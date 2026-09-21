@@ -19,6 +19,7 @@ import type {
   ModelTextResult,
 } from "@zcode/contracts";
 import type { RegistryModelConfig, RegistryProviderConfig } from "@zcode/provider";
+import { isReactorServerManagedApiKey } from "@zcode/shared";
 import {
   AiSdkModelExecution,
   type AiSdkResolvedModel,
@@ -164,6 +165,12 @@ export class AiSdkModelAdapter {
       const requestAuthRequired =
         options.providerConfig.access.type === "zhipu-account" &&
         options.providerConfig.access.mode === "off-peak";
+      // 企业服务端（Reactor Server）托管的 provider 例外：它的 `access.apiKey` 是**哨兵值**，
+      // 真实网关令牌只活 2 小时、由 Host 每次请求现场签发，因此不能像普通 API-key 那样
+      // 直接用配置里的静态密钥 —— 必须走调用级 runtime header Port 去要。
+      const reactorManagedProvider =
+        options.providerConfig.access.type === "api-key" &&
+        isReactorServerManagedApiKey(options.providerConfig.access.apiKey);
       // 调用级 runtime header Port 只服务绑定完整 Account Access 的账号型 Model；
       // 普通 API-key Model 若也消费该 Port，会把静态鉴权误送到 Host 刷新并在请求前失败。
       // Off-Peak Model 始终使用创建时注入的执行作用域 Source，不依赖账号服务。
@@ -178,7 +185,7 @@ export class AiSdkModelAdapter {
             }
             return { headersApplied: true, requestAuth };
           }
-        : options.providerConfig.access.type === "zhipu-account"
+        : options.providerConfig.access.type === "zhipu-account" || reactorManagedProvider
           ? (contextRefreshRuntimeHeadersBeforeAttempt ??
             (async () => {
               throw new ModelProtocolError(

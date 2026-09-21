@@ -146,6 +146,8 @@ export const ServiceChannels = {
   OffPeakTask: "off-peak-task",
   /** Onboarding 完成记录服务（本地持久化，后续上传服务器） */
   OnboardingRecord: "onboarding-record",
+  /** 企业服务端（Reactor Server）接入：登录、网关令牌、服务端下发的模型目录 */
+  ReactorServer: "reactor-server",
 } as const;
 
 export type ServiceChannelName = (typeof ServiceChannels)[keyof typeof ServiceChannels];

@@ -11,14 +11,19 @@ import {
   BUILTIN_MODEL_PROVIDER_IDS,
   isStartPlanModelProviderId,
   resolveModelProviderFamilySpecByProviderId,
+  resolveProviderFamilyDomainFromOAuthProvider,
+  type OAuthProviderId,
 } from "@zcode/shared";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import {
+  CODING_PLAN_PROVIDER_SPECS,
   type CodingPlanEntitlementState,
   type ModelProviderNavGroup,
   type PresetProviderSpec,
 } from "@/settings/model-provider-section/constants.js";
+import { pickCodingPlanEntitlementProvider } from "@/lib/codingPlanProvider.js";
 import {
+  createCodingPlanProviderNodeKey,
   createCustomProviderNodeKey,
   createPresetProviderNodeKey,
 } from "@/settings/model-provider-section/utils.js";
@@ -27,44 +32,51 @@ import {
   type ProviderOrderView,
 } from "@/lib/modelProviderOrdering.js";
 import type { EnterpriseCodingPlanProductDisplay } from "@/settings/model-provider-section/enterpriseCodingPlanProducts.js";
+import {
+  buildVisibleFamilyConnectionItems,
+  resolveCodingPlanEntitlementState,
+} from "@/settings/model-provider-section/providerFamilyConnectionVisibility.js";
 
 interface PresetProviderWithConfig extends PresetProviderSpec {
   provider: ProviderSettingsFormProvider | null;
 }
 
 interface UseModelProviderNavigationOptions {
+  presetProviders: PresetProviderWithConfig[];
   modelProviders: ProviderSettingsFormProvider[];
+  /**
+   * 当前账号明确有权益的 Provider。缺省等价于尚无账号权益；生产设置页始终显式传入。
+   */
+  entitledAccountProviderIds?: ReadonlySet<string>;
   modelProvidersLoading?: boolean;
   displayOrder?: ProviderOrderView;
+  codingPlanEntitlements?: Partial<Record<string, CodingPlanEntitlementState>>;
+  providerFamilyDomain?: ProviderFamilyDomain | null;
   connectionSelections?: ProviderFamilyConnectionSelectionSettings;
   pendingConnectionSelections?: ProviderFamilyConnectionSelectionSettings;
   familyConnectionSettingsLoading?: boolean;
   familyConnectionSettingsFailed?: boolean;
+  subscribedTeamProducts?: EnterpriseCodingPlanProductDisplay[];
+  showPurchasedTeamPlanFallback?: boolean;
   selectedNodeKey: string | null;
   setSelectedNodeKey: (key: string | null) => void;
   intl: ReturnType<typeof useZCodeIntl>["intl"];
-  /**
-   * 官方账号供应商相关输入（智谱 / Z.ai / BigModel 及其 Coding Plan）。
-   *
-   * Reactor 已下线这些入口（`docs/REACTOR-REBRAND-PLAN.md` 5.1），本 hook 不再消费；
-   * 设置页仍在计算并传入。保留签名是为了不动调用方的状态与推导，待内部实现一并清理时删除。
-   */
-  presetProviders: PresetProviderWithConfig[];
-  entitledAccountProviderIds?: ReadonlySet<string>;
-  codingPlanEntitlements?: Partial<Record<string, CodingPlanEntitlementState>>;
-  providerFamilyDomain?: ProviderFamilyDomain | null;
-  subscribedTeamProducts?: EnterpriseCodingPlanProductDisplay[];
-  showPurchasedTeamPlanFallback?: boolean;
 }
 
 export function useModelProviderNavigation({
+  presetProviders,
   modelProviders,
+  entitledAccountProviderIds = new Set(),
   modelProvidersLoading = false,
   displayOrder,
+  codingPlanEntitlements = {},
+  providerFamilyDomain = null,
   connectionSelections = {},
   pendingConnectionSelections = {},
   familyConnectionSettingsLoading = false,
   familyConnectionSettingsFailed = false,
+  subscribedTeamProducts = [],
+  showPurchasedTeamPlanFallback = false,
   selectedNodeKey,
   setSelectedNodeKey,
   intl,
@@ -77,10 +89,127 @@ export function useModelProviderNavigation({
     return sortModelProvidersForDisplay(allCustomProviders, displayOrder);
   }, [displayOrder, modelProviders]);
 
+  const codingPlanItems = useMemo(
+    () =>
+      CODING_PLAN_PROVIDER_SPECS.filter((spec) =>
+        shouldShowCodingPlanForProviderFamilyDomain(spec.oauthProviderId, providerFamilyDomain),
+      ).map((spec) => {
+        const provider = modelProviders.find((item) => item.providerId === spec.id) ?? null;
+        const accountEntitled = entitledAccountProviderIds.has(spec.id);
+        const entitlementProvider = pickCodingPlanEntitlementProvider(provider);
+        const entitlement = codingPlanEntitlements[spec.id];
+        const state = resolveCodingPlanEntitlementState({
+          providerId: spec.id,
+          accountEntitled,
+          accountAvailability: provider?.accountState?.availability,
+          accountUnavailableReason: provider?.accountState?.unavailableReason,
+          entitlement,
+          modelProvidersLoading,
+        });
+
+        return {
+          key: createCodingPlanProviderNodeKey(spec.id),
+          type: "codingPlan" as const,
+          presetId: spec.id,
+          oauthProviderId: spec.oauthProviderId,
+          label: isStartPlanModelProviderId(spec.id)
+            ? "Start Plan"
+            : `${spec.providerName} - ${intl.formatMessage({
+                id: "settings.modelProvider.connectionMode.codingPlan",
+              })}`,
+          providerName: spec.providerName,
+          provider: entitlementProvider,
+          accountEntitled,
+          status: state.status,
+          statusLabelId: state.statusLabelId,
+          ...(isStartPlanModelProviderId(spec.id) &&
+          entitlement?.snapshot?.unavailableReason === "not_authenticated"
+            ? {
+                accountLoginRequired: true,
+                statusLabelId: "settings.modelProvider.startPlan.status.loginExpired",
+              }
+            : {}),
+          planLevel: state.planLevel,
+          currentProductId: state.currentProductId,
+          subscriptionBillingCycle: state.subscriptionBillingCycle,
+          subscriptionRenewTime: state.subscriptionRenewTime,
+          subscriptionExpireTime: state.subscriptionExpireTime,
+          subscriptionDetails: state.subscriptionDetails,
+          quotaLimits: state.quotaLimits,
+          mcpQuotaLimit: state.mcpQuotaLimit ?? null,
+          purchaseUrl: spec.purchaseUrl,
+          statusActive: entitlementProvider?.executable === true,
+        };
+      }),
+    [
+      entitledAccountProviderIds,
+      codingPlanEntitlements,
+      intl,
+      modelProviders,
+      modelProvidersLoading,
+      providerFamilyDomain,
+    ],
+  );
+  const connectionModeCodingPlanItems = useMemo(
+    () =>
+      buildVisibleFamilyConnectionItems({
+        items: codingPlanItems.filter((item) => !isStartPlanModelProviderId(item.presetId)),
+        codingPlanEntitlements,
+        subscribedTeamProducts,
+        showPurchasedTeamPlanFallback,
+        connectionSelections: {
+          ...connectionSelections,
+          ...pendingConnectionSelections,
+        },
+        teamPlanSelections: Object.fromEntries(
+          Object.entries({ ...connectionSelections, ...pendingConnectionSelections }).filter(
+            ([, selection]) => selection?.kind === "team-coding-plan",
+          ),
+        ),
+      }),
+    [
+      codingPlanEntitlements,
+      showPurchasedTeamPlanFallback,
+      codingPlanItems,
+      connectionSelections,
+      pendingConnectionSelections,
+      subscribedTeamProducts,
+    ],
+  );
+
   const navigationGroups = useMemo<ModelProviderNavGroup[]>(() => {
     const groups: ModelProviderNavGroup[] = [
-      // Reactor 不再提供官方账号供应商（智谱 / Z.ai / BigModel 及其 Coding Plan）入口，
-      // 侧栏只保留「自定义供应商」。见 docs/REACTOR-REBRAND-PLAN.md 5.1。
+      {
+        id: "preset",
+        title: intl.formatMessage({ id: "settings.modelProvider.presetTitle" }),
+        items: [
+          ...presetProviders.map(({ id, displayName, provider }) => {
+            const statusProvider = resolvePresetFamilyStatusProvider({
+              presetId: id,
+              provider,
+              connectionModeItems: connectionModeCodingPlanItems,
+              connectionSelections,
+              modelProviders,
+            });
+            return {
+              key: createPresetProviderNodeKey(id),
+              type: "preset" as const,
+              presetId: id,
+              label: displayName,
+              logo: modelProviders.find(
+                (candidate) =>
+                  candidate.providerId ===
+                  resolveModelProviderFamilySpecByProviderId(id)?.individualCodingPlanProviderId,
+              )?.config.logo,
+              provider,
+              displayName,
+              statusProvider,
+              statusActive: statusProvider?.executable === true,
+            };
+          }),
+          ...codingPlanItems.filter((item) => isStartPlanModelProviderId(item.presetId)),
+        ],
+      },
       {
         id: "custom",
         title: intl.formatMessage({ id: "settings.modelProvider.customTitle" }),
@@ -97,15 +226,25 @@ export function useModelProviderNavigation({
     return groups;
   }, [
     customProviders,
+    codingPlanItems,
+    connectionModeCodingPlanItems,
     // 左侧导航分组标题在这个 memo 内格式化。
     // 语言切换时 provider/权益引用可能不变，必须依赖 intl 才能刷新旧 locale 的文案。
     intl,
+    connectionSelections,
+    pendingConnectionSelections,
+    presetProviders,
+    modelProviders,
   ]);
 
-  const navigationItems = useMemo(
-    () => navigationGroups.flatMap((group) => group.items),
-    [navigationGroups],
-  );
+  const navigationItems = useMemo(() => {
+    const visibleItems = navigationGroups.flatMap((group) => group.items);
+    const visibleKeys = new Set(visibleItems.map((item) => item.key));
+    return [
+      ...visibleItems,
+      ...connectionModeCodingPlanItems.filter((item) => !visibleKeys.has(item.key)),
+    ];
+  }, [connectionModeCodingPlanItems, navigationGroups]);
 
   const selectableNavigationItems = useMemo(
     () => navigationItems.filter((item) => item.type !== "codingPlanLoading"),
@@ -187,6 +326,48 @@ export function useModelProviderNavigation({
     selectedNavItem,
     navigationUnavailable,
   };
+}
+
+function shouldShowCodingPlanForProviderFamilyDomain(
+  oauthProviderId: OAuthProviderId,
+  providerFamilyDomain: ProviderFamilyDomain | null,
+): boolean {
+  if (!providerFamilyDomain) {
+    return true;
+  }
+  return resolveProviderFamilyDomainFromOAuthProvider(oauthProviderId) === providerFamilyDomain;
+}
+
+function resolvePresetFamilyStatusProvider({
+  presetId,
+  provider,
+  connectionModeItems,
+  connectionSelections,
+  modelProviders,
+}: {
+  presetId: PresetProviderSpec["id"];
+  provider: ProviderSettingsFormProvider | null;
+  connectionModeItems: ModelProviderNavGroup["items"];
+  connectionSelections: ProviderFamilyConnectionSelectionSettings;
+  modelProviders: ProviderSettingsFormProvider[];
+}): ProviderSettingsFormProvider | null {
+  const familySpec = resolveModelProviderFamilySpecByProviderId(presetId);
+  if (!familySpec) {
+    return provider;
+  }
+  const connectionItem = pickFamilyModeNavigationItem(
+    connectionModeItems.filter((item) => item.type !== "codingPlanLoading"),
+    familySpec.id,
+    connectionSelections,
+  );
+  if (!connectionItem || !isPlanConnectionNavigationItem(connectionItem)) {
+    return null;
+  }
+  // 菜单 Team 项可能从个人项派生，携带的 provider 不是团队执行身份。
+  // 必须按具体套餐 ID 回到 Settings View，不能用菜单权益或继承的 provider 点灯。
+  return (
+    modelProviders.find((candidate) => candidate.providerId === connectionItem.presetId) ?? null
+  );
 }
 
 function resolveFallbackModelProviderNodeKey({

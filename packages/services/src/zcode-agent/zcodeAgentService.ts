@@ -120,6 +120,7 @@ import type {
   AccountRequestAuthMaterial,
   IAccountRequestAuthService,
 } from "#src/model-provider/accountRequestAuthService.js";
+import type { IReactorServerService } from "#src/reactor-server/reactorServer.js";
 import {
   mergeAutomationMutationToolDenylist,
   mergeOffPeakMutationToolDenylist,
@@ -861,6 +862,11 @@ interface CreateZCodeAgentServiceOptions extends Omit<
   mcpStatusIdleTimeoutMs?: number;
   accountProviderConfigSource?: ProviderSource<AccountProviderConfigSnapshot>;
   accountRequestAuthService?: IAccountRequestAuthService;
+  /**
+   * 企业服务端（Reactor Server）的模型请求鉴权解析器。
+   * 该 provider 的网关令牌 TTL 很短，由这里每次请求现场签发（见 docs/服务端接线-方案-v1.md §4.2）。
+   */
+  reactorServerAuth?: Pick<IReactorServerService, "resolveGatewayAuth">;
   /** Desktop Host 请求 Main 登记 Agent 已授权的精确本地视频路径。 */
   authorizeLocalMediaPreviewPath?: (path: string) => Promise<string>;
   modelSelectionReadinessSource?: ModelSelectionReadinessSource;
@@ -1193,6 +1199,7 @@ export function createZCodeAgentService(
   const accountConfigReceivedRevisionByClient = new WeakMap<ZCodeProtocolClient, string>();
   const sessionTraceIdBySessionKey = new Map<string, TraceId>();
   const accountRequestAuthService = options?.accountRequestAuthService;
+  const reactorServerAuth = options?.reactorServerAuth;
   const accountProviderConfigSource = options?.accountProviderConfigSource;
   const modelSelectionReadinessSource = options?.modelSelectionReadinessSource;
   const sessionRuntimePreferencesAuthority = options?.sessionRuntimePreferencesAuthority ?? "local";
@@ -1296,6 +1303,56 @@ export function createZCodeAgentService(
         sessionId: params.pending.request.sessionId,
         error: error instanceof Error ? error.message : String(error),
         workspaceKey: resolveWorkspaceKey(params.pending.request.workspace),
+      });
+      await params.pending.client.respond(params.pending.protocolRequestId, {
+        headersApplied: false,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      if (pendingProviderRuntimeHeaders.get(params.key) === params.pending) {
+        pendingProviderRuntimeHeaders.delete(params.key);
+      }
+    }
+  }
+
+  /**
+   * 企业服务端 provider 的鉴权应答：与账号路径同构，但材料来自 ReactorServerService
+   * **现场签发**的网关令牌（TTL 短、从不落盘），因此每次模型请求都会走到这里。
+   */
+  async function respondReactorRequestAuthWithoutInteraction(params: {
+    key: string;
+    pending: PendingProviderRuntimeHeadersRequest;
+  }): Promise<void> {
+    params.pending.responding = true;
+    try {
+      const auth = await reactorServerAuth?.resolveGatewayAuth(
+        params.pending.request.providerId,
+        params.pending.request.modelSelection.modelId,
+      );
+      if (pendingProviderRuntimeHeaders.get(params.key) !== params.pending) return;
+      if (!auth) {
+        // 未登录 / 会话已失效 / provider 不再归属企业服务端：都要给出可分辨的原因，
+        // 绝不能"假装成功"后让请求带着哨兵值打到上游（那会变成一次静默的 401）。
+        throw new Error("企业服务端未授权：请在设置中登录企业账号");
+      }
+      await params.pending.client.respond(params.pending.protocolRequestId, {
+        headersApplied: true,
+        requestAuth: { apiKey: auth.apiKey },
+      });
+      logger.info(undefined, "企业服务端模型请求鉴权已注入", {
+        modelId: params.pending.request.modelSelection.modelId,
+        providerId: params.pending.request.providerId,
+        requestId: params.pending.request.requestId,
+        sessionId: params.pending.request.sessionId,
+        workspaceKey: resolveWorkspaceKey(params.pending.request.workspace),
+      });
+    } catch (error) {
+      if (pendingProviderRuntimeHeaders.get(params.key) !== params.pending) return;
+      logger.warn(undefined, "企业服务端模型请求鉴权失败", {
+        modelId: params.pending.request.modelSelection.modelId,
+        providerId: params.pending.request.providerId,
+        sessionId: params.pending.request.sessionId,
+        error: error instanceof Error ? error.message : String(error),
       });
       await params.pending.client.respond(params.pending.protocolRequestId, {
         headersApplied: false,
@@ -2264,6 +2321,14 @@ export function createZCodeAgentService(
             workspacePath: workspace.workspacePath,
           });
           const accountAccess = parsed.data.accountAccess;
+          if (reactorServerAuth && !accountAccess) {
+            // 企业服务端 provider：走 plain api-key 形态（CLI 侧靠哨兵值识别，见 runner.ts），
+            // 令牌只活 2 小时且从不落盘，因此每次请求都现场换新的。
+            // ⚠ 必须排在账号分支之前判断：下面的 fallback 会直接快速失败，
+            //   而这条路径是"没有账号凭据"的普通 provider，不进账号分支。
+            void respondReactorRequestAuthWithoutInteraction({ key: pendingKey, pending });
+            return;
+          }
           if (accountRequestAuthService && accountAccess) {
             // Account API Key / Team Runtime Key / Start Plan JWT 都不需要 Renderer 交互。
             // Host 按 Model 固定的 Account Access 自动应答，避免后台任务和无 pane 会话依赖 UI 订阅者。

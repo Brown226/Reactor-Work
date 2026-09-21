@@ -394,6 +394,10 @@ import {
   createAccountRequestAuthService,
   type IAccountRequestAuthService,
 } from "./model-provider/accountRequestAuthService.js";
+// 企业服务端接入（Reactor Server）：工厂从实现文件直接导入（根 index 只导出 descriptor/类型，
+// 原因是根 index 会被 renderer 拉进浏览器包，见 services/index.ts 的注释）。
+import { createReactorServerService } from "./reactor-server/reactorServerService.js";
+import { IReactorServerService } from "./reactor-server/reactorServer.js";
 import { createUsageStatsService } from "./usage-stats/usageStatsService.js";
 import { createCodingPlanSubscriptionService } from "./coding-plan-subscription/codingPlanSubscriptionService.js";
 import { createClientConfigService } from "./client-config/clientConfigService.js";
@@ -2075,11 +2079,21 @@ export function createLocalServices(options: {
           resolveOffPeakClientConfig: () => codingPlanSubscriptionService.getOffPeakClientConfig(),
           resolveOffPeakTaskService: () => offPeakTaskServiceForAgent,
         };
+  // 企业服务端（Reactor Server）接入：登录态与令牌的唯一所有者。
+  // 它同时是企业 provider 的唯一写入者（经 providerSettings overlay），因此必须先于 agent 服务创建。
+  const reactorServerService = createReactorServerService({
+    apiClient,
+    credentials: credentialService,
+    providerSettings: providerRuntime.providerSettings,
+  });
+
   const zcodeAgentService = createZCodeAgentService({
     ...(agentAccountProviderConfigSource
       ? { accountProviderConfigSource: agentAccountProviderConfigSource }
       : {}),
     accountRequestAuthService,
+    // 企业服务端 provider 的鉴权材料由这里现场解析（见 docs/服务端接线-方案-v1.md §4.2）。
+    reactorServerAuth: reactorServerService,
     ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
     authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
     ...offPeakToolWiring,
@@ -2594,7 +2608,9 @@ export function createLocalServices(options: {
   providerProvisioningTriggerDisposers.set(services, providerProvisioningDisposers);
   services
     .register(IProviderSettingsService, providerRuntime.providerSettings)
-    .register(IModelSelectionService, providerRuntime.modelSelection);
+    .register(IModelSelectionService, providerRuntime.modelSelection)
+    // 企业服务端接入：UI 经此登录/登出/读状态；模型请求的鉴权注入走 agent 服务的 runtime header 分支。
+    .register(IReactorServerService, reactorServerService);
   if (isDesktopAttachedRemote || options.providerProvisioningTargetEnabled === true) {
     services.register(
       IProviderProvisioningTargetService,

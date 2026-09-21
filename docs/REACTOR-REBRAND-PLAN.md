@@ -221,23 +221,6 @@ ls -d ~/.reactor && ls ~/.zcode/v2 | wc -l   # 新目录已建；官方版 ~/.zc
 | 遥测 | ARMS RUM + OTLP | 运行时环境提供 |
 | 反馈/社群 | `config/default.json` | 直接改配置 |
 
-### 5.1 官方服务入口下线（2026-09-21）
-
-官方账号服务（ZCode 账号 / Z.ai / BigModel 及其 Coding Plan）在 Reactor 界面不再提供入口。
-本次只下线**入口**：`account:*` provider、权益轮询、购买 webview 等内部实现仍在代码中，
-彻底删除会牵动 services / provider / 数据库迁移，属独立改造，另行评估。
-
-| 入口 | 位置 | 处理 |
-| --- | --- | --- |
-| 账户菜单「升级 / 续费」 | `packages/ui/src/WorkspaceSidebarFooterUsageSummary.tsx` | 删除菜单项与入口态计算；`onUpgradeClick` 属性链原样保留，避免牵动上层调用方 |
-| 设置 → 模型供应商 →「智谱」预置分组 | `packages/ui/src/settings/model-provider-section/useModelProviderNavigation.ts` | 删除 `preset` 分组与 Coding Plan 导航项，侧栏只剩「自定义供应商」 |
-
-有意保留（不属于「官方账号服务」，本次未动）：
-
-- 「添加供应商」模板选择页的「智谱」模板分组（`ProviderTemplatePicker.tsx`）：用自有 API Key 接第三方模型的模板，不是官方套餐。
-- 账户菜单「使用统计」与头像旁的套餐徽标：本次只删「升级」一项。
-- 供应商详情的 Coding Plan 卡片与连接方式 UI：侧栏已不再暴露入口，代码留待后续清理。
-
 ## 六、必须避开的坑
 
 1. **OAuth 回调绑定 `zcode://`**：`zaiProviderConfig.ts` L27 与 `bigmodelProviderConfig.ts` L22 的 `redirectUri: "zcode://oauth/callback"` 已在 Z.ai 服务端注册。改 scheme 会断登录 → 采用**双注册**，OAuth 继续走 `zcode://`。
