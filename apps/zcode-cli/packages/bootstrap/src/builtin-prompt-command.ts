@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 const BUILTIN_PROMPT_COMMAND_PATTERN = /^\/([^\s]+)(?:\s+([\s\S]*))?$/;
 
@@ -55,7 +56,7 @@ function buildInitAgentsPrompt(params: {
     `- Instruction file: ${params.targetPath}`,
     `- Existing hidden instruction candidates: ${join(params.workingDirectory, ".zcode", "AGENTS.md")} and ${join(params.workingDirectory, ".agents", "AGENTS.md")}`,
     "- File name must be exactly AGENTS.md.",
-    "- This command targets the current workspace only. Do not write ~/.zcode/AGENTS.md.",
+    `- This command targets the current workspace only. Do not write ~/${USER_DATA_DIR_NAME}/AGENTS.md.`,
     additionalInstructions,
     "",
     "Process:",

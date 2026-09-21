@@ -2,11 +2,13 @@ import { stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import type { CustomCommandRoot, CustomCommandSource } from "@zcode/contracts";
+import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 const COMMANDS_DIR = "commands";
 const GIT_MARKER = ".git";
 const HOME_PREFIX = "~/";
 const PRIORITY_STEP = 10;
+/** 工作区级目录名：项目配置语义，保持字面量。用户级改用 USER_DATA_DIR_NAME。 */
 const ZCODE_DIR = ".zcode";
 const AGENTS_DIR = ".agents";
 
@@ -96,10 +98,13 @@ function commandRootsForBase(
   scope: CustomCommandRoot["scope"],
   nextPriority: () => number,
 ): CustomCommandRoot[] {
-  // 合并而不是 fallback：兼容 `.agents` 命令和原生 `.zcode` 命令需要同时可见。
-  // 同一级别 `.zcode` 先扫描，命令同名时仍按“先到先赢”处理。
+  // 合并而不是 fallback：兼容 `.agents` 命令和原生 ZCode 命令需要同时可见。
+  // 同一级别 ZCode 目录先扫描，命令同名时仍按“先到先赢”处理。
+  // 本函数同时服务用户级与工作区级：用户级落在 USER_DATA_DIR_NAME，工作区级是项目
+  // 配置语义、保持字面量 `.zcode`——共用一个字面量会让用户级读回官方版的旧目录。
+  const zcodeDirName = scope === "user" ? USER_DATA_DIR_NAME : ZCODE_DIR;
   return [
-    root(join(baseDirectory, ZCODE_DIR, COMMANDS_DIR), scope, "zcode", nextPriority()),
+    root(join(baseDirectory, zcodeDirName, COMMANDS_DIR), scope, "zcode", nextPriority()),
     root(join(baseDirectory, AGENTS_DIR, COMMANDS_DIR), scope, "agents", nextPriority()),
   ];
 }

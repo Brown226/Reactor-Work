@@ -11,6 +11,7 @@ import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import type { RuntimeConfigPatch, UiLocale } from "@zcode/contracts";
+import { USER_DATA_DIR_NAME } from "@zcode/shared";
 import { z } from "zod";
 import {
   CANONICAL_CUA_PLUGIN_ID,
@@ -59,7 +60,7 @@ export interface PluginRemovePatchResult {
 }
 
 const DEFAULT_CONFIG_FILE = "config.json";
-const DEFAULT_BASE_DIR = "~/.zcode/cli";
+const DEFAULT_BASE_DIR = `~/${USER_DATA_DIR_NAME}/cli`;
 
 /**
  * Resolve path with ~ expansion
