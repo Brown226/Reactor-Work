@@ -4195,6 +4195,7 @@ const enUS: Record<string, string> = {
   "chat.empty.greeting.afternoon": "Good afternoon! Leave the rest to me.",
   "chat.empty.greeting.evening": "Evening, nice work today",
   "chat.empty.greeting.lateNight": "It's late—remember to take care of yourself.",
+  "chat.empty.greeting.withName": "{name}, {greeting}",
   "chat.draft.suggestedPrompt.recentCommits": "Review commits from the last 7 days",
   "chat.draft.suggestedPrompt.recentCommits.prompt":
     "Review Git commits from the last 7 days in this workspace, summarize the main changes, and identify potential risks.",

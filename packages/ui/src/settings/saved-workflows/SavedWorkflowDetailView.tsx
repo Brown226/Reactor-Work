@@ -19,7 +19,7 @@ import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { SettingsBreadcrumbReporter } from "@/settings/SettingsHeaderBreadcrumb.js";
 import { SETTINGS_FRAME_CONTENT_CLASSNAME } from "@/settings/SettingsPageParts.js";
-import { SettingsSegmentedTabs } from "@/settings/SettingsSegmentedTabs.js";
+import { SegmentedTabs } from "@/components/ui/segmented-tabs.js";
 import {
   argsDeclarationToRows,
   rowsToArgsDeclaration,
@@ -305,7 +305,7 @@ export function SavedWorkflowDetailView({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div data-testid={TID_WORKFLOW_DETAIL_TAB}>
-          <SettingsSegmentedTabs
+          <SegmentedTabs
             value={tab}
             items={[
               {

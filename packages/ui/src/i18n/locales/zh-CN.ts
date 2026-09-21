@@ -3928,6 +3928,7 @@ const zhCN: Record<string, string> = {
   "chat.empty.greeting.afternoon": "下午好呀，接下来交给我吧",
   "chat.empty.greeting.evening": "晚上好呀，今天辛苦啦",
   "chat.empty.greeting.lateNight": "夜深啦，别忘了照顾好自己哦",
+  "chat.empty.greeting.withName": "{name}，{greeting}",
   "chat.draft.suggestedPrompt.recentCommits": "检查近 7 天的 commit",
   "chat.draft.suggestedPrompt.recentCommits.prompt":
     "检查当前工作区近 7 天的 Git commit，概括主要改动并指出潜在风险。",

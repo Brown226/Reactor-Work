@@ -122,6 +122,7 @@ import {
 import type { ConversationDropTargetController } from "@/v4/composer/conversationDropTarget.js";
 import { shouldIgnoreEscapeForStopGeneration } from "@/v4/composer/escapeStop.js";
 import { ConversationDraftEmptyState } from "@/v4/ConversationDraftEmptyState.js";
+import { DraftInterfaceModeToggle } from "@/v4/DraftInterfaceModeToggle.js";
 import { ConversationDraftSuggestedPromptsContainer } from "@/v4/ConversationDraftSuggestedPromptsContainer.js";
 import { ConversationHeader, type PaneWorkspaceBadge } from "@/v4/ConversationHeader.js";
 import { ConversationQueuePanel } from "@/v4/ConversationQueuePanel.js";
@@ -4785,8 +4786,12 @@ export function SessionPane({
               }
               emptyState={
                 isDraft ? (
-                  <div data-testid={TID_CHAT_EMPTY} className="w-full">
-                    <ConversationDraftEmptyState />
+                  // 竖排：问候语在上，界面模式切换贴近输入卡；两者同属空态，随空态一起居中。
+                  <div className="flex w-full flex-col items-center">
+                    <div data-testid={TID_CHAT_EMPTY} className="w-full">
+                      <ConversationDraftEmptyState />
+                    </div>
+                    <DraftInterfaceModeToggle />
                   </div>
                 ) : null
               }

@@ -10,7 +10,7 @@ import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { AutomationSwitchToggle } from "@/settings/AutomationSwitchToggle.js";
 import { AutomationChevronDownIcon, AutomationInfoIcon } from "@/settings/AutomationIcons.js";
 import { Button } from "@/components/ui/button.js";
-import { SettingsSegmentedTabs } from "@/settings/SettingsSegmentedTabs.js";
+import { SegmentedTabs } from "@/components/ui/segmented-tabs.js";
 
 export {
   AutomationAddScheduleIcon,
@@ -57,7 +57,7 @@ export function AutomationSettingsHistoryTabs({
   onValueChange: (value: AutomationSettingsHistoryTab) => void;
 }) {
   return (
-    <SettingsSegmentedTabs
+    <SegmentedTabs
       value={value}
       items={[
         { value: "settings", label: settingsLabel },

@@ -69,7 +69,7 @@ import { useTabStore } from "@/store/TabStoreProvider.js";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 import { getPluginWorkspaceKey } from "@/settings/PluginScopeMenu.js";
 import { ExternalLink, Import, Plus, UploadCloud } from "lucide-react";
-import { SettingsSegmentedTabs } from "@/settings/SettingsSegmentedTabs.js";
+import { SegmentedTabs } from "@/components/ui/segmented-tabs.js";
 import { formatRemoteSkillSyncTarget } from "@/settings/RemoteSkillSyncDialog.js";
 import { selectPluginsForScope } from "@/settings/pluginCapabilityProjection.js";
 
@@ -1379,7 +1379,7 @@ export function McpSettingsSection({
               </p>
             </div>
             <div className="shrink-0 self-end">
-              <SettingsSegmentedTabs
+              <SegmentedTabs
                 value={editorMode}
                 items={[
                   {
