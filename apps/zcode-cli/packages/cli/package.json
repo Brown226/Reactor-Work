@@ -4,6 +4,7 @@
   "private": true,
   "description": "Main CLI application for zcode",
   "bin": {
+    "reactor": "./dist/zcode.cjs",
     "zcode": "./dist/zcode.cjs"
   },
   "files": [

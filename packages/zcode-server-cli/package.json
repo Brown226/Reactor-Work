@@ -2,6 +2,7 @@
   "name": "@zcode/server-cli",
   "private": true,
   "bin": {
+    "reactor": "./dist/server-cli.js",
     "zcode": "./dist/server-cli.js"
   },
   "type": "module",

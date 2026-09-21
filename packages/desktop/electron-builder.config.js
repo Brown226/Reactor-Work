@@ -164,7 +164,7 @@ const PACMAN_RUNTIME_DEPENDENCIES = [
   "xdg-utils",
 ];
 
-const WINDOWS_INSTALL_MANIFEST_NAME = ".zcode-install-manifest";
+const WINDOWS_INSTALL_MANIFEST_NAME = ".reactor-install-manifest";
 
 async function writeWindowsInstallManifest(context) {
   if (context.electronPlatformName !== "win32") return;
@@ -456,10 +456,11 @@ export default {
   extraMetadata: {
     version: buildMetadata.appVersion,
     zcodeProductFlavor: desktopProductIdentity.flavor,
-    homepage: "https://zcode.z.ai",
+    // TODO(reactor): 替换为对外发布用的真实网址与联系邮箱（deb/rpm 打包要求 email 合法）。
+    homepage: "https://example.com",
     author: {
-      name: "ZCode",
-      email: "dev@zcode.z.ai",
+      name: "China Nuclear Power Engineering Co., Ltd.",
+      email: "dev@example.com",
     },
   },
   // macOS 签名阶段会对 Electron Framework 下每个语言包逐个 codesign。
@@ -648,10 +649,11 @@ export default {
   // OAuth deep link 协议注册（macOS 打包后需要 Info.plist 中声明 CFBundleURLTypes）
   protocols: [
     {
-      // 协议处理器的展示名之前使用小写 scheme，打包产物里的协议描述无法体现产品名。
-      // 展示名跟随安装包身份；scheme 仍保持 zcode，因此两个应用中最后注册者会成为默认 handler。
+      // 双 scheme 注册：OAuth 回调地址固定在 zcode://oauth/callback（上游服务端已注册该
+      // redirect_uri，单独改成 reactor:// 会直接断掉登录），reactor:// 为自有协议。
+      // 协议描述跟随安装包身份；两个应用争抢同一 scheme 时，最后注册者成为默认 handler。
       name: desktopProductIdentity.productName,
-      schemes: ["zcode"],
+      schemes: ["zcode", "reactor"],
     },
   ],
   mac: {
@@ -700,7 +702,8 @@ export default {
     // 与 /usr/share/icons/hicolor/*/apps/zcode.png 保持一致。
     executableName: desktopProductIdentity.linuxExecutableName,
     category: "Development",
-    maintainer: "ZCode <dev@zcode.z.ai>",
+    // TODO(reactor): 同上，随对外发布替换。
+    maintainer: "China Nuclear Power Engineering Co., Ltd. <dev@example.com>",
   },
   deb: {
     // 生产版与 Preview 必须是两个 dpkg package；只改可执行名仍会让安装器把另一版本当成升级替换。
