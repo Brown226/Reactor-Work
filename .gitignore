@@ -69,3 +69,8 @@ packages/desktop/.e2e-artifacts/
 packages/desktop/.e2e-cache/
 packages/desktop/.e2e-network-capture/
 .zcode-runtime/
+
+# 本地笔记，内含真实供应商 API Key，只留本地、永不入库。
+# 不锚定根目录：文件即使被挪到子目录（或换成同名副本）也仍然被忽略，
+# 避免"移动一下就重新暴露给 git add"这种最容易造成永久泄露的路径。
+模型信息.txt
