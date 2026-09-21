@@ -142,12 +142,16 @@ pnpm bundle:desktop
 >
 > **工作区内的 `.zcode`**（`AGENTS.md`、`agents/`、`workflows/`、`config.json`、`plans/`）是项目配置的产品语义，按设计保持字面量，不在本次范围。
 >
-> **未收口**（仍是用户级 `~/.zcode`，与迁移后的路径并存，需后续处理）：
+> **未收口的部分已收口**（2026-09-21 补充提交，见 `docs/data-directory-contract.md` 的契约与「有意保留」清单）。上一轮遗留的这几类现在全部改用常量：
 >
-> - `packages/services/src/storage/adapters/rootsResolver.ts`——受管存储根仍解析到 `~/.zcode`，而 session store 已走新目录。
-> - `packages/desktop/src/main/desktopDataBaseDirBootstrap.ts` 与 `desktopChromiumHardwareAccelerationBootstrap.ts`——启动期读 `~/.zcode/v2/setting.json`，而同仓 `desktop/src/main/index.ts` 已改读新目录，同一个文件出现两个来源。
-> - settings-sync / skills / subagents / mcp-sync / commands / hooks 的 user 目录段；`zcode-server-cli` 的 server 根；`zcode-agent` 的用户 cli 目录。
-> - 其中 `adapters/src/{commands,skills}/roots.ts` 注明要同时兼容 `.zcode` 与 `.agents`，**可能是有意保留的旧目录读路径**，改之前需与产品口径确认，不要当成漏改直接替换。
+> - `packages/services/src/storage/adapters/rootsResolver.ts` 的受管存储根（原先仍解析到 `~/.zcode`，而 session store 已走新目录——同一份数据两个来源）。
+> - `packages/desktop/src/main/desktopDataBaseDirBootstrap.ts` 与 `desktopChromiumHardwareAccelerationBootstrap.ts` 启动期读的 `setting.json`（原先与 `desktop/src/main/index.ts` 读不同目录）。
+> - settings-sync / skills / subagents / mcp-sync / commands / hooks 的 user 目录段；`zcode-server-cli` 的 server 根（原先与 `providerRuntimeResolver` 找的 `~/.reactor-ds/server/agents` 不一致）；`zcode-agent` 的用户 cli 目录与 `storage.dir` 兜底。
+> - `adapters/src/{commands,skills}/roots.ts`：**按作用域分别取目录名**——`user` 用常量、`project` 保持 `.zcode`。原先两者共用一个字面量，用户级会读回官方版的旧目录。`.agents` 兼容目录（跨工具约定）保持原样。
+> - 远端部署：`packages/server/src/remote/*` 的 `~/.zcode/server` 收口到 `deployShared.ts` 的 `REMOTE_BASE` / `REMOTE_BASE_SHELL`（原先 `connect.ts` 与 `zcodeAgentBundleWrapper.ts` 各自硬编码，绕过唯一所有者）。
+> - 全局 saved-workflow 根 `SAVED_WORKFLOW_GLOBAL_DIR`（原先与已迁移的 legacy 用户 workflow 根分叉，而两者本应"同一处"）、CLI 的 `DEFAULT_BASE_DIR`、`DefaultRuntimeConfig.storage`、信箱根、用户级 AGENTS.md 的提示文案与 UI 回退显示、`skillSourceFilter` 的路径匹配、桌面端「清除所有数据」的用户可见文案。
+>
+> **仍有意保留**（不算漏改，改动会破坏既有功能或越界）：工作区内所有 `.zcode`；`mcpUserDirectory/legacy.ts` 里作为**导入来源**的官方版 `appData/ZCode`、`appData/ai.z.zcode`；`~/.agents/**`、`~/.claude/**` 跨工具约定目录；`scripts/zcode-distribution/installer.mjs` 的 `$HOME/.zcode/runtime`（那是**安装树**不是用户数据，迁移需先决定用哪个目录名并处理已装 shim 的指向，属独立决策）。
 
 ### 3.1 业务数据根（改一行，全仓生效）
 

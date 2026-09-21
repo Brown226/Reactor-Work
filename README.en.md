@@ -123,7 +123,7 @@ The root [.env.example](.env.example) provides sample service URLs and build con
 
 | Setting                              | Purpose                                                                                 |
 | ------------------------------------ | --------------------------------------------------------------------------------------- |
-| `ZCODE_DATA_BASE_DIR`                | Base directory for application data, stored under its `.zcode/` subdirectory            |
+| `ZCODE_DATA_BASE_DIR`                | Base directory for application data, stored under its `.reactor-ds/` subdirectory       |
 | `ZCODE_SERVER_WORKSPACE`             | Workspace path for the Web backend                                                      |
 | `ZCODE_BUILTIN_PROVIDER_CONFIG_FILE` | Path to a local provider configuration file; uses the built-in configuration when unset |
 | `ZCODE_DIST_BASE_URL`                | Download base URL used by the CLI distribution installer                                |
