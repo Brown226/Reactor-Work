@@ -1,0 +1,163 @@
+# Reactor Desktop 服务端编排（一体化：基建 + 应用服务）
+#
+#   pg        平台身份域数据库（身份/组织/权限/skills/agents…）
+#   ldap      mock CNPE 域（dc=cnpe,dc=cc）——用户 OU 树 + 807 员工
+#   identity  身份服务 :8791（登录/JWT/权限/组织）
+#   gateway   模型网关 :8790（上游模型代理）
+#
+# 使用：
+#   cd packages/server/docker
+#   docker compose up -d --build          # 首次（会构建镜像）
+#   docker compose up -d                  # 后续（仅启动）
+#   docker compose logs -f identity       # 看身份服务日志
+#   docker compose down                   # 停止（**不加 -v**，数据卷不动）
+#
+# ⚠ 数据卷是 external（指向历史上已存在的卷）——项目改名不能让它们被重建，
+#   否则 PG 里 811 个用户与 LDAP 的 807 员工全部丢失。
+
+name: reactor-desktop
+
+services:
+  ldap:
+    image: osixia/openldap:1.5.0
+    container_name: reactor-desktop-ldap
+    environment:
+      - LDAP_ORGANISATION=CNPE
+      - LDAP_DOMAIN=cnpe.cc
+      - LDAP_BASE_DN=dc=cnpe,dc=cc
+      # 测试专用管理员口令（仅本地 mock；不用于任何生产/内网凭据）
+      - LDAP_ADMIN_PASSWORD=admin123
+      - LDAP_TLS=false
+      - LDAP_REMOVE_CONFIG_AFTER_SETUP=false
+    ports:
+      - "1389:389"
+    volumes:
+      - ./seed:/container/service/slapd/assets/config/bootstrap/ldif/custom
+      - ldap-data:/var/lib/ldap
+      - ldap-config:/etc/ldap/slapd.d
+    # 同 pg：mock 域也是登录链路的前置，抖一下不该永久掉线
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "ldapsearch -x -H ldap://localhost:389 -b dc=cnpe,dc=cc -s base -D cn=admin,dc=cnpe,dc=cc -w admin123 >/dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  pg:
+    # 用 pgvector 官方镜像（含 vector 扩展）而不是 postgres:16-alpine ——
+    # 公共知识库（KB-⑥）的向量检索依赖它；官方镜像里 `CREATE EXTENSION vector` 会失败。
+    # 用户已拍板（方案 §KB-⑥「前置核实结果」）：外网打包后迁入内网，镜像可用。
+    # ⚠️ 若退回官方镜像：建表仍能成功（repo 会跳过向量列），但向量路降级为
+    #    「词法 + Node 内余弦」，且 /v1/kb/health 会如实标注 vectorReady=false。
+    image: pgvector/pgvector:pg16
+    container_name: reactor-desktop-pg
+    environment:
+      POSTGRES_DB: reactor
+      POSTGRES_USER: reactor
+      POSTGRES_PASSWORD: reactor
+    ports:
+      # ⚠ 宿主端口不能再叫 55432：它落在 Windows 的**保留端口段**（实测 55412-55511，
+      #   由 Hyper-V/WSL 动态排除），`docker compose up` 会报
+      #   `bind: An attempt was made to access a socket in a way forbidden by its access permissions`。
+      #   旧项目的 .env 指的是**原生** PG 的 IPv6 回环 [::1]:55432，容器这条映射从未真正生效过，
+      #   所以这个坑一直没暴露。改到 15432（低于保留段）。
+      #   换机器/重启后若仍冲突，用 `netsh int ipv4 show excludedportrange protocol=tcp` 复核。
+      # 同时只绑回环：PG 是 dev 弱口令（reactor），绑 0.0.0.0 会把库暴露到局域网；
+      # 与下方 identity/gateway 的 127.0.0.1 前缀保持一致，宿主冒烟与桌面端都走 127.0.0.1。
+      - "127.0.0.1:15432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reactor -d reactor"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    # 与 identity/gateway 对齐：PG 是**所有**服务与探针的前置。
+    # 没有 restart 策略时，宿主/引擎一次抖动就会让它�院终保持退出状态，而 identity 会在里面
+    # 无限重启（日志只有连接失败），现象是“环境莫名挂了、gate:infra 全红”，排查成本极高。
+    restart: unless-stopped
+
+  # 身份服务：登录/JWT/权限/组织树
+  identity:
+    build:
+      # 构建上下文 = 仓库根（Dockerfile 里只 COPY 两个路径，配合根 .dockerignore 收窄）
+      context: ../../..
+      dockerfile: packages/server/Dockerfile
+    image: reactor-desktop-server:local
+    container_name: reactor-desktop-identity
+    command: ["node", "dist/identity-entry.js"]
+    # 密钥/口令等来自仓库根 .env（已 gitignore）；下方 environment 覆盖容器内主机名
+    env_file:
+      - ../../../.env
+    environment:
+      # 容器内必须监听 0.0.0.0，否则宿主端口映射进不来
+      REACTOR_IDENTITY_HOST: 0.0.0.0
+      # 容器网络内用服务名直连（不是宿主的 127.0.0.1:55432/1389）
+      REACTOR_DB_URL: postgres://reactor:reactor@pg:5432/reactor
+      REACTOR_LDAP_URL: ldap://ldap:389
+      # 知识库向量化（KB-⑥）：identity 要把 embeddings 请求发到**网关容器**，
+      # 用 127.0.0.1 会打到自己身上 ⇒ 必须给服务名。令牌走 .env 的 REACTOR_DEV_TOKEN
+      #（网关用它校验 dev token；代码里两个名字都认）。
+      REACTOR_GATEWAY_HOST: gateway
+      REACTOR_GATEWAY_PORT: "8790"
+      # ★ 修正历史事故：KB 提交（216aff7）新增本行时另起了一个 `environment:` 块，
+      #   造成同一服务里 environment 键**重复定义** —— `docker compose config` 直接报
+      #   "mapping key \"environment\" already defined"，这份 compose 因此从未部署成功过；
+      #   即便解析器宽容地取后一块，也会把上面的 REACTOR_DB_URL / LDAP_URL / GATEWAY_HOST
+      #   覆盖掉，容器内 identity 会退回去连 127.0.0.1 而必然连不上。故合并到同一块。
+      REACTOR_KB_FILE_DIR: /app/data/kb-files
+    volumes:
+      # 知识库上传的原始文件（KB-⑥）：不挂数据卷的话，容器重建 = 用户上传的文件全丢
+      - kb-files:/app/data/kb-files
+    ports:
+      - "127.0.0.1:8791:8791"
+    depends_on:
+      pg:
+        condition: service_healthy
+      ldap:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # 模型网关：上游模型代理（T3-4 起也读管理台数据域，取 provider/密钥）
+  gateway:
+    build:
+      context: ../../..
+      dockerfile: packages/server/Dockerfile
+    image: reactor-desktop-server:local
+    container_name: reactor-desktop-gateway
+    command: ["node", "dist/index.js"]
+    env_file:
+      - ../../../.env
+    environment:
+      REACTOR_GATEWAY_HOST: 0.0.0.0
+      # ⚠ 必须覆盖：.env 里是宿主的 127.0.0.1:55432，容器内不可达 →
+      #    不覆盖会静默退化成「env 单上游」（管理台配置不生效）
+      REACTOR_DB_URL: postgres://reactor:reactor@pg:5432/reactor
+    ports:
+      - "127.0.0.1:8790:8790"
+    # 网关要读 ai_providers/secrets，等 PG 健康再起（否则首次拉取即失败并回退 env）
+    depends_on:
+      pg:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  # ★ 修正历史粘贴事故（2026-09-19，commit 216aff7 引入，旧仓与搬迁前均存在）：
+  #   加知识库文件卷时，把属于 pg-data 的 `external/name: docker_pg-data` 整块错粘到了
+  #   kb-files 上，于是 pg-data 退化成**裸声明** —— 一旦 compose 重建 pg，它会去创建
+  #   空卷 reactor-desktop_pg-data，811 用户的库看起来"全没了"；更危险的是
+  #   docker_pg-data 会被 identity 当 /app/data/kb-files 挂载读写，而那正是 postgres 的
+  #   数据目录。两处都必须按下面的写法分开。
+  #   对账依据：运行中的 reactor-desktop-pg 实际挂的就是 docker_pg-data（docker inspect）。
+  pg-data:
+    external: true
+    name: docker_pg-data
+  # 知识库上传的原始文件（KB-⑥）：与 pg 数据卷**无关**的独立卷，由 compose 管理并自动创建。
+  # 历史上它从未被真正创建过（identity 也一直没有该挂载），故这里是全新空卷。
+  kb-files:
+  ldap-data:
+    external: true
+    name: docker_ldap-data
+  ldap-config:
+    external: true
+    name: docker_ldap-config

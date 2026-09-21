@@ -1,0 +1,37 @@
+# ===== Reactor 服务端工作区（server/）=====
+# 本目录是独立 pnpm workspace，不参与主仓（Reactor-Work）的 workspace 与门禁。
+
+# ---- 依赖与构建产物 ----
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+*.tsbuildinfo.*
+coverage/
+
+# ---- 环境与本地配置（真实密钥绝不入库）----
+.env
+.env.*
+!.env.example
+*.local
+
+# ---- 日志与临时文件 ----
+*.log
+npm-debug.log*
+pnpm-debug.log*
+*.tmp
+.DS_Store
+Thumbs.db
+
+# ---- 本地运行时产物（网关调试日志等）----
+.runtime/
+
+# ---- 身份底座 seed 产物（含真实员工信息，不入库；generate.py 可复现）----
+# 与旧项目同口径：seed.ldif / employees.csv 由 docker/seed/generate.py 从
+# 员工导入模板生成，含账号与姓名，因此只留在本地、永不入库。
+packages/server/docker/seed/employees.csv
+packages/server/docker/seed/seed.ldif
+
+# ---- Python 字节码 ----
+__pycache__/
+*.pyc

@@ -61,6 +61,10 @@
     ".agents/skills",
     "packages/formal-proof",
     "apps/zcode-cli",
-    "docs/electron"
+    "docs/electron",
+    // server/ 是从 Reactor-Desktop 搬来的独立 pnpm workspace（服务端：身份底座 + 模型网关）。
+    // 它有自带的 lockfile、tsconfig 与更宽松的行数口径（多个 repo/routes 文件数百行），
+    // 且不是本仓 workspace 成员 —— 根仓 lint 不应拦截它；它自己跑 pnpm typecheck/门禁。
+    "server"
   ]
 }

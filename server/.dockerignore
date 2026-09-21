@@ -1,0 +1,18 @@
+# Docker 构建上下文收窄（服务端镜像只用到两个路径）
+#
+# 为什么需要：build context 默认是整个仓库根目录 —— 包含 node_modules、
+# 开源项目/、.git 等数 GB 内容，会全部打包送给 Docker daemon（构建极慢）。
+# 这里用「先全排除、再白名单」的写法，把上下文压到最小。
+#
+# 服务端镜像的实际需求：
+#   packages/server/package.json  → 装 6 个外部依赖（hono/pg/ldapjs/jose/bcryptjs/@hono/node-server）
+#   packages/server/dist          → 编译产物
+#   packages/shared/{package.json,dist} → 共享契约包（**必须**：skills/agents 做值导入后
+#                                     server/dist 不再自包含，缺它容器启动即 ERR_MODULE_NOT_FOUND）
+#   packages/admin/dist           → 管理台 SPA（identity 在 /console 下静态托管，见 §11.12）
+*
+!packages/server/package.json
+!packages/server/dist
+!packages/shared/package.json
+!packages/shared/dist
+!packages/admin/dist

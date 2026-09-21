@@ -1,0 +1,1944 @@
+/* ============================================================
+   Reactor 管理台 · 组件/布局/页面样式
+   ============================================================ */
+
+/* ===== 按钮 ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--motion), border-color var(--motion), color var(--motion), transform 0.06s;
+  user-select: none;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.btn-primary:not(:disabled):hover {
+  background: var(--accent-strong);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border-color: var(--hairline-strong);
+}
+.btn-ghost:not(:disabled):hover {
+  color: var(--ink);
+  background: var(--surface-hover);
+}
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border-color: rgba(192, 57, 43, 0.4);
+}
+.btn-danger:not(:disabled):hover {
+  background: var(--danger-soft);
+}
+.btn-sm {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 12px;
+  border-radius: var(--r-sm);
+}
+.btn-icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* ===== 表单 ===== */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.field > label {
+  font-size: 12px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.input,
+.select,
+.textarea {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color var(--motion), box-shadow var(--motion);
+}
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.input::placeholder {
+  color: var(--ink-3);
+}
+.textarea {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+.field .hint {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.field .field-error {
+  font-size: 12px;
+  color: var(--danger);
+}
+.select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%),
+    linear-gradient(135deg, var(--ink-3) 50%, transparent 50%);
+  background-position: calc(100% - 16px) 14px, calc(100% - 11px) 14px;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+
+/* ===== 徽标 / 状态 ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.badge-success { background: var(--success-soft); color: var(--success); }
+.badge-danger { background: var(--danger-soft); color: var(--danger); }
+.badge-warn { background: var(--warn-soft); color: var(--warn); }
+.badge-info { background: var(--info-soft); color: var(--info); }
+.badge-accent { background: var(--accent-soft); color: var(--accent); }
+.badge-neutral { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--hairline); }
+.badge-role-admin { background: var(--accent-soft); color: var(--accent); }
+.badge-role-head { background: var(--info-soft); color: var(--info); }
+.badge-role-user { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--hairline); }
+.badge-src-ad { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--hairline); }
+.badge-src-local { background: var(--success-soft); color: var(--success); }
+
+/* ===== 表格 ===== */
+.tablewrap {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.tablewrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.tablewrap thead th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface-2);
+  white-space: nowrap;
+}
+.tablewrap tbody td {
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: middle;
+  color: var(--ink);
+}
+.tablewrap tbody tr:last-child td {
+  border-bottom: none;
+}
+.tablewrap tbody tr {
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.tablewrap tbody tr:hover {
+  background: var(--surface-hover);
+}
+.tablewrap tbody tr.sel {
+  background: var(--accent-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.tablewrap td.num-cell,
+.tablewrap th.num-cell {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.table-sub {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.td-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cell-title {
+  font-weight: 500;
+  color: var(--ink);
+}
+.cell-sub {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 1px;
+}
+
+/* ===== 工具条 / 搜索 / 分段 ===== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.toolbar .spacer {
+  flex: 1;
+}
+/* 搜索框：容器只负责图标定位；**边框由 Input 自己带**（别在页面里用 border-none 抹掉外形） */
+.search {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.search svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-3);
+  pointer-events: none;
+  z-index: 1;
+}
+.search .input,
+.search input {
+  padding-left: 32px;
+  width: 220px;
+}
+.seg {
+  display: inline-flex;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  padding: 2px;
+  gap: 2px;
+}
+.seg button {
+  border: none;
+  background: transparent;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background var(--motion), color var(--motion);
+}
+.seg button.on {
+  background: var(--surface-hover);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ===== 面板 ===== */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.panel-head h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+.panel-head .sub {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* ===== 指标带 ===== */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.metric {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  padding: 16px 18px;
+}
+.metric .k {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.metric .v {
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.metric .d {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* ===== 页面骨架 ===== */
+.app {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: 24px 28px 48px;
+}
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.page-head h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.page-head .desc {
+  color: var(--ink-2);
+  font-size: 13px;
+  margin-top: 4px;
+  max-width: 640px;
+}
+.page-head .right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.scopechip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline-strong);
+  color: var(--ink-2);
+  font-size: 12px;
+  background: var(--surface);
+}
+
+/* ===== 侧栏 ===== */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.brand {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--hairline);
+  flex-shrink: 0;
+}
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  object-fit: contain;
+  padding: 3px;
+  background: var(--brand-tile, #f3f7fb);
+  border: 1px solid color-mix(in srgb, var(--brand-cyan, #2ee6f6) 30%, var(--hairline));
+  flex-shrink: 0;
+}
+.brand-name {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+.brand-name small {
+  display: block;
+  font-weight: 500;
+  color: var(--ink-2);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.nav {
+  flex: 1;
+  overflow: auto;
+  padding: 10px 10px 20px;
+}
+.navgroup-label {
+  padding: 14px 10px 6px;
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+}
+.navgroup-label:first-child {
+  padding-top: 6px;
+}
+.navitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--r-sm);
+  color: var(--ink-2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--motion), color var(--motion);
+  position: relative;
+}
+.navitem svg {
+  color: var(--ink-3);
+  flex-shrink: 0;
+}
+.navitem:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.navitem.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+.navitem.active svg {
+  color: var(--accent);
+}
+.navitem.active::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+.sidebar-foot {
+  border-top: 1px solid var(--hairline);
+  padding: 10px;
+  font-size: 11px;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+/* ===== 顶栏 ===== */
+.topbar {
+  height: var(--topbar-h);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 22px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+}
+.crumb {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.crumb b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.topbar .spacer {
+  flex: 1;
+}
+.iconbtn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background var(--motion), color var(--motion);
+}
+.iconbtn:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.userchip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 3px 6px 3px 3px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--motion);
+}
+.userchip:hover {
+  background: var(--surface-hover);
+}
+.avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ink), var(--ink-2));
+  color: var(--accent-ink);
+  font-size: 11px;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+}
+.userchip .meta .n {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.userchip .meta .r {
+  font-size: 11px;
+  color: var(--ink-3);
+  line-height: 1.2;
+}
+
+/* ===== 下拉菜单 ===== */
+.menu-pop {
+  position: absolute;
+  top: calc(var(--topbar-h) - 6px);
+  right: 18px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-pop);
+  min-width: 200px;
+  padding: 6px;
+  z-index: 60;
+}
+.menu-pop .mi {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.menu-pop .mi:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.menu-pop .mi.danger {
+  color: var(--danger);
+}
+.menu-pop .sep {
+  height: 1px;
+  background: var(--hairline);
+  margin: 6px 4px;
+}
+
+/* ===== 弹窗（居中模态；2026-09-12 起所有右侧抽屉已统一改为居中弹窗） ===== */
+.mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(32, 24, 16, 0.36);
+  z-index: 80;
+  animation: fadein 0.16s ease-out;
+}
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  /* ⚠ Tailwind v4 的 translate-x-[-50%]/translate-y-[-50%] 用的是**独立的 `translate` 属性**，
+     与这里 transform 里的 -50% 会叠加成 -100%（弹窗会跑到左上角）→ 必须显式关掉 */
+  translate: none;
+  transform: translate(-50%, -50%);
+  width: min(680px, 92vw);
+  /* 必须显式写 max-width：radix DialogContent 自带 sm:max-w-lg，不覆盖会被压到 512px */
+  max-width: 92vw;
+  max-height: min(86vh, 900px);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgba(32, 24, 16, 0.3);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  /* 必须清掉 radix DialogContent 自带的 p-6 / gap-4（否则与 modal-head/body/foot 的内边距叠加）*/
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  animation: modalin 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--hairline);
+}
+.modal-head h2 {
+  font-size: 15px;
+  font-weight: 600;
+}
+.modal-body {
+  flex: 1;
+  overflow: auto;
+  padding: 18px 20px;
+}
+.modal-foot {
+  padding: 12px 20px;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalin {
+  from { opacity: 0; transform: translate(-50%, -47%) scale(0.985); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ===== Toast ===== */
+.toast-host {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--hairline-strong);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-pop);
+  padding: 9px 14px;
+  font-size: 13px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  animation: toastin 0.2s ease-out;
+}
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--danger); }
+@keyframes toastin {
+  from { transform: translateY(-6px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ===== 空态 / 加载 ===== */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 56px 20px;
+  color: var(--ink-3);
+  text-align: center;
+}
+.empty svg {
+  color: var(--ink-3);
+  opacity: 0.7;
+}
+.empty .t {
+  font-size: 14px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.empty .s {
+  font-size: 12px;
+  max-width: 320px;
+}
+.skeleton {
+  border-radius: var(--r-sm);
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-hover) 37%, var(--surface-2) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* ===== 登录页 ===== */
+.login {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  background: var(--canvas);
+  padding: 24px;
+}
+.login-card {
+  width: min(400px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 34px 32px 28px;
+  box-shadow: var(--shadow-panel);
+}
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.login-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.login-sub {
+  color: var(--ink-2);
+  font-size: 13px;
+  margin: 4px 0 22px;
+}
+.login-foot {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-3);
+  line-height: 1.8;
+}
+.login-form .btn-primary {
+  width: 100%;
+  height: 38px;
+  margin-top: 4px;
+}
+.login-err {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  font-size: 12px;
+  margin-bottom: 14px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ===== 组织树 ===== */
+.org-wrap {
+  display: grid;
+  /* 合并页（组织与用户）：左树固定 272px（原 320px 太宽，右表被挤） */
+  /* ⚠ `minmax(0, 1fr)` 不能写成 `1fr`：1fr 的隐式最小尺寸是 min-content，长表格会把它撑破，
+     表现为右栏内容溢出到视窗外、操作列被裁掉（2026-09-19 实际踩到）。 */
+  grid-template-columns: 272px minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+/* 收起左栏 / 无组织权限（只看用户）时，右表占满 —— 不留一条空列 */
+.org-wrap.tree-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ============================================================================
+ * 「组织与用户」合并页的尺寸约束（用户口径：页面尺寸要保护）
+ *
+ * 问题：右表 30 行把整页顶长 ⇒ 部门头/工具栏/分页被滚出视野，树面板顶部被切，
+ * 右栏在窄窗口下还会横向溢出把「停用」列裁掉。
+ * 口径：**内容区（.content）不自己滚**，改成每栏各自滚 ——
+ *   左：搜索框黏顶，树面板内部滚；右：部门头 + 工具栏常驻，表格区内部滚（分页也跟着常驻）。
+ * 为什么不用 max-height: calc(100vh - N)：那串数字每加一行东西就错一次（旧 .tree-panel 就是这么烂掉的），
+ * 用 flex + min-height:0 让浏览器自己算剩余高度。
+ * ========================================================================== */
+.org-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.org-page .org-wrap {
+  flex: 1;
+  min-height: 0;
+}
+.org-col-tree,
+.org-col-right {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+/* 右表根元素参与伸缩，才能把"剩余高度"传给里面的表格区 */
+.org-col-right .users-table {
+  flex: 1;
+  min-height: 0;
+  margin-top: 12px;
+}
+.users-table {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.users-table .toolbar {
+  margin-bottom: 0;
+  padding-bottom: 12px;
+}
+.users-table .tablewrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+/*
+ * 列宽固定（table-layout: fixed）—— 这是「 табли被撞破」的根因修法：
+ * shadcn 的 Table 自带一层 `div[data-slot=table-container]`（overflow-x:auto），
+ * 自动布下表宽由**最宽的那格**决定（这里是“baidh · baidh@cnpe.cc”与部门全路径），
+ * 于是表比容器宽 70 多 px，操作列的「停用」被推到容器外（截图里只看得见「编辑」）。
+ * 固定列宽 + 省略号 + title 才是可控的；`min-width` 保底，窗口更窄时回到横向滚动（不会压成麻花）。
+ */
+.users-table .tablewrap table {
+  table-layout: fixed;
+  min-width: 780px;
+}
+.users-table .tablewrap th:nth-child(1) { width: 26%; }
+.users-table .tablewrap th:nth-child(2) { width: 24%; }
+.users-table .tablewrap th:nth-child(3) { width: 12%; }
+.users-table .tablewrap th:nth-child(4) { width: 10%; }
+.users-table .tablewrap th:nth-child(5) { width: 10%; }
+.users-table .tablewrap th:last-child { width: 18%; }
+.users-table .tablewrap td { overflow: hidden; }
+.users-table .td-main > div { min-width: 0; }
+.users-table .cell-title,
+.users-table .cell-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 操作列两个按钮不换行（换行会把行高抬起来） */
+.users-table .right-actions {
+  flex-wrap: nowrap;
+}
+/* 窄窗口：左栏收窄，给表格让位（仍保底 200px ） */
+@media (max-width: 1200px) {
+  .org-wrap {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+}
+/*
+ * 内容区的下内边距（48px）是为"滚动长页面"留的白；本页是**定高页**（左右各自滚），
+ * 这 48px 就成了白占的空白。用户口径：「部门树的尺寸还可以再往下探」 ⇒ 把这块白还给两栏。
+ * 用 `:has()` 只影响本页，不动其它页面。
+ */
+.content:has(> .org-page) {
+  padding-bottom: 16px;
+}
+
+/* 「模型与供应商」同款尺寸约束（与 .org-page 同一手法，原因也一样）：
+ *   · 页面高度 100% + min-height:0，让 flex 自己算剩余高度，**不写 max-height: calc(100vh - N)**；
+ *   · 内容区不整体滚（否则模型列表会跟着页面滚，两栏高度失控）⇒ 改成本页内部各段自己滚。
+ * 为什么用 :has()：只影响本页，不动其它页面的内容区 padding。 */
+.content:has(> .mp-page) {
+  overflow: hidden;
+  padding-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+.tree-panel {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  padding: 8px;
+  /* 高度交给父级 flex 决定（不再写死 100vh - 220px） */
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.treenode {
+  border-radius: var(--r-sm);
+}
+.treerow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  color: var(--ink-2);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.treerow:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.treerow.sel {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+.treerow .twist {
+  width: 16px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  transition: transform var(--motion);
+}
+.treerow .twist.open {
+  transform: rotate(90deg);
+}
+.treerow .cnt {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+}
+.tree-children {
+  margin-left: 16px;
+  border-left: 1px solid var(--hairline);
+  padding-left: 4px;
+}
+.dept-detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+/* ===== 组织与用户（合并页） ===== */
+/* 搜索框钉在滚动容器顶部：部门多到要滚时，搜索框不该跟着滚走 */
+.tree-search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 2px 8px;
+  background: var(--surface);
+  color: var(--ink-3);
+}
+.tree-search input {
+  font-size: 13px;
+}
+.tree-empty {
+  padding: 16px 8px;
+  font-size: 12px;
+  color: var(--ink-3);
+  text-align: center;
+}
+/* 部门头：名字 + 计数一行，运维按钮第二行（低频动作不占首屏） */
+.dept-panel {
+  padding: 14px 16px;
+}
+.dept-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.dept-head h3 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.dept-counts {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.dept-counts b {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.dept-ops {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.dept-ops .spacer {
+  flex: 1;
+}
+/* 「含下级成员」开关（放在用户表工具栏里） */
+.switchline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.switchline:has(button:disabled) {
+  color: var(--ink-3);
+  cursor: default;
+}
+.kv {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+}
+.kv .k {
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.kv .v {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  word-break: break-all;
+}
+.kv .v.mono {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+/* ===== 说明页 / 规划中 ===== */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.plancard {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.plancard .ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+}
+.plancard .t {
+  font-size: 14px;
+  font-weight: 600;
+}
+.plancard .s {
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+.plancard .p {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--ink-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+}
+
+/* 表格行内头像(字母) */
+.ava {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--surface-hover);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  flex-shrink: 0;
+  border: 1px solid var(--hairline);
+}
+/* 顶部一排布局二列(如个人中心) */
+.two-col {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.desc-list {
+  display: flex;
+  flex-direction: column;
+}
+.desc-list .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 13px;
+}
+.desc-list .row:last-child {
+  border-bottom: none;
+}
+.desc-list .row .k {
+  color: var(--ink-3);
+}
+.desc-list .row .v {
+  color: var(--ink);
+}
+.right-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.divider {
+  height: 1px;
+  background: var(--hairline);
+  margin: 16px 0;
+}
+.muted {
+  color: var(--ink-3);
+}
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================================
+ * 侧边栏设计语言对齐（对齐 BuildingAI console 的观感）
+ *
+ * ## 差在哪（对照我们的截图与上游源码）
+ * 1. **侧栏与内容区没有明度区分**：我们的 `--color-sidebar` 直接映射成 `--surface`（纯白），
+ *    等于侧栏和内容区同一块白布，只能靠一根描边硬分。上游用 `--sidebar: oklch(0.985)`（白底略灰一档）
+ *    —— **靠明度分区，不靠边框**，这是"高级感"的主要来源。
+ * 2. **条目是旧设计**：灰色药丸 + 激活时左侧色条。上游的 `SidebarMenuButton` 是
+ *    「悬停/激活各给一层极淡填充（`--sidebar-accent`）+ 圆角统一」，没有任何装饰条。
+ * 3. **分组标签太重**：我们像"全大写小标题"，上游是 11px 灰字、正常字距、几乎不抢视线。
+ *
+ * ## 为什么用追加覆盖而不是改原规则
+ * `styles.css` 里 `.navitem` 那些规则是**同特异性**的，本块在文件末尾 ⇒ 后声明者生效；
+ * 回退 = 删掉本块。这样不动既有规则、也不动任何组件代码（功能零风险）。
+ * ========================================================================== */
+:root {
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+}
+
+[data-theme="dark"] {
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+}
+
+.navitem {
+  border-radius: var(--r-sm);
+  padding: 7px 10px;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ink-2);
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.navitem:hover {
+  background: var(--sidebar-accent);
+  color: var(--ink);
+}
+
+.navitem.active {
+  background: var(--sidebar-accent);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* 去掉我们旧设计的左侧色条：上游没有任何装饰条，选中态只靠填充 + 字重 */
+.navitem.active::before {
+  display: none;
+}
+
+/* 分组标签：小、灰、不抢视线 */
+.navgroup-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink-3);
+  padding: 8px 10px 4px;
+}
+
+/* ============================================================================
+ * 侧边栏第二轮对齐（对照上游真实截图，逐条对差别）
+ *
+ * 1. **文字层级**：上游条目文字是**近黑**、只有图标是灰的；我们原来整条用 `--ink-2`，
+ *    整栏看起来"发灰" —— 这是"AI 味"最直接的来源之一。
+ * 2. **密度**：上游行高约 32px，我们约 44px，显得松散、块头大。
+ * 3. **滚动条**：我们侧栏那条粗黑滚动条压在大片浅灰上非常刺眼（截图里最扎眼的一处）。
+ * 4. 激活态：淡填充 + 更重字重，恢复图标的对比度。
+ *
+ * 仍然只追加、不改原规则：同特异性下后声明者生效，回退=删本块。
+ * ========================================================================== */
+.navitem {
+  min-height: 32px;
+  padding: 6px 8px;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.navitem svg {
+  color: var(--ink-2);
+}
+
+.navitem:hover {
+  background: var(--sidebar-accent);
+  color: var(--ink);
+}
+
+.navitem.active {
+  background: var(--sidebar-accent);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.navitem.active svg {
+  color: var(--ink);
+}
+
+.navgroup-label {
+  margin-top: 10px;
+  padding: 0 8px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink-3);
+}
+
+/* 滚动条：默认的粗黑条在浅灰侧栏上极不协调。改成细的、且只在需要时可见。
+ * 用 `scrollbar-width/color` 覆盖 Firefox 与新版 Chromium，再补一套 webkit 伪元素。 */
+[data-slot="sidebar-content"],
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+}
+
+[data-slot="sidebar-content"]::-webkit-scrollbar,
+.sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-slot="sidebar-content"]::-webkit-scrollbar-track,
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-slot="sidebar-content"]::-webkit-scrollbar-thumb,
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: var(--hairline-strong);
+  background-clip: content-box;
+  border: 2px solid transparent;
+  border-radius: 999px;
+}
+
+/* ============================================================================
+ * 内容区去"AI 味"（对照上游截图，逐条对差别）
+ *
+ * 上游内容页的口径是「小标题 + 紧凑正文 + 素色图标」；我们原来四处偏"AI 生成后台脸"：
+ *
+ * 1. **标题过大**：`.page-head h1` 接近 30px，一屏被标题吃掉半屏；上游同级标题约 16–20px，
+ *    层级靠字重与留白而不是靠字号。降到 20px 并收紧字距。
+ * 2. **解释性长文**：`.page-head .desc` 是一大段灰色说明（"固定三角色 + 按部门数据隔离；……"）。
+ *    信息该在 UI 自己身上，不该用一段话解释 UI —— 降 12px、压暗到 `--ink-3`、限制行长。
+ * 3. **浅蓝圆角图标块**：`.badge-role-head` 用了 `--info-soft/--info`，就是截图里那三个蓝色方块 ——
+ *    典型的模板化装饰。改成素色（浅灰底 + 中性图标色），只让**状态**用颜色。
+ * 4. **面板头偏大**：`.panel-head h3` 是 18–20px，跟着一起收。
+ *
+ * 只追加覆盖、不改原规则（同特异性下后声明者生效），回退 = 删本块。
+ * ========================================================================== */
+.page-head h1 {
+  font-size: 20px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.page-head .desc {
+  max-width: 68ch;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+
+.panel-head h3 {
+  font-size: 15px;
+  letter-spacing: -0.005em;
+}
+
+.panel-head .sub {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* 图标块去色：装饰不该用语义色（语义色只留给状态徽标） */
+.badge-role-head {
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+
+/* ============================================================================
+ * 编辑 Agent 弹窗：**字段一个都没减**，靠「宽一点 + 分段留白 + 标签降噪」让它不显得挤。
+ *
+ * 原来的问题：弹窗窄（约 560px）却塞了 10 个字段 ⇒ 一长条、内部滚动、每个标签和输入框同权重，
+ * 视线没有落点。这里先做三件事（不动 JSX）：
+ *   1. 放宽到 900px：两列字段（图标+名称、分类+作者）不再被挤成一行里的小格子；
+ *   2. 段间距 14 → 22px，让字段各自成"块"；
+ *   3. 标签降噪：12px、中灰、中等字重 —— 视线先落在输入内容上，而不是每个标签都喊一遍。
+ * 注：`.modal-body` 的 gap 是**内联样式**，必须 `!important` 才能压过。
+ * ========================================================================== */
+.modal {
+  width: min(900px, 94vw);
+  max-width: 900px;
+}
+
+.modal-body {
+  gap: 22px !important;
+}
+
+.modal-body label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+/* ============================================================================
+ * 页面标题只保留一份（顶部栏），内容区不再重复 —— 为内容区腾出首屏空间
+ *
+ * 原来每页都有两处「运营总览」：顶部栏 `.crumb`（13px/--ink-3，弱）与内容区 `.page-head h1`（强）
+ * —— 重复且占地方。现在：顶部栏那份是**唯一**的页面标题，所以把它放大加粗；
+ * 内容区的 `.page-head` 只在右侧真有操作按钮时才渲染（如组织管理/角色权限），否则整块收起。
+ * ========================================================================== */
+.crumb {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.page-head {
+  margin: 0 0 12px;
+  align-items: center;
+}
+
+/* `:has()` 现代 Chromium 支持（Electron 内嵌版本满足）；没有操作按钮就不占空间 */
+.page-head:not(:has(.right > *)) {
+  display: none;
+}
+
+.page-head .right {
+  margin-left: auto;
+}
+
+/* ===================== 模型与供应商（2026-09-19 合并页） =====================
+ * 三级布局：① 板块 tabs（最上）→ ② 供应商配置（左列表 + 右内联表单）→ ③ 模型列表（撑满）
+ * 布局纪律（这页踩过的坑写在这里，改之前先看）：
+ *   · 内容区不整体滚：页面用纵向 flex，末段 flex:1 吃剩余高度，各自内部滚；
+ *   · 所有中间层必须 min-width:0 —— 内联表单里 label/说明与值等宽时，会把 grid 轨道顶宽、
+ *     整块横向溢出（与 .inp 上那条注释同源）；
+ *   · 板块标签**不要**用 `.empty` 当修饰类：`.empty` 是空态占位块（flex:1 / padding:22px），
+ *     挪用它会把 tab 撑成几百像素并换行（上一版草图实测踩到，故本页一律 `mp-` 前缀）。
+ * ========================================================================= */
+.mp-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ① 板块 tabs */
+.mp-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  border-bottom: 1px solid var(--hairline);
+  flex: 0 0 auto;
+}
+.mp-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--motion);
+}
+.mp-tab:hover {
+  color: var(--ink);
+}
+.mp-tab.on {
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent);
+}
+.mp-tab .n {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--ink-3);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  min-width: 18px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+.mp-tab.on .n {
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--accent-strong);
+}
+.mp-tab .rv {
+  font-size: 10px;
+  height: 15px;
+  padding: 0 5px;
+  border-radius: 3px;
+  border: 1px solid var(--hairline);
+  color: var(--ink-3);
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface);
+}
+.mp-tab.reserve {
+  color: var(--ink-3);
+}
+
+/* ②③ 区块卡片 */
+.mp-card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.mp-sect {
+  flex: 0 0 auto;
+}
+/* 模型列表撑满剩余高度：内容区不整体滚，只有列表内部滚 */
+.mp-grow {
+  flex: 1 1 auto;
+  min-height: 220px;
+}
+.mp-secthead {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--hairline);
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+}
+.mp-secthead h3 {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.mp-secthead .spacer {
+  flex: 1;
+}
+.mp-sub {
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+.mp-step {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  flex: 0 0 18px;
+}
+.mp-dim {
+  color: var(--ink-3);
+  font-size: 11.5px;
+}
+
+/* 供应商配置：左列表 + 右表单 */
+.mp-split {
+  display: grid;
+  grid-template-columns: 236px 1fr;
+  align-items: start;
+  min-height: 0;
+}
+.mp-list {
+  padding: 6px;
+  border-right: 1px solid var(--hairline);
+  max-height: 240px;
+  overflow: auto;
+}
+.mp-prow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  background: transparent;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  color: var(--ink-2);
+  text-align: left;
+  font-family: inherit;
+  font-size: 13px;
+}
+.mp-prow:hover {
+  background: var(--surface-hover);
+}
+.mp-prow.on {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.mp-prow .ava {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.mp-prow.on .ava {
+  background: #fff;
+  border-color: rgba(180, 67, 15, 0.35);
+  color: var(--accent-strong);
+}
+.mp-prow .nm-wrap {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.mp-prow .nm {
+  font-weight: 500;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-prow .cd {
+  font-size: 11px;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-prow.on .cd {
+  color: var(--accent-strong);
+  opacity: 0.8;
+}
+.mp-prow .sd {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 7px;
+}
+.mp-prow .sd.on {
+  background: var(--success);
+}
+.mp-prow .sd.off {
+  background: var(--ink-3);
+  opacity: 0.5;
+}
+
+.mp-form {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 12px 14px;
+}
+.mp-formhead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.mp-formhead .t {
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.mp-formhead .u {
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+.mp-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px 16px;
+  min-width: 0;
+}
+.mp-grid2 > * {
+  min-width: 0;
+}
+.mp-headers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  padding: 8px;
+  min-width: 0;
+}
+.mp-hrow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+.mp-hrow > * {
+  min-width: 0;
+  flex: 1;
+}
+.mp-formfoot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+  flex-wrap: wrap;
+}
+.mp-formfoot .spacer {
+  flex: 1;
+}
+
+/* 知识库开关（在模型列表头的右侧） */
+.mp-kbctl {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 27px;
+  padding: 0 9px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  font-size: 12px;
+}
+.mp-kbctl .lb {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.mp-kbctl .mp-kbsel {
+  height: 21px;
+  min-height: 21px;
+  font-size: 11.5px;
+  border: 0;
+  background: transparent;
+  padding: 0 4px;
+  width: auto;
+}
+.mp-kbnote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 13px;
+  font-size: 12px;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--hairline);
+  flex: 0 0 auto;
+}
+.mp-kbnote b {
+  color: var(--ink);
+}
+
+/* ③ 模型行 */
+.mp-rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 6px;
+}
+.mp-mrow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--r-sm);
+}
+.mp-mrow:hover {
+  background: var(--surface-hover);
+}
+.mp-mid {
+  min-width: 0;
+  flex: 1;
+}
+.mp-m1 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-m2 {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-m3 {
+  margin-top: 4px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.mp-mrow .tag,
+.mp-drow .tag {
+  font-size: 10px;
+  padding: 0 5px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 3px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+.mp-mrow .tag.i {
+  background: var(--info-soft);
+  color: var(--info);
+  border-color: transparent;
+}
+.mp-mrow .tag.a {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: transparent;
+}
+.mp-macts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+/* 拉取对话框的候选列表 */
+.mp-dlist {
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  max-height: 360px;
+  overflow: auto;
+  margin-top: 8px;
+}
+.mp-drow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--hairline);
+  cursor: pointer;
+  font-size: 12.5px;
+}
+.mp-drow:last-child {
+  border-bottom: none;
+}
+.mp-dname {
+  min-width: 170px;
+  font-size: 12.5px;
+}
+.mp-drow .spacer {
+  flex: 1;
+}
+.mp-drow .tag.w {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border-color: transparent;
+}
+
+/* ============================================================================
+ * 模型与供应商 · 交互重构（2026-09-19 用户口径）
+ *
+ * 布局从「上下两段（供应商配置 + 模型列表）」改成**左列表 + 右两态面板**：
+ *   左：本板块的供应商列表（每行右侧「⋯」→ 编辑 / 上移下移 / 删除）
+ *   右：`data-panel=config` 时是供应商配置，`=models` 时是模型配置
+ *
+ * 为什么改：用户口径「先填好供应商配置 → 保存后那个界面就转换为模型配置界面 →
+ * 点「编辑」又切回供应商配置」。原来的上下堆叠无法表达这个「转换」，
+ * 而且供应商一多就得上下滚动着找。左列表 + 右面板是这类「主从配置」的常规解。
+ * ========================================================================== */
+.mp-split2 {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 14px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.mp-provlist {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+/* 左列表：条目多时自己滚，不带着整页滚 */
+.mp-provlist .mp-list {
+  max-height: none;
+  flex: 1 1 auto;
+  overflow: auto;
+  border-right: none;
+}
+
+/* 供应商行里的「⋯」按钮：常驻但低对比，hover 才亮 —— 避免整栏都是按钮的噪音感 */
+.mp-dots {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--ink-3);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--motion), background var(--motion), color var(--motion);
+}
+/* 键盘用户看不到 hover，所以聚焦时也要显形（否则 Tab 过去是个"隐形按钮"） */
+.mp-prow:hover .mp-dots,
+.mp-prow.on .mp-dots,
+.mp-dots:focus-visible {
+  opacity: 1;
+}
+.mp-dots:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* 右面板：配置态的表单体（可滚）与模型态的工具条 */
+.mp-formbody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px 16px;
+}
+.mp-modelbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--hairline);
+  flex: 0 0 auto;
+}
+.mp-modelbar .spacer {
+  flex: 1;
+}
+
+/* 两态开关（分段控件）：与 shadcn 的 Tabs 不同，它只切右面板内容，不是路由级 tab */
+.seg {
+  display: flex;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+.seg button {
+  height: 27px;
+  padding: 0 11px;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--ink-2);
+  border: 0;
+  border-right: 1px solid var(--hairline);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background var(--motion), color var(--motion);
+}
+.seg button:last-child {
+  border-right: 0;
+}
+.seg button:hover {
+  color: var(--ink);
+}
+.seg button.on {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}

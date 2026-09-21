@@ -1,0 +1,45 @@
+{
+  "name": "@reactor/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reactor TS 服务端：auth（LDAP+令牌）/ gateway（统一模型出口），M1+ 策略/审计/计量/管理台",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx src/index.ts",
+    "dev:identity": "tsx src/identity-entry.ts",
+    "smoke:e2e": "node scripts/e2e-smoke.mjs",
+    "smoke:identity": "node scripts/identity-smoke.mjs",
+    "smoke:admin": "node scripts/admin-smoke.mjs",
+    "smoke:skills": "node scripts/skills-smoke.mjs",
+    "skills:import": "node scripts/skills-import.mjs",
+    "smoke:agents": "node scripts/agents-smoke.mjs",
+    "smoke:org": "node scripts/org-smoke.mjs",
+    "smoke:t34": "node scripts/t34-smoke.mjs",
+    "smoke:gateway-auth": "node scripts/gateway-auth-smoke.mjs",
+    "smoke:admin-static": "node scripts/admin-static-smoke.mjs",
+    "smoke:audit": "node scripts/audit-smoke.mjs",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^3",
+    "@firecrawl/anydoc": "0.2.4",
+    "@hono/node-server": "^2.1.1",
+    "@reactor/shared": "workspace:*",
+    "ai": "^6",
+    "bcryptjs": "^3.0.3",
+    "hono": "^4.13.5",
+    "jose": "^6.2.10",
+    "ldapjs": "^3.0.7",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/ldapjs": "^3.0.6",
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.19.2"
+  }
+}

@@ -1,0 +1,288 @@
+/* ============================================================
+   Reactor 管理台 · 设计令牌
+   浅色编辑式控制台 · 画布暖纸墨（防苍白）· 品牌与桌面端对齐（2026-09-19）
+
+   品牌口径（拍板）：
+     · 主 Logo = 立方体 brand/logo-cube.jpg（非字母 R）
+     · 中文副标 = 数智堆脑
+     · 交互强调色 = 受控青（与产品 Cherenkov 青呼应）；填充用加深青保 AA
+     · 仍禁：紫/蓝紫 AI 味色相、渐变、纯黑纯白堆叠
+   暖纸画布保留（用户口径：避免苍白 AI 味）；品牌标记不再使用反应堆橙。
+   对比度由 t201-admin-palette 逐对计算。
+   ============================================================ */
+
+:root {
+  /* 色板 */
+  --canvas: #f5f2ed;
+  --surface: #ffffff;
+  --surface-2: #faf7f2;
+  --surface-hover: #f1ece5;
+  --ink: #1b1815;
+  --ink-2: #5c554c;
+  --ink-3: #6f675c;
+  --hairline: rgba(59, 48, 38, 0.14);
+  --hairline-strong: rgba(59, 48, 38, 0.22);
+
+  /* 强调（受控青 · 对齐 Reactor 主品牌）：填充/激活用 deep，装饰用 brand */
+  --accent: #0e7490;
+  --accent-ink: #ffffff;
+  --accent-soft: #e0f2f7;
+  --accent-strong: #155e75;
+  --brand: #0e7490;
+  --brand-navy: #0b1e45;
+  --brand-cyan: #2ee6f6;
+  --brand-tile: #f3f7fb;
+
+  /* 语义 */
+  --success: #256b4e;
+  --success-soft: #e4efe8;
+  --danger: #b02a1f;
+  --danger-soft: #f9e7e3;
+  --warn: #8a5a0c;
+  --warn-soft: #f6eedb;
+  --info: #1a5f8a;
+  --info-soft: #e3eff6;
+
+  /* 字族 */
+  --font-sans: "Geist", -apple-system, "Segoe UI", "PingFang SC",
+    "HarmonyOS Sans SC", "Microsoft YaHei UI", "Noto Sans CJK SC", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+
+  /* 圆角：容器/卡片/抽屉 8 · 控件 6 · 小元素 pill */
+  --r-lg: 8px;
+  --r-sm: 6px;
+
+  /* 阴影：仅浮层 */
+  --shadow-pop: 0 1px 2px rgba(16, 20, 32, 0.06), 0 8px 24px rgba(16, 20, 32, 0.1);
+  --shadow-panel: 0 1px 2px rgba(16, 20, 32, 0.04);
+
+  /* 尺寸 */
+  --sidebar-w: 232px;
+  --topbar-h: 56px;
+  --content-max: 1600px;
+  --motion: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] {
+  --canvas: #15130f;
+  --surface: #1d1a16;
+  --surface-2: #262219;
+  --surface-hover: #2e2a24;
+  --ink: #f2eee7;
+  --ink-2: #b5ac9f;
+  --ink-3: #8a8175;
+  --hairline: rgba(255, 255, 255, 0.1);
+  --hairline-strong: rgba(255, 255, 255, 0.18);
+  --accent: #22d3ee;
+  --accent-ink: #0b1c24;
+  --accent-soft: rgba(34, 211, 238, 0.14);
+  --accent-strong: #67e8f9;
+  --brand: #22d3ee;
+  --brand-navy: #0b1e45;
+  --brand-cyan: #2ee6f6;
+  --success: #6fbf95;
+  --success-soft: rgba(111, 191, 149, 0.16);
+  --danger: #e2796a;
+  --danger-soft: rgba(226, 121, 106, 0.16);
+  --warn: #d9a85a;
+  --warn-soft: rgba(217, 168, 90, 0.16);
+  --info: #6ca6ce;
+  --info-soft: rgba(108, 166, 206, 0.16);
+  --shadow-pop: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.5);
+  --shadow-panel: none;
+}
+
+/* ---------- Reset & 基础 ---------- */
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--canvas);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  font-family: inherit;
+}
+::selection {
+  background: var(--accent-soft);
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+}
+
+/* ============================================================================
+ * 设计语言对齐（全局）：把 BuildingAI 的中性灰阶映射到**我们自己的变量名**上
+ *
+ * ## 为什么这样做，而不是搬它的组件
+ * 用户口径（2026-09-19 纠正）：「借鉴的是人家的设计语言、配色、整体风格，不用原封不动地抄；
+ * 第一原则是当前功能必须可用」。所以这里**只换 token 取值**：
+ * 变量名一个不改 ⇒ 现有所有页面/组件不动一行代码就整体换观感。
+ * （此前把它的登录页整页搬来当未登录落地页，既打断了登录功能、又搞成两套皮 —— 已回退。）
+ *
+ * ## 观感差异在哪
+ * 我们原来是「橙色主色 + 高饱和语义色 + 8px 圆角 + 重阴影」，是常见的 AI 生成后台脸；
+ * 上游是**近黑单色 + 白底 + 10px 圆角 + 极轻描边**，层级靠字重和留白而不是靠颜色 —— 这是"AI 味"少的来源。
+ * 阴影取值照上游口径（1px 偏移、3px 模糊、透明度 0.05~0.1），不搞大投影。
+ *
+ * ## 只保留几何/阴影/字体，不再动色板（v1.1 修正）
+ * 原本这层还把色板覆盖成 oklch 灰度（canvas==surface 纯白、accent 近黑）—— 那是“苍白”的直接原因（用户口径）。
+ * 现在色板只在文件头的 `:root` / `[data-theme="dark"]` 定义一次（单一来源），这层只管圆角/阴影/侧栏分区。
+ *
+ * ## 保留下来仍然正确的三条（上游确实比我们强的地方）
+ * 1. 层级靠字重与留白，不靠颜色堆叠 → 单强调色纪律；
+ * 2. 阴影极轻（1px 偏移、3px 模糊、透明度 ≤0.1），卡片用描边而不是大投影；
+ * 3. 侧栏与内容区靠**明度**分区，不靠边框。
+ *
+ * ## 可逆
+ * 覆盖写在文件末尾（同特异性后声明者生效），回退 = 删掉本块。
+ * ========================================================================== */
+:root {
+  --r-lg: 0.625rem;
+  --r-sm: calc(0.625rem - 2px);
+  --shadow-panel: 0 1px 2px 0 hsl(28 20% 20% / 0.05);
+  --shadow-pop: 0 1px 2px 0 hsl(28 20% 20% / 0.08), 0 8px 24px -4px hsl(28 20% 20% / 0.14);
+}
+
+[data-theme="dark"] {
+  --r-lg: 0.5rem;
+  --r-sm: calc(0.5rem - 2px);
+  --shadow-panel: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
+  --shadow-pop: 0 1px 3px 0 hsl(0 0% 0% / 0.5), 0 4px 6px -1px hsl(0 0% 0% / 0.5);
+}
+
+/* 字体：上游用 Inter（`--font-sans: "Inter Variable"`）。我们**不自带字体文件**（离线桌面端不该依赖
+ * 网络字体），所以给一个以系统 UI 字体打头、Inter 次之的栈：装了 Inter 的机器自动用上，没装的
+ * 落到系统字体也不会难看。 */
+:root {
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+}
+
+/* ============================================================================
+ * 侧边栏设计语言对齐（对齐 BuildingAI console 的观感）
+ *
+ * ## 差在哪（对照我们的截图与上游源码）
+ * 1. **侧栏与内容区没有明度区分**：我们的 `--color-sidebar` 直接映射成 `--surface`（纯白），
+ *    等于侧栏和内容区同一块白布，只能靠一根描边硬分。上游用 `--sidebar: oklch(0.985)`（白底略灰一档）
+ *    —— **靠明度分区，不靠边框**，这是"高级感"的主要来源。
+ * 2. **条目是旧设计**：灰色药丸 + 激活时左侧色条。上游的 `SidebarMenuButton` 是
+ *    「悬停/激活各给一层极淡填充（`--sidebar-accent`）+ 圆角统一」，没有任何装饰条。
+ * 3. **分组标签太重**：我们像"全大写小标题"，上游是 11px 灰字、正常字距、几乎不抢视线。
+ *
+ * ## 为什么用追加覆盖而不是改原规则
+ * `styles.css` 里 `.navitem` 那些规则是**同特异性**的，本块在文件末尾 ⇒ 后声明者生效；
+ * 回退 = 删掉本块。这样不动既有规则、也不动任何组件代码（功能零风险）。
+ * ========================================================================== */
+:root {
+  --sidebar: #ece6dc;
+  --sidebar-accent: #e2dacd;
+  --sidebar-border: rgba(59, 48, 38, 0.12);
+}
+
+[data-theme="dark"] {
+  --sidebar: #191612;
+  --sidebar-accent: #2a251f;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+}
+
+.navitem {
+  border-radius: var(--r-sm);
+  padding: 7px 10px;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ink-2);
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.navitem:hover {
+  background: var(--sidebar-accent);
+  color: var(--ink);
+}
+
+.navitem.active {
+  background: var(--sidebar-accent);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* 去掉我们旧设计的左侧色条：上游没有任何装饰条，选中态只靠填充 + 字重 */
+.navitem.active::before {
+  display: none;
+}
+
+/* 分组标签：小、灰、不抢视线 */
+.navgroup-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink-3);
+  padding: 8px 10px 4px;
+}
+
+/* ============================================================================
+ * 图标折叠态的点击区（用户口径 2026-09-19：「必须指准特定的位置才行」）
+ *
+ * shadcn 在 icon 态把菜单按钮写成 `size-8! p-2!`（32×32）—— 图标 16px，剩下的 8px 是内边距，
+ * 指针稍微偏一点就落到菜单项外边（Fitts 定律：目标越小，命中时间随距离线性变差）。
+ * 提到 40×40：仍在 48px 的图标轨道里居中（`--sidebar-width-icon: 3rem`），
+ * 与展开态（32px 行高）的节奏差异可接受，换来的命中率提升很明显。
+ *
+ * 为什么用 `!important`：Tailwind 那两条变体本身就带 `!`。
+ * ⚠ 但光有 `!important` 还不够 —— 必须是**层内**的 important：Tailwind 的 `size-8!` 位于 `@layer utilities`，
+ *   而级联规则里**未分层的 important 输给已分层的 important**（层顺序对 important 是反向的）。
+ *   实测：不加 `@layer` 时 width/height 纹丝不动（`gap` 能生效，因为普通声明反而是未分层优先）。
+ * 为什么写在 CSS 而不改 sidebar.tsx：它是移植件，改动越少越容易与上游同步。
+ * ========================================================================== */
+@layer utilities {
+  [data-collapsible="icon"] [data-slot="sidebar-menu-button"] {
+    width: 40px !important;
+    height: 40px !important;
+    padding: 12px !important;
+  }
+}
+/* 相邻命中区之间留够间隔：竖排目标不黏在一起才不容易误点 */
+[data-collapsible="icon"] [data-slot="sidebar-menu"] {
+  gap: 6px;
+}
+/* 折叠态的侧栏触发器（底部小箭头）同理 —— 它原本是 20×20 的 aspect-square */
+[data-collapsible="icon"] [data-slot="sidebar-trigger"] {
+  width: 32px;
+  height: 32px;
+}

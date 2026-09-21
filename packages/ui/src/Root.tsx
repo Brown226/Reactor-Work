@@ -20,7 +20,8 @@ import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { SSHDialog } from "@/SSHDialog.js";
 import { SettingsPage } from "@/SettingsPage.js";
 import { CodingPlanUpgradeDialogProvider } from "@/settings/CodingPlanUpgradeDialogProvider.js";
-import { WelcomeScreen, type LoginCompleteReason } from "@/WelcomeScreen.js";
+import { EnterpriseLoginScreen, type LoginCompleteReason } from "@/EnterpriseLoginScreen.js";
+import { subscribeProviderSettingsSnapshot } from "@/lib/providerSettingsSnapshot.js";
 import { setDefaultFileDisplayBasePath } from "@/lib/fileDisplay.js";
 import { readRendererLaunchTimings, shouldReportLaunchToInput } from "@/lib/launchToInputReport.js";
 import { reportUiLaunchToInput } from "@/lib/uiPerfArmsTelemetry.js";
@@ -33,6 +34,7 @@ import {
   shouldShowRootStartupLoading,
   shouldOpenFallbackWorkspaceAfterCreate,
 } from "@/lib/rootStartupGate.js";
+import { useReactorServer } from "@/hooks/useReactorServer.js";
 import { StoreProvider, useZCodeStore } from "@/store/StoreProvider.js";
 import { setMcpStorePlatform } from "@/store/mcpStore.js";
 import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
@@ -173,6 +175,7 @@ function RootInner({
       setSendFunnelArmsReporter(null);
     };
   }, [isDesktop, platform]);
+
 
   useEffect(
     () => () => {
@@ -411,11 +414,14 @@ function RootInner({
   });
   const providerAvailabilityLoginEntryGuardEnabled =
     shouldEnableProviderAvailabilityLoginEntryGuard();
+  const enterpriseSession = useReactorServer();
   const { startupCheckCompleted: providerAvailabilityStartupCheckCompleted } =
     useProviderAvailabilityLoginEntryGuard({
       enabled: providerAvailabilityLoginEntryGuardEnabled,
       user,
       isRestoringOAuthSession: isResolvingStartupAuthState || providerStartupSyncPending,
+      isResolvingEnterpriseSession: enterpriseSession.loading,
+      hasEnterpriseSession: Boolean(enterpriseSession.status?.loggedIn),
       providerFamilyDomain: appSettings?.providerFamilyDomain,
       modelSelectionView: rootModelSelectionView,
       modelSelectionError:
@@ -450,10 +456,37 @@ function RootInner({
 
   useEffect(() => {
     // 跨 workspace 任务列表需要一个稳定的“本地/root services”入口。
-    // 桌面端 renderer 启动时会注册一次，但 Web 和测试入口也会直接挂 Root；
+    // 桌面端 renderer 启动时会注册一次，Web 和测试入口也会直接挂 Root；
     // 这里再以 Root props 兜底注册，避免当前激活远端 workspace 时本地列表误用远端 host。
     registerBaseWorkspaceServices(services);
   }, [services]);
+
+  // 强制登录：企业登录态从「已登录」掉回「未登录」（用户在设置里退出、或令牌被吊销）时，
+  // 必须回到登录页。本产品没有别的登录方式，留在工作区只会得到一堆没有模型的空会话。
+  // 只在真正见过登录态之后才触发，首次启动的未登录由启动门禁（useProviderAvailabilityLoginEntryGuard）负责。
+  const wasEnterpriseLoggedInRef = useRef(false);
+  useEffect(() => {
+    if (enterpriseSession.loading) return;
+    if (enterpriseSession.status?.loggedIn) {
+      wasEnterpriseLoggedInRef.current = true;
+      return;
+    }
+    if (wasEnterpriseLoggedInRef.current) {
+      wasEnterpriseLoggedInRef.current = false;
+      setWelcomeScreenOpenReason("manual-login");
+    }
+  }, [enterpriseSession.loading, enterpriseSession.status]);
+
+  // 企业登录态由 host 侧独占：设置页里的登录/退出只改 host 状态，Root 这份 hook 不会自动知道。
+  // provider 配置一变（登录与退出都会重写企业 provider）就重新拉一次登录态，
+  // 否则上面的"退出后强制回登录页"会一直拿着过期的 loggedIn=true。
+  useEffect(
+    () =>
+      subscribeProviderSettingsSnapshot(() => {
+        void enterpriseSession.refresh();
+      }),
+    [enterpriseSession.refresh],
+  );
 
   const handleOpenRemoteConnection = useCallback((preference?: RemoteConnectionOpenPreference) => {
     setRemoteConnectionOpenPreference(preference ?? null);
@@ -964,7 +997,7 @@ function RootInner({
         {rootModelSelectionErrorNode}
         {remoteConnectionDialog}
         {directoryBrowserDialog}
-        <WelcomeScreen onComplete={handleWelcomeScreenComplete} />
+        <EnterpriseLoginScreen onComplete={handleWelcomeScreenComplete} />
       </RootShell>
     );
   }

@@ -556,6 +556,13 @@ const enUS: Record<string, string> = {
   "welcome.loginFailed": "Login failed",
   "login.title": "Welcome to Reactor",
   "login.description": "Connect your account to start using Reactor",
+  "login.enterprise.eyebrow": "Enterprise server",
+  "login.enterprise.description":
+    "Sign in with your enterprise account; models come from the enterprise server",
+  "login.enterprise.help":
+    "After signing in, enterprise models appear in model settings and can be picked in a conversation.",
+  "login.enterprise.helpAdmin":
+    "No enterprise account? Ask your administrator for one and for the server address.",
   "login.oauth.activeProviderHint":
     "Current active provider: {provider}. Signing in again replaces the current identity.",
   "login.oauth.loadingProviders": "Loading account providers...",
@@ -596,7 +603,7 @@ const enUS: Record<string, string> = {
 
   // App header
   "app.currentTheme": "Current: {theme}",
-  "app.login": "Connect",
+  "app.login": "Sign in",
   "app.logout": "Disconnect",
   "logout.confirm.title": "Disconnect and restart Reactor?",
   "logout.confirm.descriptionWithRunningSessions":
@@ -605,7 +612,7 @@ const enUS: Record<string, string> = {
     "The app will restart after disconnecting. You will need to connect your account again.",
   "logout.confirm.ok": "Disconnect and restart",
   "logout.confirm.cancel": "Cancel",
-  "sidebar.profile.notLoggedIn": "Connect",
+  "sidebar.profile.notLoggedIn": "Sign in",
   "app.selectFile": "Select a file to get started",
   "app.workspace": "Workspace",
   "browser.title": "Browser",
@@ -716,6 +723,7 @@ const enUS: Record<string, string> = {
   "sidePane.openFile.category": "Files",
   "sidePane.openFile.emptyQuery": "Type to search files",
   "sidePane.review": "Review",
+  "sidePane.files": "Workspace files",
   "whiteboard.title": "Whiteboard",
   "whiteboard.defaultName": "Whiteboard",
   "whiteboard.nameLabel": "Whiteboard name",
@@ -2182,6 +2190,27 @@ const enUS: Record<string, string> = {
   "settings.previewBadge.light": "Light",
   "settings.previewBadge.dark": "Dark",
   "settings.modelProviderTitle": "Model settings",
+  "settings.reactorServer.title": "Enterprise server",
+  "settings.reactorServer.status.loading": "Reading enterprise sign-in state…",
+  "settings.reactorServer.status.loggedIn": "Signed in to the enterprise server",
+  "settings.reactorServer.serverUrl": "Server address",
+  "settings.reactorServer.serverUrlDescription":
+    "Address of the enterprise identity service, for example http://192.168.1.10:8791. The gateway address is derived on the same host at port 8790.",
+  "settings.reactorServer.serverUrlPlaceholder": "http://192.168.1.10:8791",
+  "settings.reactorServer.username": "Enterprise account",
+  "settings.reactorServer.password": "Password",
+  "settings.reactorServer.login": "Sign in",
+  "settings.reactorServer.logout": "Sign out",
+  "settings.reactorServer.account": "Signed in as",
+  "settings.reactorServer.accountDescription": "Account {uid} · {role}{dept}",
+  "settings.reactorServer.gatewayDescription": "Gateway address {gatewayUrl}",
+  "settings.reactorServer.models": "Enterprise models",
+  "settings.reactorServer.modelsHint":
+    "Written to the “{provider}” provider; model requests are authorized and metered by the enterprise gateway.",
+  "settings.reactorServer.modelsEmpty":
+    "The server has not published any chat model yet. Select “Refresh models” to retry.",
+  "settings.reactorServer.modelsMore": "and {count} more",
+  "settings.reactorServer.refreshModels": "Refresh models",
   "settings.mcpTitle": "MCP Servers",
   "settings.mcp.description": "Manage MCP server configurations used by Reactor Agent.",
   "settings.mcp.create.open": "Add MCP server",

@@ -1,0 +1,23 @@
+{
+  "name": "@reactor/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reactor 协议契约：RPC 命令类型、JSONL 会话 schema、工具 schema（对齐 pi-web rpc-manager 命令面）",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  }
+}
