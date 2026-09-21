@@ -30,6 +30,7 @@ import {
   toZCodeHooksEvents,
   type LegacyHooksConfig,
 } from "./workspaceHookSettingsModel.js";
+import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 const SETTINGS_FILE = "settings.json";
 const ZCODE_CONFIG_FILE = "config.json";
@@ -165,7 +166,7 @@ async function readPersistentWorkspaceHookTrustDigests(
       : isAbsolute(configured)
         ? resolve(configured)
         : resolve(home, configured)
-    : join(home, ".zcode");
+    : join(home, USER_DATA_DIR_NAME);
   const trustFilePath = join(storageRoot, "security", "workspace-hook-trust-v1.json");
 
   // 异步读取 + ENOENT 区分：不用 existsSync 预检——同步调用会阻塞服务

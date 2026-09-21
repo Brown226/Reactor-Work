@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
+import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 const HOME_PREFIX = "~/";
 
@@ -50,7 +51,7 @@ async function readUserCliConfig(
 ): Promise<Record<string, unknown>> {
   try {
     const raw = await readFile(
-      join(resolveUserHomeDir(options), ".zcode", "cli", "config.json"),
+      join(resolveUserHomeDir(options), USER_DATA_DIR_NAME, "cli", "config.json"),
       "utf8",
     );
     const parsed = JSON.parse(raw) as unknown;

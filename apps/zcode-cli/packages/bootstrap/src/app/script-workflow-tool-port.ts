@@ -20,6 +20,7 @@ import {
 import { readWorkflowScriptDocument } from "./script-workflow-meta.js";
 import type { ScriptWorkflowRuntime } from "./script-workflow-runtime.js";
 import { isScriptWorkflowStore } from "./script-workflow-utils.js";
+import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 const WORKFLOW_SCRIPT_SUFFIX = ".workflow.js";
 const WORKFLOW_NAME_PATTERN = /^[A-Za-z0-9_.-]+$/;
@@ -315,7 +316,7 @@ async function resolveNamedWorkflowPath(
   const fileName = workflowFileName(name);
   const candidates = [
     join(deps.workingDirectory, ".zcode", "workflows", fileName),
-    join(homedir(), ".zcode", "workflows", fileName),
+    join(homedir(), USER_DATA_DIR_NAME, "workflows", fileName),
   ];
   const builtIn = BUILTIN_WORKFLOW_ALLOWLIST.get(name);
   if (builtIn) candidates.push(builtIn);

@@ -20,6 +20,7 @@ import type {
   UserInstructionsOptions,
 } from "@zcode/contracts";
 import { resolveGitSnapshot } from "./git-snapshot.js";
+import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 const DEFAULT_PRIORITY_FILES = ["AGENTS.md"];
 const DEFAULT_MAX_BYTES = 100 * 1024;
@@ -234,7 +235,7 @@ async function findDefaultUserInstructionFile(
     return undefined;
   }
 
-  const filePath = join(resolveUserHomeDir(env), ".zcode", "AGENTS.md");
+  const filePath = join(resolveUserHomeDir(env), USER_DATA_DIR_NAME, "AGENTS.md");
   if (await isFile(filePath)) {
     return { filePath, fileName: "AGENTS.md" };
   }

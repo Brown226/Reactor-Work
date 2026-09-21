@@ -7,6 +7,7 @@ import type {
   ProviderFamilyConnectionSelectionSettings,
 } from "@zcode/shared";
 import {
+  USER_DATA_DIR_NAME,
   appSettingsPatchSchema,
   appSettingsSchema,
   formatLogPrefix,
@@ -53,7 +54,7 @@ function resolveUserHomeDir() {
 }
 
 function getSettingsDir() {
-  return join(resolveUserHomeDir(), ".zcode", "v2");
+  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "v2");
 }
 
 function getSettingsFile() {

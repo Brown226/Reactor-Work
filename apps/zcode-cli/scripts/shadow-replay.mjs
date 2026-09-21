@@ -43,7 +43,7 @@ const {
 const { ProductProjection } = projectionModule;
 const { SESSION_ENTRY_TARGET_COMPLETION_VERIFICATION } = contracts;
 
-const sourceDbPath = args.db ?? join(homedir(), ".zcode", "cli", "db", "db.sqlite");
+const sourceDbPath = args.db ?? join(homedir(), USER_DATA_DIR_NAME, "cli", "db", "db.sqlite");
 const limit = args.limit ? Number(args.limit) : Infinity;
 
 let dbPath = sourceDbPath;

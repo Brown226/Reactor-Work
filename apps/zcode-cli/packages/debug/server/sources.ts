@@ -14,13 +14,14 @@ import type {
   ObservationOptions,
   SourceLoadResult,
 } from "./types.js";
+import { USER_DATA_DIR_NAME } from "./user-data-dir.js";
 
 export function defaultLogDir(): string {
-  return join(homedir(), ".zcode", "cli", "log");
+  return join(homedir(), USER_DATA_DIR_NAME, "cli", "log");
 }
 
 export function defaultDbPath(): string {
-  return join(homedir(), ".zcode", "cli", "db", "db.sqlite");
+  return join(homedir(), USER_DATA_DIR_NAME, "cli", "db", "db.sqlite");
 }
 
 export async function loadLogs(options: ObservationOptions): Promise<SourceLoadResult<LogRecord>> {

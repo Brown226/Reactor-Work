@@ -10,6 +10,7 @@ import {
   sanitizeZCodeRuntimeEnvInPlace,
   type ZCodeRuntimeEnv,
 } from "@zcode/shared/runtime-env";
+import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 export type CliEnv = Record<string, string | undefined>;
 
@@ -135,5 +136,5 @@ function applyBetaStorageDefault(env: CliEnv, argv: readonly string[]): void {
   const explicitBeta = env.ZCODE_BETA === "1" || env.ZCODE_ENV === "beta";
   const invokedAsBeta = argv.some((arg) => /(^|[/\\])zcode-beta(?:$|\.)/u.test(arg));
   if (!explicitBeta && !invokedAsBeta) return;
-  env.ZCODE_STORAGE_DIR = join(homedir(), ".zcode-beta");
+  env.ZCODE_STORAGE_DIR = join(homedir(), `${USER_DATA_DIR_NAME}-beta`);
 }
