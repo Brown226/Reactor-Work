@@ -35,7 +35,7 @@ export async function resolveZCodeStorageRoot(options?: SubagentStorageOptions):
   const storageDir =
     typeof storage.dir === "string" && storage.dir.trim().length > 0
       ? storage.dir.trim()
-      : "~/.zcode";
+      : `~/${USER_DATA_DIR_NAME}`;
   return resolveConfigPath(storageDir, options);
 }
 

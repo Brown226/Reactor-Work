@@ -6,6 +6,7 @@ import type { ConnectOptions } from "@zcode/server/remote";
 import { listSSHConfigAliasesFromLocalConfig } from "@zcode/services/node";
 import { DEV_HELPER_APP_NAME, HELPER_APP_NAME } from "@zcode/zcode-cua/broker/helperConstants";
 import {
+  USER_DATA_DIR_NAME,
   ZCODE_APP_VERSION_ENV,
   ZCODE_AGENT_RUNTIME,
   ZCODE_DYNAMIC_WORKFLOW_MODE_ENV,
@@ -499,7 +500,7 @@ export function buildHostProcessEnv(hostProcessLocalEnv: Record<string, string>)
             )
           ? rawInheritedEnv.ZCODE_CUA_BUNDLED_HELPER_APP_PATH?.trim() ||
             join(
-              rawInheritedEnv.ZCODE_HOME?.trim() || join(homedir(), ".zcode"),
+              rawInheritedEnv.ZCODE_HOME?.trim() || join(homedir(), USER_DATA_DIR_NAME),
               "computer-use",
               "dev",
               DEV_HELPER_APP_NAME,

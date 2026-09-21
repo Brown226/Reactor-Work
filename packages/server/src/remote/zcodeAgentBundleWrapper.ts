@@ -6,14 +6,16 @@
 // 这样 provider runtime resolver 不需要区分原生/JS，照旧找 zcode-agent 这个可执行文件即可。
 // 开发态与生产态共用同一份 wrapper 语义。
 
+import { REMOTE_BASE_SHELL } from "./deployShared.js";
+
 export const REMOTE_AGENT_BUNDLE_NAME = "zcode.cjs";
 
 export function buildRemoteAgentBundleWrapper(runtimeResourceDir: string): string {
   return [
     "#!/bin/sh",
     "set -eu",
-    'runtime_root="${ZCODE_SERVER_RUNTIME_ROOT:-$HOME/.zcode/server}"',
-    `exec "$runtime_root/node" "$HOME/.zcode/server/agents/${runtimeResourceDir}/${REMOTE_AGENT_BUNDLE_NAME}" "$@"`,
+    `runtime_root="\${ZCODE_SERVER_RUNTIME_ROOT:-${REMOTE_BASE_SHELL}}"`,
+    `exec "$runtime_root/node" "${REMOTE_BASE_SHELL}/agents/${runtimeResourceDir}/${REMOTE_AGENT_BUNDLE_NAME}" "$@"`,
     "",
   ].join("\n");
 }

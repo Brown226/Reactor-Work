@@ -81,7 +81,7 @@ function getWorkspaceAgentsSkillRoot(workspacePath: string): string {
 
 /** ZCode Agent 用户级技能目录。 */
 function getUserZcodeSkillRoot(): string {
-  return join(resolveUserHomeDir(), ".zcode", "skills");
+  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "skills");
 }
 
 /** 兼容目录: 用户级 `~/.agents/skills`。 */
@@ -643,7 +643,7 @@ function readStorageDirFromConfig(config: Record<string, unknown>): string {
   const storage = isObjectRecord(config.storage) ? config.storage : {};
   return typeof storage.dir === "string" && storage.dir.trim().length > 0
     ? storage.dir
-    : "~/.zcode";
+    : `~/${USER_DATA_DIR_NAME}`;
 }
 
 function resolveConfigPath(path: string): string {
