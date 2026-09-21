@@ -7,15 +7,15 @@ export const enUS: ZCodeCopy = {
       localeUnsupported: (value) =>
         `Unsupported --locale value: ${value}. Supported locales: en-US, zh-CN, auto.`,
     },
-    help: (version) => `zcode ${version}
+    help: (version) => `reactor ${version}
 
 Usage:
-  zcode [command] [options]
+  reactor [command] [options]
 
-With no command, zcode opens the full-screen TUI.
+With no command, reactor opens the full-screen TUI.
 
 Commands:
-  app-server Run the ZCode Protocol stdio app server
+  app-server Run the Reactor Protocol stdio app server
   commands   List custom slash commands (\`commands list\`)
   doctor     Inspect runtime and packaging assumptions
   login [zai|bigmodel]  Sign in through browser authorization
@@ -286,7 +286,7 @@ Slash Commands:
     },
     terminal: {
       requiresInteractive: "TUI requires an interactive terminal.",
-      starting: "Starting ZCode... Ctrl+C to exit",
+      starting: "Starting Reactor... Ctrl+C to exit",
     },
     transcript: {
       compact: {

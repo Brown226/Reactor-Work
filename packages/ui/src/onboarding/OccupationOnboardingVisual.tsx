@@ -3,11 +3,10 @@ import { useEffect, useState } from "react";
 import { logger } from "@/logger.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { resolveWorkspaceShellPanelRadiusPx } from "@/app-shell/workspaceShellWindowChrome.js";
-import { ZCodeStartupLogoBadge } from "@/root/RootStartupLoading.js";
+import { ReactorStartupLogo } from "@/root/RootStartupLoading.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { cn } from "@/components/lib/utils.js";
 import { useResolvedThemeHeroPalette } from "@/openWorkspacePageThemeHero.js";
-import "@/onboarding/onboardingLogoSweep.css";
 
 export function OccupationOnboardingVisual({
   isMacDesktop,
@@ -50,11 +49,8 @@ export function OccupationOnboardingVisual({
         className="pointer-events-none absolute inset-0 z-10 rounded-[inherit] border border-border"
       />
       <div className="relative my-auto flex w-full max-w-[640px] shrink-0 flex-col items-start [container-type:inline-size]">
-        <div aria-hidden="true" className="relative mb-10 rounded-3xl">
-          <ZCodeStartupLogoBadge animated={false} />
-          <div className="onboarding-logo-sweep">
-            <div />
-          </div>
+        <div aria-hidden="true" className="mb-10">
+          <ReactorStartupLogo animated={false} />
         </div>
         <h2
           className={cn(
