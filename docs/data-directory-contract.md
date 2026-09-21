@@ -16,13 +16,13 @@
 
 **不变式**：仓库里不允许再出现第二个字面量的用户级目录名。要改目录名，只改这三处常量值（它们必须同时改），全仓用户级路径自动跟随。
 
-常量值**含前导点**（当前 `".reactor-ds"`），与磁盘目录名一致，使每个引用点都是从 `.zcode` 到常量的 1:1 替换：`join(home, USER_DATA_DIR_NAME, ...)`。
+常量值**含前导点**（当前 `".reactor"`），与磁盘目录名一致，使每个引用点都是从 `.zcode` 到常量的 1:1 替换：`join(home, USER_DATA_DIR_NAME, ...)`。
 
 ## 2. 两族目录，边界明确
 
 | 族 | 归属 | 写法 | 例子 |
 | --- | --- | --- | --- |
-| **用户级** | 本契约管辖 | `USER_DATA_DIR_NAME` | `~/.reactor-ds/v2/setting.json`、`~/.reactor-ds/cli/config.json`、`~/.reactor-ds/skills` |
+| **用户级** | 本契约管辖 | `USER_DATA_DIR_NAME` | `~/.reactor/v2/setting.json`、`~/.reactor/cli/config.json`、`~/.reactor/skills` |
 | **工作区级** | 项目配置的产品语义 | 字面量 `.zcode`，**不要改** | `<repo>/.zcode/config.json`、`<repo>/.zcode/agents`、`<repo>/.zcode/workflows`、`<repo>/.zcode/plans` |
 
 判定方法：看**基目录是谁**。
@@ -78,5 +78,5 @@ git grep -nE '"(homedir\(\)|resolveUserHomeDir\([^)]*\)|getDataBaseDir\(\)|~)/?[
   -- '*.ts' '*.tsx' '*.mjs' ':(exclude)*/node_modules/*'
 
 # 运行时：数据必须落在新目录，且官方版目录不被写入
-ls -d ~/.reactor-ds && ls ~/.zcode/v2 | wc -l
+ls -d ~/.reactor && ls ~/.zcode/v2 | wc -l
 ```

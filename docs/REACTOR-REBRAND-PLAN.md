@@ -1,7 +1,7 @@
 # Reactor 去品牌化改造清单
 
 > 目标：将 ZCode 二开为自有产品 **Reactor**，做全面去 ZCode 化。
-> 决策基线（已确认）：仅改造可见层 + 产品身份；官方服务先保留；使用全新数据目录（初值 `~/.reactor-ds`，见 P3——本机 `~/.reactor` 已被旧项目占用，待其退役后改回）；桌面版优先；协议双注册 `zcode+reactor`；CLI 双 bin `reactor+zcode`。
+> 决策基线（已确认）：仅改造可见层 + 产品身份；官方服务先保留；使用全新数据目录 `~/.reactor`；桌面版优先；协议双注册 `zcode+reactor`；CLI 双 bin `reactor+zcode`。
 
 ## 零、核心认知：改"单一事实源"，而非全局替换
 
@@ -136,7 +136,7 @@ pnpm bundle:desktop
 
 > **状态：已完成并提交**（2026-09-21，`f2dfbfa`，37 个文件 = 34 改 + 3 新增）。
 >
-> 实现方式与本节原先设想的"直接改成 `.reactor`"不同：**先把目录名收口成单一事实源常量** `USER_DATA_DIR_NAME`（`packages/shared/src/user-data-dir.ts`），初值取 `.reactor-ds`——因为本机 `~/.reactor` 已被旧项目占用。这样改回 `.reactor` 只需改三处常量值（shared 一处 + telemetry/debug 各一份同值副本，那两个包刻意不依赖 `@zcode/shared`），全仓用户级路径自动跟随。
+> 实现方式与本节原先设想的"逐处改成 `.reactor`"不同：**先把目录名收口成单一事实源常量** `USER_DATA_DIR_NAME`（`packages/shared/src/user-data-dir.ts`），再让全仓用户级路径跟随。收口时本机 `~/.reactor` 还被一个旧项目占着，故常量值先取 `.reactor-ds`；该占用解除后（旧目录已改名为 `~/.reactor---old` 留档）已改回正式名 **`.reactor`**——改名成本最终只有三处常量值（shared 一处 + telemetry/debug 各一份同值副本，那两个包刻意不依赖 `@zcode/shared`）加一次 `mv`。
 >
 > **常量值含前导点**，与磁盘目录名一致，使每个引用点都是从 `.zcode` 到常量的 1:1 替换。早期写成不含点的 `reactor-ds` 会让应用创建出非隐藏目录 `~/reactor-ds`。
 >
@@ -146,7 +146,7 @@ pnpm bundle:desktop
 >
 > - `packages/services/src/storage/adapters/rootsResolver.ts` 的受管存储根（原先仍解析到 `~/.zcode`，而 session store 已走新目录——同一份数据两个来源）。
 > - `packages/desktop/src/main/desktopDataBaseDirBootstrap.ts` 与 `desktopChromiumHardwareAccelerationBootstrap.ts` 启动期读的 `setting.json`（原先与 `desktop/src/main/index.ts` 读不同目录）。
-> - settings-sync / skills / subagents / mcp-sync / commands / hooks 的 user 目录段；`zcode-server-cli` 的 server 根（原先与 `providerRuntimeResolver` 找的 `~/.reactor-ds/server/agents` 不一致）；`zcode-agent` 的用户 cli 目录与 `storage.dir` 兜底。
+> - settings-sync / skills / subagents / mcp-sync / commands / hooks 的 user 目录段；`zcode-server-cli` 的 server 根（原先与 `providerRuntimeResolver` 找的 `~/.reactor/server/agents` 不一致）；`zcode-agent` 的用户 cli 目录与 `storage.dir` 兜底。
 > - `adapters/src/{commands,skills}/roots.ts`：**按作用域分别取目录名**——`user` 用常量、`project` 保持 `.zcode`。原先两者共用一个字面量，用户级会读回官方版的旧目录。`.agents` 兼容目录（跨工具约定）保持原样。
 > - 远端部署：`packages/server/src/remote/*` 的 `~/.zcode/server` 收口到 `deployShared.ts` 的 `REMOTE_BASE` / `REMOTE_BASE_SHELL`（原先 `connect.ts` 与 `zcodeAgentBundleWrapper.ts` 各自硬编码，绕过唯一所有者）。
 > - 全局 saved-workflow 根 `SAVED_WORKFLOW_GLOBAL_DIR`（原先与已迁移的 legacy 用户 workflow 根分叉，而两者本应"同一处"）、CLI 的 `DEFAULT_BASE_DIR`、`DefaultRuntimeConfig.storage`、信箱根、用户级 AGENTS.md 的提示文案与 UI 回退显示、`skillSourceFilter` 的路径匹配、桌面端「清除所有数据」的用户可见文案。
@@ -184,7 +184,7 @@ pnpm typecheck   # exit 0（提交前于 P3 工作树实测）
 pnpm lint        # 0 error / 70 warning。P3 触及且出现在 warning 列表里的两个文件
                  #（desktop/src/main/index.ts、services/src/node.ts）与 P3 前逐文件对比
                  # warning 数一致（各 10 条），即 P3 未新增 warning
-ls -d ~/.reactor-ds && ls ~/.zcode/v2 | wc -l   # 新目录已建；官方版 ~/.zcode/v2 仍为 34 个文件不变
+ls -d ~/.reactor && ls ~/.zcode/v2 | wc -l   # 新目录已建；官方版 ~/.zcode/v2 仍为 34 个文件不变
 ```
 
 ## 四、P4 界面视觉（"界面也要改"的实质）

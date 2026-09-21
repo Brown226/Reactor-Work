@@ -13,13 +13,14 @@
  * - **工作区级 `.zcode` 目录**（工作区内的 `AGENTS.md`、`agents/`、`workflows/`、
  *   `config.json` 等）是项目配置的产品语义，**不使用本常量**，保持字面量 `.zcode`。
  *
- * 当前值 `reactor-ds`：本机已有旧项目占用 `~/.reactor`，待其彻底退役后改回
- * `~/.reactor`（即把本常量改为 `".reactor"`）。仅改此处即可让全仓用户级路径迁移。
+ * 当前值 `.reactor`。中间曾用 `-ds` 后缀临时顶替，因为当时本机 `~/.reactor` 被一个旧项目
+ * 占用；该占用已解除（旧目录被改名为 `~/.reactor---old` 留档），因此改回正式名。
+ * 改名只需改三处常量值，全仓用户级路径自动跟随。
  *
  * `apps/zcode-cli/packages/{telemetry,debug}` 各有一份同值副本（那两个包刻意不依赖
  * 本包），改名时需一并同步。
  */
-export const USER_DATA_DIR_NAME = ".reactor-ds";
+export const USER_DATA_DIR_NAME = ".reactor";
 
 /** 目录名的去掉前导点的展示形式，用于日志与诊断文案。 */
 export const USER_DATA_DIR_DISPLAY_NAME = USER_DATA_DIR_NAME.replace(/^\./, "");

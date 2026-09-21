@@ -10,8 +10,8 @@ pnpm --filter debug dev
 
 The Hono API reads existing local diagnostics only:
 
-- `~/.reactor-ds/cli/log/*.jsonl`
-- `~/.reactor-ds/cli/db/db.sqlite`
+- `~/.reactor/cli/log/*.jsonl`
+- `~/.reactor/cli/db/db.sqlite`
 - an optional session event JSONL file or directory selected in the UI
 
 It does not modify agent runtime behavior or write back to the agent database.

@@ -5,4 +5,4 @@
  * 一份与 `@zcode/shared` 同值的常量。值**包含前导点**，与磁盘上的目录名一致。
  * 改名时两处必须同步——见 `packages/shared/src/user-data-dir.ts` 的说明。
  */
-export const USER_DATA_DIR_NAME = ".reactor-ds";
+export const USER_DATA_DIR_NAME = ".reactor";

@@ -54,7 +54,7 @@ function parseArgs(argv) {
     command: commandAndArgs[0],
     args: commandAndArgs.slice(1),
     // 目录名与 packages/shared/src/user-data-dir.ts 的 USER_DATA_DIR_NAME 保持一致
-    logDir: logDir || join(homedir(), ".reactor-ds", "v2", "dev", "stdio-traffic"),
+    logDir: logDir || join(homedir(), ".reactor", "v2", "dev", "stdio-traffic"),
     workspaceKey,
   };
 }
