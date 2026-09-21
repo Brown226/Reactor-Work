@@ -18,6 +18,7 @@ import {
   ThemeSelect,
 } from "@/settings/SettingsPageParts.js";
 import { getCodePreviewTheme } from "@/lib/codePreviewPreferences.js";
+import { BackgroundThemeSection } from "@/settings/BackgroundThemeSection.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import type { CodePreviewSettings } from "@/store/index.js";
 import { THEME_MODES } from "@/settings/settingsPageConfig.js";
@@ -241,6 +242,8 @@ export function AppearanceSectionContent({
             </CardContent>
           </Card>
         </div>
+
+        <BackgroundThemeSection />
 
         <div className="min-w-0 space-y-4">
           <div>

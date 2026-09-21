@@ -158,6 +158,9 @@ body {
   --color-background: var(--color-neutral-50);
   --color-background-alt: color-mix(in oklab, var(--color-neutral-100) 60%, transparent);
   --color-background-win-alt: var(--color-neutral-200);
+  /* 背景主题用的主题底色字面值。必须与 --color-background 同源但不引用它：
+     主区域会把 --color-background 覆盖成半透明值，若这里再引用它就会形成自引用。 */
+  --app-background-base: var(--color-neutral-50);
   --color-brand: var(--color-sky-400);
   --color-icon-blue: var(--color-terminal-bright-blue);
   --color-trajectory-user: #2563eb;
@@ -311,6 +314,7 @@ body {
   --color-background: var(--color-neutral-900);
   --color-background-alt: color-mix(in oklab, var(--color-neutral-800) 60%, transparent);
   --color-background-win-alt: var(--color-neutral-800);
+  --app-background-base: var(--color-neutral-900);
   --color-brand: var(--color-sky-500);
   --color-trajectory-user: #60a5fa;
   --color-trajectory-assistant: #2dd4bf;
@@ -463,6 +467,7 @@ body {
   --animated-gradient-text-soft: rgba(13, 13, 13, 0.22);
   --color-background: #f8f8f8;
   --color-background-win-alt: #ececee;
+  --app-background-base: #f8f8f8;
   --color-background-alt: color-mix(in oklab, var(--color-background) 70%, transparent);
   --color-brand: #0061af;
   --color-trajectory-user: #2563eb;
@@ -608,6 +613,7 @@ body {
   --animated-gradient-text-soft: rgba(255, 255, 255, 0.22);
   --color-background: #161616;
   --color-background-win-alt: #2b2b2b;
+  --app-background-base: #161616;
   --color-background-alt: color-mix(in oklab, var(--color-background-win-alt) 60%, transparent);
   --color-brand: #2fe0f9;
   --color-trajectory-user: #60a5fa;
@@ -2050,4 +2056,55 @@ body {
 
 .prompt-mention[data-mention-category="plugins"]::before {
   border-radius: var(--radius-sm);
+}
+
+/* ── 背景主题 ───────────────────────────────────────────────────────────────
+   背景画在窗口根容器（DesktopWindowFrame）的 ::before 上，整窗铺底：侧栏与主区域都在
+   它上面。外壳把 --color-background 换成半透明值，侧栏与各 pane 用自身底色把它透出来；
+   设置页、弹窗等外壳之外的表面仍是各自的不透明底色。
+   变量由 packages/ui/src/lib/backgroundTheme.ts 写到文档根，
+   语义见 docs/appearance-background-theme.md。 */
+[data-app-background] [data-desktop-window-frame] {
+  position: relative;
+  /* 窗口根容器自带不透明底色；必须让它自己成为层叠上下文，
+     否则 ::before 的负 z-index 会落到该底色之后（被整窗盖住）。 */
+  isolation: isolate;
+}
+
+[data-app-background] [data-desktop-window-frame]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--app-background-base);
+  background-image: var(--app-background-image, none);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  /* 模糊只作用在这一层，内容不受影响；放大一点避免模糊后露出边缘。 */
+  filter: blur(var(--app-background-blur, 0px));
+  transform: scale(1.06);
+}
+
+[data-app-background] [data-app-background-surface] {
+  --color-background: color-mix(
+    in oklab,
+    var(--app-background-base) var(--app-background-scrim, 100%),
+    transparent
+  );
+}
+
+/* 侧栏自身不画底色（原本透到窗口底色），背景开启时补一层与主区域同源的底板。 */
+[data-app-background] [data-workspace-sidebar-panel] {
+  background-color: color-mix(
+    in oklab,
+    var(--app-background-base) var(--app-background-scrim, 100%),
+    transparent
+  );
+}
+
+/* 背景铺开时，空状态水印会与背景图互相干扰，直接隐藏。 */
+[data-app-background] [data-v4-draft-logo] {
+  display: none;
 }

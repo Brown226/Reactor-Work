@@ -1804,6 +1804,28 @@ const enUS: Record<string, string> = {
   "settings.appearance.codeTitle": "Code settings",
   "settings.appearance.codeDescription":
     "Choose code themes, font size, and display options independently from the interface font size.",
+  "settings.appearance.backgroundTitle": "Background",
+  "settings.appearance.backgroundDescription":
+    "Add a background across the whole workspace, sidebar included. Settings, dialogs, and cards keep their own surface colors.",
+  "settings.background.none": "None",
+  "settings.background.preset.mist": "Mist",
+  "settings.background.preset.sky": "Sky",
+  "settings.background.preset.dusk": "Dusk",
+  "settings.background.preset.dune": "Dune",
+  "settings.background.preset.basalt": "Basalt",
+  "settings.background.blur": "Blur",
+  "settings.background.blurDescription":
+    "Applies a gaussian blur to the background; higher values look softer.",
+  "settings.background.scrim": "Overlay",
+  "settings.background.scrimDescription":
+    "How much of the theme color is layered over the background. Higher keeps text clearer and the background subtler.",
+  "settings.background.uploadImage": "Upload image",
+  "settings.background.replaceImage": "Replace image",
+  "settings.background.removeImage": "Remove image",
+  "settings.background.imageLoading": "Loading image…",
+  "settings.background.imageUnsupported": "Only PNG, JPG, WebP, GIF, BMP, or AVIF images work.",
+  "settings.background.imageFailed":
+    "Could not read the image and fell back to the preset background (PNG, JPG, WebP, GIF, BMP, or AVIF up to 8 MB).",
   "settings.uiFontSize": "UI font size",
   "settings.uiFontSizeDescription":
     "Adjust interface text without changing icons or layout dimensions.",

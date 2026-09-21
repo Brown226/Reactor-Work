@@ -25,6 +25,11 @@ import {
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import { readSafeLocalStorage, writeSafeLocalStorage } from "@/lib/browserEnvironment.js";
 import {
+  createBackgroundThemeStoreActions,
+  normalizeBackgroundThemeBroadcast,
+  type BackgroundThemeStoreState,
+} from "@/store/backgroundThemeState.js";
+import {
   applyUiFontSizePx,
   loadUiFontSizePx,
   normalizeUiFontSizePx,
@@ -99,7 +104,7 @@ function loadPerformanceMode(): boolean {
 // State 定义
 // ============================================================================
 
-export interface ZCodeState {
+export interface ZCodeState extends BackgroundThemeStoreState {
   /** 展示详情偏好，不改变 Agent 权限或执行能力。 */
   interfaceMode: InterfaceMode;
   setInterfaceMode: (mode: InterfaceMode) => void;
@@ -115,7 +120,6 @@ export interface ZCodeState {
   /** 代码预览设置 */
   codePreviewSettings: CodePreviewSettings;
   setCodePreviewSettings: (patch: Partial<CodePreviewSettings>) => void;
-
   /** UI 根 rem 字号（px） */
   uiFontSizePx: number;
   setUiFontSizePx: (fontSizePx: number) => void;
@@ -211,9 +215,9 @@ export interface ZCodeState {
 // 需要广播的字段 —— 只有这些字段的变更会发送给其他窗口
 // ============================================================================
 
-const BROADCAST_FIELDS = new Set(["theme", "locale", "uiFontSizePx", "interfaceMode"]);
+const BROADCAST_FIELDS = new Set(["theme", "locale", "uiFontSizePx", "interfaceMode", "backgroundTheme"]);
 
-type BroadcastField = "theme" | "locale" | "uiFontSizePx" | "interfaceMode";
+type BroadcastField = "theme" | "locale" | "uiFontSizePx" | "interfaceMode" | "backgroundTheme";
 
 /** 广播频道名前缀 */
 const STATE_CHANNEL_PREFIX = "state:";
@@ -292,6 +296,12 @@ export function createZCodeStore(
       applyUiFontSizePx(normalizedFontSizePx);
       set({ uiFontSizePx: normalizedFontSizePx });
     },
+
+    ...createBackgroundThemeStoreActions({
+      // 取整份状态：切片只声明它需要的两个字段，其余字段不参与。
+      read: () => get(),
+      write: (patch) => set(patch),
+    }),
 
     performanceMode: loadPerformanceMode(),
     setPerformanceMode: (enabled: boolean) => {
@@ -482,6 +492,10 @@ export function createZCodeStore(
         state.setInterfaceMode(normalizeInterfaceMode(msg.payload));
       } else if (field === "uiFontSizePx" && typeof msg.payload === "number") {
         state.setUiFontSizePx(msg.payload);
+      } else if (field === "backgroundTheme") {
+        state.setBackgroundTheme(
+          normalizeBackgroundThemeBroadcast(state.backgroundTheme, msg.payload),
+        );
       }
     } finally {
       applyingBroadcast = false;

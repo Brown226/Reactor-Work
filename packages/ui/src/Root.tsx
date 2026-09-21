@@ -11,6 +11,7 @@ import { TooltipProvider } from "@/components/ui/tooltip.js";
 import { Button } from "@/components/ui/button.js";
 import { PlatformProvider } from "@/hooks/usePlatform.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
+import { useBackgroundImageSource } from "@/hooks/useBackgroundImageSource.js";
 import { useDynamicWorkflowAvailabilityLoader } from "@/hooks/useDynamicWorkflowAvailability.js";
 import { DirectoryBrowser } from "@/DirectoryBrowser.js";
 import { useTabPersistence } from "@/hooks/useTabPersistence.js";
@@ -176,6 +177,8 @@ function RootInner({
     };
   }, [isDesktop, platform]);
 
+  // 背景主题的自定义图片：路径一变就在这里读盘并应用（工作区与设置页都在这个根之下）。
+  useBackgroundImageSource();
 
   useEffect(
     () => () => {

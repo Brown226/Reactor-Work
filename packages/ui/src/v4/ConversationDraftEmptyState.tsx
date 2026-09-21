@@ -228,6 +228,7 @@ function ZCodeEmptyStateLogo({ className }: { className?: string }) {
       {/* 夜间资源已自带渐变和透明度，公共容器叠加遮罩会让它重复变淡；渐隐效果只属于浅色线框。*/}
       <svg
         aria-hidden="true"
+        data-v4-draft-logo="light"
         className={cn(
           className,
           "opacity-70 dark:hidden",
