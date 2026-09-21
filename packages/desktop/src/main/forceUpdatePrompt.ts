@@ -42,14 +42,14 @@ function buildForceUpdatePromptMessages(locale: Locale) {
   if (locale === "zh-CN") {
     return {
       checkingTitle: "正在检查更新",
-      checkingMessage: "请保持此窗口打开，ZCode 正在查找可用更新。",
+      checkingMessage: "请保持此窗口打开，Reactor 正在查找可用更新。",
       downloadingTitle: "正在下载更新",
       downloadingVersionTitle: "正在下载更新 v{version}",
       downloadingMessage: "下载完成后会自动安装，请勿关闭应用。",
       readyTitle: "更新已下载",
-      readyMessage: "ZCode 正在准备重启并安装更新。",
+      readyMessage: "Reactor 正在准备重启并安装更新。",
       installingTitle: "正在安装更新",
-      installingMessage: "ZCode 即将重启完成安装。",
+      installingMessage: "Reactor 即将重启完成安装。",
       errorTitle: "自动升级失败",
       errorMessage: "你可以重试自动升级，或改用手动升级。",
       devSkippedTitle: "调试环境无法自动升级",
@@ -68,14 +68,14 @@ function buildForceUpdatePromptMessages(locale: Locale) {
 
   return {
     checkingTitle: "Checking for updates",
-    checkingMessage: "Keep this window open while ZCode checks for updates.",
+    checkingMessage: "Keep this window open while Reactor checks for updates.",
     downloadingTitle: "Downloading update",
     downloadingVersionTitle: "Downloading update v{version}",
-    downloadingMessage: "ZCode will install the update automatically after download.",
+    downloadingMessage: "Reactor will install the update automatically after download.",
     readyTitle: "Update downloaded",
-    readyMessage: "ZCode is preparing to restart and install the update.",
+    readyMessage: "Reactor is preparing to restart and install the update.",
     installingTitle: "Installing update",
-    installingMessage: "ZCode will restart to finish installing the update.",
+    installingMessage: "Reactor will restart to finish installing the update.",
     errorTitle: "Auto update failed",
     errorMessage: "You can retry auto update or use manual update.",
     devSkippedTitle: "Auto update unavailable in development",
@@ -163,13 +163,13 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
       width: 22px;
       height: 22px;
       border-radius: 6px;
-      background: #ebf4ff;
+      background: #e6f4fa;
       border: 1px solid rgba(13, 13, 13, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       flex: 0 0 auto;
-      color: #0b7fff;
+      color: #0061af;
       font-size: 12px;
       font-weight: 600;
     }
@@ -219,9 +219,9 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: color-mix(in oklab, #0b7fff 12%, transparent);
+      background: color-mix(in oklab, #0061af 12%, transparent);
       border: 1px solid rgba(13, 13, 13, 0.1);
-      color: #0b7fff;
+      color: #0061af;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -244,7 +244,7 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
     .progress { display: none; gap: 8px; flex-direction: column; }
     .progress.visible { display: flex; }
     .progress-track { height: 6px; border-radius: 999px; background: rgba(13, 13, 13, 0.08); overflow: hidden; }
-    .progress-bar { width: 0%; height: 100%; border-radius: inherit; background: #0b7fff; transition: width 160ms ease; }
+    .progress-bar { width: 0%; height: 100%; border-radius: inherit; background: #0061af; transition: width 160ms ease; }
     .progress-text { color: rgba(13, 13, 13, 0.62); font-size: 12px; }
     .actions {
       margin-top: auto;
@@ -277,14 +277,14 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
       .panel { background: #2b2b2b; border-color: transparent; }
       .titlebar { background: #202020; border-bottom-color: rgba(255, 255, 255, 0.1); }
       .brand-title, h1 { color: #f8f8f8; }
-      .brand-icon { background: #001d3d; border-color: rgba(255, 255, 255, 0.1); color: #80beff; }
+      .brand-icon { background: #062a45; border-color: rgba(255, 255, 255, 0.1); color: #2fe0f9; }
       .close { color: rgba(248, 248, 248, 0.64); }
       .close:hover { background: #363636; border-color: rgba(255, 255, 255, 0.15); color: #f8f8f8; }
       .message { color: rgba(248, 248, 248, 0.64); }
-      .status-icon { background: color-mix(in oklab, #4099ff 14%, transparent); border-color: rgba(255, 255, 255, 0.1); color: #80beff; }
+      .status-icon { background: color-mix(in oklab, #4099ff 14%, transparent); border-color: rgba(255, 255, 255, 0.1); color: #2fe0f9; }
       .version-card { border-color: rgba(255, 255, 255, 0.1); background: #202020; color: #f8f8f8; }
       .progress-track { background: rgba(255, 255, 255, 0.1); }
-      .progress-bar { background: #80beff; }
+      .progress-bar { background: #2fe0f9; }
       .progress-text { color: rgba(248, 248, 248, 0.64); }
       button { border-color: rgba(255, 255, 255, 0.1); background: #2b2b2b; color: #f8f8f8; }
       button:hover { background: #363636; border-color: rgba(255, 255, 255, 0.15); }
@@ -306,8 +306,8 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
     <main class="panel" role="dialog" aria-modal="true" aria-labelledby="title">
       <header class="titlebar">
         <div class="brand">
-          <div class="brand-icon">${icon ? `<img src="${icon}" alt="" />` : "Z"}</div>
-          <div class="brand-title">ZCode</div>
+          <div class="brand-icon">${icon ? `<img src="${icon}" alt="" />` : "R"}</div>
+          <div class="brand-title">Reactor</div>
         </div>
         <button class="close" type="button" data-action="quit" aria-label="${escapeHtml(text.quitButton)}">×</button>
       </header>
