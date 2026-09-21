@@ -39,6 +39,7 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { useReactorServer } from "@/hooks/useReactorServer.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
 import { useZCodeStore } from "@/store/StoreProvider.js";
@@ -67,19 +68,8 @@ function getSidebarProfileName(user?: UserInfo | null): string {
   return "ZCode";
 }
 
-function getSidebarProfileBadge(
-  user: UserInfo | null | undefined,
-  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
-): string {
-  if (user) {
-    return getSidebarProfileName(user);
-  }
-
-  return formatMessage({ id: "sidebar.profile.notLoggedIn" });
-}
-
-function getAvatarFallbackText(user: UserInfo | null | undefined): string {
-  const source = user?.displayName?.trim() || user?.username?.trim() || "Z";
+function getAvatarFallbackText(profileName: string | null): string {
+  const source = profileName?.trim() || "Z";
   return source[0]?.toUpperCase() ?? "Z";
 }
 
@@ -130,10 +120,16 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
   const zoomOutShortcutLabel = useShortcutCommandLabel("zoomOut");
   const resetZoomShortcutLabel = useShortcutCommandLabel("resetZoom");
   const isRestoringOAuthSession = useZCodeStore((state) => state.isRestoringOAuthSession);
-  const profileBadge = getSidebarProfileBadge(user, intl.formatMessage);
-  const avatarFallbackText = getAvatarFallbackText(user);
-  const avatarKey = user?.avatarUrl ?? user?.id ?? "guest";
-  const showAuthRestoreLoading = !user && isRestoringOAuthSession;
+  const enterpriseSession = useReactorServer();
+  // 企业登录态与官方账号是两套身份：没有官方账号时，头像/姓名回落到企业账号，
+  // 否则登录成功后侧栏仍显示「登录」，用户看不出自己是以谁登录的。
+  const enterpriseUser = enterpriseSession.status?.loggedIn ? enterpriseSession.status.user : null;
+  const profileName = user ? getSidebarProfileName(user) : enterpriseUser?.name?.trim() || null;
+  const profileBadge = profileName ?? intl.formatMessage({ id: "sidebar.profile.notLoggedIn" });
+  const avatarFallbackText = getAvatarFallbackText(profileName);
+  const avatarKey =
+    user?.avatarUrl ?? user?.id ?? (enterpriseUser ? `enterprise:${enterpriseUser.uid}` : "guest");
+  const showAuthRestoreLoading = !user && !enterpriseUser && isRestoringOAuthSession;
   const usageSummaryState = useWorkspaceSidebarFooterUsageSummaryState({
     enabled: true,
     workspaceIdentity,
@@ -144,7 +140,7 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
       <Avatar key={avatarKey} size="default">
         {user?.avatarUrl ? <AvatarImage src={user.avatarUrl} alt={profileBadge} /> : null}
         <AvatarFallback className="bg-background text-foreground">
-          {user ? (
+          {profileName ? (
             avatarFallbackText
           ) : showAuthRestoreLoading ? (
             <>
@@ -348,12 +344,26 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
               onUsageClick={usageButtonClick}
               onUpgradeClick={onUpgradeClick}
             />
-            {onLogin && !user ? (
+            {onLogin && !user && !enterpriseUser ? (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={onLogin} data-testid={TID_LOGIN_MENU_ITEM}>
                   <LogInIcon className="size-4" />
                   {intl.formatMessage({ id: "app.login" })}
+                </DropdownMenuItem>
+              </>
+            ) : null}
+            {/* 企业账号没有官方 OAuth 会话，退出只能走企业服务端登出；
+                登出后 Root 的强制登录门禁会把用户带回登录页。 */}
+            {!user && enterpriseUser ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => void enterpriseSession.logout()}
+                  data-testid={TID_LOGOUT_BUTTON}
+                >
+                  <LogOut className="size-4" />
+                  {intl.formatMessage({ id: "app.logout" })}
                 </DropdownMenuItem>
               </>
             ) : null}

@@ -85,6 +85,8 @@ export const SETTINGS_USER_ACTION_FEATURES = {
   "settings.task": ["toggle_auto_archive", "change_auto_archive_days"],
   "settings.storage": ["change_data_directory"],
   "settings.memory": ["toggle_memory", "refresh_memory", "change_memory_scope"],
+  // 企业服务端登录动作只上报「做了哪个动作」，凭据由 IReactorServerService 独占，不进遥测。
+  "settings.reactorServer": ["login", "logout", "refresh_models"],
   "settings.browser": [
     "toggle_browser_use",
     "import_browser_data",
@@ -129,7 +131,7 @@ function operationKindFor(featureId: string, action: string): UserActionOperatio
   }
   if (
     featureId.startsWith("settings.") &&
-    !["refresh_memory", "import_browser_data", "clear_cache"].includes(action)
+    !["refresh_memory", "refresh_models", "import_browser_data", "clear_cache"].includes(action)
   ) {
     return "preference";
   }

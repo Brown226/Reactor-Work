@@ -14,6 +14,8 @@ export function useProviderAvailabilityLoginEntryGuard({
   enabled = true,
   user,
   isRestoringOAuthSession,
+  isResolvingEnterpriseSession,
+  hasEnterpriseSession,
   providerFamilyDomain,
   modelSelectionView,
   modelSelectionError,
@@ -24,6 +26,9 @@ export function useProviderAvailabilityLoginEntryGuard({
   enabled?: boolean;
   user: UserInfo | null;
   isRestoringOAuthSession: boolean;
+  isResolvingEnterpriseSession?: boolean;
+  /** 已登录企业服务端即视为可用身份：企业登录是本产品唯一的登录方式。 */
+  hasEnterpriseSession?: boolean;
   providerFamilyDomain: string | null | undefined;
   modelSelectionView: ModelSelectionView | null;
   modelSelectionError?: Error;
@@ -54,16 +59,19 @@ export function useProviderAvailabilityLoginEntryGuard({
         : modelSelectionView;
       const availability = resolveProviderAvailabilityState({ modelSelectionView: refreshedView });
       const { hasUsableProvider, providerCount } = availability;
-      const shouldOpenLoginEntry = !providerFamilyDomain || (!user && !hasUsableProvider);
+      // 企业登录是本产品唯一的登录方式：已登录企业服务端就不再要求官方账号或 provider family。
+      const shouldOpenLoginEntry =
+        !hasEnterpriseSession && (!providerFamilyDomain || (!user && !hasUsableProvider));
 
-      // 未登录且没有可用模型配置时必须引导用户连接账号或填写 API Key。
-      // 启动检查、API Key 设置回流等入口统一走这里，避免各处复制判断后语义分叉。
+      // 未登录且没有可用模型配置时必须引导用户登录企业账号。
+      // 启动检查统一走这里，避免各处复制判断后语义分叉。
       logger.info("[Root] provider 可用性登录入口守卫完成检查", {
         reason: options.reason,
         source: availability.source,
         providerCount,
         hasUsableProvider,
         hasUser: Boolean(user),
+        hasEnterpriseSession: Boolean(hasEnterpriseSession),
         hasProviderFamilyDomain: Boolean(providerFamilyDomain),
         shouldOpenLoginEntry,
       });
@@ -76,6 +84,7 @@ export function useProviderAvailabilityLoginEntryGuard({
     },
     [
       enabled,
+      hasEnterpriseSession,
       modelSelectionView,
       providerFamilyDomain,
       refreshProviderState,
@@ -103,6 +112,7 @@ export function useProviderAvailabilityLoginEntryGuard({
     if (
       startupCheckCompletedRef.current ||
       isRestoringOAuthSession ||
+      isResolvingEnterpriseSession ||
       !providerAvailabilityHydrated
     ) {
       return;

@@ -55,6 +55,7 @@ import {
 } from "@/lib/accountProviderAccess.js";
 import { buildUsageEntitlementCacheKey } from "@/lib/usageEntitlementCache.js";
 import { ModelProviderSection } from "@/settings/ModelProviderSection.js";
+import { ReactorServerSection } from "@/settings/ReactorServerSection.js";
 import { useCodingPlanUpgradeDialog } from "@/settings/CodingPlanUpgradeDialogProvider.js";
 import { useEnterpriseCodingPlanProducts } from "@/settings/model-provider-section/useEnterpriseCodingPlanProducts.js";
 import { UsageStatsSection, type UsageStatsSectionTab } from "@/settings/UsageStatsSection.js";
@@ -1820,6 +1821,11 @@ export function SettingsPage({
                                 setPendingModelProviderTarget(undefined)
                               }
                             />
+                          </ServiceProvider>
+                        ) : activeSection === "reactorServer" ? (
+                          <ServiceProvider services={localHostServices}>
+                            {/* 企业服务端登录态与令牌存在本机 host（凭据库），不能注入远端 workspace。 */}
+                            <ReactorServerSection />
                           </ServiceProvider>
                         ) : activeSection === "memory" ? (
                           <ServiceProvider services={localHostServices}>

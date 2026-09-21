@@ -228,6 +228,7 @@ export function App({
     handleOpenBrowserTab,
     handleToggleGit,
     handleOpenGit,
+    handleOpenWorkspaceFiles,
     handleOpenTreemapping,
     handleOpenWhiteboard,
     handleOpenDeveloperTools,
@@ -1235,6 +1236,7 @@ export function App({
         handleOpenCommandCenter={handleOpenQuickPick}
         handleRefreshGit={handleRefreshGit}
         handleOpenGitReview={handleOpenGitReview}
+        handleOpenWorkspaceFiles={handleOpenWorkspaceFiles}
         handleBrowserUrlChange={handleBrowserUrlChange}
         handleBrowserPageMetadataChange={handleBrowserPageMetadataChange}
         handleToggleSidebar={handleToggleSidebar}

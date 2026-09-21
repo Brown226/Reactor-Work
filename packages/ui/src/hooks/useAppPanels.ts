@@ -44,6 +44,7 @@ import {
   openCodeViewerSidePane,
   openCodeViewerSidePanes,
   activateGitSidePane,
+  activateFilesSidePane,
   getActiveSidePaneTab,
   getVisibleSidePaneTabs,
   sidePaneOwnerKey,
@@ -738,6 +739,18 @@ export function useAppPanels(options: {
       return next;
     });
   }, [isOfficeMode, commitOpenedSidePaneState, revealSidePaneForCurrentOwner, workspaceAbsPath]);
+
+  // 工作区文件树：从左侧抽屉迁到右侧面板后的唯一入口（左侧工作区项 → 这里）。
+  const handleOpenWorkspaceFiles = useCallback(() => {
+    commitOpenedSidePaneState((current) => {
+      const next = activateFilesSidePane(current);
+      revealSidePaneForCurrentOwner();
+      logger.info(
+        `[App] 打开右侧面板 mode=files workspace=${workspaceAbsPath} tabs=${next.tabs.length}`,
+      );
+      return next;
+    });
+  }, [commitOpenedSidePaneState, revealSidePaneForCurrentOwner, workspaceAbsPath]);
 
   const handleOpenTreemapping = useCallback(
     (source?: TreemappingSidePaneTab["source"]) => {
@@ -1584,6 +1597,7 @@ export function useAppPanels(options: {
     handleOpenBrowserTab,
     handleToggleGit,
     handleOpenGit,
+    handleOpenWorkspaceFiles,
     handleOpenTreemapping,
     handleOpenWhiteboard,
     handleOpenDeveloperTools,

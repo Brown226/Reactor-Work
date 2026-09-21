@@ -3,6 +3,7 @@ const MIN_PREVIEW_PANE_HEAVY_CONTENT_VISIBLE_INLINE_SIZE_PX = 96;
 export type OpenTabLauncherItemId =
   | "selection-side-conversation"
   | "review"
+  | "files"
   | "terminal"
   | "browser"
   | "developer-tools";
@@ -27,6 +28,9 @@ export function resolveOpenTabLauncherItemIds({
   if (!hasReviewTab) {
     itemIds.push("review");
   }
+
+  // 工作区文件：与审查/终端并列的常驻入口（文件树从左侧抽屉迁到右侧后的主入口）。
+  itemIds.push("files");
 
   itemIds.push("terminal");
 

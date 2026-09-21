@@ -18,6 +18,7 @@ import {
   WandSparkles,
   Keyboard,
   FileSearch,
+  ServerCog,
 } from "lucide-react";
 import { isSettingsSectionEnabled, type SettingsSectionId } from "@/lib/settingsNavigation.js";
 import type { Theme } from "@/useTheme.js";
@@ -71,6 +72,13 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
     id: "modelProvider",
     icon: Package,
     titleId: "settings.modelProviderTitle",
+    groupId: "basics",
+  },
+  // 企业服务端是「模型从哪来」的另一种来源（本地网关注入），紧跟模型设置。
+  {
+    id: "reactorServer",
+    icon: ServerCog,
+    titleId: "settings.reactorServer.title",
     groupId: "basics",
   },
   {

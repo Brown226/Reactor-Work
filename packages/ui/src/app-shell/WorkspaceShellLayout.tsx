@@ -305,6 +305,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
   handleOpenTerminalTab,
   handleToggleGit,
   handleOpenGitReview,
+  handleOpenWorkspaceFiles,
   handleToggleSidePane,
   handleOpenBrowserUrl,
   handleOpenCodeViewer,
@@ -358,7 +359,6 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
   const [fileTreeOpenRequest, setFileTreeOpenRequest] = useState<SidebarFileTreeOpenRequest | null>(
     null,
   );
-  const [isSidebarFileTreeOpen, setIsSidebarFileTreeOpen] = useState(false);
   const workspaceKey = workspaceIdentity?.trim() || workspaceAbsPath;
   const screenshotSurfaceRequest = useBrowserScreenshotSurfaceRequest(sidePaneState?.tabs ?? []);
   const screenshotSurfaceTab = screenshotSurfaceRequest
@@ -427,9 +427,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
   });
   const workspaceSessionActionDisabled =
     Boolean(workspaceReadOnlyReason) || reloadSessionDisabled || reloadSessionPending;
-  // 文件树打开时任务列表整屏滑出，侧栏里的 New Task 入口也随之不可见。
-  // 顶部浮层需要临时露出 New Task，关闭文件树后继续沿用侧栏收起态规则。
-  const showTopOverlayNewTaskButton = !isSidebarVisible || isSidebarFileTreeOpen;
+  const showTopOverlayNewTaskButton = !isSidebarVisible;
   const workspaceSidebarResizeLabel = intl.formatMessage({
     id: "workspaceSidebar.resizeSidebar",
   });
@@ -773,13 +771,6 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
       workspaceSidebarPanelWidthPx,
     ],
   );
-  const activePreviewPath = useMemo(() => {
-    const activeSidePaneTab =
-      sidePaneState?.tabs.find((tab) => tab.id === sidePaneState.activeTabId) ?? null;
-    return activeSidePaneTab?.type === "code-viewer"
-      ? (activeSidePaneTab.source.path ?? null)
-      : null;
-  }, [sidePaneState]);
   const findFileLinkOwnerWorkspace = useCallback(
     (
       targetPath: string,
@@ -1464,6 +1455,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
       onOpenDeveloperTools={handleOpenDeveloperTools}
       onOpenTerminalTab={handleOpenTerminalTab}
       onOpenReviewTab={handleToggleGit}
+      onOpenWorkspaceFiles={handleOpenWorkspaceFiles}
       onOpenSelectionSideConversation={handleOpenSelectionSideConversationLauncher}
       onRevealGitFileInTree={handleRevealGitFileInTree}
       onOpenBrowserUrl={handleOpenBrowserUrl}
@@ -1561,7 +1553,6 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                   <WorkspaceSidebar
                     workspacePath={workspaceAbsPath}
                     workspaceRemoteSessionId={workspaceRemoteSessionId}
-                    activePreviewPath={activePreviewPath}
                     onSelectTask={handleSelectTaskInChat}
                     onStartDraftInWorkspace={handleCreateProjectDraft}
                     onOpenCodeViewer={handleOpenCodeViewer}
@@ -1601,7 +1592,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                     automationsActive={workspaceMainView === "automations"}
                     onOpenPluginStore={handleOpenPluginStore}
                     pluginStoreActive={workspaceMainView === "plugin-store"}
-                    onFileTreeOpenChange={setIsSidebarFileTreeOpen}
+                    onOpenWorkspaceFiles={handleOpenWorkspaceFiles}
                   />
                 </WorkflowRunOpenProvider>
               </V4SplitPaneEntryProvider>

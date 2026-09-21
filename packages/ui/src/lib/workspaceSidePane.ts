@@ -33,6 +33,18 @@ export interface GitSidePaneTab {
   openedAt?: number;
 }
 
+/**
+ * 工作区文件树 tab：一个 workspace 一份（id 固定），复用左侧原有的 `WorkspaceFileTree`。
+ * 文件树从左侧抽屉迁到右侧面板后，这里只承载"打开/激活/关闭"，不再有自己的目标状态。
+ */
+export interface FilesSidePaneTab {
+  id: "files";
+  type: "files";
+  ownerTaskId?: string | null;
+  workspaceKey?: string | null;
+  openedAt?: number;
+}
+
 export interface CodeViewerSidePaneTab {
   id: string;
   type: "code-viewer";
@@ -517,6 +529,7 @@ export type WorkspaceSidePaneTab =
   | BackgroundBashSidePaneTab
   | BrowserSidePaneTab
   | GitSidePaneTab
+  | FilesSidePaneTab
   | CodeViewerSidePaneTab
   | TreemappingSidePaneTab
   | WhiteboardSidePaneTab
@@ -648,6 +661,11 @@ function createBrowserSidePaneTab(options?: {
 
 function createGitSidePaneTab(): GitSidePaneTab {
   return { id: "git", type: "git", openedAt: Date.now() };
+}
+
+function createFilesSidePaneTab(): FilesSidePaneTab {
+  // 与 git tab 同样的单实例语义：同一 workspace 只应有一份文件树。
+  return { id: "files", type: "files", openedAt: Date.now() };
 }
 
 function createModelTrajectorySidePaneTab(options: {
@@ -1558,6 +1576,13 @@ export function activateGitSidePane(
   current: WorkspaceSidePaneState | null,
 ): WorkspaceSidePaneState {
   return activateSidePaneTab(current, createGitSidePaneTab());
+}
+
+/** 打开（或激活）右侧的「工作区文件」面板。 */
+export function activateFilesSidePane(
+  current: WorkspaceSidePaneState | null,
+): WorkspaceSidePaneState {
+  return activateSidePaneTab(current, createFilesSidePaneTab());
 }
 
 export function openWhiteboardSidePane(

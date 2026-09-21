@@ -111,7 +111,6 @@ import {
 import type { Theme } from "@/useTheme.js";
 import type { RemoteConnectionLogEntry } from "@/hooks/useRemoteConnectionLogs.js";
 import type { CodeViewerSource } from "@/lib/codeViewer.js";
-import { WorkspaceFileTree } from "@/WorkspaceFileTree.js";
 import { WorkspaceArchivedTasksFlatSection } from "@/WorkspaceArchivedTasksFlatSection.js";
 import { WorkspaceSidebarFooter } from "@/WorkspaceSidebarFooter.js";
 import { WorkspacePinnedTasksSection } from "@/WorkspacePinnedTasksSection.js";
@@ -223,7 +222,6 @@ function resolveSidebarTaskViewMode(params: {
 export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   workspacePath,
   workspaceRemoteSessionId,
-  activePreviewPath,
   onSelectTask,
   onStartDraftInWorkspace,
   onOpenCodeViewer,
@@ -261,11 +259,10 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   onOpenPluginStore,
   automationsActive = false,
   pluginStoreActive = false,
-  onFileTreeOpenChange,
+  onOpenWorkspaceFiles,
 }: {
   workspacePath: string;
   workspaceRemoteSessionId?: string;
-  activePreviewPath?: string | null;
   onSelectTask: (
     targetWorkspacePath: string,
     taskId: string,
@@ -313,7 +310,8 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   onOpenPluginStore?: () => void;
   automationsActive?: boolean;
   pluginStoreActive?: boolean;
-  onFileTreeOpenChange?: (open: boolean) => void;
+  /** 打开右侧「工作区文件」面板（文件树已从左侧抽屉迁到右侧）。 */
+  onOpenWorkspaceFiles?: () => void;
 }) {
   const { intl, localePreference, setLocalePreference } = useZCodeIntl();
   const handleTaskRowSelect = useCallback(
@@ -361,6 +359,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   const commandCenterShortcutLabel = useShortcutCommandLabel("openCommandCenter");
   const tabs = useTabStore((state) => state.tabs);
   const activateTab = useTabStore((state) => state.activateTab);
+  const activateTabByPath = useTabStore((state) => state.activateTabByPath);
   const closeTab = useTabStore((state) => state.closeTab);
   const openSettingsTab = useTabStore((state) => state.openSettingsTab);
   const expandedWorkspacePaths = useTabStore((state) => state.expandedWorkspacePaths);
@@ -387,8 +386,6 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   const [archivedActionsContainer, setArchivedActionsContainer] = useState<HTMLDivElement | null>(
     null,
   );
-  const [isFileTreeOpen, setIsFileTreeOpen] = useState(false);
-  const [fileTreeTarget, setFileTreeTarget] = useState<SidebarFileTreeTarget | null>(null);
   const [groupedStickyHeader, setGroupedStickyHeader] = useState<ReactNode | null>(null);
   const [taskOrganizeBy, setTaskOrganizeBy] = useState<TaskOrganizeBy>(
     () => readSidebarTaskPreferences().organizeBy,
@@ -539,18 +536,11 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   );
 
   useEffect(() => {
-    if (!fileTreeOpenRequest) {
-      return;
+    // 外部（命令面板/快捷键）请求查看文件时，同样落到右侧「工作区文件」面板。
+    if (fileTreeOpenRequest) {
+      onOpenWorkspaceFiles?.();
     }
-    setFileTreeTarget(fileTreeOpenRequest.target);
-    setIsFileTreeOpen(true);
-  }, [fileTreeOpenRequest]);
-  useEffect(() => {
-    onFileTreeOpenChange?.(isFileTreeOpen);
-  }, [isFileTreeOpen, onFileTreeOpenChange]);
-  useEffect(() => {
-    return () => onFileTreeOpenChange?.(false);
-  }, [onFileTreeOpenChange]);
+  }, [fileTreeOpenRequest, onOpenWorkspaceFiles]);
   useEffect(() => {
     persistSidebarTaskPreferences({
       organizeBy: taskOrganizeBy,
@@ -650,10 +640,22 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
       increaseWorkspaceTaskVisibleLimit(current, workspaceKey),
     );
   }, []);
-  const handleOpenWorkspaceFileTree = useCallback((target: SidebarFileTreeTarget) => {
-    setFileTreeTarget(target);
-    setIsFileTreeOpen(true);
-  }, []);
+  const handleOpenWorkspaceFileTree = useCallback(
+    (target: SidebarFileTreeTarget) => {
+      // 文件树已从左侧抽屉迁到右侧面板，面板展示的是"当前工作区"的文件：
+      // 目标不是当前工作区时先切过去，否则树和用户点的那一行对不上。
+      const sameWorkspace =
+        target.workspacePath === workspacePath &&
+        (target.workspaceIdentity ?? null) === (workspaceIdentity ?? null);
+      if (!sameWorkspace) {
+        activateTabByPath(target.workspacePath, {
+          ...(target.workspaceIdentity ? { workspaceIdentity: target.workspaceIdentity } : {}),
+        });
+      }
+      onOpenWorkspaceFiles?.();
+    },
+    [activateTabByPath, onOpenWorkspaceFiles, workspaceIdentity, workspacePath],
+  );
   const workspaceScrollMaskStyle = useMemo<CSSProperties>(() => {
     const baseStyle: CSSProperties = { overflowAnchor: "none" };
     if (!showWorkspaceTopMask && !showWorkspaceBottomMask) {
@@ -1259,9 +1261,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
         <div
           className={cn(
             "absolute inset-0 flex min-h-0 flex-col transition-transform duration-200 ease-out",
-            isFileTreeOpen && "-translate-x-full pointer-events-none",
           )}
-          aria-hidden={isFileTreeOpen}
         >
           <div className={cn("flex flex-col gap-1 px-2", isWindowsDesktop ? "py-2" : "py-3")}>
             <WorkspaceNewTaskTooltip disabledReason={workspaceReadOnlyReason}>
@@ -1369,10 +1369,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
                   activeTaskId={activeTaskId}
                   taskSortBy={taskSortBy}
                   onSelectTask={handleTaskRowSelect}
-                  onOpenFileTree={(target) => {
-                    setFileTreeTarget(target);
-                    setIsFileTreeOpen(true);
-                  }}
+                  onOpenFileTree={handleOpenWorkspaceFileTree}
                 />
               ) : null}
               <div className="flex min-h-0 flex-col gap-3 px-2">
@@ -1394,10 +1391,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
                     activeTaskId={activeTaskId}
                     onSelectTask={onSelectTask}
                     onCreateTask={onCreateTask}
-                    onOpenFileTree={(target) => {
-                      setFileTreeTarget(target);
-                      setIsFileTreeOpen(true);
-                    }}
+                    onOpenFileTree={handleOpenWorkspaceFileTree}
                     onCreateGroupActionChange={handleCreateGroupActionChange}
                     onCreateDraftTaskActionChange={handleCreateDraftTaskActionChange}
                     collapsedGroupIds={collapsedGroupedTaskGroupIds}
@@ -1660,39 +1654,6 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
             activeTaskId={activeTaskId}
             isDesktop={isDesktop}
           />
-        </div>
-        <div
-          className={cn(
-            "absolute inset-0 transition-transform duration-200 ease-out",
-            isFileTreeOpen ? "translate-x-0" : "translate-x-full pointer-events-none",
-          )}
-          aria-hidden={!isFileTreeOpen}
-        >
-          {fileTreeTarget ? (
-            <WorkspaceFileTree
-              workspacePath={fileTreeTarget.workspacePath}
-              workspaceName={fileTreeTarget.workspaceName}
-              workspaceIdentity={fileTreeTarget.workspaceIdentity}
-              workspaceRemoteSessionId={fileTreeTarget.workspaceRemoteSessionId}
-              revealPath={fileTreeTarget.revealPath}
-              temporaryExternalDirectory={fileTreeTarget.temporaryExternalDirectory}
-              canOpenLocalFileManager={isDesktop}
-              activePreviewPath={activePreviewPath}
-              onClose={() => setIsFileTreeOpen(false)}
-              onOpenBrowserUrl={isDesktop ? onOpenBrowserUrl : undefined}
-              onOpenPreview={(source) => {
-                // 文件树可以查看非当前 workspace 的文件。
-                // 预览 source 携带 workspace 作用域，PreviewPane 才能用正确 host 读取远程文件；
-                // 同时不切换当前 workspace，避免"Add to chat"丢给错误的 composer。
-                onOpenCodeViewer?.({
-                  ...source,
-                  workspacePath: fileTreeTarget.workspacePath,
-                  workspaceIdentity: fileTreeTarget.workspaceIdentity,
-                  workspaceRemoteSessionId: fileTreeTarget.workspaceRemoteSessionId,
-                });
-              }}
-            />
-          ) : null}
         </div>
       </div>
     </aside>

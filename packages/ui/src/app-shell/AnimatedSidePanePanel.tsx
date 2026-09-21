@@ -25,6 +25,8 @@ import { findScreenshotSurfaceTabForRender } from "@/browser-use/useBrowserScree
 import { HumanBrowserView } from "@/browser-use/HumanBrowserView.js";
 import { ScopedErrorBoundary } from "@/ErrorBoundary.js";
 import { GitPane } from "@/GitPane.js";
+import { WorkspaceFileTree } from "@/WorkspaceFileTree.js";
+import { FolderTreeIcon } from "lucide-react";
 import { TreemappingPane } from "@/TreemappingPane.js";
 import { WhiteboardPane } from "@/WhiteboardPane.js";
 import { ModelTrajectoryPane } from "@/ModelTrajectoryPane.js";
@@ -315,6 +317,7 @@ export function AnimatedSidePanePanel({
   onOpenDeveloperTools,
   onOpenTerminalTab,
   onOpenReviewTab,
+  onOpenWorkspaceFiles,
   onOpenSelectionSideConversation,
   onRevealGitFileInTree,
   onOpenBrowserUrl,
@@ -380,6 +383,7 @@ export function AnimatedSidePanePanel({
   onOpenDeveloperTools: () => void;
   onOpenTerminalTab: () => void;
   onOpenReviewTab: () => void;
+  onOpenWorkspaceFiles: () => void;
   onOpenSelectionSideConversation: () => void;
   onRevealGitFileInTree?: (path: string) => void;
   onOpenBrowserUrl: (url: string) => void;
@@ -772,6 +776,12 @@ export function AnimatedSidePanePanel({
       label: intl.formatMessage({ id: "sidePane.review" }),
       icon: FileDiffIcon,
       onOpen: onOpenReviewTab,
+    },
+    files: {
+      id: "files",
+      label: intl.formatMessage({ id: "sidePane.files" }),
+      icon: FolderTreeIcon,
+      onOpen: onOpenWorkspaceFiles,
     },
     terminal: {
       id: "terminal",
@@ -1222,6 +1232,16 @@ export function AnimatedSidePanePanel({
                             onClose={onCloseGit}
                             onRefresh={onRefreshGit}
                             onRevealFileInTree={onRevealGitFileInTree}
+                          />
+                        ) : tab.type === "files" ? (
+                          <WorkspaceFileTree
+                            workspacePath={workspaceAbsPath}
+                            workspaceIdentity={workspaceIdentity}
+                            workspaceRemoteSessionId={workspaceRemoteSessionId}
+                            canOpenLocalFileManager={isDesktop}
+                            onClose={() => onCloseTab(tab.id)}
+                            onOpenBrowserUrl={isDesktop ? onOpenBrowserUrl : undefined}
+                            onOpenPreview={onOpenCodeViewer}
                           />
                         ) : tab.type === "treemapping" ? (
                           <TreemappingPane
