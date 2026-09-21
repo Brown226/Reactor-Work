@@ -1,7 +1,7 @@
 # Reactor 去品牌化改造清单
 
 > 目标：将 ZCode 二开为自有产品 **Reactor**，做全面去 ZCode 化。
-> 决策基线（已确认）：仅改造可见层 + 产品身份；官方服务先保留；使用全新数据目录 `~/.reactor`；桌面版优先；协议双注册 `zcode+reactor`；CLI 双 bin `reactor+zcode`。
+> 决策基线（已确认）：仅改造可见层 + 产品身份；官方服务先保留；使用全新数据目录（初值 `~/.reactor-ds`，见 P3——本机 `~/.reactor` 已被旧项目占用，待其退役后改回）；桌面版优先；协议双注册 `zcode+reactor`；CLI 双 bin `reactor+zcode`。
 
 ## 零、核心认知：改"单一事实源"，而非全局替换
 
@@ -11,7 +11,7 @@
 | --- | --- | --- |
 | 桌面产品身份 | `packages/desktop/scripts/desktop-product-identity.mjs` L8-24 | appId / productName / Linux 包名 |
 | 运行时应用名 | `packages/desktop/src/main/desktopRuntimeEnv.ts` L61-63 | Electron `userData` 目录、进程名、ARMS |
-| 业务数据根 | `packages/services/src/paths.ts` L43-55 | 全部会话/配置/遥测落盘路径 |
+| 业务数据根 | `packages/shared/src/user-data-dir.ts`（`USER_DATA_DIR_NAME`，消费方 `packages/services/src/paths.ts`） | 全部会话/配置/遥测落盘路径 |
 | 服务端点 | `packages/shared/src/zcodeEndpoint.ts` L3-7 | 所有官方域名（已支持环境变量覆盖） |
 | UI 文案 | `packages/ui/src/i18n/locales/{zh-CN,en-US}.ts` | 界面全部可见文案 |
 | CLI 文案 | `apps/zcode-cli/packages/i18n/src/locales/{zh-CN,en-US}.ts` | 命令行/TUI 可见文案 |
@@ -134,16 +134,32 @@ pnpm bundle:desktop
 
 ## 三、P3 数据路径与运行时
 
+> **状态：已完成并提交**（2026-09-21，`f2dfbfa`，37 个文件 = 34 改 + 3 新增）。
+>
+> 实现方式与本节原先设想的"直接改成 `.reactor`"不同：**先把目录名收口成单一事实源常量** `USER_DATA_DIR_NAME`（`packages/shared/src/user-data-dir.ts`），初值取 `.reactor-ds`——因为本机 `~/.reactor` 已被旧项目占用。这样改回 `.reactor` 只需改三处常量值（shared 一处 + telemetry/debug 各一份同值副本，那两个包刻意不依赖 `@zcode/shared`），全仓用户级路径自动跟随。
+>
+> **常量值含前导点**，与磁盘目录名一致，使每个引用点都是从 `.zcode` 到常量的 1:1 替换。早期写成不含点的 `reactor-ds` 会让应用创建出非隐藏目录 `~/reactor-ds`。
+>
+> **工作区内的 `.zcode`**（`AGENTS.md`、`agents/`、`workflows/`、`config.json`、`plans/`）是项目配置的产品语义，按设计保持字面量，不在本次范围。
+>
+> **未收口**（仍是用户级 `~/.zcode`，与迁移后的路径并存，需后续处理）：
+>
+> - `packages/services/src/storage/adapters/rootsResolver.ts`——受管存储根仍解析到 `~/.zcode`，而 session store 已走新目录。
+> - `packages/desktop/src/main/desktopDataBaseDirBootstrap.ts` 与 `desktopChromiumHardwareAccelerationBootstrap.ts`——启动期读 `~/.zcode/v2/setting.json`，而同仓 `desktop/src/main/index.ts` 已改读新目录，同一个文件出现两个来源。
+> - settings-sync / skills / subagents / mcp-sync / commands / hooks 的 user 目录段；`zcode-server-cli` 的 server 根；`zcode-agent` 的用户 cli 目录。
+> - 其中 `adapters/src/{commands,skills}/roots.ts` 注明要同时兼容 `.zcode` 与 `.agents`，**可能是有意保留的旧目录读路径**，改之前需与产品口径确认，不要当成漏改直接替换。
+
 ### 3.1 业务数据根（改一行，全仓生效）
 
-- [ ] `packages/services/src/paths.ts` L44：`getZCodeDataRootDir()` 返回 `{dataBaseDir}/.zcode` → `.reactor`
-  - 连带生效：`getAppConfigDir()`（L54，`.reactor/v2`）、会话 L203-224、`tasks-index.sqlite` L187、feedback/export-log L161-179
+- [x] `packages/services/src/paths.ts`：`getZCodeDataRootDir()` 返回 `{dataBaseDir}/.zcode` → `{dataBaseDir}/{USER_DATA_DIR_NAME}`
+  - 连带生效：`getAppConfigDir()`（`{用户数据根}/v2`）、`getConversationWorkspaceDir()`、`copyDataDirectory()`
 
 ### 3.2 其他硬编码 `.zcode` 路径
 
-- [ ] `packages/services/src/node.ts` L1800 `ZCODE_HOME || ~/.zcode`；L1072 `~/.zcode/cli/config.json`（CLI/MCP/插件配置）
-- [ ] `packages/services/src/device/deviceMid.ts` L25：`~/.zcode/v2/telemetry-state.json`
-- [ ] `packages/services/src/telemetry/telemetryCore.ts` L130：同上
+- [x] `packages/services/src/node.ts`：`ZCODE_HOME || ~/.zcode`、`~/.zcode/cli/config.json`（CLI/MCP/插件配置）
+- [x] `packages/services/src/device/deviceMid.ts`：`~/.zcode/v2/telemetry-state.json`
+- [x] `packages/services/src/telemetry/telemetryCore.ts`：同上
+- [x] 另有 CLI 侧 15 处、桌面端 4 处、adapters 侧 9 处，合计 34 个文件，详见 `f2dfbfa`
 
 ### 3.3 环境变量策略（建议）
 
@@ -154,20 +170,36 @@ pnpm bundle:desktop
 
 **注意**：Electron `userData`（`appData/ZCode`，由 `runtimeApplicationName` 决定）与业务数据（`~/.zcode`，由 `paths.ts` 决定）是**两套独立路径**，归属不同文件，都要改。
 
+- [x] Electron `userData` 侧：`desktopRuntimeEnv.ts` 的 `runtimeApplicationName` 已随 P2 改为 `Reactor` / `Reactor Dev` / `Reactor Preview`，`userData` 随之落到 `appData/Reactor`。
+- [ ] 业务数据侧：目录名已改（见上），但 `ZCODE_*` 环境变量仍是唯一名，未加 `REACTOR_*` 别名。
+
 ### 3.4 验证
 
 ```bash
-pnpm dev:desktop
-# 确认数据落在 ~/.reactor 下，应用可正常启动新建会话
+pnpm typecheck   # exit 0（提交前于 P3 工作树实测）
+pnpm lint        # 0 error / 70 warning。P3 触及且出现在 warning 列表里的两个文件
+                 #（desktop/src/main/index.ts、services/src/node.ts）与 P3 前逐文件对比
+                 # warning 数一致（各 10 条），即 P3 未新增 warning
+ls -d ~/.reactor-ds && ls ~/.zcode/v2 | wc -l   # 新目录已建；官方版 ~/.zcode/v2 仍为 34 个文件不变
 ```
 
 ## 四、P4 界面视觉（"界面也要改"的实质）
 
+> **状态：已完成**（2026-09-21，`bb76c46`）。
+>
+> 只改**承载品牌语义的 token**（`packages/ui/src/styles.css`）：`.theme-zai-light` 的 `--color-brand` / `--color-primary` 由纯黑 → `#0061af`、`--color-accent` → `#e6f4fa`；`.theme-zai-dark` 的 brand/primary 由纯白 → `#2fe0f9`、`--color-primary-foreground` → `#082b45`、`--color-accent` → `#062a45`。
+>
+> **基座 `:root` / `.dark` 刻意不动**——它们本来就是蓝色 brand（`--color-sky-500`），只有 `.theme-zai-*` 才故意覆盖成单色，所以改这两块既改到点子上，又不波及未走主题切换的表面、边框、终端 ANSI 与轨迹语义色。
+>
+> 8 组配色经 WCAG 相对亮度对比度实测全部达标（如浅色品牌蓝对背景 5.94:1、深色青字对深藏青 9.12:1）。同时修掉 `openWorkspacePageThemeHero.tsx` 里写死的旧 accent 值（`#ebf4ff` / `#001d3d`），以及 `forceUpdatePrompt.ts`（独立窗口的内嵌 HTML，品牌色 + 文案一起改）。
+>
+> **未改**：`zai-light` / `zai-dark` 主题标识符与 localStorage key `zcode-theme` 保持原样。对外只显示"浅色/深色"，改名零用户可见收益，却需要写一份持久化值迁移。
+
 文案之外，产品观感来源于 CSS 变量主题。
 
-- [ ] `packages/ui/src/useTheme.ts` L3：`Theme` 联合类型的 `zai-light`/`zai-dark` 是**默认主题**（L86 默认 `zai-dark`）
-- [ ] `packages/ui/src/styles.css` L461 / L606：`.theme-zai-light` / `.theme-zai-dark` 的完整变量集（`--color-brand`、`--color-icon-blue`、`--color-accent` 等）→ 换成 Reactor 品牌色
-- [ ] `packages/web/index.html` L19-20：localStorage key `zcode-theme` + 默认主题
+- [x] `packages/ui/src/useTheme.ts`：`Theme` 联合类型的 `zai-light`/`zai-dark` 是**默认主题**（默认 `zai-dark`）——标识符按上述决策保留
+- [x] `packages/ui/src/styles.css`：`.theme-zai-light` / `.theme-zai-dark` 的 `--color-brand`、`--color-primary`、`--color-primary-foreground`、`--color-accent` → Reactor 品牌色
+- [x] `packages/web/index.html`：localStorage key `zcode-theme` 保持原样（属保留项）；启动闪屏已换成 Reactor 立方体标记
 
 **强制约束（`DESIGN.md`）**：UI 字号只能使用 `text-ui-xl/lg/base/caption/sm/xs`；禁止 `text-sm`/`text-xs`/`text-[13px]` 或内联 `font-size`；禁止通过改 `html.fontSize` 实现字号缩放（只能改 `--ui-font-size`）。违反视为设计系统缺陷。
 
