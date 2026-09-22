@@ -220,6 +220,8 @@ export { createCommandsService } from "./commands/commandsService.js";
 export { createHooksService } from "./hooks/hooksService.js";
 export { createMemoryService } from "./memory/memoryService.js";
 export { createSettingsSyncService } from "./settings-sync/settingsSyncService.js";
+export { createServerSkillSyncService } from "./server-skills/serverSkillSyncService.js";
+export { createServerAgentSyncService } from "./server-agents/serverAgentSyncService.js";
 export { createFeedbackDiagnosticArchive } from "./feedback/feedbackLogArchive.js";
 export { createFeedbackService } from "./feedback/feedbackService.js";
 export type { CreateFeedbackServiceOptions } from "./feedback/feedbackService.js";
@@ -398,6 +400,12 @@ import {
 // 原因是根 index 会被 renderer 拉进浏览器包，见 services/index.ts 的注释）。
 import { createReactorServerService } from "./reactor-server/reactorServerService.js";
 import { IReactorServerService } from "./reactor-server/reactorServer.js";
+// 企业服务端技能同步：工厂从实现文件直接导入（根 index 只导出 descriptor/类型，同上）。
+import { createServerSkillSyncService } from "./server-skills/serverSkillSyncService.js";
+import { IServerSkillSyncService } from "./server-skills/serverSkillSync.js";
+// 企业服务端 Agent 同步：工厂同上（根 index 只导出 descriptor/类型）。
+import { createServerAgentSyncService } from "./server-agents/serverAgentSyncService.js";
+import { IServerAgentSyncService } from "./server-agents/serverAgentSync.js";
 import { createUsageStatsService } from "./usage-stats/usageStatsService.js";
 import { createCodingPlanSubscriptionService } from "./coding-plan-subscription/codingPlanSubscriptionService.js";
 import { createClientConfigService } from "./client-config/clientConfigService.js";
@@ -2081,11 +2089,38 @@ export function createLocalServices(options: {
         };
   // 企业服务端（Reactor Server）接入：登录态与令牌的唯一所有者。
   // 它同时是企业 provider 的唯一写入者（经 providerSettings overlay），因此必须先于 agent 服务创建。
+  // 登录/登出钩子晚绑定：同步器依赖 reactorServer 实例，钩子又引用同步器，用 holder 闭包回填，
+  // 避免构造顺序死锁（登录后台同步 / 登出清空 server-agents，见 P3 计划 §4.3）。
+  let serverAgentSyncHolder: IServerAgentSyncService | null = null;
   const reactorServerService = createReactorServerService({
     apiClient,
     credentials: credentialService,
     providerSettings: providerRuntime.providerSettings,
+    onLoginSuccess: () => serverAgentSyncHolder?.sync(),
+    onLogout: () => serverAgentSyncHolder?.clearLocal(),
   });
+
+  // 企业服务端技能同步：server-skills 目录的唯一写者。只读登录态与凭据库里的
+  // reactor:* 令牌，不碰 provider；HTTP 复用 reactorServerClient（见 docs/server-skill-sync.md §5）。
+  const serverSkillSyncService = createServerSkillSyncService({
+    apiClient,
+    credentials: credentialService,
+    reactorServer: reactorServerService,
+  });
+
+  // 企业服务端 Agent 同步：server-agents 目录的唯一写者（docs/服务端接线-P3-Agent下发.md）。
+  // 只物化 installed && installEnabled；发现层（GUI/CLI）只读，启停不落本地第二套状态。
+  const serverAgentSyncService = createServerAgentSyncService({
+    apiClient,
+    credentials: credentialService,
+    reactorServer: reactorServerService,
+  });
+  serverAgentSyncHolder = serverAgentSyncService;
+  // 启动补一次：已登录则后台对齐服务端目录（失败静默，登录/安装/手动触发会再收敛）。
+  void reactorServerService
+    .getStatus()
+    .then((status) => (status.loggedIn ? serverAgentSyncService.sync() : undefined))
+    .catch(() => undefined);
 
   const zcodeAgentService = createZCodeAgentService({
     ...(agentAccountProviderConfigSource
@@ -2610,7 +2645,11 @@ export function createLocalServices(options: {
     .register(IProviderSettingsService, providerRuntime.providerSettings)
     .register(IModelSelectionService, providerRuntime.modelSelection)
     // 企业服务端接入：UI 经此登录/登出/读状态；模型请求的鉴权注入走 agent 服务的 runtime header 分支。
-    .register(IReactorServerService, reactorServerService);
+    .register(IReactorServerService, reactorServerService)
+    // 企业服务端技能同步：server-skills 目录唯一写者；UI 经此手动同步/更新/卸载。
+    .register(IServerSkillSyncService, serverSkillSyncService)
+    // 企业服务端 Agent 同步：server-agents 目录唯一写者；UI 经此安装/启停/卸载/手动同步。
+    .register(IServerAgentSyncService, serverAgentSyncService);
   if (isDesktopAttachedRemote || options.providerProvisioningTargetEnabled === true) {
     services.register(
       IProviderProvisioningTargetService,

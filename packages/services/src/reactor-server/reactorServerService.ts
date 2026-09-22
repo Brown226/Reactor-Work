@@ -44,6 +44,14 @@ export interface CreateReactorServerServiceOptions {
   readonly providerSettings: IProviderSettingsService;
   /** 注入时钟便于测试（缺省 `Date.now`）。 */
   readonly now?: () => number;
+  /**
+   * 登录成功且模型目录已写入企业 provider 之后触发——此时 `reactor:providerId` 必然存在，
+   * 是服务端技能/Agent 后台同步的正确时机（P3 计划 U-P3-2 的时序保证）。
+   * **fire-and-forget**：钩子失败只记日志，绝不阻断登录。
+   */
+  readonly onLoginSuccess?: () => unknown;
+  /** 登出本地清理完成后触发（P3：清空 `server-agents/`）。失败不阻断登出。 */
+  readonly onLogout?: () => unknown;
 }
 
 /** 从 JWT payload 读取 exp（不验签：只用于本地"该不该刷新"的判断）。 */
@@ -234,7 +242,12 @@ export function createReactorServerService(
       if (currentSet.has(modelId)) continue;
       // config 传空对象：上下文窗口、推理档位等真实参数由 provider 侧推荐配置补齐，
       // 这里只声明"这个 id 属于该 provider"。
-      await providerSettings.addPersonalModel(providerId as ProviderId, modelId as ModelId, {}, true);
+      await providerSettings.addPersonalModel(
+        providerId as ProviderId,
+        modelId as ModelId,
+        {},
+        true,
+      );
       added += 1;
     }
     for (const modelId of current) {
@@ -339,6 +352,13 @@ export function createReactorServerService(
     // 登录即把模型目录拉下来写进企业 provider，UI 随后就能选模型。
     await syncModels();
     logger.info(undefined, "企业服务端登录成功", { serverUrl, uid: result.user.uid });
+    if (options.onLoginSuccess) {
+      void Promise.resolve(options.onLoginSuccess()).catch((error: unknown) => {
+        logger.warn(undefined, "登录后钩子失败（不阻断登录）", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    }
     return getStatus();
   }
 
@@ -355,6 +375,16 @@ export function createReactorServerService(
     }
     await clearEnterpriseProviderModels();
     await clearSession();
+    // 登出钩子（清空 server-agents 等）在本地会话清完之后执行；失败只记日志，不阻断登出。
+    if (options.onLogout) {
+      try {
+        await options.onLogout();
+      } catch (error) {
+        logger.warn(undefined, "登出后钩子失败（本地会话已清理）", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
     logger.info(undefined, "企业服务端已登出");
   }
 

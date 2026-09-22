@@ -10,6 +10,8 @@ import {
   IOnboardingRecordService,
   ICredentialService,
   IReactorServerService,
+  IServerSkillSyncService,
+  IServerAgentSyncService,
   IBroadcastService,
   IZCodeTaskService,
   IZCodeAgentService,
@@ -60,6 +62,10 @@ export class RemoteServiceAccess implements IServiceAccessor {
   readonly credentialService: ICredentialService;
   /** 企业服务端（Reactor Server）接入：登录/登出/状态/服务端模型目录。 */
   readonly reactorServerService: IReactorServerService;
+  /** 企业服务端技能同步（server-skills 目录唯一写者）。 */
+  readonly serverSkillSyncService: IServerSkillSyncService;
+  /** 企业服务端 Agent 同步（server-agents 目录唯一写者）。 */
+  readonly serverAgentSyncService: IServerAgentSyncService;
   readonly broadcastService: IBroadcastService;
   readonly zcodeTaskService: IZCodeTaskService;
   readonly windowControllerService: IWindowControllerService;
@@ -126,6 +132,12 @@ export class RemoteServiceAccess implements IServiceAccessor {
     );
     this.reactorServerService = ProxyChannel.toService<IReactorServerService>(
       channelClient.getChannel(IReactorServerService.channelName),
+    );
+    this.serverSkillSyncService = ProxyChannel.toService<IServerSkillSyncService>(
+      channelClient.getChannel(IServerSkillSyncService.channelName),
+    );
+    this.serverAgentSyncService = ProxyChannel.toService<IServerAgentSyncService>(
+      channelClient.getChannel(IServerAgentSyncService.channelName),
     );
     this.broadcastService = ProxyChannel.toService<IBroadcastService>(
       channelClient.getChannel(IBroadcastService.channelName),

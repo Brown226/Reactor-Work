@@ -480,6 +480,25 @@ function RootInner({
     }
   }, [enterpriseSession.loading, enterpriseSession.status]);
 
+  // 企业服务端技能：登录态转为已登录时后台同步一次——覆盖「刚登录成功」与
+  // 「启动时已登录」两种来源；登出后重置，下次登录再同步。失败只记日志，
+  // 不回滚登录（契约 docs/server-skill-sync.md §4.5 触发时机）。
+  const serverSkillSyncedRef = useRef(false);
+  useEffect(() => {
+    if (enterpriseSession.loading) return;
+    if (!enterpriseSession.status?.loggedIn) {
+      serverSkillSyncedRef.current = false;
+      return;
+    }
+    if (serverSkillSyncedRef.current) return;
+    serverSkillSyncedRef.current = true;
+    const serverSkillSyncService = services.serverSkillSyncService;
+    if (!serverSkillSyncService) return;
+    void serverSkillSyncService.sync().catch((error) => {
+      logger.warn("[Root] 企业服务端技能后台同步失败", error);
+    });
+  }, [enterpriseSession.loading, enterpriseSession.status, services]);
+
   // 企业登录态由 host 侧独占：设置页里的登录/退出只改 host 状态，Root 这份 hook 不会自动知道。
   // provider 配置一变（登录与退出都会重写企业 provider）就重新拉一次登录态，
   // 否则上面的"退出后强制回登录页"会一直拿着过期的 loggedIn=true。

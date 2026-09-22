@@ -1,5 +1,7 @@
 import { IOffPeakTaskService } from "./session/offPeakTask.js";
 import type { IReactorServerService } from "./reactor-server/reactorServer.js";
+import type { IServerSkillSyncService } from "./server-skills/serverSkillSync.js";
+import type { IServerAgentSyncService } from "./server-agents/serverAgentSync.js";
 import type { IFileService } from "./file/file.js";
 import type { IMediaPreviewService } from "./media-preview/mediaPreview.js";
 import type { IGitService } from "./git/git.js";
@@ -89,4 +91,14 @@ export interface IServiceAccessor {
   readonly promptAttachmentTransferService: IPromptAttachmentTransferService;
   /** 企业服务端（Reactor Server）接入：登录、登出、网关令牌与服务端下发模型目录。 */
   readonly reactorServerService: IReactorServerService;
+  /**
+   * 企业服务端技能同步（server-skills 目录唯一写者）。
+   * 旧 host wire / 测试 double 可不提供；UI 须按可选处理（本地功能，远端 host 可缺席）。
+   */
+  readonly serverSkillSyncService?: IServerSkillSyncService;
+  /**
+   * 企业服务端 Agent 同步（server-agents 目录唯一写者）。
+   * 旧 host wire / 测试 double 可不提供；UI 须按可选处理。
+   */
+  readonly serverAgentSyncService?: IServerAgentSyncService;
 }

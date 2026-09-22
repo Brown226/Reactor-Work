@@ -148,6 +148,10 @@ export const ServiceChannels = {
   OnboardingRecord: "onboarding-record",
   /** 企业服务端（Reactor Server）接入：登录、网关令牌、服务端下发的模型目录 */
   ReactorServer: "reactor-server",
+  /** 企业服务端技能同步（server-skills 目录的唯一写者） */
+  ServerSkillSync: "server-skill-sync",
+  /** 企业服务端 Agent 同步（server-agents 目录的唯一写者） */
+  ServerAgentSync: "server-agent-sync",
 } as const;
 
 export type ServiceChannelName = (typeof ServiceChannels)[keyof typeof ServiceChannels];

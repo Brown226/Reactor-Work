@@ -1,4 +1,9 @@
-import type { ApiClient } from "@zcode/shared";
+import {
+  normalizeServerAgentList,
+  type ApiClient,
+  type ServerAgentDefinition,
+  type ServerAgentMutationResult,
+} from "@zcode/shared";
 
 /**
  * 企业服务端的 HTTP 客户端（薄封装，不做重试与状态）。
@@ -57,6 +62,38 @@ export interface ReactorServerModelInfo {
   readonly id: string;
   readonly modelType: string | null;
   readonly displayName: string | null;
+}
+
+/** 技能附属文件清单项（落盘集响应内联）。sha256 是服务端按**解码后字节**计算的。 */
+export interface ReactorServerSkillFileMeta {
+  readonly path: string;
+  readonly size: number;
+  readonly sha256: string;
+  readonly executable: boolean;
+}
+
+/** 落盘集技能条目：SKILL.md 正文 + 附件清单（附件内容按需拉，不在本响应里）。 */
+export interface ReactorServerSkillPayload {
+  readonly name: string;
+  readonly title: string;
+  readonly description: string | null;
+  readonly content: string;
+  readonly version: string;
+  readonly disableModelInvocation: boolean;
+  readonly files: readonly ReactorServerSkillFileMeta[];
+}
+
+/** 单个附属文件内容（按需拉取；二进制走 contentB64）。 */
+export interface ReactorServerSkillFileContent extends ReactorServerSkillFileMeta {
+  readonly content?: string;
+  readonly contentB64?: string;
+}
+
+/** 注入集条目（只读投影：与落盘集做差集得到「已下架」）。 */
+export interface ReactorServerSkillStateEntry {
+  readonly name: string;
+  readonly enabled: boolean;
+  readonly disableModelInvocation: boolean;
 }
 
 /** 归一化身份基址：去掉尾斜杠，缺协议时补 http://。 */
@@ -189,6 +226,169 @@ export function createReactorServerClient(apiClient: ApiClient) {
       }
       return models;
     },
+
+    /** 技能落盘集：已安装 ∪ 默认安装 − 已 dismiss（附件只含清单，内容按需拉）。 */
+    async deliverableSkills(
+      serverUrl: string,
+      accessToken: string,
+    ): Promise<{ skills: ReactorServerSkillPayload[] }> {
+      const { data } = await request<{ skills?: unknown }>(`${serverUrl}/me/skills`, {
+        method: "GET",
+        accessToken,
+      });
+      const list = Array.isArray(data?.skills) ? data.skills : [];
+      return {
+        skills: list.map((raw): ReactorServerSkillPayload => {
+          const item = (raw ?? {}) as Partial<ReactorServerSkillPayload>;
+          const files = Array.isArray(item.files) ? item.files : [];
+          return {
+            name: typeof item.name === "string" ? item.name : "",
+            title: typeof item.title === "string" ? item.title : "",
+            description: typeof item.description === "string" ? item.description : null,
+            content: typeof item.content === "string" ? item.content : "",
+            version: typeof item.version === "string" ? item.version : "",
+            disableModelInvocation: item.disableModelInvocation === true,
+            files: files.map((rawFile): ReactorServerSkillFileMeta => {
+              const file = (rawFile ?? {}) as Partial<ReactorServerSkillFileMeta>;
+              return {
+                path: typeof file.path === "string" ? file.path : "",
+                size: typeof file.size === "number" ? file.size : 0,
+                sha256: typeof file.sha256 === "string" ? file.sha256 : "",
+                executable: file.executable === true,
+              };
+            }),
+          };
+        }),
+      };
+    },
+
+    /** 单个附属文件内容（按需拉取；404 表示清单与存储不一致，抛 ReactorServerHttpError）。 */
+    async skillFile(
+      serverUrl: string,
+      accessToken: string,
+      name: string,
+      path: string,
+    ): Promise<ReactorServerSkillFileContent> {
+      const { data } = await request<{ file?: unknown }>(
+        `${serverUrl}/me/skills/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
+        { method: "GET", accessToken },
+      );
+      const file = (data?.file ?? {}) as Partial<ReactorServerSkillFileContent>;
+      return {
+        path: typeof file.path === "string" ? file.path : path,
+        size: typeof file.size === "number" ? file.size : 0,
+        sha256: typeof file.sha256 === "string" ? file.sha256 : "",
+        executable: file.executable === true,
+        ...(typeof file.contentB64 === "string" ? { contentB64: file.contentB64 } : {}),
+        ...(typeof file.content === "string" ? { content: file.content } : {}),
+      };
+    },
+
+    /** 注入集（恒过滤 enabled=false）；客户端只读，用于「已下架」投影。 */
+    async skillStates(
+      serverUrl: string,
+      accessToken: string,
+    ): Promise<ReactorServerSkillStateEntry[]> {
+      const { data } = await request<{ skills?: unknown }>(`${serverUrl}/me/skills/state`, {
+        method: "GET",
+        accessToken,
+      });
+      const list = Array.isArray(data?.skills) ? data.skills : [];
+      const entries: ReactorServerSkillStateEntry[] = [];
+      for (const raw of list) {
+        const item = (raw ?? {}) as Partial<ReactorServerSkillStateEntry>;
+        if (typeof item.name !== "string" || item.name.length === 0) continue;
+        entries.push({
+          name: item.name,
+          enabled: item.enabled !== false,
+          disableModelInvocation: item.disableModelInvocation === true,
+        });
+      }
+      return entries;
+    },
+
+    /** 卸载：服务端写 dismissal（auto_install 不会再塞回），幂等。 */
+    async uninstallSkill(serverUrl: string, accessToken: string, name: string): Promise<void> {
+      await request<unknown>(`${serverUrl}/me/skills/${encodeURIComponent(name)}/install`, {
+        method: "DELETE",
+        accessToken,
+      });
+    },
+
+    /** 更新归位：拉完下发集后调用，使 hasUpdate 归位。 */
+    async refreshSkill(serverUrl: string, accessToken: string, name: string): Promise<void> {
+      await request<unknown>(`${serverUrl}/me/skills/${encodeURIComponent(name)}/refresh`, {
+        method: "POST",
+        accessToken,
+      });
+    },
+
+    /**
+     * 专家市场目录（含我的安装/启停/收藏关系；可见性与分页由服务端 SQL 完成，一次全量）。
+     * 形状归一化走 shared 的 `normalizeServerAgentList`（契约单点：非法 name 丢弃、缺字段兜底）。
+     */
+    async listAgents(serverUrl: string, accessToken: string): Promise<ServerAgentDefinition[]> {
+      const { data } = await request<unknown>(`${serverUrl}/me/agents`, {
+        method: "GET",
+        accessToken,
+      });
+      return normalizeServerAgentList(data);
+    },
+
+    /** 安装专家（幂等；重复安装 = 重新启用）。成功后调用方必须 re-GET 再 reconcile（D3）。 */
+    async installAgent(
+      serverUrl: string,
+      accessToken: string,
+      name: string,
+    ): Promise<ServerAgentMutationResult> {
+      const { data } = await request<unknown>(
+        `${serverUrl}/me/agents/${encodeURIComponent(name)}/install`,
+        { method: "POST", accessToken },
+      );
+      return toAgentMutationResult(data, name);
+    },
+
+    /** 卸载专家（幂等）；服务端写关系，成功后调用方才删本地文件。 */
+    async uninstallAgent(
+      serverUrl: string,
+      accessToken: string,
+      name: string,
+    ): Promise<ServerAgentMutationResult> {
+      const { data } = await request<unknown>(
+        `${serverUrl}/me/agents/${encodeURIComponent(name)}/install`,
+        { method: "DELETE", accessToken },
+      );
+      return toAgentMutationResult(data, name);
+    },
+
+    /** 启停已安装专家（未安装时服务端回 409）。 */
+    async setAgentInstallEnabled(
+      serverUrl: string,
+      accessToken: string,
+      name: string,
+      enabled: boolean,
+    ): Promise<ServerAgentMutationResult> {
+      const { data } = await request<unknown>(
+        `${serverUrl}/me/agents/${encodeURIComponent(name)}/install`,
+        { method: "PATCH", accessToken, body: { enabled } },
+      );
+      return toAgentMutationResult(data, name);
+    },
+  };
+}
+
+/** 写操作返回按 shared 契约兜底：服务端保证 `{ok, affected[...]}`，缺项时退回目标名。 */
+function toAgentMutationResult(data: unknown, name: string): ServerAgentMutationResult {
+  const record = (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>;
+  const affected = Array.isArray(record.affected)
+    ? record.affected.filter((entry): entry is string => typeof entry === "string")
+    : [];
+  return {
+    ok: true,
+    affected: affected.length > 0 ? affected : [name],
+    ...(record.created !== undefined ? { created: record.created === true } : {}),
+    ...(record.enabled !== undefined ? { enabled: record.enabled === true } : {}),
+    ...(record.favorited !== undefined ? { favorited: record.favorited === true } : {}),
   };
 }
 
