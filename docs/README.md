@@ -7,7 +7,9 @@
 | [REACTOR-REBRAND-PLAN.md](REACTOR-REBRAND-PLAN.md)                   | 去 ZCode 化改造方案：分层清单、决策记录、风险与合规（勾选框已按源码核对同步）                         |
 | [服务端接线-方案-v1.md](服务端接线-方案-v1.md)                       | **桌面端 ↔ 自建服务端接线**：产品规则、状态所有者、服务端契约、P1–P4 分阶段与验收                     |
 | [data-directory-contract.md](data-directory-contract.md)             | **用户数据目录契约**：唯一所有者、用户级/工作区级边界、可覆盖项、失败语义、有意保留清单               |
-| [interface-mode.md](interface-mode.md)                               | **界面模式（编程/办公）契约**：状态所有者、全部入口、分段控件唯一实现、主面板入口显示规则与验收场景   |
+| [interface-mode.md](interface-mode.md)                               | **界面模式（编程/办公/审查）契约**：状态所有者、全部入口、收敛判据与逐文件归属、分段控件唯一实现、主面板入口显示规则与验收场景 |
+| [审查板块-方案-v1.md](审查板块-方案-v1.md)                           | **文件审查板块方案**：审查模式→Agent/Skill/确定性工具映射、管理员端「知识板块」、结果展示与原文高亮、缺口与分期。**M1 入口与形态、M3a 标准子域、M3b 术语白名单+规范库已落地** |
+| [审查板块-标准库自测报告.md](审查板块-标准库自测报告.md)             | **标准引用自检实测报告**：用真实设计文件跑通取数+判定链路（含判定口径、逐条结论），修正白名单误删 77 条，登记行业标准缺失等数据问题与图纸类能力缺口 |
 | [appearance-background-theme.md](appearance-background-theme.md)     | **背景主题契约**：主区域背景层、模糊/覆盖色参数、渲染契约与验收场景                                   |
 | [model-governance-and-dev-mode.md](model-governance-and-dev-mode.md) | **模型治理契约**：本地模型配置的开发者模式隐藏策略（连点版本号 7 下）、企业目录即白名单               |
 | [model-provider-catalog-pull.md](model-provider-catalog-pull.md)     | **模型目录拉取契约**：一键拉取 `/models` 的 host 侧执行边界、URL/鉴权策略、勾选与批量添加语义         |
