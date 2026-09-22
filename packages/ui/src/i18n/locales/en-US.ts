@@ -1198,7 +1198,6 @@ const enUS: Record<string, string> = {
   "workspaceHeader.help.issueReport": "Report an issue",
   "workspaceHeader.help.productRequest": "Request a feature",
   "workspaceHeader.help.productRequestDraft": "I would like to suggest: ",
-  "workspaceHeader.help.community": "User community",
   "workspaceHeader.help.docs": "Product docs",
   "titleBar.menu.file": "File",
   "titleBar.menu.view": "View",

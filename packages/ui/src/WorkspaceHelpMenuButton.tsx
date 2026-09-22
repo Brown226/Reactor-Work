@@ -10,7 +10,6 @@ import {
   LightbulbIcon,
   InfoIcon,
   MessageSquareIcon,
-  UsersIcon,
   RefreshCwIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge.js";
@@ -52,9 +51,6 @@ export function WorkspaceHelpMenuButton({
     intl,
     openSubmit: openFeedbackSubmit,
   });
-  const handleOpenCommunity = () => {
-    void platform.openCommunity();
-  };
   const handleOpenResourceManager = () => {
     void platform.executeDesktopCommand(DesktopCommandIds.OpenResourceManager);
   };
@@ -92,10 +88,7 @@ export function WorkspaceHelpMenuButton({
           <BookOpenIcon className="size-4" />
           {intl.formatMessage({ id: "workspaceHeader.help.docs" })}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={handleOpenCommunity}>
-          <UsersIcon className="size-4" />
-          {intl.formatMessage({ id: "workspaceHeader.help.community" })}
-        </DropdownMenuItem>
+        {/* 「用户社群」入口已删除：Reactor 没有自己的社群渠道，帮助菜单只保留产品文档与两条上报入口。 */}
         <DropdownMenuItem onSelect={helpMenuActions.openIssueReport}>
           <MessageSquareIcon className="size-4" />
           {intl.formatMessage({ id: "workspaceHeader.help.issueReport" })}

@@ -1107,7 +1107,6 @@ const zhCN: Record<string, string> = {
   "workspaceHeader.help.issueReport": "问题上报",
   "workspaceHeader.help.productRequest": "给产品提需求",
   "workspaceHeader.help.productRequestDraft": "我想建议：",
-  "workspaceHeader.help.community": "用户社群",
   "workspaceHeader.help.docs": "产品文档",
   "titleBar.menu.file": "文件",
   "titleBar.menu.view": "视图",
