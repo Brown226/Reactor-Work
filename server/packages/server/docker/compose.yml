@@ -106,9 +106,15 @@ services:
       #   即便解析器宽容地取后一块，也会把上面的 REACTOR_DB_URL / LDAP_URL / GATEWAY_HOST
       #   覆盖掉，容器内 identity 会退回去连 127.0.0.1 而必然连不上。故合并到同一块。
       REACTOR_KB_FILE_DIR: /app/data/kb-files
+      # 软件更新产物落盘目录（UPD）：安装包几百 MB，只能放卷，不能进 PG。
+      # 不设也能启动（代码默认 <cwd>/data/updates），但容器重建就会丢掉已发布的包，
+      # 因此这里与 kb-files 一样显式给目录 + 卷。
+      REACTOR_UPDATE_FILE_DIR: /app/data/updates
     volumes:
       # 知识库上传的原始文件（KB-⑥）：不挂数据卷的话，容器重建 = 用户上传的文件全丢
       - kb-files:/app/data/kb-files
+      # 已发布的桌面端安装包（UPD）：丢了会导致 manifest 指向 404 产物
+      - updates:/app/data/updates
     ports:
       - "127.0.0.1:8791:8791"
     depends_on:
@@ -155,6 +161,8 @@ volumes:
   # 知识库上传的原始文件（KB-⑥）：与 pg 数据卷**无关**的独立卷，由 compose 管理并自动创建。
   # 历史上它从未被真正创建过（identity 也一直没有该挂载），故这里是全新空卷。
   kb-files:
+  # 桌面端安装包（UPD）：同样与 pg 无关的独立卷；删卷 = 管理台里已发布的版本全部变成 404 产物。
+  updates:
   ldap-data:
     external: true
     name: docker_ldap-data

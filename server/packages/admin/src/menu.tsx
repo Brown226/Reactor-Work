@@ -9,6 +9,7 @@ import {
   ChartBar,
   ChartLineUp,
   ClockCounterClockwise,
+  CloudArrowUp,
   Database,
   Gauge,
   Package,
@@ -33,6 +34,7 @@ import { ModelsAndProviders } from "./pages/ModelsAndProviders";
 import { Roles } from "./pages/Roles";
 import { Skills } from "./pages/Skills";
 import { SkillBundles } from "./pages/SkillBundles";
+import { SoftwareUpdates } from "./pages/SoftwareUpdates";
 import { SyncLogs } from "./pages/SyncLogs";
 import { Usage } from "./pages/Usage";
 
@@ -194,6 +196,14 @@ export const NAV: NavGroup[] = [
     label: "系统",
     items: [
       { key: "synclogs", path: "/sync-logs", title: "同步日志", icon: ClockCounterClockwise, roles: A, el: <SyncLogs /> },
+      {
+        key: "updates",
+        path: "/updates",
+        title: "软件更新",
+        icon: CloudArrowUp,
+        roles: A,
+        el: <SoftwareUpdates />,
+      },
       {
         key: "audit",
         path: "/audit",

@@ -16,6 +16,8 @@ import { ensureDatasetsSchema } from "../datasets/repo.js";
 import { createDatasetsRoutes, createServerEmbedder, type KbRoutesDeps } from "../datasets/routes.js";
 import { ensureSkillsSchema } from "../skills/repo.js";
 import { createSkillsRoutes } from "../skills/routes.js";
+import { createUpdatesRoutes } from "../updates/routes.js";
+import { ensureUpdatesSchema } from "../updates/schema.js";
 import type { IdentityConfig } from "./config.js";
 import { closeIdentityDb, createIdentityDb, ensureSchema, type IdentityDb } from "./db.js";
 import { ensurePermissionsSchema } from "./permissions.js";
@@ -92,6 +94,7 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
   await ensureAgentsSchema(db); // Agent 数字人（A-1）
   await ensurePermissionsSchema(db); // 权限点（U-2）
   await ensureAuditSchema(db); // 审计与用量数据域（G0）
+  await ensureUpdatesSchema(db); // 软件更新产物登记（UPD）
   // 公共知识库（KB-⑥）：建表会顺带探测 pgvector 可用性 —— 不可用不阻断启动，
   // 由路由把它如实透出到 /v1/kb/health（与端上「未配置即纯词法」同口径）。
   const kbSchema = await ensureDatasetsSchema(db);
@@ -125,6 +128,9 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
   app.route("/", createSkillsRoutes(db));
   // Agents（A-1 管理面 /admin/agents + A-2 下发面 /me/agents）
   app.route("/", createAgentsRoutes(db));
+  // 软件更新（UPD）：管理面 /admin/updates/*在这里挂（复用 authed 的 Bearer）；
+  // 客户端下发面 /api/v1/releases/electron/* 由 createIdentityApp 的公开段挂（不能进 authed）。
+  app.route("/", createUpdatesRoutes(db));
   // 公共知识库（KB-⑥）：/v1/kb/* —— 鉴权与 skills/agents 同一套 claims；
   // 向量化器经网关 /v1/embeddings（KB-⑤），未配置则向量路降级为词法。
   const embedSource: "admin" | "env" | null =

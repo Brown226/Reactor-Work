@@ -119,6 +119,86 @@ export class HttpClient {
     if (!res.ok) throw new ApiError(res.status, `下载失败（${res.status}）`);
     return res.blob();
   }
+
+  /**
+   * 原始字节上传（安装包这类几百 MB 的文件）。
+   *
+   * 为什么不复用 request()：它无条件 `JSON.stringify(body)` 并写死 content-type，
+   * 传 File 会变成空对象 `{}`；而且 fetch 拿不到上传进度，大文件上传会变成"点了没反应"。
+   * 因此这里用 XHR：只设置 content-type: application/octet-stream，让服务端按原始流落盘，
+   * 鉴权头与 x-new-token 续签口径与 request() 保持一致。
+   */
+  uploadRaw<T>(
+    path: string,
+    file: Blob,
+    opts: {
+      headers?: Record<string, string>;
+      onProgress?: (progress: UploadProgress) => void;
+      onUnauthorized?: () => Promise<boolean>;
+      onAuthLost?: () => void;
+      /** 内部用：401 续签后只重试一次 */
+      retried?: boolean;
+    } = {},
+  ): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", BASE + path);
+      const at = this.store.getAccess();
+      if (at) xhr.setRequestHeader("authorization", `Bearer ${at}`);
+      xhr.setRequestHeader("content-type", "application/octet-stream");
+      for (const [key, value] of Object.entries(opts.headers ?? {})) xhr.setRequestHeader(key, value);
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) opts.onProgress?.({ loaded: event.loaded, total: event.total });
+      };
+
+      xhr.onload = () => {
+        const renewed = xhr.getResponseHeader("x-new-token");
+        if (renewed) {
+          const rt = this.store.getRefresh();
+          if (rt) this.store.setTokens(renewed, rt);
+        }
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            resolve(xhr.responseText ? (JSON.parse(xhr.responseText) as T) : (undefined as T));
+          } catch {
+            reject(new ApiError(xhr.status, "上传响应解析失败"));
+          }
+          return;
+        }
+        if (xhr.status === 401) {
+          // token 恰好在长上传开始时过期：续签后整包重传一次（此时进度归零，但比报错让人重来强）。
+          if (!opts.retried && opts.onUnauthorized) {
+            void opts.onUnauthorized().then((ok) => {
+              if (!ok) {
+                opts.onAuthLost?.();
+                reject(new ApiError(401, "登录已失效，请重新登录"));
+                return;
+              }
+              resolve(this.uploadRaw<T>(path, file, { ...opts, retried: true }));
+            }, reject);
+            return;
+          }
+          opts.onAuthLost?.();
+        }
+        let message = `上传失败（${xhr.status}）`;
+        try {
+          const parsed = JSON.parse(xhr.responseText) as { error?: { message?: string } };
+          if (parsed.error?.message) message = parsed.error.message;
+        } catch {
+          /* 非 JSON 响应（网关/代理错误页）时保留默认文案 */
+        }
+        reject(new ApiError(xhr.status, message));
+      };
+      xhr.onerror = () => reject(new ApiError(0, "上传中断（网络错误）"));
+      xhr.send(file);
+    });
+  }
+}
+
+export interface UploadProgress {
+  loaded: number;
+  total: number;
 }
 
 export const http = new HttpClient(localStorageTokenStore);

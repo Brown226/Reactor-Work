@@ -24,6 +24,7 @@ import {
 import { hashPassword } from "./passwords.js";
 import { revokeAll } from "./token-service.js";
 import { listSyncLogs, previewSync, runSync } from "./sync.js";
+import { createUpdatesPublicRoutes } from "../updates/routes.js";
 import {
   createLocalUser,
   findUserById,
@@ -83,6 +84,10 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
     if (!body?.refreshToken) throw new AuthError(400, "缺少 refreshToken");
     return c.json(await refreshTokens(cfg, db, body.refreshToken));
   });
+
+  // 软件更新下发面（UPD）：桌面客户端取 manifest 时**不带 Authorization**，
+  // 因此必须挂在 authed 组之前 —— 挂到它之后会被 use("*") 拦成 401（详见 updates/routes.ts 头注）。
+  app.route("/", createUpdatesPublicRoutes(db));
 
   // ===== 鉴权组 =====
   const authed = new Hono<AppEnv>();
@@ -159,7 +164,7 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
             "overview", "org-users", "roles", "providers", "usage",
             // 导航 key 必须与 packages/admin/src/menu.tsx 逐项对齐：此处漏一个 key，
             // 对应页面即使写好了也**永远不会出现在菜单里**（t186 会断言这条）。
-            "kb", "skills", "skill-bundles", "agents", "tools", "mcp", "apps", "synclogs", "audit", "account",
+            "kb", "skills", "skill-bundles", "agents", "tools", "mcp", "apps", "synclogs", "updates", "audit", "account",
           ]
         : role === "dept_head"
           ? ["overview", "org-users", "roles", "audit", "account"]

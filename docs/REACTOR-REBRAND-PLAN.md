@@ -221,6 +221,24 @@ ls -d ~/.reactor && ls ~/.zcode/v2 | wc -l   # 新目录已建；官方版 ~/.zc
 | 遥测 | ARMS RUM + OTLP | 运行时环境提供 |
 | 反馈/社群 | `config/default.json` | 直接改配置 |
 
+> **状态（2026-09-22）：更新源已落地，其余仍未动。**
+>
+> **更新源改成"自己发"而不是"改指向"**：桌面端的自更新只认服务端 manifest
+> （`/api/v1/releases/electron/manifest`，打包后连 `ZCODE_UPDATE_FEED_URL` 覆盖都会被 `app.isPackaged`
+> 分支忽略），所以"改向某个第三方更新源"这条本就走不通。现在由 Reactor 服务端承担：
+> `server/packages/server/src/updates/`（产物登记 + manifest + 带 Range 的下载）
+> 与管理台「系统 → 软件更新」页配套使用（登记 → 上传 → 上线/灰度）。
+> 客户端侧只需把 `ZCODE_ENDPOINT_ORIGIN` 指向本服务对外地址，无需改码。
+> 该判断来自 `packages/desktop/src/main/manifestUpdateProvider.ts` 与 `autoUpdater.ts` 的实际读法，
+> 不是推测；契约细节与部署注意见 `server/README.md` §2.1。
+>
+> 仍然待办（都需要先有资源或决策，不是代码问题）：
+>
+> - **插件市场 CDN**：默认源硬编码在 `plugin-marketplaces.ts` L37，要自建一份 marketplace.json 或删掉该默认市场；
+> - **反馈/社群链接**：`config/default.json` 里现在指向智谱飞书表单与 Discord，需要 Reactor 自己的目标地址（或确认清空）；
+> - **遥测**：实际闸门是 `ZCODE_TELEMETRY_ENABLED && ZCODE_ARMS_RUM_ENDPOINT`（端点来自环境变量、构建产物不内嵌），
+>   不配端点即不上报，因此无需改码；`ZCODE_TELEMETRY_ENABLED = true` 是常量，要"显式关"才需要改一行。
+
 ### 5.1 官方服务入口下线（2026-09-21）
 
 官方账号服务（ZCode 账号 / Z.ai / BigModel 及其 Coding Plan）在 Reactor 界面不再提供入口。

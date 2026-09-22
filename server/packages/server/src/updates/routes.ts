@@ -14,7 +14,7 @@
  */
 import { createHash, randomUUID } from "node:crypto";
 import { createReadStream, createWriteStream, existsSync, mkdirSync, statSync, unlinkSync } from "node:fs";
-import { rm } from "node:fs/promises";
+import { rm, rename } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
@@ -349,7 +349,7 @@ export function createUpdatesRoutes(db: IdentityDb): Hono<AppEnv> {
       return err(c, 400, "产物为空文件");
     }
     // 写盘成功后才改名：.part 残片不会被 manifest 引用到。
-    await import("node:fs/promises").then((fs) => fs.rename(partPath, finalPath));
+    await rename(partPath, finalPath);
 
     const updated = await attachReleaseArtifact(db, id, {
       fileName: rawFileName,

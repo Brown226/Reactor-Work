@@ -71,9 +71,33 @@ server/
             ├── identity/         # 身份底座（登录/JWT/组织/权限/同步/管理台托管）
             ├── auth/             # LDAP + 本地 bcrypt 双源
             ├── agents/ skills/ datasets/  # Agent 目录 / 技能市场 / 公共知识库
+            ├── updates/          # 软件更新（UPD）：产物登记 + 客户端 manifest + 下载
             ├── audit/            # 审计事件与用量聚合
             └── common/           # 密钥封存（AES-256-GCM）、定价、三级数据范围
 ```
+
+### 2.1 软件更新（UPD）
+
+桌面端的自更新**只认服务端 manifest**（客户端路径写死 `/api/v1/releases/electron/manifest`，
+打包后连 `ZCODE_UPDATE_FEED_URL` 覆盖都会被忽略），因此发版必须走管理台：
+
+1. 管理台 →「系统 → 软件更新」→ 新建发布（平台 / 通道 / 版本 / 更新说明 / 灰度）；
+2. 选择安装包（`.exe` `.msi` `.zip` `.dmg` `.pkg` `.AppImage` `.deb` `.rpm` `.pkg.tar.zst`，默认上限 1GB）；
+3. 上传完成即可上线（草稿态可反复换产物；**上线后不能改文件** —— 客户端按 sha512 缓存，换了会让已下载用户校验失败）。
+
+| 面 | 路径 | 鉴权 |
+|---|---|---|
+| 管理面 | `GET/POST /admin/updates/releases`、`PUT /admin/updates/releases/:id/file`、`PATCH/DELETE /admin/updates/releases/:id` | Bearer + platform_admin |
+| 下发面 | `GET /api/v1/releases/electron/manifest?platform=&channel=&device_mid=`、`GET /api/v1/releases/electron/files/:name` | **公开**（客户端不带 Authorization） |
+
+下发面必须挂在 `identity/routes.ts` 的**公开段**（`createIdentityApp` 里 authed 组之前）——
+挂到 authed 之后会被 `use("*")` 拦成 401，症状是全网客户端"检查更新失败"。
+
+客户端侧配套：把端点的 `ZCODE_ENDPOINT_ORIGIN`（或 `ZCODE_BASE_URL`）指向本服务的对外地址即可，
+manifest 与产物会自动走上面两条路径；`channel` 由客户端的「接收预览版本」设置决定（数字口径 1=stable / 3=preview）。
+
+产物落盘 `REACTOR_UPDATE_FILE_DIR`（容器内 `/app/data/updates`，卷 `updates`），
+上限 `REACTOR_UPDATE_MAX_BYTES`（默认 1GB）。**删卷 = 已发布版本全部变成 404 产物**。
 
 ---
 
@@ -148,6 +172,7 @@ node packages/server/scripts/identity-smoke.mjs                 # 其余同名�
 | Agent 目录 | `agents-smoke.mjs` |
 | 审计与用量 | `audit-smoke.mjs`、`t34-smoke.mjs` |
 | 公共知识库（纯函数 / 带服务端） | `kb-pure-smoke.ts`、`kb-server-smoke.ts` |
+| 软件更新（建表/上传/manifest/Range/灰度/下线清理） | `updates-smoke.ts`（PG 不可达时 SKIP 并以 0 退出） |
 | 向量化走网关（自带 mock 上游） | `gateway-embeddings-smoke.ts` |
 | 密钥运维 | `rotate-secret-key.mjs`、`verify-secret-key.mjs` |
 
