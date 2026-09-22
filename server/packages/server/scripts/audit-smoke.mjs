@@ -165,7 +165,7 @@ async function main() {
     const over = await req("POST", "/desktop/audit/batch", { events: Array.from({ length: 501 }, (_, i) => ev(`over-${i}`)) }, AT);
     check("A2 超过单批上限 400", over.status === 400, `status=${over.status}`);
 
-    const batch = [ev("1"), ev("2", { action: "tool_call", toolName: "bash", durationMs: 1200, filesTouched: 2 }), ev("3", { action: "approval", approvalDecision: "deny", policyMode: "strict", outcome: "denied" })];
+    const batch = [ev("1"), ev("2", { action: "tool_call", toolName: "bash", durationMs: 1200, filesTouched: 2 }), ev("3", { action: "approval", approvalDecision: "deny", policyMode: "edit", outcome: "denied" })];
     const ins = await req("POST", "/desktop/audit/batch", { batchId: "b1", events: batch }, UT);
     check("A3 正常批量入库（3 条）", ins.status === 200 && ins.json?.accepted === 3, ins.text.slice(0, 120));
 
@@ -287,12 +287,12 @@ async function main() {
     console.log("· D 策略下发");
     const p0 = await req("GET", "/desktop/policy", undefined, UT);
     check(
-      "D1 未配置时下发默认策略（balanced + 80/100）",
-      p0.status === 200 && p0.json?.policy?.defaultApprovalMode === "balanced" && JSON.stringify(p0.json?.policy?.quota?.alertThresholds) === "[80,100]",
+      "D1 未配置时下发默认策略（build + 80/100）",
+      p0.status === 200 && p0.json?.policy?.defaultApprovalMode === "build" && JSON.stringify(p0.json?.policy?.quota?.alertThresholds) === "[80,100]",
       JSON.stringify(p0.json?.policy),
     );
 
-    const forbid = await req("PUT", "/desktop/policy", { defaultApprovalMode: "trust" }, UT);
+    const forbid = await req("PUT", "/desktop/policy", { defaultApprovalMode: "yolo" }, UT);
     check("D2 普通用户改策略 403", forbid.status === 403, `status=${forbid.status}`);
 
     const bad = await req("PUT", "/desktop/policy", { defaultApprovalMode: "whatever" }, AT);
@@ -301,21 +301,41 @@ async function main() {
     const put = await req(
       "PUT",
       "/desktop/policy",
-      { defaultApprovalMode: "readonly", commandBlacklist: ["rm -rf"], egressAllowlist: ["internal.corp"], quota: { monthlyTokenLimit: 5000000, alertThresholds: [80] } },
+      { defaultApprovalMode: "plan", commandBlacklist: ["rm -rf"], egressAllowlist: ["internal.corp"], quota: { monthlyTokenLimit: 5000000, alertThresholds: [80] } },
       AT,
     );
     check(
       "D4 写入回读一致（含操作者留痕）",
       put.status === 200 &&
-        put.json?.policy?.defaultApprovalMode === "readonly" &&
+        put.json?.policy?.defaultApprovalMode === "plan" &&
         JSON.stringify(put.json?.policy?.commandBlacklist) === '["rm -rf"]' &&
         put.json?.policy?.quota?.monthlyTokenLimit === 5000000 &&
         put.json?.policy?.updatedBy === "admin",
       JSON.stringify(put.json?.policy),
     );
 
+    // D5：库里残留旧词表（改造前写入的 readonly/balanced/trust/strict）→ 读时映射，写入只写新值
+    await pool.query(
+      `INSERT INTO desktop_policy (id, policy, updated_at, updated_by) VALUES (1, $1, now(), 'legacy')
+       ON CONFLICT (id) DO UPDATE SET policy = EXCLUDED.policy`,
+      [
+        JSON.stringify({
+          defaultApprovalMode: "trust",
+          commandBlacklist: [],
+          egressAllowlist: [],
+          quota: { monthlyTokenLimit: null, alertThresholds: [80, 100] },
+        }),
+      ],
+    );
+    const legacyPolicy = await req("GET", "/desktop/policy", undefined, UT);
+    check(
+      "D5 旧词表值读时映射（trust → yolo）",
+      legacyPolicy.status === 200 && legacyPolicy.json?.policy?.defaultApprovalMode === "yolo",
+      JSON.stringify(legacyPolicy.json?.policy),
+    );
+
     // 复位为默认，避免影响其它人
-    await req("PUT", "/desktop/policy", { defaultApprovalMode: "balanced", commandBlacklist: [], egressAllowlist: [], quota: { monthlyTokenLimit: null, alertThresholds: [80, 100] } }, AT);
+    await req("PUT", "/desktop/policy", { defaultApprovalMode: "build", commandBlacklist: [], egressAllowlist: [], quota: { monthlyTokenLimit: null, alertThresholds: [80, 100] } }, AT);
 
     console.log("· E 服务端计费（四段价）");
 
@@ -502,7 +522,7 @@ async function main() {
       req(
         "PUT",
         "/desktop/policy",
-        { defaultApprovalMode: "balanced", commandBlacklist: [], egressAllowlist: [], quota: { monthlyTokenLimit: limit, alertThresholds: thresholds } },
+        { defaultApprovalMode: "build", commandBlacklist: [], egressAllowlist: [], quota: { monthlyTokenLimit: limit, alertThresholds: thresholds } },
         AT,
       );
 
@@ -576,7 +596,7 @@ async function main() {
     // 清理：删掉本轮的告警记录（否则会污染真实环境的用量页）
     const alertIds = (gList3?.alerts ?? []).map((a) => a.id);
     if (alertIds.length > 0) await pool.query(`DELETE FROM quota_alert WHERE id = ANY($1::int[])`, [alertIds]);
-    await req("PUT", "/desktop/policy", { defaultApprovalMode: "balanced", commandBlacklist: [], egressAllowlist: [], quota: { monthlyTokenLimit: null, alertThresholds: [80, 100] } }, AT);
+    await req("PUT", "/desktop/policy", { defaultApprovalMode: "build", commandBlacklist: [], egressAllowlist: [], quota: { monthlyTokenLimit: null, alertThresholds: [80, 100] } }, AT);
   } finally {
     // 审计表只增不改：测试数据在此按前缀直接清理（非 API 路径）
     const cleaned = await pool.query(`DELETE FROM audit_event WHERE event_id LIKE $1`, [`${PREFIX}%`]).catch(() => ({ rowCount: 0 }));

@@ -8,7 +8,8 @@
 
 import { Hono } from "hono";
 import type { Context } from "hono";
-import type { AuditEventInput, AuditPolicyMode, DesktopPolicy, UsageGroupBy } from "@reactor/shared";
+import { normalizeAuditPolicyMode } from "@reactor/shared";
+import type { AuditEventInput, DesktopPolicy, UsageGroupBy } from "@reactor/shared";
 import type { TokenClaims } from "../identity/auth.js";
 import { loadAllDepts, subtreeIds } from "../identity/depts.js";
 import type { IdentityDb } from "../identity/db.js";
@@ -38,8 +39,6 @@ const MAX_LIMIT = 1000;
 const DEFAULT_LIMIT = 100;
 /** 默认查询窗口：最近 7 天 */
 const DEFAULT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
-
-const POLICY_MODES: AuditPolicyMode[] = ["readonly", "balanced", "trust", "strict"];
 
 /** 解析时间参数（非法 → undefined，由调用方决定是否报错）。 */
 function parseDate(v: string | undefined): Date | undefined {
@@ -234,8 +233,12 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
     if (claims.role !== "platform_admin") return err(c, 403, "仅平台管理员可修改策略");
     const body = (await c.req.json().catch(() => null)) as Partial<DesktopPolicy> | null;
     if (!body) return err(c, 400, "请求体非法");
-    const mode = body.defaultApprovalMode ?? DEFAULT_POLICY.defaultApprovalMode;
-    if (!POLICY_MODES.includes(mode)) return err(c, 400, "defaultApprovalMode 非法");
+    // 只写新词表；旧词（readonly/balanced/trust/strict）在写入侧也接受，存的是映射后的新值。
+    const mode =
+      body.defaultApprovalMode === undefined
+        ? DEFAULT_POLICY.defaultApprovalMode
+        : normalizeAuditPolicyMode(body.defaultApprovalMode);
+    if (!mode) return err(c, 400, "defaultApprovalMode 非法");
     const list = (v: unknown, max: number): string[] =>
       Array.isArray(v)
         ? v.filter((x): x is string => typeof x === "string" && x.trim().length > 0).map((x) => x.trim()).slice(0, max)

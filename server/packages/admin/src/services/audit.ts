@@ -14,7 +14,7 @@ const AUTH = {
 
 export type AuditActionKind = "model_call" | "tool_call" | "approval" | "policy_block" | "admin_action" | "session" | "auth";
 export type UsageGroupBy = "dept" | "model" | "user" | "day";
-export type PolicyMode = "readonly" | "balanced" | "trust" | "strict";
+export type PolicyMode = "plan" | "build" | "edit" | "yolo";
 
 export interface AuditUsage {
   inputTokens?: number;

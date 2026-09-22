@@ -16,6 +16,7 @@ import type {
   UsageSummaryResponse,
   UsageSummaryRow,
 } from "@reactor/shared";
+import { normalizeAuditPolicyMode } from "@reactor/shared";
 import type { IdentityDb } from "../identity/db.js";
 import { computeCost, effectiveRates, hasBillableTokens, type PricingRates } from "../common/pricing.js";
 import { MAX_AUDIT_BATCH, MAX_AUDIT_SUMMARY_CHARS } from "./limits.js";
@@ -38,7 +39,10 @@ export interface AuditScope {
 const ACTIONS = new Set(["model_call", "tool_call", "approval", "policy_block", "session", "admin_action", "auth"]);
 const OUTCOMES = new Set(["ok", "error", "denied", "cancelled"]);
 const APPROVALS = new Set(["allow", "deny", "ask", "forbidden"]);
-const POLICY_MODES = new Set(["readonly", "balanced", "trust", "strict"]);
+/** 事件里的 policyMode 用同一词表校验：新词直接通过，旧词（改造前上报的）也接受。 */
+function isPolicyMode(value: unknown): boolean {
+  return normalizeAuditPolicyMode(value) !== null;
+}
 const SESSION_TYPES = new Set(["code", "work", "general", "unknown"]);
 
 /** 事件时间允许的偏差：不能太超前（时钟错乱/伪造），也不能太旧（离线补传上限 180 天）。 */
@@ -69,7 +73,7 @@ export function validateEvent(e: AuditEventInput, now = Date.now()): string | nu
   }
   if (e.outcome !== undefined && !OUTCOMES.has(e.outcome)) return "outcome 非法";
   if (e.approvalDecision !== undefined && !APPROVALS.has(e.approvalDecision)) return "approvalDecision 非法";
-  if (e.policyMode !== undefined && !POLICY_MODES.has(e.policyMode)) return "policyMode 非法";
+  if (e.policyMode !== undefined && !isPolicyMode(e.policyMode)) return "policyMode 非法";
   if (e.sessionType !== undefined && !SESSION_TYPES.has(e.sessionType)) return "sessionType 非法";
   for (const [k, v] of Object.entries({ durationMs: e.durationMs, filesTouched: e.filesTouched })) {
     if (v !== undefined && intOrNull(v) === null) return `${k} 非法`;
@@ -672,9 +676,9 @@ export async function listQuotaAlerts(
 
 /* ---------------- 策略下发 ---------------- */
 
-/** 缺省策略（未配置时下发它，保证端侧行为与改造前一致）。 */
+/** 缺省策略（未配置时下发它）：与端上默认档一致，`build`。 */
 export const DEFAULT_POLICY: DesktopPolicy = {
-  defaultApprovalMode: "balanced",
+  defaultApprovalMode: "build",
   commandBlacklist: [],
   egressAllowlist: [],
   quota: { monthlyTokenLimit: null, alertThresholds: [80, 100] },
@@ -690,6 +694,9 @@ export async function getPolicy(db: IdentityDb): Promise<DesktopPolicy> {
   return {
     ...DEFAULT_POLICY,
     ...p,
+    // 库里可能残留旧词表的访问模式（改造前写入的）：读时映射到新词表，写入只写新值。
+    defaultApprovalMode:
+      normalizeAuditPolicyMode(p.defaultApprovalMode) ?? DEFAULT_POLICY.defaultApprovalMode,
     quota: { ...DEFAULT_POLICY.quota, ...(p.quota ?? {}) },
     updatedAt: row.updated_at.toISOString(),
     updatedBy: row.updated_by ?? undefined,

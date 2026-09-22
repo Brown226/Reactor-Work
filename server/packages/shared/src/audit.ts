@@ -25,8 +25,35 @@ export type AuditOutcome = "ok" | "error" | "denied" | "cancelled";
 /** 审批结论（对应 sidecar 审批闸门）。 */
 export type AuditApprovalDecision = "allow" | "deny" | "ask" | "forbidden";
 
-/** 访问模式（对应 shared/rpc.ts 的 ApprovalMode）。 */
-export type AuditPolicyMode = "readonly" | "balanced" | "trust" | "strict";
+/**
+ * 访问模式：与桌面端 `zcodeTaskMode` **同一词表**（plan / build / edit / yolo）。
+ *
+ * 历史：改造前是 `readonly/balanced/trust/strict`（旧 standalone 项目的词表）。桌面端不接受旧词，
+ * 因此**只写新值**；库里可能残留旧值，读时用 `normalizeAuditPolicyMode` 映射
+ * （readonly→plan · strict→edit · balanced→build · trust→yolo），见
+ * docs/服务端接线-P4-用量上报与策略.md 的 D2。
+ */
+export type AuditPolicyMode = "plan" | "build" | "edit" | "yolo";
+
+export const AUDIT_POLICY_MODES: readonly AuditPolicyMode[] = ["plan", "build", "edit", "yolo"];
+
+/** 旧词表 → 新词表（只用于读，不用于写）。 */
+export const LEGACY_POLICY_MODE_MAP: Readonly<Record<string, AuditPolicyMode>> = {
+  readonly: "plan",
+  strict: "edit",
+  balanced: "build",
+  trust: "yolo",
+};
+
+/** 归一化访问模式：新词直接通过，旧词映射，其余返回 null（调用方决定报错或回落默认）。 */
+export function normalizeAuditPolicyMode(value: unknown): AuditPolicyMode | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim().toLowerCase();
+  if ((AUDIT_POLICY_MODES as readonly string[]).includes(trimmed)) {
+    return trimmed as AuditPolicyMode;
+  }
+  return LEGACY_POLICY_MODE_MAP[trimmed] ?? null;
+}
 
 /** 会话场景（对应 SESSION_TOOL_PRESETS 的场景边界）。 */
 export type AuditSessionType = "code" | "work" | "general" | "unknown";
