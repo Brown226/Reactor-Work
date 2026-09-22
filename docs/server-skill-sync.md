@@ -2,13 +2,15 @@
 
 > 适用范围：新增或修改「从企业服务端拉取技能并落盘 / 启停 / 卸载」的代码前先读本文件。
 > 背景与分期见 [server-skill-delivery-plan.md](server-skill-delivery-plan.md)；服务端 API 语义以 `server/` 代码为准。
-> **实现进度（2026-09-22）——发现层与护栏已落，同步器未建**：
+> **实现进度（2026-09-22）——P2 已全部落地**：
 > - ✅ `SkillScope` 增加 `server`（`packages/shared/src/skills-types.ts`）。
-> - ✅ `skillsService` 发现用户级 `server-skills/` 根（scope=server，与用户自建物理隔离）。
-> - ✅ `$` 同名折叠 server 优先（§6.1）。
-> - ✅ `deleteSkill` 对 server scope 拒绝（应走服务端卸载 API，见 §4.2 / §6）。
-> - ❌ 同步器（§4.1–4.3）、CLI skillRoot（§6）、UI 卸载/更新入口（§6）：未建。
->   目录当前不存在，发现层无实体会命中；上述落地项是为同步器铺的类型与护栏。
+> - ✅ 同步器 `IServerSkillSyncService`（`packages/services/src/server-skills/`，HTTP 复用 `reactorServerClient`）。
+> - ✅ `skillsService` 与 CLI `resolveDefaultSkillRoots` 发现用户级 `server-skills/` 根（写入/读取同走 `serverSkillsRoot.ts`）。
+> - ✅ `$` 同名折叠 server 优先（§6.1）；`deleteSkill` 对 server scope 拒绝（应走卸载 API，见 §4.2）。
+> - ✅ 设置 UI：徽标/启停/更新/卸载/手动同步/「已下架」投影；登录成功后后台同步一次（Root.tsx）。
+> - ✅ 行为测试：`packages/services/test/serverSkillSync.test.ts`、`skillsSameNameFold*.test.ts`、
+>   `apps/zcode-cli/packages/adapters/test/skillsRoots.test.ts`（`npx tsx --test <file>`）。
+> - 未做（后置）：catalog 市场 UI、服务端启停 prefs、注入集过滤、用量上报——见 §9。
 
 ## 1. 产品规则
 

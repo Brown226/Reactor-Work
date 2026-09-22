@@ -1,6 +1,6 @@
 # P2 技能下发 · 实施计划
 
-> **状态**：规划（契约见 [server-skill-sync.md](server-skill-sync.md)）　**日期**：2026-09-22
+> **状态**：已实施（2026-09-22；契约见 [server-skill-sync.md](server-skill-sync.md)）　**日期**：2026-09-22
 > **范围**：主仓 `Reactor-Work` 的服务端技能下发（同步 + 发现 + 设置 UI）；服务端 API 已存在，本计划**不改** `server/`。
 > **依据**：[服务端接线-方案-v1.md](服务端接线-方案-v1.md) §1 R4/R5、§4.3；旧项目 `Reactor-Desktop` 实现与踩坑；主仓 skills 体系现状。
 > **原则**：借旧项目的**同步协议与安全语义**，不搬它的 **Electron main + sidecar 接线**。

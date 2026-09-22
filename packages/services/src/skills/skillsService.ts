@@ -29,6 +29,7 @@ import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, USER_DATA_DIR_NAME } from "@zcode/
 import type { ISkillsService } from "./skills.js";
 import { SKILL_FILE_NAME, walkSkillMarkdownPaths } from "./skillDiscoveryWalk.js";
 import { readInstalledPluginRoots } from "#src/plugins/installedPluginRoots.js";
+import { resolveServerSkillRoot } from "#src/server-skills/serverSkillsRoot.js";
 
 interface DiscoverResult {
   skills: SkillSummary[];
@@ -89,13 +90,8 @@ function getUserAgentsSkillRoot(): string {
   return join(resolveUserHomeDir(), ".agents", "skills");
 }
 
-/**
- * 企业服务端下发技能目录（scope=server）。
- * 与用户自建 `skills/` 物理隔离，同步/卸载只动本目录——见 docs/server-skill-sync.md。
- */
-function getServerSkillRoot(): string {
-  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "server-skills");
-}
+// server-skills 根目录由同步服务侧单一持有（serverSkillsRoot.ts），发现层只复用，
+// 不在此重复一份路径口径——写入方与读取方分叉会出现「同步了但发现不到」。
 
 function normalizeSkillNameKey(name: string): string {
   return name.trim().toLowerCase();
@@ -281,6 +277,36 @@ function buildActivatedSkillsPromptBlock(skills: SkillSummary[]): string {
     ),
     "</available_skills>",
   ].join("\n");
+}
+
+/**
+ * 同名技能解析优先级（docs/server-skill-sync.md §6.1）。
+ * 企业下发优先于其余来源；server 版被本地停用时，同名回落到下一优先级（workspace→plugin→user）。
+ */
+const SCOPE_RESOLUTION_PRIORITY: Record<SkillScope, number> = {
+  server: 0,
+  workspace: 1,
+  plugin: 2,
+  user: 3,
+};
+
+/**
+ * `$` 注入的同名折叠：mentioned+enabled 集合内按 name 去重，只保留解析优先级最高的一个。
+ * 不折叠会让 server 与用户自建同名技能**双双注入**，模型收到两份互相矛盾的指令。
+ */
+function resolveSameNameSkills(skills: SkillSummary[]): SkillSummary[] {
+  const winnerByName = new Map<string, SkillSummary>();
+  for (const skill of skills) {
+    const current = winnerByName.get(skill.name);
+    if (
+      !current ||
+      SCOPE_RESOLUTION_PRIORITY[skill.scope] < SCOPE_RESOLUTION_PRIORITY[current.scope]
+    ) {
+      winnerByName.set(skill.name, skill);
+    }
+  }
+  // 保持原列表（按 name、scope 排序）的相对顺序，注入块稳定。
+  return skills.filter((skill) => winnerByName.get(skill.name) === skill);
 }
 
 async function appendSkillsAuditLog(params: {
@@ -872,7 +898,7 @@ async function discoverSkills(params: {
     // 企业服务端下发目录：与 skills/ 隔离，scope 单独标记便于 UI 卸载护栏。
     roots.push({
       scope: "server" as const,
-      rootPath: getServerSkillRoot(),
+      rootPath: resolveServerSkillRoot(),
     });
   }
   roots.push(...(await resolvePluginSkillRootDescriptors()));
@@ -1109,8 +1135,8 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
         workspaceIdentity: params.workspaceIdentity,
         provider: params.provider,
       });
-      const activatedSkills = skills.filter(
-        (skill) => skill.enabled && mentionedSkillNames.has(skill.name),
+      const activatedSkills = resolveSameNameSkills(
+        skills.filter((skill) => skill.enabled && mentionedSkillNames.has(skill.name)),
       );
       if (activatedSkills.length === 0) {
         return { prompt: params.prompt, activatedSkillNames: [] };

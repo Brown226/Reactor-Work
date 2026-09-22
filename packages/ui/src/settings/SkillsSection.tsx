@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Import,
   Plus,
+  RefreshCw,
   Trash2,
   UploadCloud,
   WandSparkles,
@@ -34,6 +35,7 @@ import {
   useWorkspaceServicesResolution,
 } from "@/hooks/useWorkspaceServices.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
+import { useServerSkillSync } from "@/hooks/useServerSkillSync.js";
 import { buildSkillMentionMarkdown } from "@/mentions/mentionMarkdown.js";
 import { filterSkillsForProvider } from "@/lib/skillSourceFilter.js";
 import { invalidateDeferredDraftSessionForSkillChange } from "@/lib/zcodeDraftSkillInvalidation.js";
@@ -188,6 +190,8 @@ export function SkillsSection({
   // useConfirmDialog 是纯 Zustand selector（不含 useState），放在这里不会影响 SkillsSection
   // 既有的「按 useState 调用次序」单测桩（见下方 selectedSkill 附近的注释）。
   const confirmDialog = useConfirmDialog();
+  // 企业服务端技能同步（server-skills）：host 未注册该服务时 available=false，入口整体隐藏。
+  const serverSkillSync = useServerSkillSync();
   const activeWorkspacePath = workspacePath ?? null;
   const activeWorkspaceIdentity = workspaceIdentity;
   const targetServiceResolution = useWorkspaceServicesResolution(
@@ -457,6 +461,62 @@ export function SkillsSection({
     ],
   );
 
+  // ── 企业服务端技能（scope=server）───────────────────────────────────────
+  // 同步/更新/卸载全部转发给 host 侧同步器（server-skills 目录唯一写者），
+  // 本地不碰文件；启停仍走 setEnabled 的路径 key map（docs/server-skill-sync.md）。
+  const reloadAfterServerSkillMutation = useCallback(async () => {
+    await Promise.all([loadSkills(false), refreshSharedSkillStoreForCurrentWorkspace()]);
+  }, [loadSkills, refreshSharedSkillStoreForCurrentWorkspace]);
+
+  const handleServerSkillSync = useCallback(async () => {
+    const result = await serverSkillSync.sync();
+    if (!result) return;
+    await reloadAfterServerSkillMutation();
+    if (result.authExpired) {
+      toast(intl.formatMessage({ id: "settings.skills.serverSync.authExpired" }));
+    } else if (result.skippedNotLoggedIn) {
+      toast(intl.formatMessage({ id: "settings.skills.serverSync.notLoggedIn" }));
+    } else if (result.offline) {
+      toast(intl.formatMessage({ id: "settings.skills.serverSync.offline" }));
+    } else {
+      toast(
+        intl.formatMessage(
+          { id: "settings.skills.serverSync.done" },
+          { changed: result.changed.length, removed: result.removed.length },
+        ),
+      );
+    }
+  }, [intl, reloadAfterServerSkillMutation, serverSkillSync]);
+
+  const handleServerSkillUpdate = useCallback(
+    async (skill: SkillSummary) => {
+      await serverSkillSync.refreshFromServer(skill.name);
+      await reloadAfterServerSkillMutation();
+    },
+    [reloadAfterServerSkillMutation, serverSkillSync],
+  );
+
+  const handleServerSkillUninstall = useCallback(
+    async (skill: SkillSummary) => {
+      const confirmed = await confirmDialog({
+        title: intl.formatMessage({ id: "settings.skills.server.uninstall.title" }),
+        description: intl.formatMessage(
+          { id: "settings.skills.server.uninstall.description" },
+          { name: skill.name },
+        ),
+        confirmLabel: intl.formatMessage({ id: "settings.skills.server.uninstall.confirm" }),
+      });
+      if (!confirmed) {
+        return;
+      }
+      const ok = await serverSkillSync.uninstall(skill.name);
+      if (ok) {
+        await reloadAfterServerSkillMutation();
+      }
+    },
+    [confirmDialog, intl, reloadAfterServerSkillMutation, serverSkillSync],
+  );
+
   const scopedProviderSkills = useMemo(() => {
     const allProviderSkills = filterSkillsForProvider(skills, ZCODE_AGENT_PROVIDER);
     const pluginStoreMatchesTarget =
@@ -613,6 +673,19 @@ export function SkillsSection({
         >
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <span className="truncate text-ui-base font-medium text-foreground">{skill.name}</span>
+            {/* 来源徽标：服务端下发的技能在列表行内即可辨（详情弹窗另有作用域标签）。 */}
+            {skill.scope === "server" ? (
+              <span className="shrink-0 rounded-md bg-surface px-1.5 py-0.5 text-ui-xs text-foreground-subtle">
+                {intl.formatMessage({ id: "settings.skills.scope.server" })}
+              </span>
+            ) : null}
+            {/* 已下架：服务端 enabled=false 的只读投影（在落盘集但不在注入集，契约 R5）。 */}
+            {skill.scope === "server" &&
+            serverSkillSync.result?.disabledNames.includes(skill.name) ? (
+              <span className="shrink-0 rounded-md bg-warning/10 px-1.5 py-0.5 text-ui-xs text-warning">
+                {intl.formatMessage({ id: "settings.skills.server.offlineBadge" })}
+              </span>
+            ) : null}
           </div>
           <div className="mt-0.5 truncate text-ui-sm text-foreground-subtle">
             {skill.description ||
@@ -622,8 +695,9 @@ export function SkillsSection({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {/* server 技能只启停、不本地删除；启停仍走 setEnabled（写按路径的 enabled map）。 */}
-          {skill.scope === "plugin" || skill.scope === "server" ? null : (
+          {/* server 技能只启停、不本地删除；启停仍走 setEnabled（写按路径的 enabled map）。
+              更新/卸载都走服务端同步器，不经 skillsService.deleteSkill。 */}
+          {skill.scope === "plugin" ? null : (
             <>
               <Switch
                 checked={skill.enabled}
@@ -631,17 +705,46 @@ export function SkillsSection({
                   void setEnabled(skill.id, checked);
                 }}
               />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="shrink-0 text-foreground-subtle hover:bg-destructive/10 hover:text-destructive"
-                aria-label={intl.formatMessage({ id: "common.delete" })}
-                title={intl.formatMessage({ id: "common.delete" })}
-                onClick={() => void handleDeleteSkill(skill)}
-              >
-                <Trash2 className="size-3.5" aria-hidden="true" />
-              </Button>
+              {skill.scope === "server" ? (
+                <>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="shrink-0 text-foreground-subtle"
+                    aria-label={intl.formatMessage({ id: "settings.skills.server.update" })}
+                    title={intl.formatMessage({ id: "settings.skills.server.update" })}
+                    onClick={() => void handleServerSkillUpdate(skill)}
+                  >
+                    <RefreshCw className="size-3.5" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="shrink-0 text-foreground-subtle hover:bg-destructive/10 hover:text-destructive"
+                    aria-label={intl.formatMessage({
+                      id: "settings.skills.server.uninstall.confirm",
+                    })}
+                    title={intl.formatMessage({ id: "settings.skills.server.uninstall.confirm" })}
+                    onClick={() => void handleServerSkillUninstall(skill)}
+                  >
+                    <Trash2 className="size-3.5" aria-hidden="true" />
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="shrink-0 text-foreground-subtle hover:bg-destructive/10 hover:text-destructive"
+                  aria-label={intl.formatMessage({ id: "common.delete" })}
+                  title={intl.formatMessage({ id: "common.delete" })}
+                  onClick={() => void handleDeleteSkill(skill)}
+                >
+                  <Trash2 className="size-3.5" aria-hidden="true" />
+                </Button>
+              )}
             </>
           )}
         </div>
@@ -658,14 +761,36 @@ export function SkillsSection({
   );
 
   const skillHeaderActions = (
-    <SettingsResourceHeaderActions
-      onRefresh={() => void Promise.all([refresh(), refreshSharedSkillStoreForCurrentWorkspace()])}
-      onImport={() => setImportDialogOpen(true)}
-      onNew={handleCreateSkill}
-      importDisabled={!capability?.userScopeAvailable}
-      importActionId="settings.skills.import.open"
-      newActionId="settings.skills.create.open"
-    />
+    <>
+      <SettingsResourceHeaderActions
+        onRefresh={() =>
+          void Promise.all([refresh(), refreshSharedSkillStoreForCurrentWorkspace()])
+        }
+        onImport={() => setImportDialogOpen(true)}
+        onNew={handleCreateSkill}
+        importDisabled={!capability?.userScopeAvailable}
+        importActionId="settings.skills.import.open"
+        newActionId="settings.skills.create.open"
+      />
+      {/* 企业服务端技能手动同步：host 未注册同步服务（旧 wire/测试 double）时整体隐藏。 */}
+      {serverSkillSync.available ? (
+        <ControlHintTooltip title={intl.formatMessage({ id: "settings.skills.serverSync.open" })}>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-lg"
+            disabled={serverSkillSync.busy}
+            aria-label={intl.formatMessage({ id: "settings.skills.serverSync.open" })}
+            onClick={() => void handleServerSkillSync()}
+          >
+            <RefreshCw
+              className={serverSkillSync.busy ? "size-3.5 animate-spin" : "size-3.5"}
+              aria-hidden="true"
+            />
+          </Button>
+        </ControlHintTooltip>
+      ) : null}
+    </>
   );
   const remoteSyncAction = connectedRemoteSyncTarget ? (
     <ControlHintTooltip title={intl.formatMessage({ id: "settings.skills.remoteSync.open" })}>

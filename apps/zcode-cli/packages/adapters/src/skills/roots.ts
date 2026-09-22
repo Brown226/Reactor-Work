@@ -45,6 +45,12 @@ export async function resolveDefaultSkillRoots(
   }
 
   if (includeZcode) {
+    // 企业服务端下发目录（server-skills）。同名解析走 first-match，因此 priority 必须
+    // 排在用户级两根之前：server 版优先，而显式配置的 extraRoots 仍最高（契约
+    // docs/server-skill-sync.md §6.1）。列表语义不变——discoverSkills 按 path 保留全部同名。
+    roots.push(
+      root(join(home, USER_DATA_DIR_NAME, "server-skills"), "user", "remote", nextPriority()),
+    );
     roots.push(...skillRootsForBase(home, "user", nextPriority));
   }
 
