@@ -1549,7 +1549,6 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
                                               reconnectingRemoteWorkspaceLogsByWorkspaceKey
                                             }
                                             onReconnectRemoteWorkspace={onReconnectRemoteWorkspace}
-                                            onOpenFileTree={handleOpenWorkspaceFileTree}
                                           />
                                         );
                                       })}

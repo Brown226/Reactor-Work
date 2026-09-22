@@ -31,7 +31,6 @@ import { DataBaseDirControl } from "@/settings/DataBaseDirControl.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useOptionalServices } from "@/hooks/useServices.js";
 import { ProactiveSuggestionsSetting } from "@/settings/ProactiveSuggestionsSetting.js";
-import { normalizeInterfaceMode, type InterfaceMode } from "@/lib/interfaceMode.js";
 import {
   createSettingsPageConfig,
   resolveSettingsSectionForPlatform,
@@ -47,8 +46,6 @@ const ZCODE_INTERACTION_BEHAVIOR_OPTIONS: readonly ZCodeInteractionBehavior[] = 
 
 export function GeneralSectionContent({
   localePreference,
-  interfaceMode = "coding",
-  setInterfaceMode = () => {},
   notificationEnabled,
   notificationSoundEnabled,
   closeToTrayOnWindows,
@@ -109,8 +106,6 @@ export function GeneralSectionContent({
   onOpenOnboardingDialog,
 }: {
   localePreference: LocalePreference;
-  interfaceMode?: InterfaceMode;
-  setInterfaceMode?: (mode: InterfaceMode) => void;
   notificationEnabled: boolean;
   notificationSoundEnabled: boolean;
   closeToTrayOnWindows: boolean;
@@ -319,36 +314,12 @@ export function GeneralSectionContent({
         />
       </SettingsGroupCard>
 
-      <SettingsGroupCard>
-        <SettingsRow
-          controlLayout="wide"
-          label={intl.formatMessage({ id: "settings.interfaceMode" })}
-          description={intl.formatMessage({ id: "settings.interfaceMode.description" })}
-          control={
-            <Select
-              value={interfaceMode}
-              onValueChange={(value) => setInterfaceMode(normalizeInterfaceMode(value))}
-            >
-              <SelectTrigger
-                size="lg"
-                className="w-full min-w-0 sm:w-64"
-                aria-label={intl.formatMessage({ id: "settings.interfaceMode" })}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="coding">
-                  {intl.formatMessage({ id: "settings.interfaceMode.coding" })}
-                </SelectItem>
-                <SelectItem value="office">
-                  {intl.formatMessage({ id: "settings.interfaceMode.office" })}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          }
-        />
-        {hasServices ? <ProactiveSuggestionsSetting /> : null}
-      </SettingsGroupCard>
+      {/* 界面模式选择已移除：主面板草稿区的分段切换是唯一入口（docs/interface-mode.md）。 */}
+      {hasServices ? (
+        <SettingsGroupCard>
+          <ProactiveSuggestionsSetting />
+        </SettingsGroupCard>
+      ) : null}
 
       <SettingsGroupCard>
         <SettingsRow

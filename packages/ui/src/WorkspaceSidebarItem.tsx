@@ -18,7 +18,6 @@ import {
   FolderOpen,
   House,
   InfoIcon,
-  ListTree,
   LoaderCircle,
   RefreshCwIcon,
   MessageCirclePlus,
@@ -59,7 +58,6 @@ import { ReconnectingRemoteWorkspaceLogTooltip } from "@/WorkspaceSidebar/Reconn
 import { cn } from "@/components/lib/utils.js";
 import {
   TID_WORKSPACE_CLOSE,
-  TID_WORKSPACE_FILE_TREE_BUTTON,
   TID_WORKSPACE_ITEM,
   testId,
 } from "@zcode/shared";
@@ -81,7 +79,6 @@ import { invalidateDeferredDraftSessionForSkillChange } from "@/lib/zcodeDraftSk
 import { refreshSharedSkillStoreForWorkspace } from "@/lib/skillStoreRefresh.js";
 import { refreshWorkspacePluginCapabilitiesAfterRemoteSync } from "@/lib/remotePluginSyncRefresh.js";
 import { useMcpStore } from "@/store/mcpStore.js";
-import { TaskRowActionButton } from "@/workspace-grouped-tasks/task-row-action-button.js";
 import { releaseWorkspaceRuntimeAfterProjectRemoval } from "@/lib/workspaceRuntimeRelease.js";
 import {
   hasRunningWorkspaceChat,
@@ -146,7 +143,6 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
   remoteWorkspaceErrorByWorkspaceKey,
   reconnectingRemoteWorkspaceLogsByWorkspaceKey,
   onReconnectRemoteWorkspace,
-  onOpenFileTree,
   itemRef,
   itemStyle,
   sortableBindings,
@@ -175,12 +171,6 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
   remoteWorkspaceErrorByWorkspaceKey: Record<string, string>;
   reconnectingRemoteWorkspaceLogsByWorkspaceKey: Record<string, RemoteConnectionLogEntry[]>;
   onReconnectRemoteWorkspace: (workspaceKey: string) => Promise<void>;
-  onOpenFileTree?: (target: {
-    workspacePath: string;
-    workspaceName: string;
-    workspaceIdentity?: string;
-    workspaceRemoteSessionId?: string;
-  }) => void;
   itemRef?: (node: HTMLLIElement | null) => void;
   itemStyle?: CSSProperties;
   sortableBindings?: SortableBindings;
@@ -243,7 +233,6 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
     isDisconnectedRemoteWorkspace && !isReconnectPending && remoteWorkspaceError?.trim(),
   );
   const showReconnectAction = Boolean(isDisconnectedRemoteWorkspace);
-  const showFileTreeAction = Boolean(onOpenFileTree && !isDisconnectedRemoteWorkspace);
   const showRemoteSkillSyncAction = shouldShowRemoteSyncActions({
     remoteSessionId: tab.remoteSessionId,
     remoteTarget: tab.remoteTarget,
@@ -442,32 +431,6 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
       isReconnectPending,
       onReconnectRemoteWorkspace,
       remoteWorkspaceKey,
-    ],
-  );
-
-  const handleOpenWorkspaceFileTree = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (isDisconnectedRemoteWorkspace || readOnlyReason || !onOpenFileTree) {
-        return;
-      }
-
-      onOpenFileTree({
-        workspacePath: tab.workspacePath,
-        workspaceName: tab.label,
-        workspaceIdentity: tab.workspaceIdentity,
-        workspaceRemoteSessionId: tab.remoteSessionId,
-      });
-    },
-    [
-      isDisconnectedRemoteWorkspace,
-      onOpenFileTree,
-      readOnlyReason,
-      tab.label,
-      tab.remoteSessionId,
-      tab.workspaceIdentity,
-      tab.workspacePath,
     ],
   );
 
@@ -949,25 +912,8 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     ) : null}
-                    {shouldMountWorkspaceRowActions && showFileTreeAction ? (
-                      <span className="shrink-0">
-                        {/* Project 文件树入口以前单独覆盖 hover:bg-surface-hover，
-                            与 Pinned / Grouped 的 bg-hover 不一致；三种入口统一复用同一 action。 */}
-                        <TaskRowActionButton
-                          // 该按钮默认继承 ghost 的主前景色，导致同组的三个图标明暗不一致。
-                          className="text-foreground-subtle hover:text-foreground"
-                          label={intl.formatMessage({
-                            id: "workspaceSidebar.showFileTree",
-                          })}
-                          onClick={handleOpenWorkspaceFileTree}
-                          showTooltip
-                          disabledReason={readOnlyReason}
-                          testId={testId(TID_WORKSPACE_FILE_TREE_BUTTON, tab.workspacePath)}
-                        >
-                          <ListTree className="h-3.5 w-3.5" />
-                        </TaskRowActionButton>
-                      </span>
-                    ) : null}
+                    {/* 「查看文件」行内按钮已删除：右侧工作区文件面板是唯一入口，
+                        工作区行不再保留第二个打开文件树的动作。 */}
                     {showRemoteConnectionErrorNotice ? (
                       remoteWorkspaceError ? (
                         <TooltipProvider>

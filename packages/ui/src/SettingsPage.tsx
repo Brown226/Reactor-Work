@@ -341,8 +341,6 @@ export function SettingsPage({
   const [settingsBreadcrumbItems, setSettingsBreadcrumbItems] = useState<
     readonly SettingsBreadcrumbItem[]
   >([]);
-  const interfaceMode = useZCodeStore((state) => state.interfaceMode);
-  const setInterfaceMode = useZCodeStore((state) => state.setInterfaceMode);
   const theme = useZCodeStore((state) => state.theme);
   const setTheme = useZCodeStore((state) => state.setTheme);
   const codePreviewSettings = useZCodeStore((state) => state.codePreviewSettings);
@@ -1660,8 +1658,6 @@ export function SettingsPage({
                         {activeSection === "general" ? (
                           <GeneralSectionContent
                             localePreference={localePreference}
-                            interfaceMode={interfaceMode}
-                            setInterfaceMode={setInterfaceMode}
                             isDesktop={isDesktop}
                             isWindowsDesktop={isWindowsDesktop}
                             platform={platform}

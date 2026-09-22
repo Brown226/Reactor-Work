@@ -1,7 +1,6 @@
 export type QuickPickCommandIcon =
   | "book"
   | "browser"
-  | "community"
   | "diff"
   | "feedback"
   | "folder"
@@ -53,7 +52,6 @@ interface QuickPickCommandHandlers {
   openMcpSettings: () => void;
   switchTheme: () => void;
   openFeedback: () => void | Promise<void>;
-  openCommunity: () => void | Promise<void>;
   openProductDocs: () => void | Promise<void>;
   login?: () => void | Promise<void>;
   logout?: () => void | Promise<void>;
@@ -67,7 +65,6 @@ interface QuickPickCommandHandlers {
 
 interface CreateQuickPickCommandsOptions {
   allowOpenWorkspace: boolean;
-  canOpenCommunity: boolean;
   isSidebarVisible: boolean;
   isLoggedIn: boolean;
   supportsEmbeddedBrowser?: boolean;
@@ -85,7 +82,6 @@ interface CreateQuickPickCommandsOptions {
 
 export function createQuickPickCommands({
   allowOpenWorkspace,
-  canOpenCommunity,
   isSidebarVisible,
   isLoggedIn,
   supportsEmbeddedBrowser = true,
@@ -248,17 +244,7 @@ export function createQuickPickCommands({
     run: handlers.openFeedback,
   });
 
-  if (canOpenCommunity) {
-    commands.push({
-      id: "community",
-      sectionId: "app",
-      titleId: "quickPick.command.community",
-      icon: "community",
-      keywords: ["community", "users", "chat", "用户社群", "社群"],
-      run: handlers.openCommunity,
-    });
-  }
-
+  // 「用户社群」命令已移除：社群入口不再出现在命令面板，帮助菜单仍保留同一平台能力。
   commands.push({
     id: "product-docs",
     sectionId: "app",
