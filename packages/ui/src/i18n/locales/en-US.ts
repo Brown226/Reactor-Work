@@ -1826,6 +1826,12 @@ const enUS: Record<string, string> = {
   "settings.background.imageUnsupported": "Only PNG, JPG, WebP, GIF, BMP, or AVIF images work.",
   "settings.background.imageFailed":
     "Could not read the image and fell back to the preset background (PNG, JPG, WebP, GIF, BMP, or AVIF up to 8 MB).",
+  "settings.appInfo.title": "App info",
+  "settings.appInfo.description": "Version and build info, to confirm which package is running.",
+  "settings.appInfo.version": "Version",
+  "settings.appInfo.buildTime": "Build time (hover the version to see it)",
+  "settings.devMode.unlocked": "Developer mode on: Settings → Model settings is now visible",
+  "settings.devMode.locked": "Developer mode off: Model settings is hidden (config stays on disk)",
   "settings.uiFontSize": "UI font size",
   "settings.uiFontSizeDescription":
     "Adjust interface text without changing icons or layout dimensions.",

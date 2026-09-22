@@ -106,6 +106,7 @@ import {
 } from "./settingsPageHelpers.js";
 import { AppearanceSectionContent } from "./settingsCodePreview.js";
 import type { SettingsSectionId } from "@/lib/settingsNavigation.js";
+import { useDevModeUnlocked } from "@/lib/devMode.js";
 import { requestPluginStoreOpen } from "@/lib/pluginStoreNavigation.js";
 import {
   runUserAction,
@@ -296,6 +297,10 @@ export function SettingsPage({
   user?: UserInfo | null;
 }) {
   const { intl, localePreference, setLocalePreference } = useZCodeIntl();
+  // 开发者模式决定「模型设置」是否出现在导航里（连点版本号 7 下解锁），这里是它唯一的订阅点：
+  // 解锁/反锁后重建分区列表，停在被隐藏分区时由 resolveSettingsSectionForPlatform 兜回「常规」。
+  // 见 docs/model-governance-and-dev-mode.md。
+  const devModeUnlocked = useDevModeUnlocked();
   const { settingsSectionGroups, settingsSections } = useMemo(
     () =>
       createSettingsPageConfig({
@@ -303,7 +308,7 @@ export function SettingsPage({
         isMacDesktop: Boolean(isMacDesktop),
         isWindowsDesktop: Boolean(isWindowsDesktop),
       }),
-    [isDesktop, isMacDesktop, isWindowsDesktop],
+    [devModeUnlocked, isDesktop, isMacDesktop, isWindowsDesktop],
   );
   const isLinuxDesktop = Boolean(isDesktop && !isMacDesktop && !isWindowsDesktop);
   const usesInlineWindowControls = Boolean(isWindowsDesktop || isLinuxDesktop);

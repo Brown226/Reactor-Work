@@ -1719,6 +1719,12 @@ const zhCN: Record<string, string> = {
   "settings.background.imageUnsupported": "只支持 PNG/JPG/WebP/GIF/BMP/AVIF 图片。",
   "settings.background.imageFailed":
     "图片读取失败，已回退到预置背景（支持 PNG/JPG/WebP/GIF/BMP/AVIF，单个文件不超过 8 MB）。",
+  "settings.appInfo.title": "应用信息",
+  "settings.appInfo.description": "版本与构建信息，用于确认当前跑的是哪个包。",
+  "settings.appInfo.version": "版本号",
+  "settings.appInfo.buildTime": "构建时间（悬停版本号可见）",
+  "settings.devMode.unlocked": "已进入开发者模式：设置 →「模型设置」已解锁",
+  "settings.devMode.locked": "已退出开发者模式：「模型设置」已隐藏（配置仍保留在磁盘上）",
   "settings.uiFontSize": "界面字号",
   "settings.uiFontSizeDescription": "调整应用界面的文字大小，图标和布局尺寸不受影响。",
   "settings.systemTitle": "常规",

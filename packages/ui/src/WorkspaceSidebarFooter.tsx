@@ -44,6 +44,7 @@ import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
 import { useZCodeStore } from "@/store/StoreProvider.js";
 import { normalizeInterfaceMode } from "@/lib/interfaceMode.js";
+import { DevModeVersionLabel } from "@/settings/DevModeVersionLabel.js";
 import type { Theme } from "@/useTheme.js";
 import {
   WorkspaceSidebarFooterPlanBadge,
@@ -378,7 +379,10 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
             ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 flex-col items-center gap-0.5">
+          {/* 版本号是开发者模式的两个入口之一（连点 7 下解锁「模型设置」，见 lib/devMode.ts）；
+              外观与普通版本号一致，入口不自我暴露。 */}
+          <DevModeVersionLabel className="items-center" />
           <ControlHintTooltip title={settingsButtonLabel}>
             <Button
               type="button"

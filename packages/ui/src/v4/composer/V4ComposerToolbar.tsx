@@ -38,6 +38,9 @@ import type {
   SessionUsageState,
 } from "@zcode/shared/zcode-protocol-v4";
 import { ModelConfigSelect, type ModelSelectGroup } from "@/ModelConfigSelect.js";
+import { useReactorServer } from "@/hooks/useReactorServer.js";
+import { useDevModeUnlocked } from "@/lib/devMode.js";
+import { resolveEnterpriseModelScope, scopeModelSelectionView } from "@/lib/modelScope.js";
 import { Button } from "@/components/ui/button.js";
 import { ChatContextUsage } from "@/chat-input-toolbar/display.js";
 import {
@@ -428,6 +431,10 @@ function V4ComposerModelControlsImpl({
     [onConfigPickerOpenChange],
   );
 
+  // 模型可见性收敛的两个输入：企业会话下发的目录 + 开发者模式是否解锁（解锁即旁路）。
+  const enterpriseSession = useReactorServer();
+  const devModeUnlocked = useDevModeUnlocked();
+
   const modelOption = modelSelectionView?.providers.some((provider) => provider.models.length > 0)
     ? ({
         id: "model",
@@ -731,7 +738,16 @@ function V4ComposerModelControlsImpl({
 
   const modelSelectGroups = useMemo<ModelSelectGroup[]>(() => {
     if (!modelSelectionView) return [];
-    return buildRegistryModelSelectGroups(displayProvider, modelSelectionView, {
+    // 企业会话激活时，可选模型收敛到服务端下发的目录（解锁开发者模式即解除）。
+    // 单一过滤点与边界见 lib/modelScope.ts + docs/model-governance-and-dev-mode.md。
+    const scopedView = scopeModelSelectionView(
+      modelSelectionView,
+      resolveEnterpriseModelScope({
+        enterpriseModels: enterpriseSession.status?.models ?? null,
+        devModeUnlocked,
+      }),
+    );
+    return buildRegistryModelSelectGroups(displayProvider, scopedView ?? modelSelectionView, {
       apiKeyLabel: intl.formatMessage({ id: "settings.modelProvider.apiKey" }),
       apiKeyBadgeLabel: intl.formatMessage({
         id: "settings.modelProvider.connectionMode.apiKeyBadge",
@@ -755,7 +771,7 @@ function V4ComposerModelControlsImpl({
         id: "settings.modelProvider.connectionMode.teamPlan",
       }),
     });
-  }, [displayProvider, intl, modelSelectionView]);
+  }, [devModeUnlocked, displayProvider, enterpriseSession.status?.models, intl, modelSelectionView]);
 
   // 修复：恢复「管理模型」入口（老版 onManageModels = 打开设置页并定位模型供应商区）。
   const handleOpenModelProviderSettings = useCallback(() => {

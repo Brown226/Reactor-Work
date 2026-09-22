@@ -1,5 +1,6 @@
 /* eslint-disable max-lines -- 设置导航意图集中管理 sessionStorage、事件桥接和解析校验，拆分会让一次性意图消费顺序更难保证。 */
 import { logger } from "@/logger.js";
+import { isDevModeUnlocked } from "@/lib/devMode.js";
 
 export type SettingsSectionId =
   | "general"
@@ -84,7 +85,12 @@ function isSettingsSectionId(value: string): value is SettingsSectionId {
 }
 
 export function isSettingsSectionEnabled(section: SettingsSectionId): boolean {
-  return !HIDDEN_SETTINGS_SECTIONS.has(section);
+  if (HIDDEN_SETTINGS_SECTIONS.has(section)) return false;
+  // 「模型设置」是本地模型配置界面：企业会话下它是一条绕过目录治理的旁路，因此默认隐藏，
+  // 连点版本号 7 下解锁开发者模式后才出现（含解锁/反锁的收尾规则，见
+  // docs/model-governance-and-dev-mode.md）。隐藏策略与手势的单一事实源在 lib/devMode.ts。
+  if (section === "modelProvider") return isDevModeUnlocked();
+  return true;
 }
 
 export function resolveSettingsSection(
