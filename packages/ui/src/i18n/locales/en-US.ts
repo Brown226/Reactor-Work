@@ -3569,6 +3569,7 @@ const enUS: Record<string, string> = {
   "settings.skills.detail.disabled": "Disabled",
   "settings.skills.scope.personal": "Personal",
   "settings.skills.scope.plugin": "Plugin",
+  "settings.skills.scope.server": "Server",
   "settings.skills.scope.workspaceFallback": "Project",
   "settings.skills.diagnostics.summary":
     "Skill diagnostics: {errorCount} error(s), {warningCount} warning(s)",

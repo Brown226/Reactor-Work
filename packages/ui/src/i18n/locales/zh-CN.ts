@@ -3345,6 +3345,7 @@ const zhCN: Record<string, string> = {
   "settings.skills.detail.disabled": "已停用",
   "settings.skills.scope.personal": "个人",
   "settings.skills.scope.plugin": "插件",
+  "settings.skills.scope.server": "服务端",
   "settings.skills.scope.workspaceFallback": "项目",
   "settings.skills.diagnostics.summary": "技能加载诊断：{errorCount} 个错误，{warningCount} 个警告",
   "settings.skills.diagnostics.expand": "展开诊断",

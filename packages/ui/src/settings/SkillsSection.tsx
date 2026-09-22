@@ -280,6 +280,9 @@ export function SkillsSection({
                 locale,
               )
             : intl.formatMessage({ id: "settings.skills.scope.plugin" });
+        case "server":
+          // 服务端下发的技能：来源与卸载都在服务端，本地不提供删除入口（见 docs/server-skill-sync.md）。
+          return intl.formatMessage({ id: "settings.skills.scope.server" });
         case "user":
         default:
           return intl.formatMessage({ id: "settings.skills.scope.personal" });
@@ -407,7 +410,8 @@ export function SkillsSection({
   // 复用应用根部已挂载的确认弹窗 store（useConfirmDialog），与子智能体删除流程保持一致。
   const handleDeleteSkill = useCallback(
     async (skill: SkillSummary) => {
-      if (!activeWorkspacePath || skill.scope === "plugin") {
+      // plugin 由卸载插件管理；server 由服务端卸载 API 管理（服务端写 dismissal，本地删除会被同步写回）。
+      if (!activeWorkspacePath || skill.scope === "plugin" || skill.scope === "server") {
         return;
       }
       const confirmed = await confirmDialog({
@@ -618,7 +622,8 @@ export function SkillsSection({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {skill.scope === "plugin" ? null : (
+          {/* server 技能只启停、不本地删除；启停仍走 setEnabled（写按路径的 enabled map）。 */}
+          {skill.scope === "plugin" || skill.scope === "server" ? null : (
             <>
               <Switch
                 checked={skill.enabled}

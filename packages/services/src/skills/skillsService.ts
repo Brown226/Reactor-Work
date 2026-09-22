@@ -89,6 +89,14 @@ function getUserAgentsSkillRoot(): string {
   return join(resolveUserHomeDir(), ".agents", "skills");
 }
 
+/**
+ * 企业服务端下发技能目录（scope=server）。
+ * 与用户自建 `skills/` 物理隔离，同步/卸载只动本目录——见 docs/server-skill-sync.md。
+ */
+function getServerSkillRoot(): string {
+  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "server-skills");
+}
+
 function normalizeSkillNameKey(name: string): string {
   return name.trim().toLowerCase();
 }
@@ -861,6 +869,11 @@ async function discoverSkills(params: {
       scope: "user" as const,
       rootPath: getUserAgentsSkillRoot(),
     });
+    // 企业服务端下发目录：与 skills/ 隔离，scope 单独标记便于 UI 卸载护栏。
+    roots.push({
+      scope: "server" as const,
+      rootPath: getServerSkillRoot(),
+    });
   }
   roots.push(...(await resolvePluginSkillRootDescriptors()));
 
@@ -1185,6 +1198,11 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
       const skill = skills.find((s) => s.id === params.skillId);
       if (!skill) {
         throw new Error(`Skill not found: ${params.skillId}`);
+      }
+      // server 作用域（server-skills/）只能经服务端卸载 API 解除安装：服务端会写 dismissal
+      // 防止下次同步又写回来，本地直接删既会被同步覆盖，也绕过了管理端的授权管理。
+      if (skill.scope === "server") {
+        throw new Error("服务端下发的技能不可本地删除，请在设置中卸载");
       }
       // plugin 作用域的技能由其所属插件管理，应通过卸载插件移除，这里拒绝单独删除。
       if (skill.scope === "plugin") {

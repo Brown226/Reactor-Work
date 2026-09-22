@@ -177,10 +177,12 @@ export function resolveSkillSourceLabel(scope: SkillScope, locale?: Locale): str
   if (locale === "zh-CN") {
     if (scope === "workspace") return "工作区";
     if (scope === "plugin") return "插件";
+    if (scope === "server") return "服务端";
     return "用户";
   }
   if (scope === "workspace") return "Workspace";
   if (scope === "plugin") return "Plugin";
+  if (scope === "server") return "Server";
   return "User";
 }
 
