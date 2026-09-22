@@ -19,6 +19,17 @@ import {
 import { createServiceDescriptor } from "../descriptors.js";
 import type { ModelConnectivityResult } from "@zcode/shared";
 import { createServiceLogger } from "../logger/serviceLogger.js";
+import {
+  fetchProviderModelCatalog,
+  type ProviderModelCatalogRequest,
+  type ProviderModelCatalogResult,
+} from "./providerModelCatalog.js";
+
+export type {
+  ProviderModelCatalogEntry,
+  ProviderModelCatalogRequest,
+  ProviderModelCatalogResult,
+} from "./providerModelCatalog.js";
 
 export type {
   ProviderSettingsProviderView,
@@ -68,6 +79,8 @@ export interface IProviderSettingsService {
   testModelConnectivity(
     input: ProviderSettingsConnectivityRequest,
   ): Promise<ModelConnectivityResult>;
+  /** 一次性拉取供应商模型目录（只读，不写配置）；在 host 侧执行以绕开渲染层 CORS。 */
+  listProviderModelCatalog(input: ProviderModelCatalogRequest): Promise<ProviderModelCatalogResult>;
 }
 
 export const IProviderSettingsService = createServiceDescriptor<IProviderSettingsService>(
@@ -206,6 +219,8 @@ export function createProviderSettingsService(
         modelId: input.modelId,
       });
     },
+    // 目录拉取不写配置也不碰 Registry，因此不等 ensureReady：供应商保存了一半也能先看目录。
+    listProviderModelCatalog: (input) => fetchProviderModelCatalog(input),
   };
 }
 

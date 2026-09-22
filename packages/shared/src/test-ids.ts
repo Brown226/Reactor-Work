@@ -446,6 +446,12 @@ export const TID_MODEL_PROVIDER_MODEL_INPUT = "model-provider-model-input";
 export const TID_MODEL_PROVIDER_MODEL_DELETE_BUTTON = "model-provider-model-delete-button";
 /** 模型供应商添加模型按钮 */
 export const TID_MODEL_PROVIDER_ADD_MODEL_BUTTON = "model-provider-add-model-button";
+/** 模型供应商「一键拉取模型」按钮（拉取上游模型目录后批量添加） */
+export const TID_MODEL_PROVIDER_PULL_MODELS_BUTTON = "model-provider-pull-models-button";
+/** 一键拉取模型弹窗根节点 */
+export const TID_MODEL_PROVIDER_CATALOG_DIALOG = "model-provider-catalog-dialog";
+/** 一键拉取模型弹窗「添加所选」确认按钮 */
+export const TID_MODEL_PROVIDER_CATALOG_CONFIRM_BUTTON = "model-provider-catalog-confirm-button";
 
 // Chat Toolbar
 /** 聊天工具栏模型选择按钮 */

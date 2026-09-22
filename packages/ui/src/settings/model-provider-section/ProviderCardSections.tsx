@@ -1,6 +1,7 @@
 /* eslint-disable max-lines -- 模型供应商卡片仍在迁移期集中维护多个紧耦合区块，后续拆分时再移除。 */
 import {
   useCallback,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -12,7 +13,8 @@ import type {
   ProviderSettingsFormModel,
 } from "@/lib/providerSettingsFormTypes.js";
 import type { ModelConnectivityResult } from "@zcode/shared";
-import type { ProviderApiType } from "@zcode/provider";
+import { isApiKeyAccess, type ProviderApiType } from "@zcode/provider";
+import type { ProviderModelCatalogEntry, ProviderModelCatalogRequest } from "@zcode/services";
 import {
   TID_MODEL_PROVIDER_ADD_MODEL_BUTTON,
   TID_MODEL_PROVIDER_BASE_URL_INPUT,
@@ -20,9 +22,19 @@ import {
   TID_MODEL_PROVIDER_MODEL_INPUT,
   TID_MODEL_PROVIDER_NAME_EDIT_BUTTON,
   TID_MODEL_PROVIDER_NAME_INPUT,
+  TID_MODEL_PROVIDER_PULL_MODELS_BUTTON,
   testId,
 } from "@zcode/shared";
-import { InfoIcon, LockKeyholeIcon, Plus, Pencil, Trash2, MoreHorizontal } from "lucide-react";
+import {
+  CloudDownload,
+  InfoIcon,
+  Loader2,
+  LockKeyholeIcon,
+  Plus,
+  Pencil,
+  Trash2,
+  MoreHorizontal,
+} from "lucide-react";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {
@@ -40,6 +52,7 @@ import { ModelRowInput } from "./ProviderFormControls.js";
 import { PresetProviderApiKeyBanner } from "./PresetProviderApiKeyBanner.js";
 import { type ProviderModelDraftValues } from "@/settings/model-provider-section/ProviderModelMetadata.js";
 import { ProviderModelMetadataDialog } from "@/settings/model-provider-section/ProviderModelMetadataDialog.js";
+import { ProviderModelCatalogDialog } from "@/settings/model-provider-section/ProviderModelCatalogDialog.js";
 import {
   ProviderApiFormatSelect,
   resolveProviderConnectionApiFormatDisplayLabel,
@@ -348,6 +361,9 @@ export function ProviderModelsSection({
   providerName,
   providerEnabled = true,
   providerAccess,
+  providerBaseUrl,
+  providerApiType,
+  providerApiKey,
   models,
   onTestModel,
   onModelCommit,
@@ -361,6 +377,11 @@ export function ProviderModelsSection({
   providerName?: string;
   providerEnabled?: boolean;
   providerAccess?: ProviderConfigObject["access"];
+  /** 与聊天请求同一份 Base URL；「一键拉取模型」按它拼 <baseUrl>/models。 */
+  providerBaseUrl?: string;
+  providerApiType?: ProviderApiType;
+  /** 表单里正在编辑的密钥：未保存的新 Key 也要能直接拉目录，回落到已保存的 access。 */
+  providerApiKey?: string;
   models: ProviderSettingsFormModel[];
   onTestModel?: (model: string) => Promise<ModelConnectivityResult>;
   onModelCommit: (
@@ -464,24 +485,121 @@ export function ProviderModelsSection({
       })
     : null;
 
+  // ===== 一键拉取模型 =====
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogAdding, setCatalogAdding] = useState(false);
+  const [catalogEntries, setCatalogEntries] = useState<readonly ProviderModelCatalogEntry[]>([]);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+  // 拉取与批量添加共用一把锁：重复点击会并发拉取/重复提交同一批 modelId。
+  const catalogBusyRef = useRef(false);
+  const existingModelIds = useMemo(
+    () => new Set(models.map((model) => model.modelId)),
+    [models],
+  );
+
+  const openCatalogDialog = useCallback(async () => {
+    if (catalogBusyRef.current) return;
+    setCatalogOpen(true);
+    setCatalogError(null);
+    setCatalogEntries([]);
+    setCatalogLoading(true);
+    catalogBusyRef.current = true;
+    try {
+      const request: ProviderModelCatalogRequest = {
+        baseUrl: providerBaseUrl ?? "",
+        apiKey:
+          providerApiKey ??
+          (isApiKeyAccess(providerAccess) ? (providerAccess.apiKey ?? undefined) : undefined),
+        apiType: providerApiType,
+      };
+      const result = await providerSettingsService.listProviderModelCatalog(request);
+      setCatalogEntries(result.models);
+    } catch (error) {
+      // 服务层已把状态码/响应片段拼进消息，直接透出即可。
+      setCatalogError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setCatalogLoading(false);
+      catalogBusyRef.current = false;
+    }
+  }, [providerAccess, providerApiKey, providerApiType, providerBaseUrl, providerSettingsService]);
+
+  const handleCatalogConfirm = useCallback(
+    async (modelIds: string[]) => {
+      if (catalogBusyRef.current || modelIds.length === 0) return;
+      catalogBusyRef.current = true;
+      setCatalogAdding(true);
+      setCatalogError(null);
+      try {
+        // 逐个 await：添加会触发一次配置保存与视图刷新，并发提交会互相覆盖个人配置版本。
+        for (const modelId of modelIds) {
+          await onAddModel({ ...createEmptyModel(), modelId, hasPersonalConfig: true });
+        }
+        setCatalogOpen(false);
+        setCatalogEntries([]);
+      } catch (error) {
+        setCatalogError(
+          intl.formatMessage(
+            { id: "settings.modelProvider.pullModels.addFailed" },
+            { message: error instanceof Error ? error.message : String(error) },
+          ),
+        );
+      } finally {
+        setCatalogAdding(false);
+        catalogBusyRef.current = false;
+      }
+    },
+    [intl, onAddModel],
+  );
+
   return (
     <div>
       <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
         <span className="text-ui-base text-foreground-subtle">
           {intl.formatMessage({ id: "settings.modelProvider.models" })}
         </span>
-        <Button
-          type="button"
-          variant="secondary"
-          size="default"
-          className="rounded-lg"
-          data-testid={TID_MODEL_PROVIDER_ADD_MODEL_BUTTON}
-          onClick={openAddDialog}
-        >
-          <Plus data-icon="inline-start" aria-hidden="true" />
-          {intl.formatMessage({ id: "settings.modelProvider.addModel" })}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* 逐个「添加模型」每次都要手敲一遍 ID；拉取目录后多选批量添加是更常用的路径。 */}
+          <Button
+            type="button"
+            variant="secondary"
+            size="default"
+            className="rounded-lg"
+            data-testid={TID_MODEL_PROVIDER_PULL_MODELS_BUTTON}
+            disabled={catalogLoading || catalogAdding}
+            onClick={() => void openCatalogDialog()}
+          >
+            {catalogLoading ? (
+              <Loader2 data-icon="inline-start" className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <CloudDownload data-icon="inline-start" aria-hidden="true" />
+            )}
+            {intl.formatMessage({ id: "settings.modelProvider.pullModels" })}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="default"
+            className="rounded-lg"
+            data-testid={TID_MODEL_PROVIDER_ADD_MODEL_BUTTON}
+            onClick={openAddDialog}
+          >
+            <Plus data-icon="inline-start" aria-hidden="true" />
+            {intl.formatMessage({ id: "settings.modelProvider.addModel" })}
+          </Button>
+        </div>
       </div>
+      <ProviderModelCatalogDialog
+        open={catalogOpen}
+        baseUrl={providerBaseUrl ?? ""}
+        loading={catalogLoading}
+        entries={catalogEntries}
+        existingModelIds={existingModelIds}
+        errorMessage={catalogError}
+        adding={catalogAdding}
+        onOpenChange={setCatalogOpen}
+        onConfirm={handleCatalogConfirm}
+      />
       {models.length > 0 ? (
         <div className="overflow-hidden rounded-lg border border-input-border bg-input">
           <SortableProviderModelList
