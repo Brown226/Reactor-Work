@@ -25,6 +25,7 @@ import { bashToolEntry, createBashToolEntry } from "./bash.js";
 import type { BashTimeoutPolicy } from "../bash-timeout-policy.js";
 import { createJsToolEntry, jsToolEntry } from "./node-repl.js";
 import { globToolEntry } from "./glob.js";
+import { knowledgeCheckToolEntry } from "./knowledge-check.js";
 import { grepToolEntry } from "./grep.js";
 import { webFetchToolEntry } from "./webfetch.js";
 import { webSearchToolEntry } from "./websearch.js";
@@ -133,6 +134,8 @@ export const builtInTools: ToolEntry[] = [
   // `subagent_model`。不进 WORKFLOW_CHILD_DISALLOWED_TOOLS
   // ——那条禁令的理由是 alwaysAsk 在 child 里无窗可弹，只读查询不适用。
   listModelsToolEntry,
+  // 知识板块（文件审查的依据）：只读端侧缓存，零网络、零 LLM，判定可复现。
+  knowledgeCheckToolEntry,
   // workflowToolEntry,
 ];
 

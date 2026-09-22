@@ -222,6 +222,8 @@ export { createMemoryService } from "./memory/memoryService.js";
 export { createSettingsSyncService } from "./settings-sync/settingsSyncService.js";
 export { createServerSkillSyncService } from "./server-skills/serverSkillSyncService.js";
 export { createServerAgentSyncService } from "./server-agents/serverAgentSyncService.js";
+// 知识缓存同步（文件审查的依据）：只读登录态与凭据，把标准清单/术语白名单/规范库拉到用户数据目录。
+export { createKnowledgeSyncService } from "./knowledge/knowledgeSyncService.js";
 export { createFeedbackDiagnosticArchive } from "./feedback/feedbackLogArchive.js";
 export { createFeedbackService } from "./feedback/feedbackService.js";
 export type { CreateFeedbackServiceOptions } from "./feedback/feedbackService.js";
@@ -406,6 +408,9 @@ import { IServerSkillSyncService } from "./server-skills/serverSkillSync.js";
 // 企业服务端 Agent 同步：工厂同上（根 index 只导出 descriptor/类型）。
 import { createServerAgentSyncService } from "./server-agents/serverAgentSyncService.js";
 import { IServerAgentSyncService } from "./server-agents/serverAgentSync.js";
+// 知识缓存同步：工厂同上（根 index 只导出 descriptor/类型，避免 renderer 包拉进 node:fs）。
+import { createKnowledgeSyncService } from "./knowledge/knowledgeSyncService.js";
+import type { IKnowledgeSyncService } from "./knowledge/knowledgeSyncService.js";
 import { createUsageStatsService } from "./usage-stats/usageStatsService.js";
 import { createCodingPlanSubscriptionService } from "./coding-plan-subscription/codingPlanSubscriptionService.js";
 import { createClientConfigService } from "./client-config/clientConfigService.js";
@@ -2092,11 +2097,19 @@ export function createLocalServices(options: {
   // 登录/登出钩子晚绑定：同步器依赖 reactorServer 实例，钩子又引用同步器，用 holder 闭包回填，
   // 避免构造顺序死锁（登录后台同步 / 登出清空 server-agents，见 P3 计划 §4.3）。
   let serverAgentSyncHolder: IServerAgentSyncService | null = null;
+  // 知识缓存同步器的 late-bind holder：登录钩子在 reactorServer 构造时就绑定了，
+  // 而同步器依赖 reactorServer 实例，只能用闭包回填（与 serverAgentSyncHolder 同一个理由）。
+  let knowledgeSyncHolder: IKnowledgeSyncService | null = null;
   const reactorServerService = createReactorServerService({
     apiClient,
     credentials: credentialService,
     providerSettings: providerRuntime.providerSettings,
-    onLoginSuccess: () => serverAgentSyncHolder?.sync(),
+    onLoginSuccess: () => {
+      void serverAgentSyncHolder?.sync();
+      // 登录后台补齐审查知识缓存：审查端（CLI 工具）只读本地缓存，这里不补就等于自检没有依据。
+      // fire-and-forget：钩子失败只记日志，绝不阻断登录。
+      void knowledgeSyncHolder?.sync();
+    },
     onLogout: () => serverAgentSyncHolder?.clearLocal(),
   });
 
@@ -2116,6 +2129,21 @@ export function createLocalServices(options: {
     reactorServer: reactorServerService,
   });
   serverAgentSyncHolder = serverAgentSyncService;
+
+  // 知识缓存同步（文件审查）：标准清单 / 术语白名单 / 规范库 → 用户数据目录 knowledge/。
+  // 只读 reactor:* 凭据，不碰 provider；消费面只要求登录态，不校验角色（见方案 §4.4.3）。
+  const knowledgeSyncService = createKnowledgeSyncService({
+    apiClient,
+    credentials: credentialService,
+    reactorServer: reactorServerService,
+  });
+  knowledgeSyncHolder = knowledgeSyncService;
+  // 启动补一次：已登录则后台同步（与 server-agents 同口径，失败保留上一份可用缓存）。
+  void reactorServerService
+    .getStatus()
+    .then((status) => (status.loggedIn ? knowledgeSyncService.sync() : undefined))
+    .catch(() => undefined);
+
   // 启动补一次：已登录则后台对齐服务端目录（失败静默，登录/安装/手动触发会再收敛）。
   void reactorServerService
     .getStatus()
