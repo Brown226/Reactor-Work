@@ -62,6 +62,16 @@ pnpm dev:desktop:test
 ZCODE_DATA_BASE_DIR="$HOME/.zcode-dev-home" pnpm dev:desktop:test
 ```
 
+#### 只改了渲染层/host 层时的快速重启
+
+Agent（`apps/zcode-cli` 及其依赖的根 workspace 源码）没变时，不需要每次都重建它：
+
+```bash
+pnpm dev:desktop:reuse      # 复用上一次的 agent 产物，且保留 out/ 让 tsup 增量
+```
+
+启动脚本会对 agent 相关源码做指纹比对（`.cache/desktop-agent-build-stamp.json`），**源码没变才复用**；有变化会自动回到全量重建，所以不会把「改动没生效」伪装成「代码没用」。想强制重建用 `pnpm dev:desktop` 或加 `--force-agent-build`。实测（Windows，热指纹）：全量约 4-5 分钟，reuse 约 95 秒。
+
 ### 远程功能（SSH/WSL）
 
 先执行 `pnpm bootstrap:with-remote` 准备远程资源（mock-cdn），再 `pnpm dev:desktop`；连接远程项目时资源选择「本地下载后上传」。开发态资源取自本地 `packages/desktop/mock-cdn` 和本地构建产物，经 SFTP 上传到远程，不访问 CDN。
