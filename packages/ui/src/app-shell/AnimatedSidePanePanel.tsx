@@ -17,7 +17,7 @@ import { horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortabl
 import type { BrowserViewScreenshotSurfacePreparePayload, GitChangeSourceId } from "@zcode/shared";
 import { PreviewPane } from "@/PreviewPane.js";
 import { SidePaneTerminalPane } from "@/SidePaneTerminalPane.js";
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
 import { WorkspaceSidePaneToggleButton } from "@/WorkspaceSidePaneToggleButton.js";
 import { DesktopWindowControls } from "@/DesktopWindowControls.js";
 import { BrowserUseSidePaneContent } from "@/browser-use/BrowserUseSidePaneContent.js";
@@ -316,7 +316,7 @@ export function AnimatedSidePanePanel({
   onOpenWhiteboard: _onOpenWhiteboard,
   onOpenDeveloperTools,
   onOpenTerminalTab,
-  onOpenReviewTab,
+  onOpenChangesTab,
   onOpenWorkspaceFiles,
   onOpenSelectionSideConversation,
   onRevealGitFileInTree,
@@ -382,7 +382,7 @@ export function AnimatedSidePanePanel({
   onOpenWhiteboard: () => void;
   onOpenDeveloperTools: () => void;
   onOpenTerminalTab: () => void;
-  onOpenReviewTab: () => void;
+  onOpenChangesTab: () => void;
   onOpenWorkspaceFiles: () => void;
   onOpenSelectionSideConversation: () => void;
   onRevealGitFileInTree?: (path: string) => void;
@@ -406,7 +406,7 @@ export function AnimatedSidePanePanel({
   onSelectGitSource: (value: GitChangeSourceId) => void;
 }) {
   const { intl } = useZCodeIntl();
-  const isOfficeMode = useIsOfficeMode();
+  const isFocusedMode = useIsFocusedMode();
   const developerToolsEnabled = useDeveloperToolsVisibility();
   const isDragCollapsible = !isVisible;
   const isResizeDisabled = !isVisible;
@@ -451,7 +451,7 @@ export function AnimatedSidePanePanel({
   const widthUnlockTimerRef = useRef<number | null>(null);
   const previousIsVisibleRef = useRef(isVisible);
   const panelLayout = resolveAnimatedSidePanePanelLayout();
-  const hasReviewTab = visibleTabs.some((tab) => tab.type === "git");
+  const hasChangesTab = visibleTabs.some((tab) => tab.type === "git");
   const canOpenSelectionSideConversation = shouldOfferSelectionSideConversation({
     activeTaskId,
   });
@@ -709,14 +709,14 @@ export function AnimatedSidePanePanel({
             <span>{intl.formatMessage({ id: "sidePane.selectionChat" })}</span>
           </DropdownMenuItem>
         ) : null}
-        {!isOfficeMode && !hasReviewTab ? (
+        {!isFocusedMode && !hasChangesTab ? (
           <DropdownMenuItem
             onSelect={() => {
-              onOpenReviewTab();
+              onOpenChangesTab();
             }}
           >
             <FileDiffIcon className="size-4" />
-            <span>{intl.formatMessage({ id: "sidePane.review" })}</span>
+            <span>{intl.formatMessage({ id: "sidePane.changes" })}</span>
           </DropdownMenuItem>
         ) : null}
         {/* 画板入口未启用 */}
@@ -728,7 +728,7 @@ export function AnimatedSidePanePanel({
           <PaletteIcon className="size-4" />
           <span>{intl.formatMessage({ id: "whiteboard.title" })}</span>
         </DropdownMenuItem> */}
-        {!isOfficeMode ? (
+        {!isFocusedMode ? (
           <DropdownMenuItem
             data-side-pane-add-item="terminal"
             onSelect={() => {
@@ -771,11 +771,11 @@ export function AnimatedSidePanePanel({
       icon: MessageSquareTextIcon,
       onOpen: onOpenSelectionSideConversation,
     },
-    review: {
-      id: "review",
-      label: intl.formatMessage({ id: "sidePane.review" }),
+    changes: {
+      id: "changes",
+      label: intl.formatMessage({ id: "sidePane.changes" }),
       icon: FileDiffIcon,
-      onOpen: onOpenReviewTab,
+      onOpen: onOpenChangesTab,
     },
     files: {
       id: "files",
@@ -805,10 +805,10 @@ export function AnimatedSidePanePanel({
   const openTabLauncherItems: OpenTabLauncherItem[] = resolveOpenTabLauncherItemIds({
     canOpenSelectionSideConversation,
     developerToolsEnabled,
-    hasReviewTab,
+    hasChangesTab,
     supportsEmbeddedBrowser,
   })
-    .filter((itemId) => !isOfficeMode || (itemId !== "terminal" && itemId !== "review"))
+    .filter((itemId) => !isFocusedMode || (itemId !== "terminal" && itemId !== "changes"))
     .map((itemId) => openTabLauncherItemById[itemId]);
   const closeSidePaneButton =
     isVisible && onCloseSidePane ? (
@@ -885,7 +885,7 @@ export function AnimatedSidePanePanel({
         closeTab: (title) => intl.formatMessage({ id: "sidePane.closeTab" }, { title }),
         relativeTime: (timestamp) => formatTaskRelativeTime(timestamp, intl),
         browserTitle: intl.formatMessage({ id: "browser.title" }),
-        reviewTitle: intl.formatMessage({ id: "sidePane.review" }),
+        changesTitle: intl.formatMessage({ id: "sidePane.changes" }),
         codeViewerTitle: intl.formatMessage({ id: "codeViewer.title" }),
         treemappingTitle: intl.formatMessage({ id: "treemapping.title" }),
         whiteboardTitle: intl.formatMessage({ id: "whiteboard.title" }),

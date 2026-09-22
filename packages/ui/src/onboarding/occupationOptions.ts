@@ -1,5 +1,6 @@
 import {
   Code2,
+  FileSearch2,
   ShieldCheck,
   PanelsTopLeft,
   PenTool,
@@ -31,10 +32,16 @@ export const occupations = [
 
 export type OccupationValue = (typeof occupations)[number];
 
-/** 步骤 2 模式选择用的图标：coding / office。 */
+/**
+ * 界面模式图标：coding / office / review。
+ *
+ * review 只出现在主面板胶囊（首次引导保持两档，见 docs/interface-mode.md 第 2 节），
+ * 但图标仍收在这里，保证同一模式在全应用只有一套视觉标识。
+ */
 export const modeOptionIcons = {
   coding: Code2,
   office: PanelsTopLeft,
+  review: FileSearch2,
 } as const;
 
 const occupationIcons = [

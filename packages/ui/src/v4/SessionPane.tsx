@@ -4,7 +4,7 @@ import type { SessionCreateSource } from "@zcode/shared";
 import { reportSessionCreate } from "@/lib/sessionCreateTelemetry.js";
 import { getLocalTtftObserver } from "@/v4/telemetry/localTtftObserver.js";
 /* oxlint-disable eslint(max-lines) -- SessionPane 是单 pane 竖切的命令编排收口（订阅/发送/停止/fork/edit/retry/queue/slash 全集），与旧 ChatView 同粒度；HEAD 已超限（693 行计数），拆散命令组会打散 dispatchCommand/snapshotRef 的闭包纪律。 */
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode, useIsOfficeMode, useIsReviewMode } from "@/hooks/useInterfaceMode.js";
 import {
   useCallback,
   useEffect,
@@ -3828,11 +3828,15 @@ export function SessionPane({
     setSelectionSideChatBlocked(sessionId, Boolean(blockingInteractionId));
     return () => setSelectionSideChatBlocked(sessionId, false);
   }, [blockingInteractionId, selectionSideChat, sessionId]);
+  // 状态面板里的 git 模型属编程向信息，办公与审查两档都要收敛掉，故用收敛判据。
+  const isFocusedMode = useIsFocusedMode();
+  // 主动任务推荐是办公档独有能力（按开关显示）；审查档固定显示审查类型卡片。
   const isOfficeMode = useIsOfficeMode();
+  const isReviewMode = useIsReviewMode();
   const statusPanelModel = useMemo(
     () =>
       buildConversationStatusPanelModel({
-        isOfficeMode,
+        isFocusedMode,
         workspacePath,
         gitSummary,
         gitDirtyFileCount,
@@ -3845,7 +3849,7 @@ export function SessionPane({
         workflowRuns: snapshot?.workflowRuns?.runs ?? [],
       }),
     [
-      isOfficeMode,
+      isFocusedMode,
       gitDirtyFileCount,
       gitSummary,
       gitWorktreeChangeSummary,
@@ -4553,8 +4557,11 @@ export function SessionPane({
         />
       ) : null}
       {composerNode}
-      {/* 办公模式显示主动任务推荐；编程模式保留原有小型场景入口。 */}
-      {isDraft && (!isOfficeMode || sharedSettings?.proactiveSuggestionsEnabled === true) ? (
+      {/* 办公档按开关显示主动任务推荐；审查档始终显示审查类型卡片；编程档保留原有小型场景入口。 */}
+      {isDraft &&
+      (isReviewMode ||
+        !isOfficeMode ||
+        sharedSettings?.proactiveSuggestionsEnabled === true) ? (
         <ConversationDraftSuggestedPromptsContainer
           className={isOfficeMode ? "mt-4" : "mt-6"}
           proactive={isOfficeMode}

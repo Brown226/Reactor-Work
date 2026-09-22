@@ -487,7 +487,7 @@ export function createZCodeStore(
         state.setLocale(msg.payload);
       } else if (
         field === "interfaceMode" &&
-        (msg.payload === "office" || msg.payload === "coding")
+        (msg.payload === "office" || msg.payload === "coding" || msg.payload === "review")
       ) {
         state.setInterfaceMode(normalizeInterfaceMode(msg.payload));
       } else if (field === "uiFontSizePx" && typeof msg.payload === "number") {

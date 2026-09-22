@@ -1,5 +1,5 @@
 /* oxlint-disable eslint(max-lines) -- 状态面板同时维护收起态摘要、展开态分区、菜单策略和宽度自适应，同文件能保证两种形态共享同一内容优先级。 */
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
 import {
   forwardRef,
   memo,
@@ -1744,13 +1744,13 @@ function ConversationStatusPanelImpl({
   onOpenWorkflowRunDirectory,
   className,
 }: ConversationStatusPanelProps) {
-  const isOfficeMode = useIsOfficeMode();
+  const isFocusedMode = useIsFocusedMode();
   const miniMeasureRef = useRef<HTMLDivElement | null>(null);
   const [miniWidth, setMiniWidth] = useState(320);
   const model = useMemo(
     () =>
       buildConversationStatusPanelModel({
-        isOfficeMode,
+        isFocusedMode,
         gitSummary,
         gitDirtyFileCount,
         gitWorktreeChangeSummary,
@@ -1763,7 +1763,7 @@ function ConversationStatusPanelImpl({
         workflowRuns,
       }),
     [
-      isOfficeMode,
+      isFocusedMode,
       backgroundWorks,
       gitDirtyFileCount,
       gitSummary,

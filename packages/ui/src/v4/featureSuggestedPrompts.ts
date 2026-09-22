@@ -11,7 +11,7 @@ import type { DraftSuggestedPromptItem } from "@/v4/draftSuggestedPromptItems.js
 const ASSETS = "https://cdn-zcode.z.ai/zcode/official-plugin/assets";
 
 type FeatureRecommendedPrompt = DraftSuggestedPromptItem & {
-  mode: "office" | "coding";
+  mode: "office" | "coding" | "review";
 };
 
 // 本期推荐按模式硬分池；展示文案和填入正文分别维护。
@@ -560,9 +560,64 @@ export const featureSuggestedPrompts: FeatureRecommendedPrompt[] = [
       en: "Set up an idle-time task for the open local repository. Trace how timeouts, disconnections, rate limits, and errors from external APIs, databases, and third-party services affect important user flows. Follow each path to the caller and user-visible result, reproduce high-risk gaps where feasible, and deliver a severity-ranked report with code locations, runtime evidence, and fixes. Do not present unverified risks as incidents or make broad code changes. Ask me to select a local repository if none is open.",
     },
   },
+  // ── 审查档（review）的审查类型卡片 ────────────────────────────────────────────
+  // 与办公/编程推荐池同源同机制：点击即预填提示词，不自动发送。
+  // 模式集合与取舍见 docs/审查板块-方案-v1.md §2（已裁剪 RULE_ONLY / DEC_REVIEW；
+  //「以库审文」依赖的企业知识库本期不做，故此处不出现，避免死入口）。
+  {
+    id: "review-type-proofread",
+    mode: "review",
+    iconName: "spell-check",
+    label: { cn: "基础校对", en: "Proofread" },
+    prompt: {
+      cn: "帮我校对这份文件，检查错别字、语法、标点和术语一致性。逐条指出问题所在的原文片段与修改建议，不要整篇重写。",
+      en: "Proofread this file for typos, grammar, punctuation, and terminology consistency. List each issue with the original snippet and a suggested fix; do not rewrite the whole document.",
+    },
+  },
+  {
+    id: "review-type-consistency",
+    mode: "review",
+    iconName: "list-checks",
+    label: { cn: "全文一致性", en: "Consistency" },
+    prompt: {
+      cn: "帮我检查这份文件前后的一致性，重点看数值参数、单位、设备编号、名称与称谓是否统一。列出不一致的位置和正确值，并说明判定依据。",
+      en: "Check this document's internal consistency, focusing on values, units, equipment IDs, names, and terminology. List each inconsistency with the correct value and the basis for your judgment.",
+    },
+  },
+  {
+    id: "review-type-compare",
+    mode: "review",
+    iconName: "file-diff",
+    label: { cn: "以文审文", en: "Review against reference" },
+    prompt: {
+      cn: "我会上传一份参照文件和一份待审文件。以参照文件为权威基准，逐条核对待审文件是否有遗漏、数值或规格不符、编号错误。只报告确信的差异，措辞不同不算问题。",
+      en: "I will provide a reference document and a document under review. Treat the reference as authoritative and check the target for omissions, value or spec mismatches, and wrong identifiers. Report only confident differences; wording differences do not count.",
+    },
+  },
+  {
+    id: "review-type-contract",
+    mode: "review",
+    iconName: "scale",
+    label: { cn: "合同风险审查", en: "Contract risk" },
+    prompt: {
+      cn: "帮我审查这份合同的风险条款，重点关注付款条件、违约责任、质保与保险、争议解决。按风险等级给出条款出处、风险说明和建议修改方向。",
+      en: "Review this contract's risk clauses, focusing on payment terms, liability, warranty and insurance, and dispute resolution. Rank by risk level with the clause location, the risk, and a suggested change.",
+    },
+  },
+  {
+    id: "review-type-standard-ref",
+    mode: "review",
+    iconName: "book-check",
+    label: { cn: "标准引用自检", en: "Standard reference check" },
+    prompt: {
+      cn: "帮我检查这份文件里引用的标准规范：编号是否写错、标准是否已废止、版本年份是否是最新的。逐条给出文件中的写法与应当的写法。",
+      en: "Check the standards cited in this document: wrong identifiers, abolished standards, and outdated version years. For each, show what the file says versus what it should say.",
+    },
+  },
 ];
 
-export function getRecommendedPromptPool(isOfficeMode: boolean): DraftSuggestedPromptItem[] {
-  const mode = isOfficeMode ? "office" : "coding";
+export function getRecommendedPromptPool(
+  mode: FeatureRecommendedPrompt["mode"],
+): DraftSuggestedPromptItem[] {
   return featureSuggestedPrompts.filter((item) => item.mode === mode);
 }

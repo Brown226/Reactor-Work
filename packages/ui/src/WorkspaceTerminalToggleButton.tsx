@@ -7,7 +7,7 @@ import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
 import { WINDOWS_CAPTION_CONTROL_CLASS } from "@/windowCaptionControls.js";
 import { runUserAction } from "@/lib/userActionTelemetry.js";
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
 
 export function WorkspaceTerminalToggleButton({
   isTerminalOpen,
@@ -21,12 +21,12 @@ export function WorkspaceTerminalToggleButton({
   useWindowsCaptionSpacing?: boolean;
 }) {
   const { intl } = useZCodeIntl();
-  const isOfficeMode = useIsOfficeMode();
+  const isFocusedMode = useIsFocusedMode();
   const label = intl.formatMessage({ id: "terminal.toggle" });
   // 展示 label 从快捷键生效表取，用户改键后 tooltip 跟随更新
   const toggleTerminalShortcutLabel = useShortcutCommandLabel("toggleTerminal");
 
-  if (isOfficeMode) return null;
+  if (isFocusedMode) return null;
 
   return (
     <ControlHintTooltip

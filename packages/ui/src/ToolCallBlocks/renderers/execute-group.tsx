@@ -45,14 +45,14 @@ function formatCompletedSummary(
 
 export function ExecuteGroupToolCallBlock(context: ToolCallBlockRenderContext) {
   const { intl } = useZCodeIntl();
-  const { toolCallNode, isRunning, statusLabel, isOfficeMode = false } = context;
+  const { toolCallNode, isRunning, statusLabel, isFocusedMode = false } = context;
   const { toolCall, childToolCalls } = toolCallNode;
   const latestActiveChild = childToolCalls.findLast((child) =>
     ACTIVE_STATUSES.has(child.toolCall.status),
   );
   const latestChild = latestActiveChild ?? childToolCalls.at(-1);
   const latestCommand =
-    !isOfficeMode && latestChild ? getExecuteSecondaryText(latestChild.toolCall.input) : undefined;
+    !isFocusedMode && latestChild ? getExecuteSecondaryText(latestChild.toolCall.input) : undefined;
   const runningActionLabel = latestCommand
     ? intl.formatMessage({ id: "chat.toolCall.execute.running" })
     : undefined;
@@ -110,8 +110,8 @@ export function ExecuteGroupToolCallBlock(context: ToolCallBlockRenderContext) {
     <ToolLayout
       toolId={toolCall.toolId}
       icon={EXECUTE_GROUP_ICON}
-      canToggle={!isOfficeMode && (context.canToggle ?? true)}
-      forceOpen={!isOfficeMode && (context.forceOpen ?? false)}
+      canToggle={!isFocusedMode && (context.canToggle ?? true)}
+      forceOpen={!isFocusedMode && (context.forceOpen ?? false)}
       kindLabel={intl.formatMessage({ id: "chat.toolCall.executeGroup.label" })}
       expandedKindLabel={intl.formatMessage({
         id: "chat.toolCall.executeGroup.label",
@@ -132,7 +132,7 @@ export function ExecuteGroupToolCallBlock(context: ToolCallBlockRenderContext) {
       }
       statusLabel={statusLabel}
       isRunning={isRunning}
-      title={isOfficeMode ? undefined : isRunning && latestCommand ? latestCommand : toolCall.title}
+      title={isFocusedMode ? undefined : isRunning && latestCommand ? latestCommand : toolCall.title}
       expandedTitle={toolCall.title}
       renderContent={renderContent}
     />

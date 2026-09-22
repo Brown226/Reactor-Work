@@ -3,7 +3,7 @@ import type { WorkspaceSidePaneTab } from "@/lib/workspaceSidePane.js";
 
 export interface SidePaneTabPresentationLabels {
   browserTitle: string;
-  reviewTitle: string;
+  changesTitle: string;
   codeViewerTitle: string;
   treemappingTitle: string;
   whiteboardTitle: string;
@@ -77,7 +77,7 @@ export function getLocalizedSidePaneTabTitle(
   return getSidePaneTabTitle(tab, (descriptor) => {
     const titleByMessageId: Record<string, string> = {
       "browser.title": labels.browserTitle,
-      "sidePane.review": labels.reviewTitle,
+      "sidePane.changes": labels.changesTitle,
       "codeViewer.title": labels.codeViewerTitle,
       "treemapping.title": labels.treemappingTitle,
       "whiteboard.title": labels.whiteboardTitle,
@@ -113,7 +113,7 @@ export function getSidePaneTabTypeLabel(
   }
   if (tab.type === "subagent-directory") return labels.subagentDirectoryTitle;
   if (tab.type === "browser" || tab.type === "browser-use") return labels.browserTitle;
-  if (tab.type === "git") return labels.reviewTitle;
+  if (tab.type === "git") return labels.changesTitle;
   if (tab.type === "treemapping") return labels.treemappingTitle;
   if (tab.type === "whiteboard") return labels.whiteboardTitle;
   if (tab.type === "model-trajectory") return labels.modelTrajectoryTitle;

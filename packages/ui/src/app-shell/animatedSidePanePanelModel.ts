@@ -2,7 +2,7 @@ const MIN_PREVIEW_PANE_HEAVY_CONTENT_VISIBLE_INLINE_SIZE_PX = 96;
 
 export type OpenTabLauncherItemId =
   | "selection-side-conversation"
-  | "review"
+  | "changes"
   | "files"
   | "terminal"
   | "browser"
@@ -10,12 +10,12 @@ export type OpenTabLauncherItemId =
 
 export function resolveOpenTabLauncherItemIds({
   developerToolsEnabled,
-  hasReviewTab,
+  hasChangesTab,
   canOpenSelectionSideConversation = false,
   supportsEmbeddedBrowser = true,
 }: {
   developerToolsEnabled: boolean;
-  hasReviewTab: boolean;
+  hasChangesTab: boolean;
   canOpenSelectionSideConversation?: boolean;
   supportsEmbeddedBrowser?: boolean;
 }): OpenTabLauncherItemId[] {
@@ -25,11 +25,11 @@ export function resolveOpenTabLauncherItemIds({
     itemIds.push("selection-side-conversation");
   }
 
-  if (!hasReviewTab) {
-    itemIds.push("review");
+  if (!hasChangesTab) {
+    itemIds.push("changes");
   }
 
-  // 工作区文件：与审查/终端并列的常驻入口（文件树从左侧抽屉迁到右侧后的主入口）。
+  // 工作区文件：与变更审查/终端并列的常驻入口（文件树从左侧抽屉迁到右侧后的主入口）。
   itemIds.push("files");
 
   itemIds.push("terminal");

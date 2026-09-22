@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { IServiceAccessor } from "@zcode/services";
 import { TID_TERMINAL, TID_TERMINAL_CLOSE_BUTTON } from "@zcode/shared";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
 import { logger } from "@/logger.js";
 import { Button } from "@/components/ui/button.js";
 import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs.js";
@@ -45,7 +45,7 @@ export function Terminal({
   onOpenBrowserUrl: (url: string) => void;
 }) {
   const { intl } = useZCodeIntl();
-  const isOfficeMode = useIsOfficeMode();
+  const isFocusedMode = useIsFocusedMode();
   const workspaceKey = workspaceIdentity?.trim() || cwd || "__default__";
   const [panelState, setPanelState] = useState<TerminalPanelState>(() => {
     const { session, workspace } = createWorkspaceTerminalState({
@@ -329,7 +329,7 @@ export function Terminal({
           </div>
 
           <div className="flex shrink-0 items-center gap-1">
-            {!isOfficeMode && (
+            {!isFocusedMode && (
               <Button
                 type="button"
                 size="icon-md"

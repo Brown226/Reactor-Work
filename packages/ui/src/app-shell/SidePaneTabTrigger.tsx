@@ -523,7 +523,7 @@ export function getSidePaneTabTitle(
   }
 
   if (tab.type === "git") {
-    return formatMessage({ id: "sidePane.review" });
+    return formatMessage({ id: "sidePane.changes" });
   }
 
   if (tab.type === "files") {

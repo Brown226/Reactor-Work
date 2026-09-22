@@ -118,7 +118,7 @@ export interface ConversationStatusPanelModel {
 }
 
 interface BuildConversationStatusPanelModelInput {
-  isOfficeMode?: boolean;
+  isFocusedMode?: boolean;
   gitSummary?: GitRepositorySummary | null;
   gitDirtyFileCount?: number;
   gitWorktreeChangeSummary?: { added: number; removed: number } | null;
@@ -296,7 +296,7 @@ export function resolveSoleRunningWorkflowRunTarget(
 export function buildConversationStatusPanelModel(
   input: BuildConversationStatusPanelModelInput,
 ): ConversationStatusPanelModel {
-  const git = input.isOfficeMode ? null : buildGitModel(input);
+  const git = input.isFocusedMode ? null : buildGitModel(input);
   const goal = input.goal ?? null;
   const sessionPlans = buildSessionPlansModel(input.sessionPlans, input.workspacePath);
   const plan = buildPlanModel(input.plan);

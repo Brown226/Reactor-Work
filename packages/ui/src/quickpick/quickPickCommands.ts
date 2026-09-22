@@ -60,7 +60,7 @@ interface QuickPickCommandHandlers {
   togglePreview: () => void;
   openTerminalTab: () => void;
   openBrowserTab: () => void;
-  openReviewTab: () => void;
+  openChangesTab: () => void;
 }
 
 interface CreateQuickPickCommandsOptions {
@@ -69,7 +69,7 @@ interface CreateQuickPickCommandsOptions {
   isLoggedIn: boolean;
   supportsEmbeddedBrowser?: boolean;
   supportsTerminal?: boolean;
-  supportsReview?: boolean;
+  supportsChanges?: boolean;
   themeTarget: "dark" | "light";
   shortcuts: {
     newTask: string;
@@ -86,7 +86,7 @@ export function createQuickPickCommands({
   isLoggedIn,
   supportsEmbeddedBrowser = true,
   supportsTerminal = true,
-  supportsReview = true,
+  supportsChanges = true,
   themeTarget,
   shortcuts,
   handlers,
@@ -181,12 +181,12 @@ export function createQuickPickCommands({
         ]
       : []),
     {
-      id: "add-review-tab",
+      id: "add-changes-tab",
       sectionId: "panels",
-      titleId: "quickPick.command.addReviewTab",
+      titleId: "quickPick.command.addChangesTab",
       icon: "diff",
-      keywords: ["add", "review", "diff", "changes", "添加审查", "审查标签", "变更"],
-      run: handlers.openReviewTab,
+      keywords: ["add", "review", "diff", "changes", "添加变更审查", "变更审查标签", "变更"],
+      run: handlers.openChangesTab,
     },
     {
       id: "settings",
@@ -279,6 +279,6 @@ export function createQuickPickCommands({
     (command) =>
       (supportsTerminal ||
         (command.id !== "toggle-terminal" && command.id !== "add-terminal-tab")) &&
-      (supportsReview || command.id !== "add-review-tab"),
+      (supportsChanges || command.id !== "add-changes-tab"),
   );
 }

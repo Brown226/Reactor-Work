@@ -267,7 +267,7 @@ function extractExecuteResultText(output: unknown): string | null {
 
 export function ExecuteToolCallBlock(context: ToolCallBlockRenderContext) {
   const { intl } = useZCodeIntl();
-  const { toolCallNode, isRunning, statusLabel, errorText, isOfficeMode = false } = context;
+  const { toolCallNode, isRunning, statusLabel, errorText, isFocusedMode = false } = context;
   const { toolCall } = toolCallNode;
   const secondaryText = getExecuteSecondaryText(toolCall.input);
   const contentParts = getExecuteContentParts(toolCall.input);
@@ -333,11 +333,11 @@ export function ExecuteToolCallBlock(context: ToolCallBlockRenderContext) {
         toolId={toolCall.toolId}
         icon={EXECUTE_TOOL_ICON}
         showIcon={context.showIcon !== false}
-        canToggle={!isOfficeMode && (context.canToggle ?? true)}
-        forceOpen={!isOfficeMode && (context.forceOpen ?? false)}
+        canToggle={!isFocusedMode && (context.canToggle ?? true)}
+        forceOpen={!isFocusedMode && (context.forceOpen ?? false)}
         hideSecondaryTextWhenOpen
         kindLabel={
-          (isOfficeMode
+          (isFocusedMode
             ? intl.formatMessage({
                 id: isRunning
                   ? "chat.toolCall.execute.running"
@@ -350,21 +350,21 @@ export function ExecuteToolCallBlock(context: ToolCallBlockRenderContext) {
         }
         sourceLabel={context.sourceLabel}
         primaryText={
-          isOfficeMode || secondaryText
+          isFocusedMode || secondaryText
             ? null
             : (toolCall.title ??
               toolCall.kind ??
               intl.formatMessage({ id: "chat.toolCall.execute.execute" }))
         }
-        secondaryText={isOfficeMode ? undefined : secondaryTextNode}
+        secondaryText={isFocusedMode ? undefined : secondaryTextNode}
         statusLabel={statusLabel}
-        statusTooltip={isOfficeMode ? undefined : failureVisibleText}
+        statusTooltip={isFocusedMode ? undefined : failureVisibleText}
         showFailureStatus={toolCall.status === "failed"}
         isRunning={isRunning}
-        title={isOfficeMode ? undefined : toolCall.title}
+        title={isFocusedMode ? undefined : toolCall.title}
         renderContent={renderContent}
       />
-      {!isOfficeMode ? (
+      {!isFocusedMode ? (
         <ToolSnapshotFieldNotice
           refs={toolCall.snapshotRefs ?? []}
           onLoadFullToolCallFields={

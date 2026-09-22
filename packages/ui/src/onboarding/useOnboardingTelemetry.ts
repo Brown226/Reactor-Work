@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useRef } from "react";
 import type { IPlatformService } from "@zcode/shared";
-import type { InterfaceMode } from "@/lib/interfaceMode.js";
+import type { OnboardingInterfaceMode } from "@/lib/interfaceMode.js";
 import type { OccupationValue } from "@/onboarding/occupationOptions.js";
 import { reportAppTelemetryEvent } from "@/lib/appTelemetry.js";
 
@@ -24,7 +24,7 @@ type Exposure = {
   ended: boolean;
   modeVisited: boolean;
   preferencesVisited: boolean;
-  mode: InterfaceMode | null;
+  mode: OnboardingInterfaceMode | null;
   preferenceValues: string;
 };
 
@@ -43,7 +43,7 @@ export function useOnboardingTelemetry({
   visible: boolean;
   step: 0 | 1 | 2;
   occupation: OccupationValue | null;
-  mode: InterfaceMode | null;
+  mode: OnboardingInterfaceMode | null;
   memory: boolean;
   suggestions: boolean;
   migration: boolean;

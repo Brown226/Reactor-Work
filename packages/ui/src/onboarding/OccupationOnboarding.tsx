@@ -15,7 +15,10 @@ import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { Button } from "@/components/ui/button.js";
 import { Checkbox } from "@/components/ui/checkbox.js";
 import { useZCodeStore } from "@/store/StoreProvider.js";
-import type { InterfaceMode } from "@/lib/interfaceMode.js";
+import {
+  toOnboardingInterfaceMode,
+  type OnboardingInterfaceMode,
+} from "@/lib/interfaceMode.js";
 import { logger } from "@/logger.js";
 import { DesktopWindowControls } from "@/DesktopWindowControls.js";
 import type { OnboardingRecordEntry } from "@zcode/shared";
@@ -61,7 +64,11 @@ export function OccupationOnboarding({
   const savedInterfaceMode = useZCodeStore((state) => state.interfaceMode);
   const setInterfaceMode = useZCodeStore((state) => state.setInterfaceMode);
   // mode 为 null 表示模式页被"跳过"（跳过是显式答案，记录里保留 null 而非兜底值）。
-  const [mode, setMode] = useState<InterfaceMode | null>(savedInterfaceMode);
+  // 引导只覆盖编程/办公两档（见 docs/interface-mode.md 第 2 节）；用户若已停在审查档，
+  // 这里按引导可记录的子集收窄，不把 review 写进引导记录。
+  const [mode, setMode] = useState<OnboardingInterfaceMode | null>(
+    toOnboardingInterfaceMode(savedInterfaceMode),
+  );
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const preferences = step === 2;
   const requestOnboardingDialog = useZCodeStore((state) => state.requestOnboardingDialog);
@@ -185,7 +192,7 @@ export function OccupationOnboarding({
         ? (entry.occupation as OccupationValue)
         : "developer",
     );
-    const initialMode = entry?.interfaceMode ?? savedInterfaceMode;
+    const initialMode = entry?.interfaceMode ?? toOnboardingInterfaceMode(savedInterfaceMode);
     setMode(initialMode);
     // 编程模式默认关闭主动工作记忆；办公模式才恢复该用户之前的勾选。
     setMemory(initialMode === "office" && (entry?.memoryEnabled ?? true));

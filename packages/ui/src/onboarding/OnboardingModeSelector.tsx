@@ -1,12 +1,12 @@
 import { Check } from "lucide-react";
 import { modeOptionIcons } from "@/onboarding/occupationOptions.js";
 import { cn } from "@/components/lib/utils.js";
-import type { InterfaceMode } from "@/lib/interfaceMode.js";
+import type { OnboardingInterfaceMode } from "@/lib/interfaceMode.js";
 
 interface ModeSelectorProps {
-  mode: InterfaceMode | null;
+  mode: OnboardingInterfaceMode | null;
   saving: boolean;
-  onSelect: (value: InterfaceMode) => void;
+  onSelect: (value: OnboardingInterfaceMode) => void;
   label: string;
   formatLabel: (key: string) => string;
 }

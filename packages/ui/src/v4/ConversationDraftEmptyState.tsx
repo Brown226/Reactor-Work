@@ -8,7 +8,7 @@ import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from
 import darkEmptyStateLogoUrl from "@/assets/Z.svg";
 import { cn } from "@/components/lib/utils.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsOfficeMode, useIsReviewMode } from "@/hooks/useInterfaceMode.js";
 import { useReactorServer } from "@/hooks/useReactorServer.js";
 import { logger } from "@/logger.js";
 import { useZCodeStoreWithDefault } from "@/store/StoreProvider.js";
@@ -82,6 +82,7 @@ function resolveGreetingFontSizePx({
 export function ConversationDraftEmptyState({ className }: { className?: string }) {
   const { intl } = useZCodeIntl();
   const isOfficeMode = useIsOfficeMode();
+  const isReviewMode = useIsReviewMode();
   const user = useZCodeStoreWithDefault((state) => state.user, null);
   const enterpriseSession = useReactorServer();
   const [greetingDate, setGreetingDate] = useState(() => new Date());
@@ -89,7 +90,11 @@ export function ConversationDraftEmptyState({ className }: { className?: string 
   const greetingContainerRef = useRef<HTMLParagraphElement | null>(null);
   const greetingMeasurementRef = useRef<HTMLSpanElement | null>(null);
   const greeting = intl.formatMessage({
-    id: isOfficeMode ? "chat.empty.greeting.office" : getChatEmptyGreetingMessageId(greetingDate),
+    id: isReviewMode
+      ? "chat.empty.greeting.review"
+      : isOfficeMode
+        ? "chat.empty.greeting.office"
+        : getChatEmptyGreetingMessageId(greetingDate),
   });
   // 句首带上登录用户名：与侧边栏页脚同一优先级（ZCode 账号在前，企业登录 Reactor Server 在后）；
   // 两处都未登录时保持原问候语，不留空称呼。

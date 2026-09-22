@@ -1,4 +1,5 @@
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { getRecommendedPromptPool } from "@/v4/featureSuggestedPrompts.js";
+import { useZCodeStoreWithDefault } from "@/store/StoreProvider.js";
 import { useSettings } from "@/hooks/useSettingService.js";
 import { useOnboardingRecordService } from "@/hooks/useOnboardingRecordService.js";
 import {
@@ -89,17 +90,22 @@ export function ConversationDraftSuggestedPromptsContainer({
 }: Props) {
   const { intl, locale } = useZCodeIntl();
   const platform = usePlatform();
-  const isOfficeMode = useIsOfficeMode();
+
   const { update } = useSettings();
   const onboardingRecordService = useOnboardingRecordService();
   const recommendationPaneId = useId();
-  const recommendationMode = isOfficeMode ? "office" : "coding";
+  // 推荐池按界面档位分池：审查档有独立的审查类型卡片池（见 featureSuggestedPrompts）。
+  const recommendationMode = useZCodeStoreWithDefault(
+    (state) => state.interfaceMode,
+    "coding" as const,
+  );
   const recommendationRevision = useSyncExternalStore(
     subscribeRecommendedPrompts,
     getRecommendedPromptsRevision,
   );
   useEffect(() => {
-    if (!proactive) return;
+    // 审查档用固定菜单，不注册轮换 pane（注册会被 selectForPane 截断成 3 条）。
+    if (!proactive || recommendationMode === "review") return;
     registerRecommendedPromptPane(recommendationPaneId, recommendationMode);
     return () => unregisterRecommendedPromptPane(recommendationPaneId);
   }, [proactive, recommendationMode, recommendationPaneId]);
@@ -141,9 +147,12 @@ export function ConversationDraftSuggestedPromptsContainer({
     rpcReady: resolution.rpcReady,
     workspaceKey,
   });
+  // 审查档的审查类型卡片是固定菜单（全部类型都要能看到），不参与「换一批」轮换，
+  // 也不受办公档主动推荐开关约束；办公档与编程档继续走原有推荐/场景池。
+  const isReviewMode = recommendationMode === "review";
   const items = useMemo(
     () =>
-      (proactive ? recommendedItems : allItems).filter(
+      (isReviewMode ? getRecommendedPromptPool("review") : proactive ? recommendedItems : allItems).filter(
         (item) =>
           !item.actions?.some(
             (action) =>
@@ -151,7 +160,7 @@ export function ConversationDraftSuggestedPromptsContainer({
               action === DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS_OFFPEAK,
           ) || Boolean(onOpenAutomations),
       ),
-    [allItems, onOpenAutomations, proactive, recommendedItems],
+    [allItems, isReviewMode, onOpenAutomations, proactive, recommendedItems],
   );
   const {
     clearPluginActionPopover,
@@ -726,15 +735,24 @@ export function ConversationDraftSuggestedPromptsContainer({
   );
 
   return (
-    <div data-v4-draft-suggested-prompts-slot="true" className={cn(!proactive && "h-8", className)}>
+    <div
+      data-v4-draft-suggested-prompts-slot="true"
+      className={cn(!proactive && "h-8", className)}
+    >
       <ConversationDraftSuggestedPrompts
         // 绝对定位让推荐区脱离 Composer 的正常结构，调试和间距语义都不直观。
         // 旧场景推荐保留固定槽位；主动推荐列表必须由内容撑高，否则多行会溢出并覆盖下方内容。
+        // 审查档的审查类型卡片与编程档场景卡同形：单行横排 chips（超出横向滚动），
+        // 不用 list 竖排——视觉规格见 docs/interface-mode.md 第 4 节。
         items={items}
         layout={proactive ? "list" : "chips"}
         onSelect={handleSelect}
-        onRefresh={proactive ? () => advanceRecommendedPromptPane(recommendationPaneId) : undefined}
-        onClose={proactive ? closeRecommendations : undefined}
+        onRefresh={
+          proactive && !isReviewMode
+            ? () => advanceRecommendedPromptPane(recommendationPaneId)
+            : undefined
+        }
+        onClose={proactive && !isReviewMode ? closeRecommendations : undefined}
         disabled={cancelling || closing}
         refreshDisabled={Boolean(pluginActionPopover)}
         pluginActionPopover={pluginActionPopover}
