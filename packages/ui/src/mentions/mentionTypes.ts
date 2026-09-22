@@ -14,7 +14,8 @@ export interface MentionItemData {
   boardId?: string;
   // server = 企业服务端下发的技能目录（server-skills/），来源见 docs/server-skill-sync.md。
   scope?: "built-in" | "workspace" | "user" | "plugin" | "server";
-  source?: "built-in" | "user" | "plugin";
+  // server = 企业服务端下发的 subagent（server-agents/），来源见 docs/服务端接线-P3-Agent下发.md。
+  source?: "built-in" | "user" | "plugin" | "server";
   model?: string;
   /** Plugin 引用的稳定身份（`name@marketplace`），canonical 链接目标；label 不参与身份。 */
   pluginId?: string;

@@ -28,6 +28,7 @@ import {
 import { normalizeSubagentModelSelection } from "./subagentModelSelection.js";
 import { serializeSubagentMarkdown, parseSubagentMarkdown } from "./subagentMarkdown.js";
 import {
+  resolveServerAgentsRoot,
   resolveSubagentStateFile,
   resolveUserHomeDir,
   resolveUserSubagentRoot,
@@ -207,6 +208,12 @@ async function discoverFileAgents(params: {
       scope: "user",
       rootPath: await resolveUserSubagentRoot(params.storageOptions),
     });
+    // 服务端下发目录与用户目录同族（用户级、同一能力门内）：两个 list 模式都包含，
+    // 企业专家不随设置页 tab 切换消失（P3 计划 §4.4）。
+    roots.push({
+      scope: "server",
+      rootPath: await resolveServerAgentsRoot(params.storageOptions),
+    });
   }
   if (params.includeWorkspaceAgents) {
     roots.push({
@@ -230,8 +237,25 @@ async function discoverFileAgents(params: {
           continue;
         }
         if (parsed.agent) {
+          // server 根护栏（U-P3-6）：parse 层把非 built-in 一律标成可写 source=user
+          // （subagentMarkdown.ts 的 source/readOnly 推导），这里覆盖为只读 source=server
+          // 并重算稳定 id——否则企业专家会进入用户 CRUD/删除路径，违反 R5。
+          const agent =
+            root.scope === "server"
+              ? {
+                  ...parsed.agent,
+                  id: createAgentStateId({
+                    name: parsed.agent.name,
+                    scope: "server",
+                    source: "server",
+                  }),
+                  source: "server" as const,
+                  readOnly: true,
+                  enabled: true,
+                }
+              : parsed.agent;
           agents.push({
-            ...parsed.agent,
+            ...agent,
             projectPath: root.scope === "workspace" ? params.workspacePath : undefined,
           });
         }
@@ -599,6 +623,9 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
       const sortedWorkspaceAgents = fileAgents
         .filter((agent) => agent.scope === "workspace")
         .sort((left, right) => left.name.localeCompare(right.name));
+      const sortedServerAgents = fileAgents
+        .filter((agent) => agent.scope === "server")
+        .sort((left, right) => left.name.localeCompare(right.name));
       // 用户页不能读项目 profile，但仍需展示本地插件的只读覆盖入口；不能把两者一并剪掉。
       const pluginAgentDiscovery = await discoverPluginAgents({
         diagnostics,
@@ -607,16 +634,21 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
           ...builtInAgents.map((agent) => agent.name),
           ...sortedUserAgents.map((agent) => agent.name),
           ...sortedWorkspaceAgents.map((agent) => agent.name),
+          // server 名同样占用裸名：不让插件 agent 抢注与企业专家同名的别名（§4.4）。
+          ...sortedServerAgents.map((agent) => agent.name),
         ],
         storageOptions,
       });
       const discoveredAgents =
         mode === "settingsUserOnly"
-          ? [...builtInAgents, ...sortedUserAgents]
+          ? [...builtInAgents, ...sortedUserAgents, ...sortedServerAgents]
           : applyRuntimePrecedence([
               ...builtInAgents,
               ...sortedUserAgents,
               ...sortedWorkspaceAgents,
+              // server 排在 workspace 之后、plugin 之前：applyRuntimePrecedence 后写覆盖，
+              // 实际解析优先级 = plugin > server > workspace > user > built-in（§4.4 / U-P3-1）。
+              ...sortedServerAgents,
               ...pluginAgentDiscovery.runtimeAgents,
             ]);
       const agents = attachEnabledState(discoveredAgents, state);
@@ -726,6 +758,10 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
     async updateAgent(params: AgentUpdateParams): Promise<{ agent: AgentSummary }> {
       validateUserAgentConfig(params.config);
       assertNotBuiltInName(params.config.name);
+      // 改名会 rm oldFilePath；server 文件绝不允许经此路径被删（assertNotServerAgentPath）。
+      if (params.oldFilePath) {
+        await assertNotServerAgentPath(params.oldFilePath, storageOptions);
+      }
 
       const scope = params.scope ?? "user";
       const agentDir =
@@ -753,6 +789,7 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
     },
 
     async deleteAgent(params: AgentDeleteParams): Promise<void> {
+      await assertNotServerAgentPath(params.filePath, storageOptions);
       await rm(params.filePath, { force: true });
 
       const state = await readAgentStateFile(storageOptions);
@@ -827,6 +864,22 @@ function requireWorkspacePath(workspacePath: string | undefined): string {
   const value = workspacePath?.trim();
   if (!value) throw new Error("Workspace path is required for workspace subagents");
   return value;
+}
+
+/**
+ * server 下发文件禁止进入本地删除/改名路径（R5 / U-P3-6 护栏）：
+ * 企业专家的解除安装只能走服务端 `DELETE .../install`，本地 rm 会被下次同步写回，
+ * 也可能把「企业下发」误删成「用户自建消失」。UI 已隐藏入口，这里是代码路径的最后一道闸。
+ */
+async function assertNotServerAgentPath(
+  filePath: string,
+  options?: SubagentStorageOptions,
+): Promise<void> {
+  const serverRoot = await resolveServerAgentsRoot(options);
+  const relativePath = relative(serverRoot, filePath);
+  if (relativePath === "" || (!relativePath.startsWith("..") && !isAbsolute(relativePath))) {
+    throw new Error("企业专家由服务端下发，不能本地删除或修改；请使用「卸载」");
+  }
 }
 
 function parseSavedAgent(

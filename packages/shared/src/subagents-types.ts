@@ -1,9 +1,13 @@
 import type { ZCodeProvider } from "./zcode-task-types-core.js";
 import { modelSelectionSchema, type ModelSelection } from "./model-selection.js";
 
-export type AgentScope = "built-in" | "workspace" | "user";
+/**
+ * `server` = 企业服务端下发（`server-agents/`，P3）：同步器唯一写入、只读、不可本地删除；
+ * 启停由服务端 install 关系决定，端侧只物化/删除文件，不进 `disabledAgentIds`。
+ */
+export type AgentScope = "built-in" | "workspace" | "user" | "server";
 
-export type AgentSource = "built-in" | "user" | "plugin";
+export type AgentSource = "built-in" | "user" | "plugin" | "server";
 
 export type BuiltInSubagentName = "general-purpose" | "Explore";
 

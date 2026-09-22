@@ -21,6 +21,15 @@ export async function resolveUserSubagentRoot(options?: SubagentStorageOptions):
   return join(await resolveZCodeStorageRoot(options), "agents");
 }
 
+/**
+ * 服务端下发目录（P3）：与 `agents/` 同一存储根下的兄弟目录，物理隔离。
+ * 唯一写者是 `IServerAgentSyncService`；发现层（GUI/CLI）只读；
+ * 解析必须与 `resolveUserSubagentRoot` 同口径，否则「同步下来没人发现」。
+ */
+export async function resolveServerAgentsRoot(options?: SubagentStorageOptions): Promise<string> {
+  return join(await resolveZCodeStorageRoot(options), "server-agents");
+}
+
 export function resolveWorkspaceSubagentRoot(workspacePath: string): string {
   return join(workspacePath, ".zcode", "agents");
 }

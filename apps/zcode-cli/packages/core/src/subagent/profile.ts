@@ -15,7 +15,8 @@ export type BuiltInSubagentModelSelectionOverrides = Partial<
 
 export type AgentPermissionMode = "auto" | "plan";
 
-export type AgentProfileSource = "built-in" | "project" | "user";
+/** `server` = 企业服务端下发（`{存储根}/server-agents`，P3）：只读、不可本地删除、不进禁用表。 */
+export type AgentProfileSource = "built-in" | "project" | "user" | "server";
 export type AgentMemoryScope = "user" | "project" | "local";
 
 export interface AgentProfile {

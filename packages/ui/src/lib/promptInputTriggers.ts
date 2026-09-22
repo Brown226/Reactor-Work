@@ -21,7 +21,7 @@ export interface PromptInputSuggestionItem {
   data?: {
     path?: string;
     scope?: "built-in" | "workspace" | "user" | "plugin" | "server";
-    source?: "built-in" | "user" | "plugin";
+    source?: "built-in" | "user" | "plugin" | "server";
     model?: string;
   };
 }

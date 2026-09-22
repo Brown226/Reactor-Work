@@ -15,9 +15,10 @@ import {
   type AgentSummary,
   type BuiltInSubagentName,
   type ModelSelection,
+  type ServerAgentDefinition,
   type SubAgentConfig,
 } from "@zcode/shared";
-import type { ModelSelectionView } from "@zcode/services";
+import type { ModelSelectionView, ServerAgentSyncResult } from "@zcode/services";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {
@@ -40,6 +41,8 @@ import { cn } from "@/components/lib/utils.js";
 import { logger } from "@/logger.js";
 import { settingsResourceRowInteraction } from "@/settings/settingsResourceRowInteraction.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
+import { useServerAgentSync } from "@/hooks/useServerAgentSync.js";
+import { useReactorServer } from "@/hooks/useReactorServer.js";
 import { useModelSelectionServiceView } from "@/hooks/useModelSelectionView.js";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -102,6 +105,7 @@ interface AgentGroups {
   builtIn: AgentSummary[];
   plugin: AgentSummary[];
   user: AgentSummary[];
+  server: AgentSummary[];
 }
 
 function projectSettingsSubagents(result: AgentsListResult): AgentSummary[] {
@@ -373,9 +377,13 @@ function AgentBadge({ children, className }: { children: string; className?: str
 }
 
 function groupAgentsByScope(agents: readonly AgentSummary[]): AgentGroups {
-  const groups: AgentGroups = { builtIn: [], plugin: [], user: [] };
+  const groups: AgentGroups = { builtIn: [], plugin: [], user: [], server: [] };
   for (const agent of agents) {
-    if (isEditableUserAgent(agent)) {
+    // server 必须先于兜底分支命中：否则企业专家会落进「内置」组
+    // （subagentMarkdown.ts:97 注释记录过同类分组事故）。
+    if (agent.scope === "server" || agent.source === "server") {
+      groups.server.push(agent);
+    } else if (isEditableUserAgent(agent)) {
       groups.user.push(agent);
     } else if (agent.source === "plugin") {
       groups.plugin.push(agent);
@@ -1407,6 +1415,151 @@ export function SubagentsSection({ onManageModels }: SubagentsSectionProps) {
     });
   }, [subagentsService, targetWorkspaceIdentity, targetWorkspacePath]);
 
+  // ===== 企业专家（server scope，P3）=====
+  // UI 只经 IServerAgentSyncService 发命令：server-agents 目录唯一写者是 host 同步器；
+  // 启停 = 服务端 install 关系（物化与否），绝不写本地 disabledAgentIds（计划 D5）。
+  const {
+    available: serverSyncAvailable,
+    busy: serverSyncBusy,
+    error: serverSyncError,
+    result: serverSyncResult,
+    sync: serverSync,
+    getCatalog: serverGetCatalog,
+    install: serverInstall,
+    uninstall: serverUninstall,
+    setInstallEnabled: serverSetInstallEnabled,
+  } = useServerAgentSync();
+  const { status: reactorStatus } = useReactorServer();
+  const [serverCatalog, setServerCatalog] = useState<readonly ServerAgentDefinition[]>([]);
+
+  // 目录投影跟随 hook 结果（同步器失败时带回上一次成功目录，UI 不因离线丢目录）。
+  useEffect(() => {
+    if (serverSyncResult) setServerCatalog(serverSyncResult.catalog);
+  }, [serverSyncResult]);
+
+  const applyServerResult = useCallback(
+    async (next: ServerAgentSyncResult | null) => {
+      if (next) setServerCatalog(next.catalog);
+      // 物化文件可能已增删：发现列表与 mention 存储都要重读。
+      await Promise.all([refresh(), refreshMentionStore()]);
+    },
+    [refresh, refreshMentionStore],
+  );
+
+  const handleServerSync = useCallback(
+    async (options?: { silent?: boolean }) => {
+      try {
+        const next = await serverSync();
+        if (!options?.silent) {
+          if (next.skippedNotLoggedIn) {
+            toast(intl.formatMessage({ id: "settings.subagents.serverSync.notLoggedIn" }));
+          } else if (next.authExpired) {
+            toast(intl.formatMessage({ id: "settings.subagents.serverSync.authExpired" }));
+          } else if (next.offline) {
+            toast(intl.formatMessage({ id: "settings.subagents.serverSync.offline" }));
+          } else {
+            toast(
+              intl.formatMessage(
+                { id: "settings.subagents.serverSync.done" },
+                { changed: String(next.changed.length), removed: String(next.removed.length) },
+              ),
+            );
+          }
+        }
+        await applyServerResult(next);
+      } catch (cause) {
+        if (!options?.silent) toast(cause instanceof Error ? cause.message : String(cause));
+      }
+    },
+    [applyServerResult, intl, serverSync],
+  );
+
+  const handleServerInstall = useCallback(
+    async (name: string) => {
+      try {
+        await applyServerResult(await serverInstall(name));
+      } catch (cause) {
+        toast(cause instanceof Error ? cause.message : String(cause));
+      }
+    },
+    [applyServerResult, serverInstall],
+  );
+
+  const handleServerInstallEnabled = useCallback(
+    async (name: string, enabled: boolean) => {
+      try {
+        await applyServerResult(await serverSetInstallEnabled(name, enabled));
+      } catch (cause) {
+        toast(cause instanceof Error ? cause.message : String(cause));
+      }
+    },
+    [applyServerResult, serverSetInstallEnabled],
+  );
+
+  const handleServerUninstall = useCallback(
+    async (agent: ServerAgentDefinition) => {
+      const confirmed = await confirmDialog({
+        title: intl.formatMessage({ id: "settings.subagents.server.uninstall.title" }),
+        description: intl.formatMessage(
+          { id: "settings.subagents.server.uninstall.description" },
+          { name: agent.name },
+        ),
+        confirmLabel: intl.formatMessage({ id: "settings.subagents.server.uninstall.confirm" }),
+      });
+      if (!confirmed) return;
+      try {
+        await applyServerResult(await serverUninstall(agent.name));
+      } catch (cause) {
+        toast(cause instanceof Error ? cause.message : String(cause));
+      }
+    },
+    [applyServerResult, confirmDialog, intl, serverUninstall],
+  );
+
+  // 首帧：先渲染 host 进程内的目录投影（不联网，重启未同步前也有数据）。
+  useEffect(() => {
+    if (!serverSyncAvailable) return;
+    let active = true;
+    void serverGetCatalog()
+      .then((catalog) => {
+        if (active) setServerCatalog(catalog);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [serverGetCatalog, serverSyncAvailable]);
+
+  // 登录态就绪：已登录则静默对齐一次（与 host 启动/登录钩子互补，幂等串行）；
+  // 已登出则读回被 clearLocal 清空后的目录。失败静默，下次手动同步再收敛。
+  useEffect(() => {
+    if (!serverSyncAvailable || reactorStatus === null) return;
+    let active = true;
+    if (!reactorStatus.loggedIn) {
+      void serverGetCatalog()
+        .then((catalog) => {
+          if (active) setServerCatalog(catalog);
+        })
+        .catch(() => undefined);
+      return () => {
+        active = false;
+      };
+    }
+    void (async () => {
+      try {
+        const next = await serverSync();
+        if (!active) return;
+        setServerCatalog(next.catalog);
+        await refresh();
+      } catch {
+        // 静默路径不打扰用户；错误横幅由 serverSyncError 承载，手动同步会重试。
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [reactorStatus, serverGetCatalog, serverSync, serverSyncAvailable, refresh]);
+
   const handleSave = useCallback(
     async (config: SubAgentConfig) => {
       setSaving(true);
@@ -1619,7 +1772,10 @@ export function SubagentsSection({ onManageModels }: SubagentsSectionProps) {
     [pluginListingById, plugins],
   );
   const filteredAgentCount =
-    groupedAgents.user.length + groupedAgents.plugin.length + groupedAgents.builtIn.length;
+    groupedAgents.user.length +
+    groupedAgents.plugin.length +
+    groupedAgents.builtIn.length +
+    groupedAgents.server.length;
   const currentEditingAgent = useMemo(() => {
     if (!editingAgent) {
       return null;
@@ -1803,6 +1959,129 @@ export function SubagentsSection({ onManageModels }: SubagentsSectionProps) {
               />
             )}
           </section>
+          {serverSyncAvailable && (groupedAgents.server.length > 0 || serverCatalog.length > 0) ? (
+            <section
+              className={query.trim() && groupedAgents.server.length === 0 ? "hidden" : "space-y-4"}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <SettingsResourceGroupHeader
+                  count={groupedAgents.server.length}
+                  title={intl.formatMessage({ id: "settings.subagents.group.server" })}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void handleServerSync()}
+                  disabled={serverSyncBusy}
+                >
+                  {intl.formatMessage({ id: "settings.subagents.server.sync" })}
+                </Button>
+              </div>
+              {serverSyncError ? (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-ui-base text-destructive">
+                  {serverSyncError}
+                </div>
+              ) : null}
+              {groupedAgents.server.length > 0 ? renderAgentList(groupedAgents.server) : null}
+              {serverCatalog.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="px-1 text-ui-sm font-medium text-foreground-subtle">
+                    {intl.formatMessage({ id: "settings.subagents.server.catalog" })}
+                  </div>
+                  <div className="overflow-hidden rounded-xl bg-surface">
+                    {serverCatalog.map((catalogAgent, index) => (
+                      <div key={`server-catalog-${catalogAgent.id}`}>
+                        {index > 0 ? (
+                          <div className="h-px bg-border/50" aria-hidden="true" />
+                        ) : null}
+                        <div className="flex flex-wrap items-center gap-3 px-4 py-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex min-w-0 flex-wrap items-center gap-2">
+                              {catalogAgent.emoji ? (
+                                <span aria-hidden="true">{catalogAgent.emoji}</span>
+                              ) : null}
+                              <span className="truncate text-ui-base font-medium text-foreground">
+                                {catalogAgent.title}
+                              </span>
+                              <span className="text-ui-sm text-foreground-subtle">
+                                {catalogAgent.name}
+                              </span>
+                              <AgentBadge>
+                                {catalogAgent.installed
+                                  ? catalogAgent.installEnabled
+                                    ? intl.formatMessage({
+                                        id: "settings.subagents.server.state.ready",
+                                      })
+                                    : intl.formatMessage({
+                                        id: "settings.subagents.server.state.disabled",
+                                      })
+                                  : intl.formatMessage({
+                                      id: "settings.subagents.server.state.notInstalled",
+                                    })}
+                              </AgentBadge>
+                            </div>
+                            {catalogAgent.description ? (
+                              <p className="mt-0.5 line-clamp-2 text-ui-sm text-foreground-subtle">
+                                {catalogAgent.description}
+                              </p>
+                            ) : null}
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            {!catalogAgent.installed ? (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={serverSyncBusy}
+                                onClick={() => void handleServerInstall(catalogAgent.name)}
+                              >
+                                {intl.formatMessage({ id: "settings.subagents.server.install" })}
+                              </Button>
+                            ) : (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={serverSyncBusy}
+                                onClick={() =>
+                                  void handleServerInstallEnabled(
+                                    catalogAgent.name,
+                                    !catalogAgent.installEnabled,
+                                  )
+                                }
+                              >
+                                {catalogAgent.installEnabled
+                                  ? intl.formatMessage({
+                                      id: "settings.subagents.server.disable",
+                                    })
+                                  : intl.formatMessage({
+                                      id: "settings.subagents.server.enable",
+                                    })}
+                              </Button>
+                            )}
+                            {catalogAgent.installed ? (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={serverSyncBusy}
+                                onClick={() => void handleServerUninstall(catalogAgent)}
+                              >
+                                {intl.formatMessage({
+                                  id: "settings.subagents.server.uninstall",
+                                })}
+                              </Button>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
           {pluginGroups.map(([pluginId, items]) => (
             <section key={pluginId} className="space-y-4">
               <SettingsResourceGroupHeader

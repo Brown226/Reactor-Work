@@ -61,8 +61,8 @@ export interface AgentTaxonomy {
 
 /** 会话类型（真源 shared/session.ts 的 SESSION_TYPES） */
 export type AgentSessionType = "code" | "work" | "general";
-/** 权限模式（真源 shared/audit.ts 的 AuditPolicyMode） */
-export type AgentPolicyMode = "readonly" | "balanced" | "trust" | "strict";
+/** 权限模式（真源 shared/audit.ts 的 AuditPolicyMode，与桌面端 zcodeTaskMode 同词表） */
+export type AgentPolicyMode = "plan" | "build" | "edit" | "yolo";
 /** 思考级别（真源 shared/session.ts 的 THINKING_LEVELS） */
 export type AgentThinkingLevel = "auto" | "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
 
@@ -72,10 +72,10 @@ export const AGENT_SESSION_TYPE_LABELS: Record<AgentSessionType, string> = {
   general: "通用",
 };
 export const AGENT_POLICY_MODE_LABELS: Record<AgentPolicyMode, string> = {
-  readonly: "只读",
-  balanced: "均衡",
-  trust: "信任",
-  strict: "严格",
+  plan: "仅规划",
+  build: "常规开发",
+  edit: "可改文件",
+  yolo: "不限制",
 };
 export const AGENT_THINKING_LEVELS: readonly AgentThinkingLevel[] = [
   "auto",

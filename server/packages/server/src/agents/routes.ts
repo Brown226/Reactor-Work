@@ -19,7 +19,9 @@ import {
   AGENT_CODE_PATTERN,
   AGENT_LIMITS,
   isThinkingLevel,
+  normalizeAuditPolicyMode,
   type AgentMutationResult,
+  type AuditPolicyMode,
 } from "@reactor/shared";
 import {
   AGENT_NAME_MAX,
@@ -96,8 +98,9 @@ function parseSessionType(raw: unknown): "code" | "work" | "general" | null {
   return raw === "code" || raw === "work" || raw === "general" ? raw : null;
 }
 
-function parsePolicyMode(raw: unknown): "readonly" | "balanced" | "trust" | "strict" | null {
-  return raw === "readonly" || raw === "balanced" || raw === "trust" || raw === "strict" ? raw : null;
+/** Agent 预设的权限模式：与桌面策略同一词表；旧词（readonly/balanced/trust/strict）读/写时都归一化。 */
+function parsePolicyMode(raw: unknown): AuditPolicyMode | null {
+  return normalizeAuditPolicyMode(raw);
 }
 
 function parseAuthor(raw: unknown): string | null {

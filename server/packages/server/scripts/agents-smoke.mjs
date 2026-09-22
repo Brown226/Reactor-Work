@@ -148,7 +148,7 @@ async function main() {
         author: "平台运营",
         // v1 预设包（D2）
         sessionType: "work",
-        policyMode: "balanced",
+        policyMode: "build",
         thinkingLevel: "medium",
         starters: ["帮我整理这份材料", "写一份本周周报"],
       },
@@ -162,7 +162,7 @@ async function main() {
     check("v1 上架时间已写入", typeof created.json?.agent?.publishedAt === "string" && created.json.agent.publishedAt.length > 0);
     check(
       "v1 预设包已保存",
-      JSON.stringify(created.json?.agent?.preset) === JSON.stringify({ sessionType: "work", policyMode: "balanced", thinkingLevel: "medium", starters: ["帮我整理这份材料", "写一份本周周报"] }),
+      JSON.stringify(created.json?.agent?.preset) === JSON.stringify({ sessionType: "work", policyMode: "build", thinkingLevel: "medium", starters: ["帮我整理这份材料", "写一份本周周报"] }),
       created.json?.agent?.preset,
     );
     check("v1 标签已保存", JSON.stringify(created.json?.agent?.tags) === '["周报","材料整理"]');
@@ -175,7 +175,7 @@ async function main() {
     const seen = (userAgents1.json?.agents ?? []).find((a) => a.name === "office-helper");
     check("A-2 全公司 Agent 对 user 可见（含 persona/model/skills）", Boolean(seen) && seen.persona.includes("办公助手") && seen.skills.length === 1);
     check("v1 市场载荷带关系与热度", seen?.installed === false && seen?.favorited === false && seen?.hot === 0, { installed: seen?.installed, hot: seen?.hot });
-    check("v1 市场载荷带预设包（应用到会话用）", seen?.sessionType === "work" && seen?.policyMode === "balanced" && seen?.thinkingLevel === "medium" && (seen?.starters ?? []).length === 2);
+    check("v1 市场载荷带预设包（应用到会话用）", seen?.sessionType === "work" && seen?.policyMode === "build" && seen?.thinkingLevel === "medium" && (seen?.starters ?? []).length === 2);
     check("v1 市场载荷带卡片字段", seen?.official === true && seen?.author === "平台运营" && (seen?.tags ?? []).length === 2);
 
     // v1 分类/标签写入校验

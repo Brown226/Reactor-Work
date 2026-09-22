@@ -8,6 +8,10 @@ type SubagentMentionInput = Pick<
 >;
 
 function getSubagentSourcePriority(agent: SubagentMentionInput): number {
+  // 数值越小越优先；与运行时 applyRuntimePrecedence 的同名结果对齐（§4.4：server 遮蔽 user/workspace）。
+  if (agent.source === "server") {
+    return -1;
+  }
   if (agent.scope === "workspace") {
     return 0;
   }
@@ -18,6 +22,9 @@ function getSubagentSourcePriority(agent: SubagentMentionInput): number {
 }
 
 function getSubagentSourceLabel(agent: SubagentMentionInput): string {
+  if (agent.source === "server") {
+    return "Enterprise";
+  }
   if (agent.scope === "workspace") {
     return "Workspace";
   }

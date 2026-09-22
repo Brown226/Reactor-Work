@@ -54,6 +54,8 @@ export async function loadZCodeAgentProfiles(
   const roots = [
     { path: join(input.storageRoot, "agents"), source: "user" as const },
     { path: join(input.workingDirectory, ".zcode", "agents"), source: "project" as const },
+    // 企业服务端下发（P3）：与 GUI 发现层同一目录口径，避免列表分叉（§4.4 发现层）。
+    { path: join(input.storageRoot, "server-agents"), source: "server" as const },
   ];
   const diagnostics: AgentProfileParseDiagnostic[] = [];
   for (const failure of migration.failures) {

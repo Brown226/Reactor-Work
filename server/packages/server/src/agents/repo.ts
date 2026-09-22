@@ -13,6 +13,7 @@ import type { IdentityDb } from "../identity/db.js";
 import { visibilitySql, type ResourceScope, type ScopeKind } from "../common/scope.js";
 import {
   isThinkingLevel,
+  normalizeAuditPolicyMode,
   type AgentCategoryItem,
   type AgentDefinition,
   type AgentTagItem,
@@ -842,10 +843,8 @@ export function toAgentPayload(row: AgentRow | AgentMarketRow): AgentDefinition 
     /* 预设包（D2） */
     sessionType:
       sessionType === "code" || sessionType === "work" || sessionType === "general" ? sessionType : null,
-    policyMode:
-      policyMode === "readonly" || policyMode === "balanced" || policyMode === "trust" || policyMode === "strict"
-        ? policyMode
-        : null,
+    // 旧词表（readonly/balanced/trust/strict）在这里也被映射到新词表：库里可能残留改造前的预设。
+    policyMode: normalizeAuditPolicyMode(policyMode),
     thinkingLevel: isThinkingLevel(row.preset.thinkingLevel) ? row.preset.thinkingLevel : null,
     starters: row.preset.starters,
   };
