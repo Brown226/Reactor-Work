@@ -173,7 +173,7 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
             "overview", "org-users", "roles", "providers", "usage",
             // 导航 key 必须与 packages/admin/src/menu.tsx 逐项对齐：此处漏一个 key，
             // 对应页面即使写好了也**永远不会出现在菜单里**（t186 会断言这条）。
-            "kb", "skills", "skill-bundles", "agents", "tools", "mcp", "apps", "synclogs", "updates", "feedback", "audit", "account",
+            "kb", "terms", "rule-libraries", "standards", "skills", "skill-bundles", "agents", "tools", "mcp", "apps", "synclogs", "updates", "feedback", "audit", "account",
           ]
         : role === "dept_head"
           ? ["overview", "org-users", "roles", "audit", "account"]

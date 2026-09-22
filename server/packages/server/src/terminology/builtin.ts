@@ -1,0 +1,146 @@
+/**
+ * 内置术语白名单（112 条，5 类）。
+ *
+ * 为什么把数据放进代码、而不是让管理员手工录：白名单是**审查的执行前提** ——
+ * 校对型审查要先把「安全壳/一回路/常规岛」这类专业词从错别字候选里排除掉，
+ * 否则一份核岛设计说明会被报出满屏误报。空库状态下这个能力等于不可用，
+ * 所以随建表幂等 seed（与 ensureBuiltinLocalAccounts 同思路），`is_builtin` 行不允许删除。
+ *
+ * 数据基线来自核审通 `terminology.service.ts` 的 BUILT_IN_TERMS（逐条迁移，未增删术语）；
+ * aliases 是该术语的**同义异形**，审查时与 term 一起进白名单 Set。
+ */
+export interface BuiltinTerm {
+  term: string;
+  category: string;
+  aliases: string[];
+}
+
+/** 默认分类：新增术语时用；管理员可在管理台改用其它分类。 */
+export const TERMINOLOGY_CATEGORIES = [
+  "核安全术语",
+  "设备术语",
+  "工艺术语",
+  "建筑术语",
+  "电气术语",
+  "自定义",
+] as const;
+
+export const BUILTIN_TERMS: readonly BuiltinTerm[] = [
+  // ===== 工艺术语 =====
+  { term: "NPSH", category: "工艺术语", aliases: ["net positive suction head", "净正吸入压头"] },
+  { term: "RUNOUT", category: "工艺术语", aliases: ["run-out", "跑流量"] },
+  { term: "冷态功能试验", category: "工艺术语", aliases: ["CFT", "cold functional test"] },
+  { term: "安全壳密封性试验", category: "工艺术语", aliases: ["containment leak rate test", "CLRT"] },
+  { term: "富集度", category: "工艺术语", aliases: ["enrichment", "铀富集度"] },
+  { term: "氙效应", category: "工艺术语", aliases: ["xenon effect", "氙毒"] },
+  { term: "水压试验", category: "工艺术语", aliases: ["hydrostatic test", "压力试验"] },
+  { term: "汽蚀余量", category: "工艺术语", aliases: ["cavitation margin", "有效汽蚀余量"] },
+  { term: "泄漏率", category: "工艺术语", aliases: ["leakage rate"] },
+  { term: "满功率", category: "工艺术语", aliases: ["full power", "额定功率"] },
+  { term: "热功率", category: "工艺术语", aliases: ["thermal power", "堆芯热功率"] },
+  { term: "热态功能试验", category: "工艺术语", aliases: ["HFT", "hot functional test"] },
+  { term: "燃耗", category: "工艺术语", aliases: ["burnup", "燃料燃耗"] },
+  { term: "电功率", category: "工艺术语", aliases: ["electrical power", "电输出功率"] },
+  { term: "硼稀释", category: "工艺术语", aliases: ["boron dilution"] },
+  { term: "碘坑", category: "工艺术语", aliases: ["iodine pit", "碘坑效应"] },
+  { term: "给水", category: "工艺术语", aliases: ["feedwater"] },
+  { term: "过冷度", category: "工艺术语", aliases: ["subcooling", "欠热度"] },
+  { term: "额定功率", category: "工艺术语", aliases: ["rated power", "名义功率"] },
+  { term: "饱和温度", category: "工艺术语", aliases: ["saturation temperature"] },
+  // ===== 建筑术语 =====
+  { term: "伸缩缝", category: "建筑术语", aliases: ["expansion joint"] },
+  { term: "大体积混凝土", category: "建筑术语", aliases: ["mass concrete"] },
+  { term: "安全壳穹顶", category: "建筑术语", aliases: ["containment dome", "穹顶"] },
+  { term: "屏蔽墙", category: "建筑术语", aliases: ["shielding wall", "生物屏蔽"] },
+  { term: "施工缝", category: "建筑术语", aliases: ["construction joint"] },
+  { term: "核岛筏基", category: "建筑术语", aliases: ["nuclear island raft", "NI筏基"] },
+  { term: "钢衬里", category: "建筑术语", aliases: ["steel liner", "衬里"] },
+  { term: "预埋件", category: "建筑术语", aliases: ["embedded part"] },
+  { term: "预应力", category: "建筑术语", aliases: ["prestressed", "预应力混凝土"] },
+  // ===== 核安全术语 =====
+  { term: "一回路", category: "核安全术语", aliases: ["一次侧", "primary circuit", "主回路"] },
+  { term: "专设安全设施", category: "核安全术语", aliases: ["专设安全系统", "ESF", "engineered safety feature"] },
+  { term: "临界", category: "核安全术语", aliases: ["critical", "临界状态"] },
+  { term: "乏燃料", category: "核安全术语", aliases: ["spent fuel", "废燃料"] },
+  { term: "二回路", category: "核安全术语", aliases: ["二次侧", "secondary circuit"] },
+  { term: "余热排出", category: "核安全术语", aliases: ["RHR", "residual heat removal", "余热导出"] },
+  { term: "停堆", category: "核安全术语", aliases: ["shutdown", "scram", "紧急停堆"] },
+  { term: "停堆深度", category: "核安全术语", aliases: ["shutdown margin", "SDM"] },
+  { term: "停机", category: "核安全术语", aliases: ["shutdown", "机组停运"] },
+  { term: "冗余", category: "核安全术语", aliases: ["redundancy", "冗余设计"] },
+  { term: "冷却剂", category: "核安全术语", aliases: ["coolant"] },
+  { term: "剂量率", category: "核安全术语", aliases: ["dose rate", "辐射剂量率"] },
+  { term: "单一故障", category: "核安全术语", aliases: ["single failure", "单点故障"] },
+  { term: "卸料", category: "核安全术语", aliases: ["unloading", "燃料卸载"] },
+  { term: "反应堆", category: "核安全术语", aliases: ["reactor", "堆"] },
+  { term: "反应性", category: "核安全术语", aliases: ["reactivity"] },
+  { term: "在役检查", category: "核安全术语", aliases: ["ISI", "in-service inspection"] },
+  { term: "堆芯", category: "核安全术语", aliases: ["core", "反应堆堆芯"] },
+  { term: "多样性", category: "核安全术语", aliases: ["diversity", "多样性设计"] },
+  { term: "大修", category: "核安全术语", aliases: ["outage", "检修"] },
+  { term: "安全壳", category: "核安全术语", aliases: ["containment", "安全壳厂房"] },
+  { term: "安全壳喷淋", category: "核安全术语", aliases: ["喷淋", "containment spray", "CSS"] },
+  { term: "安全注射", category: "核安全术语", aliases: ["安注", "safety injection", "SI"] },
+  { term: "安全级", category: "核安全术语", aliases: ["安全重要", "safety class", "安全等级"] },
+  { term: "定期试验", category: "核安全术语", aliases: ["periodic test", "定期检验"] },
+  { term: "容积控制系统", category: "核安全术语", aliases: ["CVCS", "volume control system"] },
+  { term: "并网", category: "核安全术语", aliases: ["grid connection", "并网运行"] },
+  { term: "应急堆芯冷却", category: "核安全术语", aliases: ["ECCS", "emergency core cooling"] },
+  { term: "慢化剂", category: "核安全术语", aliases: ["moderator"] },
+  { term: "抗震", category: "核安全术语", aliases: ["seismic", "抗震设计", "抗地震"] },
+  { term: "换料大修", category: "核安全术语", aliases: ["refueling outage"] },
+  { term: "控制棒", category: "核安全术语", aliases: ["control rod", "控制棒组件"] },
+  { term: "放射性", category: "核安全术语", aliases: ["radioactivity"] },
+  { term: "故障安全", category: "核安全术语", aliases: ["fail-safe", "失效安全"] },
+  { term: "核安全文化", category: "核安全术语", aliases: ["nuclear safety culture"] },
+  { term: "核燃料", category: "核安全术语", aliases: ["nuclear fuel"] },
+  { term: "核级", category: "核安全术语", aliases: ["nuclear grade", "核安全级"] },
+  { term: "燃料水池", category: "核安全术语", aliases: ["fuel pool", "乏燃料水池", "SFP"] },
+  { term: "燃料组件", category: "核安全术语", aliases: ["fuel assembly", "燃料元件"] },
+  { term: "硼酸", category: "核安全术语", aliases: ["boric acid"] },
+  { term: "纠正性维修", category: "核安全术语", aliases: ["CM", "corrective maintenance"] },
+  { term: "纵深防御", category: "核安全术语", aliases: ["defence in depth", "深度防御"] },
+  { term: "装料", category: "核安全术语", aliases: ["loading", "燃料装载"] },
+  { term: "解列", category: "核安全术语", aliases: ["grid disconnection", "脱网"] },
+  { term: "质保", category: "核安全术语", aliases: ["质量保证", "QA", "quality assurance"] },
+  { term: "跳堆", category: "核安全术语", aliases: ["reactor trip", "停堆保护"] },
+  { term: "辐射防护", category: "核安全术语", aliases: ["radiation protection", "放射防护"] },
+  { term: "预防性维修", category: "核安全术语", aliases: ["PM", "preventive maintenance"] },
+  // ===== 电气术语 =====
+  { term: "DCS", category: "电气术语", aliases: ["distributed control system", "分散控制系统"] },
+  { term: "三取二", category: "电气术语", aliases: ["2-out-of-3", "三取二逻辑"] },
+  { term: "不间断电源", category: "电气术语", aliases: ["UPS", "uninterruptible power supply"] },
+  { term: "中间量程", category: "电气术语", aliases: ["intermediate range", "IR"] },
+  { term: "仪控系统", category: "电气术语", aliases: ["I&C system", "instrumentation and control"] },
+  { term: "功率量程", category: "电气术语", aliases: ["power range", "PR"] },
+  { term: "厂外电源", category: "电气术语", aliases: ["offsite power", "外部电源"] },
+  { term: "反应堆保护系统", category: "电气术语", aliases: ["RPS", "reactor protection system"] },
+  { term: "四取二", category: "电气术语", aliases: ["2-out-of-4", "四取二逻辑"] },
+  { term: "应急母线", category: "电气术语", aliases: ["emergency bus", "应急配电母线"] },
+  { term: "旁通", category: "电气术语", aliases: ["bypass", "旁路"] },
+  { term: "源量程", category: "电气术语", aliases: ["source range", "SR"] },
+  { term: "电气贯穿件", category: "电气术语", aliases: ["electrical penetration", "EPA"] },
+  { term: "联锁", category: "电气术语", aliases: ["interlock", "闭锁"] },
+  // ===== 设备术语 =====
+  { term: "主控制室", category: "设备术语", aliases: ["MCR", "main control room"] },
+  { term: "主泵", category: "设备术语", aliases: ["RCP", "reactor coolant pump", "冷却剂泵"] },
+  { term: "主管道", category: "设备术语", aliases: ["main pipe", "主回路管道", "RCS管道"] },
+  { term: "低压加热器", category: "设备术语", aliases: ["LP heater", "低加"] },
+  { term: "凝汽器", category: "设备术语", aliases: ["condenser", "冷凝器"] },
+  { term: "反应堆冷却剂系统", category: "设备术语", aliases: ["RCS", "reactor coolant system", "一回路系统"] },
+  { term: "反应堆压力容器", category: "设备术语", aliases: ["RPV", "reactor pressure vessel", "压力容器"] },
+  { term: "安全阀", category: "设备术语", aliases: ["safety valve", "安全泄放阀"] },
+  { term: "安注箱", category: "设备术语", aliases: ["accumulator", "蓄压箱", "安全注射箱"] },
+  { term: "常规岛", category: "设备术语", aliases: ["CI", "conventional island"] },
+  { term: "应急柴油机", category: "设备术语", aliases: ["EDG", "emergency diesel generator"] },
+  { term: "核岛", category: "设备术语", aliases: ["NI", "nuclear island"] },
+  { term: "止回阀", category: "设备术语", aliases: ["check valve", "单向阀"] },
+  { term: "汽水分离再热器", category: "设备术语", aliases: ["MSR", "moisture separator reheater"] },
+  { term: "汽轮机", category: "设备术语", aliases: ["turbine", "透平"] },
+  { term: "稳压器", category: "设备术语", aliases: ["pressurizer", "PRZ"] },
+  { term: "蒸汽发生器", category: "设备术语", aliases: ["SG", "steam generator", "蒸发器"] },
+  { term: "辅助给水系统", category: "设备术语", aliases: ["AFWS", "auxiliary feedwater system"] },
+  { term: "除氧器", category: "设备术语", aliases: ["deaerator"] },
+  { term: "隔离阀", category: "设备术语", aliases: ["isolation valve"] },
+  { term: "高压加热器", category: "设备术语", aliases: ["HP heater", "高加"] },
+];

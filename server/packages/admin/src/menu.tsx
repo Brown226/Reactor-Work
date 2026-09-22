@@ -5,7 +5,9 @@
 import type { ReactNode } from "react";
 import type { Icon } from "@phosphor-icons/react";
 import {
+  BookBookmark,
   BookOpen,
+  Certificate,
   ChartBar,
   ChartLineUp,
   ChatsCircle,
@@ -13,6 +15,7 @@ import {
   CloudArrowUp,
   Database,
   Gauge,
+  ListChecks,
   Package,
   Plug,
   PuzzlePiece,
@@ -34,6 +37,9 @@ import { OrgUsers } from "./pages/OrgUsers";
 import { Planned } from "./pages/planned";
 import { ModelsAndProviders } from "./pages/ModelsAndProviders";
 import { Roles } from "./pages/Roles";
+import { RuleLibraries } from "./pages/RuleLibraries";
+import { Standards } from "./pages/Standards";
+import { Terminology } from "./pages/Terminology";
 import { Skills } from "./pages/Skills";
 import { SkillBundles } from "./pages/SkillBundles";
 import { SoftwareUpdates } from "./pages/SoftwareUpdates";
@@ -109,6 +115,12 @@ export const NAV: NavGroup[] = [
         roles: A,
         el: <KbDatasetsPage />,
       },
+      // 知识板块（文件审查的三类依据，见 docs/审查板块-方案-v1.md §4.4）：术语白名单 / 规范库 / 标准清单。
+      // 三个 key 必须与服务端 /me/nav 的 platform_admin 列表逐项同步，漏一边页面永不显示。
+      // 顺序按"审查时先用哪个"排：先查术语（过滤误报）→ 再对条文（以库审文）→ 最后对标准编号（自检）。
+      { key: "terms", path: "/terms", title: "术语白名单", icon: BookBookmark, roles: A, el: <Terminology /> },
+      { key: "rule-libraries", path: "/rule-libraries", title: "规范库", icon: ListChecks, roles: A, el: <RuleLibraries /> },
+      { key: "standards", path: "/standards", title: "标准清单", icon: Certificate, roles: A, el: <Standards /> },
       {
         key: "skills",
         path: "/skills",
