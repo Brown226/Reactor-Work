@@ -40,6 +40,18 @@ export type FeedbackTicketFrameworkSelectValue =
 
 export type FeedbackTicketSeverity = "P1-高" | "P2-中" | "P3-低";
 
+export const FEEDBACK_TICKET_STATUSES: FeedbackTicketStatus[] = [
+  "已提交",
+  "信息不足",
+  "已采纳",
+  "答复关闭",
+  "已归档",
+  "已拒绝",
+  "开发中",
+  "已解决",
+  "已上线",
+];
+
 export interface FeedbackReporter {
   user_id?: string;
   username?: string;

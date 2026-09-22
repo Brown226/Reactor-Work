@@ -72,6 +72,7 @@ server/
             ├── auth/             # LDAP + 本地 bcrypt 双源
             ├── agents/ skills/ datasets/  # Agent 目录 / 技能市场 / 公共知识库
             ├── updates/          # 软件更新（UPD）：产物登记 + 客户端 manifest + 下载
+            ├── feedback/         # 反馈 / 需求（FBK）：工单落库 + 管理台受理面
             ├── audit/            # 审计事件与用量聚合
             └── common/           # 密钥封存（AES-256-GCM）、定价、三级数据范围
 ```
@@ -98,6 +99,32 @@ manifest 与产物会自动走上面两条路径；`channel` 由客户端的「�
 
 产物落盘 `REACTOR_UPDATE_FILE_DIR`（容器内 `/app/data/updates`，卷 `updates`），
 上限 `REACTOR_UPDATE_MAX_BYTES`（默认 1GB）。**删卷 = 已发布版本全部变成 404 产物**。
+
+---
+
+### 2.2 反馈与需求（FBK）
+
+桌面端「帮助 → 问题上报 / 给产品提需求」提交的工单落进本服务，管理台「系统 → 反馈与需求」受理。
+客户端协议**不新造**：照 `packages/services/src/feedback/feedbackHttpClient.ts` 的 wire 格式实现
+（`ticket_id` / `content.category` / `environment` / `messages[].sender_type`），所以客户端只需改基址。
+
+| 面 | 路径 | 鉴权 |
+|---|---|---|
+| 提交面 | `POST /api/v1/feedback/ticket`、`GET /api/v1/feedback/ticket[/:id]`、`POST /api/v1/feedback/ticket/:id/message` | **公开**（Bearer 可选，验过才填报告人展示名） |
+| 管理面 | `GET/PATCH /admin/feedback/tickets[/:id]`、`POST /admin/feedback/tickets/:id/messages` | Bearer + platform_admin |
+
+提交面必须挂在 `identity/routes.ts` 的**公开段**：Reactor 用户只有企业账号、没有官方 `zcodejwttoken`，
+挂进 authed 组会让本产品自己的上报全部 401（与更新下发面同一条理由）。
+
+客户端接入由 `createFeedbackService` 的 `getApiBaseUrl` 完成（装配在 `services/src/node.ts`）：
+企业登录后基址变为 `<serverUrl>/api/v1`；未配置企业服务端时回落官方后端，开源用法不受影响。
+本地调试可用 `ZCODE_FEEDBACK_API_BASE` 硬覆盖（优先级最高）。
+
+**一期不支持附件**：客户端上传走 OSS 直传凭证，本服务没有对象存储，`POST /feedback/attachment/upload-credential`
+回 400 + `attachments_unsupported` 标记；客户端据此把「日志没传上去」降级成工单里的一条系统评论，
+而不是把已建好的工单报成提交失败。正文、评论、状态流转不受影响。
+
+红点语义由服务端维护：用户补充消息 → `unread=true`；管理台打开详情 → 置 false。
 
 ---
 
@@ -173,6 +200,7 @@ node packages/server/scripts/identity-smoke.mjs                 # 其余同名�
 | 审计与用量 | `audit-smoke.mjs`、`t34-smoke.mjs` |
 | 公共知识库（纯函数 / 带服务端） | `kb-pure-smoke.ts`、`kb-server-smoke.ts` |
 | 软件更新（建表/上传/manifest/Range/灰度/下线清理） | `updates-smoke.ts`（PG 不可达时 SKIP 并以 0 退出） |
+| 反馈与需求（公开提交面 / 管理受理 / wire 格式 / 红点与事件） | `feedback-smoke.ts`（**24 项全绿**；自读 `../../../.env`，PG 不可达时 SKIP 并以 0 退出） |
 | 向量化走网关（自带 mock 上游） | `gateway-embeddings-smoke.ts` |
 | 密钥运维 | `rotate-secret-key.mjs`、`verify-secret-key.mjs` |
 

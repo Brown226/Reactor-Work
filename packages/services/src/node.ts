@@ -2618,6 +2618,14 @@ export function createLocalServices(options: {
         apiClient,
         credentialService,
         oauthService,
+        // 企业版：反馈跟着企业服务端走，管理台才能受理（docs/feedback-module.md §2）。
+        // 用 getStatus() 而不是装配时读一次 —— 服务端地址是登录时才填的、还可能换。
+        // 未配置企业服务端时返回 undefined，回落官方后端，开源用法不受影响。
+        getApiBaseUrl: async () => {
+          const status = await reactorServerService.getStatus();
+          if (!status.serverUrl) return undefined;
+          return `${status.serverUrl.replace(/\/+$/, "")}/api/v1`;
+        },
       }),
     )
     .register(IPromptAttachmentTransferService, createLocalPromptAttachmentTransferService());

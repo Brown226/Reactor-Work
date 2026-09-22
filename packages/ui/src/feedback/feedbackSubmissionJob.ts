@@ -536,6 +536,10 @@ async function uploadLogsUntilComplete(
         `系统提示：完整日志自动上传失败，请必要时让用户手动导出日志。错误：${message}`,
       )
       .catch(() => undefined);
+    // 自建服务端没有对象存储（docs/feedback-module.md §6）：附件缺失 ≠ 工单没提交。
+    // 这种情况下正文已落库、"日志没传上去"也已写成评论，再抛会让用户看到"提交失败"，
+    // 与事实相反；只有**可传但没传成**（断网 / 413）才继续按失败处理。
+    if (message.includes("attachments_unsupported")) return;
     // 日志上传是提交链路的一部分，非用户主动跳过时不能吞掉异常继续显示“提交成功”。
     // 否则用户会以为完整日志已经交付，但研发侧实际只收到缺日志的工单。
     throw logError;

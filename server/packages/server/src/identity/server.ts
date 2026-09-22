@@ -18,6 +18,8 @@ import { ensureSkillsSchema } from "../skills/repo.js";
 import { createSkillsRoutes } from "../skills/routes.js";
 import { createUpdatesRoutes } from "../updates/routes.js";
 import { ensureUpdatesSchema } from "../updates/schema.js";
+import { createFeedbackAdminRoutes } from "../feedback/routes.js";
+import { ensureFeedbackSchema } from "../feedback/schema.js";
 import type { IdentityConfig } from "./config.js";
 import { closeIdentityDb, createIdentityDb, ensureSchema, type IdentityDb } from "./db.js";
 import { ensurePermissionsSchema } from "./permissions.js";
@@ -95,6 +97,7 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
   await ensurePermissionsSchema(db); // 权限点（U-2）
   await ensureAuditSchema(db); // 审计与用量数据域（G0）
   await ensureUpdatesSchema(db); // 软件更新产物登记（UPD）
+  await ensureFeedbackSchema(db); // 反馈 / 需求工单（FBK）
   // 公共知识库（KB-⑥）：建表会顺带探测 pgvector 可用性 —— 不可用不阻断启动，
   // 由路由把它如实透出到 /v1/kb/health（与端上「未配置即纯词法」同口径）。
   const kbSchema = await ensureDatasetsSchema(db);
@@ -131,6 +134,9 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
   // 软件更新（UPD）：管理面 /admin/updates/*在这里挂（复用 authed 的 Bearer）；
   // 客户端下发面 /api/v1/releases/electron/* 由 createIdentityApp 的公开段挂（不能进 authed）。
   app.route("/", createUpdatesRoutes(db));
+  // 反馈 / 需求受理（FBK）：管理面 /admin/feedback/* 挂鉴权段后复用 Bearer；
+  // 客户端提交面 /api/v1/feedback/* 必须留在公开段（Reactor 用户没有官方令牌），见 feedback/routes.ts 头注。
+  app.route("/", createFeedbackAdminRoutes(db));
   // 公共知识库（KB-⑥）：/v1/kb/* —— 鉴权与 skills/agents 同一套 claims；
   // 向量化器经网关 /v1/embeddings（KB-⑤），未配置则向量路降级为词法。
   const embedSource: "admin" | "env" | null =

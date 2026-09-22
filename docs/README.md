@@ -11,6 +11,7 @@
 | [appearance-background-theme.md](appearance-background-theme.md)     | **背景主题契约**：主区域背景层、模糊/覆盖色参数、渲染契约与验收场景                                   |
 | [model-governance-and-dev-mode.md](model-governance-and-dev-mode.md) | **模型治理契约**：本地模型配置的开发者模式隐藏策略（连点版本号 7 下）、企业目录即白名单               |
 | [model-provider-catalog-pull.md](model-provider-catalog-pull.md)     | **模型目录拉取契约**：一键拉取 `/models` 的 host 侧执行边界、URL/鉴权策略、勾选与批量添加语义         |
+| [feedback-module.md](feedback-module.md)                             | **反馈 / 需求受理（FBK）契约**：客户端 wire 格式、公开段与鉴权段分工、红点与事件语义、一期附件取舍     |
 | [服务端接线-P4-用量上报与策略.md](服务端接线-P4-用量上报与策略.md)   | **P4 开工计划**：用量上报（model_call）、桌面策略天花板、outbox/契约与阶段验收                        |
 | [server-skill-delivery-plan.md](server-skill-delivery-plan.md)       | **P2 技能下发实施计划**：目标、旧项目取舍、步骤、风险与验收                                           |
 | [server-skill-sync.md](server-skill-sync.md)                         | **服务端技能同步契约**：状态所有者、同步时序、失败语义与验收场景                                      |

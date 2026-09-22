@@ -27,6 +27,12 @@ export interface CreateFeedbackServiceOptions {
   apiClient: ApiClient;
   getDeviceMid?: () => string | undefined;
   apiBaseUrl?: string;
+  /**
+   * 企业登录后反馈的实时基址（`<serverUrl>/api/v1`）。**仅在没有显式基址时生效**：
+   * `apiBaseUrl` / `ZCODE_FEEDBACK_API_BASE` 是本地调试的硬覆盖，优先级更高。
+   * 返回 undefined 回落到官方后端。
+   */
+  getApiBaseUrl?: () => Promise<string | undefined>;
   createFullLogArchive?: (
     sourceDir: string,
     options?: {
@@ -81,8 +87,13 @@ export function createFeedbackService(options: CreateFeedbackServiceOptions): IF
     return Boolean(await getZcodeJwtToken());
   }
 
+  // 显式基址（本地调试用 env / 传参）时不要接企业端解析，否则覆盖会被静默吃掉。
+  const hasExplicitBaseUrl = Boolean(
+    options.apiBaseUrl?.trim() || process.env.ZCODE_FEEDBACK_API_BASE?.trim(),
+  );
   const httpClient = new FeedbackHttpClient({
     baseUrl: apiBaseUrl,
+    ...(hasExplicitBaseUrl ? {} : { getBaseUrl: options.getApiBaseUrl }),
     apiClient: options.apiClient,
     getAuthHeaders: async () => {
       const headers: Record<string, string> = {};

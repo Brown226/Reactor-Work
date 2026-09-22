@@ -1,4 +1,5 @@
-import { redactFeedbackText } from "@zcode/shared";
+// 值导入（枚举数组要在运行时做成员判断），不能并进下面的 import type。
+import { FEEDBACK_TICKET_MODULES, FEEDBACK_TICKET_STATUSES, redactFeedbackText } from "@zcode/shared";
 /* eslint-disable max-lines -- 反馈 HTTP 客户端集中维护新后端协议、鉴权头合并、OSS 表单直传和响应归一化。 */
 import { randomUUID } from "node:crypto";
 import { createReadStream } from "node:fs";
@@ -21,6 +22,7 @@ import type {
   FeedbackTicketDetail,
   FeedbackTicketEvent,
   FeedbackTicketFramework,
+  FeedbackTicketModule,
   FeedbackTicketSeverity,
   FeedbackTicketStatus,
   FeedbackTicketSummary,
@@ -36,6 +38,12 @@ import { resolveClientConfigPlatform } from "#src/runtime-tools/clientPlatform.j
 
 interface FeedbackHttpClientOptions {
   baseUrl: string;
+  /**
+   * 每次请求前解析基址。企业登录后反馈应打自建服务端（`<serverUrl>/api/v1`），
+   * 而服务端地址是登录后才知道、还可能中途更换的 —— 不能在构造时钉死，故与 getAuthHeaders
+   * 同一时机现解析。返回 undefined 表示沿用 baseUrl（官方后端 / 显式覆盖）。
+   */
+  getBaseUrl?: () => Promise<string | undefined>;
   apiClient: ApiClient;
   getAuthHeaders: () => Promise<Record<string, string>>;
   logger?: ServiceLogger;
@@ -70,6 +78,16 @@ interface FeedbackTicketSummaryResponse {
   status?: string | null;
   created_at?: number | string | null;
   updated_at?: number | string | null;
+  /**
+   * 列表项也带 content：自建服务端在列表里回 type/severity，
+   * 不读它的话所有工单在用户侧都显示成 bug / 无严重度。
+   */
+  content?: {
+    description?: string | null;
+    category?: string | null;
+    function?: string | null;
+    severity?: string | null;
+  } | null;
 }
 
 interface FeedbackTicketDetailResponse extends FeedbackTicketSummaryResponse {
@@ -301,8 +319,10 @@ function sanitizeFeedbackLogUrl(url: string): string {
 export class FeedbackHttpClient {
   constructor(private readonly options: FeedbackHttpClientOptions) {}
 
-  private get apiBaseUrl(): string {
-    return this.options.baseUrl.replace(/\/+$/, "");
+  /** 企业服务端地址可能随登录变化，每次请求现解析（超时/重试也各自解析，地址不会在重试间漂移）。 */
+  private async resolveBaseUrl(): Promise<string> {
+    const override = await this.options.getBaseUrl?.();
+    return (override?.trim() || this.options.baseUrl).replace(/\/+$/, "");
   }
 
   private get logger(): ServiceLogger {
@@ -318,7 +338,7 @@ export class FeedbackHttpClient {
       authHeaders ?? (await this.options.getAuthHeaders()),
       init?.headers,
     );
-    const url = `${this.apiBaseUrl}${path}`;
+    const url = `${await this.resolveBaseUrl()}${path}`;
     const method = init?.method ?? "GET";
     const requestId = getHeaderValue(headers, "x-request-id");
     const logContext = {
@@ -633,14 +653,22 @@ function mapCreatedTicket(
 
 function mapTicketSummary(ticket: FeedbackTicketSummaryResponse): FeedbackTicketSummary {
   const createdAt = normalizeFeedbackTime(ticket.created_at);
-  return {
+  const severity = parseFeedbackTicketSeverity(ticket.content?.severity);
+  const summary: FeedbackTicketSummary = {
     id: ticket.ticket_id,
     title: readString(ticket.title) ?? ticket.ticket_id,
-    type: "bug",
+    // 官方后端的列表不回 type（历史上一律按 bug 显示）；自建服务端回 content.category，能拿到就用。
+    type: parseFeedbackTicketType(ticket.content?.category, "bug"),
     status: mapFeedbackStatus(ticket.status),
     created_at: createdAt,
     updated_at: normalizeFeedbackTime(ticket.updated_at, createdAt),
   };
+  if (severity) summary.severity = severity;
+  const moduleName = readString(ticket.content?.function);
+  if (moduleName && (FEEDBACK_TICKET_MODULES as readonly string[]).includes(moduleName)) {
+    summary.module = moduleName as FeedbackTicketModule;
+  }
+  return summary;
 }
 
 function mapTicketDetail(ticket: FeedbackTicketDetailResponse): FeedbackTicketDetail {
@@ -773,16 +801,20 @@ function inferAttachmentKind(
 }
 
 function mapFeedbackStatus(status: unknown): FeedbackTicketStatus {
-  switch (readString(status)) {
+  const raw = readString(status);
+  switch (raw) {
     case "closed":
-    case "已归档":
       return "已归档";
+    // 兼容官方后端的英文态与历史缓存里的旧中文态。
     case "submitted":
-    // 兼容后端或历史缓存里仍返回旧中文状态的工单。
     case "待评估":
-    case "已提交":
-    default:
       return "已提交";
+    default:
+      // 自建服务端原样存 9 种中文状态：认得出就透传，否则"开发中/已解决"在用户侧
+      // 全部坍缩成"已提交"，受理流转用户根本看不见。
+      return (FEEDBACK_TICKET_STATUSES as readonly string[]).includes(raw ?? "")
+        ? (raw as FeedbackTicketStatus)
+        : "已提交";
   }
 }
 

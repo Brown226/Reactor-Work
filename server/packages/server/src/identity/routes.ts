@@ -25,6 +25,7 @@ import { hashPassword } from "./passwords.js";
 import { revokeAll } from "./token-service.js";
 import { listSyncLogs, previewSync, runSync } from "./sync.js";
 import { createUpdatesPublicRoutes } from "../updates/routes.js";
+import { createFeedbackPublicRoutes } from "../feedback/routes.js";
 import {
   createLocalUser,
   findUserById,
@@ -88,6 +89,14 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
   // 软件更新下发面（UPD）：桌面客户端取 manifest 时**不带 Authorization**，
   // 因此必须挂在 authed 组之前 —— 挂到它之后会被 use("*") 拦成 401（详见 updates/routes.ts 头注）。
   app.route("/", createUpdatesPublicRoutes(db));
+
+  // 反馈 / 需求提交面（FBK）：桌面端「问题上报」「给产品提需求」落库。
+  // 不进鉴权组 —— Reactor 用户只有企业账号，客户端打出去的是官方 zcodejwttoken，强制校验会 401。
+  // 但**能验过**的令牌仍然用来填报告人展示名，所以这里把 verifyAccess 作为可选依赖传进去。
+  app.route(
+    "/",
+    createFeedbackPublicRoutes(db, { verifyOptionalToken: (token) => verifyAccess(cfg, token) }),
+  );
 
   // ===== 鉴权组 =====
   const authed = new Hono<AppEnv>();
@@ -164,7 +173,7 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
             "overview", "org-users", "roles", "providers", "usage",
             // 导航 key 必须与 packages/admin/src/menu.tsx 逐项对齐：此处漏一个 key，
             // 对应页面即使写好了也**永远不会出现在菜单里**（t186 会断言这条）。
-            "kb", "skills", "skill-bundles", "agents", "tools", "mcp", "apps", "synclogs", "updates", "audit", "account",
+            "kb", "skills", "skill-bundles", "agents", "tools", "mcp", "apps", "synclogs", "updates", "feedback", "audit", "account",
           ]
         : role === "dept_head"
           ? ["overview", "org-users", "roles", "audit", "account"]

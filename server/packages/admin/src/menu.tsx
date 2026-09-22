@@ -1,4 +1,4 @@
-// 管理台导航配置：13 模块 → 分组；元素=真实页或规划态(Planned)
+// 管理台导航配置：14 模块 → 分组；元素=真实页或规划态(Planned)
 // T1-3：可见性改为「服务端 /me/nav 下发的 key 集合」驱动（角色映射在服务端），
 // 本表仍保留 roles 字段作为 /me/nav 不可用时的本地兜底。
 
@@ -8,6 +8,7 @@ import {
   BookOpen,
   ChartBar,
   ChartLineUp,
+  ChatsCircle,
   ClockCounterClockwise,
   CloudArrowUp,
   Database,
@@ -27,6 +28,7 @@ import { Account } from "./pages/Account";
 import { Agents } from "./pages/Agents";
 import { Audit } from "./pages/Audit";
 import DashboardPage from "./pages/DashboardPage";
+import { FeedbackInbox } from "./pages/FeedbackInbox";
 import KbDatasetsPage from "./pages/KbDatasetsPage";
 import { OrgUsers } from "./pages/OrgUsers";
 import { Planned } from "./pages/planned";
@@ -203,6 +205,15 @@ export const NAV: NavGroup[] = [
         icon: CloudArrowUp,
         roles: A,
         el: <SoftwareUpdates />,
+      },
+      {
+        // key 必须与服务端 /me/nav 的 platform_admin key 集合逐项对齐（漏一边页面永不显示）。
+        key: "feedback",
+        path: "/feedback",
+        title: "反馈与需求",
+        icon: ChatsCircle,
+        roles: A,
+        el: <FeedbackInbox />,
       },
       {
         key: "audit",

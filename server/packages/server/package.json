@@ -22,6 +22,7 @@
     "smoke:admin-static": "node scripts/admin-static-smoke.mjs",
     "smoke:audit": "node scripts/audit-smoke.mjs",
     "smoke:updates": "tsx scripts/updates-smoke.ts",
+    "smoke:feedback": "tsx scripts/feedback-smoke.ts",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "dependencies": {
