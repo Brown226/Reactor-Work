@@ -183,14 +183,20 @@ pnpm docker:down        # 停止；**绝不加 -v**（数据卷是 external，�
 
 ## 4. 冒烟与运维脚本
 
-> ⚠ **必须在 `server/` 目录下执行**，且用 `node packages/server/scripts/…` 直接跑。
-> 原因：多数脚本用裸 `process.loadEnvFile()` 读**当前工作目录**的 `.env`；而 `pnpm --filter @reactor/server` 会把
-> cwd 切到包目录（`packages/server/`），那里没有 `.env`，脚本会静默回落到内置默认值 `127.0.0.1:55432` 并连接失败。
-> tsx 跑的两个脚本连 `loadEnvFile()` 都没有，要显式带 `--env-file=.env`。
+> **现在任意 cwd 都能跑**（2026-09-22 起）：脚本一律用**绝对路径**读 `server/.env`
+> （`process.loadEnvFile?.(fileURLToPath(new URL("../../../.env", import.meta.url)))`），
+> 所以 `pnpm --filter @reactor/server smoke:x` 也是对的。
+>
+> 此前不是这样：5 个脚本（`identity`/`skills`/`agents`/`org`/`e2e`）写的是**裸** `process.loadEnvFile()`，
+> 读的是**当前工作目录**的 `.env`。而 `pnpm --filter` 把 cwd 切到 `packages/server/`，那里没有 `.env`，
+> 于是静默回落到内置默认值 `127.0.0.1:55432`（compose 映射在 `15432`）并**连接失败** ——
+> 只有手工 `node packages/server/scripts/…` 从 `server/` 根执行才对。两个 tsx 脚本
+> （`updates`）则连 `loadEnvFile` 都没有，会打印 `SKIP` 并以 0 退出，**看起来是绿的、实际从未跑过**。
+> 两者都已修掉，并在 `knowledge-smoke` 里按同一口径实现。
 
 ```bash
 cd server
-node packages/server/scripts/identity-smoke.mjs                 # 其余同名替换
+pnpm --filter @reactor/server smoke:knowledge                     # 也可以 node packages/server/scripts/…
 ./packages/server/node_modules/.bin/tsx --env-file=.env packages/server/scripts/kb-server-smoke.ts
 ```
 
@@ -207,7 +213,8 @@ node packages/server/scripts/identity-smoke.mjs                 # 其余同名�
 | 审计与用量 | `audit-smoke.mjs`、`t34-smoke.mjs` |
 | 公共知识库（纯函数 / 带服务端） | `kb-pure-smoke.ts`、`kb-server-smoke.ts` |
 | 软件更新（建表/上传/manifest/Range/灰度/下线清理） | `updates-smoke.ts`（PG 不可达时 SKIP 并以 0 退出） |
-| 反馈与需求（公开提交面 / 管理受理 / wire 格式 / 红点与事件） | `feedback-smoke.ts`（**24 项全绿**；自读 `../../../.env`，PG 不可达时 SKIP 并以 0 退出） |
+| 反馈与需求（公开提交面 / 管理受理 / wire 格式 / 红点与事件） | `feedback-smoke.ts`（**40 项全绿**；PG 不可达时 SKIP 并以 0 退出） |
+| 知识板块（标准清单 / 术语白名单 / 规范库） | `knowledge-smoke.ts`（**46 项全绿**：三域建表幂等、内置术语 seed 与不可删、U+FFFD 护栏、幂等导入、规范库状态语义与级联删除） |
 | 向量化走网关（自带 mock 上游） | `gateway-embeddings-smoke.ts` |
 | 密钥运维 | `rotate-secret-key.mjs`、`verify-secret-key.mjs` |
 

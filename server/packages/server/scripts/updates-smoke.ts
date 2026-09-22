@@ -24,11 +24,13 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { Hono } from "hono";
 
 import type { TokenClaims } from "../src/identity/auth.js";
-import { closeIdentityDb, createIdentityDb, type IdentityDb } from "../src/identity/db.js";
+import { ensureAuditSchema } from "../src/audit/schema.js";
+import { closeIdentityDb, createIdentityDb, ensureSchema, type IdentityDb } from "../src/identity/db.js";
 // 冒烟库隔离（真实库不受影响）：见 lib/smoke-db.mjs 头注（2026-09-18 市场被清空事故）
 import { useSmokeDb } from "./lib/smoke-db.mjs";
 
@@ -42,10 +44,22 @@ function check(name: string, cond: boolean, detail?: unknown): void {
   console.error(`  ✗ ${name}${detail === undefined ? "" : ` — ${JSON.stringify(detail).slice(0, 300)}`}`);
 }
 
+// 与其余冒烟同口径：先吃 **server 根**的 .env（REACTOR_DB_URL 在那里）。不加载的话
+// useSmokeDb() 会退回下面的 55432 兜底值 —— 而 compose 的 PG 映射在 15432
+// （55432 落在 Windows 保留端口段，见 compose.yml 的注），表现成"PG 不可达 → SKIP"
+// 而让本探针静默失去覆盖。必须 fileURLToPath：仓库路径含中文，URL.pathname 既带前导斜杠
+// 又是百分号编码，直接喂会 stat 不到。
+try {
+  // 三级 `..`：base 是本文件（packages/server/scripts/），两级只会到 packages/。
+  process.loadEnvFile?.(fileURLToPath(new URL("../../../.env", import.meta.url)));
+} catch {
+  /* 没有 .env 就按环境变量与默认值走 */
+}
+
 const dbUrl = () =>
   process.env["REACTOR_DB_URL"]?.trim() ||
   process.env["REACTOR_DATABASE_URL"]?.trim() ||
-  "postgres://reactor:reactor@127.0.0.1:55432/reactor";
+  "postgres://reactor:reactor@127.0.0.1:15432/reactor";
 
 /** 造一段可校验的假安装包（内容无所谓，只要字节确定）。 */
 function fakeArtifact(seed: string): Buffer {
@@ -85,6 +99,11 @@ async function main(): Promise<void> {
 
     /* ── ① 建表幂等 ──────────────────────────────────────────────────── */
     console.log("· 建表");
+    // 本探针直接装配路由（不起 identity 进程），所以身份与审计两张底表得自己建：
+    // 路由里的 recordAdminAction → resolveActorForClaims → findUserByUid 要读 `users`，
+    // 干净冒烟库上缺表会以 42P01 把每次写操作打成 500（同 feedback-smoke 的处理）。
+    await ensureSchema(db);
+    await ensureAuditSchema(db);
     await ensureUpdatesSchema(db);
     await ensureUpdatesSchema(db); // 幂等：第二次不应报错
     check("建表幂等（连跑两次不抛）", true);

@@ -16,7 +16,11 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 try {
-  process.loadEnvFile?.();
+  // 必须给出**绝对路径**：裸 `loadEnvFile()` 取的是 cwd 的 .env，而 pnpm 跑 npm script 时
+  // cwd 是 packages/server（那里没有 .env，.env 在 server 根）。写成裸调用会让脚本在
+  // `pnpm --filter @reactor/server smoke:x` 下回落到 55432（compose 映射在 15432），
+  // 表现成 ECONNREFUSED 或静默 SKIP —— 与同目录 admin/t34/audit 等脚本的口径保持一致。
+  process.loadEnvFile?.(fileURLToPath(new URL("../../../.env", import.meta.url)));
 } catch {
   /* ignore */
 }
