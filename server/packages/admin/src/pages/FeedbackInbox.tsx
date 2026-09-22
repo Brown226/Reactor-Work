@@ -7,6 +7,7 @@ import {
   ArrowsClockwise,
   ChatCenteredText,
   ChatsCircle,
+  DownloadSimple,
   MagnifyingGlass,
   PaperPlaneTilt,
 } from "@phosphor-icons/react";
@@ -16,9 +17,12 @@ import {
   FEEDBACK_TYPES,
   feedbackApi,
   feedbackTypeLabel,
+  type FeedbackAttachment,
   type FeedbackListResult,
   type FeedbackTicketDetail,
 } from "../services/feedback";
+// formatBytes 是通用工具（软件更新页同源复用），不为它再造一个本地实现
+import { formatBytes } from "../services/updates";
 import { toast } from "../lib/toast";
 import { PageHead, SkeletonRows } from "../ui";
 import { ToneBadge, type Tone } from "../components/reactor";
@@ -184,6 +188,23 @@ export function FeedbackInbox() {
     }
   };
 
+  /** 附件下载走带鉴权的 blob：`<a href>` 带不了 Bearer，直连会 401。 */
+  const downloadAttachment = async (attachment: FeedbackAttachment): Promise<void> => {
+    if (!detail) return;
+    try {
+      const blob = await feedbackApi.downloadAttachment(detail.id, attachment.attachment_id);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = attachment.file_name;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      toast.ok(`已下载 ${attachment.file_name}`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
   const sendReply = async (): Promise<void> => {
     if (!detail || !reply.trim()) return;
     setSending(true);
@@ -326,7 +347,10 @@ export function FeedbackInbox() {
                   </TableCell>
                   <TableCell>
                     <div className="cell-title">{ticket.reporter_display ?? "匿名用户"}</div>
-                    <div className="cell-sub mono">{ticket.device_mid ?? "—"}</div>
+                    {/* 部门优先展示（受理人先要知道"谁的部门提的"），没有登录态时回落设备号 */}
+                    <div className="cell-sub">
+                      {ticket.reporter_dept ?? <span className="mono">{ticket.device_mid ?? "—"}</span>}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="cell-sub">{ticket.module ?? "—"}</div>
@@ -371,7 +395,13 @@ export function FeedbackInbox() {
           </h3>
           <div className="sub">
             {detail
-              ? `${detail.reporter_display ?? "匿名用户"} · ${fmtTime(detail.created_at)} 提交`
+              ? [
+                  detail.reporter_display ?? "匿名用户",
+                  detail.reporter_dept,
+                  `${fmtTime(detail.created_at)} 提交`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
               : "在上方列表选择一条工单查看详情、流转状态并回复"}
           </div>
         </div>
@@ -457,6 +487,46 @@ export function FeedbackInbox() {
                         {fmtTime(message.created_at)}
                       </div>
                       <div style={{ whiteSpace: "pre-wrap" }}>{message.body}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div className="cell-sub" style={{ marginBottom: 6 }}>
+                附件（{detail.attachments.length}）
+              </div>
+              {detail.attachments.length === 0 ? (
+                <div className="cell-sub">暂无附件（截图 / 诊断日志）</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {detail.attachments.map((attachment) => (
+                    <div
+                      key={attachment.attachment_id}
+                      style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}
+                    >
+                      <ToneBadge tone={attachment.kind === "image" ? "info" : "neutral"}>
+                        {attachment.kind === "log"
+                          ? "日志"
+                          : attachment.kind === "image"
+                            ? "截图"
+                            : "附件"}
+                      </ToneBadge>
+                      <span className="cell-title" style={{ minWidth: 0 }}>
+                        {attachment.file_name}
+                      </span>
+                      <span className="cell-sub mono">{formatBytes(attachment.size)}</span>
+                      <span className="cell-sub">{fmtTime(attachment.created_at)}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5"
+                        style={{ marginLeft: "auto" }}
+                        onClick={() => void downloadAttachment(attachment)}
+                      >
+                        <DownloadSimple size={14} /> 下载
+                      </Button>
                     </div>
                   ))}
                 </div>

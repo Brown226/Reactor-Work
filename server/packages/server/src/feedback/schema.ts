@@ -33,6 +33,10 @@ export async function ensureFeedbackSchema(db: IdentityDb): Promise<void> {
       -- 状态：中文枚举，见 docs/feedback-module.md §4
       status TEXT NOT NULL DEFAULT '已提交',
       contact TEXT,
+      -- 提交者身份：从企业 JWT 的 claims 解析（name/sub/deptId），不是客户端自报的。
+      -- dept 存 departments.path（root→leaf，如 "河北分公司/市场部"），比单名信息量大。
+      reporter_uid TEXT,
+      reporter_dept TEXT,
       -- 提交时上报的设备/环境快照（客户端 environment 原样存下，详情页要展示）
       environment JSONB,
       -- 有身份时填展示名；匿名提交为 null
@@ -97,6 +101,32 @@ export async function ensureFeedbackSchema(db: IdentityDb): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_feedback_event_ticket
       ON feedback_event (ticket_id, created_at, id);
   `);
+
+  await db.pool.query(`
+    CREATE TABLE IF NOT EXISTS feedback_attachment (
+      id BIGSERIAL PRIMARY KEY,
+      ticket_id TEXT NOT NULL REFERENCES feedback_ticket(id) ON DELETE CASCADE,
+      -- 为空 = 附件挂在工单上（截图/首次日志）；有值 = 挂在某条消息上（补充消息的附件）
+      message_id TEXT,
+      -- log / image / other（与客户端 FeedbackAttachmentKind 一致）
+      kind TEXT NOT NULL,
+      -- 原始文件名只进 UI 与 Content-Disposition；磁盘用 uuid，避免中文/路径穿越
+      file_name TEXT NOT NULL,
+      stored_name TEXT NOT NULL,
+      size_bytes BIGINT NOT NULL,
+      sha256 TEXT NOT NULL,
+      content_type TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+  `);
+  await db.pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_feedback_attachment_ticket
+      ON feedback_attachment (ticket_id, created_at, id);
+  `);
+
+  // 提交者身份列是后加的：已有环境靠幂等补列拿到（新装环境由上面的 CREATE 直接建出）。
+  await db.pool.query(`ALTER TABLE feedback_ticket ADD COLUMN IF NOT EXISTS reporter_uid TEXT;`);
+  await db.pool.query(`ALTER TABLE feedback_ticket ADD COLUMN IF NOT EXISTS reporter_dept TEXT;`);
 
   // 后续补列沿用 updates/audit 的幂等写法：
   //   ALTER TABLE feedback_ticket ADD COLUMN IF NOT EXISTS <col> <type>;

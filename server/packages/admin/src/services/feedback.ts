@@ -48,12 +48,28 @@ export interface FeedbackTicketSummary {
   status: string;
   unread: boolean;
   reporter_display: string | null;
+  /** 提交者账号（企业 JWT 的 sub），用于区分同名的人。 */
+  reporter_uid: string | null;
+  /** 提交者部门（departments.path，root→leaf），为空 = 匿名提交。 */
+  reporter_dept: string | null;
   device_mid: string | null;
   assignee_id: string | null;
   assignee_display: string | null;
   last_user_activity_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface FeedbackAttachment {
+  attachment_id: number;
+  file_name: string;
+  /** log / image / other —— 与客户端 FeedbackAttachmentKind 一致 */
+  kind: string;
+  size: number;
+  content_type?: string;
+  /** 管理面下载地址（带 Bearer 才有效，走 http.download）。 */
+  download_url: string;
+  created_at: string;
 }
 
 export interface FeedbackMessage {
@@ -84,6 +100,7 @@ export interface FeedbackTicketDetail extends FeedbackTicketSummary {
   source: string | null;
   messages: FeedbackMessage[];
   events: FeedbackEvent[];
+  attachments: FeedbackAttachment[];
 }
 
 export interface FeedbackListResult {
@@ -133,5 +150,10 @@ export const feedbackApi = {
       `/admin/feedback/tickets/${encodeURIComponent(id)}/messages`,
       { body },
       AUTH,
+    ),
+  /** 附件下载（截图/日志）：走带鉴权的 blob 下载，避免 <a href> 带不了 Bearer。 */
+  downloadAttachment: (ticketId: string, attachmentId: number) =>
+    http.download(
+      `/admin/feedback/tickets/${encodeURIComponent(ticketId)}/attachments/${attachmentId}/download`,
     ),
 };

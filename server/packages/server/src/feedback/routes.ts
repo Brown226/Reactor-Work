@@ -17,22 +17,34 @@
  * 自建服务端没有这套对象存储。这里回 400 + `attachments_unsupported` 标记，
  * 客户端据此把"日志没传上去"降级成评论里的一条系统提示，而不是把已建好的工单报成提交失败。
  */
+import { createHash, randomUUID } from "node:crypto";
+import { createReadStream, createWriteStream, existsSync, mkdirSync } from "node:fs";
+import { rename } from "node:fs/promises";
+import { extname, join } from "node:path";
+import { Readable, Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
+
 import { Hono } from "hono";
 import type { Context, MiddlewareHandler } from "hono";
 
 import { recordAdminAction, resolveActorForClaims } from "../audit/repo.js";
 import type { TokenClaims } from "../identity/auth.js";
 import type { IdentityDb } from "../identity/db.js";
+import { findDeptById } from "../identity/depts.js";
 import {
   appendFeedbackEvent,
   appendFeedbackMessage,
+  createFeedbackAttachment,
   createFeedbackTicket,
+  getFeedbackAttachment,
   getFeedbackTicket,
+  listFeedbackAttachments,
   listFeedbackComments,
   listFeedbackEvents,
   listFeedbackTickets,
   patchFeedbackTicket,
   setFeedbackTicketUnread,
+  type FeedbackAttachmentRow,
   type FeedbackCommentRow,
   type FeedbackEventRow,
   type FeedbackTicketRow,
@@ -70,6 +82,108 @@ function readPositiveInt(raw: unknown, fallback: number, max: number): number {
   const parsed = typeof raw === "number" ? Number.parseInt(String(raw), 10) : Number.parseInt(String(raw ?? ""), 10);
   if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
   return Math.min(parsed, max);
+}
+
+// ============================================================================
+// 附件（截图 / 诊断日志）：字节直传 —— 客户端 PUT 原始字节 → 落盘 + sha256 → 入库
+//
+// 为什么不用对象存储：客户端原生走的是「OSS 直传凭证」协议，自建端没有那套 OSS；
+// 改成字节直传后复用 updates 模块的成熟做法（原始流 + .part 中转 + 校验和），
+// 内存占用与包体无关，也不引入对象存储的运维与凭证。
+// ============================================================================
+
+/** 附件落盘目录：与更新包同思路走 env + 容器数据卷；不进 PG（日志包可到 GB 级）。 */
+const FEEDBACK_FILE_DIR =
+  process.env["REACTOR_FEEDBACK_FILE_DIR"]?.trim() || join(process.cwd(), "data", "feedback");
+
+const FEEDBACK_ATTACHMENT_KINDS = ["log", "image", "other"] as const;
+type FeedbackAttachmentKindValue = (typeof FEEDBACK_ATTACHMENT_KINDS)[number];
+
+/** 后缀白名单：不是洁癖 —— 任意可执行文件被放进管理台下载目录就是个投递口。 */
+const FEEDBACK_ATTACHMENT_SUFFIXES = [
+  ".zip",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".gif",
+  ".txt",
+  ".log",
+  ".json",
+  ".md",
+  ".pdf",
+  ".csv",
+] as const;
+
+const DEFAULT_MAX_ATTACHMENT_BYTES = 1024 * 1024 * 1024; // 1GB，与客户端日志包上限一致
+
+function readMaxAttachmentBytes(): number {
+  const raw = process.env["REACTOR_FEEDBACK_MAX_BYTES"]?.trim();
+  const parsed = raw ? Number(raw) : Number.NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MAX_ATTACHMENT_BYTES;
+}
+
+function ensureFeedbackDir(): void {
+  if (!existsSync(FEEDBACK_FILE_DIR)) mkdirSync(FEEDBACK_FILE_DIR, { recursive: true });
+}
+
+/** 只留 basename + 白名单后缀：原始名可能带中文、空格甚至路径分隔符，落盘必须先消毒。 */
+function sanitizeAttachmentFileName(raw: string | undefined): string | null {
+  // 客户端把文件名 percent-encode 后放进 `x-file-name`（HTTP 头是 latin1，中文直传会乱码）；
+  // 先还原再取 basename，解不动就按原样处理（兼容不编码的调用方）。
+  let decoded = raw;
+  if (raw) {
+    try {
+      decoded = decodeURIComponent(raw);
+    } catch {
+      decoded = raw;
+    }
+  }
+  const base = (decoded ?? "")
+    .replaceAll("\\", "/")
+    .split("/")
+    .pop()
+    ?.trim();
+  if (!base || base === "." || base === "..") return null;
+  const ext = extname(base).toLowerCase();
+  return (FEEDBACK_ATTACHMENT_SUFFIXES as readonly string[]).includes(ext) ? base : null;
+}
+
+const publicAttachmentUrl = (ticketId: string, attachmentId: number): string =>
+  `${FEEDBACK_TICKET_PATH}/${encodeURIComponent(ticketId)}/attachments/${attachmentId}`;
+
+const adminAttachmentUrl = (ticketId: string, attachmentId: number): string =>
+  `/admin/feedback/tickets/${encodeURIComponent(ticketId)}/attachments/${attachmentId}/download`;
+
+/**
+ * 附件行 → 客户端/管理台 wire 形状。
+ * 字段名对齐客户端 `FeedbackAttachmentResponse`（attachment_id / file_name / size / download_url），
+ * 客户端 `mapAttachment` 才能直接吃。
+ */
+function serializeAttachment(row: FeedbackAttachmentRow, downloadUrl: string) {
+  return {
+    attachment_id: row.id,
+    file_name: row.fileName,
+    // log / image / other：管理台据此区分"诊断日志"与"截图"，客户端按 kind 推断图标
+    kind: row.kind,
+    size: row.sizeBytes,
+    content_type: row.contentType ?? undefined,
+    download_url: downloadUrl,
+    created_at: iso(row.createdAt),
+  };
+}
+
+/** 附件下载：查行 → 校验磁盘存在 → 流式返回（Content-Disposition 走 RFC 5987，中文名不乱码）。 */
+async function sendAttachmentFile(c: Ctx, row: FeedbackAttachmentRow): Promise<Response> {
+  const filePath = join(FEEDBACK_FILE_DIR, row.storedName);
+  if (!existsSync(filePath)) return err(c, 404, "附件文件已不存在");
+  const stream = createReadStream(filePath);
+  return c.body(Readable.toWeb(stream) as unknown as ReadableStream, 200, {
+    "content-type": row.contentType ?? "application/octet-stream",
+    "content-length": String(row.sizeBytes),
+    "x-checksum-sha256": row.sha256,
+    "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(row.fileName)}`,
+  });
 }
 
 /** 客户端 content 块（wire 格式）。 */
@@ -110,13 +224,18 @@ function serializeTicketSummary(ticket: FeedbackTicketRow) {
 }
 
 async function serializeTicketDetail(db: IdentityDb, ticket: FeedbackTicketRow) {
-  const messages = await listFeedbackComments(db, ticket.id);
+  const [messages, attachments] = await Promise.all([
+    listFeedbackComments(db, ticket.id),
+    listFeedbackAttachments(db, ticket.id),
+  ]);
   return {
     ...serializeTicketSummary(ticket),
     environment: ticket.environment ?? undefined,
     reporter_display: ticket.reporterDisplay ?? undefined,
     messages: serializeMessages(messages),
-    attachments: [],
+    attachments: attachments.map((row) =>
+      serializeAttachment(row, publicAttachmentUrl(ticket.id, row.id)),
+    ),
   };
 }
 
@@ -180,6 +299,9 @@ export function createFeedbackPublicRoutes(
     }
 
     const claims = await resolveReporter(c);
+    // 身份只信令牌：客户端自报的姓名/部门一律不采信（否则谁都能冒充田科达提单）。
+    // deptId → departments.path，拿不到（匿名提交或部门已被删）就留空。
+    const dept = claims?.deptId != null ? await findDeptById(db, claims.deptId) : null;
     // 客户端要求请求头带 X-Device-Mid，但 body.device_mid 才是提交时的权威值（两者同源）。
     const deviceMid = body.device_mid?.trim() || c.req.header("x-device-mid")?.trim() || null;
 
@@ -192,6 +314,8 @@ export function createFeedbackPublicRoutes(
       contact: body.contact?.trim() || null,
       environment: body.environment ?? null,
       reporterDisplay: claims?.name ?? claims?.sub ?? null,
+      reporterUid: claims?.sub ?? null,
+      reporterDept: dept?.path ?? null,
       deviceMid,
       locale: c.req.header("accept-language") ?? null,
       source: typeof body.environment?.["source"] === "string"
@@ -265,9 +389,103 @@ export function createFeedbackPublicRoutes(
    * 附件上传凭证：一期不支持。回 400 + `msg`（客户端 readResponseError 会把它原样当错误文案），
    * 并带上 `attachments_unsupported` 标记，客户端据此把"日志没传上"降级成评论里的系统提示。
    */
+  /**
+   * 附件字节直传。文件名走自定义头 `x-file-name`（不用 multipart，省掉整包缓冲），
+   * 边写边算 sha256，`.part` 中转保证"传一半断线"不会留下看起来可用的附件。
+   *
+   * 走这条路径的客户端**已经判定当前是自建服务端**（见 feedbackHttpClient.uploadFile），
+   * 所以下面的 upload-credential 不再是它的必经之路。
+   */
+  app.put(`${FEEDBACK_TICKET_PATH}/:id/attachment`, async (c) => {
+    const ticketId = c.req.param("id");
+    const ticket = await getFeedbackTicket(db, ticketId);
+    if (!ticket) return err(c, 404, "工单不存在");
+
+    const kindRaw = c.req.query("kind")?.trim() || "other";
+    if (!(FEEDBACK_ATTACHMENT_KINDS as readonly string[]).includes(kindRaw)) {
+      return err(c, 400, `kind 需为 ${FEEDBACK_ATTACHMENT_KINDS.join(" / ")} 之一`);
+    }
+    const messageId = c.req.query("message_id")?.trim() || null;
+    if (messageId) {
+      const messageIds = new Set((await listFeedbackComments(db, ticketId)).map((m) => m.messageId));
+      if (!messageIds.has(messageId)) return err(c, 404, "消息不存在，附件无处挂靠");
+    }
+    const fileName = sanitizeAttachmentFileName(c.req.header("x-file-name"));
+    if (!fileName) return err(c, 400, `附件后缀需为 ${FEEDBACK_ATTACHMENT_SUFFIXES.join(" ")}`);
+    const body = c.req.raw.body;
+    if (!body) return err(c, 400, "缺少文件内容");
+
+    ensureFeedbackDir();
+    const storedName = `${randomUUID()}${extname(fileName).toLowerCase()}`;
+    const finalPath = join(FEEDBACK_FILE_DIR, storedName);
+    const partPath = `${finalPath}.part`;
+
+    const hash = createHash("sha256");
+    const maxBytes = readMaxAttachmentBytes();
+    let size = 0;
+    const guard = new Transform({
+      transform(chunk, _encoding, callback) {
+        size += chunk.length;
+        if (size > maxBytes) {
+          callback(new Error(`附件超过上限 ${maxBytes} 字节（REACTOR_FEEDBACK_MAX_BYTES）`));
+          return;
+        }
+        hash.update(chunk);
+        callback(null, chunk);
+      },
+    });
+
+    try {
+      await pipeline(Readable.fromWeb(body), guard, createWriteStream(partPath));
+    } catch (error) {
+      await rename(partPath, `${partPath}.failed`).catch(() => undefined);
+      return err(c, 400, error instanceof Error ? error.message : "附件写入失败");
+    }
+    await rename(partPath, finalPath);
+
+    const attachment = await createFeedbackAttachment(db, {
+      ticketId,
+      messageId,
+      kind: kindRaw as FeedbackAttachmentKindValue,
+      fileName,
+      storedName,
+      sizeBytes: size,
+      sha256: hash.digest("hex"),
+      contentType: c.req.header("content-type") || null,
+    });
+    // 传附件也算"用户的新动作"：红点点亮、活动时间刷新，受理人能立刻看到。
+    await setFeedbackTicketUnread(db, ticketId, true, { touchActivity: true });
+    await appendFeedbackEvent(db, ticketId, {
+      type: "user_replied",
+      summary: `用户上传了附件（${kindRaw}）：${fileName}`,
+      payload: { attachment_id: attachment.id, kind: kindRaw, size: size },
+    });
+
+    return c.json(
+      {
+        attachment_id: attachment.id,
+        ticket_id: ticketId,
+        file_name: attachment.fileName,
+        size: attachment.sizeBytes,
+        sha256: attachment.sha256,
+        created_at: iso(attachment.createdAt),
+      },
+      201,
+    );
+  });
+
+  /** 用户侧回看附件：ticket id + attachment id 都是 UUID/长整型，不可枚举。 */
+  app.get(`${FEEDBACK_TICKET_PATH}/:id/attachments/:aid`, async (c) => {
+    const aid = Number.parseInt(c.req.param("aid"), 10);
+    if (!Number.isFinite(aid)) return err(c, 400, "附件 id 非法");
+    const row = await getFeedbackAttachment(db, c.req.param("id"), aid);
+    if (!row) return err(c, 404, "附件不存在");
+    return sendAttachmentFile(c, row);
+  });
+
   app.post(FEEDBACK_ATTACHMENT_CREDENTIAL_PATH, (c) => {
     const message =
-      "attachments_unsupported：自建服务端一期暂不支持附件直传（未接入对象存储），工单正文与评论不受影响。";
+      "attachments_unsupported：OSS 直传凭证仅官方后端提供；自建服务端改走 PUT 字节直传（/api/v1/feedback/ticket/:id/attachment）。";
     return c.json({ code: 4000, msg: message, detail: message }, 400);
   });
 
@@ -308,6 +526,8 @@ export function createFeedbackAdminRoutes(db: IdentityDb): Hono<AppEnv> {
     status: ticket.status,
     unread: ticket.unread,
     reporter_display: ticket.reporterDisplay,
+    reporter_uid: ticket.reporterUid,
+    reporter_dept: ticket.reporterDept,
     device_mid: ticket.deviceMid,
     assignee_id: ticket.assigneeId,
     assignee_display: ticket.assigneeDisplay,
@@ -362,9 +582,10 @@ export function createFeedbackAdminRoutes(db: IdentityDb): Hono<AppEnv> {
   app.get("/admin/feedback/tickets/:id", async (c) => {
     const ticket = await getFeedbackTicket(db, c.req.param("id"));
     if (!ticket) return err(c, 404, "工单不存在");
-    const [messages, events] = await Promise.all([
+    const [messages, events, attachments] = await Promise.all([
       listFeedbackComments(db, ticket.id),
       listFeedbackEvents(db, ticket.id),
+      listFeedbackAttachments(db, ticket.id),
     ]);
     // 打开详情即视为已读；红点不熄会让受理人反复回来看同一张单。
     await setFeedbackTicketUnread(db, ticket.id, false);
@@ -379,6 +600,9 @@ export function createFeedbackAdminRoutes(db: IdentityDb): Hono<AppEnv> {
         source: ticket.source,
         messages: messages.map(serializeAdminMessage),
         events: events.map(serializeAdminEvent),
+        attachments: attachments.map((row) =>
+          serializeAttachment(row, adminAttachmentUrl(ticket.id, row.id)),
+        ),
       },
     });
   });
@@ -492,6 +716,20 @@ export function createFeedbackAdminRoutes(db: IdentityDb): Hono<AppEnv> {
     });
 
     return c.json({ message: serializeAdminMessage(message) });
+  });
+
+  /** 管理台下载附件（管理面在鉴权段内，下载也必须带 Bearer）。 */
+  app.get("/admin/feedback/tickets/:id/attachments/:aid/download", async (c) => {
+    const aid = Number.parseInt(c.req.param("aid"), 10);
+    if (!Number.isFinite(aid)) return err(c, 400, "附件 id 非法");
+    const row = await getFeedbackAttachment(db, c.req.param("id"), aid);
+    if (!row) return err(c, 404, "附件不存在");
+    await audit(c, {
+      op: "feedback.attachment.download",
+      target: `feedback:${c.req.param("id")}/${aid}`,
+      summary: `下载附件「${row.fileName}」`,
+    });
+    return sendAttachmentFile(c, row);
   });
 
   return app;

@@ -7,6 +7,7 @@ import { stat } from "node:fs/promises";
 import { request as httpRequest } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { extname } from "node:path";
+import { Transform } from "node:stream";
 
 import type {
   ApiClient,
@@ -467,7 +468,6 @@ export class FeedbackHttpClient {
             function: input.module,
             severity: input.severity,
           },
-          contact: input.contact,
           environment: toFeedbackEnvironment(input),
         }),
       },
@@ -529,6 +529,12 @@ export class FeedbackHttpClient {
       // 客户端先校验可以避免无意义请求，并给 UI 返回稳定错误。
       throw new Error(`Feedback attachment exceeds max size ${maxAttachmentBytes}`);
     }
+    // 企业自建服务端没有「OSS 直传凭证」这套东西：判据是基址来自运行时解析的 override
+    //（只有当前指向企业端时 getBaseUrl 才有值），此时改走 PUT 原始字节，服务端流式落盘。
+    const customBaseUrl = await this.options.getBaseUrl?.();
+    if (customBaseUrl) {
+      return this.uploadDirect(ticketId, kind, filePath, filename, contentType, fileStats.size, options);
+    }
     const credential = await this.request<FeedbackUploadCredentialResponse>(
       "/feedback/attachment/upload-credential",
       {
@@ -562,6 +568,131 @@ export class FeedbackHttpClient {
       created_at: new Date().toISOString(),
     };
   }
+
+  /**
+   * 自建服务端附件：`PUT /feedback/ticket/:id/attachment`（相对 `/api/v1` 基址）。
+   *
+   * 两个关键点：
+   *  - **文件名走 percent-encode**：HTTP 头是 latin1，中文名直接塞会在服务端变乱码；
+   *    encodeURIComponent 后服务端 decodeURIComponent 能无损还原。
+   *  - **边发边报进度**：文件经 Transform 计数字节再进请求体，日志包 1GB 也不能先把字节读进内存。
+   */
+  private async uploadDirect(
+    ticketId: string,
+    kind: FeedbackAttachmentKind,
+    filePath: string,
+    filename: string,
+    contentType: string,
+    size: number,
+    options?: FeedbackUploadFileOptions,
+  ): Promise<FeedbackAttachment> {
+    const baseUrl = await this.resolveBaseUrl();
+    const url = new URL(
+      `/feedback/ticket/${encodeURIComponent(ticketId)}/attachment`,
+      `${baseUrl}/`,
+    );
+    url.searchParams.set("kind", kind);
+    if (options?.messageId) url.searchParams.set("message_id", options.messageId);
+    const authHeaders = await this.options.getAuthHeaders();
+
+    return new Promise<FeedbackAttachment>((resolve, reject) => {
+      if (options?.signal?.aborted) {
+        reject(new FeedbackUploadCanceledError());
+        return;
+      }
+      const reqImpl = url.protocol === "https:" ? httpsRequest : httpRequest;
+      const req = reqImpl(
+        {
+          protocol: url.protocol,
+          hostname: url.hostname,
+          port: url.port,
+          path: `${url.pathname}${url.search}`,
+          method: "PUT",
+          headers: {
+            ...authHeaders,
+            "Content-Type": contentType,
+            "Content-Length": String(size),
+            "x-file-name": encodeURIComponent(filename),
+          },
+        },
+        (response) => {
+          const chunks: Buffer[] = [];
+          response.on("data", (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+          response.on("end", () => {
+            const text = Buffer.concat(chunks).toString("utf8");
+            const status = response.statusCode ?? 0;
+            if (status < 200 || status >= 300) {
+              reject(new Error(readFeedbackErrorMessage(text) || `附件上传失败: HTTP ${status}`));
+              return;
+            }
+            let parsed: FeedbackDirectUploadResponse = {};
+            try {
+              parsed = JSON.parse(text) as FeedbackDirectUploadResponse;
+            } catch {
+              // 空体也算成功：服务端已入库，UI 只需要拿到一个可用的附件对象
+            }
+            resolve({
+              id: toStableNumericId(parsed.attachment_id, 1),
+              kind,
+              filename,
+              size: typeof parsed.size === "number" ? parsed.size : size,
+              sha256: parsed.sha256 ?? null,
+              redacted: false,
+              content_type: contentType,
+              download_url: null,
+              preview_url: null,
+              created_at: normalizeFeedbackTime(parsed.created_at),
+            });
+          });
+        },
+      );
+
+      options?.signal?.addEventListener("abort", () => {
+        req.destroy();
+        reject(new FeedbackUploadCanceledError());
+      });
+      req.on("error", (error) => reject(error));
+
+      let uploadedBytes = 0;
+      const source = createReadStream(filePath);
+      source.on("error", (error) => {
+        req.destroy();
+        reject(error);
+      });
+      const counter = new Transform({
+        transform(chunk, _encoding, callback) {
+          uploadedBytes += chunk.length;
+          options?.onUploadProgress?.({ uploadedBytes, totalBytes: size });
+          callback(null, chunk);
+        },
+      });
+      counter.on("error", (error) => {
+        req.destroy();
+        reject(error);
+      });
+      source.pipe(counter).pipe(req);
+    });
+  }
+}
+
+/** 服务端错误体与 readResponseError 同口径：优先 msg，其次 error.message。 */
+function readFeedbackErrorMessage(text: string): string {
+  try {
+    const parsed = JSON.parse(text) as { msg?: unknown; detail?: unknown; error?: { message?: unknown } };
+    if (typeof parsed.msg === "string" && parsed.msg.trim()) return parsed.msg;
+    if (typeof parsed.detail === "string" && parsed.detail.trim()) return parsed.detail;
+    if (parsed.error && typeof parsed.error.message === "string") return parsed.error.message;
+  } catch {
+    // 不是 JSON 就退回空串，由调用方补 HTTP 状态码
+  }
+  return "";
+}
+
+interface FeedbackDirectUploadResponse {
+  attachment_id?: string | number;
+  size?: number;
+  sha256?: string;
+  created_at?: number | string;
 }
 
 function buildFeedbackListPath(query: FeedbackListQuery): string {

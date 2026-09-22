@@ -110,11 +110,15 @@ services:
       # 不设也能启动（代码默认 <cwd>/data/updates），但容器重建就会丢掉已发布的包，
       # 因此这里与 kb-files 一样显式给目录 + 卷。
       REACTOR_UPDATE_FILE_DIR: /app/data/updates
+      # 反馈附件（截图/日志）落盘目录（FBK）：日志包可到 GB 级，只能放卷不能进 PG
+      REACTOR_FEEDBACK_FILE_DIR: /app/data/feedback
     volumes:
       # 知识库上传的原始文件（KB-⑥）：不挂数据卷的话，容器重建 = 用户上传的文件全丢
       - kb-files:/app/data/kb-files
       # 已发布的桌面端安装包（UPD）：丢了会导致 manifest 指向 404 产物
       - updates:/app/data/updates
+      # 反馈附件（FBK）：丢了管理台详情里的截图与日志就变成 404
+      - feedback-files:/app/data/feedback
     ports:
       - "127.0.0.1:8791:8791"
     depends_on:
@@ -163,6 +167,8 @@ volumes:
   kb-files:
   # 桌面端安装包（UPD）：同样与 pg 无关的独立卷；删卷 = 管理台里已发布的版本全部变成 404 产物。
   updates:
+  # 反馈附件（FBK）：独立卷，与 pg 无关；删了管理台里的截图/日志就下不下来。
+  feedback-files:
   ldap-data:
     external: true
     name: docker_ldap-data

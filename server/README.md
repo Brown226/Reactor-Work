@@ -110,19 +110,26 @@ manifest 与产物会自动走上面两条路径；`channel` 由客户端的「�
 
 | 面 | 路径 | 鉴权 |
 |---|---|---|
-| 提交面 | `POST /api/v1/feedback/ticket`、`GET /api/v1/feedback/ticket[/:id]`、`POST /api/v1/feedback/ticket/:id/message` | **公开**（Bearer 可选，验过才填报告人展示名） |
-| 管理面 | `GET/PATCH /admin/feedback/tickets[/:id]`、`POST /admin/feedback/tickets/:id/messages` | Bearer + platform_admin |
+| 提交面 | `POST /api/v1/feedback/ticket`、`GET /api/v1/feedback/ticket[/:id]`、`POST /api/v1/feedback/ticket/:id/message`、`PUT /api/v1/feedback/ticket/:id/attachment`、`GET /api/v1/feedback/ticket/:id/attachments/:aid` | **公开**（Bearer 可选，验过才填报告人） |
+| 管理面 | `GET/PATCH /admin/feedback/tickets[/:id]`、`POST /admin/feedback/tickets/:id/messages`、`GET /admin/feedback/tickets/:id/attachments/:aid/download` | Bearer + platform_admin |
 
-提交面必须挂在 `identity/routes.ts` 的**公开段**：Reactor 用户只有企业账号、没有官方 `zcodejwttoken`，
-挂进 authed 组会让本产品自己的上报全部 401（与更新下发面同一条理由）。
+提交面必须挂在 `identity/routes.ts` 的**公开段**：自建端只认自家 identity 签发的 JWT，
+官方 `zcodejwttoken` 验不过，挂进 authed 组会让本产品自己的上报全部 401（与更新下发面同一条理由）。
+报告人姓名/账号/部门**只从验过的令牌取**（`claims.name` / `claims.sub` / `claims.deptId → departments.path`），
+客户端自报的 `reporter` / `environment` 不采信。
 
 客户端接入由 `createFeedbackService` 的 `getApiBaseUrl` 完成（装配在 `services/src/node.ts`）：
 企业登录后基址变为 `<serverUrl>/api/v1`；未配置企业服务端时回落官方后端，开源用法不受影响。
 本地调试可用 `ZCODE_FEEDBACK_API_BASE` 硬覆盖（优先级最高）。
 
-**一期不支持附件**：客户端上传走 OSS 直传凭证，本服务没有对象存储，`POST /feedback/attachment/upload-credential`
-回 400 + `attachments_unsupported` 标记；客户端据此把「日志没传上去」降级成工单里的一条系统评论，
-而不是把已建好的工单报成提交失败。正文、评论、状态流转不受影响。
+**附件走字节直传**：客户端在企业基址下改道 `PUT /api/v1/feedback/ticket/:id/attachment`（body = 原始字节流，
+`x-file-name` 用 `encodeURIComponent` 带原始文件名），服务端流式落盘到 `REACTOR_FEEDBACK_FILE_DIR`
+（容器内 `/app/data/feedback`，卷 `feedback-files`），单文件上限 `REACTOR_FEEDBACK_MAX_BYTES`（默认 1GB），
+后缀白名单 `.zip .png .jpg .jpeg .webp .gif .txt .log .json .md .pdf .csv`。磁盘名用 uuid，
+原始文件名只存 PG（`feedback_attachment.file_name`）；先写 `.part` 再 rename，半截文件不入库。
+仅企业基址改道，走官方后端的客户端仍用 OSS 直传——`/feedback/attachment/upload-credential` 保留，
+只为让**旧客户端**拿到 400 + `attachments_unsupported` 而不是 404。上传失败降级成工单里的一条系统评论，
+正文、评论、状态流转不受影响。
 
 红点语义由服务端维护：用户补充消息 → `unread=true`；管理台打开详情 → 置 false。
 

@@ -13,6 +13,8 @@ import { arch, platform, release, type as osType } from "node:os";
 
 import type { ICredentialService } from "../credential/credential.js";
 import type { IOAuthService } from "../oauth/oauth.js";
+// 企业登录令牌的凭据键：提交反馈时用它当 Authorization，自建服务端才能解析出姓名与部门。
+import { REACTOR_SERVER_CREDENTIAL_KEYS } from "../reactor-server/reactorServer.js";
 import type { FeedbackUploadProgress, IFeedbackService } from "./feedback.js";
 import { FeedbackHttpClient, FeedbackUploadCanceledError } from "./feedbackHttpClient.js";
 import { cleanupLogArchive, prepareCompactLogArchive } from "./compactLogArchive.js";
@@ -103,8 +105,16 @@ export function createFeedbackService(options: CreateFeedbackServiceOptions): IF
       if (deviceMid) {
         headers["X-Device-Mid"] = deviceMid;
       }
-      const jwtToken = await getZcodeJwtToken();
-      if (jwtToken) {
+      // 企业登录态优先：自建服务端只认 identity 签的 JWT（claims 里带姓名与部门，
+      // 服务端据此写 reporter_display/reporter_dept），官方 zcodejwttoken 它验不过、
+      // 只会退化成匿名提交 —— 所以两条链路的令牌不能混着优先级发。
+      const enterpriseToken = (
+        await options.credentialService.load(REACTOR_SERVER_CREDENTIAL_KEYS.accessToken)
+      )?.trim();
+      const jwtToken = enterpriseToken ? undefined : await getZcodeJwtToken();
+      if (enterpriseToken) {
+        headers.Authorization = `Bearer ${enterpriseToken}`;
+      } else if (jwtToken) {
         headers.Authorization = `Bearer ${jwtToken}`;
       }
       return headers;

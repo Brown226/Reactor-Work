@@ -5,7 +5,6 @@ import {
   type FeedbackTicketType,
 } from "@zcode/shared";
 import type { IFeedbackService } from "@zcode/services";
-import { persistFeedbackContactPreference } from "@/feedback/feedbackContactPreference.js";
 import type { FeedbackSubmitDraft } from "@/feedback/feedbackStore.js";
 import type { ScreenshotAttachmentDraft } from "@/feedback/FeedbackScreenshotPicker.js";
 import {
@@ -29,7 +28,6 @@ export async function startSimplifiedFeedbackSubmission({
   feedbackService,
   title,
   description,
-  contact,
   screenshots,
   includeLogs,
   ticketType,
@@ -46,7 +44,6 @@ export async function startSimplifiedFeedbackSubmission({
   feedbackService: IFeedbackService;
   title?: string;
   description: string;
-  contact: string;
   screenshots: ScreenshotAttachmentDraft[];
   includeLogs: boolean;
   ticketType: FeedbackTicketType;
@@ -63,13 +60,10 @@ export async function startSimplifiedFeedbackSubmission({
   const device = await feedbackService.getDeviceSnapshot();
   const framework = DEFAULT_FEEDBACK_TICKET_FRAMEWORK;
   const normalizedDescription = description.trim();
-  const trimmedContact = contact.trim();
-  persistFeedbackContactPreference(trimmedContact);
   const attachmentDrafts = screenshots.map(({ id: _id, ...screenshot }) => ({ ...screenshot }));
   const formDraft: FeedbackSubmitDraft = {
     ...(title !== undefined ? { title } : {}),
     description,
-    contact,
     screenshots: attachmentDrafts,
     includeLogs,
     type: ticketType,
@@ -100,7 +94,6 @@ export async function startSimplifiedFeedbackSubmission({
         ...(modelContext.display ? { agentModelDisplay: modelContext.display } : {}),
       },
       source: "desktop-app",
-      contact: trimmedContact || undefined,
       locale,
     },
     screenshots: attachmentDrafts,

@@ -1,12 +1,10 @@
 import { TID_FEEDBACK_LOGS_OPT_IN } from "@zcode/shared";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button.js";
-import { Input } from "@/components/ui/input.js";
 import { Switch } from "@/components/ui/switch.js";
 import { Textarea } from "@/components/ui/textarea.js";
 import { cn } from "@/components/lib/utils.js";
 import { SubmitProgressView } from "@/feedback/FeedbackSubmitProgressView.js";
-import { rememberFeedbackContactInput } from "@/feedback/feedbackContactPreference.js";
 import type { FeedbackSubmissionProgressState } from "@/feedback/feedbackSubmissionJob.js";
 import { InboxIcon } from "lucide-react";
 
@@ -43,38 +41,6 @@ export function DescriptionSection({
   );
 }
 
-export function ContactSection({
-  value,
-  max,
-  onChange,
-  formatMessage,
-}: {
-  value: string;
-  max: number;
-  onChange: (value: string) => void;
-  formatMessage: (id: string) => string;
-}) {
-  return (
-    <Section title={formatMessage("feedback.submit.simple.contactTitle")}>
-      <Field>
-        <Input
-          type="text"
-          inputMode="email"
-          autoComplete="email"
-          value={value}
-          onChange={(event) => {
-            // 联系方式是可选项，但用户一旦填过就希望下次自动带出。
-            // 这里随输入实时持久化，不再依赖提交成功，避免网络失败或用户关闭弹窗导致记忆丢失。
-            onChange(rememberFeedbackContactInput(event.target.value));
-          }}
-          maxLength={max}
-          placeholder={formatMessage("feedback.submit.contact.placeholder")}
-          className="h-10 rounded-xl border-input-border bg-input px-3 text-ui-base text-foreground placeholder:text-foreground-subtlest hover:border-input-border-hover focus-visible:border-input-border-focused focus-visible:bg-input-focused"
-        />
-      </Field>
-    </Section>
-  );
-}
 
 export function LogUploadToggle({
   checked,

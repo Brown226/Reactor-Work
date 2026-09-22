@@ -6022,7 +6022,6 @@ const enUS: Record<string, string> = {
   "feedback.submit.simple.screenshotHint": "Paste, drag images here, or choose files.",
   "feedback.submit.simple.screenshotPrivacyHint":
     "Please check images for private information before uploading.",
-  "feedback.submit.simple.contactTitle": "Contact",
   "feedback.submit.simple.logsTitle": "Logs",
   "feedback.submit.simple.logsLabel": "Upload diagnostic logs",
   "feedback.submit.simple.logsHint":
@@ -6034,7 +6033,6 @@ const enUS: Record<string, string> = {
   "feedback.submit.contact.label": "Contact",
   "feedback.submit.contact.hint":
     "Optional, for follow-up. You can also enter another social account.",
-  "feedback.submit.contact.placeholder": "example@domain.com / social account",
   "feedback.submit.supplemental.title": "Additional information",
   "feedback.submit.module.label": "Module",
   "feedback.submit.severity.label": "Impact",
@@ -6052,7 +6050,6 @@ const enUS: Record<string, string> = {
   "feedback.featureRequest.solutionLabel": "Expected solution",
   "feedback.featureRequest.solutionPlaceholder":
     "Example: Add a quick prompt menu next to the composer with create, edit, and insert actions.",
-  "feedback.featureRequest.contactLabel": "Contact",
   "feedback.featureRequest.reset": "Reset",
   "feedback.featureRequest.submit": "Submit request",
   "feedback.featureRequest.missingRequired":

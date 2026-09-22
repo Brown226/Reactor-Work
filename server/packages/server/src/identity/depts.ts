@@ -214,3 +214,21 @@ export async function deleteDept(db: IdentityDb, id: number): Promise<void> {
   if (count > 0) throw new Error(`该部门下还有 ${count} 名成员，请先调岗`);
   await db.pool.query("DELETE FROM departments WHERE id = $1", [id]);
 }
+
+/**
+ * 按 id 取单个部门。
+ *
+ * 反馈提交这类一次性场景只为了拿一个部门名，不该为此把整棵部门树载进内存；
+ * 这里只查自己要的两个列，且不参与树的内存模型。
+ */
+export async function findDeptById(
+  db: IdentityDb,
+  id: number,
+): Promise<{ id: number; name: string; path: string } | null> {
+  const { rows } = await db.pool.query<{ id: number; name: string; path: string }>(
+    "SELECT id, name, path FROM departments WHERE id = $1",
+    [id],
+  );
+  const row = rows[0];
+  return row ? { id: row.id, name: row.name, path: row.path } : null;
+}

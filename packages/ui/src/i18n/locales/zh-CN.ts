@@ -5758,7 +5758,6 @@ const zhCN: Record<string, string> = {
   "feedback.submit.simple.screenshotTitle": "截图",
   "feedback.submit.simple.screenshotHint": "粘贴、拖拽图片到这里，或选择文件。",
   "feedback.submit.simple.screenshotPrivacyHint": "请注意检查图片中的隐私信息。",
-  "feedback.submit.simple.contactTitle": "联系方式",
   "feedback.submit.simple.logsTitle": "日志",
   "feedback.submit.simple.logsLabel": "上传诊断日志",
   "feedback.submit.simple.logsHint":
@@ -5769,7 +5768,6 @@ const zhCN: Record<string, string> = {
   "feedback.submit.removeScreenshot": "移除",
   "feedback.submit.contact.label": "联系邮箱",
   "feedback.submit.contact.hint": "选填，方便我们后续联系你；也可以填其他社交账号。",
-  "feedback.submit.contact.placeholder": "example@domain.com / 微信号 / 其他社交账号",
   "feedback.submit.supplemental.title": "补充信息",
   "feedback.submit.module.label": "功能模块",
   "feedback.submit.severity.label": "影响程度",
@@ -5787,7 +5785,6 @@ const zhCN: Record<string, string> = {
   "feedback.featureRequest.solutionLabel": "期望的解决方案",
   "feedback.featureRequest.solutionPlaceholder":
     "示例：在输入框旁增加快捷指令菜单，支持新增、编辑和一键插入。",
-  "feedback.featureRequest.contactLabel": "联系方式",
   "feedback.featureRequest.reset": "重置内容",
   "feedback.featureRequest.submit": "提交需求",
   "feedback.featureRequest.missingRequired": "请填写需求描述和期望的解决方案",

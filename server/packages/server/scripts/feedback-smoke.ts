@@ -9,14 +9,21 @@
  * ③ **wire 格式**：响应必须是客户端 `FeedbackHttpClient` 认的那套
  *    （`ticket_id` / `content.category` / `messages[].sender_type`），字段名对不上 =
  *    管理台有数据但客户端列表全是 bug、状态全坍缩成"已提交"。
- * ④ **附件明确拒绝**：`/feedback/attachment/upload-credential` 必须 400 且带
- *    `attachments_unsupported` 标记（客户端靠它把"日志没传上去"降级成评论，不报成提交失败）。
+ * ④ **附件走字节直传**：`PUT /api/v1/feedback/ticket/:id/attachment` 落盘 + sha256 入库，
+ *    中文文件名经 percent-encode 传输后原样还原；用户侧与管理面都能把字节原样下载回来。
+ *    OSS 直传凭证端点仍回 400 + `attachments_unsupported`（只有官方后端有那套 OSS）。
  * ⑤ **管理面鉴权**：非 platform_admin → 403；未注入 claims → 401。
  * ⑥ **流转写事件**：改状态要落 `status_changed` 事件，管理台时间线才答得了"谁改的什么"。
+ * ⑧ **提交者身份**：姓名/部门只认企业 JWT 的 claims，客户端自报的 reporter 一律不采信。
  * ⑦ **红点语义**：用户补充消息 → unread=true；管理台打开详情 → unread=false。
  *
  * 用法：`pnpm --filter @reactor/server smoke:feedback`
  */
+
+import { createHash } from "node:crypto";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { Hono } from "hono";
 import { fileURLToPath } from "node:url";
@@ -54,6 +61,11 @@ const dbUrl = () =>
   "postgres://reactor:reactor@127.0.0.1:15432/reactor";
 
 async function main(): Promise<void> {
+  // ★ 附件落盘目录是 routes.ts 的**模块级常量**：必须在动态 import routes 之前设好，
+  //   否则会写进真实目录（同 updates-smoke 对 REACTOR_UPDATE_FILE_DIR 的处理）。
+  const attachmentDir = mkdtempSync(join(tmpdir(), "reactor-feedback-smoke-"));
+  process.env["REACTOR_FEEDBACK_FILE_DIR"] = attachmentDir;
+
   // ★ 必须最先执行：切到独立冒烟库（每次重建），真实库不受影响
   try {
     await useSmokeDb();
@@ -89,6 +101,12 @@ async function main(): Promise<void> {
     await ensureFeedbackSchema(db); // 幂等：第二次不应报错
     check("建表幂等（连跑两次不抛）", true);
 
+    // 提交者身份要落到 departments.path：先造一个部门，后面断言"姓名/部门来自令牌"
+    const deptRow = await db.pool.query<{ id: number }>(
+      "INSERT INTO departments (parent_id, name, path, depth) VALUES (NULL, '冒烟部门', '冒烟部门', 1) RETURNING id",
+    );
+    const probeDeptId = deptRow.rows[0]!.id;
+
     /* ── 路由装配：管理面注入 claims，提交面刻意**完全不注入** ─────────── */
     const admin = new Hono<{ Variables: { claims: TokenClaims } }>();
     let currentClaims: TokenClaims | null = { sub: "probe-admin", name: "探针管理员", role: "platform_admin" };
@@ -101,8 +119,18 @@ async function main(): Promise<void> {
     });
     admin.route("/", createFeedbackAdminRoutes(db));
 
+    // 可选身份：只有带对令牌才解析出 claims（真实链路里是 identity 的 verifyAccess）。
+    const ENTERPRISE_TOKEN = "probe-enterprise-token";
     const pub = new Hono();
-    pub.route("/", createFeedbackPublicRoutes(db));
+    pub.route(
+      "/",
+      createFeedbackPublicRoutes(db, {
+        verifyOptionalToken: async (token) =>
+          token === ENTERPRISE_TOKEN
+            ? { sub: "tian.keda", name: "田科达", role: "user", deptId: probeDeptId }
+            : null,
+      }),
+    );
 
     type Requestable = { request: (input: string, init?: RequestInit) => Promise<Response> };
     const adminApp: Requestable = admin;
@@ -149,7 +177,49 @@ async function main(): Promise<void> {
     );
     check("新建工单 messages 为空数组", Array.isArray(createdBody.messages) && createdBody.messages!.length === 0);
 
-    /* ── ③ 校验：缺字段 / 非法枚举 ───────────────────────────────────── */
+    /* ── ③ 提交者身份：姓名与部门必须来自令牌，不采信客户端自报 ────────── */
+    const authedCreate = await publicApp.request(FEEDBACK_TICKET_PATH, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-device-mid": "probe-device-mid",
+        authorization: `Bearer ${ENTERPRISE_TOKEN}`,
+      },
+      body: JSON.stringify({
+        title: "带身份提交的工单",
+        device_mid: "probe-device-mid",
+        content: { description: "从登录态提交，应带上姓名与部门", category: "usage" },
+        // 这些字段客户端可以乱写；服务端必须忽略它们，只认令牌 claims
+        reporter: { display_name: "我是冒充的" },
+        environment: { user_name: "也是冒充的" },
+      }),
+    });
+    const authedBody = (await authedCreate.json()) as { ticket_id?: string };
+    check("带企业令牌提交 → 201", authedCreate.status === 201, authedCreate.status);
+    const identityRow = await db.pool.query<{
+      reporter_display: string | null;
+      reporter_uid: string | null;
+      reporter_dept: string | null;
+    }>(
+      "SELECT reporter_display, reporter_uid, reporter_dept FROM feedback_ticket WHERE id = $1",
+      [authedBody.ticket_id ?? ""],
+    );
+    const identity = identityRow.rows[0];
+    check("报告人姓名取自令牌 claims.name（不信客户端自报）", identity?.reporter_display === "田科达", identity);
+    check("报告人账号取自令牌 sub", identity?.reporter_uid === "tian.keda", identity);
+    check("部门取 departments.path", identity?.reporter_dept === "冒烟部门", identity);
+
+    const anonRow = await db.pool.query<{ reporter_display: string | null; reporter_dept: string | null }>(
+      "SELECT reporter_display, reporter_dept FROM feedback_ticket WHERE id = $1",
+      [ticketId],
+    );
+    check(
+      "匿名提交的报告人/部门留空",
+      anonRow.rows[0]?.reporter_display === null && anonRow.rows[0]?.reporter_dept === null,
+      anonRow.rows[0],
+    );
+
+    /* ── ④ 校验：缺字段 / 非法枚举 ───────────────────────────────────── */
     const noTitle = await json(publicApp, FEEDBACK_TICKET_PATH, "POST", {
       title: "  ",
       content: { description: "x", category: "bug" },
@@ -161,21 +231,97 @@ async function main(): Promise<void> {
     });
     check("非法 type → 400", badType.status === 400, badType.status);
 
-    /* ── ④ 附件凭证：明确拒绝 + 标记 ─────────────────────────────────── */
+    /* ── ⑤ 附件凭证：旧客户端的兼容位，明确拒绝 + 标记 ────────────────── */
     const upload = await json(publicApp, FEEDBACK_ATTACHMENT_CREDENTIAL_PATH, "POST", {
       ticket_id: ticketId,
       file_name: "log.zip",
       size: 1024,
     });
     const uploadBody = (await upload.json()) as { code?: number; msg?: string };
-    check("附件凭证 → 400（一期不支持）", upload.status === 400, upload.status);
+    check("附件凭证 → 400（旧客户端走 PUT 直传，见 ⑤b）", upload.status === 400, upload.status);
     check(
       "错误信息带 attachments_unsupported 标记（客户端靠它降级）",
       typeof uploadBody.msg === "string" && uploadBody.msg.includes("attachments_unsupported"),
       uploadBody,
     );
 
-    /* ── ⑤ 用户补充消息 → unread 点亮 ────────────────────────────────── */
+    /* ── ⑤b 附件字节直传：PUT 落盘 + 中文名 + 两面下载 ─────────────────── */
+    console.log("· 附件字节直传");
+    const payload = Buffer.from("REACTOR-FEEDBACK-ATTACHMENT-PAYLOAD");
+    const putRes = await publicApp.request(
+      `${FEEDBACK_TICKET_PATH}/${ticketId}/attachment?kind=image`,
+      {
+        method: "PUT",
+        headers: {
+          "x-file-name": encodeURIComponent("截图-问题.png"),
+          "content-type": "image/png",
+        },
+        body: payload,
+      },
+    );
+    const putBody = (await putRes.json()) as {
+      attachment_id?: number;
+      size?: number;
+      sha256?: string;
+    };
+    check("PUT 附件 → 201", putRes.status === 201, putRes.status);
+    check(
+      "大小与 sha256 与本地一致",
+      putBody.size === payload.length &&
+        putBody.sha256 === createHash("sha256").update(payload).digest("hex"),
+      putBody,
+    );
+    const storedRow = await db.pool.query<{ file_name: string; stored_name: string }>(
+      "SELECT file_name, stored_name FROM feedback_attachment WHERE id = $1",
+      [putBody.attachment_id ?? 0],
+    );
+    check(
+      // x-file-name 是 percent-encode 过的（HTTP 头是 latin1），落库必须还原成中文原名
+      "中文文件名无损还原",
+      storedRow.rows[0]?.file_name === "截图-问题.png",
+      storedRow.rows[0],
+    );
+    check(
+      "磁盘名是 uuid（不含原名）",
+      Boolean(storedRow.rows[0]?.stored_name) && !storedRow.rows[0]!.stored_name.includes("截图"),
+      storedRow.rows[0]?.stored_name,
+    );
+    const publicDownload = await publicApp.request(
+      `${FEEDBACK_TICKET_PATH}/${ticketId}/attachments/${putBody.attachment_id}`,
+    );
+    const publicBytes = Buffer.from(await publicDownload.arrayBuffer());
+    check(
+      "用户侧下载 200 且字节一致",
+      publicDownload.status === 200 && publicBytes.equals(payload),
+      publicDownload.status,
+    );
+    const adminDownload = await adminApp.request(
+      `/admin/feedback/tickets/${ticketId}/attachments/${putBody.attachment_id}/download`,
+    );
+    const adminBytes = Buffer.from(await adminDownload.arrayBuffer());
+    check(
+      "管理面下载 200 且字节一致",
+      adminDownload.status === 200 && adminBytes.equals(payload),
+      adminDownload.status,
+    );
+    const badExtension = await publicApp.request(
+      `${FEEDBACK_TICKET_PATH}/${ticketId}/attachment?kind=other`,
+      { method: "PUT", headers: { "x-file-name": "evil.exe" }, body: "x" },
+    );
+    check("非白名单后缀 → 400", badExtension.status === 400, badExtension.status);
+    const detailWithAttachment = await adminApp.request(
+      `/admin/feedback/tickets/${ticketId}`,
+    );
+    const detailAttachmentBody = (await detailWithAttachment.json()) as {
+      ticket?: { attachments?: unknown[] };
+    };
+    check(
+      "详情返回附件列表（管理台据此渲染下载）",
+      (detailAttachmentBody.ticket?.attachments ?? []).length >= 1,
+      detailAttachmentBody.ticket?.attachments?.length,
+    );
+
+    /* ── ⑥ 用户补充消息 → unread 点亮 ────────────────────────────────── */
     const replied = await json(publicApp, `${FEEDBACK_TICKET_PATH}/${ticketId}/message`, "POST", {
       content: { text: "补充：只在深色主题下复现" },
     });
@@ -192,7 +338,7 @@ async function main(): Promise<void> {
     );
     check("用户补充后 unread=true", unreadRow.rows[0]?.unread === true, unreadRow.rows[0]);
 
-    /* ── ⑥ 管理面鉴权 ────────────────────────────────────────────────── */
+    /* ── ⑦ 管理面鉴权 ────────────────────────────────────────────────── */
     console.log("· 管理面鉴权");
     currentClaims = { sub: "probe-user", name: "探针用户", role: "user" };
     const denied = await json(adminApp, "/admin/feedback/tickets", "GET", undefined);
@@ -202,7 +348,7 @@ async function main(): Promise<void> {
     check("无 claims → 401", anonymous.status === 401, anonymous.status);
     currentClaims = { sub: "probe-admin", name: "探针管理员", role: "platform_admin" };
 
-    /* ── ⑦ 管理台列表 / 详情 / 流转 / 回复 ────────────────────────────── */
+    /* ── ⑧ 管理台列表 / 详情 / 流转 / 回复 ────────────────────────────── */
     console.log("· 管理台受理");
     const list = await adminApp.request(`/admin/feedback/tickets?q=${encodeURIComponent("发送")}`);
     const listBody = (await list.json()) as {
@@ -288,6 +434,7 @@ async function main(): Promise<void> {
     check("查不存在的单 → 404", missing.status === 404, missing.status);
   } finally {
     await closeIdentityDb(db).catch(() => undefined);
+    rmSync(attachmentDir, { recursive: true, force: true });
   }
 
   console.log(failed === 0 ? "\n全部通过 ✓" : `\n${failed} 项失败 ✗`);

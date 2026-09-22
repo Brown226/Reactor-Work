@@ -23,6 +23,8 @@ export interface FeedbackTicketRow {
   contact: string | null;
   environment: Record<string, unknown> | null;
   reporterDisplay: string | null;
+  reporterUid: string | null;
+  reporterDept: string | null;
   deviceMid: string | null;
   assigneeId: string | null;
   assigneeDisplay: string | null;
@@ -45,6 +47,8 @@ interface RawTicketRow {
   contact: string | null;
   environment: Record<string, unknown> | null;
   reporter_display: string | null;
+  reporter_uid: string | null;
+  reporter_dept: string | null;
   device_mid: string | null;
   assignee_id: string | null;
   assignee_display: string | null;
@@ -109,6 +113,8 @@ const TICKET_COLUMNS = [
   "contact",
   "environment",
   "reporter_display",
+  "reporter_uid",
+  "reporter_dept",
   "device_mid",
   "assignee_id",
   "assignee_display",
@@ -153,6 +159,8 @@ function mapTicket(raw: RawTicketRow): FeedbackTicketRow {
     contact: raw.contact,
     environment: raw.environment ?? null,
     reporterDisplay: raw.reporter_display,
+    reporterUid: raw.reporter_uid,
+    reporterDept: raw.reporter_dept,
     deviceMid: raw.device_mid,
     assigneeId: raw.assignee_id,
     assigneeDisplay: raw.assignee_display,
@@ -199,6 +207,8 @@ export interface CreateFeedbackTicketInput {
   contact?: string | null;
   environment?: Record<string, unknown> | null;
   reporterDisplay?: string | null;
+  reporterUid?: string | null;
+  reporterDept?: string | null;
   deviceMid?: string | null;
   locale?: string | null;
   source?: string | null;
@@ -213,8 +223,9 @@ export async function createFeedbackTicket(
   const { rows } = await db.pool.query<RawTicketRow>(
     `INSERT INTO feedback_ticket
        (id, title, description, type, severity, module, status, contact, environment,
-        reporter_display, device_mid, locale, source, last_user_activity_at, unread)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11, $12, $13, now(), false)
+        reporter_display, reporter_uid, reporter_dept, device_mid, locale, source,
+        last_user_activity_at, unread)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11, $12, $13, $14, $15, now(), false)
      RETURNING ${TICKET_COLUMNS}`,
     [
       id,
@@ -227,6 +238,8 @@ export async function createFeedbackTicket(
       input.contact ?? null,
       input.environment ? JSON.stringify(input.environment) : null,
       input.reporterDisplay ?? null,
+      input.reporterUid ?? null,
+      input.reporterDept ?? null,
       input.deviceMid ?? null,
       input.locale ?? null,
       input.source ?? null,
@@ -431,4 +444,120 @@ export async function setFeedbackTicketUnread(
       WHERE id = $1`,
     [id, unread, options.touchActivity ?? false],
   );
+}
+
+// ============================================================================
+// 附件（截图 / 诊断日志）——字节落磁盘，表里只存寻址与校验和
+// ============================================================================
+
+export interface FeedbackAttachmentRow {
+  id: number;
+  ticketId: string;
+  messageId: string | null;
+  kind: string;
+  fileName: string;
+  storedName: string;
+  sizeBytes: number;
+  sha256: string;
+  contentType: string | null;
+  createdAt: Date;
+}
+
+interface RawAttachmentRow {
+  id: string | number;
+  ticket_id: string;
+  message_id: string | null;
+  kind: string;
+  file_name: string;
+  stored_name: string;
+  size_bytes: string | number;
+  sha256: string;
+  content_type: string | null;
+  created_at: Date;
+}
+
+const ATTACHMENT_COLUMNS = [
+  "id",
+  "ticket_id",
+  "message_id",
+  "kind",
+  "file_name",
+  "stored_name",
+  "size_bytes",
+  "sha256",
+  "content_type",
+  "created_at",
+].join(", ");
+
+function mapAttachment(raw: RawAttachmentRow): FeedbackAttachmentRow {
+  return {
+    id: Number(raw.id),
+    ticketId: raw.ticket_id,
+    messageId: raw.message_id,
+    kind: raw.kind,
+    fileName: raw.file_name,
+    storedName: raw.stored_name,
+    // BIGINT 默认回字符串，不转数字会让管理台把 1048576 显示成 "1048576" 字符串比较
+    sizeBytes: Number(raw.size_bytes),
+    sha256: raw.sha256,
+    contentType: raw.content_type,
+    createdAt: raw.created_at,
+  };
+}
+
+export interface CreateFeedbackAttachmentInput {
+  ticketId: string;
+  messageId?: string | null;
+  kind: string;
+  fileName: string;
+  storedName: string;
+  sizeBytes: number;
+  sha256: string;
+  contentType?: string | null;
+}
+
+export async function createFeedbackAttachment(
+  db: IdentityDb,
+  input: CreateFeedbackAttachmentInput,
+): Promise<FeedbackAttachmentRow> {
+  const { rows } = await db.pool.query<RawAttachmentRow>(
+    `INSERT INTO feedback_attachment
+       (ticket_id, message_id, kind, file_name, stored_name, size_bytes, sha256, content_type)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING ${ATTACHMENT_COLUMNS}`,
+    [
+      input.ticketId,
+      input.messageId ?? null,
+      input.kind,
+      input.fileName,
+      input.storedName,
+      input.sizeBytes,
+      input.sha256,
+      input.contentType ?? null,
+    ],
+  );
+  return mapAttachment(rows[0]!);
+}
+
+export async function listFeedbackAttachments(
+  db: IdentityDb,
+  ticketId: string,
+): Promise<FeedbackAttachmentRow[]> {
+  const { rows } = await db.pool.query<RawAttachmentRow>(
+    `SELECT ${ATTACHMENT_COLUMNS} FROM feedback_attachment WHERE ticket_id = $1 ORDER BY created_at, id`,
+    [ticketId],
+  );
+  return rows.map(mapAttachment);
+}
+
+export async function getFeedbackAttachment(
+  db: IdentityDb,
+  ticketId: string,
+  attachmentId: number,
+): Promise<FeedbackAttachmentRow | null> {
+  const { rows } = await db.pool.query<RawAttachmentRow>(
+    `SELECT ${ATTACHMENT_COLUMNS} FROM feedback_attachment WHERE ticket_id = $1 AND id = $2`,
+    [ticketId, attachmentId],
+  );
+  return rows[0] ? mapAttachment(rows[0]) : null;
 }

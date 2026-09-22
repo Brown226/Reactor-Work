@@ -13,14 +13,12 @@ import {
 } from "@zcode/shared";
 import { toast } from "@/components/ui/toast.js";
 import { FeedbackErrorTip } from "@/feedback/feedbackBadges.js";
-import { readFeedbackContactPreference } from "@/feedback/feedbackContactPreference.js";
 import {
   FeedbackScreenshotPicker,
   readScreenshotDraft,
   type ScreenshotAttachmentDraft,
 } from "@/feedback/FeedbackScreenshotPicker.js";
 import {
-  ContactSection,
   DescriptionSection,
   LogUploadToggle,
   Section,
@@ -57,7 +55,6 @@ export { SubmitProgressView } from "@/feedback/FeedbackSubmitProgressView.js";
 export { readCurrentAgentModelContext } from "@/feedback/feedbackSubmitModelContext.js";
 
 const DESCRIPTION_MAX = 4000;
-const CONTACT_MAX = 200;
 const MAX_SCREENSHOT_ATTACHMENTS = 5;
 
 type SubmitProgressState = FeedbackSubmissionProgressState;
@@ -99,7 +96,6 @@ export function FeedbackSubmitForm({
   const activeSubmissionJobRef = useRef<FeedbackSubmissionJob | null>(null);
   const modelContext = useActiveFeedbackModelContext();
   const [description, setDescription] = useState("");
-  const [contact, setContact] = useState(() => readFeedbackContactPreference());
   const [screenshots, setScreenshots] = useState<ScreenshotAttachmentDraft[]>([]);
   const [includeLogs, setIncludeLogs] = useState(false);
   const [ticketType, setTicketType] = useState<FeedbackTicketType>(DEFAULT_FEEDBACK_TYPE);
@@ -115,9 +111,6 @@ export function FeedbackSubmitForm({
   const applySubmitDraft = useCallback((draft: FeedbackSubmitDraft) => {
     appliedDraftRef.current = draft;
     setDescription(draft.description ?? draft.title ?? "");
-    if (draft.contact !== undefined) {
-      setContact(draft.contact);
-    }
     setTicketType(draft.type ?? DEFAULT_FEEDBACK_TYPE);
     setTicketSeverity(draft.severity ?? DEFAULT_FEEDBACK_SEVERITY);
     setTicketModule(draft.module ?? DEFAULT_FEEDBACK_MODULE);
@@ -258,7 +251,6 @@ export function FeedbackSubmitForm({
         feedbackService,
         // 后端正文使用 trim 后的内容，但后台卡片恢复时必须保留用户输入原文。
         description,
-        contact,
         screenshots,
         includeLogs,
         ticketType,
@@ -304,7 +296,6 @@ export function FeedbackSubmitForm({
       setSubmitting(false);
     }
   }, [
-    contact,
     description,
     feedbackService,
     formatMessage,
@@ -353,12 +344,6 @@ export function FeedbackSubmitForm({
               }}
             />
           </Section>
-          <ContactSection
-            value={contact}
-            max={CONTACT_MAX}
-            onChange={setContact}
-            formatMessage={formatMessage}
-          />
           <LogUploadToggle
             checked={includeLogs}
             onCheckedChange={setIncludeLogs}
