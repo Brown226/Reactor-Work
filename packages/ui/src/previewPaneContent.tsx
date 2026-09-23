@@ -24,6 +24,7 @@ import type { OfficeFilePreviewKind } from "@/lib/officeFilePreview.js";
 import { PreviewPaneOfficeContent } from "@/previewPaneOfficeContent.js";
 import type { PptxElementReferenceSource } from "@/lib/pptxElementReference.js";
 import type { MediaCodeViewerSource, PptxReferencePreviewNavigation } from "@/lib/codeViewer.js";
+import { ReviewTextContent } from "@/ReviewTextContent.js";
 import { resolveCodeReviewContentProjection } from "@/previewPaneCodeReview.js";
 
 interface PreviewPaneContentProps {
@@ -426,6 +427,26 @@ export function PreviewPaneContent({
 
   if (source.type !== "code-review" && isSvgFile && svgViewMode === "preview") {
     return <SvgPreviewContent title={source.title} svgContent={filePreview.content} />;
+  }
+
+  // 带字符区间的审查定位走自渲染：提取正文不需要语法高亮/diff，而 @pierre/diffs 没有
+  // 字符级装饰钩子（见 reviewTextModel.ts 头注）。行级锚点（只有行号）仍走下面的代码预览器。
+  if (
+    source.type === "code-review" &&
+    typeof source.review.startOffset === "number" &&
+    typeof source.review.endOffset === "number"
+  ) {
+    return (
+      <ReviewTextContent
+        text={filePreview.content}
+        startOffset={source.review.startOffset}
+        endOffset={source.review.endOffset}
+        quote={source.review.quote}
+        comment={source.review.body}
+        severity={source.review.severity}
+        focusRequestId={source.review.requestId}
+      />
+    );
   }
 
   return (

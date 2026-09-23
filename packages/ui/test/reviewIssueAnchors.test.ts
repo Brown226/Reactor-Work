@@ -13,6 +13,7 @@ import {
   compareIssues,
   readKnowledgeResult,
 } from "../src/ToolCallBlocks/knowledgeCheckResult.js";
+import { buildReviewTextModel, REVIEW_TEXT_MAX_LINES } from "../src/reviewTextModel.js";
 import {
   resolveAnchorLineRange,
   resolveCodeReviewContentProjection,
@@ -184,4 +185,71 @@ test("工具名判定：三种 wire 写法都认，且不误伤别的工具", ()
   assert.equal(isKnowledgeCheckToolCall({ toolName: "Read" }), false);
   assert.equal(isExportReviewReportToolCall({ toolName: "ExportReviewReport" }), true);
   assert.equal(isExportReviewReportToolCall({ toolName: "KnowledgeCheck" }), false);
+});
+
+test("字符级高亮：命中区间落在行中间时只标那几个字", () => {
+  const LF = String.fromCharCode(10);
+  // 不用字面量 \n：这条用例本身就在验换行处理，字符串里混进真实换行会把它变成另一回事
+  const text = ["第一行正常", "管件按 GB/T8163-1999 供货。", "第三行"].join(LF);
+  const start = text.indexOf("GB/T8163-1999");
+  const model = buildReviewTextModel(text, start, start + "GB/T8163-1999".length);
+  assert.equal(model.rangeValid, true);
+  assert.equal(model.hitLine, 2, "命中在第 2 行");
+  const line = model.lines.find((item) => item.number === 2)!;
+  assert.deepEqual(
+    line.segments.map((segment) => [segment.text, segment.hit]),
+    [
+      ["管件按 ", false],
+      ["GB/T8163-1999", true],
+      [" 供货。", false],
+    ],
+  );
+  // 其余行不该有任何高亮
+  assert.equal(model.lines.filter((item) => item.hasHit).length, 1);
+});
+
+test("字符级高亮：跨行区间在每行各自切段", () => {
+  const LF = String.fromCharCode(10);
+  const text = ["AAA", "BBB", "CCC"].join(LF);
+  const model = buildReviewTextModel(text, 1, 7); // 覆盖第 1 行的 AA 到第 2 行的 BB
+  assert.equal(model.hitLine, 1);
+  assert.deepEqual(model.lines.map((line) => line.hasHit), [true, true, false]);
+  assert.equal(model.lines[0]!.segments.at(-1)!.text, "AA");
+  // 偏移 7 是第 2 行末尾的换行（开区间不包含），所以第 2 行整行命中
+  assert.equal(model.lines[1]!.segments[0]!.text, "BBB");
+});
+
+test("字符级高亮：CRLF 只算一次换行，且偏移坐标不被归一化打乱", () => {
+  const CRLF = String.fromCharCode(13) + String.fromCharCode(10);
+  const text = ["AAA", "BBB"].join(CRLF);
+  const model = buildReviewTextModel(text, 5, 8); // "BBB"
+  assert.equal(model.lines.length, 2);
+  assert.equal(model.hitLine, 2);
+  assert.deepEqual(model.lines[1]!.segments, [{ text: "BBB", hit: true }]);
+});
+
+test("字符级高亮：无效区间不猜位置，也不截断正文", () => {
+  const text = "只有一行";
+  for (const [start, end] of [
+    [undefined, undefined],
+    [99, 120],
+    [3, 2],
+    [-1, 4],
+    [2, 2],
+  ] as [number | undefined, number | undefined][]) {
+    const model = buildReviewTextModel(text, start, end);
+    assert.equal(model.rangeValid, false, `${start}-${end} 应为无效区间`);
+    assert.equal(model.hitLine, null);
+    assert.ok(!model.lines.some((line) => line.hasHit), "无效区间不得产生高亮");
+    assert.equal(model.lines[0]!.segments[0]!.text, text, "正文仍要完整显示");
+  }
+});
+
+test("字符级高亮：超长文本按上限截断并标记 truncated", () => {
+  const text = Array.from({ length: 12 }, (_, index) => `L${index}`).join(String.fromCharCode(10));
+  const model = buildReviewTextModel(text, 0, 2, 5);
+  assert.equal(model.lines.length, 5);
+  assert.equal(model.truncated, true);
+  assert.equal(REVIEW_TEXT_MAX_LINES > model.lines.length, true);
+  assert.equal(buildReviewTextModel(text, 0, 2).truncated, false, "默认上限内不应截断");
 });
