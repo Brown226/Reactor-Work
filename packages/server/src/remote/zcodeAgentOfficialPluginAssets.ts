@@ -54,7 +54,6 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS = [
   //
   // 审查技能同理：只校验 plugin.json 会放过「有壳没技能」的残缺目录，
   // 而少一个 SKILL.md 在运行时表现为「这个审查类型答案很水」，不是报错。
-  "review-skills-plugin/skills/review-batch/SKILL.md",
   "review-skills-plugin/skills/review-compare/SKILL.md",
   "review-skills-plugin/skills/review-consistency/SKILL.md",
   "review-skills-plugin/skills/review-contract/SKILL.md",

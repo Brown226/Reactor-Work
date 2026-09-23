@@ -96,14 +96,4 @@ export const reviewQuickActionPrompts: ReviewQuickActionPrompt[] = [
       en: "Check the standards cited in this document: wrong identifiers, abolished standards, and outdated version years. For each, show what the file says versus what it should say.",
     },
   }),
-  reviewQuickAction({
-    id: "review-type-batch",
-    iconName: "files",
-    skill: "review-batch",
-    label: { cn: "批量审查出报告", en: "Batch review with report" },
-    prompt: {
-      cn: "把这批文件一起审一遍：逐个抽取正文并按审查要点检查，合并去重后导出一份报告（.docx 或 .xlsx），不要逐份复述全文。",
-      en: "Review this batch of files: extract each one, check it against the review points, merge duplicates, and export one report (.docx or .xlsx) without restating each document.",
-    },
-  }),
 ];

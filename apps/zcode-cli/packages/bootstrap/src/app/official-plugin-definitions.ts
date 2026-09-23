@@ -90,7 +90,6 @@ const OFFICIAL_ZCODE_GUIDE_REQUIRED_SEED_PATHS = [
 // 钉住每个技能的 SKILL.md 与错词表附件——seed 漏文件时技能会「存在但空转」，
 // 症状是审查质量下降而不是报错，没有诊断能指向交付问题。
 const OFFICIAL_REVIEW_SKILLS_REQUIRED_SEED_PATHS = [
-  "skills/review-batch/SKILL.md",
   "skills/review-compare/SKILL.md",
   "skills/review-consistency/SKILL.md",
   "skills/review-contract/SKILL.md",

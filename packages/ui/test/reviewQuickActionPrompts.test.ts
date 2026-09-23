@@ -21,7 +21,6 @@ const REVIEW_SKILLS = [
   "review-compare",
   "review-contract",
   "review-standard-check",
-  "review-batch",
 ];
 
 /** 既有按钮 id：埋点（reportPromptTemplateClick 的 templateId）与灰度按 id 关联，不随手改。 */
@@ -33,7 +32,7 @@ const LEGACY_REVIEW_ACTION_IDS = [
   "review-type-standard-ref",
 ];
 
-test("审查快捷按钮：6 张卡片与内置技能一一对应，id 不重复", () => {
+test("审查快捷按钮：5 张卡片与内置技能一一对应，id 不重复", () => {
   assert.equal(reviewQuickActionPrompts.length, REVIEW_SKILLS.length);
   const ids = reviewQuickActionPrompts.map((item) => item.id);
   assert.equal(new Set(ids).size, ids.length, "id 必须唯一");

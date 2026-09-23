@@ -51,7 +51,6 @@ export const officialSeaPlugins = [
     name: "review-skills",
     requiresRuntime: false,
     requiredSeedPaths: [
-      "skills/review-batch/SKILL.md",
       "skills/review-compare/SKILL.md",
       "skills/review-consistency/SKILL.md",
       "skills/review-contract/SKILL.md",

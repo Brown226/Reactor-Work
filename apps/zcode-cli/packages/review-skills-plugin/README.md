@@ -1,6 +1,6 @@
 # review-skills（审查技能·内置插件）
 
-文件审查板块的 6 个技能，**随安装包内置**，不经企业服务端下发。用户装完即可在审查档的
+文件审查板块的 5 个技能，**随安装包内置**，不经企业服务端下发。用户装完即可在审查档的
 快捷按钮里用到，离线（内网无公网）环境下同样可用。
 
 ## 为什么是内置插件而不是服务端技能
@@ -19,7 +19,6 @@ skills/review-consistency/       全文一致性
 skills/review-compare/           以文审文
 skills/review-contract/          合同风险审查
 skills/review-standard-check/    标准引用自检（强制走 KnowledgeCheck 确定性比对）
-skills/review-batch/             批量审查 + 报告导出（ExportReviewReport）
 ```
 
 ## 数据边界
