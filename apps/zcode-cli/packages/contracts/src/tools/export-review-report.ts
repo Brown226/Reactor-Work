@@ -32,11 +32,71 @@ export const ReviewReportIssueSchema = z
 
 export type ReviewReportIssue = z.infer<typeof ReviewReportIssueSchema>;
 
+/**
+ * 审查结论的**判定状态**。报告必须能区分「查了没问题」「根本没查到引用」「没查成」——
+ * 否则同样的 `issues: []` 会被写成「本次审查未发现问题」，那是最危险的一类假阴性：
+ * 报告是交付物，收报告的人会据此签字。
+ */
+export const REVIEW_REPORT_CONCLUSIONS = [
+  /** 查了，且全部通过（用 `coverage.referenceCount` 说明查了多少条引用） */
+  "passed",
+  /** 查了，但正文里没有可机检的引用/内容（空 issues 是预期结果，不是好消息） */
+  "no_reference",
+  /** 只审了一部分（抽取失败、格式不支持、范围被裁剪），`scope` 必须写明缺口 */
+  "partial",
+  /** 没查成（抽取失败且未补救）——此时不得声称做过任何核对 */
+  "not_checked",
+] as const;
+
+/** 判定所依据的知识库快照 + 覆盖缺口：报告要能自证「对着哪一版库、覆盖到哪」判的。 */
+export const ReviewReportBasisSchema = z
+  .object({
+    standardsStamp: z
+      .object({
+        maxUpdatedAt: z.string().nullable(),
+        fetchedAt: z.string(),
+        count: z.number().int().nonnegative(),
+      })
+      .nullable()
+      .optional(),
+    terminologyStamp: z
+      .object({
+        maxUpdatedAt: z.string().nullable(),
+        fetchedAt: z.string(),
+        count: z.number().int().nonnegative(),
+      })
+      .nullable()
+      .optional(),
+    /** 本次核对用到的已发布规范库名 */
+    ruleLibraries: z.array(z.string()).optional(),
+    /** 引用了但库中几乎没有条目的标准体系（如 `["DL","NB"]`）——必须写进免责声明 */
+    uncoveredFamilies: z.array(z.string()).optional(),
+  })
+  .strict();
+
+export type ReviewReportBasis = z.infer<typeof ReviewReportBasisSchema>;
+
 export const ExportReviewReportInputSchema = z
   .object({
     format: z.enum(REVIEW_REPORT_FORMATS).describe("docx=交付用报告；xlsx=问题明细表"),
     title: z.string().min(1).describe("报告标题（通常是被审文件名或审查类型）"),
     issues: z.array(ReviewReportIssueSchema).describe("问题清单"),
+    /**
+     * 结论状态，**必填**：空 `issues` 时它决定报告写什么。
+     * 不填就是逼调用方想清楚「到底审没审成」，而不是默认写「未发现问题」。
+     */
+    conclusion: z
+      .enum(REVIEW_REPORT_CONCLUSIONS)
+      .describe("审查结论状态；空 issues 时报告按它措辞，禁止统一写「未发现问题」"),
+    /** 审查覆盖度：引用条数 / 是否检出正文 / 抽取是否成功，结论措辞与免责声明会引用它 */
+    coverage: z
+      .object({
+        referenceCount: z.number().int().nonnegative().optional(),
+        extractedChars: z.number().int().nonnegative().optional(),
+        extractionStatus: z.enum(["ok", "failed", "no_text_layer", "skipped"]).optional(),
+      })
+      .optional(),
+    basis: ReviewReportBasisSchema.optional().describe("判定依据的知识库快照与覆盖缺口"),
     sourcePath: z
       .string()
       .optional()

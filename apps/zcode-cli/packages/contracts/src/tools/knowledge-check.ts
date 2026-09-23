@@ -35,6 +35,12 @@ export const KnowledgeCheckInputSchema = z
       .describe(
         "action=standards 时的待检正文（已提取的纯文本）。工具会按字符偏移回报每条问题的位置，并把这份文本快照落盘供预览高亮。",
       ),
+    textFile: z
+      .string()
+      .optional()
+      .describe(
+        "action=standards 时的大正文替代方案：已提取纯文本文件的绝对路径。工具读取该文件做匹配，并直接以它为「点击问题 → 原文高亮」的目标，**不再复制一份快照**；偏移相对该文件（多处引用/长文档用它，避免 text 复制全文）。",
+      ),
     sourcePath: z
       .string()
       .optional()
@@ -75,12 +81,13 @@ export interface KnowledgeCacheStamp {
 
 /** 标准引用问题的一条判定。 */
 export interface KnowledgeStandardIssue {
-  /** 问题类别：废止引用 / 未注年代号 / 编号或年代号不存在 / 未收录 / 通过 */
+  /** 问题类别：废止引用 / 未注年代号 / 编号或年代号不存在 / 库未覆盖该体系 / 未收录 / 通过 */
   code:
     | "abolished"
     | "no_year"
     | "no_version"
     | "not_in_library"
+    | "family_not_collected"
     | "missing"
     | "upcoming"
     | "ok";
@@ -135,8 +142,17 @@ export interface KnowledgeCheckOutput {
     noYear: number;
     noVersion: number;
     notInLibrary: number;
+    /** 库完全没有该标准体系，无法核对（区别于 missing 的「疑似笔误」） */
+    familyNotCollected: number;
     missing: number;
     upcoming: number;
+  } | null;
+  /** standards 模式：判定覆盖度。库对某体系零覆盖时，相关引用只能判「无法核对」 */
+  coverage: {
+    /** 本文引用到的标准体系（ident 族，如 `GB` / `DL`） */
+    citedFamilies: string[];
+    /** 引用了但库中 0 条的体系 —— 报告必须据此加数据边界声明 */
+    uncoveredFamilies: string[];
   } | null;
   /** terminology 模式：**命中的白名单词**（调用方应把命中的候选丢弃） */
   whitelisted: string[];
@@ -162,7 +178,16 @@ export const KnowledgeCheckOutputSchema = z
         .nullable(),
       issues: z.array(
         z.object({
-          code: z.enum(["abolished", "no_year", "no_version", "not_in_library", "missing", "upcoming", "ok"]),
+          code: z.enum([
+            "abolished",
+            "no_year",
+            "no_version",
+            "not_in_library",
+            "family_not_collected",
+            "missing",
+            "upcoming",
+            "ok",
+          ]),
           severity: z.enum(["error", "warning", "info", "none"]),
           quoted: z.string(),
           normalized: z.string(),
@@ -185,8 +210,15 @@ export const KnowledgeCheckOutputSchema = z
           noYear: z.number().int().nonnegative(),
           noVersion: z.number().int().nonnegative(),
           notInLibrary: z.number().int().nonnegative(),
+          familyNotCollected: z.number().int().nonnegative(),
           missing: z.number().int().nonnegative(),
           upcoming: z.number().int().nonnegative(),
+        })
+        .nullable(),
+      coverage: z
+        .object({
+          citedFamilies: z.array(z.string()),
+          uncoveredFamilies: z.array(z.string()),
         })
         .nullable(),
       whitelisted: z.array(z.string()),

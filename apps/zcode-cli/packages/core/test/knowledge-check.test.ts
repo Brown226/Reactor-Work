@@ -4,14 +4,23 @@
  * 这个文件守的不是"函数能跑"，而是**归一化与版本判定这几条踩过坑的口径**：
  * 库数据里三种编号写法并存、两位年号、全角标点、以及"版本标注必须参与匹配"。
  * 任何一条松动都会表现成"审查结果开始误报/漏报"，而那种缺陷在人工抽检里很难被发现。
+ *
+ * 后半段是工具级回归：缓存目录用 `REACTOR_KNOWLEDGE_DIR` 指到临时目录，
+ * 这样不需要真实同步过知识库就能钉住 stale / notice / textFile 的行为。
  */
 import assert from "node:assert/strict";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 
 import {
+  MAX_INLINE_TEXT_CHARS,
+  buildFamilyCoverage,
   extractReferences,
   identFamily,
   judgeReference,
+  knowledgeCheckToolEntry,
   normalizeReferenceText,
   parseStandardNo,
 } from "../src/tool/handlers/knowledge-check.js";
@@ -115,6 +124,30 @@ test("判定：库里没有的行业标准要报未收录，而不是编一个�
   assert.match(result.message, /人工确认/);
 });
 
+test("判定：库缺口与编号笔误必须分流（信噪比：6 条未收录里 5 条是库缺口）", () => {
+  const coverage = buildFamilyCoverage(LIB);
+  // 库里 GB 覆盖充分（多条）、DL 完全没有。
+  assert.ok((coverage.get("GB") ?? 0) >= 5, "GB 族应有多条覆盖");
+  assert.equal(coverage.get("DL") ?? 0, 0, "DL 族应判为无覆盖");
+
+  const gap = judgeReference(parseStandardNo("DL5027-2015", IDENTS)!, LIB, coverage);
+  assert.equal(gap.code, "family_not_collected");
+  assert.equal(gap.severity, "info");
+  assert.match(gap.message, /无法核对/);
+  assert.match(gap.message, /不能据此判定该标准不存在/);
+
+  // 覆盖充分却查不到：更像编号/年代号笔误，仍是 warning 并要人工确认。
+  const typo = judgeReference(parseStandardNo("GB/T 99999-2020", IDENTS)!, LIB, coverage);
+  assert.equal(typo.code, "missing");
+  assert.equal(typo.severity, "warning");
+  assert.match(typo.message, /同体系已收录/);
+
+  // 不传覆盖度时不能静默得到乐观结论：走保守的 missing 分支。
+  const unknown = judge("DL5027-2015");
+  assert.equal(unknown.code, "missing");
+  assert.match(unknown.message, /未提供库覆盖度统计/);
+});
+
 test("抽取：给出字符偏移与行号，且不吃掉库外的行业标准", () => {
   const text = [
     "一、引用标准",
@@ -135,3 +168,95 @@ test("抽取：给出字符偏移与行号，且不吃掉库外的行业标准",
     "材料牌号 Q235-B 不是标准引用",
   );
 });
+
+const CACHE_ENV_KEY = "REACTOR_KNOWLEDGE_DIR";
+const previousCacheDir = process.env[CACHE_ENV_KEY];
+
+function withTempCache(run: (cacheDir: string) => Promise<void>): Promise<void> {
+  const cacheDir = mkdtempSync(join(tmpdir(), "knowledge-check-"));
+  process.env[CACHE_ENV_KEY] = cacheDir;
+  return run(cacheDir).finally(() => {
+    if (previousCacheDir === undefined) delete process.env[CACHE_ENV_KEY];
+    else process.env[CACHE_ENV_KEY] = previousCacheDir;
+    rmSync(cacheDir, { recursive: true, force: true });
+  });
+}
+
+function seedStandards(cacheDir: string, fetchedAt: string): void {
+  writeFileSync(
+    join(cacheDir, "standards.json"),
+    JSON.stringify({
+      maxUpdatedAt: "2026-09-22T14:25:38.502Z",
+      fetchedAt,
+      items: LIB,
+    }),
+    "utf8",
+  );
+}
+
+test("工具：rules 空库是合法状态，不得判 stale、不得提管理台", () =>
+  withTempCache(async (cacheDir) => {
+    writeFileSync(
+      join(cacheDir, "rule-libraries.json"),
+      JSON.stringify({ fetchedAt: new Date().toISOString(), libraries: [], items: {} }),
+      "utf8",
+    );
+    const result = (await knowledgeCheckToolEntry.handler({ action: "rules" }, {} as never)) as {
+      stale: boolean;
+      notice: string | null;
+      items: unknown[];
+    };
+    assert.equal(result.stale, false, "服务器上就是 0 个已发布库，同步多少次都不会变");
+    assert.deepEqual(result.items, []);
+    assert.match(result.notice ?? "", /没有已发布的规范库|未启用/);
+    assert.ok(!/管理台/.test(result.notice ?? ""), "notice 面向普通用户，不能提管理台操作");
+  }));
+
+test("工具：缓存缺失才判 stale，并给出可执行提示", () =>
+  withTempCache(async (cacheDir) => {
+    const result = (await knowledgeCheckToolEntry.handler(
+      { action: "rules" },
+      {} as never,
+    )) as { stale: boolean; notice: string };
+    assert.equal(result.stale, true);
+    assert.match(result.notice, /同步知识库/);
+  }));
+
+test("工具：旧快照只提示不判失败（stale=false + notice 说明快照年龄）", () =>
+  withTempCache(async (cacheDir) => {
+    const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString();
+    seedStandards(cacheDir, fiveDaysAgo);
+    const result = (await knowledgeCheckToolEntry.handler(
+      { action: "standards", text: "管件按 GB/T 8163-2018 供货。" },
+      {} as never,
+    )) as { stale: boolean; notice: string | null; summary: { total: number } };
+    assert.equal(result.stale, false, "旧库仍可用，只是结论边界要说明");
+    assert.match(result.notice ?? "", /天前/);
+    assert.equal(result.summary.total, 1);
+  }));
+
+test("工具：textFile 用源文件本身做高亮目标，偏移是全文基准", () =>
+  withTempCache(async (cacheDir) => {
+    seedStandards(cacheDir, new Date().toISOString());
+    const textFile = join(cacheDir, "design.extracted.txt");
+    writeFileSync(textFile, "第一段。\n管件按 GB/T 8163-1999 供货。\n第三段。", "utf8");
+    const result = (await knowledgeCheckToolEntry.handler(
+      { action: "standards", textFile, sourcePath: textFile },
+      {} as never,
+    )) as { textPath: string | null; issues: { startOffset: number; endOffset: number }[] };
+    assert.equal(result.textPath, textFile, "textFile 模式不再复制快照，直接用源文件");
+    const offset = textFile === null ? 0 : "管件按 GB/T 8163-1999 供货。".indexOf("GB/T 8163-1999") + "第一段。\n".length;
+    assert.equal(result.issues.length, 1);
+    assert.equal(result.issues[0]!.startOffset, offset);
+  }));
+
+test("工具：内联正文超上限要报错并指向 textFile（不许手工切片）", () =>
+  withTempCache(async (cacheDir) => {
+    seedStandards(cacheDir, new Date().toISOString());
+    const huge = "字".repeat(MAX_INLINE_TEXT_CHARS + 1);
+    await assert.rejects(
+      () => knowledgeCheckToolEntry.handler({ action: "standards", text: huge }, {} as never),
+      /textFile/,
+    );
+  }));
+

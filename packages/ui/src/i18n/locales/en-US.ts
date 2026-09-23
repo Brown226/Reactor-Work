@@ -1746,11 +1746,11 @@ const enUS: Record<string, string> = {
   "review.issue.noYear": "Missing year",
   "review.issue.noVersion": "Missing version note",
   "review.issue.notInLibrary": "Number not in library",
+  "review.issue.familyNotCollected": "System not covered by library",
   "review.issue.missing": "Not in library",
   "review.issue.upcoming": "Not yet in force",
   "review.issue.ok": "Passed",
   "review.issue.unknown": "Finding ({code})",
-
   "chat.toolCall.execute.conciseCompleted": "Ran a command",
   "chat.contextOptimization.started": "Optimizing conversation",
   "chat.contextOptimization.skipped": "No conversation optimization needed",

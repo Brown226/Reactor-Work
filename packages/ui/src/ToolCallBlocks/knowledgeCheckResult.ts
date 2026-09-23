@@ -31,6 +31,8 @@ export interface ReviewSummaryView {
   noYear: number;
   noVersion: number;
   notInLibrary: number;
+  /** 库未覆盖该标准体系，无法核对（区别于 missing 的疑似笔误） */
+  familyNotCollected: number;
   missing: number;
   upcoming: number;
 }
@@ -87,6 +89,7 @@ const KNOWN_CODES = new Set([
   "no_year",
   "no_version",
   "not_in_library",
+  "family_not_collected",
   "missing",
   "upcoming",
   "ok",
@@ -133,6 +136,7 @@ function parseSummary(raw: unknown): ReviewSummaryView | null {
     noYear: number("noYear"),
     noVersion: number("noVersion"),
     notInLibrary: number("notInLibrary"),
+    familyNotCollected: number("familyNotCollected"),
     missing: number("missing"),
     upcoming: number("upcoming"),
   };
@@ -190,7 +194,7 @@ export function actionableIssues(issues: readonly ReviewIssueView[]): ReviewIssu
   return issues.filter((issue) => issue.severity !== "none");
 }
 
-/** 问题类别的展示顺序：先硬错误，再需确认，最后提示。 */
+/** 问题类别的展示顺序：先硬错误，再需确认，最后提示（含库未覆盖的 info 条）。 */
 export function compareIssues(left: ReviewIssueView, right: ReviewIssueView): number {
   const rank = (issue: ReviewIssueView): number => {
     if (issue.code === "abolished" || issue.code === "not_in_library") return 0;

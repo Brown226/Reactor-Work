@@ -170,6 +170,13 @@ function toStamp(raw: { maxUpdatedAt?: string | null; fetchedAt?: string; items?
 
 const MAX_SNAPSHOT_BYTES = 2 * 1024 * 1024;
 
+/**
+ * 内联 `text` 的上限。超过它就要改用 `textFile`（大文档路径）：既绕开
+ * 「一次塞几十万字符」的工具调用，也让偏移相对一个稳定存在的文件 ——
+ * 手工切片会让偏移变成「合法但错的」，前端越界保护拦不住。
+ */
+export const MAX_INLINE_TEXT_CHARS = 400_000;
+
 /** 把正文快照落盘（内容寻址，重复审查同一文本不重复写），返回绝对路径。 */
 export function persistReviewText(text: string, dir: string): string | null {
   if (Buffer.byteLength(text, "utf8") > MAX_SNAPSHOT_BYTES) return null;
@@ -185,6 +192,22 @@ export function persistReviewText(text: string, dir: string): string | null {
   }
 }
 
+/* ── 缓存新鲜度 ─────────────────────────────────────────────────── */
+
+/** 快照超过这个年龄就在 notice 里提醒（不判 stale：旧库仍然可用，只是结论边界要说明）。 */
+const CACHE_AGE_NOTICE_HOURS = 24;
+
+function cacheAgeNotice(stamp: KnowledgeCacheStamp | null, scope: string): string | null {
+  const fetchedAt = stamp?.fetchedAt;
+  if (!fetchedAt) return null;
+  const parsed = Date.parse(fetchedAt);
+  if (Number.isNaN(parsed)) return null;
+  const ageHours = (Date.now() - parsed) / 3_600_000;
+  if (ageHours < CACHE_AGE_NOTICE_HOURS) return null;
+  const days = Math.floor(ageHours / 24);
+  return `${scope}快照取自 ${fetchedAt}（约 ${days} 天前），期间库可能有更新；若要按最新库下结论，请先在桌面端同步知识库。`;
+}
+
 /* ── standards：抽取引用 + 判定 ───────────────────────────────────── */
 
 export interface StandardLibraryEntry {
@@ -194,6 +217,27 @@ export interface StandardLibraryEntry {
   ident: string | null;
   publishDate: string | null;
 }
+
+/** 某标准体系（ident 族）在库里的条目数，用于「库缺口 vs 疑似笔误」的分流。 */
+export type FamilyCoverage = ReadonlyMap<string, number>;
+
+/**
+ * 统计库里每个 ident 族的条目数。`GB` 与 `GB/T` 归一族（`identFamily`），
+ * 语义是「库里有没有这个体系的标准」，不是「有没有这个前缀」。
+ */
+export function buildFamilyCoverage(library: readonly StandardLibraryEntry[]): FamilyCoverage {
+  const coverage = new Map<string, number>();
+  for (const entry of library) {
+    const parsed = parseStandardNo(entry.standardNo, BASELINE_IDENTS);
+    if (!parsed) continue;
+    const family = identFamily(parsed.ident);
+    coverage.set(family, (coverage.get(family) ?? 0) + 1);
+  }
+  return coverage;
+}
+
+/** 族覆盖低于这个数就认为「该体系未被库覆盖」：判不出结论比判错更诚实。 */
+const FAMILY_COVERAGE_FLOOR = 2;
 
 interface Judgment {
   code: KnowledgeStandardIssue["code"];
@@ -207,10 +251,14 @@ interface Judgment {
 
 /**
  * 判定一条引用。导出是为了让单测直接钉住口径（version 标注、家族不符、未注年代号）。
+ *
+ * `coverage` 是库里各 ident 族的条目数（`buildFamilyCoverage`）。缺省按「无法判断覆盖」
+ * 处理，走保守的 `missing` 分支 —— 老调用方（单测）不传也不会静默得到乐观结论。
  */
 export function judgeReference(
   parsed: ParsedStandardNo,
   library: StandardLibraryEntry[],
+  coverage?: FamilyCoverage,
 ): Judgment {
   /** 索引里同时带上库侧的**版本标注**：判定「引用了哪一版」必须看它（见文件头注 ②）。 */
   interface Indexed {
@@ -245,6 +293,52 @@ export function judgeReference(
   const currentOf = (list: Indexed[]): Indexed | undefined =>
     list.find((item) => item.entry.status === "current") ??
     list.find((item) => item.entry.status === "upcoming");
+
+  /**
+   * 「库中查不到」的两种真相必须分开，否则报告信噪比崩塌：
+   *  - 该体系在库里几乎没收录（NB/CECS/DL/EJ…）→ 判「无法核对」（info），
+   *    并要求人工确认 —— 这**不是**笔误，把它写成笔误会让人去改正确的编号；
+   *  - 体系覆盖充分却查不到 → 更可能是编号/年代号笔误（warning），需人工确认。
+   */
+  const notFound = (): Judgment => {
+    // 注意区分两种「拿不到覆盖度」：整个覆盖度统计没传（老调用方）→ 保守判 missing；
+    // 传了但该族在表里没有 → 库里就是 0 条，正是库缺口。
+    if (coverage === undefined) {
+      return {
+        code: "missing",
+        severity: "warning",
+        libraryNo: null,
+        libraryName: null,
+        libraryStatus: null,
+        suggestion: null,
+        message:
+          "标准库中无此编号：可能库待补充，也可能是编号笔误，需人工确认" +
+          "（本次未提供库覆盖度统计，无法进一步区分）",
+      };
+    }
+    const family = identFamily(parsed.ident);
+    const familyCount = coverage.get(family) ?? 0;
+    if (familyCount < FAMILY_COVERAGE_FLOOR) {
+      return {
+        code: "family_not_collected",
+        severity: "info",
+        libraryNo: null,
+        libraryName: null,
+        libraryStatus: null,
+        suggestion: null,
+        message: `库中未收录 ${family} 体系的标准（共 ${familyCount} 条），无法核对；需人工确认，不能据此判定该标准不存在`,
+      };
+    }
+    return {
+      code: "missing",
+      severity: "warning",
+      libraryNo: null,
+      libraryName: null,
+      libraryStatus: null,
+      suggestion: null,
+      message: `标准库中无此编号（同体系已收录 ${familyCount} 条）：疑似编号或年代号笔误，需人工确认`,
+    };
+  };
 
   if (parsed.year) {
     const hits = byKey3.get(KEY3(parsed)) ?? [];
@@ -329,15 +423,7 @@ export function judgeReference(
           .join("、")}`,
       };
     }
-    return {
-      code: "missing",
-      severity: "warning",
-      libraryNo: null,
-      libraryName: null,
-      libraryStatus: null,
-      suggestion: null,
-      message: "标准库中无此编号：可能库待补充，也可能是编号笔误，需人工确认",
-    };
+    return notFound();
   }
 
   // 未注年代号：引用规范要求注明年号，且无法判定引用的是哪一版。
@@ -367,15 +453,7 @@ export function judgeReference(
       }${missingSlashT ? "；该标准为推荐性，文档写法缺 /T" : ""}`,
     };
   }
-  return {
-    code: "missing",
-    severity: "warning",
-    libraryNo: null,
-    libraryName: null,
-    libraryStatus: null,
-    suggestion: null,
-    message: "标准库中无此编号：可能库待补充，也可能是编号笔误，需人工确认",
-  };
+  return notFound();
 }
 
 /** 在正文里抽取标准引用（带字符偏移与行号）。 */
@@ -429,9 +507,10 @@ function readStandards(dir: string): { library: StandardLibraryEntry[]; stamp: K
 }
 
 const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionContext) => {
-  const { action, text, sourcePath, candidates, libraryId, limit } =
-    KnowledgeCheckInputSchema.parse(input) as KnowledgeCheckInput;
+  const parsedInput = KnowledgeCheckInputSchema.parse(input) as KnowledgeCheckInput;
+  const { action, sourcePath, candidates, libraryId, limit } = parsedInput;
   const cacheDir = resolveKnowledgeDir();
+  const notices: string[] = [];
   const notice = (message: string): KnowledgeCheckOutput => ({
     action,
     stale: true,
@@ -440,6 +519,7 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
     issues: [],
     textPath: null,
     summary: null,
+    coverage: null,
     whitelisted: [],
     remaining: [],
     items: [],
@@ -448,10 +528,36 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
   void context;
 
   if (action === "standards") {
-    if (!text || text.trim() === "") {
-      throw createCoreError(CoreErrorType.InvalidInput, "action=standards 需要 text（待检正文）", {
-        context: { action },
-      });
+    const inlineText = parsedInput.text;
+    const textFile = parsedInput.textFile?.trim();
+    if (!inlineText && !textFile) {
+      throw createCoreError(
+        CoreErrorType.InvalidInput,
+        "action=standards 需要 text（短正文）或 textFile（已提取纯文本文件的绝对路径，长文档用）",
+        { context: { action } },
+      );
+    }
+    if (inlineText && inlineText.length > MAX_INLINE_TEXT_CHARS) {
+      throw createCoreError(
+        CoreErrorType.InvalidInput,
+        `正文过长（${inlineText.length} 字符，上限 ${MAX_INLINE_TEXT_CHARS}）：请先用 Write 把提取出的纯文本落成文件，再改用 textFile 传入；不要手工切片，切片会让字符偏移失去全文基准。`,
+        { context: { action, length: inlineText.length } },
+      );
+    }
+    let text = inlineText ?? "";
+    let textPath: string | null = null;
+    if (textFile) {
+      try {
+        text = readFileSync(textFile, "utf8");
+      } catch (error) {
+        throw createCoreError(
+          CoreErrorType.InvalidInput,
+          `textFile 读取失败（${textFile}）：${error instanceof Error ? error.message : String(error)}`,
+          { context: { action, textFile } },
+        );
+      }
+      // 大文档直接用源文件做高亮目标，不复制快照（review-text 目录不该堆全文副本）。
+      textPath = textFile;
     }
     const { library, stamp } = readStandards(cacheDir);
     if (library.length === 0) {
@@ -459,6 +565,8 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
         `标准库缓存为空或不可读（${join(cacheDir, "standards.json")}）：请先在桌面端登录企业服务端并打开审查模式完成知识库同步，再执行自检。`,
       );
     }
+    const ageNotice = cacheAgeNotice(stamp, "标准库");
+    if (ageNotice) notices.push(ageNotice);
     // 抽取端用「库中出现过的前缀 ∪ 基础超集」：既能扫出库里的写法，也能扫出库里没有的行业标准。
     const libIdents = new Set<string>();
     for (const entry of library) {
@@ -468,8 +576,9 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
     const idents = [...new Set([...BASELINE_IDENTS, ...libIdents])].sort((a, b) => b.length - a.length);
 
     const matches = extractReferences(text, idents);
+    const coverage = buildFamilyCoverage(library);
     const issues: KnowledgeStandardIssue[] = matches.map((match) => {
-      const judgment = judgeReference(match.parsed, library);
+      const judgment = judgeReference(match.parsed, library, coverage);
       return {
         code: judgment.code,
         severity: judgment.severity,
@@ -487,13 +596,16 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
     });
     const count = (code: KnowledgeStandardIssue["code"]): number =>
       issues.filter((issue) => issue.code === code).length;
+    if (sourcePath) {
+      notices.push(sourcePath === textFile ? `正文来源：${sourcePath}（textFile 模式）` : `正文来源：${sourcePath}`);
+    }
     return {
       action,
       stale: false,
       cacheDir,
       stamp,
       issues,
-      textPath: persistReviewText(text, cacheDir),
+      textPath: textPath ?? persistReviewText(text, cacheDir),
       summary: {
         total: issues.length,
         ok: count("ok"),
@@ -501,13 +613,24 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
         noYear: count("no_year"),
         noVersion: count("no_version"),
         notInLibrary: count("not_in_library"),
+        familyNotCollected: count("family_not_collected"),
         missing: count("missing"),
         upcoming: count("upcoming"),
+      },
+      coverage: {
+        citedFamilies: [...new Set(matches.map((match) => identFamily(match.parsed.ident)))].sort(),
+        uncoveredFamilies: [
+          ...new Set(
+            matches
+              .map((match) => identFamily(match.parsed.ident))
+              .filter((family) => (coverage.get(family) ?? 0) < FAMILY_COVERAGE_FLOOR),
+          ),
+        ].sort(),
       },
       whitelisted: [],
       remaining: [],
       items: [],
-      notice: sourcePath ? `正文来源：${sourcePath}` : null,
+      notice: notices.length > 0 ? notices.join("；") : null,
     } satisfies KnowledgeCheckOutput;
   }
 
@@ -536,6 +659,17 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
       const hit = whitelist.has(key) || [...whitelist].some((term) => term.length > 0 && key.includes(term));
       (hit ? whitelisted : remaining).push(candidate);
     }
+    // 命中率过低说明白名单的覆盖域与本文档不匹配（如白名单是核安全域、文档是消防/给排水域）。
+    // 这时大批候选项会留在 remaining，若不说明，用户会把「白名单没覆盖」当成「文档有问题」。
+    const coverageWarning =
+      listed.length >= 10 && remaining.length / listed.length > 0.95
+        ? `术语白名单对本文档几乎无覆盖（${whitelisted.length}/${listed.length} 命中）：remaining 里的候选词很可能不是错别字，而是白名单未覆盖的专业词，不要据此报错。`
+        : null;
+    const terminologyAgeNotice = cacheAgeNotice(
+      toStamp(raw ? { ...raw, items: raw.items ?? [] } : null),
+      "术语白名单",
+    );
+    const terminologyNotice = [coverageWarning, terminologyAgeNotice].filter(Boolean).join("；");
     return {
       action,
       stale: false,
@@ -544,10 +678,11 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
       issues: [],
       textPath: null,
       summary: null,
+      coverage: null,
       whitelisted,
       remaining,
       items: [],
-      notice: null,
+      notice: terminologyNotice.length > 0 ? terminologyNotice : null,
     } satisfies KnowledgeCheckOutput;
   }
 
@@ -570,23 +705,32 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
     if (items.length >= max) break;
   }
   const libraries = raw.libraries ?? [];
+  // stale 只表示「端侧缓存不可用」（缺失/读取失败）。服务端本来就没有已发布库、
+  // 或库为空/全停用，都是**合法状态**，同步多少次都不会变：这时必须给非 stale 的
+  // 结构化结果，否则调用方会以为要去修缓存，还会拿到「先同步知识库」这种无效指引。
+  const rulesNotice =
+    libraries.length === 0
+      ? "当前没有已发布的规范库（该能力未启用）：没有可逐条核对的条文，不要在结论里声称核对过规范库。"
+      : items.length === 0
+        ? "已发布的规范库里暂无可用条目（库为空，或全部条目被停用）。"
+        : `已发布库：${libraries.map((lib) => `${lib.name}(#${lib.id})`).join("、")}`;
+  const rulesAgeNotice = cacheAgeNotice(
+    { maxUpdatedAt: null, fetchedAt: raw.fetchedAt ?? "", count: 0 },
+    "规范库",
+  );
   return {
     action,
-    stale: items.length === 0,
+    stale: false,
     cacheDir,
     stamp: null,
     issues: [],
     textPath: null,
     summary: null,
+    coverage: null,
     whitelisted: [],
     remaining: [],
     items,
-    notice:
-      libraries.length === 0
-        ? "端侧缓存里没有已发布的规范库：规范库需要在管理台把状态置为「已发布」后才会下发。"
-        : items.length === 0
-          ? "规范库缓存里没有条目（可能库为空，或全部条目被停用）。"
-          : `已发布库：${libraries.map((lib) => `${lib.name}(#${lib.id})`).join("、")}`,
+    notice: [rulesNotice, rulesAgeNotice].filter((item) => item !== null).join("；"),
   } satisfies KnowledgeCheckOutput;
 };
 
@@ -625,7 +769,7 @@ export const knowledgeCheckToolEntry: ToolEntry = {
       const summary = result.summary;
       const problems = result.issues.filter((issue) => issue.severity !== "none");
       const lines = [
-        `标准引用自检：共 ${summary?.total ?? 0} 条引用 — 通过 ${summary?.ok ?? 0}，已废止 ${summary?.abolished ?? 0}，未注年代号 ${summary?.noYear ?? 0}，未写版本标注 ${summary?.noVersion ?? 0}，编号不存在 ${summary?.notInLibrary ?? 0}，未收录 ${summary?.missing ?? 0}，即将实施 ${summary?.upcoming ?? 0}`,
+        `标准引用自检：共 ${summary?.total ?? 0} 条引用 — 通过 ${summary?.ok ?? 0}，已废止 ${summary?.abolished ?? 0}，未注年代号 ${summary?.noYear ?? 0}，未写版本标注 ${summary?.noVersion ?? 0}，编号不存在 ${summary?.notInLibrary ?? 0}，库未覆盖该体系 ${summary?.familyNotCollected ?? 0}，疑似笔误 ${summary?.missing ?? 0}，即将实施 ${summary?.upcoming ?? 0}`,
       ];
       for (const issue of problems.slice(0, 80)) {
         lines.push(

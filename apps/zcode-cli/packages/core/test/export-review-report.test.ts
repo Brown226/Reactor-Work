@@ -10,13 +10,16 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-
+import { writeFile } from "node:fs/promises";
 import AdmZip from "adm-zip";
 
 import {
+  basisMetaLines,
   buildDocxReport,
   buildXlsxReport,
   countBySeverity,
+  coverageDisclaimer,
+  emptyIssuesStatement,
   exportReviewReportToolEntry,
   resolveReportPath,
   sanitizeReportText,
@@ -46,9 +49,84 @@ const BASE: ExportReviewReportInput = {
   format: "docx",
   title: "循环水处理系统工艺设计说明",
   issues: ISSUES,
+  conclusion: "passed",
   scope: "正文 + 表格；未含图纸",
   summary: "共 3 条问题，其中 1 条必须修改。",
 };
+
+test("空问题表：三种真相必须分开措辞，不能一句「未发现问题」覆盖（P0-2）", () => {
+  const withCoverage = (overrides: Partial<ExportReviewReportInput>): ExportReviewReportInput => ({
+    ...BASE,
+    issues: [],
+    ...overrides,
+  });
+  const passed = emptyIssuesStatement(withCoverage({ conclusion: "passed", coverage: { referenceCount: 18 } }));
+  assert.match(passed, /未发现问题/);
+  assert.match(passed, /18 条/, "查了且通过要写清核对了几条引用");
+  const none = emptyIssuesStatement(
+    withCoverage({ conclusion: "no_reference", coverage: { referenceCount: 0 } }),
+  );
+  assert.match(none, /未检出/);
+  assert.ok(!/未发现问题/.test(none), "没有引用不等于没有问题");
+  assert.match(none, /0 条引用/);
+  const unchecked = emptyIssuesStatement(
+    withCoverage({ conclusion: "not_checked", coverage: { extractionStatus: "failed" } }),
+  );
+  assert.match(unchecked, /未完成/);
+  assert.ok(!/未发现问题/.test(unchecked));
+  const partial = emptyIssuesStatement(withCoverage({ conclusion: "partial" }));
+  assert.match(partial, /仅覆盖部分范围/);
+});
+
+test("依据快照：库版本与覆盖缺口必须写进报告（P1-1/P1-2）", async () => {
+  const input: ExportReviewReportInput = {
+    ...BASE,
+    conclusion: "passed",
+    coverage: { referenceCount: 18 },
+    basis: {
+      standardsStamp: {
+        maxUpdatedAt: "2026-09-22T14:25:38.502Z",
+        fetchedAt: "2026-09-23T01:40:54.766Z",
+        count: 13445,
+      },
+      ruleLibraries: ["消防类审点库"],
+      uncoveredFamilies: ["DL", "NB"],
+    },
+  };
+  const lines = basisMetaLines(input);
+  assert.equal(lines.length, 2);
+  assert.match(lines[0]!, /标准库快照/);
+  assert.match(lines[0]!, /13445/);
+  assert.match(lines[0]!, /2026-09-22/);
+  const disclaimer = coverageDisclaimer(input);
+  assert.ok(disclaimer !== null);
+  assert.match(disclaimer!, /数据边界/);
+  assert.match(disclaimer!, /DL/);
+  assert.equal(coverageDisclaimer({ ...BASE, conclusion: "passed", basis: { uncoveredFamilies: [] } }), null);
+  assert.equal(basisMetaLines({ ...BASE, conclusion: "passed" }).length, 0);
+
+  // docx 与 xlsx 都要带上这些信息：判定的可追溯性不能只在一种格式里有。
+  const dir = mkdtempSync(join(tmpdir(), "review-basis-"));
+  try {
+    const docxPath = join(dir, "r.docx");
+    await writeFile(docxPath, await buildDocxReport(input, "2026-09-23 10:00:00"));
+    const documentXml = new AdmZip(readFileSync(docxPath)).readAsText("word/document.xml");
+    assert.match(documentXml, /标准库快照/);
+    assert.match(documentXml, /数据边界/);
+
+    const xlsxPath = join(dir, "r.xlsx");
+    await writeFile(xlsxPath, await buildXlsxReport(input, "2026-09-23 10:00:00"));
+    const zip = new AdmZip(readFileSync(xlsxPath));
+    // ExcelJS 把字符串统一放 sharedStrings.xml，工作表 XML 里只有引用索引。
+    const shared = zip.readAsText("xl/sharedStrings.xml");
+    assert.match(shared, /结论状态/);
+    assert.match(shared, /已核对，未发现问题/);
+    assert.match(shared, /数据边界/);
+    assert.match(shared, /标准库快照/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 test("净化：控制字符必须去掉、超长必须截断（否则 Office 打开报文件损坏）", () => {
   assert.equal(sanitizeReportText("正常\u0000文本\u0007"), "正常文本");

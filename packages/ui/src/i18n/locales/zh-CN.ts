@@ -1643,11 +1643,11 @@ const zhCN: Record<string, string> = {
   "review.issue.noYear": "未注年代号",
   "review.issue.noVersion": "未写版本标注",
   "review.issue.notInLibrary": "编号不存在",
+  "review.issue.familyNotCollected": "库未覆盖该体系",
   "review.issue.missing": "未收录",
   "review.issue.upcoming": "即将实施",
   "review.issue.ok": "通过",
   "review.issue.unknown": "问题（{code}）",
-
   "chat.toolCall.execute.conciseCompleted": "已运行命令",
   "chat.contextOptimization.started": "正在优化对话",
   "chat.contextOptimization.skipped": "无需优化对话",

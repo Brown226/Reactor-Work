@@ -50,6 +50,14 @@ const SEVERITY_LABEL: Record<ReviewReportIssue["severity"], string> = {
   info: "提示",
 };
 
+/** 结论状态的人类可读标签（xlsx 摘要 sheet 用）。 */
+const CONCLUSION_LABEL: Record<ExportReviewReportInput["conclusion"], string> = {
+  passed: "已核对，未发现问题",
+  no_reference: "未检出可机检的引用",
+  partial: "仅覆盖部分范围",
+  not_checked: "未完成审查",
+};
+
 /**
  * 文本净化：去掉控制字符（保留 \t\n），并截断超长单元格。
  * 不做这一步，Excel 会因为非法字符直接判文件损坏，而词法上"看起来"写入是成功的。
@@ -87,6 +95,59 @@ export function countBySeverity(issues: ReviewReportIssue[]): { error: number; w
   };
 }
 
+/** 结论措辞：空 issues 时三种真相必须分开写（P0-2，把「查不到」写成「没问题」是假阴性）。 */
+export function emptyIssuesStatement(input: ExportReviewReportInput): string {
+  const references = input.coverage?.referenceCount;
+  switch (input.conclusion) {
+    case "no_reference":
+      return references === 0
+        ? "本次审查未检出可机检的标准引用（已扫描正文，命中 0 条引用）——这不是「没有问题」，请确认审查范围是否覆盖正文。"
+        : "本次审查未检出可机检的内容，请确认审查范围与抽取结果。";
+    case "not_checked":
+      return `本次审查未完成（${
+        input.coverage?.extractionStatus === "no_text_layer" ? "图纸类无文本层" : "正文抽取失败或未执行"
+      }），不得据此判断文件质量。`;
+    case "partial":
+      return "本次审查仅覆盖部分范围（详见「审查范围」），未覆盖部分没有结论。";
+    case "passed":
+    default:
+      return references && references > 0
+        ? `本次审查未发现问题（共核对 ${references} 条标准引用）。`
+        : "本次审查未发现问题。";
+  }
+}
+
+/** 库快照与覆盖缺口的元信息行：报告要能自证「对着哪一版库」判的（P1-1/P1-2）。 */
+export function basisMetaLines(input: ExportReviewReportInput): string[] {
+  const basis = input.basis;
+  if (!basis) return [];
+  const lines: string[] = [];
+  const stamp = basis.standardsStamp;
+  if (stamp) {
+    lines.push(
+      `标准库快照：库更新时间 ${stamp.maxUpdatedAt ?? "未标注"}，端侧同步于 ${stamp.fetchedAt}（${stamp.count} 条）`,
+    );
+  }
+  const terminology = basis.terminologyStamp;
+  if (terminology) {
+    lines.push(`术语白名单：${terminology.count} 条（端侧同步于 ${terminology.fetchedAt}）`);
+  }
+  if (basis.ruleLibraries && basis.ruleLibraries.length > 0) {
+    lines.push(`规范库：${basis.ruleLibraries.join("、")}`);
+  }
+  return lines;
+}
+
+/** 库覆盖缺口免责：库里没有的体系判不出对错，必须显式告知，不能让人误读成「编号有错」。 */
+export function coverageDisclaimer(input: ExportReviewReportInput): string | null {
+  const families = input.basis?.uncoveredFamilies ?? [];
+  if (families.length === 0) return null;
+  return (
+    `数据边界：本库当前未覆盖 ${families.join("、")} 等标准体系，` +
+    "涉及这些体系的引用**无法机检核对**，需要另行人工确认；「未收录」不等于「标准不存在或编号有误」。"
+  );
+}
+
 /** 生成 `.docx`：标题 + 元信息 + 结论摘要 + 问题表。 */
 export async function buildDocxReport(
   input: ExportReviewReportInput,
@@ -96,6 +157,7 @@ export async function buildDocxReport(
   const meta: string[] = [`生成时间：${generatedAt}`];
   if (input.sourcePath) meta.push(`被审文件：${basename(input.sourcePath)}`);
   if (input.scope) meta.push(`审查范围：${input.scope}`);
+  meta.push(...basisMetaLines(input));
   meta.push(
     `问题合计：${input.issues.length} 条（必须修改 ${counts.error}／建议修改 ${counts.warning}／提示 ${counts.info}）`,
   );
@@ -134,7 +196,7 @@ export async function buildDocxReport(
             : []),
           new Paragraph({ text: "问题清单", heading: HeadingLevel.HEADING_2 }),
           ...(input.issues.length === 0
-            ? [new Paragraph({ text: "本次审查未发现问题。" })]
+            ? [new Paragraph({ text: emptyIssuesStatement(input) })]
             : [
                 new Table({
                   width: { size: 100, type: WidthType.PERCENTAGE },
@@ -157,6 +219,14 @@ export async function buildDocxReport(
                   ],
                 }),
               ]),
+          ...(coverageDisclaimer(input)
+            ? [
+                new Paragraph({
+                  text: coverageDisclaimer(input)!,
+                  heading: HeadingLevel.HEADING_3,
+                }),
+              ]
+            : []),
           // 话术边界：报告是机器生成的初稿，结论必须有人复核——写在文末，避免被当成定论。
           new Paragraph({
             text: "本报告由 Agent 依据给定依据自动生成，供复核参考；正式交付前请由专业人员确认。",
@@ -219,10 +289,21 @@ export async function buildXlsxReport(
     ["生成时间", generatedAt],
     ...(input.sourcePath ? ([["被审文件", input.sourcePath]] as [string, string][]) : []),
     ...(input.scope ? ([["审查范围", input.scope]] as [string, string][]) : []),
+    ...(basisMetaLines(input).map((line) => [line.split("：")[0]!, line.slice(line.indexOf("：") + 1)] as [string, string])),
+    ...(input.coverage?.referenceCount !== undefined
+      ? ([["核对引用数", String(input.coverage.referenceCount)]] as [string, string][])
+      : []),
+    ["结论状态", CONCLUSION_LABEL[input.conclusion]],
+    ...(input.issues.length === 0
+      ? ([["结论说明", sanitizeReportText(emptyIssuesStatement(input), 4_000)]] as [string, string][])
+      : []),
     ["问题合计", String(input.issues.length)],
     ["必须修改", String(counts.error)],
     ["建议修改", String(counts.warning)],
     ["提示", String(counts.info)],
+    ...(coverageDisclaimer(input)
+      ? ([["数据边界", coverageDisclaimer(input)!]] as [string, string][])
+      : []),
     ...(input.summary ? ([["结论摘要", input.summary]] as [string, string][]) : []),
   ];
   for (const [key, value] of summaryRows) {
@@ -239,9 +320,11 @@ export async function buildXlsxReport(
 const exportReviewReportHandler: ToolHandler = async (input, context) => {
   const parsed = ExportReviewReportInputSchema.parse(input) as ExportReviewReportInput;
   if (parsed.issues.length > 5_000) {
-    throw createCoreError(CoreErrorType.InvalidInput, "问题条数超过 5000，请先收敛范围再导出", {
-      context: { issueCount: parsed.issues.length },
-    });
+    throw createCoreError(
+      CoreErrorType.InvalidInput,
+      "问题条数超过 5000：请分批导出（按章节/子目录拆成多份报告，或把 info 级条目移出问题表），不要合并成一份",
+      { context: { issueCount: parsed.issues.length } },
+    );
   }
   const generatedAt = new Date().toISOString().replace("T", " ").slice(0, 19);
   const target = resolveReportPath(parsed, context.workingDirectory ?? process.cwd());
@@ -264,7 +347,13 @@ const EXPORT_REVIEW_REPORT_DESCRIPTION = [
   "Export a review-findings report as .docx (delivery format) or .xlsx (issue details) into the workspace.",
   "Pass the issues you already produced — this tool only formats them, it does not re-analyse anything.",
   "Default output path is next to the reviewed file: <name>-审查报告-<timestamp>.<ext>.",
-].join(" ");
+  "",
+  "You MUST state `conclusion` (passed / no_reference / partial / not_checked): when `issues` is empty the wording",
+  "depends entirely on it — no_reference and not_checked must never read as \"no problems found\".",
+  "Pass `coverage` (referenceCount / extractedChars / extractionStatus) and, for standards checks,",
+  "`basis` from KnowledgeCheck (standardsStamp + uncoveredFamilies) so the report can prove which library version",
+  "it was judged against and which standard systems the library does not cover.",
+].join("\n");
 
 export const exportReviewReportToolEntry: ToolEntry = {
   capability: "Render review findings into a .docx or .xlsx report file inside the workspace",
@@ -292,8 +381,7 @@ export const exportReviewReportToolEntry: ToolEntry = {
       `格式 ${result.format}，${result.bytes} 字节；问题 ${result.issueCount} 条` +
         `（必须修改 ${result.bySeverity.error}／建议修改 ${result.bySeverity.warning}／提示 ${result.bySeverity.info}）`,
     ].join("\n");
-  },
-  permission: {
+  },  permission: {
     permission: "edit",
     reason: "ExportReviewReport writes a report file into the workspace",
     riskLevel: "medium",
