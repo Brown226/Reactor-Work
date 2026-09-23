@@ -361,6 +361,50 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
     // marketplace 条目都对齐；具体版本由原子 producer bump 工作流维护。
     version: "0.6.3",
   },
+  {
+    // 产品决策：文件解析 / OCR / DWG 是审查场景的地基能力，安装后必须开箱即用
+    // （用户无 Python/poppler/tesseract 也能跑），故这里显式声明 defaultEnabled，
+    // 不受「defaultEnabled 仅限内容型插件」的旧约定约束 —— 该约定防的是首启即拉起
+    // Helper 这类重副作用；本插件只注入 3 个只读解析工具，运行时无守护进程。
+    // 资产（原生绑定/ONNX 模型/wasm）经 runtimeTopLevelPaths 随 seed 进入缓存，
+    // 打包态另有一份在 resources/tools/file-tools（electron-builder extraResources），
+    // 解析顺序见 file-tools-plugin/src/assets.ts。改默认值时必须同步
+    // packages/shared/src/plugin-marketplaces.ts（bootstrap 单测机械对照两者）。
+    defaultEnabled: true,
+    listing: {
+      author: ZAI_AUTHOR,
+      category: "productivity",
+      displayName: "File Tools",
+      displayName_i18n: { "zh-CN": "文件解析工具" },
+      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/documents/icon.png`,
+      description_i18n: {
+        "zh-CN": "解析 Office/PDF 文档、识别图片与扫描件文字、解析 DWG 图纸的文本与标准引用。",
+      },
+      examplePrompts: [
+        "Parse this Word document and summarize its standard references",
+        "Read the scanned PDF I just attached",
+      ],
+      examplePrompts_i18n: {
+        "zh-CN": ["解析这份 Word 文档并提取引用的标准", "识别我刚上传的扫描件 PDF"],
+      },
+    },
+    name: "file-tools",
+    requiredSeedPaths: [
+      "dist/mcp/server.js",
+      // pdfjs fake worker：随 bundle 一起拷贝（scripts/build.mjs）。
+      "dist/mcp/pdf.worker.mjs",
+    ],
+    rootCandidates: [
+      "packages/file-tools-plugin",
+      "../file-tools-plugin",
+      "../../file-tools-plugin",
+      "../../../file-tools-plugin",
+    ],
+    // anydoc / onnxruntime / canvas / ocr-models / libredwg 资产树（~130MB/平台）：
+    // packaged 走 resources/tools/file-tools 解析；seed 副本覆盖 dev 与兜底路径。
+    runtimeTopLevelPaths: ["assets"],
+    version: "0.1.0",
+  },
 ];
 
 // 在 official plugin 定义里标了 defaultEnabled: true 的, 拼成 `<name>@<marketplace>` 形式,

@@ -47,6 +47,25 @@ const UNSUPPORTED_BINARY_EXTENSIONS = new Set([
   ".wasm",
   ".zip",
 ]);
+/**
+ * Office / CAD 文档：Read 的文本直读只会拿到二进制乱码。官方 file-tools 插件
+ * （默认启用）提供 parse_document / parse_dwg 两个 local 工具，这里在入口处
+ * fail-fast 并把模型引到正确工具，避免「乱码→再绕一圈」。
+ */
+const OFFICE_DOCUMENT_EXTENSIONS = new Set([
+  ".doc",
+  ".docm",
+  ".docx",
+  ".dwg",
+  ".ppsx",
+  ".ppt",
+  ".pptm",
+  ".pptx",
+  ".xls",
+  ".xlsb",
+  ".xlsm",
+  ".xlsx",
+]);
 const BLOCKING_DEVICE_PATHS = new Set([
   "/dev/console",
   "/dev/fd/0",
@@ -141,7 +160,19 @@ function validateReadPathSemantics(
   }
 
   const extension = readFileExtension(lowerPath);
-  if (!extension || !UNSUPPORTED_BINARY_EXTENSIONS.has(extension)) return;
+  if (!extension || !UNSUPPORTED_BINARY_EXTENSIONS.has(extension)) {
+    if (extension && OFFICE_DOCUMENT_EXTENSIONS.has(extension)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["file_path"],
+        message:
+          extension === ".dwg"
+            ? "DWG drawings cannot be read as text. Use the parse_dwg tool (bundled file-tools MCP server) to extract layers, text entities, dimensions and standard references."
+            : `Read cannot parse ${extension} documents as text. Use the parse_document tool (bundled file-tools MCP server) to extract Markdown; for scans without a text layer use ocr_scan.`,
+      });
+    }
+    return;
+  }
 
   context.addIssue({
     code: z.ZodIssueCode.custom,
