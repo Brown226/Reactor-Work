@@ -26,6 +26,7 @@ import type { BashTimeoutPolicy } from "../bash-timeout-policy.js";
 import { createJsToolEntry, jsToolEntry } from "./node-repl.js";
 import { globToolEntry } from "./glob.js";
 import { knowledgeCheckToolEntry } from "./knowledge-check.js";
+import { exportReviewReportToolEntry } from "./export-review-report.js";
 import { grepToolEntry } from "./grep.js";
 import { webFetchToolEntry } from "./webfetch.js";
 import { webSearchToolEntry } from "./websearch.js";
@@ -136,6 +137,8 @@ export const builtInTools: ToolEntry[] = [
   listModelsToolEntry,
   // 知识板块（文件审查的依据）：只读端侧缓存，零网络、零 LLM，判定可复现。
   knowledgeCheckToolEntry,
+  // 审查报告导出：把已产出的问题清单落成 .docx/.xlsx（写工作区，需确认）。
+  exportReviewReportToolEntry,
   // workflowToolEntry,
 ];
 
