@@ -48,6 +48,22 @@ function runTimedPnpmScript(scriptName) {
   }
 }
 
+/** 仓库根脚本（native-search / file-tools 资产等）：按目标平台显式传 --platform。 */
+function runTimedRepoScript(scriptRelativePath, args) {
+  const startMs = Date.now();
+  console.log(`[ci][timer] prepare-runtime-assets:${scriptRelativePath} start`);
+  try {
+    runCommand(process.execPath, [resolve(desktopRoot, "..", "..", scriptRelativePath), ...args], {
+      cwd: desktopRoot,
+      env: process.env,
+    });
+  } finally {
+    console.log(
+      `[ci][timer] prepare-runtime-assets:${scriptRelativePath} end duration_ms=${Date.now() - startMs}`,
+    );
+  }
+}
+
 const shouldSkipRemoteAssets = process.env.ZCODE_SKIP_REMOTE_ASSETS === "1";
 
 if (!shouldSkipRemoteAssets) {
@@ -62,3 +78,10 @@ if (!shouldSkipRemoteAssets) {
 for (const scriptName of localRuntimeScripts) {
   runTimedPnpmScript(scriptName);
 }
+
+// file-tools 官方插件的原生资产树（anydoc napi / onnxruntime / @napi-rs/canvas / PP-OCR
+// 模型 / libredwg wasm）。electron-builder 的 extraResources 直接引用
+// bundled-tools/<platformKey>/file-tools，干净检出缺少该目录会直接让打包失败，
+// 因此挂在 prepare 主链上（非可选）。模型从 hf-mirror 下载并按 sha256 固定；
+// 脚本自带 dev 副本缓存复用，重复构建不会重复下载。
+runTimedRepoScript("scripts/prepare-file-tools-assets.mjs", ["--platform", target.key]);

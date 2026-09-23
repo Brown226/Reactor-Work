@@ -642,6 +642,16 @@ export default {
       to: `tools/${toolId}`,
       filter: ["**/*"],
     })),
+    {
+      // file-tools 官方插件的原生资产树（anydoc napi、onnxruntime、@napi-rs/canvas、
+      // PP-OCR ONNX 模型、libredwg wasm）。MCP 子进程按 process.resourcesPath/tools/file-tools
+      // 解析（候选链与 ripgrep 同思路，见 packages/services/src/runtime-tools 与
+      // apps/zcode-cli/packages/file-tools-plugin/src/assets.ts）。
+      // 资产由 scripts/prepare-file-tools-assets.mjs 生成（版本 + sha256 固定）。
+      from: `bundled-tools/${targetPlatform.key}/file-tools`,
+      to: "tools/file-tools",
+      filter: ["**/*"],
+    },
   ],
   // postinstall 会先优先复用 node-pty 自带的 Windows 预编译产物，其他平台再按需 electron-rebuild。
   // 打包阶段统一复用安装时准备好的原生文件，避免 electron-builder 再触发一轮不受控的本地编译。
