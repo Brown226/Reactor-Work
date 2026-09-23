@@ -52,7 +52,8 @@ import { TaskStopToolCallBlock } from "@/ToolCallBlocks/renderers/task-stop.js";
 import { TodoToolCallBlock } from "@/ToolCallBlocks/renderers/todo.js";
 import { AskQuestionToolCallBlock } from "@/ToolCallBlocks/renderers/ask-question.js";
 import { KnowledgeCheckToolCallBlock } from "@/ToolCallBlocks/renderers/knowledge-check.js";
-import { isKnowledgeCheckToolCall } from "@/lib/reviewToolNames.js";
+import { ReportReviewIssuesToolCallBlock } from "@/ToolCallBlocks/renderers/report-review-issues.js";
+import { isKnowledgeCheckToolCall, isReportReviewIssuesToolCall } from "@/lib/reviewToolNames.js";
 import { resolveToolCallIdentity } from "@/lib/toolIdentity.js";
 import type { ToolCallBlockRenderContext } from "@/ToolCallBlocks/shared.js";
 
@@ -77,6 +78,12 @@ export function resolveToolCallRenderer(context: ToolCallBlockRenderContext) {
   // 必须渲染成可点击的问题条才能「点问题 → 打开正文并高亮」。
   if (isKnowledgeCheckToolCall(context.toolCallNode.toolCall)) {
     return KnowledgeCheckToolCallBlock;
+  }
+
+  // 自述型审查（校对/一致性/以文审文/合同风险）的问题清单同样要能点：结论由模型给出，
+  // 但字符偏移由 `ReportReviewIssues` 确定性定位，渲染与点击链路与上一条完全一致。
+  if (isReportReviewIssuesToolCall(context.toolCallNode.toolCall)) {
+    return ReportReviewIssuesToolCallBlock;
   }
 
   // 可复用工作流的两个工具按**工具名**先分流，刻意排在 family 之前。两个理由：

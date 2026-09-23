@@ -10,7 +10,7 @@
  */
 import { AlertTriangleIcon, CheckCircle2Icon, FileSearchIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
-import { cn } from "@/components/lib/utils.js";
+import { ReviewIssueRow } from "@/ToolCallBlocks/renderers/reviewIssueRow.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { ToolLayout } from "@/ToolCallBlocks/ToolLayout.js";
 import {
@@ -35,20 +35,6 @@ const ISSUE_LABEL_KEYS: Record<string, string> = {
   missing: "review.issue.missing",
   upcoming: "review.issue.upcoming",
   ok: "review.issue.ok",
-};
-
-const SEVERITY_STYLES: Record<ReviewIssueView["severity"], string> = {
-  error: "border-destructive/40 bg-destructive/5",
-  warning: "border-amber-500/40 bg-amber-500/5",
-  info: "border-border bg-surface",
-  none: "border-border bg-surface",
-};
-
-const SEVERITY_DOT: Record<ReviewIssueView["severity"], string> = {
-  error: "bg-destructive",
-  warning: "bg-amber-500",
-  info: "bg-foreground-subtle",
-  none: "bg-foreground-subtlest",
 };
 
 export function KnowledgeCheckToolCallBlock(context: ToolCallBlockRenderContext) {
@@ -88,7 +74,8 @@ export function KnowledgeCheckToolCallBlock(context: ToolCallBlockRenderContext)
     [context.workspacePath, intl, onOpenCodeViewer, textPath],
   );
 
-  if (!result) return null;
+  // 只处理 KnowledgeCheck 自己的两种结果：`issues` 是 ReportReviewIssues 的，走它自己的渲染器。
+  if (!result || result.kind === "issues") return null;
 
   if (result.kind === "terminology") {
     const primary = result.stale
@@ -207,37 +194,15 @@ export function KnowledgeCheckToolCallBlock(context: ToolCallBlockRenderContext)
             </div>
           ) : null}
           {issues.map((issue) => (
-            <button
+            <ReviewIssueRow
               key={`${issue.startOffset}:${issue.code}:${issue.quoted}`}
-              type="button"
-              // 点击整条问题 → 打开正文快照并定位高亮；没有落盘快照时保持只读展示
-              disabled={!textPath || !onOpenCodeViewer}
-              onClick={() => openIssue(issue)}
-              className={cn(
-                "flex w-full flex-col gap-1 rounded border p-2 text-left transition-colors",
-                SEVERITY_STYLES[issue.severity],
-                textPath && onOpenCodeViewer ? "cursor-pointer hover:border-foreground/40" : "",
-              )}
-            >
-              <span className="flex items-center gap-2 text-[11px]">
-                <span className={cn("size-1.5 shrink-0 rounded-full", SEVERITY_DOT[issue.severity])} />
-                <span className="font-medium">
-                  {intl.formatMessage({ id: ISSUE_LABEL_KEYS[issue.code] ?? "review.issue.unknown" })}
-                </span>
-                {issue.line > 0 ? (
-                  <span className="text-foreground-subtle">
-                    {intl.formatMessage({ id: "review.card.line" }, { line: issue.line })}
-                  </span>
-                ) : null}
-              </span>
-              <span className="font-mono text-ui-sm break-all">{issue.quoted}</span>
-              <span className="text-ui-sm text-foreground-subtle">{issue.message}</span>
-              {issue.suggestion ? (
-                <span className="text-ui-sm">
-                  {intl.formatMessage({ id: "review.card.suggestion" })}：{issue.suggestion}
-                </span>
-              ) : null}
-            </button>
+              issue={issue}
+              label={intl.formatMessage({
+                id: ISSUE_LABEL_KEYS[issue.code] ?? "review.issue.unknown",
+              })}
+              canOpen={Boolean(textPath) && Boolean(onOpenCodeViewer)}
+              onOpen={() => openIssue(issue)}
+            />
           ))}
           {issues.length === 0 && !result.stale ? (
             <div className="text-ui-sm text-foreground-subtle">

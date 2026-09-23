@@ -19,7 +19,11 @@ import {
   resolveCodeReviewContentProjection,
   resolveLineFromOffset,
 } from "../src/previewPaneCodeReview.js";
-import { isExportReviewReportToolCall, isKnowledgeCheckToolCall } from "../src/lib/reviewToolNames.js";
+import {
+  isExportReviewReportToolCall,
+  isKnowledgeCheckToolCall,
+  isReportReviewIssuesToolCall,
+} from "../src/lib/reviewToolNames.js";
 
 const CONTENT = ["一、引用标准", "GB/T 8163-2018、GB 12238", "管件按 GB/T8163-1999 供货。"].join("\n");
 
@@ -185,6 +189,81 @@ test("工具名判定：三种 wire 写法都认，且不误伤别的工具", ()
   assert.equal(isKnowledgeCheckToolCall({ toolName: "Read" }), false);
   assert.equal(isExportReviewReportToolCall({ toolName: "ExportReviewReport" }), true);
   assert.equal(isExportReviewReportToolCall({ toolName: "KnowledgeCheck" }), false);
+  assert.equal(isReportReviewIssuesToolCall({ toolName: "ReportReviewIssues" }), true);
+  assert.equal(isReportReviewIssuesToolCall({ raw: { toolName: "report_review_issues" } }), true);
+  assert.equal(isReportReviewIssuesToolCall({ toolName: "KnowledgeCheck" }), false);
+});
+
+test("结果读取：ReportReviewIssues 的结果按 issues 识别，定位元数据不丢", () => {
+  const view = readKnowledgeResult({
+    result: {
+      action: "issues",
+      stale: false,
+      textPath: "C:/tmp/review-text/abc.txt",
+      sourcePath: "C:/docs/设计说明.docx",
+      notice: "有 1 条是归一化后匹配到的。",
+      summary: { total: 3, error: 1, warning: 1, info: 1, unlocated: 1 },
+      issues: [
+        {
+          code: "TYPO-001",
+          severity: "error",
+          quoted: "水磊",
+          message: "疑似错别字",
+          line: 12,
+          startOffset: 300,
+          endOffset: 302,
+          occurrences: 2,
+          matchedOccurrence: 2,
+          matchKind: "exact",
+          located: true,
+        },
+        {
+          code: "TYPO-002",
+          severity: "warning",
+          quoted: "找不到的片段",
+          message: "无法定位",
+          line: 0,
+          startOffset: -1,
+          endOffset: -1,
+          occurrences: 0,
+          matchedOccurrence: 0,
+          matchKind: "not_found",
+          located: false,
+        },
+      ],
+    },
+  });
+  assert.ok(view && view.kind === "issues");
+  assert.equal(view.summary?.unlocated, 1);
+  assert.equal(view.summary?.error, 1);
+  assert.equal(view.textPath, "C:/tmp/review-text/abc.txt");
+  assert.equal(view.issues[0]!.matchedOccurrence, 2);
+  assert.equal(view.issues[0]!.occurrences, 2);
+  assert.equal(view.issues[0]!.located, true);
+  assert.equal(view.issues[1]!.located, false, "未定位的条目必须如实标出来");
+  assert.equal(view.issues[1]!.startOffset, -1);
+});
+
+test("结果读取：标准自检的条目默认视为已定位（老载荷没有 located 字段也不能变成不可点）", () => {
+  const view = readKnowledgeResult({
+    result: {
+      action: "standards",
+      issues: [
+        {
+          code: "abolished",
+          severity: "error",
+          quoted: "GB 50222-2017",
+          message: "已废止",
+          line: 3,
+          startOffset: 10,
+          endOffset: 23,
+        },
+      ],
+    },
+  });
+  assert.ok(view && view.kind === "standards");
+  assert.equal(view.issues[0]!.located, true);
+  assert.equal(view.issues[0]!.occurrences, 1);
 });
 
 test("字符级高亮：命中区间落在行中间时只标那几个字", () => {

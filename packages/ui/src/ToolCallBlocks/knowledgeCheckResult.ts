@@ -22,6 +22,12 @@ export interface ReviewIssueView {
   libraryStatus: string | null;
   suggestion: string | null;
   message: string;
+  /** 片段在正文里出现的次数；`ReportReviewIssues` 会填，标准自检恒为 1 */
+  occurrences: number;
+  /** 实际定位取的是第几次出现（1 起） */
+  matchedOccurrence: number;
+  /** 是否在正文里定位到了；false 表示偏移不可用，前端不得据此高亮 */
+  located: boolean;
 }
 
 export interface ReviewSummaryView {
@@ -54,7 +60,27 @@ export interface TerminologyResultView {
   notice: string | null;
 }
 
-export type KnowledgeResultView = ReviewResultView | TerminologyResultView;
+/**
+ * `ReportReviewIssues` 的结果：结构与时序都与 standards 同形（同样带 `textPath` 与逐条偏移），
+ * 差别只在 `code` 是审查规则码而不是标准判定类别。
+ */
+export interface ReportedIssuesResultView {
+  kind: "issues";
+  stale: boolean;
+  sourcePath: string | null;
+  textPath: string | null;
+  notice: string | null;
+  issues: ReviewIssueView[];
+  summary: {
+    total: number;
+    error: number;
+    warning: number;
+    info: number;
+    unlocated: number;
+  } | null;
+}
+
+export type KnowledgeResultView = ReviewResultView | TerminologyResultView | ReportedIssuesResultView;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -122,6 +148,10 @@ function parseIssue(raw: unknown): ReviewIssueView | null {
     libraryStatus: readString(record["libraryStatus"]),
     suggestion: readString(record["suggestion"]),
     message,
+    occurrences: readNumber(record["occurrences"]) ?? 1,
+    matchedOccurrence: readNumber(record["matchedOccurrence"]) ?? 1,
+    // 缺省视为已定位：标准自检的结果全部带偏移，老载荷没有该字段时不能因此变成不可点。
+    located: record["located"] !== false,
   };
 }
 
@@ -174,6 +204,29 @@ export function readKnowledgeResult(raw: unknown): KnowledgeResultView | null {
         issues: record["issues"]
           .map(parseIssue)
           .filter((issue): issue is ReviewIssueView => issue !== null),
+      };
+    }
+    if (action === "issues" && Array.isArray(record["issues"])) {
+      const summary = asRecord(record["summary"]);
+      const count = (key: string): number => readNumber(summary?.[key]) ?? 0;
+      return {
+        kind: "issues",
+        stale,
+        sourcePath: readString(record["sourcePath"]),
+        textPath: readString(record["textPath"]),
+        notice: readString(record["notice"]),
+        issues: record["issues"]
+          .map(parseIssue)
+          .filter((issue): issue is ReviewIssueView => issue !== null),
+        summary: summary
+          ? {
+              total: count("total"),
+              error: count("error"),
+              warning: count("warning"),
+              info: count("info"),
+              unlocated: count("unlocated"),
+            }
+          : null,
       };
     }
     if (action === "terminology" && Array.isArray(record["whitelisted"])) {
