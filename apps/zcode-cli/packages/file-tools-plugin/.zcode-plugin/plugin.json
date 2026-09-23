@@ -1,0 +1,15 @@
+{
+  "name": "file-tools",
+  "version": "0.1.0",
+  "description": "Desktop local document parsing, OCR and DWG drawing extraction for the Agent: parse_document (Office/PDF to Markdown), ocr_scan (images/scanned PDFs), parse_dwg (layers, text entities, dimensions, standard references). All engines ship inside the installer and work offline.",
+  "author": { "name": "Z.ai" },
+  "license": "MIT",
+  "mcpServers": {
+    "file-tools": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["dist/mcp/server.js"],
+      "timeoutMs": 600000
+    }
+  }
+}

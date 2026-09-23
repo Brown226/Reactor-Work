@@ -1,0 +1,5 @@
+# 构建产物；assets/ 由 scripts/prepare-file-tools-assets.mjs 生成，size 130MB+ 不入库。
+dist/
+dist-types/
+node_modules/
+assets/

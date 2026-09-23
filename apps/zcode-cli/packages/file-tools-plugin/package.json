@@ -1,0 +1,34 @@
+{
+  "name": "@zcode/file-tools-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "作为官方 ZCode 内置插件发布的文件解析 / OCR / CAD 图纸解析工具（MCP server）。",
+  "author": {
+    "name": "Z.ai"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/mcp/server.js",
+  "scripts": {
+    "build": "tsc && node scripts/build.mjs",
+    "clean": "node ../../scripts/clean-dist.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint src --no-ignore"
+  },
+  "dependencies": {
+    "@firecrawl/anydoc": "0.2.4",
+    "@mlightcad/libredwg-web": "0.6.10",
+    "@modelcontextprotocol/server": "2.0.0",
+    "@napi-rs/canvas": "^1.0.9",
+    "jimp": "^1.6.1",
+    "onnxruntime-node": "1.23.2",
+    "paddleocr": "1.2.0",
+    "pdfjs-dist": "6.2.108",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0"
+  }
+}

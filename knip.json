@@ -7,7 +7,8 @@
         ".release-it.mjs",
         ".vscode/*.mjs",
         "scripts/check-workspace-freshness.mjs",
-        "scripts/mise-run.mjs"
+        "scripts/mise-run.mjs",
+        "scripts/prepare-file-tools-assets.mjs"
       ]
     },
     "packages/desktop": {
@@ -27,6 +28,15 @@
     },
     "apps/zcode-cli/packages/browser-use-plugin": {
       "entry": ["src/browser-client.ts"]
+    },
+    "apps/zcode-cli/packages/file-tools-plugin": {
+      "entry": ["src/server.ts", "scripts/smoke-stdio.mjs", "test/**/*.test.ts"],
+      "ignoreDependencies": [
+        "@firecrawl/anydoc",
+        "onnxruntime-node",
+        "@napi-rs/canvas",
+        "@mlightcad/libredwg-web"
+      ]
     }
   },
   "ignore": [".agents/**", "docs/**", "packages/ui/src/components/**"]
