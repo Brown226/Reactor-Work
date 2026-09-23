@@ -51,6 +51,8 @@ import { TaskOutputToolCallBlock } from "@/ToolCallBlocks/renderers/task-output.
 import { TaskStopToolCallBlock } from "@/ToolCallBlocks/renderers/task-stop.js";
 import { TodoToolCallBlock } from "@/ToolCallBlocks/renderers/todo.js";
 import { AskQuestionToolCallBlock } from "@/ToolCallBlocks/renderers/ask-question.js";
+import { KnowledgeCheckToolCallBlock } from "@/ToolCallBlocks/renderers/knowledge-check.js";
+import { isKnowledgeCheckToolCall } from "@/lib/reviewToolNames.js";
 import { resolveToolCallIdentity } from "@/lib/toolIdentity.js";
 import type { ToolCallBlockRenderContext } from "@/ToolCallBlocks/shared.js";
 
@@ -69,6 +71,13 @@ export function resolveToolCallRenderer(context: ToolCallBlockRenderContext) {
   }
 
   const identity = resolveToolCallIdentity(context.toolCallNode.toolCall);
+
+  // 知识板块工具同样按名先分流、排在 family 之前：`KnowledgeCheck` 不在已知工具表里
+  // （identity 回 unknown → 原始 JSON 兜底卡），而它的结论是一串带原文位置的判定，
+  // 必须渲染成可点击的问题条才能「点问题 → 打开正文并高亮」。
+  if (isKnowledgeCheckToolCall(context.toolCallNode.toolCall)) {
+    return KnowledgeCheckToolCallBlock;
+  }
 
   // 可复用工作流的两个工具按**工具名**先分流，刻意排在 family 之前。两个理由：
   // 它们今天不在 shared 的已知工具表里（identity 回 unknown，会掉进 raw JSON 兜底卡）；

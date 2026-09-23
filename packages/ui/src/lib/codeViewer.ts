@@ -36,6 +36,20 @@ export interface CodeReviewAnchor {
   priority?: 0 | 1 | 2 | 3;
   startLine?: number;
   endLine?: number;
+  /**
+   * 字符级定位（相对**被打开文件的文本**）：审查问题多来自提取文本（docx/pdf 无行号），
+   * 错别字往往在行中间，只有行号不足以指出位置。
+   *
+   * 展示侧目前只能做到「按偏移换算出所在行 + 行高亮」，并把 `quote` 作为评论的
+   * selectedText 显示出来 —— `@pierre/diffs` 的 FileOptions 没有字符级装饰钩子
+   * （见 docs/审查板块-方案-v1.md §3.3 的说明），字符级背景色需要自渲染文本层。
+   */
+  startOffset?: number;
+  endOffset?: number;
+  /** 命中的原文片段：无偏移时的兜底定位，同时让人一眼看到命中的是哪几个字 */
+  quote?: string;
+  /** 严重度：与结构化问题条的 severity 同口径，供卡片着色 */
+  severity?: "error" | "warning" | "info";
 }
 
 export interface CodeReviewCodeViewerSource extends CodeViewerWorkspaceScope {
