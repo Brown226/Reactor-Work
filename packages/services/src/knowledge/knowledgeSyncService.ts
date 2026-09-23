@@ -112,11 +112,19 @@ export function createKnowledgeSyncService(options: {
     } catch {
       return null;
     }
-    if (!status.loggedIn || !status.serverUrl) return null;
+    if (!status.loggedIn || !status.serverUrl) {
+      logger.info("知识缓存同步跳过：未登录企业服务端", { loggedIn: status.loggedIn });
+      return null;
+    }
     const accessToken = await options.credentials
       .load(REACTOR_SERVER_CREDENTIAL_KEYS.accessToken)
       .catch(() => null);
-    if (!accessToken) return null;
+    if (!accessToken) {
+      logger.warn("知识缓存同步跳过：已登录但凭据库里没有 accessToken", {
+        serverUrl: status.serverUrl,
+      });
+      return null;
+    }
     return { serverUrl: status.serverUrl, accessToken };
   }
 
@@ -137,6 +145,26 @@ export function createKnowledgeSyncService(options: {
     });
     if (response.status === 304) return null;
     if (!response.ok) {
+      if (response.status === 401) {
+        // 令牌过期是最常见的失败原因（应用重启后凭据库里的 access 往往已过期）。
+        // 会话层负责刷新并回写凭据库；刷新后重试一次，避免"要用户手动重登一次才行"。
+        await options.reactorServer.getStatus().catch(() => undefined);
+        const refreshed = await options.credentials
+          .load(REACTOR_SERVER_CREDENTIAL_KEYS.accessToken)
+          .catch(() => null);
+        if (refreshed && refreshed !== session.accessToken) {
+          const retried = await options.apiClient.request(`${session.serverUrl}${path}`, {
+            method: "GET",
+            headers: { authorization: `Bearer ${refreshed}` },
+          });
+          if (retried.ok) {
+            const data = (await retried.json()) as T;
+            return { data, lastModified: retried.headers.get("last-modified") };
+          }
+          logger.warn("知识缓存取数 401 后重试仍失败", { path, status: retried.status });
+          return null;
+        }
+      }
       // 404 = 该库未发布/不存在，属正常态；其余状态记日志但仍然不写坏缓存。
       if (response.status !== 404) {
         logger.warn("知识缓存取数失败", { path, status: response.status });

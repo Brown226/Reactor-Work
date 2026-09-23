@@ -379,12 +379,19 @@ function* walkFiles(
   directory: string,
   allowedTopLevelPaths: ReadonlySet<string>,
   depth = 0,
+  topLevelSegment?: string,
 ): Generator<string> {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
-    if (shouldSkipDirectory(entry.name, depth, allowedTopLevelPaths)) continue;
+    if (shouldSkipDirectory(entry.name, depth, allowedTopLevelPaths, topLevelSegment)) continue;
     const fullPath = join(directory, entry.name);
     if (entry.isDirectory()) {
-      yield* walkFiles(fullPath, allowedTopLevelPaths, depth + 1);
+      // 顶层段名要一路带下去：判断"嵌套 node_modules 该不该剪"依赖它（见 shouldSkipDirectory）。
+      yield* walkFiles(
+        fullPath,
+        allowedTopLevelPaths,
+        depth + 1,
+        depth === 0 ? entry.name : topLevelSegment,
+      );
       continue;
     }
     if (entry.isFile()) yield fullPath;
@@ -649,11 +656,21 @@ function shouldSkipDirectory(
   name: string,
   depth: number,
   allowedTopLevelPaths: ReadonlySet<string>,
+  topLevelSegment?: string,
 ): boolean {
   if (name === ".turbo" || name === "coverage" || name === ".venv" || name === "__pycache__") {
     return true;
   }
-  return name === "node_modules" && !(depth === 0 && allowedTopLevelPaths.has(name));
+  if (name !== "node_modules") return false;
+  // 顶层 node_modules 只有在被显式允许时才拷（原行为）。
+  if (depth === 0) return !allowedTopLevelPaths.has(name);
+  // 嵌套的 node_modules 默认剪掉（源码树的依赖不该进缓存），**但**在
+  // `runtimeTopLevelPaths` 显式声明的资产树里必须保留：原生绑定（anydoc / onnxruntime-node /
+  // canvas）本身就是以 node_modules 包的形式分发的，剪掉它们等于交付一个"资产不完整"的插件
+  // ——2026-09-23 实测：file-tools 的 anydoc/canvas/onnxruntime 被整棵剪掉，工具在应用里直接报错，
+  // 而源码态跑得好好的（源码走 require，不经过 seed）。
+  if (topLevelSegment !== undefined && allowedTopLevelPaths.has(topLevelSegment)) return false;
+  return true;
 }
 
 function shouldIncludePluginFile(
