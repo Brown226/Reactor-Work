@@ -1,0 +1,8 @@
+{
+  "name": "review-skills",
+  "version": "0.1.0",
+  "description": "Built-in file review skills for the review interface mode: basic proofreading, full-text consistency, review-against-reference, contract risk, standard reference check, and batch review with report export. Ships inside the installer and works offline; the standard catalog itself is synced from the enterprise server.",
+  "author": { "name": "Z.ai" },
+  "license": "MIT",
+  "skills": "skills"
+}

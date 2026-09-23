@@ -43,6 +43,24 @@ export const officialSeaPlugins = [
     // 导致发布产物不 seed browser-use，进而无法装配宿主 node_repl MCP。
     version: "0.5.1",
   },
+  {
+    // 审查技能：纯内容型插件（只有 skills，没有 MCP server），requiresRuntime:false 跳过
+    // runtime 校验，但 requiredSeedPaths 仍逐个钉住 SKILL.md——SEA 产物缺文件时技能会
+    // 静默失效，而不是报错。
+    marketplace: "zcode-plugins-official",
+    name: "review-skills",
+    requiresRuntime: false,
+    requiredSeedPaths: [
+      "skills/review-batch/SKILL.md",
+      "skills/review-compare/SKILL.md",
+      "skills/review-consistency/SKILL.md",
+      "skills/review-contract/SKILL.md",
+      "skills/review-proofread/SKILL.md",
+      "skills/review-standard-check/SKILL.md",
+    ],
+    rootPath: join("packages", "review-skills-plugin"),
+    version: "0.1.0",
+  },
 ];
 
 export const collectSeaOfficialPluginAssets = async ({

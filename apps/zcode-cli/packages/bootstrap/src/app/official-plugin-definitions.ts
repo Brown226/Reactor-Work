@@ -86,6 +86,20 @@ const OFFICIAL_ZCODE_GUIDE_REQUIRED_SEED_PATHS = [
   "skills/dynamic-workflows/patterns.md",
 ] as const;
 
+// 审查技能：文件审查板块的 6 个技能随包内置（`review-skills-plugin`），不经企业服务端下发。
+// 钉住每个技能的 SKILL.md 与错词表附件——seed 漏文件时技能会「存在但空转」，
+// 症状是审查质量下降而不是报错，没有诊断能指向交付问题。
+const OFFICIAL_REVIEW_SKILLS_REQUIRED_SEED_PATHS = [
+  "skills/review-batch/SKILL.md",
+  "skills/review-compare/SKILL.md",
+  "skills/review-consistency/SKILL.md",
+  "skills/review-contract/SKILL.md",
+  "skills/review-proofread/SKILL.md",
+  "skills/review-proofread/references/punctuation-rules.md",
+  "skills/review-proofread/references/typo-dictionary.md",
+  "skills/review-standard-check/SKILL.md",
+] as const;
+
 export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = [
   {
     // 无 listing：宿主不进市场、不对用户露出。它必须始终可用，因为 node_repl 的注册门禁
@@ -403,6 +417,40 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
     // anydoc / onnxruntime / canvas / ocr-models / libredwg 资产树（~130MB/平台）：
     // packaged 走 resources/tools/file-tools 解析；seed 副本覆盖 dev 与兜底路径。
     runtimeTopLevelPaths: ["assets"],
+    version: "0.1.0",
+  },
+  {
+    // 产品决策：审查技能是产品能力而非组织数据，随包内置、默认启用。
+    // 过去这 6 个技能走企业服务端技能库下发，等于「管理员不导入就没有审查能力」，
+    // 而且内网离线部署时它是最容易被漏掉的一步。服务端技能库回归本位：只装企业自建技能。
+    // 纯内容型插件（只有 skills，无 MCP / 无系统依赖），符合 defaultEnabled 的既有约定。
+    defaultEnabled: true,
+    listing: {
+      author: ZAI_AUTHOR,
+      category: "productivity",
+      displayName: "Review Skills",
+      displayName_i18n: { "zh-CN": "文件审查技能" },
+      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/documents/icon.png`,
+      description_i18n: {
+        "zh-CN":
+          "文件审查板块的判定规则与输出格式：基础校对、全文一致性、以文审文、合同风险审查、标准引用自检、批量审查报告。",
+      },
+      examplePrompts: [
+        "Proofread this document and list every typo",
+        "Check the standard references cited in this document",
+      ],
+      examplePrompts_i18n: {
+        "zh-CN": ["帮我校对这份文件，逐条指出错别字", "检查这份文件引用的标准是否已废止"],
+      },
+    },
+    name: "review-skills",
+    requiredSeedPaths: OFFICIAL_REVIEW_SKILLS_REQUIRED_SEED_PATHS,
+    rootCandidates: [
+      "packages/review-skills-plugin",
+      "../review-skills-plugin",
+      "../../review-skills-plugin",
+      "../../../review-skills-plugin",
+    ],
     version: "0.1.0",
   },
 ];

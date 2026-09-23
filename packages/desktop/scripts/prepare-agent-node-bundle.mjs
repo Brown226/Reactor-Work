@@ -111,6 +111,16 @@ const officialPluginPackages = [
     runtimeBuildScript: "scripts/build.mjs",
     stagedPath: "packages/node-repl-host",
   },
+
+  {
+    // 审查技能（6 个）：纯内容型插件，没有 runtime 构建步骤，只需把 skills/ 与清单拷进
+    // glm/packages。此前这 6 个技能只存在于企业服务端技能库，安装包不带、也没人发现，
+    // 结果是「不登录企业端就没有审查能力」；内置后由 definition 的 defaultEnabled 直接可用。
+    packageName: "@zcode/review-skills-plugin",
+    relativePath: "apps/zcode-cli/packages/review-skills-plugin",
+    requiresRuntime: false,
+    stagedPath: "packages/review-skills-plugin",
+  },
 ];
 const includedOfficialPluginTopLevelPaths = new Set([
   ".mcp.json",

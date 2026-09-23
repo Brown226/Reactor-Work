@@ -116,6 +116,14 @@ const remoteOfficialPluginPackages = [
     runtimeBuildScript: "scripts/build.mjs",
     stagedPath: "packages/node-repl-host",
   },
+  {
+    // 审查技能：纯内容型插件，无 runtime 构建。远端工作区同样要能审查文件，
+    // 这份清单若漏掉它，远端会话里 6 个审查技能会静默不存在（本地却正常）。
+    packageName: "@zcode/review-skills-plugin",
+    relativePath: "apps/zcode-cli/packages/review-skills-plugin",
+    requiresRuntime: false,
+    stagedPath: "packages/review-skills-plugin",
+  },
 ];
 const remoteOfficialPluginTopLevelPaths = new Set([
   ".mcp.json",
