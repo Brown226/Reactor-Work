@@ -408,7 +408,11 @@ function getPreviewPaneDisplayOptions(
 ) {
   const canToggleMarkdownView =
     source !== null &&
-    (isMarkdownSource(source) || (source.type === "file" && isMarkdownFilePath(source.path)));
+    (isMarkdownSource(source) ||
+      (source.type === "file" && isMarkdownFilePath(source.path)) ||
+      // 审查定位打开的是提取正文（可能落在历史 `.txt` 快照上）：正文/源码两视图都要给，
+      // 判据与 previewPaneContent 的分支一致 —— 看锚点声明，不看扩展名。
+      (source.type === "code-review" && source.review.textFormat === "markdown"));
   const canToggleSvgView =
     source !== null &&
     (isSvgSource(source) || (source.type === "file" && isSvgFilePath(source.path)));
@@ -692,8 +696,12 @@ export function PreviewPane({
       return;
     }
 
+    // 审查正文快照同样是 markdown（提取工具转出来的）：默认进正文视图 —— 高亮按片段画在
+    // 渲染后的正文上；要核对源码就切到「源码」。非 markdown 的审查目标仍直接进源码视图。
     setMarkdownViewMode(
-      source.type !== "code-review" && (isMarkdownSource(source) || isMarkdownFilePath(source.path))
+      isMarkdownSource(source) ||
+        (source.type === "code-review" && source.review.textFormat === "markdown") ||
+        (isMarkdownFilePath(source.path) && source.type !== "code-review")
         ? "preview"
         : "code",
     );

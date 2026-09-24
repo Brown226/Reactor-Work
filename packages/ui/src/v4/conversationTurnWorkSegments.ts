@@ -10,23 +10,6 @@ import {
 } from "@/v4/conversationCuaGroups.js";
 import { buildConversationFlowItems } from "@/v4/conversationTurnFlowItems.js";
 import type { AssistantWorkRow, ConversationTurnFlowItem } from "@/v4/conversationTurnFlowItems.js";
-import { isKnowledgeCheckToolCall, isReportReviewIssuesToolCall } from "@/lib/reviewToolNames.js";
-
-/**
- * 该工作段里是否有**审查结果卡**。
- *
- * 为什么它要影响折叠：轮次完成后这段「工作过程」会收成一行「已处理 X 秒」，而审查结论
- * ——问题清单卡——恰好长在工具调用上，于是结果连同推理过程一起被藏起来，用户看到的现象是
- * 「跑完了没有卡片」。审查结果是产物而不是工作步骤，这类轮次默认摊开。
- * 只对含审查结果卡的段生效，办公/编程档的折叠行为不变。
- */
-function hasReviewResultRow(rows: readonly AssistantWorkRow[]): boolean {
-  return rows.some((row) => {
-    if (row.kind !== "toolCall") return false;
-    const source = { toolName: row.toolName };
-    return isKnowledgeCheckToolCall(source) || isReportReviewIssuesToolCall(source);
-  });
-}
 
 export interface ConversationTurnWorkStatus {
   state: "running" | "completed" | "interrupted";
@@ -234,8 +217,6 @@ export function buildConversationTurnWorkSegments(options: {
         !options.timelineOnly &&
         (options.forceOpenHistory ||
           (options.isLastTurn && segmentWorkStatus?.state === "running") ||
-          // 审查结果卡不能被收进「已处理 X」：那是结论，不是过程。
-          hasReviewResultRow(segmentHistoryRows) ||
           (visualDrafts.length === 1 &&
             visibleAssistantTextRow === undefined &&
             segmentFlowRows.length > 0)),

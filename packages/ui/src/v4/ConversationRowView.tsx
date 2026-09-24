@@ -48,6 +48,8 @@ import type {
 } from "@zcode/shared/zcode-protocol-v4";
 import { AssistantPreviewCards } from "@/AssistantPreviewCards.js";
 import { AssistantCodeCommentCards } from "@/AssistantCodeCommentCards.js";
+import { ReviewResultPanel } from "@/review/ReviewResultPanel.js";
+import type { ReviewResultGathering } from "@/review/reviewResultGroups.js";
 import { useAssistantCodeCommentFeatureEnabled } from "@/AssistantCodeCommentFeatureProvider.js";
 import {
   Attachment,
@@ -269,6 +271,11 @@ interface ConversationRowViewProps {
   assistantCodeCommentCards?: AssistantCodeCommentCard[];
   /** 由 TurnGroup 统一裁决整轮正文是否隐藏 code-comment 协议原文。 */
   assistantCodeCommentProjectionEnabled?: boolean;
+  /**
+   * 整轮审查结果的聚合（一个统一面板）。只由 TurnGroup 为轮尾终态 assistant text 计算后下发，
+   * 一轮只渲染一次 —— 面板挂在正文下方，工作流水里的审查工具行只剩摘要。
+   */
+  assistantReviewResults?: ReviewResultGathering;
 }
 
 // ── 每种行拆成独立 memo 叶子：虚拟列表下父级重渲染时，只有 props 真变的行重渲染；
@@ -1482,6 +1489,7 @@ const AssistantTextRowView = memo(function AssistantTextRowView({
   previewCardsAutoOpenKey,
   codeCommentCards,
   codeCommentProjectionEnabled,
+  reviewResults,
 }: {
   row: AssistantTextRow;
   context: ConversationRowRenderContext;
@@ -1495,6 +1503,7 @@ const AssistantTextRowView = memo(function AssistantTextRowView({
   previewCardsAutoOpenKey?: string;
   codeCommentCards?: AssistantCodeCommentCard[];
   codeCommentProjectionEnabled?: boolean;
+  reviewResults?: ReviewResultGathering;
 }) {
   const streaming = row.state === "streaming";
   const isFocusedMode = useIsFocusedMode();
@@ -1557,6 +1566,19 @@ const AssistantTextRowView = memo(function AssistantTextRowView({
             onOpenFileLink={context.onOpenFileLink}
             autoOpenPptxKey={previewCardsAutoOpenKey}
             onAutoOpenPptx={context.onAutoOpenAssistantPptx}
+          />
+        </div>
+      ) : null}
+      {/* 审查结果是这一轮的产物，挂在正文下方、操作栏之上：结论必须与总结连读，
+          而不是收进上方「工作过程」里（见 docs/审查板块-方案-v1.md §3.2）。 */}
+      {reviewResults?.hasContent ? (
+        <div className="mt-3">
+          <ReviewResultPanel
+            gathering={reviewResults}
+            workspacePath={context.workspacePath}
+            workspaceIdentity={context.workspaceIdentity}
+            workspaceRemoteSessionId={context.workspaceRemoteSessionId}
+            onOpenCodeViewer={context.onOpenCodeViewer}
           />
         </div>
       ) : null}
@@ -2062,6 +2084,7 @@ function ConversationRowViewImpl({
   assistantPreviewCardsAutoOpenKey,
   assistantCodeCommentCards,
   assistantCodeCommentProjectionEnabled,
+  assistantReviewResults,
   reasoningContentVariant,
   userInputStatus,
 }: ConversationRowViewProps) {
@@ -2091,6 +2114,7 @@ function ConversationRowViewImpl({
           previewCardsAutoOpenKey={assistantPreviewCardsAutoOpenKey}
           codeCommentCards={assistantCodeCommentCards}
           codeCommentProjectionEnabled={assistantCodeCommentProjectionEnabled}
+          reviewResults={assistantReviewResults}
         />
       );
     case "reasoning":

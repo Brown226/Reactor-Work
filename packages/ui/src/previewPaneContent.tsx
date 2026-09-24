@@ -429,6 +429,33 @@ export function PreviewPaneContent({
     return <SvgPreviewContent title={source.title} svgContent={filePreview.content} />;
   }
 
+  // 审查正文快照是**提取出来的 markdown**（docx/xlsx/pdf 经解析工具无损转出）：默认渲染成正文
+  // 并按命中的原文片段画高亮 —— 用户要看的是「说明书第 3 章那句写错了」，不是源码里的 `|` 与 `#`。
+  // 判据是锚点声明的 `textFormat`，不是扩展名：历史快照是 `.txt`，内容同样是提取正文。
+  // 源码视图仍可切到下面的字符偏移自渲染。
+  if (source.type === "code-review" && source.review.textFormat === "markdown" && markdownViewMode === "preview") {
+    return (
+      <MarkdownPreviewContent
+        selectionTarget={markdownSelectionTarget}
+        sourceKey={source.path ?? source.title}
+        sourceTitle={source.path ?? source.title}
+        sourcePath={source.path}
+        content={filePreview.content}
+        workspacePath={workspacePath}
+        onOpenBrowserUrl={onOpenBrowserUrl}
+        {...(source.review.quote
+          ? {
+              quoteHighlight: {
+                quote: source.review.quote,
+                occurrence: source.review.occurrence ?? null,
+                focusRequestId: source.review.requestId,
+              },
+            }
+          : {})}
+      />
+    );
+  }
+
   // 带字符区间的审查定位走自渲染：提取正文不需要语法高亮/diff，而 @pierre/diffs 没有
   // 字符级装饰钩子（见 reviewTextModel.ts 头注）。行级锚点（只有行号）仍走下面的代码预览器。
   if (

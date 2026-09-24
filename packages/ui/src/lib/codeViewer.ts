@@ -48,8 +48,23 @@ export interface CodeReviewAnchor {
   endOffset?: number;
   /** 命中的原文片段：无偏移时的兜底定位，同时让人一眼看到命中的是哪几个字 */
   quote?: string;
+  /**
+   * 片段在正文里是第几次出现（1 起）。渲染后的 markdown 预览里没有字符偏移的概念，只能按
+   * 片段文字重新定位；同一句话在文中重复时靠这个序号才能落在工具栏说的那一处（偏移与序号
+   * 都由工具在提取正文上算出，见 docs/审查板块-方案-v1.md §3.3）。
+   */
+  occurrence?: number;
   /** 严重度：与结构化问题条的 severity 同口径，供卡片着色 */
   severity?: "error" | "warning" | "info";
+  /**
+   * 被打开正文的形态。审查定位打开的是**提取出来的正文**（docx/xlsx/pdf 经解析工具转成
+   * markdown），要按正文渲染并按片段高亮；代码评论锚点打开的是源码，必须走代码预览器。
+   *
+   * 缺省按 `"plain"`（源码）—— 这条缺省是安全方向的：把源码当 markdown 渲染会吃掉缩进与
+   * 特殊字符，把正文当源码显示只是不好看。扩展名不能承担这个判断：`.txt` 快照是历史遗留，
+   * 内容同样是提取正文（见 docs/审查板块-方案-v1.md §3.3）。
+   */
+  textFormat?: "markdown" | "plain";
 }
 
 export interface CodeReviewCodeViewerSource extends CodeViewerWorkspaceScope {

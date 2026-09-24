@@ -43,6 +43,10 @@ import {
 } from "@/ToolCallBlocks/renderers/offpeak-create.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import type { AssistantPreviewCard } from "@/lib/assistantPreviewCards.js";
+import {
+  collectReviewResults,
+  type ReviewResultGathering,
+} from "@/review/reviewResultGroups.js";
 import { useAssistantCodeCommentFeatureEnabled } from "@/AssistantCodeCommentFeatureProvider.js";
 import {
   buildAssistantCodeCommentCards,
@@ -621,6 +625,7 @@ function ConversationWorkSegmentFlow({
   assistantPreviewCardsAutoOpenKey,
   assistantCodeCommentCards,
   assistantCodeCommentProjectionEnabled,
+  assistantReviewResults,
   canForkLatestAssistant,
   canRetryLatestAssistant,
   shareSelectionToggle,
@@ -637,6 +642,7 @@ function ConversationWorkSegmentFlow({
   assistantPreviewCardsAutoOpenKey?: string;
   assistantCodeCommentCards: AssistantCodeCommentCard[];
   assistantCodeCommentProjectionEnabled: boolean;
+  assistantReviewResults?: ReviewResultGathering;
   canForkLatestAssistant: boolean;
   canRetryLatestAssistant: boolean;
   shareSelectionToggle?: ReactNode;
@@ -739,6 +745,7 @@ function ConversationWorkSegmentFlow({
               }
               assistantCodeCommentCards={item.latest ? assistantCodeCommentCards : undefined}
               assistantCodeCommentProjectionEnabled={assistantCodeCommentProjectionEnabled}
+              assistantReviewResults={item.latest ? assistantReviewResults : undefined}
             />
           );
         } else {
@@ -816,6 +823,12 @@ function ConversationTurnFlow({
     fileChangesState: unit.header?.fileChanges?.state,
     fetchFileChanges: context.fetchFileChanges,
   });
+  // 整轮审查结果聚合一次，只交给轮尾正文渲染（见 docs/审查板块-方案-v1.md §3.2）：
+  // 几个工具调用合成一个面板，工具行本身退化成摘要，不再各自长一张卡。
+  const assistantReviewResults = useMemo(
+    () => collectReviewResults(unit.assistantWorkRows),
+    [unit.assistantWorkRows],
+  );
 
   if (unit.timelineOnly) {
     return (
@@ -885,6 +898,7 @@ function ConversationTurnFlow({
           assistantPreviewCardsAutoOpenKey={assistantPreviewCardsAutoOpenKey}
           assistantCodeCommentCards={assistantCodeCommentCards}
           assistantCodeCommentProjectionEnabled={assistantCodeCommentProjectionEnabled}
+          assistantReviewResults={assistantReviewResults}
           canForkLatestAssistant={canForkLatestAssistant}
           canRetryLatestAssistant={canRetryLatestAssistant}
           shareSelectionToggle={shareSelectionToggle}
@@ -985,6 +999,10 @@ function ConversationBackgroundResultWork({
     fileChangesState: unit.header?.fileChanges?.state,
     fetchFileChanges: context.fetchFileChanges,
   });
+  const assistantReviewResults = useMemo(
+    () => collectReviewResults(unit.assistantWorkRows),
+    [unit.assistantWorkRows],
+  );
 
   // 后台结果已经由独立唤醒轮总结过；复用普通 assistant 的工时折叠
   // 会显示不准确的分段耗时，并让一段短总结产生没有意义的收起状态。
@@ -1084,6 +1102,7 @@ function ConversationBackgroundResultWork({
           assistantPreviewCardsAutoOpenKey={assistantPreviewCardsAutoOpenKey}
           assistantCodeCommentCards={assistantCodeCommentCards}
           assistantCodeCommentProjectionEnabled={assistantCodeCommentProjectionEnabled}
+          assistantReviewResults={assistantReviewResults}
         />
       ) : null}
       {hasFollowing ? (

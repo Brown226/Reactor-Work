@@ -177,13 +177,19 @@ const MAX_SNAPSHOT_BYTES = 2 * 1024 * 1024;
  */
 export const MAX_INLINE_TEXT_CHARS = 400_000;
 
-/** 把正文快照落盘（内容寻址，重复审查同一文本不重复写），返回绝对路径。 */
+/**
+ * 把正文快照落盘（内容寻址，重复审查同一文本不重复写），返回绝对路径。
+ *
+ * 后缀是 `.md` 而不是 `.txt`：正文来自解析工具（docx/xlsx/pdf 无损转 markdown），
+ * 预览区据此渲染成正文并按片段高亮 —— 后缀是前端唯一的判据，写成 `.txt` 会让用户点开
+ * 看到的是一堆 `|` 与 `#`（见 docs/审查板块-方案-v1.md §3.3）。
+ */
 export function persistReviewText(text: string, dir: string): string | null {
   if (Buffer.byteLength(text, "utf8") > MAX_SNAPSHOT_BYTES) return null;
   try {
     const target = join(dir, "review-text");
     mkdirSync(target, { recursive: true });
-    const name = `${createHash("sha1").update(text, "utf8").digest("hex").slice(0, 16)}.txt`;
+    const name = `${createHash("sha1").update(text, "utf8").digest("hex").slice(0, 16)}.md`;
     const path = join(target, name);
     if (!existsSync(path)) writeFileSync(path, text, "utf8");
     return path;
