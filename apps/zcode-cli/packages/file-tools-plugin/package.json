@@ -10,14 +10,13 @@
   "type": "module",
   "main": "./dist/mcp/server.js",
   "scripts": {
-    "build": "tsc && node scripts/build.mjs",
+    "build": "tsc && node scripts/build.mjs && node scripts/publish-sidecar.mjs",
     "clean": "node ../../scripts/clean-dist.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint src --no-ignore"
   },
   "dependencies": {
     "@firecrawl/anydoc": "0.2.4",
-    "@mlightcad/libredwg-web": "0.6.10",
     "@modelcontextprotocol/server": "2.0.0",
     "@napi-rs/canvas": "^1.0.9",
     "jimp": "^1.6.1",

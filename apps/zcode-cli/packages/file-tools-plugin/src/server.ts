@@ -1,9 +1,9 @@
 /**
  * file-tools MCP server（官方内置插件的 stdio 形态，与 node_repl host 同链路）：
- * parse_document / ocr_scan / parse_dwg 三个本地解析工具。
+ * parse_document / ocr_scan / dwg_modify / dwg_graph 四个本地工具（dwg_modify 可读写，其余只读）。
  *
  * 关键约束：stdio MCP 的 stdout 就是 JSON-RPC 通道。pdfjs（"Warning: TT"）、
- * libredwg（"Open dwg file with error code"）等第三方会把诊断打到 console.log，
+ * sidecar（"Open dwg file with error code"）等第三方会把诊断打到 console.log，
  * 必须整体改道 stderr，否则协议流被污染。
  */
 import { realpath } from "node:fs/promises";
@@ -13,7 +13,8 @@ import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { z } from "zod";
 import { PARSE_DOCUMENT_DESCRIPTION, parseDocument, parseDocumentInputSchema } from "./tools/parse-document.js";
 import { OCR_SCAN_DESCRIPTION, ocrScan, ocrScanInputSchema } from "./tools/ocr-scan.js";
-import { PARSE_DWG_DESCRIPTION, parseDwg, parseDwgInputSchema } from "./tools/parse-dwg.js";
+import { DWG_MODIFY_DESCRIPTION, dwgModify, dwgModifyInputSchema } from "./tools/dwg-modify.js";
+import { DWG_GRAPH_DESCRIPTION, dwgGraph, dwgGraphInputSchema } from "./tools/dwg-graph.js";
 
 const SERVER_NAME = "file-tools";
 const SERVER_VERSION = "0.1.0";
@@ -36,9 +37,14 @@ const tools: Tool[] = [
     inputSchema: z.toJSONSchema(ocrScanInputSchema) as Tool["inputSchema"],
   },
   {
-    name: "parse_dwg",
-    description: PARSE_DWG_DESCRIPTION,
-    inputSchema: z.toJSONSchema(parseDwgInputSchema) as Tool["inputSchema"],
+    name: "dwg_modify",
+    description: DWG_MODIFY_DESCRIPTION,
+    inputSchema: z.toJSONSchema(dwgModifyInputSchema) as Tool["inputSchema"],
+  },
+  {
+    name: "dwg_graph",
+    description: DWG_GRAPH_DESCRIPTION,
+    inputSchema: z.toJSONSchema(dwgGraphInputSchema) as Tool["inputSchema"],
   },
 ];
 
@@ -59,7 +65,7 @@ export function createFileToolsMcpServer(): Server {
     {
       capabilities: { tools: {} },
       instructions:
-        "Local document/OCR/DWG extraction tools. Use parse_document for Office/PDF, ocr_scan for scans and images, parse_dwg for drawings. All engines run offline inside the installer.",
+        "Local document/OCR/DWG tools. Use parse_document for Office/PDF, ocr_scan for scans and images, dwg_modify to read drawings (layers, texts, dimensions, standard references) and to modify them with structured ops, dwg_graph for symbol/connection topology (which equipment a symbol connects to). All engines run offline inside the installer.",
     },
   );
 
@@ -82,12 +88,19 @@ export function createFileToolsMcpServer(): Server {
         }
         return textResult(await ocrScan(parsed.data));
       }
-      if (name === "parse_dwg") {
-        const parsed = parseDwgInputSchema.safeParse(request.params.arguments ?? {});
+      if (name === "dwg_modify") {
+        const parsed = dwgModifyInputSchema.safeParse(request.params.arguments ?? {});
         if (!parsed.success) {
-          invalidParams(`parse_dwg: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
+          invalidParams(`dwg_modify: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
         }
-        return textResult(await parseDwg(parsed.data));
+        return textResult(await dwgModify(parsed.data));
+      }
+      if (name === "dwg_graph") {
+        const parsed = dwgGraphInputSchema.safeParse(request.params.arguments ?? {});
+        if (!parsed.success) {
+          invalidParams(`dwg_graph: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
+        }
+        return textResult(await dwgGraph(parsed.data));
       }
       invalidParams(`Tool ${name} not found`);
     } catch (error) {

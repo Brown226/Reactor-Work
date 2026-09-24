@@ -1,7 +1,7 @@
 {
   "name": "file-tools",
   "version": "0.1.0",
-  "description": "Desktop local document parsing, OCR and DWG drawing extraction for the Agent: parse_document (Office/PDF to Markdown), ocr_scan (images/scanned PDFs), parse_dwg (layers, text entities, dimensions, standard references). All engines ship inside the installer and work offline.",
+  "description": "Desktop local document parsing, OCR and DWG drawing extraction for the Agent: parse_document (Office/PDF to Markdown), ocr_scan (images/scanned PDFs), dwg_modify (DWG read: layers/text/dimensions/standard references, plus structured edits), dwg_graph (DWG symbol/connection topology). All engines ship inside the installer and work offline.",
   "author": { "name": "Z.ai" },
   "license": "MIT",
   "mcpServers": {

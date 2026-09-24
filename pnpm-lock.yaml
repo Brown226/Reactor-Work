@@ -480,9 +480,6 @@ importers:
       '@firecrawl/anydoc':
         specifier: 0.2.4
         version: 0.2.4
-      '@mlightcad/libredwg-web':
-        specifier: 0.6.10
-        version: 0.6.10
       '@modelcontextprotocol/server':
         specifier: 2.0.0
         version: 2.0.0
@@ -2648,9 +2645,6 @@ packages:
 
   '@mermaid-js/parser@1.1.0':
     resolution: {integrity: sha512-gxK9ZX2+Fex5zu8LhRQoMeMPEHbc73UKZ0FQ54YrQtUxE1VVhMwzeNtKRPAu5aXks4FasbMe4xB4bWrmq6Jlxw==}
-
-  '@mlightcad/libredwg-web@0.6.10':
-    resolution: {integrity: sha512-yJ9bTyuKWTst2vEaYmWjW36bIM5xkfTPg3QhpbexdG+bqi7/UY/Jyp3X7tovcOv0HJ/gnDXV9RaeAs+IzUxJ5w==}
 
   '@modelcontextprotocol/client@2.0.0':
     resolution: {integrity: sha512-8f1OghQ2rjzIOfqgUCP+8GiUWqRs89njoWLNqAe8kWmDePv3s1fZXseej+QXemssEuuOvLLmLO/kqM3IQHtISw==}
@@ -11757,8 +11751,6 @@ snapshots:
   '@mermaid-js/parser@1.1.0':
     dependencies:
       langium: 4.2.2
-
-  '@mlightcad/libredwg-web@0.6.10': {}
 
   '@modelcontextprotocol/client@2.0.0':
     dependencies:

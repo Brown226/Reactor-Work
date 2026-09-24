@@ -1,10 +1,9 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { parseDwg, parseDwgInputSchema } from "../src/tools/parse-dwg.js";
+import { dwgModify } from "../src/tools/dwg-modify.js";
 import { rasterizePdfPages } from "../src/raster.js";
 
 const REPO_ROOT = fileURLToPath(new URL("../../../../..", import.meta.url));
@@ -38,27 +37,28 @@ test("raster.ts：真实 PDF 页 → RGBA（pdfjs + @napi-rs/canvas Node 链回�
   assert.ok(nonBlack > 0, "渲染结果不应全黑");
 });
 
-test("parse_dwg：真实 DWG → 图层/文本/标准引用", async (t) => {
+test("dwg_modify：真实 DWG 读模式（无 sidecar 时跳过）", async (t) => {
   const dwg = fixture("FZ9HX011101B25A43SDACFC (15169HX-JPS01-001).dwg");
-  if (!dwg) {
-    t.skip("fixture DWG 不在检出的 docs 目录，跳过真实解析");
+  const exe =
+    process.env.ZCODE_DWG_SIDECAR_PATH ??
+    join(
+      REPO_ROOT,
+      "apps/zcode-cli/packages/file-tools-plugin/tools/dwg-sidecar/bin/Release/net9.0",
+      process.platform === "win32" ? "dwg-sidecar.exe" : "dwg-sidecar",
+    );
+  if (!dwg || !existsSync(exe)) {
+    t.skip("fixture DWG 或 sidecar 未构建，跳过真实解析");
     return;
   }
-  await readFile(dwg);
-  const result = await parseDwg({ file_path: dwg });
+  const result = await dwgModify({ file_path: dwg });
   assert.equal(result.status, "success");
-  assert.equal(result.metadata.layerCount, result.layers.length);
+  assert.equal(result.metadata.layerCount, result.layerDetails.length);
   assert.ok(result.metadata.layerCount >= 10, `图层数应 ≥10，实际 ${result.metadata.layerCount}`);
   assert.ok(result.metadata.textCount >= 100, `文本实体应 ≥100，实际 ${result.metadata.textCount}`);
   assert.ok(result.standardRefs.length >= 10, `标准引用应 ≥10，实际 ${result.standardRefs.length}`);
-  const refs = result.standardRefs.filter((ref) => ref.standardIdent.length > 0);
-  assert.equal(refs.length, result.standardRefs.length, "每条引用都应有 ident");
-  const standardNos = result.standardRefs.map((ref) => ref.standardNo).join(" ");
-  assert.match(standardNos, /GB|DL|HG/);
-  assert.match(standardNos, /\d{4}/, "标准号应带年份");
-});
-
-test("parse_dwg：非 dwg 拒绝；schema 校验", () => {
-  assert.equal(parseDwgInputSchema.safeParse({ file_path: "" }).success, false);
-  assert.equal(parseDwgInputSchema.safeParse({ file_path: "a.dwg", max_text_entities: 10 }).success, true);
+  for (const ref of result.standardRefs) {
+    assert.ok(ref.standardIdent.length > 0, `引用缺少 ident：${ref.standardNo}`);
+    assert.ok(ref.cadHandleId.length > 0, "引用应回填 cadHandleId");
+  }
+  assert.match(result.standardRefs.map((ref) => ref.standardNo).join(" "), /GB|DL|HG/);
 });

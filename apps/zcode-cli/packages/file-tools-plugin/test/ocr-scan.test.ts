@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ocrScan, ocrScanInputSchema } from "../src/tools/ocr-scan.js";
-import { getStandardIdent } from "../src/tools/parse-dwg.js";
 import {
   anydocEntryDir,
   onnxruntimeEntryDir,

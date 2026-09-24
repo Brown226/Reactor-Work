@@ -15,8 +15,9 @@
  * 用法：node scripts/prepare-file-tools-assets.mjs [--platform win32-x64] [--from-workspace <path>]
  */
 import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join, relative as relativePath, resolve } from "node:path";
+import { join, resolve } from "node:path";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const platformKey = readArg("--platform") ?? `${process.platform}-${process.arch}`;
@@ -68,9 +69,14 @@ const FILE_TOOLS_LICENSES = [
     source: "https://huggingface.co/x3zvawq/paddleocr-js-onnx",
   },
   {
-    component: "libredwg-web (@mlightcad)",
-    license: "GPL-3.0",
-    source: "npm @mlightcad/libredwg-web（LibreDWG，附带源码获取声明）",
+    component: "ACadSharp",
+    license: "MIT",
+    source: "nuget ACadSharp（DWG 读写引擎；npm/nuget lockfile 固定版本）",
+  },
+  {
+    component: "Microsoft .NET runtime（sidecar 自包含运行时）",
+    license: "MIT",
+    source: "https://github.com/dotnet/runtime（随自包含发布附带）",
   },
 ];
 
@@ -89,45 +95,6 @@ function copyDirectory(source, target) {
 
 function sha256OfFile(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
-}
-
-/**
- * libredwg 包内 TS 编译残留的「无后缀相对导入」→ 显式路径。只改 import 语句里的
- * 说明符，不改任何执行代码；改前逐条写入 staging 日志保证可审计。
- */
-function rewriteLibreDwgImports(treeRoot) {
-  const rewrites = [];
-  const walk = (dir) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-        continue;
-      }
-      if (!entry.name.endsWith(".js")) continue;
-      const before = readFileSync(full, "utf8");
-      const after = before.replace(
-        /(from\s+["'])(\.\.?\/[^"']+?)(["'])/g,
-        (match, head, specifier, tail) => {
-          if (specifier.endsWith(".js") || specifier.includes(".wasm")) return match;
-          const candidates = [
-            join(dirname(full), `${specifier}.js`),
-            join(dirname(full), specifier, "index.js"),
-          ];
-          const resolved = candidates.find((candidate) => existsSync(candidate));
-          if (!resolved) {
-            throw new Error(`libredwg 导入改写无法解析：${specifier}（${full}）`);
-          }
-          const relative = relativePath(dirname(full), resolved).replace(/\\/g, "/");
-          rewrites.push(`${full.slice(treeRoot.length + 1)}: ${specifier} -> ${relative}`);
-          return `${head}${relative.startsWith(".") ? relative : `./${relative}`}${tail}`;
-        },
-      );
-      if (after !== before) writeFileSync(full, after);
-    }
-  };
-  walk(treeRoot);
-  return rewrites;
 }
 
 function resolveWorkspacePackage(name) {
@@ -242,6 +209,46 @@ function writeStagingMeta(outRoot, meta) {
   writeFileSync(join(outRoot, "THIRD-PARTY-NOTICES.txt"), notices);
 }
 
+
+/** platformKey（运行时）→ .NET RID（sidecar 自包含发布）。 */
+const DOTNET_RID = {
+  "win32-x64": "win-x64",
+  "win32-arm64": "win-arm64",
+  "darwin-x64": "osx-x64",
+  "darwin-arm64": "osx-arm64",
+  "linux-x64": "linux-x64",
+  "linux-arm64": "linux-arm64",
+};
+
+/**
+ * 发布 DWG sidecar 进资产树：dwg-sidecar/<rid>/dwg-sidecar[.exe]。
+ * 复用插件包 scripts/publish-sidecar.mjs（dotnet publish 封装，--required 强制 SDK）。
+ * 跨平台目标（如在 Windows 上给 osx-arm64 出包）不可行，脚本明确报错。
+ */
+function stageSidecar(targetRoot, runtimePlatformKey) {
+  const rid = DOTNET_RID[runtimePlatformKey];
+  if (!rid) throw new Error(`不支持的平台：${runtimePlatformKey}`);
+  const outDir = join(targetRoot, "dwg-sidecar", rid);
+  mkdirSync(outDir, { recursive: true });
+  const pluginRoot = join(repoRoot, "apps", "zcode-cli", "packages", "file-tools-plugin");
+  const publishScript = join(pluginRoot, "scripts", "publish-sidecar.mjs");
+  if (!existsSync(publishScript)) {
+    throw new Error(`sidecar 发布脚本缺失：${publishScript}`);
+  }
+  const result = spawnSync(
+    process.execPath,
+    [publishScript, "--rid", rid, "--out", outDir, "--required"],
+    { stdio: "inherit", cwd: pluginRoot },
+  );
+  if (result.status !== 0) {
+    throw new Error(`DWG sidecar 发布失败（${rid}）：exit=${result.status}`);
+  }
+  const exeName = runtimePlatformKey.startsWith("win32") ? "dwg-sidecar.exe" : "dwg-sidecar";
+  if (!existsSync(join(outDir, exeName))) {
+    throw new Error(`sidecar 产物缺失：${join(outDir, exeName)}`);
+  }
+}
+
 function stageAssets(targetRoot) {
   rmSync(targetRoot, { recursive: true, force: true });
   mkdirSync(targetRoot, { recursive: true });
@@ -275,19 +282,11 @@ function stageAssets(targetRoot) {
     stageNpmPackage(packageName, join(canvasRoot, "node_modules"));
   }
 
-  // 4) libredwg-web（lib/ + wasm/ 保留相对结构；导入改写）
-  const libredwgSource = resolveWorkspacePackage("@mlightcad/libredwg-web");
-  if (!libredwgSource) throw new Error("workspace node_modules 里找不到 @mlightcad/libredwg-web");
-  const libredwgRoot = join(targetRoot, "libredwg");
-  mkdirSync(libredwgRoot, { recursive: true });
-  copyDirectory(join(libredwgSource, "lib"), join(libredwgRoot, "lib"));
-  copyDirectory(join(libredwgSource, "wasm"), join(libredwgRoot, "wasm"));
-  const rewrites = rewriteLibreDwgImports(join(libredwgRoot, "lib"));
-  const wasmFile = join(libredwgRoot, "wasm", "libredwg-web.wasm");
-  sha256["libredwg-web (@mlightcad)"] = sha256OfFile(wasmFile);
+  // 4) DWG sidecar（ACadSharp，自包含 .NET 发布；需要 dotnet SDK，失败直接中断）。
+  stageSidecar(targetRoot, platformKey);
 
-  writeStagingMeta(targetRoot, { sha256, modelFiles: "prepared", libredwgImportRewrites: rewrites.length });
-  return { rewrites: rewrites.length };
+  writeStagingMeta(targetRoot, { sha256, modelFiles: "deferred", sidecar: "published" });
+  return {};
 }
 
 function stageDevCopy(fromRoot) {
@@ -301,8 +300,8 @@ async function main() {
   const legacyModelCache = join(devAssetsRoot, "ocr-models");
   const modelCacheDir = existsSync(legacyModelCache) ? legacyModelCache : null;
 
-  // 2) npm 原生依赖 staging（anydoc / onnxruntime / canvas / libredwg）。
-  const result = stageAssets(bundledRoot);
+  // 2) 原生依赖 + sidecar staging（anydoc / onnxruntime / canvas / dwg-sidecar）。
+  stageAssets(bundledRoot);
 
   // 3) OCR 模型（网络，sha256 固定；有缓存则不重复下载）。
   const modelResults = await downloadOcrModels(join(bundledRoot, "ocr-models"), modelCacheDir);
@@ -313,7 +312,7 @@ async function main() {
   const total = sumDirectorySize(bundledRoot);
   process.stdout.write(
     `[file-tools] staged → ${bundledRoot}\n[file-tools] dev copy → ${devAssetsRoot}\n` +
-      `[file-tools] libredwg import rewrites: ${result.rewrites}; models: ${modelResults.length}; total ${(total / 1024 / 1024).toFixed(1)} MiB\n`,
+      `[file-tools] models: ${modelResults.length}; total ${(total / 1024 / 1024).toFixed(1)} MiB\n`,
   );
 }
 

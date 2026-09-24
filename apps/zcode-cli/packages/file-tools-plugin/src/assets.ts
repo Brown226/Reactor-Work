@@ -20,8 +20,6 @@ interface FileToolsAssets {
   onnxruntimeDir: string | null;
   /** PP-OCR ONNX 模型 + 字典。 */
   ocrModelsDir: string | null;
-  /** libredwg-web 的 lib/ + wasm/（GPL-3.0）。 */
-  libredwgDir: string | null;
   /** @napi-rs/canvas 及其平台 skia 绑定（Node 目录布局）。 */
   canvasDir: string | null;
 }
@@ -79,7 +77,6 @@ export function resolveFileToolsAssets(
       anydocDir: null,
       onnxruntimeDir: null,
       ocrModelsDir: null,
-      libredwgDir: null,
       canvasDir: null,
     };
   }
@@ -88,7 +85,6 @@ export function resolveFileToolsAssets(
     anydocDir: dirIfExists(join(root, "anydoc")),
     onnxruntimeDir: dirIfExists(join(root, "onnxruntime")),
     ocrModelsDir: dirIfExists(join(root, "ocr-models")),
-    libredwgDir: dirIfExists(join(root, "libredwg")),
     canvasDir: dirIfExists(join(root, "canvas")),
   };
 }

@@ -167,7 +167,7 @@ function validateReadPathSemantics(
         path: ["file_path"],
         message:
           extension === ".dwg"
-            ? "DWG drawings cannot be read as text. Use the parse_dwg tool (bundled file-tools MCP server) to extract layers, text entities, dimensions and standard references."
+            ? "DWG drawings cannot be read as text. Use the dwg_modify tool (bundled file-tools MCP server, read mode) to extract layers, text entities, dimensions and standard references."
             : `Read cannot parse ${extension} documents as text. Use the parse_document tool (bundled file-tools MCP server) to extract Markdown; for scans without a text layer use ocr_scan.`,
       });
     }
