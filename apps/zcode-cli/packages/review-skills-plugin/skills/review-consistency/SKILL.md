@@ -46,7 +46,7 @@ ReportReviewIssues({
   sourcePath: "<被审文件路径>",
   issues: [{
     severity: "error" | "warning" | "info",
-    ruleCode: "TYPO-001",          // 本条依据的规则标识，不适用时写审查类型名
+    ruleCode: "标点-001",          // 规则标识：<中文类别>-<三位序号>。类别取 数值/名称/编号/单位与量纲/时序/范围；不要用英文缩写——面板把这个标识直接显示给用户看
     originalText: "……",            // 原文片段，一字不改地抄回
     description: "为什么是问题",     // 引规则/标准/条款
     suggestion: "改成什么",          // 无法给出时写“需人工确认”

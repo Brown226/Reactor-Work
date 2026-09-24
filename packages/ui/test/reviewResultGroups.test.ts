@@ -8,7 +8,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { collectReviewResults } from "../src/review/reviewResultGroups.js";
+import {
+  collectReviewResults,
+  reviewIssueCodeFamily,
+  reviewIssueCodeSuffix,
+  reviewIssueFamilyLabelKey,
+} from "../src/review/reviewResultGroups.js";
 import type { AssistantWorkRow } from "../src/v4/conversationTurnFlowItems.js";
 
 /**
@@ -162,4 +167,26 @@ test("notice 去重后逐条上抛，stale 只要有一条出现就为真", () =
   ]);
   assert.equal(gathering.stale, true);
   assert.deepEqual(gathering.notices, ["知识库未同步"]);
+});
+
+test("英文族名有中文标签，中文族名与未知族名原样显示（不猜译名）", () => {
+  assert.equal(reviewIssueFamilyLabelKey("PUNCT"), "review.family.punct");
+  assert.equal(reviewIssueFamilyLabelKey("grammar"), "review.family.grammar");
+  assert.equal(reviewIssueFamilyLabelKey("CONTRACT"), "review.family.contract");
+  // 新版 skill 直接产出中文类别：原样显示，不需要也不该有译名
+  assert.equal(reviewIssueFamilyLabelKey("标点"), null);
+  // 没见过的族名不编中文名：编了用户会拿它去对上不存在的规则
+  assert.equal(reviewIssueFamilyLabelKey("ZZZ-UNKNOWN"), null);
+  assert.equal(reviewIssueFamilyLabelKey("WHATEVER"), null);
+});
+
+test("行上规则码只换族名、保留序号：PUNCT-001 → 标点-001", () => {
+  assert.equal(reviewIssueCodeFamily("PUNCT-001"), "PUNCT");
+  assert.equal(reviewIssueCodeSuffix("PUNCT-001"), "-001");
+  assert.equal(reviewIssueCodeFamily("CONTRACT-PAYMENT"), "CONTRACT");
+  assert.equal(reviewIssueCodeSuffix("CONTRACT-PAYMENT"), "-PAYMENT");
+  // 无序号的中文/单段码：族名即全码，后缀为空
+  assert.equal(reviewIssueCodeFamily("标点"), "标点");
+  assert.equal(reviewIssueCodeSuffix("标点"), "");
+  assert.equal(reviewIssueCodeFamily("no_version"), "no_version");
 });

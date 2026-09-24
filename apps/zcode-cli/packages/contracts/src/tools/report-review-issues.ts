@@ -44,7 +44,10 @@ export const ReportReviewIssuesInputSchema = z
             ruleCode: z
               .string()
               .min(1)
-              .describe("本条依据的规则标识，如 TYPO-001 / CONSISTENCY / CONTRACT-PAYMENT；不适用时写审查类型名"),
+              .describe(
+                "本条依据的规则标识，写成 `<中文类别>-<三位序号>`（如 `标点-001`、`编号-002`）；" +
+                  "不适用时写审查类型名。**用中文类别，不要用英文缩写**——面板把这个标识直接显示给用户看",
+              ),
             originalText: z
               .string()
               .min(1)

@@ -18,6 +18,9 @@ import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import type { CodeViewerSource } from "@/lib/codeViewer.js";
 import {
   REVIEW_ISSUE_LABEL_KEYS,
+  reviewIssueCodeFamily,
+  reviewIssueCodeSuffix,
+  reviewIssueFamilyLabelKey,
   shouldShowSectionTitles,
   type ReviewResultCodeGroup,
   type ReviewResultGathering,
@@ -45,6 +48,15 @@ export interface ReviewResultPanelProps {
 
 function basename(path: string): string {
   return path.replaceAll("\\", "/").split("/").pop() ?? path;
+}
+
+/**
+ * 行上的规则码：族名有中文标签就把族名换掉，序号原样保留（`PUNCT-001` → `标点-001`）。
+ * 序号不翻译——它是这条问题在族内的身份，改了就没有可引用的编号了。
+ */
+function issueCodeLabel(intl: ReturnType<typeof useZCodeIntl>["intl"], code: string): string {
+  const key = reviewIssueFamilyLabelKey(reviewIssueCodeFamily(code));
+  return key ? `${intl.formatMessage({ id: key })}${reviewIssueCodeSuffix(code)}` : code;
 }
 
 export function ReviewResultPanel({
@@ -274,9 +286,8 @@ function CodeGroup({
 }) {
   const { intl } = useZCodeIntl();
   const [open, setOpen] = useState(defaultOpen);
-  const labelKey = REVIEW_ISSUE_LABEL_KEYS[group.family];
-  // 标准自检的判定码有固定译名；自述型审查的族名（`PUNCT` / `GRAMMAR` / `CONTRACT`）由模型
-  // 给出，没有译名就原样显示 —— 硬套八类标签会给出错误分类，编一句中文只是噪音。
+  // 标准自检的判定码有固定译名；族名（`PUNCT` / `标点`）另有一张标签表。都没有就原样显示族名。
+  const labelKey = REVIEW_ISSUE_LABEL_KEYS[group.family] ?? reviewIssueFamilyLabelKey(group.family);
   const label = labelKey ? intl.formatMessage({ id: labelKey }) : group.family;
   const totals = group.totals;
   const showCodePerItem = group.items.some((item) => item.code !== group.family);
@@ -379,7 +390,7 @@ function IssueRow({
           ) : null}
           {showCode ? (
             <span className="shrink-0 rounded bg-muted px-1 text-[11px] text-foreground-subtle">
-              {item.code}
+              {issueCodeLabel(intl, item.code)}
             </span>
           ) : null}
         </span>

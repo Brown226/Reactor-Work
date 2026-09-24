@@ -33,6 +33,50 @@ export const REVIEW_ISSUE_LABEL_KEYS: Record<string, string> = {
   ok: "review.issue.ok",
 };
 
+/**
+ * 规则码**族名** → i18n 标签 key。
+ *
+ * 为什么需要它：自述型审查的 `ruleCode` 由模型自己写（契约只要求「规则标识」），历史数据里是
+ * `PUNCT-001` / `GRAMMAR-002` 这类英文族名 —— 面板上直接显示就是一排英文缩写。这里给出中文标签；
+ * 中文族名（新版 skill 要求 `标点-001` 这种写法）与没见过的族名返回 null，调用方原样显示。
+ * 未知族名**不猜**：编一个中文名比显示原文更糟，用户会拿它去对上不存在的规则。
+ */
+export const REVIEW_ISSUE_FAMILY_KEYS: Record<string, string> = {
+  PUNCT: "review.family.punct",
+  PUNCTUATION: "review.family.punct",
+  TYPO: "review.family.typo",
+  SPELL: "review.family.typo",
+  GRAMMAR: "review.family.grammar",
+  TERM: "review.family.terminology",
+  WORDING: "review.family.wording",
+  STYLE: "review.family.style",
+  FORMAT: "review.family.format",
+  LAYOUT: "review.family.layout",
+  SPACING: "review.family.spacing",
+  QUANT: "review.family.quantity",
+  NUM: "review.family.numbering",
+  UNIT: "review.family.unit",
+  NUMBERING: "review.family.numbering",
+  TABLE: "review.family.table",
+  FIGURE: "review.family.figure",
+  REF: "review.family.reference",
+  DATE: "review.family.date",
+  CONSISTENCY: "review.family.consistency",
+  COMPLETENESS: "review.family.completeness",
+  CONTRACT: "review.family.contract",
+};
+
+/** 族名的 i18n key（未知族名与中文族名返回 null，调用方原样显示族名）。 */
+export function reviewIssueFamilyLabelKey(family: string): string | null {
+  return REVIEW_ISSUE_FAMILY_KEYS[family.toUpperCase()] ?? null;
+}
+
+/** 规则码里族名之后的部分（`PUNCT-001` → `-001`），用来把中文标签拼回完整码。 */
+export function reviewIssueCodeSuffix(code: string): string {
+  const family = reviewIssueCodeFamily(code);
+  return code.slice(family.length);
+}
+
 export interface ReviewResultItem {
   /** 同一轮内稳定 key（面板列表用） */
   key: string;
