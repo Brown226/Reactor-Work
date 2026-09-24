@@ -459,6 +459,7 @@ export function PreviewPaneContent({
                 quote: source.review.quote,
                 occurrence: source.review.occurrence ?? null,
                 focusRequestId: source.review.requestId,
+                ...(source.review.note ? { note: source.review.note } : {}),
               },
             }
           : {})}

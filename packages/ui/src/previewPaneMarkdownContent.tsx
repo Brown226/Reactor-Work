@@ -5,6 +5,7 @@ import { MessageResponse } from "@/components/ai-elements/message.js";
 import type { CodePreviewSettings } from "@/lib/codePreviewSettings.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { scheduleReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
+import { ReviewQuoteCallout } from "@/review/ReviewQuoteCallout.js";
 import type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 import type { Theme } from "@/useTheme.js";
 
@@ -39,7 +40,9 @@ export function MarkdownPreviewContent({
 }: MarkdownPreviewContentProps) {
   const { intl } = useZCodeIntl();
   const rootRef = useRef<HTMLDivElement>(null);
+  const calloutHostRef = useRef<HTMLDivElement>(null);
   const [quoteMissing, setQuoteMissing] = useState(false);
+  const [quoteRange, setQuoteRange] = useState<Range | null>(null);
   const selectionScope = useMemo(
     () => ({}),
     [content, sourceKey, sourcePath, selectionTarget?.workspaceKey, selectionTarget?.sessionId],
@@ -57,11 +60,15 @@ export function MarkdownPreviewContent({
       getRoot: () => rootRef.current,
       quote,
       occurrence,
-      onSettled: (found) => setQuoteMissing(!found),
+      onSettled: (range) => {
+        setQuoteRange(range);
+        setQuoteMissing(range === null);
+      },
     });
   }, [content, occurrence, quote, focusRequestId]);
 
   return (
+    <div ref={calloutHostRef} className="relative h-full w-full">
     <div
       ref={rootRef}
       data-markdown-preview="true"
@@ -94,6 +101,13 @@ export function MarkdownPreviewContent({
           {content}
         </MessageResponse>
       </div>
+    </div>
+      <ReviewQuoteCallout
+        range={quoteRange}
+        note={quoteHighlight?.note}
+        hostRef={calloutHostRef}
+        onDismiss={() => setQuoteRange(null)}
+      />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import type { BundledLanguage } from "shiki";
 import { getMediaPreviewFormat, type MediaPreviewKind } from "@zcode/shared";
 import type { TaskChatToolCall as ChatToolCall } from "@/lib/taskChatMessageTypes.js";
 import type { CodeViewerWorkspaceScope } from "@/lib/codeViewerWorkspaceScope.js";
-import type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
+import type { QuoteHighlightNote, QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 import {
   decodeFilePathUriEscapes,
   getPathLeaf,
@@ -66,6 +66,8 @@ export interface CodeReviewAnchor {
   occurrence?: number;
   /** 严重度：与结构化问题条的 severity 同口径，供卡片着色 */
   severity?: "error" | "warning" | "info";
+  /** 定位卡内容：原件/正文预览上贴着命中处显示的「这是什么问题 + 改成什么」 */
+  note?: QuoteHighlightNote;
   /**
    * 被打开正文的形态。审查定位打开的是**提取出来的正文**（docx/xlsx/pdf 经解析工具转成
    * markdown），要按正文渲染并按片段高亮；代码评论锚点打开的是源码，必须走代码预览器。

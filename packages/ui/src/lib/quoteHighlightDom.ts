@@ -271,11 +271,11 @@ export function applyReviewQuoteHighlight(
   root: HTMLElement,
   quote: string,
   occurrence?: number | null,
-): boolean {
+): Range | null {
   ensureReviewQuoteStyle();
   const support = getCssHighlightSupport();
   const range = findQuoteRangeInElement(root, quote, occurrence);
-  if (!support) return false;
+  if (!support) return null;
   const blockRange = range ? findBlockRange(root, range) : null;
   const highlight = new support.Highlight(...(range ? [range] : [])) as CssHighlightLike;
   highlight.priority = 3;
@@ -288,7 +288,7 @@ export function applyReviewQuoteHighlight(
     scrollRangeIntoViewSettled(range);
     flashReviewQuoteHighlight(range, support);
   }
-  return range !== null;
+  return range;
 }
 
 /**
@@ -335,8 +335,8 @@ export function scheduleReviewQuoteHighlight(options: {
   getRoot: () => HTMLElement | null;
   quote: string;
   occurrence?: number | null;
-  /** 定位结束（命中或彻底没找到）时回调 */
-  onSettled: (found: boolean) => void;
+  /** 定位结束（命中或彻底没找到）时回调；命中时给出 Range，供定位卡贴位置 */
+  onSettled: (range: Range | null) => void;
 }): () => void {
   let cancelled = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -344,14 +344,17 @@ export function scheduleReviewQuoteHighlight(options: {
   const run = () => {
     if (cancelled) return;
     const root = options.getRoot();
-    if (root && applyReviewQuoteHighlight(root, options.quote, options.occurrence ?? null)) {
-      options.onSettled(true);
+    const range = root
+      ? applyReviewQuoteHighlight(root, options.quote, options.occurrence ?? null)
+      : null;
+    if (range) {
+      options.onSettled(range);
       return;
     }
     attempt += 1;
     const delay = QUOTE_RETRY_DELAYS_MS[attempt];
     if (delay === undefined) {
-      options.onSettled(false);
+      options.onSettled(null);
       return;
     }
     timer = setTimeout(run, delay);

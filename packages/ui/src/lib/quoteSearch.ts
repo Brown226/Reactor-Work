@@ -28,6 +28,26 @@ export interface QuoteHighlightTarget {
   occurrence?: number | null;
   /** 每次点击都换一个值：同一个文件重复点同一条也要重新定位/滚动 */
   focusRequestId?: string;
+  /** 定位卡内容（类别 / 说明 / 建议）。原件预览里没有评论面板，修改意见得跟着定位一起给。 */
+  note?: QuoteHighlightNote;
+}
+
+/**
+ * 定位卡上要显示的一条问题。
+ *
+ * 以前只有「提取正文（源码视图）」有评论框能显示建议；换成原件预览后那里没有评论位，
+ * 修改意见就丢了 —— 用户点一条问题要看的恰恰是「改成什么」，所以它必须跟着定位走。
+ */
+export interface QuoteHighlightNote {
+  /** 类别标签（`标点` / `已废止引用`），已在面板侧解析成中文 */
+  title: string;
+  /** 规则码原文（`标点-001`），给用户引用/回查用 */
+  code?: string;
+  message: string;
+  suggestion?: string | null;
+  severity?: "error" | "warning" | "info";
+  /** 第几行（文本行号，给人看的） */
+  line?: number;
 }
 
 const FULL_WIDTH_START = 0xff01;

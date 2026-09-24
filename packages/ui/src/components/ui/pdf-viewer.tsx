@@ -14,6 +14,7 @@ import * as pdfZoom from "@/components/ui/usePdfZoomOverlay.js";
 import { isAppleKeyboardPlatform } from "@/lib/keyboardShortcuts.js";
 import { createPdfJsDocumentOptions } from "@/lib/pdfJsAssets.js";
 import { scheduleReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
+import { ReviewQuoteCallout } from "@/review/ReviewQuoteCallout.js";
 import { createQuotePageScan, type QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
@@ -151,7 +152,9 @@ export function PdfViewer({
   const [displayScale, setDisplayScale] = useState(pdfZoom.DEFAULT_SCALE);
   const [quotePage, setQuotePage] = useState<number | null>(null);
   const [quoteMissing, setQuoteMissing] = useState(false);
+  const [quoteRange, setQuoteRange] = useState<Range | null>(null);
   const pdfDocumentRef = useRef<PDFDocumentProxy | null>(null);
+  const calloutHostRef = useRef<HTMLDivElement | null>(null);
   const [pageIntrinsicSize, setPageIntrinsicSize] = useState<pdfZoom.PdfPageSize | null>(null);
   const [rangeError, setRangeError] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -290,7 +293,10 @@ export function PdfViewer({
       getRoot: () => pageViewportRef.current,
       quote,
       occurrence: quoteHighlight?.occurrence ?? null,
-      onSettled: (found) => setQuoteMissing(!found),
+      onSettled: (range) => {
+        setQuoteRange(range);
+        setQuoteMissing(range === null);
+      },
     });
     // pageIntrinsicSize 进依赖：文本层的位置要等页面渲染完成、拿到真实尺寸才定下来。
   }, [
@@ -447,9 +453,10 @@ export function PdfViewer({
 
   return (
     <div
+      ref={calloutHostRef}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className={cn("flex h-full min-h-0 flex-col outline-none", className)}
+      className={cn("relative flex h-full min-h-0 flex-col outline-none", className)}
       {...props}
     >
       <div ref={scrollContainerRef} className="min-h-0 flex-1 overflow-auto">
@@ -574,6 +581,13 @@ export function PdfViewer({
           <ZoomInIcon />
         </Button>
       </div>
+      {/* 定位卡挂在**不滚动**的外层：不跟着 PDF 滚动，也不吃页面缩放 */}
+      <ReviewQuoteCallout
+        range={quoteRange}
+        note={quoteHighlight?.note}
+        hostRef={calloutHostRef}
+        onDismiss={() => setQuoteRange(null)}
+      />
     </div>
   );
 }

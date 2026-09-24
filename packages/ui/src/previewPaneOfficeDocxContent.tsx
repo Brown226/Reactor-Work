@@ -7,6 +7,7 @@ import {
 } from "@/lib/officeFilePreview.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { scheduleReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
+import { ReviewQuoteCallout } from "@/review/ReviewQuoteCallout.js";
 import type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 import { logger } from "@/logger.js";
 
@@ -71,6 +72,8 @@ export function PreviewPaneOfficeDocxContent({
   const [fit, setFit] = useState<DocxPreviewFit | null>(null);
   const [renderState, setRenderState] = useState<"loading" | "ready" | "error">("loading");
   const [quoteMissing, setQuoteMissing] = useState(false);
+  const [quoteRange, setQuoteRange] = useState<Range | null>(null);
+  const calloutHostRef = useRef<HTMLDivElement | null>(null);
   const { intl } = useZCodeIntl();
 
   const updateFit = useCallback(() => {
@@ -186,13 +189,17 @@ export function PreviewPaneOfficeDocxContent({
     const quote = quoteHighlight?.quote;
     if (renderState !== "ready" || !quote) {
       setQuoteMissing(false);
+      setQuoteRange(null);
       return undefined;
     }
     return scheduleReviewQuoteHighlight({
       getRoot: () => renderContainerRef.current,
       quote,
       occurrence: quoteHighlight?.occurrence ?? null,
-      onSettled: (found) => setQuoteMissing(!found),
+      onSettled: (range) => {
+        setQuoteRange(range);
+        setQuoteMissing(range === null);
+      },
     });
     // fit.scale 必须进依赖：docx 先按原始纸张尺寸渲染、再按可用宽度缩放，缩放提交前量到的是
     // 旧几何，滚完内容一收缩命中就跑到视口外（用户得自己往上翻）。缩放定稿后重跑一次即可对齐。
@@ -228,8 +235,9 @@ export function PreviewPaneOfficeDocxContent({
 
   return (
     <div
+      ref={calloutHostRef}
       aria-busy={renderState === "loading" ? "true" : undefined}
-      className="h-full min-h-0 w-full min-w-0 bg-background"
+      className="relative h-full min-h-0 w-full min-w-0 bg-background"
       data-office-preview-kind="docx"
       data-office-preview-pending={renderState === "loading" ? "" : undefined}
     >
@@ -279,6 +287,13 @@ export function PreviewPaneOfficeDocxContent({
           </div>
         </div>
       </div>
+      {/* 定位卡挂在**不滚动**的外层：卡片不跟着内容滚，也不吃 docx 的 scale 缩放 */}
+      <ReviewQuoteCallout
+        range={quoteRange}
+        note={quoteHighlight?.note}
+        hostRef={calloutHostRef}
+        onDismiss={() => setQuoteRange(null)}
+      />
     </div>
   );
 }
