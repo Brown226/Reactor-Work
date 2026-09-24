@@ -4,17 +4,11 @@ import type { MarkdownSelectionTarget } from "@/lib/conversationSelectionReferen
 import { MessageResponse } from "@/components/ai-elements/message.js";
 import type { CodePreviewSettings } from "@/lib/codePreviewSettings.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
-import { applyReviewQuoteHighlight, clearReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
+import { scheduleReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
+import type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 import type { Theme } from "@/useTheme.js";
 
-/** 审查定位：把命中的原文片段在渲染后的正文里标出来并滚过去。 */
-export interface MarkdownQuoteHighlightTarget {
-  quote: string;
-  /** 片段是第几次出现（1 起），与工具算出的偏移同源 */
-  occurrence?: number | null;
-  /** 每次点击都换一个值：同一个文件重复点同一条也要重新定位/滚动 */
-  focusRequestId?: string;
-}
+export type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 
 interface MarkdownPreviewContentProps {
   content: string;
@@ -28,11 +22,8 @@ interface MarkdownPreviewContentProps {
   /** 代码预览设置（store 耦合剥离）：透传给 markdown 渲染，需保持引用稳定。 */
   codePreviewSettings?: CodePreviewSettings;
   onOpenBrowserUrl?: (url: string) => void;
-  quoteHighlight?: MarkdownQuoteHighlightTarget;
+  quoteHighlight?: QuoteHighlightTarget;
 }
-
-/** 渲染是异步的（Streamdown 内部还会做代码高亮），一次找不到就在这几个时间点重试。 */
-const QUOTE_RETRY_DELAYS_MS = [0, 120, 320, 700];
 
 export function MarkdownPreviewContent({
   content,
@@ -58,36 +49,16 @@ export function MarkdownPreviewContent({
   const focusRequestId = quoteHighlight?.focusRequestId ?? null;
 
   useEffect(() => {
-    const root = rootRef.current;
-    if (!root || !quote) {
+    if (!quote) {
       setQuoteMissing(false);
-      clearReviewQuoteHighlight();
       return undefined;
     }
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    let attempt = 0;
-    const run = () => {
-      if (cancelled) return;
-      const found = applyReviewQuoteHighlight(root, quote, occurrence);
-      if (found) {
-        setQuoteMissing(false);
-        return;
-      }
-      attempt += 1;
-      const delay = QUOTE_RETRY_DELAYS_MS[attempt];
-      if (delay === undefined) {
-        setQuoteMissing(true);
-        return;
-      }
-      timer = setTimeout(run, delay);
-    };
-    run();
-    return () => {
-      cancelled = true;
-      if (timer !== undefined) clearTimeout(timer);
-      clearReviewQuoteHighlight();
-    };
+    return scheduleReviewQuoteHighlight({
+      getRoot: () => rootRef.current,
+      quote,
+      occurrence,
+      onSettled: (found) => setQuoteMissing(!found),
+    });
   }, [content, occurrence, quote, focusRequestId]);
 
   return (

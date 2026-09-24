@@ -51,6 +51,18 @@ function basename(path: string): string {
 }
 
 /**
+ * 原件预览能不能按片段标出高亮。
+ *
+ * 只有 docx 这一条路：`docx-preview` 把正文渲染成真实 DOM，能按原文片段找到 Range；
+ * xlsx 是 canvas 渲染（没有文本层），PDF 一次只挂一页、要跨页搜才能定位，都不在这里假装支持 ——
+ * 它们退回「原件看版面 + 提取正文看高亮」两标签。加新类型时**必须**同时能在这里与
+ * `quoteHighlight` 消费方说清楚，否则用户点了没反应。
+ */
+function isQuoteHighlightableFile(path: string): boolean {
+  return path.toLowerCase().endsWith(".docx");
+}
+
+/**
  * 行上的规则码：族名有中文标签就把族名换掉，序号原样保留（`PUNCT-001` → `标点-001`）。
  * 序号不翻译——它是这条问题在族内的身份，改了就没有可引用的编号了。
  */
@@ -78,12 +90,31 @@ export function ReviewResultPanel({
         ...(workspaceIdentity ? { workspaceIdentity } : {}),
         ...(workspaceRemoteSessionId ? { workspaceRemoteSessionId } : {}),
       };
-      // 两个标签一起给：原件看版面，提取正文看命中位置（高亮那一页留在最上层）。
-      if (item.sourcePath && item.sourcePath !== item.textPath) {
+      const highlight = {
+        quote: item.quoted,
+        occurrence: item.matchedOccurrence,
+        focusRequestId: `${item.textPath}:${item.startOffset}:${item.code}:${Date.now()}`,
+      };
+      const hasOriginal = Boolean(item.sourcePath && item.sourcePath !== item.textPath);
+      // 能在原件里标出这句话（docx 预览有 DOM 文本层）就**只开原件** —— 用户要核对的版面与上下文
+      // 都由原件说了算，再开一个提取正文标签只是多一个要关的东西。
+      if (hasOriginal && isQuoteHighlightableFile(item.sourcePath!)) {
         onOpenCodeViewer({
           type: "file",
-          title: basename(item.sourcePath),
-          path: item.sourcePath,
+          title: basename(item.sourcePath!),
+          path: item.sourcePath!,
+          ...scope,
+          quoteHighlight: highlight,
+        });
+        return;
+      }
+      // 原件标不出来（xlsx 是 canvas、扫描件 PDF 没有文本层）或无原件：给原件 + 提取正文两个标签，
+      // 高亮落在正文上且留在最上层。
+      if (hasOriginal) {
+        onOpenCodeViewer({
+          type: "file",
+          title: basename(item.sourcePath!),
+          path: item.sourcePath!,
           ...scope,
         });
       }
@@ -93,7 +124,7 @@ export function ReviewResultPanel({
         path: item.textPath,
         ...scope,
         review: {
-          requestId: `${item.textPath}:${item.startOffset}:${item.code}:${Date.now()}`,
+          requestId: highlight.focusRequestId,
           title: intl.formatMessage(
             { id: REVIEW_ISSUE_LABEL_KEYS[item.code] ?? "review.issue.unknown" },
             { code: item.code },

@@ -5,6 +5,9 @@ import {
   installDocumentLinkSafety,
   type DocxPreviewFit,
 } from "@/lib/officeFilePreview.js";
+import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { scheduleReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
+import type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 import { logger } from "@/logger.js";
 
 const DOCX_RENDER_OPTIONS = {
@@ -51,11 +54,14 @@ export function PreviewPaneOfficeDocxContent({
   buffer,
   errorMessage,
   onOpenBrowserUrl,
+  quoteHighlight,
   sourcePath,
 }: {
   buffer: ArrayBuffer;
   errorMessage: string;
   onOpenBrowserUrl?: (url: string) => void;
+  /** 审查定位：渲染完成后在原件 DOM 里标出这句原文（docx 无字符偏移，只能按片段找） */
+  quoteHighlight?: QuoteHighlightTarget;
   sourcePath: string;
 }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -64,6 +70,8 @@ export function PreviewPaneOfficeDocxContent({
   const [previewClassName] = useState(createDocxPreviewClassName);
   const [fit, setFit] = useState<DocxPreviewFit | null>(null);
   const [renderState, setRenderState] = useState<"loading" | "ready" | "error">("loading");
+  const [quoteMissing, setQuoteMissing] = useState(false);
+  const { intl } = useZCodeIntl();
 
   const updateFit = useCallback(() => {
     const viewport = viewportRef.current;
@@ -172,6 +180,22 @@ export function PreviewPaneOfficeDocxContent({
     };
   }, [buffer, onOpenBrowserUrl, previewClassName, sourcePath]);
 
+  // 原件里的审查定位：docx 渲染完才有 DOM 文本，按「片段 + 第几处」重新找一次并滚过去。
+  // 找不到就**不画**（标错地方比不标更误导复核者），只给一行提示让用户自己搜。
+  useEffect(() => {
+    const quote = quoteHighlight?.quote;
+    if (renderState !== "ready" || !quote) {
+      setQuoteMissing(false);
+      return undefined;
+    }
+    return scheduleReviewQuoteHighlight({
+      getRoot: () => renderContainerRef.current,
+      quote,
+      occurrence: quoteHighlight?.occurrence ?? null,
+      onSettled: (found) => setQuoteMissing(!found),
+    });
+  }, [quoteHighlight?.focusRequestId, quoteHighlight?.occurrence, quoteHighlight?.quote, renderState]);
+
   useLayoutEffect(() => {
     if (renderState !== "ready") {
       return;
@@ -204,6 +228,11 @@ export function PreviewPaneOfficeDocxContent({
       {renderState === "error" ? (
         <div className="p-3 text-ui-base text-destructive" role="alert">
           {errorMessage}
+        </div>
+      ) : null}
+      {quoteMissing ? (
+        <div className="border-b border-amber-500/40 bg-amber-500/5 px-3 py-2 text-ui-sm">
+          {intl.formatMessage({ id: "review.quote.notFound" })}
         </div>
       ) : null}
       <div

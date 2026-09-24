@@ -18,6 +18,18 @@ export interface QuoteOccurrence {
   total: number;
 }
 
+/**
+ * 「在某个预览面上把这句原文标出来」的请求。渲染面可以是提取正文（markdown），
+ * 也可以是原件（docx 预览的 DOM）—— 定位方式相同，所以共用同一个形状。
+ */
+export interface QuoteHighlightTarget {
+  quote: string;
+  /** 片段是第几次出现（1 起），与工具算出的偏移同源；缺省取第一处 */
+  occurrence?: number | null;
+  /** 每次点击都换一个值：同一个文件重复点同一条也要重新定位/滚动 */
+  focusRequestId?: string;
+}
+
 const FULL_WIDTH_START = 0xff01;
 const FULL_WIDTH_END = 0xff5e;
 const FULL_WIDTH_OFFSET = 0xfee0;

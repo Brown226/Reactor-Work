@@ -179,3 +179,46 @@ export function applyReviewQuoteHighlight(
   if (range) scrollRangeIntoView(range);
   return range !== null;
 }
+
+/** 渲染是异步的（markdown 子树、docx 分页），一次找不到就在这几个时间点重试。 */
+const QUOTE_RETRY_DELAYS_MS = [0, 120, 320, 700];
+
+/**
+ * 带重试的定位：两个渲染面（提取正文的 markdown、原件的 docx）都用它，免得各写一套重试节奏。
+ *
+ * 返回一个取消句柄：调用方在卸载/切换文件时必须调它 —— 高亮是文档级注册表，
+ * 不清理会让已经关掉的标签页继续占着 `CSS.highlights`。
+ */
+export function scheduleReviewQuoteHighlight(options: {
+  /** 每次重试时现取根节点：渲染容器可能在这期间才挂上 */
+  getRoot: () => HTMLElement | null;
+  quote: string;
+  occurrence?: number | null;
+  /** 定位结束（命中或彻底没找到）时回调 */
+  onSettled: (found: boolean) => void;
+}): () => void {
+  let cancelled = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let attempt = 0;
+  const run = () => {
+    if (cancelled) return;
+    const root = options.getRoot();
+    if (root && applyReviewQuoteHighlight(root, options.quote, options.occurrence ?? null)) {
+      options.onSettled(true);
+      return;
+    }
+    attempt += 1;
+    const delay = QUOTE_RETRY_DELAYS_MS[attempt];
+    if (delay === undefined) {
+      options.onSettled(false);
+      return;
+    }
+    timer = setTimeout(run, delay);
+  };
+  run();
+  return () => {
+    cancelled = true;
+    if (timer !== undefined) clearTimeout(timer);
+    clearReviewQuoteHighlight();
+  };
+}

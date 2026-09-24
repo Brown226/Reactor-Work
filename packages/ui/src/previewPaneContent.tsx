@@ -317,6 +317,8 @@ export function PreviewPaneContent({
         loading={loadingOfficePreview}
         onOpenBrowserUrl={onOpenBrowserUrl}
         preview={officePreview}
+        // 审查定位：原件（docx）渲染完成后在它的 DOM 里标出这句原文。
+        {...(source.quoteHighlight ? { quoteHighlight: source.quoteHighlight } : {})}
         resolvedTheme={resolvedTheme}
         sourcePath={source.path}
       />

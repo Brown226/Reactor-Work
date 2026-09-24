@@ -3,6 +3,7 @@ import type { BundledLanguage } from "shiki";
 import { getMediaPreviewFormat, type MediaPreviewKind } from "@zcode/shared";
 import type { TaskChatToolCall as ChatToolCall } from "@/lib/taskChatMessageTypes.js";
 import type { CodeViewerWorkspaceScope } from "@/lib/codeViewerWorkspaceScope.js";
+import type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 import {
   decodeFilePathUriEscapes,
   getPathLeaf,
@@ -27,6 +28,15 @@ export interface FileCodeViewerSource extends CodeViewerWorkspaceScope {
   type: "file";
   title: string;
   path: string;
+  /**
+   * 打开原件时顺带标出这句原文（审查定位用）。
+   *
+   * 为什么原件也要能高亮：审查问题的真相在**原件**里（版式、上下文都是原件说了算），用户点一条问题
+   * 首先想看的是「这是在原件哪一页哪一句话」。原件的渲染面（docx 预览的 DOM）不含字符偏移，
+   * 所以和提取正文一样按「片段 + 第几处」重新定位（见 lib/quoteHighlightDom.ts）。
+   * 只对能高亮的原件类型有意义（docx）；xlsx 是 canvas 渲染、没有文本层，PDF 需要逐页搜，暂不声明。
+   */
+  quoteHighlight?: QuoteHighlightTarget;
 }
 
 export interface CodeReviewAnchor {
