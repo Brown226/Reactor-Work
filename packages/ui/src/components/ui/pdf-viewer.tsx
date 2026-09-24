@@ -292,7 +292,9 @@ export function PdfViewer({
       occurrence: quoteHighlight?.occurrence ?? null,
       onSettled: (found) => setQuoteMissing(!found),
     });
+    // pageIntrinsicSize 进依赖：文本层的位置要等页面渲染完成、拿到真实尺寸才定下来。
   }, [
+    pageIntrinsicSize,
     pageNumber,
     quoteHighlight?.focusRequestId,
     quoteHighlight?.occurrence,

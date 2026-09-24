@@ -194,7 +194,15 @@ export function PreviewPaneOfficeDocxContent({
       occurrence: quoteHighlight?.occurrence ?? null,
       onSettled: (found) => setQuoteMissing(!found),
     });
-  }, [quoteHighlight?.focusRequestId, quoteHighlight?.occurrence, quoteHighlight?.quote, renderState]);
+    // fit.scale 必须进依赖：docx 先按原始纸张尺寸渲染、再按可用宽度缩放，缩放提交前量到的是
+    // 旧几何，滚完内容一收缩命中就跑到视口外（用户得自己往上翻）。缩放定稿后重跑一次即可对齐。
+  }, [
+    fit?.scale,
+    quoteHighlight?.focusRequestId,
+    quoteHighlight?.occurrence,
+    quoteHighlight?.quote,
+    renderState,
+  ]);
 
   useLayoutEffect(() => {
     if (renderState !== "ready") {

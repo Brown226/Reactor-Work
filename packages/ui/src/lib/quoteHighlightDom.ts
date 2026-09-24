@@ -14,11 +14,27 @@
 import { normalizeWithIndexMap } from "@/lib/quoteSearch.js";
 
 const REVIEW_QUOTE_HIGHLIGHT_NAME = "zcode-review-quote";
+/** 闪过的那一下用单独的名字：注册表按名字换，不用重算 Range */
+const REVIEW_QUOTE_FLASH_NAME = "zcode-review-quote-flash";
+/** 命中所在**整段**的淡色底：只标几个字时，光看那几个字很难在整页里找到它 */
+const REVIEW_QUOTE_BLOCK_NAME = "zcode-review-quote-block";
 const REVIEW_QUOTE_STYLE_ID = "zcode-review-quote-highlight-style";
+
+// 配色刻意比「对话内查找」的浅黄更重：查找是扫一眼，审查定位是「请核对这一句」，
+// 浅色底 + 白纸（docx/pdf 纸张永远是白的）在屏幕上几乎看不出来。
 const REVIEW_QUOTE_STYLE = `
 ::highlight(${REVIEW_QUOTE_HIGHLIGHT_NAME}) {
-  background-color: var(--color-find-highlight, #fde68a);
-  color: var(--color-foreground);
+  background-color: #fbbf24;
+  color: #1f2937;
+  text-decoration: underline 2px #b45309;
+}
+::highlight(${REVIEW_QUOTE_FLASH_NAME}) {
+  background-color: #fb7185;
+  color: #1f2937;
+  text-decoration: underline 2px #9f1239;
+}
+::highlight(${REVIEW_QUOTE_BLOCK_NAME}) {
+  background-color: rgba(251, 191, 36, 0.28);
 }
 `;
 
@@ -152,13 +168,100 @@ export function findQuoteRangeInElement(
 }
 
 export function clearReviewQuoteHighlight(): void {
-  getCssHighlightSupport()?.highlights.delete(REVIEW_QUOTE_HIGHLIGHT_NAME);
+  const support = getCssHighlightSupport();
+  support?.highlights.delete(REVIEW_QUOTE_HIGHLIGHT_NAME);
+  support?.highlights.delete(REVIEW_QUOTE_FLASH_NAME);
+  support?.highlights.delete(REVIEW_QUOTE_BLOCK_NAME);
+  stopReviewQuoteScrollSettle();
 }
 
-export function scrollRangeIntoView(range: Range): void {
+/** 命中所在整段的范围（只标几个字时，用户在一个页面里仍然很难找到那几个字）。 */
+const BLOCK_SELECTOR = "p,li,blockquote,dd,dt,td,th,h1,h2,h3,h4,h5,h6";
+/** 整段超过这个字符数就不给淡色底：一整页表格铺满颜色反而看不见重点。 */
+const BLOCK_HIGHLIGHT_MAX_CHARS = 400;
+
+function findBlockRange(root: HTMLElement, range: Range): Range | null {
+  const start = range.startContainer;
+  const element = start instanceof Element ? start : start.parentElement;
+  // 表格里的段落优先按段落标 ：整格铺色会盖住相邻内容，看不清命中在哪个单元格的哪一句。
+  const block = element?.closest<HTMLElement>("p") ?? element?.closest<HTMLElement>(BLOCK_SELECTOR);
+  if (!block || !root.contains(block)) return null;
+  if ((block.textContent ?? "").length > BLOCK_HIGHLIGHT_MAX_CHARS) return null;
+  const blockRange = document.createRange();
+  try {
+    blockRange.selectNodeContents(block);
+  } catch {
+    return null;
+  }
+  return blockRange;
+}
+
+/** 命中所在元素最近的纵向滚动容器（预览区的滚动发生在它身上，不是窗口）。 */
+function findScrollHost(element: Element | null): HTMLElement | null {
+  let current: Element | null = element;
+  while (current) {
+    const style = window.getComputedStyle(current);
+    if (/(auto|scroll)/u.test(style.overflowY) && current.scrollHeight > current.clientHeight) {
+      return current as HTMLElement;
+    }
+    current = current.parentElement;
+  }
+  return null;
+}
+
+function isRangeVisible(range: Range, host: HTMLElement | null): boolean {
+  const rect = range.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) return false;
+  // 上下各留一点余量：贴边就算「看不到」，免得高亮正好压在工具栏/窗口边缘上。
+  const margin = 48;
+  if (!host) {
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    return rect.bottom > margin && rect.top < viewportHeight - margin;
+  }
+  const hostRect = host.getBoundingClientRect();
+  return rect.top >= hostRect.top + margin && rect.bottom <= hostRect.bottom - margin;
+}
+
+/** 定位相关定时器的统一取消入口（补滚 + 闪烁），切换文件/卸载时必须调用 */
+let cancelScrollSettle: (() => void) | null = null;
+
+function stopReviewQuoteScrollSettle(): void {
+  cancelScrollSettle?.();
+  cancelScrollSettle = null;
+}
+
+/**
+ * 滚动到位，并在布局稳定前补几次。
+ *
+ * 为什么不能只滚一次：docx 预览是「先渲染原尺寸、再按可用宽度 scale」，PDF 的文本层也是在页面
+ * 渲染完成后才定位 —— 在缩放/重排之前滚，量到的是**旧高度**，滚完内容一收缩，命中就跑到视口上方
+ * 之外，用户得自己往上翻。这里在几个时间点复查：**只在命中不在视口内时**才补滚，
+ * 用户已经自己滚走的情况下不抢滚动位置。
+ */
+function scrollRangeIntoViewSettled(range: Range): void {
   const container = range.commonAncestorContainer;
   const element = container instanceof Element ? container : container.parentElement;
-  element?.scrollIntoView({ block: "center", behavior: "auto" });
+  const host = findScrollHost(element);
+  const scrollNow = () => {
+    if (isRangeVisible(range, host)) return;
+    const rect = range.getBoundingClientRect();
+    if (host) {
+      // 直接算目标偏移而不是 scrollIntoView：后者会连带滚动外层容器（对话流也跟着跳），
+      // 而且这里的滚动只能发生在预览区自己身上。
+      host.scrollTop += rect.top - host.getBoundingClientRect().top - host.clientHeight / 2 + rect.height / 2;
+      return;
+    }
+    element?.scrollIntoView({ block: "center", behavior: "auto" });
+  };
+  stopReviewQuoteScrollSettle();
+  scrollNow();
+  const timers: ReturnType<typeof setTimeout>[] = [];
+  for (const delay of [120, 320, 700, 1200]) {
+    timers.push(setTimeout(scrollNow, delay));
+  }
+  cancelScrollSettle = () => {
+    for (const timer of timers) clearTimeout(timer);
+  };
 }
 
 /**
@@ -173,11 +276,49 @@ export function applyReviewQuoteHighlight(
   const support = getCssHighlightSupport();
   const range = findQuoteRangeInElement(root, quote, occurrence);
   if (!support) return false;
+  const blockRange = range ? findBlockRange(root, range) : null;
   const highlight = new support.Highlight(...(range ? [range] : [])) as CssHighlightLike;
   highlight.priority = 3;
   support.highlights.set(REVIEW_QUOTE_HIGHLIGHT_NAME, highlight);
-  if (range) scrollRangeIntoView(range);
+  support.highlights.set(
+    REVIEW_QUOTE_BLOCK_NAME,
+    new support.Highlight(...(blockRange ? [blockRange] : [])) as CssHighlightLike,
+  );
+  if (range) {
+    scrollRangeIntoViewSettled(range);
+    flashReviewQuoteHighlight(range, support);
+  }
   return range !== null;
+}
+
+/**
+ * 闪三下：审查定位是「请核对这一句」，一瞬间的颜色变化能把眼睛带过去；闪完停在稳定配色上。
+ * 换的是注册表里的名字，Range 不重算。
+ */
+function flashReviewQuoteHighlight(
+  range: Range,
+  support: { highlights: CssHighlightRegistryLike; Highlight: HighlightConstructor },
+): void {
+  const timers: ReturnType<typeof setTimeout>[] = [];
+  const show = (name: string) => {
+    support.highlights.delete(REVIEW_QUOTE_HIGHLIGHT_NAME);
+    support.highlights.delete(REVIEW_QUOTE_FLASH_NAME);
+    const highlight = new support.Highlight(range) as CssHighlightLike;
+    highlight.priority = 3;
+    support.highlights.set(name, highlight);
+  };
+  [120, 360, 600].forEach((delay, index) => {
+    timers.push(setTimeout(() => show(index % 2 === 0 ? REVIEW_QUOTE_FLASH_NAME : REVIEW_QUOTE_HIGHLIGHT_NAME), delay));
+  });
+  timers.push(setTimeout(() => show(REVIEW_QUOTE_HIGHLIGHT_NAME), 860));
+  const cancel = () => {
+    for (const timer of timers) clearTimeout(timer);
+  };
+  const previousCancel = cancelScrollSettle;
+  cancelScrollSettle = () => {
+    previousCancel?.();
+    cancel();
+  };
 }
 
 /** 渲染是异步的（markdown 子树、docx 分页），一次找不到就在这几个时间点重试。 */
