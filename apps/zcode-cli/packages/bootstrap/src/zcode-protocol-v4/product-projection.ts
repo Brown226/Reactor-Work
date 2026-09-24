@@ -5361,6 +5361,9 @@ function toProtocolToolCallDisplay(
     case "list_models":
     // ResumeWorkflowRun 的恢复卡。
     case "resume_workflow_run":
+    // 审查结果卡（标准引用自检 / 自述型审查问题清单）。缺这一条的表现极具迷惑性：
+    // 持久化路径（hydration）能显示卡片、实时投影却整个丢掉，于是「刷新后才有卡」。
+    case "review_issues":
       return display;
     default:
       return undefined;

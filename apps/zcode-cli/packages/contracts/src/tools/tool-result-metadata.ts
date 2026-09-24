@@ -231,6 +231,69 @@ const bashOutputDisplaySchema = z
   })
   .strict();
 
+/**
+ * 审查结果卡的结构化载荷（KnowledgeCheck / ReportReviewIssues）。
+ *
+ * ## 为什么审查卡必须走 display
+ *
+ * 结构化结果到前端的**唯一**通道是这个 payload：工具输出经 resultBudget 后只留文本
+ * （`state.output` 是格式化文案），`state.metadata` 里也只有 schemaVersion/serialization；
+ * 前端能读到的结构只剩 `row.output.display`。没有 display 时卡片拿不到任何数据，
+ * 渲染器只能退化成一行文本——这正是审查卡片最初「看不到卡片、全是文字」的原因。
+ *
+ * 字段与工具输出同名同义（`action` / `issues` / `summary` / `textPath` / `notice`），
+ * 这样前端读取器对两个来源共用一套解析。
+ */
+export const REVIEW_DISPLAY_MAX_ISSUES = 200;
+export const REVIEW_DISPLAY_MAX_QUOTED_CHARS = 400;
+export const REVIEW_DISPLAY_MAX_MESSAGE_CHARS = 600;
+export const REVIEW_DISPLAY_MAX_SUGGESTION_CHARS = 600;
+export const REVIEW_DISPLAY_MAX_NOTICE_CHARS = 1_000;
+export const REVIEW_DISPLAY_MAX_PATH_CHARS = 4_096;
+export const REVIEW_DISPLAY_MAX_TERM_CHARS = 120;
+export const REVIEW_DISPLAY_MAX_TERMS = 200;
+
+export const reviewIssueDisplayItemSchema = z
+  .object({
+    /** 标准自检是固定八类（abolished/no_year/…），自述型审查是规则码（TYPO-001/…）。 */
+    code: z.string().min(1).max(64),
+    severity: z.enum(["error", "warning", "info", "none"]),
+    quoted: z.string().max(REVIEW_DISPLAY_MAX_QUOTED_CHARS),
+    message: z.string().max(REVIEW_DISPLAY_MAX_MESSAGE_CHARS),
+    line: z.number().int().nonnegative(),
+    startOffset: z.number().int(),
+    endOffset: z.number().int(),
+    suggestion: z.string().max(REVIEW_DISPLAY_MAX_SUGGESTION_CHARS).nullable(),
+    // 标准自检独有
+    normalized: z.string().max(300).optional(),
+    libraryNo: z.string().max(200).nullable().optional(),
+    libraryName: z.string().max(400).nullable().optional(),
+    libraryStatus: z.enum(["current", "upcoming", "abolished", "unknown"]).nullable().optional(),
+    // 自述型审查独有：定位元数据
+    occurrences: z.number().int().nonnegative().optional(),
+    matchedOccurrence: z.number().int().nonnegative().optional(),
+    matchKind: z.enum(["exact", "normalized", "not_found"]).optional(),
+    located: z.boolean().optional(),
+  })
+  .strict();
+
+export const reviewIssuesToolResultDisplayPayloadSchema = z
+  .object({
+    kind: z.literal("review_issues"),
+    action: z.enum(["standards", "terminology", "rules", "issues"]),
+    stale: z.boolean(),
+    textPath: z.string().max(REVIEW_DISPLAY_MAX_PATH_CHARS).nullable(),
+    sourcePath: z.string().max(REVIEW_DISPLAY_MAX_PATH_CHARS).nullable(),
+    notice: z.string().max(REVIEW_DISPLAY_MAX_NOTICE_CHARS).nullable(),
+    summary: z.record(z.string(), z.number()).nullable(),
+    issues: z.array(reviewIssueDisplayItemSchema).max(REVIEW_DISPLAY_MAX_ISSUES),
+    /** 超过上限被丢弃的问题条数：>0 时卡片要写明「仅显示前 N 条」，不能假装完整。 */
+    droppedIssues: z.number().int().nonnegative(),
+    whitelisted: z.array(z.string().max(REVIEW_DISPLAY_MAX_TERM_CHARS)).max(REVIEW_DISPLAY_MAX_TERMS),
+    remaining: z.array(z.string().max(REVIEW_DISPLAY_MAX_TERM_CHARS)).max(REVIEW_DISPLAY_MAX_TERMS),
+  })
+  .strict();
+
 export const toolResultDisplayPayloadSchema = z.discriminatedUnion("kind", [
   bashOutputDisplaySchema,
   fileDiffToolResultDisplayPayloadSchema,
@@ -248,6 +311,7 @@ export const toolResultDisplayPayloadSchema = z.discriminatedUnion("kind", [
   savedWorkflowListToolResultDisplayPayloadSchema,
   listModelsToolResultDisplayPayloadSchema,
   resumeWorkflowRunToolResultDisplayPayloadSchema,
+  reviewIssuesToolResultDisplayPayloadSchema,
 ]);
 
 export type FileDiffToolResultDisplayPayload = z.infer<

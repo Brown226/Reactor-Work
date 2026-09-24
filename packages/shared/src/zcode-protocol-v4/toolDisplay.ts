@@ -20,6 +20,51 @@ import {
 // errorCode/suggestedAction/media(screenshot) 等结构化内容带到 renderer）。consume-main 之前
 // 缺这个 union + toolOutputSchema.display 字段——协议层 zod 校验会把 agent 下发的 display 整个
 // strip 掉，导致 UI 永远拿不到 display?.kind==="cua"，CUA 工具调用退化成 fallback 渲染。
+// 审查结果卡（标准引用自检 / 自述型审查问题清单）：与 contracts 侧
+// toolResultDisplayPayloadSchema 同步。缺成员 = 整块被 zod 剥掉，卡片退化成一行文本，
+// 而且两端都不报错——审查卡片最初就是这样「看不到卡」的。
+export const reviewIssuesDisplaySchema = z
+  .object({
+    kind: z.literal("review_issues"),
+    action: z.enum(["standards", "terminology", "rules", "issues"]),
+    stale: z.boolean(),
+    textPath: z.string().max(4_096).nullable(),
+    sourcePath: z.string().max(4_096).nullable(),
+    notice: z.string().max(1_000).nullable(),
+    summary: z.record(z.string(), z.number()).nullable(),
+    issues: z
+      .array(
+        z
+          .object({
+            code: z.string().min(1).max(64),
+            severity: z.enum(["error", "warning", "info", "none"]),
+            quoted: z.string().max(400),
+            message: z.string().max(600),
+            line: z.number().int().nonnegative(),
+            startOffset: z.number().int(),
+            endOffset: z.number().int(),
+            suggestion: z.string().max(600).nullable(),
+            normalized: z.string().max(300).optional(),
+            libraryNo: z.string().max(200).nullable().optional(),
+            libraryName: z.string().max(400).nullable().optional(),
+            libraryStatus: z
+              .enum(["current", "upcoming", "abolished", "unknown"])
+              .nullable()
+              .optional(),
+            occurrences: z.number().int().nonnegative().optional(),
+            matchedOccurrence: z.number().int().nonnegative().optional(),
+            matchKind: z.enum(["exact", "normalized", "not_found"]).optional(),
+            located: z.boolean().optional(),
+          })
+          .strict(),
+      )
+      .max(200),
+    droppedIssues: z.number().int().nonnegative(),
+    whitelisted: z.array(z.string().max(120)).max(200),
+    remaining: z.array(z.string().max(120)).max(200),
+  })
+  .strict();
+
 const toolResultDisplaySchema = z.discriminatedUnion("kind", [
   bashOutputDisplaySchema,
   z.object({
@@ -147,6 +192,7 @@ const toolResultDisplaySchema = z.discriminatedUnion("kind", [
   toolCallSavedWorkflowListDisplaySchema,
   toolCallListModelsDisplaySchema,
   toolCallResumeWorkflowRunDisplaySchema,
+  reviewIssuesDisplaySchema,
 ]);
 export type ToolResultDisplay = z.infer<typeof toolResultDisplaySchema>;
 
@@ -259,5 +305,6 @@ export const toolCallDisplaySchema = z.discriminatedUnion("kind", [
   toolCallSavedWorkflowListDisplaySchema,
   toolCallListModelsDisplaySchema,
   toolCallResumeWorkflowRunDisplaySchema,
+  reviewIssuesDisplaySchema,
 ]);
 export type ToolCallDisplay = z.infer<typeof toolCallDisplaySchema>;

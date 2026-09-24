@@ -24,6 +24,7 @@ import { countPatchLines } from "../diff.js";
 import { boundDisplayText } from "./display-text.js";
 import { createCreateWorkflowDisplay } from "./create-workflow-display.js";
 import { createWorkflowObservationDisplay } from "./workflow-observation-display.js";
+import { createReviewResultDisplay } from "./review-result-display.js";
 
 // 拆到 create-workflow-display.ts 后保持既有导出面（handlers/create-workflow.ts 仍从这里 import）。
 export { createCreateWorkflowDisplay } from "./create-workflow-display.js";
@@ -119,6 +120,11 @@ export function createToolResultDisplay(
 
   const workflowObservation = createWorkflowObservationDisplay(toolName, output);
   if (workflowObservation) return workflowObservation;
+
+  // 审查结果卡（标准引用自检 / 自述型审查问题清单）：结构化结果只能经 display 到前端，
+  // 漏掉这一步的表现是「卡片退化成一行文本」，而且不会报任何错。
+  const reviewDisplay = createReviewResultDisplay(toolName, output);
+  if (reviewDisplay) return reviewDisplay;
 
   if (options?.mcp) {
     // 结果级构造：官方 MCP 的不可用标识只能从本次结果里读，因此把 output 一起传进去。
