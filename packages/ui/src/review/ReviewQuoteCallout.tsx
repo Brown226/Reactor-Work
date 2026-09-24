@@ -14,9 +14,10 @@ import { cn } from "@/components/lib/utils.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import type { QuoteHighlightNote } from "@/lib/quoteSearch.js";
 
+/** 严重度点用语义 token（DESIGN.md：警告用 --color-warning，不硬编码 amber）。 */
 const SEVERITY_DOTS: Record<string, string> = {
   error: "bg-destructive",
-  warning: "bg-amber-500",
+  warning: "bg-warning",
   info: "bg-foreground-subtle",
 };
 
@@ -119,10 +120,10 @@ export function ReviewQuoteCallout({
         <span className={cn("size-1.5 shrink-0 rounded-full", SEVERITY_DOTS[severity])} />
         <span className="text-ui-sm font-medium">{note.title}</span>
         {note.code ? (
-          <span className="rounded bg-muted px-1 text-[11px] text-foreground-subtle">{note.code}</span>
+          <span className="rounded-md bg-muted px-1 text-ui-xs text-foreground-subtle">{note.code}</span>
         ) : null}
         {note.line && note.line > 0 ? (
-          <span className="text-[11px] text-foreground-subtle">
+          <span className="text-ui-xs tabular-nums text-foreground-subtlest">
             {intl.formatMessage({ id: "review.card.line" }, { line: note.line })}
           </span>
         ) : null}
@@ -141,9 +142,9 @@ export function ReviewQuoteCallout({
               })}
               onClick={() => onToggleMarked(!marked)}
               className={cn(
-                "rounded p-0.5",
+                "rounded-md p-0.5",
                 marked
-                  ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                  ? "bg-success text-success-foreground hover:opacity-90"
                   : "text-foreground-subtle hover:bg-muted hover:text-foreground",
               )}
             >
@@ -162,20 +163,18 @@ export function ReviewQuoteCallout({
           ) : null}
         </span>
       </div>
-      <div className="max-h-24 overflow-auto rounded bg-muted/60 px-2 py-1 font-mono text-[11px] break-all">
+      <div className="max-h-24 overflow-auto rounded-md bg-muted/60 px-2 py-1 font-mono text-ui-xs break-all">
         {range.toString()}
       </div>
       <div className="text-ui-sm">{note.message}</div>
       {note.suggestion ? (
-        // 建议用绿色 + 加粗：一条问题里「是什么问题」与「改成什么」是两种信息，
-        // 用户扫一眼要能直接落到改法上（与卡片里「通过」用的 emerald 是同一语义）。
-        <div className="mt-0.5 rounded-md bg-emerald-500/10 px-2 py-1 text-ui-sm">
-          <span className="text-emerald-700 dark:text-emerald-400">
+        // 建议用 success 色 + 加粗：一条问题里「是什么问题」与「改成什么」是两种信息，
+        // 用户扫一眼要能直接落到改法上（与面板行里的绿色建议同源）。
+        <div className="mt-0.5 rounded-md bg-success/10 px-2 py-1 text-ui-sm">
+          <span className="text-success">
             {intl.formatMessage({ id: "review.card.suggestion" })}：
           </span>
-          <span className="font-medium text-emerald-700 dark:text-emerald-300">
-            {note.suggestion}
-          </span>
+          <span className="font-medium text-success">{note.suggestion}</span>
         </div>
       ) : null}
     </div>

@@ -2,17 +2,26 @@
  * 审查结果面板（`docs/审查板块-方案-v1.md` §3.2）。
  *
  * 一轮对话只有**一个**面板，挂在轮尾最终正文的下方、操作栏之上：本轮所有审查类工具结果
- * （标准引用自检 / 自述型审查 / 术语白名单）都在这里，按「来源文件 → 规则码」两级分组给计数。
+ * （标准引用自检 / 自述型审查 / 术语白名单）都在这里，按「来源文件 → 规则码族」两级分组给计数。
  * 不再按工具调用拆卡、也不再一条问题一个卡片 —— 67 条问题在对话里铺成 67 个块之后，
  * 用户看到的是噪音而不是结论。
  *
- * 行是**密排**的：一行片段（mono，超长截断，悬停看全文）+ 一行说明。点击一条 = 打开原件 +
- * 打开带高亮的提取正文（`code-review` 源）。没定位到的条目**不装成可点**：偏移是 -1，点了会跳到
- * 无关位置，那比不能点更误导复核者。
+ * 视觉语言（对齐 DESIGN.md：密排操作面板优于卡片装饰，层次靠描边/背景/缩进而非重阴影）：
+ *   工具栏头部（标题 + 语义色计数 + 右侧采纳/一键修改，底部一条分隔线）
+ *     └ 文件节（图标 + 名称 + 计数）→ 规则码族（可折叠）→ 问题行（严重度色条 + 绿色建议）
+ * 字号一律 `text-ui-*`，计数与行号 `tabular-nums`。点击一条问题 = 打开原件并在原件里高亮；
+ * 没定位到的条目**不装成可点**：偏移是 -1，点了会跳到无关位置，那比不能点更误导复核者。
  */
-import { CheckCheckIcon, ClipboardListIcon, TriangleAlertIcon } from "lucide-react";
+import {
+  CheckCheckIcon,
+  ClipboardListIcon,
+  FileTextIcon,
+  InfoIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button.js";
+import { cn } from "@/components/lib/utils.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import type { CodeViewerSource } from "@/lib/codeViewer.js";
 import type { QuoteHighlightNote, ReviewQuoteMarkTarget } from "@/lib/quoteSearch.js";
@@ -27,7 +36,6 @@ import {
   type ReviewResultGathering,
   type ReviewResultItem,
 } from "@/review/reviewResultGroups.js";
-
 
 /** 片段数量超过这个量级时分组默认收起：面板要能一眼看完，而不是又变成一堵墙。 */
 const GROUP_AUTO_OPEN_MAX_ITEMS = 20;
@@ -60,7 +68,6 @@ function isQuoteHighlightableFile(path: string): boolean {
   return lower.endsWith(".docx") || lower.endsWith(".pdf");
 }
 
-
 /** 采纳载荷：定位卡的对号与面板行上的对号必须产出同一份数据，所以只在这里造一次。 */
 function buildMarkForItem(item: ReviewResultItem, note: QuoteHighlightNote): ReviewQuoteMarkTarget {
   return {
@@ -78,6 +85,19 @@ function buildMarkForItem(item: ReviewResultItem, note: QuoteHighlightNote): Rev
   };
 }
 
+/** 类别名的解析（标准判定码走既有译名，族名走标签表，都没有就原样）：面板与定位卡共用。 */
+function resolveIssueTitle(
+  intl: ReturnType<typeof useZCodeIntl>["intl"],
+  item: ReviewResultItem,
+): string {
+  const family = reviewIssueCodeFamily(item.code);
+  const familyKey =
+    REVIEW_ISSUE_LABEL_KEYS[family] ??
+    REVIEW_ISSUE_LABEL_KEYS[item.code] ??
+    reviewIssueFamilyLabelKey(family);
+  return familyKey ? intl.formatMessage({ id: familyKey }) : family;
+}
+
 export function ReviewResultPanel({
   gathering,
   sessionId,
@@ -93,21 +113,16 @@ export function ReviewResultPanel({
   const marks = useReviewMarksStore((state) => state.marks);
   const toggleMark = useReviewMarksStore((state) => state.toggle);
   const markedKeys = useMemo(() => new Set(Object.keys(marks)), [marks]);
+
   // 行上的对号与定位卡的对号共用同一份载荷；已采纳再点一次 = 取消采纳。
   const toggleRowMark = useCallback(
     (item: ReviewResultItem) => {
-      const family = reviewIssueCodeFamily(item.code);
-      const familyKey =
-        REVIEW_ISSUE_LABEL_KEYS[family] ??
-        REVIEW_ISSUE_LABEL_KEYS[item.code] ??
-        reviewIssueFamilyLabelKey(family);
-      const label = issueCodeLabel(intl, item.code);
+      const title = resolveIssueTitle(intl, item);
+      const codeLabel = issueCodeLabel(intl, item.code);
       toggleMark(
         buildMarkForItem(item, {
-          title: familyKey ? intl.formatMessage({ id: familyKey }) : family,
-          ...(label !== (familyKey ? intl.formatMessage({ id: familyKey }) : family)
-            ? { code: label }
-            : {}),
+          title,
+          ...(codeLabel !== title ? { code: codeLabel } : {}),
           message: item.message,
           suggestion: item.suggestion,
           severity: item.severity === "none" ? "info" : item.severity,
@@ -132,12 +147,7 @@ export function ReviewResultPanel({
       // 定位卡内容在这里组装：原件预览没有评论面板，修改意见必须跟着定位一起过去。
       // 标题是**类别**（标点 / 已废止引用），码另给一格（标点-001）—— 两处同源会给用户
       // 看到重复的一段字（`标点-001 标点-001`）。
-      const family = reviewIssueCodeFamily(item.code);
-      const familyKey =
-        REVIEW_ISSUE_LABEL_KEYS[family] ??
-        REVIEW_ISSUE_LABEL_KEYS[item.code] ??
-        reviewIssueFamilyLabelKey(family);
-      const title = familyKey ? intl.formatMessage({ id: familyKey }) : family;
+      const title = resolveIssueTitle(intl, item);
       const codeLabel = issueCodeLabel(intl, item.code);
       const note = {
         title,
@@ -206,52 +216,54 @@ export function ReviewResultPanel({
         },
       });
     },
-    [
-      intl,
-      onOpenCodeViewer,
-      workspaceIdentity,
-      workspacePath,
-      workspaceRemoteSessionId,
-    ],
+    [intl, onOpenCodeViewer, workspaceIdentity, workspacePath, workspaceRemoteSessionId],
   );
 
   if (!gathering.hasContent) return null;
 
+  // 严重度计数带语义色（DESIGN.md：只给真实语义状态上色）；数字用 tabular-nums，计数变化不抖。
   const severityChips = (
     [
-      ["review.severity.error", gathering.totals.error],
-      ["review.severity.warning", gathering.totals.warning],
-      ["review.severity.info", gathering.totals.info],
+      ["review.severity.error", gathering.totals.error, "bg-destructive", "text-destructive"],
+      ["review.severity.warning", gathering.totals.warning, "bg-warning", "text-warning"],
+      [
+        "review.severity.info",
+        gathering.totals.info,
+        "bg-foreground-subtle",
+        "text-foreground-subtle",
+      ],
     ] as const
   ).filter(([, count]) => count > 0);
 
   return (
     <section
       data-review-result-panel="true"
-      className="flex w-full flex-col gap-2 rounded-xl border border-card-border bg-card p-3 text-foreground"
+      className="flex w-full flex-col gap-2.5 rounded-xl border border-card-border bg-card p-4 text-foreground"
     >
-      <header className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <header className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-border/60 pb-2.5">
         <span className="flex items-center gap-2 text-ui-base font-medium leading-5">
           <ClipboardListIcon className="size-4 shrink-0 text-foreground-subtle" />
           {intl.formatMessage({ id: "review.panel.title" })}
         </span>
-        <span className="text-ui-sm text-foreground-subtle">
+        <span className="text-ui-sm tabular-nums text-foreground-subtle">
           {intl.formatMessage({ id: "review.panel.totals" }, { total: gathering.totals.total })}
         </span>
-        {severityChips.map(([key, count]) => (
-          <span key={key} className="text-ui-sm text-foreground-subtle">
-            {intl.formatMessage({ id: key })} {count}
+        {severityChips.map(([id, count, dotClass, textClass]) => (
+          <span key={id} className="flex items-center gap-1 text-ui-xs tabular-nums">
+            <span className={cn("size-1.5 rounded-full", dotClass)} />
+            <span className={textClass}>{count}</span>
+            <span className="text-foreground-subtle">{intl.formatMessage({ id })}</span>
           </span>
         ))}
         {gathering.passed > 0 ? (
-          <span className="text-ui-sm text-foreground-subtle">
+          <span className="text-ui-xs tabular-nums text-success">
             {intl.formatMessage({ id: "review.panel.passed" }, { count: gathering.passed })}
           </span>
         ) : null}
         {fix.count > 0 ? (
           // 采纳了才出现：没标记时这个按钮点下去无事可做，占位只是噪音。
           <span className="ml-auto flex items-center gap-2">
-            <span className="text-ui-sm text-emerald-700 dark:text-emerald-400">
+            <span className="text-ui-xs tabular-nums text-success">
               {intl.formatMessage({ id: "review.mark.count" }, { count: fix.count })}
             </span>
             <Button
@@ -272,21 +284,34 @@ export function ReviewResultPanel({
       </header>
 
       {sendFailed ? (
-        <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-ui-sm">
-          {intl.formatMessage({ id: "review.mark.applyFailed" })}
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-2 text-ui-sm text-destructive">
+          <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0" />
+          <span>{intl.formatMessage({ id: "review.mark.applyFailed" })}</span>
         </div>
       ) : null}
-      {gathering.notices.map((notice) => (
-        <div
-          key={notice}
-          className="flex items-start gap-2 rounded border border-amber-500/40 bg-amber-500/5 p-2 text-ui-sm"
-        >
-          <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0 text-amber-600 dark:text-amber-500" />
-          <span>{notice}</span>
-        </div>
-      ))}
+      {/* 提示分两级：`stale`（结论不可用）用警告块；其余是「读结论前该知道的边界」，
+          降级成一行弱提示 —— 结论已经够多，不该再让说明去抢注意力。 */}
+      {gathering.notices.map((notice) =>
+        gathering.stale ? (
+          <div
+            key={notice}
+            className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 p-2 text-ui-sm text-foreground"
+          >
+            <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0 text-warning" />
+            <span>{notice}</span>
+          </div>
+        ) : (
+          <div
+            key={notice}
+            className="flex items-start gap-2 px-1 text-ui-xs text-foreground-subtlest"
+          >
+            <InfoIcon className="mt-0.5 size-3.5 shrink-0" />
+            <span>{notice}</span>
+          </div>
+        ),
+      )}
       {gathering.totals.unlocated > 0 ? (
-        <div className="text-ui-sm text-foreground-subtle">
+        <div className="px-1 text-ui-xs text-foreground-subtlest">
           {intl.formatMessage(
             { id: "review.panel.unlocated" },
             { count: gathering.totals.unlocated },
@@ -294,16 +319,17 @@ export function ReviewResultPanel({
         </div>
       ) : null}
       {gathering.totals.total === 0 && gathering.terminology.length === 0 ? (
-        <div className="text-ui-sm text-foreground-subtle">
+        <div className="px-1 text-ui-sm text-foreground-subtle">
           {intl.formatMessage({ id: "review.issues.clean" })}
         </div>
       ) : null}
 
-      {gathering.sections.map((section) => (
+      {gathering.sections.map((section, index) => (
         <Section
           key={section.key}
           section={section}
           showTitle={showSectionTitles}
+          separated={index > 0}
           defaultOpen={groupsDefaultOpen}
           onOpenItem={openItem}
           canOpen={Boolean(onOpenCodeViewer)}
@@ -312,22 +338,40 @@ export function ReviewResultPanel({
         />
       ))}
 
-      {gathering.terminology.map((card) => (
-        <div key={card.key} className="flex flex-col gap-1.5 border-t border-border/50 pt-2">
-          <div className="text-ui-sm font-medium">{intl.formatMessage({ id: "review.tool.terminology" })}</div>
+      {/* 术语白名单与节同一套语言：图标 + 名称 + 计数 + 词条 chip（不折叠，它本身就是结论的一部分） */}
+      {gathering.terminology.map((card, index) => (
+        <div
+          key={card.key}
+          className={cn(
+            "flex flex-col gap-1.5",
+            (index > 0 || gathering.sections.length > 0) && "border-t border-border/60 pt-2",
+          )}
+        >
+          <div className="flex items-center gap-2 px-2 text-ui-base font-medium">
+            <FileTextIcon className="size-3.5 shrink-0 text-foreground-subtle" />
+            {intl.formatMessage({ id: "review.tool.terminology" })}
+            <span className="text-ui-xs tabular-nums text-foreground-subtlest">
+              {intl.formatMessage(
+                { id: "review.panel.count" },
+                { count: card.whitelisted.length + card.remaining.length },
+              )}
+            </span>
+          </div>
           {card.stale ? (
-            <div className="text-ui-sm text-foreground-subtle">
+            <div className="px-2 text-ui-xs text-warning">
               {intl.formatMessage({ id: "review.terminology.stale" })}
             </div>
           ) : null}
-          <TermChips
-            label={intl.formatMessage({ id: "review.terminology.whitelisted" })}
-            terms={card.whitelisted}
-          />
-          <TermChips
-            label={intl.formatMessage({ id: "review.terminology.remaining" })}
-            terms={card.remaining}
-          />
+          <div className="flex flex-col gap-1.5 px-2 pb-1">
+            <TermChips
+              label={intl.formatMessage({ id: "review.terminology.whitelisted" })}
+              terms={card.whitelisted}
+            />
+            <TermChips
+              label={intl.formatMessage({ id: "review.terminology.remaining" })}
+              terms={card.remaining}
+            />
+          </div>
         </div>
       ))}
     </section>
