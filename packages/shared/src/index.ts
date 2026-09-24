@@ -308,3 +308,4 @@ export * from "./pluginStoreOrdering.js";
 export * from "./session-debug.js";
 export { redactFeedbackText } from "./feedbackPrivacy.js";
 export * from "./reactorServer.js";
+export * from "./document-style.js";

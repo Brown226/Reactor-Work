@@ -137,6 +137,15 @@ test("净化：控制字符必须去掉、超长必须截断（否则 Office 打
   assert.ok(clipped.endsWith("…"));
 });
 
+test("净化：模型的 markdown 行内记号要脱掉（报告是纯文本载体，没有渲染器）", () => {
+  assert.equal(sanitizeReportText("引用**无法机检核对**，需人工确认"), "引用无法机检核对，需人工确认");
+  assert.equal(sanitizeReportText("见 `GB/T 17395` 与 __现行版本__"), "见 GB/T 17395 与 现行版本");
+  // 单个 * _ ` 属于正文内容（通配、标准号、下划线），不能误删
+  assert.equal(sanitizeReportText("文件 *.dwg 与 GB/T 1.1*"), "文件 *.dwg 与 GB/T 1.1*");
+  assert.equal(sanitizeReportText("字段 a_b_c 保留"), "字段 a_b_c 保留");
+  assert.equal(sanitizeReportText("未闭合的 ** 记号原样保留"), "未闭合的 ** 记号原样保留");
+});
+
 test("默认输出路径：落在被审文件同目录、按扩展名正确派生", () => {
   const path = resolveReportPath(
     { ...BASE, sourcePath: join("E:", "工作", "设计文件", "HX1CI0842.docx") },
