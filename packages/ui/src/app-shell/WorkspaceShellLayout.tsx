@@ -46,6 +46,7 @@ import type {
 } from "@/settings/saved-workflows/SavedWorkflowsSection.js";
 import { AutomationsMainBreadcrumbFrame } from "@/settings/AutomationsMainBreadcrumbFrame.js";
 import { PluginStorePage } from "@/settings/PluginStorePage.js";
+import { MarketPage } from "@/marketplace/MarketPage.js";
 import { TaskFindDialog } from "@/quickpick/TaskFindDialog.js";
 import { WorkspaceHeader } from "@/WorkspaceHeader.js";
 import { WorkspaceSidebar, type SidebarFileTreeOpenRequest } from "@/WorkspaceSidebar.js";
@@ -199,6 +200,9 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
   handleOpenAutomations,
   handleOpenPluginStore,
   handleManageInstalledPlugins,
+  onOpenMarket,
+  marketIntent,
+  onOpenModelProviderSettings,
   onConnectRemote,
   onSelectRemoteProject,
   onCancelRemoteProject,
@@ -1488,7 +1492,9 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
   // 与 Task Header 分叉。桌面端统一复用 WorkspaceHeader，只由 variant 裁剪 task 专属内容；
   // 手机远控无 active task 时仍不渲染桌面 chrome，继续遵守 replayable overlay 边界。
   const shouldRenderMainViewHeader =
-    workspaceMainView !== "automations" && workspaceMainView !== "plugin-store";
+    workspaceMainView !== "automations" &&
+    workspaceMainView !== "plugin-store" &&
+    workspaceMainView !== "market";
   const shouldRenderWorkspaceHeader =
     shouldRenderMainViewHeader && (activeTaskId !== null || isDesktop);
   // ErrorBoundary resetKeys 的数组如果每次 render 都重新创建，
@@ -1596,6 +1602,8 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                     automationsActive={workspaceMainView === "automations"}
                     onOpenPluginStore={handleOpenPluginStore}
                     pluginStoreActive={workspaceMainView === "plugin-store"}
+                    onOpenMarket={onOpenMarket}
+                    marketActive={workspaceMainView === "market"}
                     onOpenWorkspaceFiles={handleOpenWorkspaceFiles}
                   />
                 </WorkflowRunOpenProvider>
@@ -1817,6 +1825,29 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                             </div>
                           </AutomationsMainBreadcrumbFrame>
                         </main>
+                      ) : workspaceMainView === "market" ? (
+                        <main className="flex h-full min-h-0 flex-1 flex-col bg-background">
+                          <AutomationsMainBreadcrumbFrame
+                            isDesktop={Boolean(isDesktop)}
+                            sectionLabel={intl.formatMessage({ id: "marketplace.title" })}
+                            ariaLabel={intl.formatMessage({
+                              id: "settings.breadcrumbLabel",
+                            })}
+                          >
+                            <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+                              <div className="mx-auto flex w-full max-w-6xl flex-col px-4 py-4 md:px-6 md:py-6">
+                                <MarketPage
+                                  workspacePath={workspaceAbsPath}
+                                  workspaceIdentity={workspaceIdentity}
+                                  onCreateTask={handleCreateTaskInChat}
+                                  onOpenPluginStore={handleOpenPluginStore}
+                                  marketIntent={marketIntent}
+                                  onOpenModelProviderSettings={onOpenModelProviderSettings}
+                                />
+                              </div>
+                            </div>
+                          </AutomationsMainBreadcrumbFrame>
+                        </main>
                       ) : (
                         <main className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
                           {renderChatFindDialog()}
@@ -1895,7 +1926,9 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                     </div>
                   </section>
                 </ResizablePanel>
-                {workspaceMainView !== "automations" && workspaceMainView !== "plugin-store" ? (
+                {workspaceMainView !== "automations" &&
+                workspaceMainView !== "plugin-store" &&
+                workspaceMainView !== "market" ? (
                   <AnimatedTerminalPanel
                     frameClassName={cn(
                       isSidePaneVisible

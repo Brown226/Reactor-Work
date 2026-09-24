@@ -4,7 +4,6 @@ import {
   Settings,
   Settings2,
   Package,
-  Bot,
   Palette,
   Sun,
   BarChart3,
@@ -15,7 +14,6 @@ import {
   Blocks,
   Globe2,
   Cable,
-  WandSparkles,
   Keyboard,
   FileSearch,
   ServerCog,
@@ -88,12 +86,6 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
     groupId: "agentCapabilities",
   },
   {
-    id: "subagents",
-    icon: Bot,
-    titleId: "settings.subagents.title",
-    groupId: "agentCapabilities",
-  },
-  {
     id: "plugin",
     icon: Blocks,
     titleId: "settings.plugins.title",
@@ -103,12 +95,6 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
     id: "mcp",
     icon: Cable,
     titleId: "settings.mcpTitle",
-    groupId: "agentCapabilities",
-  },
-  {
-    id: "skill",
-    icon: WandSparkles,
-    titleId: "settings.skills.title",
     groupId: "agentCapabilities",
   },
   {

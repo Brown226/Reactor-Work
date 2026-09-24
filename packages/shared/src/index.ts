@@ -257,6 +257,7 @@ export * from "./remote-sync.js";
 export * from "./plugin-types.js";
 export * from "./subagents-types.js";
 export * from "./server-agents-types.js";
+export * from "./server-skills-market-types.js";
 export * from "./settings-source.js";
 export * from "./settings-errors.js";
 export * from "./app-runtime-preferences.js";

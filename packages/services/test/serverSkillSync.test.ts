@@ -87,6 +87,32 @@ function deliverableBody(extra: Record<string, unknown> = {}): unknown {
   };
 }
 
+/** 市场目录条目（对齐服务端 `SkillCatalogItem` 形状，见 shared `server-skills-market-types.ts`）。 */
+function catalogItem(extra: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 1,
+    name: "alpha",
+    title: "Alpha",
+    description: "test skill",
+    icon: "📊",
+    category: "data",
+    tags: ["excel"],
+    author: "官方",
+    version: "1.0.0",
+    featured: false,
+    hot: 3,
+    uses: 7,
+    autoInstall: false,
+    disableModelInvocation: false,
+    updatedAt: "2026-09-01T00:00:00.000Z",
+    installed: false,
+    favorited: false,
+    enabled: true,
+    hasUpdate: false,
+    ...extra,
+  };
+}
+
 test("sync 写入 SKILL.md 并在第二次调用时保持幂等（无变更零写入）", async () => {
   const home = await mkdtemp(join(tmpdir(), "server-skill-sync-"));
   const previousHome = process.env.HOME;
@@ -503,6 +529,246 @@ test("未登录：不发起任何请求，skippedNotLoggedIn", async () => {
   } finally {
     if (previousHome === undefined) delete process.env.HOME;
     else process.env.HOME = previousHome;
+    await rm(home, { recursive: true, force: true });
+  }
+});
+
+test("syncCatalog：目录+精选写入进程内投影；非法名/重复丢弃；失败保留旧值且零磁盘写", async () => {
+  const home = await mkdtemp(join(tmpdir(), "server-skill-catalog-"));
+  const previousHome = process.env.HOME;
+  const previousUserProfile = process.env.USERPROFILE;
+  process.env.HOME = home;
+  process.env.USERPROFILE = home;
+  try {
+    // 预置本地落盘技能：syncCatalog 无论成败都不该碰它。
+    const localDir = join(resolveServerSkillRoot(), "alpha");
+    await mkdir(localDir, { recursive: true });
+    await writeFile(join(localDir, "SKILL.md"), SKILL_MD, "utf-8");
+
+    let offline = false;
+    const apiClient: ApiClient = {
+      async request(input, init) {
+        const url = String(input);
+        const method = (init?.method ?? "GET").toUpperCase();
+        if (offline) {
+          return new Response(JSON.stringify({ error: { code: "503", message: "down" } }), {
+            status: 503,
+            headers: { "content-type": "application/json" },
+          });
+        }
+        if (method === "GET" && /\/me\/skills\/catalog/.test(url)) {
+          return new Response(
+            JSON.stringify({
+              items: [
+                catalogItem(),
+                catalogItem({ id: 2, name: "beta", title: "Beta" }),
+                // 非法名（不能安全作目录名）整条丢弃；重复 name 去重取首。
+                catalogItem({ id: 3, name: "Bad_Name" }),
+                catalogItem({ id: 99, name: "alpha", title: "dup" }),
+              ],
+              total: 3,
+              page: 1,
+              pageSize: 24,
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          );
+        }
+        if (method === "GET" && /\/me\/skills\/featured/.test(url)) {
+          return new Response(
+            JSON.stringify({ items: [catalogItem({ featured: true })], nonce: "n" }),
+            {
+              status: 200,
+              headers: { "content-type": "application/json" },
+            },
+          );
+        }
+        return new Response("{}", { status: 404, headers: { "content-type": "application/json" } });
+      },
+    };
+    const service = createServerSkillSyncService({
+      apiClient,
+      credentials: fakeCredentials(),
+      reactorServer: fakeReactorServer(true),
+    });
+
+    const ok = await service.syncCatalog();
+    assert.equal(ok.offline, false);
+    assert.equal(ok.skippedNotLoggedIn, false);
+    assert.deepEqual(
+      ok.catalog.map((item) => item.name),
+      ["alpha", "beta"],
+    );
+    assert.deepEqual(
+      ok.featured.map((item) => item.name),
+      ["alpha"],
+    );
+    // 缺字段兜底：服务端无独立 installEnabled 位 → 与 enabled 同义。
+    assert.equal(ok.catalog[0]?.installEnabled, true);
+    assert.equal(ok.catalog[0]?.uses, 7);
+    assert.deepEqual(
+      (await service.getCatalog()).map((item) => item.name),
+      ["alpha", "beta"],
+    );
+
+    // 拉取失败：投影保留上一次成功值，本地落盘分毫不动。
+    offline = true;
+    const failed = await service.syncCatalog();
+    assert.equal(failed.offline, true);
+    assert.equal(failed.authExpired, false);
+    assert.match(failed.errors[0] ?? "", /读取技能市场目录失败/);
+    assert.deepEqual(
+      failed.catalog.map((item) => item.name),
+      ["alpha", "beta"],
+    );
+    assert.equal(await readFile(join(localDir, "SKILL.md"), "utf-8"), SKILL_MD);
+  } finally {
+    if (previousHome === undefined) delete process.env.HOME;
+    else process.env.HOME = previousHome;
+    if (previousUserProfile === undefined) delete process.env.USERPROFILE;
+    else process.env.USERPROFILE = previousUserProfile;
+    await rm(home, { recursive: true, force: true });
+  }
+});
+
+test("install：POST 成功后 re-GET 落盘 reconcile；非法名在发请求前拒绝", async () => {
+  const home = await mkdtemp(join(tmpdir(), "server-skill-install-"));
+  const previousHome = process.env.HOME;
+  const previousUserProfile = process.env.USERPROFILE;
+  process.env.HOME = home;
+  process.env.USERPROFILE = home;
+  try {
+    let installPosts = 0;
+    const apiClient = createFakeApiClient([
+      {
+        method: "POST",
+        match: /\/install$/,
+        body: { ok: true, affected: ["alpha"], skill: catalogItem({ installed: true }) },
+      },
+      { method: "GET", match: /\/me\/skills$/, body: deliverableBody() },
+      {
+        method: "GET",
+        match: /\/me\/skills\/state/,
+        body: { skills: [{ name: "alpha", enabled: true }] },
+      },
+    ]);
+    const countingClient: ApiClient = {
+      async request(input, init) {
+        const method = (init?.method ?? "GET").toUpperCase();
+        if (method === "POST" && String(input).endsWith("/install")) installPosts += 1;
+        return apiClient.request(input, init);
+      },
+    };
+    const service = createServerSkillSyncService({
+      apiClient: countingClient,
+      credentials: fakeCredentials(),
+      reactorServer: fakeReactorServer(true),
+    });
+
+    // 非法名：本地直接拒绝，不打服务端（防线 1，与 shared 契约同口径）。
+    await assert.rejects(() => service.install("Bad_Name"), /非法技能名/);
+    assert.equal(installPosts, 0);
+
+    const result = await service.install("alpha");
+    assert.equal(installPosts, 1);
+    assert.deepEqual(result.names, ["alpha"]);
+    assert.deepEqual(result.errors, []);
+    // 写后 re-GET + 落盘 reconcile：文件来自 GET /me/skills，而非本地推算。
+    assert.equal(
+      await readFile(join(resolveServerSkillRoot(), "alpha", "SKILL.md"), "utf-8"),
+      SKILL_MD,
+    );
+  } finally {
+    if (previousHome === undefined) delete process.env.HOME;
+    else process.env.HOME = previousHome;
+    if (previousUserProfile === undefined) delete process.env.USERPROFILE;
+    else process.env.USERPROFILE = previousUserProfile;
+    await rm(home, { recursive: true, force: true });
+  }
+});
+
+test("setFavorite：true 走 PUT、false 走 DELETE；写后 re-GET 刷新投影，re-GET 失败标注「收藏已生效」", async () => {
+  const home = await mkdtemp(join(tmpdir(), "server-skill-favorite-"));
+  const previousHome = process.env.HOME;
+  const previousUserProfile = process.env.USERPROFILE;
+  process.env.HOME = home;
+  process.env.USERPROFILE = home;
+  try {
+    const favoriteMethods: string[] = [];
+    let favorited = false;
+    let catalogDown = false;
+    const apiClient: ApiClient = {
+      async request(input, init) {
+        const url = String(input);
+        const method = (init?.method ?? "GET").toUpperCase();
+        if (method === "PUT" && url.endsWith("/favorite")) {
+          favoriteMethods.push("PUT");
+          favorited = true;
+          return new Response(JSON.stringify({ ok: true, favorited: true }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        }
+        if (method === "DELETE" && url.endsWith("/favorite")) {
+          favoriteMethods.push("DELETE");
+          favorited = false;
+          return new Response(JSON.stringify({ ok: true, favorited: false }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        }
+        if (catalogDown) {
+          return new Response(JSON.stringify({ error: { code: "503", message: "down" } }), {
+            status: 503,
+            headers: { "content-type": "application/json" },
+          });
+        }
+        if (method === "GET" && /\/me\/skills\/catalog/.test(url)) {
+          return new Response(
+            JSON.stringify({
+              items: [catalogItem({ favorited })],
+              total: 1,
+              page: 1,
+              pageSize: 24,
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          );
+        }
+        if (method === "GET" && /\/me\/skills\/featured/.test(url)) {
+          return new Response(JSON.stringify({ items: [] }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        }
+        return new Response("{}", { status: 404, headers: { "content-type": "application/json" } });
+      },
+    };
+    const service = createServerSkillSyncService({
+      apiClient,
+      credentials: fakeCredentials(),
+      reactorServer: fakeReactorServer(true),
+    });
+
+    const added = await service.setFavorite("alpha", true);
+    assert.deepEqual(favoriteMethods, ["PUT"]);
+    assert.deepEqual(added.errors, []);
+    assert.equal((await service.getCatalog())[0]?.favorited, true);
+
+    const removed = await service.setFavorite("alpha", false);
+    assert.equal(removed.offline, false);
+    assert.deepEqual(favoriteMethods, ["PUT", "DELETE"]);
+    assert.equal((await service.getCatalog())[0]?.favorited, false);
+
+    // 写已生效但 re-GET 失败：标 offline + 「收藏已生效」，旧投影不被覆盖、磁盘不动。
+    catalogDown = true;
+    const degraded = await service.setFavorite("alpha", true);
+    assert.equal(degraded.offline, true);
+    assert.match(degraded.errors[0] ?? "", /收藏已生效，但读取技能市场目录失败/);
+    assert.equal((await service.getCatalog())[0]?.favorited, false);
+  } finally {
+    if (previousHome === undefined) delete process.env.HOME;
+    else process.env.HOME = previousHome;
+    if (previousUserProfile === undefined) delete process.env.USERPROFILE;
+    else process.env.USERPROFILE = previousUserProfile;
     await rm(home, { recursive: true, force: true });
   }
 });

@@ -13,7 +13,7 @@ import { usePlatform } from "@/hooks/usePlatform.js";
 import { useWorkspaceActiveTaskState } from "@/hooks/useWorkspaceActiveTaskState.js";
 import { useEnsureWorkspaceMcpLoaded } from "@/hooks/useEnsureWorkspaceMcpLoaded.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";
-import { isWorkspaceReadOnly, isWorkspaceTab } from "@/store/tabStore.js";
+import { isSettingsTab, isWorkspaceReadOnly, isWorkspaceTab } from "@/store/tabStore.js";
 import type { TaskChatMessage as TestChatMessage } from "@/lib/taskChatMessageTypes.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
@@ -66,7 +66,7 @@ import { resolveAppWorkspaceRpcTarget } from "@/app-shell/workspaceRpcTarget.js"
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
 import { useWorkspaceTerminalTaskNotifications } from "@/hooks/useTaskNotifications.js";
 import { useOffPeakTaskNotifications } from "@/hooks/useOffPeakTaskNotifications.js";
-import type { AppProps, WorkspaceMainView } from "@/app-shell/types.js";
+import type { AppProps, MarketIntent, WorkspaceMainView } from "@/app-shell/types.js";
 import type {
   ChatSearchResultHighlightRequest,
   ChatViewSummaryPanelVariant,
@@ -416,6 +416,7 @@ export function App({
     setGitRefreshVersion((value) => value + 1);
   }, []);
   const openSettingsTab = useTabStore((state) => state.openSettingsTab);
+  const closeTab = useTabStore((state) => state.closeTab);
   const gitState = useGitRepository({
     workspacePath: workspaceAbsPath,
     activeTaskId,
@@ -831,6 +832,7 @@ export function App({
   > | null>(null);
   const [pluginStoreReturnScopeKey, setPluginStoreReturnScopeKey] = useState("user");
   const [pluginStoreOpenVersion, setPluginStoreOpenVersion] = useState(0);
+  const [marketIntent, setMarketIntent] = useState<MarketIntent | null>(null);
   const handleNavigateToTaskMain = useCallback(() => {
     setWorkspaceMainView("chat");
   }, []);
@@ -852,6 +854,16 @@ export function App({
     preserveNextSettingsExit();
     setWorkspaceMainView("plugin-store");
   }, [preserveNextSettingsExit]);
+  const handleOpenMarket = useCallback(() => {
+    // 侧栏入口回落默认视图：清掉命令面板可能留下的意图（MarketPage 重挂载即默认专家/市场）。
+    setMarketIntent(null);
+    setWorkspaceMainView("market");
+  }, []);
+  const handleManageModelsFromMarket = useCallback(() => {
+    // 子智能体表单「管理模型」→ 设置·模型分区；该分区被治理隐藏时由 settingsNavigation 回落。
+    setPendingSettingsSection("modelProvider");
+    openSettingsTab();
+  }, [openSettingsTab]);
   const handleOpenAutomationConsumed = useCallback(() => {
     setOpenAutomationId(null);
     setOpenAutomationTab(null);
@@ -994,8 +1006,13 @@ export function App({
           openWorkspace: () => runVisibleWorkspaceCommand(onOpenWorkspace),
           openSettings: openSettingsTab,
           openSkillsSettings: () => {
-            setPendingSettingsPluginIntent("skills");
-            openSettingsTab();
+            // 技能管理已迁入「专家·技能」市场（方案 §5.1）：退出设置时抑制回落 chat，
+            // 关掉设置 tab 后直接落到市场的「我的·技能」管理视图。
+            preserveNextSettingsExit();
+            const settingsTab = tabs.find(isSettingsTab);
+            if (settingsTab) closeTab(settingsTab.id);
+            setMarketIntent({ view: "skill", mode: "mine", version: Date.now() });
+            setWorkspaceMainView("market");
           },
           openMcpSettings: () => {
             setPendingSettingsPluginIntent("mcps");
@@ -1040,6 +1057,9 @@ export function App({
       supportsEmbeddedBrowser,
       toggleSidebarShortcutLabel,
       toggleTerminalShortcutLabel,
+      closeTab,
+      preserveNextSettingsExit,
+      tabs,
       themeTarget,
     ],
   );
@@ -1110,6 +1130,9 @@ export function App({
         handleOpenAutomations={handleOpenAutomations}
         handleOpenPluginStore={handleOpenPluginStoreForScope}
         handleManageInstalledPlugins={handleManageInstalledPlugins}
+        onOpenMarket={handleOpenMarket}
+        marketIntent={marketIntent}
+        onOpenModelProviderSettings={handleManageModelsFromMarket}
         onConnectRemote={onConnectRemote}
         onSelectRemoteProject={onSelectRemoteProject}
         onCancelRemoteProject={onCancelRemoteProject}

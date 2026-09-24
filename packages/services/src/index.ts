@@ -106,7 +106,10 @@ export type {
 // 企业服务端技能同步：与上面同规矩，只出 descriptor 与类型；工厂与路径解析在 node-only 文件
 // （根 index 会被 renderer 拉进浏览器包，见 services 目录内约定）。
 export { IServerSkillSyncService } from "./server-skills/serverSkillSync.js";
-export type { ServerSkillSyncResult } from "./server-skills/serverSkillSync.js";
+export type {
+  ServerSkillCatalogSyncResult,
+  ServerSkillSyncResult,
+} from "./server-skills/serverSkillSync.js";
 // 企业服务端 Agent 同步：与上面同规矩，只出 descriptor 与类型；工厂在 node-only 文件。
 export { IServerAgentSyncService } from "./server-agents/serverAgentSync.js";
 export type { ServerAgentSyncResult } from "./server-agents/serverAgentSync.js";

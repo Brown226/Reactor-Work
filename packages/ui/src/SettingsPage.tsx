@@ -64,7 +64,6 @@ import {
   type CodingPlanUsageSource,
 } from "@/settings/usage-stats/CodingPlanUsagePanel.js";
 import { buildPersonalCodingPlanUsageSource } from "@/lib/codingPlanUsageSources.js";
-import { SubagentsSection } from "@/settings/SubagentsSection.js";
 import { AutomationsSection } from "@/settings/AutomationsSection.js";
 import { SegmentPill } from "@/settings/PluginStoreListView.js";
 import { PluginsSection } from "@/settings/PluginsSection.js";
@@ -615,9 +614,6 @@ export function SettingsPage({
     },
     [openCodingPlanUpgrade],
   );
-  const handleOpenModelProviderSettings = useCallback(() => {
-    setActiveSettingsSection("modelProvider");
-  }, [setActiveSettingsSection]);
   const handleOpenUsageSettings = useCallback(() => {
     // 设置页 sidebar footer 里的齿轮/返回按钮复用 onBack，
     // 但头像菜单的“使用统计”应该停留在设置页并切到 Usage，不能跟着返回工作区。
@@ -1870,19 +1866,6 @@ export function SettingsPage({
                               onBack?.();
                             }}
                           />
-                        ) : activeSection === "skill" ? (
-                          <PluginsSection
-                            key={`skill:${settingsSectionNavigationVersion}`}
-                            mode="skill"
-                            workspacePath={activeWorkspacePath}
-                            workspaceIdentity={activeWorkspaceIdentity}
-                            onCreateTask={onCreateTask}
-                            onOpenPluginStore={(_returnScopeKey, intent) => {
-                              // 添加市场与浏览插件都先离开设置层，再显示商店。
-                              requestPluginStoreOpen({ returnScopeKey: "user", intent });
-                              onBack?.();
-                            }}
-                          />
                         ) : activeSection === "migration" ? (
                           <MigrationSection
                             workspacePath={activeWorkspacePath}
@@ -1896,12 +1879,6 @@ export function SettingsPage({
                             selectedCodingPlanSource={selectedUsageCodingPlanSource}
                             workspaceIdentity={activeWorkspaceIdentity}
                             workspacePath={activeWorkspacePath ?? undefined}
-                          />
-                        ) : activeSection === "subagents" ? (
-                          <SubagentsSection
-                            onManageModels={handleOpenModelProviderSettings}
-                            workspacePath={activeWorkspacePath}
-                            workspaceIdentity={activeWorkspaceIdentity}
                           />
                         ) : activeSection === "automations" ? (
                           <AutomationsSection

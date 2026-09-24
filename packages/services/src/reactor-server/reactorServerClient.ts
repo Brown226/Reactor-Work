@@ -1,8 +1,16 @@
 import {
   normalizeServerAgentList,
+  normalizeServerSkillCatalogItem,
+  normalizeServerSkillCatalogList,
+  normalizeServerSkillCatalogPage,
   type ApiClient,
   type ServerAgentDefinition,
   type ServerAgentMutationResult,
+  type ServerSkillCatalogItem,
+  type ServerSkillCatalogPage,
+  type ServerSkillCatalogQuery,
+  type ServerSkillFavoriteResult,
+  type ServerSkillInstallResult,
 } from "@zcode/shared";
 
 /**
@@ -324,6 +332,69 @@ export function createReactorServerClient(apiClient: ApiClient) {
     },
 
     /**
+     * 技能市场目录（分页；可见性与安装/收藏关系由服务端 SQL 完成）。
+     * 形状归一化走 shared 的 `normalizeServerSkillCatalogPage`（契约单点：非法 name 丢弃、缺字段兜底）。
+     */
+    async skillCatalog(
+      serverUrl: string,
+      accessToken: string,
+      query?: ServerSkillCatalogQuery,
+    ): Promise<ServerSkillCatalogPage> {
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(query ?? {})) {
+        if (value === undefined) continue;
+        const param = key === "favoritedOnly" ? "favorited" : key;
+        params.set(param, value === true ? "1" : String(value));
+      }
+      const search = params.toString();
+      const { data } = await request<unknown>(
+        `${serverUrl}/me/skills/catalog${search ? `?${search}` : ""}`,
+        { method: "GET", accessToken },
+      );
+      return normalizeServerSkillCatalogPage(data);
+    },
+
+    /** 技能精选（服务端按 nonce 加权抽取的 featured 子集；响应 `{items, nonce}`，nonce 不消费）。 */
+    async skillFeatured(serverUrl: string, accessToken: string): Promise<ServerSkillCatalogItem[]> {
+      const { data } = await request<unknown>(`${serverUrl}/me/skills/featured`, {
+        method: "GET",
+        accessToken,
+      });
+      return normalizeServerSkillCatalogList(data);
+    },
+
+    /** 安装技能（幂等；重复安装不报错）。成功后调用方必须 re-GET 再 reconcile（D3）。 */
+    async installSkill(
+      serverUrl: string,
+      accessToken: string,
+      name: string,
+    ): Promise<ServerSkillInstallResult> {
+      const { data } = await request<unknown>(
+        `${serverUrl}/me/skills/${encodeURIComponent(name)}/install`,
+        { method: "POST", accessToken },
+      );
+      return toSkillMutationResult(data, name);
+    },
+
+    /**
+     * 收藏 / 取消收藏（幂等；`favorited=true` 用 PUT、false 用 DELETE，对齐服务端路由）。
+     * 纯标记不改下发集；成功后调用方 re-GET 刷新目录投影。
+     */
+    async setSkillFavorite(
+      serverUrl: string,
+      accessToken: string,
+      name: string,
+      favorited: boolean,
+    ): Promise<ServerSkillFavoriteResult> {
+      const { data } = await request<{ ok?: unknown; favorited?: unknown }>(
+        `${serverUrl}/me/skills/${encodeURIComponent(name)}/favorite`,
+        { method: favorited ? "PUT" : "DELETE", accessToken },
+      );
+      const value = typeof data?.favorited === "boolean" ? data.favorited : favorited;
+      return { ok: true, favorited: value };
+    },
+
+    /**
      * 专家市场目录（含我的安装/启停/收藏关系；可见性与分页由服务端 SQL 完成，一次全量）。
      * 形状归一化走 shared 的 `normalizeServerAgentList`（契约单点：非法 name 丢弃、缺字段兜底）。
      */
@@ -374,6 +445,20 @@ export function createReactorServerClient(apiClient: ApiClient) {
       );
       return toAgentMutationResult(data, name);
     },
+  };
+}
+
+/** 技能写操作返回按 shared 契约兜底：缺 `affected` 时退回目标名；`skill` 缺失时留 null（由 re-GET 补）。 */
+function toSkillMutationResult(data: unknown, name: string): ServerSkillInstallResult {
+  const record = (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>;
+  const affected = Array.isArray(record.affected)
+    ? record.affected.filter((entry): entry is string => typeof entry === "string")
+    : [];
+  const skill = normalizeServerSkillCatalogItem(record.skill);
+  return {
+    ok: true,
+    affected: affected.length > 0 ? affected : [name],
+    skill,
   };
 }
 

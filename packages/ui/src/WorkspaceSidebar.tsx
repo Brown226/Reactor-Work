@@ -17,6 +17,7 @@ import {
   CalendarClock,
   Clock3,
   Cloud,
+  Bot,
   Folder,
   FolderOpen,
   Hash,
@@ -259,6 +260,8 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   onOpenPluginStore,
   automationsActive = false,
   pluginStoreActive = false,
+  onOpenMarket,
+  marketActive = false,
   onOpenWorkspaceFiles,
 }: {
   workspacePath: string;
@@ -310,6 +313,8 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   onOpenPluginStore?: () => void;
   automationsActive?: boolean;
   pluginStoreActive?: boolean;
+  onOpenMarket?: () => void;
+  marketActive?: boolean;
   /** 打开右侧「工作区文件」面板（文件树已从左侧抽屉迁到右侧）。 */
   onOpenWorkspaceFiles?: () => void;
 }) {
@@ -754,6 +759,9 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   const handleOpenPluginStoreMain = useCallback(() => {
     onOpenPluginStore?.();
   }, [onOpenPluginStore]);
+  const handleOpenMarketMain = useCallback(() => {
+    onOpenMarket?.();
+  }, [onOpenMarket]);
   const handleOpenAutomationsMain = useCallback(() => {
     onOpenAutomations?.();
   }, [onOpenAutomations]);
@@ -1330,6 +1338,21 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
             >
               <CalendarClock className="size-4" />
               {intl.formatMessage({ id: "workspace.openScheduledSettings" })}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleOpenMarketMain}
+              data-icon="inline-start"
+              data-testid="marketplace-open"
+              size="lg"
+              aria-pressed={marketActive}
+              className={cn(
+                "w-full justify-start gap-2 text-foreground hover:bg-surface-hover hover:text-foreground",
+                marketActive && "bg-selected text-foreground",
+              )}
+            >
+              <Bot className="size-4" />
+              {intl.formatMessage({ id: "marketplace.title" })}
             </Button>
             <Button
               variant="ghost"

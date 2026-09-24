@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 import { chmod, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import type { ApiClient } from "@zcode/shared";
+import { isServerSkillNameFileSafe } from "@zcode/shared";
+import type { ApiClient, ServerSkillCatalogItem } from "@zcode/shared";
 import type { ICredentialService } from "../credential/credential.js";
 import { createServiceLogger } from "../logger/serviceLogger.js";
 import {
@@ -13,7 +14,11 @@ import {
   ReactorServerHttpError,
   type ReactorServerSkillPayload,
 } from "../reactor-server/reactorServerClient.js";
-import { IServerSkillSyncService, type ServerSkillSyncResult } from "./serverSkillSync.js";
+import {
+  IServerSkillSyncService,
+  type ServerSkillCatalogSyncResult,
+  type ServerSkillSyncResult,
+} from "./serverSkillSync.js";
 import { resolveServerSkillRoot } from "./serverSkillsRoot.js";
 
 /**
@@ -93,6 +98,23 @@ function failedResult(error: unknown, context: string): ServerSkillSyncResult {
   };
 }
 
+/** 目录投影的空结果：catalog/featured 带回上一次成功值（UI 不因离线丢市场页）。 */
+function catalogResult(
+  catalog: readonly ServerSkillCatalogItem[],
+  featured: readonly ServerSkillCatalogItem[],
+  overrides: Partial<Omit<ServerSkillCatalogSyncResult, "catalog" | "featured">> = {},
+): ServerSkillCatalogSyncResult {
+  return {
+    catalog,
+    featured,
+    errors: [],
+    offline: false,
+    authExpired: false,
+    skippedNotLoggedIn: false,
+    ...overrides,
+  };
+}
+
 interface ServerSession {
   readonly serverUrl: string;
   readonly accessToken: string;
@@ -104,9 +126,12 @@ export function createServerSkillSyncService(options: {
   reactorServer: IReactorServerService;
 }): IServerSkillSyncService {
   const client = createReactorServerClient(options.apiClient);
-  // 串行队列：sync/uninstall/refresh 同一时刻只跑一个，后来的等待，
+  // 串行队列：sync/uninstall/refresh/install/favorite 同一时刻只跑一个，后来的等待，
   // 避免「全量对齐删目录」与「单技能卸载删目录」交叉执行把状态写撕裂。
   let queue: Promise<unknown> = Promise.resolve();
+  /** 最近一次成功 syncCatalog 的目录/精选投影（进程内存；不落盘，失败时作为兜底）。 */
+  let lastCatalog: readonly ServerSkillCatalogItem[] = [];
+  let lastFeatured: readonly ServerSkillCatalogItem[] = [];
 
   function enqueue<T>(task: () => Promise<T>): Promise<T> {
     const run = queue.then(task, task);
@@ -380,9 +405,67 @@ export function createServerSkillSyncService(options: {
     }
   }
 
+  /**
+   * 拉 catalog + featured 刷新进程内投影：**纯内存，零磁盘写**——
+   * 失败（含未登录/离线/401）一律带回上一次成功值，本地 `server-skills/` 分毫不动。
+   */
+  async function runSyncCatalog(): Promise<ServerSkillCatalogSyncResult> {
+    const session = await resolveSession();
+    if (!session) {
+      return catalogResult(lastCatalog, lastFeatured, { skippedNotLoggedIn: true });
+    }
+    try {
+      const [page, featured] = await Promise.all([
+        client.skillCatalog(session.serverUrl, session.accessToken),
+        client.skillFeatured(session.serverUrl, session.accessToken),
+      ]);
+      lastCatalog = page.items;
+      lastFeatured = featured;
+      return catalogResult(lastCatalog, lastFeatured);
+    } catch (error) {
+      const unauthorized =
+        error instanceof ReactorServerHttpError &&
+        (error.status === 401 || error.status === 403 || error.isUnauthorized);
+      return catalogResult(lastCatalog, lastFeatured, {
+        errors: [`读取技能市场目录失败: ${errorMessage(error)}`],
+        offline: !unauthorized,
+        authExpired: unauthorized,
+      });
+    }
+  }
+
+  async function runInstall(name: string): Promise<ServerSkillSyncResult> {
+    if (!isServerSkillNameFileSafe(name)) throw new Error(`非法技能名: ${name}`);
+    const session = await resolveSession();
+    if (!session) throw new Error("未登录企业服务端，无法安装技能");
+    await client.installSkill(session.serverUrl, session.accessToken, name);
+    // 写后 re-GET + 落盘 reconcile：安装关系与聚合字段以服务端为准，本地不推算（D3 同款）。
+    return runSync();
+  }
+
+  async function runSetFavorite(
+    name: string,
+    favorited: boolean,
+  ): Promise<ServerSkillCatalogSyncResult> {
+    if (!isServerSkillNameFileSafe(name)) throw new Error(`非法技能名: ${name}`);
+    const session = await resolveSession();
+    if (!session) throw new Error("未登录企业服务端，无法收藏技能");
+    await client.setSkillFavorite(session.serverUrl, session.accessToken, name, favorited);
+    // 收藏不改下发集（不影响磁盘）；写成功后 re-GET 只刷新目录投影。
+    const refreshed = await runSyncCatalog();
+    // 写已生效、只是 re-GET 失败：标注清楚，避免 UI 把「收藏成功」误报成整体失败。
+    const errors = refreshed.errors.map((entry) => `收藏已生效，但${entry}`);
+    return errors.length > 0 ? { ...refreshed, errors } : refreshed;
+  }
+
   return {
     sync: () => enqueue(runSync),
+    syncCatalog: () => enqueue(runSyncCatalog),
+    install: (name: string) => enqueue(() => runInstall(name)),
     uninstall: (name: string) => enqueue(() => runUninstall(name)),
     refreshFromServer: (name: string) => enqueue(() => runRefreshFromServer(name)),
+    setFavorite: (name: string, favorited: boolean) =>
+      enqueue(() => runSetFavorite(name, favorited)),
+    getCatalog: async () => lastCatalog,
   };
 }

@@ -1,4 +1,4 @@
-import { ServiceChannels } from "@zcode/shared";
+import { ServiceChannels, type ServerSkillCatalogItem } from "@zcode/shared";
 import { createServiceDescriptor } from "../descriptors.js";
 
 /**
@@ -35,10 +35,37 @@ export interface ServerSkillSyncResult {
 export interface IServerSkillSyncService {
   /** 全量对齐：以 `GET /me/skills` 为真相，只动 `server-skills/`。并发调用串行执行。 */
   sync(): Promise<ServerSkillSyncResult>;
+  /**
+   * 拉市场目录（catalog + featured）刷新**进程内投影**；纯内存，**不碰磁盘**——
+   * 失败时保留上一次成功值（与 P3 `ServerAgentSyncResult.catalog` 同语义），本地落盘零影响。
+   */
+  syncCatalog(): Promise<ServerSkillCatalogSyncResult>;
+  /** 市场安装：`POST .../install` 成功后 re-GET + 落盘 reconcile（不本地推算聚合字段，D3 同款）。 */
+  install(name: string): Promise<ServerSkillSyncResult>;
   /** 卸载：先 `DELETE .../install`（服务端写 dismissal），成功后才删本地目录。 */
   uninstall(name: string): Promise<void>;
   /** 更新单个技能：全量对齐后 `POST .../refresh` 归位 hasUpdate。 */
   refreshFromServer(name: string): Promise<ServerSkillSyncResult>;
+  /** 收藏/取消收藏（纯标记）：写成功后 re-GET 刷新目录投影。 */
+  setFavorite(name: string, favorited: boolean): Promise<ServerSkillCatalogSyncResult>;
+  /** 进程内最近一次成功 `syncCatalog()` 的目录投影（不联网；UI 首帧渲染用）。 */
+  getCatalog(): Promise<readonly ServerSkillCatalogItem[]>;
+}
+
+/** 一次 `syncCatalog()` / `setFavorite()` 的结果（市场投影，只在内存，不落盘）。 */
+export interface ServerSkillCatalogSyncResult {
+  /** 目录全量投影（含未安装条目，市场字段在此）——市场页卡片的数据源。 */
+  readonly catalog: readonly ServerSkillCatalogItem[];
+  /** 精选投影（featured=true 的目录条目子集，服务端按 nonce 加权抽取）。 */
+  readonly featured: readonly ServerSkillCatalogItem[];
+  /** 单项失败信息；投影失败时 catalog/featured 带回**上一次**成功值。 */
+  readonly errors: readonly string[];
+  /** 服务端不可达 / 5xx / 取不到 token：本地落盘零影响，投影保留旧值。 */
+  readonly offline: boolean;
+  /** 401/403：token 失效，UI 应提示重新登录（区别于「离线」）。 */
+  readonly authExpired: boolean;
+  /** 未登录：未发起任何请求，投影不动。 */
+  readonly skippedNotLoggedIn: boolean;
 }
 
 export const IServerSkillSyncService = createServiceDescriptor<IServerSkillSyncService>(

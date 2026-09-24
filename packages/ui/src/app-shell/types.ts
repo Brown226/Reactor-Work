@@ -117,7 +117,15 @@ export interface GitChangeSummary {
   removed: number;
 }
 
-export type WorkspaceMainView = "chat" | "automations" | "plugin-store";
+export type WorkspaceMainView = "chat" | "automations" | "plugin-store" | "market";
+
+/** 市场页导航意图（命令面板等外部入口用）：指定打开哪个视图与市场/我的模式。 */
+export interface MarketIntent {
+  view: "expert" | "skill";
+  mode: "market" | "mine";
+  /** 即使与上次相同也需触发切换，用递增版本号表达「一次新的打开」。 */
+  version: number;
+}
 
 export interface WorkspaceShellLayoutProps extends Omit<AppProps, "baseFeedbackService"> {
   workspaceReadOnlyReason?: string;
@@ -130,6 +138,12 @@ export interface WorkspaceShellLayoutProps extends Omit<AppProps, "baseFeedbackS
   handleOpenAutomations: OpenAutomationsMain;
   handleOpenPluginStore: () => void;
   handleManageInstalledPlugins: () => void;
+  /** 打开「专家·技能」市场主视图（插件市场入口上方的新菜单项）。 */
+  onOpenMarket: () => void;
+  /** 命令面板等入口携带的市场视图意图；MarketPage 挂载/变更时落到指定 tab 与模式。 */
+  marketIntent: MarketIntent | null;
+  /** 子智能体表单「管理模型」跳设置·模型分区（App 持有 intent+打开逻辑）。 */
+  onOpenModelProviderSettings: () => void;
   workspaceShellZCodeState: WorkspaceShellZCodeState;
   theme: Theme;
   isMacFullscreen: boolean;
