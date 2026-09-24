@@ -35,7 +35,8 @@ description: >
 
 ```
 ReportReviewIssues({
-  text: "<提取出的正文>"            // 长文档改用 textFile: "<抽取文本的绝对路径>"
+  text: "<提取出的正文>"            // 长文档改用 textFile: "<抽取文本的绝对路径>"（用 .md 后缀落盘，
+                                          //  抽取结果本来就是 markdown；.txt 会让预览区按源码显示）
   sourcePath: "<被审文件路径>",
   issues: [{
     severity: "error" | "warning" | "info",
