@@ -8,7 +8,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { locateQuoteOccurrence, normalizeWithIndexMap } from "../src/lib/quoteSearch.js";
+import {
+  createQuotePageScan,
+  locateQuoteOccurrence,
+  locateQuotePage,
+  normalizeWithIndexMap,
+} from "../src/lib/quoteSearch.js";
 
 test("归一化：全角转半角、空白丢弃、连字符与斜杠统一、大写归一", () => {
   assert.equal(normalizeWithIndexMap("ＧＢ／Ｔ ８１６３").text, "GB/T8163");
@@ -55,4 +60,47 @@ test("找不到就返回 null，绝不退化成模糊匹配", () => {
   assert.equal(locateQuoteOccurrence("这是一段正文", "完全无关的句子"), null);
   assert.equal(locateQuoteOccurrence("这是一段正文", "   "), null);
   assert.equal(locateQuoteOccurrence("这是一段正文", ""), null);
+});
+
+test("分页定位：返回片段所在页号（1 起），跨页累计序号与工具口径一致", () => {
+  const pages = ["第一页：见 GB 12238。", "第二页：安装调试要求。", "第三页：安装调试复核。"];
+  // 第一处「安装调试」在第二页
+  assert.equal(locateQuotePage(pages, "安装调试", 1), 2);
+  // 第二处在第三页：序号按跨页累计解释，不是「这一页的第几处」
+  assert.equal(locateQuotePage(pages, "安装调试", 2), 3);
+  assert.equal(locateQuotePage(pages, "GB 12238", 1), 1);
+});
+
+test("分页定位：归一化差异跨页照样命中；找不到返回 null，序号越界退回首个命中页", () => {
+  // 全角/空白差异由归一化吸收
+  assert.equal(locateQuotePage(["ｄｏｃｕｍｅｎｔ 编号　Ａ"], "document编号 A", 1), 1);
+  // 序号越界：退回第一个有命中的页（与文本侧「越界退回第一处」一致）
+  assert.equal(locateQuotePage(["甲", "安装调试"], "安装调试", 9), 2);
+  // 全篇没有 → null，调用方不得据此跳页
+  assert.equal(locateQuotePage(["甲", "乙"], "丙", 1), null);
+  assert.equal(locateQuotePage([], "丙", 1), null);
+});
+
+test("增量扫描：命中即停，不必读完整本 PDF", () => {
+  const scan = createQuotePageScan("安装调试", 1);
+  assert.ok(scan);
+  assert.equal(scan.push("第一页：安装调试要求。"), 1, "第一页命中就定下页码");
+  // 第 N 处：前几页没有命中时不做决定
+  const second = createQuotePageScan("安装调试", 2);
+  assert.ok(second);
+  assert.equal(second.push("甲"), null);
+  assert.equal(second.push("安装调试"), null, "只累计到 1 处，还不能定页");
+  assert.equal(second.push("安装调试"), 3, "累计到第 2 处，落在第 3 页");
+  // 序号越界：读完所有页后退回首个命中页
+  const overflow = createQuotePageScan("安装调试", 9);
+  assert.ok(overflow);
+  assert.equal(overflow.push("甲"), null);
+  assert.equal(overflow.push("安装调试"), null);
+  assert.equal(overflow.result(), 2);
+  // 空片段 / 全无命中
+  assert.equal(createQuotePageScan("  ", 1), null);
+  const miss = createQuotePageScan("没有这句话", 1);
+  assert.ok(miss);
+  assert.equal(miss.push("甲"), null);
+  assert.equal(miss.result(), null);
 });

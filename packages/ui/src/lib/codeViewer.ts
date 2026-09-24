@@ -126,6 +126,11 @@ export interface PdfCodeViewerSource extends CodeViewerWorkspaceScope {
   type: "pdf";
   title: string;
   path: string;
+  /**
+   * 审查定位：PDF 预览有文本层（react-pdf 默认渲染），可在原件里按片段标出高亮。
+   * PDF 一次只挂一页，所以消费方要先用 pdf.js 的文本抽取找出片段在第几页，再跳页 + 高亮。
+   */
+  quoteHighlight?: QuoteHighlightTarget;
 }
 
 export interface PptxCodeViewerSource extends CodeViewerWorkspaceScope {

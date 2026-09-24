@@ -336,6 +336,8 @@ function resolvePreviewPanePdfSource(
     type: "pdf",
     title: source.title,
     path: source.path,
+    // 审查点一条问题时会带上定位请求：原件（PDF）渲染完就把这句原文标出来。
+    ...(source.quoteHighlight ? { quoteHighlight: source.quoteHighlight } : {}),
   };
 }
 

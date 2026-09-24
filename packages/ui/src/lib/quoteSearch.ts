@@ -104,3 +104,62 @@ export function locateQuoteOccurrence(
   const end = (haystack.indices[endInNormalized] ?? start) + 1;
   return { start, end, total: starts.length };
 }
+
+/**
+ * 在「按页切好的文本」里找片段在第几页（PDF 用：一次只挂一页，得先知道跳哪页）。
+ *
+ * 序号按**跨页累计**解释，与工具在整篇正文上算出的 `matchedOccurrence` 同口径：
+ * 第 3 处出现在第 2 页时，页码就是 2，而不是「第 2 页里的第 3 处」。
+ * 序号越界或未给 → 取第一个有命中的页（与文本侧「越界退回第一处」一致）；
+ * 全篇都没有 → null（调用方不得据此跳页）。
+ */
+export function locateQuotePage(
+  pageTexts: readonly string[],
+  quote: string,
+  occurrence?: number | null,
+): number | null {
+  const scan = createQuotePageScan(quote, occurrence);
+  if (!scan) return null;
+  for (let index = 0; index < pageTexts.length; index += 1) {
+    const decided = scan.push(pageTexts[index] ?? "");
+    if (decided !== null) return decided;
+  }
+  return scan.result();
+}
+
+/** 增量扫描：逐页喂文本，一旦能定下页码就返回它（大文档不必读完所有页）。 */
+export interface QuotePageScan {
+  /** 喂一页文本；返回页码表示已确定，返回 null 表示还要继续喂 */
+  push: (pageText: string) => number | null;
+  /** 喂完所有页后取结果（没有命中返回 null） */
+  result: () => number | null;
+}
+
+export function createQuotePageScan(
+  quote: string,
+  occurrence?: number | null,
+): QuotePageScan | null {
+  const needle = normalizeWithIndexMap(quote).text;
+  if (needle.length === 0) return null;
+  let pageIndex = 0;
+  let seen = 0;
+  let firstHit = 0;
+  const wanted = occurrence && occurrence > 0 ? occurrence : null;
+  return {
+    push(pageText) {
+      pageIndex += 1;
+      const hits = countOccurrences(normalizeWithIndexMap(pageText).text, needle).length;
+      if (hits === 0) return null;
+      if (firstHit === 0) firstHit = pageIndex;
+      // 第一处：首个命中页就是答案；第 N 处：累计到 N 就落在这页。
+      if (wanted === null || wanted === 1 || seen + hits >= wanted) {
+        return pageIndex;
+      }
+      seen += hits;
+      return null;
+    },
+    result() {
+      return firstHit === 0 ? null : firstHit;
+    },
+  };
+}

@@ -306,7 +306,15 @@ export function PreviewPaneContent({
       );
     }
 
-    return <PdfPreviewContent source={pdfViewerSource} labels={pdfViewerLabels} />;
+    return (
+      <PdfPreviewContent
+        source={pdfViewerSource}
+        labels={pdfViewerLabels}
+        {...(source.type === "pdf" && source.quoteHighlight
+          ? { quoteHighlight: source.quoteHighlight }
+          : {})}
+      />
+    );
   }
 
   if (source.type === "file" && officePreviewKind) {

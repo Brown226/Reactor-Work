@@ -53,13 +53,15 @@ function basename(path: string): string {
 /**
  * 原件预览能不能按片段标出高亮。
  *
- * 只有 docx 这一条路：`docx-preview` 把正文渲染成真实 DOM，能按原文片段找到 Range；
- * xlsx 是 canvas 渲染（没有文本层），PDF 一次只挂一页、要跨页搜才能定位，都不在这里假装支持 ——
- * 它们退回「原件看版面 + 提取正文看高亮」两标签。加新类型时**必须**同时能在这里与
- * `quoteHighlight` 消费方说清楚，否则用户点了没反应。
+ * - `.docx`：`docx-preview` 渲染成真实 DOM，按片段找 Range 即可。
+ * - `.pdf`：`react-pdf` 默认渲染文本层（且有 `TextLayer.css` 定位），逐页搜到目标页后跳页再标。
+ * - `.xlsx`/`.xls`：canvas 渲染，没有文本层，做不到 —— 退回「原件看版面 + 提取正文看高亮」两标签。
+ *
+ * 加新类型时**必须**同时在这里与消费方（docx 预览 / PDF 查看器）说清楚，否则用户点了没反应。
  */
 function isQuoteHighlightableFile(path: string): boolean {
-  return path.toLowerCase().endsWith(".docx");
+  const lower = path.toLowerCase();
+  return lower.endsWith(".docx") || lower.endsWith(".pdf");
 }
 
 /**
