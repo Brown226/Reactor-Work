@@ -90,6 +90,7 @@ export function KnowledgeCheckToolCallBlock(context: ToolCallBlockRenderContext)
         icon={KNOWLEDGE_CHECK_TOOL_ICON}
         showIcon={context.showIcon !== false}
         canToggle={result.whitelisted.length > 0 || result.remaining.length > 0}
+        autoOpen={result.whitelisted.length > 0 || result.remaining.length > 0}
         kindLabel={intl.formatMessage({ id: "review.tool.terminology" })}
         primaryText={primary}
         content={
@@ -149,6 +150,8 @@ export function KnowledgeCheckToolCallBlock(context: ToolCallBlockRenderContext)
       icon={KNOWLEDGE_CHECK_TOOL_ICON}
       showIcon={context.showIcon !== false}
       canToggle={issues.length > 0 || Boolean(result.notice) || result.stale}
+      // 同 ReportReviewIssues：结论是主产物，默认展开一行摘要用户会当成「没卡片」。
+      autoOpen={issues.length > 0 || result.stale}
       kindLabel={intl.formatMessage({ id: "review.tool.standards" })}
       primaryText={primary}
       statusLabel={

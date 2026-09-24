@@ -33,6 +33,17 @@ export function ReportReviewIssuesToolCallBlock(context: ToolCallBlockRenderCont
   const openIssue = useCallback(
     (issue: ReviewIssueView) => {
       if (!textPath || !onOpenCodeViewer || !issue.located || issue.startOffset < 0) return;
+      // 先开原始文档（docx/xlsx/…）：精确到字符的高亮只能落在提取正文上（Office 预览没有文本层
+      // 定位），但用户核对时多数时候更想看原件的版面，所以两个标签一起给：原件在前、正文在后，
+      // 高亮的那一页留在最上层。
+      if (sourcePath && sourcePath !== textPath) {
+        onOpenCodeViewer({
+          type: "file",
+          title: sourcePath.replaceAll("\\", "/").split("/").pop() ?? sourcePath,
+          path: sourcePath,
+          workspacePath: context.workspacePath,
+        });
+      }
       onOpenCodeViewer({
         type: "code-review",
         title: intl.formatMessage({ id: "review.card.title" }),
@@ -52,7 +63,7 @@ export function ReportReviewIssuesToolCallBlock(context: ToolCallBlockRenderCont
         },
       });
     },
-    [context.workspacePath, intl, onOpenCodeViewer, textPath],
+    [context.workspacePath, intl, onOpenCodeViewer, sourcePath, textPath],
   );
 
   if (!view) return null;
@@ -72,6 +83,9 @@ export function ReportReviewIssuesToolCallBlock(context: ToolCallBlockRenderCont
       icon={REVIEW_ISSUES_TOOL_ICON}
       showIcon={context.showIcon !== false}
       canToggle={problems.length > 0 || Boolean(view.notice)}
+      // 一次性默认展开：审查结论就是这个板块的主产物，折叠成一行时用户会以为「没有卡片」。
+      // 只展开有内容的卡（空结果展开等于加噪音），展开后用户仍可手动收起。
+      autoOpen={problems.length > 0}
       kindLabel={intl.formatMessage({ id: "review.tool.issues" })}
       primaryText={primary}
       statusLabel={
