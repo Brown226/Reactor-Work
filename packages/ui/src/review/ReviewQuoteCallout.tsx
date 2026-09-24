@@ -8,7 +8,7 @@
  * 位置算法：卡片挂在**预览区不滚动的外层**（不跟着内容滚、也不吃缩放 transform），每次滚动/缩放/重排
  * 都用命中的 Range 重新量一次矩形。右侧放得下就贴右边（像代码审查的评论气泡），放不下就落到下方。
  */
-import { XIcon } from "lucide-react";
+import { CheckIcon, XIcon } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "@/components/lib/utils.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -32,9 +32,22 @@ export interface ReviewQuoteCalloutProps {
   /** 定位坐标系：预览区不滚动的那层容器 */
   hostRef: React.RefObject<HTMLElement | null>;
   onDismiss?: () => void;
+  /**
+   * 采纳这条建议（右上角对号）。不传就不显示对号 —— 只有审查面板打开的定位卡才有"采纳"语义，
+   * 代码评论之类的定位没有。
+   */
+  onToggleMarked?: (marked: boolean) => void;
+  marked?: boolean;
 }
 
-export function ReviewQuoteCallout({ range, note, hostRef, onDismiss }: ReviewQuoteCalloutProps) {
+export function ReviewQuoteCallout({
+  range,
+  note,
+  hostRef,
+  onDismiss,
+  onToggleMarked,
+  marked = false,
+}: ReviewQuoteCalloutProps) {
   const { intl } = useZCodeIntl();
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [placement, setPlacement] = useState<{ top: number; left: number } | null>(null);
@@ -113,16 +126,41 @@ export function ReviewQuoteCallout({ range, note, hostRef, onDismiss }: ReviewQu
             {intl.formatMessage({ id: "review.card.line" }, { line: note.line })}
           </span>
         ) : null}
-        {onDismiss ? (
-          <button
-            type="button"
-            aria-label={intl.formatMessage({ id: "common.close" })}
-            onClick={onDismiss}
-            className="ml-auto rounded p-0.5 text-foreground-subtle hover:bg-muted hover:text-foreground"
-          >
-            <XIcon className="size-3.5" />
-          </button>
-        ) : null}
+        <span className="ml-auto flex items-center gap-1">
+          {onToggleMarked ? (
+            // 采纳按钮：对号。采纳后实心绿底 —— 用户扫一眼面板/原件就能看出"这条我认了"。
+            <button
+              type="button"
+              data-review-mark-toggle={marked ? "marked" : "unmarked"}
+              aria-pressed={marked}
+              title={intl.formatMessage({
+                id: marked ? "review.mark.unmark" : "review.mark.mark",
+              })}
+              aria-label={intl.formatMessage({
+                id: marked ? "review.mark.unmark" : "review.mark.mark",
+              })}
+              onClick={() => onToggleMarked(!marked)}
+              className={cn(
+                "rounded p-0.5",
+                marked
+                  ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                  : "text-foreground-subtle hover:bg-muted hover:text-foreground",
+              )}
+            >
+              <CheckIcon className="size-3.5" />
+            </button>
+          ) : null}
+          {onDismiss ? (
+            <button
+              type="button"
+              aria-label={intl.formatMessage({ id: "common.close" })}
+              onClick={onDismiss}
+              className="rounded p-0.5 text-foreground-subtle hover:bg-muted hover:text-foreground"
+            >
+              <XIcon className="size-3.5" />
+            </button>
+          ) : null}
+        </span>
       </div>
       <div className="max-h-24 overflow-auto rounded bg-muted/60 px-2 py-1 font-mono text-[11px] break-all">
         {range.toString()}

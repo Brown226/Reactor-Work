@@ -10,11 +10,15 @@
  * 打开带高亮的提取正文（`code-review` 源）。没定位到的条目**不装成可点**：偏移是 -1，点了会跳到
  * 无关位置，那比不能点更误导复核者。
  */
-import { ClipboardListIcon, TriangleAlertIcon } from "lucide-react";
-import { useCallback } from "react";
+import { CheckCheckIcon, ClipboardListIcon, TriangleAlertIcon } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import type { CodeViewerSource } from "@/lib/codeViewer.js";
+import type { QuoteHighlightNote, ReviewQuoteMarkTarget } from "@/lib/quoteSearch.js";
 import { Section, TermChips, issueCodeLabel } from "@/review/ReviewResultRows.js";
+import { useSendReviewFixRequest } from "@/review/useSendReviewFixRequest.js";
+import { useReviewMarksStore } from "@/store/reviewMarksStore.js";
 import {
   REVIEW_ISSUE_LABEL_KEYS,
   reviewIssueCodeFamily,
@@ -30,6 +34,8 @@ const GROUP_AUTO_OPEN_MAX_ITEMS = 20;
 
 export interface ReviewResultPanelProps {
   gathering: ReviewResultGathering;
+  /** 当前会话 id：一键修改要把指令发进这一轮会话 */
+  sessionId?: string;
   workspacePath?: string;
   workspaceIdentity?: string;
   workspaceRemoteSessionId?: string;
@@ -54,14 +60,64 @@ function isQuoteHighlightableFile(path: string): boolean {
   return lower.endsWith(".docx") || lower.endsWith(".pdf");
 }
 
+
+/** 采纳载荷：定位卡的对号与面板行上的对号必须产出同一份数据，所以只在这里造一次。 */
+function buildMarkForItem(item: ReviewResultItem, note: QuoteHighlightNote): ReviewQuoteMarkTarget {
+  return {
+    key: `${item.textPath}:${item.startOffset}:${item.code}`,
+    code: note.code ?? item.code,
+    title: note.title,
+    severity: note.severity ?? "warning",
+    quoted: item.quoted,
+    matchedOccurrence: item.matchedOccurrence,
+    message: item.message,
+    suggestion: item.suggestion,
+    line: item.line,
+    sourcePath: item.sourcePath,
+    textPath: item.textPath,
+  };
+}
+
 export function ReviewResultPanel({
   gathering,
+  sessionId,
   workspacePath,
   workspaceIdentity,
   workspaceRemoteSessionId,
   onOpenCodeViewer,
 }: ReviewResultPanelProps) {
   const { intl } = useZCodeIntl();
+  const fix = useSendReviewFixRequest(sessionId ?? null);
+  const [sendFailed, setSendFailed] = useState(false);
+  // 行上的采纳态与定位卡的对号共用同一份 store：一处勾上，另一处立刻是勾上的。
+  const marks = useReviewMarksStore((state) => state.marks);
+  const toggleMark = useReviewMarksStore((state) => state.toggle);
+  const markedKeys = useMemo(() => new Set(Object.keys(marks)), [marks]);
+  // 行上的对号与定位卡的对号共用同一份载荷；已采纳再点一次 = 取消采纳。
+  const toggleRowMark = useCallback(
+    (item: ReviewResultItem) => {
+      const family = reviewIssueCodeFamily(item.code);
+      const familyKey =
+        REVIEW_ISSUE_LABEL_KEYS[family] ??
+        REVIEW_ISSUE_LABEL_KEYS[item.code] ??
+        reviewIssueFamilyLabelKey(family);
+      const label = issueCodeLabel(intl, item.code);
+      toggleMark(
+        buildMarkForItem(item, {
+          title: familyKey ? intl.formatMessage({ id: familyKey }) : family,
+          ...(label !== (familyKey ? intl.formatMessage({ id: familyKey }) : family)
+            ? { code: label }
+            : {}),
+          message: item.message,
+          suggestion: item.suggestion,
+          severity: item.severity === "none" ? "info" : item.severity,
+          line: item.line,
+        }),
+        Date.now(),
+      );
+    },
+    [intl, toggleMark],
+  );
   const groupsDefaultOpen = gathering.totals.total <= GROUP_AUTO_OPEN_MAX_ITEMS;
   const showSectionTitles = shouldShowSectionTitles(gathering.sections);
 
@@ -91,11 +147,13 @@ export function ReviewResultPanel({
         severity: item.severity === "none" ? "info" : item.severity,
         line: item.line,
       } as const;
+      const mark = buildMarkForItem(item, note);
       const highlight = {
         quote: item.quoted,
         occurrence: item.matchedOccurrence,
         focusRequestId: `${item.textPath}:${item.startOffset}:${item.code}:${Date.now()}`,
         note,
+        mark,
       };
       const hasOriginal = Boolean(item.sourcePath && item.sourcePath !== item.textPath);
       // 能在原件里标出这句话（docx 预览有 DOM 文本层）就**只开原件** —— 用户要核对的版面与上下文
@@ -138,6 +196,7 @@ export function ReviewResultPanel({
           // 提取正文按正文渲染（含高亮），不是源码：这条由面板声明，不靠扩展名猜。
           textFormat: "markdown",
           note,
+          mark,
           ...(item.line > 0 ? { startLine: item.line, endLine: item.line } : {}),
           ...(item.startOffset >= 0 ? { startOffset: item.startOffset } : {}),
           ...(item.endOffset >= 0 ? { endOffset: item.endOffset } : {}),
@@ -189,8 +248,34 @@ export function ReviewResultPanel({
             {intl.formatMessage({ id: "review.panel.passed" }, { count: gathering.passed })}
           </span>
         ) : null}
+        {fix.count > 0 ? (
+          // 采纳了才出现：没标记时这个按钮点下去无事可做，占位只是噪音。
+          <span className="ml-auto flex items-center gap-2">
+            <span className="text-ui-sm text-emerald-700 dark:text-emerald-400">
+              {intl.formatMessage({ id: "review.mark.count" }, { count: fix.count })}
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              data-testid="review-apply-marks"
+              disabled={fix.sending}
+              onClick={() => {
+                void fix.send().then((result) => setSendFailed(!result.ok));
+              }}
+            >
+              <CheckCheckIcon className="size-3.5" />
+              {intl.formatMessage({ id: "review.mark.apply" })}
+            </Button>
+          </span>
+        ) : null}
       </header>
 
+      {sendFailed ? (
+        <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-ui-sm">
+          {intl.formatMessage({ id: "review.mark.applyFailed" })}
+        </div>
+      ) : null}
       {gathering.notices.map((notice) => (
         <div
           key={notice}
@@ -222,6 +307,8 @@ export function ReviewResultPanel({
           defaultOpen={groupsDefaultOpen}
           onOpenItem={openItem}
           canOpen={Boolean(onOpenCodeViewer)}
+          markedKeys={markedKeys}
+          onToggleMark={toggleRowMark}
         />
       ))}
 

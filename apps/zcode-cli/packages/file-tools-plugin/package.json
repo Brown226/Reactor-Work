@@ -19,6 +19,7 @@
     "@firecrawl/anydoc": "0.2.4",
     "@modelcontextprotocol/server": "2.0.0",
     "@napi-rs/canvas": "^1.0.9",
+    "fflate": "^0.8.2",
     "jimp": "^1.6.1",
     "onnxruntime-node": "1.23.2",
     "paddleocr": "1.2.0",

@@ -1,6 +1,7 @@
 /**
  * file-tools MCP server（官方内置插件的 stdio 形态，与 node_repl host 同链路）：
- * parse_document / ocr_scan / dwg_modify / dwg_graph 四个本地工具（dwg_modify 可读写，其余只读）。
+ * parse_document / ocr_scan / docx_patch / dwg_modify / dwg_graph 五个本地工具
+ * （dwg_modify 与 docx_patch 可写，其余只读）。
  *
  * 关键约束：stdio MCP 的 stdout 就是 JSON-RPC 通道。pdfjs（"Warning: TT"）、
  * sidecar（"Open dwg file with error code"）等第三方会把诊断打到 console.log，
@@ -13,6 +14,7 @@ import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { z } from "zod";
 import { PARSE_DOCUMENT_DESCRIPTION, parseDocument, parseDocumentInputSchema } from "./tools/parse-document.js";
 import { OCR_SCAN_DESCRIPTION, ocrScan, ocrScanInputSchema } from "./tools/ocr-scan.js";
+import { DOCX_PATCH_DESCRIPTION, docxPatch, docxPatchInputSchema } from "./tools/docx-patch.js";
 import { DWG_MODIFY_DESCRIPTION, dwgModify, dwgModifyInputSchema } from "./tools/dwg-modify.js";
 import { DWG_GRAPH_DESCRIPTION, dwgGraph, dwgGraphInputSchema } from "./tools/dwg-graph.js";
 
@@ -35,6 +37,11 @@ const tools: Tool[] = [
     name: "ocr_scan",
     description: OCR_SCAN_DESCRIPTION,
     inputSchema: z.toJSONSchema(ocrScanInputSchema) as Tool["inputSchema"],
+  },
+  {
+    name: "docx_patch",
+    description: DOCX_PATCH_DESCRIPTION,
+    inputSchema: z.toJSONSchema(docxPatchInputSchema) as Tool["inputSchema"],
   },
   {
     name: "dwg_modify",
@@ -65,7 +72,7 @@ export function createFileToolsMcpServer(): Server {
     {
       capabilities: { tools: {} },
       instructions:
-        "Local document/OCR/DWG tools. Use parse_document for Office/PDF, ocr_scan for scans and images, dwg_modify to read drawings (layers, texts, dimensions, standard references) and to modify them with structured ops, dwg_graph for symbol/connection topology (which equipment a symbol connects to). All engines run offline inside the installer.",
+        "Local document/OCR/DWG tools. Use parse_document for Office/PDF, ocr_scan for scans and images, docx_patch to apply review fixes inside an existing .docx without touching its formatting (matched text only, copies by default), dwg_modify to read drawings (layers, texts, dimensions, standard references) and to modify them with structured ops, dwg_graph for symbol/connection topology (which equipment a symbol connects to). All engines run offline inside the installer.",
     },
   );
 
@@ -87,6 +94,13 @@ export function createFileToolsMcpServer(): Server {
           invalidParams(`ocr_scan: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
         }
         return textResult(await ocrScan(parsed.data));
+      }
+      if (name === "docx_patch") {
+        const parsed = docxPatchInputSchema.safeParse(request.params.arguments ?? {});
+        if (!parsed.success) {
+          invalidParams(`docx_patch: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
+        }
+        return textResult(await docxPatch(parsed.data));
       }
       if (name === "dwg_modify") {
         const parsed = dwgModifyInputSchema.safeParse(request.params.arguments ?? {});

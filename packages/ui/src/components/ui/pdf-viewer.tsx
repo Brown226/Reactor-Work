@@ -15,6 +15,7 @@ import { isAppleKeyboardPlatform } from "@/lib/keyboardShortcuts.js";
 import { createPdfJsDocumentOptions } from "@/lib/pdfJsAssets.js";
 import { scheduleReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
 import { ReviewQuoteCallout } from "@/review/ReviewQuoteCallout.js";
+import { useReviewMarksStore } from "@/store/reviewMarksStore.js";
 import { createQuotePageScan, type QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
@@ -155,6 +156,16 @@ export function PdfViewer({
   const [quoteRange, setQuoteRange] = useState<Range | null>(null);
   const pdfDocumentRef = useRef<PDFDocumentProxy | null>(null);
   const calloutHostRef = useRef<HTMLDivElement | null>(null);
+  const quoteMark = quoteHighlight?.mark;
+  const quoteMarked = useReviewMarksStore((state) =>
+    quoteMark ? Boolean(state.marks[quoteMark.key]) : false,
+  );
+  const toggleQuoteMark = useReviewMarksStore((state) => state.toggle);
+  const onToggleQuoteMark = useCallback(() => {
+    if (!quoteMark) return;
+    toggleQuoteMark(quoteMark);
+  }, [quoteMark, toggleQuoteMark]);
+
   const [pageIntrinsicSize, setPageIntrinsicSize] = useState<pdfZoom.PdfPageSize | null>(null);
   const [rangeError, setRangeError] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -586,6 +597,8 @@ export function PdfViewer({
         range={quoteRange}
         note={quoteHighlight?.note}
         hostRef={calloutHostRef}
+        marked={quoteMarked}
+        {...(quoteMark ? { onToggleMarked: onToggleQuoteMark } : {})}
         onDismiss={() => setQuoteRange(null)}
       />
     </div>

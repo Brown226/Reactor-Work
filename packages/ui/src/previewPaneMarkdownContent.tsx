@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MarkdownSelectionTooltip } from "@/v4/MarkdownSelectionTooltip.js";
 import type { MarkdownSelectionTarget } from "@/lib/conversationSelectionReference.js";
 import { MessageResponse } from "@/components/ai-elements/message.js";
@@ -6,6 +6,7 @@ import type { CodePreviewSettings } from "@/lib/codePreviewSettings.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { scheduleReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
 import { ReviewQuoteCallout } from "@/review/ReviewQuoteCallout.js";
+import { useReviewMarksStore } from "@/store/reviewMarksStore.js";
 import type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 import type { Theme } from "@/useTheme.js";
 
@@ -43,6 +44,16 @@ export function MarkdownPreviewContent({
   const calloutHostRef = useRef<HTMLDivElement>(null);
   const [quoteMissing, setQuoteMissing] = useState(false);
   const [quoteRange, setQuoteRange] = useState<Range | null>(null);
+  const quoteMark = quoteHighlight?.mark;
+  const quoteMarked = useReviewMarksStore((state) =>
+    quoteMark ? Boolean(state.marks[quoteMark.key]) : false,
+  );
+  const toggleQuoteMark = useReviewMarksStore((state) => state.toggle);
+  const onToggleQuoteMark = useCallback(() => {
+    if (!quoteMark) return;
+    toggleQuoteMark(quoteMark);
+  }, [quoteMark, toggleQuoteMark]);
+
   const selectionScope = useMemo(
     () => ({}),
     [content, sourceKey, sourcePath, selectionTarget?.workspaceKey, selectionTarget?.sessionId],
@@ -106,6 +117,8 @@ export function MarkdownPreviewContent({
         range={quoteRange}
         note={quoteHighlight?.note}
         hostRef={calloutHostRef}
+        marked={quoteMarked}
+        {...(quoteMark ? { onToggleMarked: onToggleQuoteMark } : {})}
         onDismiss={() => setQuoteRange(null)}
       />
     </div>

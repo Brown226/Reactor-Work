@@ -1754,6 +1754,12 @@ const enUS: Record<string, string> = {
   "review.panel.passed": "{count} passed",
   "review.panel.unlocated": "{count} could not be located in the text and are not clickable",
   "review.panel.sourceless": "Source not stated",
+  "review.mark.mark": "Accept this suggestion",
+  "review.mark.unmark": "Remove acceptance",
+  "review.mark.count": "{count} accepted",
+  "review.mark.apply": "Apply accepted fixes",
+  "review.mark.applyFailed":
+    "The request could not be sent (the session may be busy). Your marks are kept — try again in a moment.",
   "review.family.punct": "Punctuation",
   "review.family.typo": "Typos",
   "review.family.grammar": "Grammar",

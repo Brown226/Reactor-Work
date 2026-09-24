@@ -68,8 +68,10 @@ export function normalizeWithMap(text: string): { normalized: string; map: numbe
       converted = null;
     } else if (raw === "\u2215" || raw === "\uFF0F") {
       converted = "/";
-    } else if (/[\u2010-\u2015\u2212~〜～]/.test(raw)) {
-      converted = "-";
+    } else if (/[\u2010-\u2015\u2212~〜～-]/.test(raw)) {
+      converted = null;
+      // 破折号族整类忽略（与空白同等对待）：抽取器对连字符的处理不一致 —— anydoc 会把
+      // `15169HX-JPS01-001` 读成 `15169HX JPS01 001`，把 `-` 当普通字符就永远对不上原件。
     } else if (/\s/.test(raw)) {
       converted = null;
     } else {

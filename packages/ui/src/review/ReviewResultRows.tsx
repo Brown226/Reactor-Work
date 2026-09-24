@@ -2,7 +2,7 @@
  * 面板的行与分组（从 `ReviewResultPanel` 里拆出来：面板本体已经很长，再塞下去会顶到 max-lines，
  * 而这几块是纯展示、只依赖传入的数据与回调，独立成文件更清楚）。
  */
-import { ChevronRightIcon } from "lucide-react";
+import { CheckIcon, ChevronRightIcon } from "lucide-react";
 import { useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible.js";
 import { cn } from "@/components/lib/utils.js";
@@ -25,6 +25,11 @@ function basename(path: string): string {
  * 规则码的展示形式：整码或族名有译名就用译名（`PUNCT-001` → `标点-001`），否则原样。
  * 序号不翻译 —— 它是这条问题在族内的身份，改了就没有可引用的编号了。
  */
+/** 采纳标记的 key：与面板、定位卡共用同一口径（`textPath:startOffset:code`）。 */
+export function issueMarkKey(item: ReviewResultItem): string {
+  return `${item.textPath}:${item.startOffset}:${item.code}`;
+}
+
 export function issueCodeLabel(
   intl: ReturnType<typeof useZCodeIntl>["intl"],
   code: string,
@@ -62,12 +67,17 @@ export function Section({
   defaultOpen,
   canOpen,
   onOpenItem,
+  markedKeys,
+  onToggleMark,
 }: {
   section: ReviewResultSection;
   showTitle: boolean;
   defaultOpen: boolean;
   canOpen: boolean;
   onOpenItem: (item: ReviewResultItem) => void;
+  /** 已采纳条目的 key 集合（与定位卡同一口径） */
+  markedKeys: ReadonlySet<string>;
+  onToggleMark?: (item: ReviewResultItem) => void;
 }) {
   const { intl } = useZCodeIntl();
   return (
@@ -96,6 +106,8 @@ export function Section({
           defaultOpen={defaultOpen}
           canOpen={canOpen}
           onOpenItem={onOpenItem}
+          markedKeys={markedKeys}
+          {...(onToggleMark ? { onToggleMark } : {})}
         />
       ))}
     </div>
@@ -107,11 +119,15 @@ export function CodeGroup({
   defaultOpen,
   canOpen,
   onOpenItem,
+  markedKeys,
+  onToggleMark,
 }: {
   group: ReviewResultCodeGroup;
   defaultOpen: boolean;
   canOpen: boolean;
   onOpenItem: (item: ReviewResultItem) => void;
+  markedKeys: ReadonlySet<string>;
+  onToggleMark?: (item: ReviewResultItem) => void;
 }) {
   const { intl } = useZCodeIntl();
   const [open, setOpen] = useState(defaultOpen);
@@ -161,6 +177,8 @@ export function CodeGroup({
               showCode={showCodePerItem}
               canOpen={canOpen}
               onOpen={() => onOpenItem(item)}
+              marked={markedKeys.has(issueMarkKey(item))}
+              {...(onToggleMark ? { onToggleMark: () => onToggleMark(item) } : {})}
             />
           ))}
         </div>
@@ -174,12 +192,16 @@ export function IssueRow({
   showCode,
   canOpen,
   onOpen,
+  marked,
+  onToggleMark,
 }: {
   item: ReviewResultItem;
   /** 同族里有多个具体规则码时逐行标出来，用户才能引用准确的码 */
   showCode: boolean;
   canOpen: boolean;
   onOpen: () => void;
+  marked?: boolean;
+  onToggleMark?: () => void;
 }) {
   const { intl } = useZCodeIntl();
   const clickable = canOpen && item.located && Boolean(item.textPath);
@@ -198,6 +220,11 @@ export function IssueRow({
   ].filter((entry): entry is string => entry !== null);
 
   return (
+    // 不能把「采纳」按钮嵌在「打开」按钮里（button 不能嵌套 button）：外层只做布局与 hover，
+    // 两个动作各自是独立的按钮。
+    <div
+      className={cn("group/issue flex w-full items-start gap-1 rounded", marked ? "bg-emerald-500/8" : "")}
+    >
     <button
       type="button"
       disabled={!clickable}
@@ -229,5 +256,25 @@ export function IssueRow({
         </span>
       </span>
     </button>
+      {onToggleMark ? (
+        // 采纳态：实心绿 = 已采纳；未采纳时只在悬停时显形，免得 27 行都在喊「点我」。
+        <button
+          type="button"
+          data-review-mark-toggle={marked ? "marked" : "unmarked"}
+          aria-pressed={marked}
+          title={intl.formatMessage({ id: marked ? "review.mark.unmark" : "review.mark.mark" })}
+          aria-label={intl.formatMessage({ id: marked ? "review.mark.unmark" : "review.mark.mark" })}
+          onClick={onToggleMark}
+          className={cn(
+            "mt-0.5 shrink-0 self-start rounded p-0.5 transition-opacity",
+            marked
+              ? "bg-emerald-600 text-white hover:bg-emerald-700"
+              : "text-foreground-subtle opacity-0 hover:bg-muted hover:text-foreground group-hover/issue:opacity-100 focus-visible:opacity-100",
+          )}
+        >
+          <CheckIcon className="size-3.5" />
+        </button>
+      ) : null}
+    </div>
   );
 }

@@ -91,12 +91,14 @@ test("定位：CRLF 正文的行号按 \\n 计，正文区间不跨行时不含�
   assert.equal(crlf.slice(span.startOffset, span.endOffset), "目标片段");
 });
 
-test("归一化映射：全角、空白、破折号都被折掉，映射回原文下标", () => {
+test("归一化映射：全角转半角，空白与破折号一律折掉，映射回原文下标", () => {
   const { normalized, map } = normalizeWithMap("Ａ　B-c");
-  assert.equal(normalized, "AB-C");
+  // 连字符与空白同样被丢掉：抽取器会把 `A-B` 读成 `A B`，留着 `-` 就永远对不上原件
+  assert.equal(normalized, "ABC");
   assert.equal(map.length, normalized.length);
   assert.equal(map[0], 0, "Ａ 映射回原文下标 0");
   assert.equal(map[1], 2, "B 前有一个全角空格，下标应跳过它");
+  assert.equal(map[2], 4, "c 在连字符之后，下标应跳过它");
 });
 
 /* ── 工具级 ───────────────────────────────────────────────────── */

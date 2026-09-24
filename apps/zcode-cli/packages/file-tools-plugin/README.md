@@ -7,6 +7,7 @@
 | --- | --- | --- |
 | `parse_document` | Office/PDF → Markdown（docx/doc/xlsx/xls/pptx/ppt/odt/rtf/csv/epub/pdf） | `@firecrawl/anydoc`（napi） |
 | `ocr_scan` | 图片/扫描件 PDF → 文本 + 置信度 | PP-OCRv5 mobile（ONNX）+ pdfjs 栅格化 |
+| `docx_patch` | 已有 .docx 的**定点文字替换**（只改命中的 `<w:t>`，格式/表格/编号/页眉页脚原样；默认另存副本） | `fflate`（OOXML zip）+ 插件内匹配 |
 | `dwg_modify` | DWG 读（图层/文本/尺寸/标准引用）+ 结构化修改（replace_text/rename_layer） | ACadSharp（.NET sidecar，MIT） |
 | `dwg_graph` | DWG 符号/连接拓扑图（块引用符号节点 + 线段连接边，节点带文本 tag，全部挂 cadHandleId 锚点） | ACadSharp（.NET sidecar，MIT）+ 插件内纯 TS 融合 |
 

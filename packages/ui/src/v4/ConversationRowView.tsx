@@ -1575,6 +1575,7 @@ const AssistantTextRowView = memo(function AssistantTextRowView({
         <div className="mt-3">
           <ReviewResultPanel
             gathering={reviewResults}
+            sessionId={context.sessionId ?? undefined}
             workspacePath={context.workspacePath}
             workspaceIdentity={context.workspaceIdentity}
             workspaceRemoteSessionId={context.workspaceRemoteSessionId}

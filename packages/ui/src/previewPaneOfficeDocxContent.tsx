@@ -8,6 +8,7 @@ import {
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { scheduleReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
 import { ReviewQuoteCallout } from "@/review/ReviewQuoteCallout.js";
+import { useReviewMarksStore } from "@/store/reviewMarksStore.js";
 import type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 import { logger } from "@/logger.js";
 
@@ -75,6 +76,16 @@ export function PreviewPaneOfficeDocxContent({
   const [quoteRange, setQuoteRange] = useState<Range | null>(null);
   const calloutHostRef = useRef<HTMLDivElement | null>(null);
   const { intl } = useZCodeIntl();
+  const quoteMark = quoteHighlight?.mark;
+  const quoteMarked = useReviewMarksStore((state) =>
+    quoteMark ? Boolean(state.marks[quoteMark.key]) : false,
+  );
+  const toggleQuoteMark = useReviewMarksStore((state) => state.toggle);
+  const onToggleQuoteMark = useCallback(() => {
+    if (!quoteMark) return;
+    toggleQuoteMark(quoteMark);
+  }, [quoteMark, toggleQuoteMark]);
+
 
   const updateFit = useCallback(() => {
     const viewport = viewportRef.current;
@@ -292,6 +303,8 @@ export function PreviewPaneOfficeDocxContent({
         range={quoteRange}
         note={quoteHighlight?.note}
         hostRef={calloutHostRef}
+        marked={quoteMarked}
+        {...(quoteMark ? { onToggleMarked: onToggleQuoteMark } : {})}
         onDismiss={() => setQuoteRange(null)}
       />
     </div>

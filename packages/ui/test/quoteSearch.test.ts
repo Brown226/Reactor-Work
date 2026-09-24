@@ -18,7 +18,9 @@ import {
 test("归一化：全角转半角、空白丢弃、连字符与斜杠统一、大写归一", () => {
   assert.equal(normalizeWithIndexMap("ＧＢ／Ｔ ８１６３").text, "GB/T8163");
   assert.equal(normalizeWithIndexMap("GB 12238").text, "GB12238");
-  assert.equal(normalizeWithIndexMap("a—b–c~d〜e").text, "A-B-C-D-E");
+  // 连字符与空白一样被忽略：抽取器把 `A-B` 读成 `A B` 时仍能对上
+  assert.equal(normalizeWithIndexMap("15169HX-JPS01-001").text, "15169HXJPS01001");
+  assert.equal(normalizeWithIndexMap("a—b–c~d〜e").text, "ABCDE");
   assert.equal(normalizeWithIndexMap("全角　空格").text, "全角空格");
 });
 

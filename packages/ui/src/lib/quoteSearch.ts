@@ -8,7 +8,7 @@
  *
  * 归一化规则必须与 CLI 侧 `normalizeWithMap`（core/src/tool/handlers/report-review-issues.ts）
  * **逐条一致**，否则同一份文档两侧数出来的「第 N 处」会不同：
- * 全角转半角、全角空格/普通空白一律丢弃、各种连字符统一成 `-`、斜杠统一、大写归一。
+ * 全角转半角、空白与各种连字符一律丢弃、斜杠统一、大写归一。
  */
 export interface QuoteOccurrence {
   /** 命中片段在原文里的起止（原文下标，`end` 不含） */
@@ -30,6 +30,26 @@ export interface QuoteHighlightTarget {
   focusRequestId?: string;
   /** 定位卡内容（类别 / 说明 / 建议）。原件预览里没有评论面板，修改意见得跟着定位一起给。 */
   note?: QuoteHighlightNote;
+  /**
+   * 这条问题的「采纳」载荷：定位卡的右上角对号把它写进 marks store。
+   * 挂在定位请求上而不是让消费方自己拼 —— 只有面板知道 key/quoted/occurrence/原件路径。
+   */
+  mark?: ReviewQuoteMarkTarget;
+}
+
+/** 采纳标记的内容（`ReviewMark` 去掉时间戳的部分；形状放这里避免 lib 依赖 store）。 */
+export interface ReviewQuoteMarkTarget {
+  key: string;
+  code: string;
+  title: string;
+  severity: "error" | "warning" | "info";
+  quoted: string;
+  matchedOccurrence: number;
+  message: string;
+  suggestion: string | null;
+  line: number;
+  sourcePath: string | null;
+  textPath: string | null;
 }
 
 /**
@@ -75,8 +95,10 @@ export function normalizeWithIndexMap(raw: string): { text: string; indices: num
       converted = null;
     } else if (char === "\u2215" || char === "\uff0f") {
       converted = "/";
-    } else if (/[\u2010-\u2015\u2212~〜～]/u.test(char)) {
-      converted = "-";
+    } else if (/[\u2010-\u2015\u2212~〜～-]/u.test(char)) {
+      converted = null;
+      // 破折号族整类忽略（与空白同等对待）：抽取器对连字符的处理不一致 —— anydoc 会把
+      // `15169HX-JPS01-001` 读成 `15169HX JPS01 001`，把 `-` 当普通字符就永远对不上原件。
     } else if (/\s/u.test(char)) {
       converted = null;
     } else {
