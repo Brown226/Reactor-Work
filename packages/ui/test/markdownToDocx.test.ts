@@ -74,7 +74,9 @@ async function parts(markdown: string = SAMPLE) {
 
 test("排版：字体字号只准活在 styles.xml，正文的 run 只能引用样式", async () => {
   const { document, styles } = await parts();
-  const blocks = [...document.matchAll(/<w:rPr>([\s\S]*?)<\/w:rPr>/g)].map((match) => match[1] ?? "");
+  const blocks = [...document.matchAll(/<w:rPr>([\s\S]*?)<\/w:rPr>/g)].map(
+    (match) => match[1] ?? "",
+  );
   for (const block of blocks) {
     // 加粗/斜体不在禁列：Markdown 里 `**粗**` 是**内容语义**，必须落在 run 上（等同于用户按 Ctrl+B）。
     // 报告没有这种强调，所以那边连 b/i 一起禁 —— 两处口径的差别只在这里。
@@ -99,7 +101,9 @@ test("排版：代码与引用走具名样式", async () => {
 test("排版：表格固定布局、列宽之和等于版心宽度", async () => {
   const { document } = await parts();
   assert.match(document, /<w:tblLayout w:type="fixed"\/>/);
-  const grid = [...document.matchAll(/<w:gridCol w:w="(\d+)"\/>/g)].map((match) => Number(match[1]));
+  const grid = [...document.matchAll(/<w:gridCol w:w="(\d+)"\/>/g)].map((match) =>
+    Number(match[1]),
+  );
   assert.equal(grid.length, 2, "样例是两列表格");
   assert.equal(
     grid.reduce((sum, width) => sum + width, 0),

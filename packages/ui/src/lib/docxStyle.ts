@@ -43,13 +43,28 @@ export const DOCX_STYLE_IDS = {
 } as const;
 
 function fontOf(stack: DocumentFontStack) {
-  return { ascii: stack.ascii, hAnsi: stack.ascii, eastAsia: stack.eastAsia, cs: stack.ascii, hint: "eastAsia" };
+  return {
+    ascii: stack.ascii,
+    hAnsi: stack.ascii,
+    eastAsia: stack.eastAsia,
+    cs: stack.ascii,
+    hint: "eastAsia",
+  };
 }
 
-function headingStyle(sizePt: number, beforePt: number, afterPt: number): IBaseParagraphStyleOptions {
+function headingStyle(
+  sizePt: number,
+  beforePt: number,
+  afterPt: number,
+): IBaseParagraphStyleOptions {
   // 内置样式自带 id/name，且库是先展开 {id,name} 再展开这里 —— 多传 id 会把 styleId 覆盖成空。
   return {
-    run: { font: fontOf(T.font.heading), size: halfPointsFromPt(sizePt), bold: true, color: T.color.text },
+    run: {
+      font: fontOf(T.font.heading),
+      size: halfPointsFromPt(sizePt),
+      bold: true,
+      color: T.color.text,
+    },
     paragraph: {
       spacing: {
         before: twipsFromPt(beforePt),
@@ -64,11 +79,19 @@ function headingStyle(sizePt: number, beforePt: number, afterPt: number): IBaseP
 
 /** 导出文档的样式表：正文体 + 标题层级 + 代码/引用/表格。 */
 export function markdownDocumentStyles(): IStylesOptions {
-  const codeRun = { font: fontOf(T.font.mono), size: halfPointsFromPt(T.sizePt.body), color: T.color.text };
+  const codeRun = {
+    font: fontOf(T.font.mono),
+    size: halfPointsFromPt(T.sizePt.body),
+    color: T.color.text,
+  };
   return {
     default: {
       document: {
-        run: { font: fontOf(T.font.body), size: halfPointsFromPt(T.sizePt.body), color: T.color.text },
+        run: {
+          font: fontOf(T.font.body),
+          size: halfPointsFromPt(T.sizePt.body),
+          color: T.color.text,
+        },
         paragraph: {
           spacing: {
             after: twipsFromPt(T.spacing.bodyAfterPt),
@@ -78,13 +101,37 @@ export function markdownDocumentStyles(): IStylesOptions {
         },
       },
       title: headingStyle(T.sizePt.reportTitle, 0, T.spacing.titleAfterPt),
-      heading1: headingStyle(T.sizePt.heading1, T.spacing.heading1BeforePt, T.spacing.heading1AfterPt),
-      heading2: headingStyle(T.sizePt.heading2, T.spacing.heading2BeforePt, T.spacing.heading2AfterPt),
-      heading3: headingStyle(T.sizePt.heading3, T.spacing.heading3BeforePt, T.spacing.heading3AfterPt),
+      heading1: headingStyle(
+        T.sizePt.heading1,
+        T.spacing.heading1BeforePt,
+        T.spacing.heading1AfterPt,
+      ),
+      heading2: headingStyle(
+        T.sizePt.heading2,
+        T.spacing.heading2BeforePt,
+        T.spacing.heading2AfterPt,
+      ),
+      heading3: headingStyle(
+        T.sizePt.heading3,
+        T.spacing.heading3BeforePt,
+        T.spacing.heading3AfterPt,
+      ),
       // h4-h6 比正文更小层级：仍用标题体，字号不再往下掉（再小就与表格字混淆了）。
-      heading4: headingStyle(T.sizePt.heading3, T.spacing.heading3BeforePt, T.spacing.heading3AfterPt),
-      heading5: headingStyle(T.sizePt.heading3, T.spacing.heading3BeforePt, T.spacing.heading3AfterPt),
-      heading6: headingStyle(T.sizePt.heading3, T.spacing.heading3BeforePt, T.spacing.heading3AfterPt),
+      heading4: headingStyle(
+        T.sizePt.heading3,
+        T.spacing.heading3BeforePt,
+        T.spacing.heading3AfterPt,
+      ),
+      heading5: headingStyle(
+        T.sizePt.heading3,
+        T.spacing.heading3BeforePt,
+        T.spacing.heading3AfterPt,
+      ),
+      heading6: headingStyle(
+        T.sizePt.heading3,
+        T.spacing.heading3BeforePt,
+        T.spacing.heading3AfterPt,
+      ),
     },
     paragraphStyles: [
       {
@@ -107,8 +154,20 @@ export function markdownDocumentStyles(): IStylesOptions {
         quickFormat: true,
         run: { size: halfPointsFromPt(T.sizePt.body), color: T.color.subtle },
         paragraph: {
-          spacing: { before: 0, after: twipsFromPt(T.spacing.bodyAfterPt), line: 240, lineRule: LineRuleType.AUTO },
-          border: { left: { style: BorderStyle.SINGLE, size: lineWidthFromPt(2), color: T.color.ruleStrong, space: 6 } },
+          spacing: {
+            before: 0,
+            after: twipsFromPt(T.spacing.bodyAfterPt),
+            line: 240,
+            lineRule: LineRuleType.AUTO,
+          },
+          border: {
+            left: {
+              style: BorderStyle.SINGLE,
+              size: lineWidthFromPt(2),
+              color: T.color.ruleStrong,
+              space: 6,
+            },
+          },
         },
       },
       {
@@ -117,7 +176,12 @@ export function markdownDocumentStyles(): IStylesOptions {
         basedOn: "Normal",
         next: "Normal",
         quickFormat: true,
-        run: { font: fontOf(T.font.heading), size: halfPointsFromPt(T.sizePt.tableHeader), bold: true, color: T.color.text },
+        run: {
+          font: fontOf(T.font.heading),
+          size: halfPointsFromPt(T.sizePt.tableHeader),
+          bold: true,
+          color: T.color.text,
+        },
         paragraph: {
           spacing: { before: 0, after: 0, line: 240, lineRule: LineRuleType.AUTO },
           alignment: "center",
@@ -182,8 +246,16 @@ export function markdownTableProperties(columnCount: number) {
 }
 
 function markdownTableBorders(): ITableBordersOptions {
-  const strong = { style: BorderStyle.SINGLE, size: lineWidthFromPt(T.table.ruleStrongPt), color: T.color.ruleStrong };
-  const light = { style: BorderStyle.SINGLE, size: lineWidthFromPt(T.table.ruleLightPt), color: T.color.ruleLight };
+  const strong = {
+    style: BorderStyle.SINGLE,
+    size: lineWidthFromPt(T.table.ruleStrongPt),
+    color: T.color.ruleStrong,
+  };
+  const light = {
+    style: BorderStyle.SINGLE,
+    size: lineWidthFromPt(T.table.ruleLightPt),
+    color: T.color.ruleLight,
+  };
   return {
     top: strong,
     bottom: strong,

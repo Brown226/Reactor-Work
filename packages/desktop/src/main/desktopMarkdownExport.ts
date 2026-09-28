@@ -2,10 +2,7 @@ import { randomUUID } from "node:crypto";
 import { unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type {
-  MarkdownExportRequest,
-  MarkdownExportResult,
-} from "@zcode/shared";
+import type { MarkdownExportRequest, MarkdownExportResult } from "@zcode/shared";
 import { PlatformChannels } from "@zcode/shared";
 import { BrowserWindow, ipcMain } from "electron";
 
@@ -70,14 +67,11 @@ async function captureFullPagePng(
   try {
     await webContents.debugger.attach("1.3");
     try {
-      const result = (await webContents.debugger.sendCommand(
-        "Page.captureScreenshot",
-        {
-          format: "png",
-          captureBeyondViewport: true,
-          clip: { x: 0, y: 0, width, height, scale },
-        },
-      )) as { data: string };
+      const result = (await webContents.debugger.sendCommand("Page.captureScreenshot", {
+        format: "png",
+        captureBeyondViewport: true,
+        clip: { x: 0, y: 0, width, height, scale },
+      })) as { data: string };
       return Buffer.from(result.data, "base64");
     } finally {
       webContents.debugger.detach();
@@ -92,8 +86,7 @@ async function renderMarkdownExport(
   request: MarkdownExportRequest,
   logger: { warn: (...args: unknown[]) => void },
 ): Promise<MarkdownExportResult> {
-  const width =
-    request.format === "png" ? Math.max(320, request.width ?? PNG_DEFAULT_WIDTH) : 1000;
+  const width = request.format === "png" ? Math.max(320, request.width ?? PNG_DEFAULT_WIDTH) : 1000;
   const contentHeight =
     request.format === "png" ? Math.max(200, request.contentHeight ?? 2000) : 2000;
   const height = Math.min(contentHeight + 64, MAX_CONTENT_HEIGHT);

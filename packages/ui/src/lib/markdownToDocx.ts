@@ -92,7 +92,11 @@ function inlineTokensToRuns(tokens: Token[] | undefined, style: RunStyle = {}): 
       case "codespan":
         // 等宽字体在字符样式里（`ReactorCode`），不放 run 上 —— 见文件头注释。
         runs.push(
-          new TextRun({ text: (token as Tokens.Codespan).text, style: DOCX_STYLE_IDS.code, ...style }),
+          new TextRun({
+            text: (token as Tokens.Codespan).text,
+            style: DOCX_STYLE_IDS.code,
+            ...style,
+          }),
         );
         break;
       case "br":
@@ -178,9 +182,11 @@ async function listToParagraphs(list: Tokens.List, depth: number): Promise<DocxB
 
 function codeToParagraphs(code: string): Paragraph[] {
   // 每行一个段落便于跨页断行；等宽字体、底纹与零段距都在样式里。
-  return code.split("\n").map(
-    (line) => new Paragraph({ style: DOCX_STYLE_IDS.codeBlock, children: [new TextRun(line)] }),
-  );
+  return code
+    .split("\n")
+    .map(
+      (line) => new Paragraph({ style: DOCX_STYLE_IDS.codeBlock, children: [new TextRun(line)] }),
+    );
 }
 
 async function imageParagraph(token: Tokens.Image): Promise<Paragraph> {
@@ -240,14 +246,17 @@ async function tokensToParagraphs(tokens: Token[]): Promise<DocxBlock[]> {
         const heading = token as Tokens.Heading;
         out.push(
           new Paragraph({
-            heading: ([
-              HeadingLevel.HEADING_1,
-              HeadingLevel.HEADING_2,
-              HeadingLevel.HEADING_3,
-              HeadingLevel.HEADING_4,
-              HeadingLevel.HEADING_5,
-              HeadingLevel.HEADING_6,
-            ] as const)[heading.depth - 1] ?? HeadingLevel.HEADING_6,
+            heading:
+              (
+                [
+                  HeadingLevel.HEADING_1,
+                  HeadingLevel.HEADING_2,
+                  HeadingLevel.HEADING_3,
+                  HeadingLevel.HEADING_4,
+                  HeadingLevel.HEADING_5,
+                  HeadingLevel.HEADING_6,
+                ] as const
+              )[heading.depth - 1] ?? HeadingLevel.HEADING_6,
             children: inlineTokensToRuns(heading.tokens),
           }),
         );

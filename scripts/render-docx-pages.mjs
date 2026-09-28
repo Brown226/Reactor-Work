@@ -49,7 +49,9 @@ async function launchBrowser() {
 const browser = await launchBrowser();
 try {
   const page = await (await browser.newContext()).newPage();
-  await page.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0}#host{padding:24px}</style></head><body><div id="host"></div></body></html>`);
+  await page.setContent(
+    `<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0}#host{padding:24px}</style></head><body><div id="host"></div></body></html>`,
+  );
   // docx-preview 的 UMD 构建依赖全局 JSZip：不先注入就在 loadAsync 处炸。
   await page.addScriptTag({ path: JSZIP });
   await page.addScriptTag({ path: DOCX_PREVIEW });
@@ -71,7 +73,8 @@ try {
     return {
       // 页面尺寸反证纸张方向：A4 纵向 ≈ 794px、横向 ≈ 1123px（96dpi）
       pageSizes: pages.map(
-        (el) => `${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`,
+        (el) =>
+          `${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`,
       ),
       styleClasses: [
         ...new Set(

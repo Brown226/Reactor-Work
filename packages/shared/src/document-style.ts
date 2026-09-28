@@ -198,10 +198,7 @@ export function columnWidthsFromPercents(
 }
 
 /** 版心宽度（twip）：纸宽减左右页边距。列宽分配要用它，不能凭空猜。 */
-export function contentWidthTwips(
-  page: DocumentStyleTokens["page"],
-  landscape = false,
-): number {
+export function contentWidthTwips(page: DocumentStyleTokens["page"], landscape = false): number {
   const widthMm = landscape ? page.heightMm : page.widthMm;
   return twipsFromMm(widthMm - page.marginLeftMm - page.marginRightMm);
 }
