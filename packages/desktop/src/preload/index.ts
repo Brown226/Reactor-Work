@@ -68,6 +68,8 @@ import type {
   SaveFileRequest,
   SaveFileResult,
   PrintPageToPdfResult,
+  MarkdownExportRequest,
+  MarkdownExportResult,
   SSHConfigAliasOption,
   RemoteConnectionRuntimeLog,
   WindowControlsOverlayMetrics,
@@ -297,6 +299,9 @@ contextBridge.exposeInMainWorld("zcode", {
   /** 将当前页面的 print 媒体版面导出为 PDF（Chromium 打印引擎，矢量文本） */
   printPageToPdf: (): Promise<PrintPageToPdfResult> =>
     ipcRenderer.invoke(PlatformChannels.PrintToPdf),
+  /** 把自包含 HTML 离屏渲染为 PNG 长图 / PDF（Markdown 导出） */
+  exportMarkdownPage: (payload: MarkdownExportRequest): Promise<MarkdownExportResult> =>
+    ipcRenderer.invoke(PlatformChannels.MarkdownExport, payload),
   /** 从系统拖拽/文件输入得到的 Web File 解析真实本地路径 */
   getPathForFile: (file: File): string | null => {
     // Electron 32 起移除了非标准 File.path，renderer 不能再直接从拖拽 File 上取路径。

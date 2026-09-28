@@ -486,6 +486,9 @@ importers:
       '@napi-rs/canvas':
         specifier: ^1.0.9
         version: 1.0.9
+      fflate:
+        specifier: ^0.8.2
+        version: 0.8.3
       jimp:
         specifier: ^1.6.1
         version: 1.6.1
@@ -1166,6 +1169,9 @@ importers:
       cmdk:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      docx:
+        specifier: ^9.7.1
+        version: 9.7.1
       docx-preview:
         specifier: ^0.4.0
         version: 0.4.0

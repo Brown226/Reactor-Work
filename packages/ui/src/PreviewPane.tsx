@@ -18,6 +18,9 @@ import {
   EyeIcon,
   ExternalLinkIcon,
   FileCode2Icon,
+  FileTextIcon,
+  DownloadIcon,
+  ImageIcon,
   CopyIcon,
 } from "lucide-react";
 import { nanoid } from "nanoid";
@@ -46,6 +49,7 @@ import { FileDisplayIcon, resolveFileDisplayDescriptor } from "@/lib/fileDisplay
 import { getPathLeaf, isAbsoluteFilePath } from "@/lib/path.js";
 import { decodeBase64ToArrayBuffer, getOfficeFilePreviewKind } from "@/lib/officeFilePreview.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { useMarkdownExport } from "@/hooks/useMarkdownExport.js";
 import { useFileContextActions } from "@/hooks/useFileContextActions.js";
 import { useWorkspaceOpenInEditorTarget } from "@/hooks/useWorkspaceOpenInEditorTarget.js";
 import { logger } from "@/logger.js";
@@ -61,6 +65,9 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.js";
 import { readLastSelectedEditorId } from "@/lib/editorPreference.js";
@@ -401,6 +408,13 @@ function isPlainCodeSource(source: CodeViewerSource | null): boolean {
   return false;
 }
 
+/** 导出默认文件名：优先文件路径 basname，其次标题，均去掉扩展名 */
+function deriveMarkdownExportName(source: CodeViewerSource | null): string {
+  const raw = (source && "path" in source && source.path) || source?.title || "";
+  const base = raw.split(/[\\/]/).pop() ?? "";
+  return base.replace(/\.[^.]+$/, "") || "markdown";
+}
+
 function getPreviewPaneDisplayOptions(
   source: CodeViewerSource | null,
   viewModes: {
@@ -648,6 +662,14 @@ export function PreviewPane({
   );
   const { canToggleCodeWrap, canToggleMarkdownView, canToggleSvgView, hasMoreMenu } =
     displayOptions;
+  // Markdown 导出：互斥状态与失败恢复的唯一 owner；PNG/PDF 快照预览 DOM，docx 重新解析源码。
+  const markdownExport = useMarkdownExport({
+    getPreviewRoot: () =>
+      document.querySelector<HTMLElement>('[data-markdown-preview="true"]'),
+    content: filePreview?.content ?? "",
+    fileName: deriveMarkdownExportName(source),
+  });
+  const { exporting: exportingMarkdown, exportAs: exportMarkdownAs } = markdownExport;
   const codeCommentLabels = useMemo(
     () => ({
       addComment: intl.formatMessage({ id: "codeViewer.comment.add" }),
@@ -1639,6 +1661,40 @@ export function PreviewPane({
                         })}
                       </DropdownMenuRadioItem>
                     </DropdownMenuRadioGroup>
+                  </>
+                ) : null}
+                {canToggleMarkdownView ? (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <DownloadIcon className="size-4" />
+                        {intl.formatMessage({ id: "markdownExport.label" })}
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem
+                          disabled={exportingMarkdown !== null}
+                          onSelect={() => void exportMarkdownAs("png")}
+                        >
+                          <ImageIcon className="size-4" />
+                          {intl.formatMessage({ id: "markdownExport.png" })}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          disabled={exportingMarkdown !== null}
+                          onSelect={() => void exportMarkdownAs("docx")}
+                        >
+                          <FileTextIcon className="size-4" />
+                          {intl.formatMessage({ id: "markdownExport.word" })}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          disabled={exportingMarkdown !== null}
+                          onSelect={() => void exportMarkdownAs("pdf")}
+                        >
+                          <FileTextIcon className="size-4" />
+                          {intl.formatMessage({ id: "markdownExport.pdf" })}
+                        </DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
                   </>
                 ) : null}
                 {canToggleSvgView ? (

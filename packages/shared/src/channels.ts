@@ -46,6 +46,8 @@ import type {
   SaveFileRequest,
   SaveFileResult,
   PrintPageToPdfResult,
+  MarkdownExportRequest,
+  MarkdownExportResult,
   OpenInEditorOptions,
   PostUpdateReleaseNotesPayload,
   RemoteSessionClosedEvent,
@@ -174,6 +176,8 @@ export const PlatformChannels = {
   SaveFile: "zcode:save-file",
   /** Renderer → Main：用 Chromium 打印引擎把当前页面 print 媒体版面导出为 PDF */
   PrintToPdf: "zcode:print-to-pdf",
+  /** Renderer → Main：把自包含 HTML 离屏渲染为 PNG 长图 / PDF（Markdown 导出） */
+  MarkdownExport: "zcode:markdown-export",
   /** Main → Renderer：转发远程连接过程日志 */
   RemoteConnectionLog: "zcode:remote-connection-log",
   /** Main → Renderer：远程 workspace session 已关闭 */
@@ -680,6 +684,10 @@ export interface PlatformChannelMap {
   [PlatformChannels.PrintToPdf]: {
     request: void;
     response: PrintPageToPdfResult;
+  };
+  [PlatformChannels.MarkdownExport]: {
+    request: MarkdownExportRequest;
+    response: MarkdownExportResult;
   };
   [PlatformChannels.RemoteConnectionLog]: {
     request: {

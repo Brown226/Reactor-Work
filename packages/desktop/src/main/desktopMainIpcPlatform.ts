@@ -54,6 +54,7 @@ import {
 import { createTempTextAttachment } from "./tempTextAttachment.js";
 import { registerDesktopSaveFileIpcHandler } from "./desktopSaveFile.js";
 import { registerDesktopPrintToPdfIpcHandler } from "./desktopPrintToPdf.js";
+import { registerDesktopMarkdownExportIpcHandler } from "./desktopMarkdownExport.js";
 import { registerCuaPipActiveSessionIpc } from "./desktopCuaPipIpc.js";
 
 export function registerPlatformIpcHandlers(options: {
@@ -133,6 +134,7 @@ export function registerPlatformIpcHandlers(options: {
 
   registerDesktopSaveFileIpcHandler(options.logger);
   registerDesktopPrintToPdfIpcHandler(options.logger);
+  registerDesktopMarkdownExportIpcHandler(options.logger);
 
   ipcMain.handle(
     PlatformChannels.CreateTempTextAttachment,

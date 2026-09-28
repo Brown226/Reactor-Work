@@ -195,6 +195,8 @@ export type {
   SaveFileRequest,
   SaveFileResult,
   PrintPageToPdfResult,
+  MarkdownExportRequest,
+  MarkdownExportResult,
   DesktopCommandId,
   CuaOsSupport,
   DesktopWindowChromeState,

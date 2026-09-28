@@ -275,6 +275,27 @@ export interface PrintPageToPdfResult {
   error?: string;
 }
 
+/** Markdown 导出请求：自包含 HTML → PNG 长图 / PDF。docx 不经此通道（renderer 本地生成）。 */
+export interface MarkdownExportRequest {
+  format: "png" | "pdf";
+  /** 自包含 HTML：本地图片已内联为 dataURL，不引用外部资源 */
+  html: string;
+  /** PNG 专用：输出宽度（CSS px），默认 760 */
+  width?: number;
+  /** PNG 专用：像素密度，默认 2 */
+  scale?: number;
+  /** PNG 专用：正文高度（CSS px），用于全页捕获范围 */
+  contentHeight?: number;
+}
+
+export interface MarkdownExportResult {
+  success: boolean;
+  /** 成功时的字节 */
+  data?: ArrayBuffer;
+  /** "busy" | "load_failed" | "render_failed" */
+  error?: string;
+}
+
 export function createOpenInEditorRemoteTarget(target: RemoteTarget): OpenInEditorRemoteTarget {
   switch (target.kind) {
     case "ssh":
@@ -540,6 +561,12 @@ export interface IPlatformService {
    * 页面尺寸由 renderer 注入的 @page CSS 决定（preferCSSPageSize）；仅 Desktop 实现。
    */
   printPageToPdf?(): Promise<PrintPageToPdfResult>;
+
+  /**
+   * 把自包含 HTML 离屏渲染为 PNG 长图或 PDF（Chromium 引擎）。
+   * 本地图片须已内联为 dataURL；docx 不经此通道；仅 Desktop 实现。
+   */
+  exportMarkdownPage?(payload: MarkdownExportRequest): Promise<MarkdownExportResult>;
 
   /**
    * 从浏览器 File 对象解析宿主本地路径；只有 Desktop preload 能安全实现。
