@@ -140,13 +140,6 @@ export const DOCUMENT_STYLE_TOKENS: DocumentStyleTokens = {
   },
 };
 
-/** 严重度 → 颜色令牌键：报告里「必须修改 / 建议修改 / 提示」的文字着色。 */
-export const DOCUMENT_SEVERITY_COLOR_KEYS = {
-  error: "error",
-  warning: "warning",
-  info: "info",
-} as const;
-
 /** pt → `w:sz`（half-point）。10.5pt(五号) → 21。 */
 export function halfPointsFromPt(pt: number): number {
   return Math.round(pt * 2);
