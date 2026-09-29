@@ -9,7 +9,7 @@ import { join } from "node:path";
  * 解析口径与 skillsService 的用户技能根逐字一致：env `HOME`/`USERPROFILE` →
  * `homedir()`，再拼 `USER_DATA_DIR_NAME`。刻意**不**用 paths.ts 的
  * `getDataBaseDir()`——发现层走的是 env/home 口径，写入方与读取方必须同一个目录
- * （契约 docs/server-skill-sync.md §2 不变式 3）。
+ * （契约 docs/已完成/已完成-server-skill-sync.md §2 不变式 3）。
  *
  * 本文件是 node-only（node:os/node:path），不能从 services 根 index 再导出。
  */

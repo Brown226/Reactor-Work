@@ -6,7 +6,7 @@ import test from "node:test";
 import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 /**
- * `$` 同名折叠：server 优先于 user（docs/server-skill-sync.md §6.1）。
+ * `$` 同名折叠：server 优先于 user（docs/已完成/已完成-server-skill-sync.md §6.1）。
  * 发现层仍两者都列（列表语义），但注入会话时同名只取 server 版。
  *
  * 单独成文件：skillsService 的 CLI config 路径是模块级常量，import 时即固定 HOME；

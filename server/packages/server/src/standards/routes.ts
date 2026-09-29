@@ -6,7 +6,7 @@
  *    内部只再校验 platform_admin（写操作）；
  *  - `/v1/standards/index` 是**执行期只读**：桌面端审查要读标准库，但普通用户**不该有管理入口**，
  *    所以它不带 admin 前缀、不校验角色，只要 Bearer 能过即可（登录态 = 可读）。
- *    见 docs/审查板块-方案-v1.md §4.4.3：管理界面只在管理员端，消费接口不进任何用户可见导航。
+ *    见 docs/未完成-审查板块-方案-v1.md §4.4.3：管理界面只在管理员端，消费接口不进任何用户可见导航。
  *
  * 导入走 JSON 而不是 multipart：标准库是**一次性迁移**的治理数据（3.6 万行 → 13,369 行筛选后），
  * 调用方是运维脚本而不是浏览器；JSON 让导入可以幂等重跑，也不用为它引入 exceljs 依赖。
@@ -221,7 +221,7 @@ export function createStandardsAdminRoutes(db: IdentityDb): Hono<AppEnv> {
 
 /**
  * 消费面 `/v1/standards/*`：登录即可读，没有管理入口。
- * 桌面端自检用它同步标准库索引（缺口 2，见 docs/审查板块-方案-v1.md §5）。
+ * 桌面端自检用它同步标准库索引（缺口 2，见 docs/未完成-审查板块-方案-v1.md §5）。
  */
 export function createStandardsQueryRoutes(db: IdentityDb): Hono<AppEnv> {
   const app = new Hono<AppEnv>();

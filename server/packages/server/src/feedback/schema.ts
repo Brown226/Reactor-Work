@@ -30,7 +30,7 @@ export async function ensureFeedbackSchema(db: IdentityDb): Promise<void> {
       severity TEXT,
       -- 模块分类（客户端 content.function），如 "模型配置 / API Key"
       module TEXT,
-      -- 状态：中文枚举，见 docs/feedback-module.md §4
+      -- 状态：中文枚举，见 docs/已完成/已完成-feedback-module.md §4
       status TEXT NOT NULL DEFAULT '已提交',
       contact TEXT,
       -- 提交者身份：从企业 JWT 的 claims 解析（name/sub/deptId），不是客户端自报的。

@@ -2114,14 +2114,14 @@ export function createLocalServices(options: {
   });
 
   // 企业服务端技能同步：server-skills 目录的唯一写者。只读登录态与凭据库里的
-  // reactor:* 令牌，不碰 provider；HTTP 复用 reactorServerClient（见 docs/server-skill-sync.md §5）。
+  // reactor:* 令牌，不碰 provider；HTTP 复用 reactorServerClient（见 docs/已完成/已完成-server-skill-sync.md §5）。
   const serverSkillSyncService = createServerSkillSyncService({
     apiClient,
     credentials: credentialService,
     reactorServer: reactorServerService,
   });
 
-  // 企业服务端 Agent 同步：server-agents 目录的唯一写者（docs/服务端接线-P3-Agent下发.md）。
+  // 企业服务端 Agent 同步：server-agents 目录的唯一写者（docs/已完成/已完成-服务端接线-P3-Agent下发.md）。
   // 只物化 installed && installEnabled；发现层（GUI/CLI）只读，启停不落本地第二套状态。
   const serverAgentSyncService = createServerAgentSyncService({
     apiClient,
@@ -2155,7 +2155,7 @@ export function createLocalServices(options: {
       ? { accountProviderConfigSource: agentAccountProviderConfigSource }
       : {}),
     accountRequestAuthService,
-    // 企业服务端 provider 的鉴权材料由这里现场解析（见 docs/服务端接线-方案-v1.md §4.2）。
+    // 企业服务端 provider 的鉴权材料由这里现场解析（见 docs/未完成-服务端接线-方案-v1.md §4.2）。
     reactorServerAuth: reactorServerService,
     ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
     authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
@@ -2646,7 +2646,7 @@ export function createLocalServices(options: {
         apiClient,
         credentialService,
         oauthService,
-        // 企业版：反馈跟着企业服务端走，管理台才能受理（docs/feedback-module.md §2）。
+        // 企业版：反馈跟着企业服务端走，管理台才能受理（docs/已完成/已完成-feedback-module.md §2）。
         // 用 getStatus() 而不是装配时读一次 —— 服务端地址是登录时才填的、还可能换。
         // 未配置企业服务端时返回 undefined，回落官方后端，开源用法不受影响。
         getApiBaseUrl: async () => {

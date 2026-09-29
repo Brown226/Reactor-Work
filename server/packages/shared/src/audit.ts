@@ -31,7 +31,7 @@ export type AuditApprovalDecision = "allow" | "deny" | "ask" | "forbidden";
  * 历史：改造前是 `readonly/balanced/trust/strict`（旧 standalone 项目的词表）。桌面端不接受旧词，
  * 因此**只写新值**；库里可能残留旧值，读时用 `normalizeAuditPolicyMode` 映射
  * （readonly→plan · strict→edit · balanced→build · trust→yolo），见
- * docs/服务端接线-P4-用量上报与策略.md 的 D2。
+ * docs/未完成-服务端接线-P4-用量上报与策略.md 的 D2。
  */
 export type AuditPolicyMode = "plan" | "build" | "edit" | "yolo";
 

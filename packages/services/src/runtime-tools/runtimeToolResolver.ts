@@ -56,7 +56,7 @@ function resolveCommandOnPath(
   return null;
 }
 
-function resolvePlatformScopedBundledToolRoots(moduleDir?: string): Array<string | null> {
+export function resolvePlatformScopedBundledToolRoots(moduleDir?: string): Array<string | null> {
   const platformKey = `${process.platform}-${process.arch}`;
   return [
     resolvePath(process.cwd(), "bundled-tools", platformKey),

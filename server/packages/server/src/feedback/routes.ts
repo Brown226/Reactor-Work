@@ -329,7 +329,7 @@ export function createFeedbackPublicRoutes(
   app.get(FEEDBACK_TICKET_PATH, async (c) => {
     const limit = readPositiveInt(c.req.query("limit"), 50, 200);
     const offset = readPositiveInt(c.req.query("offset"), 1, 100_000) - 1;
-    // mine 只能按设备身份过滤：Reactor 没有"官方账号-工单"归属（见 docs/feedback-module.md §6）。
+    // mine 只能按设备身份过滤：Reactor 没有"官方账号-工单"归属（见 docs/已完成/已完成-feedback-module.md §6）。
     const mine = c.req.query("mine");
     const deviceMid = mine === "1" || mine === "true" ? c.req.header("x-device-mid")?.trim() : undefined;
     const { tickets } = await listFeedbackTickets(db, {

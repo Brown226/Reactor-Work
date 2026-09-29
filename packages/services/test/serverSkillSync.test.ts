@@ -10,7 +10,7 @@ import { resolveServerSkillRoot } from "../src/server-skills/serverSkillsRoot.js
 
 /**
  * server-skills 同步器行为测试。
- * 覆盖契约 docs/server-skill-sync.md 的核心失败语义与增量口径：
+ * 覆盖契约 docs/已完成/已完成-server-skill-sync.md 的核心失败语义与增量口径：
  * 离线零删、401 区分、附件 sha 短路与二进制哈希、硬收回删目录、卸载链路。
  */
 

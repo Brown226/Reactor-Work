@@ -280,7 +280,7 @@ function buildActivatedSkillsPromptBlock(skills: SkillSummary[]): string {
 }
 
 /**
- * 同名技能解析优先级（docs/server-skill-sync.md §6.1）。
+ * 同名技能解析优先级（docs/已完成/已完成-server-skill-sync.md §6.1）。
  * 企业下发优先于其余来源；server 版被本地停用时，同名回落到下一优先级（workspace→plugin→user）。
  */
 const SCOPE_RESOLUTION_PRIORITY: Record<SkillScope, number> = {

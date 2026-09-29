@@ -1,7 +1,7 @@
 /**
  * 标准规范清单仓储（STD）：全部 SQL 收口在这里，路由只做 HTTP 形状。
  *
- * 三处刻意的取舍（改之前先看 docs/审查板块-方案-v1.md §4.4.3）：
+ * 三处刻意的取舍（改之前先看 docs/未完成-审查板块-方案-v1.md §4.4.3）：
  *  - 列表用 LIMIT/OFFSET + 同 WHERE 的 COUNT(*)：与 feedback/audit 的分页口径一致；
  *  - `listStandardIndex` 是**批量只读轻量索引**，只给自检消费端用，不带 created_at 等
  *    管理字段，也不分页 —— 它一次拉全量，端侧缓存后按 updated_at 判断是否过期；

@@ -4,7 +4,7 @@
  * 事实源：`server/packages/shared/src/skills.ts` 的 `SkillCatalogItem`（`GET /me/skills/catalog`
  * 分页条目、`GET /me/skills/featured` 精选条目、安装/收藏写操作回带的 `skill` 字段同形）。
  * 与专家侧 `server-agents-types.ts` 同纪律：服务端加字段/改缺省必须在这里显式跟随，
- * services 层不再手写第二份 shape（方案见 docs/专家技能市场-方案-v1.md §2/§4/§5.3）。
+ * services 层不再手写第二份 shape（方案见 docs/未完成-专家技能市场-方案-v1.md §2/§4/§5.3）。
  *
  * 为什么 catalog 条目要单独一份契约：P2 的 `ReactorServerSkillPayload` 是**落盘集**
  * （含 content/files、不含市场字段），本文件是**市场目录**（含 hot/uses/favorited、不含正文），

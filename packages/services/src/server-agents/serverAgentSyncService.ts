@@ -25,7 +25,7 @@ import {
 import { IServerAgentSyncService, type ServerAgentSyncResult } from "./serverAgentSync.js";
 
 /**
- * 同步器实现。字段映射、同步时序与验收见 docs/服务端接线-P3-Agent下发.md。
+ * 同步器实现。字段映射、同步时序与验收见 docs/已完成/已完成-服务端接线-P3-Agent下发.md。
  *
  * 三条硬约束：
  *  1. 写操作成功后 **re-GET 全量再 reconcile**，不在本地推算 installed/hot 等聚合字段（D3）；

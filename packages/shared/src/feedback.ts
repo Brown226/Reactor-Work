@@ -97,7 +97,7 @@ export interface CreateFeedbackTicketInput {
   device?: FeedbackDeviceInfo;
   /**
    * 联系方式字段已下线（产品决策：不再让用户填联系方式，身份改由登录态自带，见
-   * docs/feedback-module.md §6）。服务端 `feedback_ticket.contact` 列保留，只为展示历史数据。
+   * docs/已完成/已完成-feedback-module.md §6）。服务端 `feedback_ticket.contact` 列保留，只为展示历史数据。
    */
   /** 当前界面语言，仅用于请求头透传，不写入后端工单正文。 */
   locale?: "zh-CN" | "en-US";

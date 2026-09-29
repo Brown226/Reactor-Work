@@ -9,7 +9,7 @@ import { createServiceDescriptor } from "../descriptors.js";
  *  2. 企业 provider 条目：经 `IProviderSettingsService` 写 personal overlay，不另起配置文件；
  *  3. 网关请求鉴权材料：内存缓存短期网关令牌，供模型请求**每次现场解析**（见 §设计文档 4.2）。
  *
- * 设计依据：`docs/服务端接线-方案-v1.md`。
+ * 设计依据：`docs/未完成-服务端接线-方案-v1.md`。
  */
 
 /** 企业服务端地址（身份进程，形如 `http://10.0.0.5:8791`）。网关默认取同主机 `:8790`。 */

@@ -6,7 +6,7 @@ import type { AgentPermissionMode } from "./subagents-types.js";
  * 事实源：`server/packages/server/src/agents/repo.ts` 的 `toAgentPayload`（`AgentDefinition`）。
  * 不在 services 里手写第二份 shape：服务端加字段/改缺省时，必须在这里显式跟随，
  * 否则两端会静默漂移（与技能契约 `skills-types.ts` 同纪律）。
- * 字段映射正本见 docs/服务端接线-方案-v1.md §4.4；实施计划 docs/服务端接线-P3-Agent下发.md。
+ * 字段映射正本见 docs/未完成-服务端接线-方案-v1.md §4.4；实施计划 docs/已完成/已完成-服务端接线-P3-Agent下发.md。
  */
 
 /** 服务端 policyMode 词表（`server/packages/shared/src/audit.ts` 的 `AuditPolicyMode`）。 */

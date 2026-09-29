@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { delimiter } from "node:path";
 import { buildZCodeToolEnvPassthroughEnv, sanitizeZCodeRuntimeEnvInPlace } from "@zcode/shared";
 import { appendPathEntries, buildRuntimeToolEnvPatch } from "./runtimeToolResolver.js";
+import { buildOfficeEnginesEnvPatch } from "./officeEnginesEnv.js";
 import {
   buildShellBootstrapPath,
   captureLoginShellEnvSnapshot,
@@ -172,8 +173,14 @@ export function buildRuntimeProcessEnvPatch(
     ...normalizedBaseEnv,
     PATH: undefined,
   });
+  // 办公四件套 skill 的本地引擎（LibreOffice / 便携 Python / 字体）：安装器预置时翻译成
+  // skill env_check.sh 认识的 env 契约，并把可执行目录并入 PATH；未预置时不注入任何变量。
+  const officeEngines = buildOfficeEnginesEnvPatch(normalizedBaseEnv);
 
-  const runtimeToolPathEntries = runtimeToolEnvPatch.PATH?.split(delimiter).filter(Boolean) ?? [];
+  const runtimeToolPathEntries = [
+    ...(runtimeToolEnvPatch.PATH?.split(delimiter).filter(Boolean) ?? []),
+    ...officeEngines.pathEntries,
+  ];
   // 远端 server 可能由非交互 SSH /bin/sh 启动，原始 PATH 只有系统目录；
   // login shell 探测失败时如果继续沿用该 PATH，后续 mcp/list 的 app-server 直接 spawn("npx")
   // 会找不到 Homebrew/NVM 里的 npx。POSIX 下把 bootstrap PATH 也作为最终兜底，而不是只用于探测。
@@ -184,6 +191,7 @@ export function buildRuntimeProcessEnvPatch(
     ...loginShellEnvPatch,
     ...toolEnvPassthroughPatch,
     ...runtimeToolEnvPatch,
+    ...officeEngines.env,
     // Python on Windows inherits the active code page (often GBK/936) when no explicit
     // encoding is set. ZCode/Bash tool output is consumed as UTF-8, so force Python
     // subprocesses spawned by agents to emit UTF-8.

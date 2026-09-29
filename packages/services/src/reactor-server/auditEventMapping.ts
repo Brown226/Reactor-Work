@@ -4,7 +4,7 @@
  * 纯函数、不碰 IO、不读时钟以外的一切：单测直接把输入喂进来断言输出，
  * 接线的部分（订阅流、flush、落盘）在 `auditOutbox.ts` / `auditReporter.ts`。
  *
- * 语言见 docs/服务端接线-P4-用量上报与策略.md §4.1；红线见 `auditContract.ts` 注释。
+ * 语言见 docs/未完成-服务端接线-P4-用量上报与策略.md §4.1；红线见 `auditContract.ts` 注释。
  */
 import {
   truncateAuditSummary,

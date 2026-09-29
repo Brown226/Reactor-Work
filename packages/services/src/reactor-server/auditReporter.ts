@@ -4,7 +4,7 @@
  * 接线的部分留给 P4.1b：订阅 Host 的 `task_token_usage_delta`、按 30s 合并窗口 / 登录 / 退出触发 flush、
  * 通过 `reactorServerClient` POST `/desktop/audit/batch`。这样切片的边界是"纯逻辑可单测、网络单独接"。
  *
- * 过滤口径见 docs/服务端接线-P4-用量上报与策略.md §4.1，与模型治理契约同源：
+ * 过滤口径见 docs/未完成-服务端接线-P4-用量上报与策略.md §4.1，与模型治理契约同源：
  * **只报企业 provider 的调用**；开发者模式旁路的本地模型有意不报（产品既定，不是缺口）。
  */
 import type { AuditOutbox } from "./auditOutbox.js";

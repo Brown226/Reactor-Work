@@ -71,7 +71,7 @@ export interface AuditBatchResponse {
 export const MAX_AUDIT_BATCH = 500;
 export const MAX_AUDIT_SUMMARY_CHARS = 200;
 
-/** outbox 上限：超出丢最旧（磁盘有界优先于"永不丢"，见 docs/服务端接线-P4-用量上报与策略.md §7）。 */
+/** outbox 上限：超出丢最旧（磁盘有界优先于"永不丢"，见 docs/未完成-服务端接线-P4-用量上报与策略.md §7）。 */
 export const AUDIT_OUTBOX_MAX_EVENTS = 5000;
 
 /** 待上报事件的落盘文件：`{用户数据根}/audit-outbox.jsonl`。 */

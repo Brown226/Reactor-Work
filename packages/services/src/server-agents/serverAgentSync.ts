@@ -4,7 +4,7 @@ import { createServiceDescriptor } from "../descriptors.js";
 /**
  * 企业服务端 Agent 同步（server-agents）。
  *
- * 契约与决策正本：docs/服务端接线-方案-v1.md §4.4；实施计划 docs/服务端接线-P3-Agent下发.md。
+ * 契约与决策正本：docs/未完成-服务端接线-方案-v1.md §4.4；实施计划 docs/已完成/已完成-服务端接线-P3-Agent下发.md。
  * 谁写盘：只有本服务写 `{数据根}/server-agents/`（根目录见 subagentStorage.resolveServerAgentsRoot）；
  * 发现层（subagentsService / CLI bootstrap）只读。启停不落本地第二套状态——
  * 「是否物化」即启用态，服务端 `agent_installs` 是唯一真相（D5）。

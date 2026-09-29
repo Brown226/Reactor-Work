@@ -864,7 +864,7 @@ interface CreateZCodeAgentServiceOptions extends Omit<
   accountRequestAuthService?: IAccountRequestAuthService;
   /**
    * 企业服务端（Reactor Server）的模型请求鉴权解析器。
-   * 该 provider 的网关令牌 TTL 很短，由这里每次请求现场签发（见 docs/服务端接线-方案-v1.md §4.2）。
+   * 该 provider 的网关令牌 TTL 很短，由这里每次请求现场签发（见 docs/未完成-服务端接线-方案-v1.md §4.2）。
    */
   reactorServerAuth?: Pick<IReactorServerService, "resolveGatewayAuth">;
   /** Desktop Host 请求 Main 登记 Agent 已授权的精确本地视频路径。 */

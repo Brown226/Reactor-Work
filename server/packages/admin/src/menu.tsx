@@ -115,7 +115,7 @@ export const NAV: NavGroup[] = [
         roles: A,
         el: <KbDatasetsPage />,
       },
-      // 知识板块（文件审查的三类依据，见 docs/审查板块-方案-v1.md §4.4）：术语白名单 / 规范库 / 标准清单。
+      // 知识板块（文件审查的三类依据，见 docs/未完成-审查板块-方案-v1.md §4.4）：术语白名单 / 规范库 / 标准清单。
       // 三个 key 必须与服务端 /me/nav 的 platform_admin 列表逐项同步，漏一边页面永不显示。
       // 顺序按"审查时先用哪个"排：先查术语（过滤误报）→ 再对条文（以库审文）→ 最后对标准编号（自检）。
       { key: "terms", path: "/terms", title: "术语白名单", icon: BookBookmark, roles: A, el: <Terminology /> },

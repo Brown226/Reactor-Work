@@ -22,7 +22,7 @@ import {
 import { resolveServerSkillRoot } from "./serverSkillsRoot.js";
 
 /**
- * 同步器实现。同步时序、失败语义与验收场景见 docs/server-skill-sync.md。
+ * 同步器实现。同步时序、失败语义与验收场景见 docs/已完成/已完成-server-skill-sync.md。
  *
  * 三条硬约束（来自旧项目踩坑）：
  *  1. 二进制附件哈希一律按**解码后字节**——服务端清单 sha 同口径，对不上就跳过不写；

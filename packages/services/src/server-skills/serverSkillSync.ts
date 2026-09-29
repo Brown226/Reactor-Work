@@ -4,7 +4,7 @@ import { createServiceDescriptor } from "../descriptors.js";
 /**
  * 企业服务端技能同步（server-skills）。
  *
- * 契约正本：docs/server-skill-sync.md。谁写盘：只有本服务写
+ * 契约正本：docs/已完成/已完成-server-skill-sync.md。谁写盘：只有本服务写
  * `~/.reactor/server-skills/`（路径见 serverSkillsRoot.ts）；发现（skillsService /
  * CLI skillRoots）只读。启停不走本服务（仍是 ISkillsService.setEnabled 的路径 key map）。
  */

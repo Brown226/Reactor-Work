@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 /**
- * 知识缓存的**唯一所有者**（文件审查板块，见 docs/审查板块-方案-v1.md §4.4.3）。
+ * 知识缓存的**唯一所有者**（文件审查板块，见 docs/未完成-审查板块-方案-v1.md §4.4.3）。
  *
  * 写入方是端侧同步服务（`knowledgeSyncService`），读取方是 CLI 的 `KnowledgeCheck` 工具。
  * 两边必须解析出**同一个目录**，否则表现成「同步下来了但工具说缓存为空」——

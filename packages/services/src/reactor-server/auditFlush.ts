@@ -1,7 +1,7 @@
 /**
  * 上报 flush（P4.1b）：peek → POST → ack 的批量循环，外加触发时机。
  *
- * 语义与边界见 docs/服务端接线-P4-用量上报与策略.md §4.2：
+ * 语义与边界见 docs/未完成-服务端接线-P4-用量上报与策略.md §4.2：
  * - **peek 不删 → 全批 ack**：POST 成功但 ack 前崩溃，重发由服务端 `eventId` 判重；
  * - 单批 ≤ `MAX_AUDIT_BATCH`(500)；一次 flush 最多 `maxBatches`(10) 批，避免长时间占住；
  * - POST 失败**不动 outbox**（已 ack 的批次不会重发，未 ack 的下次再试）；

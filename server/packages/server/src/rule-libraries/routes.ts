@@ -326,7 +326,7 @@ export function createRuleLibraryAdminRoutes(db: IdentityDb): Hono<AppEnv> {
 
 /**
  * 消费面 `/v1/rule-libraries/*`：登录即可读，不进任何用户可见导航。
- * 契约见 docs/审查板块-方案-v1.md §4.4.3：先列可下发的库，再按库拉条文（按库缓存）。
+ * 契约见 docs/未完成-审查板块-方案-v1.md §4.4.3：先列可下发的库，再按库拉条文（按库缓存）。
  */
 export function createRuleLibraryQueryRoutes(db: IdentityDb): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
