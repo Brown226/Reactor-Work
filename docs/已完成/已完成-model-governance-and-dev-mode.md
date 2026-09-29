@@ -13,9 +13,12 @@
   始终可见，它是被认可的模型来源。
 - **解锁方式**：任意一处版本号**连续点击 7 下**（相邻两次间隔超过 1.5s 即归零重数）。
 - **两个入口，各数各的**：每个入口有自己的计数器，混点不解锁——"在一个地方连续点 7 下"才可自我验证。
-  当前落在两处版本号上：**设置 → 外观 的「应用信息」行**与**侧栏底部的版本号**（同一组件
-  `DevModeVersionLabel`，各自一份 `useDevTap`）。原项目用"设置→关于"作第二入口，fork 的关于是原生
-  对话框、无法挂手势；帮助菜单项也不可用——选中即关菜单，1.5s 窗口内点不满 7 下。
+  当前落在两处版本号上：**设置 → 外观 的「应用信息」行**（`DevModeVersionLabel`，renderer 内
+  `useDevTap` 计数）与**「帮助 → 关于 Reactor」弹窗的版本号**（main 侧
+  `aboutDevModeTap.ts` 计数；About 是独立 renderer 进程，拿不到应用 store，故由 main 计数后把
+  取反值广播回应用窗口，写入路径仍只有 `setDevModeUnlocked` 一条）。
+  （2026-09-29 调整）侧栏底部的版本号入口已删除（footer 只留设置按钮）；原"fork 的关于是原生
+  对话框、无法挂手势"的前提已不成立——About 现为自绘弹窗，可以挂手势。
 - **途中不给进度**：只有解锁/反锁那一刻给结果提示（隐藏入口的进度条等于把后门画在门上）。
 - **反锁要收尾**：当前正停在「模型设置」页时被反锁/换账号 → 自动退回「常规」页，不留空白内容区。
 - **只藏界面不删配置**：反锁后本地 provider 配置仍在磁盘上。
@@ -39,11 +42,14 @@
 | 设置分区可见性 | 既有闸门 | `packages/ui/src/lib/settingsNavigation.ts` 的 `isSettingsSectionEnabled`（`modelProvider` 读开发者模式） |
 | 企业目录与登录态 | 既有企业链路（不改所有权） | `packages/ui/src/hooks/useReactorServer.ts` + `packages/services/src/reactor-server/*` |
 | 模型可见性过滤 | 单一函数 | `packages/ui/src/lib/modelScope.ts`（`resolveEnterpriseModelScope` + `scopeModelSelectionView`） |
-| 版本号入口 UI | 一个组件两处复用 | `packages/ui/src/settings/DevModeVersionLabel.tsx` |
+| 版本号入口 UI | 设置页入口一个组件 | `packages/ui/src/settings/DevModeVersionLabel.tsx` |
+| About 入口的连点计数与广播 | desktop main | `packages/desktop/src/main/aboutDevModeTap.ts`（频道 `AboutVersionTap` / `DevModeUnlockChanged` / `DevModeUnlockReported`） |
+| 桌面桥（订阅广播 + 上报本地变化） | RootInner 挂载一次 | `packages/ui/src/lib/devMode.ts` 的 `useDevModeUnlockBridge` |
 
 **单一事实源**：开发者模式只有一个模块级布尔（`lib/devMode.ts`），两个入口读同一个值、各自计数；
-设置导航与模型过滤都从它取数，不存在第二处开关。企业目录仍由既有的 `reactorServerService`
-同步与持有，本改造不新增同步路径。
+设置导航与模型过滤都从它取数，不存在第二处开关。main 只保留一个 `latestKnown` 镜像供 About
+连点取反，镜像由 renderer 上报刷新、main 不回播（无回环、无第二写入口）。企业目录仍由既有的
+`reactorServerService` 同步与持有，本改造不新增同步路径。
 
 ## 3. 可见性与过滤
 
@@ -72,7 +78,7 @@ reactorStatus ───┘
 
 1. 全新安装（未解锁）：设置导航无「模型设置」；「企业服务端」可见。
 2. 在外观页版本号连点 7 下：出现解锁提示，「模型设置」出现在导航里；重启后仍解锁。
-3. 在帮助菜单版本号连点 7 下同理；但"外观点 4 下 + 帮助点 3 下"不解锁。
+3. 在「帮助 → 关于 Reactor」弹窗的版本号连点 7 下同理（版本号下方出现结果提示）；但"外观点 4 下 + About 点 3 下"不解锁。
 4. 已解锁时再连点 7 下：反锁并提示；此时若正停在「模型设置」页 → 自动回到「常规」。
 5. 连点间隔超过 1.5s 重新计数；连点途中没有任何进度提示。
 6. 登录企业服务端且目录同步成功：聊天模型选择器只列企业模型；本地 provider 模型不出现。
@@ -85,7 +91,8 @@ reactorStatus ───┘
   绕过手段存在但需要显式解锁，且旁路调用不带网关令牌、在网关侧天然留痕/受限）。
 - **不搬原项目 `prefs` 的分键细节**：fork 的 store 已有 localStorage 约定，按 fork 约定实现，
   不引入第二套偏好存储。
-- **不跨窗口广播开发者模式**：与原项目一致（localStorage + 本地订阅），窗口间不同步；
-  如需同步，后续把它加进 `BROADCAST_FIELDS`。
+- **不跨窗口广播开发者模式**（2026-09-29 收窄）：本地入口（设置页版本号）仍是 localStorage + 本地订阅；
+  只有 About 连点这一个跨进程动作会经 main 广播 `DevModeUnlockChanged`，应用窗口统一应用新值——
+  这是从 About 窗口进入 store 的唯一通道，不是通用同步机制，仍不进 `BROADCAST_FIELDS`。
 - **不改企业模型的物化方案**：`reconcileProviderModels` 把目录模型写进「Reactor 企业服务端」provider
   这一做法保留，本改造只在其上补"可见性收敛"。
