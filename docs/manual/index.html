@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reactor 说明书</title>
+<meta name="description" content="Reactor（数智堆脑） 内网部署的产品说明书：按本仓库实际行为整理。" />
+<link rel="stylesheet" href="assets/manual.css" />
+</head>
+<body>
+<header class="manual-topbar">
+  <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="manual-nav">目录</button>
+  <span class="brand">Reactor<span class="brand-sub">数智堆脑</span></span>
+  <span class="topbar-note">离线说明书 · 依据本仓源码</span>
+</header>
+<div class="manual-layout">
+  <aside class="manual-aside" id="manual-nav">
+<nav class="manual-nav" aria-label="说明书目录">
+<a class="nav-home" href="index.html">Reactor 说明书</a>
+<section class="nav-group"><h2>开始使用</h2>
+<ul>
+<li><a href="welcome.html">概述与核心能力</a></li>
+<li><a href="install.html">安装与部署</a></li>
+<li><a href="model-access.html">接入模型</a></li>
+<li><a href="feedback.html">反馈与支持</a></li>
+</ul></section>
+<section class="nav-group"><h2>核心功能</h2>
+<ul>
+<li><a href="agent.html">Reactor Agent</a></li>
+<li><a href="goal.html">目标模式</a></li>
+<li><a href="memory.html">项目记忆</a></li>
+<li><a href="repo-wiki.html">仓库百科</a></li>
+<li><a href="task-management.html">任务与文件管理</a></li>
+<li><a href="edit-history.html">编辑历史对话</a></li>
+<li><a href="automations.html">定时任务</a></li>
+<li><a href="idle-time-tasks.html">闲时任务</a></li>
+<li><a href="remote-development.html">远程开发</a></li>
+<li><a href="remote-control.html">手机远控</a></li>
+<li><a href="subagents.html">子智能体</a></li>
+<li><a href="browser-use.html">浏览器自动化</a></li>
+</ul></section>
+<section class="nav-group"><h2>扩展体系</h2>
+<ul>
+<li><a href="plugin.html">插件</a></li>
+<li><a href="skill.html">技能</a></li>
+<li><a href="mcp.html">MCP</a></li>
+<li><a href="command.html">命令</a></li>
+<li><a href="hooks.html">Hooks</a></li>
+</ul></section>
+<section class="nav-group"><h2>本仓特有功能</h2>
+<ul>
+<li><a href="interface-modes.html">界面模式（编程 / 办公 / 审查）</a></li>
+<li><a href="review-panel.html">文件审查板块</a></li>
+<li><a href="office-suite.html">内网办公四件套</a></li>
+<li><a href="model-governance.html">模型治理与开发者模式</a></li>
+<li><a href="data-contracts.html">数据目录与背景主题契约</a></li>
+</ul></section>
+<section class="nav-group"><h2>内网服务端</h2>
+<ul>
+<li><a href="server-overview.html">服务端总览与接线</a></li>
+<li><a href="server-delivery.html">技能与 Agent 下发</a></li>
+<li><a href="server-usage-policy.html">用量上报与策略下发</a></li>
+</ul></section>
+<section class="nav-group"><h2>帮助</h2>
+<ul>
+<li><a href="keyboard-shortcuts.html">快捷键表</a></li>
+<li><a href="qa.html">常见问题</a></li>
+<li><a href="linux-wsl.html">Linux / WSL 排查</a></li>
+<li><a href="upstream-diff.html">与上游 ZCode 的差异</a></li>
+</ul></section>
+</nav>
+  </aside>
+  <main class="manual-main">
+<article class="manual-article">
+<h1 id="reactor-产品说明书">Reactor 产品说明书</h1>
+<p><strong>Reactor（数智堆脑）</strong> 是面向内网环境部署的 Agentic Development Environment（ADE）：把大模型的长上下文与长程任务能力，落到桌面端、Web 端与终端里可连续推进的开发工作流上。</p>
+<p>本说明书<strong>依据当前检出的源码整理</strong>，描述的是本仓库实际提供的能力、命令、配置项与文件位置。它与上游 ZCode 官方文档存在差异，凡属本仓二次开发新增、上游没有或已改动的部分，均在本说明书中单独标注。</p>
+<h2 id="本说明书与上游文档的关系">本说明书与上游文档的关系</h2>
+<div class="table-wrap"><table><thead><tr><th>关注点</th><th>上游 ZCode 官方文档</th><th>本说明书</th></tr></thead><tbody>
+<tr><td>依据</td><td>官方发布的产品形态</td><td>当前检出的本仓源码</td></tr>
+<tr><td>产品名</td><td>ZCode</td><td>Reactor（数智堆脑）</td></tr>
+<tr><td>模型接入</td><td>官方 GLM Coding Plan / Z.ai / BigModel 等</td><td>内网自建服务端与模型网关，含企业目录白名单</td></tr>
+<tr><td>新增能力</td><td>—</td><td>界面模式（编程 / 办公 / 审查）、文件审查板块、内网办公四件套、模型治理等</td></tr>
+<tr><td>在线商业与社群内容</td><td>下载、套餐、社群、额度重置等</td><td>已删除，替换为内网部署与分发方式</td></tr>
+</tbody></table></div>
+<blockquote><p><strong>提示</strong>：本说明书是离线站点，双击任意 <code>.html</code> 即可浏览，不依赖网络、不请求任何外部资源。 若你只是想确认某条行为是否与本仓源码一致，请以源码、<code>package.json</code> 与 <code>docs/</code> 下的契约为准。</p></blockquote>
+<h2 id="目录">目录</h2>
+<div class="table-wrap"><table><thead><tr><th>章节</th><th>包含内容</th></tr></thead><tbody>
+<tr><td><a href="welcome.html">开始使用</a></td><td><a href="welcome.html">概述与核心能力</a> · <a href="install.html">安装与部署</a> · <a href="model-access.html">接入模型</a> · <a href="feedback.html">反馈与支持</a></td></tr>
+<tr><td>核心功能</td><td><a href="agent.html">Reactor Agent</a> · <a href="goal.html">目标模式</a> · <a href="memory.html">项目记忆</a> · <a href="repo-wiki.html">仓库百科</a> · <a href="task-management.html">任务与文件管理</a> · <a href="edit-history.html">编辑历史对话</a></td></tr>
+<tr><td>核心功能（续）</td><td><a href="automations.html">定时任务</a> · <a href="idle-time-tasks.html">闲时任务</a> · <a href="remote-development.html">远程开发</a> · <a href="remote-control.html">手机远控</a> · <a href="subagents.html">子智能体</a> · <a href="browser-use.html">浏览器自动化</a></td></tr>
+<tr><td>扩展体系</td><td><a href="plugin.html">插件</a> · <a href="skill.html">技能</a> · <a href="mcp.html">MCP</a> · <a href="command.html">命令</a> · <a href="hooks.html">Hooks</a></td></tr>
+<tr><td>本仓特有功能</td><td><a href="interface-modes.html">界面模式</a> · <a href="review-panel.html">文件审查板块</a> · <a href="office-suite.html">内网办公四件套</a> · <a href="model-governance.html">模型治理与开发者模式</a> · <a href="data-contracts.html">数据目录与背景主题契约</a></td></tr>
+<tr><td>内网服务端</td><td><a href="server-overview.html">服务端总览与接线</a> · <a href="server-delivery.html">技能与 Agent 下发</a> · <a href="server-usage-policy.html">用量上报与策略下发</a></td></tr>
+<tr><td>帮助</td><td><a href="keyboard-shortcuts.html">快捷键表</a> · <a href="qa.html">常见问题</a> · <a href="linux-wsl.html">Linux / WSL 排查</a> · <a href="upstream-diff.html">与上游 ZCode 的差异</a></td></tr>
+</tbody></table></div>
+<h2 id="阅读建议">阅读建议</h2>
+<ol><li><strong>第一次接触</strong>：先读<a href="welcome.html">概述与核心能力</a>，再按<a href="install.html">安装与部署</a>、<a href="model-access.html">接入模型</a>把环境跑起来。</li><li><strong>日常使用</strong>：重点看<a href="agent.html">Reactor Agent</a>的补充上下文与<a href="agent.html">执行模式</a>，以及<a href="keyboard-shortcuts.html">快捷键表</a>。</li><li><strong>管理员与系统集成</strong>：读「内网服务端」三章，配合<a href="model-governance.html">模型治理与开发者模式</a>。</li><li><strong>排查差异</strong>：遇到行为与预期不符时，先看<a href="qa.html">常见问题</a>与<a href="upstream-diff.html">与上游 ZCode 的差异</a>。</li></ol>
+<h2 id="关于本说明书的边界">关于本说明书的边界</h2>
+<ul><li>本说明书只描述<strong>当前仓库提供的功能、命令与文件</strong>；不存在的功能不写入，已移除的功能同步删除。</li><li>涉及状态所有者、事件顺序、失败语义的内容，以 <code>docs/</code> 下对应契约文档为准，本说明书只做面向使用者的转述。</li><li>上游官方文档中的在线服务（下载站、套餐权益、社群入口、额度重置卡、Bot Channel 等）与内网隔离部署场景无关，本说明书不再收录。</li></ul>
+</article>
+<footer class="manual-footer">
+  <p>本说明书依据当前检出的源码整理，与上游 ZCode 官方文档可能存在差异，差异见
+  <a href="upstream-diff.html">与上游 ZCode 的差异</a>。</p>
+</footer>
+  </main>
+</div>
+<button type="button" class="to-top" aria-label="回到顶部">↑</button>
+<script src="assets/manual.js"></script>
+</body>
+</html>

@@ -18,7 +18,7 @@
 
 ## 一、P1 可见品牌层（零兼容风险，首批交付）
 
-> **状态：已完成**（2026-09-21）。文案、图标、logo 均已落地并通过验证；细节与遗留项见 [brand/README.md](brand/README.md) 的「生产资产清单」。
+> **状态：已完成**（2026-09-21）。文案、图标、logo 均已落地并通过验证；细节与遗留项见 [brand/README.md](brand/未完成-README.md) 的「生产资产清单」。
 > 已确认标记：**立方体**（风车系列不使用）。因立方体素材内部几何非规则内缩，标记以位图接入，矢量源待补。
 
 ### 1.1 界面文案（约 190 处，集中在 4 个文件）
@@ -32,6 +32,13 @@
 
 **注意**：只改**文案值**，不改 i18n key 名，避免牵连组件引用。
 
+#### 1.1.1 主进程菜单是独立的文案源（2026-09-29 补齐）
+
+主进程菜单不走 UI 的 i18n locales，而是 `packages/shared/src/desktopMenu.ts` 的 `desktopMenuMessages`（消费方：`packages/desktop/src/main/desktopTray.ts` 托盘、`desktopApplicationMenu.ts` 应用菜单）。UI 侧改完后这里仍是旧文案，表现为托盘悬浮提示「ZCode」、托盘菜单「打开 ZCode」与「关于 ZCode」。
+
+- [x] `packages/shared/src/desktopMenu.ts`：两个 locale 的 `tray.tooltip`、`tray.menu.openZCode`、`titleBar.menu.help.about` 改为 Reactor；key 名与 id 常量不变。
+- 有意保留：`titleBar.menu.help.zcodeEndpoint`（「ZCode Endpoint」）只在 `ZCODE_ENV === "test"` 的测试构建里出现，且指向官方端点切换（P5 决策保留），未改。
+
 ### 1.2 Web 外壳
 
 - [ ] `packages/web/index.html`：L15 `<title>ZCode</title>`、base64 内嵌 favicon、**L161-201 内嵌 SVG logo 副本（易漏改）**
@@ -40,7 +47,7 @@
 
 ### 1.3 Logo（需替换为 Reactor 标记）
 
-品牌素材见 [brand/README.md](brand/README.md)：主标记为**八片风车（叶轮）**，配「Reactor + 数智堆脑」字标，色板已提取。
+品牌素材见 [brand/README.md](brand/未完成-README.md)：主标记为**八片风车（叶轮）**，配「Reactor + 数智堆脑」字标，色板已提取。
 
 - [ ] `packages/ui/src/components/ui/ZCodeAboutLogo.tsx`：`ZCodeAboutLogo`（图标 + wordmark）与 `ZCodeWordmarkLogo` 的 SVG path 是**硬编码的 Z/C 字母字形**，需换成 Reactor 风车标记与字标的矢量路径。
 - 被引用于：`WelcomeScreen.tsx`、`OnboardingWelcomeView.tsx`（L22 `aria-label`）、关于页
@@ -142,7 +149,7 @@ pnpm bundle:desktop
 >
 > **工作区内的 `.zcode`**（`AGENTS.md`、`agents/`、`workflows/`、`config.json`、`plans/`）是项目配置的产品语义，按设计保持字面量，不在本次范围。
 >
-> **未收口的部分已收口**（2026-09-21 补充提交，见 `docs/data-directory-contract.md` 的契约与「有意保留」清单）。上一轮遗留的这几类现在全部改用常量：
+> **未收口的部分已收口**（2026-09-21 补充提交，见 `docs/已完成/已完成-data-directory-contract.md` 的契约与「有意保留」清单）。上一轮遗留的这几类现在全部改用常量：
 >
 > - `packages/services/src/storage/adapters/rootsResolver.ts` 的受管存储根（原先仍解析到 `~/.zcode`，而 session store 已走新目录——同一份数据两个来源）。
 > - `packages/desktop/src/main/desktopDataBaseDirBootstrap.ts` 与 `desktopChromiumHardwareAccelerationBootstrap.ts` 启动期读的 `setting.json`（原先与 `desktop/src/main/index.ts` 读不同目录）。

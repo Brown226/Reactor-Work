@@ -1,0 +1,261 @@
+/* Reactor 说明书站点样式：单一来源，所有页面共用；仅离线使用，不引用外部字体或资源。 */
+:root {
+  --bg: #f6f7f9;
+  --paper: #ffffff;
+  --ink: #1c2024;
+  --muted: #5c6470;
+  --line: #e3e6ea;
+  --accent: #1d4ed8;
+  --accent-soft: #eaf0ff;
+  --code-bg: #f4f5f7;
+  --warn-bg: #fff8e6;
+  --warn-line: #e8c46a;
+  --aside-w: 288px;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Microsoft YaHei UI", "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  -webkit-text-size-adjust: 100%;
+}
+
+.manual-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand { font-weight: 600; letter-spacing: 0.02em; }
+.brand-sub { margin-left: 8px; font-weight: 400; font-size: 13px; color: var(--muted); }
+.topbar-note { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+.nav-toggle {
+  display: none;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.manual-layout { display: flex; align-items: flex-start; }
+
+.manual-aside {
+  position: sticky;
+  top: 56px;
+  flex: 0 0 var(--aside-w);
+  width: var(--aside-w);
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding: 20px 12px 48px;
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+}
+
+.manual-nav a { color: var(--muted); text-decoration: none; }
+.manual-nav a:hover { color: var(--accent); }
+
+.nav-home {
+  display: block;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: var(--ink) !important;
+  background: var(--accent-soft);
+  border-radius: 8px;
+}
+
+.nav-group { margin-bottom: 18px; }
+
+.nav-group h2 {
+  margin: 0 0 6px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.nav-group ul { margin: 0; padding: 0; list-style: none; }
+
+.nav-group li a {
+  display: block;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+.nav-group li a.is-active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+.manual-main { flex: 1 1 auto; min-width: 0; padding: 32px 40px 64px; }
+
+.manual-article {
+  max-width: 860px;
+  padding: 40px 48px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.manual-article h1 {
+  margin: 0 0 24px;
+  padding-bottom: 16px;
+  font-size: 30px;
+  line-height: 1.35;
+  border-bottom: 1px solid var(--line);
+}
+
+.manual-article h2 {
+  margin: 40px 0 14px;
+  padding-top: 8px;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.manual-article h3 { margin: 28px 0 10px; font-size: 17px; }
+.manual-article h4 { margin: 22px 0 8px; font-size: 15px; color: var(--muted); }
+.manual-article p { margin: 0 0 14px; }
+.manual-article ul, .manual-article ol { margin: 0 0 14px; padding-left: 24px; }
+.manual-article li { margin: 4px 0; }
+
+.manual-article a { color: var(--accent); }
+
+.manual-article code {
+  padding: 1px 5px;
+  font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+  font-size: 13px;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  word-break: break-word;
+}
+
+.manual-article pre {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.manual-article pre code {
+  padding: 0;
+  background: none;
+  border: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.manual-article blockquote {
+  margin: 0 0 16px;
+  padding: 10px 16px;
+  color: var(--muted);
+  background: var(--warn-bg);
+  border-left: 4px solid var(--warn-line);
+  border-radius: 0 8px 8px 0;
+}
+
+.manual-article blockquote p:last-child { margin-bottom: 0; }
+
+.manual-article hr { margin: 32px 0; border: 0; border-top: 1px solid var(--line); }
+
+.table-wrap { margin: 0 0 18px; overflow-x: auto; }
+
+.manual-article table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+.manual-article th, .manual-article td {
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+  border: 1px solid var(--line);
+}
+
+.manual-article th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+
+.manual-footer {
+  max-width: 860px;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* 首页目录卡片 */
+.manual-article .card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.manual-article .card-grid li {
+  margin: 0;
+  padding: 14px 16px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.manual-article .card-grid a { display: block; font-weight: 600; text-decoration: none; }
+.manual-article .card-grid span { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); }
+
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 20;
+  display: none;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.to-top.is-visible { display: block; }
+
+@media (max-width: 900px) {
+  .nav-toggle { display: inline-block; }
+  .topbar-note { display: none; }
+  .manual-aside {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    z-index: 25;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  }
+  .manual-aside.is-open { transform: translateX(0); }
+  .manual-main { padding: 20px 16px 48px; }
+  .manual-article { padding: 24px 18px; border-radius: 10px; }
+  .manual-article h1 { font-size: 24px; }
+  .manual-article h2 { font-size: 19px; }
+}

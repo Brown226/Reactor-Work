@@ -1,8 +1,8 @@
 # P2 技能下发 · 实施计划
 
-> **状态**：已实施（2026-09-22；契约见 [server-skill-sync.md](server-skill-sync.md)）　**日期**：2026-09-22
+> **状态**：已实施（2026-09-22；契约见 [已完成-server-skill-sync.md](已完成-server-skill-sync.md)）　**日期**：2026-09-22
 > **范围**：主仓 `Reactor-Work` 的服务端技能下发（同步 + 发现 + 设置 UI）；服务端 API 已存在，本计划**不改** `server/`。
-> **依据**：[服务端接线-方案-v1.md](服务端接线-方案-v1.md) §1 R4/R5、§4.3；旧项目 `Reactor-Desktop` 实现与踩坑；主仓 skills 体系现状。
+> **依据**：[未完成-服务端接线-方案-v1.md](../未完成-服务端接线-方案-v1.md) §1 R4/R5、§4.3；旧项目 `Reactor-Desktop` 实现与踩坑；主仓 skills 体系现状。
 > **原则**：借旧项目的**同步协议与安全语义**，不搬它的 **Electron main + sidecar 接线**。
 
 ---
@@ -48,7 +48,7 @@
 
 ## 3. 状态所有者（摘要）
 
-完整契约见 `server-skill-sync.md` §2。
+完整契约见 `已完成-server-skill-sync.md` §2。
 
 | 状态 | 唯一写者 | 落盘 |
 |------|----------|------|
@@ -89,7 +89,7 @@ IReactorServerService ──(accessToken)──► IServerSkillSyncService
 
 | # | 步骤 | 产出 | 验收 |
 |---|------|------|------|
-| 1 | 本计划 + 契约 | `server-skill-delivery-plan.md`、`server-skill-sync.md` | 文档评审 |
+| 1 | 本计划 + 契约 | `已完成-server-skill-delivery-plan.md`、`已完成-server-skill-sync.md` | 文档评审 |
 | 2 | shared 类型 | `SkillScope += "server"`；CLI `SkillSource` 映射 | typecheck |
 | 3 | 同步器服务 | `IServerSkillSyncService` + client HTTP 面 + 落盘 | 服务层断言 |
 | 4 | 发现根 | `skillsService` + CLI `roots.ts` 加 `server-skills` | 列表出现、`$`/Skill 可加载 |
@@ -143,7 +143,7 @@ IReactorServerService ──(accessToken)──► IServerSkillSyncService
 
 | 文档 | 关系 |
 |------|------|
-| [server-skill-sync.md](server-skill-sync.md) | **契约正本**：状态所有者、时序、接口、验收 |
-| [服务端接线-方案-v1.md](服务端接线-方案-v1.md) | 产品规则与分期；本文只展开 P2 |
-| [data-directory-contract.md](data-directory-contract.md) | 目录命名与用户级/工作区级边界 |
-| [../server/README.md](../server/README.md) | 服务端技能 API 语义（落盘集/注入集） |
+| [已完成-server-skill-sync.md](已完成-server-skill-sync.md) | **契约正本**：状态所有者、时序、接口、验收 |
+| [未完成-服务端接线-方案-v1.md](../未完成-服务端接线-方案-v1.md) | 产品规则与分期；本文只展开 P2 |
+| [已完成-data-directory-contract.md](已完成-data-directory-contract.md) | 目录命名与用户级/工作区级边界 |
+| [../server/README.md](../../server/README.md) | 服务端技能 API 语义（落盘集/注入集） |

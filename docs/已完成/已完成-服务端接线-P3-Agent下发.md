@@ -1,7 +1,7 @@
 # 服务端接线 P3 — Agent 下发（开工计划）
 
 > **状态**：开工计划（实现前的契约与边界，动手时不偏离本文件）　**日期**：2026-09-22
-> **上游**：[服务端接线-方案-v1.md](服务端接线-方案-v1.md) §4.4（**决策正本**，2026-09-22 修订版）/ §5 P3 / §6 U4（已解决）
+> **上游**：[未完成-服务端接线-方案-v1.md](../未完成-服务端接线-方案-v1.md) §4.4（**决策正本**，2026-09-22 修订版）/ §5 P3 / §6 U4（已解决）
 > **服务端契约**：`server/packages/server/src/agents/routes.ts` + `server/packages/shared/src/agents.ts`（已实现且有冒烟 `server/packages/server/scripts/agents-smoke.mjs`，**本阶段零改动**）
 > **前置**：P2 技能下发（`skills[]` 直通后本机才有可注入的技能）；P1 企业登录与 `reactor:providerId`（模型映射依赖）
 > **原则**：不照搬 Reactor-Desktop 的 `agents.json` 全量缓存 + `new_session` 注入；复用主仓 subagent markdown 运行时，只新增 server 目录与来源，与 P2 同步器纪律同构。
@@ -241,9 +241,9 @@ cd server && node packages/server/scripts/agents-smoke.mjs   # 路径与参数�
 
 | 文档                                                                 | 关系                                                                             |
 | -------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| [服务端接线-方案-v1.md](服务端接线-方案-v1.md)                       | 产品规则与 §4.4 决策正本；本文件是 P3 的**唯一实现计划**，冲突以本文件为准并回写 |
-| [server-skill-delivery-plan.md](server-skill-delivery-plan.md)       | P2 前置；同步器纪律、步骤表与验收结构同构                                        |
-| [server-skill-sync.md](server-skill-sync.md)                         | 技能同步契约；「失败不删本地」「只动自己目录」的语义直接沿用                     |
-| [data-directory-contract.md](data-directory-contract.md)             | `server-agents` 路径必须走 `USER_DATA_DIR_NAME`，用户级、工作区级永不含该目录    |
-| [model-governance-and-dev-mode.md](model-governance-and-dev-mode.md) | policyMode 映射与模型可见性的产品口径；本文件不改它                              |
-| [../server/README.md](../server/README.md)                           | 服务端 `/me/agents` API 与冒烟命令                                               |
+| [未完成-服务端接线-方案-v1.md](../未完成-服务端接线-方案-v1.md)                       | 产品规则与 §4.4 决策正本；本文件是 P3 的**唯一实现计划**，冲突以本文件为准并回写 |
+| [已完成-server-skill-delivery-plan.md](已完成-server-skill-delivery-plan.md)       | P2 前置；同步器纪律、步骤表与验收结构同构                                        |
+| [已完成-server-skill-sync.md](已完成-server-skill-sync.md)                         | 技能同步契约；「失败不删本地」「只动自己目录」的语义直接沿用                     |
+| [已完成-data-directory-contract.md](已完成-data-directory-contract.md)             | `server-agents` 路径必须走 `USER_DATA_DIR_NAME`，用户级、工作区级永不含该目录    |
+| [已完成-model-governance-and-dev-mode.md](已完成-model-governance-and-dev-mode.md) | policyMode 映射与模型可见性的产品口径；本文件不改它                              |
+| [../server/README.md](../../server/README.md)                           | 服务端 `/me/agents` API 与冒烟命令                                               |

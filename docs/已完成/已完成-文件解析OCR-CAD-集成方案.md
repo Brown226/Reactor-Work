@@ -2,9 +2,9 @@
 
 状态：**已实现（M1–M5）+ 两轮演进**：
 1. 扫描 PDF 栅格化由 poppler 改为 pdfjs+canvas（见 §5.1）；
-2. **OCR 已下沉 office-engines Python**（OCR栈轻量化方案.md），file-tools 不再带 onnxruntime/ocr-models；
-3. **已拆三插件**（ile-tools拆三插件方案.md）：ile-tools=parse/docx/pdf-research，ocr-tools=ocr_scan，dwg-tools=dwg_*。工具名不变。
-适用范围：`apps/zcode-cli/packages/file-tools-plugin` 及其资产分发链路；面向核电设计场景的文档审查工作流。
+2. **OCR 已下沉 office-engines Python**（`已完成-OCR栈轻量化方案.md`），file-tools 不再带 onnxruntime/ocr-models；
+3. **已拆三插件**（`未完成-file-tools拆三插件方案.md`）：`file-tools`=parse/docx/pdf-research，`ocr-tools`=`ocr_scan`，`dwg-tools`=dwg_*。工具名不变。
+适用范围：`file-tools-plugin` / `ocr-tools-plugin` / `dwg-tools-plugin` 及资产分发链路；面向核电设计场景的文档审查工作流。
 
 ## 1. 目标与非目标（达成状态）
 

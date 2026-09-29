@@ -1,0 +1,254 @@
+[
+  {
+    "standardNo": "DL 5068-2014",
+    "standardName": "发电厂化学设计规范",
+    "standardIdent": "DL",
+    "fullMatch": "《发电厂化学设计规范》（DL 5068-2014）",
+    "cadHandleId": "A3C6"
+  },
+  {
+    "standardNo": "DL 5053-2012",
+    "standardName": "火力发电厂职业安全设计规程",
+    "standardIdent": "DL",
+    "fullMatch": "《火力发电厂职业安全设计规程》（DL 5053-2012）",
+    "cadHandleId": "A3C7"
+  },
+  {
+    "standardNo": "DL/T 5054-2016",
+    "standardName": "火力发电厂汽水管道设计规范",
+    "standardIdent": "DL/T",
+    "fullMatch": "《火力发电厂汽水管道设计规范》（DL/T 5054-2016）",
+    "cadHandleId": "A3C8"
+  },
+  {
+    "standardNo": "DL/T 5072-2007",
+    "standardName": "火力发电厂保温油漆设计规程",
+    "standardIdent": "DL/T",
+    "fullMatch": "《火力发电厂保温油漆设计规程》（DL/T 5072-2007）",
+    "cadHandleId": "A3C9"
+  },
+  {
+    "standardNo": "HG/T 20679-2014",
+    "standardName": "化工设备、管道外防腐设计规范",
+    "standardIdent": "HG/T",
+    "fullMatch": "《化工设备、管道外防腐设计规范》（HG/T 20679-2014）",
+    "cadHandleId": "A3CA"
+  },
+  {
+    "standardNo": "GB 50050-2017",
+    "standardName": "工业循环冷却水处理设计规范",
+    "standardIdent": "GB",
+    "fullMatch": "《工业循环冷却水处理设计规范》（GB 50050-2017）",
+    "cadHandleId": "A3CB"
+  },
+  {
+    "standardNo": "GB 50316-2000",
+    "standardName": "工业金属管道设计规范(2008年版)",
+    "standardIdent": "GB",
+    "fullMatch": "《工业金属管道设计规范(2008年版)》（GB 50316-2000）",
+    "cadHandleId": "A3CC"
+  },
+  {
+    "standardNo": "HG 20520-1992",
+    "standardName": "玻璃钢/聚氯乙烯（FRP/PVC）复合管道设计规定",
+    "standardIdent": "HG",
+    "fullMatch": "《玻璃钢/聚氯乙烯（FRP/PVC）复合管道设计规定》（HG 20520-1992）",
+    "cadHandleId": "A3CD"
+  },
+  {
+    "standardNo": "GB 11984-2008",
+    "standardName": "氯气安全规程",
+    "standardIdent": "GB",
+    "fullMatch": "《氯气安全规程》（GB 11984-2008）",
+    "cadHandleId": "A3CE"
+  },
+  {
+    "standardNo": "GB/T 22839-2010",
+    "standardName": "电解海水次氯酸钠发生装置技术条件",
+    "standardIdent": "GB/T",
+    "fullMatch": "《电解海水次氯酸钠发生装置技术条件》（GB/T 22839-2010）",
+    "cadHandleId": "A3CF"
+  },
+  {
+    "standardNo": "DL/T 716-2000",
+    "standardName": "电站隔膜阀选用导则",
+    "standardIdent": "DL/T",
+    "fullMatch": "《电站隔膜阀选用导则》（DL/T 716-2000）",
+    "cadHandleId": "A3D0"
+  },
+  {
+    "standardNo": "DL/T 746-2016",
+    "standardName": "电站蝶阀选用导则",
+    "standardIdent": "DL/T",
+    "fullMatch": "《电站蝶阀选用导则》（DL/T 746-2016）",
+    "cadHandleId": "A3D1"
+  },
+  {
+    "standardNo": "JB/T 2932-1999",
+    "standardName": "水处理设备：技术条件",
+    "standardIdent": "JB/T",
+    "fullMatch": "《水处理设备：技术条件》（JB/T 2932-1999）",
+    "cadHandleId": "A3D2"
+  },
+  {
+    "standardNo": "GB/T 13922-2011",
+    "standardName": "水处理设备性能试验",
+    "standardIdent": "GB/T",
+    "fullMatch": "《水处理设备性能试验》(GB/T 13922-2011)",
+    "cadHandleId": "A3D3"
+  },
+  {
+    "standardNo": "GB/T 14976-2012",
+    "standardName": "流体输送用不锈钢无缝钢管",
+    "standardIdent": "GB/T",
+    "fullMatch": "《流体输送用不锈钢无缝钢管》（GB/T 14976-2012）",
+    "cadHandleId": "A3D5"
+  },
+  {
+    "standardNo": "GB/T 8163-2018",
+    "standardName": "输送流体用无缝钢管",
+    "standardIdent": "GB/T",
+    "fullMatch": "《输送流体用无缝钢管》（GB/T 8163-2018）",
+    "cadHandleId": "A3D6"
+  },
+  {
+    "standardNo": "GB/T 17395-2008",
+    "standardName": "无缝钢管尺寸、外形、重量及允许偏差",
+    "standardIdent": "GB/T",
+    "fullMatch": "《无缝钢管尺寸、外形、重量及允许偏差》（GB/T 17395-2008）",
+    "cadHandleId": "A3D7"
+  },
+  {
+    "standardNo": "GB/T 12771-2019",
+    "standardName": "液体输送用不锈钢焊接钢管",
+    "standardIdent": "GB/T",
+    "fullMatch": "《液体输送用不锈钢焊接钢管》（GB/T 12771-2019）",
+    "cadHandleId": "A3D8"
+  },
+  {
+    "standardNo": "GB/T 12459-2017",
+    "standardName": "钢制对焊管件 类型与参数",
+    "standardIdent": "GB/T",
+    "fullMatch": "《钢制对焊管件 类型与参数》（GB/T 12459-2017）",
+    "cadHandleId": "A3D9"
+  },
+  {
+    "standardNo": "DL/T 935-2020",
+    "standardName": "钢塑复合管和管件",
+    "standardIdent": "DL/T",
+    "fullMatch": "《钢塑复合管和管件》（DL/T 935-2020）",
+    "cadHandleId": "A3DA"
+  },
+  {
+    "standardNo": "CECS 41:2004",
+    "standardName": "建筑给水硬聚氯乙烯管管道技术规程",
+    "standardIdent": "CECS",
+    "fullMatch": "《建筑给水硬聚氯乙烯管管道技术规程》（CECS 41:2004）",
+    "cadHandleId": "A3DB"
+  },
+  {
+    "standardNo": "T/CECS 122-2020",
+    "standardName": "埋地硬聚氯乙烯排水管道工程技术规程",
+    "standardIdent": "T/CECS",
+    "fullMatch": "《埋地硬聚氯乙烯排水管道工程技术规程》（T/CECS 122-2020）",
+    "cadHandleId": "A3DC"
+  },
+  {
+    "standardNo": "GB/T 9124.1-2019",
+    "standardName": "钢制法兰 第1部分：PN系列",
+    "standardIdent": "GB/T",
+    "fullMatch": "《钢制法兰 第1部分：PN系列》（GB/T 9124.1-2019）",
+    "cadHandleId": "A3DD"
+  },
+  {
+    "standardNo": "DL 5190.6-2019",
+    "standardName": "电力建设施工技术规范第6部分：水处理及制（供）氢设备和系统",
+    "standardIdent": "DL",
+    "fullMatch": "《电力建设施工技术规范第6部分：水处理及制（供）氢设备和系统》（DL 5190.6-2019）",
+    "cadHandleId": "A3DE"
+  },
+  {
+    "standardNo": "GB 50235-2010",
+    "standardName": "工业金属管道工程施工规范",
+    "standardIdent": "GB",
+    "fullMatch": "《工业金属管道工程施工规范》（GB 50235-2010）",
+    "cadHandleId": "A3DF"
+  },
+  {
+    "standardNo": "GB 50184-2011",
+    "standardName": "工业金属管道工程施工质量验收规范",
+    "standardIdent": "GB",
+    "fullMatch": "《工业金属管道工程施工质量验收规范》（GB 50184-2011）",
+    "cadHandleId": "A3E0"
+  },
+  {
+    "standardNo": "GB/T 983-2012",
+    "standardName": "不锈钢焊条",
+    "standardIdent": "GB/T",
+    "fullMatch": "《不锈钢焊条》（GB/T 983-2012）",
+    "cadHandleId": "A3E1"
+  },
+  {
+    "standardNo": "GB 50212-2014",
+    "standardName": "建筑防腐蚀工程施工规范",
+    "standardIdent": "GB",
+    "fullMatch": "《建筑防腐蚀工程施工规范》（GB 50212-2014）",
+    "cadHandleId": "A3E2"
+  },
+  {
+    "standardNo": "GB 50231-2009",
+    "standardName": "机械设备安装工程施工及验收通用规范",
+    "standardIdent": "GB",
+    "fullMatch": "《机械设备安装工程施工及验收通用规范》（GB 50231-2009）",
+    "cadHandleId": "A3E3"
+  },
+  {
+    "standardNo": "GB 50236-2011",
+    "standardName": "现场设备、工业管道焊接工程施工规范",
+    "standardIdent": "GB",
+    "fullMatch": "《现场设备、工业管道焊接工程施工规范》（GB 50236-2011）",
+    "cadHandleId": "A3E4"
+  },
+  {
+    "standardNo": "GB/T 17395-2008",
+    "standardName": "无缝钢管尺寸、外形、重量及允许偏差",
+    "standardIdent": "GB/T",
+    "fullMatch": "《无缝钢管尺寸、外形、重量及允许偏差》（GB/T\n17395-2008）",
+    "cadHandleId": "A3D7"
+  },
+  {
+    "standardNo": "HG 21504.1-1992",
+    "standardName": "",
+    "standardIdent": "HG",
+    "fullMatch": "（HG 21504.1-1992）",
+    "cadHandleId": "A3D4"
+  },
+  {
+    "standardNo": "CECS 122-2020",
+    "standardName": "",
+    "standardIdent": "CECS",
+    "fullMatch": "CECS 122-2020）",
+    "cadHandleId": "A3DC"
+  },
+  {
+    "standardNo": "DL/T 5190.6-2019",
+    "standardName": "",
+    "standardIdent": "DL/T",
+    "fullMatch": "（DL/T 5190.6-2019）",
+    "cadHandleId": "A4F6"
+  },
+  {
+    "standardNo": "DL/T5190.5-2019",
+    "standardName": "",
+    "standardIdent": "DL/T",
+    "fullMatch": "（DL/T5190.5-2019）",
+    "cadHandleId": "A508"
+  },
+  {
+    "standardNo": "DL/T 5190.5-2019",
+    "standardName": "",
+    "standardIdent": "DL/T",
+    "fullMatch": "DL/T 5190.5-2019",
+    "cadHandleId": "A508"
+  }
+]

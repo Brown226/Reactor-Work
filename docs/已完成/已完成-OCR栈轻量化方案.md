@@ -1,8 +1,9 @@
 # OCR 栈轻量化方案 · RapidOCR 下沉 office-engines
 
-状态：方案待评审｜适用范围：file-tools `ocr_scan` + office-engines｜维护者：桌面工具组
+状态：**已实施并归档**（2026-09-29，`68ec34d`）。P1–P3 已交付：`office_skill_lib/ocr.py` 落地、`ocr_scan` 改薄壳、file-tools staging 已去掉 onnxruntime/ocr-models。方案原稿的 RapidOCR 路线因 opencv-python 传递依赖过重，已改为 onnxruntime+numpy 最小 PP-OCR 管线（见 §5）。P4 文档同步随发布。
+适用范围：`ocr-tools-plugin` 的 `ocr_scan` + office-engines｜维护者：桌面工具组
 参考：LeAgent `leagent[ocr]`（RapidOCR 默认 / PaddleOCR legacy，Apache-2.0）；
-现状以 `docs/文件解析OCR-CAD-集成方案.md` 与 file-tools 资产树为准。
+现状以 `docs/已完成/已完成-文件解析OCR-CAD-集成方案.md` 与 file-tools 资产树为准。
 
 ## 1. 背景与问题
 
@@ -145,7 +146,7 @@ apps/zcode-cli/packages/file-tools-plugin/
   assets/win32-x64/SOURCES.json            # 组件清单同步
   test/ocr-scan.test.ts                    # 改为打真实 Python 引擎的集成测
 packages/services/src/runtime-tools/       # 确认 ZCODE_PYTHON_PATH 注入覆盖 MCP 子进程（已有则不动）
-docs/文件解析OCR-CAD-集成方案.md           # §资产树与体积表更新
+docs/已完成/已完成-文件解析OCR-CAD-集成方案.md           # §资产树与体积表更新
 ```
 
 | 接线点 | 要求 |
@@ -207,6 +208,6 @@ P1–P3 一辑交付；P4 随发布。
 
 | 文档 | 关系 |
 | --- | --- |
-| `文件解析OCR-CAD-集成方案.md` | 被本文修订：OCR 资产树、体积、推理栈 |
-| `内网办公四件套-fork-spec.md` | 无边界变化；office-engines 闭包 +2 包 |
-| `办公公式与字体管线-借入方案.md` | 并行方案，共享 office-skill-lib 落盘方式 |
+| `已完成-文件解析OCR-CAD-集成方案.md` | 被本文修订：OCR 资产树、体积、推理栈 |
+| `已完成-内网办公四件套-fork-spec.md` | 无边界变化；office-engines 闭包 +2 包 |
+| `已完成-办公公式与字体管线-借入方案.md` | 并行方案，共享 office-skill-lib 落盘方式 |

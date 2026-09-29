@@ -1,7 +1,7 @@
 # 服务端技能同步契约（server-skills）
 
 > 适用范围：新增或修改「从企业服务端拉取技能并落盘 / 启停 / 卸载」的代码前先读本文件。
-> 背景与分期见 [server-skill-delivery-plan.md](server-skill-delivery-plan.md)；服务端 API 语义以 `server/` 代码为准。
+> 背景与分期见 [已完成-server-skill-delivery-plan.md](已完成-server-skill-delivery-plan.md)；服务端 API 语义以 `server/` 代码为准。
 > **实现进度（2026-09-22）——P2 已全部落地**：
 > - ✅ `SkillScope` 增加 `server`（`packages/shared/src/skills-types.ts`）。
 > - ✅ 同步器 `IServerSkillSyncService`（`packages/services/src/server-skills/`，HTTP 复用 `reactorServerClient`）。
@@ -40,7 +40,7 @@
 
 1. 不允许第二处写 `server-skills` 目录；UI 只发命令给同步器。
 2. 不允许为服务端技能新增 enabled 状态文件/内存缓存作为真相。
-3. 目录解析与 `getUserZcodeSkillRoot()` 完全一致：`join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "server-skills")`（env `HOME`/`USERPROFILE` → `homedir()`）。注意 `ZCODE_DATA_BASE_DIR` / `ZCODE_HOME` / `storage.dir` 覆盖项当前对 skills 根不生效——既有缺口，非本契约引入，见 [data-directory-contract.md](data-directory-contract.md) §4。
+3. 目录解析与 `getUserZcodeSkillRoot()` 完全一致：`join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "server-skills")`（env `HOME`/`USERPROFILE` → `homedir()`）。注意 `ZCODE_DATA_BASE_DIR` / `ZCODE_HOME` / `storage.dir` 覆盖项当前对 skills 根不生效——既有缺口，非本契约引入，见 [已完成-data-directory-contract.md](已完成-data-directory-contract.md) §4。
 4. 工作区级目录永远不含 `server-skills`（服务端技能是用户级）。
 
 ## 3. 目录与文件布局

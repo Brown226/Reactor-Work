@@ -2,7 +2,7 @@
 
 > 适用范围：任何新增或修改「把文件写到用户 HOME 下」的代码之前，先读本文件。
 > 相关实现：`packages/shared/src/user-data-dir.ts`、`packages/services/src/paths.ts`。
-> 背景与阶段划分见 [REACTOR-REBRAND-PLAN.md](REACTOR-REBRAND-PLAN.md) 的 P3。
+> 背景与阶段划分见 [未完成-REACTOR-REBRAND-PLAN.md](../未完成-REACTOR-REBRAND-PLAN.md) 的 P3。
 
 ## 1. 唯一所有者
 
