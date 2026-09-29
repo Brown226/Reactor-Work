@@ -108,6 +108,16 @@ export interface PdfViewerProps extends HTMLAttributes<HTMLDivElement> {
   source: PdfViewerSource;
   labels?: Partial<PdfViewerLabels>;
   onLoadError?: (error: Error) => void;
+  /** 论文模式：文档加载后回传 pdf.js outline 树（未解析 dest）。 */
+  onDocumentOutline?: (info: {
+    pageCount: number;
+    outline: Array<{ title?: string; dest?: unknown; items?: unknown }> | null;
+    pdfDocument: PDFDocumentProxy;
+  }) => void;
+  /** 页码变化（论文侧栏同步高亮）。 */
+  onPageNumberChange?: (page: number) => void;
+  /** 外部跳页请求：id 变化时跳到 page（论文侧栏点大纲）。 */
+  goToPageRequest?: { page: number; id: number };
   /**
    * 审查定位：把这段原文在 PDF 里标出来。
    *
@@ -139,6 +149,9 @@ export function PdfViewer({
   source,
   labels,
   onLoadError,
+  onDocumentOutline,
+  onPageNumberChange,
+  goToPageRequest,
   quoteHighlight,
   className,
   ...props
@@ -229,10 +242,18 @@ export function PdfViewer({
         pendingZoomAnchorRef.current = null;
         pendingScrollToTopRef.current = true;
         setPageNumber(clamped);
+        onPageNumberChange?.(clamped);
       }
     },
-    [clearZoomOverlay, numPages, pageNumber],
+    [clearZoomOverlay, numPages, onPageNumberChange, pageNumber],
   );
+
+  useEffect(() => {
+    if (!goToPageRequest) return;
+    goToPage(goToPageRequest.page);
+    // 只响应请求 id 变化，避免 page 数字依赖导致重复跳。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goToPageRequest?.id]);
 
   // ── 审查定位：先找出这句话在第几页，再跳过去 ────────────────────────
   // 逐页取 pdf.js 的文本内容，交给纯函数算页码（跨页累计序号，与工具给的序号同口径）。
@@ -492,6 +513,28 @@ export function PdfViewer({
                     const clamped = Math.min(pageNumber, document.numPages);
                     setPageNumber(clamped);
                     setPageInput(String(clamped));
+                    if (onDocumentOutline) {
+                      void document
+                        .getOutline()
+                        .then((outline) => {
+                          onDocumentOutline({
+                            pageCount: document.numPages,
+                            outline: (outline as Array<{
+                              title?: string;
+                              dest?: unknown;
+                              items?: unknown;
+                            }>) ?? null,
+                            pdfDocument: document,
+                          });
+                        })
+                        .catch(() => {
+                          onDocumentOutline({
+                            pageCount: document.numPages,
+                            outline: null,
+                            pdfDocument: document,
+                          });
+                        });
+                    }
                   }}
                   onLoadError={onLoadError}
                   loading={

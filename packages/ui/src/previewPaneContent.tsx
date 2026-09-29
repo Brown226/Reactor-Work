@@ -1,7 +1,7 @@
 import type { MarkdownSelectionTarget } from "@/lib/conversationSelectionReference.js";
 /* eslint-disable max-lines -- PreviewPane 内容路由同时承载文本、图片、媒体、Office、PDF 和 PPTX 渲染。 */
 import type { BundledTheme } from "shiki";
-import { useMemo, type Ref, type SyntheticEvent, type UIEventHandler } from "react";
+import { useMemo, useState, type Ref, type SyntheticEvent, type UIEventHandler } from "react";
 import type { FileBinaryPreview, FileMediaPreview, FileTextSlice } from "@zcode/shared";
 import { inferCodeLanguage } from "@/lib/codeViewer.js";
 import type { CodeViewerSource } from "@/lib/codeViewer.js";
@@ -22,6 +22,7 @@ import type { CodeCommentPreview, CodeCommentRange } from "@/lib/codeCommentCont
 import type { Theme } from "@/useTheme.js";
 import type { OfficeFilePreviewKind } from "@/lib/officeFilePreview.js";
 import { PreviewPaneOfficeContent } from "@/previewPaneOfficeContent.js";
+import { V4_DRAFT_SCOPE_ROOT } from "@/v4/composer/composerDraftStore.js";
 import type { PptxElementReferenceSource } from "@/lib/pptxElementReference.js";
 import type { MediaCodeViewerSource, PptxReferencePreviewNavigation } from "@/lib/codeViewer.js";
 import { ReviewTextContent } from "@/ReviewTextContent.js";
@@ -133,6 +134,8 @@ export function PreviewPaneContent({
   scrollContainerRef,
 }: PreviewPaneContentProps) {
   const { intl } = useZCodeIntl();
+  /** 论文模式默认关：审查定位（quoteHighlight）走普通预览，避免两套高亮语义叠加。 */
+  const [paperMode, setPaperMode] = useState(false);
   const fileMissingMessage = intl.formatMessage({ id: "codeViewer.fileMissing" });
   const mediaLabels = {
     loading: intl.formatMessage({ id: "codeViewer.loadingMedia" }),
@@ -307,13 +310,39 @@ export function PreviewPaneContent({
     }
 
     return (
-      <PdfPreviewContent
-        source={pdfViewerSource}
-        labels={pdfViewerLabels}
-        {...(source.type === "pdf" && source.quoteHighlight
-          ? { quoteHighlight: source.quoteHighlight }
-          : {})}
-      />
+      <div className="flex h-full min-h-0 flex-col">
+        <div className="flex items-center justify-end gap-2 border-b border-border px-2 py-1">
+          <button
+            type="button"
+            className={`rounded-md px-2 py-1 text-ui-base ${
+              paperMode ? "bg-primary text-primary-foreground" : "text-foreground-subtle hover:bg-surface-sunken"
+            }`}
+            onClick={() => setPaperMode((v) => !v)}
+            title={paperMode ? "退出论文模式，回到普通预览" : "打开论文模式：大纲 / 引文 / 引用进会话"}
+          >
+            论文模式
+          </button>
+        </div>
+        <div className="min-h-0 flex-1">
+          <PdfPreviewContent
+            source={pdfViewerSource}
+            labels={pdfViewerLabels}
+            {...(paperMode ? { paperMode: true } : {})}
+            fileName={source.path ?? source.title ?? "document.pdf"}
+            {...(workspacePath
+              ? {
+                  composerScope: {
+                    workspacePath,
+                    scopeId: V4_DRAFT_SCOPE_ROOT,
+                  },
+                }
+              : {})}
+            {...(!paperMode && source.type === "pdf" && source.quoteHighlight
+              ? { quoteHighlight: source.quoteHighlight }
+              : {})}
+          />
+        </div>
+      </div>
     );
   }
 

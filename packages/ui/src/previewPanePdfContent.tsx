@@ -10,24 +10,63 @@ const PdfViewer = lazy(() =>
   })),
 );
 
+const PaperModePanel = lazy(() =>
+  import("@/pdf-reader/PaperModePanel.js").then((module) => ({
+    default: module.PaperModePanel,
+  })),
+);
+
 interface PdfPreviewContentProps {
   source: PdfViewerSource;
   labels: PdfViewerLabels;
   /** 审查定位：在原件 PDF 里标出这句原文（逐页搜 + 跳页 + 文本层高亮） */
   quoteHighlight?: QuoteHighlightTarget;
+  /** 论文模式：阅读器 + 大纲/引文侧栏（与审查定位二选一，不叠加）。 */
+  paperMode?: boolean;
+  fileName?: string;
+  referencesText?: string;
+  /** 引用进会话：宿主写入输入框草稿。 */
+  onQuoteIntoComposer?: (draft: string) => void;
+  /** 未传 onQuoteIntoComposer 时，追加到该 scope 的 v4 composer 草稿。 */
+  composerScope?: {
+    workspacePath: string;
+    workspaceIdentity?: string;
+    scopeId: string;
+  };
 }
 
-export function PdfPreviewContent({ source, labels, quoteHighlight }: PdfPreviewContentProps) {
+export function PdfPreviewContent({
+  source,
+  labels,
+  quoteHighlight,
+  paperMode,
+  fileName,
+  referencesText,
+  onQuoteIntoComposer,
+  composerScope,
+}: PdfPreviewContentProps) {
   return (
     <Suspense
       fallback={<div className="p-3 text-ui-base text-foreground-subtle">{labels.loading}</div>}
     >
-      <PdfViewer
-        source={source}
-        labels={labels}
-        className="h-full"
-        {...(quoteHighlight ? { quoteHighlight } : {})}
-      />
+      {paperMode ? (
+        <PaperModePanel
+          source={source}
+          fileName={fileName ?? "document.pdf"}
+          labels={labels}
+          {...(referencesText ? { referencesText } : {})}
+          {...(onQuoteIntoComposer ? { onQuoteIntoComposer } : {})}
+          {...(composerScope ? { composerScope } : {})}
+          className="h-full"
+        />
+      ) : (
+        <PdfViewer
+          source={source}
+          labels={labels}
+          className="h-full"
+          {...(quoteHighlight ? { quoteHighlight } : {})}
+        />
+      )}
     </Suspense>
   );
 }
