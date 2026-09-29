@@ -1,6 +1,6 @@
 /**
- * file-tools 资产定位：native 绑定 / ONNX 模型 / canvas / wasm 全部以只读产品资产
- * 随安装包分发（resources/tools/file-tools），MCP 子进程自解析，不改 bootstrap。
+ * file-tools 资产定位：anydoc + canvas，以只读产品资产随安装包分发
+ * （resources/tools/file-tools），MCP 子进程自解析，不改 bootstrap。
  *
  * 候选顺序与 packages/services/src/runtime-tools/runtimeToolResolver.ts 同思路：
  * 1. 环境变量 ZCODE_FILE_TOOLS_ASSETS_ROOT（部署 / 测试覆盖）
@@ -16,10 +16,6 @@ interface FileToolsAssets {
   root: string | null;
   /** @firecrawl/anydoc 及其平台 napi 绑定（Node 目录布局）。 */
   anydocDir: string | null;
-  /** onnxruntime-node（Node 目录布局）。 */
-  onnxruntimeDir: string | null;
-  /** PP-OCR ONNX 模型 + 字典。 */
-  ocrModelsDir: string | null;
   /** @napi-rs/canvas 及其平台 skia 绑定（Node 目录布局）。 */
   canvasDir: string | null;
 }
@@ -34,7 +30,7 @@ export function platformKey(platform: NodeJS.Platform = process.platform): strin
 }
 
 /**
- * 解析资产根。每个候选按「canvas 目录存在」判定：canvas 是 OCR/栅格化链路
+ * 解析资产根。每个候选按「canvas 目录存在」判定：canvas 是 pdf-research 栅格化
  * 必须的原生资产，缺它不算有效根，避免把半成品资产根当完整根用。
  */
 function resolveAssetsRoot(env: NodeJS.ProcessEnv, cwd: string): string | null {
@@ -75,16 +71,12 @@ export function resolveFileToolsAssets(
     return {
       root: null,
       anydocDir: null,
-      onnxruntimeDir: null,
-      ocrModelsDir: null,
       canvasDir: null,
     };
   }
   return {
     root,
     anydocDir: dirIfExists(join(root, "anydoc")),
-    onnxruntimeDir: dirIfExists(join(root, "onnxruntime")),
-    ocrModelsDir: dirIfExists(join(root, "ocr-models")),
     canvasDir: dirIfExists(join(root, "canvas")),
   };
 }
@@ -93,8 +85,3 @@ export function resolveFileToolsAssets(
 export function anydocEntryDir(anydocDir: string): string {
   return join(anydocDir, "node_modules", "@firecrawl", "anydoc");
 }
-
-export function onnxruntimeEntryDir(onnxruntimeDir: string): string {
-  return join(onnxruntimeDir, "node_modules", "onnxruntime-node");
-}
-

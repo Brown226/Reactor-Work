@@ -1,0 +1,6 @@
+{
+  "name": "dwg-tools",
+  "version": "0.1.0",
+  "description": "Offline DWG drawing read/write and symbol topology (ACadSharp sidecar).",
+  "main": "dist/mcp/server.js"
+}

@@ -54,7 +54,8 @@ export interface OfficialPluginDefinition {
   version: string;
 }
 
-const ZAI_AUTHOR = { name: "Z.ai", url: "https://z.ai" } as const;
+// 内网 fork：官方插件开发者统一署名 Reactor官方（用户可见的「开发者」字段即此处）。
+const ZAI_AUTHOR = { name: "Reactor官方" } as const;
 const OFFICIAL_PLUGIN_ASSETS_BASE_URL = "https://cdn-zcode.z.ai/zcode/official-plugin/assets";
 
 const OFFICIAL_NODE_REPL_HOST_REQUIRED_SEED_PATHS = ["dist/mcp/server.js"] as const;
@@ -150,7 +151,7 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       displayName_i18n: { "zh-CN": "浏览器操作" },
       icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/browser-use/icon.png`,
       description_i18n: {
-        "zh-CN": "操作 ZCode 内置浏览器，检查网页并验证交互。",
+        "zh-CN": "操作 Reactor 内置浏览器，检查网页并验证交互。",
       },
     },
     name: OFFICIAL_BROWSER_USE_PLUGIN_NAME,
@@ -180,8 +181,8 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
         category: "productivity",
         displayName,
         displayName_i18n: { "zh-CN": chineseName },
-        // 复用已发布的文档图标，拆分插件无需依赖新 CDN 资源。
-        icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/document-skills/icon.png`,
+        // 不设 icon：原 CDN 地址在内网不可达，商店按 title 首字母渲染头像兜底
+        // （见 packages/ui/src/marketplace/MarketPage.tsx 的 `item.icon || item.title.slice(0, 1)`）。
         description_i18n: { "zh-CN": `创建、编辑与审阅${chineseName}（${skill.toUpperCase()}）。` },
       },
       name,
@@ -195,6 +196,94 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       version: "0.1.7",
     }),
   ),
+  ...(
+      [
+        {
+          name: "superpowers",
+          version: "5.1.0",
+          displayName: "Superpowers",
+          chineseName: "开发工作流增强",
+          description: "软件开发工作流技能集：头脑风暴、计划执行、测试驱动开发、系统化调试、代码评审、并行子代理与 git worktree。",
+          skills: [
+            "brainstorming",
+            "dispatching-parallel-agents",
+            "executing-plans",
+            "finishing-a-development-branch",
+            "receiving-code-review",
+            "requesting-code-review",
+            "subagent-driven-development",
+            "systematic-debugging",
+            "test-driven-development",
+            "using-git-worktrees",
+            "using-superpowers",
+            "verification-before-completion",
+          ],
+        },
+        {
+          name: "obsidian",
+          version: "0.1.2",
+          displayName: "Obsidian",
+          chineseName: "Obsidian 笔记",
+          description: "Obsidian 笔记创作技能集：markdown 编辑、excalidraw 图表、json-canvas 画布、mermaid 可视化与 bases 数据库。",
+          skills: [
+            "defuddle",
+            "excalidraw-diagram",
+            "json-canvas",
+            "knap",
+            "mermaid-visualizer",
+            "obsidian-bases",
+            "obsidian-cli",
+            "obsidian-markdown",
+            "setup",
+          ],
+        },
+        {
+          name: "accounting-and-reporting",
+          version: "0.1.1",
+          displayName: "Accounting & Reporting",
+          chineseName: "财务核算与报告",
+          description: "企业财务核算与报告技能集：科目映射、底稿审计、财务报告、台账对账、月结复核、报表渲染、勾稽检查与 xlsx 编制。",
+          skills: [
+            "account-mapping",
+            "audit-xls",
+            "financial-reporting",
+            "ledger-reconciliation",
+            "month-end-close-review",
+            "report-render",
+            "statement-consistency-check",
+            "xlsx-author",
+          ],
+        },
+      ] as const
+    ).map(
+      ({
+        name,
+        version,
+        displayName,
+        chineseName,
+        description,
+        skills,
+      }): OfficialPluginDefinition => ({
+        defaultEnabled: true,
+        listing: {
+          author: ZAI_AUTHOR,
+          category: "productivity",
+          displayName,
+          displayName_i18n: { "zh-CN": chineseName },
+          // 这三个插件在原 CDN 目录里没有发布过图标，按约定回退标题首字母头像。
+          description_i18n: { "zh-CN": description },
+        },
+        name,
+        requiredSeedPaths: skills.map((skill) => `skills/${skill}/SKILL.md`),
+        rootCandidates: [
+          `packages/${name}-plugin`,
+          `../${name}-plugin`,
+          `../../${name}-plugin`,
+          `../../../${name}-plugin`,
+        ],
+        version,
+      }),
+    ),
   {
     // 沿用原聚合文档插件的官方搜图能力，仅拆出独立开关；认证仍由官方 MCP adapter 注入。
     defaultEnabled: true,
@@ -243,7 +332,7 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       displayName_i18n: { "zh-CN": "恢复旧版会话" },
       icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/restore-legacy-sessions/icon.png`,
       description_i18n: {
-        "zh-CN": "将旧版会话恢复为 ZCode 任务与会话记录。",
+        "zh-CN": "将旧版会话恢复为 Reactor 任务与会话记录。",
       },
     },
     name: "restore-legacy-sessions",
@@ -266,7 +355,7 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       // 创建器使用客户端自带图标，不再借用 skill-creator 的远端图片。
       displayName_i18n: { "zh-CN": "插件创建器" },
       description_i18n: {
-        "zh-CN": "开发、校验 ZCode 插件，完成本地 dev 市场安装、试用与更新。",
+        "zh-CN": "开发、校验 Reactor 插件，完成本地 dev 市场安装、试用与更新。",
       },
     },
     rootCandidates: [
@@ -294,7 +383,7 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       displayName: "Skill Creator",
       displayName_i18n: { "zh-CN": "技能创建器" },
       icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/skill-creator/icon.png`,
-      description_i18n: { "zh-CN": "创建、编辑和验证可复用的 ZCode 技能。" },
+      description_i18n: { "zh-CN": "创建、编辑和验证可复用的 Reactor 技能。" },
     },
     name: "skill-creator",
     rootCandidates: [
@@ -312,18 +401,18 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
     listing: {
       author: ZAI_AUTHOR,
       category: "utilities",
-      displayName: "ZCode Guide",
-      displayName_i18n: { "zh-CN": "ZCode 使用指南" },
+      displayName: "Reactor Guide",
+      displayName_i18n: { "zh-CN": "Reactor 使用指南" },
       icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/zcode-guide/icon.png`,
       description_i18n: {
-        "zh-CN": "提供 ZCode 配置指南与插件、技能、MCP、命令和钩子诊断。",
+        "zh-CN": "提供 Reactor 配置指南与插件、技能、MCP、命令和钩子诊断。",
       },
       examplePrompts: [
-        "How do I configure MCP servers in ZCode?",
-        "Diagnose my current ZCode setup",
+        "How do I configure MCP servers in Reactor?",
+        "Diagnose my current Reactor setup",
       ],
       examplePrompts_i18n: {
-        "zh-CN": ["ZCode 里怎么配置 MCP 服务器？", "帮我诊断当前的 ZCode 配置"],
+        "zh-CN": ["Reactor 里怎么配置 MCP 服务器？", "帮我诊断当前的 Reactor 配置"],
       },
     },
     name: "zcode-guide",
@@ -375,30 +464,26 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
     version: "0.6.3",
   },
   {
-    // 产品决策：文件解析 / OCR / DWG 是审查场景的地基能力，安装后必须开箱即用
-    // （用户无 Python/poppler/tesseract 也能跑），故这里显式声明 defaultEnabled，
-    // 不受「defaultEnabled 仅限内容型插件」的旧约定约束 —— 该约定防的是首启即拉起
-    // Helper 这类重副作用；本插件只注入 3 个只读解析工具，运行时无守护进程。
-    // 资产（原生绑定/ONNX 模型/wasm）经 runtimeTopLevelPaths 随 seed 进入缓存，
-    // 打包态另有一份在 resources/tools/file-tools（electron-builder extraResources），
-    // 解析顺序见 file-tools-plugin/src/assets.ts。改默认值时必须同步
-    // packages/shared/src/plugin-marketplaces.ts（bootstrap 单测机械对照两者）。
+    // 产品决策：文档解析 / docx 手术刀 / PDF 研读是审查场景的地基能力，安装后开箱即用。
+    // OCR 在 ocr-tools、DWG 在 dwg-tools（docs/file-tools拆三插件方案.md）。
+    // 资产经 runtimeTopLevelPaths 随 seed 进入缓存；打包态在 resources/tools/file-tools。
+    // 改默认值时必须同步 packages/shared/src/plugin-marketplaces.ts（bootstrap 单测机械对照）。
     defaultEnabled: true,
     listing: {
       author: ZAI_AUTHOR,
       category: "productivity",
       displayName: "File Tools",
-      displayName_i18n: { "zh-CN": "文件解析工具" },
+      displayName_i18n: { "zh-CN": "文档解析工具" },
       icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/documents/icon.png`,
       description_i18n: {
-        "zh-CN": "解析 Office/PDF 文档、识别图片与扫描件文字、解析 DWG 图纸的文本与标准引用。",
+        "zh-CN": "解析 Office/PDF 文档正文、docx 最小改动手术刀、PDF 结构与引用研读。",
       },
       examplePrompts: [
         "Parse this Word document and summarize its standard references",
-        "Read the scanned PDF I just attached",
+        "Patch the typo in this docx without reformatting",
       ],
       examplePrompts_i18n: {
-        "zh-CN": ["解析这份 Word 文档并提取引用的标准", "识别我刚上传的扫描件 PDF"],
+        "zh-CN": ["解析这份 Word 文档并提取引用的标准", "在不改格式的前提下修掉 docx 里的错别字"],
       },
     },
     name: "file-tools",
@@ -413,8 +498,59 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       "../../file-tools-plugin",
       "../../../file-tools-plugin",
     ],
-    // anydoc / onnxruntime / canvas / ocr-models / libredwg 资产树（~130MB/平台）：
-    // packaged 走 resources/tools/file-tools 解析；seed 副本覆盖 dev 与兜底路径。
+    // anydoc + canvas 资产树：packaged 走 resources/tools/file-tools；seed 副本兜底。
+    runtimeTopLevelPaths: ["assets"],
+    version: "0.1.0",
+  },
+  {
+    // OCR（扫描件/图片识字）。推理在 office-engines Python，本插件无原生资产。
+    defaultEnabled: true,
+    listing: {
+      author: ZAI_AUTHOR,
+      category: "productivity",
+      displayName: "OCR Tools",
+      displayName_i18n: { "zh-CN": "扫描件识别工具" },
+      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/documents/icon.png`,
+      description_i18n: {
+        "zh-CN": "离线识别图片与扫描件 PDF 中的中英文文字（PP-OCR）。",
+      },
+      examplePrompts: ["Read the scanned PDF I just attached"],
+      examplePrompts_i18n: { "zh-CN": ["识别我刚上传的扫描件 PDF"] },
+    },
+    name: "ocr-tools",
+    requiredSeedPaths: ["dist/mcp/server.js"],
+    rootCandidates: [
+      "packages/ocr-tools-plugin",
+      "../ocr-tools-plugin",
+      "../../ocr-tools-plugin",
+      "../../../ocr-tools-plugin",
+    ],
+    runtimeTopLevelPaths: [],
+    version: "0.1.0",
+  },
+  {
+    // DWG 图纸解析/修改（ACadSharp sidecar）。
+    defaultEnabled: true,
+    listing: {
+      author: ZAI_AUTHOR,
+      category: "productivity",
+      displayName: "DWG Tools",
+      displayName_i18n: { "zh-CN": "图纸解析工具" },
+      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/documents/icon.png`,
+      description_i18n: {
+        "zh-CN": "解析 DWG 图纸的文本、尺寸、标准引用与符号连接拓扑，并支持结构化修改。",
+      },
+      examplePrompts: ["List the standard references in this DWG drawing"],
+      examplePrompts_i18n: { "zh-CN": ["列出这张 DWG 图纸里的标准引用"] },
+    },
+    name: "dwg-tools",
+    requiredSeedPaths: ["dist/mcp/server.js"],
+    rootCandidates: [
+      "packages/dwg-tools-plugin",
+      "../dwg-tools-plugin",
+      "../../dwg-tools-plugin",
+      "../../../dwg-tools-plugin",
+    ],
     runtimeTopLevelPaths: ["assets"],
     version: "0.1.0",
   },

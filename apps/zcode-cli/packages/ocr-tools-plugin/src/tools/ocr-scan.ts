@@ -3,7 +3,7 @@
  *
  * 推理与栅格化在 office-engines Python（office_skill_lib.ocr，PP-OCR ONNX 最小管线）。
  * 本文件只做入参校验与结果包装，对外契约与历史版本一致。
- * 见 docs/OCR栈轻量化方案.md。
+ * 见 docs/已完成/已完成-OCR栈轻量化方案.md。
  */
 import { extname } from "node:path";
 import { z } from "zod";

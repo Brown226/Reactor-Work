@@ -1,11 +1,10 @@
 /**
  * file-tools MCP server（官方内置插件的 stdio 形态，与 node_repl host 同链路）：
- * parse_document / ocr_scan / docx_patch / dwg_modify / dwg_graph 五个本地工具
- * （dwg_modify 与 docx_patch 可写，其余只读）。
+ * parse_document / docx_patch / pdf_* 研读工具。
+ * OCR 在 ocr-tools，DWG 在 dwg-tools（见 docs/未完成-file-tools拆三插件方案.md）。
  *
- * 关键约束：stdio MCP 的 stdout 就是 JSON-RPC 通道。pdfjs（"Warning: TT"）、
- * sidecar（"Open dwg file with error code"）等第三方会把诊断打到 console.log，
- * 必须整体改道 stderr，否则协议流被污染。
+ * 关键约束：stdio MCP 的 stdout 就是 JSON-RPC 通道。pdfjs（"Warning: TT"）等
+ * 第三方会把诊断打到 console.log，必须整体改道 stderr，否则协议流被污染。
  */
 import { realpath } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -13,10 +12,24 @@ import { Server, type Tool } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { z } from "zod";
 import { PARSE_DOCUMENT_DESCRIPTION, parseDocument, parseDocumentInputSchema } from "./tools/parse-document.js";
-import { OCR_SCAN_DESCRIPTION, ocrScan, ocrScanInputSchema } from "./tools/ocr-scan.js";
 import { DOCX_PATCH_DESCRIPTION, docxPatch, docxPatchInputSchema } from "./tools/docx-patch.js";
-import { DWG_MODIFY_DESCRIPTION, dwgModify, dwgModifyInputSchema } from "./tools/dwg-modify.js";
-import { DWG_GRAPH_DESCRIPTION, dwgGraph, dwgGraphInputSchema } from "./tools/dwg-graph.js";
+import {
+  PDF_CITATIONS_DESCRIPTION,
+  PDF_FORMULA_CANDIDATES_DESCRIPTION,
+  PDF_PAGE_TEXT_DESCRIPTION,
+  PDF_REGION_TEXT_DESCRIPTION,
+  PDF_STRUCTURE_DESCRIPTION,
+  pdfCitations,
+  pdfCitationsInputSchema,
+  pdfFormulaCandidates,
+  pdfFormulaCandidatesInputSchema,
+  pdfPageText,
+  pdfPageTextInputSchema,
+  pdfRegionText,
+  pdfRegionTextInputSchema,
+  pdfStructure,
+  pdfStructureInputSchema,
+} from "./tools/pdf-research.js";
 
 const SERVER_NAME = "file-tools";
 const SERVER_VERSION = "0.1.0";
@@ -34,24 +47,34 @@ const tools: Tool[] = [
     inputSchema: z.toJSONSchema(parseDocumentInputSchema) as Tool["inputSchema"],
   },
   {
-    name: "ocr_scan",
-    description: OCR_SCAN_DESCRIPTION,
-    inputSchema: z.toJSONSchema(ocrScanInputSchema) as Tool["inputSchema"],
-  },
-  {
     name: "docx_patch",
     description: DOCX_PATCH_DESCRIPTION,
     inputSchema: z.toJSONSchema(docxPatchInputSchema) as Tool["inputSchema"],
   },
   {
-    name: "dwg_modify",
-    description: DWG_MODIFY_DESCRIPTION,
-    inputSchema: z.toJSONSchema(dwgModifyInputSchema) as Tool["inputSchema"],
+    name: "pdf_structure",
+    description: PDF_STRUCTURE_DESCRIPTION,
+    inputSchema: z.toJSONSchema(pdfStructureInputSchema) as Tool["inputSchema"],
   },
   {
-    name: "dwg_graph",
-    description: DWG_GRAPH_DESCRIPTION,
-    inputSchema: z.toJSONSchema(dwgGraphInputSchema) as Tool["inputSchema"],
+    name: "pdf_citations",
+    description: PDF_CITATIONS_DESCRIPTION,
+    inputSchema: z.toJSONSchema(pdfCitationsInputSchema) as Tool["inputSchema"],
+  },
+  {
+    name: "pdf_page_text",
+    description: PDF_PAGE_TEXT_DESCRIPTION,
+    inputSchema: z.toJSONSchema(pdfPageTextInputSchema) as Tool["inputSchema"],
+  },
+  {
+    name: "pdf_region_text",
+    description: PDF_REGION_TEXT_DESCRIPTION,
+    inputSchema: z.toJSONSchema(pdfRegionTextInputSchema) as Tool["inputSchema"],
+  },
+  {
+    name: "pdf_formula_candidates",
+    description: PDF_FORMULA_CANDIDATES_DESCRIPTION,
+    inputSchema: z.toJSONSchema(pdfFormulaCandidatesInputSchema) as Tool["inputSchema"],
   },
 ];
 
@@ -72,7 +95,7 @@ export function createFileToolsMcpServer(): Server {
     {
       capabilities: { tools: {} },
       instructions:
-        "Local document/OCR/DWG tools. Use parse_document for Office/PDF, ocr_scan for scans and images, docx_patch to apply review fixes inside an existing .docx without touching its formatting (matched text only, copies by default), dwg_modify to read drawings (layers, texts, dimensions, standard references) and to modify them with structured ops, dwg_graph for symbol/connection topology (which equipment a symbol connects to). All engines run offline inside the installer.",
+        "Local document tools (anydoc parse + docx surgical patch + PDF research). Use parse_document for Office/PDF body text, docx_patch to apply review fixes inside an existing .docx without touching its formatting (matched text only, copies by default). For paper/standard reading use pdf_structure / pdf_citations / pdf_page_text / pdf_region_text / pdf_formula_candidates. Scans/images: ocr_scan (ocr-tools). DWG drawings: dwg_modify / dwg_graph (dwg-tools). All engines run offline inside the installer.",
     },
   );
 
@@ -88,13 +111,6 @@ export function createFileToolsMcpServer(): Server {
         }
         return textResult(await parseDocument(parsed.data));
       }
-      if (name === "ocr_scan") {
-        const parsed = ocrScanInputSchema.safeParse(request.params.arguments ?? {});
-        if (!parsed.success) {
-          invalidParams(`ocr_scan: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
-        }
-        return textResult(await ocrScan(parsed.data));
-      }
       if (name === "docx_patch") {
         const parsed = docxPatchInputSchema.safeParse(request.params.arguments ?? {});
         if (!parsed.success) {
@@ -102,19 +118,50 @@ export function createFileToolsMcpServer(): Server {
         }
         return textResult(await docxPatch(parsed.data));
       }
-      if (name === "dwg_modify") {
-        const parsed = dwgModifyInputSchema.safeParse(request.params.arguments ?? {});
+      if (name === "pdf_structure") {
+        const parsed = pdfStructureInputSchema.safeParse(request.params.arguments ?? {});
         if (!parsed.success) {
-          invalidParams(`dwg_modify: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
+          invalidParams(`pdf_structure: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
         }
-        return textResult(await dwgModify(parsed.data));
+        return textResult(await pdfStructure(parsed.data.file_path));
       }
-      if (name === "dwg_graph") {
-        const parsed = dwgGraphInputSchema.safeParse(request.params.arguments ?? {});
+      if (name === "pdf_citations") {
+        const parsed = pdfCitationsInputSchema.safeParse(request.params.arguments ?? {});
         if (!parsed.success) {
-          invalidParams(`dwg_graph: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
+          invalidParams(`pdf_citations: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
         }
-        return textResult(await dwgGraph(parsed.data));
+        return textResult(
+          await pdfCitations(parsed.data.file_path, parsed.data.max_items),
+        );
+      }
+      if (name === "pdf_page_text") {
+        const parsed = pdfPageTextInputSchema.safeParse(request.params.arguments ?? {});
+        if (!parsed.success) {
+          invalidParams(`pdf_page_text: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
+        }
+        return textResult(
+          await pdfPageText(parsed.data.file_path, parsed.data.start_page, parsed.data.end_page),
+        );
+      }
+      if (name === "pdf_region_text") {
+        const parsed = pdfRegionTextInputSchema.safeParse(request.params.arguments ?? {});
+        if (!parsed.success) {
+          invalidParams(`pdf_region_text: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`);
+        }
+        return textResult(
+          await pdfRegionText(parsed.data.file_path, parsed.data.page, parsed.data.bbox),
+        );
+      }
+      if (name === "pdf_formula_candidates") {
+        const parsed = pdfFormulaCandidatesInputSchema.safeParse(request.params.arguments ?? {});
+        if (!parsed.success) {
+          invalidParams(
+            `pdf_formula_candidates: ${parsed.error.issues[0]?.message ?? "invalid arguments"}`,
+          );
+        }
+        return textResult(
+          await pdfFormulaCandidates(parsed.data.file_path, parsed.data.max_items),
+        );
       }
       invalidParams(`Tool ${name} not found`);
     } catch (error) {

@@ -1,5 +1,5 @@
 /**
- * native / ONNX / canvas 绑定的双路径惰性加载。
+ * native 绑定的双路径惰性加载（anydoc / @napi-rs/canvas）。
  *
  * esbuild bundle 已把原生依赖标记为 external（要么是 .node 二进制，要么是按平台
  * 分发的完整目录，无法内联）。运行时按两条路径解析：
@@ -9,7 +9,7 @@
  */
 import { join } from "node:path";
 import { createRequire } from "node:module";
-import { anydocEntryDir, onnxruntimeEntryDir, resolveFileToolsAssets } from "./assets.js";
+import { anydocEntryDir, resolveFileToolsAssets } from "./assets.js";
 
 /** dist bundle 自带 createRequire banner；源码（tsx）下这里兜底创建。 */
 const runtimeRequire =
@@ -50,47 +50,6 @@ export function loadAnydoc(): AnydocModule {
     }
   }
   throw new Error("未找到 anydoc 原生资产（file-tools 资产不完整）");
-}
-
-function hasAnydoc(): boolean {
-  try {
-    return loadAnydoc() !== null;
-  } catch {
-    return false;
-  }
-}
-
-let onnxruntimeModule: AnyNative | undefined;
-
-export function loadOnnxruntime(): AnyNative {
-  if (onnxruntimeModule !== undefined) return onnxruntimeModule;
-  try {
-    onnxruntimeModule = runtimeRequire("onnxruntime-node");
-    return onnxruntimeModule;
-  } catch {
-    // 继续走资产目录。
-  }
-  const assets = resolveFileToolsAssets();
-  if (assets.onnxruntimeDir) {
-    const entry = onnxruntimeEntryDir(assets.onnxruntimeDir);
-    try {
-      onnxruntimeModule = runtimeRequire(entry);
-      return onnxruntimeModule;
-    } catch (error) {
-      throw new Error(
-        `onnxruntime-node 资产加载失败（${entry}）：${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-  }
-  throw new Error("未找到 onnxruntime-node 原生资产（file-tools 资产不完整）");
-}
-
-function hasOnnxruntime(): boolean {
-  try {
-    return loadOnnxruntime() !== undefined;
-  } catch {
-    return false;
-  }
 }
 
 /** @napi-rs/canvas：运行时 require 平台 skia .node，同样双路径。 */

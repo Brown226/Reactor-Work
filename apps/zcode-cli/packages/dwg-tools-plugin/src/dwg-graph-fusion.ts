@@ -1,7 +1,7 @@
 /**
  * DWG 符号/连接拓扑融合（纯函数，无 IO）：sidecar graph 命令的原始行 → 拓扑图。
  *
- * 规则（与 docs/文件解析OCR-CAD-集成方案.md §3 dwg_graph 契约一致）：
+ * 规则（与 docs/已完成/已完成-文件解析OCR-CAD-集成方案.md §3 dwg_graph 契约一致）：
  * - 节点 = INSERT 块引用符号；tag = 插入点 snapTol 内最近的文本（平局按 handle 数值序）；
  * - 线段仅首末端点参与：吸附 snapTol 内的符号，端点间 snapTol 内重合则并查集链合成 run；
  * - 每个 run 附着的去重符号 ≥2 → 两两成边（单段 run = direct，多段 = run）；

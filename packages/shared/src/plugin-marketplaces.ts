@@ -24,13 +24,18 @@ export const DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS: ReadonlySet<string> = new Set(
   "skill-creator@zcode-plugins-official",
   "plugin-creator@zcode-plugins-official",
   "zcode-guide@zcode-plugins-official",
-  // 文件解析 / OCR / DWG：安装后开箱即用的只读解析工具（官方插件 file-tools）。
+  // 文件能力三件套：文档解析 / 扫描件 OCR / DWG 图纸（docs/未完成-file-tools拆三插件方案.md）。
   // 电脑控制回退为默认关闭，故 computer-use 不在此名单内。
   // 该集合必须与 official-plugin-definitions.ts 里标了 defaultEnabled 的插件逐一对应，
-  // bootstrap 的「Settings 默认启用集合与 CLI 的官方插件声明一致」单测机械对照两者。
+  // bootstrap 的 default-enabled-ids.test.ts 机械对照两者。
   "file-tools@zcode-plugins-official",
+  "ocr-tools@zcode-plugins-official",
+  "dwg-tools@zcode-plugins-official",
   // 审查技能：文件审查板块的 6 个技能随包内置，不再依赖企业服务端下发（官方插件 review-skills）。
   "review-skills@zcode-plugins-official",
+  "superpowers@zcode-plugins-official",
+  "obsidian@zcode-plugins-official",
+  "accounting-and-reporting@zcode-plugins-official",
 ]);
 
 export const DEFAULT_PLUGIN_MARKETPLACES: DefaultPluginMarketplace[] = [

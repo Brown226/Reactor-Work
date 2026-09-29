@@ -54,7 +54,7 @@ async function loadPdfjs(): Promise<any> {
   return pdfjs;
 }
 
-function loadPdfjsOnce(): Promise<any> {
+export function loadPdfjsOnce(): Promise<any> {
   pdfjsPromise ??= loadPdfjs();
   return pdfjsPromise;
 }

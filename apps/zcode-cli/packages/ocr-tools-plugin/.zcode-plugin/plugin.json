@@ -1,0 +1,6 @@
+{
+  "name": "ocr-tools",
+  "version": "0.1.0",
+  "description": "Offline OCR for images and scanned PDFs (PP-OCR via office-engines Python).",
+  "main": "dist/mcp/server.js"
+}

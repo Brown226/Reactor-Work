@@ -3,13 +3,13 @@
  *
  * 协议：stdin 单发一行 JSON 请求，stdout 取最后一个非空行解析；退出码 0 正常、2 错误。
  * 资产解析候选链（env → resourcesPath → 包内 assets）与失败降级语义见
- * docs/文件解析OCR-CAD-集成方案.md §5。
+ * docs/已完成/已完成-文件解析OCR-CAD-集成方案.md §5。
  */
 import { spawn } from "node:child_process";
 import { statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveFileToolsAssets } from "./assets.js";
+import { resolveSidecarDir as resolveSidecarDirFromAssets } from "./assets.js";
 
 /** sidecar 可执行文件名：Windows 带 .exe。 */
 function sidecarBinaryName(): string {
@@ -46,15 +46,13 @@ function resolveSidecarDir(): string {
     }
     return override;
   }
-  const assets = resolveFileToolsAssets();
+  const staged = resolveSidecarDirFromAssets();
   const rid = dotnetRid(`${process.platform}-${process.arch}`);
-  // 开发态：`pnpm --filter @zcode/file-tools-plugin build` 的 dotnet publish 输出。
-  // src/tools/*.ts 下运行是 ../../dist（src→包根），dist/mcp/server.js 里是 ../dist
-  // （dist/mcp→包根）；两种形状都入候选。
+  // 开发态：`pnpm --filter @zcode/dwg-tools-plugin build` 的 dotnet publish 输出。
   const moduleDir = dirname(fileURLToPath(import.meta.url));
   const candidates: Array<string | null> = [
-    // 桌面打包态（prepare 脚本按 RID 发布进 resources/tools/file-tools/dwg-sidecar）。
-    assets.root ? join(assets.root, "dwg-sidecar") : null,
+    // 桌面打包态（prepare 脚本按 RID 发布进 resources/tools/dwg-tools/dwg-sidecar）。
+    staged,
     resolve(moduleDir, "..", "dist", "dwg-sidecar"),
     resolve(moduleDir, "..", "..", "dist", "dwg-sidecar"),
   ];
@@ -65,7 +63,7 @@ function resolveSidecarDir(): string {
     if (isFileSafe(join(candidate, sidecarBinaryName()))) return candidate;
   }
   throw new Error(
-    "未找到 DWG sidecar（dwg-sidecar 可执行文件）。file-tools 资产不完整：需运行 scripts/prepare-file-tools-assets.mjs（或包内 dotnet publish）。",
+    "未找到 DWG sidecar（dwg-sidecar 可执行文件）。dwg-tools 资产不完整：需运行 scripts/prepare-file-tools-assets.mjs 或包内 dotnet publish。",
   );
 }
 

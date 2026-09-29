@@ -1,8 +1,8 @@
 {
-  "name": "@zcode/file-tools-plugin",
+  "name": "@zcode/dwg-tools-plugin",
   "version": "0.1.0",
   "private": true,
-  "description": "作为官方 ZCode 内置插件发布的文档解析 / docx 手术刀 / PDF 研读工具（MCP server）。",
+  "description": "DWG 图纸解析/修改（MCP server，ACadSharp sidecar）。",
   "author": {
     "name": "Z.ai"
   },
@@ -16,12 +16,7 @@
     "lint": "oxlint src --no-ignore"
   },
   "dependencies": {
-    "@firecrawl/anydoc": "0.2.4",
     "@modelcontextprotocol/server": "2.0.0",
-    "@napi-rs/canvas": "^1.0.9",
-    "fflate": "^0.8.2",
-    "jimp": "^1.6.1",
-    "pdfjs-dist": "6.2.108",
     "zod": "^4.4.3"
   },
   "devDependencies": {

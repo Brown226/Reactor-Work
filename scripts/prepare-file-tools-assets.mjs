@@ -16,7 +16,7 @@
  */
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const repoRoot = resolve(import.meta.dirname, "..");
@@ -230,7 +230,7 @@ function stageSidecar(targetRoot, runtimePlatformKey) {
   if (!rid) throw new Error(`不支持的平台：${runtimePlatformKey}`);
   const outDir = join(targetRoot, "dwg-sidecar", rid);
   mkdirSync(outDir, { recursive: true });
-  const pluginRoot = join(repoRoot, "apps", "zcode-cli", "packages", "file-tools-plugin");
+  const pluginRoot = join(repoRoot, "apps", "zcode-cli", "packages", "dwg-tools-plugin");
   const publishScript = join(pluginRoot, "scripts", "publish-sidecar.mjs");
   if (!existsSync(publishScript)) {
     throw new Error(`sidecar 发布脚本缺失：${publishScript}`);
@@ -240,10 +240,24 @@ function stageSidecar(targetRoot, runtimePlatformKey) {
     [publishScript, "--rid", rid, "--out", outDir, "--required"],
     { stdio: "inherit", cwd: pluginRoot },
   );
-  if (result.status !== 0) {
-    throw new Error(`DWG sidecar 发布失败（${rid}）：exit=${result.status}`);
-  }
   const exeName = runtimePlatformKey.startsWith("win32") ? "dwg-sidecar.exe" : "dwg-sidecar";
+  if (result.status !== 0) {
+    // NuGet 在部分环境（含中文路径 / 损坏的全局包缓存）会 restore 失败，与工程无关。
+    // 此时允许复用历史 dotnet publish 产物，避免整条 staging 因还原问题挂掉。
+    const legacyCandidates = [
+      // 自包含单文件发布（~35MB）优先
+      join(repoRoot, "apps", "zcode-cli", "packages", "file-tools-plugin", "dist", "dwg-sidecar", rid, exeName),
+      join(repoRoot, "apps", "zcode-cli", "packages", "dwg-tools-plugin", "dist", "dwg-sidecar", rid, exeName),
+      join(repoRoot, "apps", "zcode-cli", "packages", "file-tools-plugin", "tools", "dwg-sidecar", "bin", "Release", "net9.0", rid, exeName),
+      join(repoRoot, "apps", "zcode-cli", "packages", "file-tools-plugin", "tools", "dwg-sidecar", "bin", "Release", "net9.0", exeName),
+    ];
+    const fallback = legacyCandidates.find((p) => existsSync(p) && statSync(p).size > 1024 * 1024);
+    if (!fallback) {
+      throw new Error(`DWG sidecar 发布失败（${rid}）：exit=${result.status}`);
+    }
+    copyFileSync(fallback, join(outDir, exeName));
+    console.log(`  ⚠ sidecar publish 失败，复用历史产物：${fallback}`);
+  }
   if (!existsSync(join(outDir, exeName))) {
     throw new Error(`sidecar 产物缺失：${join(outDir, exeName)}`);
   }
@@ -268,7 +282,7 @@ function stageAssets(targetRoot) {
 
   // 2) onnxruntime-node + ocr-models 已退役：OCR 推理迁到 office-engines Python
   //    （scripts/office_skill_lib/ocr.py + onnxruntime/numpy wheel + ocr-models）。
-  //    见 docs/OCR栈轻量化方案.md。此处不再 stage，避免 ~80MB 双栈。
+  //    见 docs/已完成/已完成-OCR栈轻量化方案.md。此处不再 stage，避免 ~80MB 双栈。
 
   // 3) @napi-rs/canvas + 本平台 skia 绑定（linux 同时带 musl 变体，js-binding 按 libc 选择）。
   //    仍保留：pdf_structure / pdf_citations 等 pdf-research 工具用 pdfjs + canvas 栅格。
@@ -282,10 +296,13 @@ function stageAssets(targetRoot) {
     stageNpmPackage(packageName, join(canvasRoot, "node_modules"));
   }
 
-  // 4) DWG sidecar（ACadSharp，自包含 .NET 发布；需要 dotnet SDK，失败直接中断）。
-  stageSidecar(targetRoot, platformKey);
+  // 4) DWG sidecar 发布进**独立** dwg-tools 资产树（docs/未完成-file-tools拆三插件方案.md）。
+  const dwgRoot = join(repoRoot, "packages", "desktop", "bundled-tools", platformKey, "dwg-tools");
+  rmSync(dwgRoot, { recursive: true, force: true });
+  mkdirSync(dwgRoot, { recursive: true });
+  stageSidecar(dwgRoot, platformKey);
 
-  writeStagingMeta(targetRoot, { sha256, modelFiles: "office-engines", sidecar: "published" });
+  writeStagingMeta(targetRoot, { sha256, modelFiles: "office-engines", sidecar: "dwg-tools" });
   return {};
 }
 
@@ -303,9 +320,10 @@ async function main() {
   stageDevCopy(bundledRoot);
 
   const total = sumDirectorySize(bundledRoot);
+  const dwgTotal = sumDirectorySize(join(repoRoot, "packages", "desktop", "bundled-tools", platformKey, "dwg-tools"));
   process.stdout.write(
     `[file-tools] staged → ${bundledRoot}\n[file-tools] dev copy → ${devAssetsRoot}\n` +
-      `[file-tools] OCR 在 office-engines；total ${(total / 1024 / 1024).toFixed(1)} MiB\n`,
+      `[file-tools] OCR 在 office-engines；file-tools ${(total / 1024 / 1024).toFixed(1)} MiB + dwg-tools ${(dwgTotal / 1024 / 1024).toFixed(1)} MiB\n`,
   );
 }
 

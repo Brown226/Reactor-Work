@@ -1,15 +1,13 @@
 # @zcode/file-tools-plugin
 
-官方内置插件 `file-tools` 的 MCP server：桌面端本地文档解析 / OCR / DWG 图纸抽取。
-安装后默认启用，Agent 获得四个只读工具，全部离线可用（无需 Python / poppler / tesseract）。
+官方内置插件 `file-tools` 的 MCP server：本地文档解析 / docx 定点修改 / PDF 研读。
+OCR 在 `ocr-tools-plugin`，DWG 在 `dwg-tools-plugin`（`docs/未完成-file-tools拆三插件方案.md`）。
 
 | 工具 | 能力 | 引擎 |
 | --- | --- | --- |
-| `parse_document` | Office/PDF → Markdown（docx/doc/xlsx/xls/pptx/ppt/odt/rtf/csv/epub/pdf） | `@firecrawl/anydoc`（napi） |
-| `ocr_scan` | 图片/扫描件 PDF → 文本 + 置信度 | PP-OCRv5 mobile（ONNX）+ pdfjs 栅格化 |
-| `docx_patch` | 已有 .docx 的**定点文字替换**（只改命中的 `<w:t>`，格式/表格/编号/页眉页脚原样；默认另存副本） | `fflate`（OOXML zip）+ 插件内匹配 |
-| `dwg_modify` | DWG 读（图层/文本/尺寸/标准引用）+ 结构化修改（replace_text/rename_layer） | ACadSharp（.NET sidecar，MIT） |
-| `dwg_graph` | DWG 符号/连接拓扑图（块引用符号节点 + 线段连接边，节点带文本 tag，全部挂 cadHandleId 锚点） | ACadSharp（.NET sidecar，MIT）+ 插件内纯 TS 融合 |
+| `parse_document` | Office/PDF → Markdown | `@firecrawl/anydoc`（napi） |
+| `docx_patch` | 已有 .docx 的**定点文字替换**（只改命中的 `<w:t>`，格式原样；默认另存副本） | `fflate`（OOXML zip） |
+| `pdf_*` | PDF 结构/引用/页文本/区域/公式候选（研读） | pdfjs + `@napi-rs/canvas` |
 
 ## 开发
 
@@ -17,9 +15,8 @@
 # 依赖安装（根目录）
 pnpm install
 
-# 生成资产（下载 OCR 模型 sha256 固定 + dotnet 发布 DWG sidecar + 拷贝原生绑定）
-node scripts/prepare-file-tools-assets.mjs            # 当前平台
-node scripts/prepare-file-tools-assets.mjs --platform darwin-arm64   # 交叉平台（需对应平台 node_modules）
+# 生成资产（anydoc + canvas；DWG sidecar 发布到 dwg-tools 树）
+node scripts/prepare-file-tools-assets.mjs
 
 # 构建 + 类型检查 + lint
 pnpm --filter @zcode/file-tools-plugin build

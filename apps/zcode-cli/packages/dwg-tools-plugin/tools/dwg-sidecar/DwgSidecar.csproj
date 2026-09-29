@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>dwg-sidecar</AssemblyName>
+    <RootNamespace>DwgSidecar</RootNamespace>
+    <!-- 保持本地体积：非压缩单文件由 prepare 脚本按平台发布。 -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ACadSharp" Version="3.8.0" />
+  </ItemGroup>
+
+</Project>

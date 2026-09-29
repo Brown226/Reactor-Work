@@ -643,15 +643,34 @@ export default {
       filter: ["**/*"],
     })),
     {
-      // file-tools 官方插件的原生资产树（anydoc napi、onnxruntime、@napi-rs/canvas、
-      // PP-OCR ONNX 模型、libredwg wasm）。MCP 子进程按 process.resourcesPath/tools/file-tools
-      // 解析（候选链与 ripgrep 同思路，见 packages/services/src/runtime-tools 与
-      // apps/zcode-cli/packages/file-tools-plugin/src/assets.ts）。
-      // 资产由 scripts/prepare-file-tools-assets.mjs 生成（版本 + sha256 固定）。
+      // file-tools：anydoc + canvas（parse_document / pdf-research）。
+      // OCR 在 office-engines，DWG 在 tools/dwg-tools（docs/未完成-file-tools拆三插件方案.md）。
       from: `bundled-tools/${targetPlatform.key}/file-tools`,
       to: "tools/file-tools",
       filter: ["**/*"],
     },
+    {
+      // dwg-tools：ACadSharp sidecar（自包含 .NET）。
+      from: `bundled-tools/${targetPlatform.key}/dwg-tools`,
+      to: "tools/dwg-tools",
+      filter: ["**/*"],
+    },
+    // 办公四件套 skill 的本地引擎树（LibreOffice / 便携 Python + wheels / CJK 字体）。
+    // 资产由 scripts/prepare-office-engines-assets.mjs 生成（版本 + sha256 固定，
+    // bundled-tools 不进 git，CI/发布流水线负责准备）。electron-builder 对不存在的
+    // from 目录会直接报错，因此未准备的平台/机器整体跳过该项：安装器与运行时都按
+    // 「无内置引擎」降级（skill env_check 走 on-demand 报告），不影响其他能力。
+    ...(existsSync(
+      resolve(workspaceRoot, "bundled-tools", targetPlatform.key, "office-engines"),
+    )
+      ? [
+          {
+            from: `bundled-tools/${targetPlatform.key}/office-engines`,
+            to: "tools/office-engines",
+            filter: ["**/*"],
+          },
+        ]
+      : []),
   ],
   // postinstall 会先优先复用 node-pty 自带的 Windows 预编译产物，其他平台再按需 electron-rebuild。
   // 打包阶段统一复用安装时准备好的原生文件，避免 electron-builder 再触发一轮不受控的本地编译。
