@@ -182,7 +182,7 @@ export const MAX_INLINE_TEXT_CHARS = 400_000;
  *
  * 后缀是 `.md` 而不是 `.txt`：正文来自解析工具（docx/xlsx/pdf 无损转 markdown），
  * 预览区据此渲染成正文并按片段高亮 —— 后缀是前端唯一的判据，写成 `.txt` 会让用户点开
- * 看到的是一堆 `|` 与 `#`（见 docs/审查板块-方案-v1.md §3.3）。
+ * 看到的是一堆 `|` 与 `#`（见 docs/未完成-审查板块-方案-v1.md §3.3）。
  */
 export function persistReviewText(text: string, dir: string): string | null {
   if (Buffer.byteLength(text, "utf8") > MAX_SNAPSHOT_BYTES) return null;

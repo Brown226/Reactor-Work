@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE } from "@zcode/contracts";
+import { isOfficialPluginMarketplaceDisabled } from "@zcode/shared";
 
 const BUNDLED_PARTITION_FILE = "bundled-marketplace.json";
 const CDN_PARTITION_FILE = "cdn-marketplace.json";
@@ -28,6 +29,11 @@ export function writeCdnOfficialMarketplacePartitionSync(input: {
   storageRoot: string;
 }): Record<string, unknown> {
   assertOfficialManifest(input.manifest);
+  // 内网 fork：CDN 分片默认禁用（商店只显示内置插件）。禁用时拒绝落盘 CDN 目录，
+  // 否则一次刷新就会把 34 个 CDN 插件重新写回合并 manifest。
+  if (isOfficialPluginMarketplaceDisabled()) {
+    return rebuildOfficialMarketplaceSync(input.storageRoot);
+  }
   writeJsonFileSync(partitionPath(input.storageRoot, CDN_PARTITION_FILE), input.manifest);
   return rebuildOfficialMarketplaceSync(input.storageRoot);
 }
@@ -62,7 +68,11 @@ export function loadBundledOfficialPluginRootsSync(
 
 function rebuildOfficialMarketplaceSync(storageRoot: string): Record<string, unknown> {
   const bundledPartition = readBundledPartition(storageRoot);
-  const cdnManifest = readJsonRecord(partitionPath(storageRoot, CDN_PARTITION_FILE));
+  // 内网 fork：CDN 分片禁用（默认）时，合并目录里不出现任何 CDN 插件——
+  // 已存在的 cdn-marketplace.json 不删除，只是不再参与合并，下次启动即自愈收敛。
+  const cdnManifest = isOfficialPluginMarketplaceDisabled()
+    ? undefined
+    : readJsonRecord(partitionPath(storageRoot, CDN_PARTITION_FILE));
   const bundledManifest = bundledPartition?.manifest;
   const cdnPlugins = readPluginEntries(cdnManifest);
   const cdnPluginNames = new Set(cdnPlugins.map(readPluginName).filter(isDefined));

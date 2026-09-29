@@ -6,7 +6,7 @@ import { USER_DATA_DIR_NAME } from "@zcode/shared";
 import { resolveDefaultSkillRoots } from "../src/skills/roots.js";
 
 /**
- * server-skills 发现根的插入位置（docs/server-skill-sync.md §6.1）：
+ * server-skills 发现根的插入位置（docs/已完成/已完成-server-skill-sync.md §6.1）：
  * priority 必须位于 extraRoots 之后、用户级两根之前——CLI 的同名解析是
  * first-match（priority 升序），这样 server 版同名优先，且不改动既有
  * user/project 相对顺序。

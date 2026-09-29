@@ -26,6 +26,7 @@ import type { BashTimeoutPolicy } from "../bash-timeout-policy.js";
 import { createJsToolEntry, jsToolEntry } from "./node-repl.js";
 import { globToolEntry } from "./glob.js";
 import { knowledgeCheckToolEntry } from "./knowledge-check.js";
+import { emitUiPatchToolEntry, emitUiTreeToolEntry } from "./emit-ui-tree.js";
 import { reportReviewIssuesToolEntry } from "./report-review-issues.js";
 import { exportReviewReportToolEntry } from "./export-review-report.js";
 import { grepToolEntry } from "./grep.js";
@@ -138,6 +139,9 @@ export const builtInTools: ToolEntry[] = [
   listModelsToolEntry,
   // 知识板块（文件审查的依据）：只读端侧缓存，零网络、零 LLM，判定可复现。
   knowledgeCheckToolEntry,
+  // GenUI 消息体：声明式 UI 树进工具结果，由聊天列内联渲染（非办公成稿）。
+  emitUiTreeToolEntry,
+  emitUiPatchToolEntry,
   // 自述型审查的问题承载：把 originalText 定位成字符偏移，前端才能「点击问题 → 原文高亮」。
   reportReviewIssuesToolEntry,
   // 审查报告导出：把已产出的问题清单落成 .docx/.xlsx（写工作区，需确认）。

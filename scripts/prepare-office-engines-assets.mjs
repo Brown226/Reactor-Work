@@ -464,7 +464,7 @@ function main() {
 
   console.log(`[office-engines] platform=${platformKey} stage=${stage}${recordMode ? " (record 模式)" : ""}`);
   if (stage === "all" || stage === "libreoffice") {
-    // 默认策略（docs/内网办公四件套-fork-spec.md 7.0）：LibreOffice 不打包，Office/WPS
+    // 默认策略（docs/已完成/已完成-内网办公四件套-fork-spec.md 7.0）：LibreOffice 不打包，Office/WPS
     // 基镜像或 COM 垫片承担渲染。只有明确决定打包时才暂存，防止 `--stage all` 顺手带出 1.6GB。
     console.log(
       "  ⚠ 即将暂存 LibreOffice 1.6GB 进安装包。当前内网策略是不打包；确定要打包请继续，否则只跑 --stage python。",

@@ -6,7 +6,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import type { PluginDiagnostic, PluginManifest, PluginStoreListing } from "@zcode/contracts";
 import { isOfficialMarketplaceId, ZCODE_OFFICIAL_PLUGIN_MARKETPLACE } from "@zcode/contracts";
-import { DEFAULT_PLUGIN_MARKETPLACES, sanitizeZCodeRuntimeEnv } from "@zcode/shared";
+import { DEFAULT_PLUGIN_MARKETPLACES, isOfficialPluginMarketplaceDisabled, sanitizeZCodeRuntimeEnv } from "@zcode/shared";
 import { loadPluginMcpServerDefinitions, resolvePluginMcpServers } from "./mcp.js";
 import {
   appendPluginSourceCleanupError,
@@ -280,6 +280,10 @@ export function ensureDefaultPluginMarketplaces(storageRoot: string): KnownMarke
   const known = loadKnownMarketplacesSync(storageRoot);
   const existingIds = new Set(known.map((record) => record.id));
   const now = new Date().toISOString();
+  // 官方市场记录始终 seed：它是本地元数据（不触发网络），商店的内置插件分区
+  // （bundled-marketplace.json 合并产物）依赖这个 marketplace id 存在才能展示。
+  // CDN 目录的禁用发生在分片层（official-marketplace.ts）与刷新层（updateMarketplace），
+  // 不在这里——否则记录缺失会让商店连内置插件都收不到。
   const missing = DEFAULT_PLUGIN_MARKETPLACES.filter(
     (marketplace) => !existingIds.has(marketplace.id),
   ).map(
@@ -317,6 +321,11 @@ export async function ensureMarketplaceManifestAvailable(input: {
     (item) => item.id === input.marketplace,
   );
   if (!record) return null;
+  // 内网 fork：官方市场的 CDN 目录懒加载同样禁用——本地没有 manifest（内置分片尚未
+  // seed）时不得回头去拉 CDN，否则一次安装操作就会把 CDN 目录重新引回来。
+  if (isOfficialPluginMarketplaceDisabled() && isOfficialMarketplaceId(record.id)) {
+    return null;
+  }
   // 受信任的内部懒加载：用 known record 的规范 source 拉取，并以 record.id 作为 trustedId，
   // 使官方 id 只能由本来就是该官方 id 的记录刷新得到。
   return await addMarketplace({
@@ -507,8 +516,11 @@ export async function updateMarketplace(input: {
     throw new Error(`Marketplace not found: ${input.marketplace}`);
   }
   const updated: KnownMarketplaceRecord[] = [];
+  // 内网部署：官方市场不刷新 CDN manifest（访问必失败），内置资产目录已由 seed 提供。
+  const officialDisabled = isOfficialPluginMarketplaceDisabled();
   for (const record of selected) {
     throwIfPluginOperationAborted(input.signal);
+    if (officialDisabled && isOfficialMarketplaceId(record.id)) continue;
 
     // 受信任的刷新会重新拉取已知 marketplace 自带的 source；record.id 作为 trustedId，
     // 使官方 id 只能由原本就是该 id 的记录刷新得到。

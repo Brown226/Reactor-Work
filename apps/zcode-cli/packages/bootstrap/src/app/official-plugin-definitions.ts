@@ -465,7 +465,7 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
   },
   {
     // 产品决策：文档解析 / docx 手术刀 / PDF 研读是审查场景的地基能力，安装后开箱即用。
-    // OCR 在 ocr-tools、DWG 在 dwg-tools（docs/file-tools拆三插件方案.md）。
+    // OCR 在 ocr-tools、DWG 在 dwg-tools（docs/未完成-file-tools拆三插件方案.md）。
     // 资产经 runtimeTopLevelPaths 随 seed 进入缓存；打包态在 resources/tools/file-tools。
     // 改默认值时必须同步 packages/shared/src/plugin-marketplaces.ts（bootstrap 单测机械对照）。
     defaultEnabled: true,
