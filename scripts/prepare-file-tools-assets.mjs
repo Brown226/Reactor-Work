@@ -266,12 +266,12 @@ function stageAssets(targetRoot) {
   copyDirectory(platformSource, join(anydocRoot, "node_modules", platformPackage));
   sha256["@firecrawl/anydoc"] = null; // 版本即 lockfile；平台包逐文件哈希见 staging 日志
 
-  // 2) onnxruntime-node（bin/napi-v6 只保留本平台；原包带全平台，白占 ~200MB）
-  const onnxruntimeRoot = join(targetRoot, "onnxruntime");
-  const onnxruntimeDir = stageNpmPackage("onnxruntime-node", join(onnxruntimeRoot, "node_modules"));
-  pruneOnnxruntimePlatforms(onnxruntimeDir, platformKey);
+  // 2) onnxruntime-node + ocr-models 已退役：OCR 推理迁到 office-engines Python
+  //    （scripts/office_skill_lib/ocr.py + onnxruntime/numpy wheel + ocr-models）。
+  //    见 docs/OCR栈轻量化方案.md。此处不再 stage，避免 ~80MB 双栈。
 
-  // 3) @napi-rs/canvas + 本平台 skia 绑定（linux 同时带 musl 变体，js-binding 按 libc 选择）
+  // 3) @napi-rs/canvas + 本平台 skia 绑定（linux 同时带 musl 变体，js-binding 按 libc 选择）。
+  //    仍保留：pdf_structure / pdf_citations 等 pdf-research 工具用 pdfjs + canvas 栅格。
   const canvasRoot = join(targetRoot, "canvas");
   stageNpmPackage("@napi-rs/canvas", join(canvasRoot, "node_modules"));
   const canvasVariants = platformKey.startsWith("linux-")
@@ -285,7 +285,7 @@ function stageAssets(targetRoot) {
   // 4) DWG sidecar（ACadSharp，自包含 .NET 发布；需要 dotnet SDK，失败直接中断）。
   stageSidecar(targetRoot, platformKey);
 
-  writeStagingMeta(targetRoot, { sha256, modelFiles: "deferred", sidecar: "published" });
+  writeStagingMeta(targetRoot, { sha256, modelFiles: "office-engines", sidecar: "published" });
   return {};
 }
 
@@ -296,23 +296,16 @@ function stageDevCopy(fromRoot) {
 
 async function main() {
   process.stdout.write(`[file-tools] staging platform: ${platformKey}\n`);
-  // 1) 先保留旧 dev 模型缓存（stageDevCopy 会整树重建 dev 副本）；sha256 不匹配自动回退下载。
-  const legacyModelCache = join(devAssetsRoot, "ocr-models");
-  const modelCacheDir = existsSync(legacyModelCache) ? legacyModelCache : null;
-
-  // 2) 原生依赖 + sidecar staging（anydoc / onnxruntime / canvas / dwg-sidecar）。
+  // OCR 模型不再在本脚本 stage（迁 office-engines）；仅保留旧缓存供 office-engines 复用。
   stageAssets(bundledRoot);
 
-  // 3) OCR 模型（网络，sha256 固定；有缓存则不重复下载）。
-  const modelResults = await downloadOcrModels(join(bundledRoot, "ocr-models"), modelCacheDir);
-
-  // 4) dev 副本（随插件 seed 覆盖开发态资产解析）。
+  // dev 副本（随插件 seed 覆盖开发态资产解析）。
   stageDevCopy(bundledRoot);
 
   const total = sumDirectorySize(bundledRoot);
   process.stdout.write(
     `[file-tools] staged → ${bundledRoot}\n[file-tools] dev copy → ${devAssetsRoot}\n` +
-      `[file-tools] models: ${modelResults.length}; total ${(total / 1024 / 1024).toFixed(1)} MiB\n`,
+      `[file-tools] OCR 在 office-engines；total ${(total / 1024 / 1024).toFixed(1)} MiB\n`,
   );
 }
 

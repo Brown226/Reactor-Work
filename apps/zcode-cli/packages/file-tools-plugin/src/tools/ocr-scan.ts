@@ -1,13 +1,14 @@
 /**
- * ocr_scan 工具：图片 / 扫描件 PDF → 文本（PP-OCR 本地推理，离线可用）。
- * PDF 走栅格化（pdfjs + @napi-rs/canvas），位图解 jimp。
+ * ocr_scan 工具：图片 / 扫描件 PDF → 文本。
+ *
+ * 推理与栅格化在 office-engines Python（office_skill_lib.ocr，PP-OCR ONNX 最小管线）。
+ * 本文件只做入参校验与结果包装，对外契约与历史版本一致。
+ * 见 docs/OCR栈轻量化方案.md。
  */
 import { extname } from "node:path";
 import { z } from "zod";
 import { assertReadableFile, wrapFileContent } from "../guard.js";
-import { decodeImageFile, isImagePath, isPdfPath } from "../image-input.js";
-import { recognizeImage } from "../ocr-engine.js";
-import { rasterizePdfPages } from "../raster.js";
+import { EngineUnavailableError, runOcrCli } from "../ocr-python.js";
 
 export const OCR_SCAN_DESCRIPTION = [
   "Recognize text from a local image or scanned PDF with the bundled offline OCR engine (PP-OCR, Chinese+English).",
@@ -35,9 +36,20 @@ interface OcrScanOutput {
   note?: string;
 }
 
+const IMAGE_EXT = new Set([".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"]);
+const PDF_EXT = ".pdf";
+
+function isImage(path: string): boolean {
+  return IMAGE_EXT.has(extname(path).toLowerCase());
+}
+
+function isPdf(path: string): boolean {
+  return extname(path).toLowerCase() === PDF_EXT;
+}
+
 export async function ocrScan(input: z.infer<typeof ocrScanInputSchema>): Promise<OcrScanOutput> {
   const extension = extname(input.file_path).toLowerCase();
-  if (!isImagePath(input.file_path) && !isPdfPath(input.file_path)) {
+  if (!isImage(input.file_path) && !isPdf(input.file_path)) {
     return {
       status: "failed",
       text: "",
@@ -48,34 +60,58 @@ export async function ocrScan(input: z.infer<typeof ocrScanInputSchema>): Promis
   }
   assertReadableFile(input.file_path);
 
-  const pageTexts: string[] = [];
-  const confidences: number[] = [];
+  try {
+    if (isPdf(input.file_path)) {
+      const result = await runOcrCli([
+        "pdf",
+        input.file_path,
+        "--max-pages",
+        String(input.max_pages ?? 20),
+      ]);
+      if (result.status !== "success") {
+        return {
+          status: "failed",
+          text: "",
+          confidence: 0,
+          pages: 0,
+          note: result.message ?? result.error ?? "OCR 失败",
+        };
+      }
+      return {
+        status: "success",
+        text: wrapFileContent(String(result.text ?? "")),
+        confidence: Number(result.confidence ?? 0),
+        pages: Number(result.pages ?? 0),
+        note: result.note ? String(result.note) : undefined,
+      };
+    }
 
-  if (isPdfPath(input.file_path)) {
-    const { images, totalPages } = await rasterizePdfPages(input.file_path, undefined, {
-      dpi: 200,
-      maxPages: input.max_pages ?? 20,
-    });
-    for (const image of images) {
-      const result = await recognizeImage(image);
-      pageTexts.push(result.text.trim());
-      if (result.lines.length > 0) confidences.push(result.confidence);
+    const result = await runOcrCli(["image", input.file_path]);
+    if (result.status !== "success") {
+      return {
+        status: "failed",
+        text: "",
+        confidence: 0,
+        pages: 0,
+        note: result.message ?? result.error ?? "OCR 失败",
+      };
     }
     return {
       status: "success",
-      text: wrapFileContent(pageTexts.filter((text) => text.length > 0).join("\n\n--- 页分隔 ---\n\n")),
-      confidence: confidences.length > 0 ? confidences.reduce((sum, value) => sum + value, 0) / confidences.length : 0,
-      pages: images.length,
-      note: totalPages > images.length ? `共 ${totalPages} 页，仅识别前 ${images.length} 页` : undefined,
+      text: wrapFileContent(String(result.text ?? "").trim()),
+      confidence: Number(result.confidence ?? 0),
+      pages: 1,
     };
+  } catch (error) {
+    if (error instanceof EngineUnavailableError) {
+      return {
+        status: "failed",
+        text: "",
+        confidence: 0,
+        pages: 0,
+        note: error.message,
+      };
+    }
+    throw error;
   }
-
-  const image = await decodeImageFile(input.file_path);
-  const result = await recognizeImage(image);
-  return {
-    status: "success",
-    text: wrapFileContent(result.text.trim()),
-    confidence: result.confidence,
-    pages: 1,
-  };
 }

@@ -1,0 +1,74 @@
+{
+  "python.embed": {
+    "sha256": "8d3f33be9eb810f23c102f08475af2854e50484b8e4e06275e937be61ce3d2fb"
+  },
+  "package:defusedxml": {
+    "sha256": "a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61"
+  },
+  "package:openpyxl": {
+    "sha256": "5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2"
+  },
+  "package:et_xmlfile": {
+    "sha256": "7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa"
+  },
+  "package:xlsxwriter": {
+    "sha256": "9a5db42bc5dff014806c58a20b9eae7322a134abb6fce3c92c181bfb275ec5b3"
+  },
+  "package:pikepdf": {
+    "sha256": "30a4fdc3d9fc22dd4189d60da5205a32807d2d9edfa312dde9e53e9529edeaca"
+  },
+  "package:pdfplumber": {
+    "sha256": "7741ea81bf165b474b153e6789d10d18e06b6ddcf3ec84289c3ef2fed6802580"
+  },
+  "package:pdfminer.six": {
+    "sha256": "366585ba97e80dffa8f00cebe303d2f381884d8637af4ce422f1df3ef38111a9"
+  },
+  "package:pypdfium2": {
+    "sha256": "90dbb2ac07be53219f56be09961eb95cf2473f834d01a42d901d13ccfad64b4c"
+  },
+  "package:pypdf": {
+    "sha256": "64b31da97eda0771ef22edb1bfecd5deee4b72c3d1736b7df2689805076d6418"
+  },
+  "package:reportlab": {
+    "sha256": "927616931637e2f13e2ee3b3b6316d7a07803170e258621cff7d138bde17fbb5"
+  },
+  "package:PyMuPDF": {
+    "sha256": "ebd244918798502d7b4504c90410d1711a4d7675a32584ca30f1bab419ecbffe"
+  },
+  "package:cryptography": {
+    "sha256": "31e44a986ceccec3d0498e16f3d27b2ee5fdf69ce2ab89b52eaad1d2f33d8778"
+  },
+  "package:pillow": {
+    "sha256": "1d846aea995ad352d4bdcc847535bd56e0fd88d36829d2c90be880ef1ee4668a"
+  },
+  "package:lxml": {
+    "sha256": "c1a69e58a6bb2de65902051d57fde951febad631a20a64572677a1052690482f"
+  },
+  "package:packaging": {
+    "sha256": "5b8f2217dbdbd2f7f384c41c628544e6d52f2d0f53c6d0c3ea61aa5d1d7ff124"
+  },
+  "package:charset-normalizer": {
+    "sha256": "3e4d1f6587322d2788836a99c69062fbb091331ec940e02d12d179c1d53e25fc"
+  },
+  "package:cffi": {
+    "sha256": "dca802c8db0720ce1c49cce1149ff7b06e91ba15fa84b1d59144fef1a1bc7ac2"
+  },
+  "package:python-docx": {
+    "sha256": "08c20d6058916fb19853fcf080f7f42b6270d89eac9fa5f8c15f691c0017fabe"
+  },
+  "package:typing-extensions": {
+    "sha256": "04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"
+  },
+  "package:onnxruntime": {
+    "sha256": "d4097b75b77486bb45835a8ed25b9a67976040ec6c258aeabae6aadfbdd1201c"
+  },
+  "package:numpy": {
+    "sha256": "c1f9540be57940698ed329904db803cf7a402f3fc200bfe599334c9bd84a40b2"
+  },
+  "package:flatbuffers": {
+    "sha256": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4"
+  },
+  "package:protobuf": {
+    "sha256": "bdb3a345d48db958e6ce1f18e508beb0cc981d64f24088427549c866cd039f1e"
+  }
+}

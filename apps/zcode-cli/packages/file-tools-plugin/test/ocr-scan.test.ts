@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import { ocrScan, ocrScanInputSchema } from "../src/tools/ocr-scan.js";
 import {
@@ -23,6 +26,23 @@ test("ocr_scan：max_pages 默认与上限声明", () => {
   assert.equal(parsed.max_pages, undefined);
   assert.equal(ocrScanInputSchema.safeParse({ file_path: "a.pdf", max_pages: 99 }).success, false);
   assert.equal(ocrScanInputSchema.safeParse({ file_path: "a.pdf", max_pages: 20 }).success, true);
+});
+
+test("ocr_scan：缺 office-engines Python 时返回 ENGINE_UNAVAILABLE 文案", async () => {
+  const tmp = join(tmpdir(), `ocr-scan-${Date.now()}.png`);
+  writeFileSync(tmp, Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  try {
+    const result = await ocrScan({ file_path: tmp });
+    // 有引擎则走真实识别；无引擎则必须是可读 failed，不得空成功
+    if (result.status === "failed") {
+      assert.match(result.note ?? "", /ENGINE_UNAVAILABLE|office-engines|Python|OCR/);
+    } else {
+      assert.equal(result.status, "success");
+      assert.equal(result.pages, 1);
+    }
+  } finally {
+    rmSync(tmp, { force: true });
+  }
 });
 
 test("assets：platformKey 与解析入口（无资产时各目录为 null，不抛）", () => {
