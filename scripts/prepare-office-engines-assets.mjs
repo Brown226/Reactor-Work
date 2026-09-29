@@ -126,13 +126,34 @@ const PACKAGE_PINS = {
   numpy: "numpy-2.2.6-cp312-cp312-win_amd64.whl",
   flatbuffers: "flatbuffers-25.12.19-py2.py3-none-any.whl",
   protobuf: "protobuf-7.36.2-py3-none-any.whl",
+  // 公式线（office_skill_lib.omml）：LaTeX → MathML
+  latex2mathml: "latex2mathml-3.81.1-py3-none-any.whl",
+  // pptx 公式插入（insert_math.py → mc:AlternateContent）
+  "python-pptx": "python_pptx-1.0.2-py3-none-any.whl",
 };
 
-/** CJK 字体（source han sans SC，github notofonts raw）；失败不阻塞，env_check 回退系统字体。 */
-const FONT_URLS = [
-  "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf",
-  "https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Bold.otf",
-];
+/**
+ * CJK 字体：必须是 **TrueType outlines**（ReportLab TTFont 可嵌）。
+ * notofonts 的 OTF/CFF 与 Noto CJK TTC 会被 skill_fonts 跳过——此前下 OTF 是无效资产。
+ * 钉 gstatic Noto Sans SC TTF + sha256（与 LeAgent FONT_MANIFEST 同源）；国内走 loli 镜像。
+ * 失败不阻塞，env_check 回退系统字体。
+ */
+const FONT_MANIFEST = {
+  "NotoSansSC-Regular.ttf": {
+    urls: [
+      "https://fonts.gstatic.com/s/notosanssc/v40/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaG9_FnYw.ttf",
+      "https://gstatic.loli.net/s/notosanssc/v40/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaG9_FnYw.ttf",
+    ],
+    sha256: "450625c8d46ab3df97b7904ded955ec2746d17ec76740cb1e91d1ba63a0f89af",
+  },
+  "NotoSansSC-Bold.ttf": {
+    urls: [
+      "https://fonts.gstatic.com/s/notosanssc/v40/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaGzjCnYw.ttf",
+      "https://gstatic.loli.net/s/notosanssc/v40/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaGzjCnYw.ttf",
+    ],
+    sha256: "0066a522a1ac007c1d72bc4fccb114f80ff7294641c78cead9715bd14d43b9ea",
+  },
+};
 
 /** PP-OCRv5 mobile（与历史 file-tools 资产同源，sha256 一致）。 */
 const OCR_MODEL_REPO = "https://hf-mirror.com/x3zvawq/paddleocr-js-onnx/resolve/main";
@@ -395,12 +416,24 @@ function execCapture(command, args) {
 function stageFonts() {
   const fontsRoot = join(stagingRoot, "fonts");
   mkdirSync(fontsRoot, { recursive: true });
+  // 清掉旧 OTF/CFF 残留（历史上误下 notofonts OTF，ReportLab 不可嵌）
+  for (const stale of ["NotoSansCJKsc-Regular.otf", "NotoSansCJKsc-Bold.otf"]) {
+    rmSync(join(fontsRoot, stale), { force: true });
+  }
   let downloaded = 0;
-  for (const url of FONT_URLS) {
-    const file = url.split("/").pop();
+  for (const [file, asset] of Object.entries(FONT_MANIFEST)) {
     const target = join(fontsRoot, file);
     try {
-      download([url], target);
+      if (existsSync(target) && sha256File(target) === asset.sha256) {
+        console.log(`  ✓ fonts/${file}（缓存命中）`);
+        downloaded += 1;
+        continue;
+      }
+      download(asset.urls, target);
+      const digest = sha256File(target);
+      if (digest !== asset.sha256) {
+        throw new Error(`sha256 不匹配：${file}（${digest} ≠ ${asset.sha256}）`);
+      }
       verifyOrRecord(`font:${file}`, target);
       downloaded += 1;
     } catch (error) {
@@ -412,7 +445,7 @@ function stageFonts() {
     rmSync(fontsRoot, { force: true, recursive: true });
     console.log("  ○ 无内置字体，env_check 将按系统字体目录检查");
   } else {
-    console.log(`  ✓ ${downloaded} 个 CJK 字体 → tools/office-engines/fonts`);
+    console.log(`  ✓ ${downloaded} 个 CJK TrueType 字体 → tools/office-engines/fonts`);
   }
 }
 

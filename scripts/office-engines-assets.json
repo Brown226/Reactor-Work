@@ -70,5 +70,17 @@
   },
   "package:protobuf": {
     "sha256": "bdb3a345d48db958e6ce1f18e508beb0cc981d64f24088427549c866cd039f1e"
+  },
+  "package:latex2mathml": {
+    "sha256": "c337668441b71c819b6733905a8058ba9a9d767bae11a0c5fdacb3aff31361bd"
+  },
+  "font:NotoSansSC-Regular.ttf": {
+    "sha256": "450625c8d46ab3df97b7904ded955ec2746d17ec76740cb1e91d1ba63a0f89af"
+  },
+  "font:NotoSansSC-Bold.ttf": {
+    "sha256": "0066a522a1ac007c1d72bc4fccb114f80ff7294641c78cead9715bd14d43b9ea"
+  },
+  "package:python-pptx": {
+    "sha256": "160838e0b8565a8b1f67947675886e9fea18aa5e795db7ae531606d68e785cba"
   }
 }
