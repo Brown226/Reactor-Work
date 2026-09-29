@@ -3,7 +3,7 @@
  *
  * 只做「转发动作 + 维护内存投影」：市场目录的真相在服务端（`GET /me/skills/catalog`），
  * 磁盘落盘归 host 侧 `IServerSkillSyncService`（P2），本 hook 不碰文件、不缓存 token
- * （方案见 docs/专家技能市场-方案-v1.md §5.3）。失败向上收敛为 error/notice，不抛给调用方。
+ * （方案见 docs/未完成-专家技能市场-方案-v1.md §5.3）。失败向上收敛为 error/notice，不抛给调用方。
  */
 import { useCallback, useEffect, useState } from "react";
 import type { ServerSkillCatalogItem } from "@zcode/shared";

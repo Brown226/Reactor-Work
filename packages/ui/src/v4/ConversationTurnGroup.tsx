@@ -823,7 +823,7 @@ function ConversationTurnFlow({
     fileChangesState: unit.header?.fileChanges?.state,
     fetchFileChanges: context.fetchFileChanges,
   });
-  // 整轮审查结果聚合一次，只交给轮尾正文渲染（见 docs/审查板块-方案-v1.md §3.2）：
+  // 整轮审查结果聚合一次，只交给轮尾正文渲染（见 docs/未完成-审查板块-方案-v1.md §3.2）：
   // 几个工具调用合成一个面板，工具行本身退化成摘要，不再各自长一张卡。
   const assistantReviewResults = useMemo(
     () => collectReviewResults(unit.assistantWorkRows),

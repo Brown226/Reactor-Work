@@ -10,7 +10,7 @@ export function useIsOfficeMode(): boolean {
  *
  * 这两档都要求收纳编程向 UI（终端、git 面板、命令详情、代码 diff），
  * 因此「隐藏编程向入口」的分支一律用本 hook，不要继续用 useIsOfficeMode
- * （否则审查档会漏掉每一处隐藏逻辑，见 docs/interface-mode.md 第 5 节）。
+ * （否则审查档会漏掉每一处隐藏逻辑，见 docs/已完成/已完成-interface-mode.md 第 5 节）。
  */
 export function useIsFocusedMode(): boolean {
   return useZCodeStoreWithDefault(

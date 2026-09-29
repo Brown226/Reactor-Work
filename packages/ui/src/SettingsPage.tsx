@@ -298,7 +298,7 @@ export function SettingsPage({
   const { intl, localePreference, setLocalePreference } = useZCodeIntl();
   // 开发者模式决定「模型设置」是否出现在导航里（连点版本号 7 下解锁），这里是它唯一的订阅点：
   // 解锁/反锁后重建分区列表，停在被隐藏分区时由 resolveSettingsSectionForPlatform 兜回「常规」。
-  // 见 docs/model-governance-and-dev-mode.md。
+  // 见 docs/已完成/已完成-model-governance-and-dev-mode.md。
   const devModeUnlocked = useDevModeUnlocked();
   const { settingsSectionGroups, settingsSections } = useMemo(
     () =>

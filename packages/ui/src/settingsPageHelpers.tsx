@@ -314,7 +314,7 @@ export function GeneralSectionContent({
         />
       </SettingsGroupCard>
 
-      {/* 界面模式选择已移除：主面板草稿区的分段切换是唯一入口（docs/interface-mode.md）。 */}
+      {/* 界面模式选择已移除：主面板草稿区的分段切换是唯一入口（docs/已完成/已完成-interface-mode.md）。 */}
       {hasServices ? (
         <SettingsGroupCard>
           <ProactiveSuggestionsSetting />

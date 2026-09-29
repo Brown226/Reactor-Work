@@ -64,7 +64,7 @@ export function OccupationOnboarding({
   const savedInterfaceMode = useZCodeStore((state) => state.interfaceMode);
   const setInterfaceMode = useZCodeStore((state) => state.setInterfaceMode);
   // mode 为 null 表示模式页被"跳过"（跳过是显式答案，记录里保留 null 而非兜底值）。
-  // 引导只覆盖编程/办公两档（见 docs/interface-mode.md 第 2 节）；用户若已停在审查档，
+  // 引导只覆盖编程/办公两档（见 docs/已完成/已完成-interface-mode.md 第 2 节）；用户若已停在审查档，
   // 这里按引导可记录的子集收窄，不把 review 写进引导记录。
   const [mode, setMode] = useState<OnboardingInterfaceMode | null>(
     toOnboardingInterfaceMode(savedInterfaceMode),

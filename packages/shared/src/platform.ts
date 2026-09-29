@@ -426,6 +426,11 @@ export interface DesktopZoomState {
   zoomLevel: number;
 }
 
+/** 开发者模式解锁态（About 窗口连点 ↔ renderer store 之间的载具）。 */
+export interface DevModeUnlockState {
+  unlocked: boolean;
+}
+
 export interface DesktopWindowChromeState {
   isMaximized: boolean;
   /** 本机 macOS 主版本；非 macOS 或无法解析时为 null。 */
@@ -849,6 +854,12 @@ export interface IPlatformService {
 
   /** 注册当前桌面窗口页面缩放档位变化回调，返回 disposer */
   onDesktopZoomLevelChanged?(handler: (state: DesktopZoomState) => void): () => void;
+
+  /** 把本地解锁态上报给桌面 main（About 窗口连点取反与提示依赖它）；Web 无此能力 */
+  reportDevModeUnlock?(unlocked: boolean): void;
+
+  /** 订阅开发者模式解锁态变化（About 版本号连点 → main 广播），返回 disposer */
+  onDevModeUnlockChanged?(handler: (state: DevModeUnlockState) => void): () => void;
 
   /** 注册用户点击系统通知后跳转到对应任务的回调，返回 disposer */
   onTaskNotificationClick(handler: (taskId: string) => void): () => void;

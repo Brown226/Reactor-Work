@@ -4,7 +4,7 @@
  * 状态直接读 store（与主题、界面字号同一处），不经过 `AppearanceSectionContent` 的
  * 属性链，避免为一段可独立演进的外观设置改动设置页签名。
  * 图片的读取不在这一层：组件只负责选文件与展示状态，读盘与授权在
- * `useBackgroundImageSource`（应用根节点挂一次）。语义见 docs/appearance-background-theme.md。
+ * `useBackgroundImageSource`（应用根节点挂一次）。语义见 docs/已完成/已完成-appearance-background-theme.md。
  */
 import { useState, type CSSProperties, type ReactNode } from "react";
 import { ImagePlusIcon, XIcon } from "lucide-react";

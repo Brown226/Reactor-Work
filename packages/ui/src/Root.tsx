@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button.js";
 import { PlatformProvider } from "@/hooks/usePlatform.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { useBackgroundImageSource } from "@/hooks/useBackgroundImageSource.js";
+import { useDevModeUnlockBridge } from "@/lib/devMode.js";
 import { useDynamicWorkflowAvailabilityLoader } from "@/hooks/useDynamicWorkflowAvailability.js";
 import { DirectoryBrowser } from "@/DirectoryBrowser.js";
 import { useTabPersistence } from "@/hooks/useTabPersistence.js";
@@ -179,6 +180,10 @@ function RootInner({
 
   // 背景主题的自定义图片：路径一变就在这里读盘并应用（工作区与设置页都在这个根之下）。
   useBackgroundImageSource();
+
+  // 开发者模式的桌面桥：About 窗口连点的广播从这里接入 store，本地变化也从这里上报 main。
+  // 必须挂在 PlatformProvider 之内（RootInner），且全应用只挂这一次。
+  useDevModeUnlockBridge(platform);
 
   useEffect(
     () => () => {
@@ -482,7 +487,7 @@ function RootInner({
 
   // 企业服务端技能：登录态转为已登录时后台同步一次——覆盖「刚登录成功」与
   // 「启动时已登录」两种来源；登出后重置，下次登录再同步。失败只记日志，
-  // 不回滚登录（契约 docs/server-skill-sync.md §4.5 触发时机）。
+  // 不回滚登录（契约 docs/已完成/已完成-server-skill-sync.md §4.5 触发时机）。
   const serverSkillSyncedRef = useRef(false);
   useEffect(() => {
     if (enterpriseSession.loading) return;

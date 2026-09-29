@@ -743,7 +743,7 @@ export function ConversationDraftSuggestedPromptsContainer({
         // 绝对定位让推荐区脱离 Composer 的正常结构，调试和间距语义都不直观。
         // 旧场景推荐保留固定槽位；主动推荐列表必须由内容撑高，否则多行会溢出并覆盖下方内容。
         // 审查档的审查类型卡片与编程档场景卡同形：单行横排 chips（超出横向滚动），
-        // 不用 list 竖排——视觉规格见 docs/interface-mode.md 第 4 节。
+        // 不用 list 竖排——视觉规格见 docs/已完成/已完成-interface-mode.md 第 4 节。
         items={items}
         layout={proactive ? "list" : "chips"}
         onSelect={handleSelect}

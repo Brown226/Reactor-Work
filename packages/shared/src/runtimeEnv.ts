@@ -11,6 +11,14 @@ export const ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY = "ZCODE_TOOL_ENV_PASSTHROUGH_JS
 /** Desktop Main 将服务端裁决的单功能灰度结果传给 Local/Remote Host。 */
 export const ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV = "ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED";
 export const ZCODE_CUA_PRODUCT_HELPER_ENV_KEY = "ZCODE_CUA_PRODUCT_HELPER";
+/**
+ * 官方插件市场的 CDN 分片开关（内网 fork 默认关闭）：
+ * - 默认（未设置）：CDN 分片禁用——商店只显示随安装包内置的官方插件，不访问 cdn-zcode.z.ai；
+ * - 显式 `ZCODE_OFFICIAL_PLUGIN_MARKETPLACE=on/1/cdn`：恢复 CDN 目录（公网开发/联调用）。
+ * 内置插件的加载不经过 CDN（SEA/filesystem seed → 本地分片），与本开关无关。
+ * 见 docs/已完成/已完成-内网办公四件套-fork-spec.md。
+ */
+export const ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ENV_KEY = "ZCODE_OFFICIAL_PLUGIN_MARKETPLACE";
 export const ZCODE_CUA_BROKER_SOCKET_ENV_KEY = "ZCODE_CUA_PERMISSION_BROKER_SOCKET";
 /** Shared node_repl host marker; unlike the broker bearer values it is not a secret. */
 export const ZCODE_CUA_NODE_REPL_HOST_ENV_KEY = "ZCODE_CUA_NODE_REPL_HOST";
@@ -38,6 +46,11 @@ export function isZCodeCuaInternalFeatureEnabled(env: EnvRecord = process.env): 
   const explicit = env[ZCODE_CUA_PRODUCT_HELPER_ENV_KEY]?.trim().toLowerCase();
   if (explicit === "0" || explicit === "false" || explicit === "off") return false;
   return true;
+}
+
+export function isOfficialPluginMarketplaceDisabled(env: EnvRecord = process.env): boolean {
+  const explicit = env[ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ENV_KEY]?.trim().toLowerCase();
+  return !(explicit === "1" || explicit === "true" || explicit === "on" || explicit === "cdn");
 }
 
 const SANITIZED_RUNTIME_ENV_KEYS = [

@@ -92,7 +92,7 @@ export function isSettingsSectionEnabled(section: SettingsSectionId): boolean {
   if (HIDDEN_SETTINGS_SECTIONS.has(section)) return false;
   // 「模型设置」是本地模型配置界面：企业会话下它是一条绕过目录治理的旁路，因此默认隐藏，
   // 连点版本号 7 下解锁开发者模式后才出现（含解锁/反锁的收尾规则，见
-  // docs/model-governance-and-dev-mode.md）。隐藏策略与手势的单一事实源在 lib/devMode.ts。
+  // docs/已完成/已完成-model-governance-and-dev-mode.md）。隐藏策略与手势的单一事实源在 lib/devMode.ts。
   if (section === "modelProvider") return isDevModeUnlocked();
   return true;
 }

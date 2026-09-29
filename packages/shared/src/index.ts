@@ -109,6 +109,7 @@ export * from "./dynamic-workflow-feature.js";
 export * from "./markdown-artifact-images.js";
 export * from "./serviceAuthority.js";
 export * from "./server-remote.js";
+export * from "./devMode.js";
 
 export interface ICredentialStore {
   get(key: string): Promise<string | null>;
@@ -311,3 +312,4 @@ export * from "./session-debug.js";
 export { redactFeedbackText } from "./feedbackPrivacy.js";
 export * from "./reactorServer.js";
 export * from "./document-style.js";
+export * from "./genUi/index.js";

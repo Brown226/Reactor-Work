@@ -42,7 +42,6 @@ import { useReactorServer } from "@/hooks/useReactorServer.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
 import { useZCodeStore } from "@/store/StoreProvider.js";
-import { DevModeVersionLabel } from "@/settings/DevModeVersionLabel.js";
 import type { Theme } from "@/useTheme.js";
 import {
   WorkspaceSidebarFooterPlanBadge,
@@ -282,7 +281,7 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
             {/* 收口重复缩放子菜单时误留了语言之后的那份，导致菜单顺序变成
                 语言→缩放→主题；账户菜单分组顺序固定为 语言→主题→缩放→用量→登录/登出，
                 这里把唯一一份（读生效表）挪回用量摘要之前，不要再补第二份缩放子菜单。
-                界面模式子菜单已删除：主面板草稿区的分段切换是该状态的唯一入口（docs/interface-mode.md）。 */}
+                界面模式子菜单已删除：主面板草稿区的分段切换是该状态的唯一入口（docs/已完成/已完成-interface-mode.md）。 */}
             {isDesktop ? (
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
@@ -357,10 +356,10 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
             ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
-        <div className="flex shrink-0 flex-col items-center gap-0.5">
-          {/* 版本号是开发者模式的两个入口之一（连点 7 下解锁「模型设置」，见 lib/devMode.ts）；
-              外观与普通版本号一致，入口不自我暴露。 */}
-          <DevModeVersionLabel className="items-center" />
+        {/* 右侧只保留设置按钮，与左侧登录/头像同一基线单行。
+            版本号（开发者模式连点入口）已迁到「帮助 → 关于 Reactor」的版本号上，
+            见 docs/已完成/已完成-model-governance-and-dev-mode.md。 */}
+        <div className="flex shrink-0 items-center">
           <ControlHintTooltip title={settingsButtonLabel}>
             <Button
               type="button"

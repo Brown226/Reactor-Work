@@ -3,7 +3,7 @@
  *
  * 这是**唯一的过滤点**：输入只有"目录"与"是否解锁开发者模式"，不读其它状态，
  * 避免出现第二套"当前是否企业模式"的判断。语义与验收场景见
- * `docs/model-governance-and-dev-mode.md`。
+ * `docs/已完成/已完成-model-governance-and-dev-mode.md`。
  *
  * 边界：
  * - `enterpriseModels` 为 `null` 或空 = 不限制（未登录企业服务端 / 目录同步中 / 已解锁开发者模式）；

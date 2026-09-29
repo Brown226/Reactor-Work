@@ -5,6 +5,11 @@ interface CustomAboutDialogHtmlInput {
   optimizationLine: string;
   versionLabel: string;
   okButtonLabel: string;
+  /** 版本号连点解锁/反锁的结果提示文案（main 侧按 locale 提供）。 */
+  devModeUnlockedHint: string;
+  devModeLockedHint: string;
+  /** 结果提示停留时长，与 `DEV_TAP_HINT_MS`（@zcode/shared）同源。 */
+  devModeHintMs: number;
 }
 
 function escapeHtml(value: string): string {
@@ -109,6 +114,26 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
         letter-spacing: 0;
       }
 
+      /* 版本号是开发者模式的手势入口（连点 7 下，见 docs/model-governance-and-dev-mode.md）。
+         外观保持纯文本，不自我暴露；no-drag 保证点击不被窗口拖拽区吃掉。 */
+      .version-tap {
+        padding: 0;
+        border: 0;
+        background: none;
+        font: inherit;
+        color: inherit;
+        cursor: default;
+        text-align: inherit;
+        -webkit-app-region: no-drag;
+      }
+
+      .dev-mode-hint {
+        margin-top: 10px;
+        font-size: 11px;
+        line-height: 1.3;
+        color: #303033;
+      }
+
       .meta {
         margin-top: 28px;
         display: flex;
@@ -157,6 +182,10 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
         .meta {
           color: #e2e2e2;
         }
+
+        .dev-mode-hint {
+          color: #e2e2e2;
+        }
       }
     </style>
   </head>
@@ -173,13 +202,20 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
             />
           </div>
           <h1 id="about-title" class="title">
-            ${escapeHtml(input.applicationName)}<br />
-            ${escapeHtml(input.versionLabel)} ${escapeHtml(input.appVersion)}
+            <button
+              type="button"
+              class="version-tap"
+              title="${escapeHtml(`${input.applicationName} ${input.versionLabel} ${input.appVersion}`)}"
+            >
+              ${escapeHtml(input.applicationName)}<br />
+              ${escapeHtml(input.versionLabel)} ${escapeHtml(input.appVersion)}
+            </button>
           </h1>
           <div class="meta">
             ${input.optimizationLine ? `<div>${escapeHtml(input.optimizationLine)}</div>` : ""}
             <div>${escapeHtml(input.copyright)}</div>
           </div>
+          <div class="dev-mode-hint" role="status" hidden></div>
         </div>
         <div class="spacer"></div>
         <button class="ok-button" type="button" autofocus>${escapeHtml(input.okButtonLabel)}</button>
@@ -193,6 +229,27 @@ export function createCustomAboutDialogHtml(input: CustomAboutDialogHtmlInput): 
           closeWindow();
         }
       });
+
+      // 版本号连点入口：页面只上报原始点击，计数/判期/取反都在 main（aboutDevModeTap.ts），
+      // 这里只负责展示 main 推送回来的结果提示。
+      const aboutBridge = window.reactorAbout;
+      const hintElement = document.querySelector(".dev-mode-hint");
+      const unlockedHint = ${JSON.stringify(input.devModeUnlockedHint)};
+      const lockedHint = ${JSON.stringify(input.devModeLockedHint)};
+      let hintTimer = 0;
+      const showHint = (unlocked) => {
+        if (!hintElement) return;
+        hintElement.textContent = unlocked ? unlockedHint : lockedHint;
+        hintElement.hidden = false;
+        window.clearTimeout(hintTimer);
+        hintTimer = window.setTimeout(() => {
+          hintElement.hidden = true;
+        }, ${input.devModeHintMs});
+      };
+      aboutBridge?.onDevModeUnlockChanged?.((state) => showHint(state.unlocked));
+      document
+        .querySelector(".version-tap")
+        ?.addEventListener("click", () => aboutBridge?.reportVersionTap());
     </script>
   </body>
 </html>`;

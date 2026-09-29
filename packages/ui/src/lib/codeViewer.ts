@@ -56,7 +56,7 @@ export interface CodeReviewAnchor {
    *
    * 展示侧目前只能做到「按偏移换算出所在行 + 行高亮」，并把 `quote` 作为评论的
    * selectedText 显示出来 —— `@pierre/diffs` 的 FileOptions 没有字符级装饰钩子
-   * （见 docs/审查板块-方案-v1.md §3.3 的说明），字符级背景色需要自渲染文本层。
+   * （见 docs/未完成-审查板块-方案-v1.md §3.3 的说明），字符级背景色需要自渲染文本层。
    */
   startOffset?: number;
   endOffset?: number;
@@ -65,7 +65,7 @@ export interface CodeReviewAnchor {
   /**
    * 片段在正文里是第几次出现（1 起）。渲染后的 markdown 预览里没有字符偏移的概念，只能按
    * 片段文字重新定位；同一句话在文中重复时靠这个序号才能落在工具栏说的那一处（偏移与序号
-   * 都由工具在提取正文上算出，见 docs/审查板块-方案-v1.md §3.3）。
+   * 都由工具在提取正文上算出，见 docs/未完成-审查板块-方案-v1.md §3.3）。
    */
   occurrence?: number;
   /** 严重度：与结构化问题条的 severity 同口径，供卡片着色 */
@@ -80,7 +80,7 @@ export interface CodeReviewAnchor {
    *
    * 缺省按 `"plain"`（源码）—— 这条缺省是安全方向的：把源码当 markdown 渲染会吃掉缩进与
    * 特殊字符，把正文当源码显示只是不好看。扩展名不能承担这个判断：`.txt` 快照是历史遗留，
-   * 内容同样是提取正文（见 docs/审查板块-方案-v1.md §3.3）。
+   * 内容同样是提取正文（见 docs/未完成-审查板块-方案-v1.md §3.3）。
    */
   textFormat?: "markdown" | "plain";
 }

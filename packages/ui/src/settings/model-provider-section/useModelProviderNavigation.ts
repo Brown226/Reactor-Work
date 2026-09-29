@@ -46,7 +46,7 @@ interface UseModelProviderNavigationOptions {
   /**
    * 官方账号供应商相关输入（智谱 / Z.ai / BigModel 及其 Coding Plan）。
    *
-   * Reactor 已下线这些入口（`docs/REACTOR-REBRAND-PLAN.md` 5.1），本 hook 不再消费；
+   * Reactor 已下线这些入口（`docs/未完成-REACTOR-REBRAND-PLAN.md` 5.1），本 hook 不再消费；
    * 设置页仍在计算并传入。保留签名是为了不动调用方的状态与推导，待内部实现一并清理时删除。
    */
   presetProviders: PresetProviderWithConfig[];
@@ -80,7 +80,7 @@ export function useModelProviderNavigation({
   const navigationGroups = useMemo<ModelProviderNavGroup[]>(() => {
     const groups: ModelProviderNavGroup[] = [
       // Reactor 不再提供官方账号供应商（智谱 / Z.ai / BigModel 及其 Coding Plan）入口，
-      // 侧栏只保留「自定义供应商」。见 docs/REACTOR-REBRAND-PLAN.md 5.1。
+      // 侧栏只保留「自定义供应商」。见 docs/未完成-REACTOR-REBRAND-PLAN.md 5.1。
       {
         id: "custom",
         title: intl.formatMessage({ id: "settings.modelProvider.customTitle" }),

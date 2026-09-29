@@ -1570,7 +1570,7 @@ const AssistantTextRowView = memo(function AssistantTextRowView({
         </div>
       ) : null}
       {/* 审查结果是这一轮的产物，挂在正文下方、操作栏之上：结论必须与总结连读，
-          而不是收进上方「工作过程」里（见 docs/审查板块-方案-v1.md §3.2）。 */}
+          而不是收进上方「工作过程」里（见 docs/未完成-审查板块-方案-v1.md §3.2）。 */}
       {reviewResults?.hasContent ? (
         <div className="mt-3">
           <ReviewResultPanel

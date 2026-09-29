@@ -4,6 +4,7 @@ import { arch, hostname, platform, release, type, version as osVersion } from "n
 import { join } from "node:path";
 import {
   DEFAULT_LOCALE,
+  DEV_TAP_HINT_MS,
   type Locale,
   ZCODE_BUILD_TIME,
   ZCODE_COMMIT,
@@ -65,6 +66,8 @@ const ABOUT_MESSAGES: Record<
     okButtonLabel: string;
     optimizedForAppleSilicon: string;
     copyright: (year: number) => string;
+    devModeUnlockedHint: string;
+    devModeLockedHint: string;
   }
 > = {
   "zh-CN": {
@@ -74,6 +77,9 @@ const ABOUT_MESSAGES: Record<
     optimizedForAppleSilicon: "已针对 Apple Silicon 优化。",
     // 版权主体待替换为 Reactor 的法定实体名；上游版权归属由仓库根 LICENSE / NOTICE.md 保留。
     copyright: (year) => `版权所有 © ${year} Reactor。`,
+    // 版本号连点的结果提示；完整语义见 docs/model-governance-and-dev-mode.md。
+    devModeUnlockedHint: "已进入开发者模式",
+    devModeLockedHint: "已退出开发者模式",
   },
   "en-US": {
     aboutTitle: "About Reactor",
@@ -81,6 +87,8 @@ const ABOUT_MESSAGES: Record<
     okButtonLabel: "OK",
     optimizedForAppleSilicon: "Optimized for Apple Silicon.",
     copyright: (year) => `Copyright © ${year} Reactor.`,
+    devModeUnlockedHint: "Developer mode on",
+    devModeLockedHint: "Developer mode off",
   },
 };
 
@@ -244,11 +252,15 @@ export async function showAboutDialog(
     title: aboutMessages.aboutTitle,
     icon: existsSync(iconPath) ? iconPath : undefined,
     webPreferences: {
+      preload: join(import.meta.dirname, "../preload/aboutWindow.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
     },
   });
+  // 版本号连点 → 开发者模式开关的中转；窗口关闭时 bridge 会随 "closed" 自行摘除。
+  const { getAboutDevModeTapBridge } = await import("./aboutDevModeTap.js");
+  getAboutDevModeTapBridge().attach(aboutWindow);
   aboutWindow.setMenuBarVisibility(false);
   aboutWindow.once("ready-to-show", () => {
     aboutWindow.show();
@@ -262,6 +274,9 @@ export async function showAboutDialog(
         optimizationLine: formatAboutOptimizationLine(snapshot, locale),
         versionLabel: aboutMessages.versionLabel,
         okButtonLabel: aboutMessages.okButtonLabel,
+        devModeUnlockedHint: aboutMessages.devModeUnlockedHint,
+        devModeLockedHint: aboutMessages.devModeLockedHint,
+        devModeHintMs: DEV_TAP_HINT_MS,
       }),
     )}`,
   );

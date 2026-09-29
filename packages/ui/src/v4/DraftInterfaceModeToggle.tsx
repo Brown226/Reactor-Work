@@ -9,7 +9,7 @@ import { useZCodeStore } from "@/store/StoreProvider.js";
  * 草稿首页（主面板）的界面模式快捷切换：编程 / 办公 / 审查。
  *
  * 只是 `store.interfaceMode` 的又一个入口：不保留本地副本，也不新增持久化路径，
- * 与首次引导、快捷键改的是同一份状态（见 docs/interface-mode.md）。
+ * 与首次引导、快捷键改的是同一份状态（见 docs/已完成/已完成-interface-mode.md）。
  * 图标与 onboarding 的模式选择同源，避免同一模式出现两套标识。
  */
 export function DraftInterfaceModeToggle() {

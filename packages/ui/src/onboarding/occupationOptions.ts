@@ -35,7 +35,7 @@ export type OccupationValue = (typeof occupations)[number];
 /**
  * 界面模式图标：coding / office / review。
  *
- * review 只出现在主面板胶囊（首次引导保持两档，见 docs/interface-mode.md 第 2 节），
+ * review 只出现在主面板胶囊（首次引导保持两档，见 docs/已完成/已完成-interface-mode.md 第 2 节），
  * 但图标仍收在这里，保证同一模式在全应用只有一套视觉标识。
  */
 export const modeOptionIcons = {

@@ -564,7 +564,7 @@ export const featureSuggestedPrompts: FeatureRecommendedPrompt[] = [
   // ── 审查档（review）的审查类型卡片 ────────────────────────────────────────────
   // 与办公/编程推荐池同源同机制：点击即预填提示词，不自动发送。
   // 卡片定义在 reviewQuickActionPrompts.ts：每张卡片硬绑定内置插件 `review-skills` 的一个技能，
-  // 正文以 `$<skill-name>` 开头（见该文件注释与 docs/审查板块-方案-v1.md §2）。
+  // 正文以 `$<skill-name>` 开头（见该文件注释与 docs/未完成-审查板块-方案-v1.md §2）。
   ...reviewQuickActionPrompts,
 ];
 

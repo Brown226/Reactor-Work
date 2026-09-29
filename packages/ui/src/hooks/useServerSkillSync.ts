@@ -2,7 +2,7 @@
  * useServerSkillSync —— 企业服务端技能同步（server-skills）。
  *
  * 只做「转发动作 + 展示结果」：server-skills 目录的唯一写者是 host 侧
- * `IServerSkillSyncService`，UI 不碰文件、不缓存 token（契约 docs/server-skill-sync.md）。
+ * `IServerSkillSyncService`，UI 不碰文件、不缓存 token（契约 docs/已完成/已完成-server-skill-sync.md）。
  */
 import { useCallback, useRef, useState } from "react";
 import type { IServerSkillSyncService, ServerSkillSyncResult } from "@zcode/services";

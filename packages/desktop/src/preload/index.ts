@@ -44,6 +44,7 @@ import type {
   BrowserViewRestoreTabsRequest,
   BrowserViewportSize,
   DesktopZoomState,
+  DevModeUnlockState,
   DesktopWindowChromeState,
   DesktopCommandId,
   DesktopTitleBarTheme,
@@ -565,6 +566,21 @@ contextBridge.exposeInMainWorld("zcode", {
     callback({ zoomLevel: latestDesktopZoomLevel });
     ipcRenderer.on(PlatformChannels.DesktopZoomLevelChanged, handler);
     return () => ipcRenderer.removeListener(PlatformChannels.DesktopZoomLevelChanged, handler);
+  },
+  /** 把本地开发者模式解锁态上报给 main（About 窗口连点据此取反）；只发不回播 */
+  reportDevModeUnlock: (unlocked: boolean): void => {
+    ipcRenderer.send(PlatformChannels.DevModeUnlockReported, { unlocked });
+  },
+  /** 注册开发者模式解锁态变化回调（About 版本号连点 → main 广播），返回 disposer */
+  onDevModeUnlockChanged: (callback: (state: DevModeUnlockState) => void): (() => void) => {
+    const handler = (_event: unknown, state: DevModeUnlockState) => {
+      if (typeof state?.unlocked !== "boolean") {
+        return;
+      }
+      callback({ unlocked: state.unlocked });
+    };
+    ipcRenderer.on(PlatformChannels.DevModeUnlockChanged, handler);
+    return () => ipcRenderer.removeListener(PlatformChannels.DevModeUnlockChanged, handler);
   },
   /** 注册用户点击系统通知后跳转到对应任务的回调，返回 disposer */
   onTaskNotificationClick: (callback: (taskId: string) => void): (() => void) => {

@@ -739,7 +739,7 @@ function V4ComposerModelControlsImpl({
   const modelSelectGroups = useMemo<ModelSelectGroup[]>(() => {
     if (!modelSelectionView) return [];
     // 企业会话激活时，可选模型收敛到服务端下发的目录（解锁开发者模式即解除）。
-    // 单一过滤点与边界见 lib/modelScope.ts + docs/model-governance-and-dev-mode.md。
+    // 单一过滤点与边界见 lib/modelScope.ts + docs/已完成/已完成-model-governance-and-dev-mode.md。
     const scopedView = scopeModelSelectionView(
       modelSelectionView,
       resolveEnterpriseModelScope({

@@ -96,7 +96,7 @@ export function selectSkillsForScope(
   return skills.filter((skill) => {
     if (skill.scope !== "plugin") {
       // server scope 是企业服务端下发的用户级资源（~/.reactor/server-skills/），
-      // 跟随「用户」标签展示，来源徽标区分——见 docs/server-skill-sync.md §6。
+      // 跟随「用户」标签展示，来源徽标区分——见 docs/已完成/已完成-server-skill-sync.md §6。
       if (skill.scope === "server") return scope === "user";
       return skill.scope === scope;
     }

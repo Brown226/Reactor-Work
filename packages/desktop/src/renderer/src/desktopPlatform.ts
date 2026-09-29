@@ -116,6 +116,9 @@ export function createDesktopPlatform(options: {
       window.zcode.getDesktopZoomLevel?.() ?? Promise.resolve({ zoomLevel: 0 }),
     onDesktopZoomLevelChanged: (handler) =>
       window.zcode.onDesktopZoomLevelChanged?.(handler) ?? (() => {}),
+    reportDevModeUnlock: (unlocked) => window.zcode.reportDevModeUnlock?.(unlocked),
+    onDevModeUnlockChanged: (handler) =>
+      window.zcode.onDevModeUnlockChanged?.(handler) ?? (() => {}),
     onTaskNotificationClick: (handler) => window.zcode.onTaskNotificationClick(handler),
     exportLogs: () => window.zcode.exportLogs(),
     captureWindowScreenshot: () =>

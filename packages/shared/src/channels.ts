@@ -57,6 +57,7 @@ import type {
   UpdateCheckResultPayload,
   UpdateStatePayload,
   DesktopZoomState,
+  DevModeUnlockState,
   DesktopWindowChromeState,
   WindowControlsOverlayMetrics,
   WindowControlsOverlayReadyPayload,
@@ -399,6 +400,12 @@ export const PlatformChannels = {
   GetDesktopZoomLevel: "zcode:get-desktop-zoom-level",
   /** Main → Renderer：当前窗口页面缩放档位变化 */
   DesktopZoomLevelChanged: "zcode:desktop-zoom-level-changed",
+  /** About 窗口 → Main：About 版本号被点了一次（计数与判定期在 main） */
+  AboutVersionTap: "zcode:about-version-tap",
+  /** Main → Renderer / About 窗口：开发者模式解锁态变化（About 版本号连点触发） */
+  DevModeUnlockChanged: "zcode:dev-mode-unlock-changed",
+  /** Renderer → Main：上报当前开发者模式解锁态（main 据此取反，不回播） */
+  DevModeUnlockReported: "zcode:dev-mode-unlock-reported",
   /** Renderer → Main：读取开发态 stdio tap proxy 开关状态 */
   GetZCodeStdioTapDevState: "zcode:get-zcode-stdio-tap-dev-state",
   /** Main → Renderer：本地 setting.json 已由 main 进程更新 */
@@ -1112,6 +1119,18 @@ export interface PlatformChannelMap {
   };
   [PlatformChannels.DesktopZoomLevelChanged]: {
     request: DesktopZoomState;
+    response: void;
+  };
+  [PlatformChannels.AboutVersionTap]: {
+    request: void;
+    response: void;
+  };
+  [PlatformChannels.DevModeUnlockChanged]: {
+    request: DevModeUnlockState;
+    response: void;
+  };
+  [PlatformChannels.DevModeUnlockReported]: {
+    request: DevModeUnlockState;
     response: void;
   };
   [PlatformChannels.PostUpdateReleaseNotes]: {

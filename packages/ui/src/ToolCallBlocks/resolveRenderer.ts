@@ -54,6 +54,8 @@ import { AskQuestionToolCallBlock } from "@/ToolCallBlocks/renderers/ask-questio
 import { KnowledgeCheckToolCallBlock } from "@/ToolCallBlocks/renderers/knowledge-check.js";
 import { ReportReviewIssuesToolCallBlock } from "@/ToolCallBlocks/renderers/report-review-issues.js";
 import { isKnowledgeCheckToolCall, isReportReviewIssuesToolCall } from "@/lib/reviewToolNames.js";
+import { isEmitUiToolCall } from "@/lib/genUiToolNames.js";
+import { EmitUiTreeToolCallBlock } from "@/ToolCallBlocks/renderers/emit-ui-tree.js";
 import { resolveToolCallIdentity } from "@/lib/toolIdentity.js";
 import type { ToolCallBlockRenderContext } from "@/ToolCallBlocks/shared.js";
 
@@ -84,6 +86,11 @@ export function resolveToolCallRenderer(context: ToolCallBlockRenderContext) {
   // 但字符偏移由 `ReportReviewIssues` 确定性定位，渲染与点击链路与上一条完全一致。
   if (isReportReviewIssuesToolCall(context.toolCallNode.toolCall)) {
     return ReportReviewIssuesToolCallBlock;
+  }
+
+  // GenUI 消息体：结果里是声明式 UI 树，必须内联渲染而不是原始 JSON 卡。
+  if (isEmitUiToolCall(context.toolCallNode.toolCall)) {
+    return EmitUiTreeToolCallBlock;
   }
 
   // 可复用工作流的两个工具按**工具名**先分流，刻意排在 family 之前。两个理由：

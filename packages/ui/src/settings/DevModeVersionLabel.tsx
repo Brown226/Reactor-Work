@@ -6,7 +6,7 @@
  * 的那一刻才显示一行结果提示。
  *
  * 每个实例有自己的连点计数（见 `useDevTap`），因此"在这个地方连续点 7 下"是唯一能自我验证的操作。
- * 语义见 `docs/model-governance-and-dev-mode.md`。
+ * 语义见 `docs/已完成/已完成-model-governance-and-dev-mode.md`。
  */
 import { ZCODE_BUILD_TIME, ZCODE_VERSION } from "@zcode/shared";
 import { cn } from "@/components/lib/utils.js";

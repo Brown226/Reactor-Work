@@ -85,3 +85,32 @@ for (const scriptName of localRuntimeScripts) {
 // 因此挂在 prepare 主链上（非可选）。模型从 hf-mirror 下载并按 sha256 固定；
 // 脚本自带 dev 副本缓存复用，重复构建不会重复下载。
 runTimedRepoScript("scripts/prepare-file-tools-assets.mjs", ["--platform", target.key]);
+
+// 办公四件套 skill 的 Python 运行时（embeddable + 钉死的 19 包）。与 file-tools 的差别：
+// 可降级 —— 暂存失败（内网 CI 拉不到 PyPI 镜像）只告警不阻断打包，electron-builder 的
+// extraResources 是条件注入（目录不存在即跳过），安装包退化为「无内置 Python」，
+// 此时 skill 依赖机器自带 python3（部署文档已说明）。产物不进 git，CI 必须在此生成。
+// 显式跳过：ZCODE_SKIP_OFFICE_ENGINES=1。目前只支持 win32-x64（脚本按平台硬报错）。
+const shouldSkipOfficeEngines = process.env.ZCODE_SKIP_OFFICE_ENGINES === "1";
+if (shouldSkipOfficeEngines) {
+  console.log("[prepare:runtime-assets] skip office-engines (ZCODE_SKIP_OFFICE_ENGINES=1)");
+} else if (target.key !== "win32-x64") {
+  console.log(
+    `[prepare:runtime-assets] skip office-engines: 当前仅支持 win32-x64（目标 ${target.key}）`,
+  );
+} else {
+  try {
+    // 不带 --record：以仓库内 scripts/office-engines-assets.json 的 sha256 为准做校验，
+    // hash 不符即失败；manifest 的更新是显式的人工动作（改 PACKAGE_PINS 后 local --record）。
+    runTimedRepoScript("scripts/prepare-office-engines-assets.mjs", [
+      "--platform",
+      target.key,
+      "--stage",
+      "python",
+    ]);
+  } catch (error) {
+    console.warn(
+      `[prepare:runtime-assets] office-engines 准备失败（继续打包，安装包将无内置 Python）: ${error.message}`,
+    );
+  }
+}

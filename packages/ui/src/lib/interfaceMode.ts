@@ -4,7 +4,7 @@ export type InterfaceMode = "office" | "coding" | "review";
  * 首次引导可选的档位子集。
  *
  * 引导是产品定位问卷，只问编程/办公两档；「审查」只能从主面板胶囊进入。
- * 该不对称是有意的（见 docs/interface-mode.md 第 2 节），不要为了让类型统一而补齐。
+ * 该不对称是有意的（见 docs/已完成/已完成-interface-mode.md 第 2 节），不要为了让类型统一而补齐。
  */
 export type OnboardingInterfaceMode = "office" | "coding";
 

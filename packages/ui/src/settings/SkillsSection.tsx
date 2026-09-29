@@ -285,7 +285,7 @@ export function SkillsSection({
               )
             : intl.formatMessage({ id: "settings.skills.scope.plugin" });
         case "server":
-          // 服务端下发的技能：来源与卸载都在服务端，本地不提供删除入口（见 docs/server-skill-sync.md）。
+          // 服务端下发的技能：来源与卸载都在服务端，本地不提供删除入口（见 docs/已完成/已完成-server-skill-sync.md）。
           return intl.formatMessage({ id: "settings.skills.scope.server" });
         case "user":
         default:
@@ -463,7 +463,7 @@ export function SkillsSection({
 
   // ── 企业服务端技能（scope=server）───────────────────────────────────────
   // 同步/更新/卸载全部转发给 host 侧同步器（server-skills 目录唯一写者），
-  // 本地不碰文件；启停仍走 setEnabled 的路径 key map（docs/server-skill-sync.md）。
+  // 本地不碰文件；启停仍走 setEnabled 的路径 key map（docs/已完成/已完成-server-skill-sync.md）。
   const reloadAfterServerSkillMutation = useCallback(async () => {
     await Promise.all([loadSkills(false), refreshSharedSkillStoreForCurrentWorkspace()]);
   }, [loadSkills, refreshSharedSkillStoreForCurrentWorkspace]);

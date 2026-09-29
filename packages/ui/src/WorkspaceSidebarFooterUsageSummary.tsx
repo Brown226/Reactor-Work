@@ -409,7 +409,7 @@ type WorkspaceSidebarFooterUsageSummaryState = ReturnType<
  * 账户菜单里的「使用统计」入口。
  *
  * Reactor 已下线官方套餐升级入口（原「升级 / 续费」菜单项），见
- * `docs/REACTOR-REBRAND-PLAN.md` 5.1。`state` / `onUpgradeClick` 两个属性按上层调用
+ * `docs/未完成-REACTOR-REBRAND-PLAN.md` 5.1。`state` / `onUpgradeClick` 两个属性按上层调用
  * 约定保留、此处不再消费，避免牵动 `WorkspaceSidebarFooter` 与其调用方。
  */
 export function WorkspaceSidebarFooterUsageSummaryContent({

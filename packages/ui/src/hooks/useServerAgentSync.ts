@@ -2,7 +2,7 @@
  * useServerAgentSync —— 企业服务端专家同步（server-agents）。
  *
  * 只做「转发动作 + 展示结果」：server-agents 目录的唯一写者是 host 侧
- * `IServerAgentSyncService`，UI 不碰文件、不缓存 token（契约 docs/服务端接线-P3-Agent下发.md）。
+ * `IServerAgentSyncService`，UI 不碰文件、不缓存 token（契约 docs/已完成/已完成-服务端接线-P3-Agent下发.md）。
  *
  * 与 useServerSkillSync 的差异：动作失败**向上抛**（服务端 409 等原文需要调用方 toast），
  * 因此各回调均返回稳定的 Promise，失败时调用方自行 try/catch。

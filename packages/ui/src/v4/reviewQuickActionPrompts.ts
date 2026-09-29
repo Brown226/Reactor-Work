@@ -11,7 +11,7 @@ import type { DraftSuggestedPromptItem } from "@/v4/draftSuggestedPromptItems.js
  * 单独成文件（而不是塞进 featureSuggestedPrompts）是因为那个文件 import 了 PNG 资源，
  * 本文件保持纯数据，单测可以直接断言「按钮 ↔ 技能」的对应关系。
  *
- * 模式集合与取舍见 docs/审查板块-方案-v1.md §2（已裁剪 RULE_ONLY / DEC_REVIEW；
+ * 模式集合与取舍见 docs/未完成-审查板块-方案-v1.md §2（已裁剪 RULE_ONLY / DEC_REVIEW；
  * 「以库审文」依赖的企业知识库本期不做，故此处不出现，避免死入口）。
  */
 export interface ReviewQuickActionPrompt extends DraftSuggestedPromptItem {

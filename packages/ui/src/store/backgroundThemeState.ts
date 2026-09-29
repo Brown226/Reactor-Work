@@ -3,7 +3,7 @@
  *
  * 与 `codingPlanQuotaResetState.ts` 同样的拆分方式——状态语义留在
  * `@/lib/backgroundTheme.ts`，store 只装配，避免全局 store 因外观设置继续膨胀。
- * 产品语义见 `docs/appearance-background-theme.md`。
+ * 产品语义见 `docs/已完成/已完成-appearance-background-theme.md`。
  */
 import { logger } from "@/logger.js";
 import {
