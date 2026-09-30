@@ -77,3 +77,23 @@ packages/desktop/.e2e-network-capture/
 # 不锚定根目录：文件即使被挪到子目录（或换成同名副本）也仍然被忽略，
 # 避免"移动一下就重新暴露给 git add"这种最容易造成永久泄露的路径。
 模型信息.txt
+
+# ── 本地垃圾/再生产物（不入库） ─────────────────────────────────
+# 一次性实验、调试脚本与输出（*.ps1/*.mjs/*.cs/*.json/*.md 等均按前缀拦）
+.tmp-*
+# 本地 e2e / 探索脚本
+.server-skill-e2e.mts
+# zcode 本地工作区与用户配置（与 .gitignore 同内容的副本）
+/.zcode/
+/.zcodeignore
+# 根目录误生成的对照页/预览页
+/index.html
+# DWG sidecar .NET 构建缓存（源码在 tools/dwg-sidecar/*.cs）
+**/dwg-sidecar/bin/
+**/dwg-sidecar/obj/
+# manual 站点构建输出（源码 docs/manual/pages/*.md，产物由 build.mjs 生成）
+docs/manual/*.html
+!docs/manual/index.html
+docs/manual/check.mjs
+docs/manual/smoke-render.mjs
+docs/manual/verify-html.mjs
