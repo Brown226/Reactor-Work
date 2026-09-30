@@ -97,3 +97,4 @@ docs/manual/*.html
 docs/manual/check.mjs
 docs/manual/smoke-render.mjs
 docs/manual/verify-html.mjs
+docs/manual/.pages-backup/
