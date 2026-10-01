@@ -162,7 +162,11 @@ function cronPermission(
     sideEffectScope: "workspace" as const,
     needsApproval,
     patternSources: ["toolName", "input"],
-    alwaysAllowPatternSources: needsApproval ? undefined : ["toolName"],
+    // 声明写全（此前 needsApproval 时是 undefined，审批 UI 会给出「项目级永久放行」选项）。
+    // 自动化是持久对象，每次新建/改动都该过目，所以只放会话级免确认（同 create-workflow 的口径），
+    // 不提供项目级「总是允许」——否则点一次就把整个 Cron 家族永久放行。
+    alwaysAllowPatternSources: ["toolName"],
+    askOptions: { allowAlways: "session" },
     denyPriority: "beforeAsk" as const,
   };
 }

@@ -10,6 +10,7 @@ export const pdfStructureInputSchema = z.object({
 
 export const PDF_STRUCTURE_DESCRIPTION = [
   "Extract offline PDF research structure: page_count, title, outline/sections, and figure/table references.",
+  "All page numbers (outline[].page, sections[].page, figures[].page) are 1-based; outline[].page is null when a bookmark target cannot be resolved (broken or named destinations).",
   "Use this before quoting or summarizing a paper; for plain body text use parse_document.",
 ].join(" ");
 
@@ -31,6 +32,7 @@ export const pdfPageTextInputSchema = z.object({
 
 export const PDF_PAGE_TEXT_DESCRIPTION = [
   "Extract plain text for a 1-based inclusive page range of a local PDF (whole document if omitted).",
+  "If the range yields no text (scanned page / no text layer) the result carries a note telling you to use ocr_scan instead of retrying.",
   "For full-document markdown prefer parse_document; this tool is for page-scoped research reads.",
 ].join(" ");
 

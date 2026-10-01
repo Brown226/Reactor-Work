@@ -3,6 +3,7 @@ import type { ApprovalPrompt } from "./app-model.js";
 import { approvalDecisions, palette } from "./app-model.js";
 import {
   approvalDecisionLabel,
+  approvalDecisionsFor,
   isOfficialCuaProjectApproval,
   approvalPermissionScopes,
   approvalRequestDescription,
@@ -116,7 +117,8 @@ function approvalRows(approval: ApprovalPrompt, contentWidth: number): ApprovalT
     );
   }
 
-  for (const decision of approvalDecisions) {
+  // 选项列表按 optionsPolicy 收窄（见 approvalDecisionsFor），不再固定渲染三项。
+  for (const decision of approvalDecisionsFor(approval.request)) {
     rows.push(
       approvalTextRow(
         decision,

@@ -10,6 +10,7 @@ export * from "./provider/index.js";
 export * from "./model/index.js";
 export * from "./logging/index.js";
 export * from "./config/index.js";
+export * from "./policy/index.js";
 export * from "./skills/index.js";
 export * from "./commands/index.js";
 export * from "./plugins/index.js";

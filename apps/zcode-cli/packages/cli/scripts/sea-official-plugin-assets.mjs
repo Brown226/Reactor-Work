@@ -181,6 +181,10 @@ export const officialSeaPlugins = [
     packageName: "@zcode/file-tools-plugin",
     requiresRuntime: true,
     requiredRuntimePaths: ["dist/mcp/server.js", "dist/mcp/pdf.worker.mjs"],
+    // 与 bootstrap 的 OFFICIAL_PLUGIN_DEFINITIONS.runtimeTopLevelPaths 对齐：
+    // anydoc/canvas 引擎资产树。SEA 不采集它，运行期 seed gate 会以
+    // 「声明了 assets 却收不到文件」拒绝整个插件（hasDeclaredAssetsButNoFiles）。
+    runtimeTopLevelPaths: ["assets"],
     rootPath: join("packages", "file-tools-plugin"),
     version: "0.1.0",
   },
@@ -190,6 +194,7 @@ export const officialSeaPlugins = [
     packageName: "@zcode/ocr-tools-plugin",
     requiresRuntime: true,
     requiredRuntimePaths: ["dist/mcp/server.js"],
+    runtimeTopLevelPaths: [],
     rootPath: join("packages", "ocr-tools-plugin"),
     version: "0.1.0",
   },
@@ -199,6 +204,8 @@ export const officialSeaPlugins = [
     packageName: "@zcode/dwg-tools-plugin",
     requiresRuntime: true,
     requiredRuntimePaths: ["dist/mcp/server.js"],
+    // ACadSharp sidecar 资产树，来源 scripts/prepare-file-tools-assets.mjs。
+    runtimeTopLevelPaths: ["assets"],
     rootPath: join("packages", "dwg-tools-plugin"),
     version: "0.1.0",
   },
@@ -229,7 +236,7 @@ export const collectSeaOfficialPluginAssets = async ({
     const pluginFiles = [];
     for await (const sourcePath of walkFiles(pluginRoot)) {
       const relativePath = relative(pluginRoot, sourcePath);
-      if (!shouldIncludePluginFile(relativePath)) continue;
+      if (!shouldIncludePluginFile(relativePath, plugin)) continue;
 
       const bytes = await readFile(sourcePath);
       const sourceStats = await stat(sourcePath);
@@ -248,6 +255,10 @@ export const collectSeaOfficialPluginAssets = async ({
         plugin: plugin.name,
       });
     }
+
+    // 与 bootstrap 运行期 seed gate 同口径的构建期防线：声明了资产树却没采到文件，
+    // 宁可让 `pnpm sea` 失败，也不要发布一个注定被拒绝 seed 的插件。
+    assertPluginRuntimeAssetPaths(plugin, pluginFiles);
 
     pluginFiles.sort((left, right) => left.path.localeCompare(right.path));
     plugins.push({
@@ -359,13 +370,30 @@ const includedTopLevelPaths = new Set([
   "templates",
 ]);
 
-const shouldIncludePluginFile = (relativePath) => {
+const shouldIncludePluginFile = (relativePath, plugin) => {
   const segments = relativePath.split(sep);
   if (segments.includes(".DS_Store") || segments.some((segment) => segment.endsWith(".pyc"))) {
     return false;
   }
   const [topLevel] = relativePath.split(sep);
-  return topLevel !== undefined && includedTopLevelPaths.has(topLevel);
+  if (topLevel === undefined) return false;
+  if (includedTopLevelPaths.has(topLevel)) return true;
+  // 声明了 runtimeTopLevelPaths 的插件（如 file-tools / dwg-tools 的引擎资产树）
+  // 按声明放行；不声明的一律不收，避免把无关大目录卷进 SEA 产物。
+  return (plugin.runtimeTopLevelPaths ?? []).includes(topLevel);
+};
+
+const assertPluginRuntimeAssetPaths = (plugin, pluginFiles) => {
+  const declared = plugin.runtimeTopLevelPaths ?? [];
+  for (const topLevel of declared) {
+    const collected = pluginFiles.some((file) => file.path.split("/")[0] === topLevel);
+    if (!collected) {
+      throw new Error(
+        `Missing ${plugin.name} runtime asset tree "${topLevel}/" in the SEA staging. ` +
+          `Run \`node scripts/prepare-file-tools-assets.mjs\` before \`pnpm sea\`.`,
+      );
+    }
+  }
 };
 
 const toPosixPath = (value) => value.split(sep).join("/");

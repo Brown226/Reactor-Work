@@ -159,7 +159,9 @@ function offPeakPermission(
     sideEffectScope: "workspace" as const,
     needsApproval,
     patternSources: ["toolName", "input"],
-    alwaysAllowPatternSources: needsApproval ? undefined : ["toolName"],
+    // 同 cron.ts：声明写全 + 只放会话级免确认，避免审批 UI 给出项目级永久放行。
+    alwaysAllowPatternSources: ["toolName"],
+    askOptions: { allowAlways: "session" },
     denyPriority: "beforeAsk" as const,
   };
 }

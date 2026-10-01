@@ -14,13 +14,34 @@ import {
   type RiskLevel,
   type ToolPermissionSpec,
 } from "@zcode/contracts";
-import { OFFICIAL_CUA_PERMISSION_RULE_TOOL_NAME } from "@zcode/shared";
+import {
+  OFFICIAL_CUA_PERMISSION_RULE_TOOL_NAME,
+  intersectReactorDesktopPolicyMode,
+  matchReactorCommandBlacklist,
+  type ReactorDesktopPolicySource,
+} from "@zcode/shared";
 import { resolvePlanModeTransitionPermission } from "./plan-mode-policy.js";
 import { webFetchRuleSubjects, wildcardToRegExp } from "./rule-matching.js";
 import { isPreapprovedWorkflowDraftWrite } from "./workflow-draft-path.js";
 import { applyPermissionUpdates } from "../tool/executor/permission-rules.js";
 import { isWebFetchPreapprovedUrl } from "../tool/webfetch-preapproved.js";
 import type { ToolPermissionRulePolicy } from "../tool/types.js";
+
+// -----------------------------------------------
+// 组织策略（命令黑名单 / 模式天花板）
+// -----------------------------------------------
+
+/**
+ * 从工具入参里取"要执行的命令文本"。
+ *
+ * 目前只有 Bash 一族带 `command`（见 `contracts/src/tools/bash.ts`），因此这里只认这个字段：
+ * 宁可少拦（不认识就不拦），也不要把 URL/路径当命令匹配 —— 那会让黑名单在非执行类工具上误伤。
+ */
+function commandTextOf(input: unknown): string | null {
+  if (typeof input !== "object" || input === null) return null;
+  const command = (input as { command?: unknown }).command;
+  return typeof command === "string" ? command : null;
+}
 
 // -----------------------------------------------
 // Types
@@ -95,6 +116,39 @@ export class PermissionService {
 
 
   checkPermission(
+    context: PermissionContext,
+    toolCapability?: PermissionToolCapability,
+    projectRules?: PermissionRuleset | null,
+    rulePolicy?: ToolPermissionRulePolicy,
+  ): PermissionDecisionResult {
+    const capability = this.resolveCapability(context, toolCapability);
+    const policy = this.config.desktopPolicy?.current() ?? null;
+
+    // P4.3 命令黑名单闸：执行类工具的 command 命中即拒绝（在模式判定之前 —— 这是组织硬边界，
+    // 不能被 yolo/always-allow 规则绕过）。拒绝理由用中文，模型能读懂并不再重试。
+    const hit = matchReactorCommandBlacklist(commandTextOf(context.input), policy?.commandBlacklist);
+    if (hit !== null) {
+      return this.deny(
+        context,
+        capability,
+        "policy.commandBlacklist",
+        `该命令被组织策略禁止执行（命中命令黑名单“${hit}”）。请改用其它方式，或联系管理员调整策略。`,
+      );
+    }
+
+    // P4.2b 模式天花板：与用户档位取交集（只能收紧不能放宽）。判定仍走同一条既有链路，
+    // 只是把生效档位换成交集结果 —— 因此规则来源/规则号/风险等级都不受影响。
+    const effectiveMode = intersectReactorDesktopPolicyMode(
+      context.mode,
+      policy?.defaultApprovalMode,
+    ) as CollaborationMode;
+    const scopedContext =
+      effectiveMode === context.mode ? context : { ...context, mode: effectiveMode };
+
+    return this.decide(scopedContext, toolCapability, projectRules, rulePolicy);
+  }
+
+  private decide(
     context: PermissionContext,
     toolCapability?: PermissionToolCapability,
     projectRules?: PermissionRuleset | null,
@@ -680,6 +734,11 @@ export interface PermissionConfig {
   disallowedTools: Set<string>;
   autoApproveHighRisk: boolean;
   allowMediumRiskInAutoMode: boolean;
+  /**
+   * 组织策略只读来源（P4.2b / P4.3）：`plan|build|edit|yolo` 模式天花板 + 命令黑名单。
+   * 缺省 = 不限制（未接入 / 未登录 / 策略文件不存在），此时行为与接线前完全一致。
+   */
+  desktopPolicy?: ReactorDesktopPolicySource;
 }
 
 export const defaultPermissionConfig: PermissionConfig = {

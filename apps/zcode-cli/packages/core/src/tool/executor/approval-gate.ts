@@ -5,6 +5,10 @@ import {
   type TraceContext,
 } from "@zcode/contracts";
 import type { ExecutableToolCall, ToolEntry } from "../types.js";
+import {
+  requiresScopedAlwaysAllowContent,
+  resolveAlwaysAllowRuleContent,
+} from "./permission-suggestions.js";
 import type { ToolExecutorDeps } from "./types.js";
 
 interface ResolvedToolApproval {
@@ -21,16 +25,31 @@ interface ResolvedToolApproval {
  * 没有声明钩子的工具一律照旧弹窗。
  */
 function resolveOptionsPolicy(
-  allowAlways: false | "session" | undefined,
+  entry: ToolEntry,
+  executionInput: unknown,
 ): PermissionOptionsPolicy | undefined {
-  switch (allowAlways) {
+  switch (entry.permission?.askOptions?.allowAlways) {
     case false:
       return "no-always-allow";
     case "session":
       return "session-always-allow";
     default:
-      return undefined;
+      break;
   }
+
+  // 越权防护（与 buildDefaultPermissionUpdates 用同一个判据）：工具声明了 path/command/network
+  // 这类"规则必须带作用域内容"的来源，却从本次入参解析不出任何内容时，任何"总是允许"都会落成
+  // 一条无内容规则，而 permissionService.matchesRule 把无内容规则判为匹配一切——一次点击就变成
+  // 整个工具的项目级永久放行。这里主动收窄选项：不投放"总是允许"，退回每次都问。
+  // 消息消费面（v4 选项投影、legacy 投影）都以 optionsPolicy 为准裁剪 always-allow 选项。
+  const sources = entry.permission?.alwaysAllowPatternSources;
+  if (
+    requiresScopedAlwaysAllowContent(sources) &&
+    resolveAlwaysAllowRuleContent(executionInput, sources) === undefined
+  ) {
+    return "no-always-allow";
+  }
+  return undefined;
 }
 
 export function resolveToolApproval(
@@ -42,7 +61,7 @@ export function resolveToolApproval(
 ): ResolvedToolApproval {
   // `permission` 类型上是必填，但 executor 也会被只声明了一部分字段的 entry 驱动
   // （测试桩、动态注册的工具）。周边代码靠 spread 而不是读字段来容忍这一点，gate 同理。
-  const optionsPolicy = resolveOptionsPolicy(entry.permission?.askOptions?.allowAlways);
+  const optionsPolicy = resolveOptionsPolicy(entry, executionInput);
 
   if (!entry.prepareApproval) {
     return { gate: "ask", ...(optionsPolicy ? { optionsPolicy } : {}) };

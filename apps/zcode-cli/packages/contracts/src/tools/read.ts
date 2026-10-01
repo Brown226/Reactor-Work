@@ -48,9 +48,9 @@ const UNSUPPORTED_BINARY_EXTENSIONS = new Set([
   ".zip",
 ]);
 /**
- * Office / CAD 文档：Read 的文本直读只会拿到二进制乱码。官方 file-tools 插件
- * （默认启用）提供 parse_document / parse_dwg 两个 local 工具，这里在入口处
- * fail-fast 并把模型引到正确工具，避免「乱码→再绕一圈」。
+ * Office / CAD 文档：Read 的文本直读只会拿到二进制乱码。官方三件套插件（默认启用）
+ * 分别提供 parse_document（file-tools）/ ocr_scan（ocr-tools）/ dwg_modify（dwg-tools）
+ * local 工具，这里在入口处 fail-fast 并把模型引到正确工具，避免「乱码→再绕一圈」。
  */
 const OFFICE_DOCUMENT_EXTENSIONS = new Set([
   ".doc",

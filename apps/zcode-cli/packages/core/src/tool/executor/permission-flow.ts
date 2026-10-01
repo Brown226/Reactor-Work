@@ -27,7 +27,7 @@ import {
   resolveRuntimePermissionCapability,
   resolveRuntimePermissionContext,
 } from "./permission-capability.js";
-import { buildDefaultPermissionUpdates } from "./permission-suggestions.js";
+import { buildEntryPermissionUpdates } from "./permission-suggestions.js";
 import { recheckPermissionHookModifiedInput } from "./permission-input-recheck.js";
 import type { ToolExecutorDeps } from "./types.js";
 import { summarizeInput } from "./utils.js";
@@ -62,9 +62,10 @@ export async function resolveToolPermission(
   };
   const runtimePermissionContext = resolveRuntimePermissionContext(deps);
   const rulePolicy = entry.resolvePermissionRulePolicy?.(executionInput, runtimePermissionContext);
+  // 规则内容按工具声明的 alwaysAllowPatternSources 推导（修复越权：不再只认写死的入参键表）。
   const suggestedPermissionUpdates =
     rulePolicy?.suggestedPermissionUpdates ??
-    buildDefaultPermissionUpdates(toolCall.name, executionInput, entry.permissionCapabilityGroup);
+    buildEntryPermissionUpdates(entry, toolCall.name, executionInput);
 
   let projectRules: PermissionRuleset | null;
   try {

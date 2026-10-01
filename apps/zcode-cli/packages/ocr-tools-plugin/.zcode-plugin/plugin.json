@@ -2,5 +2,14 @@
   "name": "ocr-tools",
   "version": "0.1.0",
   "description": "Offline OCR for images and scanned PDFs (PP-OCR via office-engines Python).",
-  "main": "dist/mcp/server.js"
+  "author": { "name": "Z.ai" },
+  "license": "MIT",
+  "mcpServers": {
+    "ocr-tools": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["dist/mcp/server.js"],
+      "timeoutMs": 600000
+    }
+  }
 }

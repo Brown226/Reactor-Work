@@ -27,13 +27,14 @@ export function handleApprovalKey(
     setApprovalQueue((current) => {
       const [first, ...rest] = current;
       if (!first) return current;
-      const selectedIndex = approvalDecisions.indexOf(first.selectedDecision);
+      // 只在当前请求允许的选项里循环（optionsPolicy 可能收窄掉「项目级总是允许」）。
+      const decisions = approvalDecisionsFor(first.request);
+      const selectedIndex = decisions.indexOf(first.selectedDecision);
       return [
         {
           ...first,
           selectedDecision:
-            approvalDecisions[clampIndex(selectedIndex + delta, approvalDecisions.length)] ??
-            "deny",
+            decisions[clampIndex(selectedIndex + delta, decisions.length)] ?? "deny",
         },
         ...rest,
       ];
@@ -51,11 +52,24 @@ export function handleApprovalKey(
   }
 }
 
+/**
+ * 当前请求允许的决策集合。core 会按工具的 askOptions / alwaysAllow 声明下发 optionsPolicy：
+ * - `no-always-allow`：本请求不提供任何「总是允许」；
+ * - `session-always-allow`：只允许会话级免确认，TUI 没有会话级选项，所以也不提供项目级。
+ * 此前 TUI 无视该字段，总是渲染三个选项，等于把 ExportReviewReport、Cron 家族这类
+ * 「不该项目级放行」的工具放大成整工具永久规则。
+ */
+export function approvalDecisionsFor(request: PermissionBrokerRequest): ApprovalDecision[] {
+  if (request.optionsPolicy === "no-always-allow" || request.optionsPolicy === "session-always-allow") {
+    return ["allow_once", "deny"];
+  }
+  return approvalDecisions;
+}
+
 export function approvalDecisionLabel(
   decision: ApprovalDecision,
   request?: PermissionBrokerRequest,
-): string {
-  if (decision === "allow_once") return "Allow once";
+): string {  if (decision === "allow_once") return "Allow once";
   if (decision === "allow_project") {
     return request && isOfficialCuaProjectApproval(request)
       ? "Always allow Computer Use in this project"
@@ -132,13 +146,21 @@ function createApprovalResult(
     };
   }
 
+  // 纵深防御：即使上游选中了 allow_project，也要在 optionsPolicy 禁止时降级为仅本次放行，
+  // 避免任何路径把受限工具写成项目级永久规则。
+  const projectAllowed = decision === "allow_project" && isProjectAlwaysAllowed(request);
   return {
     decision: "allow",
-    permissionUpdates:
-      decision === "allow_project" ? permissionUpdatesForApproval(request) : undefined,
-    reason: decision === "allow_project" ? "Approved for this project in TUI" : "Approved in TUI",
+    permissionUpdates: projectAllowed ? permissionUpdatesForApproval(request) : undefined,
+    reason: projectAllowed ? "Approved for this project in TUI" : "Approved in TUI",
     resolvedAt: new Date(),
   };
+}
+
+function isProjectAlwaysAllowed(request: PermissionBrokerRequest): boolean {
+  return !(
+    request.optionsPolicy === "no-always-allow" || request.optionsPolicy === "session-always-allow"
+  );
 }
 
 function permissionUpdatesForApproval(request: PermissionBrokerRequest) {

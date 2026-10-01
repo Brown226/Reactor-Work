@@ -95,7 +95,7 @@ export function createFileToolsMcpServer(): Server {
     {
       capabilities: { tools: {} },
       instructions:
-        "Local document tools (anydoc parse + docx surgical patch + PDF research). Use parse_document for Office/PDF body text, docx_patch to apply review fixes inside an existing .docx without touching its formatting (matched text only, copies by default). For paper/standard reading use pdf_structure / pdf_citations / pdf_page_text / pdf_region_text / pdf_formula_candidates. Scans/images: ocr_scan (ocr-tools). DWG drawings: dwg_modify / dwg_graph (dwg-tools). All engines run offline inside the installer.",
+        "Local document tools (anydoc parse + docx surgical patch + PDF research). Use parse_document for Office/PDF body text, docx_patch to apply review fixes inside an existing .docx without touching its formatting (matched text only, copies by default). For paper/standard reading use pdf_structure / pdf_citations / pdf_page_text / pdf_region_text / pdf_formula_candidates. Scans/images and DWG drawings are other plugins' MCP servers, not tools of this one: ocr-tools provides ocr_scan, dwg-tools provides dwg_modify / dwg_graph. All engines run offline inside the installer.",
     },
   );
 

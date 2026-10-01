@@ -214,7 +214,7 @@ const runDoctor = (ctx: RunContext, options: GlobalOptions, workingDirectory: st
   }
 
   const colors = supportsColor(ctx.stdout, options.noColor);
-  ctx.stdout.write(`${color.bold("zcode doctor", colors)}\n`);
+  ctx.stdout.write(`${color.bold("reactor doctor", colors)}\n`);
   ctx.stdout.write(`version: ${payload.cli.version}\n`);
   ctx.stdout.write(`process: ${payload.runtime.processTitle}\n`);
   ctx.stdout.write(`node: ${payload.runtime.node}\n`);

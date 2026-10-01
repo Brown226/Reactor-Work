@@ -7,7 +7,7 @@
  * 边界：与 parse_document 不重复（研究 API vs 正文抽取）；公式候选一律 approx。
  */
 import { readFile } from "node:fs/promises";
-import { assertReadableFile } from "../guard.js";
+import { FileToolError, assertReadableFile } from "../guard.js";
 import { loadPdfjsOnce } from "../raster.js";
 import {
   DOI_RE,
@@ -32,15 +32,36 @@ interface OpenPdf {
   pageCount: number;
 }
 
+/**
+ * 加密 PDF：pdfjs 在 getDocument 阶段抛 PasswordException（name 固定，见
+ * pdfjs-dist `PasswordException`）。工具无交互渠道问密码，翻成 FileToolError
+ * 中文指引；其余打开失败原样上抛，由 server 统一报错。
+ */
+function isPasswordException(pdfjs: any, error: unknown): boolean {
+  if (typeof pdfjs?.PasswordException === "function" && error instanceof pdfjs.PasswordException) {
+    return true;
+  }
+  // 跨 bundle/worker 传输后 instanceof 可能失效，按 name 兜底识别。
+  return (error as { name?: unknown })?.name === "PasswordException";
+}
+
 async function openPdf(filePath: string): Promise<OpenPdf> {
   assertReadableFile(filePath);
   const pdfjs = await loadPdfjsOnce();
   const bytes = new Uint8Array(await readFile(filePath));
-  const doc = await pdfjs.getDocument({
-    data: bytes,
-    isEvalSupported: false,
-    useSystemFonts: true,
-  }).promise;
+  let doc: any;
+  try {
+    doc = await pdfjs.getDocument({
+      data: bytes,
+      isEvalSupported: false,
+      useSystemFonts: true,
+    }).promise;
+  } catch (error) {
+    if (isPasswordException(pdfjs, error)) {
+      throw new FileToolError("该 PDF 已加密，无法离线解析，请先解除密码保护");
+    }
+    throw error;
+  }
   return { doc, pageCount: doc.numPages as number };
 }
 
@@ -74,20 +95,60 @@ async function docPageText(doc: any, pageNumber: number): Promise<string> {
 
 // ── pdf_structure ───────────────────────────────────────────────────────────
 
+/** 大纲最多返回 200 条（与原实现一致），解析 dest 也一并到此为止。 */
+const MAX_OUTLINE_ENTRIES = 200;
+
+/**
+ * 把书签的 dest 解析成页码。对外页码口径写死为 **1-based**：
+ * pdfjs `getPageIndex` 返回 0-based；UI 侧 `PaperModePanel.handleOutline`
+ * （packages/ui/src/pdf-reader/PaperModePanel.tsx）同样做 `dest[0] + 1` 再交给
+ * pdfjs viewer（pageNumber 从 1 开始），`pdf_page_text` 的 start/end 也是 1-based。
+ *
+ * dest 形态（实测 pdfjs 6.2）：
+ * - 数组且首元素是 Ref `{num, gen}` → getPageIndex(ref) + 1；
+ * - 数组且首元素是数字（远端跳转的 0-based 页码）→ +1（与 UI 侧口径一致）；
+ * - 字符串 → 具名目标，先 getDestination(name) 再按数组处理。
+ * 解析失败一律返回 null（坏书签/无效具名目标在真实文件里很常见，不能让结构抽取失败）。
+ */
+async function outlineDestPage(doc: any, dest: unknown): Promise<number | null> {
+  try {
+    const array = typeof dest === "string" ? await doc.getDestination(dest) : dest;
+    if (!Array.isArray(array) || array.length === 0) return null;
+    const target = array[0] as unknown;
+    const pageCount = doc.numPages as number;
+    if (typeof target === "number") {
+      const page = target + 1;
+      return Number.isInteger(page) && page >= 1 && page <= pageCount ? page : null;
+    }
+    if (target && typeof target === "object") {
+      const index = await doc.getPageIndex(target);
+      return Number.isInteger(index) && index >= 0 && index < pageCount ? index + 1 : null;
+    }
+    return null;
+  } catch {
+    // dest 指向不存在的页对象（pdfjs 抛 "The reference does not point to a /Page dictionary."）
+    // 或具名目标缺失：保留 null，不抛错。
+    return null;
+  }
+}
+
 async function readOutline(doc: any): Promise<OutlineEntry[]> {
   const raw = (await doc.getOutline()) ?? [];
   const out: OutlineEntry[] = [];
-  const walk = (nodes: any[], level: number) => {
+  const walk = async (nodes: any[], level: number): Promise<void> => {
     for (const node of nodes) {
+      if (out.length >= MAX_OUTLINE_ENTRIES) return;
       const title = String(node.title ?? "").trim();
-      if (title) out.push({ title, page: null, level });
+      if (title) {
+        out.push({ title, page: await outlineDestPage(doc, node.dest), level });
+      }
       if (Array.isArray(node.items) && node.items.length > 0) {
-        walk(node.items, level + 1);
+        await walk(node.items, level + 1);
       }
     }
   };
-  walk(raw, 1);
-  return out.slice(0, 200);
+  await walk(raw, 1);
+  return out;
 }
 
 /** 标题行包围盒（原点左上，PDF 点）。 */
@@ -250,11 +311,27 @@ export async function pdfCitations(
 
 // ── pdf_page_text ───────────────────────────────────────────────────────────
 
+/**
+ * 无文本层提示：措辞与 parse-document.ts 的 needsOcr 指引保持同一套说法，
+ * 避免同一个事实在两条路径上有两种口径。
+ */
+const NO_TEXT_LAYER_NOTE =
+  "该 PDF 是扫描件/无文本层，请改用 ocr_scan 抽取文字；也可用 Read 的 pages 模式直接把页面当图片读给模型。";
+
+export interface PdfPageTextResult {
+  text: string;
+  start: number;
+  end: number;
+  page_count: number;
+  /** 仅当请求页范围抽不到任何文本时给出：提示改用 ocr_scan，而不是静默返回空串。 */
+  note?: string;
+}
+
 export async function pdfPageText(
   filePath: string,
   startPage?: number | null,
   endPage?: number | null,
-): Promise<{ text: string; start: number; end: number; page_count: number }> {
+): Promise<PdfPageTextResult> {
   const { doc, pageCount } = await openPdf(filePath);
   try {
     const start = Math.max(1, startPage ?? 1);
@@ -264,7 +341,14 @@ export async function pdfPageText(
       const body = (await docPageText(doc, p)).trim();
       if (body) parts.push(body);
     }
-    return { text: parts.join("\n\n"), start, end, page_count: pageCount };
+    const text = parts.join("\n\n");
+    return {
+      text,
+      start,
+      end,
+      page_count: pageCount,
+      ...(text ? {} : { note: NO_TEXT_LAYER_NOTE }),
+    };
   } finally {
     await closePdf(doc);
   }
@@ -276,6 +360,8 @@ export interface PdfRegionTextResult {
   text: string;
   page: number;
   page_count: number;
+  /** 仅当该页整体没有文本层时给出（框内为空但页内有文字属于正常选区，不加提示）。 */
+  note?: string;
 }
 
 /** bbox 原点左上；过滤文本 item 中心点是否落在框内。 */
@@ -293,13 +379,17 @@ export async function pdfRegionText(
       const pageHeight = viewport.height as number;
       const [x0, y0, x1, y1] = bbox;
       const content = await pdfPage.getTextContent();
-      const parts: string[] = [];
-      let lastY: number | null = null;
-      for (const item of content.items as Array<{
+      const items = content.items as Array<{
         str?: string;
         transform?: number[];
         width?: number;
-      }>) {
+      }>;
+      const pageHasText = items.some(
+        (item) => typeof item.str === "string" && item.str.trim() !== "",
+      );
+      const parts: string[] = [];
+      let lastY: number | null = null;
+      for (const item of items) {
         if (typeof item.str !== "string" || !item.transform) continue;
         const cx = item.transform[4] + (item.width ?? 0) / 2;
         const topY = pageHeight - item.transform[5];
@@ -309,10 +399,12 @@ export async function pdfRegionText(
         parts.push(item.str);
         lastY = yKey;
       }
+      const text = parts.join("").replace(/\s+/g, " ").trim();
       return {
-        text: parts.join("").replace(/\s+/g, " ").trim(),
+        text,
         page,
         page_count: pageCount,
+        ...(text === "" && !pageHasText ? { note: NO_TEXT_LAYER_NOTE } : {}),
       };
     } finally {
       pdfPage.cleanup();

@@ -1,22 +1,24 @@
 #!/usr/bin/env node
 /**
- * file-tools 资产 staging：把桌面端开箱即用所需的 native 绑定 / ONNX 模型 / wasm
- * 收进一个只读资产树，供 electron-builder 打进安装包（bundled-tools/<platformKey>，
- * 见 packages/desktop/electron-builder.config.js 的 extraResources），并同步一份到
- * apps/zcode-cli/packages/file-tools-plugin/assets/<platformKey> 供开发态 MCP 子进程解析。
+ * 文件能力三件套的资产 staging（docs/未完成-file-tools拆三插件方案.md）：文件能力按插件
+ * 分开成树，供 electron-builder 打进安装包（bundled-tools/<platformKey>，见
+ * packages/desktop/electron-builder.config.js 的 extraResources），并同步一份到各插件包的
+ * assets/<platformKey>，供开发态/seed 缓存里的 MCP 子进程解析：
+ * - file-tools：anydoc（napi）→ bundled-tools/<platformKey>/file-tools；
+ * - dwg-tools：ACadSharp sidecar（自包含 .NET）→ bundled-tools/<platformKey>/dwg-tools。
+ * dwg 侧必须落进插件包 assets/：dwg-tools 的 definition 声明 runtimeTopLevelPaths: ["assets"]，
+ * seed 校验要求该树至少收上一个文件（bundled-plugins.hasDeclaredAssetsButNoFiles），
+ * 否则整个插件被拒绝 seed，dwg_modify / dwg_graph 在任何安装形态下都不可达。
  *
  * 固定策略（对齐 scripts/native-search-tools-config.mjs）：
- * - npm 依赖（anydoc / onnxruntime-node / @napi-rs/canvas / libredwg-web）一律
- *   从**本工作区 node_modules** 拷贝，版本即 lockfile 锁定的版本；
- * - PP-OCR 模型从 HuggingFace 镜像下载，sha256 固定（见 OCR_MODEL_FILES）；
- * - libredwg 包内部是「无后缀相对导入」（TS 编译残留），Node ESM 解析不了，
- *   staging 时把导入改写成显式路径（唯一被改写的第三方代码，逐条注释）。
+ * - npm 依赖（anydoc / @napi-rs/canvas）从**本工作区 node_modules** 拷贝，
+ *   版本即 lockfile 锁定的版本。
  *
  * 用法：node scripts/prepare-file-tools-assets.mjs [--platform win32-x64] [--from-workspace <path>]
  */
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const repoRoot = resolve(import.meta.dirname, "..");
@@ -58,16 +60,15 @@ const NPM_PLATFORM_SUFFIX = {
   "linux-arm64": "linux-arm64-gnu",
 };
 
-/** 布局：<assets>/<name>/node_modules/<scope>/<pkg>（Node require 目录解析）。 */
+/** file-tools 资产树的第三方清单（DWG/OCR 引擎已按「一引擎一 owner」拆走，见方案文档）。
+ * 布局：<assets>/<name>/node_modules/<scope>/<pkg>（Node require 目录解析）。 */
 const FILE_TOOLS_LICENSES = [
   { component: "@firecrawl/anydoc", license: "MIT", source: "npm @firecrawl/anydoc" },
-  { component: "onnxruntime-node", license: "MIT", source: "npm onnxruntime-node" },
   { component: "@napi-rs/canvas", license: "MIT", source: "npm @napi-rs/canvas" },
-  {
-    component: "PP-OCRv5 mobile ONNX models",
-    license: "Apache-2.0",
-    source: "https://huggingface.co/x3zvawq/paddleocr-js-onnx",
-  },
+];
+
+/** dwg-tools 资产树的第三方清单：sidecar 自带 ACadSharp 与自包含 .NET runtime。 */
+const DWG_TOOLS_LICENSES = [
   {
     component: "ACadSharp",
     license: "MIT",
@@ -89,6 +90,10 @@ function copyDirectory(source, target) {
       copyDirectory(sourcePath, targetPath);
     } else if (entry.isFile()) {
       writeFileSync(targetPath, readFileSync(sourcePath));
+      // 保留可执行位：dwg-sidecar 是直接 spawn 的二进制，且 plugins seed 会以源文件
+      // mode 落盘缓存文件（bundled-plugins.modeForSeedFile）；writeFileSync 新建文件默认
+      // 0644，darwin/linux 上会让 sidecar 在缓存副本里 EACCES 起不来。
+      chmodSync(targetPath, statSync(sourcePath).mode & 0o777);
     }
   }
 }
@@ -174,7 +179,7 @@ async function downloadOcrModels(targetDir, cacheDir = null) {
   return results;
 }
 
-function writeStagingMeta(outRoot, meta) {
+function writeStagingMeta(outRoot, meta, licenses) {
   writeFileSync(
     join(outRoot, ".bundle-meta.json"),
     `${JSON.stringify({ ...meta, platform: platformKey }, null, 2)}\n`,
@@ -184,16 +189,16 @@ function writeStagingMeta(outRoot, meta) {
     `${JSON.stringify(
       {
         platform: platformKey,
-        components: FILE_TOOLS_LICENSES.map((item) => ({ ...item, sha256: meta.sha256[item.component] ?? null })),
+        components: licenses.map((item) => ({ ...item, sha256: meta.sha256[item.component] ?? null })),
       },
       null,
       2,
     )}\n`,
   );
   const notices = [
-    "THIRD-PARTY NOTICES — file-tools bundled assets",
+    `THIRD-PARTY NOTICES — ${meta.tree} bundled assets`,
     "",
-    ...FILE_TOOLS_LICENSES.flatMap((item) => [
+    ...licenses.flatMap((item) => [
       `* ${item.component} — ${item.license}`,
       `  Source: ${item.source}`,
       ...(item.license.toUpperCase().startsWith("GPL")
@@ -230,26 +235,26 @@ function stageSidecar(targetRoot, runtimePlatformKey) {
   if (!rid) throw new Error(`不支持的平台：${runtimePlatformKey}`);
   const outDir = join(targetRoot, "dwg-sidecar", rid);
   mkdirSync(outDir, { recursive: true });
-  const pluginRoot = join(repoRoot, "apps", "zcode-cli", "packages", "dwg-tools-plugin");
-  const publishScript = join(pluginRoot, "scripts", "publish-sidecar.mjs");
+  const dwgPluginRoot = join(repoRoot, "apps", "zcode-cli", "packages", "dwg-tools-plugin");
+  const publishScript = join(dwgPluginRoot, "scripts", "publish-sidecar.mjs");
   if (!existsSync(publishScript)) {
     throw new Error(`sidecar 发布脚本缺失：${publishScript}`);
   }
   const result = spawnSync(
     process.execPath,
     [publishScript, "--rid", rid, "--out", outDir, "--required"],
-    { stdio: "inherit", cwd: pluginRoot },
+    { stdio: "inherit", cwd: dwgPluginRoot },
   );
   const exeName = runtimePlatformKey.startsWith("win32") ? "dwg-sidecar.exe" : "dwg-sidecar";
   if (result.status !== 0) {
     // NuGet 在部分环境（含中文路径 / 损坏的全局包缓存）会 restore 失败，与工程无关。
     // 此时允许复用历史 dotnet publish 产物，避免整条 staging 因还原问题挂掉。
+    // 候选只列 dwg-tools 自己（拆分后 file-tools 不再持有 DWG 引擎与 sidecar 源码）。
     const legacyCandidates = [
       // 自包含单文件发布（~35MB）优先
-      join(repoRoot, "apps", "zcode-cli", "packages", "file-tools-plugin", "dist", "dwg-sidecar", rid, exeName),
-      join(repoRoot, "apps", "zcode-cli", "packages", "dwg-tools-plugin", "dist", "dwg-sidecar", rid, exeName),
-      join(repoRoot, "apps", "zcode-cli", "packages", "file-tools-plugin", "tools", "dwg-sidecar", "bin", "Release", "net9.0", rid, exeName),
-      join(repoRoot, "apps", "zcode-cli", "packages", "file-tools-plugin", "tools", "dwg-sidecar", "bin", "Release", "net9.0", exeName),
+      join(dwgPluginRoot, "dist", "dwg-sidecar", rid, exeName),
+      join(dwgPluginRoot, "tools", "dwg-sidecar", "bin", "Release", "net9.0", rid, exeName),
+      join(dwgPluginRoot, "tools", "dwg-sidecar", "bin", "Release", "net9.0", exeName),
     ];
     const fallback = legacyCandidates.find((p) => existsSync(p) && statSync(p).size > 1024 * 1024);
     if (!fallback) {
@@ -301,14 +306,16 @@ function stageAssets(targetRoot) {
   rmSync(dwgRoot, { recursive: true, force: true });
   mkdirSync(dwgRoot, { recursive: true });
   stageSidecar(dwgRoot, platformKey);
+  writeStagingMeta(dwgRoot, { sha256: {}, tree: "dwg-tools" }, DWG_TOOLS_LICENSES);
 
-  writeStagingMeta(targetRoot, { sha256, modelFiles: "office-engines", sidecar: "dwg-tools" });
+  writeStagingMeta(targetRoot, { sha256, modelFiles: "office-engines", tree: "file-tools" }, FILE_TOOLS_LICENSES);
   return {};
 }
 
-function stageDevCopy(fromRoot) {
-  rmSync(devAssetsRoot, { recursive: true, force: true });
-  copyDirectory(fromRoot, devAssetsRoot);
+/** 插件 dev 副本：seed / 开发态 MCP 子进程从插件包 assets/<platformKey> 解析资产。 */
+function stageDevCopy(fromRoot, toRoot) {
+  rmSync(toRoot, { recursive: true, force: true });
+  copyDirectory(fromRoot, toRoot);
 }
 
 async function main() {
@@ -316,13 +323,26 @@ async function main() {
   // OCR 模型不再在本脚本 stage（迁 office-engines）；仅保留旧缓存供 office-engines 复用。
   stageAssets(bundledRoot);
 
-  // dev 副本（随插件 seed 覆盖开发态资产解析）。
-  stageDevCopy(bundledRoot);
+  // dev 副本（随插件 seed 覆盖开发态资产解析）。dwg 侧缺这份副本会让 dwg-tools 的
+  // runtimeTopLevelPaths: ["assets"] 收不到任何资产文件，seed 直接拒绝整个插件。
+  const dwgBundledRoot = join(repoRoot, "packages", "desktop", "bundled-tools", platformKey, "dwg-tools");
+  const dwgDevAssetsRoot = join(
+    repoRoot,
+    "apps",
+    "zcode-cli",
+    "packages",
+    "dwg-tools-plugin",
+    "assets",
+    platformKey,
+  );
+  stageDevCopy(bundledRoot, devAssetsRoot);
+  stageDevCopy(dwgBundledRoot, dwgDevAssetsRoot);
 
   const total = sumDirectorySize(bundledRoot);
-  const dwgTotal = sumDirectorySize(join(repoRoot, "packages", "desktop", "bundled-tools", platformKey, "dwg-tools"));
+  const dwgTotal = sumDirectorySize(dwgBundledRoot);
   process.stdout.write(
-    `[file-tools] staged → ${bundledRoot}\n[file-tools] dev copy → ${devAssetsRoot}\n` +
+    `[file-tools] staged → ${bundledRoot}（dev copy → ${devAssetsRoot}）\n` +
+      `[dwg-tools] staged → ${dwgBundledRoot}（dev copy → ${dwgDevAssetsRoot}）\n` +
       `[file-tools] OCR 在 office-engines；file-tools ${(total / 1024 / 1024).toFixed(1)} MiB + dwg-tools ${(dwgTotal / 1024 / 1024).toFixed(1)} MiB\n`,
   );
 }

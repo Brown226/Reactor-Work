@@ -530,6 +530,11 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
   },
   {
     // DWG 图纸解析/修改（ACadSharp sidecar）。
+    // assets/<platformKey>/dwg-sidecar/<rid>/ 由 scripts/prepare-file-tools-assets.mjs 生成：
+    // seed 侧由 runtimeTopLevelPaths 进缓存（dwg-tools 的 src/assets.ts 按插件根 assets 解析），
+    // 打包态走 resources/tools/dwg-tools。这份资产树必须非空 ——
+    // bundled-plugins.hasDeclaredAssetsButNoFiles 会把「声明了 assets 却收不到文件」的
+    // 插件整体拒绝 seed，症状是 dwg_modify / dwg_graph 在任何安装形态下都不可达。
     defaultEnabled: true,
     listing: {
       author: ZAI_AUTHOR,

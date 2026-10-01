@@ -54,6 +54,10 @@
       "types": "./dist/config/index.d.ts",
       "import": "./dist/config/index.js"
     },
+    "./policy": {
+      "types": "./dist/policy/index.d.ts",
+      "import": "./dist/policy/index.js"
+    },
     "./skills": {
       "types": "./dist/skills/index.d.ts",
       "import": "./dist/skills/index.js"

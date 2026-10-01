@@ -82,9 +82,16 @@ export async function recheckPermissionHookModifiedInput(input: {
     return {};
   }
 
+  // 与首次判定同源：hook 改写 input 之后仍按工具声明的 alwaysAllowPatternSources 推导规则内容。
+  // capabilityGroup 保持这条路径修复前的原样（不传）：它不是本次越权修复的一部分。
   const suggestedPermissionUpdates =
     rulePolicy?.suggestedPermissionUpdates ??
-    buildDefaultPermissionUpdates(input.toolCall.name, input.modifiedInput);
+    buildDefaultPermissionUpdates(
+      input.toolCall.name,
+      input.modifiedInput,
+      undefined,
+      input.entry.permission?.alwaysAllowPatternSources,
+    );
   const brokerResult = await input.deps.permissionBroker.requestPermission(
     {
       input: input.modifiedInput,

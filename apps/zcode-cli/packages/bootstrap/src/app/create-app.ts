@@ -13,6 +13,7 @@ import {
 import { createNodeFileSystemAdapter } from "@zcode/adapters/fs";
 import { createNodeWebFetchHttpClientAdapter } from "@zcode/adapters/http";
 import { createJimpImageProcessorAdapter } from "@zcode/adapters/image";
+import { createDesktopPolicySource } from "@zcode/adapters/policy";
 import { createPopplerPdfDocumentAdapter } from "@zcode/adapters/pdf";
 import { createNodeSessionMailboxAdapter } from "@zcode/adapters/mailbox";
 import { createNodeContextSourceAdapter } from "@zcode/adapters/context";
@@ -345,6 +346,10 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
       autoApproveHighRisk: configResult.config.permission.autoApproveHighRisk,
       disallowedTools: new Set(configResult.config.permission.disallowedTools),
       allowMediumRiskInAutoMode: configResult.config.permission.allowMediumRiskInAuto,
+      // P4.2b / P4.3：组织策略（模式天花板 + 命令黑名单）由 Host 落到用户数据根，
+      // 这里只读；文件不存在（未登录）或不含名单时行为与接线前一致 —— 不限制。
+      // 子代理（general-purpose 等）继承本实例，从而同样受策略约束。
+      desktopPolicy: createDesktopPolicySource(),
     });
     const inputHistoryStore = options.inputHistoryStore ?? asInputHistoryStore(sessionStore);
     const artifactStore =

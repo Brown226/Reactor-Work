@@ -47,6 +47,10 @@ export const MATH_NOISE_RE = /https?:\/\/|www\.|doi[:.]|©|\bfig(?:ure)?\b|\btab
 
 export interface OutlineEntry {
   title: string;
+  /**
+   * 1-based 页码（口径与 pdfjs viewer / `PaperModePanel` 的 `dest[0] + 1` 一致，
+   * 见 pdf-research-core.outlineDestPage）；解析不出目标时为 null。
+   */
   page: number | null;
   level: number;
 }
@@ -125,6 +129,9 @@ export async function deriveSectionsFromPages(
   if (outline.length > 0) {
     for (let i = 0; i < outline.length; i += 1) {
       const node = outline[i];
+      // node.page 是 1-based，恒 ≥1；真值判断即「dest 解析成功」。解析失败的书签
+      // （page === null）逐条跳过；若全部书签都解析不出页码，sections 仍为空，
+      // 函数继续走下面的标题行启发式（保持原兜底行为）。
       if (node.level <= 2 && node.page) {
         sections.push({ id: `sec-${i}`, title: node.title, page: node.page, level: node.level });
       }

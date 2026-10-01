@@ -12,6 +12,7 @@ export {
 export type {
   PdfCitation,
   PdfFormulaCandidate,
+  PdfPageTextResult,
   PdfRegionTextResult,
   PdfStructureResult,
 } from "./pdf-research-core.js";

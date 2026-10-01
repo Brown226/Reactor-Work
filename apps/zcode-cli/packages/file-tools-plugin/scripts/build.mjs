@@ -12,10 +12,13 @@ const require2 = createRequire(import.meta.url);
  * 与 node-repl-host 同款 ESM 产物 + createRequire banner（esbuild 的 esm 产物里
  * __require shim 在 ESM 作用域没有 require 可用；CJS 依赖会在模块求值阶段炸）。
  *
- * external 的原生/大型依赖：anydoc 的 JS wrapper 若被内联，其对平台 .node 的
- * 相对 require 会在 seed 缓存副本里解析失败；onnxruntime-node 同理；
- * libredwg 的 Node 可用实现在 lib/libredwg.js（相对 import wasm 胶水），只能
- * 从资产目录整目录加载。pdfjs/@napi-rs/canvas/paddleocr/jimp 可安全内联。
+ * external 的原生依赖只保留 file-tools 自己的引擎：
+ * - anydoc 的 JS wrapper 若被内联，其对平台 .node 的相对 require 会在 seed 缓存副本里
+ *   解析失败；
+ * - @napi-rs/canvas 的平台 skia .node 同理（js-binding 运行时按平台 require）。
+ * pdfjs（含 worker 拷贝）与 fflate 可安全内联。
+ * onnxruntime-node / @mlightcad/libredwg-web 已随 OCR / DWG 能力拆去 ocr-tools /
+ * dwg-tools（docs/未完成-file-tools拆三插件方案.md），本包不再 import，故从 external 移除。
  */
 const nodeRequireBanner = `import { createRequire as __zcodeCreateRequire } from "node:module";
 const require = __zcodeCreateRequire(import.meta.url);`;
@@ -29,8 +32,6 @@ await build({
   external: [
     // 原生绑定：运行时从资产目录绝对路径加载（src/native.ts）。
     "@firecrawl/anydoc",
-    "onnxruntime-node",
-    "@mlightcad/libredwg-web",
     // @napi-rs/canvas 的平台 skia .node 同上；js-binding 运行时按平台 require。
     "@napi-rs/canvas",
     "@napi-rs/canvas-*",

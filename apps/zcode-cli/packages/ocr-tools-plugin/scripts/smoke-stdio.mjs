@@ -1,21 +1,25 @@
 /**
- * MCP stdio 端到端（file-tools）：spawn dist/mcp/server.js，
- * initialize → tools/list → tools/call（parse_document / pdf_structure + 错误路径）。
+ * MCP stdio 端到端（ocr-tools）：spawn dist/mcp/server.js，
+ * initialize → tools/list → tools/call（ocr_scan）。
  *
- * tools/list 只允许 file-tools 归属的工具；ocr_scan / dwg_* 已拆到 ocr-tools / dwg-tools，
- * 本 server 再暴露它们即失败（拆分方案 docs/未完成-file-tools拆三插件方案.md）。
+ * tools/list 只允许 ocr_scan；file-tools / dwg-tools 的工具出现即失败
+ * （拆分方案 docs/未完成-file-tools拆三插件方案.md）。
  *
  * 用法（须在插件目录下执行，脚本按 cwd 解析 dist/mcp/server.js）：
- *   node scripts/smoke-stdio.mjs [office 文档] [pdf]
- * 省略参数时用仓库内 fixture（docs/审查板块原始数据/标准库测试文档）；fixture 不存在时
- * 该次调用按 SMOKE-SKIP 显式跳过并打印原因，不会静默通过。
+ *   node scripts/smoke-stdio.mjs [图片或 PDF]
+ * 省略参数时用仓库内 fixture（docs/审查板块原始数据/标准库测试文档/2.pdf）。
+ * 开发态未显式设置 ZCODE_SKILL_ENGINE_ROOT 时，脚本按 officeEnginesEnv 的 dev 候选
+ * （packages/desktop/bundled-tools/<platformKey>/office-engines）注入，便于本机冒烟；
+ * 引擎缺失或 fixture 缺失时按 SMOKE-SKIP 显式跳过并打印原因，不静默通过。
  * 退出码：0 通过；1 失败；2 有跳过的调用（未完整验证）。
  */
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
-const FILE_TOOLS = [
+const OCR_TOOLS = ["ocr_scan"];
+/** 拆分后归属 file-tools / dwg-tools 的工具名；出现在本 server 的 tools/list 即回归。 */
+const FOREIGN_TOOLS = [
   "parse_document",
   "docx_patch",
   "pdf_structure",
@@ -23,19 +27,37 @@ const FILE_TOOLS = [
   "pdf_page_text",
   "pdf_region_text",
   "pdf_formula_candidates",
+  "dwg_modify",
+  "dwg_graph",
 ];
-/** 拆分后归属 ocr-tools / dwg-tools 的工具名；出现在本 server 的 tools/list 即回归。 */
-const MOVED_AWAY_TOOLS = ["ocr_scan", "dwg_modify", "dwg_graph"];
+/** 引擎缺失时 ocr_scan 返回的 failed note 特征（src/ocr-python.ts 的 EngineUnavailableError 文案）。 */
+const ENGINE_MISSING_PATTERN = /ENGINE_UNAVAILABLE|office-engines|office_skill_lib|Python/;
 
-// 仓库根：scripts → file-tools-plugin → packages → zcode-cli → apps → repoRoot
+// 仓库根：scripts → ocr-tools-plugin → packages → zcode-cli → apps → repoRoot
 const repoRoot = resolve(import.meta.dirname, "..", "..", "..", "..", "..");
 const fixtureRoot = resolve(repoRoot, "docs", "审查板块原始数据", "标准库测试文档");
-const [, , docArg, pdfArg] = process.argv;
-const docPath = docArg ?? resolve(fixtureRoot, "智能辅助设计平台-软件说明书.docx");
-const pdfPath = pdfArg ?? resolve(fixtureRoot, "2.pdf");
+const [, , fileArg] = process.argv;
+const targetPath = fileArg ?? resolve(fixtureRoot, "2.pdf");
+
+// 开发态引擎根（与 packages/services/src/runtime-tools/officeEnginesEnv.ts 的 dev 候选一致）：
+// 仅在本机未配置时兜底，绝不覆盖显式 env。
+const devEngineRoot = resolve(
+  repoRoot,
+  "packages",
+  "desktop",
+  "bundled-tools",
+  `${process.platform}-${process.arch}`,
+  "office-engines",
+);
+const childEnv = { ...process.env };
+if (!childEnv.ZCODE_SKILL_ENGINE_ROOT?.trim() && existsSync(devEngineRoot)) {
+  childEnv.ZCODE_SKILL_ENGINE_ROOT = devEngineRoot;
+  console.log(`using dev office-engines root: ${devEngineRoot}`);
+}
 
 const child = spawn(process.execPath, ["dist/mcp/server.js"], {
   cwd: process.cwd(),
+  env: childEnv,
   stdio: ["pipe", "pipe", "pipe"],
 });
 
@@ -96,6 +118,12 @@ function toolErrorText(response) {
   return result.isError ? (result.content?.[0]?.text ?? "(isError 无内容)") : null;
 }
 
+/** 区分「本机缺引擎」与真回归：前者跳过并写清原因，后者失败退出。 */
+function engineMissingReason(payload) {
+  const message = `${payload.error ?? ""}${payload.note ?? ""}`;
+  return ENGINE_MISSING_PATTERN.test(message) ? message : null;
+}
+
 const init = await request("initialize", {
   protocolVersion: "2025-11-25",
   capabilities: {},
@@ -108,70 +136,48 @@ child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/ini
 const list = await request("tools/list");
 const toolNames = list.message.result.tools.map((t) => t.name).sort();
 console.log("tools:", toolNames.join(", "));
-// 归属工具必须齐全；多出来的工具（尤其迁走的 ocr/dwg）一律判失败。
-const extraTools = toolNames.filter((name) => !FILE_TOOLS.includes(name));
-const missingTools = FILE_TOOLS.filter((name) => !toolNames.includes(name));
+const extraTools = toolNames.filter((name) => !OCR_TOOLS.includes(name));
+const missingTools = OCR_TOOLS.filter((name) => !toolNames.includes(name));
 if (missingTools.length > 0) fail(`tools/list 缺少 ${missingTools.join(", ")}`);
 if (extraTools.length > 0) {
-  const moved = extraTools.filter((name) => MOVED_AWAY_TOOLS.includes(name));
+  const foreign = extraTools.filter((name) => FOREIGN_TOOLS.includes(name));
   fail(
-    `tools/list 出现非 file-tools 工具：${extraTools.join(", ")}` +
-      (moved.length > 0 ? `（${moved.join(", ")} 已迁至 ocr-tools / dwg-tools）` : ""),
+    `tools/list 出现非 ocr-tools 工具：${extraTools.join(", ")}` +
+      (foreign.length > 0 ? `（${foreign.join(", ")} 归属其它插件）` : ""),
   );
 }
 
-if (!existsSync(docPath)) {
-  skip(`未找到 Office 文档 fixture（${docPath}），跳过 parse_document 调用`);
+if (!existsSync(targetPath)) {
+  skip(`未找到图片/PDF fixture（${targetPath}），跳过 ocr_scan 调用`);
 } else {
-  const parseResult = await request("tools/call", {
-    name: "parse_document",
-    arguments: { file_path: docPath },
+  const ocrResult = await request("tools/call", {
+    name: "ocr_scan",
+    arguments: { file_path: targetPath },
   });
-  const parseError = toolErrorText(parseResult);
-  if (parseError) fail(`parse_document 返回错误：${parseError}`);
-  const parseContent = toolPayload(parseResult);
-  console.log(
-    "parse_document:",
-    JSON.stringify({
-      ok: true,
-      parser: parseContent.parser,
-      charCount: parseContent.charCount,
-      head: parseContent.markdown.slice(11, 200),
-    }),
-  );
+  const ocrError = toolErrorText(ocrResult);
+  if (ocrError) {
+    fail(`ocr_scan 返回错误：${ocrError}`);
+  } else {
+    const ocr = toolPayload(ocrResult);
+    if (ocr.status === "failed") {
+      const reason = engineMissingReason(ocr);
+      if (reason) skip(`OCR 引擎不可用，跳过 ocr_scan：${reason}`);
+      else fail(`ocr_scan status=failed：${ocr.note ?? ""}`);
+    } else {
+      console.log(
+        "ocr_scan:",
+        JSON.stringify({
+          ok: true,
+          pages: ocr.pages,
+          confidence: ocr.confidence,
+          charCount: ocr.text.length,
+          head: ocr.text.slice(0, 200),
+          note: ocr.note,
+        }),
+      );
+    }
+  }
 }
-
-if (!existsSync(pdfPath)) {
-  skip(`未找到 PDF fixture（${pdfPath}），跳过 pdf_structure 调用`);
-} else {
-  const structureResult = await request("tools/call", {
-    name: "pdf_structure",
-    arguments: { file_path: pdfPath },
-  });
-  const structureError = toolErrorText(structureResult);
-  if (structureError) fail(`pdf_structure 返回错误：${structureError}`);
-  const structure = toolPayload(structureResult);
-  console.log(
-    "pdf_structure:",
-    JSON.stringify({
-      ok: true,
-      pages: structure.page_count,
-      title: structure.title,
-      outline: structure.outline.length,
-      sections: structure.sections.length,
-      figures: structure.figures.length,
-    }),
-  );
-}
-
-// 错误路径：不存在的文件必须返回结构化错误（isError 或 JSON-RPC error），不能崩 server。
-const missing = await request("tools/call", {
-  name: "parse_document",
-  arguments: { file_path: "Z:/does-not-exist.docx" },
-});
-const missingError = toolErrorText(missing);
-if (!missingError) fail("parse_document 对不存在的文件没有返回错误");
-console.log("missing-file handling:", JSON.stringify({ isError: true, content: missingError }));
 
 const notFound = await request("tools/call", { name: "no_such_tool", arguments: {} });
 // MCP 层两种合法形态：JSON-RPC error（无效 tool 名）或 isError 结果（服务端自行兜底）。

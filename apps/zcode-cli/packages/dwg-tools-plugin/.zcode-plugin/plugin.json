@@ -2,5 +2,14 @@
   "name": "dwg-tools",
   "version": "0.1.0",
   "description": "Offline DWG drawing read/write and symbol topology (ACadSharp sidecar).",
-  "main": "dist/mcp/server.js"
+  "author": { "name": "Z.ai" },
+  "license": "MIT",
+  "mcpServers": {
+    "dwg-tools": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["dist/mcp/server.js"],
+      "timeoutMs": 600000
+    }
+  }
 }

@@ -16,10 +16,15 @@ import {
   type HttpClientRunOptions,
 } from "@zcode/contracts";
 import {
+  isReactorEgressHostAllowed,
+  type ReactorDesktopPolicySource,
+} from "@zcode/shared";
+import {
   loadTlsCaCertificates,
   resolveProxyForRequest,
   resolveWebFetchProxyForRequest,
 } from "../network/http-config.js";
+import { createDesktopPolicySource } from "../policy/desktopPolicySource.js";
 import {
   assertPublicEgressDestination,
   createPublicEgressLookup,
@@ -41,6 +46,22 @@ export interface NodeHttpClientAdapterOptions {
   caCertFile?: string;
   dnsLookup?: DnsLookup;
   capturedUserProxyEnvFallback?: boolean;
+  /**
+   * 组织出网白名单来源（P4.3）：缺省读 `{用户数据根}/desktop-policy.json`（Host 写、CLI 只读）。
+   * 只作用于 `egressPolicy === "public"` 的请求（WebFetch 这类统一出网口），
+   * 未配置（文件不存在 / 名单为空）时行为与接线前完全一致 —— 不限制。
+   */
+  desktopPolicy?: ReactorDesktopPolicySource;
+}
+
+/** 进程内共享的默认策略来源：读同一个文件，没必要每个 client 各持一份缓存。 */
+let sharedDesktopPolicySource: ReactorDesktopPolicySource | null = null;
+function resolveDesktopPolicySource(
+  override: ReactorDesktopPolicySource | undefined,
+): ReactorDesktopPolicySource {
+  if (override) return override;
+  sharedDesktopPolicySource ??= createDesktopPolicySource();
+  return sharedDesktopPolicySource;
 }
 
 export class NodeHttpClientAdapter implements HttpClientPort {
@@ -85,6 +106,9 @@ export class NodeHttpClientAdapter implements HttpClientPort {
 
     try {
       if (publicDnsLookup) {
+        // P4.3 出网白名单：与 public-egress（私网 IP 校验）**双重判定**，互不替代。
+        // 顺序上先判组织名单（本地判定，不需要 DNS），再判公网可达性。
+        assertEgressAllowlist(url, this.options.desktopPolicy);
         assertPublicEgressProxyBoundary(url, proxy.proxyUrl);
         await assertPublicEgressDestination(url, publicDnsLookup, {
           signal: abortController.signal,
@@ -269,8 +293,24 @@ function createRequestAgent(
   return undefined;
 }
 
-function assertPublicEgressProxyBoundary(url: URL, proxyUrl: string | undefined): void {
-  if (!proxyUrl) return;
+/**
+ * 组织出网白名单闸（P4.3）：命中"不在名单内"即拒绝，理由给中文可读文案（会进入模型上下文）。
+ *
+ * 判定规则见 `@zcode/shared` 的 `isReactorEgressHostAllowed`（裸域含子域 / `*.` 不含裸域 /
+ * `*` 逃生阀 / 端口不参与匹配）；名单为空或策略文件不存在 = 不限制，与接线前行为一致。
+ */
+function assertEgressAllowlist(url: URL, source: ReactorDesktopPolicySource | undefined): void {
+  const allowlist = resolveDesktopPolicySource(source).current()?.egressAllowlist;
+  if (!allowlist || allowlist.length === 0) return;
+  if (isReactorEgressHostAllowed(url.hostname, allowlist)) return;
+  throw createHttpClientError({
+    code: "egress_blocked",
+    url: url.toString(),
+    message: `出网被组织策略拒绝：域名 ${url.hostname} 不在允许访问的清单内（如需访问请联系管理员调整出网白名单）`,
+  });
+}
+
+function assertPublicEgressProxyBoundary(url: URL, proxyUrl: string | undefined): void {  if (!proxyUrl) return;
   // 普通代理会在代理侧解析目标域名，本地 DNS 校验无法证明最终 IP 仍是公网地址。
   throw createHttpClientError({
     code: "egress_blocked",
