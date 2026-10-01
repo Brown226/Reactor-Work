@@ -8,6 +8,7 @@ import {
   app,
   BrowserWindow,
   MessageChannelMain,
+  safeStorage,
   utilityProcess as electronUtilityProcess,
 } from "electron";
 import type { MessagePortMain, UtilityProcess as ElectronUtilityProcess } from "electron";
@@ -19,6 +20,7 @@ import {
   type HostAgentProcessSpawnedResponse,
   type HostCuaOperationStateResponse,
   type HostMcpTelemetryResponse,
+  type HostSafeStorageOperationRequestResponse,
   type HostSessionCreateTelemetryResponse,
   type TaskRealtimeHostDeliveryKind,
   formatZCodeHostProcessName,
@@ -281,9 +283,57 @@ export function spawnHostProcess(
   });
 
   const databaseStartupRelay = bindDatabaseStartupRelay(win, child, hostId);
+
+  // main 侧 safeStorage 代持操作。utility process 拿不到 safeStorage 模块（Electron 41
+  // 的 utility process 仅暴露 net / systemPreferences），凭据 v2（OS 钥匙串）加解密按
+  // requestId 委托 main；明文只走 parentPort 进程内通道，不落盘不落网络。
+  // decryptString 失败（换机器 / 钥匙串条目丢失）原样抛错，由凭据层转成「请重新登录」
+  // 的可读错误；isEncryptionAvailable 在 app ready 前按平台语义返回 false，host 据此
+  // 保持 v1 行为。
+  const resolveSafeStorageOperation = async (
+    request: HostSafeStorageOperationRequestResponse,
+  ): Promise<{ available?: boolean; payload?: string }> => {
+    switch (request.operation) {
+      case "is-available":
+        return { available: safeStorage.isEncryptionAvailable() };
+      case "encrypt":
+        return {
+          payload: (await safeStorage.encryptString(request.plainText ?? "")).toString(
+            "base64url",
+          ),
+        };
+      case "decrypt":
+        return {
+          payload: safeStorage.decryptString(Buffer.from(request.cipherText ?? "", "base64url")),
+        };
+    }
+  };
+
   child.on("message", (message: unknown) => {
     const result = hostResponseMessageSchema.safeParse(message);
     if (!result.success) {
+      return;
+    }
+
+    if (result.data.type === HostResponseTypes.SafeStorageOperationRequest) {
+      const request = result.data;
+      void resolveSafeStorageOperation(request)
+        .then((payload) => {
+          child.postMessage({
+            type: HostMessageTypes.SafeStorageOperationResult,
+            requestId: request.requestId,
+            ok: true,
+            ...payload,
+          });
+        })
+        .catch((error: unknown) => {
+          child.postMessage({
+            type: HostMessageTypes.SafeStorageOperationResult,
+            requestId: request.requestId,
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
       return;
     }
 

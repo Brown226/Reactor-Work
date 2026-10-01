@@ -410,6 +410,27 @@ export const hostLocalMediaPreviewPathAuthorizeResultMessageSchema = z
   })
   .strict();
 
+// main → host：safeStorage 代理操作结果。encrypt 回 cipherText（base64url），
+// decrypt 回 plainText，is-available 回 available；ok=false 时 error 说明原因
+// （钥匙串不可用 / 解密失败等），host 侧据此抛错让凭据层给出可读提示。
+export const hostSafeStorageOperationResultMessageSchema = z
+  .object({
+    type: z.literal("safe-storage-operation-result"),
+    requestId: nonEmptyStringSchema,
+    ok: z.boolean(),
+    available: z.boolean().optional(),
+    /** operation=encrypt 的密文（base64url）或 decrypt 的明文。 */
+    payload: z.string().optional(),
+    error: z.string().optional(),
+  })
+  .strict();
+export type HostSafeStorageOperationRequestResponse = z.infer<
+  typeof hostSafeStorageOperationRequestResponseSchema
+>;
+export type HostSafeStorageOperationResultMessage = z.infer<
+  typeof hostSafeStorageOperationResultMessageSchema
+>;
+
 export const hostCuaPipFocusChangedMessageSchema = z
   .object({
     type: z.literal("cua-pip-focus-changed"),
@@ -469,6 +490,7 @@ export const hostIncomingMessageSchema = z.discriminatedUnion("type", [
   hostSessionMessageDeliverMessageSchema,
   hostSessionMessageDeliveryResultMessageSchema,
   hostFeedbackLogArchiveResultMessageSchema,
+  hostSafeStorageOperationResultMessageSchema,
   hostCronRunMessageSchema,
   hostOffPeakRunMessageSchema,
   hostBrowserExecuteResultMessageSchema,
@@ -871,6 +893,21 @@ export const hostLocalMediaPreviewPathAuthorizeRequestResponseSchema = z
   })
   .strict();
 
+// host → main：safeStorage（OS 钥匙串）代理操作。utility process 拿不到 safeStorage
+// 模块，凭据加解密只能由持有钥匙串的 main 代持；payload 走 parentPort 进程内通道，
+// 不落盘不落网络。安全权衡：宿主（Electron 进程组）本就是受信边界，代理不扩大边界。
+export const hostSafeStorageOperationRequestResponseSchema = z
+  .object({
+    type: z.literal("safe-storage-operation-request"),
+    requestId: nonEmptyStringSchema,
+    operation: z.enum(["is-available", "encrypt", "decrypt"]),
+    /** operation=encrypt：待加密明文。 */
+    plainText: z.string().optional(),
+    /** operation=decrypt：safeStorage 密文（base64url）。 */
+    cipherText: nonEmptyStringSchema.optional(),
+  })
+  .strict();
+
 export const networkObservationSchema = z.object({
   transport: z.enum(["http", "websocket", "rpc"]),
   interface: z.string(),
@@ -970,6 +1007,7 @@ export const hostResponseMessageSchema = z.discriminatedUnion("type", [
   hostSessionRouteAnnounceResponseSchema,
   hostSessionMessageDeliverResultResponseSchema,
   hostFeedbackLogArchiveRequestResponseSchema,
+  hostSafeStorageOperationRequestResponseSchema,
   hostBrowserExecuteRequestResponseSchema,
   hostLocalMediaPreviewPathAuthorizeRequestResponseSchema,
   hostNetworkTelemetryBatchResponseSchema,

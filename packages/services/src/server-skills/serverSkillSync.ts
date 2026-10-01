@@ -1,4 +1,4 @@
-import { ServiceChannels, type ServerSkillCatalogItem } from "@zcode/shared";
+import { ServiceChannels, type ServerSkillBundleDetail, type ServerSkillBundleSummary, type ServerSkillCatalogItem, type ServerSkillDetail } from "@zcode/shared";
 import { createServiceDescriptor } from "../descriptors.js";
 
 /**
@@ -50,6 +50,17 @@ export interface IServerSkillSyncService {
   setFavorite(name: string, favorited: boolean): Promise<ServerSkillCatalogSyncResult>;
   /** 进程内最近一次成功 `syncCatalog()` 的目录投影（不联网；UI 首帧渲染用）。 */
   getCatalog(): Promise<readonly ServerSkillCatalogItem[]>;
+  /**
+   * 拉单个技能详情（目录条目 + SKILL.md 正文 + 附件清单 + allowedTools；M2 #2）。
+   * 只读不落盘、不走同步队列；失败（含未登录/404）向上抛，由 UI 弹层自行展示。
+   */
+  getDetail(name: string): Promise<ServerSkillDetail>;
+  /** 用户可见套件摘要（M2/M3 #13；只读投影，失败向上抛）。 */
+  listBundles(): Promise<readonly ServerSkillBundleSummary[]>;
+  /** 套件详情（含成员目录条目；只读，失败向上抛）。 */
+  getBundleDetail(id: number): Promise<ServerSkillBundleDetail>;
+  /** 整套安装套件：服务端逐成员写安装后 re-GET + 落盘 reconcile（与单技能 install 同语义 D3）。 */
+  installBundle(id: number): Promise<ServerSkillSyncResult>;
 }
 
 /** 一次 `syncCatalog()` / `setFavorite()` 的结果（市场投影，只在内存，不落盘）。 */

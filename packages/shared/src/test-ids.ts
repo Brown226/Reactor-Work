@@ -737,3 +737,9 @@ export const TID_REACTOR_SERVER_LOGOUT = "reactor-server-logout";
 export const TID_REACTOR_SERVER_SYNC_MODELS = "reactor-server-sync-models";
 /** 企业服务端设置分区：登录态/错误提示（loading 与 error 态才出现） */
 export const TID_REACTOR_SERVER_STATUS = "reactor-server-status";
+/** 企业服务端设置分区：本月用量简报（累计 token / 额度进度，P4.1 做-4） */
+export const TID_REACTOR_SERVER_USAGE = "reactor-server-usage";
+/** 企业服务端设置分区：手动刷新用量简报按钮 */
+export const TID_REACTOR_SERVER_REFRESH_USAGE = "reactor-server-refresh-usage";
+/** 企业服务端设置分区：组织策略摘要（模式天花板 / 命令黑名单 / 出网白名单） */
+export const TID_REACTOR_SERVER_POLICY = "reactor-server-policy";

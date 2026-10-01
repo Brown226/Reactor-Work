@@ -5,10 +5,7 @@ import { isServerSkillNameFileSafe } from "@zcode/shared";
 import type { ApiClient, ServerSkillCatalogItem } from "@zcode/shared";
 import type { ICredentialService } from "../credential/credential.js";
 import { createServiceLogger } from "../logger/serviceLogger.js";
-import {
-  REACTOR_SERVER_CREDENTIAL_KEYS,
-  type IReactorServerService,
-} from "../reactor-server/reactorServer.js";
+import { type IReactorServerService } from "../reactor-server/reactorServer.js";
 import {
   createReactorServerClient,
   ReactorServerHttpError,
@@ -19,6 +16,11 @@ import {
   type ServerSkillCatalogSyncResult,
   type ServerSkillSyncResult,
 } from "./serverSkillSync.js";
+import {
+  createServerSessionResolver,
+  createServerSkillMarketAccess,
+  type ServerSession,
+} from "./serverSkillServerAccess.js";
 import { resolveServerSkillRoot } from "./serverSkillsRoot.js";
 
 /**
@@ -115,11 +117,7 @@ function catalogResult(
   };
 }
 
-interface ServerSession {
-  readonly serverUrl: string;
-  readonly accessToken: string;
-}
-
+/** 会话解析与 M2 市场出口（详情/套件）下沉至 serverSkillServerAccess.ts（语义逐字保留）。 */
 export function createServerSkillSyncService(options: {
   apiClient: ApiClient;
   credentials: ICredentialService;
@@ -139,20 +137,11 @@ export function createServerSkillSyncService(options: {
     return run;
   }
 
-  async function resolveSession(): Promise<ServerSession | null> {
-    let status;
-    try {
-      status = await options.reactorServer.getStatus();
-    } catch {
-      return null;
-    }
-    if (!status.loggedIn || !status.serverUrl) return null;
-    const accessToken = await options.credentials
-      .load(REACTOR_SERVER_CREDENTIAL_KEYS.accessToken)
-      .catch(() => null);
-    if (!accessToken) return null;
-    return { serverUrl: status.serverUrl, accessToken };
-  }
+  // 既有会话解析逻辑原样下沉（serverSkillServerAccess.ts）；此处仅接线。
+  const resolveSession = createServerSessionResolver({
+    reactorServer: options.reactorServer,
+    credentials: options.credentials,
+  });
 
   async function fetchSkillFile(
     session: ServerSession,
@@ -458,6 +447,7 @@ export function createServerSkillSyncService(options: {
     return errors.length > 0 ? { ...refreshed, errors } : refreshed;
   }
 
+  // M2 市场出口：详情/套件只读不进串行队列，installBundle 经 enqueueInstall 进队列（包装在 access 内）。
   return {
     sync: () => enqueue(runSync),
     syncCatalog: () => enqueue(runSyncCatalog),
@@ -467,5 +457,6 @@ export function createServerSkillSyncService(options: {
     setFavorite: (name: string, favorited: boolean) =>
       enqueue(() => runSetFavorite(name, favorited)),
     getCatalog: async () => lastCatalog,
+    ...createServerSkillMarketAccess({ client, resolveSession, runSync, enqueueInstall: enqueue }),
   };
 }

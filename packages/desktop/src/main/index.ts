@@ -40,6 +40,7 @@ import {
   nativeImage,
   net,
   protocol,
+  safeStorage,
   session,
   webContents,
 } from "electron";
@@ -672,7 +673,9 @@ const UPDATE_STATUS_WINDOW_TRAFFIC_LIGHT_POSITION = { x: 10, y: 10 } as const;
 const mainSettingService = createSettingService();
 const appLaunchGate = createAppLaunchGate();
 const appLaunchCoordinator = createAppLaunchCoordinator(appLaunchGate);
-const appTelemetryCredentialService = createCredentialService();
+// main 进程在 Electron 环境内，直接持有 safeStorage（OS 钥匙串）能力；凭据写入优先
+// v2。app ready 前 isEncryptionAvailable 按平台语义返回 false，自动落入 v1 既定降级。
+const appTelemetryCredentialService = createCredentialService({ safeStorage });
 async function resolveCurrentZCodeEndpointOrigin() {
   return resolveZCodeEndpointOrigin({
     env: ZCODE_ENV,

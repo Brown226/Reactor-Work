@@ -3,6 +3,8 @@ import type { ModelId, ProviderConfigObject, ProviderId } from "@zcode/provider"
 import type { ICredentialService } from "../credential/credential.js";
 import type { IProviderSettingsService } from "../model-provider/providerFacadeServices.js";
 import { createServiceLogger } from "../logger/serviceLogger.js";
+import type { ModelCallUsageDelta } from "./auditEventMapping.js";
+import { createReactorServerP4Wiring } from "./reactorServerP4Wiring.js";
 import {
   createReactorServerClient,
   deriveGatewayBaseUrl,
@@ -52,6 +54,23 @@ export interface CreateReactorServerServiceOptions {
   readonly onLoginSuccess?: () => unknown;
   /** 登出本地清理完成后触发（P3：清空 `server-agents/`）。失败不阻断登出。 */
   readonly onLogout?: () => unknown;
+  /**
+   * 会话流用量事件源（P4.1b）：Host 装配注入（订阅 CLI 的 `usage.delta` 事实）。
+   * 缺省 = 不上报（只保留 outbox/flush 语义，供探针与测试）。
+   */
+  readonly subscribeUsageDelta?: (listener: (delta: ModelCallUsageDelta) => void) => () => void;
+  /** outbox 落盘路径（缺省 `{用户数据根}/audit-outbox.jsonl`；测试注入临时目录）。 */
+  readonly auditOutboxPath?: string;
+  /** 策略缓存路径（缺省 `{用户数据根}/desktop-policy.json`；测试注入临时目录）。 */
+  readonly policyFilePath?: string;
+  /** 上报合并窗口（缺省 30s）与定时兜底（缺省 5min）；测试注入短窗口以便确定性断言。 */
+  readonly auditFlushDebounceMs?: number;
+  readonly auditFlushIntervalMs?: number;
+  /**
+   * 构造后是否自动补一次启动态：已登录则拉策略 + 挂用量事件源，未登录则清空策略缓存。
+   * 缺省 true；测试可关掉以避免后台网络。
+   */
+  readonly bootstrapOnStart?: boolean;
 }
 
 /** 从 JWT payload 读取 exp（不验签：只用于本地"该不该刷新"的判断）。 */
@@ -81,6 +100,28 @@ export function createReactorServerService(
   let cachedProviderId: string | null | undefined;
   let cachedModels: readonly string[] = [];
   let lastError: string | null = null;
+
+  // ── P4：用量上报（P4.1）与组织策略（P4.2b）都在服务内闭环 ──
+  // 为什么由服务持有而不是让 node.ts 直接调 bridge：outbox 的入队/peek/ack 是 Host 内部语义，
+  // 暴露成公开方法就等于给 Renderer 开了第二条写路径（P4 文档 §4.2）。
+  // 装配细节收在 reactorServerP4Wiring.ts，这里只保留"何时喊一声"（登录/登出/启动）。
+  const p4 = createReactorServerP4Wiring({
+    client,
+    credentials,
+    hasUsableSession,
+    ensureAccessToken,
+    readManagedProviderEntry,
+    ...(options.subscribeUsageDelta ? { subscribeUsageDelta: options.subscribeUsageDelta } : {}),
+    ...(options.auditOutboxPath !== undefined ? { auditOutboxPath: options.auditOutboxPath } : {}),
+    ...(options.policyFilePath !== undefined ? { policyFilePath: options.policyFilePath } : {}),
+    ...(options.auditFlushDebounceMs !== undefined
+      ? { auditFlushDebounceMs: options.auditFlushDebounceMs }
+      : {}),
+    ...(options.auditFlushIntervalMs !== undefined
+      ? { auditFlushIntervalMs: options.auditFlushIntervalMs }
+      : {}),
+    logger,
+  });
 
   function toUserInfo(user: {
     uid: string;
@@ -352,6 +393,8 @@ export function createReactorServerService(
     // 登录即把模型目录拉下来写进企业 provider，UI 随后就能选模型。
     await syncModels();
     logger.info(undefined, "企业服务端登录成功", { serverUrl, uid: result.user.uid });
+    // P4.1 / P4.2b：登录成功 = 用量上报的启动点 + 策略拉取点（都 fire-and-forget，不阻断登录）。
+    p4.onLogin();
     if (options.onLoginSuccess) {
       void Promise.resolve(options.onLoginSuccess()).catch((error: unknown) => {
         logger.warn(undefined, "登录后钩子失败（不阻断登录）", {
@@ -365,6 +408,9 @@ export function createReactorServerService(
   async function logout(): Promise<void> {
     const serverUrl = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.serverUrl);
     const tokens = await loadTokens();
+    // P4.1：退出前 best-effort 补传一次（令牌此时仍有效）再退订；顺序由 wiring 内部保证
+    // （先 flush 再 stop：反了会让未上报事件只能等下次登录才补）。
+    await p4.beforeLogout(Boolean(serverUrl && tokens));
     if (serverUrl && tokens) {
       // 尽力吊销服务端 refresh；失败不影响本地清理，否则用户会卡在"退不出去"。
       await client.logout(serverUrl, tokens.accessToken).catch((error: unknown) => {
@@ -375,6 +421,8 @@ export function createReactorServerService(
     }
     await clearEnterpriseProviderModels();
     await clearSession();
+    // P4.2b：登出后策略不同步、不强制 → 清掉缓存（否则组织策略会在无登录态下继续限制用户）。
+    await p4.clearPolicy();
     // 登出钩子（清空 server-agents 等）在本地会话清完之后执行；失败只记日志，不阻断登出。
     if (options.onLogout) {
       try {
@@ -413,5 +461,26 @@ export function createReactorServerService(
     return { apiKey: await ensureGatewayToken(serverUrl) };
   }
 
-  return { getStatus, login, logout, syncModels, resolveGatewayAuth };
+  // 启动补一次：进程重启后（凭据仍在）恢复用量上报与策略缓存，不等用户再点一次登录。
+  if (options.bootstrapOnStart !== false) {
+    void p4.bootstrap().catch((error: unknown) => {
+      logger.warn(undefined, "启动补一次（策略/用量）失败", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
+  }
+
+  return {
+    getStatus,
+    login,
+    logout,
+    syncModels,
+    resolveGatewayAuth,
+    isEnterpriseProvider: p4.isEnterpriseProvider,
+    flushUsageReports: p4.flushUsageReports,
+    getUsageReportStatus: p4.getUsageReportStatus,
+    refreshPolicy: p4.refreshPolicy,
+    getPolicy: () => p4.policyCache.getView(),
+    getUsageOverview: p4.getUsageOverview,
+  };
 }

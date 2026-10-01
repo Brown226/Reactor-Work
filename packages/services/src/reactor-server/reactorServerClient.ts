@@ -1,6 +1,5 @@
 import {
   normalizeServerAgentList,
-  normalizeServerSkillCatalogItem,
   normalizeServerSkillCatalogList,
   normalizeServerSkillCatalogPage,
   type ApiClient,
@@ -12,6 +11,16 @@ import {
   type ServerSkillFavoriteResult,
   type ServerSkillInstallResult,
 } from "@zcode/shared";
+import { toAgentMutationResult, toSkillMutationResult } from "./reactorServerWriteResults.js";
+import {
+  createReactorServerP4Endpoints,
+  type ReactorUsageGroupBy,
+  type ReactorUsageSummary,
+  type ReactorUsageSummaryRow,
+} from "./reactorServerP4Endpoints.js";
+import { createReactorServerMarketEndpoints } from "./reactorServerMarketEndpoints.js";
+
+export type { ReactorUsageGroupBy, ReactorUsageSummary, ReactorUsageSummaryRow };
 
 /**
  * 企业服务端的 HTTP 客户端（薄封装，不做重试与状态）。
@@ -445,35 +454,13 @@ export function createReactorServerClient(apiClient: ApiClient) {
       );
       return toAgentMutationResult(data, name);
     },
-  };
-}
 
-/** 技能写操作返回按 shared 契约兜底：缺 `affected` 时退回目标名；`skill` 缺失时留 null（由 re-GET 补）。 */
-function toSkillMutationResult(data: unknown, name: string): ServerSkillInstallResult {
-  const record = (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>;
-  const affected = Array.isArray(record.affected)
-    ? record.affected.filter((entry): entry is string => typeof entry === "string")
-    : [];
-  const skill = normalizeServerSkillCatalogItem(record.skill);
-  return {
-    ok: true,
-    affected: affected.length > 0 ? affected : [name],
-    skill,
-  };
-}
-
-/** 写操作返回按 shared 契约兜底：服务端保证 `{ok, affected[...]}`，缺项时退回目标名。 */
-function toAgentMutationResult(data: unknown, name: string): ServerAgentMutationResult {
-  const record = (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>;
-  const affected = Array.isArray(record.affected)
-    ? record.affected.filter((entry): entry is string => typeof entry === "string")
-    : [];
-  return {
-    ok: true,
-    affected: affected.length > 0 ? affected : [name],
-    ...(record.created !== undefined ? { created: record.created === true } : {}),
-    ...(record.enabled !== undefined ? { enabled: record.enabled === true } : {}),
-    ...(record.favorited !== undefined ? { favorited: record.favorited === true } : {}),
+    // P4 出口（批量审计上报 / 策略下发 / 用量聚合）在 reactorServerP4Endpoints.ts，
+    // 与这里共用同一个 request 闭包：不新开第二条出网通道，也不把本文件顶过行数上限。
+    ...createReactorServerP4Endpoints(request),
+    // M2 市场出口（技能详情 /me/skills/:name、套件 /me/bundles*）在 reactorServerMarketEndpoints.ts，
+    // 同 P4 惯例共用 request 闭包；形状归一化全部落在 shared 契约。
+    ...createReactorServerMarketEndpoints(request),
   };
 }
 

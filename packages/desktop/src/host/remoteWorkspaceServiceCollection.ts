@@ -36,6 +36,7 @@ import {
   IPromptAttachmentTransferService,
   type IServiceAccessor,
 } from "@zcode/services";
+import type { CredentialSafeStorageAdapter } from "@zcode/services/node";
 import {
   ConversationShareHttpClient,
   ConversationShareService,
@@ -93,10 +94,14 @@ export function createRemoteWorkspaceServiceCollection(params: {
   runtimePreferencesBridge: {
     onError: (error: unknown) => void;
   };
+  /** 远程 workspace 读写的是本机凭据；与 Local Host 共用同一 safeStorage 代理桥。 */
+  credentialSafeStorage?: CredentialSafeStorageAdapter;
 }): ServiceCollection {
   assertLegacyRemoteWorkspaceRpcContract(params.connectionServices);
   const localSettingService = createSettingService();
-  const localCredentialService = createCredentialService();
+  const localCredentialService = createCredentialService({
+    safeStorage: params.credentialSafeStorage,
+  });
   const localAccountProviderCredentialStore = createAccountProviderCredentialStore({
     credentialService: localCredentialService,
   });

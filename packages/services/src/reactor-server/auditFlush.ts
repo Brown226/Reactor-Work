@@ -133,6 +133,13 @@ export function createAuditFlushScheduler(options: {
   let intervalTimer: ReturnType<typeof setInterval> | null = null;
   let inFlight: Promise<AuditFlushResult> | null = null;
 
+  // 计时器不阻止进程退出：Host 是长驻进程，但单测/CLI 退出不该被"5 分钟兜底"拖住
+  // （Node 环境才有 unref；注入的假计时器可以没有）。
+  const unref = (timer: unknown): void => {
+    const candidate = timer as { unref?: () => void } | null;
+    candidate?.unref?.();
+  };
+
   const runOnce = (): Promise<AuditFlushResult> => {
     // 并发调用合并成同一次 flush：多窗口/多触发点同时到达时不重复发包。
     if (inFlight) return inFlight;
@@ -149,6 +156,7 @@ export function createAuditFlushScheduler(options: {
         debounceTimer = null;
         void runOnce();
       }, debounceMs);
+      unref(debounceTimer);
     },
     flushNow: runOnce,
     start() {
@@ -156,6 +164,7 @@ export function createAuditFlushScheduler(options: {
       intervalTimer = setIntervalImpl(() => {
         void runOnce();
       }, intervalMs);
+      unref(intervalTimer);
     },
     dispose() {
       if (debounceTimer !== null) {

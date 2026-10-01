@@ -65,6 +65,7 @@ import {
   type OffPeakRequestAuthBuilder,
 } from "@zcode/services/node";
 import { createHostResourceUsageResponder } from "./hostResourceUsage.js";
+import { createSafeStorageMainBridge } from "./safeStorageMainBridge.js";
 import {
   assertBoundSessionDispatchable,
   resolveOffPeakDispatchKind,
@@ -255,6 +256,17 @@ const browserControlMainBridge = createBrowserControlMainBridge({
       ...input,
       ...(remoteBackend ? { remoteBackend } : {}),
     });
+  },
+});
+
+// safeStorage host↔main 桥：utility process 拿不到 Electron 的 safeStorage 模块，
+// 凭据 v2（OS 钥匙串）加解密委托 main 代持；adapter 注入本地/远程两套服务装配。
+const safeStorageMainBridge = createSafeStorageMainBridge({
+  postToMain: (message) => {
+    if (!parentPort) {
+      throw new Error("parentPort unavailable");
+    }
+    parentPort.postMessage(message);
   },
 });
 
@@ -1666,6 +1678,7 @@ async function createWindowRemoteConnectionHandle(params: {
     connectionServices: backendConnection.services,
     sourceServices: activeServices ?? undefined,
     parentPort,
+    credentialSafeStorage: safeStorageMainBridge.adapter,
     createRemotePromptAttachmentSessionService: (service) =>
       createRemotePromptAttachmentSessionService(service, {
         materializePromptAttachments,
@@ -2336,6 +2349,11 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
     return;
   }
 
+  if (msg.type === HostMessageTypes.SafeStorageOperationResult) {
+    safeStorageMainBridge.handleResultMessage(msg);
+    return;
+  }
+
   if (msg.type === HostMessageTypes.CronRun) {
     if (databaseStartup?.coordinator.snapshot.phase !== "ready") {
       parentPort.postMessage({
@@ -2809,6 +2827,7 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
               prepareLegacyAccountConnections,
               hostApiNetworkTransport,
               authorizeLocalMediaPreviewPath,
+              credentialSafeStorage: safeStorageMainBridge.adapter,
               runtimeProcessEnvPatch: msg.runtimeProcessEnvPatch,
               agentRuntimeContext: {
                 getDeviceMid: () => msg.deviceMid,

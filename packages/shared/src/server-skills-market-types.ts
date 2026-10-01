@@ -197,3 +197,150 @@ export function normalizeServerSkillCatalogPage(payload: unknown): ServerSkillCa
     pageSize: asNumber(record.pageSize) || items.length,
   };
 }
+
+/* ===== 技能详情（`GET /me/skills/:name`，M2 #2；事实源 server skills routes 的详情端点）===== */
+
+/** 详情响应里的附件清单项（服务端 `listSkillFiles`，与落盘集 `files` 同形；内容按需另走 /file）。 */
+export interface ServerSkillDetailFile {
+  readonly path: string;
+  readonly size: number;
+  readonly sha256: string;
+  readonly executable: boolean;
+}
+
+/** `GET /me/skills/:name` 详情：目录条目 + SKILL.md 正文 + allowedTools + 附件清单。 */
+export interface ServerSkillDetail {
+  /**
+   * 目录条目（市场关系字段齐全）；服务端返回异常形状时为 null，
+   * UI 以空态兜底（服务端 404 在客户端已抛 ReactorServerHttpError，不会走到这里）。
+   */
+  readonly skill: ServerSkillCatalogItem | null;
+  /** SKILL.md 原文（frontmatter + 正文）；服务端未返回时为空串（UI 空态）。 */
+  readonly content: string;
+  /** 服务端从 SKILL.md frontmatter 解析出的 allowed-tools（客户端不重复解析）。 */
+  readonly allowedTools: readonly string[];
+  /** 附件清单（仅元信息，本期详情弹层不做内容下载）。 */
+  readonly files: readonly ServerSkillDetailFile[];
+  /** 附件总字节（服务端 `filesTotalBytes`；缺失时按 files 求和兜底）。 */
+  readonly filesTotalBytes: number;
+}
+
+/** 归一化 `GET /me/skills/:name` 响应：只兜底不抛错；非法 path 的附件丢弃。 */
+export function normalizeServerSkillDetail(payload: unknown): ServerSkillDetail {
+  const record = (typeof payload === "object" && payload !== null
+    ? payload
+    : {}) as Record<string, unknown>;
+  const files = (Array.isArray(record.files) ? record.files : [])
+    .map((rawFile): ServerSkillDetailFile => {
+      const file = (typeof rawFile === "object" && rawFile !== null
+        ? rawFile
+        : {}) as Record<string, unknown>;
+      return {
+        path: typeof file.path === "string" ? file.path : "",
+        size: asNumber(file.size),
+        sha256: typeof file.sha256 === "string" ? file.sha256 : "",
+        executable: file.executable === true,
+      };
+    })
+    .filter((file) => file.path.length > 0);
+  const declaredTotal = asNumber(record.filesTotalBytes);
+  return {
+    skill: normalizeServerSkillCatalogItem(record.skill),
+    content: typeof record.content === "string" ? record.content : "",
+    allowedTools: asStringList(record.allowedTools),
+    files,
+    filesTotalBytes: declaredTotal > 0 ? declaredTotal : files.reduce((sum, f) => sum + f.size, 0),
+  };
+}
+
+/* ===== 技能套件（`/me/bundles`，M2/M3 #13；事实源 server skills routes 套件端点）===== */
+
+/** `GET /me/bundles` 单条摘要：服务端按「对该用户可见」口径统计成员数与我的已装数。 */
+export interface ServerSkillBundleSummary {
+  readonly id: number;
+  readonly name: string;
+  readonly title: string;
+  readonly description: string | null;
+  readonly icon: string | null;
+  /** 服务端只下发 enabled 的套件；缺省按 true 兜底。 */
+  readonly enabled: boolean;
+  /** 对该用户可见的成员技能数（不可见成员既不由套件装，也不计入）。 */
+  readonly memberCount: number;
+  readonly installedCount: number;
+  /** memberCount > 0 且全部已装。 */
+  readonly allInstalled: boolean;
+}
+
+/** `GET /me/bundles/:id`：摘要 + 成员目录条目（与 catalog 条目同形，含 installed 关系）。 */
+export interface ServerSkillBundleDetail extends ServerSkillBundleSummary {
+  readonly members: readonly ServerSkillCatalogItem[];
+}
+
+/** `POST /me/bundles/:id/install` 返回（affected = 本次写入安装关系的技能名，幂等）。 */
+export interface ServerSkillBundleInstallResult {
+  readonly ok: true;
+  readonly affected: readonly string[];
+}
+
+function asBundleId(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : null;
+}
+
+/** 归一化套件摘要；id/name 非法丢弃整条（与 catalog「宁可少一条」同纪律）。 */
+export function normalizeServerSkillBundleSummary(raw: unknown): ServerSkillBundleSummary | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const item = raw as Record<string, unknown>;
+  const id = asBundleId(item.id);
+  const name = asString(item.name)?.trim() ?? "";
+  if (id === null || name.length === 0) return null;
+  const title = asString(item.title)?.trim();
+  const memberCount = asNumber(item.memberCount);
+  const installedCount = asNumber(item.installedCount);
+  return {
+    id,
+    name,
+    // title 服务端必填；防御旧数据缺失时退回 name（与 catalog 条目同兜底）。
+    title: title && title.length > 0 ? title : name,
+    description: asString(item.description),
+    icon: asString(item.icon),
+    enabled: item.enabled !== false,
+    memberCount,
+    installedCount,
+    // 服务端显式给了 allInstalled 就用；缺省按计数推算，避免旧响应恒 false。
+    allInstalled: item.allInstalled === true || (memberCount > 0 && installedCount >= memberCount),
+  };
+}
+
+/** 解析 `GET /me/bundles` 响应（`{bundles:[...]}` 或裸数组）；形状不对返回空集，按 id 去重。 */
+export function normalizeServerSkillBundleList(payload: unknown): ServerSkillBundleSummary[] {
+  const list = Array.isArray(payload)
+    ? payload
+    : typeof payload === "object" &&
+        payload !== null &&
+        Array.isArray((payload as { bundles?: unknown }).bundles)
+      ? (payload as { bundles: unknown[] }).bundles
+      : [];
+  const result: ServerSkillBundleSummary[] = [];
+  const seen = new Set<number>();
+  for (const raw of list) {
+    const bundle = normalizeServerSkillBundleSummary(raw);
+    if (!bundle || seen.has(bundle.id)) continue;
+    seen.add(bundle.id);
+    result.push(bundle);
+  }
+  return result;
+}
+
+/** 归一化 `GET /me/bundles/:id` 响应（`{bundle:{...,members}}`）；形状不符返回 null（调用方抛错）。 */
+export function normalizeServerSkillBundleDetail(payload: unknown): ServerSkillBundleDetail | null {
+  const record = (typeof payload === "object" && payload !== null
+    ? payload
+    : {}) as Record<string, unknown>;
+  const bundle = normalizeServerSkillBundleSummary(record.bundle);
+  if (!bundle) return null;
+  const source = record.bundle as Record<string, unknown>;
+  return {
+    ...bundle,
+    members: normalizeServerSkillCatalogList(Array.isArray(source.members) ? source.members : []),
+  };
+}

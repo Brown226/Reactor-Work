@@ -49,6 +49,18 @@ export function createAuditOutbox(options: { filePath: string }): AuditOutbox {
   let loaded = false;
   let events: AuditEventInput[] = [];
   let ids = new Set<string>();
+  /**
+   * 写串行链：append（入队）与 ack（flush 后删除）都会原子重写同一个文件，
+   * 两者并发时用的是同一个 `.tmp` 路径，会出现 `EPERM/ENOENT rename`（真机上就是
+   * "一次模型调用刚结束、恰好撞上 flush 的 ack"这个时序）。因此所有写操作排队执行。
+   */
+  let writeChain: Promise<void> = Promise.resolve();
+  const enqueueWrite = (task: () => Promise<void>): Promise<void> => {
+    const next = writeChain.then(task, task);
+    // 让链本身不会因单次失败而拒绝（错误由调用方 await 的 next 感知）。
+    writeChain = next.catch(() => undefined);
+    return next;
+  };
 
   const load = async (): Promise<void> => {
     if (loaded) return;
@@ -76,22 +88,24 @@ export function createAuditOutbox(options: { filePath: string }): AuditOutbox {
   return {
     async append(incoming) {
       if (incoming.length === 0) return;
-      await load();
-      let changed = false;
-      for (const event of incoming) {
-        if (ids.has(event.eventId)) continue;
-        events.push(event);
-        ids.add(event.eventId);
-        changed = true;
-      }
-      if (!changed) return;
+      await enqueueWrite(async () => {
+        await load();
+        let changed = false;
+        for (const event of incoming) {
+          if (ids.has(event.eventId)) continue;
+          events.push(event);
+          ids.add(event.eventId);
+          changed = true;
+        }
+        if (!changed) return;
 
-      if (events.length > AUDIT_OUTBOX_MAX_EVENTS) {
-        const overflow = events.length - AUDIT_OUTBOX_MAX_EVENTS;
-        const dropped = events.splice(0, overflow);
-        for (const event of dropped) ids.delete(event.eventId);
-      }
-      await flush();
+        if (events.length > AUDIT_OUTBOX_MAX_EVENTS) {
+          const overflow = events.length - AUDIT_OUTBOX_MAX_EVENTS;
+          const dropped = events.splice(0, overflow);
+          for (const event of dropped) ids.delete(event.eventId);
+        }
+        await flush();
+      });
     },
 
     async peek(limit) {
@@ -102,13 +116,15 @@ export function createAuditOutbox(options: { filePath: string }): AuditOutbox {
 
     async ack(eventIds) {
       if (eventIds.length === 0) return;
-      await load();
-      const acked = new Set(eventIds);
-      const remaining = events.filter((event) => !acked.has(event.eventId));
-      if (remaining.length === events.length) return;
-      events = remaining;
-      ids = new Set(events.map((event) => event.eventId));
-      await flush();
+      await enqueueWrite(async () => {
+        await load();
+        const acked = new Set(eventIds);
+        const remaining = events.filter((event) => !acked.has(event.eventId));
+        if (remaining.length === events.length) return;
+        events = remaining;
+        ids = new Set(events.map((event) => event.eventId));
+        await flush();
+      });
     },
 
     async size() {

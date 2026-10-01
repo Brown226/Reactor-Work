@@ -84,6 +84,10 @@ export {
   createSettingServiceWithMigrations,
 } from "./setting/settingService.js";
 export { createCredentialService } from "./credential/credentialService.js";
+export type {
+  CredentialCipherProvider,
+  CredentialSafeStorageAdapter,
+} from "./credential/providers/credentialCipherProvider.js";
 export { createBroadcastService } from "./broadcast/broadcastService.js";
 export { createZCodeAgentService } from "./zcode-agent/zcodeAgentService.js";
 export { createZCodeTaskServiceAdapter } from "./zcode-agent/zcodeTaskServiceAdapter.js";
@@ -344,6 +348,8 @@ import { createOnboardingRecordService } from "./onboarding/onboardingRecordServ
 import { createLegacyTeamOrganizationResolver } from "./model-provider/legacyTeamOrganizationResolver.js";
 import { createObservableSettingService } from "./setting/observableSettingService.js";
 import { createCredentialService } from "./credential/credentialService.js";
+import type { CredentialSafeStorageAdapter } from "./credential/providers/credentialCipherProvider.js";
+import { createCredentialCipherProvider } from "./credential/providers/credentialCipherProvider.js";
 import { createBroadcastService } from "./broadcast/broadcastService.js";
 import { createZCodeAgentService } from "./zcode-agent/zcodeAgentService.js";
 import type { ZCodeAgentCommandResolver } from "./zcode-agent/zcodeAgentProcessManager.js";
@@ -1330,6 +1336,12 @@ export function createLocalServices(options: {
   zcodeAgentCommandResolver?: ZCodeAgentCommandResolver;
   /** Desktop Main 提前异步采集的本机 runtime 环境；Local Host 注入后不再同步启动 login shell。 */
   runtimeProcessEnvPatch?: Record<string, string>;
+  /**
+   * 桌面宿主注入的 safeStorage（OS 钥匙串）能力。main 进程直传 electron.safeStorage，
+   * utility process host 传经 main 代理的异步实现（Electron 的 utility process 拿不到
+   * safeStorage 模块）。缺省（纯 CLI / web / server）不注入，凭据保持 v1 推导钥行为。
+   */
+  credentialSafeStorage?: CredentialSafeStorageAdapter;
   /** 本地桌面上次 workspace 缺失时，仅用于 Agent 子进程 spawn.cwd 兜底。 */
   zcodeAgentSpawnFallbackCwd?: string;
   /** desktop-attached remote server 从 Desktop Host 收到的一次性 Agent 网络配置。 */
@@ -1416,7 +1428,13 @@ export function createLocalServices(options: {
       overrideOrigin: (await settingService.get()).zcodeEndpointOrigin,
     });
   const provisioningOAuthKeys = new Set<string>(PROVIDER_PROVISIONING_OAUTH_CREDENTIAL_KEYS);
+  // 同一进程内凭据加解密必须共用同一个 cipher：credentialService 写入 v2（safeStorage）
+  // 后，Provisioning Source 用无 safeStorage 的默认推导钥 provider 读取会直接解密失败。
+  const credentialCipherProvider = createCredentialCipherProvider({
+    safeStorage: options.credentialSafeStorage,
+  });
   const credentialService = createCredentialService({
+    cipherProvider: credentialCipherProvider,
     onDidMutate: ({ key }) => {
       if (provisioningOAuthKeys.has(key) || isProviderProvisioningAccountCredentialKey(key)) {
         options.onProviderProvisioningSourceChanged?.("credential");
@@ -1596,6 +1614,8 @@ export function createLocalServices(options: {
     settingService,
     credentialFilePath: resolveCredentialFilePath(resolveAppConfigDir()),
     personalConfigFilePath: join(resolveAppConfigDir(), PERSONAL_PROVIDER_CONFIG_FILE_NAME),
+    // 与 credentialService 共用同一 cipher：allowlist 内的 OAuth 凭据可能是 v2 密文。
+    cipherProvider: credentialCipherProvider,
   });
   const providerProvisioningDisposers = [
     providerConfigRuntime.configService.onDidChange((reason) => {
@@ -2100,6 +2120,11 @@ export function createLocalServices(options: {
   // 知识缓存同步器的 late-bind holder：登录钩子在 reactorServer 构造时就绑定了，
   // 而同步器依赖 reactorServer 实例，只能用闭包回填（与 serverAgentSyncHolder 同一个理由）。
   let knowledgeSyncHolder: IKnowledgeSyncService | null = null;
+  // P4.1b 用量事件源的 late-bind holder：reactorServer 先建（它是登录态与企业 provider 的所有者），
+  // agent 服务后建，而订阅入口在 agent 服务上（`onDynamicUsageFact`），只能用闭包回填。
+  // 订阅只会在登录成功 / 启动补一次时安装，届时 agent 服务必然已经构造完成。
+  let usageFactSourceHolder: Pick<IZCodeAgentService, "onDynamicUsageFact"> | null = null;
+  const reactorServerWiringLog = createServiceLogger("reactor-server-wiring");
   const reactorServerService = createReactorServerService({
     apiClient,
     credentials: credentialService,
@@ -2111,6 +2136,33 @@ export function createLocalServices(options: {
       void knowledgeSyncHolder?.sync();
     },
     onLogout: () => serverAgentSyncHolder?.clearLocal(),
+    // 用量事实源：CLI 的 `usage.delta`（含 providerId/modelId/token 分项）。只做字段搬运，
+    // 是否入库（登录态 / 企业 provider / 有有效 token）由 Reporter 与 service 判定。
+    subscribeUsageDelta: (listener) => {
+      const source = usageFactSourceHolder;
+      if (!source) {
+        // 只会出现在"agent 服务尚未构造"的异常装配顺序下：宁可漏订阅也不抛进会话热路径。
+        reactorServerWiringLog.warn(undefined, "用量上报未接线：agent 服务尚未构造，订阅被跳过");        return () => undefined;
+      }
+      const disposable = source.onDynamicUsageFact()((fact) => {
+        listener({
+          // 幂等键 = 会话 id + 事件 id：eventId 只在会话内唯一，跨会话可能撞号。
+          eventId: `${fact.sessionId}:${fact.eventId}`,
+          ts: new Date(fact.occurredAt).toISOString(),
+          sessionId: fact.sessionId,
+          providerId: fact.providerId ?? "",
+          modelId: fact.modelId ?? "",
+          usage: {
+            inputTokens: fact.inputTokens,
+            outputTokens: fact.outputTokens,
+            totalTokens: fact.totalTokens,
+            cachedInputTokens: fact.cacheReadTokens,
+            cachedWriteInputTokens: fact.cacheWriteTokens,
+          },
+        });
+      });
+      return () => disposable.dispose();
+    },
   });
 
   // 企业服务端技能同步：server-skills 目录的唯一写者。只读登录态与凭据库里的
@@ -2340,6 +2392,9 @@ export function createLocalServices(options: {
         }),
   });
   providerConnectivityAgentService = zcodeAgentService;
+  // 回填用量事实源（P4.1b）：reactorServer 的订阅钩子此刻起可用；
+  // 登录成功 / 启动补一次时才会真正安装订阅。
+  usageFactSourceHolder = zcodeAgentService;
   // Helper health probe 短暂超时不应在 Computer Use turn 中途回收 Agent。resolver 会把 restart
   // 推迟到下一个 request/turn 边界；若 broker 确实已失效，当前 turn 会自然失败并由下一次请求恢复。
   hasActiveTurnRef = () => zcodeAgentService.hasActiveCuaOperationTurn();

@@ -139,7 +139,7 @@ async function readProvisioningCredentials(
     if (typeof encrypted !== "string") {
       throw new Error(`Credential allowlist value must be a string: ${key}`);
     }
-    const value = cipher.decrypt(encrypted);
+    const value = await cipher.decrypt(encrypted);
     if (!value.trim()) continue;
     entries.push({ scope, key, value });
   }

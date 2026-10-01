@@ -98,9 +98,12 @@ export {
   REACTOR_SERVER_PROVIDER_NAME,
 } from "./reactor-server/reactorServer.js";
 export type {
+  ReactorServerAuditStatus,
   ReactorServerLoginInput,
+  ReactorServerPolicyView,
   ReactorServerRequestAuth,
   ReactorServerStatus,
+  ReactorServerUsageOverview,
   ReactorServerUserInfo,
 } from "./reactor-server/reactorServer.js";
 // 企业服务端技能同步：与上面同规矩，只出 descriptor 与类型；工厂与路径解析在 node-only 文件

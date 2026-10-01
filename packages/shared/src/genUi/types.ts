@@ -67,7 +67,10 @@ export function countGenUiNodes(node: GenUiNode | null | undefined): number {
   return n;
 }
 
-/** 树 key：会话 + 消息槽位。身份 key 口径与 workspaceIdentity 一致。 */
-export function genUiTreeKey(sessionId: string, messageId: string): string {
-  return `${sessionId}::${messageId}`;
+/**
+ * 树 key：workspace 身份 key + 消息槽位。
+ * 身份 key 口径同 AGENTS.md：`workspaceIdentity?.trim() || workspacePath`，远程会话不能只按路径分桶。
+ */
+export function genUiTreeKey(workspaceKey: string, messageId: string): string {
+  return `${workspaceKey}::${messageId}`;
 }

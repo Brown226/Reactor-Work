@@ -311,5 +311,6 @@ export * from "./pluginStoreOrdering.js";
 export * from "./session-debug.js";
 export { redactFeedbackText } from "./feedbackPrivacy.js";
 export * from "./reactorServer.js";
+export * from "./desktopPolicy.js";
 export * from "./document-style.js";
 export * from "./genUi/index.js";

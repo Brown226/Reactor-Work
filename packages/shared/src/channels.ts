@@ -563,6 +563,8 @@ export const HostMessageTypes = {
   BrowserExecuteResult: "browser-execute-result",
   /** main → host：本地视频 canonical path 授权结果 */
   LocalMediaPreviewPathAuthorizeResult: "local-media-preview-path-authorize-result",
+  /** main → host：safeStorage（OS 钥匙串）代理操作结果（按 requestId 关联） */
+  SafeStorageOperationResult: "safe-storage-operation-result",
   /** Main → Host：全局前台 ZCode 窗口派生的 producer focus fact。 */
   CuaPipFocusChanged: "cua-pip-focus-changed",
   /** main → host：要求 Host 现读本地 Source，并同步指定 Remote Environment。 */
@@ -654,6 +656,8 @@ export const HostResponseTypes = {
   BrowserExecuteRequest: "browser-execute-request",
   /** host → main：请求授权 Agent 已精确校验的本地视频路径 */
   LocalMediaPreviewPathAuthorizeRequest: "local-media-preview-path-authorize-request",
+  /** host → main：safeStorage（OS 钥匙串）代理操作请求（按 requestId 关联）。utility process 无 safeStorage 模块，加解密由 main 代持。 */
+  SafeStorageOperationRequest: "safe-storage-operation-request",
   /** host → main：RPC 网络遥测批次（channel.command 成功率/耗时） */
   NetworkTelemetryBatch: "network-telemetry-batch",
   /** host → main：本地 Provisioning Source 成功持久化。 */

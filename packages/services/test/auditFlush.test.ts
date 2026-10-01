@@ -174,6 +174,13 @@ test("bridge：只记录企业 provider 且已登录的调用，并触发 flush"
 
     listener?.(enterpriseDelta);
     listener?.(localDelta);
+    // 有界等待代替固定 20ms 睡眠：全量并发跑测试时，flush 的异步链
+    // （schedule → flush → postBatch → ack）会与固定睡眠赛跑，导致 posted 仍为空而误报失败。
+    const deadline = Date.now() + 3_000;
+    while (posted.length === 0 && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    // 条件成立后再静默一小段，确保本地 provider 的 delta **始终**没有被补报上来。
     await new Promise((resolve) => setTimeout(resolve, 20));
 
     const postedIds = posted.flat().map((event) => event.eventId);

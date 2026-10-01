@@ -103,6 +103,10 @@ import type {
 } from "@zcode/shared/zcode-protocol-v4";
 import { createServiceDescriptor } from "../descriptors.js";
 
+/** 全局用量事实：telemetry 事实里 `usage.delta` 这一支（含 providerId/modelId/token 分项）。 */
+export type ZCodeAgentUsageFact = Extract<ConversationTelemetryFact, { kind: "usage.delta" }>;
+
+
 export * from "./zcodeAgentPluginParams.js";
 export * from "./zcodeAgentWorkflowParams.js";
 import type {
@@ -813,6 +817,13 @@ export interface IZCodeAgentService {
   onDynamicConversationTelemetryFact(
     params: ZCodeAgentWorkspaceTarget,
   ): Event<ConversationTelemetryFact>;
+  /**
+   * 全局模型用量事实（`usage.delta`）：跨 workspace 的 live 事实，**仅供可信 Host 旁路订阅**
+   * —— 它是 P4 用量上报（`ReactorUsageReporter`）在 Host 侧的入队源。与
+   * `onDynamicConversationTelemetryFact` 同一 CLI 通知，区别是不按 workspace 分桶：
+   * 记账只需要 provider/model/token 与会话 id，不需要 workspace 身份。
+   */
+  onDynamicUsageFact(): Event<ZCodeAgentUsageFact>;
   /** 当前窗口全部本地 live task 的 CUA 权限观察；历史、远程与 replayable 不在此事件面。 */
   onDynamicCuaPermissionObservation(): Event<ZCodeAgentCuaPermissionObservation>;
   // ── sessions-index 通道（列表活性）──

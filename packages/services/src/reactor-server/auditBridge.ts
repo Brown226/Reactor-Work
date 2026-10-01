@@ -23,9 +23,16 @@ import {
 export interface ReactorAuditBridgeDeps {
   outbox: AuditOutbox;
   postBatch: AuditBatchPoster;
-  isEnterpriseLoggedIn: () => boolean;
-  isEnterpriseProvider: (providerId: string) => boolean;
-  subscribeUsageDelta: (listener: (delta: ModelCallUsageDelta) => void) => () => void;
+  /**
+   * 登录态与企业 provider 判定：**每次入队时现读 Host 事实**（可以异步），
+   * 不在桥里缓存成一份会过期的状态副本。
+   */
+  isEnterpriseLoggedIn: () => boolean | Promise<boolean>;
+  isEnterpriseProvider: (providerId: string) => boolean | Promise<boolean>;
+  /**
+   * 用量事件源。缺省 = 只装 outbox/flush（探针、只补传场景），`start()` 不订阅任何流。
+   */
+  subscribeUsageDelta?: (listener: (delta: ModelCallUsageDelta) => void) => () => void;
   /** 合并窗口（默认 30s）与定时兜底（默认 5min）；测试可缩短或注入假计时器。 */
   debounceMs?: number;
   intervalMs?: number;
@@ -58,24 +65,29 @@ export function createReactorAuditBridge(deps: ReactorAuditBridgeDeps): ReactorA
 
   let unsubscribe: (() => void) | null = null;
 
+  // 一条增量 = 一次异步判定 + 入队；并发到达时各自独立（outbox 内部串行 append 语义）。
+  async function record(delta: ModelCallUsageDelta): Promise<void> {
+    const [enterpriseLoggedIn, enterpriseProvider] = await Promise.all([
+      deps.isEnterpriseLoggedIn(),
+      deps.isEnterpriseProvider(delta.providerId),
+    ]);
+    const enqueued = await reporter.recordModelCallUsage(delta, {
+      enterpriseLoggedIn,
+      enterpriseProvider,
+    });
+    if (enqueued) scheduler.schedule();
+  }
+
   return {
     start() {
-      if (unsubscribe) return;
+      if (unsubscribe || !deps.subscribeUsageDelta) return;
       unsubscribe = deps.subscribeUsageDelta((delta) => {
-        void reporter
-          .recordModelCallUsage(delta, {
-            enterpriseLoggedIn: deps.isEnterpriseLoggedIn(),
-            enterpriseProvider: deps.isEnterpriseProvider(delta.providerId),
-          })
-          .then((enqueued) => {
-            if (enqueued) scheduler.schedule();
-          })
-          .catch((error: unknown) => {
-            // 记账失败不影响会话：outbox 是本地文件，这里只记录。
-            deps.logger?.warn("[audit] 用量入队失败", {
-              error: error instanceof Error ? error.message : String(error),
-            });
+        void record(delta).catch((error: unknown) => {
+          // 记账失败不影响会话：outbox 是本地文件，这里只记录。
+          deps.logger?.warn("[audit] 用量入队失败", {
+            error: error instanceof Error ? error.message : String(error),
           });
+        });
       });
       scheduler.start();
     },
