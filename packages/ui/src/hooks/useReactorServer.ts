@@ -6,13 +6,22 @@
  * 因此这里的状态一律以服务端返回的 `ReactorServerStatus` 为准，动作完成后重新拉取。
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ReactorServerLoginInput, ReactorServerStatus } from "@zcode/services";
+import type {
+  ReactorServerLoginInput,
+  ReactorServerStatus,
+  ReactorServerUsageOverview,
+} from "@zcode/services";
 import { useServices } from "./useServices.js";
 
-export type ReactorServerAction = "login" | "logout" | "syncModels";
+export type ReactorServerAction = "login" | "logout" | "syncModels" | "refreshUsage";
 
 export interface UseReactorServerResult {
   status: ReactorServerStatus | null;
+  /**
+   * 用量/策略简报（P4.1 做-4）。`null` = 尚未取到（加载中或未登录）：
+   * 月度累计只有服务端权威值，不拿本地队列冒充（见 P4 文档 §7-4）。
+   */
+  overview: ReactorServerUsageOverview | null;
   /** 首次状态拉取中（用于整段骨架，不要和动作中的 busy 混用）。 */
   loading: boolean;
   /** 正在执行的动作；null 表示空闲。 */
@@ -22,6 +31,7 @@ export interface UseReactorServerResult {
   login: (input: ReactorServerLoginInput) => Promise<boolean>;
   logout: () => Promise<boolean>;
   syncModels: () => Promise<boolean>;
+  refreshUsage: () => Promise<boolean>;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -31,6 +41,7 @@ function getErrorMessage(error: unknown): string {
 export function useReactorServer(): UseReactorServerResult {
   const { reactorServerService } = useServices();
   const [status, setStatus] = useState<ReactorServerStatus | null>(null);
+  const [overview, setOverview] = useState<ReactorServerUsageOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<ReactorServerAction | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +56,11 @@ export function useReactorServer(): UseReactorServerResult {
       if (requestIdRef.current !== requestId) return;
       setStatus(next);
       setError(null);
+      // 简报依赖登录态（未登录直接返回空视图），因此状态先落地再拉简报：
+      // 两者并行会让"退出登录后还闪一下上个月用量"。
+      const nextOverview = await reactorServerService.getUsageOverview();
+      if (requestIdRef.current !== requestId) return;
+      setOverview(nextOverview);
     } catch (cause) {
       if (requestIdRef.current !== requestId) return;
       setError(getErrorMessage(cause));
@@ -67,6 +83,7 @@ export function useReactorServer(): UseReactorServerResult {
         await operation();
         if (requestIdRef.current !== requestId) return true;
         setStatus(await reactorServerService.getStatus());
+        setOverview(await reactorServerService.getUsageOverview());
         return true;
       } catch (cause) {
         if (requestIdRef.current === requestId) setError(getErrorMessage(cause));
@@ -90,6 +107,11 @@ export function useReactorServer(): UseReactorServerResult {
     () => runAction("syncModels", () => reactorServerService.syncModels()),
     [reactorServerService, runAction],
   );
+  // 手动刷新简报：补传一次积压 + 重新拉服务端月度累计（策略不在此列，走 refreshPolicy 的既有触发点）。
+  const refreshUsage = useCallback(
+    () => runAction("refreshUsage", () => reactorServerService.flushUsageReports()),
+    [reactorServerService, runAction],
+  );
 
-  return { status, loading, busy, error, refresh, login, logout, syncModels };
+  return { status, overview, loading, busy, error, refresh, login, logout, syncModels, refreshUsage };
 }

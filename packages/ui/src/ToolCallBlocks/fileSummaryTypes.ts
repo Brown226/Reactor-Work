@@ -201,6 +201,16 @@ export interface ToolCallBlockRenderContext {
   toolCallNode: TaskChatToolCallTreeNode;
   workspacePath: string;
   /**
+   * workspace 身份 key（AGENTS.md：远程链路不能只按路径匹配）。
+   * GenUI 动作回传要按它写 composer 插入请求；缺席时退化为路径键。
+   */
+  workspaceIdentity?: string;
+  /**
+   * 本工具卡所属会话：GenUI 按钮/表单回传用它把文本送进该会话输入框。
+   * 缺席（如权限弹窗里的工具卡）或为空时退回新建任务草稿槽。
+   */
+  sessionId?: string | null;
+  /**
    * 应用主题（store 耦合剥离）：由构建 render context 的宿主
    * （ToolCallBlock / PermissionDialog 等）从上层状态传入，供
    * MessageResponse / EditInlineDiffContent 等展示组件做 light/dark 分流。

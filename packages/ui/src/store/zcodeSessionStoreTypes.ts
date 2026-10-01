@@ -133,11 +133,27 @@ export interface ComposerMentionPrefill {
   data?: MentionItemData;
 }
 
+/**
+ * 文本插入语义：
+ * - `replace`（缺省）：整体替换输入框正文；调用方需自行保证不会吞掉用户已输入内容。
+ * - `prepend-if-missing`：只在编辑器里缺该 mention 时前置节点。
+ * - `append`：把文本追加到现有正文之后（PDF 引用 / GenUI 动作回传用，不覆盖用户草稿）。
+ */
+export type ComposerTextInsertMode = "replace" | "prepend-if-missing" | "append";
+
 export interface ComposerTextInsertRequest {
   requestId: number;
   text: string;
   mention?: ComposerMentionPrefill;
-  mode?: "replace" | "prepend-if-missing";
+  mode?: ComposerTextInsertMode;
+  /**
+   * 目标会话标识；缺省/null 表示「新建任务草稿槽」（composer scope = `__draft__`）。
+   *
+   * 请求存放在 workspace 级状态里（composerTextInsertRequest），同一个 workspace 下
+   * 草稿 pane 与多个会话 pane 会同时读到它。带目标会话的请求只允许该会话的 composer
+   * 消费，否则 PDF 引用 / GenUI 动作回传会串到别的会话输入框。
+   */
+  sessionId?: string | null;
 }
 
 export interface TimelineBottomRequest {
@@ -243,7 +259,8 @@ export interface ZCodeSessionStoreState {
     text: string,
     workspaceIdentity?: string,
     mention?: ComposerMentionPrefill,
-    mode?: "replace" | "prepend-if-missing",
+    mode?: ComposerTextInsertMode,
+    sessionId?: string | null,
   ) => number;
   clearComposerTextInsertRequest: (
     workspacePath: string,

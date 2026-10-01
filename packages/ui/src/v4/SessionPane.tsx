@@ -263,6 +263,7 @@ import type {
   SyncSubagentSessionTabsRequest,
   OpenSubagentSideTabRequest,
 } from "@/lib/workspaceSidePane.js";
+import { matchesComposerTextInsertTarget } from "@/lib/composerTextInsert.js";
 import {
   buildSelectionSideChatKey,
   clearSelectionSideChat,
@@ -4388,7 +4389,13 @@ export function SessionPane({
       centered={isDraft}
       blockingRequestId={blockingInteractionId}
       listenAddToChatEvents={focused}
-      externalTextInsertRequest={focused && sessionId === null ? composerTextInsertRequest : null}
+      // 请求存在 workspace 级状态里，必须按目标会话归因：新建任务态照旧吃无目标请求，
+      // 已有会话只吃目标等于本会话的请求（PDF「引用进会话」/ GenUI 动作回传）。
+      externalTextInsertRequest={
+        focused && matchesComposerTextInsertTarget(composerTextInsertRequest, sessionId)
+          ? composerTextInsertRequest
+          : null
+      }
       onExternalTextInsertApplied={handleExternalTextInsertApplied}
       autoFocusEnabled={focused}
       disabled={

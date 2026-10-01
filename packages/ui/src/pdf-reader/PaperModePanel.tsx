@@ -3,12 +3,16 @@
 import { useCallback, useRef, useState } from "react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { PdfViewer, type PdfViewerProps } from "@/components/ui/pdf-viewer.js";
+import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { PaperSidebar } from "./PaperSidebar.js";
 import { PdfSelectionMenu } from "./PdfSelectionMenu.js";
 import {
   appendPdfQuoteToComposerDraft,
   flattenPdfJsOutline,
   formatPdfQuoteDraft,
+  scanPaperPagesForFiguresAndFormulas,
+  type PaperFigureItem,
+  type PaperFormulaItem,
   type PaperOutlineItem,
 } from "./readerComposerBridge.js";
 
@@ -21,11 +25,13 @@ export interface PaperModePanelProps {
   labels: PdfViewerProps["labels"];
   referencesText?: string;
   onQuoteIntoComposer?: (draft: string) => void;
-  /** 未传 onQuoteIntoComposer 时，追加到该 scope 的 v4 composer 草稿。 */
+  /** 未传 onQuoteIntoComposer 时，送入该会话/草稿槽的 v4 composer 草稿。 */
   composerScope?: {
     workspacePath: string;
     workspaceIdentity?: string;
     scopeId: string;
+    /** 有活跃会话时进该会话输入框；空值表示新建任务草稿槽。 */
+    sessionId?: string | null;
   };
   onDocumentLoad?: (info: {
     pageCount: number;
@@ -45,11 +51,14 @@ export function PaperModePanel({
   onDocumentLoad,
   className,
 }: PaperModePanelProps) {
+  const { intl } = useZCodeIntl();
   const [outline, setOutline] = useState<PaperOutlineItem[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [jump, setJump] = useState<{ page: number; id: number } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [autoReferences, setAutoReferences] = useState<string | null>(null);
+  const [figures, setFigures] = useState<PaperFigureItem[]>([]);
+  const [formulas, setFormulas] = useState<PaperFormulaItem[]>([]);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   const pushDraft = useCallback(
@@ -73,27 +82,45 @@ export function PaperModePanel({
       });
       setOutline(items);
       onDocumentLoad?.({ pageCount, outline: items, pdfDocument });
-      // 自动抽 References（尾部若干页），供引文页签；失败不阻塞阅读。
-      if (!referencesText) {
-        void (async () => {
-          try {
-            const start = Math.max(1, pageCount - 4);
-            const parts: string[] = [];
-            for (let p = start; p <= pageCount; p += 1) {
-              const page = await pdfDocument.getPage(p);
-              const content = await page.getTextContent();
-              const line = (content.items as Array<{ str?: string }>)
-                .map((item) => (typeof item.str === "string" ? item.str : ""))
-                .join(" ");
-              if (line.trim()) parts.push(line);
-              page.cleanup();
-            }
-            setAutoReferences(parts.join("\n"));
-          } catch {
-            setAutoReferences(null);
+      // 逐页抽文本（失败不阻塞阅读）：
+      // - 前 80 页喂给插图/公式页签（论文场景基本全覆盖；超长文档不无限扫描）；
+      // - 引文页签保持既有行为，只看尾部 5 页，避免把正文里的编号误当引文。
+      void (async () => {
+        try {
+          const readPageText = async (p: number): Promise<string> => {
+            const page = await pdfDocument.getPage(p);
+            const content = await page.getTextContent();
+            const text = (content.items as Array<{ str?: string }>)
+              .map((item) => (typeof item.str === "string" ? item.str : ""))
+              .join(" ");
+            page.cleanup();
+            return text;
+          };
+          const scanLimit = Math.min(pageCount, 80);
+          const tailStart = Math.max(1, pageCount - 4);
+          const pageSet = new Set<number>();
+          for (let p = 1; p <= scanLimit; p += 1) pageSet.add(p);
+          for (let p = tailStart; p <= pageCount; p += 1) pageSet.add(p);
+          const pageTexts = new Map<number, string>();
+          for (const p of pageSet) pageTexts.set(p, await readPageText(p));
+          if (!referencesText) {
+            const tail = [...pageTexts.entries()]
+              .filter(([p]) => p >= tailStart)
+              .sort(([a], [b]) => a - b)
+              .map(([, text]) => text)
+              .filter((text) => text.trim());
+            setAutoReferences(tail.join("\n"));
           }
-        })();
-      }
+          const scanned = [...pageTexts.entries()]
+            .sort(([a], [b]) => a - b)
+            .map(([page, text]) => ({ page, text }));
+          const scan = scanPaperPagesForFiguresAndFormulas(scanned);
+          setFigures(scan.figures);
+          setFormulas(scan.formulas);
+        } catch {
+          setAutoReferences(null);
+        }
+      })();
     },
     [onDocumentLoad, referencesText],
   );
@@ -120,7 +147,7 @@ export function PaperModePanel({
                 fileName,
                 page: pageNumber,
                 text,
-                instruction: "请结合以上原文作答。",
+                instruction: intl.formatMessage({ id: "paperMode.instruction.answer" }),
               }),
             )
           }
@@ -130,7 +157,7 @@ export function PaperModePanel({
                 fileName,
                 page: pageNumber,
                 text,
-                instruction: "请解释这段原文。",
+                instruction: intl.formatMessage({ id: "paperMode.instruction.explain" }),
               }),
             )
           }
@@ -140,7 +167,17 @@ export function PaperModePanel({
                 fileName,
                 page: pageNumber,
                 text,
-                instruction: "请翻译成中文。",
+                instruction: intl.formatMessage({ id: "paperMode.instruction.translate" }),
+              }),
+            )
+          }
+          onAsk={(text) =>
+            pushDraft(
+              formatPdfQuoteDraft({
+                fileName,
+                page: pageNumber,
+                text,
+                instruction: intl.formatMessage({ id: "paperMode.instruction.ask" }),
               }),
             )
           }
@@ -149,6 +186,8 @@ export function PaperModePanel({
       {sidebarOpen ? (
         <PaperSidebar
           outline={outline}
+          figures={figures}
+          formulas={formulas}
           referencesText={referencesText ?? autoReferences ?? undefined}
           fileName={fileName}
           currentPage={pageNumber}
@@ -162,7 +201,7 @@ export function PaperModePanel({
           className="border-l border-border px-2 text-ui-base text-foreground-subtle"
           onClick={() => setSidebarOpen(true)}
         >
-          侧栏
+          {intl.formatMessage({ id: "paperMode.reopenSidebar" })}
         </button>
       )}
     </div>

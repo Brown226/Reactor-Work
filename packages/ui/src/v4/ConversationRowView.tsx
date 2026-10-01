@@ -1968,6 +1968,9 @@ const ToolCallRowView = memo(function ToolCallRowView({
         <ToolCallBlock
           toolCallNode={toolCallNode}
           workspacePath={context.workspacePath}
+          // GenUI 按钮/表单回传要知道写进哪个会话的输入框；身份同样随行（远程不得只按路径匹配）。
+          workspaceIdentity={context.workspaceIdentity}
+          sessionId={context.sessionId}
           theme={context.theme}
           codePreviewSettings={context.codePreviewSettings}
           showTodoToolCalls={context.messageStreamShowTodos === true}

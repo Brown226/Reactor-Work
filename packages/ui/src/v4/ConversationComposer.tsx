@@ -95,7 +95,7 @@ import { useOptionalServices } from "@/hooks/useServices.js";
 import { logger } from "@/logger.js";
 import { runUserAction, startUserAction } from "@/lib/userActionTelemetry.js";
 import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
-import type { ComposerMentionPrefill } from "@/store/zcodeSessionStoreTypes.js";
+import type { ComposerTextInsertRequest } from "@/store/zcodeSessionStoreTypes.js";
 import { FileDisplayIcon, resolveFileDisplayDescriptor } from "@/lib/fileDisplay.js";
 import {
   isImageChatComposerAttachment,
@@ -199,12 +199,12 @@ function getComposerAttachmentTypeLabel(filename: string, mimeType: string): str
   return (mimeType.split("/").at(-1) ?? mimeType).toUpperCase();
 }
 
-interface ExternalTextInsertRequest {
-  requestId: number;
-  text: string;
-  mention?: ComposerMentionPrefill;
-  mode?: "replace" | "prepend-if-missing";
-}
+/**
+ * 外部一次性文本预填请求（Example Prompt / PDF 引用 / GenUI 动作回传）。
+ * 直接复用 store 的请求形状：多一份本地接口就等于多一份会跟
+ * `requestComposerTextInsert` 悄悄分叉的克隆（sessionId 目标会话就是这样漏掉的）。
+ */
+type ExternalTextInsertRequest = ComposerTextInsertRequest;
 
 function restorePersistedComposerDraftIntoInput({
   draft,
@@ -247,6 +247,7 @@ function applyExternalTextInsertRequestToComposer({
   appliedRequestId: number | null;
   inputApi: Pick<
     LexicalChatInputHandle,
+    | "appendText"
     | "getMarkdown"
     | "prependMentionIfMissing"
     | "setMention"
@@ -263,6 +264,16 @@ function applyExternalTextInsertRequestToComposer({
   }
   if (!inputApi) {
     return appliedRequestId;
+  }
+  if (request.mode === "append") {
+    // 追加语义（PDF 引用 / GenUI 动作回传）：自动插入不能吞掉用户已经敲进输入框的草稿，
+    // 所以走编辑器节点级 append（appendEditorPlainText 会在需要时补一个分隔空格），
+    // 再从编辑器读回 canonical 文本落草稿，而不是用 setText 整体覆盖。
+    inputApi.appendText(request.text);
+    updateText(inputApi.getMarkdown());
+    scheduleDraftPersist();
+    requestFocus();
+    return request.requestId;
   }
   if (request.mode === "prepend-if-missing" && request.mention) {
     if (!inputApi.prependMentionIfMissing(request.mention)) {

@@ -3,11 +3,16 @@
  * 点击专家卡片打开；动作全部转发给 P3 `IServerAgentSyncService`（经 MarketPage），
  * 安装关系真相在服务端，本组件只渲染与发命令。
  */
-import { Lightbulb, MessageCircle } from "lucide-react";
+import { Lightbulb, MessageCircle, Send } from "lucide-react";
 import type { ServerAgentDefinition } from "@zcode/shared";
 import { Button } from "@/components/ui/button.js";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import {
+  formatExpertTags,
+  isExpertModelUnavailable,
+  summonDraftMessageId,
+} from "@/marketplace/expertSummon.js";
 
 export interface ExpertDetailDialogProps {
   agent: ServerAgentDefinition | null;
@@ -18,6 +23,13 @@ export interface ExpertDetailDialogProps {
   onToggleEnabled: (name: string, enabled: boolean) => void;
   /** starters 行点击 = 新建会话并预填；未安装或宿主无入口时为 undefined（整块隐藏）。 */
   onStarter?: (prompt: string) => void;
+  /**
+   * 召唤专家（M2 #1）：点击 = 用该专家组装新会话草稿（与 starters 同通道，绝不自动发送）。
+   * 仅已安装专家提供（subagent mention 需本地已物化）；宿主无入口时为 undefined（按钮隐藏）。
+   */
+  onSummon?: (prompt: string) => void;
+  /** 服务端已加载的可用模型 id；null/undefined = 未加载（不做模型可用性判定，不误报）。 */
+  availableModels?: readonly string[] | null;
 }
 
 function formatUses(count: number, locale: string): string {
@@ -35,9 +47,14 @@ export function ExpertDetailDialog({
   onUninstall,
   onToggleEnabled,
   onStarter,
+  onSummon,
+  availableModels = null,
 }: ExpertDetailDialogProps) {
   const { intl, locale } = useZCodeIntl();
   const showStarters = Boolean(onStarter && agent && agent.starters.length > 0);
+  const summonAvailable = Boolean(onSummon && agent && agent.installed);
+  // M2 #1 如实提示：专家指定模型不在服务端可用列表时提示但不禁用（由用户判断）。
+  const modelUnavailable = isExpertModelUnavailable(agent?.modelId ?? null, availableModels);
 
   return (
     <Dialog
@@ -111,11 +128,38 @@ export function ExpertDetailDialog({
                 {intl.formatMessage({ id: "marketplace.dialog.install" })}
               </Button>
             )}
-            {/* M2：以此专家开会话薄封装（P3 §4.4 预留）；M1 只占位不实现召唤。 */}
-            <Button type="button" variant="outline" size="sm" disabled>
-              {intl.formatMessage({ id: "marketplace.dialog.summon" })}
-            </Button>
+            {/* M2 #1 召唤专家：与 starters 同通道预填新会话草稿（绝不自动发送）；仅已安装专家提供。 */}
+            {summonAvailable ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() => {
+                  if (!agent) return;
+                  const tags = formatExpertTags(agent.tags, locale);
+                  onSummon?.(
+                    intl.formatMessage(
+                      { id: summonDraftMessageId(tags.length > 0) },
+                      { title: agent.title, tags },
+                    ),
+                  );
+                }}
+              >
+                <Send className="size-4" aria-hidden="true" />
+                {intl.formatMessage({ id: "marketplace.dialog.summon" })}
+              </Button>
+            ) : null}
           </div>
+
+          {summonAvailable && modelUnavailable && agent ? (
+            <p className="text-ui-xs text-warning">
+              {intl.formatMessage(
+                { id: "marketplace.dialog.summonModelUnavailable" },
+                { model: agent.modelId ?? "" },
+              )}
+            </p>
+          ) : null}
 
           <p className="text-ui-base text-foreground-subtle">
             {agent.description ||

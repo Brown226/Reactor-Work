@@ -74,6 +74,8 @@ function ToolCallBlockComponent({
   toolCallNode,
   depth = 0,
   workspacePath,
+  workspaceIdentity,
+  sessionId,
   theme,
   codePreviewSettings,
   showIcon = true,
@@ -106,6 +108,12 @@ function ToolCallBlockComponent({
   toolCallNode: TaskChatToolCallTreeNode;
   depth?: number;
   workspacePath: string;
+  /**
+   * GenUI 动作回传的写入身份：远程 workspace 必须带 workspaceIdentity，
+   * 会话内回传必须带 sessionId（否则文本会落到新建任务草稿槽）。
+   */
+  workspaceIdentity?: string;
+  sessionId?: string | null;
   /** 应用主题（store 耦合剥离）：由宿主（v4 SessionPane 等）传入，缺省按 "system" 兜底。 */
   theme?: ToolCallBlockRenderContext["theme"];
   /** 代码预览设置（store 耦合剥离）：由宿主传入并保持引用稳定。 */
@@ -290,6 +298,8 @@ function ToolCallBlockComponent({
       isFocusedMode,
       toolCallNode,
       workspacePath,
+      workspaceIdentity,
+      sessionId,
       theme,
       codePreviewSettings,
       displayModel,
@@ -358,6 +368,8 @@ function ToolCallBlockComponent({
       workflowRun,
       workflowDraft,
       workspacePath,
+      workspaceIdentity,
+      sessionId,
     ],
   );
 

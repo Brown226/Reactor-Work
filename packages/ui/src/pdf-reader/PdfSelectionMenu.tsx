@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 
 /**
- * PDF 文本层选区浮动菜单（P0b）：复制 / 引用进会话 / 解释 / 翻译。
+ * PDF 文本层选区浮动菜单（P0b）：复制 / 引用进会话 / 解释 / 翻译 / 提问。
  * 挂在 PaperModePanel 根节点上监听 selection；PDF.js 文本层是真实 DOM 文本。
  */
 export interface PdfSelectionMenuProps {
@@ -10,11 +11,14 @@ export interface PdfSelectionMenuProps {
   onQuote: (text: string) => void;
   onExplain: (text: string) => void;
   onTranslate: (text: string) => void;
+  /** 提问：把选中原文与提问前缀放进输入框，等用户补完问题后由用户自己发送。 */
+  onAsk: (text: string) => void;
   labels?: {
     copy?: string;
     quote?: string;
     explain?: string;
     translate?: string;
+    ask?: string;
   };
 }
 
@@ -30,8 +34,10 @@ export function PdfSelectionMenu({
   onQuote,
   onExplain,
   onTranslate,
+  onAsk,
   labels,
 }: PdfSelectionMenuProps) {
+  const { intl } = useZCodeIntl();
   const [menu, setMenu] = useState<MenuState | null>(null);
   const hideTimer = useRef<number | null>(null);
 
@@ -91,28 +97,35 @@ export function PdfSelectionMenu({
         className="rounded-md px-2 py-1 text-ui-base hover:bg-surface-sunken"
         onClick={() => act(onCopy)}
       >
-        {labels?.copy ?? "复制"}
+        {labels?.copy ?? intl.formatMessage({ id: "paperMode.action.copy" })}
       </button>
       <button
         type="button"
         className="rounded-md px-2 py-1 text-ui-base font-medium text-primary hover:bg-surface-sunken"
         onClick={() => act(onQuote)}
       >
-        {labels?.quote ?? "引用进会话"}
+        {labels?.quote ?? intl.formatMessage({ id: "paperMode.quoteIntoComposer" })}
       </button>
       <button
         type="button"
         className="rounded-md px-2 py-1 text-ui-base hover:bg-surface-sunken"
         onClick={() => act(onExplain)}
       >
-        {labels?.explain ?? "解释"}
+        {labels?.explain ?? intl.formatMessage({ id: "paperMode.action.explain" })}
       </button>
       <button
         type="button"
         className="rounded-md px-2 py-1 text-ui-base hover:bg-surface-sunken"
         onClick={() => act(onTranslate)}
       >
-        {labels?.translate ?? "翻译"}
+        {labels?.translate ?? intl.formatMessage({ id: "paperMode.action.translate" })}
+      </button>
+      <button
+        type="button"
+        className="rounded-md px-2 py-1 text-ui-base hover:bg-surface-sunken"
+        onClick={() => act(onAsk)}
+      >
+        {labels?.ask ?? intl.formatMessage({ id: "paperMode.action.ask" })}
       </button>
     </div>
   );

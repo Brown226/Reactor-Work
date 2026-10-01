@@ -27,11 +27,13 @@ interface PdfPreviewContentProps {
   referencesText?: string;
   /** 引用进会话：宿主写入输入框草稿。 */
   onQuoteIntoComposer?: (draft: string) => void;
-  /** 未传 onQuoteIntoComposer 时，追加到该 scope 的 v4 composer 草稿。 */
+  /** 未传 onQuoteIntoComposer 时，送入该会话/草稿槽的 v4 composer 草稿。 */
   composerScope?: {
     workspacePath: string;
     workspaceIdentity?: string;
     scopeId: string;
+    /** 有活跃会话时进该会话输入框；空值表示新建任务草稿槽。 */
+    sessionId?: string | null;
   };
 }
 

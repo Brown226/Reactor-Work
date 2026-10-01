@@ -1,17 +1,24 @@
 import { useMemo, useState } from "react";
+import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import {
   extractCitationsFromText,
   formatPdfQuoteDraft,
   type PaperCitationItem,
+  type PaperFigureItem,
+  type PaperFormulaItem,
   type PaperOutlineItem,
 } from "./readerComposerBridge.js";
 
 /**
- * PaperSideBar — 大纲 / 引文页签；点击大纲跳页，点引文可「引用进会话」。
+ * PaperSideBar — 大纲 / 插图 / 公式 / 引文页签；点击条目跳页，点引文可「引用进会话」。
  */
 
 export interface PaperSidebarProps {
   outline: PaperOutlineItem[];
+  /** 图注候选（浏览器侧启发式，与 file-tools pdf_structure 同口径）。 */
+  figures: PaperFigureItem[];
+  /** 公式候选。 */
+  formulas: PaperFormulaItem[];
   /** 全文或 References 段文本；有值才显示引文页签。 */
   referencesText?: string;
   fileName: string;
@@ -21,10 +28,12 @@ export interface PaperSidebarProps {
   onClose?: () => void;
 }
 
-type Tab = "outline" | "citations";
+type Tab = "outline" | "figures" | "formulas" | "citations";
 
 export function PaperSidebar({
   outline,
+  figures,
+  formulas,
   referencesText,
   fileName,
   currentPage,
@@ -32,6 +41,7 @@ export function PaperSidebar({
   onQuoteIntoComposer,
   onClose,
 }: PaperSidebarProps) {
+  const { intl } = useZCodeIntl();
   const [tab, setTab] = useState<Tab>("outline");
   const citations = useMemo<PaperCitationItem[]>(
     () => (referencesText ? extractCitationsFromText(referencesText) : []),
@@ -41,18 +51,20 @@ export function PaperSidebar({
   return (
     <aside className="flex h-full min-h-0 w-64 shrink-0 flex-col border-l border-border bg-surface">
       <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
-        <div className="text-ui-base font-medium">论文模式</div>
+        <div className="text-ui-base font-medium">
+          {intl.formatMessage({ id: "paperMode.title" })}
+        </div>
         {onClose ? (
           <button
             type="button"
             className="text-ui-base text-foreground-subtle hover:text-foreground"
             onClick={onClose}
           >
-            关闭
+            {intl.formatMessage({ id: "paperMode.close" })}
           </button>
         ) : null}
       </div>
-      <div className="flex gap-1 border-b border-border px-2 py-1.5">
+      <div className="flex flex-wrap gap-1 border-b border-border px-2 py-1.5">
         <button
           type="button"
           className={`rounded-md px-2 py-1 text-ui-base ${
@@ -60,7 +72,28 @@ export function PaperSidebar({
           }`}
           onClick={() => setTab("outline")}
         >
-          大纲 {outline.length > 0 ? `(${outline.length})` : ""}
+          {intl.formatMessage({ id: "paperMode.tab.outline" })}{" "}
+          {outline.length > 0 ? `(${outline.length})` : ""}
+        </button>
+        <button
+          type="button"
+          className={`rounded-md px-2 py-1 text-ui-base ${
+            tab === "figures" ? "bg-surface-sunken font-medium" : "text-foreground-subtle"
+          }`}
+          onClick={() => setTab("figures")}
+        >
+          {intl.formatMessage({ id: "paperMode.tab.figures" })}{" "}
+          {figures.length > 0 ? `(${figures.length})` : ""}
+        </button>
+        <button
+          type="button"
+          className={`rounded-md px-2 py-1 text-ui-base ${
+            tab === "formulas" ? "bg-surface-sunken font-medium" : "text-foreground-subtle"
+          }`}
+          onClick={() => setTab("formulas")}
+        >
+          {intl.formatMessage({ id: "paperMode.tab.formulas" })}{" "}
+          {formulas.length > 0 ? `(${formulas.length})` : ""}
         </button>
         <button
           type="button"
@@ -70,14 +103,15 @@ export function PaperSidebar({
           onClick={() => setTab("citations")}
           disabled={citations.length === 0}
         >
-          引文 {citations.length > 0 ? `(${citations.length})` : ""}
+          {intl.formatMessage({ id: "paperMode.tab.citations" })}{" "}
+          {citations.length > 0 ? `(${citations.length})` : ""}
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-auto p-2">
         {tab === "outline" ? (
           outline.length === 0 ? (
             <p className="px-1 text-ui-base text-foreground-subtle">
-              该 PDF 无书签；可用服务端 pdf_structure 做启发式章节。
+              {intl.formatMessage({ id: "paperMode.outlineEmpty" })}
             </p>
           ) : (
             <ul className="space-y-0.5">
@@ -105,6 +139,52 @@ export function PaperSidebar({
               })}
             </ul>
           )
+        ) : tab === "figures" ? (
+          figures.length === 0 ? (
+            <p className="px-1 text-ui-base text-foreground-subtle">
+              {intl.formatMessage({ id: "paperMode.figuresEmpty" })}
+            </p>
+          ) : (
+            <ul className="space-y-0.5">
+              {figures.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    className={`w-full rounded-md px-2 py-1 text-left text-ui-base hover:bg-surface-sunken ${
+                      item.page === currentPage ? "bg-surface-sunken font-medium" : ""
+                    }`}
+                    onClick={() => onJumpToPage(item.page)}
+                  >
+                    <span className="truncate">{item.label}</span>
+                    <span className="ml-1 text-foreground-subtle">{item.page}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )
+        ) : tab === "formulas" ? (
+          formulas.length === 0 ? (
+            <p className="px-1 text-ui-base text-foreground-subtle">
+              {intl.formatMessage({ id: "paperMode.formulasEmpty" })}
+            </p>
+          ) : (
+            <ul className="space-y-0.5">
+              {formulas.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    className={`w-full rounded-md px-2 py-1 text-left text-ui-base hover:bg-surface-sunken ${
+                      item.page === currentPage ? "bg-surface-sunken font-medium" : ""
+                    }`}
+                    onClick={() => onJumpToPage(item.page)}
+                  >
+                    <span className="block truncate font-mono">{item.text}</span>
+                    <span className="text-foreground-subtle">{item.page}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )
         ) : (
           <ul className="space-y-2">
             {citations.map((cite) => (
@@ -125,12 +205,14 @@ export function PaperSidebar({
                           fileName,
                           page: currentPage,
                           text: cite.text,
-                          instruction: "请解释这条参考文献与当前讨论的关系。",
+                          instruction: intl.formatMessage({
+                            id: "paperMode.instruction.citationRelation",
+                          }),
                         }),
                       )
                     }
                   >
-                    引用进会话
+                    {intl.formatMessage({ id: "paperMode.quoteIntoComposer" })}
                   </button>
                 ) : null}
               </li>

@@ -23,8 +23,11 @@ const OFFICIAL_PLUGIN_ICON_BY_ID: Readonly<Record<string, string>> = {
   "spreadsheets@zcode-plugins-official": spreadsheetsIconUrl,
   "superpowers@zcode-plugins-official": superpowersIconUrl,
   "zcode-guide@zcode-plugins-official": zcodeGuideIconUrl,
-  // file-tools 无自有图标：与 definitions 的 listing 一致复用 documents 图标。
+  // file-tools / ocr-tools / dwg-tools 无自有图标：与 definitions 的 listing 一致复用 documents 图标
+  // （三者的 listing.icon 都指向 documents/icon.png；内网 CDN 不可达时这里兜底）。
   "file-tools@zcode-plugins-official": documentsIconUrl,
+  "ocr-tools@zcode-plugins-official": documentsIconUrl,
+  "dwg-tools@zcode-plugins-official": documentsIconUrl,
 };
 
 const TRUSTED_BUNDLED_PLUGIN_ICONS = new Set(Object.values(OFFICIAL_PLUGIN_ICON_BY_ID));

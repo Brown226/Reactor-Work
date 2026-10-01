@@ -1199,6 +1199,10 @@ export function AnimatedSidePanePanel({
                             source={tab.source}
                             onClose={onCloseCodeViewer}
                             workspacePath={workspaceAbsPath}
+                            workspaceIdentity={workspaceIdentity}
+                            // 预览所属会话：PDF 论文模式「引用进会话」要落到当前会话输入框
+                            // （draft 态 activeTaskId 为 null，仍进新建任务草稿槽）。
+                            composerSessionId={activeTaskId}
                             onOpenBrowserUrl={onOpenBrowserUrl}
                             onOpenCodeViewer={onOpenCodeViewer}
                             // inactive/窄条/resize 中的 code preview 不应继续让

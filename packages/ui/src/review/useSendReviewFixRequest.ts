@@ -1,9 +1,10 @@
 /**
  * 「把我采纳的审查问题改掉」= 发一轮新对话（不含附件、不走草稿）。
  *
- * 为什么直接发而不是预填：预填通道（`requestComposerTextInsert`）只在**新建任务草稿态**
- * （focused 且无 session）生效，而审查必然发生在已有会话里 —— 预填在那里根本不会被消费。
- * 所以这里走协议原语：`sendText` 命令（非 CAS、行级目标无关），幂等由 `commandId` 保证，
+ * 为什么直接发而不是预填：预填通道（`requestComposerTextInsert`）现在已经能在已有会话里生效
+ * （见 P0-2 修复：请求带目标 sessionId + append 语义），但「一键修改」要的是**立刻开始改**，
+ * 不是让用户再点一次发送 —— 预填会把这一步退化成两步操作。所以这里仍走协议原语：
+ * `sendText` 命令（非 CAS、行级目标无关），幂等由 `commandId` 保证，
  * busy/running 时的入队/抢占由 CLI 按 `inputRouting` 裁决，UI 不自行判断。
  *
  * 标记的清理：**accepted / duplicate 才清**。rejected/stale/failed 时保留，用户改完队列状态能再点一次；

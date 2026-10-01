@@ -6,7 +6,12 @@
  * （方案见 docs/未完成-专家技能市场-方案-v1.md §5.3）。失败向上收敛为 error/notice，不抛给调用方。
  */
 import { useCallback, useEffect, useState } from "react";
-import type { ServerSkillCatalogItem } from "@zcode/shared";
+import type {
+  ServerSkillBundleDetail,
+  ServerSkillBundleSummary,
+  ServerSkillCatalogItem,
+  ServerSkillDetail,
+} from "@zcode/shared";
 import type { ServerSkillCatalogSyncResult } from "@zcode/services";
 import { useServices } from "./useServices.js";
 
@@ -25,6 +30,20 @@ export interface UseServerSkillMarketResult {
   install: (name: string) => Promise<boolean>;
   uninstall: (name: string) => Promise<boolean>;
   setFavorite: (name: string, favorited: boolean) => Promise<boolean>;
+  /**
+   * 拉单个技能详情（M2 #2）：只读转发，失败向上抛，由详情弹层自行展示加载态/错误；
+   * 不动 busy/error（弹层局部状态所有者），成功也不写目录投影。
+   */
+  getDetail: (name: string) => Promise<ServerSkillDetail>;
+  /** 套件摘要列表（M2/M3 #13）：只读转发，失败向上抛（市场页局部 state 展示）。 */
+  listBundles: () => Promise<readonly ServerSkillBundleSummary[]>;
+  /** 套件详情（含成员清单）：只读转发，失败向上抛（弹层自行展示）。 */
+  getBundleDetail: (id: number) => Promise<ServerSkillBundleDetail>;
+  /**
+   * 整套安装套件：服务端逐成员写安装后落盘 reconcile + re-GET 刷新目录投影。
+   * 失败向上抛（进度展示由套件弹层负责，避免错误被吞进横幅后弹层无反馈）。
+   */
+  installBundle: (id: number) => Promise<void>;
 }
 
 function toMessage(error: unknown): string {
@@ -128,6 +147,39 @@ export function useServerSkillMarket(): UseServerSkillMarketResult {
     [applyResult, run, service],
   );
 
+  // 详情/套件只读转发：不占用 busy/error（弹层与市场页是各自局部状态的所有者），失败向上抛。
+  const requireService = useCallback(() => {
+    if (!service) throw new Error("当前会话不支持技能市场同步");
+    return service;
+  }, [service]);
+
+  const getDetail = useCallback(
+    (name: string) => requireService().getDetail(name),
+    [requireService],
+  );
+
+  const listBundles = useCallback(() => requireService().listBundles(), [requireService]);
+
+  const getBundleDetail = useCallback(
+    (id: number) => requireService().getBundleDetail(id),
+    [requireService],
+  );
+
+  const installBundle = useCallback(
+    async (id: number) => {
+      const target = requireService();
+      setBusy(true);
+      try {
+        // 服务端逐成员写安装 → 落盘 reconcile（service 内）→ re-GET 刷新目录投影（D3）。
+        await target.installBundle(id);
+        applyResult(await target.syncCatalog());
+      } finally {
+        setBusy(false);
+      }
+    },
+    [applyResult, requireService],
+  );
+
   return {
     available: Boolean(service),
     busy,
@@ -139,5 +191,9 @@ export function useServerSkillMarket(): UseServerSkillMarketResult {
     install,
     uninstall,
     setFavorite,
+    getDetail,
+    listBundles,
+    getBundleDetail,
+    installBundle,
   };
 }

@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { LayoutDashboard } from "lucide-react";
-import {
-  genUiTreeKey,
-  isGenUiTreeV1,
-  type GenUiPatchOp,
-  type GenUiTreeV1,
-} from "@zcode/shared";
+import { genUiTreeKey, isGenUiTreeV1, type GenUiPatchOp, type GenUiTreeV1 } from "@zcode/shared";
 import { GenUiTreeView, type GenUiActionEvent } from "@/genUi/GenUiRegistry.js";
 import {
   appendGenUiActionToComposerDraft,
@@ -53,7 +48,10 @@ function extractTree(output: unknown): GenUiTreeV1 | null {
   return isGenUiTreeV1(tree) ? tree : null;
 }
 
-function readToolInput(toolCall: { input?: unknown; raw?: unknown }): Record<string, unknown> | null {
+function readToolInput(toolCall: {
+  input?: unknown;
+  raw?: unknown;
+}): Record<string, unknown> | null {
   const fromInput = parseMaybeJson(toolCall.input);
   if (isPlainRecord(fromInput)) return fromInput;
   const raw = parseMaybeJson(toolCall.raw);
@@ -76,8 +74,7 @@ function extractPatch(input: Record<string, unknown> | null): {
   const ops = rawOps.filter((op): op is GenUiPatchOp => {
     if (!isPlainRecord(op)) return false;
     if (op.op === "replace") return typeof op.path === "string" && isPlainRecord(op.node);
-    if (op.op === "props")
-      return typeof op.path === "string" && isPlainRecord(op.props);
+    if (op.op === "props") return typeof op.path === "string" && isPlainRecord(op.props);
     return false;
   });
   return { targetTreeCallId: target, ops };
@@ -87,7 +84,10 @@ export function EmitUiTreeToolCallBlock(context: ToolCallBlockRenderContext) {
   const { toolCall } = context.toolCallNode;
   const toolCallId = toolCall.toolId || "unknown";
   const isPatch = isEmitUiPatchToolCall(toolCall) && !isEmitUiTreeToolCall(toolCall);
-  const treeFromOutput = useMemo(() => (isPatch ? null : extractTree(toolCall.output)), [isPatch, toolCall.output]);
+  const treeFromOutput = useMemo(
+    () => (isPatch ? null : extractTree(toolCall.output)),
+    [isPatch, toolCall.output],
+  );
   const patchInfo = useMemo(
     () => (isPatch ? extractPatch(readToolInput(toolCall)) : null),
     [isPatch, toolCall],
@@ -95,18 +95,21 @@ export function EmitUiTreeToolCallBlock(context: ToolCallBlockRenderContext) {
 
   // EmitUiPatch 的目标槽位；EmitUiTree 用自身 toolCallId。
   const targetMessageId = patchInfo?.targetTreeCallId ?? toolCallId;
-  const storeKey = genUiTreeKey(context.workspacePath, targetMessageId);
+  // 树槽位按 workspace 身份 key 分桶（workspaceIdentity?.trim() || workspacePath）：
+  // 远程 workspace 的路径与身份不一致时，只按路径分桶会把两棵树混进同一个槽位。
+  const treeWorkspaceKey = context.workspaceIdentity?.trim() || context.workspacePath;
+  const storeKey = genUiTreeKey(treeWorkspaceKey, targetMessageId);
   const storeTree = useUiTreeStore((s) => s.treesByKey[storeKey]);
 
   // 物化 EmitUiTree 结果树
   useEffect(() => {
     if (!treeFromOutput || isPatch) return;
     useUiTreeStore.getState().setTree({
-      sessionId: context.workspacePath,
+      sessionId: treeWorkspaceKey,
       messageId: toolCallId,
       tree: treeFromOutput,
     });
-  }, [context.workspacePath, toolCallId, isPatch, treeFromOutput]);
+  }, [treeWorkspaceKey, toolCallId, isPatch, treeFromOutput]);
 
   // 合并 EmitUiPatch（同一 patch 只应用一次）
   useEffect(() => {
@@ -114,11 +117,11 @@ export function EmitUiTreeToolCallBlock(context: ToolCallBlockRenderContext) {
     if (appliedPatchCallIds.has(toolCallId)) return;
     appliedPatchCallIds.add(toolCallId);
     useUiTreeStore.getState().applyPatch({
-      sessionId: context.workspacePath,
+      sessionId: treeWorkspaceKey,
       messageId: patchInfo.targetTreeCallId,
       ops: patchInfo.ops,
     });
-  }, [context.workspacePath, isPatch, patchInfo, toolCallId]);
+  }, [treeWorkspaceKey, isPatch, patchInfo, toolCallId]);
 
   const tree = treeFromOutput ?? storeTree ?? null;
 
@@ -128,11 +131,16 @@ export function EmitUiTreeToolCallBlock(context: ToolCallBlockRenderContext) {
       if (!workspacePath) return;
       appendGenUiActionToComposerDraft({
         workspacePath,
+        // 远程 workspace 的请求按 identity 分桶，不能只按路径匹配（AGENTS.md）。
+        ...(context.workspaceIdentity ? { workspaceIdentity: context.workspaceIdentity } : {}),
+        // 会话内回传要进本会话输入框；context.sessionId 缺席（权限弹窗里的工具卡、
+        // 嵌套子工具卡未透传）时保持旧的根草稿槽降级行为。
+        ...(context.sessionId ? { sessionId: context.sessionId } : {}),
         scopeId: V4_DRAFT_SCOPE_ROOT,
         event,
       });
     },
-    [context.workspacePath],
+    [context.workspaceIdentity, context.sessionId, context.workspacePath],
   );
 
   const renderContent = useCallback(() => {

@@ -59,6 +59,15 @@ interface PreviewPaneContentProps {
   /** 应用主题（store 耦合剥离）：透传给 markdown/mermaid 预览，缺省按 "system" 兜底。 */
   theme?: Theme;
   workspacePath?: string;
+  /**
+   * workspace 身份 key：远程 workspace 的草稿/插入请求都不能只按路径匹配（AGENTS.md），
+   * 由预览 pane 宿主透传，供 PDF「引用进会话」写入正确的 workspace 分桶。
+   */
+  workspaceIdentity?: string;
+  /**
+   * 预览 pane 归属的会话：有值时 PDF「引用进会话」进该会话输入框，空值进新建任务草稿槽。
+   */
+  composerSessionId?: string | null;
   onOpenBrowserUrl?: (url: string) => void;
   markdownSelectionTarget?: MarkdownSelectionTarget;
   markdownViewMode: "preview" | "code";
@@ -119,6 +128,8 @@ export function PreviewPaneContent({
   resolvedTheme,
   theme,
   workspacePath,
+  workspaceIdentity,
+  composerSessionId,
   onOpenBrowserUrl,
   markdownSelectionTarget,
   markdownViewMode,
@@ -315,12 +326,16 @@ export function PreviewPaneContent({
           <button
             type="button"
             className={`rounded-md px-2 py-1 text-ui-base ${
-              paperMode ? "bg-primary text-primary-foreground" : "text-foreground-subtle hover:bg-surface-sunken"
+              paperMode
+                ? "bg-primary text-primary-foreground"
+                : "text-foreground-subtle hover:bg-surface-sunken"
             }`}
             onClick={() => setPaperMode((v) => !v)}
-            title={paperMode ? "退出论文模式，回到普通预览" : "打开论文模式：大纲 / 引文 / 引用进会话"}
+            title={intl.formatMessage({
+              id: paperMode ? "paperMode.exitTitle" : "paperMode.openTitle",
+            })}
           >
-            论文模式
+            {intl.formatMessage({ id: "paperMode.title" })}
           </button>
         </div>
         <div className="min-h-0 flex-1">
@@ -333,6 +348,11 @@ export function PreviewPaneContent({
               ? {
                   composerScope: {
                     workspacePath,
+                    // 修复：此前只传 workspacePath + 根草稿 scopeId，已有会话里点「引用进会话」
+                    // 会把文本写进新建任务草稿槽；这里补齐身份与目标会话，交给
+                    // appendPdfQuoteToComposerDraft 选「进该会话输入框」还是「进根草稿槽」。
+                    ...(workspaceIdentity ? { workspaceIdentity } : {}),
+                    sessionId: composerSessionId ?? null,
                     scopeId: V4_DRAFT_SCOPE_ROOT,
                   },
                 }
@@ -472,7 +492,11 @@ export function PreviewPaneContent({
   // 并按命中的原文片段画高亮 —— 用户要看的是「说明书第 3 章那句写错了」，不是源码里的 `|` 与 `#`。
   // 判据是锚点声明的 `textFormat`，不是扩展名：历史快照是 `.txt`，内容同样是提取正文。
   // 源码视图仍可切到下面的字符偏移自渲染。
-  if (source.type === "code-review" && source.review.textFormat === "markdown" && markdownViewMode === "preview") {
+  if (
+    source.type === "code-review" &&
+    source.review.textFormat === "markdown" &&
+    markdownViewMode === "preview"
+  ) {
     return (
       <MarkdownPreviewContent
         selectionTarget={markdownSelectionTarget}

@@ -53,7 +53,9 @@ function MetricCardNode({ node }: { node: GenUiNode }) {
         {str(p.value)}
         {str(p.unit) ? <span className="ml-1 text-sm font-normal">{str(p.unit)}</span> : null}
       </div>
-      {str(p.delta) ? <div className="mt-1 text-xs text-muted-foreground">{str(p.delta)}</div> : null}
+      {str(p.delta) ? (
+        <div className="mt-1 text-xs text-muted-foreground">{str(p.delta)}</div>
+      ) : null}
     </div>
   );
 }
@@ -76,7 +78,13 @@ function KpiBoardNode({
   );
 }
 
-function WeatherCardNode({ node, renderChild }: { node: GenUiNode; renderChild: (c: GenUiNode) => React.ReactNode }) {
+function WeatherCardNode({
+  node,
+  renderChild,
+}: {
+  node: GenUiNode;
+  renderChild: (c: GenUiNode) => React.ReactNode;
+}) {
   const p = node.props ?? {};
   const forecast = Array.isArray(p.forecast) ? (p.forecast as Array<Record<string, unknown>>) : [];
   return (
@@ -153,9 +161,7 @@ function AlertNode({ node }: { node: GenUiNode }) {
       : tone === "warn"
         ? "border-amber-500/40 bg-amber-500/10 text-amber-700"
         : "border-border bg-surface text-foreground";
-  return (
-    <div className={`rounded-lg border px-3 py-2 text-sm ${toneClass}`}>{str(p.text)}</div>
-  );
+  return <div className={`rounded-lg border px-3 py-2 text-sm ${toneClass}`}>{str(p.text)}</div>;
 }
 
 export interface GenUiActionEvent {

@@ -8,7 +8,11 @@
  * 本页不新建 store、不碰文件；未登录企业服务端时渲染登录引导而不是空列表。
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ServerAgentDefinition, ServerSkillCatalogItem } from "@zcode/shared";
+import type {
+  ServerAgentDefinition,
+  ServerSkillBundleSummary,
+  ServerSkillCatalogItem,
+} from "@zcode/shared";
 import type { CreateTaskRequest, MarketIntent } from "@/app-shell/types.js";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
@@ -20,10 +24,11 @@ import { useServerAgentSync } from "@/hooks/useServerAgentSync.js";
 import { useServerSkillMarket } from "@/hooks/useServerSkillMarket.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { ExpertDetailDialog } from "@/marketplace/ExpertDetailDialog.js";
+import { SkillBundleDialog } from "@/marketplace/SkillBundleDialog.js";
 import { SkillDetailDialog } from "@/marketplace/SkillDetailDialog.js";
 import { PluginsSection } from "@/settings/PluginsSection.js";
 import { SubagentsSection } from "@/settings/SubagentsSection.js";
-import { Bot, Sparkles } from "lucide-react";
+import { Bot, PackageOpen, Sparkles } from "lucide-react";
 
 export interface MarketPageProps {
   workspacePath?: string | null;
@@ -41,6 +46,8 @@ export interface MarketPageProps {
 type MarketView = "expert" | "skill";
 type MarketMode = "market" | "mine";
 type ExpertSort = "default" | "hot" | "new";
+/** 技能视图的子分段：普通技能目录 vs 套件（M2/M3 #13 最小形态，不做完整 SkillHub）。 */
+type SkillSegment = "skills" | "bundles";
 
 function toMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -139,6 +146,58 @@ function SkillCard({
   );
 }
 
+function BundleCard({
+  bundle,
+  onOpen,
+}: {
+  bundle: ServerSkillBundleSummary;
+  onOpen: (id: number) => void;
+}) {
+  const { intl } = useZCodeIntl();
+  return (
+    <button
+      type="button"
+      data-testid={`bundle-card-${bundle.id}`}
+      onClick={() => onOpen(bundle.id)}
+      className="flex min-w-0 flex-col gap-2 rounded-xl border border-card-border bg-card p-4 text-left transition-colors hover:bg-card-selected"
+    >
+      <div className="flex min-w-0 items-center gap-2.5">
+        <span
+          aria-hidden="true"
+          className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-background text-ui-base text-foreground-subtle ring-1 ring-border"
+        >
+          {bundle.icon || <PackageOpen className="size-4" aria-hidden="true" />}
+        </span>
+        <span className="min-w-0 truncate text-ui-base font-medium text-foreground">
+          {bundle.title}
+        </span>
+        {bundle.allInstalled ? (
+          <span className="ml-auto inline-flex min-w-0 shrink-0 items-center rounded-md bg-surface px-1.5 py-0.5 text-ui-xs text-foreground-subtle ring-1 ring-border">
+            {intl.formatMessage({ id: "marketplace.card.installed" })}
+          </span>
+        ) : null}
+      </div>
+      <p className="line-clamp-2 text-ui-sm text-foreground-subtle">{bundle.description || ""}</p>
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+        <span className="inline-flex min-h-5 items-center rounded-md bg-surface px-1.5 text-ui-xs text-foreground-subtle ring-1 ring-border">
+          {intl.formatMessage(
+            { id: "marketplace.bundle.memberCount" },
+            { count: bundle.memberCount },
+          )}
+        </span>
+        {!bundle.allInstalled && bundle.installedCount > 0 ? (
+          <span className="inline-flex min-h-5 items-center rounded-md bg-surface px-1.5 text-ui-xs text-foreground-subtle ring-1 ring-border">
+            {intl.formatMessage(
+              { id: "marketplace.bundle.installedProgress" },
+              { installed: bundle.installedCount, total: bundle.memberCount },
+            )}
+          </span>
+        ) : null}
+      </div>
+    </button>
+  );
+}
+
 function LoginGate({ titleId, bodyId }: { titleId: string; bodyId: string }) {
   const { intl } = useZCodeIntl();
   return (
@@ -176,6 +235,12 @@ export function MarketPage({
   const [skillOpenName, setSkillOpenName] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [loadedOnce, setLoadedOnce] = useState(false);
+  // 套件（M2/M3 #13）：局部 state，不新建 store；进入「套件」分段才拉取。
+  const [skillSegment, setSkillSegment] = useState<SkillSegment>("skills");
+  const [bundles, setBundles] = useState<readonly ServerSkillBundleSummary[]>([]);
+  const [bundlesLoading, setBundlesLoading] = useState(false);
+  const [bundlesError, setBundlesError] = useState<string | null>(null);
+  const [bundleOpenId, setBundleOpenId] = useState<number | null>(null);
 
   const statusLoaded = reactor.status !== null;
   const loggedIn = reactor.status?.loggedIn ?? false;
@@ -231,6 +296,59 @@ export function MarketPage({
   }, [expertSync, loggedIn, skillLoad, statusLoaded]);
 
   // 「我的·技能」改为嵌入自设置页迁入的 PluginsSection（见下方 mine 分支），本地不再自持技能开关态。
+
+  // hook 动作具名解出（useCallback 稳定），供下方 effects / 回调依赖。
+  const skillsGetDetail = skillsMarket.getDetail;
+  const skillsListBundles = skillsMarket.listBundles;
+  const skillsGetBundleDetail = skillsMarket.getBundleDetail;
+  const skillsInstallBundle = skillsMarket.installBundle;
+
+  // 进入「套件」分段（技能视图 + 市场模式 + 已登录）即拉一次套件摘要；幂等 GET，可重复触发。
+  useEffect(() => {
+    if (view !== "skill" || mode !== "market" || skillSegment !== "bundles") return;
+    if (!statusLoaded || !loggedIn) return;
+    let active = true;
+    setBundlesLoading(true);
+    setBundlesError(null);
+    void skillsListBundles()
+      .then((items) => {
+        if (active) setBundles(items);
+      })
+      .catch((cause) => {
+        if (active) setBundlesError(toMessage(cause));
+      })
+      .finally(() => {
+        if (active) setBundlesLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [loggedIn, mode, skillSegment, skillsListBundles, statusLoaded, view]);
+
+  const bundleItems = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return bundles;
+    return bundles.filter((bundle) =>
+      [bundle.name, bundle.title, bundle.description ?? ""]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery),
+    );
+  }, [bundles, query]);
+
+  const handleBundleInstall = useCallback(
+    async (id: number) => {
+      // 服务端整套安装（service 内已完成落盘 reconcile）+ 目录投影刷新（hook 内）。
+      await skillsInstallBundle(id);
+      // 安装改变 installedCount：尽力重拉套件列表；失败可忽略（弹层自己会重拉详情刷新 n/m）。
+      try {
+        setBundles(await skillsListBundles());
+      } catch {
+        // 列表刷新失败不回滚安装结果，下次进入分段会重拉。
+      }
+    },
+    [skillsInstallBundle, skillsListBundles],
+  );
 
   const runExpertAction = useCallback(
     async (operation: () => Promise<{ catalog: readonly ServerAgentDefinition[] }>) => {
@@ -451,6 +569,43 @@ export function MarketPage({
           </button>
         </div>
 
+        {/* 技能视图子分段：技能目录 / 套件（M2/M3 #13 最小形态，与主 tab 同视觉语言）。 */}
+        {view === "skill" && mode === "market" ? (
+          <div className="flex h-8 items-center gap-1 rounded-lg bg-surface p-1" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={skillSegment === "skills"}
+              data-testid="marketplace-segment-skills"
+              onClick={() => setSkillSegment("skills")}
+              className={cn(
+                "flex h-7 items-center rounded-md px-3 text-ui-base font-medium transition-colors",
+                skillSegment === "skills"
+                  ? "bg-card text-foreground ring-1 ring-border"
+                  : "text-foreground-subtle hover:text-foreground",
+              )}
+            >
+              {intl.formatMessage({ id: "marketplace.segment.skills" })}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={skillSegment === "bundles"}
+              data-testid="marketplace-segment-bundles"
+              onClick={() => setSkillSegment("bundles")}
+              className={cn(
+                "flex h-7 items-center gap-1.5 rounded-md px-3 text-ui-base font-medium transition-colors",
+                skillSegment === "bundles"
+                  ? "bg-card text-foreground ring-1 ring-border"
+                  : "text-foreground-subtle hover:text-foreground",
+              )}
+            >
+              <PackageOpen className="size-4" aria-hidden="true" />
+              {intl.formatMessage({ id: "marketplace.segment.bundles" })}
+            </button>
+          </div>
+        ) : null}
+
         <div className="ml-auto flex min-w-0 flex-wrap items-center gap-2">
           {view === "expert" && mode === "market" ? (
             <div className="hidden items-center gap-1 sm:flex" role="group">
@@ -524,6 +679,7 @@ export function MarketPage({
           </div>
 
           {view === "skill" &&
+          skillSegment === "skills" &&
           skillsMarket.featured.length > 0 &&
           !query.trim() &&
           category === "all" ? (
@@ -557,7 +713,32 @@ export function MarketPage({
             </section>
           ) : null}
 
-          {statusLoaded && loggedIn && !loadedOnce ? (
+          {view === "skill" && skillSegment === "bundles" ? (
+            // 套件分段：列表卡（名/描述/含技能数），点开弹层整套安装（M2/M3 #13）。
+            bundlesLoading ? (
+              <p className="py-8 text-center text-ui-base text-foreground-subtle">
+                {intl.formatMessage({ id: "common.loading" })}
+              </p>
+            ) : bundlesError ? (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-ui-base text-destructive">
+                {bundlesError}
+              </div>
+            ) : bundleItems.length === 0 ? (
+              <p className="py-8 text-center text-ui-base text-foreground-subtle">
+                {intl.formatMessage({ id: "marketplace.bundles.empty" })}
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                {bundleItems.map((bundle) => (
+                  <BundleCard
+                    key={bundle.id}
+                    bundle={bundle}
+                    onOpen={(id) => setBundleOpenId(id)}
+                  />
+                ))}
+              </div>
+            )
+          ) : statusLoaded && loggedIn && !loadedOnce ? (
             <p className="py-8 text-center text-ui-base text-foreground-subtle">
               {intl.formatMessage({ id: "common.loading" })}
             </p>
@@ -617,6 +798,13 @@ export function MarketPage({
             ? (prompt) => handleExpertStarter(expertSelected, prompt)
             : undefined
         }
+        onSummon={
+          expertSelected?.installed && onCreateTask
+            ? (prompt) => handleExpertStarter(expertSelected, prompt)
+            : undefined
+        }
+        // 服务端模型目录未加载时不判定（null），避免误报「模型不可用」。
+        availableModels={reactor.status?.models ?? null}
       />
       <SkillDetailDialog
         item={skillSelected}
@@ -625,6 +813,15 @@ export function MarketPage({
         onInstall={(name) => void skillsMarket.install(name)}
         onUninstall={(name) => void skillsMarket.uninstall(name)}
         onFavorite={(name, favorited) => void skillsMarket.setFavorite(name, favorited)}
+        // 详情通道（M2 #2）：宿主不支持时整块隐藏详情区，而不是展示必然失败的加载态。
+        detailLoader={skillsMarket.available ? skillsGetDetail : undefined}
+      />
+      <SkillBundleDialog
+        bundleId={bundleOpenId}
+        busy={skillsMarket.busy}
+        onClose={() => setBundleOpenId(null)}
+        detailLoader={skillsGetBundleDetail}
+        onInstall={handleBundleInstall}
       />
     </div>
   );

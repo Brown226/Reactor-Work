@@ -500,6 +500,8 @@ function buildCodeViewerBreadcrumb(
 export function PreviewPane({
   source: rawSource,
   workspacePath,
+  workspaceIdentity,
+  composerSessionId,
   onOpenBrowserUrl,
   onOpenCodeViewer,
   renderHeavyContent = true,
@@ -508,6 +510,10 @@ export function PreviewPane({
   source: CodeViewerSource | null;
   onClose: () => void;
   workspacePath?: string;
+  /** workspace 身份 key：PDF「引用进会话」写草稿/插入请求时不能只按路径匹配（AGENTS.md）。 */
+  workspaceIdentity?: string;
+  /** 预览归属会话：有值时 PDF「引用进会话」进该会话输入框，空值进新建任务草稿槽。 */
+  composerSessionId?: string | null;
   onOpenBrowserUrl?: (url: string) => void;
   onOpenCodeViewer?: (source: CodeViewerSource) => void;
   renderHeavyContent?: boolean;
@@ -1841,6 +1847,8 @@ export function PreviewPane({
             resolvedTheme={resolvedTheme}
             theme={theme}
             workspacePath={sourceWorkspacePath}
+            workspaceIdentity={workspaceIdentity}
+            composerSessionId={composerSessionId ?? null}
             onOpenBrowserUrl={onOpenBrowserUrl}
             markdownSelectionTarget={
               markdownSelectionTarget &&

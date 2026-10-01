@@ -1,11 +1,15 @@
 /**
- * 技能介绍弹层（专家·技能市场 M1，方案 §5.4 线框）。
+ * 技能介绍弹层（专家·技能市场 M1，方案 §5.4 线框；M2 #2 扩展 SKILL.md 预览/附件清单/allowedTools）。
+ *
+ * 详情（正文/附件/allowedTools）在弹层打开时经 `detailLoader`（→ `GET /me/skills/:name`）按需拉取，
+ * 加载/失败/空态由本组件局部 state 承担，不进全局 store；失败不影响目录条目本身展示。
  * 「试试这样用」示例词与「使用案例」块依赖服务端 listing 字段——当前 catalog 契约
- * （server-skills-market-types.ts §7-U7 已核对）暂无该字段，两块整块隐藏不伪造；
- * 字段就绪后在契约里显式跟进再放开。
+ * （server-skills-market-types.ts §7-U7 已核对）暂无该字段，两块整块隐藏不伪造。
  */
-import { Lightbulb, Star } from "lucide-react";
-import type { ServerSkillCatalogItem } from "@zcode/shared";
+import { useEffect, useState, type ReactNode } from "react";
+import { Lightbulb, Paperclip, ScrollText, Star } from "lucide-react";
+import type { ServerSkillCatalogItem, ServerSkillDetail } from "@zcode/shared";
+import { formatBytes } from "@/resource-manager/resourceUsageView.js";
 import { Button } from "@/components/ui/button.js";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -17,6 +21,23 @@ export interface SkillDetailDialogProps {
   onInstall: (name: string) => void;
   onUninstall: (name: string) => void;
   onFavorite: (name: string, favorited: boolean) => void;
+  /**
+   * 详情加载通道（宿主支持时提供）：失败向上抛，本组件展示失败态；
+   * 缺省时三个详情块整块隐藏（与专家 starters 的可选通道同款）。
+   */
+  detailLoader?: (name: string) => Promise<ServerSkillDetail>;
+}
+
+type DetailState = "loading" | "ready" | "error";
+
+function toMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function SectionTitle({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <h4 className="flex items-center gap-1.5 text-ui-base font-medium text-foreground">{icon}{children}</h4>
+  );
 }
 
 export function SkillDetailDialog({
@@ -26,8 +47,40 @@ export function SkillDetailDialog({
   onInstall,
   onUninstall,
   onFavorite,
+  detailLoader,
 }: SkillDetailDialogProps) {
   const { intl } = useZCodeIntl();
+  const [detail, setDetail] = useState<ServerSkillDetail | null>(null);
+  const [detailState, setDetailState] = useState<DetailState>("loading");
+  const [detailError, setDetailError] = useState<string | null>(null);
+
+  const detailName = item?.name ?? null;
+  useEffect(() => {
+    if (!detailName || !detailLoader) return;
+    let active = true;
+    setDetail(null);
+    setDetailState("loading");
+    setDetailError(null);
+    detailLoader(detailName)
+      .then((next) => {
+        if (active) {
+          setDetail(next);
+          setDetailState("ready");
+        }
+      })
+      .catch((cause) => {
+        if (active) {
+          setDetailState("error");
+          setDetailError(toMessage(cause));
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [detailLoader, detailName]);
+
+  const showDetailBlocks = Boolean(detailLoader);
+  const detailReady = detailState === "ready" && detail !== null;
 
   return (
     <Dialog
@@ -37,7 +90,7 @@ export function SkillDetailDialog({
       }}
     >
       {item ? (
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
           <div className="flex min-w-0 items-start gap-3 pr-8">
             <div
               aria-hidden="true"
@@ -132,8 +185,89 @@ export function SkillDetailDialog({
                 {intl.formatMessage({ id: "marketplace.dialog.category" })}
               </dt>
               <dd className="truncate text-foreground-subtle">{item.category || "—"}</dd>
+              {detailReady && detail.allowedTools.length > 0 ? (
+                <>
+                  <dt className="text-foreground-subtlest">
+                    {intl.formatMessage({ id: "marketplace.dialog.allowedTools" })}
+                  </dt>
+                  <dd className="break-all font-mono text-foreground-subtle">
+                    {detail.allowedTools.join(", ")}
+                  </dd>
+                </>
+              ) : null}
             </dl>
           </div>
+
+          {showDetailBlocks ? (
+            detailState === "loading" ? (
+              <p className="text-ui-sm text-foreground-subtlest">
+                {intl.formatMessage({ id: "marketplace.dialog.detailLoading" })}
+              </p>
+            ) : detailState === "error" ? (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-ui-sm text-destructive">
+                {intl.formatMessage({ id: "marketplace.dialog.detailFailed" })}
+                {detailError ? `：${detailError}` : ""}
+              </div>
+            ) : (
+              <>
+                {/* SKILL.md 正文预览：只读原文（pre 限高滚动）。
+                    不引会话用的 markdown 渲染器（MessageResponse/Streamdown，带 mermaid/math/代码高亮与
+                    React #185 崩溃边界）：SKILL.md 头部是 YAML frontmatter，原文预览更忠实且零新依赖。 */}
+                <div className="space-y-1.5">
+                  <SectionTitle
+                    icon={<ScrollText className="size-4 text-foreground-subtle" aria-hidden="true" />}
+                  >
+                    {intl.formatMessage({ id: "marketplace.dialog.skillMd" })}
+                  </SectionTitle>
+                  {detailReady && detail.content ? (
+                    <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-surface p-3 font-mono text-ui-xs text-foreground-subtle">
+                      {detail.content}
+                    </pre>
+                  ) : (
+                    <p className="rounded-lg bg-surface px-3 py-3 text-center text-ui-sm text-foreground-subtlest">
+                      {intl.formatMessage({ id: "marketplace.dialog.noContent" })}
+                    </p>
+                  )}
+                </div>
+
+                {/* 附件清单：仅文件名与体积（本期不做内容下载）。 */}
+                <div className="space-y-1.5">
+                  <SectionTitle
+                    icon={<Paperclip className="size-4 text-foreground-subtle" aria-hidden="true" />}
+                  >
+                    {intl.formatMessage({ id: "marketplace.dialog.attachments" })}
+                    {detailReady && detail.files.length > 0
+                      ? ` (${detail.files.length} · ${formatBytes(detail.filesTotalBytes)})`
+                      : ""}
+                  </SectionTitle>
+                  {detailReady && detail.files.length > 0 ? (
+                    <ul className="space-y-1 rounded-lg bg-surface p-2">
+                      {detail.files.map((file) => (
+                        <li
+                          key={file.path}
+                          className="flex min-w-0 items-center justify-between gap-2 px-1 py-0.5"
+                        >
+                          <span className="min-w-0 truncate font-mono text-ui-xs text-foreground-subtle">
+                            {file.path}
+                          </span>
+                          <span className="shrink-0 text-ui-xs text-foreground-subtlest">
+                            {formatBytes(file.size)}
+                            {file.executable
+                              ? ` · ${intl.formatMessage({ id: "marketplace.dialog.executable" })}`
+                              : ""}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="rounded-lg bg-surface px-3 py-3 text-center text-ui-sm text-foreground-subtlest">
+                      {intl.formatMessage({ id: "marketplace.dialog.noAttachments" })}
+                    </p>
+                  )}
+                </div>
+              </>
+            )
+          ) : null}
         </DialogContent>
       ) : null}
     </Dialog>
