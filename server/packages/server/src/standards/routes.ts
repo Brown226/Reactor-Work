@@ -142,7 +142,20 @@ export function createStandardsAdminRoutes(db: IdentityDb): Hono<AppEnv> {
       // 漏掉 undefined 分支会把 String(undefined) = "undefined" 写进 SQL，
       // PG 报 DateTimeParseError（接口直接 500）。
       if (value === undefined) continue;
-      patch[key] = value === null || value === "" ? null : String(value);
+      if (value === null || value === "") {
+        patch[key] = null;
+        continue;
+      }
+      // 编辑语义（§7-10.2）：日期无法解析要返 400，而不是把任意字符串塞给 PG 换一个 500。
+      // 只收 ISO 日期 / 日期时间；「2024-13-45」这类格式对但取值非法的也要挡掉。
+      const text = String(value).trim();
+      const dateLike =
+        /^\d{4}-\d{2}-\d{2}([ T]\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:?\d{2})?)?$/.exec(text) !==
+        null;
+      if (!dateLike || Number.isNaN(new Date(text).getTime())) {
+        return err(c, 400, `${key} 不是可解析的日期（期望 YYYY-MM-DD 或 ISO 日期时间）`);
+      }
+      patch[key] = text;
     }
     const row = await updateStandard(db, id, patch);
     if (!row) return err(c, 404, "标准不存在");

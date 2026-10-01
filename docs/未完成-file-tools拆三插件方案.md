@@ -1,28 +1,28 @@
 # file-tools 拆三插件方案
 
-状态：实施中｜适用范围：`apps/zcode-cli/packages/{file,ocr,dwg}-tools-plugin`｜维护者：桌面工具组
+状态：已收口（2026-09-30，待真机验证）｜适用范围：`apps/zcode-cli/packages/{file,ocr,dwg}-tools-plugin`｜维护者：桌面工具组
 
 ## 1. 背景
 
 `file-tools` 单包捆了 5 块能力、3 套原生引擎：
 
-| 能力 | 工具 | 资产 | 体积 |
-| --- | --- | --- | --- |
-| 文档解析 | `parse_document` | anydoc | ~8MB |
-| OCR | `ocr_scan` | 已迁 office-engines（薄壳） | ~0 |
-| docx 手术刀 | `docx_patch` | 无 | ~0 |
-| CAD/DWG | `dwg_modify` / `dwg_graph` | dwg-sidecar | ~35MB |
-| PDF 研读 | `pdf_*` ×5 | canvas + pdfjs | ~37MB |
+| 能力        | 工具                       | 资产                        | 体积  |
+| ----------- | -------------------------- | --------------------------- | ----- |
+| 文档解析    | `parse_document`           | anydoc                      | ~8MB  |
+| OCR         | `ocr_scan`                 | 已迁 office-engines（薄壳） | ~0    |
+| docx 手术刀 | `docx_patch`               | 无                          | ~0    |
+| CAD/DWG     | `dwg_modify` / `dwg_graph` | dwg-sidecar                 | ~35MB |
+| PDF 研读    | `pdf_*` ×5                 | canvas + pdfjs              | ~37MB |
 
 模块 import 不交叉（仅共享 `guard.ts`），具备拆分条件。目标：**按引擎分家**，可单独启用/停用，资产不互相拖累。
 
 ## 2. 目标形态（3 插件）
 
-| 插件 | name | 工具 | 资产 | 体积 |
-| --- | --- | --- | --- | --- |
-| **file-tools**（收窄） | `file-tools` | `parse_document`、`docx_patch`、`pdf_*` | anydoc + canvas | ~45MB |
-| **ocr-tools** | `ocr-tools` | `ocr_scan` | 无（调 office-engines） | <1MB |
-| **dwg-tools** | `dwg-tools` | `dwg_modify`、`dwg_graph` | dwg-sidecar | ~35MB |
+| 插件                   | name         | 工具                                    | 资产                    | 体积  |
+| ---------------------- | ------------ | --------------------------------------- | ----------------------- | ----- |
+| **file-tools**（收窄） | `file-tools` | `parse_document`、`docx_patch`、`pdf_*` | anydoc + canvas         | ~45MB |
+| **ocr-tools**          | `ocr-tools`  | `ocr_scan`                              | 无（调 office-engines） | <1MB  |
+| **dwg-tools**          | `dwg-tools`  | `dwg_modify`、`dwg_graph`               | dwg-sidecar             | ~35MB |
 
 **产品规则**
 
@@ -40,15 +40,15 @@
 
 ## 4. 接线点
 
-| 位置 | 改动 |
-| --- | --- |
-| `official-plugin-definitions.ts` | `file-tools` 条目收窄；新增 `ocr-tools`、`dwg-tools` |
-| `plugin-marketplaces.ts` | 与 definitions 同步（bootstrap 单测机械对照） |
-| `sea-official-plugin-assets.mjs` | 3 个 `officialSeaPlugins` 条目 |
-| `electron-builder.config.js` | extraResources：`tools/file-tools`、`tools/dwg-tools`（ocr 无资产） |
-| `prepare-file-tools-assets.mjs` | 按插件切 staging：anydoc/canvas → file-tools；dwg-sidecar → dwg-tools |
+| 位置                                | 改动                                                                                     |
+| ----------------------------------- | ---------------------------------------------------------------------------------------- |
+| `official-plugin-definitions.ts`    | `file-tools` 条目收窄；新增 `ocr-tools`、`dwg-tools`                                     |
+| `plugin-marketplaces.ts`            | 与 definitions 同步（bootstrap 单测机械对照）                                            |
+| `sea-official-plugin-assets.mjs`    | 3 个 `officialSeaPlugins` 条目                                                           |
+| `electron-builder.config.js`        | extraResources：`tools/file-tools`、`tools/dwg-tools`（ocr 无资产）                      |
+| `prepare-file-tools-assets.mjs`     | 按插件切 staging：anydoc/canvas → file-tools；dwg-sidecar → dwg-tools                    |
 | `contracts/tools/read.ts` fail-fast | 文案改为「file-tools（parse_document）/ dwg-tools（dwg_modify）/ ocr-tools（ocr_scan）」 |
-| `bundled-plugins` seed | 3 套 `runtimeTopLevelPaths`；防「剪掉原生资产」坑各测一遍 |
+| `bundled-plugins` seed              | 3 套 `runtimeTopLevelPaths`；防「剪掉原生资产」坑各测一遍                                |
 
 ## 5. 包布局
 
@@ -78,10 +78,10 @@ apps/zcode-cli/packages/
 
 ## 7. 实施顺序
 
-| 步骤 | 内容 |
-| --- | --- |
-| P1 | `ocr-tools-plugin`（最小、已解耦） |
-| P2 | `dwg-tools-plugin`（sidecar 整树迁出） |
-| P3 | `file-tools` 删 OCR/DWG，收窄定义与资产 |
-| P4 | definitions / SEA / builder / fail-fast / 文档 |
-| P5 | 三包测试 + 门禁 |
+| 步骤 | 内容                                           |
+| ---- | ---------------------------------------------- |
+| P1   | `ocr-tools-plugin`（最小、已解耦）             |
+| P2   | `dwg-tools-plugin`（sidecar 整树迁出）         |
+| P3   | `file-tools` 删 OCR/DWG，收窄定义与资产        |
+| P4   | definitions / SEA / builder / fail-fast / 文档 |
+| P5   | 三包测试 + 门禁                                |

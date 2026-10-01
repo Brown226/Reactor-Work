@@ -387,6 +387,14 @@ async function main(): Promise<void> {
       "清空日期用空串（而不是 undefined 语义）",
       (await patch(`/admin/standards/${stdRow["id"]}`, { publishDate: "" })).json["publishDate"] === null,
     );
+    check(
+      "非法日期返 400（而不是 PG 的 DateTimeParseError → 500）",
+      (await patch(`/admin/standards/${stdRow["id"]}`, { publishDate: "not-a-date" })).status === 400,
+    );
+    check(
+      "格式合法但取值非法的日期同样返 400",
+      (await patch(`/admin/standards/${stdRow["id"]}`, { publishDate: "2024-13-45" })).status === 400,
+    );
 
     console.log(failed === 0 ? "\n全部断言通过" : `\n存在 ${failed} 条失败断言`);
   } finally {

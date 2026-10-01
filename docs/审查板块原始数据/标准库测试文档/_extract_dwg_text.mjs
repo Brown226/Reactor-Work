@@ -1,10 +1,10 @@
-// 一次性的图纸文本抽取脚本：调用 file-tools 的 DWG sidecar（与 dwg_modify 同一引擎），
+// 一次性的图纸文本抽取脚本：调用 dwg-tools 的 DWG sidecar（与 dwg_modify 同一引擎），
 // 把整图文本落成 .txt 供 KnowledgeCheck(textFile) 做标准引用比对，并保存 standardRefs。
 import { spawn } from "node:child_process";
 import { writeFileSync } from "node:fs";
 
 const SIDECAR =
-  "E:/工作/Reactor-Work/apps/zcode-cli/packages/file-tools-plugin/dist/dwg-sidecar/win-x64/dwg-sidecar.exe";
+  "E:/工作/Reactor-Work/apps/zcode-cli/packages/dwg-tools-plugin/dist/dwg-sidecar/win-x64/dwg-sidecar.exe";
 const DWG =
   "E:/工作/Reactor-Work/docs/审查板块原始数据/标准库测试文档/FZ9HX011101B25A43SDACFC (15169HX-JPS01-001).dwg";
 const OUT_TXT =

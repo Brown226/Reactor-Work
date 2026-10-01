@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 
 const SIDECAR =
-  "E:/工作/Reactor-Work/apps/zcode-cli/packages/file-tools-plugin/dist/dwg-sidecar/win-x64/dwg-sidecar.exe";
+  "E:/工作/Reactor-Work/apps/zcode-cli/packages/dwg-tools-plugin/dist/dwg-sidecar/win-x64/dwg-sidecar.exe";
 const DWG =
   "E:/工作/Reactor-Work/docs/审查板块原始数据/标准库测试文档/FZ9HX011101B25A43SDACFC (15169HX-JPS01-001).dwg";
 const DIR = "E:/工作/Reactor-Work/docs/审查板块原始数据/标准库测试文档/";
