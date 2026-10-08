@@ -196,9 +196,19 @@ pnpm docker:down        # 停止；**绝不加 -v**（数据卷是 external，�
 
 ```bash
 cd server
-pnpm --filter @reactor/server smoke:knowledge                     # 也可以 node packages/server/scripts/…
-./packages/server/node_modules/.bin/tsx --env-file=.env packages/server/scripts/kb-server-smoke.ts
+pnpm --filter @reactor/server smoke:knowledge
+pnpm --filter @reactor/server smoke:kb-pure          # 无 PG，纯逻辑 + 源契约
+pnpm --filter @reactor/server smoke:kb-server        # 连库（走 reactor_smoke）
+pnpm --filter @reactor/server smoke:gateway-embeddings
 ```
+
+> 2026-10-08 补：`kb-pure-smoke.ts`、`kb-server-smoke.ts`、`gateway-embeddings-smoke.ts`
+> 三个脚本此前**没有注册进 `package.json`**，只能按文件路径手工调 `tsx` ——
+> 于是 README 里写的 `smoke:x` 跑法对它们无效（报 `ERR_PNPM_RECURSIVE_RUN_NO_SCRIPT`）。
+> 现已补齐 `smoke:kb-pure` / `smoke:kb-server` / `smoke:gateway-embeddings`。
+> 同时 `kb-server-smoke.ts` 漏了「绝对路径读 `.env`」那一行（正是上面记的老坑，它是唯一的漏网者），
+> 且 `useSmokeDb()` 排在可达性检查**之前**、自己也会回落到 55432 ⇒ 直接 `ECONNREFUSED` 崩掉退出 1，
+> 连它头注承诺的「连不上则 SKIP 退出 0」都走不到。两处都已修。
 
 | 用途 | 脚本 |
 |---|---|
@@ -211,11 +221,13 @@ pnpm --filter @reactor/server smoke:knowledge                     # 也可以 no
 | 技能市场 | `skills-smoke.mjs`、`skills-import.mjs` |
 | Agent 目录 | `agents-smoke.mjs` |
 | 审计与用量 | `audit-smoke.mjs`、`t34-smoke.mjs` |
-| 公共知识库（纯函数 / 带服务端） | `kb-pure-smoke.ts`、`kb-server-smoke.ts` |
+| 公共知识库（纯函数 / 带服务端） | `smoke:kb-pure`、`smoke:kb-server` |
 | 软件更新（建表/上传/manifest/Range/灰度/下线清理） | `updates-smoke.ts`（PG 不可达时 SKIP 并以 0 退出） |
 | 反馈与需求（公开提交面 / 管理受理 / wire 格式 / 红点与事件） | `feedback-smoke.ts`（**40 项全绿**；PG 不可达时 SKIP 并以 0 退出） |
 | 知识板块（标准清单 / 术语白名单 / 规范库） | `knowledge-smoke.ts`（**46 项全绿**：三域建表幂等、内置术语 seed 与不可删、U+FFFD 护栏、幂等导入、规范库状态语义与级联删除） |
-| 向量化走网关（自带 mock 上游） | `gateway-embeddings-smoke.ts` |
+| 管理操作审计兜底（中间件留痕 + 手写埋点去重，见 `src/audit/adminAudit.ts`） | `admin-audit-smoke.ts`（**29 项全绿**；PG 不可达时 SKIP 并以 0 退出） |
+| P4 真机验收·**服务端半边**（登录/网关令牌/四型事件上报与回读/幂等/策略下发/登出吊销；**非冒烟库**，直打运行中的 :8791，结束打印审计测试事件清理命令、策略自动还原） | `acceptance:p4`（**30 项全绿**，2026-10-08；桌面半边见 `docs/未完成-服务端接线-P4-用量上报与策略.md` §17） |
+| 向量化走网关（自带 mock 上游） | `smoke:gateway-embeddings` |
 | 密钥运维 | `rotate-secret-key.mjs`、`verify-secret-key.mjs` |
 
 **数据安全**：连库的冒烟都经 `scripts/lib/smoke-db.mjs` 切到独立库 `reactor_smoke`（每次 DROP+CREATE），
@@ -238,7 +250,7 @@ pnpm --filter @reactor/server smoke:knowledge                     # 也可以 no
 ## 6. 与主仓（Reactor-Work）的关系
 
 - 本目录**不在**主仓 `pnpm-workspace.yaml` 的匹配范围内（主仓匹配 `packages/*` 与 `apps/zcode-cli/*`），因此两边依赖、lockfile、门禁互不干扰。
-- 主仓是二开的 ZCode 桌面/CLI 工作台（品牌已改为 Reactor）；本目录是它的**服务端**。两者目前**尚未接线**——桌面端还没有登录、拿 token、拉取服务端下发的技能/Agent 的能力，这是下一步要做的事。
+- 主仓是二开的 ZCode 桌面/CLI 工作台（品牌已改为 Reactor）；本目录是它的**服务端**。两者**已接线（P1–P4，见 `docs/未完成-服务端接线-方案-v1.md`）**：桌面端 `reactorServerService` 负责企业登录/令牌刷新、网关令牌换发、服务端技能/Agent 后台同步、用量上报（`/desktop/audit/batch`）与组织策略下发（`/desktop/policy`）。
 - 旧项目的 `packages/client`（Electron 桌面端）**刻意没搬**：那个位置由主仓本身承担。所以本目录只含"服务端 + 它的管理台"，不含桌面端。
 
 ---

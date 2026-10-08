@@ -47,11 +47,12 @@ export async function ensureStandardsSchema(db: IdentityDb): Promise<void> {
   await db.pool.query(`
     CREATE INDEX IF NOT EXISTS idx_standard_category ON standard (category);
   `);
-  // 搜索走 ILIKE '%kw%'，13k 行用普通 btree 也能走索引扫描的位图过滤；
-  // 规模涨到十万级再考虑 pg_trgm，现在引入扩展属于过度设计。
-  await db.pool.query(`
-    CREATE INDEX IF NOT EXISTS idx_standard_name_trgm ON standard USING gin (standard_name gin_trgm_ops);
-  `).catch(() => undefined); // pg_trgm 未安装时不阻断启动（与 datasets 的 vector 降级同思路）
+  // 搜索走 ILIKE '%kw%'：前导通配符用不上 btree，13k 行直接顺序扫描即可
+  // （2026-10-08 实测 EXPLAIN = Seq Scan，毫秒级）；规模涨到十万级再考虑 pg_trgm。
+  // ⚠ 反例：这里曾无条件执行 `CREATE INDEX ... USING gin (standard_name gin_trgm_ops)`，
+  //   而 pg_trgm **未安装**（pg_available_extensions 有 1.6 但 installed_version 为空），
+  //   语句必然报 42704 并被 `.catch(() => undefined)` 吞掉 —— 索引从未存在过，
+  //   却让人以为搜索已经走了索引。要建就先 `CREATE EXTENSION pg_trgm`，否则别写这一句。
   // 后续加字段照着 audit/schema.ts 的做法续写幂等补列：
   //   ALTER TABLE standard ADD COLUMN IF NOT EXISTS <col> <type>;
 }

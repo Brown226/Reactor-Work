@@ -18,6 +18,8 @@
  * 用法：`pnpm --filter @reactor/server exec tsx scripts/kb-server-smoke.ts`
  */
 
+import { fileURLToPath } from "node:url";
+
 import { Hono } from "hono";
 import {
   addDocument,
@@ -36,6 +38,17 @@ import type { TokenClaims } from "../src/identity/auth.js";
 import { createIdentityDb, closeIdentityDb, type IdentityDb } from "../src/identity/db.js";
 // 冒烟库隔离（真实库不受影响）：见 lib/smoke-db.mjs 头注（2026-09-18 市场被清空事故）
 import { useSmokeDb } from "./lib/smoke-db.mjs";
+
+// 与其余冒烟同口径：先吃 **server 根**的 .env（绝对路径，不依赖 cwd），否则会回落到
+// 55432（compose 映射在 15432）而连不上。必须 fileURLToPath：仓库路径含中文。
+// ⚠ 反例：本脚本此前漏了这一行，而 `useSmokeDb()` 在 main() 里**先于**可达性检查执行，
+//   它自己读 process.env 也会回落到 55432 ⇒ 直接 ECONNREFUSED 崩掉退出 1，
+//   连头注承诺的「连不上则 SKIP 退出 0」都走不到（2026-10-08 实测）。
+try {
+  process.loadEnvFile?.(fileURLToPath(new URL("../../../.env", import.meta.url)));
+} catch {
+  /* 没有 .env 就按环境变量与默认值走 */
+}
 
 let failed = 0;
 function check(name: string, cond: boolean, detail?: unknown): void {
@@ -73,11 +86,18 @@ function fakeEmbedder(map: Record<string, number>): (texts: readonly string[]) =
 const dbUrl = () =>
   process.env["REACTOR_DB_URL"]?.trim() ||
   process.env["REACTOR_DATABASE_URL"]?.trim() ||
-  "postgres://reactor:reactor@127.0.0.1:55432/reactor";
+  "postgres://reactor:reactor@127.0.0.1:15432/reactor";
 
 async function main(): Promise<void> {
   // ★ 必须最先执行：切到独立冒烟库（每次重建），真实库不受影响（见 lib/smoke-db.mjs 头注）
-  await useSmokeDb();
+  // ⚠ 头注承诺「连不上则打印 SKIP 并以 0 退出」，所以这一步也必须能 SKIP：
+  //   它自己就要连维护库，PG 不可达时抛的是 ECONNREFUSED 而不是"连不上"的语义。
+  try {
+    await useSmokeDb();
+  } catch (err) {
+    console.log(`SKIP: 冒烟库准备失败（PG 不可达？）: ${err instanceof Error ? err.message : String(err)}`);
+    process.exit(0);
+  }
   let db: IdentityDb;
   try {
     db = createIdentityDb(dbUrl());
