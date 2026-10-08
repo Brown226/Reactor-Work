@@ -234,7 +234,9 @@ function resolveMcpServerConfig(
       cwd:
         typeof server.cwd === "string"
           ? resolveTemplate(server.cwd, context, { allowSensitive: false })
-          : undefined,
+          : // 未声明 cwd 落到插件根而非宿主工作区：`args` 里的 `dist/mcp/server.js` 是插件相对路径，
+            // 按工作区解析会找不到文件，表现成面板上「MCP 进程启动失败 / Connection closed」。
+            context.loaded.rootPath,
       enabled: typeof server.enabled === "boolean" ? server.enabled : undefined,
       env,
       source,
