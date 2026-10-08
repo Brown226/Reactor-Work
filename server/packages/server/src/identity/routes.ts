@@ -244,13 +244,27 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
     if (body.password.length < 8) throw new AuthError(400, "密码至少 8 位");
     const role: Role = body.role ?? "user";
     if (role !== "user" && role !== "dept_head" && role !== "platform_admin") throw new AuthError(400, "role 非法");
+
+    // 角色门槛（与 patchUser 同一套规则）：普通用户不得建号；部门负责人只能在本部门及以下
+    // 建**普通用户**，且部门必须落在自己子树内。
+    // ⚠ 反例：不判 role 时任何登录用户都能 POST /users 建一个 platform_admin 提权（2026-10-08 实测 201）。
+    const claims = c.get("claims");
+    const departmentId = body.departmentId ?? null;
+    if (claims.role === "user") return err(c, 403, "无权创建用户");
+    if (claims.role === "dept_head") {
+      if (role !== "user") return err(c, 403, "部门负责人只能创建普通用户");
+      // departmentId 为空视为建在自己部门下；显式指定的必须落在子树内，否则是跨部门建号。
+      const target = departmentId ?? claims.deptId ?? null;
+      const allowed = await subtree(db, claims.deptId);
+      if (target === null || !allowed.has(target)) return err(c, 403, "只能在本部门及以下创建用户");
+    }
     try {
       const u = await createLocalUser(db, {
         uid: body.uid,
         name: body.name,
         email: body.email ?? null,
         role,
-        departmentId: body.departmentId ?? null,
+        departmentId,
         passwordHash: hashPassword(body.password),
       });
       return c.json({ user: toPublicUser(u) }, 201);
