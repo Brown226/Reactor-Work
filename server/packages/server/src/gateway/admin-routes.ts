@@ -25,6 +25,7 @@ import {
   type ProviderApi,
 } from "./provider-api.js";
 import { deptsExist, parseScope } from "../common/scope.js";
+import { markAdminAudited } from "../audit/adminAudit.js";
 import { recordAdminAction, resolveActorForClaims, type AdminActionEntry } from "../audit/repo.js";
 import { listQuotaAlerts } from "../audit/repo.js";
 import { parseVectorDim } from "./vector-dim.js";
@@ -348,6 +349,8 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
    * 摘要只描述动作与对象，**绝不写入密钥值**（值只以「已变更」表述）。
    */
   const audit = async (c: Ctx, entry: AdminActionEntry): Promise<void> => {
+    // 洞①：先打标再落库——兜底中间件见标即跳过，一个请求只落一条 admin_action。
+    markAdminAudited(c);
     const claims = c.get("claims");
     if (!claims?.sub) return;
     const actor = await resolveActorForClaims(db, claims);

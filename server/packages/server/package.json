@@ -21,9 +21,14 @@
     "smoke:gateway-auth": "node scripts/gateway-auth-smoke.mjs",
     "smoke:admin-static": "node scripts/admin-static-smoke.mjs",
     "smoke:audit": "node scripts/audit-smoke.mjs",
+    "smoke:admin-audit": "tsx scripts/admin-audit-smoke.ts",
+    "acceptance:p4": "node scripts/p4-acceptance.mjs",
     "smoke:updates": "tsx scripts/updates-smoke.ts",
     "smoke:feedback": "tsx scripts/feedback-smoke.ts",
     "smoke:knowledge": "tsx scripts/knowledge-smoke.ts",
+    "smoke:kb-pure": "tsx scripts/kb-pure-smoke.ts",
+    "smoke:kb-server": "tsx scripts/kb-server-smoke.ts",
+    "smoke:gateway-embeddings": "tsx scripts/gateway-embeddings-smoke.ts",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "dependencies": {

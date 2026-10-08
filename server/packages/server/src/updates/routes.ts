@@ -22,6 +22,7 @@ import { pipeline } from "node:stream/promises";
 import { Hono } from "hono";
 import type { Context, MiddlewareHandler } from "hono";
 
+import { markAdminAudited } from "../audit/adminAudit.js";
 import { recordAdminAction, resolveActorForClaims } from "../audit/repo.js";
 import type { TokenClaims } from "../identity/auth.js";
 import type { IdentityDb } from "../identity/db.js";
@@ -227,6 +228,8 @@ export function createUpdatesRoutes(db: IdentityDb): Hono<AppEnv> {
   app.use("/admin/updates/*", requireAdmin);
 
   const audit = async (c: Ctx, entry: Parameters<typeof recordAdminAction>[2]): Promise<void> => {
+    // 洞①：先打标再落库——兜底中间件见标即跳过，一个请求只落一条 admin_action。
+    markAdminAudited(c);
     const claims = c.get("claims");
     if (!claims?.sub) return;
     await recordAdminAction(db, await resolveActorForClaims(db, claims), entry);

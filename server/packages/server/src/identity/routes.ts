@@ -9,6 +9,7 @@ import type { Context } from "hono";
 import { decodeJwt } from "jose";
 import { ADMIN_MOUNT_PREFIX, mountAdminSpa } from "./admin-static.js";
 import { createAuditRoutes } from "../audit/routes.js";
+import { adminAuditMiddleware } from "../audit/adminAudit.js";
 import type { IdentityConfig } from "./config.js";
 import type { IdentityDb } from "./db.js";
 import { buildDeptTree, createDept, deleteDept, loadAllDepts, subtreeIds, updateDept } from "./depts.js";
@@ -119,6 +120,11 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
     await next();
     if (renewed) c.res.headers.set("x-new-token", renewed);
   });
+
+  // 管理操作审计兜底（洞①）：紧随 Bearer（claims 已就绪）、先于一切被挂路由注册。
+  // 经 app.route("/", authed) 复制到根后，同样覆盖 identity/server.ts 里后挂的 /admin/*、
+  // /v1/kb/* 等管理面——与 Bearer 覆盖管理面是同一套注册序机制。范围与去重见 audit/adminAudit.ts。
+  authed.use("*", adminAuditMiddleware(db));
 
   // 登出（鉴权）：服务端吊销该用户全部 refresh token。
   authed.post("/auth/logout", async (c) => {
