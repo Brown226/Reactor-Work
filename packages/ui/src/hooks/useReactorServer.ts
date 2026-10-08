@@ -84,14 +84,17 @@ export function useReactorServer(): UseReactorServerResult {
       setError(null);
       try {
         await operation();
-        if (requestIdRef.current !== requestId) return true;
-        setStatus(await reactorServerService.getStatus());
-        setOverview(await reactorServerService.getUsageOverview());
         // 身份切换即数据切换：登出后不回本地态、登录后不进该用户命名空间，
         // 同一台机器上的下一个用户就会看到上一任的任务与消息（方案文档 §1）。
+        // 重启必须排在状态刷新**之前**：刷新走 host 的登录态查询，过期会话的令牌刷新
+        // 可能挂起数十秒（实测 51s / 54s），等它走完才重启，用户感知就是"点了登录卡几分钟"。
+        // 反正进程马上重启，重启前的状态投影没有读者。
         if (action === "login" || action === "logout") {
           await restartForDataScopeSwitch();
         }
+        if (requestIdRef.current !== requestId) return true;
+        setStatus(await reactorServerService.getStatus());
+        setOverview(await reactorServerService.getUsageOverview());
         return true;
       } catch (cause) {
         if (requestIdRef.current === requestId) setError(getErrorMessage(cause));
