@@ -1,5 +1,5 @@
 /* path 规则集中维护：旧 task 快照与 provider 配置路径仍在这里收口。 */
-import { lstatSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync } from "node:fs";
 import { cp } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { basename, join, win32 } from "node:path";
@@ -7,6 +7,12 @@ import { homedir } from "node:os";
 import {
   DATA_BASE_DIR_FORBIDDEN_WINDOWS_INSTALL_DIR_ERROR_CODE,
   USER_DATA_DIR_NAME,
+  ZCODE_DATA_SCOPE_ENV_KEY,
+  ZCODE_DATA_SCOPE_MARKER_FILE_NAME,
+  ZCODE_LOCAL_DATA_SCOPE,
+  ZCODE_USER_SCOPED_DATA_DIR_NAME,
+  parseZCodeDataScopeMarkerFile,
+  sanitizeZCodeDataScope,
 } from "@zcode/shared";
 
 let _dataBaseDir: string | null = null;
@@ -47,9 +53,83 @@ export function getZCodeDataRootDir(): string {
   return join(getDataBaseDir(), USER_DATA_DIR_NAME);
 }
 
+/**
+ * 数据命名空间 marker 路径：`{用户数据根}/data-scope.json`。
+ *
+ * 刻意放在任何 `users/{scope}` 目录**之外**——本地态与各企业用户必须读到同一份事实源，
+ * 否则切到某个 scope 之后就再也读不回 marker 了。
+ */
+export function getZCodeDataScopeMarkerFilePath(): string {
+  return join(getZCodeDataRootDir(), ZCODE_DATA_SCOPE_MARKER_FILE_NAME);
+}
+
+let cachedDataScope: string | null = null;
+
+/**
+ * 当前数据命名空间：显式 env 覆盖 > marker > `local`。
+ *
+ * env 由 Main 在 fork Host 时按 marker 注入（CLI/agent 再继承它）；这里读 marker 只兜底
+ * 「Host 被手工启动、没有 env」的情况。进程内只解析一次：scope 变化必须重启进程才生效
+ * （已打开的 SQLite 句柄与缓存目录不会跟着搬，见方案文档 §3 时序）。
+ */
+export function getZCodeDataScope(): string {
+  if (cachedDataScope !== null) {
+    return cachedDataScope;
+  }
+  const override = sanitizeZCodeDataScope(process.env[ZCODE_DATA_SCOPE_ENV_KEY]);
+  if (override !== ZCODE_LOCAL_DATA_SCOPE) {
+    cachedDataScope = override;
+    return cachedDataScope;
+  }
+  const markerPath = getZCodeDataScopeMarkerFilePath();
+  cachedDataScope = existsSync(markerPath)
+    ? (() => {
+        try {
+          return parseZCodeDataScopeMarkerFile(readFileSync(markerPath, "utf8")).scope;
+        } catch {
+          // marker 损坏 = 无法判断归属，回落本地态；不为猜一个用户而冒数据串读的风险。
+          return ZCODE_LOCAL_DATA_SCOPE;
+        }
+      })()
+    : ZCODE_LOCAL_DATA_SCOPE;
+  return cachedDataScope;
+}
+
+/** 撤销 `getZCodeDataScope()` 的进程内缓存（仅测试用；Host 侧 scope 变化靠重启）。 */
+export function resetZCodeDataScopeCache(): void {
+  cachedDataScope = null;
+}
+
+/**
+ * 当前命名空间的数据根；`local` 返回 null，表示沿用历史路径、不做任何迁移
+ * （`docs/已完成/已完成-data-directory-contract.md` §5：本产品不做数据迁移）。
+ */
+export function getZCodeUserScopedDataRootDir(): string | null {
+  const scope = getZCodeDataScope();
+  if (scope === ZCODE_LOCAL_DATA_SCOPE) {
+    return null;
+  }
+  return join(getZCodeDataRootDir(), ZCODE_USER_SCOPED_DATA_DIR_NAME, scope);
+}
+
+/**
+ * `v2` 配置目录的当前命名空间形态。
+ *
+ * 全局配置（凭据、provider、设置、策略缓存）继续用 {@link getAppConfigDir}；
+ * 只有会话/任务派生的数据（tasks-index、legacy 快照、检查点、memory、审计 outbox）
+ * 走这里——凭据若跟着 scope 搬走，重启后就读不到令牌，登录会被自己打成死循环。
+ */
+export function getUserScopedAppConfigDir(): string {
+  const scoped = getZCodeUserScopedDataRootDir();
+  return scoped ? join(scoped, "v2") : getAppConfigDir();
+}
+
 /** 非项目对话共享的真实工作目录；默认 {用户数据根}/workspace/default。 */
 export function getConversationWorkspaceDir(): string {
-  return join(getZCodeDataRootDir(), "workspace", "default");
+  const scoped = getZCodeUserScopedDataRootDir();
+  return scoped
+    ? join(scoped, "workspace", "default")
+    : join(getZCodeDataRootDir(), "workspace", "default");
 }
 
 /** {dataBaseDir}/{USER_DATA_DIR_NAME}/v2 */
@@ -182,12 +262,13 @@ export function getFeedbackLogArchiveDir(): string {
 }
 
 export function getGitCheckpointIndexRootDir(): string {
-  return join(getZCodeDataRootDir(), "git-checkpoint-index");
+  const scoped = getZCodeUserScopedDataRootDir();
+  return join(scoped ?? getZCodeDataRootDir(), "git-checkpoint-index");
 }
 
-/** ~/.zcode/v2/tasks-index.sqlite */
+/** ~/.zcode/v2/tasks-index.sqlite（本地态）或 ~/.zcode/users/{scope}/v2/tasks-index.sqlite */
 export function getTasksIndexDatabasePath(): string {
-  return join(getAppConfigDir(), "tasks-index.sqlite");
+  return join(getUserScopedAppConfigDir(), "tasks-index.sqlite");
 }
 
 /** workspace 级身份键：远程优先使用 workspaceIdentity，本地回退 workspacePath。 */
@@ -203,9 +284,13 @@ export function getWorkspaceHash(workspacePath: string, workspaceIdentity?: stri
     .slice(0, 12);
 }
 
-/** ~/.zcode/v2/sessions/{workspaceHash} */
+/** ~/.zcode/v2/sessions/{workspaceHash}（本地态）或 users/{scope}/v2/sessions/{workspaceHash} */
 function getTaskSessionDir(workspacePath: string, workspaceIdentity?: string): string {
-  return join(getAppConfigDir(), "sessions", getWorkspaceHash(workspacePath, workspaceIdentity));
+  return join(
+    getUserScopedAppConfigDir(),
+    "sessions",
+    getWorkspaceHash(workspacePath, workspaceIdentity),
+  );
 }
 
 /** ~/.zcode/v2/sessions/{workspaceHash}/{taskId}.json */

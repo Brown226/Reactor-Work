@@ -1,4 +1,5 @@
 export {
+  applyDataScopeToDefaultSessionDbPath,
   createSqliteSessionStore,
   getDefaultSessionDbPath,
   openStartupSqliteSessionStore,

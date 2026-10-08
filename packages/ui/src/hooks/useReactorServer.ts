@@ -12,6 +12,7 @@ import type {
   ReactorServerUsageOverview,
 } from "@zcode/services";
 import { useServices } from "./useServices.js";
+import { useRestartForDataScopeSwitch } from "./useRestartForDataScopeSwitch.js";
 
 export type ReactorServerAction = "login" | "logout" | "syncModels" | "refreshUsage";
 
@@ -40,6 +41,8 @@ function getErrorMessage(error: unknown): string {
 
 export function useReactorServer(): UseReactorServerResult {
   const { reactorServerService } = useServices();
+  // 登录/登出会改写本机数据命名空间（企业用户隔离），成功后必须重启应用才生效。
+  const restartForDataScopeSwitch = useRestartForDataScopeSwitch();
   const [status, setStatus] = useState<ReactorServerStatus | null>(null);
   const [overview, setOverview] = useState<ReactorServerUsageOverview | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +87,11 @@ export function useReactorServer(): UseReactorServerResult {
         if (requestIdRef.current !== requestId) return true;
         setStatus(await reactorServerService.getStatus());
         setOverview(await reactorServerService.getUsageOverview());
+        // 身份切换即数据切换：登出后不回本地态、登录后不进该用户命名空间，
+        // 同一台机器上的下一个用户就会看到上一任的任务与消息（方案文档 §1）。
+        if (action === "login" || action === "logout") {
+          await restartForDataScopeSwitch();
+        }
         return true;
       } catch (cause) {
         if (requestIdRef.current === requestId) setError(getErrorMessage(cause));
@@ -92,7 +100,7 @@ export function useReactorServer(): UseReactorServerResult {
         if (requestIdRef.current === requestId) setBusy(null);
       }
     },
-    [reactorServerService],
+    [reactorServerService, restartForDataScopeSwitch],
   );
 
   const login = useCallback(

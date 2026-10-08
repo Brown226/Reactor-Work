@@ -1019,4 +1019,4 @@ export function openStartupSqliteSessionStore(
   return new SqliteSessionStore(options);
 }
 
-export { getDefaultSessionDbPath };
+export { getDefaultSessionDbPath, applyDataScopeToDefaultSessionDbPath } from "./paths.js";

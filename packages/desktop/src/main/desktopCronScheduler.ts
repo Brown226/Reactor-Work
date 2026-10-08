@@ -5,6 +5,7 @@ import { utilityProcess as electronUtilityProcess } from "electron";
 import type { UtilityProcess as ElectronUtilityProcess } from "electron";
 import { HostMessageTypes } from "@zcode/shared";
 import { buildHostProcessEnv, schedulerModulePath } from "./desktopRuntimeEnv.js";
+import { buildDataScopeEnv } from "./desktopDataScope.js";
 import { ingestSchedulerSelfResourceSample } from "./processResourceSelfHeapSource.js";
 import { registerSchedulerProcess, unregisterSchedulerProcess } from "./resourceManagerWindow.js";
 import type {
@@ -63,6 +64,7 @@ export function spawnCronScheduler(deps: CronSchedulerDeps): CronSchedulerHandle
     execArgv: ["--no-warnings"],
     env: {
       ...buildHostProcessEnv(deps.hostProcessLocalEnv),
+      ...buildDataScopeEnv(),
       ZCODE_PROCESS_LABEL: "scheduler",
     },
   });

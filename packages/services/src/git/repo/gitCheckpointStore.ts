@@ -1,6 +1,6 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { getAppConfigDir, getWorkspaceHash } from "../../paths.js";
+import { getUserScopedAppConfigDir, getWorkspaceHash } from "../../paths.js";
 import type { GitCheckpointMeta } from "@zcode/shared";
 
 function isGitCheckpointMeta(value: unknown): value is GitCheckpointMeta {
@@ -30,7 +30,7 @@ export class GitCheckpointStore {
   private readonly writeChains = new Map<string, Promise<void>>();
 
   private get checkpointsDir(): string {
-    return this.options?.rootDir ?? join(getAppConfigDir(), "checkpoints");
+    return this.options?.rootDir ?? join(getUserScopedAppConfigDir(), "checkpoints");
   }
 
   private checkpointDir(workspacePath: string): string {

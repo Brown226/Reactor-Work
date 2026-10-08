@@ -3,6 +3,7 @@ import type { ModelId, ProviderConfigObject, ProviderId } from "@zcode/provider"
 import type { ICredentialService } from "../credential/credential.js";
 import type { IProviderSettingsService } from "../model-provider/providerFacadeServices.js";
 import { createServiceLogger } from "../logger/serviceLogger.js";
+import { writeZCodeDataScopeMarker } from "../userDataScope.js";
 import type { ModelCallUsageDelta } from "./auditEventMapping.js";
 import { createReactorServerP4Wiring } from "./reactorServerP4Wiring.js";
 import {
@@ -387,6 +388,9 @@ export function createReactorServerService(
       REACTOR_SERVER_CREDENTIAL_KEYS.user,
       JSON.stringify(toUserInfo(result.user)),
     );
+    // 数据命名空间切到该企业用户：同步写 marker，Renderer 收到成功响应后会立刻重启应用，
+    // marker 必须在此之前落盘，否则新进程按旧 scope 拉起数据（方案文档 §3）。
+    writeZCodeDataScopeMarker(result.user.uid, result.user.uid);
     lastError = null;
     cachedGateway = null;
     cachedProviderId = undefined;
@@ -421,6 +425,9 @@ export function createReactorServerService(
     }
     await clearEnterpriseProviderModels();
     await clearSession();
+    // 数据命名空间回本地态：不切的话，下一个企业用户会看到这个人的任务与会话历史
+    // （本机数据原本按「机器 + 工作区」落盘，与登录身份无关，见方案文档 §1）。
+    writeZCodeDataScopeMarker("local");
     // P4.2b：登出后策略不同步、不强制 → 清掉缓存（否则组织策略会在无登录态下继续限制用户）。
     await p4.clearPolicy();
     // 登出钩子（清空 server-agents 等）在本地会话清完之后执行；失败只记日志，不阻断登出。

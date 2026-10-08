@@ -33,6 +33,7 @@
 | [已完成-model-governance-and-dev-mode.md](已完成/已完成-model-governance-and-dev-mode.md) | **模型治理契约**：本地模型配置的开发者模式隐藏策略（连点版本号 7 下）、企业目录即白名单                                     |
 | [已完成-model-provider-catalog-pull.md](已完成/已完成-model-provider-catalog-pull.md)     | **模型目录拉取契约**：一键拉取 `/models` 的 host 侧执行边界、URL/鉴权策略、勾选与批量添加语义                               |
 | [已完成-feedback-module.md](已完成/已完成-feedback-module.md)                             | **反馈 / 需求受理（FBK）契约**：客户端 wire 格式、公开段与鉴权段分工、报告人身份取令牌、红点与事件语义、附件字节直传        |
+| [已完成-用户数据隔离-命名空间与切换.md](已完成/已完成-用户数据隔离-命名空间与切换.md)       | **用户数据隔离**：按企业用户分命名空间（scope/marker/env 通道、切换时序）、凭据为何保持全局、零迁移口径与双用户验收  |
 | [已完成-server-skill-delivery-plan.md](已完成/已完成-server-skill-delivery-plan.md)       | **P2 技能下发实施计划**：目标、旧项目取舍、步骤、风险与验收                                                                 |
 | [已完成-server-skill-sync.md](已完成/已完成-server-skill-sync.md)                         | **服务端技能同步契约**：状态所有者、同步时序、失败语义与验收场景                                                            |
 | [已完成-服务端接线-P3-Agent下发.md](已完成/已完成-服务端接线-P3-Agent下发.md)             | **P3 Agent 下发开工计划**：server scope 物化、字段映射、发现层/precedence、同步器步骤、风险与验收                           |

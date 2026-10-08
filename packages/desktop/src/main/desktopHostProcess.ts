@@ -56,6 +56,7 @@ import { ingestCliResourceSample } from "./processResourceCliSource.js";
 import { ingestHostSelfResourceSample } from "./processResourceSelfHeapSource.js";
 import { createFeedbackLogArchiveFromExportLogs } from "./exportLogs.js";
 import { buildHostE2ECoverageEnv } from "./e2eCoverage.js";
+import { buildDataScopeEnv } from "./desktopDataScope.js";
 
 export interface WindowBootstrapOptions {
   restoreSession?: boolean;
@@ -240,6 +241,7 @@ export function spawnHostProcess(
     execArgv,
     env: {
       ...buildHostProcessEnv(dependencies.hostProcessLocalEnv),
+      ...buildDataScopeEnv(),
       ...buildHostE2ECoverageEnv(),
       ZCODE_PROCESS_LABEL: label,
       // macOS-only: the Computer Use Helper launcher runs inside this forked host utilityProcess, whose

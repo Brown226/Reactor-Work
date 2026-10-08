@@ -1,6 +1,7 @@
 import { isAbsolute, resolve } from "node:path";
 import { SqliteSessionStore } from "@zcode/adapters/storage";
 import { resolvePath, type ConfigResult } from "@zcode/adapters/config";
+import { applyDataScopeToDefaultSessionDbPath } from "@zcode/adapters/storage";
 import {
   SESSION_ENTRY_MODEL_SELECTION,
   parseModelSelectionValue,
@@ -104,9 +105,13 @@ export async function openStartupSessionStore(
 export function getSessionDbPath(configResult: ConfigResult, workingDirectory?: string): string {
   const configured = configResult.config.storage.sessionDbPath;
   // 存储 Worker 不能 chdir；显式传入业务实际 cwd，保持相对路径与普通 Agent 一致。
-  if (workingDirectory && !isAbsolute(configured) && !configured.startsWith("~/"))
-    return resolve(workingDirectory, configured);
-  return resolvePath(configured);
+  const resolved =
+    workingDirectory && !isAbsolute(configured) && !configured.startsWith("~/")
+      ? resolve(workingDirectory, configured)
+      : resolvePath(configured);
+  // 企业用户隔离：仍用默认会话库时按 ZCODE_DATA_SCOPE 分命名空间。
+  // 用户显式配了 storage.sessionDbPath 时改写函数原样返回，配置优先（见那边的段比对注释）。
+  return applyDataScopeToDefaultSessionDbPath(resolved);
 }
 
 function isPromiseLike<T>(value: T | Promise<T>): value is Promise<T> {

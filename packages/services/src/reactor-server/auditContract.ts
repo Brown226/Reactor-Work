@@ -10,7 +10,7 @@
  * **不含提示词/回复/工具输出正文**；`summary` 只放短标签。
  */
 import { join } from "node:path";
-import { getZCodeDataRootDir } from "../paths.js";
+import { getZCodeDataRootDir, getZCodeUserScopedDataRootDir } from "../paths.js";
 
 /** 事件动作类别（v1 只用 `model_call`，其余留给 P4.3）。 */
 export type AuditActionKind =
@@ -76,7 +76,8 @@ export const AUDIT_OUTBOX_MAX_EVENTS = 5000;
 
 /** 待上报事件的落盘文件：`{用户数据根}/audit-outbox.jsonl`。 */
 export function resolveAuditOutboxPath(): string {
-  return join(getZCodeDataRootDir(), "audit-outbox.jsonl");
+  const scoped = getZCodeUserScopedDataRootDir();
+  return join(scoped ?? getZCodeDataRootDir(), "audit-outbox.jsonl");
 }
 
 /** 短摘要裁剪：按字符截断并补省略号，保证不超服务端上限。 */

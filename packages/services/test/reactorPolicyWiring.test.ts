@@ -22,7 +22,6 @@ import {
   parseReactorDesktopPolicyFile,
   REACTOR_DESKTOP_POLICY_FILE_NAME,
 } from "@zcode/shared";
-import { join } from "node:path";
 
 /** 与 Host 侧 wiring 的落盘口径一致（`{数据根}/desktop-policy.json`）。 */
 const resolveReactorDesktopPolicyPath = (dir: string): string =>
