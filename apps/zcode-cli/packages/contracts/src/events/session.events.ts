@@ -980,6 +980,11 @@ export interface PermissionDeniedPayload {
   toolName: string;
   reason: string;
   inputSummary?: unknown;
+  /**
+   * 规则拒绝时的 ruleId（如 `policy.commandBlacklist`）。洞②（审计补全）：审计链路
+   * 据此区分组织策略拦截与普通规则拒绝；无规则的拒绝（如会话级取消）可缺省。
+   */
+  ruleId?: string;
 }
 
 export type UserInputAutoResolutionState =

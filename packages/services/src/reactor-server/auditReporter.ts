@@ -9,8 +9,10 @@
  */
 import type { AuditOutbox } from "./auditOutbox.js";
 import {
+  buildBehaviorAuditEvent,
   buildModelCallAuditEvent,
   hasBillableUsage,
+  type BehaviorAuditFact,
   type ModelCallUsageDelta,
 } from "./auditEventMapping.js";
 
@@ -38,6 +40,20 @@ export interface AuditReporter {
     delta: ModelCallUsageDelta,
     context: ModelCallReportContext,
   ): Promise<boolean>;
+  /**
+   * 记录一条行为事实（tool_call / approval / policy_block，洞②）；返回是否真的入队。
+   * 门禁只有企业登录态：这三类是受管设备的行为/治理审计、不计费，组织策略在本地模型
+   * 会话同样生效，按 provider 过滤会漏掉旁路会话里的拦截记录（与 model_call 口径不同处）。
+   */
+  recordBehaviorFact(
+    fact: BehaviorAuditFact,
+    context: BehaviorReportContext,
+  ): Promise<boolean>;
+}
+
+/** 行为事实上报上下文：登录态现读，无 provider 维度（见 recordBehaviorFact 注释）。 */
+export interface BehaviorReportContext {
+  enterpriseLoggedIn: boolean;
 }
 
 export function createAuditReporter(options: {
@@ -51,6 +67,13 @@ export function createAuditReporter(options: {
     async recordModelCallUsage(delta, context) {
       if (!shouldReportModelCall(delta, context)) return false;
       const event = buildModelCallAuditEvent(delta, { ts: now() });
+      if (!event) return false;
+      await options.outbox.append([event]);
+      return true;
+    },
+    async recordBehaviorFact(fact, context) {
+      if (!context.enterpriseLoggedIn) return false;
+      const event = buildBehaviorAuditEvent(fact, { ts: now() });
       if (!event) return false;
       await options.outbox.append([event]);
       return true;

@@ -128,7 +128,9 @@ export async function resolveToolPermission(
 
   if (permissionDecision.decision === "deny") {
     telemetry?.setPermissionDecision("denied");
-    await emitPermissionDenied(deps, toolCall, permissionDecision.reason, traceContext);
+    // 洞②（审计补全）：把 ruleId 带进 PermissionDenied——审计链路靠它区分
+    // 组织策略拦截（policy.commandBlacklist → policy_block）与普通规则拒绝。
+    await emitPermissionDenied(deps, toolCall, permissionDecision.reason, traceContext, permissionDecision.ruleId);
 
     deps.logger?.warn("Tool permission denied", {
       ...traceContextToLogContext(traceContext),

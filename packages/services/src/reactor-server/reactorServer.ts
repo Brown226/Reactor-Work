@@ -79,7 +79,7 @@ export interface ReactorServerPolicyView {
 }
 
 /**
- * 设置页「企业服务端」的用量简报（P4.1 做-4 / R5）。
+ * 设置页「账号」分区·组织页的用量简报（P4.1 做-4 / R5）。
  *
  * 月度累计取服务端 `GET /desktop/usage/summary`（权威口径，只有企业 provider 的调用在报），
  * 本地只补「待上报条数」这一项 Host 事实；未登录/服务端不可达时 `monthTokens` 为 null，

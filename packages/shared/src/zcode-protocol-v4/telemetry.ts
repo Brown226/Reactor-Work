@@ -132,6 +132,12 @@ const toolLifecycleFactSchema = z
     errorMessage: z.string().optional(),
     parentToolCallId: z.string().min(1).optional(),
     childToolCallId: z.string().min(1).optional(),
+    /**
+     * 本次调用是否只读（CLI 按工具元数据 + 入参解析后的结论，如 Bash 只读命令）。
+     * 洞②（审计补全）引入：终态事实据此决定是否上报 `tool_call`——Host 不做工具名猜测，
+     * 未携带（旧 CLI / started 未到）按"不报"处理，避免把只读调用刷进审计。
+     */
+    sideEffect: z.boolean().optional(),
     agentId: z.string().min(1).optional(),
     agentType: z.string().optional(),
     childSessionId: z.string().min(1).optional(),
@@ -155,6 +161,12 @@ const permissionLifecycleFactSchema = z
     childSessionId: z.string().min(1).optional(),
     background: z.boolean().optional(),
     decision: z.enum(["allow", "deny", "escalate", "modify"]).optional(),
+    /**
+     * 规则拒绝时的 ruleId（如 `policy.commandBlacklist`）。洞②（审计补全）引入：
+     * Host 据此把组织策略拦截记成 `policy_block`、普通规则拒绝记成 `approval/forbidden`，
+     * 不依赖中文 reason 文本匹配。只有 phase=denied 携带。
+     */
+    ruleId: z.string().optional(),
   })
   .strict();
 

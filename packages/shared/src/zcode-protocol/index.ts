@@ -1408,6 +1408,9 @@ export const zcodePermissionResolvedEventPayloadSchema = z
     inputSummary: z.unknown().optional(),
     childSessionId: nonEmptyString.optional(),
     background: z.boolean().optional(),
+    // PermissionDenied 复用本事件（decision=deny）：规则拒绝时携带 ruleId，
+    // 供审计链路区分「组织策略拦截」与「普通规则拒绝」（洞②）。strict schema 不放行会整事件被拒。
+    ruleId: nonEmptyString.optional(),
   })
   .strict();
 export const zcodeUserInputRequestedEventPayloadSchema = z

@@ -21,7 +21,7 @@ import test from "node:test";
 import type { ApiClient } from "@zcode/shared";
 import { REACTOR_SERVER_API_KEY_SENTINEL } from "@zcode/shared";
 import type { IProviderSettingsService } from "../src/model-provider/providerFacadeServices.js";
-import type { ModelCallUsageDelta } from "../src/reactor-server/auditEventMapping.js";
+import type { BehaviorAuditFact, ModelCallUsageDelta } from "../src/reactor-server/auditEventMapping.js";
 import { createReactorServerService } from "../src/reactor-server/reactorServerService.js";
 
 const ENTERPRISE_PROVIDER_ID = "ent-1";
@@ -183,6 +183,17 @@ function createHarness(options: HarnessOptions = {}) {
     };
   };
 
+  // 行为审计事实源（洞②）：与用量源同构，供测试直发 tool/permission 生命周期事实。
+  let auditListener: ((fact: BehaviorAuditFact) => void) | null = null;
+  let auditUnsubscribed = 0;
+  const subscribeAuditFacts = (next: (fact: BehaviorAuditFact) => void): (() => void) => {
+    auditListener = next;
+    return () => {
+      auditListener = null;
+      auditUnsubscribed += 1;
+    };
+  };
+
   const credentials = {
     load: async (key: string) => credentialsStore.get(key) ?? null,
     save: async (key: string, value: string) => {
@@ -199,8 +210,12 @@ function createHarness(options: HarnessOptions = {}) {
     providerSettings,
     credentials,
     subscribeUsageDelta,
+    subscribeAuditFacts,
     get unsubscribed() {
       return unsubscribed;
+    },
+    get auditUnsubscribed() {
+      return auditUnsubscribed;
     },
     /** 模拟 CLI 的 `usage.delta` 经 node.ts 映射后送到服务的用量增量。 */
     emit(delta: Partial<ModelCallUsageDelta> & { providerId: string }): void {
@@ -215,6 +230,19 @@ function createHarness(options: HarnessOptions = {}) {
       });
     },
     hasListener: () => listener !== null,
+    /** 模拟 CLI 的 tool/permission 生命周期事实经 auditFactEmitter 送到服务（洞②）。 */
+    emitBehavior(fact: Partial<BehaviorAuditFact> & { kind: BehaviorAuditFact["kind"] }): void {
+      assert.ok(auditListener, "行为审计事实源未订阅（start 未执行）");
+      auditListener({
+        version: 1,
+        eventId: "fe-1",
+        eventSeq: 0,
+        occurredAt: Date.parse("2026-10-08T08:00:00.000Z"),
+        sessionId: "session-1",
+        ...fact,
+      } as BehaviorAuditFact);
+    },
+    hasAuditListener: () => auditListener !== null,
     auditBatchRequests: () =>
       requests.filter((request) => request.url.includes("/desktop/audit/batch")),
   };
@@ -224,6 +252,23 @@ function createHarness(options: HarnessOptions = {}) {
 async function settle(rounds = 6): Promise<void> {
   for (let index = 0; index < rounds; index += 1) {
     await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+}
+
+/**
+ * 轮询等待条件成立（超时即失败）。
+ *
+ * ⚠ 反例：入队走 outbox 的写串行链，每次 append 都是 `mkdir + writeFile + rename` 真实文件 I/O。
+ * 一次 emit 多个事实时，`settle(6)` 这种"固定等 6 轮 setTimeout(0)"**不保证**等到最后一笔
+ * 落盘 —— 定时器与 I/O 完成无关，机器负载高时 6 轮可能在第三笔写完前就跑完了，
+ * 断言就会偶发看到 pendingEvents=2（2026-10-08 实测 3 次里挂 1 次）。这里改成等条件本身。
+ */
+async function waitUntil(predicate: () => Promise<boolean>, timeoutMs = 5000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    if (await predicate()) return;
+    if (Date.now() >= deadline) throw new Error("等待条件超时");
+    await new Promise((resolve) => setTimeout(resolve, 5));
   }
 }
 
@@ -252,6 +297,7 @@ function createService(
     credentials: harness.credentials as never,
     providerSettings: harness.providerSettings,
     subscribeUsageDelta: harness.subscribeUsageDelta,
+    subscribeAuditFacts: harness.subscribeAuditFacts,
     auditOutboxPath: outboxPath,
     policyFilePath: policyPath,
     bootstrapOnStart: false,
@@ -475,4 +521,82 @@ test("上限：单批 ≤500 条、一次 flush ≤10 批", async (t) => {
     assert.ok(size <= 500, `单批不得超过 500 条，实际 ${size}`);
   }
   assert.equal(result.pendingEvents, 200, "5200 - 10*500 = 200 条留下次");
+});
+
+test("行为事实（洞②）：登录后入队 approval/policy_block/tool_call 并上报，登出退订", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "reactor-audit-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const harness = createHarness({ loggedIn: false });
+  const service = createService(harness, join(dir, "audit-outbox.jsonl"), join(dir, "policy.json"));
+  t.after(() => service.logout().catch(() => undefined));
+
+  assert.equal(harness.hasAuditListener(), false, "登录前不得挂行为事实源");
+  await loginAndQuiesce(service);
+  assert.equal(harness.hasAuditListener(), true, "登录成功后必须挂上行为事实源");
+
+  harness.emitBehavior({
+    kind: "permission.lifecycle",
+    phase: "resolved",
+    decision: "allow",
+    toolCallId: "call-1",
+    toolName: "Bash",
+    eventId: "fe-1",
+  });
+  harness.emitBehavior({
+    kind: "permission.lifecycle",
+    phase: "denied",
+    ruleId: "policy.commandBlacklist",
+    toolCallId: "call-2",
+    toolName: "Bash",
+    eventId: "fe-2",
+  });
+  harness.emitBehavior({
+    kind: "tool.lifecycle",
+    phase: "completed",
+    sideEffect: true,
+    toolCallId: "call-3",
+    toolName: "Edit",
+    durationMs: 42,
+    eventId: "fe-3",
+    errorMessage: "secret-content-must-not-leak",
+  });
+  await settle();
+  await waitUntil(async () => (await service.getUsageReportStatus()).pendingEvents === 3);
+  assert.equal((await service.getUsageReportStatus()).pendingEvents, 3, "行为事实入队三条");
+
+  const before = harness.auditBatchRequests().length;
+  const flushed = await service.flushUsageReports();
+  assert.equal(flushed.pendingEvents, 0, "POST 成功后必须 ack");
+  const batches = harness.auditBatchRequests();
+  assert.equal(batches.length, before + 1);
+  const posted = batches[batches.length - 1]?.body as { events: Record<string, unknown>[] };
+  assert.equal(posted.events.length, 3);
+  const byAction = new Map(posted.events.map((event) => [String(event["action"]), event]));
+
+  const approval = byAction.get("approval");
+  assert.equal(approval?.approvalDecision, "allow");
+  assert.equal(approval?.target, "call-1");
+  assert.equal(approval?.toolName, "Bash");
+  assert.equal(approval?.eventId, "session-1:fe-1");
+
+  const policyBlock = byAction.get("policy_block");
+  assert.equal(policyBlock?.outcome, "denied");
+  assert.equal(policyBlock?.errorCode, "policy.commandBlacklist");
+  assert.equal(policyBlock?.target, "call-2");
+
+  const toolCall = byAction.get("tool_call");
+  assert.equal(toolCall?.outcome, "ok");
+  assert.equal(toolCall?.durationMs, 42);
+  assert.equal(toolCall?.eventId, "session-1:fe-3");
+
+  // 红线：事实里的错误正文不进上报事件。
+  assert.equal(
+    JSON.stringify(posted.events).includes("secret-content"),
+    false,
+    "事件体不得携带事实正文字段",
+  );
+
+  await service.logout();
+  assert.equal(harness.auditUnsubscribed, 1, "登出必须退订行为事实源");
+  assert.equal(harness.hasAuditListener(), false);
 });

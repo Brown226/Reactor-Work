@@ -199,6 +199,7 @@ export async function emitPermissionDenied(
   toolCall: ExecutableToolCall,
   reason: string | undefined,
   traceContext: TraceContext,
+  ruleId?: string,
 ): Promise<void> {
   await deps.emitEvent({
     id: crypto.randomUUID() as any,
@@ -213,6 +214,8 @@ export async function emitPermissionDenied(
       toolName: toolCall.name,
       reason: reason ?? `Permission denied for ${toolCall.name}`,
       inputSummary: summarizeInput(toolCall.input),
+      // 洞②（审计补全）：规则 id 随事件下行，审计链路据此识别 policy.* 拦截（不匹配中文 reason 文本）。
+      ...(ruleId ? { ruleId } : {}),
     },
   });
 }

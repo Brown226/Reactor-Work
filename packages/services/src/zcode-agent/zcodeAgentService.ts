@@ -195,6 +195,7 @@ import type {
   ZCodeAgentListMcpServerStatusesParams,
   ZCodeAgentWorkspaceTarget,
   ZCodeAgentUsageFact,
+  ZCodeAgentAuditFact,
   ZCodeAgentCuaPermissionObservation,
   ZCodeAgentCreateAutomationParams,
   ZCodeAgentUpdateAutomationParams,
@@ -1139,6 +1140,9 @@ export function createZCodeAgentService(
   // 全局用量事实：与 conversationTelemetryFact 同一通知，只把 `usage.delta` 旁路给可信 Host
   // （P4 用量上报入队源）。跨 workspace 汇总到一条事件面，Host 记账不必枚举 workspace。
   const usageFactEmitter = new Emitter<ZCodeAgentUsageFact>();
+  // 全局行为审计事实（洞②）：tool.lifecycle 终态与 permission.lifecycle 结论旁路给可信 Host
+  // （审计上报入队源）。与 usageFactEmitter 同一通知、同一跨 workspace 口径。
+  const auditFactEmitter = new Emitter<ZCodeAgentAuditFact>();
   const cuaPermissionObservationEmitter = new Emitter<ZCodeAgentCuaPermissionObservation>();
   // sessions-index 帧 fan-out：与 conversation 同一 conversationFrame 通知，按 topic 前缀分流到此 emitter。
   const sessionsIndexFrameEmitters = new Map<string, Emitter<SessionsIndexTopicWireCandidate>>();
@@ -2070,6 +2074,14 @@ export function createZCodeAgentService(
             // 用量事实同时广播到全局面（Host 侧上报的入队源）。这里不做 workspace 过滤：
             // 远程 workspace 的模型调用同样是本机发出的企业用量，必须计入。
             if (parsed.data.kind === "usage.delta") usageFactEmitter.fire(parsed.data);
+            // 行为审计事实（洞②）：同一通知旁路 tool/permission 两支，过滤与映射在上报桥做
+            // （事实面保持原样透传，避免 Host 侧提前丢掉 renderer 也要用的字段）。
+            else if (
+              parsed.data.kind === "tool.lifecycle" ||
+              parsed.data.kind === "permission.lifecycle"
+            ) {
+              auditFactEmitter.fire(parsed.data);
+            }
           } else {
             // 严格丢弃未知字段，避免 CLI runtime 新字段未经审计穿透到 renderer reporter。
             logger.warn(undefined, "丢弃无效 v4 conversation telemetry fact", {
@@ -3278,6 +3290,7 @@ export function createZCodeAgentService(
     conversationTelemetryFactEmitters.clear();
     localTtftFactsEmitter.dispose();
     usageFactEmitter.dispose();
+    auditFactEmitter.dispose();
     cuaPermissionObservationEmitter.dispose();
     for (const emitter of workspaceConfigFrameEmitters.values()) {
       emitter.dispose();
@@ -5544,6 +5557,11 @@ export function createZCodeAgentService(
       // 不按 workspace 分桶的用量事实面：只服务 Host 侧记账（P4），
       // renderer/mobile 由 connection facade 挡在外面（见 zcodeAgentConnectionScope）。
       return usageFactEmitter.event;
+    },
+
+    onDynamicAuditFact() {
+      // 行为审计事实面（洞②）：与用量事实同一道门——仅可信 Host 订阅。
+      return auditFactEmitter.event;
     },
 
     onDynamicCuaPermissionObservation() {

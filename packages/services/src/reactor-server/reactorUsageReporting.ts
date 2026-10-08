@@ -15,7 +15,7 @@ import { resolveAuditOutboxPath } from "./auditContract.js";
 import { createAuditOutbox, type AuditOutbox } from "./auditOutbox.js";
 import { createReactorAuditBridge, type ReactorAuditBridge } from "./auditBridge.js";
 import type { AuditBatchPoster, AuditFlushResult } from "./auditFlush.js";
-import type { ModelCallUsageDelta } from "./auditEventMapping.js";
+import type { BehaviorAuditFact, ModelCallUsageDelta } from "./auditEventMapping.js";
 import type { ReactorServerAuditStatus } from "./reactorServer.js";
 
 export interface ReactorUsageReportingDeps {
@@ -27,6 +27,8 @@ export interface ReactorUsageReportingDeps {
   isEnterpriseProvider: (providerId: string) => boolean | Promise<boolean>;
   /** 会话流用量事件源；缺省 = 只装 outbox/flush（探针用例）。 */
   subscribeUsageDelta?: (listener: (delta: ModelCallUsageDelta) => void) => () => void;
+  /** 行为审计事实源（洞②）；与用量源并列，两者皆缺省时 start() 不订阅任何流。 */
+  subscribeAuditFacts?: (listener: (fact: BehaviorAuditFact) => void) => () => void;
   debounceMs?: number;
   intervalMs?: number;
   logger?: {
@@ -58,6 +60,7 @@ export function createReactorUsageReporting(
     isEnterpriseLoggedIn: deps.isEnterpriseLoggedIn,
     isEnterpriseProvider: deps.isEnterpriseProvider,
     ...(deps.subscribeUsageDelta ? { subscribeUsageDelta: deps.subscribeUsageDelta } : {}),
+    ...(deps.subscribeAuditFacts ? { subscribeAuditFacts: deps.subscribeAuditFacts } : {}),
     ...(deps.debounceMs !== undefined ? { debounceMs: deps.debounceMs } : {}),
     ...(deps.intervalMs !== undefined ? { intervalMs: deps.intervalMs } : {}),
     ...(deps.logger ? { logger: deps.logger } : {}),
@@ -76,7 +79,8 @@ export function createReactorUsageReporting(
 
   return {
     start() {
-      if (!deps.subscribeUsageDelta) return false;
+      // 任一事件源在场即算接线成功（用量 / 行为审计可各自单独存在）。
+      if (!deps.subscribeUsageDelta && !deps.subscribeAuditFacts) return false;
       bridge.start();
       subscribed = true;
       return true;

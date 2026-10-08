@@ -290,6 +290,8 @@ export class ConversationTelemetryFactNormalizer {
   private readonly firstStreamChunks = new BoundedKeySet();
   private readonly sourceCommandByTurn = new BoundedValueMap<string>();
   private readonly toolNameByCall = new BoundedValueMap<string>();
+  /** 洞②：started 时缓存「按入参解析后的只读结论」，终态 fact 附带（缓存模式同 toolNameByCall）。 */
+  private readonly sideEffectByCall = new BoundedValueMap<boolean>();
   private readonly modelBySession = new BoundedValueMap<{
     modelName: string;
     modelProvider: string;
@@ -466,6 +468,11 @@ export class ConversationTelemetryFactNormalizer {
         const key = `${turnKey ?? sessionId}\0${toolCallId}`;
         const explicitName = "toolName" in payload ? optionalString(payload.toolName) : undefined;
         const toolName = explicitName ?? this.toolNameByCall.get(key);
+        // 洞②（审计补全）：started 携带解析后的副作用结论（如 Bash 只读命令为 false），
+        // 缓存到终态再放进 fact——终态是 Host 上报 tool_call 的唯一依据，未声明按副作用处理。
+        if (event.type === SessionEventType.ToolCallStarted) {
+          this.sideEffectByCall.set(key, (payload as ToolCallStartedPayload).readOnly !== true);
+        }
         const result =
           event.type === SessionEventType.ToolCallResult
             ? (payload as ToolCallResultPayload)
@@ -491,7 +498,13 @@ export class ConversationTelemetryFactNormalizer {
           phase === "completed" && toolName === "CronCreate"
             ? cronCreateAutomationId(result?.result.content)
             : undefined;
-        if (phase === "completed" || phase === "failed") this.toolNameByCall.delete(key);
+        // 洞②：只在终态取缓存并附带；started/progress 不带（Host 只消费终态）。
+        const isTerminalPhase = phase === "completed" || phase === "failed";
+        const sideEffect = isTerminalPhase ? this.sideEffectByCall.get(key) : undefined;
+        if (isTerminalPhase) {
+          this.toolNameByCall.delete(key);
+          this.sideEffectByCall.delete(key);
+        }
         return conversationTelemetryFactSchema.parse({
           ...base,
           kind: "tool.lifecycle",
@@ -499,6 +512,7 @@ export class ConversationTelemetryFactNormalizer {
           phase,
           toolCallId,
           ...(toolName ? { toolName } : {}),
+          ...(sideEffect !== undefined ? { sideEffect } : {}),
           ...(automationId ? { automationId } : {}),
           ...(result ? { durationMs: result.duration } : {}),
           ...(error ? { errorCode: error.error.code ?? error.error.type } : {}),
@@ -553,6 +567,8 @@ export class ConversationTelemetryFactNormalizer {
             : {}),
           ...(rawPayload.background === true ? { background: true } : {}),
           ...(resolved ? { decision: resolved.decision } : {}),
+          // 洞②（审计补全）：规则拒绝携带 ruleId，Host 据此区分 policy.* 拦截与普通规则拒绝。
+          ...(denied?.ruleId ? { ruleId: denied.ruleId } : {}),
         });
       }
       case SessionEventType.ModelComplete: {
@@ -735,6 +751,7 @@ export class ConversationTelemetryFactNormalizer {
     this.sourceCommandByTurn.delete(turnKey);
     this.firstStreamChunks.deletePrefix(`${turnKey}\0`);
     this.toolNameByCall.deletePrefix(`${turnKey}\0`);
+    this.sideEffectByCall.deletePrefix(`${turnKey}\0`);
   }
 
   clearSession(sessionId: string): void {
@@ -742,6 +759,7 @@ export class ConversationTelemetryFactNormalizer {
     this.sourceCommandByTurn.deletePrefix(prefix);
     this.firstStreamChunks.deletePrefix(prefix);
     this.toolNameByCall.deletePrefix(prefix);
+    this.sideEffectByCall.deletePrefix(prefix);
     this.modelBySession.delete(sessionId);
     this.completedModelRequests.deletePrefix(prefix);
   }

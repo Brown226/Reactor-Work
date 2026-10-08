@@ -15,7 +15,7 @@ import { join } from "node:path";
 import type { ProviderConfigObject } from "@zcode/provider";
 import type { ICredentialService } from "../credential/credential.js";
 import { getZCodeDataRootDir } from "../paths.js";
-import type { ModelCallUsageDelta } from "./auditEventMapping.js";
+import type { BehaviorAuditFact, ModelCallUsageDelta } from "./auditEventMapping.js";
 import type { ReactorServerClient } from "./reactorServerClient.js";
 import { createReactorPolicyCache, type ReactorPolicyCache } from "./reactorPolicyCache.js";
 import { createReactorPolicySync } from "./reactorPolicySync.js";
@@ -43,6 +43,8 @@ export interface ReactorServerP4WiringDeps {
     config: ProviderConfigObject;
   } | null>;
   subscribeUsageDelta?: (listener: (delta: ModelCallUsageDelta) => void) => () => void;
+  /** 行为审计事实源（洞②）；Host 装配注入（订阅 CLI 的 tool/permission 生命周期事实）。 */
+  subscribeAuditFacts?: (listener: (fact: BehaviorAuditFact) => void) => () => void;
   auditOutboxPath?: string;
   policyFilePath?: string;
   auditFlushDebounceMs?: number;
@@ -99,6 +101,7 @@ export function createReactorServerP4Wiring(
     isEnterpriseLoggedIn: () => deps.hasUsableSession(),
     isEnterpriseProvider: (providerId) => isEnterpriseProvider(providerId),
     ...(deps.subscribeUsageDelta ? { subscribeUsageDelta: deps.subscribeUsageDelta } : {}),
+    ...(deps.subscribeAuditFacts ? { subscribeAuditFacts: deps.subscribeAuditFacts } : {}),
     ...(deps.auditFlushDebounceMs !== undefined ? { debounceMs: deps.auditFlushDebounceMs } : {}),
     ...(deps.auditFlushIntervalMs !== undefined ? { intervalMs: deps.auditFlushIntervalMs } : {}),
     logger: deps.logger,

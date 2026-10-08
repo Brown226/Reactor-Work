@@ -4,7 +4,7 @@ import type { ICredentialService } from "../credential/credential.js";
 import type { IProviderSettingsService } from "../model-provider/providerFacadeServices.js";
 import { createServiceLogger } from "../logger/serviceLogger.js";
 import { writeZCodeDataScopeMarker } from "../userDataScope.js";
-import type { ModelCallUsageDelta } from "./auditEventMapping.js";
+import type { BehaviorAuditFact, ModelCallUsageDelta } from "./auditEventMapping.js";
 import { createReactorServerP4Wiring } from "./reactorServerP4Wiring.js";
 import {
   createReactorServerClient,
@@ -60,6 +60,11 @@ export interface CreateReactorServerServiceOptions {
    * 缺省 = 不上报（只保留 outbox/flush 语义，供探针与测试）。
    */
   readonly subscribeUsageDelta?: (listener: (delta: ModelCallUsageDelta) => void) => () => void;
+  /**
+   * 行为审计事实源（洞②）：Host 装配注入（订阅 CLI 的 `tool.lifecycle` / `permission.lifecycle` 事实）。
+   * 缺省 = 不上报行为事件（与 subscribeUsageDelta 同口径，供探针与测试）。
+   */
+  readonly subscribeAuditFacts?: (listener: (fact: BehaviorAuditFact) => void) => () => void;
   /** outbox 落盘路径（缺省 `{用户数据根}/audit-outbox.jsonl`；测试注入临时目录）。 */
   readonly auditOutboxPath?: string;
   /** 策略缓存路径（缺省 `{用户数据根}/desktop-policy.json`；测试注入临时目录）。 */
@@ -113,6 +118,7 @@ export function createReactorServerService(
     ensureAccessToken,
     readManagedProviderEntry,
     ...(options.subscribeUsageDelta ? { subscribeUsageDelta: options.subscribeUsageDelta } : {}),
+    ...(options.subscribeAuditFacts ? { subscribeAuditFacts: options.subscribeAuditFacts } : {}),
     ...(options.auditOutboxPath !== undefined ? { auditOutboxPath: options.auditOutboxPath } : {}),
     ...(options.policyFilePath !== undefined ? { policyFilePath: options.policyFilePath } : {}),
     ...(options.auditFlushDebounceMs !== undefined

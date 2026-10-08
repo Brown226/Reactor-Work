@@ -11,7 +11,7 @@
  * - `postBatch`：`reactorServerClient` 的批量上报出口。
  */
 import type { AuditOutbox } from "./auditOutbox.js";
-import type { ModelCallUsageDelta } from "./auditEventMapping.js";
+import type { BehaviorAuditFact, ModelCallUsageDelta } from "./auditEventMapping.js";
 import { createAuditReporter } from "./auditReporter.js";
 import {
   createAuditFlushScheduler,
@@ -33,6 +33,11 @@ export interface ReactorAuditBridgeDeps {
    * 用量事件源。缺省 = 只装 outbox/flush（探针、只补传场景），`start()` 不订阅任何流。
    */
   subscribeUsageDelta?: (listener: (delta: ModelCallUsageDelta) => void) => () => void;
+  /**
+   * 行为审计事实源（洞②：tool.lifecycle / permission.lifecycle）。与用量源并列，
+   * 两者都缺省时 `start()` 同样不订阅任何流。
+   */
+  subscribeAuditFacts?: (listener: (fact: BehaviorAuditFact) => void) => () => void;
   /** 合并窗口（默认 30s）与定时兜底（默认 5min）；测试可缩短或注入假计时器。 */
   debounceMs?: number;
   intervalMs?: number;
@@ -63,7 +68,8 @@ export function createReactorAuditBridge(deps: ReactorAuditBridgeDeps): ReactorA
     logger: deps.logger,
   });
 
-  let unsubscribe: (() => void) | null = null;
+  let unsubscribeUsage: (() => void) | null = null;
+  let unsubscribeAudit: (() => void) | null = null;
 
   // 一条增量 = 一次异步判定 + 入队；并发到达时各自独立（outbox 内部串行 append 语义）。
   async function record(delta: ModelCallUsageDelta): Promise<void> {
@@ -78,22 +84,43 @@ export function createReactorAuditBridge(deps: ReactorAuditBridgeDeps): ReactorA
     if (enqueued) scheduler.schedule();
   }
 
+  // 行为事实入队（洞②）：门禁只判企业登录态（见 auditReporter.recordBehaviorFact 注释）。
+  async function recordBehavior(fact: BehaviorAuditFact): Promise<void> {
+    const enterpriseLoggedIn = await deps.isEnterpriseLoggedIn();
+    const enqueued = await reporter.recordBehaviorFact(fact, { enterpriseLoggedIn });
+    if (enqueued) scheduler.schedule();
+  }
+
   return {
     start() {
-      if (unsubscribe || !deps.subscribeUsageDelta) return;
-      unsubscribe = deps.subscribeUsageDelta((delta) => {
-        void record(delta).catch((error: unknown) => {
-          // 记账失败不影响会话：outbox 是本地文件，这里只记录。
-          deps.logger?.warn("[audit] 用量入队失败", {
-            error: error instanceof Error ? error.message : String(error),
+      if (unsubscribeUsage || unsubscribeAudit) return;
+      if (!deps.subscribeUsageDelta && !deps.subscribeAuditFacts) return;
+      if (deps.subscribeUsageDelta) {
+        unsubscribeUsage = deps.subscribeUsageDelta((delta) => {
+          void record(delta).catch((error: unknown) => {
+            // 记账失败不影响会话：outbox 是本地文件，这里只记录。
+            deps.logger?.warn("[audit] 用量入队失败", {
+              error: error instanceof Error ? error.message : String(error),
+            });
           });
         });
-      });
+      }
+      if (deps.subscribeAuditFacts) {
+        unsubscribeAudit = deps.subscribeAuditFacts((fact) => {
+          void recordBehavior(fact).catch((error: unknown) => {
+            deps.logger?.warn("[audit] 行为事实入队失败", {
+              error: error instanceof Error ? error.message : String(error),
+            });
+          });
+        });
+      }
       scheduler.start();
     },
     stop() {
-      unsubscribe?.();
-      unsubscribe = null;
+      unsubscribeUsage?.();
+      unsubscribeUsage = null;
+      unsubscribeAudit?.();
+      unsubscribeAudit = null;
       scheduler.dispose();
     },
     flushNow: () => scheduler.flushNow(),

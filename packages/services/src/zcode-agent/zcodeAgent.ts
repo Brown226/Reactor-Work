@@ -105,6 +105,15 @@ import { createServiceDescriptor } from "../descriptors.js";
 
 /** 全局用量事实：telemetry 事实里 `usage.delta` 这一支（含 providerId/modelId/token 分项）。 */
 export type ZCodeAgentUsageFact = Extract<ConversationTelemetryFact, { kind: "usage.delta" }>;
+/**
+ * 全局行为审计事实：`tool.lifecycle` / `permission.lifecycle` 两支（洞②审计补全）。
+ * 与用量事实同一 CLI 通知、同一「不按 workspace 分桶」口径：行为审计记的是本机受管会话，
+ * 远程 workspace 的工具调用同样是本机发出的，必须计入。
+ */
+export type ZCodeAgentAuditFact = Extract<
+  ConversationTelemetryFact,
+  { kind: "tool.lifecycle" | "permission.lifecycle" }
+>;
 
 
 export * from "./zcodeAgentPluginParams.js";
@@ -824,6 +833,11 @@ export interface IZCodeAgentService {
    * 记账只需要 provider/model/token 与会话 id，不需要 workspace 身份。
    */
   onDynamicUsageFact(): Event<ZCodeAgentUsageFact>;
+  /**
+   * 全局行为审计事实（`tool.lifecycle` / `permission.lifecycle`）：洞②审计补全的入队源。
+   * 与 `onDynamicUsageFact` 同一道门——仅可信 Host 旁路订阅，renderer/mobile 拿不到。
+   */
+  onDynamicAuditFact(): Event<ZCodeAgentAuditFact>;
   /** 当前窗口全部本地 live task 的 CUA 权限观察；历史、远程与 replayable 不在此事件面。 */
   onDynamicCuaPermissionObservation(): Event<ZCodeAgentCuaPermissionObservation>;
   // ── sessions-index 通道（列表活性）──

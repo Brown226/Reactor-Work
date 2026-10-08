@@ -2124,6 +2124,8 @@ export function createLocalServices(options: {
   // agent 服务后建，而订阅入口在 agent 服务上（`onDynamicUsageFact`），只能用闭包回填。
   // 订阅只会在登录成功 / 启动补一次时安装，届时 agent 服务必然已经构造完成。
   let usageFactSourceHolder: Pick<IZCodeAgentService, "onDynamicUsageFact"> | null = null;
+  // 行为审计事实源（洞②）：与用量源同一套 late-bind 理由与同一回填点。
+  let auditFactSourceHolder: Pick<IZCodeAgentService, "onDynamicAuditFact"> | null = null;
   const reactorServerWiringLog = createServiceLogger("reactor-server-wiring");
   const reactorServerService = createReactorServerService({
     apiClient,
@@ -2161,6 +2163,17 @@ export function createLocalServices(options: {
           },
         });
       });
+      return () => disposable.dispose();
+    },
+    // 行为审计事实源（洞②）：透传原始 fact，过滤与映射在上报桥（buildBehaviorAuditEvent）做，
+    // 与用量链路「Host 只搬运、门禁在 Reporter」的分工一致。
+    subscribeAuditFacts: (listener) => {
+      const source = auditFactSourceHolder;
+      if (!source) {
+        reactorServerWiringLog.warn(undefined, "行为审计上报未接线：agent 服务尚未构造，订阅被跳过");
+        return () => undefined;
+      }
+      const disposable = source.onDynamicAuditFact()((fact) => listener(fact));
       return () => disposable.dispose();
     },
   });
@@ -2395,6 +2408,8 @@ export function createLocalServices(options: {
   // 回填用量事实源（P4.1b）：reactorServer 的订阅钩子此刻起可用；
   // 登录成功 / 启动补一次时才会真正安装订阅。
   usageFactSourceHolder = zcodeAgentService;
+  // 行为审计事实源（洞②）同点回填。
+  auditFactSourceHolder = zcodeAgentService;
   // Helper health probe 短暂超时不应在 Computer Use turn 中途回收 Agent。resolver 会把 restart
   // 推迟到下一个 request/turn 边界；若 broker 确实已失效，当前 turn 会自然失败并由下一次请求恢复。
   hasActiveTurnRef = () => zcodeAgentService.hasActiveCuaOperationTurn();

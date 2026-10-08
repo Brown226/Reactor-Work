@@ -731,15 +731,23 @@ export const TID_REACTOR_SERVER_USERNAME_INPUT = "reactor-server-username-input"
 export const TID_REACTOR_SERVER_PASSWORD_INPUT = "reactor-server-password-input";
 /** 企业服务端登录表单：登录按钮 */
 export const TID_REACTOR_SERVER_LOGIN = "reactor-server-login";
-/** 企业服务端设置分区：退出登录按钮 */
+/** 账号分区：退出登录按钮 */
 export const TID_REACTOR_SERVER_LOGOUT = "reactor-server-logout";
-/** 企业服务端设置分区：刷新模型清单按钮 */
+/** 账号分区：刷新模型清单按钮 */
 export const TID_REACTOR_SERVER_SYNC_MODELS = "reactor-server-sync-models";
-/** 企业服务端设置分区：登录态/错误提示（loading 与 error 态才出现） */
+/** 账号分区：登录态/错误提示（loading 与 error 态才出现） */
 export const TID_REACTOR_SERVER_STATUS = "reactor-server-status";
-/** 企业服务端设置分区：本月用量简报（累计 token / 额度进度，P4.1 做-4） */
-export const TID_REACTOR_SERVER_USAGE = "reactor-server-usage";
-/** 企业服务端设置分区：手动刷新用量简报按钮 */
+/** 账号分区：手动刷新用量简报按钮 */
 export const TID_REACTOR_SERVER_REFRESH_USAGE = "reactor-server-refresh-usage";
-/** 企业服务端设置分区：组织策略摘要（模式天花板 / 命令黑名单 / 出网白名单） */
+/** 账号分区：组织策略摘要（模式天花板 / 命令黑名单 / 出网白名单） */
 export const TID_REACTOR_SERVER_POLICY = "reactor-server-policy";
+/** 账号分区根节点（已登录态） */
+export const TID_ACCOUNT_SECTION = "account-section";
+/** 账号分区：页内「账号 / 组织」分段切换 */
+export const TID_ACCOUNT_TAB = "account-tab";
+/** 账号分区·组织页：可用权限清单 */
+export const TID_ACCOUNT_PERMISSIONS = "account-permissions";
+/** 账号分区·组织页：可用能力计数（模型 / 技能 / 专家） */
+export const TID_ACCOUNT_CAPABILITY = "account-capability";
+/** 账号分区·组织页：可用额度（用量 / 上限 / 进度） */
+export const TID_ACCOUNT_QUOTA = "account-quota";

@@ -22,6 +22,12 @@ export type AuditActionKind =
   | "admin_action"
   | "auth";
 
+/**
+ * 审批结论词表（与服务端 `repo.ts` 的 `APPROVALS` 同步，两边一起改）。
+ * 事实面的 permission decision（allow/deny/escalate/modify）由映射层折算到这四个词。
+ */
+export type AuditApprovalDecision = "allow" | "deny" | "ask" | "forbidden";
+
 /** 事件结果。 */
 export type AuditOutcome = "ok" | "error" | "denied" | "cancelled";
 
@@ -54,6 +60,15 @@ export interface AuditEventInput {
   summary?: string;
   filesTouched?: number;
   usage?: AuditUsage;
+  /**
+   * 工具名（`tool_call`/`approval`/`policy_block` 用；服务端列 `tool_name`）。
+   * 与服务端 `AuditEventInput` 同名字段镜像，截 128 防超长（服务端不校验此列）。
+   */
+  toolName?: string;
+  /** 对象标识（服务端校验 ≤128）：工具事件放 toolCallId，管理事件放路径。 */
+  target?: string;
+  /** 审批结论（服务端按 `APPROVALS` 白名单校验）。 */
+  approvalDecision?: AuditApprovalDecision;
 }
 
 export interface AuditBatchRequest {
