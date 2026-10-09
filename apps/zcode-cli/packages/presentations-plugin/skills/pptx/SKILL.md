@@ -674,6 +674,42 @@ Skip `word_wrap = False`: it makes text overflow the box invisibly in PowerPoint
 - Avoid verbose variable names and redundant operations
 - Avoid unnecessary print statements
 
+## Vendored scripts (`scripts/`)
+
+Deterministic deck operations live in `scripts/` as Python tools (Apache-2.0, copied verbatim
+from the upstream Fresh PPTX skill; attribution in `THIRD-PARTY-NOTICES.md`). Resolve the
+absolute path once and always call through it — never bare `python3 scripts/...`:
+
+```bash
+PPTX_SKILL_DIR="<skill_directory>"   # ← parent directory of this SKILL.md
+
+python3 "$PPTX_SKILL_DIR/scripts/dump_text.py" deck.pptx --notes > deck.txt
+python3 "$PPTX_SKILL_DIR/scripts/diagnose.py" deck.pptx
+python3 "$PPTX_SKILL_DIR/scripts/render_pdf.py" deck.pptx
+python3 "$PPTX_SKILL_DIR/scripts/render_slides.py" deck.pptx --out slides/
+python3 "$PPTX_SKILL_DIR/scripts/contact_sheet.py" deck.pptx --cols 3
+python3 "$PPTX_SKILL_DIR/scripts/explode.py" deck.pptx unpacked/
+python3 "$PPTX_SKILL_DIR/scripts/assemble.py" unpacked/ out.pptx
+python3 "$PPTX_SKILL_DIR/scripts/insert_slide.py" unpacked/ --clone slide3.xml
+python3 "$PPTX_SKILL_DIR/scripts/prune.py" unpacked/
+```
+
+| Script | Use |
+|--------|-----|
+| `dump_text.py` | Extract all slide text (optionally speaker notes) for review and diffing |
+| `diagnose.py` | Well-formedness check on a finished deck — run before delivery |
+| `render_pdf.py` / `render_slides.py` | Deck → PDF / per-slide PNG via LibreOffice (visual QA) |
+| `contact_sheet.py` | Thumbnail grid for previewing a template |
+| `explode.py` / `assemble.py` | Unpack a .pptx to XML / repack — pair with surgical edits |
+| `insert_slide.py` | Clone an existing slide or add a blank slide from a layout, inside an unpacked deck |
+| `prune.py` | Drop unreferenced parts from an unpacked deck |
+| `soffice_bridge.py` | Internal LibreOffice bridge used by the render scripts — not an entry point |
+
+`soffice` must be reachable on PATH (see the LibreOffice hard requirement below and the
+`ZCODE_LIBREOFFICE_PATH` contract in the office four-pack fork spec). The upstream
+`preview.ts` HTTP preview server is intentionally not vendored — rendered PNGs plus the
+`pptx:visual-judge` agent cover the same review loop.
+
 ## Dependencies
 
 Required dependencies (should already be installed):

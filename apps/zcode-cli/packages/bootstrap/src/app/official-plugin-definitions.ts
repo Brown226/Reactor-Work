@@ -168,13 +168,15 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
   },
   ...(
     [
-      ["documents", "docx", "Documents", "Word文档"],
-      ["pdf", "pdf", "PDF", "PDF"],
-      ["presentations", "pptx", "Presentations", "演示文档"],
-      ["spreadsheets", "xlsx", "Spreadsheets", "电子表格"],
+      // version 按条目携带：四件套各自独立升版，避免无内容变更的插件被共享字面量牵连
+      // （scripts 库借入仅 presentations/spreadsheets 变更，见 fork spec 第 8 节）。
+      ["documents", "docx", "Documents", "Word文档", "0.1.7"],
+      ["pdf", "pdf", "PDF", "PDF", "0.1.7"],
+      ["presentations", "pptx", "Presentations", "演示文档", "0.1.8"],
+      ["spreadsheets", "xlsx", "Spreadsheets", "电子表格", "0.1.8"],
     ] as const
   ).map(
-    ([name, skill, displayName, chineseName]): OfficialPluginDefinition => ({
+    ([name, skill, displayName, chineseName, version]): OfficialPluginDefinition => ({
       defaultEnabled: true,
       listing: {
         author: ZAI_AUTHOR,
@@ -193,7 +195,7 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
         `../../${name}-plugin`,
         `../../../${name}-plugin`,
       ],
-      version: "0.1.7",
+      version,
     }),
   ),
   ...(
@@ -253,6 +255,22 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
             "statement-consistency-check",
             "xlsx-author",
           ],
+        },
+        {
+          name: "research",
+          version: "0.1.0",
+          displayName: "Research",
+          chineseName: "自主研究",
+          description: "自主研究技能集：八模式研究方法与纪律（实验循环/主题调研/量化分析/对比评测/根因排查/消融实验/论文复现/论文写作与引用校验），外加 arXiv 论文级工具belt。",
+          skills: ["super-research", "arxiv"],
+        },
+        {
+          name: "analytics",
+          version: "0.1.0",
+          displayName: "Analytics",
+          chineseName: "经营分析",
+          description: "产品与经营分析技能集：数据质量核查、KPI 框架设计、指标波动诊断与看板搭建（BI 平台 / HTML / Streamlit）。",
+          skills: ["analyze-data-quality", "design-kpis", "metric-diagnostics", "build-dashboard"],
         },
       ] as const
     ).map(

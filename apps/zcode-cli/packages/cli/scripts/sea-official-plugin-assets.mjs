@@ -62,7 +62,8 @@ export const officialSeaPlugins = [
   },
   // 办公四件套：原官方市场插件（cdn-zcode.z.ai seed），因内网隔离部署 fork 进仓库随包分发。
   // 同为纯内容型（requiresRuntime:false）；requiredSeedPaths 与 official-plugin-definitions.ts
-  // 四件套条目逐一对应，三处 version 必须同为 0.1.7（见 docs/已完成/已完成-内网办公四件套-fork-spec.md）。
+  // 四件套条目逐一对应，version 按插件各自同步（documents/pdf 0.1.7；
+  // presentations/spreadsheets 0.1.8 = 上游脚本库借入，见 fork spec 第 8 节）。
   {
     marketplace: "zcode-plugins-official",
     name: "documents",
@@ -85,7 +86,7 @@ export const officialSeaPlugins = [
     requiresRuntime: false,
     requiredSeedPaths: ["agents/visual-judge.md", "skills/pptx/SKILL.md"],
     rootPath: join("packages", "presentations-plugin"),
-    version: "0.1.7",
+    version: "0.1.8",
   },
   {
     marketplace: "zcode-plugins-official",
@@ -93,7 +94,7 @@ export const officialSeaPlugins = [
     requiresRuntime: false,
     requiredSeedPaths: ["agents/visual-judge.md", "skills/xlsx/SKILL.md"],
     rootPath: join("packages", "spreadsheets-plugin"),
-    version: "0.1.7",
+    version: "0.1.8",
   },
   // 第二批内网 fork：同样纯内容型（requiresRuntime:false），requiredSeedPaths 与
   // official-plugin-definitions.ts 各条目对应，三处 version 一致（见 spec 7.6/第 6 节）。
@@ -172,6 +173,31 @@ export const officialSeaPlugins = [
     ],
     rootPath: join("packages", "accounting-and-reporting-plugin"),
     version: "0.1.1",
+  },
+  // 研究插件（docs/未完成-研究插件-方案-v1.md）：纯内容型，两个技能均为上游
+  // mimocode 内置包整包复制（书面许可）；脚本 stdlib-only，运行期按需联网。
+  {
+    marketplace: "zcode-plugins-official",
+    name: "research",
+    requiresRuntime: false,
+    requiredSeedPaths: ["skills/super-research/SKILL.md", "skills/arxiv/SKILL.md"],
+    rootPath: join("packages", "research-plugin"),
+    version: "0.1.0",
+  },
+  // 经营分析插件（docs/未完成-经营分析插件-方案-v1.md）：纯内容型，四个 workflow
+  // 拆自上游 data-analytics（书面许可）；财务域归 accounting-and-reporting。
+  {
+    marketplace: "zcode-plugins-official",
+    name: "analytics",
+    requiresRuntime: false,
+    requiredSeedPaths: [
+      "skills/analyze-data-quality/SKILL.md",
+      "skills/design-kpis/SKILL.md",
+      "skills/metric-diagnostics/SKILL.md",
+      "skills/build-dashboard/SKILL.md",
+    ],
+    rootPath: join("packages", "analytics-plugin"),
+    version: "0.1.0",
   },
   // 文件能力三件套（docs/未完成-file-tools拆三插件方案.md）：file-tools=parse/docx/pdf，
   // ocr-tools=扫描件识字，dwg-tools=图纸。requiresRuntime 走 dist/mcp/server.js。

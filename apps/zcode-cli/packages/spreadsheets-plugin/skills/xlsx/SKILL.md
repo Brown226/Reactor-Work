@@ -219,6 +219,35 @@ Workbook metadata: `wb.properties.creator = "Z.ai"`
 
 ---
 
+### Vendored scripts (`scripts/`)
+
+Deterministic workbook operations live in `scripts/` as Python tools (Apache-2.0, copied
+verbatim from the upstream Fresh XLSX skill; attribution in `THIRD-PARTY-NOTICES.md`).
+Same absolute-path rule as above; run with the interpreter resolved by the office env
+contract (`ZCODE_PYTHON_PATH` when set):
+
+```bash
+python3 "$XLSX_SKILL_DIR/scripts/overview.py" book.xlsx
+python3 "$XLSX_SKILL_DIR/scripts/audit.py" output.xlsx
+python3 "$XLSX_SKILL_DIR/scripts/bake.py" output.xlsx
+python3 "$XLSX_SKILL_DIR/scripts/csv_out.py" input.xlsx out_dir/
+python3 "$XLSX_SKILL_DIR/scripts/pdf_out.py" output.xlsx
+python3 "$XLSX_SKILL_DIR/scripts/explode.py" input.xlsx unpacked/
+python3 "$XLSX_SKILL_DIR/scripts/assemble.py" unpacked/ output.xlsx
+```
+
+| Script | Use |
+|--------|-----|
+| `overview.py` | JSON snapshot of the workbook (per-sheet shape, charts, defined names) |
+| `audit.py` | Integrity audit: ZIP structure, XML well-formedness, openpyxl round-trip, Excel-error scan — run before delivery |
+| `bake.py` | Bake cached formula values via headless LibreOffice (`--timeout` configurable) |
+| `csv_out.py` | Flatten sheets to CSV (directory → one file per sheet) |
+| `pdf_out.py` | Workbook → PDF via headless LibreOffice |
+| `explode.py` / `assemble.py` | Unpack to XML parts / repack for surgical edits |
+| `runtime/libreoffice.py` | Internal LibreOffice locator/invoker used by `bake.py` / `pdf_out.py` |
+
+---
+
 ## Quality Gate
 
 Every deliverable must pass the full integrity pipeline before delivery.

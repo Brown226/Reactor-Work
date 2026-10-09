@@ -250,5 +250,49 @@
     "license": "MIT",
     "scope": "Vendored React/Next.js guidance and local adaptations; local README preserves Shu Ding / Vercel attribution.",
     "reviewRequired": "Pinned upstream README and skill declare MIT, but a complete original copyright/license notice has not been obtained."
+  },
+  {
+    "id": "Fresh PPTX skill scripts (pptx-official)",
+    "referenceRevision": null,
+    "source": "mimocode builtin_skills desktop-1579e7d, pptx-official/LICENSE (Apache-2.0, Copyright 2026 The Fresh PPTX Skill contributors)",
+    "file": "third-party/upstream/79f83e1bc36c3bed501c0b133ace0a7d3a470faba4c3ca3c489a1b2b15b42dc4.txt",
+    "sha256": "79f83e1bc36c3bed501c0b133ace0a7d3a470faba4c3ca3c489a1b2b15b42dc4",
+    "importRevision": null,
+    "provenance": "Copied from the local mimocode builtin_skills distribution (desktop-1579e7d); the original upstream revision is not recorded in this checkout.",
+    "roots": ["apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts"],
+    "scope": "Vendored pptx-official Python scripts only, copied verbatim without modification. The plugin's own SKILL.md, agents and other files are ZCode fork content and are not attributed to the upstream project.",
+    "license": "Apache-2.0"
+  },
+  {
+    "id": "Fresh XLSX skill scripts (xlsx-official)",
+    "referenceRevision": null,
+    "source": "mimocode builtin_skills desktop-1579e7d, xlsx-official/LICENSE (Apache-2.0, Copyright 2026 The Fresh XLSX Skill contributors)",
+    "file": "third-party/upstream/2ece2ad3591e1ad87a75eb998c97dd59d2f6d7fec346595c9ea6dce8a8078d98.txt",
+    "sha256": "2ece2ad3591e1ad87a75eb998c97dd59d2f6d7fec346595c9ea6dce8a8078d98",
+    "importRevision": null,
+    "provenance": "Copied from the local mimocode builtin_skills distribution (desktop-1579e7d); the original upstream revision is not recorded in this checkout.",
+    "roots": ["apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts"],
+    "scope": "Vendored xlsx-official Python scripts only, copied verbatim without modification. The plugin's own SKILL.md, agents and other files are ZCode fork content and are not attributed to the upstream project.",
+    "license": "Apache-2.0"
+  },
+  {
+    "id": "mimocode research and analytics skills (super-research, arxiv, data-analytics workflows)",
+    "referenceRevision": null,
+    "source": "mimocode builtin_skills desktop-1579e7d (skills/super-research, skills/arxiv, skills/data-analytics workflows); upstream author granted written permission to copy on 2026-10-09",
+    "importRevision": null,
+    "provenance": "Copied from the local mimocode builtin_skills distribution (desktop-1579e7d); the original upstream revision is not recorded in this checkout.",
+    "roots": [
+      "apps/zcode-cli/packages/research-plugin/skills",
+      "apps/zcode-cli/packages/analytics-plugin/skills"
+    ],
+    "scope": "Vendored research and analytics skill content only, copied verbatim except the four analytics SKILL.md files listed in modifiedFiles, which carry a ZCode subset-boundary note after the frontmatter. The plugin manifests, LICENSE.txt and README files are ZCode files and are not attributed to the upstream project.",
+    "license": "written permission (arxiv skill declares MIT in its own frontmatter)",
+    "reviewRequired": "Upstream author granted written permission to copy (2026-10-09, permission record held by the project owner); no upstream LICENSE file ships with the bundle.",
+    "modifiedFiles": [
+      "apps/zcode-cli/packages/analytics-plugin/skills/analyze-data-quality/SKILL.md",
+      "apps/zcode-cli/packages/analytics-plugin/skills/design-kpis/SKILL.md",
+      "apps/zcode-cli/packages/analytics-plugin/skills/metric-diagnostics/SKILL.md",
+      "apps/zcode-cli/packages/analytics-plugin/skills/build-dashboard/SKILL.md"
+    ]
   }
 ]

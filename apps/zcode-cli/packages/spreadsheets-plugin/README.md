@@ -14,14 +14,15 @@
 ## 目录
 
 ```
-.zcode-plugin/plugin.json        插件清单（version 0.1.7）
+.zcode-plugin/plugin.json        插件清单（version 0.1.8）
 agents/visual-judge.md           渲染页视觉验收 Agent（只读，逐页 pass/fail 判决）
 skills/xlsx/
-  SKILL.md                       349 行入口：场景 → engines → 质检流水线
+  SKILL.md                       378 行入口：场景 → engines → 脚本 → 质检流水线
   scenes/                        create / edit / analyze / convert / finance / finance_lite / vba / analyze-recipes / edit-patterns
   engines/                        chart.md、chart-templates.md、vba-templates.md、design.md
   templates/                     base.py、palettes.py
   xlsx.py                        表格生成主脚本
+  scripts/                       上游 Fresh XLSX 借入的 9 个 Python 文件（Apache-2.0，原样拷贝）
   env_setup/                     环境检查与安装（Python / LibreOffice / 字体）
   quality/pipeline.md            质检流水线
   LICENSE.txt                    Z.ai 专有许可：仅限个人、教育与非商业使用；产品方内部使用
@@ -29,7 +30,9 @@ skills/xlsx/
 
 ## 能力边界
 
-覆盖「从无到有」的表格制作（公式 / 图表 / 财务场景 / VBA）。**既有表格的确定性编辑**
-（单元格级读写、透视、图表更新）不在技能射程内，规划以 exceljs 自建 JS 版 MCP 工具
-补位（参照 haris-musa/excel-mcp-server 的 25 工具清单），见
+覆盖「从无到有」的表格制作（公式 / 图表 / 财务场景 / VBA），以及 deck/workbook 级的
+确定性操作（overview / audit / bake / csv_out / pdf_out / explode / assemble，见
+SKILL.md「Vendored scripts」）。**单元格级的交互式确定性编辑**（单元格读写、透视、
+图表更新）不在技能射程内，规划以 exceljs 自建 JS 版 MCP 工具补位（参照
+haris-musa/excel-mcp-server 的 25 工具清单），见
 `docs/已完成/已完成-内网办公四件套-fork-spec.md` 后续项。

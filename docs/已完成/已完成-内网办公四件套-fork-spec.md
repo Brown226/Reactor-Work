@@ -171,3 +171,47 @@ COM 注册完整度需实测，验收以 visual-judge 判决为准。
 相关路由（xlsx recalc / docx→PDF，待用户或基镜像提供 soffice）、visual-judge 逐页判决的
 真实调用。另有一项待真实桌面复核：Bash 工具进程 PATH 中 Windows 形态目录条的解析
 （与 ripgrep/bfs 等既有内置工具同一机制，非本次引入；env_check 自解析为主路径，不依赖它）。
+
+## 8. Phase 3：官方脚本库借入（2026-10-08）
+
+### 8.1 背景
+
+presentations 的 pptx skill 此前是纯 prompt 驱动（无脚本），xlsx skill 仅 3 个自有
+Python 文件；deck/工作簿的装配、诊断、拆合、导出等确定性操作每次都要现场写一次性脚本。
+上游 mimocode 内置包（`builtin_skills/desktop-1579e7d`）的 `pptx-official` /
+`xlsx-official` 自带 Apache-2.0 脚本库（The Fresh PPTX/XLSX Skill contributors），
+与 fork 的创作层定位互补：**LLM 流程仍是 SKILL.md 唯一 owner，脚本归操作层**，
+对应第 2 节三层能力模型，不新增写入路径。
+
+### 8.2 借入范围与边界
+
+| 插件 | 借入 | 不借入 | 理由 |
+| --- | --- | --- | --- |
+| presentations | `pptx-official/scripts/` 的 10 个 `.py` | `preview.ts` / `preview_server.ts` | 预览服务与 agents/visual-judge + `render_slides.py` 能力重复；且 TS 入库需过 lint/format 门禁，与"原样拷贝、零修改"的许可策略冲突 |
+| spreadsheets | `xlsx-official/scripts/` 全部（7 个顶层 `.py` + `runtime/` 2 个文件） | — | 无重叠件 |
+
+约束：脚本**原样拷贝、不做格式化与改写**（Apache-2.0 4(b) 无需文件内修改声明）；
+SKILL.md 保留 fork 版本并新增 scripts 用法小节；两插件 LICENSE.txt（Z.ai 专有）与
+脚本的 Apache-2.0 在 `third-party/copied-components.json` 分别登记，边界见各 record
+的 `scope`。
+
+### 8.3 版本与登记
+
+- presentations / spreadsheets：`0.1.7 → 0.1.8`，三处同步（`.zcode-plugin/plugin.json`、
+  `official-plugin-definitions.ts`、`sea-official-plugin-assets.mjs`）。documents / pdf
+  无内容变更，维持 `0.1.7`。
+- `official-plugin-definitions.ts` 的四件套 `.map()` 由共享 version 改为**按条目各自
+  携带 version**（与 sea 脚本的逐插件条目结构对齐）；否则共享字面量会迫使无变更的
+  documents/pdf 一起升版。
+- 许可登记：`third-party/copied-components.json` 新增两条 record（Apache-2.0，pinned
+  许可文本落 `third-party/upstream/<sha256>.txt`），`THIRD-PARTY-NOTICES.md` 由
+  `node scripts/licenses.mjs notices` 重新生成。
+
+### 8.4 验收
+
+1. 冒烟：每个借入脚本 `--help` 可执行；真实文件功能路径（python-pptx 造样本 deck →
+   `diagnose.py` 实跑通过）。
+2. `pnpm lint` / `pnpm typecheck` / `pnpm architecture:check --changed` 通过
+   （本次改动含 bootstrap 与 cli 的 TS/mjs，按跨包口径全量执行）。
+3. `node scripts/licenses.mjs check` 通过；SEA 资产脚本可枚举两插件且
+   `requiredSeedPaths` 不变。

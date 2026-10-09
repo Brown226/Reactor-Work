@@ -1,0 +1,14 @@
+{
+  "name": "analytics",
+  "version": "0.1.0",
+  "description": "Product and business analytics skills: data quality, KPI design, metric diagnostics, and dashboards, published as an official ZCode plugin.",
+  "description_i18n": {
+    "en": "Product and business analytics skills: data quality, KPI design, metric diagnostics, and dashboards.",
+    "zh-CN": "产品与经营分析技能：数据质量核查、KPI 框架设计、指标波动诊断与看板搭建。"
+  },
+  "author": {
+    "name": "Reactor官方"
+  },
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "skills": "skills"
+}

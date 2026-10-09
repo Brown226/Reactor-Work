@@ -1,0 +1,14 @@
+{
+  "name": "research",
+  "version": "0.1.0",
+  "description": "Autonomous research skills: eight-mode research discipline plus an arXiv paper toolbelt, published as an official ZCode plugin.",
+  "description_i18n": {
+    "en": "Autonomous research skills: eight-mode research discipline plus an arXiv paper toolbelt.",
+    "zh-CN": "自主研究技能：八模式研究方法与纪律，外加 arXiv 论文工具belt。"
+  },
+  "author": {
+    "name": "Reactor官方"
+  },
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "skills": "skills"
+}

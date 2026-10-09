@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "inputHashEncoding": "UTF-8 with CRLF normalized to LF; notice and source snapshot hashes remain byte-exact",
   "scope": "Production dependency union across current workspace projects, copied source/assets and native tools; not a per-installer SBOM or a certification of all licensing obligations.",
-  "noticesSha256": "05d366f61fe430c5a0c7ed6b27ac9bb6626591151331f2817cb9120649e4c67f",
+  "noticesSha256": "2e656c825f395f5002033c88c729dccb4a5208ea2c1232299662cc1b55f1af4d",
   "inputs": {
     ".agents/skills/agent-browser/references/authentication.md": "e2c3b0f4a1dc1368dee821f03c000d818a48421d09f3872525dddffe73f2112b",
     ".agents/skills/agent-browser/references/commands.md": "17522fc56d742663f47231ff06c4811abc87e12c7f78e11f94d253ddd540a909",
@@ -2673,7 +2673,7 @@
     "scripts/license-texts/Apache-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
     "scripts/native-search-tools-config.mjs": "281d368464f61363fa2d8ab74f416962fe730dd0a0572db5564475f876bb65aa",
     "scripts/remote-native-search-tools-config.mjs": "472322a66f84c7452f96aa9e16e9c4e0600f7c2588a03dc6bc869229161b1cb2",
-    "third-party/copied-components.json": "a411ef6ee22a25e910d2ccfb5dde572a116174645abbda9e99f86946deeb2072",
+    "third-party/copied-components.json": "4a5ac092cf1f793cb8839928efa64b45e0e138e5ff50bfc2d6e5df5b29f2d1df",
     "third-party/embedded-components.json": "9586ccca15897f56d4ca1d703dffe9e02880fedd766c1dff93f7ac1f52ea891a",
     "third-party/native-search/licenses/00373c9bf56a894b2ed67586596bc1e8b0630cabbaf1ab46c75fc754b6bcd1ce.txt": "00373c9bf56a894b2ed67586596bc1e8b0630cabbaf1ab46c75fc754b6bcd1ce",
     "third-party/native-search/licenses/01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f.txt": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
@@ -2871,7 +2871,71 @@
     "third-party/upstream/f18c12b8e7daf98d572518b7db133b2dc66a713921dac4825410dd656e0c1a1a.txt": "f18c12b8e7daf98d572518b7db133b2dc66a713921dac4825410dd656e0c1a1a",
     "third-party/upstream/f29b60ea39a2132e3baa98927c2d473b349a54143da44a0c6762b243e6459452.txt": "f29b60ea39a2132e3baa98927c2d473b349a54143da44a0c6762b243e6459452",
     "third-party/upstream/f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af.txt": "f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af",
-    "third-party/upstream/fc7d762e0ebf8720d0a03cf00058aaa3a198347e9651be2f50a25e3b3ec13985.txt": "fc7d762e0ebf8720d0a03cf00058aaa3a198347e9651be2f50a25e3b3ec13985"
+    "third-party/upstream/fc7d762e0ebf8720d0a03cf00058aaa3a198347e9651be2f50a25e3b3ec13985.txt": "fc7d762e0ebf8720d0a03cf00058aaa3a198347e9651be2f50a25e3b3ec13985",
+    "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/assemble.py": "0bf1bf1b6fa16165d47e2645c07a2c3e5efe500f9b0ce1234290ad40414304e6",
+    "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/contact_sheet.py": "98d5fbc9725406190cb3cb8c11c30fba624cbf654b98198098e8889e03530cb7",
+    "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/diagnose.py": "647cd7fd7f1c3e5b3d73a9b6649dcf07e77191daf3f6e3511da55e87450004d5",
+    "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/dump_text.py": "0920e6b15d8ebc8fdc5ed253f3a4a656bfbcfcbeb0fd63ff1cde2d8e75324d40",
+    "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/explode.py": "b18fb4831141b3378495050adca9606d51ea42607247e8f9528f0c4c74311baf",
+    "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/insert_slide.py": "0a4cbe3105b7b826553a7e5f0756268771978d2e6c950161cd2426a1f1c4018f",
+    "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/prune.py": "d9bd393bacbfd098d89cc763988b00e85f9ff2e1a0d9216c1ae473fd930b1d6d",
+    "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/render_pdf.py": "4c31a4ddb9ddde061b6ee6c0d4e522b1e9095641b5a514686d5d40a22c3012bf",
+    "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/render_slides.py": "9f6f0b705b29178892f4dbe510e28ef856533a267d797157b81c29c0818d73f6",
+    "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/soffice_bridge.py": "47ccd5b993d34fbe2d74774bba05197e74cfe8f8f0baff5e001876095f526831",
+    "third-party/upstream/79f83e1bc36c3bed501c0b133ace0a7d3a470faba4c3ca3c489a1b2b15b42dc4.txt": "79f83e1bc36c3bed501c0b133ace0a7d3a470faba4c3ca3c489a1b2b15b42dc4",
+    "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/assemble.py": "50a419431a7ea7f57e399a616459d898b4d3a3959bf6b8807968f97454a32737",
+    "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/audit.py": "a1a19bf0c547d3021e08a891d7658f9d77fb3766cb4d8549b6bd6b760c5bc88c",
+    "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/bake.py": "0c02a29080d646f673e8a9c0bb5e5fa9a7a644cf8dc254e7a15f8ab2a26764f2",
+    "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/csv_out.py": "c1695abed18eff5bf51f7d76f4fabff6c57433b53f4145dfad3253559214597a",
+    "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/explode.py": "3c9f0e888ac2b71f5dfa9c5ec2d1bcb8e63ac5b3ee527653e3632f3f2d9a56b1",
+    "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/overview.py": "c75e7adb08530b4b062ac717ad95c283356ae6e7f09cf82803b4d057b75c0f9a",
+    "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/pdf_out.py": "090949d6d02d009e43c71e4e1e51285e2d7e3a29b2b5ec016b4315f203906995",
+    "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/runtime/__init__.py": "2e4e67be31ff272789d08f684a416594968b0e39cf1ceff3f85f3f354c17f3be",
+    "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/runtime/libreoffice.py": "630ddc95da6c8a2d4b9b102aca226cfaf9f02c7cf0e990142795b87a29d77589",
+    "third-party/upstream/2ece2ad3591e1ad87a75eb998c97dd59d2f6d7fec346595c9ea6dce8a8078d98.txt": "2ece2ad3591e1ad87a75eb998c97dd59d2f6d7fec346595c9ea6dce8a8078d98",
+    "apps/zcode-cli/packages/research-plugin/skills/arxiv/SKILL.md": "eb85861f6d064af75c99c1088f2e2d6fe5ea86e1b73e9f84fd38ec076ae37b6b",
+    "apps/zcode-cli/packages/research-plugin/skills/arxiv/scripts/arxiv.py": "3d0eb7dbf5713d18eff3fc4703d3a266ac5cd73e1342ff283a686dfa12fadd45",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/README.en.md": "7647267f85d0ba3ce96474b9c157dbd2e3ce532eb6fc35ca667711c96b69e581",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/README.es.md": "9578dfeebcd0d4767ff9f70d6653eefef6acbfe8677622238641cb633c1c957f",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/README.fr.md": "6e7d12a8a2a4d7e2a960cab3862e9ad4307a4e10fa506872a3a1295718288394",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/README.ja.md": "a2e6d4c13480303865b25bce114499a5a744048796a12d26e92ed557e01d764f",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/README.md": "5814bfb0165a58cfdcb7d60f0208be9093f9ab373cec5bd79481e8a95e7d8489",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/README.ru.md": "abc26c5e78bc4f8af341941fb903ea90457f8fe33ed2f49a41424b4d890210e3",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/SKILL.md": "ba96aa9431cdd14a0d9e957df30d192a96cdcbdf466fa62696165fa5cacdf52e",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/evals.json": "aec11f112840af85cf2b1213384cbd959bd0ad0d6ce1d56ecb0a22639abb44cb",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_bench/README.md": "d717a43b6688025126bf86887803906006f52720f9c6e4df7bc9d3c820fe62bb",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_bench/candidates/cleaner_a.py": "6bb1fb76967967de98d5d44b34b596c42597863c0b242717ebf134fddf6c03d6",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_bench/candidates/cleaner_b.py": "9215cce8caec7acd22aa84de5156f375ca9c7c4c7ae2cb291ec9f168092bb386",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_bench/candidates/cleaner_c.py": "784537e37ebac5d9cf47fa54c9b7fab51bccaf3ab5aec774b643757dbcce3e18",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_bench/run_case.sh": "9a7925984914a59822bf740fbf2b0fa421f6bc4f7558174bcc2fcd87e95630c0",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_dataset/README.md": "2d740b171476045345fde39f212b05574ed0a67ee800c147b6d7a155f9a70dd6",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_dataset/dataset.csv": "837b63b7967e9ecf88c310b322ee747fb57991b5b30dcf8671de05ffd02b22ce",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_dataset/generate.py": "a4a84c6b5bb0b794ab9f5359851efc8b08542509576c771cbf49cfb636fceed4",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_pipeline/README.md": "6bf35d4799dc5b8b373de6d3f36d73683c2df2b557688f57799c9a221dbac24e",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_pipeline/pipeline.py": "641315eba08299a7505711bb8e689b4c32c387fe8bde502bc14502f68c0d98d2",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_regression/README.md": "2025d8c01c2536d0be4d1edfcc9845fadcb8348f09b53a126a508076a6ad411c",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_regression/setup.sh": "b386bb8536a919d59310c14f17aa8e9bdfdf2681f63c7e61655ac0f78f3cafea",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_repo/README.md": "9678e9528d92d015bfb5f0c2087678da048f49cbd835d314daef0928fce93e33",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_repo/run.py": "fb5c562fbc1b30044399ab5c53e03b80bd30e9e72f7f45bbc06899773b8c88f2",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/references/ablation-study.md": "f3163e6df0f24b067276bf89bacc91dbf73eee78502acee6a7bff12dce4e0a52",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/references/api-cheatsheet.md": "f750f78a286d916fad41d3784e5bb96b8196c7cb0d842133103d2714a6e0248d",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/references/benchmark-comparison.md": "29d4f639d065472996c300a7bec43f2c9ca6619faa1153c14500f9acf39469c7",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/references/experiment-loop.md": "e530ffd766952fe5fa98f350b0eaa9f310861207fc8d54812f464b16049754ad",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/references/paper-reproduction.md": "890f542cc0dbfd939267c774bce4dcf9f12b6bac715a2c882c987ceb051e34ba",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/references/paper-writing.md": "957916689f77657f859084e965d96b027079e3e66616c73dd05de948bd2b42a2",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/references/quant-analysis.md": "d8940d1455180a4f5e15917f07ae5fb0184c48d59631cc7d1e879cdbb9884b16",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/references/root-cause.md": "6583b967d49ba73bcc67472ce1a92b7daf3198dc4f74bba5ce3bd634bf9133a3",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/references/topic-survey.md": "70c06b29cb661610cbface9110189e72fc729c3037d81d9f3f18ba774e86e790",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/scripts/fetch_paper.py": "a14fb087e236e4194a36e38f08cbe1237e8683af979140b615e560a7983e3e03",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/scripts/paper_search.py": "6128acc928f87221cf9c09989214506dc26085ebc9575c391f43a9fc71a808ed",
+    "apps/zcode-cli/packages/research-plugin/skills/super-research/scripts/verify_citation.py": "18b507aea8940aef3cd581147e4156d69a5c03f661edab371f844e9c8280691e",
+    "apps/zcode-cli/packages/analytics-plugin/skills/analyze-data-quality/SKILL.md": "1ac4c5141584f9ea04a0844579d3e9f67c15ad29e4592a2c17d6dd61e26b03f8",
+    "apps/zcode-cli/packages/analytics-plugin/skills/build-dashboard/SKILL.md": "48607666bc1722a658ba6827be86e7e3d3cc4f849bb3ab5bf868b497e9727b36",
+    "apps/zcode-cli/packages/analytics-plugin/skills/build-dashboard/specifications/bi-platform-dashboard.md": "822e8472db2870e5cee4d2b0597f1fb6439f0c51734bc48889de0c6d37b828d5",
+    "apps/zcode-cli/packages/analytics-plugin/skills/build-dashboard/specifications/html-dashboard.md": "e05480a2e1a2b7f41eed5f41d7a1176011e1f0f9b2612ba30e3fc64a56460e87",
+    "apps/zcode-cli/packages/analytics-plugin/skills/build-dashboard/specifications/streamlit-dashboard.md": "e90a94d0750cf0d06c8553a59b51e90a2612783087e3c72f7b22618a34463d88",
+    "apps/zcode-cli/packages/analytics-plugin/skills/design-kpis/SKILL.md": "caf28dfa0f8844a4656257535f74916c2160da3a612804c503544302bdcd3c9d",
+    "apps/zcode-cli/packages/analytics-plugin/skills/metric-diagnostics/SKILL.md": "9bde7d80b3e80dc96f1b07cb9cae2cdc0c207d0fc16ede03c07c5808b18b8dd1"
   },
   "packages": [
     {
@@ -30103,6 +30167,308 @@
           "sha256": "4d025c42043c56e6355196a2e885d168cdb15248d0797146c9db838a57b34946"
         }
       ]
+    },
+    {
+      "id": "Fresh PPTX skill scripts (pptx-official)",
+      "referenceRevision": null,
+      "source": "mimocode builtin_skills desktop-1579e7d, pptx-official/LICENSE (Apache-2.0, Copyright 2026 The Fresh PPTX Skill contributors)",
+      "file": "third-party/upstream/79f83e1bc36c3bed501c0b133ace0a7d3a470faba4c3ca3c489a1b2b15b42dc4.txt",
+      "sha256": "79f83e1bc36c3bed501c0b133ace0a7d3a470faba4c3ca3c489a1b2b15b42dc4",
+      "importRevision": null,
+      "provenance": "Copied from the local mimocode builtin_skills distribution (desktop-1579e7d); the original upstream revision is not recorded in this checkout.",
+      "roots": [
+        "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts"
+      ],
+      "scope": "Vendored pptx-official Python scripts only, copied verbatim without modification. The plugin's own SKILL.md, agents and other files are ZCode fork content and are not attributed to the upstream project.",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "file": "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/assemble.py",
+          "sha256": "0bf1bf1b6fa16165d47e2645c07a2c3e5efe500f9b0ce1234290ad40414304e6"
+        },
+        {
+          "file": "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/contact_sheet.py",
+          "sha256": "98d5fbc9725406190cb3cb8c11c30fba624cbf654b98198098e8889e03530cb7"
+        },
+        {
+          "file": "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/diagnose.py",
+          "sha256": "647cd7fd7f1c3e5b3d73a9b6649dcf07e77191daf3f6e3511da55e87450004d5"
+        },
+        {
+          "file": "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/dump_text.py",
+          "sha256": "0920e6b15d8ebc8fdc5ed253f3a4a656bfbcfcbeb0fd63ff1cde2d8e75324d40"
+        },
+        {
+          "file": "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/explode.py",
+          "sha256": "b18fb4831141b3378495050adca9606d51ea42607247e8f9528f0c4c74311baf"
+        },
+        {
+          "file": "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/insert_slide.py",
+          "sha256": "0a4cbe3105b7b826553a7e5f0756268771978d2e6c950161cd2426a1f1c4018f"
+        },
+        {
+          "file": "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/prune.py",
+          "sha256": "d9bd393bacbfd098d89cc763988b00e85f9ff2e1a0d9216c1ae473fd930b1d6d"
+        },
+        {
+          "file": "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/render_pdf.py",
+          "sha256": "4c31a4ddb9ddde061b6ee6c0d4e522b1e9095641b5a514686d5d40a22c3012bf"
+        },
+        {
+          "file": "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/render_slides.py",
+          "sha256": "9f6f0b705b29178892f4dbe510e28ef856533a267d797157b81c29c0818d73f6"
+        },
+        {
+          "file": "apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts/soffice_bridge.py",
+          "sha256": "47ccd5b993d34fbe2d74774bba05197e74cfe8f8f0baff5e001876095f526831"
+        }
+      ]
+    },
+    {
+      "id": "Fresh XLSX skill scripts (xlsx-official)",
+      "referenceRevision": null,
+      "source": "mimocode builtin_skills desktop-1579e7d, xlsx-official/LICENSE (Apache-2.0, Copyright 2026 The Fresh XLSX Skill contributors)",
+      "file": "third-party/upstream/2ece2ad3591e1ad87a75eb998c97dd59d2f6d7fec346595c9ea6dce8a8078d98.txt",
+      "sha256": "2ece2ad3591e1ad87a75eb998c97dd59d2f6d7fec346595c9ea6dce8a8078d98",
+      "importRevision": null,
+      "provenance": "Copied from the local mimocode builtin_skills distribution (desktop-1579e7d); the original upstream revision is not recorded in this checkout.",
+      "roots": [
+        "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts"
+      ],
+      "scope": "Vendored xlsx-official Python scripts only, copied verbatim without modification. The plugin's own SKILL.md, agents and other files are ZCode fork content and are not attributed to the upstream project.",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "file": "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/assemble.py",
+          "sha256": "50a419431a7ea7f57e399a616459d898b4d3a3959bf6b8807968f97454a32737"
+        },
+        {
+          "file": "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/audit.py",
+          "sha256": "a1a19bf0c547d3021e08a891d7658f9d77fb3766cb4d8549b6bd6b760c5bc88c"
+        },
+        {
+          "file": "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/bake.py",
+          "sha256": "0c02a29080d646f673e8a9c0bb5e5fa9a7a644cf8dc254e7a15f8ab2a26764f2"
+        },
+        {
+          "file": "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/csv_out.py",
+          "sha256": "c1695abed18eff5bf51f7d76f4fabff6c57433b53f4145dfad3253559214597a"
+        },
+        {
+          "file": "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/explode.py",
+          "sha256": "3c9f0e888ac2b71f5dfa9c5ec2d1bcb8e63ac5b3ee527653e3632f3f2d9a56b1"
+        },
+        {
+          "file": "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/overview.py",
+          "sha256": "c75e7adb08530b4b062ac717ad95c283356ae6e7f09cf82803b4d057b75c0f9a"
+        },
+        {
+          "file": "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/pdf_out.py",
+          "sha256": "090949d6d02d009e43c71e4e1e51285e2d7e3a29b2b5ec016b4315f203906995"
+        },
+        {
+          "file": "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/runtime/__init__.py",
+          "sha256": "2e4e67be31ff272789d08f684a416594968b0e39cf1ceff3f85f3f354c17f3be"
+        },
+        {
+          "file": "apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts/runtime/libreoffice.py",
+          "sha256": "630ddc95da6c8a2d4b9b102aca226cfaf9f02c7cf0e990142795b87a29d77589"
+        }
+      ]
+    },
+    {
+      "id": "mimocode research and analytics skills (super-research, arxiv, data-analytics workflows)",
+      "referenceRevision": null,
+      "source": "mimocode builtin_skills desktop-1579e7d (skills/super-research, skills/arxiv, skills/data-analytics workflows); upstream author granted written permission to copy on 2026-10-09",
+      "importRevision": null,
+      "provenance": "Copied from the local mimocode builtin_skills distribution (desktop-1579e7d); the original upstream revision is not recorded in this checkout.",
+      "roots": [
+        "apps/zcode-cli/packages/research-plugin/skills",
+        "apps/zcode-cli/packages/analytics-plugin/skills"
+      ],
+      "scope": "Vendored research and analytics skill content only, copied verbatim except the four analytics SKILL.md files listed in modifiedFiles, which carry a ZCode subset-boundary note after the frontmatter. The plugin manifests, LICENSE.txt and README files are ZCode files and are not attributed to the upstream project.",
+      "license": "written permission (arxiv skill declares MIT in its own frontmatter)",
+      "reviewRequired": "Upstream author granted written permission to copy (2026-10-09, permission record held by the project owner); no upstream LICENSE file ships with the bundle.",
+      "modifiedFiles": [
+        "apps/zcode-cli/packages/analytics-plugin/skills/analyze-data-quality/SKILL.md",
+        "apps/zcode-cli/packages/analytics-plugin/skills/design-kpis/SKILL.md",
+        "apps/zcode-cli/packages/analytics-plugin/skills/metric-diagnostics/SKILL.md",
+        "apps/zcode-cli/packages/analytics-plugin/skills/build-dashboard/SKILL.md"
+      ],
+      "files": [
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/arxiv/SKILL.md",
+          "sha256": "eb85861f6d064af75c99c1088f2e2d6fe5ea86e1b73e9f84fd38ec076ae37b6b"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/arxiv/scripts/arxiv.py",
+          "sha256": "3d0eb7dbf5713d18eff3fc4703d3a266ac5cd73e1342ff283a686dfa12fadd45"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/README.en.md",
+          "sha256": "7647267f85d0ba3ce96474b9c157dbd2e3ce532eb6fc35ca667711c96b69e581"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/README.es.md",
+          "sha256": "9578dfeebcd0d4767ff9f70d6653eefef6acbfe8677622238641cb633c1c957f"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/README.fr.md",
+          "sha256": "6e7d12a8a2a4d7e2a960cab3862e9ad4307a4e10fa506872a3a1295718288394"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/README.ja.md",
+          "sha256": "a2e6d4c13480303865b25bce114499a5a744048796a12d26e92ed557e01d764f"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/README.md",
+          "sha256": "5814bfb0165a58cfdcb7d60f0208be9093f9ab373cec5bd79481e8a95e7d8489"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/README.ru.md",
+          "sha256": "abc26c5e78bc4f8af341941fb903ea90457f8fe33ed2f49a41424b4d890210e3"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/SKILL.md",
+          "sha256": "ba96aa9431cdd14a0d9e957df30d192a96cdcbdf466fa62696165fa5cacdf52e"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/evals.json",
+          "sha256": "aec11f112840af85cf2b1213384cbd959bd0ad0d6ce1d56ecb0a22639abb44cb"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_bench/README.md",
+          "sha256": "d717a43b6688025126bf86887803906006f52720f9c6e4df7bc9d3c820fe62bb"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_bench/candidates/cleaner_a.py",
+          "sha256": "6bb1fb76967967de98d5d44b34b596c42597863c0b242717ebf134fddf6c03d6"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_bench/candidates/cleaner_b.py",
+          "sha256": "9215cce8caec7acd22aa84de5156f375ca9c7c4c7ae2cb291ec9f168092bb386"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_bench/candidates/cleaner_c.py",
+          "sha256": "784537e37ebac5d9cf47fa54c9b7fab51bccaf3ab5aec774b643757dbcce3e18"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_bench/run_case.sh",
+          "sha256": "9a7925984914a59822bf740fbf2b0fa421f6bc4f7558174bcc2fcd87e95630c0"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_dataset/README.md",
+          "sha256": "2d740b171476045345fde39f212b05574ed0a67ee800c147b6d7a155f9a70dd6"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_dataset/dataset.csv",
+          "sha256": "7bfa8a0f41dde2de3ca19d7ba0c48a1b2a45b5ccac704c8b825d888221a8d9eb"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_dataset/generate.py",
+          "sha256": "a4a84c6b5bb0b794ab9f5359851efc8b08542509576c771cbf49cfb636fceed4"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_pipeline/README.md",
+          "sha256": "6bf35d4799dc5b8b373de6d3f36d73683c2df2b557688f57799c9a221dbac24e"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_pipeline/pipeline.py",
+          "sha256": "641315eba08299a7505711bb8e689b4c32c387fe8bde502bc14502f68c0d98d2"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_regression/README.md",
+          "sha256": "2025d8c01c2536d0be4d1edfcc9845fadcb8348f09b53a126a508076a6ad411c"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_regression/setup.sh",
+          "sha256": "b386bb8536a919d59310c14f17aa8e9bdfdf2681f63c7e61655ac0f78f3cafea"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_repo/README.md",
+          "sha256": "9678e9528d92d015bfb5f0c2087678da048f49cbd835d314daef0928fce93e33"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/evals/toy_repo/run.py",
+          "sha256": "fb5c562fbc1b30044399ab5c53e03b80bd30e9e72f7f45bbc06899773b8c88f2"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/references/ablation-study.md",
+          "sha256": "f3163e6df0f24b067276bf89bacc91dbf73eee78502acee6a7bff12dce4e0a52"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/references/api-cheatsheet.md",
+          "sha256": "f750f78a286d916fad41d3784e5bb96b8196c7cb0d842133103d2714a6e0248d"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/references/benchmark-comparison.md",
+          "sha256": "29d4f639d065472996c300a7bec43f2c9ca6619faa1153c14500f9acf39469c7"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/references/experiment-loop.md",
+          "sha256": "e530ffd766952fe5fa98f350b0eaa9f310861207fc8d54812f464b16049754ad"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/references/paper-reproduction.md",
+          "sha256": "890f542cc0dbfd939267c774bce4dcf9f12b6bac715a2c882c987ceb051e34ba"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/references/paper-writing.md",
+          "sha256": "957916689f77657f859084e965d96b027079e3e66616c73dd05de948bd2b42a2"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/references/quant-analysis.md",
+          "sha256": "d8940d1455180a4f5e15917f07ae5fb0184c48d59631cc7d1e879cdbb9884b16"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/references/root-cause.md",
+          "sha256": "6583b967d49ba73bcc67472ce1a92b7daf3198dc4f74bba5ce3bd634bf9133a3"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/references/topic-survey.md",
+          "sha256": "70c06b29cb661610cbface9110189e72fc729c3037d81d9f3f18ba774e86e790"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/scripts/fetch_paper.py",
+          "sha256": "a14fb087e236e4194a36e38f08cbe1237e8683af979140b615e560a7983e3e03"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/scripts/paper_search.py",
+          "sha256": "6128acc928f87221cf9c09989214506dc26085ebc9575c391f43a9fc71a808ed"
+        },
+        {
+          "file": "apps/zcode-cli/packages/research-plugin/skills/super-research/scripts/verify_citation.py",
+          "sha256": "18b507aea8940aef3cd581147e4156d69a5c03f661edab371f844e9c8280691e"
+        },
+        {
+          "file": "apps/zcode-cli/packages/analytics-plugin/skills/analyze-data-quality/SKILL.md",
+          "sha256": "1ac4c5141584f9ea04a0844579d3e9f67c15ad29e4592a2c17d6dd61e26b03f8"
+        },
+        {
+          "file": "apps/zcode-cli/packages/analytics-plugin/skills/build-dashboard/SKILL.md",
+          "sha256": "48607666bc1722a658ba6827be86e7e3d3cc4f849bb3ab5bf868b497e9727b36"
+        },
+        {
+          "file": "apps/zcode-cli/packages/analytics-plugin/skills/build-dashboard/specifications/bi-platform-dashboard.md",
+          "sha256": "822e8472db2870e5cee4d2b0597f1fb6439f0c51734bc48889de0c6d37b828d5"
+        },
+        {
+          "file": "apps/zcode-cli/packages/analytics-plugin/skills/build-dashboard/specifications/html-dashboard.md",
+          "sha256": "e05480a2e1a2b7f41eed5f41d7a1176011e1f0f9b2612ba30e3fc64a56460e87"
+        },
+        {
+          "file": "apps/zcode-cli/packages/analytics-plugin/skills/build-dashboard/specifications/streamlit-dashboard.md",
+          "sha256": "e90a94d0750cf0d06c8553a59b51e90a2612783087e3c72f7b22618a34463d88"
+        },
+        {
+          "file": "apps/zcode-cli/packages/analytics-plugin/skills/design-kpis/SKILL.md",
+          "sha256": "caf28dfa0f8844a4656257535f74916c2160da3a612804c503544302bdcd3c9d"
+        },
+        {
+          "file": "apps/zcode-cli/packages/analytics-plugin/skills/metric-diagnostics/SKILL.md",
+          "sha256": "9bde7d80b3e80dc96f1b07cb9cae2cdc0c207d0fc16ede03c07c5808b18b8dd1"
+        }
+      ]
     }
   ],
   "patches": [
@@ -30642,6 +31008,5 @@
       }
     ]
   },
-  "reviewRequired": [
-  ]
+  "reviewRequired": []
 }

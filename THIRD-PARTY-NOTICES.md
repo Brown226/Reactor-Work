@@ -2462,6 +2462,11 @@ The original import revisions of copied components are not recorded in the curre
 
 - React Best Practices skill (MIT): .agents/skills/react-best-practices. License reference: https://github.com/vercel-labs/agent-skills/tree/063bee94c3f4df8453406c830b0a7df0f2860278. Original import revision: not recorded. Review required: Pinned upstream README and skill declare MIT, but a complete original copyright/license notice has not been obtained.
 
+- Fresh PPTX skill scripts (pptx-official) (Apache-2.0): apps/zcode-cli/packages/presentations-plugin/skills/pptx/scripts. License reference: mimocode builtin_skills desktop-1579e7d, pptx-official/LICENSE (Apache-2.0, Copyright 2026 The Fresh PPTX Skill contributors). Original import revision: not recorded.
+- Fresh XLSX skill scripts (xlsx-official) (Apache-2.0): apps/zcode-cli/packages/spreadsheets-plugin/skills/xlsx/scripts. License reference: mimocode builtin_skills desktop-1579e7d, xlsx-official/LICENSE (Apache-2.0, Copyright 2026 The Fresh XLSX Skill contributors). Original import revision: not recorded.
+
+- mimocode research and analytics skills (super-research, arxiv, data-analytics workflows) (written permission (arxiv skill declares MIT in its own frontmatter)): apps/zcode-cli/packages/research-plugin/skills, apps/zcode-cli/packages/analytics-plugin/skills. License reference: mimocode builtin_skills desktop-1579e7d (skills/super-research, skills/arxiv, skills/data-analytics workflows); upstream author granted written permission to copy on 2026-10-09. Original import revision: not recorded. Review required: Upstream author granted written permission to copy (2026-10-09, permission record held by the project owner); no upstream LICENSE file ships with the bundle.
+
 Fig autocomplete source carries the repository's MIT license; the generated registry records npm @withfig/autocomplete@2.692.3 metadata as ISC. The original source MIT notice is retained below.
 
 ## Embedded native and WASM components
@@ -43980,6 +43985,89 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  *  This file is part of Mbed TLS (https://tls.mbed.org)
  */
+
+````
+
+### Notice 79f83e1bc36c3bed501c0b133ace0a7d3a470faba4c3ca3c489a1b2b15b42dc4
+
+- Fresh PPTX skill scripts (pptx-official): mimocode builtin_skills desktop-1579e7d, pptx-official/LICENSE (Apache-2.0, Copyright 2026 The Fresh PPTX Skill contributors)
+
+````text
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
+
+Copyright 2026 The Fresh PPTX Skill contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+--------------------------------------------------------------------------------
+
+This skill is an independent implementation authored from scratch. It relies on
+public specifications and permissively licensed third-party tooling, including:
+
+  - ECMA-376 / ISO/IEC 29500 (Office Open XML, PresentationML) — public standard
+  - python-pptx (MIT, https://github.com/scanny/python-pptx)
+  - PptxGenJS (MIT, https://github.com/gitbrent/PptxGenJS)
+  - lxml (BSD-3-Clause, https://lxml.de)
+  - Pillow (MIT-CMU, https://python-pillow.org)
+  - LibreOffice / soffice (MPL 2.0, invoked as an external binary; no linking)
+  - Poppler / pdftoppm (GPL, invoked as an external binary; no linking)
+
+Users are responsible for complying with the licenses of the external
+tools they choose to install.
+````
+
+### Notice 2ece2ad3591e1ad87a75eb998c97dd59d2f6d7fec346595c9ea6dce8a8078d98
+
+- Fresh XLSX skill scripts (xlsx-official): mimocode builtin_skills desktop-1579e7d, xlsx-official/LICENSE (Apache-2.0, Copyright 2026 The Fresh XLSX Skill contributors)
+
+````text
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
+
+Copyright 2026 The Fresh XLSX Skill contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+--------------------------------------------------------------------------------
+
+This skill is an independent implementation authored from scratch against
+public specifications, and it relies on permissively licensed third-party
+tooling, including:
+
+  - ECMA-376 / ISO/IEC 29500 (Office Open XML — SpreadsheetML) — public standard
+  - openpyxl (MIT, https://foss.heptapod.net/openpyxl/openpyxl)
+  - pandas (BSD-3-Clause, https://pandas.pydata.org/)
+  - lxml (BSD-3-Clause, https://lxml.de)
+  - xlsxwriter (BSD-2-Clause, optional, https://github.com/jmcnamara/XlsxWriter)
+  - LibreOffice / soffice (MPL 2.0, invoked as an external binary; no linking)
+
+If you redistribute this skill as part of a larger product, you remain
+responsible for satisfying the license terms of every third-party dependency
+you bundle or install alongside it.
+
 
 ````
 
