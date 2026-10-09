@@ -3,7 +3,9 @@
   "plugins": null,
   "categories": {},
   "rules": {
-    "max-lines": ["error", { "max": 400, "skipBlankLines": true, "skipComments": true }]
+    // 全仓行数上限 400 → 1000：编排型文件（启动接线、构建脚本、portal 产物管线）
+    // 天然超过 400 行且拆分会切断内聚阅读；1000 仍保留超长文件需人工复核的拦截。
+    "max-lines": ["error", { "max": 1000, "skipBlankLines": true, "skipComments": true }]
   },
   "overrides": [
     {
