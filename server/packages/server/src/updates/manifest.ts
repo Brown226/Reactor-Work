@@ -33,7 +33,40 @@ export function parseReleaseChannel(raw: string | null | undefined): ReleaseChan
 export function normalizeReleasePlatform(raw: string | null | undefined): string | null {
   const value = raw?.trim().toLowerCase();
   if (!value) return null;
-  return /^(windows|darwin|linux)-(x64|arm64|ia32|armv7l)$/.test(value) ? value : null;
+  const match = /^(windows|darwin|linux)-([a-z0-9_]+)$/.exec(value);
+  if (!match) return null;
+  const arch = normalizeReleaseArch(match[2]!);
+  return arch ? `${match[1]}-${arch}` : null;
+}
+
+/**
+ * 架构串口径归一化。
+ *
+ * **必须同时接受两套写法**——这是踩过的坑：桌面端 `getElectronReleasePlatform()` 用的是
+ * **electron-builder / uname 口径**（`x86_64` / `aarch64` / `x86`，见
+ * `packages/desktop/src/main/manifestUpdateProvider.ts` 的 `mapElectronReleaseArch`），
+ * 而管理台登记与库内存储用的是**内部口径**（`x64` / `arm64` / `ia32`，见
+ * admin `RELEASE_PLATFORMS`）。若只认内部口径，已装客户端取 manifest 会被这里判非法
+ * （实测 400），表现为**桌面端永远检查不到更新、右上角没有更新提示**。
+ *
+ * 客户端已分发、改不动，因此以服务端做归一化：先映射到内部口径，再回库匹配。
+ */
+function normalizeReleaseArch(raw: string): string | null {
+  switch (raw) {
+    case "x86_64":
+      return "x64";
+    case "aarch64":
+      return "arm64";
+    case "x86":
+      return "ia32";
+    case "x64":
+    case "arm64":
+    case "ia32":
+    case "armv7l":
+      return raw;
+    default:
+      return null;
+  }
 }
 
 /**

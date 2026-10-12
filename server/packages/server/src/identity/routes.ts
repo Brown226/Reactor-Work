@@ -25,7 +25,7 @@ import {
 import { hashPassword } from "./passwords.js";
 import { revokeAll } from "./token-service.js";
 import { listSyncLogs, previewSync, runSync } from "./sync.js";
-import { createUpdatesPublicRoutes } from "../updates/routes.js";
+import { createReleasesPageRoutes, createUpdatesPublicRoutes } from "../updates/routes.js";
 import { createFeedbackPublicRoutes } from "../feedback/routes.js";
 import {
   createLocalUser,
@@ -90,6 +90,10 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
   // 软件更新下发面（UPD）：桌面客户端取 manifest 时**不带 Authorization**，
   // 因此必须挂在 authed 组之前 —— 挂到它之后会被 use("*") 拦成 401（详见 updates/routes.ts 头注）。
   app.route("/", createUpdatesPublicRoutes(db));
+
+  // 用户下载面（UPD）：`GET /download` 下载页 + `GET /api/v1/releases/published` 版本列表。
+  // 面向**还没装客户端**的普通用户，同样必须公开（目标用户没有账号）。详见 updates/routes.ts。
+  app.route("/", createReleasesPageRoutes(db));
 
   // 反馈 / 需求提交面（FBK）：桌面端「问题上报」「给产品提需求」落库。
   // 不进鉴权组 —— Reactor 用户只有企业账号，客户端打出去的是官方 zcodejwttoken，强制校验会 401。

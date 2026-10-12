@@ -9,8 +9,36 @@ export interface IdentityDb {
   pool: pg.Pool;
 }
 
+/** 连接池上限默认值 */
+const DEFAULT_POOL_MAX = 10;
+/**
+ * 连接池上限天花板：PG 服务端 `max_connections=100`，且 reactor 库不只有本池在用，
+ * 客户端池超过这个量会直接触发 `FATAL: too many clients`，故封顶留余量。
+ */
+const POOL_MAX_CEILING = 50;
+
+/**
+ * 解析连接池上限（env：`REACTOR_IDENTITY_POOL_MAX`）。
+ *
+ * 为什么改成可配：原为硬编码 `max: 5`，实测 8 路并发即占到 4 个（80%），
+ * 内网多人同时用会在上限处排队；而放大是安全的（PG 服务端尚有余量）。
+ * 内网部署不便重建镜像（无外网时 `--build` 必挂），调一行 `.env` 比重新 build + docker save 便宜得多。
+ */
+function resolvePoolMax(): number {
+  const raw = process.env.REACTOR_IDENTITY_POOL_MAX?.trim();
+  if (!raw) return DEFAULT_POOL_MAX;
+  const n = Number(raw);
+  // 反例：env 手写错（非数字、0、负数、小数）时若照建，池会变成 NaN 或 0，
+  // 表现为「一查库就永久卡住」且不报错，极难排查；故一律回落默认值并告警。
+  if (!Number.isInteger(n) || n < 1) {
+    console.warn(`[identity/db] REACTOR_IDENTITY_POOL_MAX="${raw}" 不是正整数，已回落默认值 ${DEFAULT_POOL_MAX}`);
+    return DEFAULT_POOL_MAX;
+  }
+  return Math.min(n, POOL_MAX_CEILING);
+}
+
 export function createIdentityDb(dbUrl: string): IdentityDb {
-  return { pool: new pg.Pool({ connectionString: dbUrl, max: 5 }) };
+  return { pool: new pg.Pool({ connectionString: dbUrl, max: resolvePoolMax() }) };
 }
 
 export async function closeIdentityDb(db: IdentityDb): Promise<void> {

@@ -95,7 +95,9 @@ async function main(): Promise<void> {
   try {
     // ★ 动态 import：路由模块在模块级读 REACTOR_UPDATE_FILE_DIR，必须先设好环境变量再加载
     const { ensureUpdatesSchema } = await import("../src/updates/schema.js");
-    const { createUpdatesRoutes, createUpdatesPublicRoutes } = await import("../src/updates/routes.js");
+    const { createUpdatesRoutes, createUpdatesPublicRoutes, createReleasesPageRoutes } = await import(
+      "../src/updates/routes.js"
+    );
 
     /* ── ① 建表幂等 ──────────────────────────────────────────────────── */
     console.log("· 建表");
@@ -119,6 +121,8 @@ async function main(): Promise<void> {
 
     const publicApp = new Hono();
     publicApp.route("/", createUpdatesPublicRoutes(db));
+    // 用户下载面与客户端下发面同挂公开段（真实装配里由 identity/routes.ts 公开段挂）
+    publicApp.route("/", createReleasesPageRoutes(db));
 
     /** 只依赖 request 的结构类型：免得在两种 Env 泛型之间来回 cast。 */
     type Requestable = { request: (input: string, init?: RequestInit) => Promise<Response> };
@@ -228,6 +232,62 @@ async function main(): Promise<void> {
     check("files[0].url 指向下发路径", manifest.files?.[0]?.url?.startsWith("/api/v1/releases/electron/files/") === true, manifest.files?.[0]?.url);
     check("中英文本地化说明都在", Boolean(manifest.releaseNotesByLocale?.["zh-CN"]?.markdown && manifest.releaseNotesByLocale?.["en-US"]?.markdown), Object.keys(manifest.releaseNotesByLocale ?? {}));
 
+    /* ── ⑥a 平台串口径归一化（实测踩过的坑，必须回归）──────────────── */
+    // 桌面端上报的是 electron-builder / uname 口径（x86_64 / aarch64 / x86），
+    // 而库内登记的是内部口径（x64 / arm64 / ia32）。若只认内部口径，
+    // 已装客户端取 manifest 会被判非法 400 → 永远检查不到更新、右上角没有提示。
+    console.log("· 平台串口径归一化（客户端 electron-builder ↔ 服务端内部口径）");
+    const clientStyleRes = await publicApp.request(
+      "/api/v1/releases/electron/manifest?platform=windows-x86_64&channel=1",
+    );
+    check(
+      "客户端口径 windows-x86_64 → 200（归一化到 windows-x64 后命中已发布版本）",
+      clientStyleRes.status === 200,
+      clientStyleRes.status,
+    );
+    const otherArchRes = await publicApp.request(
+      "/api/v1/releases/electron/manifest?platform=windows-arm64&channel=1",
+    );
+    check(
+      "同平台另一架构 windows-arm64 → 404（归一化后正常查库，不是 400 非法）",
+      otherArchRes.status === 404,
+      otherArchRes.status,
+    );
+    const badPlatformRes = await publicApp.request(
+      "/api/v1/releases/electron/manifest?platform=win32-x64&channel=1",
+    );
+    check(
+      "非 electron 形态 win32-x64 → 400（保留校验，不静默放行拼错的串）",
+      badPlatformRes.status === 400,
+      badPlatformRes.status,
+    );
+
+    /* ── ⑥b 用户下载面（公开版本列表 + 下载页）──────────────────────── */
+    // 面向「还没装客户端」的普通用户：不带 Authorization 也要能列出版本、打开下载页。
+    console.log("· 用户下载面（公开）");
+    const pubListRes = await publicApp.request("/api/v1/releases/published");
+    const pubList = (await pubListRes.json()) as {
+      releases: Array<{ platform: string; channel: string; version: string; downloadPath: string }>;
+    };
+    check("公开取已发布列表 → 200（无 Authorization）", pubListRes.status === 200, pubListRes.status);
+    const listed = pubList.releases.find((r) => r.platform === "windows-x64" && r.channel === "stable");
+    check("已上线版本出现在列表里", listed?.version === "1.0.0", pubList.releases);
+    check(
+      "列表条目的下载路径指向公开下载接口",
+      listed?.downloadPath?.startsWith("/api/v1/releases/electron/files/") === true,
+      listed?.downloadPath,
+    );
+    check(
+      "列表不泄露内部寻址字段（stored_name / sha512）",
+      !("storedName" in (listed ?? {})) && !("sha512Base64" in (listed ?? {})),
+      Object.keys(listed ?? {}),
+    );
+
+    const pageRes = await publicApp.request("/download");
+    const pageText = await pageRes.text();
+    check("下载页 → 200 且为 HTML", pageRes.status === 200 && (pageRes.headers.get("content-type") ?? "").includes("text/html"), pageRes.status);
+    check("下载页正文含产品名", pageText.includes("下载 Reactor"), pageText.slice(0, 60));
+
     /* ── ⑦ 产物下载 + Range 续传 ────────────────────────────────────── */
     const fileUrl = manifest.files[0]!.url;
     const fullRes = await publicApp.request(fileUrl);
@@ -267,6 +327,16 @@ async function main(): Promise<void> {
       "/api/v1/releases/electron/manifest?platform=windows-x64&channel=1&device_mid=probe-mid-0",
     );
     check("下线后 manifest → 404", afterUnpublish.status === 404, afterUnpublish.status);
+
+    // 下载面同理：下线的版本不该再出现在公开列表里（否则用户会下到一个已撤回的包）。
+    const pubAfterUnpublish = (await (await publicApp.request("/api/v1/releases/published")).json()) as {
+      releases: Array<{ platform: string; channel: string }>;
+    };
+    check(
+      "下线后公开列表不再含该版本",
+      !pubAfterUnpublish.releases.some((r) => r.platform === "windows-x64" && r.channel === "stable"),
+      pubAfterUnpublish.releases,
+    );
 
     const storedName = decodeURIComponent(fileUrl.slice(fileUrl.lastIndexOf("/") + 1));
     check("产物文件确实落在更新目录", existsSync(join(artifactDir, storedName)));

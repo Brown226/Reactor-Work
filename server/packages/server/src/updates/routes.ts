@@ -34,6 +34,7 @@ import {
   normalizeReleasePlatform,
   parseReleaseChannel,
 } from "./manifest.js";
+import { DOWNLOAD_PAGE_PATH, renderDownloadPage } from "./download-page.js";
 import {
   attachReleaseArtifact,
   createRelease,
@@ -41,6 +42,8 @@ import {
   findPublishedRelease,
   findReleaseByStoredName,
   getRelease,
+  listLatestPublished,
+  listPublishedChangelog,
   listReleases,
   patchRelease,
   type AppReleaseRow,
@@ -207,6 +210,72 @@ export function createUpdatesPublicRoutes(db: IdentityDb): Hono<AppEnv> {
     return c.body(Readable.toWeb(stream) as unknown as ReadableStream, 200, {
       ...headers,
       "content-length": String(total),
+    });
+  });
+
+  return app;
+}
+
+// ============================================================================
+// 用户下载面（公开，给还没装客户端的普通用户）
+// ============================================================================
+
+/**
+ * 首次获取安装包的入口：一个公开的版本列表接口 + 一个公开的下载页。
+ *
+ * 与「客户端下发面」的分工：manifest 是**已装客户端**自更新用的（要 platform + channel + device_mid）；
+ * 这里面向**没有任何客户端的人**，一次列出各平台最新已发布版本，点一下就能下。
+ *
+ * 同样必须挂在公开段 —— 目标用户没有账号，任何鉴权都会把人挡在门外。
+ * 只暴露已发布且**有产物**的条目，不回传 stored_name / sha512 等内部寻址细节，
+ * 下载一律经既有的 `/api/v1/releases/electron/files/:name`（公开、支持 Range）。
+ */
+export function createReleasesPageRoutes(db: IdentityDb): Hono<AppEnv> {
+  const app = new Hono<AppEnv>();
+
+  app.get("/api/v1/releases/published", async (c) => {
+    const rows = await listLatestPublished(db);
+    return c.json({
+      releases: rows.map((row) => ({
+        platform: row.platform,
+        channel: row.channel,
+        version: row.version,
+        releaseName: row.releaseName,
+        releaseNotesZh: row.releaseNotesZh,
+        fileName: row.fileName,
+        sizeBytes: row.sizeBytes,
+        publishedAt: row.publishedAt?.toISOString() ?? null,
+        // 内部寻址细节（stored_name / sha512）不外传，只给出走公开下载接口的路径
+        downloadPath: `${ELECTRON_FILE_PATH_PREFIX}${encodeURIComponent(row.storedName ?? "")}`,
+      })),
+    });
+  });
+
+  app.get(DOWNLOAD_PAGE_PATH, (c) => c.html(renderDownloadPage()));
+
+  /**
+   * 已发布版本历史：官网「更新日志」页从此拉取，与服务端上线的发布说明**同一口径**。
+   *
+   * 为什么公开：changelog 面向的是还没装客户端的人（和下载页同一批读者），不能要鉴权。
+   * 只回"已发布且版本说明非空"的条目，不回 stored_name / sha512 等内部寻址字段；
+   * 也没有下载路径——更新日志是"看说明"，取包走 /download。
+   */
+  app.get("/api/v1/releases/changelog", async (c) => {
+    const limit = readPositiveInt(c.req.query("limit"), 50, 200);
+    const rows = await listPublishedChangelog(db, limit);
+    return c.json({
+      releases: rows
+        // 没写任何发布说明的版本不进更新日志：日志页的空条目没有信息量，
+        // 也会让"从服务端同步"看起来像漏了内容。取包仍走 /download，不受影响。
+        .filter((row) => Boolean(row.releaseNotesZh?.trim() || row.releaseNotesEn?.trim()))
+        .map((row) => ({
+          version: row.version,
+          channel: row.channel,
+          releaseName: row.releaseName,
+          releaseNotesZh: row.releaseNotesZh,
+          releaseNotesEn: row.releaseNotesEn,
+          publishedAt: row.publishedAt?.toISOString() ?? null,
+        })),
     });
   });
 

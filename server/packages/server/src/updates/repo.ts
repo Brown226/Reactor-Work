@@ -269,6 +269,26 @@ export async function findPublishedRelease(
   return rows[0] ? mapRelease(rows[0]) : null;
 }
 
+/**
+ * 公开下载页用：**各平台 / 通道的最新已发布版本**（每个组合一条）。
+ *
+ * 与 `findPublishedRelease` 的区别是「多平台聚合」——客户端按自己所在的平台 / 通道取一条，
+ * 而面向新用户的下载页要一次列全（Windows 安装包、macOS 安装包…），因此这里按组合去重。
+ *
+ * `DISTINCT ON (platform, channel)` 的 `ORDER BY` 必须以这两列开头（PG 的硬要求）；
+ * 版本号是 TEXT 不参与排序，与全表口径一致：**谁最新只认 published_at**，
+ * 避免 `1.10.0` 被字符串比较判成小于 `1.9.0` 而回退版本。
+ * 只回**有产物**的条目：没有安装包的登记在下载页上没有意义。
+ */
+export async function listLatestPublished(db: IdentityDb): Promise<AppReleaseRow[]> {
+  const { rows } = await db.pool.query<RawReleaseRow>(
+    `SELECT DISTINCT ON (platform, channel) ${RELEASE_COLUMNS} FROM app_release
+      WHERE published = true AND stored_name IS NOT NULL AND sha512_base64 IS NOT NULL
+      ORDER BY platform, channel, published_at DESC NULLS LAST, id DESC`,
+  );
+  return rows.map(mapRelease);
+}
+
 export async function findReleaseByStoredName(
   db: IdentityDb,
   storedName: string,
@@ -278,4 +298,30 @@ export async function findReleaseByStoredName(
     [storedName],
   );
   return rows[0] ? mapRelease(rows[0]) : null;
+}
+
+/**
+ * 已发布版本的历史（官网「更新日志」用）。
+ *
+ * 与 `listLatestPublished` 的区别：那个是"每平台/通道取最新一条"（下载页要按平台分列），
+ * 这个是"每个**版本号**取一条"（更新日志按版本叙事，同一版本发到多个平台不该重复出现）。
+ *
+ * 排序用 published_at 而不是 version：版本号是 TEXT，`1.10.0` 会被当小于 `1.9.0`；
+ * 且人工填写的版本号未必严格递增，"按上线时间倒序"才是用户预期的"新的在上面"。
+ */
+export async function listPublishedChangelog(
+  db: IdentityDb,
+  limit: number,
+): Promise<AppReleaseRow[]> {
+  const { rows } = await db.pool.query<RawReleaseRow>(
+    `SELECT * FROM (
+       SELECT DISTINCT ON (version) ${RELEASE_COLUMNS} FROM app_release
+       WHERE published = true AND stored_name IS NOT NULL AND sha512_base64 IS NOT NULL
+       ORDER BY version, published_at DESC NULLS LAST, id DESC
+     ) AS per_version
+     ORDER BY published_at DESC NULLS LAST, id DESC
+     LIMIT $1`,
+    [limit],
+  );
+  return rows.map(mapRelease);
 }

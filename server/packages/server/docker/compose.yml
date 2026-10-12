@@ -4,6 +4,7 @@
 #   ldap      mock CNPE 域（dc=cnpe,dc=cc）——用户 OU 树 + 807 员工
 #   identity  身份服务 :8791（登录/JWT/权限/组织）
 #   gateway   模型网关 :8790（上游模型代理）
+#   portal    产品门户 :8080（官网 + 说明书静态站，反代 identity 的下载与更新日志）
 #
 # 使用：
 #   cd packages/server/docker
@@ -149,6 +150,28 @@ services:
     depends_on:
       pg:
         condition: service_healthy
+    restart: unless-stopped
+
+  # 产品门户：官网 + 说明书的静态站点（nginx:alpine），与上面四个服务同在默认网络。
+  #
+  # 为什么放进这份编排：门户首页的「下载 Reactor」与更新日志页由 nginx.conf 反代到
+  # identity（/download、/api/v1/releases/*），读的正是同一个 updates 卷与 app_release 数据。
+  # 门户与服务端同栈后，`docker compose up -d` 一次起全栈，两者天然同网络、数据互通，
+  # 不再需要手工 `docker run` 起门户并额外接网。
+  #
+  # ★ 构建上下文 = 仓库根下的 portal/（与手工 `docker build portal` 等价，portal/.dockerignore
+  #   照常生效，不会把整个仓库当上下文）。构建前需先跑 `node portal/manual/build.mjs`
+  #   生成说明书 HTML —— 镜像按文件系统原样拷贝，产物缺失就不会出现在站点里。
+  portal:
+    build:
+      context: ../../../../portal
+      dockerfile: Dockerfile
+    image: reactor-portal:v1.0.0
+    container_name: reactor-desktop-portal
+    ports:
+      - "8080:80"
+    # 刻意不写 depends_on：门户是纯静态站点，identity 晚起或未起时官网与说明书照常可浏览，
+    # 仅下载与更新日志两个反代路径短暂 502（nginx 用变量延迟解析上游，不拖垮整站）。
     restart: unless-stopped
 
 volumes:

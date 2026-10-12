@@ -61,7 +61,7 @@ server/
     │   └── scripts/          #   port-kb-ui.mjs（BuildingAI 移植管线，见 §9 注意事项）
     └── server/               # @reactor/server —— 服务端本体
         ├── Dockerfile
-        ├── docker/compose.yml  # 一体化编排：pg + ldap + identity + gateway
+        ├── docker/compose.yml  # 一体化编排：pg + ldap + identity + gateway + portal
         ├── docker/seed/        #   mock CNPE 域种子（generate.py + 说明）
         ├── scripts/            #   冒烟与运维脚本（smoke:* 见 §4）
         └── src/
@@ -90,6 +90,21 @@ server/
 |---|---|---|
 | 管理面 | `GET/POST /admin/updates/releases`、`PUT /admin/updates/releases/:id/file`、`PATCH/DELETE /admin/updates/releases/:id` | Bearer + platform_admin |
 | 下发面 | `GET /api/v1/releases/electron/manifest?platform=&channel=&device_mid=`、`GET /api/v1/releases/electron/files/:name` | **公开**（客户端不带 Authorization） |
+| 用户下载面 | `GET /download`（下载页）、`GET /api/v1/releases/published`（各平台最新已发布版本）、`GET /api/v1/releases/changelog`（版本历史，供官网更新日志同步） | **公开**（面向还没装客户端的普通用户） |
+
+用户下载面解决的是「新用户第一次从哪拿安装包」：已装客户端靠下发面的 manifest 自更新，
+而没装的人没有客户端、也没有账号，此前只能由管理员从数据卷里手工拷包。
+现在把服务端地址给用户，让他打开 `http://<服务端地址>/download` 即可看到各平台最新版本并直接下载
+（页面是服务端直出的自包含 HTML，零外部资源；版本列表只回已发布且有产物的条目，不外传 stored_name/sha512）。
+
+`/api/v1/releases/changelog` 供**门户官网的更新日志页**同步：按**版本号去重**（同一版本发到多平台只一条）、
+按上线时间倒序，只回已上线且写了更新说明的条目。官网页面用渐进增强加载，取不到时保留静态基线。
+两处（客户端更新提示、官网更新日志）读的是**同一份服务端发布说明**，发版时填一次即可。
+
+> 平台串口径：客户端上报的是 electron-builder / uname 口径（`windows-x86_64`、`darwin-aarch64`），
+> 而管理台登记与库内用的是内部口径（`windows-x64`、`darwin-arm64`）。`normalizeReleasePlatform`
+> 做**归一化**后再查库——**两套写法都必须接受**，否则已装客户端取 manifest 被判非法 400，
+> 表现为"桌面端永远检查不到更新、右上角没有更新提示"（实测踩过的坑，冒烟里有回归断言）。
 
 下发面必须挂在 `identity/routes.ts` 的**公开段**（`createIdentityApp` 里 authed 组之前）——
 挂到 authed 之后会被 `use("*")` 拦成 401，症状是全网客户端"检查更新失败"。
@@ -171,10 +186,13 @@ netsh int ipv4 show excludedportrange protocol=tcp   # 看保留段，挑一个�
 pnpm --filter @reactor/server dev:identity   # :8791
 pnpm --filter @reactor/server dev            # :8790
 
-# B. Docker 一体化（pg + ldap + identity + gateway 全在容器里）
+# B. Docker 一体化（pg + ldap + identity + gateway + portal 全在容器里）
 pnpm docker:up          # = docker compose -f packages/server/docker/compose.yml up -d
 pnpm docker:down        # 停止；**绝不加 -v**（数据卷是 external，加 -v 会丢 811 用户/807 员工）
 ```
+
+> `portal` 是产品门户（官网 + 说明书静态站，:8080）。它与 identity 同处默认网络，
+> nginx 反代 `identity:8791` 读同一 updates 卷与 app_release 数据——**一键起全栈，下载面与更新日志天然互通**。
 
 > 数据卷中 `pg-data` / `ldap-data` / `ldap-config` 是 **external**，指回历史卷名（`docker_pg-data` 等）——换目录、改项目名都不会重建空卷；
 > `kb-files` 是 compose 管理的卷（KB 上传件从未真正持久化过，见 §7.1）。
