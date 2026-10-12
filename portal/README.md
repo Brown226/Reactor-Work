@@ -4,7 +4,7 @@
 
 | 入口 | 内容 |
 | --- | --- |
-| [`index.html`](index.html) | **官网首页**：Hero + 应用窗口演示、核心能力、本仓特有、三步部署 |
+| [`index.html`](index.html) | **官网首页**：Hero + 应用窗口演示、核心能力、本仓特有 |
 | [`changelog.html`](changelog.html) | **更新日志**：自 v1.0.0 起维护 |
 | [`manual/index.html`](manual/index.html) | **产品说明书**：6 组 34 页，依据当前检出的源码整理 |
 

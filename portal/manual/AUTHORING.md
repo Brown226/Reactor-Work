@@ -49,7 +49,7 @@
 | 核心功能 | `agent`、`goal`、`memory`、`repo-wiki`、`task-management`、`edit-history`、`automations`、`idle-time-tasks`、`remote-development`、`subagents`、`browser-use` |
 | 扩展体系 | `plugin`、`skill`、`mcp`、`command`、`hooks` |
 | 本仓特有功能 | `interface-modes`、`review-panel`、`office-suite`、`model-governance`、`data-contracts` |
-| 内网服务端 | `server-overview`、`server-delivery`、`server-usage-policy` |
+| 内网服务端 | `server-overview`、`software-update`、`server-delivery`、`server-usage-policy` |
 | 帮助 | `keyboard-shortcuts`、`qa`、`linux-wsl`、`about` |
 
 新增页面要在 `build.mjs` 顶部的 `NAV` 加一项，并建立同名 `pages/<slug>.md`，只加一边会导致构建报「缺少内容文件」。

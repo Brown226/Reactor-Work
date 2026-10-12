@@ -65,7 +65,8 @@ export const NAV = [
   {
     group: "内网服务端",
     items: [
-      { slug: "server-overview", title: "服务端总览与接线", related: ["server-delivery", "server-usage-policy", "model-governance"] },
+      { slug: "server-overview", title: "服务端总览与接线", related: ["server-delivery", "server-usage-policy", "model-governance", "software-update"] },
+      { slug: "software-update", title: "软件包分发与自动更新", related: ["install", "server-overview", "server-delivery"] },
       { slug: "server-delivery", title: "技能与 Agent 下发", related: ["server-overview"] },
       { slug: "server-usage-policy", title: "用量上报与策略下发", related: ["server-overview"] },
     ],

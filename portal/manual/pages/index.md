@@ -15,7 +15,7 @@
 | 核心功能（续） | [定时任务](automations.html) · [闲时任务](idle-time-tasks.html) · [远程开发](remote-development.html) · [子智能体](subagents.html) · [浏览器自动化](browser-use.html) |
 | 扩展体系 | [插件](plugin.html) · [技能](skill.html) · [MCP](mcp.html) · [命令](command.html) · [Hooks](hooks.html) |
 | 本仓特有功能 | [界面模式](interface-modes.html) · [文件审查板块](review-panel.html) · [内网办公四件套](office-suite.html) · [模型治理与开发者模式](model-governance.html) · [数据目录与背景主题契约](data-contracts.html) |
-| 内网服务端 | [服务端总览与接线](server-overview.html) · [技能与 Agent 下发](server-delivery.html) · [用量上报与策略下发](server-usage-policy.html) |
+| 内网服务端 | [服务端总览与接线](server-overview.html) · [软件包分发与自动更新](software-update.html) · [技能与 Agent 下发](server-delivery.html) · [用量上报与策略下发](server-usage-policy.html) |
 | 帮助 | [快捷键表](keyboard-shortcuts.html) · [常见问题](qa.html) · [Linux / WSL 排查](linux-wsl.html) · [关于本说明书](about.html) |
 
 ## 阅读建议

@@ -62,6 +62,8 @@ Reactor 内置了一批官方插件。下表按默认状态分组列出本仓随
 | **superpowers** | 软件开发工作流技能集（头脑风暴、计划执行、TDD、调试、评审等） | 默认启用 |
 | **obsidian** | Obsidian 笔记创作技能集 | 默认启用 |
 | **accounting-and-reporting** | 财务核算与报告技能集 | 默认启用 |
+| **research** | 自主研究技能集：八模式研究方法与 arXiv 论文检索、引用验证（仅依赖 Python 标准库与公开学术 API） | 默认启用 |
+| **analytics** | 经营分析技能集：数据质量核查、KPI 框架、指标诊断与看板设计 | 默认启用 |
 | **computer-use** | 电脑控制：驱动鼠标、键盘与界面元素 | 默认关闭 |
 | **android-emulator / ios-simulator** | 移动开发工作流与模拟器自动化 | 默认关闭 |
 | **restore-legacy-sessions** | 把旧版会话恢复为 Reactor 任务与会话记录 | 默认关闭 |

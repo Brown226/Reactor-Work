@@ -100,6 +100,8 @@ portal/manual/smoke-render.mjs
 portal/manual/verify-html.mjs
 # 评审用预览截图（临时产物，不进库）
 portal/manual/_preview-*.png
+# 官网/说明书改版评审截图：playwright 渲染验证输出，同样不入库
+portal-preview/
 
 # 审查板块联调用的真实业务数据（含真实项目编号的 PDF/DWG/DOCX/XLSX/PPTX）
 # 与提取产物、一次性提取脚本；已在 origin/main 历史中，此处阻止再次纳入索引。
