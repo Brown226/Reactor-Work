@@ -72,10 +72,12 @@ import {
   ZCODE_ARMS_RUM_ENDPOINT,
   ZCODE_ENV,
   ZCODE_PRODUCT_FLAVOR,
+  ZCODE_FORCE_UPDATE_GATE_ENABLED,
   ZCODE_TELEMETRY_ENABLED,
   ZCODE_VERSION,
   buildZCodeEndpointUrls,
   desktopMenuMessageIds,
+  normalizeZCodeEndpointOrigin,
   resolveZCodeEndpointOrigin,
   shouldEnableE2ETestBridge,
   type AppSettings,
@@ -682,6 +684,28 @@ async function resolveCurrentZCodeEndpointOrigin() {
     envBaseOrigin: resolveZCodeEndpointEnvBaseOrigin(hostProcessLocalEnv),
     overrideOrigin: (await mainSettingService.get()).zcodeEndpointOrigin,
   });
+}
+
+/**
+ * 更新清单的端点解析：**优先用登录时的企业服务端地址**。
+ *
+ * 内网部署的更新权威源是 Reactor Server（`/api/v1/releases/electron/manifest` 由它下发），
+ * 而通用端点解析的默认值是 ZCode 官网——换标后官网 manifest 还是旧产品线的版本
+ * （实测会拉到 v3.14.5 的更新日志），对 Reactor 1.0.0 用户是错误目的地。
+ * 未登录 / 凭据读不到时退回通用解析，行为与改动前一致。
+ */
+async function resolveUpdateEndpointOrigin(): Promise<string> {
+  try {
+    const serverUrl = await appTelemetryCredentialService.load("reactor:serverUrl");
+    const normalized = serverUrl?.trim();
+    if (normalized) {
+      logger.info(`[auto-update] 使用企业服务端作为更新源：${normalized}`);
+      return normalizeZCodeEndpointOrigin(normalized);
+    }
+  } catch (error) {
+    logger.warn("[auto-update] 读取企业服务端地址失败，回退通用端点解析", { error });
+  }
+  return resolveCurrentZCodeEndpointOrigin();
 }
 let desktopContextPromptRollout: ReturnType<typeof createDesktopContextPromptRollout> | undefined;
 function resolveDesktopContextPromptEnabledForHost(): boolean {
@@ -1958,7 +1982,7 @@ app.whenReady().then(async () => {
     settingService: mainSettingService,
     locale: currentApplicationLocale,
     deviceMid,
-    resolveEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
+    resolveEndpointOrigin: resolveUpdateEndpointOrigin,
     updateFeedSource: resolveUpdateFeedSourceFromStartupConfig({
       argv: process.argv,
       env: process.env,
@@ -2189,8 +2213,15 @@ app.whenReady().then(async () => {
   // 是面向打包发布客户端的安全门，对未打包 dev 运行时无意义。打包版 app.isPackaged === true，
   // gate 照常生效，对真实用户零影响。
   const skipForceUpdateForLocalDevRuntime = !app.isPackaged;
+  // Reactor 产品线版本号从 1.0.0 重新起算，而门的配置源（ZCode 公网 client/configs 的
+  // minimalVersion，实测 3.5.3）属于旧产品线，会把 1.0.0 误判为过旧直接挡启动；
+  // 内网 Reactor Server 策略目前不下发 minimalVersion，故门整体关闭（见
+  // ZCODE_FORCE_UPDATE_GATE_ENABLED 注释里的重新启用条件）。
+  const skipForceUpdateForProductLineReset = !ZCODE_FORCE_UPDATE_GATE_ENABLED;
   const forceUpdateGuardResult =
-    ZCODE_PRODUCT_FLAVOR === "production" && !skipForceUpdateForLocalDevRuntime
+    ZCODE_PRODUCT_FLAVOR === "production" &&
+    !skipForceUpdateForLocalDevRuntime &&
+    !skipForceUpdateForProductLineReset
       ? await maybeBlockStartupForForceUpdate({
           locale: currentApplicationLocale,
           logger,
@@ -2204,6 +2235,10 @@ app.whenReady().then(async () => {
     logger.info("[force-update] Preview 跳过远端强制升级检查");
   } else if (skipForceUpdateForLocalDevRuntime) {
     logger.info("[force-update] 本地 dev 构建（未打包）跳过远端强制升级检查");
+  } else if (skipForceUpdateForProductLineReset) {
+    logger.info(
+      "[force-update] Reactor 产品线版本重置，公网 minimalVersion 不可用，跳过远端强制升级检查",
+    );
   }
   if (forceUpdateGuardResult.blocked) {
     return;

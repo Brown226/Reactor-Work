@@ -37,6 +37,20 @@ export const ZCODE_PRODUCT_FLAVOR = normalizeZCodeProductFlavor(
   typeof __ZCODE_PRODUCT_FLAVOR__ !== "undefined" ? __ZCODE_PRODUCT_FLAVOR__ : undefined,
   ZCODE_ENV,
 );
+
+/**
+ * 强制升级启动门开关。
+ *
+ * 门原先读 ZCode 公网 `/api/v1/client/configs` 下发的 `forceUpdate.minimalVersion`。
+ * Reactor 产品线版本号从 1.0.0 重新起算，而该配置属于旧产品线（实测仍在下发 3.5.3），
+ * 按 semver 比较会把 1.0.0 误判为过旧、启动即被挡住；内网 Reactor Server 的
+ * `GET /desktop/policy` 目前不下发 minimalVersion，没有可替代的权威源。
+ * 在策略源切换到 Reactor Server 之前，门保持关闭。
+ * 重新启用条件：服务端开始下发该字段，且把配置源从公网 client/configs 切到
+ * Reactor Server 策略通道，然后改回 true。
+ */
+export const ZCODE_FORCE_UPDATE_GATE_ENABLED = false;
+
 export const ZCODE_APP_VERSION_ENV = "ZCODE_APP_VERSION" as const;
 export const ZCODE_BUILD_COMMIT_ID_ENV = "ZCODE_BUILD_COMMIT_ID" as const;
 
