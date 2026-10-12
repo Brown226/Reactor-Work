@@ -12,7 +12,7 @@
 // 远端（SSH/WSL/Docker）没有 Electron，仍走 prepare:remote-assets 的原生二进制，互不影响。
 
 import { cpSync, existsSync, mkdirSync } from "node:fs";
-import { basename, dirname, resolve } from "node:path";
+import { basename, dirname, relative, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { runCommand } from "../../../scripts/spawn-command.mjs";
@@ -88,6 +88,17 @@ const browserUseRequiredRuntimePaths = [
   "skills/control-browser/SKILL.md",
   "skills/web-gui-tester/SKILL.md",
 ];
+/**
+ * 内容型官方插件（无 runtime 构建）与运行时型插件的清单来自**单一数据源**
+ * `scripts/official-plugin-seeds.mjs`——这份清单过去在桌面打包、远端预构建、服务端
+ * 远端合同三处各写一遍，漂移导致「dev 有、安装包没有」静默存在很久
+ * （见 44b25ed46c 与该模块注释）。新增随包插件只改那一处。
+ */
+import {
+  CONTENT_PLUGIN_SEED_ENTRIES,
+  RUNTIME_PLUGIN_PACKAGES,
+} from "../../../scripts/official-plugin-seeds.mjs";
+
 const officialPluginPackages = [
   {
     // browser-use 只携带自己的 client script 与 skill/docs；node_repl MCP runtime 归
@@ -113,14 +124,17 @@ const officialPluginPackages = [
   },
 
   {
-    // 审查技能（6 个）：纯内容型插件，没有 runtime 构建步骤，只需把 skills/ 与清单拷进
-    // glm/packages。此前这 6 个技能只存在于企业服务端技能库，安装包不带、也没人发现，
+    // 审查技能（5 个）：纯内容型插件，没有 runtime 构建步骤，只需把 skills/ 与清单拷进
+    // glm/packages。此前这些技能只存在于企业服务端技能库，安装包不带、也没人发现，
     // 结果是「不登录企业端就没有审查能力」；内置后由 definition 的 defaultEnabled 直接可用。
     packageName: "@zcode/review-skills-plugin",
     relativePath: "apps/zcode-cli/packages/review-skills-plugin",
     requiresRuntime: false,
     stagedPath: "packages/review-skills-plugin",
   },
+
+  ...RUNTIME_PLUGIN_PACKAGES,
+  ...CONTENT_PLUGIN_SEED_ENTRIES,
 ];
 const includedOfficialPluginTopLevelPaths = new Set([
   ".mcp.json",
@@ -128,6 +142,13 @@ const includedOfficialPluginTopLevelPaths = new Set([
   "README.md",
   // Electron 生产资源复制有独立白名单，遗漏 agents 会让首启 filesystem seed 永久缺少子代理。
   "agents",
+  // file-tools / dwg-tools 的引擎资产树（anydoc/canvas/dwg-sidecar）。
+  // 打包态运行时优先从 resources/tools/<插件> 解析（见 dwg-tools src/assets.ts 的候选链），
+  // 但 seed 侧必须非空 —— bundled-plugins.hasDeclaredAssetsButNoFiles 会把
+  // 「声明了 runtimeTopLevelPaths: ["assets"] 却收不到文件」的插件整体拒绝 seed，
+  // 症状是文档解析/图纸解析在安装包里直接消失。故此处随包拷贝（definitions 注释
+  // 称之为「seed 副本兜底」）。
+  "assets",
   "commands",
   "dist",
   "docs",
@@ -145,7 +166,23 @@ const excludedOfficialPluginAssetNames = new Set([
   "node_modules",
 ]);
 
-function shouldCopyOfficialPluginAsset(sourcePath) {
+/**
+ * dwg-sidecar 的 .NET 自包含产物不进 staged 插件树。
+ *
+ * dwg-tools 的资产树有两份实体：源码 assets/win32-x64/dwg-sidecar/（assets.ts 运行时读它）
+ * 与 publish-sidecar.mjs 的发布产物 dist/dwg-sidecar/<rid>/（插件自带端到端单测读它）。
+ * 运行时候选链（dwg-tools/src/assets.ts）只认 env / resources/tools/dwg-tools / 插件根
+ * assets/<platformKey>，从不解析 dist/；而 requiredRuntimePaths 也只校验 dist/mcp/server.js。
+ * 故 staged 树里这份 35.31MB 二进制纯死重：安装包里同一 sidecar 会落三份
+ * （dist 一份 + assets 一份 + resources/tools/dwg-tools 一份），远端 4 个平台组件各翻一倍。
+ */
+const EXCLUDED_PLUGIN_RELATIVE_TREES = ["dist/dwg-sidecar"];
+
+function shouldCopyOfficialPluginAsset(sourcePath, sourceRoot) {
+  const relativePath = relative(sourceRoot, sourcePath).replaceAll("\\", "/");
+  if (EXCLUDED_PLUGIN_RELATIVE_TREES.some((tree) => relativePath === tree || relativePath.startsWith(`${tree}/`))) {
+    return false;
+  }
   const name = basename(sourcePath);
   return !excludedOfficialPluginAssetNames.has(name) && !name.endsWith(".pyc");
 }
@@ -243,10 +280,10 @@ function stageOfficialPlugins() {
     for (const entryName of includedOfficialPluginTopLevelPaths) {
       const sourcePath = resolve(sourceRoot, entryName);
       if (!existsSync(sourcePath)) continue;
-      cpSync(sourcePath, resolve(targetRoot, entryName), {
-        recursive: true,
-        filter: shouldCopyOfficialPluginAsset,
-      });
+    cpSync(sourcePath, resolve(targetRoot, entryName), {
+      recursive: true,
+      filter: (candidatePath) => shouldCopyOfficialPluginAsset(candidatePath, sourceRoot),
+    });
     }
     for (const relativePath of plugin.requiredSeedPaths ?? []) {
       const stagedAssetPath = resolve(targetRoot, ...relativePath.split("/"));

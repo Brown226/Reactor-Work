@@ -23,7 +23,13 @@ function resolveZCodeEnv(value: string | undefined): "test" | "production" {
   return value?.trim().toLowerCase() === "production" ? "production" : "test";
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
+  // 与 packages/desktop/vite.config.ts 同因：进程级 NODE_ENV=production（全局环境变量 / CI 镜像）
+  // 会让 @vitejs/plugin-react 判定 isProduction 并跳过 $RefreshSig$/$RefreshReg$ preamble 注入，
+  // 但 oxc 的 jsx.refresh 仍按 command === "serve" 打开，dev 下即 "ReferenceError: $RefreshSig$ is not defined"。
+  if (command === "serve" && process.env.NODE_ENV === "production") {
+    process.env.NODE_ENV = "development";
+  }
   // `.env*` 只提供链接常量；当前产品环境由启动脚本或 CI 注入 ZCODE_ENV。
   // 启动脚本通过 process.env 显式选择 test/production；它必须优先于 .env 文件，
   // 否则 share:test 可能被 mode 的旧配置误解析到错误 endpoint。

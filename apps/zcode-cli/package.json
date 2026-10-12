@@ -1,6 +1,6 @@
 {
   "name": "zcode-cli",
-  "version": "0.16.9",
+  "version": "1.0.0",
   "private": true,
   "description": "A cross-platform TypeScript Node.js CLI with a small TUI and optional SEA packaging.",
   "type": "module",

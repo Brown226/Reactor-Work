@@ -17,7 +17,7 @@ import {
 } from "node:fs";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import process from "node:process";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
@@ -25,6 +25,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
 import { resolveRemoteNativeSearchPrebuiltPlan } from "./remote-native-search-tools-config.mjs";
 import { prepareNativeSearchTools } from "./prepare-native-search-tools.mjs";
+// 随包插件清单与桌面打包共用单一数据源（三处平行清单漂移的历史教训，见该模块注释）
+import { CONTENT_PLUGIN_SEED_ENTRIES, RUNTIME_PLUGIN_PACKAGES } from "./official-plugin-seeds.mjs";
 import { stageNodeNotices, stageThirdPartyNotices } from "./third-party-notices.mjs";
 import {
   computeDeterministicSourceSha256 as computeComponentSourceSha256,
@@ -95,6 +97,9 @@ const remoteOfficialPluginPackages = [
   // 内置插件源码，但漏改这份清单，bootstrap:with-remote 在 staging 第一个 manifest 就抛
   // missing。此处与 packages/desktop/scripts/prepare-agent-node-bundle.mjs 的桌面 seed
   // 清单、packages/server/src/remote/zcodeAgentOfficialPluginAssets.ts 的远端合同保持一致。
+  //
+  // 2026-10-09：按上线需求把随包插件补全到与桌面清单一致（17 个）—— 否则远端工作区
+  // 只能拿到 3 个插件，而本地 dev 从源码 seed 能拿全部，「本地有、远端没有」会再次静默。
   {
     // 远端 shared-host 必须部署 node_repl runtime，否则只剩 skill 而没有 mcp__node_repl__js ——
     // 该 runtime 现由 @zcode/node-repl-host 提供（见下一个条目），browser-use 只带自己的
@@ -118,19 +123,26 @@ const remoteOfficialPluginPackages = [
   },
   {
     // 审查技能：纯内容型插件，无 runtime 构建。远端工作区同样要能审查文件，
-    // 这份清单若漏掉它，远端会话里 6 个审查技能会静默不存在（本地却正常）。
+    // 这份清单若漏掉它，远端会话里审查技能会静默不存在（本地却正常）。
     packageName: "@zcode/review-skills-plugin",
     relativePath: "apps/zcode-cli/packages/review-skills-plugin",
     requiresRuntime: false,
     stagedPath: "packages/review-skills-plugin",
   },
+  ...RUNTIME_PLUGIN_PACKAGES,
+  ...CONTENT_PLUGIN_SEED_ENTRIES,
 ];
+
 const remoteOfficialPluginTopLevelPaths = new Set([
   ".mcp.json",
   ".zcode-plugin",
   "README.md",
   // 生产远程预构建有独立顶层白名单，遗漏 agents 会在上传前永久裁掉子代理。
   "agents",
+  // file-tools / dwg-tools 的引擎资产树。远端没有 resources/tools 那种独立分发，
+  // 引擎必须随插件一起上传，否则 seed 侧「声明了 assets 却没有文件」会整体拒绝该插件
+  // （bundled-plugins.hasDeclaredAssetsButNoFiles），工具在远端直接不可用。
+  "assets",
   "commands",
   "dist",
   "docs",
@@ -148,7 +160,19 @@ const excludedOfficialPluginAssetNames = new Set([
   "node_modules",
 ]);
 
-function shouldCopyOfficialPluginAsset(sourcePath) {
+/**
+ * dwg-sidecar 的 .NET 自包含产物不进远端 staged 插件树：运行时候选链
+ * （dwg-tools/src/assets.ts）只认 env / resourcesPath/tools/dwg-tools / 插件根
+ * assets/<platformKey>，从不解析 dist/；requiredRuntimePaths 也只校验
+ * dist/mcp/server.js。这份 35.31MB 二进制留在树里纯死重，且会按 4 个远端平台各翻一倍。
+ */
+const EXCLUDED_PLUGIN_RELATIVE_TREES = ["dist/dwg-sidecar"];
+
+function shouldCopyOfficialPluginAsset(sourcePath, sourceRoot) {
+  const relativePath = relative(sourceRoot, sourcePath).replaceAll("\\", "/");
+  if (EXCLUDED_PLUGIN_RELATIVE_TREES.some((tree) => relativePath === tree || relativePath.startsWith(`${tree}/`))) {
+    return false;
+  }
   const name = basename(sourcePath);
   return !excludedOfficialPluginAssetNames.has(name) && !name.endsWith(".pyc");
 }
@@ -475,10 +499,10 @@ function stageRemoteOfficialPlugins(glmDir) {
     for (const entryName of remoteOfficialPluginTopLevelPaths) {
       const sourcePath = join(sourceRoot, entryName);
       if (!existsSync(sourcePath)) continue;
-      cpSync(sourcePath, join(targetRoot, entryName), {
-        recursive: true,
-        filter: shouldCopyOfficialPluginAsset,
-      });
+    cpSync(sourcePath, join(targetRoot, entryName), {
+      recursive: true,
+      filter: (candidatePath) => shouldCopyOfficialPluginAsset(candidatePath, sourceRoot),
+    });
     }
     for (const relativePath of remoteOfficialPluginRequiredPaths) {
       if (!relativePath.startsWith(`${plugin.stagedPath}/`)) continue;

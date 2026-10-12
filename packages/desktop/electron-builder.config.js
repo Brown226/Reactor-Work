@@ -655,13 +655,16 @@ export default {
       to: "tools/dwg-tools",
       filter: ["**/*"],
     },
-    // 办公四件套 skill 的本地引擎树（LibreOffice / 便携 Python + wheels / CJK 字体）。
+    // 办公四件套 skill 的本地引擎树（便携 Python + wheels / CJK 字体；LibreOffice 按内网策略不打包）。
     // 资产由 scripts/prepare-office-engines-assets.mjs 生成（版本 + sha256 固定，
     // bundled-tools 不进 git，CI/发布流水线负责准备）。electron-builder 对不存在的
     // from 目录会直接报错，因此未准备的平台/机器整体跳过该项：安装器与运行时都按
     // 「无内置引擎」降级（skill env_check 走 on-demand 报告），不影响其他能力。
+    // 准入判断必须与 from 同基准：from 相对 desktop 包根解析，暂存脚本也写在
+    // packages/desktop/bundled-tools/<platform>/office-engines；曾误用 workspaceRoot
+    // （仓库根）导致该项永远被跳过，安装包从来没有过内置 Python/OCR。
     ...(existsSync(
-      resolve(workspaceRoot, "bundled-tools", targetPlatform.key, "office-engines"),
+      resolve(desktopPackageRoot, "bundled-tools", targetPlatform.key, "office-engines"),
     )
       ? [
           {

@@ -219,6 +219,9 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
             "using-git-worktrees",
             "using-superpowers",
             "verification-before-completion",
+            // 这两个此前漏列：磁盘上一直有，但 seed 校验不查 ⇒ 缺了不会被拦住
+            "writing-plans",
+            "writing-skills",
           ],
         },
         {

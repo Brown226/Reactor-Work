@@ -36,6 +36,10 @@ export const DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS: ReadonlySet<string> = new Set(
   "superpowers@zcode-plugins-official",
   "obsidian@zcode-plugins-official",
   "accounting-and-reporting@zcode-plugins-official",
+  // research / analytics：eb9bcc5 借入上游脚本库时加进了 definitions 的 defaultEnabled，
+  // 但漏改这份名单 —— 结果是 seed 默认开、设置页不认（bootstrap 单测当场抓到）。
+  "research@zcode-plugins-official",
+  "analytics@zcode-plugins-official",
 ]);
 
 export const DEFAULT_PLUGIN_MARKETPLACES: DefaultPluginMarketplace[] = [

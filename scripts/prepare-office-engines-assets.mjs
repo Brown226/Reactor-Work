@@ -229,12 +229,46 @@ function dirnameOf(path) {
   return resolve(path, "..");
 }
 
+/**
+ * 解压 zip（.whl 同样是 zip）。
+ *
+ * 不能只依赖 `7z`：开发机默认不装 7-Zip，spawnSync 找不到命令时 status 为 null，
+ * 会一律报 "7z extract failed"——曾经因此在本机永远暂存不出 Python，安装包也就
+ * 从来没有过内置引擎。按顺序回退：7z → Windows 自带 bsdtar（System32/tar.exe，
+ * 支持 zip；不能直接用 PATH 里的 tar，Git Bash 的 GNU tar 不解 zip）→ 通用 tar。
+ */
 function extractZip(zipPath, targetDir) {
   mkdirSync(targetDir, { recursive: true });
-  const result = spawnSync("7z", ["x", "-y", `-o${targetDir}`, zipPath], {
-    stdio: ["ignore", "ignore", "inherit"],
-  });
-  if (result.status !== 0) throw new Error(`7z extract failed: ${zipPath}`);
+
+  const systemRoot = process.env.SystemRoot ?? process.env.SYSTEMROOT;
+  const candidates = [
+    { command: "7z", args: ["x", "-y", `-o${targetDir}`, zipPath] },
+    ...(process.platform === "win32" && systemRoot
+      ? [
+          {
+            command: join(systemRoot, "System32", "tar.exe"),
+            args: ["-xf", zipPath, "-C", targetDir],
+          },
+        ]
+      : []),
+    { command: "tar", args: ["-xf", zipPath, "-C", targetDir] },
+  ];
+
+  const failures = [];
+  for (const candidate of candidates) {
+    const result = spawnSync(candidate.command, candidate.args, {
+      stdio: ["ignore", "ignore", "ignore"],
+    });
+    if (result.status === 0) {
+      return;
+    }
+    failures.push(
+      `${candidate.command}${
+        result.error ? ` (${result.error.code ?? result.error.message})` : ` status=${result.status}`
+      }`,
+    );
+  }
+  throw new Error(`extract failed: ${zipPath} (tried: ${failures.join("; ")})`);
 }
 
 function rmrf(path) {

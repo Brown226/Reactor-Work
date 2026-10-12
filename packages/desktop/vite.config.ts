@@ -140,7 +140,17 @@ function stripViteRequestQuery(id: string) {
   return id.split("?")[0] ?? id;
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
+  // Vite 用 process.env.NODE_ENV === "production" 推导 isProduction，而 @vitejs/plugin-react
+  // 在 isProduction 时跳过注入 $RefreshReg$/$RefreshSig$ 的 preamble，却仍按 command === "serve"
+  // 打开 oxc 的 jsx.refresh —— 结果调用点存在、preamble 缺失，渲染进程启动即抛
+  // "Uncaught ReferenceError: $RefreshSig$ is not defined"，React 永不挂载，界面停在灰屏。
+  // 机器级/用户级 NODE_ENV=production（CI 镜像、全局环境变量）会踩中，这里在 dev server 下
+  // 强制 development，与 Vite 自身的 dev 语义对齐。必须在返回配置对象前设置：Vite 在
+  // resolveConfig 里读取它，而该阶段晚于本回调。
+  if (command === "serve" && process.env.NODE_ENV === "production") {
+    process.env.NODE_ENV = "development";
+  }
   // `.env*` 只提供链接常量；当前产品环境由启动脚本或 CI 注入 ZCODE_ENV。
   const env = { ...loadEnv(mode, "../..", ""), ...process.env };
   const repoRoot = resolve(__dirname, "../..");

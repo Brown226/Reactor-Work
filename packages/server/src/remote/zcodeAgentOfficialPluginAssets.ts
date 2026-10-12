@@ -2,11 +2,37 @@ import { posix } from "node:path";
 
 export const REMOTE_AGENT_OFFICIAL_PLUGIN_DIR_NAME = "packages";
 
+/**
+ * 随包官方插件的目录名（= `packages/<目录>`，即 seed 的 rootCandidates）。
+ *
+ * ⚠ 与 `scripts/official-plugin-seeds.mjs`（桌面打包 + 远端预构建共用的单一数据源）
+ * **一一对应**：那份漏一个，这里就会在 dev 态 SSH 部署时静默少一个插件——
+ * 「本地有、远端没有」没有任何报错。2026-10-09 已把两份补满到 17 个随包插件
+ * （历史：44b25ed46c 只改了一部分，安装包一度只剩 3 个而 dev 链仍拿全部）。
+ *
+ * 唯一的有意差异：`node-repl-host` 不进这份合同 —— 远端工作区当前不承载
+ * Browser Use / Computer Use，宿主 runtime 部署了也没有消费者。
+ */
 export const REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES = [
   "browser-use-plugin",
-  // 审查技能随包内置：远端工作区跑审查同样需要这 6 个技能。缺了不报错，只是静默没有技能，
+  // 审查技能随包内置：远端工作区跑审查同样需要这些技能。缺了不报错，只是静默没有技能，
   // 所以这里必须进合同，靠 required 相对路径在部署前拦住半成品。
   "review-skills-plugin",
+  // ── 以下 14 个为 2026-10-09 补全（与官方插件集合对齐）────────────────────
+  "file-tools-plugin",
+  "ocr-tools-plugin",
+  "dwg-tools-plugin",
+  "documents-plugin",
+  "pdf-plugin",
+  "presentations-plugin",
+  "spreadsheets-plugin",
+  "accounting-and-reporting-plugin",
+  "analytics-plugin",
+  "research-plugin",
+  "obsidian-plugin",
+  "superpowers-plugin",
+  "skill-creator-plugin",
+  "zcode-guide-plugin",
 ] as const;
 
 export const REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS = [
@@ -15,6 +41,9 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS = [
   "README.md",
   // 开发态远程插件复制使用独立白名单，遗漏 agents 会只在远端丢失子代理。
   "agents",
+  // file-tools / dwg-tools 的引擎资产树：远端没有 resources/tools 独立分发，
+  // 少了它 seed 会以「声明了 assets 却没有文件」整体拒绝这两个插件。
+  "assets",
   "commands",
   "dist",
   "docs",
@@ -60,6 +89,64 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS = [
   "review-skills-plugin/skills/review-proofread/SKILL.md",
   "review-skills-plugin/skills/review-proofread/references/typo-dictionary.md",
   "review-skills-plugin/skills/review-standard-check/SKILL.md",
+  // ── 以下 14 个插件为 2026-10-09 补全（与 scripts/official-plugin-seeds.mjs 同源）──
+  // 运行时型（MCP server 必须先构建出 dist/mcp/server.js）
+  "file-tools-plugin/dist/mcp/server.js",
+  "file-tools-plugin/dist/mcp/pdf.worker.mjs",
+  "ocr-tools-plugin/dist/mcp/server.js",
+  "dwg-tools-plugin/dist/mcp/server.js",
+  // 办公四件套：技能正文 + 视觉评审子代理
+  "documents-plugin/agents/visual-judge.md",
+  "documents-plugin/skills/docx/SKILL.md",
+  "pdf-plugin/agents/visual-judge.md",
+  "pdf-plugin/skills/pdf/SKILL.md",
+  "presentations-plugin/agents/visual-judge.md",
+  "presentations-plugin/skills/pptx/SKILL.md",
+  "spreadsheets-plugin/agents/visual-judge.md",
+  "spreadsheets-plugin/skills/xlsx/SKILL.md",
+  // 内容型技能集：逐个钉住 SKILL.md（少一个就只是"这个类型答案变水"，没有报错）
+  "accounting-and-reporting-plugin/skills/account-mapping/SKILL.md",
+  "accounting-and-reporting-plugin/skills/audit-xls/SKILL.md",
+  "accounting-and-reporting-plugin/skills/financial-reporting/SKILL.md",
+  "accounting-and-reporting-plugin/skills/ledger-reconciliation/SKILL.md",
+  "accounting-and-reporting-plugin/skills/month-end-close-review/SKILL.md",
+  "accounting-and-reporting-plugin/skills/report-render/SKILL.md",
+  "accounting-and-reporting-plugin/skills/statement-consistency-check/SKILL.md",
+  "accounting-and-reporting-plugin/skills/xlsx-author/SKILL.md",
+  "analytics-plugin/skills/analyze-data-quality/SKILL.md",
+  "analytics-plugin/skills/build-dashboard/SKILL.md",
+  "analytics-plugin/skills/design-kpis/SKILL.md",
+  "analytics-plugin/skills/metric-diagnostics/SKILL.md",
+  "research-plugin/skills/arxiv/SKILL.md",
+  "research-plugin/skills/super-research/SKILL.md",
+  "obsidian-plugin/skills/defuddle/SKILL.md",
+  "obsidian-plugin/skills/excalidraw-diagram/SKILL.md",
+  "obsidian-plugin/skills/json-canvas/SKILL.md",
+  "obsidian-plugin/skills/knap/SKILL.md",
+  "obsidian-plugin/skills/mermaid-visualizer/SKILL.md",
+  "obsidian-plugin/skills/obsidian-bases/SKILL.md",
+  "obsidian-plugin/skills/obsidian-cli/SKILL.md",
+  "obsidian-plugin/skills/obsidian-markdown/SKILL.md",
+  "obsidian-plugin/skills/setup/SKILL.md",
+  "superpowers-plugin/skills/brainstorming/SKILL.md",
+  "superpowers-plugin/skills/dispatching-parallel-agents/SKILL.md",
+  "superpowers-plugin/skills/executing-plans/SKILL.md",
+  "superpowers-plugin/skills/finishing-a-development-branch/SKILL.md",
+  "superpowers-plugin/skills/receiving-code-review/SKILL.md",
+  "superpowers-plugin/skills/requesting-code-review/SKILL.md",
+  "superpowers-plugin/skills/subagent-driven-development/SKILL.md",
+  "superpowers-plugin/skills/systematic-debugging/SKILL.md",
+  "superpowers-plugin/skills/test-driven-development/SKILL.md",
+  "superpowers-plugin/skills/using-git-worktrees/SKILL.md",
+  "superpowers-plugin/skills/using-superpowers/SKILL.md",
+  "superpowers-plugin/skills/verification-before-completion/SKILL.md",
+  "superpowers-plugin/skills/writing-plans/SKILL.md",
+  "superpowers-plugin/skills/writing-skills/SKILL.md",
+  "skill-creator-plugin/skills/skill-creator/SKILL.md",
+  "zcode-guide-plugin/commands/workflow.md",
+  "zcode-guide-plugin/skills/dynamic-workflows/SKILL.md",
+  "zcode-guide-plugin/skills/dynamic-workflows/examples.md",
+  "zcode-guide-plugin/skills/dynamic-workflows/patterns.md",
 ] as const;
 
 export function buildRemoteAgentOfficialPluginDir(remoteProviderDir: string): string {
