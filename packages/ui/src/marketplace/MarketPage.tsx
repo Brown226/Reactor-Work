@@ -23,6 +23,7 @@ import { useReactorServer } from "@/hooks/useReactorServer.js";
 import { useServerAgentSync } from "@/hooks/useServerAgentSync.js";
 import { useServerSkillMarket } from "@/hooks/useServerSkillMarket.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { buildSkillUsePrefill, shouldShowSkillUseAction } from "@/marketplace/skillUsage.js";
 import { ExpertDetailDialog } from "@/marketplace/ExpertDetailDialog.js";
 import { SkillBundleDialog } from "@/marketplace/SkillBundleDialog.js";
 import { SkillDetailDialog } from "@/marketplace/SkillDetailDialog.js";
@@ -113,36 +114,65 @@ function ExpertCard({
 function SkillCard({
   item,
   onOpen,
+  onUse,
 }: {
   item: ServerSkillCatalogItem;
   onOpen: (name: string) => void;
+  /** 宿主提供新建会话通道时传入；安装且启用才渲染「使用」。 */
+  onUse?: (item: ServerSkillCatalogItem) => void;
 }) {
   const { intl } = useZCodeIntl();
+  // 外壳不能是 <button>：内嵌「使用」按钮在 HTML 非法。主体点击区独立成 button，
+  // 焦点/hover 样式随它走，卡片外壳只承担视觉（DESIGN.md 卡片外壳约定不变）。
+  const showUse = shouldShowSkillUseAction({
+    installed: item.installed,
+    enabled: item.enabled,
+    hasCreateTask: Boolean(onUse),
+  });
   return (
-    <button
-      type="button"
+    <div
       data-testid={`skill-card-${item.name}`}
-      onClick={() => onOpen(item.name)}
-      className="flex min-w-0 flex-col gap-2 rounded-xl border border-card-border bg-card p-3.5 text-left transition-colors hover:border-border-hover hover:bg-card-selected focus-visible:ring-2 focus-visible:ring-input-border-focused focus-visible:outline-none"
+      className="flex min-w-0 flex-col gap-2 rounded-xl border border-card-border bg-card p-3.5 transition-colors hover:border-border-hover hover:bg-card-selected"
     >
       <div className="flex min-w-0 items-center gap-2.5">
-        <span
-          aria-hidden="true"
-          className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background text-ui-base text-foreground-subtle ring-1 ring-border"
+        <button
+          type="button"
+          onClick={() => onOpen(item.name)}
+          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg text-left focus-visible:ring-2 focus-visible:ring-input-border-focused focus-visible:outline-none"
         >
-          {item.icon || item.title.slice(0, 1)}
-        </span>
-        <span className="min-w-0 truncate text-ui-base font-semibold text-foreground">
-          {item.title}
-        </span>
-        {item.installed ? (
-          <span className="ml-auto inline-flex min-h-5 shrink-0 items-center rounded-md bg-surface px-1.5 text-ui-xs text-foreground-subtle ring-1 ring-border">
-            {intl.formatMessage({ id: "marketplace.card.installed" })}
+          <span
+            aria-hidden="true"
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background text-ui-base text-foreground-subtle ring-1 ring-border"
+          >
+            {item.icon || item.title.slice(0, 1)}
           </span>
-        ) : null}
+          <span className="min-w-0 truncate text-ui-base font-semibold text-foreground">
+            {item.title}
+          </span>
+        </button>
+        <span className="flex shrink-0 items-center gap-1.5">
+          {showUse ? (
+            <Button type="button" size="sm" onClick={() => onUse?.(item)}>
+              {intl.formatMessage({ id: "marketplace.card.use" })}
+            </Button>
+          ) : null}
+          {item.installed ? (
+            <span className="inline-flex min-h-5 items-center rounded-md bg-surface px-1.5 text-ui-xs text-foreground-subtle ring-1 ring-border">
+              {intl.formatMessage({ id: "marketplace.card.installed" })}
+            </span>
+          ) : null}
+        </span>
       </div>
-      <p className="line-clamp-2 text-ui-sm text-foreground-subtle">{item.description || ""}</p>
-    </button>
+      <button
+        type="button"
+        onClick={() => onOpen(item.name)}
+        className="rounded-lg text-left focus-visible:ring-2 focus-visible:ring-input-border-focused focus-visible:outline-none"
+      >
+        <span className="line-clamp-2 block text-ui-sm text-foreground-subtle">
+          {item.description || ""}
+        </span>
+      </button>
+    </div>
   );
 }
 
@@ -382,6 +412,20 @@ export function MarketPage({
       };
       onCreateTask({
         initialPrompt: `${mention.markdown} ${prompt.trim()}`.trim(),
+        initialPromptMention: mention,
+      });
+    },
+    [onCreateTask],
+  );
+
+  const handleSkillStarter = useCallback(
+    (item: ServerSkillCatalogItem) => {
+      if (!onCreateTask) return;
+      // 技能无 starters 字段（服务端 catalog 暂无，§7-U7），故只预填 `$技能名` mention、
+      // 不替用户编任务描述；发送通道与专家召唤同源，只写草稿不自动发送。
+      const mention = buildSkillUsePrefill(item.name, item.title);
+      onCreateTask({
+        initialPrompt: mention.markdown,
         initialPromptMention: mention,
       });
     },
@@ -761,6 +805,7 @@ export function MarketPage({
                       key={item.id}
                       item={item}
                       onOpen={(name) => setSkillOpenName(name)}
+                      onUse={onCreateTask ? handleSkillStarter : undefined}
                     />
                   ))}
             </div>
@@ -813,6 +858,12 @@ export function MarketPage({
         onInstall={(name) => void skillsMarket.install(name)}
         onUninstall={(name) => void skillsMarket.uninstall(name)}
         onFavorite={(name, favorited) => void skillsMarket.setFavorite(name, favorited)}
+        // 使用入口（与卡片同源）：安装后才给；宿主无新建会话通道时整块隐藏。
+        onUse={
+          skillSelected?.installed && onCreateTask
+            ? (item) => handleSkillStarter(item)
+            : undefined
+        }
         // 详情通道（M2 #2）：宿主不支持时整块隐藏详情区，而不是展示必然失败的加载态。
         detailLoader={skillsMarket.available ? skillsGetDetail : undefined}
       />

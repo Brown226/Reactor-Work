@@ -22,6 +22,11 @@ export interface SkillDetailDialogProps {
   onUninstall: (name: string) => void;
   onFavorite: (name: string, favorited: boolean) => void;
   /**
+   * 「使用」通道（宿主支持时提供）：新建会话并预填 `$技能名` mention（不自动发送）。
+   * 缺省或未安装时整块隐藏（与专家 starters 的可选通道同款）。
+   */
+  onUse?: (item: ServerSkillCatalogItem) => void;
+  /**
    * 详情加载通道（宿主支持时提供）：失败向上抛，本组件展示失败态；
    * 缺省时三个详情块整块隐藏（与专家 starters 的可选通道同款）。
    */
@@ -47,6 +52,7 @@ export function SkillDetailDialog({
   onInstall,
   onUninstall,
   onFavorite,
+  onUse,
   detailLoader,
 }: SkillDetailDialogProps) {
   const { intl } = useZCodeIntl();
@@ -106,15 +112,28 @@ export function SkillDetailDialog({
 
           <div className="flex flex-wrap items-center gap-2">
             {item.installed ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={busy}
-                onClick={() => onUninstall(item.name)}
-              >
-                {intl.formatMessage({ id: "marketplace.dialog.uninstall" })}
-              </Button>
+              <>
+                {onUse ? (
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => onUse(item)}
+                  >
+                    {intl.formatMessage({ id: "marketplace.dialog.use" })}
+                  </Button>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={busy}
+                  onClick={() => onUninstall(item.name)}
+                >
+                  {intl.formatMessage({ id: "marketplace.dialog.uninstall" })}
+                </Button>
+              </>
             ) : (
               <Button
                 type="button"
