@@ -55,15 +55,9 @@ import { ThoughtLevelCycleControl } from "@/chat-input-toolbar/ThoughtLevelCycle
 import { getNextThoughtLevelValue } from "@/chat-input-toolbar/thoughtLevelOptions.js";
 import type { V4ComposerConfigPicker } from "@/v4/composer/configPickerState.js";
 import { useToolbarShortcutBindings } from "@/v4/composer/toolbarShortcuts.js";
-import {
-  resolveModelSelectTriggerDisplay,
-  shouldShowManageModelsAction,
-} from "@/chat-input-toolbar/modelSelection.js";
+import { resolveModelSelectTriggerDisplay } from "@/chat-input-toolbar/modelSelection.js";
 import { resolveV4ModelTriggerDisplay } from "@/v4/composer/modelTriggerDisplay.js";
-import {
-  setPendingSettingsSectionIntent,
-  setPendingSettingsUsageCodingPlanIntent,
-} from "@/lib/settingsNavigation.js";
+import { setPendingSettingsUsageCodingPlanIntent } from "@/lib/settingsNavigation.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";
 import type { ModelSelectionView } from "@zcode/services";
 import type { ModelSelectionState } from "@/hooks/useModelSelectionView.js";
@@ -773,15 +767,7 @@ function V4ComposerModelControlsImpl({
     });
   }, [devModeUnlocked, displayProvider, enterpriseSession.status?.models, intl, modelSelectionView]);
 
-  // 修复：恢复「管理模型」入口（老版 onManageModels = 打开设置页并定位模型供应商区）。
-  const handleOpenModelProviderSettings = useCallback(() => {
-    setPendingSettingsSectionIntent("modelProvider");
-    openSettingsTab();
-  }, [openSettingsTab]);
-  const showManageModelsAction = shouldShowManageModelsAction(handleOpenModelProviderSettings);
-  const manageModelsLabel = intl.formatMessage({
-    id: "chat.toolbar.model.manageModels",
-  });
+  // 聊天输入框不再提供「管理模型」入口（改由设置页承担）；模型菜单只负责选择当前模型。
 
   // 当前投影模型的编码值：provider 命中目录则按自定义模型编码，否则回落裸 model id。
   const rawModelValue = useMemo(() => {
@@ -799,14 +785,8 @@ function V4ComposerModelControlsImpl({
   // 不在可选组（失效/下线/退登）→ 回落占位/默认「选择模型」，不直显协议内部占位符或失效
   // 模型 id。复用存活的 resolveModelSelectTriggerDisplay。
   const triggerDisplay = useMemo(
-    () =>
-      resolveModelSelectTriggerDisplay(
-        rawModelValue,
-        modelSelectGroups,
-        showManageModelsAction,
-        manageModelsLabel,
-      ),
-    [manageModelsLabel, modelSelectGroups, rawModelValue, showManageModelsAction],
+    () => resolveModelSelectTriggerDisplay(rawModelValue, modelSelectGroups),
+    [modelSelectGroups, rawModelValue],
   );
   const normalizedModelValue = triggerDisplay.value ?? "";
 
@@ -983,8 +963,8 @@ function V4ComposerModelControlsImpl({
   // 键盘热键（旧 useToolbarShortcutBindings）：Ctrl+M 打开模型菜单、Ctrl+T 循环思考深度。
   // 模式循环（Ctrl+Shift+M）由 V4ComposerModeSwitch 单独绑定（modeOption 在彼处）。
   // 模型留空是正常的待选择状态，包括已有会话；不能因为没有已选模型隐藏重选入口。
-  // 有可选组时正常显示；无组但有「管理模型」入口时也显示，避免用户零模型入口。
-  const modelMenuVisible = modelSelectGroups.length > 0 || showManageModelsAction;
+  // 有可选组时才显示重选入口；模型留空是正常的待选择状态。
+  const modelMenuVisible = modelSelectGroups.length > 0;
   const providerSubmenuClassName = undefined;
   useToolbarShortcutBindings({
     hasAnyOption: Boolean(modelOption) || Boolean(thoughtOption),
@@ -1063,9 +1043,6 @@ function V4ComposerModelControlsImpl({
           triggerLabelPrefix={modelTriggerDisplay.providerPrefix}
           triggerLabelValue={modelTriggerDisplay.modelLabel}
           triggerLabelPrefixClassName="composer-provider-prefix hidden @2xl/composer:inline group-data-[composer-provider-compact=true]/toolbar:hidden"
-          showManageModelsAction={showManageModelsAction}
-          manageModelsLabel={manageModelsLabel}
-          onManageModels={handleOpenModelProviderSettings}
           lockReasonMessage={intl.formatMessage({
             id: "chat.toolbar.modelSwitch.lockedByRunningTask",
           })}

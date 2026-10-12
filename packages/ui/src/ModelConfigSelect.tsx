@@ -87,8 +87,10 @@ const EMPTY_MODEL_SELECT_FOOTER_ACTIONS: readonly ModelSelectFooterAction[] = []
 export const MODEL_CONFIG_SELECT_BADGE_CLASS_NAME =
   "shrink-0 rounded-full bg-surface px-1 py-px text-ui-xs font-medium leading-normal text-foreground-subtle";
 
-function shouldShowModelProviderLevel(modelGroups: readonly ModelSelectGroup[]): boolean {
-  return modelGroups.length > 0;
+export function shouldShowModelProviderLevel(modelGroups: readonly ModelSelectGroup[]): boolean {
+  // 只有一个来源时不需要 provider 层：直接平铺模型，省掉「点开标题才见模型」的多余层级。
+  // 多来源仍保留分组；调用方显式传 showProviderLevel 时以调用方值为准。
+  return modelGroups.length > 1;
 }
 
 function isFamilyConnectionGroup(
@@ -139,7 +141,8 @@ interface ModelConfigSelectProps {
   triggerLabelPrefix?: string;
   triggerLabelValue?: string;
   triggerLabelPrefixClassName?: string;
-  showManageModelsAction: boolean;
+  /** 缺省 false：聊天输入框不再提供「管理模型」入口；其它调用点按需显式传入。 */
+  showManageModelsAction?: boolean;
   lockReasonMessage: string;
   isItemLocked: (candidateValue: string) => boolean;
   onValueChange: (value: string) => void;
@@ -190,7 +193,7 @@ export const ModelConfigSelect = memo(function ModelConfigSelectComponent({
   triggerLabelPrefix,
   triggerLabelValue,
   triggerLabelPrefixClassName,
-  showManageModelsAction,
+  showManageModelsAction = false,
   lockReasonMessage,
   isItemLocked,
   onValueChange,
