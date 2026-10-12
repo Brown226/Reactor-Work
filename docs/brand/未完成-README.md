@@ -87,6 +87,8 @@ Reactor（中文名「数智堆脑」）的品牌视觉素材。本目录是**�
 | 界面内标记 | `packages/ui/src/assets/reactor-mark.png`，经 `ReactorLogo` 组件使用 | 同上（256px） |
 | 启动闪烁页标记 | `packages/web/index.html`、`packages/desktop/src/renderer/index.html` | 同上（112px，base64 内嵌，保持零网络请求） |
 | About 窗口标记 | `packages/desktop/src/main/aboutWindow.ts` | 同上（96px，data URL 文档无法解析相对路径） |
+| Z.AI 账号位 provider 图标 | `packages/ui/src/assets/provider-icons/model-provider-zai-app.png` | 同上（裁内容 bbox 后长边适配 116px、居中 128×128 透明画布），2026-10-12 起替换原 ZCode 应用图标副本 |
+| macOS 安装盘背景 | `packages/desktop/build/dmg_background.png`、`@2x` | 同上；2026-10-12 去除旧品牌字样，箭头与浅灰线稿装饰原样保留 |
 
 标记采用**位图**而非矢量：立方体素材内部几何并非简单内缩（白框贴边、立方体本体更小），纯几何重绘会与品牌稿产生可见偏差。矢量源仍是长期方向——见下方待补齐项。
 
@@ -101,12 +103,13 @@ Reactor（中文名「数智堆脑」）的品牌视觉素材。本目录是**�
 - [x] 界面内标记位图 `reactor-mark.png`（256px）
 - [x] 启动页与 About 窗口内嵌标记
 - [x] 托盘图标：沿用 `build/icon.ico` 的既有链路（electron-builder 复制为 `resources/tray_icon.ico`）
+- [x] macOS 安装盘背景 `dmg_background.png` 与 `@2x` 去除旧品牌字样（2026-10-12）
+- [x] provider 图标中的 ZCode 残留清理（2026-10-12，见 `../../已完成/已完成-ZCode图标残留清理.md`）
 
 ### 仍待补齐
 
 - [ ] **立方体标记的矢量源（SVG）**——当前用位图，放到 256px 以上或做动画时会受限
 - [ ] **字标「Reactor + 数智堆脑」**未接入产品：`logo-cube.jpg` 只有位图，且界面文案已改用纯文本「Reactor」，尚无字标组件
-- [ ] macOS 安装盘背景 `dmg_background.png` 与 `@2x` 仍为 ZCode 版本（含旧品牌字样）
 - [ ] 托盘图标在小尺寸下为带网格的立方体，16px 可辨识但偏细节；如需更锐利可另出一版简化图标
 - [ ] 立方体标记的单色/反白版本（用于深色底、单色打印等场景）
 

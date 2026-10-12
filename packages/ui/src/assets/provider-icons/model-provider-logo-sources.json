@@ -38,9 +38,9 @@
         "account:zai-team-coding-plan",
         "account:zai-offpeak-idle-plan"
       ],
-      "sourceUrl": "repository:packages/desktop/build/icons/128x128.png",
-      "sourceOwner": "Z.AI",
-      "normalization": "Byte-for-byte copy of the existing 128x128 ZCode application PNG. No extra Dock padding, redraw, inversion or added outline."
+      "sourceUrl": "repository:packages/ui/src/assets/reactor-mark.png",
+      "sourceOwner": "Reactor",
+      "normalization": "Replaced on 2026-10-12 with the Reactor brand cube (was the ZCode application glyph). Cropped to the glyph bbox of reactor-mark.png, long edge fitted to 116px and centered on a 128x128 transparent canvas; transparent background replaces the former opaque Dock tile so light and dark themes both stay clean."
     },
     {
       "brand": "BigModel",
