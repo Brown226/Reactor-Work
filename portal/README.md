@@ -5,7 +5,7 @@
 | 入口 | 内容 |
 | --- | --- |
 | [`index.html`](index.html) | **官网首页**：Hero + 应用窗口演示、核心能力、本仓特有、三步部署 |
-| [`changelog.html`](changelog.html) | **更新日志**：自 v3.14.0 起维护 |
+| [`changelog.html`](changelog.html) | **更新日志**：自 v1.0.0 起维护 |
 | [`manual/index.html`](manual/index.html) | **产品说明书**：6 组 34 页，依据当前检出的源码整理 |
 
 ## 结构
@@ -45,7 +45,7 @@ docker run --rm -p 8080:80 reactor-portal:v1.0.0
 # 浏览器打开 http://localhost:8080/（官网）与 /manual/（说明书）
 
 # 4. 发布到内网
-docker save reactor-portal:v1.0.0 -o reactor-portal-v3.14.0.tar
+docker save reactor-portal:v1.0.0 -o reactor-portal-v1.0.0.tar
 # 导入内网镜像仓库或目标机器 docker load 后，在服务端 compose 里加一个服务：
 #
 #   portal:

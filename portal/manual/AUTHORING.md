@@ -46,7 +46,7 @@
 | 章节 | 页面 slug |
 | --- | --- |
 | 开始使用 | `index`、`welcome`、`install`、`model-access`、`feedback` |
-| 核心功能 | `agent`、`goal`、`memory`、`repo-wiki`、`task-management`、`edit-history`、`automations`、`idle-time-tasks`、`remote-development`、`remote-control`、`subagents`、`browser-use` |
+| 核心功能 | `agent`、`goal`、`memory`、`repo-wiki`、`task-management`、`edit-history`、`automations`、`idle-time-tasks`、`remote-development`、`subagents`、`browser-use` |
 | 扩展体系 | `plugin`、`skill`、`mcp`、`command`、`hooks` |
 | 本仓特有功能 | `interface-modes`、`review-panel`、`office-suite`、`model-governance`、`data-contracts` |
 | 内网服务端 | `server-overview`、`server-delivery`、`server-usage-policy` |

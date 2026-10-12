@@ -37,8 +37,7 @@ export const NAV = [
       { slug: "edit-history", title: "编辑历史对话", related: ["task-management"] },
       { slug: "automations", title: "定时任务", related: ["idle-time-tasks", "goal"] },
       { slug: "idle-time-tasks", title: "闲时任务", related: ["automations"] },
-      { slug: "remote-development", title: "远程开发", related: ["remote-control", "server-overview"] },
-      { slug: "remote-control", title: "手机远控", related: ["remote-development", "feedback"] },
+      { slug: "remote-development", title: "远程开发", related: ["server-overview", "feedback"] },
       { slug: "subagents", title: "子智能体", related: ["agent", "skill"] },
       { slug: "browser-use", title: "浏览器自动化", related: ["agent", "review-panel"] },
     ],
@@ -282,48 +281,27 @@ function findGroupOf(slug) {
   return NAV.find((group) => group.items.some((candidate) => candidate.slug === slug)) ?? null;
 }
 
-/** 顶部分章导航：水平 Tab + 悬停下拉面板（纯 CSS），当前章高亮。 */
-function renderGroupNav(currentSlug) {
-  const tabs = NAV.map((group, groupIndex) => {
-    const num = String(groupIndex + 1).padStart(2, "0");
-    const isActive = group.items.some((item) => item.slug === currentSlug);
-    const links = group.items
-      .filter((item) => !item.isIndex)
-      .map((item) => {
-        const current = item.slug === currentSlug ? ' class="is-current"' : "";
-        return `<a href="${item.slug}.html"${current}>${escapeHtml(item.title)}</a>`;
-      })
-      .join("\n");
-    return `<div class="group-tab${isActive ? " is-active" : ""}">
-<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">${num}</span>${escapeHtml(group.group)}</button>
-<div class="group-panel">
-${links}
-</div>
-</div>`;
-  }).join("\n");
-
-  return `<nav class="group-nav" aria-label="章节导航">
-${tabs}
-</nav>`;
-}
-
-/** 窄屏抽屉：全部分组与页面平铺，由 manual.js 控制开合与当前页定位。 */
-function renderMobileNav(currentSlug) {
+/** 左侧目录栏：分组标题 + 页面列表，当前页高亮。桌面常显，窄屏由 manual.js 变抽屉。
+    id=manual-nav 供 assets/manual.js 读取，类名契约不可改。 */
+function renderSidebar(currentSlug) {
   const sections = NAV.map((group) => {
     const links = group.items
       .map((item) => {
-        // 标记当前页，抽屉定位靠它；否则翻到长列表末尾时看不出自己停在哪。
+        // 标记当前页：抽屉定位与高亮都靠它，否则翻到长列表末尾时看不出自己停在哪。
         const current = item.slug === currentSlug ? ' class="is-current"' : "";
         return `<a href="${item.slug}.html"${current}>${escapeHtml(item.title)}</a>`;
       })
       .join("\n");
-    return `<section class="m-group"><h3>${escapeHtml(group.group)}</h3>
+    return `<section class="side-group">
+<h3>${escapeHtml(group.group)}</h3>
 ${links}
 </section>`;
   }).join("\n");
-  return `<div class="mobile-nav" id="manual-nav">
+  return `<aside class="docs-sidebar" id="manual-nav" aria-label="说明书目录">
+<nav class="side-scroll">
 ${sections}
-</div>`;
+</nav>
+</aside>`;
 }
 
 /** 从渲染后的正文提取 h2/h3，生成右侧「本页目录」。 */
@@ -395,10 +373,9 @@ function renderPageShell({ slug, title, body, isIndex, lastVerified, toc, crumb 
     <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="manual-nav">目录</button>
     <a class="top-home" href="../index.html">官网 ↗</a>
   </div>
-${renderGroupNav(slug)}
 </header>
-${renderMobileNav(slug)}
 <div class="docs-layout">
+  ${renderSidebar(slug)}
   <main class="docs-main">
     ${crumb ? `<div class="doc-crumb">${escapeHtml(crumb)}</div>` : ""}
     <article class="docs-article">

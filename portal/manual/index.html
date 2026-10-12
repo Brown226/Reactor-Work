@@ -14,81 +14,20 @@
     <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="manual-nav">目录</button>
     <a class="top-home" href="../index.html">官网 ↗</a>
   </div>
-<nav class="group-nav" aria-label="章节导航">
-<div class="group-tab is-active">
-<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">01</span>开始使用</button>
-<div class="group-panel">
-<a href="welcome.html">概述与核心能力</a>
-<a href="install.html">安装与部署</a>
-<a href="model-access.html">接入模型</a>
-<a href="feedback.html">反馈与支持</a>
-</div>
-</div>
-<div class="group-tab">
-<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">02</span>核心功能</button>
-<div class="group-panel">
-<a href="agent.html">Reactor Agent</a>
-<a href="goal.html">目标模式</a>
-<a href="memory.html">项目记忆</a>
-<a href="repo-wiki.html">仓库百科</a>
-<a href="task-management.html">任务与文件管理</a>
-<a href="edit-history.html">编辑历史对话</a>
-<a href="automations.html">定时任务</a>
-<a href="idle-time-tasks.html">闲时任务</a>
-<a href="remote-development.html">远程开发</a>
-<a href="remote-control.html">手机远控</a>
-<a href="subagents.html">子智能体</a>
-<a href="browser-use.html">浏览器自动化</a>
-</div>
-</div>
-<div class="group-tab">
-<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">03</span>扩展体系</button>
-<div class="group-panel">
-<a href="plugin.html">插件</a>
-<a href="skill.html">技能</a>
-<a href="mcp.html">MCP</a>
-<a href="command.html">命令</a>
-<a href="hooks.html">Hooks</a>
-</div>
-</div>
-<div class="group-tab">
-<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">04</span>本仓特有功能</button>
-<div class="group-panel">
-<a href="interface-modes.html">界面模式（编程 / 办公 / 审查）</a>
-<a href="review-panel.html">文件审查板块</a>
-<a href="office-suite.html">内网办公四件套</a>
-<a href="model-governance.html">模型治理与开发者模式</a>
-<a href="data-contracts.html">数据目录与背景主题契约</a>
-</div>
-</div>
-<div class="group-tab">
-<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">05</span>内网服务端</button>
-<div class="group-panel">
-<a href="server-overview.html">服务端总览与接线</a>
-<a href="server-delivery.html">技能与 Agent 下发</a>
-<a href="server-usage-policy.html">用量上报与策略下发</a>
-</div>
-</div>
-<div class="group-tab">
-<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">06</span>帮助</button>
-<div class="group-panel">
-<a href="keyboard-shortcuts.html">快捷键表</a>
-<a href="qa.html">常见问题</a>
-<a href="linux-wsl.html">Linux / WSL 排查</a>
-<a href="about.html">关于本说明书</a>
-</div>
-</div>
-</nav>
 </header>
-<div class="mobile-nav" id="manual-nav">
-<section class="m-group"><h3>开始使用</h3>
+<div class="docs-layout">
+  <aside class="docs-sidebar" id="manual-nav" aria-label="说明书目录">
+<nav class="side-scroll">
+<section class="side-group">
+<h3>开始使用</h3>
 <a href="index.html" class="is-current">说明书首页</a>
 <a href="welcome.html">概述与核心能力</a>
 <a href="install.html">安装与部署</a>
 <a href="model-access.html">接入模型</a>
 <a href="feedback.html">反馈与支持</a>
 </section>
-<section class="m-group"><h3>核心功能</h3>
+<section class="side-group">
+<h3>核心功能</h3>
 <a href="agent.html">Reactor Agent</a>
 <a href="goal.html">目标模式</a>
 <a href="memory.html">项目记忆</a>
@@ -98,37 +37,40 @@
 <a href="automations.html">定时任务</a>
 <a href="idle-time-tasks.html">闲时任务</a>
 <a href="remote-development.html">远程开发</a>
-<a href="remote-control.html">手机远控</a>
 <a href="subagents.html">子智能体</a>
 <a href="browser-use.html">浏览器自动化</a>
 </section>
-<section class="m-group"><h3>扩展体系</h3>
+<section class="side-group">
+<h3>扩展体系</h3>
 <a href="plugin.html">插件</a>
 <a href="skill.html">技能</a>
 <a href="mcp.html">MCP</a>
 <a href="command.html">命令</a>
 <a href="hooks.html">Hooks</a>
 </section>
-<section class="m-group"><h3>本仓特有功能</h3>
+<section class="side-group">
+<h3>本仓特有功能</h3>
 <a href="interface-modes.html">界面模式（编程 / 办公 / 审查）</a>
 <a href="review-panel.html">文件审查板块</a>
 <a href="office-suite.html">内网办公四件套</a>
 <a href="model-governance.html">模型治理与开发者模式</a>
 <a href="data-contracts.html">数据目录与背景主题契约</a>
 </section>
-<section class="m-group"><h3>内网服务端</h3>
+<section class="side-group">
+<h3>内网服务端</h3>
 <a href="server-overview.html">服务端总览与接线</a>
 <a href="server-delivery.html">技能与 Agent 下发</a>
 <a href="server-usage-policy.html">用量上报与策略下发</a>
 </section>
-<section class="m-group"><h3>帮助</h3>
+<section class="side-group">
+<h3>帮助</h3>
 <a href="keyboard-shortcuts.html">快捷键表</a>
 <a href="qa.html">常见问题</a>
 <a href="linux-wsl.html">Linux / WSL 排查</a>
 <a href="about.html">关于本说明书</a>
 </section>
-</div>
-<div class="docs-layout">
+</nav>
+</aside>
   <main class="docs-main">
     
     <article class="docs-article">
@@ -140,7 +82,7 @@
 <div class="table-wrap"><table><thead><tr><th>章节</th><th>包含内容</th></tr></thead><tbody>
 <tr><td><a href="welcome.html">开始使用</a></td><td><a href="welcome.html">概述与核心能力</a> · <a href="install.html">安装与部署</a> · <a href="model-access.html">接入模型</a> · <a href="feedback.html">反馈与支持</a></td></tr>
 <tr><td>核心功能</td><td><a href="agent.html">Reactor Agent</a> · <a href="goal.html">目标模式</a> · <a href="memory.html">项目记忆</a> · <a href="repo-wiki.html">仓库百科</a> · <a href="task-management.html">任务与文件管理</a> · <a href="edit-history.html">编辑历史对话</a></td></tr>
-<tr><td>核心功能（续）</td><td><a href="automations.html">定时任务</a> · <a href="idle-time-tasks.html">闲时任务</a> · <a href="remote-development.html">远程开发</a> · <a href="remote-control.html">手机远控</a> · <a href="subagents.html">子智能体</a> · <a href="browser-use.html">浏览器自动化</a></td></tr>
+<tr><td>核心功能（续）</td><td><a href="automations.html">定时任务</a> · <a href="idle-time-tasks.html">闲时任务</a> · <a href="remote-development.html">远程开发</a> · <a href="subagents.html">子智能体</a> · <a href="browser-use.html">浏览器自动化</a></td></tr>
 <tr><td>扩展体系</td><td><a href="plugin.html">插件</a> · <a href="skill.html">技能</a> · <a href="mcp.html">MCP</a> · <a href="command.html">命令</a> · <a href="hooks.html">Hooks</a></td></tr>
 <tr><td>本仓特有功能</td><td><a href="interface-modes.html">界面模式</a> · <a href="review-panel.html">文件审查板块</a> · <a href="office-suite.html">内网办公四件套</a> · <a href="model-governance.html">模型治理与开发者模式</a> · <a href="data-contracts.html">数据目录与背景主题契约</a></td></tr>
 <tr><td>内网服务端</td><td><a href="server-overview.html">服务端总览与接线</a> · <a href="server-delivery.html">技能与 Agent 下发</a> · <a href="server-usage-policy.html">用量上报与策略下发</a></td></tr>

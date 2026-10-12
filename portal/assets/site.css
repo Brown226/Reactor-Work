@@ -18,7 +18,7 @@
   --accent-soft: rgba(91, 141, 247, 0.14);
   --ok: #34c759;
   --warn: #f59e0b;
-  --radius: 14px;
+  --radius: 12px;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --sans: "Microsoft YaHei UI", "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC",
     system-ui, sans-serif;
@@ -32,11 +32,11 @@ body {
   font-family: var(--sans);
   background: var(--bg);
   color: var(--ink);
-  line-height: 1.7;
+  line-height: 1.75;
   -webkit-font-smoothing: antialiased;
 }
 
-.container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -104,7 +104,7 @@ a:hover { text-decoration: underline; }
   letter-spacing: 1px;
   color: var(--accent);
   background: var(--accent-soft);
-  border: 1px solid rgba(76, 141, 255, 0.25);
+  border: 1px solid rgba(91, 141, 247, 0.25);
   border-radius: 999px;
   padding: 5px 14px;
   margin-bottom: 22px;
@@ -144,7 +144,7 @@ a:hover { text-decoration: underline; }
   content: "";
   position: absolute;
   inset: -8% -12%;
-  background: radial-gradient(46% 52% at 50% 42%, rgba(76, 141, 255, 0.16), transparent 70%);
+  background: radial-gradient(46% 52% at 50% 42%, rgba(91, 141, 247, 0.16), transparent 70%);
   pointer-events: none;
 }
 .app-window {
@@ -261,7 +261,7 @@ a:hover { text-decoration: underline; }
   white-space: nowrap;
 }
 .chip.mode { color: var(--warn); border-color: rgba(245, 158, 11, 0.35); }
-.chip.model { color: var(--accent); border-color: rgba(76, 141, 255, 0.35); }
+.chip.model { color: var(--accent); border-color: rgba(91, 141, 247, 0.35); }
 .send {
   margin-left: auto;
   background: var(--ink);
@@ -337,7 +337,7 @@ a:hover { text-decoration: underline; }
   color: var(--ink);
   transition: border-color 0.15s ease, transform 0.15s ease;
 }
-.native-card:hover { border-color: rgba(76, 141, 255, 0.45); text-decoration: none; transform: translateY(-2px); }
+.native-card:hover { border-color: rgba(91, 141, 247, 0.45); text-decoration: none; transform: translateY(-2px); }
 .native-card .tag {
   display: inline-block;
   font-size: 11.5px;
@@ -350,55 +350,6 @@ a:hover { text-decoration: underline; }
 .native-card h3 { font-size: 16px; margin-bottom: 6px; }
 .native-card p { color: var(--ink-2); font-size: 13.5px; }
 .native-card .go { display: inline-block; margin-top: 12px; font-size: 13px; color: var(--accent); }
-
-/* ===== 部署 ===== */
-.deploy-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: start; }
-.step-list { display: flex; flex-direction: column; gap: 22px; }
-.step { display: flex; gap: 16px; }
-.step-no {
-  flex: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 1px solid var(--line-strong);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--accent);
-}
-.step h3 { font-size: 15.5px; }
-.step p { color: var(--ink-2); font-size: 14px; margin-top: 4px; }
-.code-block {
-  background: #111113;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.code-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink-3);
-  font-size: 12px;
-  font-family: var(--mono);
-}
-.code-block pre {
-  padding: 18px 20px;
-  font-family: var(--mono);
-  font-size: 13px;
-  line-height: 1.9;
-  color: #d8d8dc;
-  overflow-x: auto;
-}
-.code-block .c { color: var(--ink-3); }
-.code-block .cmd { color: #eaeaf0; }
-.code-block .flag { color: var(--accent); }
-.deploy-note { margin-top: 14px; font-size: 13px; color: var(--ink-3); }
-.deploy-note b { color: var(--ink-2); }
 
 /* ===== 页脚 ===== */
 .footer { border-top: 1px solid var(--line); padding: 40px 0 48px; }
@@ -413,7 +364,6 @@ a:hover { text-decoration: underline; }
   .win-body { grid-template-columns: 1fr; }
   .win-side, .win-right { display: none; }
   .feature-grid, .native-grid { grid-template-columns: 1fr 1fr; }
-  .deploy-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 620px) {
   .topbar-nav { gap: 16px; }
@@ -484,3 +434,59 @@ a:hover { text-decoration: underline; }
 .log-entry li a { color: var(--accent); }
 .log-empty-note { margin-top: 28px; font-size: 13px; color: var(--ink-3); }
 .log-empty-note code { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
+
+/* ===== 首页氛围背景（仅首页 body.home 生效，更新日志页不受影响） =====
+   参考 DeepSeek Harness 首屏：深蓝黑底 + 一道自右上斜射左下的柔和光束 + 左下副辉光。
+   光束方向由 linear-gradient(135deg) 控制：等色线沿「右上—左下」延伸。 */
+body.home {
+  background-color: #0b1020;
+  background-image:
+    /* 左下副辉光 */
+    radial-gradient(560px 460px at 12% 88%, rgba(63, 116, 232, 0.28), transparent 62%),
+    /* 右下角微弱冷光，平衡画面 */
+    radial-gradient(680px 520px at 92% 78%, rgba(91, 141, 247, 0.1), transparent 68%),
+    /* 主光束：右上 -> 左下，中心最亮 */
+    linear-gradient(
+      135deg,
+      #0a0f1e 0%,
+      #0d1528 30%,
+      #16294a 44%,
+      #27436f 50%,
+      #16294a 56%,
+      #0d1528 70%,
+      #0a0f1e 100%
+    ),
+    /* 底色 */
+    linear-gradient(#0a0f1e, #0a0f1e);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+/* 光束核心的柔白高光，叠在光束中段，形成参考图里的「云状」亮带 */
+body.home::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    transparent 42%,
+    rgba(196, 216, 255, 0.12) 49%,
+    rgba(220, 233, 255, 0.18) 50.5%,
+    rgba(196, 216, 255, 0.12) 52%,
+    transparent 60%
+  );
+}
+
+/* 保持内容层在氛围背景之上 */
+body.home .topbar,
+body.home main,
+body.home .footer { position: relative; z-index: 1; }
+
+/* 顶栏改为半透明深色，透出流光背景 */
+body.home .topbar { background: rgba(11, 16, 32, 0.72); }
+
+/* 首页底部加一层压暗，避免页脚区域整块高光显得发灰 */
+body.home .footer { background: linear-gradient(transparent, rgba(10, 15, 30, 0.72)); }

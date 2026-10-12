@@ -1,36 +1,49 @@
-// 说明书站点交互：窄屏目录抽屉开合与当前页定位、右侧「本页目录」滚动高亮。无外部请求。
+// 说明书站点交互：左侧目录栏（桌面常显 / 窄屏抽屉）开合与当前页定位、
+// 右侧「本页目录」滚动高亮。无外部请求。
 (function () {
   "use strict";
 
   var toggle = document.querySelector(".nav-toggle");
   var drawer = document.getElementById("manual-nav");
+  // #manual-nav 是外层容器；实际滚动发生在其内的 .side-scroll，窄屏回退到容器自身。
+  var scroller = drawer ? drawer.querySelector(".side-scroll") || drawer : null;
 
-  if (toggle && drawer) {
-    // 抽屉内容 33 项远超一屏，跨页跳转会把 scrollTop 重置为 0，
-    // 于是翻到列表末尾的页面时抽屉停在第一组，看着像「自动跳回第一个」。
-    // 打开时把当前页滚到可视区中部，位置由 build.mjs 注入的 a.is-current 决定。
+  if (drawer && scroller) {
+    // 目录含 34 项，远超一屏，跨页跳转会把 scrollTop 重置为 0，
+    // 于是翻到列表末尾的页面时目录停在第一组，看着像「自动跳回第一个」。
+    // 把当前页滚到可视区中部，位置由 build.mjs 注入的 a.is-current 决定。
     var revealCurrent = function () {
       var current = drawer.querySelector("a.is-current");
       if (!current) return;
-      var max = drawer.scrollHeight - drawer.clientHeight;
-      var target = current.offsetTop - drawer.clientHeight / 2 + current.offsetHeight / 2;
-      drawer.scrollTop = Math.max(0, Math.min(target, max));
+      var view = scroller.clientHeight;
+      if (!view) return;
+      var max = scroller.scrollHeight - view;
+      var rect = current.getBoundingClientRect();
+      var viewRect = scroller.getBoundingClientRect();
+      var relTop = rect.top - viewRect.top + scroller.scrollTop;
+      var target = relTop - view / 2 + rect.height / 2;
+      scroller.scrollTop = Math.max(0, Math.min(target, max));
     };
 
-    toggle.addEventListener("click", function () {
-      var open = drawer.classList.toggle("is-open");
-      toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      // display 从 none 变 block 后才有 clientHeight，定位必须等一帧。
-      if (open) requestAnimationFrame(revealCurrent);
-    });
+    if (toggle) {
+      toggle.addEventListener("click", function () {
+        var open = drawer.classList.toggle("is-open");
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        // 窄屏下 display 从 none 变 block 后才有尺寸，定位必须等一帧。
+        if (open) requestAnimationFrame(revealCurrent);
+      });
+    }
 
-    // 窄屏下点抽屉里的链接跳转后自动收起，避免遮住正文。
+    // 窄屏下点目录里的链接跳转后自动收起，避免遮住正文。
     drawer.addEventListener("click", function (event) {
       if (event.target && event.target.tagName === "A") {
         drawer.classList.remove("is-open");
-        toggle.setAttribute("aria-expanded", "false");
+        if (toggle) toggle.setAttribute("aria-expanded", "false");
       }
     });
+
+    // 桌面：目录常显，加载时同样把当前页定位到中部（长目录才看得见自己停在哪）。
+    requestAnimationFrame(revealCurrent);
   }
 
   // 右侧「本页目录」：滚动时把视口内最近的标题高亮出来。
