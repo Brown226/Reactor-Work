@@ -35,3 +35,12 @@ packages/server/docker/seed/seed.ldif
 # ---- Python 字节码 ----
 __pycache__/
 *.pyc
+
+# ---- 迁移前备份（含真实数据/配置快照，仅留本地；重建见命令注释）----
+# 例：docker exec reactor-desktop-pg pg_dump -U reactor -d reactor -t quota_alert \
+#       -t desktop_policy --data-only --column-inserts > .backup/pre-<change>-<ts>.sql
+.backup/
+
+# ---- 管理台真机走查截图（含登录态、真实账号/部门与额度数字，仅留本地）----
+# 由 quota-admin-walkthrough.py 落盘，验收证据以文档文字记录为准。
+packages/server/shots/

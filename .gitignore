@@ -91,10 +91,16 @@ packages/desktop/.e2e-network-capture/
 # DWG sidecar .NET 构建缓存（源码在 tools/dwg-sidecar/*.cs）
 **/dwg-sidecar/bin/
 **/dwg-sidecar/obj/
-# manual 站点构建输出（源码 docs/manual/pages/*.md，产物由 build.mjs 生成）
-docs/manual/*.html
-!docs/manual/index.html
-docs/manual/check.mjs
-docs/manual/smoke-render.mjs
-docs/manual/verify-html.mjs
-docs/manual/.pages-backup/
+# 产品站点（官网 docs/site/ + 说明书 portal/manual/）构建输出与本地工具
+# 说明书源码 pages/*.md 入库；HTML 由 build.mjs 生成，不入库（index.html 除外）
+portal/manual/*.html
+!portal/manual/index.html
+portal/manual/check.mjs
+portal/manual/smoke-render.mjs
+portal/manual/verify-html.mjs
+# 评审用预览截图（临时产物，不进库）
+portal/manual/_preview-*.png
+
+# 审查板块联调用的真实业务数据（含真实项目编号的 PDF/DWG/DOCX/XLSX/PPTX）
+# 与提取产物、一次性提取脚本；已在 origin/main 历史中，此处阻止再次纳入索引。
+docs/审查板块原始数据/
