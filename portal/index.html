@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reactor（数智堆脑）· 内网 Agentic Development Environment</title>
+<meta name="description" content="Reactor（数智堆脑）是面向内网环境部署的 Agentic Development Environment：长任务执行、多端跟进、企业模型治理，依据本仓源码整理。" />
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" href="#top">Reactor<span class="brand-sub">数智堆脑</span></a>
+    <nav class="topbar-nav">
+      <a href="#features">核心能力</a>
+      <a href="#native">本仓特有</a>
+      <a href="#deploy">部署</a>
+      <a href="changelog.html">更新日志</a>
+      <a class="nav-cta" href="manual/index.html">产品说明书</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <div class="announce-wrap">
+    <span class="announce"><span class="dot"></span>v3.14 · <b>界面模式、文件审查板块、内网服务端</b>已合入，详见产品说明书</span>
+  </div>
+
+  <section class="hero container">
+    <span class="hero-eyebrow">内网隔离部署 · Agentic Development Environment</span>
+    <h1>长任务，一站到底</h1>
+    <p class="sub">Reactor 把大模型的长上下文与长程任务能力，落到桌面端、Web 端与终端里可连续推进的开发工作流：目标、文件、终端结果、浏览器上下文与 Git 状态始终在同一个任务里。</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="manual/index.html">查看产品说明书</a>
+      <a class="btn btn-ghost" href="#deploy">三步部署 ↓</a>
+    </div>
+
+    <div class="hero-stage">
+      <div class="app-window" aria-label="Reactor 桌面端界面示意（静态演示）">
+        <div class="win-bar">
+          <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
+          <span class="win-title">Reactor — reactor-work</span>
+        </div>
+        <div class="win-body">
+          <aside class="win-side">
+            <div class="side-actions">
+              <span class="pill strong">新建任务</span>
+              <span class="pill">打开工作区</span>
+            </div>
+            <div class="side-label">任务</div>
+            <div class="task-item active"><span class="state">●</span>给登录接口补单测</div>
+            <div class="task-item"><span class="state">●</span>升级构建脚本</div>
+            <div class="task-item">整理接口文档</div>
+          </aside>
+          <div class="win-main">
+            <div class="chat-user">给登录接口补上单元测试，跑通后总结改动。</div>
+            <div class="chat-step"><span class="tick">✓</span>读取 <code>auth.ts</code> 与现有用例</div>
+            <div class="chat-step"><span class="tick">✓</span>编辑 <code>auth.test.ts</code> <span class="diff-add">+86</span> <span class="diff-del">−0</span></div>
+            <div class="chat-step"><span class="tick">✓</span>终端 <code>pnpm test</code> · 12 个用例全部通过</div>
+            <div class="file-tabs">
+              <span class="tab active">auth.ts</span>
+              <span class="tab">auth.test.ts</span>
+              <span class="tab">session.ts</span>
+            </div>
+            <div class="diff-summary">3 个文件已更改 <span class="n-add">+214</span> <span class="n-del">−6</span><span class="undo">撤销</span></div>
+            <div class="composer">
+              <span class="chip">＋ 添加上下文</span>
+              <span class="chip mode">变更前确认</span>
+              <span class="chip model">企业网关 · GLM</span>
+              <span class="send">发送</span>
+            </div>
+          </div>
+          <aside class="win-right">
+            <div class="right-label">GIT</div>
+            <div class="branch-chip">feat/login-tests</div>
+            <div class="branch-chip">Changes +214 −6</div>
+            <div class="commit-btn">Commit</div>
+            <div class="right-label">目标</div>
+            <div class="goal-box">
+              <div>登录接口单测覆盖</div>
+              <div class="goal-bar"><i></i></div>
+              <div class="goal-num">3 / 4 步 · 进行中</div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-head">
+        <div class="kicker">核心能力</div>
+        <h2>在同一个任务里，从规划走到验证收口</h2>
+        <p>Reactor 围绕 Agent 工作流组织任务、权限、上下文与提交流，模型输出直接落到实际工程操作上。</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          </div>
+          <h3>长任务执行</h3>
+          <p>需求理解、计划拆解、代码修改、验证与审查在同一个任务里完成；目标模式提供目标管理、完成校验与状态恢复。</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="13" height="10" rx="2"/><rect x="17" y="9" width="4.5" height="10" rx="1.5"/><path d="M6 19h6"/></svg>
+          </div>
+          <h3>多端跟进</h3>
+          <p>桌面端、Web 端与终端共用同一套会话运行时；手机远控接入桌面已有会话，长任务执行中随时查看进度、补充指令。</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.4-3 8.4-7 10-4-1.6-7-5.6-7-10V6z"/><path d="M9.5 12l1.8 1.8 3.5-3.6"/></svg>
+          </div>
+          <h3>企业模型治理</h3>
+          <p>企业登录下，可选模型由内网服务端目录决定；模型调用统一走内网网关，可按人归属，本地模型配置由策略收敛。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="native">
+    <div class="container">
+      <div class="section-head">
+        <div class="kicker">本仓特有</div>
+        <h2>为内网研发场景补齐的六块能力</h2>
+        <p>以下能力为本仓新增，单独成章；点击卡片直达离线说明书对应页面。</p>
+      </div>
+      <div class="native-grid">
+        <a class="native-card" href="manual/interface-modes.html">
+          <span class="tag">界面</span>
+          <h3>界面模式三档</h3>
+          <p>编程 / 办公 / 审查三档界面收敛策略，按任务形态切换工作台。</p>
+          <span class="go">阅读说明 →</span>
+        </a>
+        <a class="native-card" href="manual/review-panel.html">
+          <span class="tag">审查</span>
+          <h3>文件审查板块</h3>
+          <p>审查类型映射到 Agent / Skill / 确定性工具，问题点击定位原文高亮。</p>
+          <span class="go">阅读说明 →</span>
+        </a>
+        <a class="native-card" href="manual/office-suite.html">
+          <span class="tag">办公</span>
+          <h3>内网办公四件套</h3>
+          <p>文档 / 表格 / 演示 / PDF 四个技能包随包分发，离线可用。</p>
+          <span class="go">阅读说明 →</span>
+        </a>
+        <a class="native-card" href="manual/automations.html">
+          <span class="tag">自动化</span>
+          <h3>定时任务与闲时任务</h3>
+          <p>把周期性工作交给队列，后台照常推进，结果回到任务列表。</p>
+          <span class="go">阅读说明 →</span>
+        </a>
+        <a class="native-card" href="manual/remote-control.html">
+          <span class="tag">远控</span>
+          <h3>手机远控</h3>
+          <p>手机扫码接入桌面已有会话，复用同一运行时，不另起 Agent。</p>
+          <span class="go">阅读说明 →</span>
+        </a>
+        <a class="native-card" href="manual/server-overview.html">
+          <span class="tag">服务端</span>
+          <h3>内网服务端</h3>
+          <p>身份底座 + 模型网关 + 管理台 API，技能 / Agent / 策略统一下发。</p>
+          <span class="go">阅读说明 →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="deploy">
+    <div class="container">
+      <div class="section-head">
+        <div class="kicker">部署</div>
+        <h2>三步，把 Reactor 跑起来</h2>
+        <p>所有命令从仓库根目录执行；运行时版本以仓库的 <b>mise.toml</b> 为准。</p>
+      </div>
+      <div class="deploy-grid">
+        <div class="step-list">
+          <div class="step">
+            <div class="step-no">1</div>
+            <div>
+              <h3>准备环境</h3>
+              <p>克隆仓库，安装 Node.js 24 与 pnpm 10（版本以仓库声明为准）。</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-no">2</div>
+            <div>
+              <h3>初始化</h3>
+              <p>安装 workspace 依赖并准备桌面本地运行资源。</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-no">3</div>
+            <div>
+              <h3>启动</h3>
+              <p>桌面端开发用 dev:desktop；Web 端用 dev:web；正式分发用 bundle 打包。</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="code-block">
+            <div class="code-head">terminal — 仓库根目录</div>
+            <pre><span class="c"># 初始化：依赖 + 桌面运行资源</span>
+<span class="cmd">pnpm bootstrap</span>
+
+<span class="c"># 桌面端（生产服务配置）</span>
+<span class="cmd">pnpm dev:desktop</span>
+
+<span class="c"># 打包桌面端安装产物</span>
+<span class="cmd">pnpm bundle:desktop</span> <span class="flag">-- --os win --arch x64</span></pre>
+          </div>
+          <p class="deploy-note"><b>内网环境</b>：构建期依赖下载须指向内网镜像（<code>INTRANET_MACHINE_HOST</code> / <code>ZCODE_DEPS_BASE_URL</code>，见仓库 <code>.env.example</code>）；未配置时构建会直接报错，不会静默回落公网。完整说明见<a href="manual/install.html">安装与部署</a>。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span class="brand">Reactor<span class="brand-sub">数智堆脑</span></span>
+    <span>v3.14.0 · 依据当前检出的源码整理</span>
+    <div class="footer-links">
+      <a href="changelog.html">更新日志</a>
+      <a href="manual/index.html">产品说明书</a>
+      <a href="manual/feedback.html">反馈与支持</a>
+      <a href="manual/about.html">关于本说明书</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

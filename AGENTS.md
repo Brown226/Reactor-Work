@@ -32,6 +32,7 @@
 - `packages/services`：业务服务；`packages/rpc`：RPC 框架。
 - `packages/shared`：共享协议与类型；`packages/client`：Agent 客户端 SDK。
 - `apps/zcode-cli`：Agent CLI 与运行时。
+- `portal/`：产品门户（官网 + 说明书离线站点），独立 Docker 镜像部署到内网，不参与本仓构建门禁。
 - `CONTEXT.md`：插件商店领域词汇；修改相关 UI 前阅读。
 - `DESIGN.md`：UI 设计规范；修改 UI 前阅读。
 
@@ -42,9 +43,23 @@
 - 有行为改动时先补充对应测试；交互改动需要 E2E 场景。检查测试与实现是否一致，并实际执行可用的验证。未执行或环境受限时如实说明。
 - 修复 bug 时用中文注释说明原因和修复依据。发现设计缺陷时先与用户对齐，不不断增加兜底分支。
 - 涉及状态、时序、远端或异步同步的方案，用图展示所有者及事件顺序。
-- 必须执行 `pnpm typecheck` 和 `pnpm lint`，报告真实结果，不将已有失败写成通过。
+- 必须执行 `pnpm typecheck` 和 `pnpm lint`，报告真实结果，不将已有失败写成通过。检查范围按时效分级（见下），但报告口径不变：跑了什么、没跑什么，如实写。
 - 使用异步文件和网络 IO；跨包导入使用公开入口，遵守现有路径别名。
 - 禁止 UI 直接调用 Repo、Service 引用 Runtime 具体实现、跨域导入实现细节及循环依赖。
+
+### 验证成本分级（避免重复全量门禁）
+
+全仓 `pnpm typecheck` 是 `tsc -b` 全链条 10 包构建，一次一两分钟，是最慢的门禁；每次小改动都全量跑属于重复耗时操作。按改动类型分级：
+
+| 改动类型 | 验证口径 |
+| --- | --- |
+| 文案、样式、注释、单文件小改 | 只对改动文件跑 `pnpm exec oxlint <files>`（毫秒级）+ 对受影响包链跑增量 `tsc -b`；交付时注明验证范围 |
+| 行为改动、跨包改动、协议/状态改动 | 全量 `pnpm typecheck` + `pnpm lint` + `pnpm architecture:check --changed` |
+| 提交、推送前 | 一次性补齐完整门禁（全量 typecheck + lint + arch + `oxfmt --check`） |
+
+- `pnpm lint`（oxlint）全仓仅约 1 秒，不是瓶颈，可随跑；慢的是 typecheck，别反复跑。
+- 确定性高的布局/文案改动不做静态复现或运行时验证；无法到达的链路（如需登录才能进入的界面）如实注明，不为此强行起 dev 进程。
+- `pnpm dev:desktop` 的 `pre-dev` 每次启动都删除 `out/` 全量重建 main/host/preload，启动慢是固有成本；不要为验证单点改动反复重启 dev 进程。
 
 ## UI 与平台边界
 

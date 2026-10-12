@@ -27,9 +27,13 @@
 
 - 企业会话激活（已登录企业服务端）时，**聊天里可选的模型 = 该会话从网关目录同步到的企业模型**；
   本地其它 provider 的模型不参与选择。
-- **未登录 / 未配置企业服务端**时不做限制：本地 provider 正常可用（个人版/离线场景）。
+- **未登录不允许进入工作区**（2026-10-09 收窄）：门禁改为**只看身份**——未登录企业服务端一律停在
+  登录页，因此「未登录时本地 provider 正常可用」这条语义不再成立。判定见
+  `useProviderAvailabilityLoginEntryGuard`（谓词只读 `hasEnterpriseSession`）。
+  原「个人版 / 离线场景」口径随强制登录一并取消，本产品在内网部署下只有企业登录一种身份。
 - **开发者模式解锁 = 旁路**：解锁后本地 provider 重新可用（对应原项目「本地模型直连」的旁路口子）。
   这是一条**绕过治理的旁路**：不经网关的模型调用没有白名单校验、没有审计与用量上报。
+  注意旁路只在**已登录**前提下生效：它收敛的是"已登录时能选到哪些模型"，不再是"未登录也能用"。
 - 企业模型的**鉴权仍走网关**（每次请求现场签发令牌），因此审计与用量在网关侧依然成立；
   本策略约束的是"能选到哪些模型"，不是"调用能否被审计"。
 
@@ -41,6 +45,7 @@
 | 连点计数与提示 | 同文件 hook（每个入口一份实例状态） | `packages/ui/src/lib/devMode.ts` |
 | 设置分区可见性 | 既有闸门 | `packages/ui/src/lib/settingsNavigation.ts` 的 `isSettingsSectionEnabled`（`modelProvider` 读开发者模式） |
 | 企业目录与登录态 | 既有企业链路（不改所有权） | `packages/ui/src/hooks/useReactorServer.ts` + `packages/services/src/reactor-server/*` |
+| 登录门禁（未登录不得进工作区） | 单一 hook，谓词只看 `hasEnterpriseSession` | `packages/ui/src/root/useProviderAvailabilityLoginEntryGuard.ts` |
 | 模型可见性过滤 | 单一函数 | `packages/ui/src/lib/modelScope.ts`（`resolveEnterpriseModelScope` + `scopeModelSelectionView`） |
 | 版本号入口 UI | 设置页入口一个组件 | `packages/ui/src/settings/DevModeVersionLabel.tsx` |
 | About 入口的连点计数与广播 | desktop main | `packages/desktop/src/main/aboutDevModeTap.ts`（频道 `AboutVersionTap` / `DevModeUnlockChanged` / `DevModeUnlockReported`） |
@@ -58,18 +63,24 @@ devModeUnlocked ─┐
                  ├─→ 设置导航：modelProvider 是否渲染（未解锁则不渲染）
 reactorStatus ───┘
                  └─→ 聊天可选模型：激活企业会话且未解锁 → 仅企业模型；否则本地 provider 全量
+
+hasEnterpriseSession ─→ 登录门禁：false 时停在登录页（不看 provider 可用性）
 ```
 
 - 过滤只在**一处**实现（`lib/modelScope.ts` 的 `resolveEnterpriseModelScope` +
   `scopeModelSelectionView`），聊天选择器的分组构造点调用它，避免两条判断。
 - 判定输入只有两个：`devModeUnlocked` 与"企业会话是否激活且目录非空"；不读其它状态，避免出现
   第二套"当前是否企业模式"的判断。
+- 登录门禁与模型过滤是**两件事**：门禁决定"能不能进工作区"（只看身份），过滤决定"进来后能选哪些
+  模型"。门禁不再读 `providerFamilyDomain` / `user` / `hasUsableProvider`——那套"可用性引导"
+  谓词是开源初版遗留，会把配置引导误当鉴权，导致有本地 provider 的机器未登录也能进工作区。
 
 ## 4. 失败语义
 
 | 情况 | 行为 |
 | --- | --- |
-| 未登录企业服务端 | 不限制模型（本地 provider 全量），「模型设置」仍按开发者模式隐藏策略处理 |
+| 未登录企业服务端 | 停在登录页，不进入工作区；本地 provider 配置保留在磁盘上但不参与选择 |
+| provider registry 启动读取失败 | **fail-closed**：仍按未登录处理（打开登录页），不因读取失败放行进工作区 |
 | 已登录但目录为空（同步中/失败） | 不限制，并在企业服务端面板显示原有状态；不因目录为空把可选模型清空 |
 | 目录同步后被裁掉的模型 | 由既有 `reconcileProviderModels` 处理；聊天里选不到即视为不可用 |
 | 反锁时正停在「模型设置」 | 退回「常规」页 |
@@ -83,7 +94,9 @@ reactorStatus ───┘
 5. 连点间隔超过 1.5s 重新计数；连点途中没有任何进度提示。
 6. 登录企业服务端且目录同步成功：聊天模型选择器只列企业模型；本地 provider 模型不出现。
 7. 同一状态下解锁开发者模式：本地 provider 模型重新出现在选择器里。
-8. 退出企业登录：选择器恢复列出本地 provider 模型。
+8. 退出企业登录：被强制回到登录页（不再回到"未登录可用本地模型"的工作区）。
+9. **未登录 + 机器上存在本地 provider 且有模型**：启动仍停在登录页（旧谓词会放行进工作区，此为回归点）。
+10. **启动时 provider registry 读取失败 + 未登录**：停在登录页（fail-closed），不放行进工作区。
 
 ## 6. 不做 / 边界
 

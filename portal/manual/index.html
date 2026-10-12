@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reactor 说明书</title>
+<meta name="description" content="Reactor（数智堆脑） 内网部署的产品说明书：按本仓库实际行为整理。" />
+<link rel="stylesheet" href="assets/manual.css" />
+</head>
+<body>
+<header class="docs-topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">Reactor<span class="brand-sub">数智堆脑</span></a>
+    <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="manual-nav">目录</button>
+    <a class="top-home" href="../index.html">官网 ↗</a>
+  </div>
+<nav class="group-nav" aria-label="章节导航">
+<div class="group-tab is-active">
+<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">01</span>开始使用</button>
+<div class="group-panel">
+<a href="welcome.html">概述与核心能力</a>
+<a href="install.html">安装与部署</a>
+<a href="model-access.html">接入模型</a>
+<a href="feedback.html">反馈与支持</a>
+</div>
+</div>
+<div class="group-tab">
+<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">02</span>核心功能</button>
+<div class="group-panel">
+<a href="agent.html">Reactor Agent</a>
+<a href="goal.html">目标模式</a>
+<a href="memory.html">项目记忆</a>
+<a href="repo-wiki.html">仓库百科</a>
+<a href="task-management.html">任务与文件管理</a>
+<a href="edit-history.html">编辑历史对话</a>
+<a href="automations.html">定时任务</a>
+<a href="idle-time-tasks.html">闲时任务</a>
+<a href="remote-development.html">远程开发</a>
+<a href="remote-control.html">手机远控</a>
+<a href="subagents.html">子智能体</a>
+<a href="browser-use.html">浏览器自动化</a>
+</div>
+</div>
+<div class="group-tab">
+<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">03</span>扩展体系</button>
+<div class="group-panel">
+<a href="plugin.html">插件</a>
+<a href="skill.html">技能</a>
+<a href="mcp.html">MCP</a>
+<a href="command.html">命令</a>
+<a href="hooks.html">Hooks</a>
+</div>
+</div>
+<div class="group-tab">
+<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">04</span>本仓特有功能</button>
+<div class="group-panel">
+<a href="interface-modes.html">界面模式（编程 / 办公 / 审查）</a>
+<a href="review-panel.html">文件审查板块</a>
+<a href="office-suite.html">内网办公四件套</a>
+<a href="model-governance.html">模型治理与开发者模式</a>
+<a href="data-contracts.html">数据目录与背景主题契约</a>
+</div>
+</div>
+<div class="group-tab">
+<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">05</span>内网服务端</button>
+<div class="group-panel">
+<a href="server-overview.html">服务端总览与接线</a>
+<a href="server-delivery.html">技能与 Agent 下发</a>
+<a href="server-usage-policy.html">用量上报与策略下发</a>
+</div>
+</div>
+<div class="group-tab">
+<button type="button" class="tab-btn" aria-haspopup="true"><span class="tab-num">06</span>帮助</button>
+<div class="group-panel">
+<a href="keyboard-shortcuts.html">快捷键表</a>
+<a href="qa.html">常见问题</a>
+<a href="linux-wsl.html">Linux / WSL 排查</a>
+<a href="about.html">关于本说明书</a>
+</div>
+</div>
+</nav>
+</header>
+<div class="mobile-nav" id="manual-nav">
+<section class="m-group"><h3>开始使用</h3>
+<a href="index.html" class="is-current">说明书首页</a>
+<a href="welcome.html">概述与核心能力</a>
+<a href="install.html">安装与部署</a>
+<a href="model-access.html">接入模型</a>
+<a href="feedback.html">反馈与支持</a>
+</section>
+<section class="m-group"><h3>核心功能</h3>
+<a href="agent.html">Reactor Agent</a>
+<a href="goal.html">目标模式</a>
+<a href="memory.html">项目记忆</a>
+<a href="repo-wiki.html">仓库百科</a>
+<a href="task-management.html">任务与文件管理</a>
+<a href="edit-history.html">编辑历史对话</a>
+<a href="automations.html">定时任务</a>
+<a href="idle-time-tasks.html">闲时任务</a>
+<a href="remote-development.html">远程开发</a>
+<a href="remote-control.html">手机远控</a>
+<a href="subagents.html">子智能体</a>
+<a href="browser-use.html">浏览器自动化</a>
+</section>
+<section class="m-group"><h3>扩展体系</h3>
+<a href="plugin.html">插件</a>
+<a href="skill.html">技能</a>
+<a href="mcp.html">MCP</a>
+<a href="command.html">命令</a>
+<a href="hooks.html">Hooks</a>
+</section>
+<section class="m-group"><h3>本仓特有功能</h3>
+<a href="interface-modes.html">界面模式（编程 / 办公 / 审查）</a>
+<a href="review-panel.html">文件审查板块</a>
+<a href="office-suite.html">内网办公四件套</a>
+<a href="model-governance.html">模型治理与开发者模式</a>
+<a href="data-contracts.html">数据目录与背景主题契约</a>
+</section>
+<section class="m-group"><h3>内网服务端</h3>
+<a href="server-overview.html">服务端总览与接线</a>
+<a href="server-delivery.html">技能与 Agent 下发</a>
+<a href="server-usage-policy.html">用量上报与策略下发</a>
+</section>
+<section class="m-group"><h3>帮助</h3>
+<a href="keyboard-shortcuts.html">快捷键表</a>
+<a href="qa.html">常见问题</a>
+<a href="linux-wsl.html">Linux / WSL 排查</a>
+<a href="about.html">关于本说明书</a>
+</section>
+</div>
+<div class="docs-layout">
+  <main class="docs-main">
+    
+    <article class="docs-article">
+<h1 id="reactor-产品说明书">Reactor 产品说明书</h1>
+<p><strong>Reactor（数智堆脑）</strong> 是面向内网环境部署的 Agentic Development Environment（ADE）：把大模型的长上下文与长程任务能力，落到桌面端、Web 端与终端里可连续推进的开发工作流上。</p>
+<p>本说明书<strong>依据当前检出的源码整理</strong>，描述的是本仓库实际提供的能力、命令、配置项与文件位置。取材依据、称谓口径与内容边界统一见<a href="about.html">关于本说明书</a>。</p>
+<blockquote><p><strong>提示</strong>：本说明书是离线站点，双击任意 <code>.html</code> 即可浏览，不依赖网络、不请求任何外部资源。</p></blockquote>
+<h2 id="目录">目录</h2>
+<div class="table-wrap"><table><thead><tr><th>章节</th><th>包含内容</th></tr></thead><tbody>
+<tr><td><a href="welcome.html">开始使用</a></td><td><a href="welcome.html">概述与核心能力</a> · <a href="install.html">安装与部署</a> · <a href="model-access.html">接入模型</a> · <a href="feedback.html">反馈与支持</a></td></tr>
+<tr><td>核心功能</td><td><a href="agent.html">Reactor Agent</a> · <a href="goal.html">目标模式</a> · <a href="memory.html">项目记忆</a> · <a href="repo-wiki.html">仓库百科</a> · <a href="task-management.html">任务与文件管理</a> · <a href="edit-history.html">编辑历史对话</a></td></tr>
+<tr><td>核心功能（续）</td><td><a href="automations.html">定时任务</a> · <a href="idle-time-tasks.html">闲时任务</a> · <a href="remote-development.html">远程开发</a> · <a href="remote-control.html">手机远控</a> · <a href="subagents.html">子智能体</a> · <a href="browser-use.html">浏览器自动化</a></td></tr>
+<tr><td>扩展体系</td><td><a href="plugin.html">插件</a> · <a href="skill.html">技能</a> · <a href="mcp.html">MCP</a> · <a href="command.html">命令</a> · <a href="hooks.html">Hooks</a></td></tr>
+<tr><td>本仓特有功能</td><td><a href="interface-modes.html">界面模式</a> · <a href="review-panel.html">文件审查板块</a> · <a href="office-suite.html">内网办公四件套</a> · <a href="model-governance.html">模型治理与开发者模式</a> · <a href="data-contracts.html">数据目录与背景主题契约</a></td></tr>
+<tr><td>内网服务端</td><td><a href="server-overview.html">服务端总览与接线</a> · <a href="server-delivery.html">技能与 Agent 下发</a> · <a href="server-usage-policy.html">用量上报与策略下发</a></td></tr>
+<tr><td>帮助</td><td><a href="keyboard-shortcuts.html">快捷键表</a> · <a href="qa.html">常见问题</a> · <a href="linux-wsl.html">Linux / WSL 排查</a> · <a href="about.html">关于本说明书</a></td></tr>
+</tbody></table></div>
+<h2 id="阅读建议">阅读建议</h2>
+<ol><li><strong>第一次接触</strong>：先读<a href="welcome.html">概述与核心能力</a>，再按<a href="install.html">安装与部署</a>、<a href="model-access.html">接入模型</a>把环境跑起来。</li><li><strong>日常使用</strong>：重点看<a href="agent.html">Reactor Agent</a>的补充上下文与<a href="agent.html">执行模式</a>，以及<a href="keyboard-shortcuts.html">快捷键表</a>。</li><li><strong>管理员与系统集成</strong>：读「内网服务端」三章，配合<a href="model-governance.html">模型治理与开发者模式</a>。</li><li><strong>排查问题</strong>：遇到行为与预期不符时，先看<a href="qa.html">常见问题</a>。</li></ol>
+
+<nav class="pager" aria-label="翻页">
+<span class="pager-cell is-prev is-none" aria-hidden="true"></span>
+<a class="pager-cell is-next" href="welcome.html"><span>下一页 →</span><b>概述与核心能力</b></a>
+</nav>
+    </article>
+    <footer class="docs-footer">
+      <p>本说明书依据当前检出的源码整理；行为与说明书不一致时，以源码与 <code>docs/</code> 下的契约为准。</p>
+      
+    </footer>
+  </main>
+<aside class="toc-rail" aria-label="本页目录">
+<div class="toc-title">本页目录</div>
+<a class="toc-l" href="#目录">目录</a>
+<a class="toc-l" href="#阅读建议">阅读建议</a>
+</aside>
+</div>
+<button type="button" class="to-top" aria-label="回到顶部">↑</button>
+<script src="assets/manual.js"></script>
+</body>
+</html>

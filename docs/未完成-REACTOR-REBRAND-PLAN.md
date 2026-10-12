@@ -52,9 +52,9 @@
 - [ ] `packages/ui/src/components/ui/ZCodeAboutLogo.tsx`：`ZCodeAboutLogo`（图标 + wordmark）与 `ZCodeWordmarkLogo` 的 SVG path 是**硬编码的 Z/C 字母字形**，需换成 Reactor 风车标记与字标的矢量路径。
 - 被引用于：`WelcomeScreen.tsx`、`OnboardingWelcomeView.tsx`（L22 `aria-label`）、关于页
 - ⚠️ **前置依赖**：现有素材是带底色的 JPEG，需先产出风车标记与字标的**矢量源（SVG）**才能替换 —— 见 brand/README 的「待补齐的生产资产」。
+- [x] `packages/ui/src/v4/ConversationDraftEmptyState.tsx`：草稿空态水印由 ZCode 线框 Z（浅色内联 SVG + 深色 `assets/Z.svg`）换成 Reactor 标记（`ReactorLogo` / `assets/reactor-mark.png`），低透明度居中垫在问候语后面；`data-v4-draft-logo` 标记保留在包裹层上，背景主题开启时的隐藏规则（`styles.css`）继续命中。深色资产 `assets/Z.svg` 随之删除。
 
 ### 1.4 图标资产（纯替换）
-
 - [ ] `packages/desktop/build/`：`icon.icns`、`icon.ico`、`icon.png`、`icons/`（16–1024 全尺寸）、`icon_installer.icns/ico/png`、`icon_windows.png`
 - [ ] `packages/desktop/build/dmg_background.png` 与 `@2x`（macOS 安装盘背景，含 ZCode 字样）
 - [ ] `public/logo/icons/`（全套 + icns/ico）、`public/icon_512@2x.png`
@@ -70,7 +70,24 @@ brand/README.md 已提取完整色板，核心取值：
 - 青（主强调）`#2FE0F9`
 - 紫（次强调）`#B384E8`
 
-### 1.5 验证
+### 1.5 版本号统一为 1.0.0
+
+上游版本号全部清出产品面：根 `package.json`（驱动设置页「应用信息」、`build-meta.json`、
+CLI `--version` 与 mock-cdn 开发目录名）与 `packages/desktop/package.json`（缺 version 时
+`app.getVersion()` 回退成 Electron 运行时版本，关于对话框因此显示 `41.0.3`）都落到 `1.0.0`；
+`apps/zcode-cli/package.json` 与 `server/` 工作区各包同值。
+
+**有意不改**（会破坏缓存路径 / 上游追踪）：
+
+- 插件版本 `packages/zcode-cua`(0.6.3)、`browser-use-plugin`(0.5.1)、`superpowers-plugin`(5.1.0)、
+  `zcode-guide-plugin`(0.2.0)、`node-repl-host`(0.6.0) 与 `official-plugin-definitions.ts` 的同名字段：
+  它们追踪上游 runtime / marketplace 条目，改动会让插件 UI 展示、缓存路径与 marketplace 三方错位。
+- 协议版本（`SERVER_REMOTE_PROTOCOL_VERSION` 等）、schema 版本、依赖版本：与产品版本无关。
+
+连带注意：自动更新源仍是官方端点（P5 决策保留），版本降到 `1.0.0` 后「检查更新」会把
+上游新版本一律判为可更新——这是预期，不是回归。
+
+### 1.6 验证
 
 ```bash
 pnpm typecheck

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>更新日志 · Reactor（数智堆脑）</title>
+<meta name="description" content="Reactor（数智堆脑）更新日志：版本变更、能力合入与行为调整，依据本仓源码与 package.json 维护。" />
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" href="index.html">Reactor<span class="brand-sub">数智堆脑</span></a>
+    <nav class="topbar-nav">
+      <a href="index.html#features">核心能力</a>
+      <a href="index.html#native">本仓特有</a>
+      <a href="index.html#deploy">部署</a>
+      <a href="changelog.html" aria-current="page">更新日志</a>
+      <a class="nav-cta" href="manual/index.html">产品说明书</a>
+    </nav>
+  </div>
+</header>
+
+<main class="log-wrap">
+  <div class="log-head">
+    <h1>更新日志</h1>
+    <p>记录版本变更、能力合入与行为调整。本页自 <b>v3.14.0</b> 起维护，更早版本未记录；行为口径以当前检出的源码为准。</p>
+  </div>
+
+  <div class="log-rule"></div>
+
+  <section class="log-entry">
+    <div class="log-ver-row">
+      <span class="log-ver">v3.14.0</span>
+      <span class="log-latest">当前版本</span>
+      <span class="log-when">版本号取自仓库根 package.json · 基线条目</span>
+    </div>
+    <h2>当前版本基线</h2>
+    <ul>
+      <li><b>本仓特有能力</b>：界面模式（编程 / 办公 / 审查）、文件审查板块、内网办公四件套、模型治理与开发者模式、内网服务端（身份底座 + 模型网关 + 管理台 API）。</li>
+      <li><b>多端同一运行时</b>：桌面端、Web 端与终端共用同一套会话运行时；手机远控接入桌面已有会话，不另起 Agent。</li>
+      <li><b>任务体系</b>：目标模式（目标管理 / 完成校验 / 状态恢复）、定时任务、闲时任务、编辑历史对话、会话分叉、辅助对话。</li>
+      <li><b>扩展体系</b>：插件、技能、MCP、命令、Hooks。</li>
+      <li><b>内网分发</b>：<code>dist/zcode</code> 发行包（TUI + Web + Agent）与 <code>install.sh</code>，须托管到内网可访问地址安装。</li>
+      <li>各能力的详细行为见<a href="manual/index.html">产品说明书</a>对应页面。</li>
+    </ul>
+  </section>
+
+  <p class="log-empty-note">更早版本未在此记录。发版时在「当前版本」上方新增条目，维护规则见本目录 <code>README.md</code>。</p>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span class="brand">Reactor<span class="brand-sub">数智堆脑</span></span>
+    <span>依据当前检出的源码整理</span>
+    <div class="footer-links">
+      <a href="index.html">官网首页</a>
+      <a href="changelog.html">更新日志</a>
+      <a href="manual/index.html">产品说明书</a>
+      <a href="manual/feedback.html">反馈与支持</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

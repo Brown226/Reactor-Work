@@ -1,0 +1,7 @@
+# 镜像里不需要的本地文件（nginx.conf 必须保留，Dockerfile 显式 COPY 它）
+Dockerfile
+README.md
+**/_preview-*.png
+**/.pages-backup/
+**/.DS_Store
+Thumbs.db
