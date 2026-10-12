@@ -26,12 +26,21 @@ export class ChannelClient implements IChannelClient, IDisposable {
   private pendingRejections = new Map<number, (error: Error) => void>();
   private lastRequestId = 0;
   private protocolListener: IDisposable | null;
+  private protocolCloseListener: IDisposable | null = null;
 
   private readonly _onDidInitialize = new Emitter<void>();
   readonly onDidInitialize = this._onDidInitialize.event;
 
   constructor(private protocol: IMessagePassingProtocol) {
     this.protocolListener = this.protocol.onMessage((msg) => this.onBuffer(msg));
+    // 传输断连（host 进程退出导致 MessagePort 关闭）必须 fail-closed：
+    // dispose 会把所有挂起的 Promise 请求 reject，避免上层 UI 永久 pending。
+    // onClose 为可选接口，旧传输实现不提供时行为零变化。
+    if (this.protocol.onClose) {
+      const error = new Error("RPC 连接已断开（服务进程退出或传输端口关闭）");
+      error.name = "ConnectionClosed";
+      this.protocolCloseListener = this.protocol.onClose(() => this.dispose(error));
+    }
   }
 
   getChannel<T extends IChannel>(channelName: string): T {
@@ -253,6 +262,8 @@ export class ChannelClient implements IChannelClient, IDisposable {
     this.isDisposed = true;
     this.protocolListener?.dispose();
     this.protocolListener = null;
+    this.protocolCloseListener?.dispose();
+    this.protocolCloseListener = null;
 
     const rejection = reason ?? new Error("ChannelClient disposed");
     if (!reason) {

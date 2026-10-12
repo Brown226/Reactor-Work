@@ -24,6 +24,13 @@ import { Event, Emitter, IDisposable, DisposableStore } from "./foundation.js";
 export interface IMessagePassingProtocol {
   send(buffer: VSBuffer): void;
   readonly onMessage: Event<VSBuffer>;
+  /**
+   * 传输层断连通知（对端进程死亡 / port 关闭）。
+   * 可选：旧传输实现不提供即无断连感知，ChannelClient 不会订阅。
+   * 提供时必须保证：连接终结时触发一次（幂等），让 ChannelClient
+   * 把挂起的 RPC fail-closed reject，而不是永久挂起。
+   */
+  readonly onClose?: Event<void>;
   drain?(): Promise<void>;
 }
 
@@ -347,8 +354,10 @@ export function createQueuePair(): [IMessagePassingProtocol, IMessagePassingProt
  * 使得这个 Protocol 可以同时在浏览器和 Electron 中使用。
  */
 export interface MessagePortLike {
-  addEventListener(type: "message", listener: (e: { data: MessagePortPayload }) => void): void;
-  removeEventListener(type: "message", listener: (e: { data: MessagePortPayload }) => void): void;
+  // 单一联合签名（不用重载）：message 与 close 的 listener 统一收一个事件参数，
+  // close 的调用方传无参箭头函数即可（参数少的一方永远兼容）。
+  addEventListener(type: "message" | "close", listener: (e: { data: MessagePortPayload }) => void): void;
+  removeEventListener(type: "message" | "close", listener: (e: { data: MessagePortPayload }) => void): void;
   postMessage(message: MessagePortPayload): void;
   start(): void;
   close(): void;
@@ -363,8 +372,15 @@ export class MessagePortProtocol implements IMessagePassingProtocol {
   readonly onMessage = this._onMessage.event;
   private readonly _onFlowState = new Emitter<MessagePortFlowState>();
   readonly onFlowState = this._onFlowState.event;
+  // 对端进程死亡（host crash / utilityProcess 退出）时 port 会触发 close 事件。
+  // MessagePortProtocol 必须把它传播为 onClose，否则 ChannelClient 永远不知道
+  // 传输已终结，挂起的 RPC 会永久挂起（UI 无限 loading，fail-hidden）。
+  private readonly _onClose = new Emitter<void>();
+  readonly onClose = this._onClose.event;
 
   private readonly handler: (e: { data: MessagePortPayload }) => void;
+  private readonly closeHandler = () => this.fireClose();
+  private closeFired = false;
 
   constructor(private port: MessagePortLike) {
     this.handler = (e: { data: MessagePortPayload }) => {
@@ -377,7 +393,16 @@ export class MessagePortProtocol implements IMessagePassingProtocol {
       if (e.data instanceof Uint8Array) this._onMessage.fire(VSBuffer.wrap(e.data));
     };
     this.port.addEventListener("message", this.handler);
+    this.port.addEventListener("close", this.closeHandler);
     this.port.start();
+  }
+
+  private fireClose(): void {
+    if (this.closeFired) {
+      return;
+    }
+    this.closeFired = true;
+    this._onClose.fire();
   }
 
   send(buffer: VSBuffer): void {
@@ -390,8 +415,13 @@ export class MessagePortProtocol implements IMessagePassingProtocol {
 
   disconnect(): void {
     this.port.removeEventListener("message", this.handler);
+    this.port.removeEventListener("close", this.closeHandler);
     this.port.close();
+    // 主动 disconnect 也属于连接终结：先通知 onClose（幂等），
+    // 让未显式 dispose ChannelClient 的调用方也能 fail-closed。
+    this.fireClose();
     this._onMessage.dispose();
     this._onFlowState.dispose();
+    this._onClose.dispose();
   }
 }
