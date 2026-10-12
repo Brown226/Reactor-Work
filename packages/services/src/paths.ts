@@ -66,19 +66,24 @@ export function getZCodeDataScopeMarkerFilePath(): string {
 let cachedDataScope: string | null = null;
 
 /**
- * 当前数据命名空间：显式 env 覆盖 > marker > `local`。
+ * 当前数据命名空间：注入的 env > marker > `local`。
  *
  * env 由 Main 在 fork Host 时按 marker 注入（CLI/agent 再继承它）；这里读 marker 只兜底
  * 「Host 被手工启动、没有 env」的情况。进程内只解析一次：scope 变化必须重启进程才生效
  * （已打开的 SQLite 句柄与缓存目录不会跟着搬，见方案文档 §3 时序）。
+ *
+ * 注入值必须**原样信任，包括 `local`**：marker 的写入方就是 Host 自己（登录/登出 RPC），
+ * 若把注入的 `local` 当成"未覆盖"再回头读一次 marker，而 marker 已在此期间被改写，
+ * Host 就会解析出与 agent（只认 env）不同的 scope——任务列表读新用户、消息正文读旧用户，
+ * 正是方案文档 §3 警告的撕裂视图。变量真的不存在（手工启动）才允许回落 marker。
  */
 export function getZCodeDataScope(): string {
   if (cachedDataScope !== null) {
     return cachedDataScope;
   }
-  const override = sanitizeZCodeDataScope(process.env[ZCODE_DATA_SCOPE_ENV_KEY]);
-  if (override !== ZCODE_LOCAL_DATA_SCOPE) {
-    cachedDataScope = override;
+  const injected = process.env[ZCODE_DATA_SCOPE_ENV_KEY]?.trim();
+  if (injected) {
+    cachedDataScope = sanitizeZCodeDataScope(injected);
     return cachedDataScope;
   }
   const markerPath = getZCodeDataScopeMarkerFilePath();
