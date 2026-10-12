@@ -323,22 +323,6 @@ export interface AppSettings {
   nativeSearchEnhancementsEnabled?: boolean;
   /** 新建或冷恢复 Session 是否启用 Memory；默认关闭。 */
   memoryEnabled?: boolean;
-  onboardingOccupation?:
-    | "office"
-    | "developer"
-    | "independent"
-    | "infrastructure"
-    | "product"
-    | "design"
-    | "student"
-    | "creator"
-    | "operations"
-    | "marketing"
-    | "finance"
-    | "accounting"
-    | "legal"
-    | "other"
-    | null;
   proactiveSuggestionsEnabled?: boolean;
   /** 上次关闭时的完整 workspace 会话（含本地与远端 workspace） */
   lastWorkspaceSession?: PersistedWorkspaceSessionEntry[];
@@ -362,8 +346,6 @@ export interface AppSettings {
   autoDownloadAndInstallUpdates?: boolean;
   /** 用户跳过的 Electron 自动更新版本；按通道隔离，避免 stable / preview 互相遮挡。 */
   skippedElectronUpdateVersions?: Partial<Record<ElectronReleaseChannel, string>>;
-  /** 首次启动设置同步提示是否已消费；只表示弹窗不再出现，不代表导入成功。 */
-  settingsSyncFirstRunPromptHandled?: boolean;
   /** 设置页里的临时 endpoint override；正式/测试默认 base url 由 ZCODE_BASE_URL env 管理。 */
   zcodeEndpointOrigin?: string;
 }

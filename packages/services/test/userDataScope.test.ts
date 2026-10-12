@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -103,6 +103,49 @@ test("tasks-index 路径：local = 历史路径；uid scope = users/{uid} 前缀
         ".reactor",
         ZCODE_USER_SCOPED_DATA_DIR_NAME,
         "admin",
+        "v2",
+        "tasks-index.sqlite",
+      ),
+    );
+  } finally {
+    if (previousScopeEnv === undefined) delete process.env[ZCODE_DATA_SCOPE_ENV_KEY];
+    else process.env[ZCODE_DATA_SCOPE_ENV_KEY] = previousScopeEnv;
+    resetZCodeDataScopeCache();
+    setDataBaseDir(null);
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("注入的 local 优先于 marker：Host 不得回头读 marker 与 agent 分家", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "data-scope-injected-local-"));
+  try {
+    setDataBaseDir(dir);
+    await mkdir(join(dir, ".reactor"), { recursive: true });
+    // marker 写着 tiankd（登录时由 Host 自己写入），而 Main 这次注入的是 local。
+    await writeFile(
+      join(dir, ".reactor", ZCODE_DATA_SCOPE_MARKER_FILE_NAME),
+      stringifyZCodeDataScopeMarkerFile({ scope: "tiankd", uid: "tiankd" }),
+      "utf8",
+    );
+
+    process.env[ZCODE_DATA_SCOPE_ENV_KEY] = ZCODE_LOCAL_DATA_SCOPE;
+    resetZCodeDataScopeCache();
+    assert.equal(
+      getTasksIndexDatabasePath(),
+      join(dir, ".reactor", "v2", "tasks-index.sqlite"),
+      "注入 local 必须原样信任：回头读 marker 会让 Host 用 tiankd、agent 用 local，两侧分家",
+    );
+
+    // 变量真的不存在（手工启动 Host、没有 Main）才允许回落 marker。
+    delete process.env[ZCODE_DATA_SCOPE_ENV_KEY];
+    resetZCodeDataScopeCache();
+    assert.equal(
+      getTasksIndexDatabasePath(),
+      join(
+        dir,
+        ".reactor",
+        ZCODE_USER_SCOPED_DATA_DIR_NAME,
+        "tiankd",
         "v2",
         "tasks-index.sqlite",
       ),

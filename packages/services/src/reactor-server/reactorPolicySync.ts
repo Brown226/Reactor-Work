@@ -11,6 +11,7 @@
  */
 import type { ReactorDesktopPolicy } from "@zcode/shared";
 import type { ReactorServerClient } from "./reactorServerClient.js";
+import type { ReactorMyQuota } from "./reactorServerP4Endpoints.js";
 import type { ReactorPolicyCache } from "./reactorPolicyCache.js";
 import type {
   ReactorServerAuditStatus,
@@ -19,7 +20,13 @@ import type {
 } from "./reactorServer.js";
 
 export interface ReactorPolicySyncDeps {
-  client: Pick<ReactorServerClient, "policy" | "usageSummary">;
+  /**
+   * `myQuota` 是可选注入：老服务端没有该端点时它是 `undefined`，
+   * 概览回落旧口径（组织上限 + scope 内用量），不因此报错。
+   */
+  client: Pick<ReactorServerClient, "policy" | "usageSummary"> & {
+    myQuota?: ReactorServerClient["myQuota"];
+  };
   cache: ReactorPolicyCache;
   readServerUrl: () => Promise<string | null>;
   hasUsableSession: () => Promise<boolean>;
@@ -84,18 +91,28 @@ export function createReactorPolicySync(deps: ReactorPolicySyncDeps): ReactorPol
       const quota: ReactorDesktopPolicy["quota"] | undefined = policyView.policy?.quota;
       const quotaLimit = quota?.monthlyTokenLimit ?? null;
       let monthTokens: number | null = null;
+      /**
+       * 「我的额度」（QTM P4c）：每项自带 used/limit，分子分母同源 —— 任何角色都能
+       * 正确显示进度（旧口径对非管理员是"我用多少 / 全组织上限"，无意义）。
+       * 老服务端没有该端点时 myQuota 返回 null ⇒ 回落旧口径。
+       */
+      let myQuota: ReactorMyQuota | null = null;
       const serverUrl = await deps.readServerUrl();
       if (serverUrl && (await deps.hasUsableSession())) {
         try {
           const accessToken = await deps.ensureAccessToken(serverUrl);
           // 月度累计取服务端聚合（权威口径）。端上 outbox 只存"未确认"的事件，
           // 上报成功即 ack 删除，做不了月度累计，不能拿它冒充（P4 文档 §7-4）。
-          const summary = await deps.client.usageSummary(serverUrl, accessToken, {
-            groupBy: "model",
-            from: startOfMonthIso(),
-            to: now().toISOString(),
-          });
+          const [summary, quotaView] = await Promise.all([
+            deps.client.usageSummary(serverUrl, accessToken, {
+              groupBy: "model",
+              from: startOfMonthIso(),
+              to: now().toISOString(),
+            }),
+            deps.client.myQuota?.(serverUrl, accessToken).catch(() => null) ?? Promise.resolve(null),
+          ]);
           monthTokens = summary.totals.totalTokens;
+          myQuota = quotaView;
         } catch (error) {
           deps.logger.warn("读取企业服务端月度用量失败", {
             error: error instanceof Error ? error.message : String(error),
@@ -116,9 +133,12 @@ export function createReactorPolicySync(deps: ReactorPolicySyncDeps): ReactorPol
         policyStale: policyView.stale,
         commandBlacklistCount: policyView.policy?.commandBlacklist.length ?? 0,
         egressAllowlistCount: policyView.policy?.egressAllowlist.length ?? 0,
+        // 文档地址只是配置位：未登录/无策略/老服务端都按未配置处理，不报错不跳转。
+        productDocsUrl: policyView.policy?.productDocsUrl ?? null,
         monthTokens,
         percent,
         quotaExceeded: percent !== null && maxThreshold !== null && percent * 100 >= maxThreshold,
+        myQuota,
         pendingEvents: auditStatus.pendingEvents,
         lastFlushAt: auditStatus.lastFlushAt,
         lastError: auditStatus.lastError ?? policyView.error,

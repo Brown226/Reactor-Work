@@ -38,6 +38,36 @@ export interface ReactorUsageSummary {
   readonly totals: ReactorUsageSummaryRow;
 }
 
+/**
+ * 「我的额度」一项（`GET /desktop/quota/me` 的 items[]）。
+ *
+ * 与 `ReactorServerUsageOverview` 的区别：那份概览里只有**一个** `quotaLimit`（组织值）
+ * 与 scope 内用量的比值，对非管理员是错口径（见设置页账号分区方案的 §1.2）。
+ * 这里每项自带 `used` 与 `limit`，**分子分母同源** ⇒ 任何角色都能正确算百分比；
+ * 同时端口径由服务端按令牌决定（管理员=组织、部门负责人=本部门子树、成员=自己）。
+ */
+export interface ReactorQuotaItem {
+  readonly scopeType: "org" | "dept" | "user";
+  readonly scopeId: string | null;
+  readonly limitTokens: number | null;
+  readonly limitCost: number | null;
+  readonly usedTokens: number;
+  readonly usedCost: number;
+  /** 0-100；该维度未设上限时为 null（不显示进度条，不拿别的维度冒充） */
+  readonly tokenPercent: number | null;
+  readonly costPercent: number | null;
+  readonly alertThresholds: readonly number[];
+  readonly action: "warn" | "block";
+  readonly exceeded: boolean;
+}
+
+export interface ReactorMyQuota {
+  readonly period: string;
+  readonly items: readonly ReactorQuotaItem[];
+  /** 任一阻断规则超限（端侧据此提示；真正的拦截在网关） */
+  readonly blocked: boolean;
+}
+
 export function createReactorServerP4Endpoints(request: ReactorServerRequester) {
   return {
     /**
@@ -103,6 +133,64 @@ export function createReactorServerP4Endpoints(request: ReactorServerRequester) 
         totals: toUsageSummaryRow(data?.totals),
       };
     },
+
+    /**
+     * 我的额度（`GET /desktop/quota/me`）：每项自带 used 与 limit，**分子分母同源**。
+     *
+     * 为什么需要它（而不是复用 `getUsageOverview` 的那一个百分比）：那份概览的分子是
+     * 调用者 scope 内的用量、分母是**全组织**上限 —— 对非管理员是错口径，设置页为此
+     * 不得不对非管理员隐藏百分比。本出口让任何角色都能显示自己维度上的真实进度。
+     *
+     * 405/404（服务端尚未升级）⇒ 返回 null，调用方回落旧口径（不假装有数据）。
+     */
+    async myQuota(serverUrl: string, accessToken: string): Promise<ReactorMyQuota | null> {
+      try {
+        const { data } = await request<{ period?: unknown; items?: unknown; blocked?: unknown }>(
+          `${serverUrl}/desktop/quota/me`,
+          { method: "GET", accessToken },
+        );
+        const record = (typeof data === "object" && data !== null ? data : {}) as Record<
+          string,
+          unknown
+        >;
+        return {
+          period: typeof record.period === "string" ? record.period : "",
+          items: Array.isArray(record.items) ? record.items.map(toQuotaItem) : [],
+          blocked: record.blocked === true,
+        };
+      } catch {
+        // 老服务端没有该端点 → 静默回落（调用方用旧概览）
+        return null;
+      }
+    },
+  };
+}
+
+/** `GET /desktop/quota/me` 单项归一化：脏字段按"无上限/0 用量"兜底，不因一条脏数据丢整页。 */
+export function toQuotaItem(raw: unknown): ReactorQuotaItem {
+  const record = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>;
+  const number = (value: unknown): number =>
+    typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
+  const nullable = (value: unknown): number | null =>
+    typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : null;
+  const scopeType =
+    record.scopeType === "dept" || record.scopeType === "user" ? record.scopeType : "org";
+  return {
+    scopeType,
+    scopeId: typeof record.scopeId === "string" ? record.scopeId : null,
+    limitTokens: nullable(record.limitTokens),
+    limitCost: nullable(record.limitCost),
+    usedTokens: number(record.usedTokens),
+    usedCost: number(record.usedCost),
+    tokenPercent: nullable(record.tokenPercent),
+    costPercent: nullable(record.costPercent),
+    alertThresholds: Array.isArray(record.alertThresholds)
+      ? record.alertThresholds.filter(
+          (n): n is number => typeof n === "number" && Number.isFinite(n) && n > 0 && n <= 100,
+        )
+      : [],
+    action: record.action === "block" ? "block" : "warn",
+    exceeded: record.exceeded === true,
   };
 }
 

@@ -23,11 +23,25 @@ import { REACTOR_SERVER_API_KEY_SENTINEL } from "@zcode/shared";
 import type { IProviderSettingsService } from "../src/model-provider/providerFacadeServices.js";
 import type { BehaviorAuditFact, ModelCallUsageDelta } from "../src/reactor-server/auditEventMapping.js";
 import { createReactorServerService } from "../src/reactor-server/reactorServerService.js";
+import { setDataBaseDir } from "../src/paths.js";
 
 const ENTERPRISE_PROVIDER_ID = "ent-1";
 const LOCAL_PROVIDER_ID = "local-9";
 const SERVER_URL = "http://server.test:8791";
 const GATEWAY_URL = "http://server.test:8790/v1";
+
+// 登录/登出会同步写数据作用域 marker。不把数据根导到临时目录的话，跑一次测试就把
+// 开发机上真实的 ~/.reactor/data-scope.json 覆盖成 local，下一次启动应用就用错命名空间。
+let isolatedDataBaseDir: string | undefined;
+test.before(async () => {
+  isolatedDataBaseDir = await mkdtemp(join(tmpdir(), "reactor-audit-wiring-data-"));
+  setDataBaseDir(isolatedDataBaseDir);
+});
+test.after(() => {
+  setDataBaseDir(null);
+  if (isolatedDataBaseDir) void rm(isolatedDataBaseDir, { recursive: true, force: true });
+  isolatedDataBaseDir = undefined;
+});
 
 /** 造一个 exp 在未来的假 JWT（服务只读 payload.exp 判断"该不该刷新"）。 */
 function fakeJwt(expiresInSeconds = 3600): string {

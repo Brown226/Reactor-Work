@@ -28,9 +28,23 @@ const resolveReactorDesktopPolicyPath = (dir: string): string =>
   join(dir, REACTOR_DESKTOP_POLICY_FILE_NAME);
 import type { IProviderSettingsService } from "../src/model-provider/providerFacadeServices.js";
 import { createReactorServerService } from "../src/reactor-server/reactorServerService.js";
+import { setDataBaseDir } from "../src/paths.js";
 
 const SERVER_URL = "http://server.test:8791";
 const GATEWAY_URL = "http://server.test:8790/v1";
+
+// 登录/登出会同步写数据作用域 marker。不把数据根导到临时目录的话，跑一次测试就把
+// 开发机上真实的 ~/.reactor/data-scope.json 覆盖成 local，下一次启动应用就用错命名空间。
+let isolatedDataBaseDir: string | undefined;
+test.before(async () => {
+  isolatedDataBaseDir = await mkdtemp(join(tmpdir(), "reactor-policy-wiring-data-"));
+  setDataBaseDir(isolatedDataBaseDir);
+});
+test.after(() => {
+  setDataBaseDir(null);
+  if (isolatedDataBaseDir) void rm(isolatedDataBaseDir, { recursive: true, force: true });
+  isolatedDataBaseDir = undefined;
+});
 
 function fakeJwt(expiresInSeconds = 3600): string {
   const payload = Buffer.from(
@@ -44,6 +58,11 @@ interface PolicyHarnessOptions {
   /** `GET /desktop/policy` 的响应；返回 Error 表示网络/HTTP 失败。 */
   policyResponse?: unknown | Error;
   monthTokens?: number;
+  /**
+   * `GET /desktop/quota/me` 的响应（QTM P4c）。
+   * 缺省 = 模拟**老服务端**（404），用于验证端侧回落旧口径且不报错。
+   */
+  myQuota?: unknown | Error;
 }
 
 function createPolicyHarness(options: PolicyHarnessOptions = {}) {
@@ -107,6 +126,14 @@ function createPolicyHarness(options: PolicyHarnessOptions = {}) {
             cost: 0,
           },
         });
+      }
+      if (url.endsWith("/desktop/quota/me")) {
+        // 缺省模拟老服务端：404 → 端侧 myQuota 为 null（回落旧口径）
+        if (options.myQuota === undefined) {
+          return json({ error: { code: "404", message: "not found" } }, 404);
+        }
+        if (options.myQuota instanceof Error) throw options.myQuota;
+        return json(options.myQuota);
       }
       if (url.endsWith("/auth/login")) {
         return json({
@@ -298,6 +325,90 @@ test("用量简报：未登录时月度累计为 null（不拿本地缓存冒充
     0,
     "未登录不得请求用量聚合",
   );
+});
+
+test("我的额度（QTM P4c）：拿到服务端按令牌解析的适用规则与用量", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "reactor-policy-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const harness = createPolicyHarness({
+    loggedIn: true,
+    myQuota: {
+      period: "2026-10",
+      items: [
+        {
+          scopeType: "org",
+          scopeId: null,
+          limitTokens: 1000,
+          limitCost: null,
+          usedTokens: 850,
+          usedCost: 0,
+          tokenPercent: 85,
+          costPercent: null,
+          alertThresholds: [80, 100],
+          action: "warn",
+          exceeded: false,
+        },
+        {
+          // 脏项：百分比非法/阈值越界 —— 归一化应兜底而不丢整页
+          scopeType: "user",
+          scopeId: "u1",
+          limitTokens: null,
+          usedTokens: 12,
+          tokenPercent: "NaN",
+          alertThresholds: [0, 250, 90],
+          action: "unexpected",
+          exceeded: "yes",
+        },
+      ],
+      blocked: false,
+    },
+  });
+  const service = createService(harness, dir);
+  await service.refreshPolicy();
+
+  const overview = await service.getUsageOverview();
+  assert.equal(overview.myQuota?.period, "2026-10");
+  assert.equal(overview.myQuota?.items.length, 2);
+  const org = overview.myQuota?.items[0];
+  // ★ 分子分母同源：org 项自带 used/limit，任何角色都能直接显示百分比
+  assert.equal(org?.scopeType, "org");
+  assert.equal(org?.usedTokens, 850);
+  assert.equal(org?.limitTokens, 1000);
+  assert.equal(org?.tokenPercent, 85);
+  // 脏项兜底：非法百分比 → null；阈值只留 1-100 内的；action 只认 block/warn；exceeded 只认布尔 true
+  const user = overview.myQuota?.items[1];
+  assert.equal(user?.tokenPercent, null);
+  assert.deepEqual(user?.alertThresholds, [90]);
+  assert.equal(user?.action, "warn");
+  assert.equal(user?.exceeded, false);
+  assert.equal(overview.myQuota?.blocked, false);
+});
+
+test("我的额度：老服务端无该端点（404）⇒ myQuota 为 null，概览仍可用", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "reactor-policy-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  // 不传 myQuota ⇒ harness 回 404（老服务端形态）
+  const harness = createPolicyHarness({ loggedIn: true, monthTokens: 850 });
+  const service = createService(harness, dir);
+  await service.refreshPolicy();
+
+  const overview = await service.getUsageOverview();
+  assert.equal(overview.myQuota, null, "无端点时不假装有数据");
+  // 旧口径仍然完整（必须回调成功，不能因新端点缺失而整体失败）
+  assert.equal(overview.monthTokens, 850);
+  assert.equal(overview.percent, 0.85);
+});
+
+test("我的额度：端点抛错 ⇒ myQuota 为 null 且不冒泡", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "reactor-policy-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const harness = createPolicyHarness({ loggedIn: true, myQuota: new Error("boom") });
+  const service = createService(harness, dir);
+  await service.refreshPolicy();
+
+  const overview = await service.getUsageOverview();
+  assert.equal(overview.myQuota, null);
+  assert.equal(overview.monthTokens, 850, "额度端点故障不影响用量简报");
 });
 
 test("模式天花板：与用户档位取交集，只收紧不放宽", () => {

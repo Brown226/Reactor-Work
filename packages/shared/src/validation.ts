@@ -43,7 +43,6 @@ export { WSL_USER_MAX_LENGTH, isValidWslUser, wslUserSchema } from "./wslUserVal
 export { zcodeTaskModeSchema } from "./zcode-task-mode-schema.js";
 import { wslUserSchema } from "./wslUserValidation.js";
 export {
-  appSettingsOccupationEnum,
   appSettingsPatchSchema,
   appSettingsSchema,
   localeSchema,

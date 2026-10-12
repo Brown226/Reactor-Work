@@ -63,6 +63,27 @@ export interface ReactorDesktopPolicyQuota {
   alertThresholds: number[];
 }
 
+/** 产品文档地址字段上限：与服务端 `normalizeProductDocsUrl` 同口径。 */
+const PRODUCT_DOCS_URL_MAX_LENGTH = 500;
+
+/**
+ * 归一化产品文档地址：仅接受 http/https，其余（空串 / 非法协议 / 超长 / 非字符串）→ null。
+ * 与服务端 `server/packages/server/src/audit/repo.ts` 的同名函数各有一份实现
+ * （两个 workspace 不共享运行时），改规则必须同步。
+ */
+export function normalizeProductDocsUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > PRODUCT_DOCS_URL_MAX_LENGTH) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return null;
+  }
+  return parsed.protocol === "http:" || parsed.protocol === "https:" ? trimmed : null;
+}
+
 export interface ReactorDesktopPolicy {
   /** 组织允许用户开到的最高档；用户会话 mode 与它取交集。 */
   defaultApprovalMode: ReactorDesktopPolicyMode;
@@ -71,6 +92,8 @@ export interface ReactorDesktopPolicy {
   /** 出网白名单（域名后缀，见 `isReactorEgressHostAllowed`）；空数组 = 不限制。 */
   egressAllowlist: string[];
   quota: ReactorDesktopPolicyQuota;
+  /** 产品文档入口地址；null = 未配置（UI 提示而非跳转）。不参与任何强制判定。 */
+  productDocsUrl: string | null;
 }
 
 /**
@@ -87,6 +110,7 @@ export const DEFAULT_REACTOR_DESKTOP_POLICY: ReactorDesktopPolicy = {
   commandBlacklist: [],
   egressAllowlist: [],
   quota: { monthlyTokenLimit: null, alertThresholds: [80, 100] },
+  productDocsUrl: null,
 };
 
 /** 从任一（可能不完整的）策略对象归一化出完整策略：缺字段按默认合并，不把缺失当清空。 */
@@ -118,6 +142,8 @@ export function normalizeReactorDesktopPolicy(raw: unknown): ReactorDesktopPolic
           ? thresholds
           : [...DEFAULT_REACTOR_DESKTOP_POLICY.quota.alertThresholds],
     },
+    // 文档地址是随策略下发的配置位：解析不出就当未配置，不影响其余字段的强制语义。
+    productDocsUrl: normalizeProductDocsUrl(record.productDocsUrl),
   };
 }
 

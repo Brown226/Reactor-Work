@@ -1,6 +1,7 @@
 import { ServiceChannels } from "@zcode/shared";
 import type { ReactorDesktopPolicy } from "@zcode/shared";
 import { createServiceDescriptor } from "../descriptors.js";
+import type { ReactorMyQuota } from "./reactorServerP4Endpoints.js";
 
 /**
  * 企业服务端（Reactor Server）接入服务。
@@ -94,20 +95,30 @@ export interface ReactorServerUsageOverview {
   /** 策略摘要用：命令黑名单 / 出网白名单条数（0 = 该项不限制）。 */
   readonly commandBlacklistCount: number;
   readonly egressAllowlistCount: number;
+  /**
+   * 产品文档入口地址（策略配置位）：null = 未配置，UI 弹提示而不跳转。
+   * 消费方见 docs/已完成/已完成-产品文档入口.md。
+   */
+  readonly productDocsUrl: string | null;
   /** 本自然月企业网关模型调用累计 token；null = 服务端不可达/未登录。 */
   readonly monthTokens: number | null;
   /** 额度使用率（0-1）；无上限或取不到用量时为 null。 */
   readonly percent: number | null;
   /** 是否已跨过最高告警阈值（只提示，不阻断）。 */
   readonly quotaExceeded: boolean;
+  /**
+   * 「我的额度」（QTM P4c）：服务端按令牌解析出的适用规则与各自用量，
+   * 每项自带 used/limit ⇒ 分子分母同源，任何角色都能正确显示进度。
+   * null/undefined = 未登录 / 服务端不可达 / 老服务端无该端点（UI 回落 `quotaLimit` 旧口径）。
+   */
+  readonly myQuota?: ReactorMyQuota | null;
   readonly pendingEvents: number;
   readonly lastFlushAt: string | null;
   readonly lastError: string | null;
 }
 
 export interface IReactorServerService {
-  getStatus(): Promise<ReactorServerStatus>;
-  /** 登录并完成"取网关令牌 + 拉模型目录 + 写企业 provider"三步。 */
+  getStatus(): Promise<ReactorServerStatus>;  /** 登录并完成"取网关令牌 + 拉模型目录 + 写企业 provider"三步。 */
   login(input: ReactorServerLoginInput): Promise<ReactorServerStatus>;
   /** 退出：尽力通知服务端吊销 refresh，然后清空本地令牌与企业 provider 的模型清单。 */
   logout(): Promise<void>;
