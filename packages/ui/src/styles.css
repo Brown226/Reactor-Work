@@ -2103,8 +2103,3 @@ body {
     transparent
   );
 }
-
-/* 背景铺开时，空状态水印会与背景图互相干扰，直接隐藏。 */
-[data-app-background] [data-v4-draft-logo] {
-  display: none;
-}

@@ -124,6 +124,7 @@ import { shouldIgnoreEscapeForStopGeneration } from "@/v4/composer/escapeStop.js
 import { ConversationDraftEmptyState } from "@/v4/ConversationDraftEmptyState.js";
 import { DraftInterfaceModeToggle } from "@/v4/DraftInterfaceModeToggle.js";
 import { ConversationDraftSuggestedPromptsContainer } from "@/v4/ConversationDraftSuggestedPromptsContainer.js";
+import { ConversationSecurityDisclaimer } from "@/v4/ConversationSecurityDisclaimer.js";
 import { ConversationHeader, type PaneWorkspaceBadge } from "@/v4/ConversationHeader.js";
 import { ConversationQueuePanel } from "@/v4/ConversationQueuePanel.js";
 import { projectPendingGuideQueue } from "@/v4/pendingGuideProjection.js";
@@ -4583,6 +4584,10 @@ export function SessionPane({
           isDesktop={isDesktop}
         />
       ) : null}
+      {/* 合规提示：会话态在 dock 内、输入卡下方居中，填进输入卡与面板底边的空隙。
+          草稿态首页的 composer 随空态整体居中、不吸底，提示挂进 dock 只会贴在
+          chips 下方，因此改为绝对定位于面板右下角——两种互斥，同一时刻只有一份。 */}
+      {!isDraft ? <ConversationSecurityDisclaimer className="mt-2 text-center" /> : null}
     </>
   );
   // 进入/退出分享时 chat dock 与分享 dock 高度不同；共享同一个 grid 单元做上下位移淡入淡出，
@@ -4848,6 +4853,13 @@ export function SessionPane({
           </SessionPluginReferenceIconBoundary>
         )}
       </div>
+      {/* 草稿态首页的合规提示：composer 随空态整体居中、不吸底，挂进 dock 只会贴在
+          推荐 chips 下方，这里改为绝对定位于面板右下角（产品规则见
+          docs/已完成/已完成-conversation-security-disclaimer.md）；
+          pointer-events-none 保证这块角落的命中不被文字占走。 */}
+      {isDraft && !readOnly ? (
+        <ConversationSecurityDisclaimer className="pointer-events-none absolute bottom-3 right-4 text-right" />
+      ) : null}
     </div>
   );
 }

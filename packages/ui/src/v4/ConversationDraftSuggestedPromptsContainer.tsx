@@ -1,7 +1,3 @@
-import { getRecommendedPromptPool } from "@/v4/featureSuggestedPrompts.js";
-import { useZCodeStoreWithDefault } from "@/store/StoreProvider.js";
-import { useSettings } from "@/hooks/useSettingService.js";
-import { useOnboardingRecordService } from "@/hooks/useOnboardingRecordService.js";
 import {
   advanceRecommendedPromptPane,
   getRecommendedPromptsForPane,
@@ -10,6 +6,9 @@ import {
   subscribeRecommendedPrompts,
   unregisterRecommendedPromptPane,
 } from "@/v4/featureSuggestedPromptRotation.js";
+import { getRecommendedPromptPool } from "@/v4/featureSuggestedPrompts.js";
+import { useZCodeStoreWithDefault } from "@/store/StoreProvider.js";
+import { useSettings } from "@/hooks/useSettingService.js";
 /* oxlint-disable eslint(max-lines) -- 推荐 Prompt 同时收口 latest-wins、取消、可信解析、操作反馈和 Composer 收尾，拆分会打散这条状态机。 */
 import {
   useCallback,
@@ -92,7 +91,6 @@ export function ConversationDraftSuggestedPromptsContainer({
   const platform = usePlatform();
 
   const { update } = useSettings();
-  const onboardingRecordService = useOnboardingRecordService();
   const recommendationPaneId = useId();
   // 推荐池按界面档位分池：审查档有独立的审查类型卡片池（见 featureSuggestedPrompts）。
   const recommendationMode = useZCodeStoreWithDefault(
@@ -117,14 +115,8 @@ export function ConversationDraftSuggestedPromptsContainer({
   const closeRecommendations = async () => {
     setClosing(true);
     try {
-      // 关闭按钮与引导、设置页共用持久化设置，避免另一份本地开关重新显示推荐。
+      // 关闭按钮与设置页共用持久化设置，避免另一份本地开关重新显示推荐。
       await update({ proactiveSuggestionsEnabled: false });
-      // 手动修改反向回写 record，换号同步时不会把已关闭的推荐复活；失败不阻塞关闭流程。
-      await onboardingRecordService
-        ?.updateRecordPreferences({ proactiveSuggestionsEnabled: false })
-        .catch((cause: unknown) => {
-          logger.warn("[v4-suggested-prompts] 回写引导记录失败", { error: String(cause) });
-        });
     } catch (error) {
       logger.warn("[v4-suggested-prompts] 关闭推荐失败", { error: String(error) });
       toast(intl.formatMessage({ id: "chat.officeSuggestions.closeError" }));
@@ -735,15 +727,10 @@ export function ConversationDraftSuggestedPromptsContainer({
   );
 
   return (
-    <div
-      data-v4-draft-suggested-prompts-slot="true"
-      className={cn(!proactive && "h-8", className)}
-    >
+    <div data-v4-draft-suggested-prompts-slot="true" className={cn(!proactive && "h-8", className)}>
       <ConversationDraftSuggestedPrompts
         // 绝对定位让推荐区脱离 Composer 的正常结构，调试和间距语义都不直观。
         // 旧场景推荐保留固定槽位；主动推荐列表必须由内容撑高，否则多行会溢出并覆盖下方内容。
-        // 审查档的审查类型卡片与编程档场景卡同形：单行横排 chips（超出横向滚动），
-        // 不用 list 竖排——视觉规格见 docs/已完成/已完成-interface-mode.md 第 4 节。
         items={items}
         layout={proactive ? "list" : "chips"}
         onSelect={handleSelect}

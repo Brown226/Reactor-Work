@@ -14,14 +14,14 @@ import type { DraftSuggestedPromptItem } from "@/v4/draftSuggestedPromptItems.js
  * 模式集合与取舍见 docs/未完成-审查板块-方案-v1.md §2（已裁剪 RULE_ONLY / DEC_REVIEW；
  * 「以库审文」依赖的企业知识库本期不做，故此处不出现，避免死入口）。
  */
-export interface ReviewQuickActionPrompt extends DraftSuggestedPromptItem {
+interface ReviewQuickActionPrompt extends DraftSuggestedPromptItem {
   mode: "review";
   /** 内置插件 `review-skills` 中的技能名；正文里的 `$<skill>` 引用必须与它一致。 */
   skill: string;
 }
 
 /** Composer 技能引用的 token 语法：`$name` 需位于行首或空白之后，且后接空白或结尾。 */
-export function withSkillReference(skill: string, prompt: string): string {
+function withSkillReference(skill: string, prompt: string): string {
   return `$${skill} ${prompt}`;
 }
 
