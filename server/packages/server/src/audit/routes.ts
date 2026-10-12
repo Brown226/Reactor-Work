@@ -18,16 +18,19 @@ import { MAX_AUDIT_BATCH } from "./limits.js";
 import {
   DEFAULT_POLICY,
   auditStats,
-  evaluateQuotaAlerts,
   getPolicy,
   insertAuditBatch,
+  normalizeProductDocsUrl,
   putPolicy,
   queryAudit,
-  summarizeUsage,
   type AuditActor,
   type AuditQueryFilters,
   type AuditScope,
 } from "./repo.js";
+// 额度评估统一走 metering 域（P2）：用量取账本，支持 org/dept/user 多维度规则
+import { evaluateQuotaFor } from "../metering/quota-eval.js";
+// 报表口径切账本（P4）：/desktop/usage/summary 改用账本聚合
+import { summarizeLedgerUsage, type UsageLedgerFilter } from "../metering/repo.js";
 
 type AppEnv = { Variables: { claims: TokenClaims } };
 type Ctx = Context<AppEnv>;
@@ -185,8 +188,17 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
 
     const actor = await resolveActor(db, claims);
     const result = await insertAuditBatch(db, actor, body.events as AuditEventInput[]);
-    // 额度评估（只告警不阻断）：每次上报后检查是否跨过阈值；失败不影响上报结果，但**要可见**
-    const quota = await evaluateQuotaAlerts(db, { webhookUrl: process.env.REACTOR_QUOTA_WEBHOOK_URL }).catch((e) => {
+    /**
+     * 额度评估（P2 起统一走 metering 域的新引擎）：
+     *  · 用量取**账本**（网关权威），不再用本批上报的事件 —— 端侧漏报不会让额度失真；
+     *  · 合成开关默认开：老部署的 `desktop_policy.quota` 在迁移前仍然有效。
+     * 这样"额度是否超线"全仓只有一个实现（metering/quota-eval.ts）。
+     */
+    const quota = await evaluateQuotaFor(db, {
+      uid: actor.uid,
+      deptId: actor.deptId,
+      webhookUrl: process.env.REACTOR_QUOTA_WEBHOOK_URL,
+    }).catch((e) => {
       console.warn(`[audit] 额度评估失败（不影响上报）：${e instanceof Error ? e.message : String(e)}`);
       return null;
     });
@@ -212,7 +224,13 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
     return c.json({ events, total, limit: f.limit, offset: f.offset, scope: scope.role, ...(stats ? { stats } : {}) });
   });
 
-  /** 用量聚合（部门 / 模型 / 用户 / 日） */
+  /**
+   * 用量聚合（部门 / 模型 / 用户 / 日）。
+   *
+   * **数据源 = 计量账本**（P4 口径切换）：账本是网关侧事实，端侧漏报/崩溃不会让报表缺数。
+   * 审计事件里的 `model_call` 仍在「审计」页按事件口径可见（两处用途不同、口径也标注清楚）。
+   * 过滤沿用同一套角色收敛（`resolveScope`）：普通用户只看自己、部门负责人看子树。
+   */
   app.get("/desktop/usage/summary", async (c) => {
     const claims = c.get("claims");
     const groupRaw = (c.req.query("groupBy") ?? "dept") as UsageGroupBy;
@@ -220,8 +238,25 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
     const f = parseFilters(c);
     if ("error" in f) return err(c, 400, f.error);
     const scope = await resolveScope(db, claims);
-    const summary = await summarizeUsage(db, scope, f, groupRaw);
-    return c.json({ ...summary, scope: scope.role });
+    // scope → 账本过滤（与 buildWhere 的语义一一对应：user 限本人；dept_head 限子树）
+    const ledgerFilter: UsageLedgerFilter = {
+      ...(f.from ? { from: f.from } : {}),
+      ...(f.to ? { to: f.to } : {}),
+      ...(scope.role === "user" ? { uid: scope.uid } : {}),
+      ...(scope.role === "dept_head" ? { deptIds: scope.deptIds } : {}),
+      // 报表含 system 调用（KB 向量化等会消耗组织额度，管理视图应能看到）
+    };
+    const summary = await summarizeLedgerUsage(db, ledgerFilter, groupRaw);
+    return c.json({
+      groupBy: groupRaw,
+      from: (f.from ?? new Date(0)).toISOString(),
+      to: (f.to ?? new Date()).toISOString(),
+      rows: summary.rows,
+      totals: { key: "TOTAL", ...summary.totals },
+      scope: scope.role,
+      /** 口径标注：调用方（管理台/端侧）据此说明数据来源 */
+      source: "ledger",
+    });
   });
 
   /** 策略下发（读取）：任意已登录用户拿「当前生效策略」 */
@@ -248,6 +283,13 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
     const thresholds = Array.isArray(quotaRaw.alertThresholds)
       ? quotaRaw.alertThresholds.filter((n): n is number => typeof n === "number" && n > 0 && n <= 100).slice(0, 10)
       : DEFAULT_POLICY.quota.alertThresholds;
+    // 产品文档地址：省略/null = 清空（与其它字段"整体替换"语义一致）；给了但非法
+    // （非 http(s) / 超长）直接 400，不让管理员以为配上了却被静默丢弃。
+    let productDocsUrl: string | null = null;
+    if (body.productDocsUrl !== undefined && body.productDocsUrl !== null) {
+      productDocsUrl = normalizeProductDocsUrl(body.productDocsUrl);
+      if (!productDocsUrl) return err(c, 400, "productDocsUrl 非法（仅支持 http/https）");
+    }
     const policy: DesktopPolicy = {
       defaultApprovalMode: mode,
       commandBlacklist: list(body.commandBlacklist, 200),
@@ -256,10 +298,19 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
         monthlyTokenLimit: typeof limit === "number" && Number.isFinite(limit) && limit > 0 ? limit : null,
         alertThresholds: thresholds,
       },
+      productDocsUrl,
     };
     const saved = await putPolicy(db, policy, claims.sub);
-    // 额度/阈值变更后立即复评：把额度调低会**当场**触发告警，不必等到下次上报
-    const quota = await evaluateQuotaAlerts(db, { webhookUrl: process.env.REACTOR_QUOTA_WEBHOOK_URL }).catch((e) => {
+    /**
+     * 额度/阈值变更后立即复评：把额度调低会**当场**触发告警，不必等到下次调用。
+     * 注：`desktop_policy.quota` 是**旧配置位**；已有 org 规则时新引擎以规则为准
+     * （此处复评用于让"只改了旧字段、还没迁移"的部署也能立刻看到跨线告警）。
+     */
+    const quota = await evaluateQuotaFor(db, {
+      uid: claims.sub,
+      deptId: claims.deptId ?? null,
+      webhookUrl: process.env.REACTOR_QUOTA_WEBHOOK_URL,
+    }).catch((e) => {
       console.warn(`[audit] 额度评估失败（不影响策略保存）：${e instanceof Error ? e.message : String(e)}`);
       return null;
     });

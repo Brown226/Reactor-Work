@@ -158,6 +158,37 @@ async function main() {
     const HT = head.accessToken;
     const UT = user.accessToken;
 
+    /**
+     * 向**计量账本**种一行（P2/P4 起报表与额度都以账本为权威源）。
+     * 本冒烟不经过网关进程（它测的是 identity 侧路由），所以直接写仓储 ——
+     * 与网关落账同一张表、同一形状（`usage_ledger`）。
+     */
+    const { recordUsage: ledgerRecordUsage } = await import(
+      new URL("../dist/metering/repo.js", import.meta.url).href
+    );
+    const recordLedger = ({ uid, deptPath = null, model, tokens, cost = null, seq }) =>
+      ledgerRecordUsage(
+        { pool },
+        {
+          requestId: `${PREFIX}${seq}`,
+          subjectKind: "user",
+          uid,
+          deptId: null,
+          deptPath,
+          model,
+          provider: "tokenrhythm",
+          apiShape: "anthropic-messages",
+          inputTokens: tokens,
+          outputTokens: 0,
+          cacheReadTokens: 0,
+          cacheWriteTokens: 0,
+          totalTokens: tokens,
+          cost,
+          costSource: cost === null ? null : "server",
+          currency: cost === null ? null : "CNY",
+        },
+      );
+
     console.log("· A 上报");
     const spoof = await req("POST", "/desktop/audit/batch", { uid: "somebody-else", events: [ev("spoof")] }, UT);
     check("A1 请求体自带 uid 被拒（归属只认令牌）", spoof.status === 400, `${spoof.status} ${spoof.text.slice(0, 80)}`);
@@ -263,15 +294,40 @@ async function main() {
     const csvBody = new TextDecoder().decode(new Uint8Array(await csvOnly.arrayBuffer()));
     check("B9 CSV 只导出明细（无 stats 字段）", !csvBody.includes("byAction"), csvBody.slice(0, 60));
 
-    console.log("· C 用量聚合");
+    console.log("· C 用量聚合（P4 起口径 = 计量账本）");
+    /**
+     * P4 口径切换：`/desktop/usage/summary` 的用量源是**账本**（网关权威），不是审计事件。
+     * 所以这里先向账本种数据，再验聚合；同时**反向钉住**"仅上报事件不进报表"
+     * （否则两套数会再次混起来，而那正是本次治理要消除的问题）。
+     */
+    const ledgerUid = "user"; // 用真实 uid 便于验证 user 视角收敛
+    // 部门归属：账本行的 dept_path 是写入时快照，这里直接给（真实链路由网关按令牌落）
+    const ledgerRows = [
+      { uid: ledgerUid, deptPath: "/河北分公司/设计管理部", model: "smoke-model", tokens: 150, cost: 0.01 },
+      { uid: ledgerUid, deptPath: "/河北分公司/设计管理部", model: "smoke-model", tokens: 50, cost: 0.005 },
+      { uid: "head", deptPath: "/河北分公司/设计管理部", model: "smoke-model", tokens: 15, cost: 0.002 },
+    ];
+    for (let i = 0; i < ledgerRows.length; i++) {
+      const r = ledgerRows[i];
+      await recordLedger({
+        uid: r.uid,
+        deptPath: r.deptPath,
+        model: r.model,
+        tokens: r.tokens,
+        cost: r.cost,
+        seq: `${PREFIX}c${i}`,
+      });
+    }
+
     const byModel = await req("GET", "/desktop/usage/summary?groupBy=model&limit=100", undefined, AT);
     const modelRow = (byModel.json?.rows ?? []).find((r) => r.key === "smoke-model");
     check(
-      "C1 按模型聚合：调用数与 token 求和正确",
-      byModel.status === 200 && modelRow && modelRow.calls >= 2 && modelRow.totalTokens >= 160,
+      "C1 按模型聚合（账本口径）：调用数与 token 求和正确",
+      byModel.status === 200 && modelRow && modelRow.calls >= 3 && modelRow.totalTokens >= 215,
       JSON.stringify(modelRow),
     );
-    check("C2 totals 与行数据一致（totalTokens >= 各行之和的模型行）", byModel.json?.totals?.totalTokens >= (modelRow?.totalTokens ?? 0), JSON.stringify(byModel.json?.totals));
+    check("C2 回执标注数据源为账本（口径可辨识）", byModel.json?.source === "ledger", byModel.json?.source);
+    check("C2b totals 不小于该模型行", byModel.json?.totals?.totalTokens >= (modelRow?.totalTokens ?? 0), JSON.stringify(byModel.json?.totals));
 
     const byUser = await req("GET", "/desktop/usage/summary?groupBy=user", undefined, AT);
     const keys = (byUser.json?.rows ?? []).map((r) => r.key);
@@ -279,10 +335,28 @@ async function main() {
 
     const userSum = await req("GET", "/desktop/usage/summary?groupBy=user", undefined, UT);
     check(
-      "C4 user 视角聚合仅含自己",
+      "C4 user 视角聚合仅含自己（角色收敛）",
       (userSum.json?.rows ?? []).every((r) => r.key === "user") && (userSum.json?.rows ?? []).length === 1,
       JSON.stringify((userSum.json?.rows ?? []).map((r) => r.key)),
     );
+
+    // ★反向断言：A 段上报的 audit_event（含超大 usage）不进报表 —— 报表只看账本
+    {
+      const before = (await req("GET", "/desktop/usage/summary?groupBy=model&limit=100", undefined, AT)).json?.totals?.totalTokens ?? 0;
+      await req(
+        "POST",
+        "/desktop/audit/batch",
+        { events: [ev("c-report-only", { usage: { model: "report-only-model", inputTokens: 999_999, outputTokens: 0, totalTokens: 999_999, cost: 0 } })] },
+        AT,
+      );
+      const after = (await req("GET", "/desktop/usage/summary?groupBy=model&limit=100", undefined, AT)).json;
+      const leaked = (after?.rows ?? []).some((r) => r.key === "report-only-model");
+      check(
+        "C5 ★仅上报未落账本 ⇒ 不进报表（两套口径不再混用）",
+        !leaked && (after?.totals?.totalTokens ?? 0) === before,
+        { leaked, before, after: after?.totals?.totalTokens },
+      );
+    }
 
     console.log("· D 策略下发");
     const p0 = await req("GET", "/desktop/policy", undefined, UT);
@@ -416,10 +490,13 @@ async function main() {
       JSON.stringify(r3),
     );
 
-    // 聚合口径：cost 求和应包含服务端核算值
+    // 聚合口径（P4）：报表读账本，所以 cost 行来自**账本落的 cost**（网关按四段价核算）。
+    // 种一条带 cost 的账本行，验证它聚合进报表 —— 即"报表 cost = 服务端核算值"这条链。
+    const costModel = `${PREFIX}ledger-cost`;
+    await recordLedger({ uid: "user", model: costModel, tokens: 300, cost: 0.71, seq: "e7" });
     const sumE = await req("GET", "/desktop/usage/summary?groupBy=model", undefined, AT);
-    const fullRow = (sumE.json?.rows ?? []).find((r) => r.key === `${PREFIX}price-full`);
-    check("E7 用量聚合采用服务端核算的 cost（模型行 = 0.71）", Boolean(fullRow) && Math.abs(fullRow.cost - 0.71) < 1e-9, JSON.stringify(fullRow));
+    const fullRow = (sumE.json?.rows ?? []).find((r) => r.key === costModel);
+    check("E7 用量聚合采用账本核算的 cost（模型行 = 0.71）", Boolean(fullRow) && Math.abs(fullRow.cost - 0.71) < 1e-9, JSON.stringify(fullRow));
 
     // 查询接口应带回 cost/costSource（供审计页展示来源）
     const qE = await req("GET", `/desktop/audit?action=model_call&limit=100`, undefined, AT);
@@ -506,86 +583,100 @@ async function main() {
 
     console.log("· G 额度告警（阈值触发 + 外发 + 幂等 + 不阻断）");
 
-    // 以「本月已有用量」为基准反推一个额度，使当前正好约 50%，从而可控地跨阈值
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
-    const base = await req(
-      "GET",
-      `/desktop/usage/summary?groupBy=day&from=${monthStart.toISOString()}&to=${new Date().toISOString()}`,
-      undefined,
-      AT,
-    );
-    const baseTokens = base.json?.totals?.totalTokens ?? 0;
-    const limit = Math.max(1000, Math.ceil(baseTokens / 0.5) + 10); // 当前≈50%
-    const setPolicy = (thresholds) =>
+    /**
+     * P2 起额度的**用量口径是账本**（`usage_ledger`，网关权威），不再取审计事件聚合。
+     * 所以本段直接向账本种用量行 —— 这正是"上报与额度解耦"的验证点：
+     * 上报事件（G2b 仍会报一条超大用量）不再影响额度，超线与否只看账本。
+     */
+    const quotaUid = `${PREFIX}quota-uid`;
+    const recordQuotaLedger = (tokens) =>
+      recordLedger({
+        uid: quotaUid,
+        model: "quota-model",
+        tokens,
+        seq: `quota-${Date.now()}-${Math.round(tokens)}`,
+      });
+
+    // 用**固定基线**算额度（不能用全库总量：user 规则只算该 uid 自己的账本用量）：
+    // 先种 base，令 limit ≈ base/0.5 ⇒ 当前约 50%，后续 bump 可控地跨阈值。
+    const base = 1000;
+    await recordQuotaLedger(base);
+    const limit = Math.ceil(base / 0.5) + 10; // = 2010 ⇒ 当前 ≈ 49.8%
+
+    // 用户规则（P2 口径）：走管理面 API，与生产路径一致；user scope 只算该 uid 的账本用量
+    const putRule = (thresholds) =>
       req(
         "PUT",
-        "/desktop/policy",
-        { defaultApprovalMode: "build", commandBlacklist: [], egressAllowlist: [], quota: { monthlyTokenLimit: limit, alertThresholds: thresholds } },
+        "/admin/quota-rules",
+        { scopeType: "user", scopeId: quotaUid, limitTokens: limit, alertThresholds: thresholds, action: "warn" },
         AT,
       );
 
-    const g1 = await setPolicy([80]);
+    const g1 = await putRule([80]);
     check("G0 设置额度（当前约 50%）后**未**触发告警", g1.status === 200 && !g1.json?.quotaAlerts, JSON.stringify(g1.json?.quotaAlerts ?? null));
 
-    const listAlerts = async () => (await req("GET", "/admin/quota-alerts", undefined, AT)).json;
+    const listAlerts = async () =>
+      ((await req("GET", "/admin/quota-alerts", undefined, AT)).json?.alerts ?? []).filter(
+        (a) => a.scopeType === "user" && a.scopeId === quotaUid,
+      );
     const gList0 = await listAlerts();
-    check("G1 告警列表初始为空且带当前用量/额度", gList0?.alerts?.length === 0 && gList0?.limitTokens === limit, JSON.stringify({ n: gList0?.alerts?.length, limit: gList0?.limitTokens, pct: gList0?.percent }));
+    check("G1 告警列表初始为空", gList0.length === 0, JSON.stringify({ n: gList0.length }));
 
-    // 冲过 80%
+    // 冲过 80%：写账本（不是发上报事件）
     const bump = Math.ceil(limit * 0.35);
-    const g2 = await req(
+    await recordQuotaLedger(bump);
+    const g2 = await putRule([80]);
+    check(
+      "G2 账本跨过 80% 阈值 → 评估带出新告警",
+      g2.status === 200 && (g2.json?.quotaAlerts ?? []).length === 1 && g2.json.quotaAlerts[0].threshold === 80,
+      JSON.stringify(g2.json?.quotaAlerts ?? null),
+    );
+    // ★ 钉住解耦：报一条超大用量的**上报事件**，不应对额度产生任何影响
+    await req(
       "POST",
       "/desktop/audit/batch",
-      { events: [ev("quota1", { usage: { model: "quota-model", inputTokens: bump, outputTokens: 0, totalTokens: bump, cost: 0 } })] },
+      { events: [ev("quota-report-decoupled", { usage: { model: "quota-model", inputTokens: 10_000_000, outputTokens: 0, totalTokens: 10_000_000, cost: 0 } })] },
       AT,
     );
     check(
-      "G2 跨过 80% 阈值 → 上报响应带出新告警（且上报本身仍成功）",
-      g2.status === 200 && g2.json?.accepted === 1 && (g2.json?.quotaAlerts ?? []).length === 1 && g2.json.quotaAlerts[0].threshold === 80,
-      JSON.stringify(g2.json?.quotaAlerts ?? null),
+      "G2b ★上报事件不再驱动额度（超大 reported 用量不产生新告警 ⇒ 口径已切到账本）",
+      (await listAlerts()).length === 1,
+      JSON.stringify(await listAlerts()),
     );
+
     const gList1 = await listAlerts();
     check(
-      "G3 告警落库并可查（含 period/percent/额度）",
-      gList1?.alerts?.length === 1 && gList1.alerts[0].period === new Date().toISOString().slice(0, 7) && gList1.alerts[0].percent >= 80,
-      JSON.stringify(gList1?.alerts?.[0]),
+      "G3 告警落库并可查（含 period/threshold/percent 与 scope）",
+      gList1.length === 1 &&
+        gList1[0].period === new Date().toISOString().slice(0, 7) &&
+        gList1[0].percent >= 80 &&
+        gList1[0].scopeType === "user" &&
+        gList1[0].scopeId === quotaUid,
+      JSON.stringify(gList1[0]),
     );
     check(
       "G4 已通过 webhook 外发（notified=true，无错误）",
-      gList1?.alerts?.[0]?.notified === true && gList1?.alerts?.[0]?.notifyError === null && gList1?.webhookConfigured === true,
-      JSON.stringify({ notified: gList1?.alerts?.[0]?.notified, err: gList1?.alerts?.[0]?.notifyError, cfg: gList1?.webhookConfigured }),
+      gList1[0]?.notified === true && gList1[0]?.notifyError === null,
+      JSON.stringify({ notified: gList1[0]?.notified, err: gList1[0]?.notifyError }),
     );
 
-    // 幂等：再上报不应重复告警
-    await req(
-      "POST",
-      "/desktop/audit/batch",
-      { events: [ev("quota2", { usage: { model: "quota-model", inputTokens: 10, outputTokens: 0, totalTokens: 10, cost: 0 } })] },
-      AT,
-    );
+    // 幂等：再评估一次不应重复告警
+    await putRule([80]);
     const gList2 = await listAlerts();
-    check("G5 同一周期同一阈值只告警一次（幂等）", gList2?.alerts?.length === 1, `n=${gList2?.alerts?.length}`);
+    check("G5 同一周期同一 scope 同一阈值只告警一次（幂等）", gList2.length === 1, `n=${gList2.length}`);
 
-    // 加阈值 100 并冲过 → 第二条告警
-    await setPolicy([80, 100]);
-    const bump2 = Math.ceil(limit * 0.3);
-    await req(
-      "POST",
-      "/desktop/audit/batch",
-      { events: [ev("quota3", { usage: { model: "quota-model", inputTokens: bump2, outputTokens: 0, totalTokens: bump2, cost: 0 } })] },
-      AT,
-    );
+    // 加阈值 100 并冲过 → 追加 critical
+    await recordQuotaLedger(Math.ceil(limit * 0.3));
+    await putRule([80, 100]);
     const gList3 = await listAlerts();
-    const thresholds = (gList3?.alerts ?? []).map((a) => a.threshold);
+    const thresholds = gList3.map((a) => a.threshold);
     check("G6 新增 100% 阈值并冲过 → 追加一条 critical 告警", thresholds.includes(80) && thresholds.includes(100), JSON.stringify(thresholds));
     check(
-      "G7 超过 100% 仍不阻断上报（只告警不阻断）",
+      "G7 超过 100% 仍不阻断上报（只告警不阻断 —— action=warn 的既有语义）",
       (await req("POST", "/desktop/audit/batch", { events: [ev("quota4", { usage: { model: "quota-model", inputTokens: 5, outputTokens: 0, totalTokens: 5, cost: 0 } })] }, AT)).status === 200,
     );
 
-    // webhook mock 收到的载荷形状
+    // webhook mock 收到的载荷形状（P2 起带 scope）
     check(
       "G8 webhook 收到合规载荷（type/period/threshold/percent）",
       webhookReceived.length >= 2 &&
@@ -593,10 +684,12 @@ async function main() {
       JSON.stringify(webhookReceived),
     );
 
-    // 清理：删掉本轮的告警记录（否则会污染真实环境的用量页）
-    const alertIds = (gList3?.alerts ?? []).map((a) => a.id);
+    // 清理：删掉本轮的用户规则/告警/账本行（否则污染真实环境的用量页）
+    const ruleId = g1.json?.rule?.id;
+    if (ruleId) await req("DELETE", `/admin/quota-rules/${ruleId}`, undefined, AT);
+    const alertIds = gList3.map((a) => a.id);
     if (alertIds.length > 0) await pool.query(`DELETE FROM quota_alert WHERE id = ANY($1::int[])`, [alertIds]);
-    await req("PUT", "/desktop/policy", { defaultApprovalMode: "build", commandBlacklist: [], egressAllowlist: [], quota: { monthlyTokenLimit: null, alertThresholds: [80, 100] } }, AT);
+    await pool.query(`DELETE FROM usage_ledger WHERE uid = $1`, [quotaUid]).catch(() => ({ rowCount: 0 }));
   } finally {
     // 审计表只增不改：测试数据在此按前缀直接清理（非 API 路径）
     const cleaned = await pool.query(`DELETE FROM audit_event WHERE event_id LIKE $1`, [`${PREFIX}%`]).catch(() => ({ rowCount: 0 }));

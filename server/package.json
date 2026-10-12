@@ -1,6 +1,6 @@
 {
   "name": "reactor-server-workspace",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Reactor（数智堆脑）服务端独立工作区：身份底座 + 模型网关 + 管理台 API",
   "packageManager": "pnpm@10.33.2",

@@ -255,7 +255,9 @@ export function Audit() {
                 <TableRow key={e.id}>
                   <TableCell className="mono cell-sub">{fmtTime(e.ts)}</TableCell>
                   <TableCell>
-                    <div className="cell-title mono">{e.uid}</div>
+                    {/* uid 为 mono 无空格文本，LDAP 环境下可能是邮箱/点分标识，
+                        同样会撑爆列宽；与摘要列同一收口模式。 */}
+                    <div className="cell-title mono max-w-[160px] truncate" title={e.uid}>{e.uid}</div>
                     <div className="cell-sub">{e.deptPath ?? "—"}</div>
                   </TableCell>
                   <TableCell>
@@ -280,7 +282,16 @@ export function Audit() {
                     ) : null}
                   </TableCell>
                   <TableCell className="num-cell mono">{e.durationMs != null ? `${(e.durationMs / 1000).toFixed(1)}s` : "—"}</TableCell>
-                  <TableCell><div className="cell-sub">{e.summary ?? "—"}</div></TableCell>
+                  {/* 修复溢出：摘要含「解密后的密钥请求 https://…」这类无空格长文本，
+                      不截断会把整表撑出 .tablewrap（overflow:hidden）从而裁掉右侧列。
+                      按 Standards.tsx 既有模式 max-w + truncate + title：单行省略，
+                      全文 hover 可见；反例是不加 max-w 只加 truncate——td 自动布局下
+                      宽度仍由内容决定，省略符不生效。 */}
+                  <TableCell>
+                    <div className="cell-sub max-w-[360px] truncate" title={e.summary ?? undefined}>
+                      {e.summary ?? "—"}
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))
             )}

@@ -1,6 +1,6 @@
 {
   "name": "@reactor/shared",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Reactor 协议契约：RPC 命令类型、JSONL 会话 schema、工具 schema（对齐 pi-web rpc-manager 命令面）",
   "type": "module",

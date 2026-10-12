@@ -12,6 +12,8 @@ import { ensureAdminSchema } from "../gateway/admin-schema.js";
 import { createAdminRoutes, readKbRetrievalConfig } from "../gateway/admin-routes.js";
 import { ensureAgentsSchema } from "../agents/repo.js";
 import { createAgentsRoutes } from "../agents/routes.js";
+import { ensureMeteringSchema, ensureQuotaSchema } from "../metering/index.js";
+import { createQuotaRoutes } from "../metering/quota-routes.js";
 import { ensureDatasetsSchema } from "../datasets/repo.js";
 import { createDatasetsRoutes, createServerEmbedder, type KbRoutesDeps } from "../datasets/routes.js";
 import { ensureSkillsSchema } from "../skills/repo.js";
@@ -108,7 +110,11 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
   await ensureAgentsSchema(db); // Agent 数字人（A-1）
   await ensurePermissionsSchema(db); // 权限点（U-2）
   await ensureAuditSchema(db); // 审计与用量数据域（G0）
-  await ensureUpdatesSchema(db); // 软件更新产物登记（UPD）
+  // 计量账本（额度分配 P1）：唯一写入者是 gateway 进程，建表归本启动批 ——
+  // gateway 遵「不建表不迁移」纪律，冷启窗口内它的写库失败按 fail-open 降级（见方案 §6）。
+  await ensureMeteringSchema(db);
+  // 额度规则与告警（额度分配 P2）：含老库的 quota_alert 唯一约束迁移，见 quota-schema.ts
+  await ensureQuotaSchema(db);  await ensureUpdatesSchema(db); // 软件更新产物登记（UPD）
   await ensureFeedbackSchema(db); // 反馈 / 需求工单（FBK）
   await ensureStandardsSchema(db); // 标准规范清单（STD，文件审查板块的知识依据）
   // 知识板块另外两个子域：术语白名单（TRM，建表时幂等 seed 112 条内置词条）与规范库（RUL）。
@@ -143,6 +149,9 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
   // 管理台 API（T3-1/T3-4）：挂在 authed 组之后，鉴权复用 authed 的 Bearer 中间件，
   // 路由内部仅再校验 claims.role=platform_admin。
   app.route("/", createAdminRoutes(db, { secretKey }));
+  // 额度规则与告警（额度分配 P2）：新口径挂在自己的路由文件里；
+  // admin-routes.ts 里旧的 /admin/quota-alerts 已移除（避免同路径双注册 —— Hono 取先注册的那条）。
+  app.route("/", createQuotaRoutes(db));
   // Skills（S-1 管理面 /admin/skills + S-2 下发面 /me/skills）
   app.route("/", createSkillsRoutes(db));
   // Agents（A-1 管理面 /admin/agents + A-2 下发面 /me/agents）

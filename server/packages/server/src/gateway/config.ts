@@ -21,6 +21,14 @@ export interface GatewayConfig {
   jwtSecret?: string;
   /** B2：是否接受 M0 静态 dev token（默认 true；生产可置 false 强制身份令牌） */
   allowDevToken: boolean;
+  /**
+   * 额度硬阻断开关（额度分配 P3）。
+   *
+   * 默认 **false**：只告警不阻断（与改造前完全一致，回归可证）。
+   * 置 true 后，`quota_rule.action='block'` 的规则超限时网关返回 429 + 写 `policy_block` 审计。
+   * 方案 §2 Q2：先观察一个周期再开。
+   */
+  quotaEnforce: boolean;
 }
 
 export const DEFAULT_GATEWAY_PORT = 8787;
@@ -53,5 +61,7 @@ export function loadGatewayConfig(env: NodeJS.ProcessEnv = process.env): Gateway
     jwtSecret: env.REACTOR_JWT_SECRET,
     // 默认接受（e2e/sidecar 现网依赖）；生产置 false 即强制身份令牌
     allowDevToken: (env.REACTOR_GATEWAY_ALLOW_DEV_TOKEN ?? "true") !== "false",
+    // 默认关闭（只告警不阻断）；开启即对 block 规则生效，见字段注释
+    quotaEnforce: (env.REACTOR_QUOTA_ENFORCE ?? "false") === "true",
   };
 }

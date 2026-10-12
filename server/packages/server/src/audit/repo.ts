@@ -1,9 +1,16 @@
 /**
- * 审计与用量仓储（G0）：批量写入（幂等）、查询、聚合、策略读写。
+ * 审计事件仓储（G0）：批量写入（幂等）、查询、报表统计、策略读写。
  *
  * 全部参数化；只增不改（无 UPDATE/DELETE 审计事件的路径）。
  * 契约类型来自 @reactor/shared（**仅 type import**：服务端 dist 保持自包含，
  * 不做 @reactor/shared 运行时依赖 —— Dockerfile 依赖这一点）。
+ *
+ * ⚠ 口径边界（额度分配方案 P2/P4，2026-10-09）：
+ *  · **用量聚合**（按部门/模型/用户/日）与**额度评估**已迁至 `metering` 域
+ *    —— 前者口径是计量账本（网关权威），后者要支持 org/dept/user 多维规则。
+ *    本文件不再提供 `summarizeUsage` / `evaluateQuotaAlerts`（旧实现已删除，
+ *    避免两套口径并存导致"报表与额度对不上"）。
+ *  · 本文件仍负责**审计事件**（事实记录：谁在何时做了什么）与**策略读写**。
  */
 
 import type {
@@ -12,9 +19,6 @@ import type {
   AuditEventRecord,
   AuditUsage,
   DesktopPolicy,
-  UsageGroupBy,
-  UsageSummaryResponse,
-  UsageSummaryRow,
 } from "@reactor/shared";
 import { normalizeAuditPolicyMode } from "@reactor/shared";
 import type { IdentityDb } from "../identity/db.js";
@@ -437,244 +441,27 @@ export async function recordAdminAction(db: IdentityDb, actor: AuditActor, entry
   }
 }
 
-/* ---------------- 用量聚合 ---------------- */
+/* ---------------- 策略下发 ---------------- */
 
-const GROUP_EXPR: Record<UsageGroupBy, string> = {
-  dept: "coalesce(dept_path, '(未分配)')",
-  model: "coalesce(model, '(未知模型)')",
-  user: "uid",
-  day: "to_char(ts, 'YYYY-MM-DD')",
-};
-
-/** 用量聚合（部门/模型/用户/日）。只统计带用量的事件（通常是 model_call）。 */
-export async function summarizeUsage(
-  db: IdentityDb,
-  scope: AuditScope,
-  f: AuditQueryFilters,
-  groupBy: UsageGroupBy,
-): Promise<UsageSummaryResponse> {
-  const { where, params } = buildWhere(scope, f);
-  const usageOnly = `${where ? `${where} AND` : "WHERE"} (input_tokens IS NOT NULL OR output_tokens IS NOT NULL OR cost IS NOT NULL)`;
-  const agg = `
-    count(*)::int AS calls,
-    coalesce(sum(input_tokens), 0)::bigint AS input_tokens,
-    coalesce(sum(output_tokens), 0)::bigint AS output_tokens,
-    coalesce(sum(cache_read_tokens), 0)::bigint AS cache_read_tokens,
-    coalesce(sum(cache_write_tokens), 0)::bigint AS cache_write_tokens,
-    -- 端侧未上报 totalTokens 时，按四段之和兜底（避免报表为 0 而分项有值）
-    coalesce(sum(coalesce(
-      total_tokens,
-      coalesce(input_tokens, 0) + coalesce(output_tokens, 0) + coalesce(cache_read_tokens, 0) + coalesce(cache_write_tokens, 0)
-    )), 0)::bigint AS total_tokens,
-    coalesce(sum(cost), 0)::numeric AS cost`;
-
-  const { rows } = await db.pool.query<Record<string, unknown>>(
-    `SELECT ${GROUP_EXPR[groupBy]} AS key, ${agg} FROM audit_event ${usageOnly}
-     GROUP BY 1 ORDER BY total_tokens DESC, calls DESC LIMIT 500`,
-    params,
-  );
-  const { rows: totalRows } = await db.pool.query<Record<string, unknown>>(
-    `SELECT ${agg} FROM audit_event ${usageOnly}`,
-    params,
-  );
-
-  const toRow = (key: string, r: Record<string, unknown>): UsageSummaryRow => ({
-    key,
-    calls: Number(r.calls ?? 0),
-    inputTokens: Number(r.input_tokens ?? 0),
-    outputTokens: Number(r.output_tokens ?? 0),
-    cacheReadTokens: Number(r.cache_read_tokens ?? 0),
-    cacheWriteTokens: Number(r.cache_write_tokens ?? 0),
-    totalTokens: Number(r.total_tokens ?? 0),
-    cost: Number(r.cost ?? 0),
-  });
-
-  return {
-    groupBy,
-    from: (f.from ?? new Date(0)).toISOString(),
-    to: (f.to ?? new Date()).toISOString(),
-    rows: rows.map((r) => toRow(String(r.key), r)),
-    totals: toRow("TOTAL", totalRows[0] ?? {}),
-  };
-}
-
-/* ---------------- 额度告警（M9） ---------------- */
-
-export interface QuotaAlert {
-  id: number;
-  period: string;
-  threshold: number;
-  level: "warn" | "critical";
-  monthTokens: number;
-  limitTokens: number;
-  percent: number;
-  createdAt: string;
-  notified: boolean;
-  notifyError: string | null;
-}
-
-export interface QuotaCheckResult {
-  checked: boolean;
-  period: string;
-  percent: number | null;
-  monthTokens: number;
-  limitTokens: number | null;
-  /** 本次新触发的告警（已触发过的不会重复） */
-  newAlerts: QuotaAlert[];
-}
-
-/** 当前周期（UTC，YYYY-MM） */
-export function currentPeriod(now = new Date()): string {
-  return now.toISOString().slice(0, 7);
-}
-
-/** 组织级月度用量（与用量报表同一口径：端侧未报 totalTokens 时按四段之和兜底） */
-async function monthTokens(db: IdentityDb, period: string): Promise<number> {
-  const { rows } = await db.pool.query<{ n: string }>(
-    `SELECT coalesce(sum(coalesce(
-       total_tokens,
-       coalesce(input_tokens, 0) + coalesce(output_tokens, 0) + coalesce(cache_read_tokens, 0) + coalesce(cache_write_tokens, 0)
-     )), 0)::bigint AS n
-     FROM audit_event
-     WHERE to_char(ts, 'YYYY-MM') = $1`,
-    [period],
-  );
-  return Number(rows[0]?.n ?? 0);
-}
+/** 产品文档地址字段上限（与端侧归一化口径一致，见 packages/shared/src/desktopPolicy.ts）。 */
+const PRODUCT_DOCS_URL_MAX_LENGTH = 500;
 
 /**
- * 评估月度额度是否触发告警（幂等）。
- *
- * 触发时机：每次批量上报之后 + 策略（额度/阈值）变更之后。
- * 幂等：`UNIQUE (period, threshold)` —— 同一周期同一阈值只产生一条告警，不会刷屏。
- * **只告警不阻断**：本函数只记录与通知，不影响上报/调用是否成功。
- * webhook 为 best-effort：失败只记 notify_error，不抛错、不影响主流程。
+ * 归一化产品文档地址：仅接受 http/https，其余（空串 / 非法协议 / 超长）一律 null。
+ * 服务端与端侧各有一份同口径实现（两个 workspace 不共享运行时），改规则必须同步。
  */
-export async function evaluateQuotaAlerts(
-  db: IdentityDb,
-  opts: { webhookUrl?: string; period?: string } = {},
-): Promise<QuotaCheckResult> {
-  const period = opts.period ?? currentPeriod();
-  const policy = await getPolicy(db);
-  const limit = policy.quota.monthlyTokenLimit;
-  const thresholds = [...new Set(policy.quota.alertThresholds)].filter((t) => t > 0 && t <= 100).sort((a, b) => a - b);
-  if (limit === null || limit <= 0 || thresholds.length === 0) {
-    return { checked: false, period, percent: null, monthTokens: 0, limitTokens: limit ?? null, newAlerts: [] };
-  }
-
-  const tokens = await monthTokens(db, period);
-  // clamp：额度设得极低时 percent 可能远超 100；收敛到列宽能装的范围
-  const percent = Math.min(99999999.99, Math.round((tokens / limit) * 10000) / 100);
-  const newAlerts: QuotaAlert[] = [];
-
-  for (const threshold of thresholds) {
-    if (percent < threshold) continue;
-    const level = threshold >= 100 ? "critical" : "warn";
-    const { rows } = await db.pool.query<{ id: number; created_at: Date }>(
-      `INSERT INTO quota_alert (period, threshold, level, month_tokens, limit_tokens, percent)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       ON CONFLICT (period, threshold) DO NOTHING
-       RETURNING id, created_at`,
-      [period, threshold, level, tokens, limit, percent],
-    );
-    const row = rows[0];
-    if (!row) continue; // 该阈值本周期已告警过
-    const alert: QuotaAlert = {
-      id: row.id,
-      period,
-      threshold,
-      level,
-      monthTokens: tokens,
-      limitTokens: limit,
-      percent,
-      createdAt: row.created_at.toISOString(),
-      notified: false,
-      notifyError: null,
-    };
-    if (opts.webhookUrl) {
-      const result = await notifyWebhook(opts.webhookUrl, alert);
-      alert.notified = result.ok;
-      alert.notifyError = result.error ?? null;
-      await db.pool
-        .query(`UPDATE quota_alert SET notified = $1, notified_at = now(), notify_error = $2 WHERE id = $3`, [
-          result.ok,
-          result.error ?? null,
-          row.id,
-        ])
-        .catch(() => undefined);
-    }
-    newAlerts.push(alert);
-  }
-
-  return { checked: true, period, percent, monthTokens: tokens, limitTokens: limit, newAlerts };
-}
-
-/** 告警外发（best-effort）：POST JSON，5s 超时；失败只回报，不抛。 */
-async function notifyWebhook(url: string, alert: QuotaAlert): Promise<{ ok: boolean; error?: string }> {
+export function normalizeProductDocsUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > PRODUCT_DOCS_URL_MAX_LENGTH) return null;
+  let parsed: URL;
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        type: "quota_alert",
-        period: alert.period,
-        threshold: alert.threshold,
-        level: alert.level,
-        monthTokens: alert.monthTokens,
-        limitTokens: alert.limitTokens,
-        percent: alert.percent,
-        at: new Date().toISOString(),
-      }),
-      signal: AbortSignal.timeout(5_000),
-    });
-    if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    parsed = new URL(trimmed);
+  } catch {
+    return null;
   }
+  return parsed.protocol === "http:" || parsed.protocol === "https:" ? trimmed : null;
 }
-
-/** 列出某周期的告警（含当前用量与额度，便于页面直接渲染）。 */
-export async function listQuotaAlerts(
-  db: IdentityDb,
-  period = currentPeriod(),
-): Promise<{ period: string; monthTokens: number; limitTokens: number | null; percent: number | null; alerts: QuotaAlert[] }> {
-  const policy = await getPolicy(db);
-  const limit = policy.quota.monthlyTokenLimit;
-  const tokens = await monthTokens(db, period);
-  const { rows } = await db.pool.query<{
-    id: number;
-    period: string;
-    threshold: number;
-    level: string;
-    month_tokens: string;
-    limit_tokens: string;
-    percent: string;
-    created_at: Date;
-    notified: boolean;
-    notify_error: string | null;
-  }>(`SELECT * FROM quota_alert WHERE period = $1 ORDER BY threshold`, [period]);
-  return {
-    period,
-    monthTokens: tokens,
-    limitTokens: limit,
-    percent: limit && limit > 0 ? Math.round((tokens / limit) * 10000) / 100 : null,
-    alerts: rows.map((r) => ({
-      id: r.id,
-      period: r.period,
-      threshold: r.threshold,
-      level: r.level === "critical" ? "critical" : "warn",
-      monthTokens: Number(r.month_tokens),
-      limitTokens: Number(r.limit_tokens),
-      percent: Number(r.percent),
-      createdAt: r.created_at.toISOString(),
-      notified: r.notified,
-      notifyError: r.notify_error,
-    })),
-  };
-}
-
-/* ---------------- 策略下发 ---------------- */
 
 /** 缺省策略（未配置时下发它）：与端上默认档一致，`build`。 */
 export const DEFAULT_POLICY: DesktopPolicy = {
@@ -682,6 +469,7 @@ export const DEFAULT_POLICY: DesktopPolicy = {
   commandBlacklist: [],
   egressAllowlist: [],
   quota: { monthlyTokenLimit: null, alertThresholds: [80, 100] },
+  productDocsUrl: null,
 };
 
 export async function getPolicy(db: IdentityDb): Promise<DesktopPolicy> {
@@ -689,7 +477,12 @@ export async function getPolicy(db: IdentityDb): Promise<DesktopPolicy> {
     `SELECT policy, updated_at, updated_by FROM desktop_policy WHERE id = 1`,
   );
   const row = rows[0];
-  if (!row) return { ...DEFAULT_POLICY };
+  if (!row) {
+    return {
+      ...DEFAULT_POLICY,
+      productDocsUrl: normalizeProductDocsUrl(process.env.REACTOR_PRODUCT_DOCS_URL),
+    };
+  }
   const p = row.policy ?? {};
   return {
     ...DEFAULT_POLICY,
@@ -698,6 +491,10 @@ export async function getPolicy(db: IdentityDb): Promise<DesktopPolicy> {
     defaultApprovalMode:
       normalizeAuditPolicyMode(p.defaultApprovalMode) ?? DEFAULT_POLICY.defaultApprovalMode,
     quota: { ...DEFAULT_POLICY.quota, ...(p.quota ?? {}) },
+    // 文档地址：库里没有（或值非法）时回落到部署环境变量，让运维只改 .env 也能配。
+    productDocsUrl:
+      normalizeProductDocsUrl(p.productDocsUrl) ??
+      normalizeProductDocsUrl(process.env.REACTOR_PRODUCT_DOCS_URL),
     updatedAt: row.updated_at.toISOString(),
     updatedBy: row.updated_by ?? undefined,
   };
@@ -710,6 +507,7 @@ export async function putPolicy(db: IdentityDb, policy: DesktopPolicy, updatedBy
     commandBlacklist: policy.commandBlacklist,
     egressAllowlist: policy.egressAllowlist,
     quota: policy.quota,
+    productDocsUrl: normalizeProductDocsUrl(policy.productDocsUrl),
   };
   await db.pool.query(
     `INSERT INTO desktop_policy (id, policy, updated_at, updated_by) VALUES (1, $1, now(), $2)

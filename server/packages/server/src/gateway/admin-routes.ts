@@ -27,7 +27,6 @@ import {
 import { deptsExist, parseScope } from "../common/scope.js";
 import { markAdminAudited } from "../audit/adminAudit.js";
 import { recordAdminAction, resolveActorForClaims, type AdminActionEntry } from "../audit/repo.js";
-import { listQuotaAlerts } from "../audit/repo.js";
 import { parseVectorDim } from "./vector-dim.js";
 import {
   isModelType,
@@ -1566,10 +1565,103 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
   });
 
   // ===== 额度告警（M9）=====
-  admin.get("/admin/quota-alerts", async (c) => {
-    const period = c.req.query("period") ?? undefined;
-    const data = await listQuotaAlerts(db, period);
-    return c.json({ ...data, webhookConfigured: Boolean(process.env.REACTOR_QUOTA_WEBHOOK_URL) });
+  // 已迁至 metering/quota-routes.ts（额度分配 P2：多维度 scope 口径）。
+  // 这里不再注册，避免与 createQuotaRoutes 的同名路径双注册（Hono 取先注册的那条，
+  // 表现为「改了新的实现但线上还是旧行为」—— 这类静默失效排查成本极高）。
+
+  // ===== 计量对账（额度分配 P1c）=====
+
+  /**
+   * 账本 vs 端侧上报的漂移对比（按 model）。
+   *
+   * 为什么要这个端点：账本（网关权威）与端侧 `model_call` 上报是**两条独立路径**，
+   * 差异本身就是信息 —— 端侧漏报（进程崩溃/未 acK）、重复上报、或端侧调用根本没走网关
+   * （开发者模式旁路），都会在这里显形。报表切换口径后，这是唯一的"两套数是否一致"的检查面。
+   *
+   * 口径说明（写进回执，避免误读）：
+   *  · 账本侧含全部调用（含 system 的 KB 向量化）；端侧上报**只报企业 provider 的 model_call**
+   *    （P4 决策 D1），所以 system 的差额是**预期**而非异常 —— 回执里单列 `ledgerSystemTokens`。
+   *  · 端侧只报一次成功调用，`outcome!=ok` 的账本行（上游 5xx）端侧也可能报了 error 事件，
+   *    这属于形态差异，不按漂移算（回执用 `calls` 而非 token 判定阈值）。
+   */
+  admin.get("/admin/usage/reconciliation", async (c) => {
+    const to = c.req.query("to") ? new Date(c.req.query("to") as string) : new Date();
+    const from = c.req.query("from") ? new Date(c.req.query("from") as string) : new Date(to.getTime() - 7 * 24 * 3600 * 1000);
+    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return err(c, 400, "from/to 非法");
+    if (from.getTime() > to.getTime()) return err(c, 400, "from 不能晚于 to");
+
+    const [ledgerRows, reportedRows] = await Promise.all([
+      db.pool.query<{ model: string; calls: number; total_tokens: string; system_tokens: string }>(
+        `SELECT coalesce(model, '(未知模型)') AS model,
+                count(*)::int AS calls,
+                coalesce(sum(coalesce(total_tokens,
+                  coalesce(input_tokens,0)+coalesce(output_tokens,0)+coalesce(cache_read_tokens,0)+coalesce(cache_write_tokens,0))), 0)::bigint AS total_tokens,
+                coalesce(sum(CASE WHEN subject_kind = 'system' THEN coalesce(total_tokens,
+                  coalesce(input_tokens,0)+coalesce(output_tokens,0)+coalesce(cache_read_tokens,0)+coalesce(cache_write_tokens,0)) ELSE 0 END), 0)::bigint AS system_tokens
+           FROM usage_ledger
+          WHERE ts >= $1 AND ts <= $2
+          GROUP BY 1`,
+        [from, to],
+      ),
+      // 端侧上报侧：与 audit 报表同一口径（action=model_call 且带用量）
+      db.pool.query<{ model: string; calls: number; total_tokens: string }>(
+        `SELECT coalesce(model, '(未知模型)') AS model,
+                count(*)::int AS calls,
+                coalesce(sum(coalesce(total_tokens,
+                  coalesce(input_tokens,0)+coalesce(output_tokens,0)+coalesce(cache_read_tokens,0)+coalesce(cache_write_tokens,0))), 0)::bigint AS total_tokens
+           FROM audit_event
+          WHERE action = 'model_call' AND ts >= $1 AND ts <= $2
+            AND (input_tokens IS NOT NULL OR output_tokens IS NOT NULL OR cost IS NOT NULL)
+          GROUP BY 1`,
+        [from, to],
+      ),
+    ]);
+
+    const ledgerMap = new Map(ledgerRows.rows.map((r) => [r.model, r]));
+    const reportedMap = new Map(reportedRows.rows.map((r) => [r.model, r]));
+    const models = [...new Set([...ledgerMap.keys(), ...reportedMap.keys()])].sort();
+
+    const rows = models.map((model) => {
+      const l = ledgerMap.get(model);
+      const r = reportedMap.get(model);
+      const ledgerTokens = Number(l?.total_tokens ?? 0);
+      const reportedTokens = Number(r?.total_tokens ?? 0);
+      return {
+        model,
+        ledgerCalls: l?.calls ?? 0,
+        reportedCalls: r?.calls ?? 0,
+        ledgerTokens,
+        reportedTokens,
+        /** 端侧应有但未报的 token（正数 = 漏报；负数 = 端侧多报/账本漏记） */
+        deltaTokens: ledgerTokens - reportedTokens,
+        /** 其中属于 system 调用的部分（KB 向量化等，端侧按 D1 本就不报 —— 预期差额） */
+        ledgerSystemTokens: Number(l?.system_tokens ?? 0),
+      };
+    });
+
+    const totals = rows.reduce(
+      (acc, r) => ({
+        ledgerCalls: acc.ledgerCalls + r.ledgerCalls,
+        reportedCalls: acc.reportedCalls + r.reportedCalls,
+        ledgerTokens: acc.ledgerTokens + r.ledgerTokens,
+        reportedTokens: acc.reportedTokens + r.reportedTokens,
+        deltaTokens: acc.deltaTokens + r.deltaTokens,
+        ledgerSystemTokens: acc.ledgerSystemTokens + r.ledgerSystemTokens,
+      }),
+      { ledgerCalls: 0, reportedCalls: 0, ledgerTokens: 0, reportedTokens: 0, deltaTokens: 0, ledgerSystemTokens: 0 },
+    );
+
+    return c.json({
+      from: from.toISOString(),
+      to: to.toISOString(),
+      rows,
+      totals,
+      /**
+       * 用户侧全量调用的期望差额：`deltaTokens` 应约等于 `ledgerSystemTokens`
+       * （端侧按 D1 不报 system 调用）。明显超出说明端侧漏报或存在不走网关的调用。
+       */
+      expectedDeltaFromSystem: totals.ledgerSystemTokens,
+    });
   });
 
   // ===== 知识库检索配置（KB 打通 · 2026-09-19）=====

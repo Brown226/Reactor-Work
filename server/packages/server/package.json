@@ -1,6 +1,6 @@
 {
   "name": "@reactor/server",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Reactor TS 服务端：auth（LDAP+令牌）/ gateway（统一模型出口），M1+ 策略/审计/计量/管理台",
   "type": "module",
@@ -21,6 +21,7 @@
     "smoke:gateway-auth": "node scripts/gateway-auth-smoke.mjs",
     "smoke:admin-static": "node scripts/admin-static-smoke.mjs",
     "smoke:audit": "node scripts/audit-smoke.mjs",
+    "smoke:quota": "tsx scripts/quota-smoke.ts",
     "smoke:admin-audit": "tsx scripts/admin-audit-smoke.ts",
     "acceptance:p4": "node scripts/p4-acceptance.mjs",
     "smoke:updates": "tsx scripts/updates-smoke.ts",

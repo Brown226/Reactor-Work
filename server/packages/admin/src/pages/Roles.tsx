@@ -149,14 +149,18 @@ export function Roles() {
               ) : (
                 filtered.map((point) => (
                   <TableRow key={point.code}>
-                    <TableCell className="mono">{point.code}</TableCell>
+                    {/* 修复溢出：权限码/路径是无空格 mono 长文本，说明列文字过长，
+                        三者共同把表格撑出容器，右侧「角色可见性」被裁。按 Standards.tsx
+                        既有模式 max-w + truncate + title 收口；反例是只加 truncate
+                        不加 max-w——td 自动布局下宽度仍由内容决定。 */}
+                    <TableCell className="mono max-w-[220px] truncate" title={point.code}>{point.code}</TableCell>
                     <TableCell>
                       <ToneBadge tone={point.method === "GET" ? "info" : point.method === "DELETE" ? "danger" : "warn"}>
                         {point.method}
                       </ToneBadge>
                     </TableCell>
-                    <TableCell className="mono" style={{ fontSize: 12 }}>{point.path}</TableCell>
-                    <TableCell className="cell-sub">{point.description}</TableCell>
+                    <TableCell className="mono max-w-[260px] truncate" style={{ fontSize: 12 }} title={point.path}>{point.path}</TableCell>
+                    <TableCell className="cell-sub max-w-[300px] truncate" title={point.description ?? undefined}>{point.description}</TableCell>
                     <TableCell>
                       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                         {roles

@@ -221,6 +221,7 @@ pnpm --filter @reactor/server smoke:gateway-embeddings
 | 技能市场 | `skills-smoke.mjs`、`skills-import.mjs` |
 | Agent 目录 | `agents-smoke.mjs` |
 | 审计与用量 | `audit-smoke.mjs`、`t34-smoke.mjs` |
+| 额度分配全链路（QTM P1–P4） | `smoke:quota`（`quota-smoke.ts`，**138 项全绿**：①域层 —— 建表幂等/写入回读同形/幂等键挡重放/聚合兜底/过滤/只增不改；②网关接线 —— 四形态（anthropic/openai 非流式+流式、embeddings、rerank）真实落账、**OpenAI 缓存口径减算**、SSE 顺路解析、上游 5xx 记 error 行不产生假用量、账本降级不阻断；③对账端点；④额度规则 CRUD/部门子树/分 scope 告警幂等/百分比口径；⑤**单位后缀**（`5M`/`500K`/`1.5M`/`500万`/裸数字，含 8 合法 + 8 非法形态）；⑥**硬阻断** —— 开关关闭不拦、开启后 429 + `policy_block` 审计 + 被拒不打上游 + 放宽即恢复 + dev token 放行；⑦**批量下发** —— dryRun 不写库、`expandUsers` 展开部门子树下每个在用用户、显式 uid 的停用/不存在跳过并给理由、请求内去重、500 目标上限写库前挡下、覆盖标注、重复 apply 幂等、非管理员 403。**真实起网关与 identity 进程**（自带 mock 上游）；PG 不可达时 SKIP 并以 0 退出。见 `docs/未完成-额度分配-方案-v1.md`） |
 | 公共知识库（纯函数 / 带服务端） | `smoke:kb-pure`、`smoke:kb-server` |
 | 软件更新（建表/上传/manifest/Range/灰度/下线清理） | `updates-smoke.ts`（PG 不可达时 SKIP 并以 0 退出） |
 | 反馈与需求（公开提交面 / 管理受理 / wire 格式 / 红点与事件） | `feedback-smoke.ts`（**40 项全绿**；PG 不可达时 SKIP 并以 0 退出） |
@@ -228,6 +229,7 @@ pnpm --filter @reactor/server smoke:gateway-embeddings
 | 管理操作审计兜底（中间件留痕 + 手写埋点去重，见 `src/audit/adminAudit.ts`） | `admin-audit-smoke.ts`（**29 项全绿**；PG 不可达时 SKIP 并以 0 退出） |
 | P4 真机验收·**服务端半边**（登录/网关令牌/四型事件上报与回读/幂等/策略下发/登出吊销；**非冒烟库**，直打运行中的 :8791，结束打印审计测试事件清理命令、策略自动还原） | `acceptance:p4`（**30 项全绿**，2026-10-08；桌面半边见 `docs/未完成-服务端接线-P4-用量上报与策略.md` §17） |
 | 向量化走网关（自带 mock 上游） | `smoke:gateway-embeddings` |
+| **额度分配·管理台视觉验收**（GUI 走查：登录 → 用量与额度 → 额度分配面板 → 新建 5M 规则看换算预览/非法提示/保存/编辑回填/对账表/删除 → **批量分配**对话框（部门下拉/100M 换算预览/超限部门明确报错/ghost uid 的 dryRun 跳过理由/零写入应用回执）；**直打运行中的 :8791**，截图存 `packages/server/shots/`） | `python scripts/quota-admin-walkthrough.py`（**31 项全绿**，2026-10-09；复用系统 Chrome/Edge，未装 playwright 浏览器时 SKIP。覆盖新版面顺序（额度分配→概览→报表）、规则行当期用量、对账折叠） |
 | 密钥运维 | `rotate-secret-key.mjs`、`verify-secret-key.mjs` |
 
 **数据安全**：连库的冒烟都经 `scripts/lib/smoke-db.mjs` 切到独立库 `reactor_smoke`（每次 DROP+CREATE），

@@ -182,6 +182,11 @@ export interface DesktopPolicy {
     monthlyTokenLimit: number | null;
     alertThresholds: number[];
   };
+  /**
+   * 产品文档入口地址（帮助菜单「产品文档」跳转目标）。null = 未配置：
+   * 端侧据此弹「尚未配置」提示，不跳转。维护方式见 docs/已完成/已完成-产品文档入口.md。
+   */
+  productDocsUrl?: string | null;
   updatedAt?: string;
   updatedBy?: string;
 }

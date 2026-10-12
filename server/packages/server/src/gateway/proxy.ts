@@ -14,6 +14,15 @@ import { createGatewayAuthenticator, type Principal } from "../auth/token.js";
 import { joinUrl, type ModelCatalog } from "./models.js";
 import { authHeadersFor, canServe, isScopeVisible, shapeFromPath, upstreamPathFor, type InboundShape } from "./provider-api.js";
 import { hasFeature, type ProviderSource } from "./registry.js";
+import {
+  extractUsage,
+  meteredStream,
+  SseUsageAccumulator,
+  type MeterContext,
+  type MeteringService,
+  type UpstreamShape,
+} from "./usage-capture.js";
+import { quotaExceededResponse, type QuotaGate } from "./quota-gate.js";
 
 const ANTHROPIC_DEFAULT_VERSION = "2023-06-01";
 
@@ -21,6 +30,10 @@ export function createGatewayHandlers(
   config: GatewayConfig,
   source: ProviderSource,
   catalog: ModelCatalog,
+  /** 计量服务（额度分配 P1b）：未接库时为 null ⇒ 纯透传，行为与改造前一致。 */
+  metering: MeteringService | null = null,
+  /** 额度执行门（额度分配 P3）：未启用时 check() 直接放行，零查询。 */
+  quotaGate: QuotaGate | null = null,
 ) {
   // B2：身份令牌（aud=gateway）优先，dev token 兜底（见 auth/token.ts）
   const authenticator = createGatewayAuthenticator({
@@ -84,6 +97,80 @@ export function createGatewayHandlers(
         ...(clamped ? { "x-reactor-clamped": clamped } : {}),
       },
     });
+
+  /**
+   * 计量版透传（P1b）：在纯透传之上，按回执形态**顺路**提取 usage 并落账本。
+   *
+   * 两条路径：
+   *  · **非流式**（JSON）：先整块读回执 → 提取 usage → 原样返回（回执体必须重建，
+   *    但字节数不变、仅内容类型与状态码同上游）。
+   *  · **流式**（SSE）：把 `body` 包成 `meteredStream` —— 数据先喂累加器再给客户端，
+   *    流结束时落账（**不 await**：客户端已读完，不需要为记账再等一次 DB）。
+   *
+   * 为什么不能一律缓冲：对话流式回执若先全部读完再返回，用户会把整个回答憋到最后
+   * 才看到 —— 那是把流式改成了非流式，属于功能性回归。所以按 content-type 分流。
+   */
+  const isStreamingResponse = (upstream: Response): boolean =>
+    (upstream.headers.get("content-type") ?? "").toLowerCase().includes("text/event-stream");
+
+  /**
+   * 一次代理调用的统一收尾：非流式走这里（同步提取 + 立刻返回），流式见 `pipeMetered`。
+   * 未接计量服务时行为与旧 `pipe()` 完全一致。
+   */
+  const pipeMetered = async (
+    upstream: Response,
+    providerId: string,
+    principal: Principal,
+    shape: UpstreamShape,
+    meter: MeterContext | null,
+    clamped?: string,
+  ): Promise<Response> => {
+    if (!metering || !meter) return pipe(upstream, providerId, principal, clamped);
+    // 上游非 2xx：不读 body（可能是错误 JSON，也可能是流），按 error 记一条空用量行后透传。
+    // 记行的意义：上游 4xx/5xx 的次数本身是被治理方关心的（"这个密钥一直 401"），
+    // token 全 null 不会污染用量聚合（见 metering/schema.ts 的 outcome 注释）。
+    if (!upstream.ok) {
+      metering.finish(meter, null, "error", upstream.status);
+      return pipe(upstream, providerId, principal, clamped);
+    }
+    if (isStreamingResponse(upstream)) {
+      const accumulator = new SseUsageAccumulator(shape === "anthropic-messages" ? "anthropic-messages" : "openai-chat");
+      const body = meteredStream(upstream.body, accumulator, (usage, outcome) => {
+        metering.finish(meter, usage, outcome, upstream.status);
+      });
+      return new Response(body, {
+        status: upstream.status,
+        headers: {
+          "content-type": upstream.headers.get("content-type") ?? "text/event-stream",
+          "x-reactor-upstream": providerId,
+          "x-reactor-auth": principal.kind,
+          ...(principal.sub ? { "x-reactor-subject": principal.sub } : {}),
+          ...(clamped ? { "x-reactor-clamped": clamped } : {}),
+        },
+      });
+    }
+    // 非流式：缓冲读取（回执通常几 KB～几百 KB；计量需要全文解析）
+    const bytes = await upstream.arrayBuffer();
+    let usage = null;
+    try {
+      usage = extractUsage(shape, JSON.parse(new TextDecoder().decode(bytes)) as unknown);
+    } catch {
+      usage = null;
+    }
+    // outcome 只反映 HTTP 结果：200 但上游未回 usage 是正常情形（tokens 全 null），
+    // 若记成 error 会把「没计量数据」谎报成「调用失败」，污染按 outcome 的排查。
+    metering.finish(meter, usage, "ok", upstream.status);
+    return new Response(bytes, {
+      status: upstream.status,
+      headers: {
+        "content-type": upstream.headers.get("content-type") ?? "application/json",
+        "x-reactor-upstream": providerId,
+        "x-reactor-auth": principal.kind,
+        ...(principal.sub ? { "x-reactor-subject": principal.sub } : {}),
+        ...(clamped ? { "x-reactor-clamped": clamped } : {}),
+      },
+    });
+  };
 
   /**
    * T3-4b：从请求体读 model，据此解析目标上游（模型目录已配置时按 model 路由）。
@@ -166,6 +253,38 @@ export function createGatewayHandlers(
     uid: principal.sub,
   });
 
+  /**
+   * 额度执行门（P3）：在**转发之前**判定，命中 `block` 规则即 429（不消耗上游）。
+   *
+   * 只在 `principal.kind === "user"` 时检查（dev token 放行，与可见范围同一纪律）；
+   * 开关关闭时 `check()` 直接返回放行，不做任何查询 —— 即"改造前行为"。
+   * 返回非 null 表示应当阻断，调用方直接把它当回执返回。
+   */
+  const enforceQuota = async (
+    c: Context,
+    principal: Principal,
+    model: string | null,
+    shape: string,
+  ): Promise<Response | null> => {
+    if (!quotaGate || principal.kind !== "user") return null;
+    const decision = await quotaGate.check({
+      uid: principal.sub ?? null,
+      deptId: principal.deptId ?? null,
+      model,
+    });
+    if (!decision.blocked) return null;
+    // 审计（best-effort，不阻塞回执：调用方已经要被拒了，不需要再等一次 DB 往返）
+    quotaGate.recordBlock({
+      uid: principal.sub ?? "",
+      deptId: principal.deptId ?? null,
+      model,
+      shape,
+      blocking: decision.blocking,
+    });
+    c.header("x-reactor-quota", "blocked");
+    return c.json(quotaExceededResponse(decision.blocking), 429);
+  };
+
   return {
     /** Anthropic Messages 协议透传（Pi 内核 → 上游 anthropic 端点） */
     async proxyAnthropic(c: Context): Promise<Response> {
@@ -187,7 +306,19 @@ export function createGatewayHandlers(
       // P2：协议派发（auto 保持历史行为：入站什么形态就发什么形态）
       const serve = canServe(provider.api, inbound);
       if (!serve.ok) return protocolMismatch(c, provider.id, serve.reason);
+      // P3：额度硬阻断（开关关闭时零开销；放在上游解析之后 ⇒ 被拒的调用不会打上游）
+      const blocked = await enforceQuota(c, principal, model ?? target.model?.model ?? null, serve.upstreamShape);
+      if (blocked) return blocked;
       const { body, clamped } = clampOutput(raw, parsed, target.model?.maxOutput ?? null);
+      const meter = metering?.begin({
+        principal,
+        providerId: provider.id,
+        model: model ?? target.model?.model ?? null,
+        // 上游形态决定 usage 字段怎么读（anthropic vs openai 的缓存口径不同）
+        shape: serve.upstreamShape,
+        pricing: target.model?.pricing ?? null,
+        currency: target.model?.currency ?? null,
+      }) ?? null;
       const upstream = await fetch(joinUrl(provider.baseUrl, upstreamPathFor(serve.upstreamShape)), {
         method: c.req.method,
         headers: {
@@ -198,7 +329,7 @@ export function createGatewayHandlers(
         },
         body,
       });
-      return pipe(upstream, provider.id, principal, clamped);
+      return pipeMetered(upstream, provider.id, principal, serve.upstreamShape, meter, clamped);
     },
 
     /** OpenAI Chat Completions 协议透传（Web/其它客户端 → 上游 openai 端点） */
@@ -220,7 +351,18 @@ export function createGatewayHandlers(
       // P2：协议派发
       const serve = canServe(provider.api, inbound);
       if (!serve.ok) return protocolMismatch(c, provider.id, serve.reason);
+      // P3：额度硬阻断（同 anthropic 路径）
+      const blocked = await enforceQuota(c, principal, model ?? target.model?.model ?? null, serve.upstreamShape);
+      if (blocked) return blocked;
       const { body, clamped } = clampOutput(raw, parsed, target.model?.maxOutput ?? null);
+      const meter = metering?.begin({
+        principal,
+        providerId: provider.id,
+        model: model ?? target.model?.model ?? null,
+        shape: serve.upstreamShape,
+        pricing: target.model?.pricing ?? null,
+        currency: target.model?.currency ?? null,
+      }) ?? null;
       const upstream = await fetch(joinUrl(provider.baseUrl, upstreamPathFor(serve.upstreamShape)), {
         method: c.req.method,
         headers: {
@@ -230,7 +372,7 @@ export function createGatewayHandlers(
         },
         body,
       });
-      return pipe(upstream, provider.id, principal, clamped);
+      return pipeMetered(upstream, provider.id, principal, serve.upstreamShape, meter, clamped);
     },
 
     /**
@@ -259,6 +401,17 @@ export function createGatewayHandlers(
       if (target.model && principal.kind === "user" && !isScopeVisible(target.model.scope, actorOf(principal))) {
         return modelForbidden(c, model ?? "");
       }
+      // P3：额度硬阻断（向量/重排同治理 —— 它们也消耗额度，且 system:kb 用量计入组织额度）
+      const blocked = await enforceQuota(c, principal, model ?? target.model?.model ?? null, "embeddings");
+      if (blocked) return blocked;
+      const meter = metering?.begin({
+        principal,
+        providerId: provider.id,
+        model: model ?? target.model?.model ?? null,
+        shape: "embeddings",
+        pricing: target.model?.pricing ?? null,
+        currency: target.model?.currency ?? null,
+      }) ?? null;
       const upstream = await fetch(joinUrl(provider.baseUrl, "embeddings"), {
         method: "POST",
         headers: {
@@ -269,7 +422,7 @@ export function createGatewayHandlers(
         },
         body: raw,
       });
-      return pipe(upstream, provider.id, principal);
+      return pipeMetered(upstream, provider.id, principal, "embeddings", meter);
     },
 
     /**
@@ -296,6 +449,17 @@ export function createGatewayHandlers(
       if (target.model && principal.kind === "user" && !isScopeVisible(target.model.scope, actorOf(principal))) {
         return modelForbidden(c, model ?? "");
       }
+      // P3：额度硬阻断（向量/重排同治理 —— 它们也消耗额度，且 system:kb 用量计入组织额度）
+      const blocked = await enforceQuota(c, principal, model ?? target.model?.model ?? null, "rerank");
+      if (blocked) return blocked;
+      const meter = metering?.begin({
+        principal,
+        providerId: provider.id,
+        model: model ?? target.model?.model ?? null,
+        shape: "rerank",
+        pricing: target.model?.pricing ?? null,
+        currency: target.model?.currency ?? null,
+      }) ?? null;
       const upstream = await fetch(joinUrl(provider.baseUrl, "rerank"), {
         method: "POST",
         headers: {
@@ -305,7 +469,7 @@ export function createGatewayHandlers(
         },
         body: raw,
       });
-      return pipe(upstream, provider.id, principal);
+      return pipeMetered(upstream, provider.id, principal, "rerank", meter);
     },
 
     /**
