@@ -8,6 +8,9 @@
  *  4) /console/assets/<不存在>.js → 404（**不**回退成 HTML，避免把缺资源伪装成页面）
  *  5) 路径穿越尝试不泄露仓库文件（.env 等）
  *  6) API 与前端路由不冲突：/admin/models 仍是 JSON（曾把 SPA 挂在 /admin 造成冲突）
+ *  7) 根路径品牌资源：/brand/logo-cube.jpg、/favicon.svg 直接可用
+ *     （管理台 <img src="/brand/..."> 用绝对路径；只挂 /console 时会破图占位符）
+ *  8) /brand/* 的路径穿越同样不泄露仓库文件
  *
  * 前置：docker compose up -d pg；已 build server 与 admin（无 admin/dist 时自动 SKIP）。
  * 用法：node packages/server/scripts/admin-static-smoke.mjs
@@ -135,6 +138,34 @@ async function main() {
     api.status === 200 && apiType.includes("application/json"),
     `status=${api.status} type=${apiType}`,
   );
+
+  // 7) 根路径品牌资源（管理台侧栏/登录页的 <img src="/brand/logo-cube.jpg"> 与 favicon 用绝对路径引用）
+  const brand = await fetch(`${BASE}/brand/logo-cube.jpg`);
+  const brandType = brand.headers.get("content-type") ?? "";
+  check(
+    "7 /brand/* 在根路径可用（否则管理台图标退化成破图占位符）",
+    brand.status === 200 && brandType.includes("image/"),
+    `status=${brand.status} type=${brandType}`,
+  );
+  const favicon = await fetch(`${BASE}/favicon.svg`);
+  const faviconType = favicon.headers.get("content-type") ?? "";
+  check(
+    "8 /favicon.svg 在根路径可用",
+    favicon.status === 200 && faviconType.includes("svg"),
+    `status=${favicon.status} type=${faviconType}`,
+  );
+
+  // 9) /brand/* 的路径穿越（serveStatic 自带防护，回归用）
+  const brandTraversals = ["/brand/../.env", "/brand/%2e%2e%2f.env", "/brand/..%2f..%2f.env"];
+  let brandLeaked = false;
+  const brandDetail = [];
+  for (const p of brandTraversals) {
+    const res = await fetch(`${BASE}${p}`, { redirect: "manual" });
+    const text = res.status === 200 ? await res.text() : "";
+    if (/REACTOR_JWT_SECRET|REACTOR_UPSTREAM_API_KEY/.test(text)) brandLeaked = true;
+    brandDetail.push(`${p}→${res.status}`);
+  }
+  check("9 /brand/* 路径穿越不泄露仓库文件", !brandLeaked, brandDetail.join(" "));
 
   cleanup();
   console.log(failed === 0 ? "\nADMIN STATIC SMOKE PASS" : `\nADMIN STATIC SMOKE FAIL (${failed})`);

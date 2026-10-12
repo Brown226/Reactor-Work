@@ -12,6 +12,7 @@
  *  - `/console` → 302 到 `/console/`；`/console/` → index.html
  *  - `/console/assets/*` 等带扩展名的路径 → 对应文件；不存在则 **404**（不回退 HTML，避免把资源缺失伪装成页面）
  *  - 其余「看起来像前端路由」的路径（无扩展名）→ index.html（SPA history 回退）
+ *  - `/favicon.svg`、`/brand/*` → 根路径同送一份（管理台用绝对路径引用，见 ROOT_BRAND_PATHS）
  *  - 目录不存在时不挂载任何路由，仅告警（API 照常工作）
  *
  * 安全：交给 @hono/node-server 的 serveStatic（自带路径穿越防护），
@@ -25,6 +26,22 @@ import { serveStatic } from "@hono/node-server/serve-static";
 
 /** 管理台挂载前缀（与 API 的 /admin 前缀隔离，避免前端路由与 API 路径冲突）。 */
 export const ADMIN_MOUNT_PREFIX = "/console";
+
+/**
+ * 额外挂在**根路径**的品牌资源。
+ *
+ * 管理台侧栏/登录页写的是绝对路径 `/brand/logo-cube.jpg`，index.html 的 favicon 也是
+ * `/favicon.svg`；dev 期 vite 把 `public/` serve 在根，所以这些绝对路径在 dev 下本来就能取到。
+ * 反例（实测复现）：只挂 `/console` 前缀时，`/brand/logo-cube.jpg` 解析不到文件
+ * ——8791 上 `/console/brand/logo-cube.jpg` 返回 200 image/jpeg，而 `/brand/logo-cube.jpg`
+ * 被 authed 组的 `use("*")` 拦成 401，`<img>` 取不到图就退化成浏览器破图占位符。
+ * 反例：把前端改成相对路径 `./brand/...` 也不能修——SPA 有 `/console/datasets/:id` 这类
+ * 两级路由，相对基址会解析成 `/console/datasets/brand/...`，详情页反而坏。
+ * 故在根路径显式挂一份，与 dev 行为对齐。
+ *
+ * 同时被 `permissions.ts` 消费：这些是公开文件，不该被扫成权限点。
+ */
+export const ROOT_BRAND_PATHS = ["/favicon.svg", "/brand/*"] as const;
 
 /**
  * 默认产物目录：从编译产物 `packages/server/dist/identity/admin-static.js` 回到 `packages/admin/dist`。
@@ -47,6 +64,13 @@ export function mountAdminSpa<E extends Env>(app: Hono<E>, adminDist: string = r
     return false;
   }
   const prefix = ADMIN_MOUNT_PREFIX;
+
+  // 0) 品牌资源挂到根路径（原因见 ROOT_BRAND_PATHS 注释）。
+  //    ⚠ 必须在 authed 组之前注册：routes.ts 的 authed 用 use("*") 挂在根上，
+  //       注册顺序在它之后的路由会被它拦成 401（静态资源也一样）。
+  for (const brandPath of ROOT_BRAND_PATHS) {
+    app.use(brandPath, serveStatic({ root: adminDist }));
+  }
 
   // 1) 真实文件（含 assets/*.js|css）；rewrite 去掉前缀
   app.use(

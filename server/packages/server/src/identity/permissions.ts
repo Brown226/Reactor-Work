@@ -8,7 +8,7 @@
  * 好处：新增一条受保护路由后跑一次扫描，权限清单自动出现，无需手维护。
  */
 
-import { ADMIN_MOUNT_PREFIX } from "./admin-static.js";
+import { ADMIN_MOUNT_PREFIX, ROOT_BRAND_PATHS } from "./admin-static.js";
 import type { IdentityDb } from "./db.js";
 import type { Role } from "./users.js";
 
@@ -104,6 +104,8 @@ export function isPermissionRoute(route: RouteEntry): boolean {
   // 管理台 SPA 静态资源（/console/*）：公开可访问的静态文件，不是权限实体
   // —— 否则登录页都取不到，且权限矩阵里会多出一堆无意义的「console」权限码。
   if (route.path === ADMIN_MOUNT_PREFIX || route.path.startsWith(`${ADMIN_MOUNT_PREFIX}/`)) return false;
+  // 根路径品牌资源（/favicon.svg、/brand/*）：同理是公开文件，不是权限实体。
+  if (ROOT_BRAND_PATHS.some((p) => route.path === p)) return false;
   return route.path.startsWith("/");
 }
 
