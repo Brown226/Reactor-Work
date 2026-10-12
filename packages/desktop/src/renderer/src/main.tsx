@@ -73,9 +73,10 @@ function registerE2EStoreBridgesIfEnabled() {
   });
 }
 
-// 初始化主题：默认 Zai dark，后续由 useTheme hook 接管
+// 初始化主题：默认浅色（zai-light），后续由 useTheme hook 接管。
+// 与 store 的默认值必须一致，否则首帧会把 dark class 打到 document 上再被 store 改回。
 {
-  const saved = localStorage.getItem("zcode-theme") || "zai-dark";
+  const saved = localStorage.getItem("zcode-theme") || "zai-light";
   const resolved =
     saved === "system"
       ? window.matchMedia("(prefers-color-scheme: dark)").matches
