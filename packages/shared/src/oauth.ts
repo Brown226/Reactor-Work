@@ -41,6 +41,13 @@ function readCredentialErrorCode(error: unknown): string {
 }
 
 function readCredentialErrorMessage(error: unknown): string {
+  // 跨进程/跨 RPC 边界后错误常被 String(err) 拍成纯字符串（UI 侧的 error state 就是
+  // 字符串）。不认字符串会让 isCredentialDecryptError 对这类错误恒为 false，
+  // 「本机凭据解不开」于是被当成未知错误继续上浮给用户。
+  if (typeof error === "string") {
+    return error;
+  }
+
   if (error instanceof Error) {
     return error.message;
   }
