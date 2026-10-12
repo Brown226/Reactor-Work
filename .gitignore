@@ -106,3 +106,9 @@ portal-preview/
 # 审查板块联调用的真实业务数据（含真实项目编号的 PDF/DWG/DOCX/XLSX/PPTX）
 # 与提取产物、一次性提取脚本；已在 origin/main 历史中，此处阻止再次纳入索引。
 docs/审查板块原始数据/
+
+# 内网部署交付物：Docker 镜像 tar + 数据卷备份 + config/.env（真实生产密钥），
+# 总体积约 385MB。属交付物而非源码，严禁入库/外发。
+/Reactor 服务端部署镜像/
+# tsup 运行期生成的临时展开配置（bundled_<hash>.mjs），非源码
+packages/desktop/tsup.config.bundled_*.mjs
