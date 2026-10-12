@@ -7,7 +7,6 @@ import {
   ISystemService,
   ITerminalService,
   ISettingService,
-  IOnboardingRecordService,
   ICredentialService,
   IReactorServerService,
   IServerSkillSyncService,
@@ -58,7 +57,6 @@ export class RemoteServiceAccess implements IServiceAccessor {
   readonly systemService: ISystemService;
   readonly terminalService: ITerminalService;
   readonly settingService: ISettingService;
-  readonly onboardingRecordService: IOnboardingRecordService;
   readonly credentialService: ICredentialService;
   /** 企业服务端（Reactor Server）接入：登录/登出/状态/服务端模型目录。 */
   readonly reactorServerService: IReactorServerService;
@@ -123,9 +121,6 @@ export class RemoteServiceAccess implements IServiceAccessor {
     );
     this.settingService = ProxyChannel.toService<ISettingService>(
       channelClient.getChannel(ISettingService.channelName),
-    );
-    this.onboardingRecordService = ProxyChannel.toService<IOnboardingRecordService>(
-      channelClient.getChannel(IOnboardingRecordService.channelName),
     );
     this.credentialService = ProxyChannel.toService<ICredentialService>(
       channelClient.getChannel(ICredentialService.channelName),

@@ -2384,20 +2384,5 @@ export function createSettingsSyncService(
         taskResults,
       };
     },
-
-    async getFirstRunPromptState() {
-      const settings = await dependencies.settingService.get();
-      return {
-        handled: settings.settingsSyncFirstRunPromptHandled === true,
-      };
-    },
-
-    async markFirstRunPromptHandled(): Promise<void> {
-      await dependencies.settingService.update({
-        // 这里记录的是“首启导入提示是否已经被消费”，不是“导入是否成功”。
-        // 如果把“用户点击跳过”遗漏掉，下次启动还会重复弹窗，造成首启流程打扰感。
-        settingsSyncFirstRunPromptHandled: true,
-      });
-    },
   };
 }

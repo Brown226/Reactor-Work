@@ -62,6 +62,7 @@ export {
 export {
   ZCODE_ENV,
   ZCODE_PRODUCT_FLAVOR,
+  ZCODE_FORCE_UPDATE_GATE_ENABLED,
   ZCODE_APP_VERSION_ENV,
   ZCODE_BUILD_COMMIT_ID_ENV,
   RUNTIME_ZCODE_DEBUG,
@@ -129,7 +130,6 @@ export * from "./e2e-test-bridge.js";
 export * from "./remoteAppConfig.js";
 export * from "./helpAppConfig.js";
 export * from "./remoteAssetInstallMode.js";
-export * from "./onboardingRecord.js";
 export * from "./remoteResourcePackages.js";
 export * from "./plan-identity.js";
 export {
