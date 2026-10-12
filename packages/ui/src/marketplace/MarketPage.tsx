@@ -66,17 +66,17 @@ function ExpertCard({
       type="button"
       data-testid={`expert-card-${agent.name}`}
       onClick={() => onOpen(agent.name)}
-      className="flex min-w-0 flex-col gap-2 rounded-xl border border-card-border bg-card p-4 text-left transition-colors hover:bg-card-selected"
+      className="flex min-w-0 flex-col gap-2 rounded-xl border border-card-border bg-card p-3.5 text-left transition-colors hover:border-border-hover hover:bg-card-selected focus-visible:ring-2 focus-visible:ring-input-border-focused focus-visible:outline-none"
     >
       <div className="flex min-w-0 items-center gap-2.5">
         <span
           aria-hidden="true"
-          className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-background text-ui-base text-foreground-subtle ring-1 ring-border"
+          className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background text-ui-base text-foreground-subtle ring-1 ring-border"
         >
           {agent.emoji || agent.title.slice(0, 1)}
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-ui-base font-medium text-foreground">
+          <span className="block truncate text-ui-base font-semibold text-foreground">
             {agent.title}
           </span>
           {agent.author ? (
@@ -123,16 +123,16 @@ function SkillCard({
       type="button"
       data-testid={`skill-card-${item.name}`}
       onClick={() => onOpen(item.name)}
-      className="flex min-w-0 flex-col gap-2 rounded-xl border border-card-border bg-card p-4 text-left transition-colors hover:bg-card-selected"
+      className="flex min-w-0 flex-col gap-2 rounded-xl border border-card-border bg-card p-3.5 text-left transition-colors hover:border-border-hover hover:bg-card-selected focus-visible:ring-2 focus-visible:ring-input-border-focused focus-visible:outline-none"
     >
       <div className="flex min-w-0 items-center gap-2.5">
         <span
           aria-hidden="true"
-          className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-background text-ui-base text-foreground-subtle ring-1 ring-border"
+          className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background text-ui-base text-foreground-subtle ring-1 ring-border"
         >
           {item.icon || item.title.slice(0, 1)}
         </span>
-        <span className="min-w-0 truncate text-ui-base font-medium text-foreground">
+        <span className="min-w-0 truncate text-ui-base font-semibold text-foreground">
           {item.title}
         </span>
         {item.installed ? (
@@ -159,16 +159,16 @@ function BundleCard({
       type="button"
       data-testid={`bundle-card-${bundle.id}`}
       onClick={() => onOpen(bundle.id)}
-      className="flex min-w-0 flex-col gap-2 rounded-xl border border-card-border bg-card p-4 text-left transition-colors hover:bg-card-selected"
+      className="flex min-w-0 flex-col gap-2 rounded-xl border border-card-border bg-card p-3.5 text-left transition-colors hover:border-border-hover hover:bg-card-selected focus-visible:ring-2 focus-visible:ring-input-border-focused focus-visible:outline-none"
     >
       <div className="flex min-w-0 items-center gap-2.5">
         <span
           aria-hidden="true"
-          className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-background text-ui-base text-foreground-subtle ring-1 ring-border"
+          className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background text-ui-base text-foreground-subtle ring-1 ring-border"
         >
           {bundle.icon || <PackageOpen className="size-4" aria-hidden="true" />}
         </span>
-        <span className="min-w-0 truncate text-ui-base font-medium text-foreground">
+        <span className="min-w-0 truncate text-ui-base font-semibold text-foreground">
           {bundle.title}
         </span>
         {bundle.allInstalled ? (
@@ -694,7 +694,7 @@ export function MarketPage({
                     key={`featured-${item.id}`}
                     type="button"
                     onClick={() => setSkillOpenName(item.name)}
-                    className="flex w-40 shrink-0 flex-col gap-1 rounded-xl border border-card-border bg-card p-3 text-left transition-colors hover:bg-card-selected"
+                    className="flex w-40 shrink-0 flex-col gap-1 rounded-xl border border-card-border bg-card p-3 text-left transition-colors hover:border-border-hover hover:bg-card-selected focus-visible:ring-2 focus-visible:ring-input-border-focused focus-visible:outline-none"
                   >
                     <span className="flex min-w-0 items-center gap-2">
                       <span aria-hidden="true" className="shrink-0">
