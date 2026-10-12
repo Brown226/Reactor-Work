@@ -8,7 +8,7 @@ export type SettingsSectionId =
   | "migration"
   | "browser"
   | "modelProvider"
-  | "reactorServer"
+  | "account"
   | "memory"
   | "plugin"
   | "mcp"
@@ -71,7 +71,7 @@ function isSettingsSectionId(value: string): value is SettingsSectionId {
     value === "migration" ||
     value === "browser" ||
     value === "modelProvider" ||
-    value === "reactorServer" ||
+    value === "account" ||
     value === "memory" ||
     value === "plugin" ||
     value === "mcp" ||
@@ -145,6 +145,11 @@ function readLastSettingsSectionPreference(
     if (raw === "codePreview") {
       storage.setItem(SETTINGS_LAST_SECTION_STORAGE_KEY, "appearance");
       return "appearance";
+    }
+    // 旧版「企业服务端」分区已改名为「账号」：不清迁移，用户升级后仍停在同一页。
+    if (raw === "reactorServer") {
+      storage.setItem(SETTINGS_LAST_SECTION_STORAGE_KEY, "account");
+      return "account";
     }
     if (raw && isSettingsSectionId(raw)) {
       return resolveSettingsSection(raw, fallbackSection);
@@ -317,6 +322,10 @@ function consumePendingSettingsSection(
     if (raw === "skills") {
       // 旧 Skills 使用复数 id；迁移到当前独立 skill 分区。
       return "skill";
+    }
+    if (raw === "reactorServer") {
+      // 旧「企业服务端」分区 id；一次性跳转意图同样迁移到「账号」。
+      return "account";
     }
     if (raw && isSettingsSectionId(raw)) {
       return resolveSettingsSection(raw, fallbackSection);

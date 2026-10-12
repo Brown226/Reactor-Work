@@ -233,6 +233,8 @@ export function HooksSection({ workspacePath, workspaceIdentity }: HooksSectionP
       filterPluginHooksByScope(pluginHooks, activeScope).map((hook) => ({
         ...hook,
         pluginIconItem: {
+          // 带插件身份，优先命中本地打包图标而非旧 CDN 资产。
+          id: hook.pluginId,
           name: hook.pluginName,
           listing: pluginListingById.get(hook.pluginId),
         },

@@ -16,7 +16,8 @@ interface CommandCardProps {
   onEdit?: (command: ZCodeCommand) => void;
   onToggle?: (command: ZCodeCommand, enabled: boolean) => void;
   isOperating?: boolean;
-  pluginIconItem?: Pick<StorePluginItem, "name" | "listing">;
+  pluginIconItem?: Pick<StorePluginItem, "name" | "listing"> &
+    Partial<Pick<StorePluginItem, "id">>;
 }
 
 export function CommandCard({

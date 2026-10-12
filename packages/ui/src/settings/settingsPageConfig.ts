@@ -54,6 +54,15 @@ const BASE_SETTINGS_SECTION_GROUPS: Array<{
 ];
 
 const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
+  // 「账号」是「我是谁 / 组织给了我什么」的入口（原「企业服务端」），放在基础设置
+  // 第一项：身份与权益优先于本机配置；模型设置（开发者模式下才可见）退到其后。
+  // 初始落点回退仍是「常规」（consumeInitialSettingsSection），不受本顺序影响。
+  {
+    id: "account",
+    icon: ServerCog,
+    titleId: "settings.account.title",
+    groupId: "basics",
+  },
   {
     id: "general",
     icon: Settings2,
@@ -70,13 +79,6 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
     id: "modelProvider",
     icon: Package,
     titleId: "settings.modelProviderTitle",
-    groupId: "basics",
-  },
-  // 企业服务端是「模型从哪来」的另一种来源（本地网关注入），紧跟模型设置。
-  {
-    id: "reactorServer",
-    icon: ServerCog,
-    titleId: "settings.reactorServer.title",
     groupId: "basics",
   },
   {

@@ -486,6 +486,8 @@ function PluginMcpServerList({
             <div className="relative size-9 shrink-0" data-mcp-status-dot-placement="icon-corner">
               <PluginStoreAvatar
                 item={{
+                  // 带插件身份，优先命中本地打包图标而非旧 CDN 资产。
+                  id: item.pluginId,
                   name: item.pluginName,
                   listing: pluginListingById.get(item.pluginId),
                 }}

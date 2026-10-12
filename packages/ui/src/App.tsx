@@ -46,7 +46,7 @@ import {
   type SettingsSectionId,
 } from "@/lib/settingsNavigation.js";
 import { runWorkspaceVisibleCommand } from "@/lib/workspaceVisibleCommand.js";
-import { ZCODE_PRODUCT_DOCS_URL } from "@/lib/productDocs.js";
+import { toast } from "@/components/ui/toast.js";
 // 左上角应用标记：Z.ai 的 logo 已随品牌替换移除，这里改用 Reactor 立方标记，
 // 与登录页/启动页保持同一视觉（vite 资源导入，路径别名同 ReactorLogo）。
 import appLogoUrl from "@/assets/reactor-mark.png";
@@ -66,6 +66,7 @@ import { resolveAppWorkspaceRpcTarget } from "@/app-shell/workspaceRpcTarget.js"
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
 import { useWorkspaceTerminalTaskNotifications } from "@/hooks/useTaskNotifications.js";
 import { useOffPeakTaskNotifications } from "@/hooks/useOffPeakTaskNotifications.js";
+import { useProductDocsUrl } from "@/hooks/useProductDocsUrl.js";
 import type { AppProps, MarketIntent, WorkspaceMainView } from "@/app-shell/types.js";
 import type {
   ChatSearchResultHighlightRequest,
@@ -682,9 +683,15 @@ export function App({
       disposeTicketsPanel?.();
     };
   }, [openFeedbackSubmit, openFeedbackTickets, platform]);
+  const productDocsUrl = useProductDocsUrl();
   const handleOpenProductDocs = useCallback(() => {
-    platform.openExternal(ZCODE_PRODUCT_DOCS_URL);
-  }, [platform]);
+    // 与帮助菜单同一收口：地址来自服务端策略，未配置则提示，不跳官方站。
+    if (!productDocsUrl) {
+      toast(intl.formatMessage({ id: "help.productDocs.notConfigured" }));
+      return;
+    }
+    platform.openExternal(productDocsUrl);
+  }, [platform, productDocsUrl]);
   const themeTarget = resolveTheme(theme) === "dark" ? "light" : "dark";
   const handleSwitchTheme = useCallback(() => {
     setTheme(themeTarget);

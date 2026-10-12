@@ -354,6 +354,9 @@ export function CommandsSection({
           pluginIconItem={
             isPluginCommand(command)
               ? {
+                  // id 必须带 marketplace 后缀：PluginStoreAvatar 据此命中本地打包图标
+                  // （pluginIconSource），否则会直接渲染 listing.icon 指向的旧 CDN 资产。
+                  id: `${command.pluginName.trim()}@${command.pluginMarketplace.trim()}`,
                   name: command.pluginName,
                   listing: pluginListingById.get(
                     `${command.pluginName.trim()}@${command.pluginMarketplace.trim()}`,
