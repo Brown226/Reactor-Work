@@ -48,6 +48,26 @@ export function resolveUniquePluginListingByName(
 }
 
 /**
+ * 与 resolveUniquePluginListingByName 同一「同名唯一」安全约束，但返回完整条目：
+ * 调用方需要 id 来命中 pluginIconSource 的本地打包图标（见 CommandsSection 注释），
+ * 只拿 listing 会把身份丢掉、回退到 listing.icon 指向的旧 CDN 资产。
+ */
+export function resolveUniquePluginItemByName<T extends { name: string }>(
+  plugins: readonly T[],
+  name: string,
+): T | undefined {
+  const normalizedName = name.trim().toLocaleLowerCase();
+  let match: T | undefined;
+  let count = 0;
+  for (const plugin of plugins) {
+    if (plugin.name.trim().toLocaleLowerCase() !== normalizedName) continue;
+    count += 1;
+    match = plugin;
+  }
+  return count === 1 ? match : undefined;
+}
+
+/**
  * 商店条目：把 overview 的目录条目（listing/安装态）、运行时插件信息（启用态/组件）与
  * 已安装记录（更新徽标/安装时间）按 id join 成 UI 单一视图模型。
  */

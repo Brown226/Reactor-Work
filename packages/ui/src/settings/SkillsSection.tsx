@@ -53,6 +53,7 @@ import {
 } from "@/settings/PluginInstallEmptyState.js";
 import {
   resolvePluginDisplayName,
+  resolveUniquePluginItemByName,
   resolveUniquePluginListingByName,
 } from "@/settings/pluginStoreListing.js";
 import { groupSkillsByPlugin } from "@/settings/pluginManagedResourceGroups.js";
@@ -562,7 +563,9 @@ export function SkillsSection({
       new Map(
         plugins.map((plugin) => [
           plugin.id,
-          { name: plugin.name, listing: pluginListingById.get(plugin.id) },
+          // id 必须随 item 一起传：PluginStoreAvatar 据此命中 pluginIconSource 的本地
+          // 打包图标，缺失时会回退 listing.icon 指向的旧 CDN 资产（内网可达时直接显示上游旧标）。
+          { id: plugin.id, name: plugin.name, listing: pluginListingById.get(plugin.id) },
         ]),
       ),
     [pluginListingById, plugins],
@@ -639,10 +642,8 @@ export function SkillsSection({
     const pluginIconItem = skill.pluginId
       ? pluginIconItemById.get(skill.pluginId)
       : skill.pluginName
-        ? {
-            name: skill.pluginName,
-            listing: resolveUniquePluginListingByName(availablePlugins, skill.pluginName),
-          }
+        ? // 同名唯一时才解析，且必须带 id：否则图标回退到 listing.icon 的旧 CDN 资产。
+          resolveUniquePluginItemByName(availablePlugins, skill.pluginName)
         : undefined;
     return (
       <div
