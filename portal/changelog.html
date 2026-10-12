@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>更新日志 · Reactor（数智堆脑）</title>
 <meta name="description" content="Reactor（数智堆脑）更新日志：版本变更、能力合入与行为调整，依据本仓源码与 package.json 维护。" />
+<link rel="icon" type="image/png" href="assets/icon.png" />
 <link rel="stylesheet" href="assets/site.css" />
 </head>
 <body>
 
 <header class="topbar">
   <div class="container topbar-inner">
-    <a class="brand" href="index.html">Reactor<span class="brand-sub">数智堆脑</span></a>
+    <a class="brand" href="index.html"><span class="brand-name">Reactor</span><span class="brand-sub">数智堆脑</span></a>
     <nav class="topbar-nav">
       <a href="index.html#features">核心能力</a>
       <a href="index.html#native">本仓特有</a>
@@ -25,15 +26,19 @@
   <div class="log-head">
     <h1>更新日志</h1>
     <p>记录版本变更、能力合入与行为调整。本页自 <b>v1.0.0</b> 起维护，更早版本未记录；行为口径以当前检出的源码为准。</p>
-    <p>本页由人工维护；桌面端「帮助 → 检查更新」里看到的发布说明，由内网服务端随更新清单下发到客户端，两者应保持同一口径。完整链路见<a href="manual/software-update.html">软件包分发与自动更新</a>。</p>
+    <p><b>v1.0.0 基线之后，本页由内网服务端下发同步</b>：管理员在「系统 → 软件更新」发版时填写的更新说明，会随发布清单同步到这里，桌面端「帮助 → 检查更新」里看到的发布说明与之一致。完整链路见<a href="manual/software-update.html">软件包分发与自动更新</a>。</p>
   </div>
 
   <div class="log-rule"></div>
 
-  <section class="log-entry">
+  <!-- 服务端已发布版本：由下方脚本拉取 /api/v1/releases/changelog 动态注入。
+       脚本不可用（离线打开/反代未配置）时此容器为空，页面仍显示 v1.0.0 基线，不破坏可用性。 -->
+  <div id="log-from-server"></div>
+
+  <section class="log-entry" id="log-baseline">
     <div class="log-ver-row">
       <span class="log-ver">v1.0.0</span>
-      <span class="log-latest">当前版本</span>
+      <span class="log-latest">基线版本</span>
       <span class="log-when">版本号取自仓库根 package.json · 基线条目</span>
     </div>
     <h2>当前版本基线</h2>
@@ -47,12 +52,87 @@
     </ul>
   </section>
 
-  <p class="log-empty-note">更早版本未在此记录。发版时在「当前版本」上方新增条目，维护规则见本目录 <code>README.md</code>。</p>
+  <p class="log-empty-note">更早版本未在此记录。发版时在管理台「软件更新」登记并上线版本、填写更新说明，本页会自动同步；维护规则见本目录 <code>README.md</code>。</p>
 </main>
+
+<script>
+  // 从服务端拉已发布版本，追加到 v1.0.0 基线之上。
+  // 纯渐进增强：拿不到（门户未反代 / 服务端离线 / 库内暂无记录）就静默保留基线，不报错、不留占位。
+  (function () {
+    var host = document.getElementById("log-from-server");
+    if (!host) return;
+
+    function fmtDate(iso) {
+      if (!iso) return "";
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return "";
+      var p = function (n) { return String(n).padStart(2, "0"); };
+      return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+    }
+
+    // 更新说明按 Markdown 写（与桌面端发布说明同源），这里只做最小渲染：
+    // 逐行处理"- "列表项与普通段落，避免引入外部 Markdown 依赖（门户零依赖纪律）。
+    function renderNotes(md) {
+      var ul = document.createElement("ul");
+      (md || "").split(/\r?\n/).forEach(function (line) {
+        var t = line.trim();
+        if (!t) return;
+        var li = document.createElement("li");
+        var text = t.replace(/^[-*]\s+/, "");
+        li.textContent = text;
+        ul.appendChild(li);
+      });
+      return ul;
+    }
+
+    fetch("/api/v1/releases/changelog", { headers: { accept: "application/json" } })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (data) {
+        var rows = data && data.releases ? data.releases : [];
+        // 基线条目已静态展示 v1.0.0，这里跳过它，避免重复。
+        rows = rows.filter(function (r) { return r.version !== "1.0.0"; });
+        if (rows.length === 0) return;
+
+        rows.forEach(function (row) {
+          var sec = document.createElement("section");
+          sec.className = "log-entry";
+
+          var vrow = document.createElement("div");
+          vrow.className = "log-ver-row";
+          var ver = document.createElement("span");
+          ver.className = "log-ver";
+          ver.textContent = "v" + row.version;
+          vrow.appendChild(ver);
+          if (row.channel === "preview") {
+            // 用灰色小字而非绿色胶囊：.log-latest 是"当前版本"专用标记，
+            // 拿它标预览版会让读者误以为该版本是当前推荐版本。
+            var pre = document.createElement("span");
+            pre.className = "log-when";
+            pre.textContent = "预览通道";
+            vrow.appendChild(pre);
+          }
+          if (row.publishedAt) {
+            var when = document.createElement("span");
+            when.className = "log-when";
+            when.textContent = "上线 " + fmtDate(row.publishedAt);
+            vrow.appendChild(when);
+          }
+          sec.appendChild(vrow);
+
+          var h2 = document.createElement("h2");
+          h2.textContent = row.releaseName || "Reactor " + row.version;
+          sec.appendChild(h2);
+          sec.appendChild(renderNotes(row.releaseNotesZh || row.releaseNotesEn || ""));
+          host.appendChild(sec);
+        });
+      })
+      .catch(function () { /* 渐进增强失败：静默保留静态基线 */ });
+  })();
+</script>
 
 <footer class="footer">
   <div class="container footer-inner">
-    <span class="brand">Reactor<span class="brand-sub">数智堆脑</span></span>
+    <span class="brand"><span class="brand-name">Reactor</span><span class="brand-sub">数智堆脑</span></span>
     <span>依据当前检出的源码整理</span>
     <div class="footer-links">
       <a href="index.html">官网首页</a>

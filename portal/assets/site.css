@@ -59,16 +59,39 @@ a:hover { text-decoration: underline; }
 }
 .brand {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 9px;
   font-weight: 600;
   font-size: 16px;
   letter-spacing: 0.02em;
   color: var(--ink);
 }
 .brand:hover { text-decoration: none; }
-.brand-sub { font-size: 13px; font-weight: 400; color: var(--ink-3); letter-spacing: normal; }
-.topbar-nav { display: flex; gap: 26px; margin-left: auto; }
+/* 品牌字标：纯文字形态（无位图图标）。
+   主名用「白 → 浅蓝 → 强调蓝」的斜向渐变，副标用竖线分隔。
+   注：此处只做视觉缩放，不改变 .brand 的 16px 基准字号，
+   避免顶栏/页脚沿用同一 .brand 时字号被放大破坏版式。 */
+.brand-name {
+  background: linear-gradient(120deg, #ffffff 8%, #bcd2ff 52%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 1.32em;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+/* 副标：前置竖线分隔，弱化呈现，营造「主标 · 副标」的舒展层次 */
+.brand-sub {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-3);
+  letter-spacing: normal;
+  padding-left: 10px;
+  border-left: 1px solid var(--line-strong);
+}
+/* 交叉轴居中：导航文字链接无内边距，flex 默认 stretch 会把它拉到整栏高、文字从顶部排，
+   实测比「产品说明书」按钮的字形中心偏高 8.3px；置中后与按钮同基线。 */
+.topbar-nav { display: flex; align-items: center; gap: 26px; margin-left: auto; }
 .topbar-nav a { color: var(--ink-2); font-size: 14px; }
 .topbar-nav a:hover { color: var(--ink); text-decoration: none; }
 .topbar-nav a.nav-cta {
@@ -138,6 +161,29 @@ a:hover { text-decoration: underline; }
 .btn-ghost { color: var(--ink); border-color: var(--line-strong); }
 .btn-ghost:hover { border-color: var(--ink-3); }
 
+/* 主下载按钮：同源相对路径 /download 直达服务端下载页（反代见 nginx.conf）。
+   形态参考“大按钮 + 平台副行”，但用中性下载图标，不引入任何厂商标识。 */
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 24px 11px 20px;
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 10px 26px -12px rgba(91, 141, 247, 0.85);
+}
+.btn-download:hover {
+  background: #6f9bf9;
+  color: #fff;
+  box-shadow: 0 14px 30px -12px rgba(91, 141, 247, 0.95);
+}
+.btn-download .dl-ic { display: inline-flex; width: 22px; height: 22px; flex: 0 0 auto; }
+.btn-download .dl-ic svg { width: 100%; height: 100%; }
+.btn-download .dl-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; }
+.btn-download .dl-main { font-size: 15px; font-weight: 700; }
+.btn-download .dl-sub { font-size: 11.5px; font-weight: 400; color: rgba(255, 255, 255, 0.82); margin-top: 2px; }
+
 /* ===== 应用窗口模拟 =====
    依据真实桌面主界面骨架绘制（纯 HTML/CSS）：
    三栏 = 侧栏（文字导航 + 项目/任务列表） | 对话主区（标题行 + 时间线 + 输入区） | 多标签侧面板。
@@ -146,7 +192,9 @@ a:hover { text-decoration: underline; }
 .hero-stage::before {
   content: "";
   position: absolute;
-  inset: -8% -12%;
+  /* 左右不再外扩（原 -8% -12% 会让整页横向溢出 24px/47px）。
+     辉光为 radial 椭圆（水平半径 46%），收进容器后视觉基本一致。 */
+  inset: -8% 0;
   background: radial-gradient(46% 52% at 50% 42%, rgba(91, 141, 247, 0.16), transparent 70%);
   pointer-events: none;
 }
@@ -411,11 +459,15 @@ a:hover { text-decoration: underline; }
   align-items: center;
   gap: 4px;
   padding: 10px 12px;
+  /* 与中栏 .main-header 等高：否则右栏标签行比左边高一截，两行的下边框错位，
+     看起来就是"右侧按钮没和左边同一水平线"。 */
+  min-height: 44px;
+  box-sizing: border-box;
   border-bottom: 1px solid var(--line);
 }
-.ptab { padding: 4px 10px; border-radius: 7px; color: var(--ink-3); font-size: 11.5px; }
+.ptab { padding: 4px 10px; border-radius: 7px; color: var(--ink-3); font-size: 11.5px; line-height: 1.2; }
 .ptab.active { background: var(--card-2); color: var(--ink); }
-.ptab-add { margin-left: auto; color: var(--ink-3); font-size: 14px; }
+.ptab-add { margin-left: auto; color: var(--ink-3); font-size: 14px; line-height: 1.2; }
 .pane-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 .pane-source { display: flex; align-items: center; gap: 6px; }
 .src-chip {
