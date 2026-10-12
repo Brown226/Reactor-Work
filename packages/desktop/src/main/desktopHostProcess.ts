@@ -162,6 +162,7 @@ export function spawnHostProcess(
     logger: {
       info: (...args: unknown[]) => void;
       warn: (...args: unknown[]) => void;
+      error: (...args: unknown[]) => void;
     };
     broadcastHub: BroadcastHub;
     taskRealtimeBus?: TaskRealtimeBus;
@@ -663,6 +664,14 @@ export function spawnHostProcess(
         break;
       }
     }
+    recoverRendererAfterAbnormalHostExit({
+      win,
+      windowId,
+      label,
+      code,
+      child,
+      logger: dependencies.logger,
+    });
   });
 
   return child;
@@ -768,4 +777,62 @@ export function disposeHostProcessAndWait(
 
     disposeHostProcess(child, label, disposingHostProcessTimers, logger, options.forceKillDelayMs);
   });
+}
+
+/**
+ * host 异常退出（非应用退出/窗口关闭的主动 dispose）后恢复 renderer。
+ *
+ * 恢复路径复用 dom-ready 的既有 respawn 分支（desktopWindowLifecycle.ts）：
+ * 调用点已把 host 从 windowHostProcessMap 删除，renderer reload 后 main 会
+ * spawn 新 host 并重新投递 ServicePort，整套启动流程重走。
+ * 明确不做 renderer 侧 services 热替换——services 是 React 根 props，
+ * 替换等于全树重挂载，收益与 reload 等价而复杂度高一个量级。
+ *
+ * 防风暴：host 若起来就退（环境损坏等），无限 reload 会形成重启循环；
+ * 单窗口时间窗内达到上限后抑制自动恢复，保留现场日志等用户手动重启。
+ */
+const HOST_RECOVERY_RELOAD_WINDOW_MS = 60_000;
+const HOST_RECOVERY_RELOAD_LIMIT = 2;
+const hostRecoveryReloadHistory = new Map<number, number[]>();
+
+function recoverRendererAfterAbnormalHostExit(params: {
+  win: BrowserWindow;
+  windowId: number;
+  label: string;
+  code: number;
+  child: ElectronUtilityProcess;
+  logger: {
+    info: (...args: unknown[]) => void;
+    warn: (...args: unknown[]) => void;
+    error: (...args: unknown[]) => void;
+  };
+}): void {
+  const { win, windowId, label, code, child, logger } = params;
+  // 应用退出/窗口关闭走 disposeHostProcess，会把 child 写入 disposingHostProcesses；
+  // 这不是故障，不触发恢复。
+  if (disposingHostProcesses.has(child)) {
+    return;
+  }
+  if (win.isDestroyed()) {
+    return;
+  }
+
+  const now = Date.now();
+  const history = (hostRecoveryReloadHistory.get(windowId) ?? []).filter(
+    (at) => now - at < HOST_RECOVERY_RELOAD_WINDOW_MS,
+  );
+  if (history.length >= HOST_RECOVERY_RELOAD_LIMIT) {
+    hostRecoveryReloadHistory.set(windowId, history);
+    logger.error(
+      `[host-recovery] host (${label}) 异常退出（code=${code}），${HOST_RECOVERY_RELOAD_WINDOW_MS}ms 内已自动恢复 ${history.length} 次，抑制自动 reload（窗口 ${windowId}）`,
+    );
+    return;
+  }
+
+  history.push(now);
+  hostRecoveryReloadHistory.set(windowId, history);
+  logger.warn(
+    `[host-recovery] host (${label}) 异常退出（code=${code}），reload renderer 触发 host 重建（窗口 ${windowId}，窗口内第 ${history.length} 次）`,
+  );
+  win.webContents.reload();
 }

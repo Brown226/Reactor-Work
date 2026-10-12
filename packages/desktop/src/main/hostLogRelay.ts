@@ -74,11 +74,11 @@ export function createHostLogRelay(
     },
 
     onStderr(message: string): void {
-      if (hasStructuredLog) {
-        return;
-      }
-
-      rawLogs.push({ kind: "stderr", message });
+      // stderr 立即回放，不受 hasStructuredLog 门控：host 静默死亡（exit 0、
+      // 无结构化日志）前的 stderr 是唯一死前证据，入缓存等 exit 兜底回放时
+      // 会被运行期的结构化日志门控成永久丢弃，导致"死亡前无任何异常日志"。
+      // 立即 emit 后不再入缓存，flushRawLogs 不会重复回放。
+      emitRawLog({ kind: "stderr", message });
     },
 
     onStructuredLog(entry: HostStructuredLog): void {
