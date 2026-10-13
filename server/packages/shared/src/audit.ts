@@ -187,6 +187,12 @@ export interface DesktopPolicy {
    * 端侧据此弹「尚未配置」提示，不跳转。维护方式见 docs/已完成/已完成-产品文档入口.md。
    */
   productDocsUrl?: string | null;
+  /**
+   * 该用户可用的界面模式（`coding` 为编程模式）。**按 viewer 计算**，非组织级单值：
+   * 未授权编程模式时不含 "coding"（端侧据此隐藏入口并把已存的 coding 兜底到办公档）；
+   * 平台管理员恒为全三档。受众配置见 docs/未完成-编程模式权限-方案-v1.md。
+   */
+  allowedInterfaceModes?: string[];
   updatedAt?: string;
   updatedBy?: string;
 }

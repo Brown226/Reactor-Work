@@ -13,6 +13,7 @@ import {
   ChatsCircle,
   ClockCounterClockwise,
   CloudArrowUp,
+  Code,
   Database,
   Gauge,
   ListChecks,
@@ -33,6 +34,7 @@ import { Audit } from "./pages/Audit";
 import DashboardPage from "./pages/DashboardPage";
 import { FeedbackInbox } from "./pages/FeedbackInbox";
 import KbDatasetsPage from "./pages/KbDatasetsPage";
+import { InterfaceModePolicyPage } from "./pages/InterfaceModePolicy";
 import { OrgUsers } from "./pages/OrgUsers";
 import { Planned } from "./pages/planned";
 import { ModelsAndProviders } from "./pages/ModelsAndProviders";
@@ -78,6 +80,15 @@ export const NAV: NavGroup[] = [
       // 只改一边的话页面永不显示（t187 对这个跨包契约做双向断言）。
       { key: "org-users", path: "/org", title: "组织与用户", icon: UsersThree, roles: AH, el: <OrgUsers /> },
       { key: "roles", path: "/roles", title: "角色与权限", icon: ShieldCheck, roles: AH, el: <Roles /> },
+      // 界面模式权限（编程模式受众）：仅平台管理员。key 必须与服务端 /me/nav 的列表逐项同步。
+      {
+        key: "interface-mode",
+        path: "/interface-mode",
+        title: "界面模式权限",
+        icon: Code,
+        roles: A,
+        el: <InterfaceModePolicyPage />,
+      },
     ],
   },
   {

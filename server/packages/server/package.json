@@ -16,6 +16,7 @@
     "smoke:skills": "node scripts/skills-smoke.mjs",
     "skills:import": "node scripts/skills-import.mjs",
     "smoke:agents": "node scripts/agents-smoke.mjs",
+    "smoke:interface-mode": "node scripts/interface-mode-smoke.mjs",
     "smoke:org": "node scripts/org-smoke.mjs",
     "smoke:t34": "node scripts/t34-smoke.mjs",
     "smoke:gateway-auth": "node scripts/gateway-auth-smoke.mjs",

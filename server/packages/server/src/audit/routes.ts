@@ -31,6 +31,8 @@ import {
 import { evaluateQuotaFor } from "../metering/quota-eval.js";
 // 报表口径切账本（P4）：/desktop/usage/summary 改用账本聚合
 import { summarizeLedgerUsage, type UsageLedgerFilter } from "../metering/repo.js";
+// 编程模式受众（按 viewer 计算 allowedInterfaceModes，见 interface-mode/repo.ts）
+import { allowedInterfaceModesFor, getInterfaceModePolicy } from "../interface-mode/repo.js";
 
 type AppEnv = { Variables: { claims: TokenClaims } };
 type Ctx = Context<AppEnv>;
@@ -259,8 +261,24 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
     });
   });
 
-  /** 策略下发（读取）：任意已登录用户拿「当前生效策略」 */
-  app.get("/desktop/policy", async (c) => c.json({ policy: await getPolicy(db) }));
+  /**
+   * 策略下发（读取）：任意已登录用户拿「当前生效策略」。
+   *
+   * 其余字段是全组织单值；`allowedInterfaceModes` 例外 —— 它**按 viewer 计算**
+   * （编程模式受众配置见 docs/未完成-编程模式权限-方案-v1.md）：未授权时不含 "coding"，
+   * 端侧据此隐藏编程档入口。受众表为空/未配置时按白名单默认关闭处理。
+   */
+  app.get("/desktop/policy", async (c) => {
+    const claims = c.get("claims");
+    const policy = await getPolicy(db);
+    const modePolicy = await getInterfaceModePolicy(db);
+    const allowedInterfaceModes = allowedInterfaceModesFor(modePolicy, {
+      uid: claims.sub,
+      role: claims.role,
+      deptId: claims.deptId ?? null,
+    });
+    return c.json({ policy: { ...policy, allowedInterfaceModes } });
+  });
 
   /** 策略下发（写入）：仅平台管理员 */
   app.put("/desktop/policy", async (c) => {

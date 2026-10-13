@@ -198,6 +198,7 @@ function RootInner({
   const { intl, locale } = useZCodeIntl();
   const theme = useZCodeStore((state) => state.theme);
   const user = useZCodeStore((state) => state.user);
+  const applyServerInterfaceModes = useZCodeStore((state) => state.applyServerInterfaceModes);
   const isRestoringOAuthSession = useZCodeStore((state) => state.isRestoringOAuthSession);
   const setUser = useZCodeStore((state) => state.setUser);
   const setIsRestoringOAuthSession = useZCodeStore((state) => state.setIsRestoringOAuthSession);
@@ -511,6 +512,47 @@ function RootInner({
       }),
     [enterpriseSession.refresh],
   );
+
+  // 编程模式受众：登录态转为已登录时同步服务端下发的「可用界面模式」到 store
+  //（未授权编程的用户据此隐藏编程档入口、并把已存的 coding 兜底到办公档）。
+  // 见 docs/未完成-编程模式权限-方案-v1.md。
+  //
+  // 顺序：先读**缓存**（getPolicy 不发网络）立即对齐 —— 桌面端登录会重启应用，重启后
+  // 缓存里就是上一份策略，先应用它可让入口与当前档在首帧就一致、避免闪一下少一档；
+  // 再 refreshPolicy() 拉最新（内部单飞，与登录时的既有拉取合并；失败保留上一份，不清空）。
+  const interfaceModeSyncedRef = useRef(false);
+  useEffect(() => {
+    if (enterpriseSession.loading) return;
+    if (!enterpriseSession.status?.loggedIn) {
+      // 登出/未登录：清回「未就绪」（UI 按白名单关闭默认过滤，不主动改当前档）。
+      interfaceModeSyncedRef.current = false;
+      applyServerInterfaceModes(null);
+      return;
+    }
+    if (interfaceModeSyncedRef.current) return;
+    interfaceModeSyncedRef.current = true;
+    const applyView = (
+      view: Awaited<ReturnType<typeof services.reactorServerService.getPolicy>>,
+    ): void => {
+      if (view.policy) applyServerInterfaceModes(view.policy.allowedInterfaceModes);
+    };
+    void services.reactorServerService
+      .getPolicy()
+      .then((cached) => {
+        applyView(cached);
+        return services.reactorServerService.refreshPolicy();
+      })
+      .then(applyView)
+      .catch((error) => {
+        // 拉取失败：保留已应用的值（不清空、不阻断登录）。
+        logger.warn("[Root] 拉取界面模式权限失败，沿用已有过滤", { error });
+      });
+  }, [
+    applyServerInterfaceModes,
+    enterpriseSession.loading,
+    enterpriseSession.status,
+    services.reactorServerService,
+  ]);
 
   const handleOpenRemoteConnection = useCallback((preference?: RemoteConnectionOpenPreference) => {
     setRemoteConnectionOpenPreference(preference ?? null);

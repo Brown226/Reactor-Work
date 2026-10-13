@@ -18,6 +18,8 @@ import { ensureDatasetsSchema } from "../datasets/repo.js";
 import { createDatasetsRoutes, createServerEmbedder, type KbRoutesDeps } from "../datasets/routes.js";
 import { ensureSkillsSchema } from "../skills/repo.js";
 import { createSkillsRoutes } from "../skills/routes.js";
+import { ensureInterfaceModeSchema } from "../interface-mode/repo.js";
+import { createInterfaceModeRoutes } from "../interface-mode/routes.js";
 import { createUpdatesRoutes } from "../updates/routes.js";
 import { ensureUpdatesSchema } from "../updates/schema.js";
 import { createFeedbackAdminRoutes } from "../feedback/routes.js";
@@ -110,6 +112,9 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
   await ensureAgentsSchema(db); // Agent 数字人（A-1）
   await ensurePermissionsSchema(db); // 权限点（U-2）
   await ensureAuditSchema(db); // 审计与用量数据域（G0）
+  // 界面模式权限（编程模式受众；随 /desktop/policy 一并下发）—— 必须先于 audit 路由生效，
+  // 否则 /desktop/policy 的 allowedInterfaceModes 计算会打在未建表上。
+  await ensureInterfaceModeSchema(db);
   // 计量账本（额度分配 P1）：唯一写入者是 gateway 进程，建表归本启动批 ——
   // gateway 遵「不建表不迁移」纪律，冷启窗口内它的写库失败按 fail-open 降级（见方案 §6）。
   await ensureMeteringSchema(db);
@@ -156,6 +161,8 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
   app.route("/", createSkillsRoutes(db));
   // Agents（A-1 管理面 /admin/agents + A-2 下发面 /me/agents）
   app.route("/", createAgentsRoutes(db));
+  // 界面模式权限（/admin/interface-mode-policy；下发字段随 audit 的 /desktop/policy 走）
+  app.route("/", createInterfaceModeRoutes(db));
   // 软件更新（UPD）：管理面 /admin/updates/*在这里挂（复用 authed 的 Bearer）；
   // 客户端下发面 /api/v1/releases/electron/* 由 createIdentityApp 的公开段挂（不能进 authed）。
   app.route("/", createUpdatesRoutes(db));

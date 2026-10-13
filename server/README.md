@@ -238,6 +238,7 @@ pnpm --filter @reactor/server smoke:gateway-embeddings
 | 网关鉴权 | `gateway-auth-smoke.mjs` |
 | 技能市场 | `skills-smoke.mjs`、`skills-import.mjs` |
 | Agent 目录 | `agents-smoke.mjs` |
+| 界面模式权限（编程模式受众：默认关闭 / off·all·role·dept·user 五档 / 管理员恒全档 / 校验与越权；见 `docs/未完成-编程模式权限-方案-v1.md`） | `smoke:interface-mode`（`interface-mode-smoke.mjs`；PG 不可达时起不来） |
 | 审计与用量 | `audit-smoke.mjs`、`t34-smoke.mjs` |
 | 额度分配全链路（QTM P1–P4） | `smoke:quota`（`quota-smoke.ts`，**138 项全绿**：①域层 —— 建表幂等/写入回读同形/幂等键挡重放/聚合兜底/过滤/只增不改；②网关接线 —— 四形态（anthropic/openai 非流式+流式、embeddings、rerank）真实落账、**OpenAI 缓存口径减算**、SSE 顺路解析、上游 5xx 记 error 行不产生假用量、账本降级不阻断；③对账端点；④额度规则 CRUD/部门子树/分 scope 告警幂等/百分比口径；⑤**单位后缀**（`5M`/`500K`/`1.5M`/`500万`/裸数字，含 8 合法 + 8 非法形态）；⑥**硬阻断** —— 开关关闭不拦、开启后 429 + `policy_block` 审计 + 被拒不打上游 + 放宽即恢复 + dev token 放行；⑦**批量下发** —— dryRun 不写库、`expandUsers` 展开部门子树下每个在用用户、显式 uid 的停用/不存在跳过并给理由、请求内去重、500 目标上限写库前挡下、覆盖标注、重复 apply 幂等、非管理员 403。**真实起网关与 identity 进程**（自带 mock 上游）；PG 不可达时 SKIP 并以 0 退出。见 `docs/未完成-额度分配-方案-v1.md`） |
 | 公共知识库（纯函数 / 带服务端） | `smoke:kb-pure`、`smoke:kb-server` |

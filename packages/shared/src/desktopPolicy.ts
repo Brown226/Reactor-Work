@@ -94,6 +94,56 @@ export interface ReactorDesktopPolicy {
   quota: ReactorDesktopPolicyQuota;
   /** 产品文档入口地址；null = 未配置（UI 提示而非跳转）。不参与任何强制判定。 */
   productDocsUrl: string | null;
+  /**
+   * 该用户可用的界面模式（`coding` 为编程模式）。**由服务端按 viewer 计算**，
+   * 与服务端 `server/packages/shared/src/audit.ts` 的同名字段一一对应（两 workspace
+   * 不共享运行时，改口径必须同步）。
+   *
+   * 缺省 = 白名单关闭（不含 `coding`），与产品规则一致：编程模式只对配置了受众的人开放。
+   * 端侧据此隐藏切换器中的编程档，并把已存的 `coding` 兜底到办公档。
+   */
+  allowedInterfaceModes: ReactorInterfaceMode[];
+}
+
+/** 界面模式词表（与端上 `packages/ui/src/lib/interfaceMode.ts` 的 `InterfaceMode` 同口径）。 */
+export const REACTOR_INTERFACE_MODES = ["office", "coding", "review"] as const;
+export type ReactorInterfaceMode = (typeof REACTOR_INTERFACE_MODES)[number];
+
+/** 白名单关闭时的默认可用档（不含编程档）：与服务端「未配置受众」的口径一致。 */
+const DEFAULT_ALLOWED_INTERFACE_MODES: ReactorInterfaceMode[] = ["office", "review"];
+
+function isReactorInterfaceMode(value: unknown): value is ReactorInterfaceMode {
+  return (
+    typeof value === "string" && (REACTOR_INTERFACE_MODES as readonly string[]).includes(value)
+  );
+}
+
+/**
+ * 归一化可用界面模式列表：
+ * - 非数组 / 解析不出任何合法档 → 回落白名单关闭默认（**绝不放大可见性**）；
+ * - 只保留词表内取值并去重。
+ */
+function normalizeInterfaceModes(value: unknown): ReactorInterfaceMode[] {
+  if (!Array.isArray(value)) return [...DEFAULT_ALLOWED_INTERFACE_MODES];
+  const set = new Set<ReactorInterfaceMode>();
+  for (const item of value) {
+    if (isReactorInterfaceMode(item)) set.add(item);
+  }
+  if (set.size === 0) return [...DEFAULT_ALLOWED_INTERFACE_MODES];
+  return [...set];
+}
+
+/**
+ * 某界面模式对该策略是否可用。`allowed` 缺省（空/未给）时按白名单关闭默认处理，
+ * 供 UI 过滤切换器档位、以及 store 兜底当前档使用。
+ */
+export function isReactorInterfaceModeAllowed(
+  mode: string | null | undefined,
+  allowed: readonly string[] | null | undefined,
+): boolean {
+  if (!mode) return false;
+  const list = allowed && allowed.length > 0 ? allowed : DEFAULT_ALLOWED_INTERFACE_MODES;
+  return list.includes(mode);
 }
 
 /**
@@ -111,6 +161,8 @@ export const DEFAULT_REACTOR_DESKTOP_POLICY: ReactorDesktopPolicy = {
   egressAllowlist: [],
   quota: { monthlyTokenLimit: null, alertThresholds: [80, 100] },
   productDocsUrl: null,
+  // 白名单默认关闭：未配置受众时不含编程档（与产品规则一致，见 docs/未完成-编程模式权限-方案-v1.md）。
+  allowedInterfaceModes: [...DEFAULT_ALLOWED_INTERFACE_MODES],
 };
 
 /** 从任一（可能不完整的）策略对象归一化出完整策略：缺字段按默认合并，不把缺失当清空。 */
@@ -144,6 +196,8 @@ export function normalizeReactorDesktopPolicy(raw: unknown): ReactorDesktopPolic
     },
     // 文档地址是随策略下发的配置位：解析不出就当未配置，不影响其余字段的强制语义。
     productDocsUrl: normalizeProductDocsUrl(record.productDocsUrl),
+    // 可用界面模式：解析不出就回落白名单关闭默认（不含编程档）——绝不因缺字段放大可见性。
+    allowedInterfaceModes: normalizeInterfaceModes(record.allowedInterfaceModes),
   };
 }
 
