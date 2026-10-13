@@ -524,6 +524,8 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
     stamp: null,
     issues: [],
     textPath: null,
+    // 缓存不可用时也回显来源路径：前端要能打开原件让人工核对，而不是只看到一句提示。
+    sourcePath: sourcePath ?? null,
     summary: null,
     coverage: null,
     whitelisted: [],
@@ -612,6 +614,9 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
       stamp,
       issues,
       textPath: textPath ?? persistReviewText(text, cacheDir),
+      // 来源原件的绝对路径：没有它，前端「点击问题 → 原文」只能打开提取正文，
+      // 用户核对的是丢失版面的纯文本而不是 docx/pdf 原件（见 reviewResultPanel 的 hasOriginal 分支）。
+      sourcePath: sourcePath ?? null,
       summary: {
         total: issues.length,
         ok: count("ok"),
@@ -683,6 +688,7 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
       stamp: toStamp(raw ? { ...raw, items: raw.items ?? [] } : null),
       issues: [],
       textPath: null,
+      sourcePath: null,
       summary: null,
       coverage: null,
       whitelisted,
@@ -731,6 +737,7 @@ const knowledgeCheckHandler: ToolHandler = async (input, context: ToolExecutionC
     stamp: null,
     issues: [],
     textPath: null,
+    sourcePath: null,
     summary: null,
     coverage: null,
     whitelisted: [],

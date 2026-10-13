@@ -47,6 +47,11 @@ export interface ReviewResultView {
   kind: "standards";
   stale: boolean;
   textPath: string | null;
+  /**
+   * 正文来源原件（docx/pdf/xlsx）的绝对路径；未传或不适用时为 null。
+   * 有它前端才打开原件并按片段高亮，缺失时退回只开提取正文。
+   */
+  sourcePath: string | null;
   notice: string | null;
   summary: ReviewSummaryView | null;
   issues: ReviewIssueView[];
@@ -199,6 +204,7 @@ export function readKnowledgeResult(raw: unknown): KnowledgeResultView | null {
         kind: "standards",
         stale,
         textPath: readString(record["textPath"]),
+        sourcePath: readString(record["sourcePath"]),
         notice: readString(record["notice"]),
         summary: parseSummary(record["summary"]),
         issues: record["issues"]

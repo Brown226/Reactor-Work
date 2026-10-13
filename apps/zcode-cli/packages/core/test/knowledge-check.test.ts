@@ -243,11 +243,37 @@ test("工具：textFile 用源文件本身做高亮目标，偏移是全文基�
     const result = (await knowledgeCheckToolEntry.handler(
       { action: "standards", textFile, sourcePath: textFile },
       {} as never,
-    )) as { textPath: string | null; issues: { startOffset: number; endOffset: number }[] };
+    )) as {
+      textPath: string | null;
+      sourcePath: string | null;
+      issues: { startOffset: number; endOffset: number }[];
+    };
     assert.equal(result.textPath, textFile, "textFile 模式不再复制快照，直接用源文件");
+    assert.equal(result.sourcePath, textFile, "来源路径要原样回显，前端才认得出原件");
     const offset = textFile === null ? 0 : "管件按 GB/T 8163-1999 供货。".indexOf("GB/T 8163-1999") + "第一段。\n".length;
     assert.equal(result.issues.length, 1);
     assert.equal(result.issues[0]!.startOffset, offset);
+  }));
+
+test("工具：内联正文也回显 sourcePath（点击问题要能打开 docx 原件）", () =>
+  withTempCache(async (cacheDir) => {
+    seedStandards(cacheDir, new Date().toISOString());
+    const result = (await knowledgeCheckToolEntry.handler(
+      { action: "standards", text: "管件按 GB/T 8163-2018 供货。", sourcePath: "C:/docs/设计说明.docx" },
+      {} as never,
+    )) as { sourcePath: string | null; textPath: string | null };
+    assert.equal(result.sourcePath, "C:/docs/设计说明.docx");
+    assert.match(result.textPath ?? "", /\.md$/, "快照仍是 markdown，不是 txt");
+  }));
+
+test("工具：没传 sourcePath 时回显 null（不猜路径）", () =>
+  withTempCache(async (cacheDir) => {
+    seedStandards(cacheDir, new Date().toISOString());
+    const result = (await knowledgeCheckToolEntry.handler(
+      { action: "standards", text: "管件按 GB/T 8163-2018 供货。" },
+      {} as never,
+    )) as { sourcePath: string | null };
+    assert.equal(result.sourcePath, null);
   }));
 
 test("工具：内联正文超上限要报错并指向 textFile（不许手工切片）", () =>

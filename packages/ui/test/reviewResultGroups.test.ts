@@ -89,6 +89,24 @@ test("一轮多个审查结果合并成一个面板：来源文件分节、规�
   assert.equal(gathering.passed, 1);
 });
 
+test("标准自检带 sourcePath 时按原件分节，行上带上来源（点击才能开 docx 原件）", () => {
+  const gathering = collectReviewResults([
+    toolRow(1, "KnowledgeCheck", {
+      ...STANDARDS_RESULT,
+      sourcePath: "E:/docs/设计说明.docx",
+    }),
+  ]);
+  assert.equal(gathering.sections.length, 1);
+  const section = gathering.sections[0]!;
+  assert.equal(section.sourcePath, "E:/docs/设计说明.docx", "必须按来源文件分节，不能汇入无来源节");
+  const items = section.codeGroups.flatMap((group) => group.items);
+  assert.ok(items.length > 0);
+  for (const item of items) {
+    assert.equal(item.sourcePath, "E:/docs/设计说明.docx");
+    assert.equal(item.textPath, "/tmp/review-text/a.md", "提取正文仍是高亮兜底目标");
+  }
+});
+
 test("同一来源的多条工具结果合并成一节，不重复开卡", () => {
   const second = {
     ...ISSUES_RESULT,

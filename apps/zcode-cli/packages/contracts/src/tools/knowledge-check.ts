@@ -141,6 +141,14 @@ export interface KnowledgeCheckOutput {
   issues: KnowledgeStandardIssue[];
   /** standards 模式：落盘的正文快照路径（预览高亮打开它）；未落盘为 null */
   textPath: string | null;
+  /**
+   * 正文来源文件（docx/pdf/xlsx 原件）的绝对路径；调用方未传或不适用时为 null。
+   *
+   * 有了它，前端「点击问题 → 原文」才能打开**原件**并按片段高亮（见
+   * packages/ui/src/review/ReviewResultPanel.tsx 的 hasOriginal 分支）；
+   * 缺失时前端退回只开提取正文，用户看到的就丢掉了原有版面。
+   */
+  sourcePath: string | null;
   summary: {
     /** 共识别出多少条引用（去重前） */
     total: number;
@@ -209,6 +217,7 @@ export const KnowledgeCheckOutputSchema = z
         }),
       ),
       textPath: z.string().nullable(),
+      sourcePath: z.string().nullable(),
       summary: z
         .object({
           total: z.number().int().nonnegative(),

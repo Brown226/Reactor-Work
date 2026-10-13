@@ -226,7 +226,7 @@ function compareCodeGroups(left: ReviewResultCodeGroup, right: ReviewResultCodeG
  * 把一轮的 assistant 工作行聚合成审查结果面板的数据。
  *
  * 分组口径：**来源文件 → 规则码**。同一来源的多条工具结果合并（同一份文件被自检 + 自述型
- * 审查各扫一遍时不该出现两张卡）；没有来源标注的结果（标准自检只落正文快照）汇入无来源节。
+ * 审查各扫一遍时不该出现两张卡）；没有来源标注的结果（调用方没传 sourcePath）汇入无来源节。
  */
 export function collectReviewResults(rows: readonly AssistantWorkRow[]): ReviewResultGathering {
   const sections = new Map<string, ReviewResultSection>();
@@ -256,7 +256,9 @@ export function collectReviewResults(rows: readonly AssistantWorkRow[]): ReviewR
     }
 
     const textPath = result.textPath;
-    const sourcePath = result.kind === "issues" ? result.sourcePath : null;
+    // 两种结果都带 sourcePath（标准自检与自述型审查同口径）：有它才打开原件定位，
+    // 否则用户点问题只能看到丢失版面的提取正文。
+    const sourcePath = result.sourcePath;
     if (result.stale) stale = true;
     if (result.notice && !notices.includes(result.notice)) notices.push(result.notice);
     if (textPath && !textPaths.includes(textPath)) textPaths.push(textPath);

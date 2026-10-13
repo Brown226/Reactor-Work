@@ -11,7 +11,7 @@ import test from "node:test";
 
 import { createReviewResultDisplay } from "../src/tool/executor/review-result-display.js";
 
-function standardsOutput(issueCount: number): unknown {
+function standardsOutput(issueCount: number, sourcePath: string | null = "C:/docs/设计说明.docx"): unknown {
   return {
     action: "standards",
     stale: false,
@@ -32,6 +32,7 @@ function standardsOutput(issueCount: number): unknown {
       message: "引用了已废止标准",
     })),
     textPath: "C:/Users/u/.reactor/knowledge/review-text/abc.txt",
+    sourcePath,
     summary: {
       total: issueCount,
       ok: 0,
@@ -61,8 +62,19 @@ test("display：KnowledgeCheck 产出 review_issues 载荷，前端要用的字�
   assert.equal(display.issues[0]!.startOffset, 0, "偏移是点击定位的唯一依据，不能丢");
   assert.equal(display.issues[0]!.endOffset, 14);
   assert.equal(display.textPath, "C:/Users/u/.reactor/knowledge/review-text/abc.txt");
+  // 来源原件路径是「点击问题 → 打开 docx 原件并高亮」的唯一依据，缺了前端只能开提取正文
+  assert.equal(display.sourcePath, "C:/docs/设计说明.docx");
   assert.equal(display.summary?.["abolished"], 2);
   assert.equal(display.droppedIssues, 0);
+});
+
+test("display：标准自检透传 sourcePath；为 null（老载荷/未传）时不产半张卡", () => {
+  const withSource = createReviewResultDisplay("KnowledgeCheck", standardsOutput(1));
+  assert.equal(withSource?.sourcePath, "C:/docs/设计说明.docx");
+  // 没有来源路径时如实给 null：前端据此退回「只开提取正文」，而不是猜一个路径
+  const withoutSource = createReviewResultDisplay("KnowledgeCheck", standardsOutput(1, null));
+  assert.equal(withoutSource?.sourcePath, null);
+  assert.equal(withoutSource?.textPath, "C:/Users/u/.reactor/knowledge/review-text/abc.txt");
 });
 
 test("display：ReportReviewIssues 保留定位元数据（located / 第几次出现）", () => {
@@ -123,6 +135,7 @@ test("display：术语模式带白名单与剩余候选", () => {
     stamp: null,
     issues: [],
     textPath: null,
+    sourcePath: null,
     summary: null,
     coverage: null,
     whitelisted: ["核安全", "循环水泵"],

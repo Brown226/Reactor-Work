@@ -95,7 +95,9 @@ function createKnowledgeCheckDisplay(output: unknown): ReviewDisplayPayload | un
     action: data.action,
     stale: data.stale,
     textPath: bound(data.textPath, REVIEW_DISPLAY_MAX_PATH_CHARS),
-    sourcePath: null,
+    // 来源原件路径必须透传：缺它前端「点击问题 → 原文」只会打开提取正文，
+    // 用户看到的是丢掉版面的纯文本（见 ReviewResultPanel 的 hasOriginal 分支）。
+    sourcePath: bound(data.sourcePath, REVIEW_DISPLAY_MAX_PATH_CHARS),
     notice: bound(data.notice, REVIEW_DISPLAY_MAX_NOTICE_CHARS),
     summary: data.summary ? { ...data.summary } : null,
     issues: bounded.issues,

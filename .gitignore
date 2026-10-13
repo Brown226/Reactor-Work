@@ -112,3 +112,7 @@ docs/审查板块原始数据/
 /Reactor 服务端部署镜像/
 # tsup 运行期生成的临时展开配置（bundled_<hash>.mjs），非源码
 packages/desktop/tsup.config.bundled_*.mjs
+
+# 桌面端安装包本地迭代/交付产物（单文件约 324MB，超过 GitHub 单文件 100MB 硬限制，
+# 入库会导致 push 失败）。属交付物而非源码，不入库。
+packages/desktop/安装包迭代/

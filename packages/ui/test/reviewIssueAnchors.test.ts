@@ -264,6 +264,32 @@ test("结果读取：标准自检的条目默认视为已定位（老载荷没�
   assert.ok(view && view.kind === "standards");
   assert.equal(view.issues[0]!.located, true);
   assert.equal(view.issues[0]!.occurrences, 1);
+  // 老载荷没有 sourcePath：读取器给 null，前端据此只开提取正文，不猜路径
+  assert.equal(view.sourcePath, null);
+});
+
+test("结果读取：标准自检带回 sourcePath（点击问题要打开 docx 原件而不是纯文本）", () => {
+  const view = readKnowledgeResult({
+    result: {
+      action: "standards",
+      textPath: "/tmp/review-text/a.md",
+      sourcePath: "E:/docs/设计说明.docx",
+      issues: [
+        {
+          code: "no_year",
+          severity: "warning",
+          quoted: "GB 12238",
+          message: "未注年代号",
+          line: 2,
+          startOffset: 10,
+          endOffset: 18,
+        },
+      ],
+    },
+  });
+  assert.ok(view && view.kind === "standards");
+  assert.equal(view.sourcePath, "E:/docs/设计说明.docx");
+  assert.equal(view.textPath, "/tmp/review-text/a.md");
 });
 
 test("字符级高亮：命中区间落在行中间时只标那几个字", () => {
