@@ -61,6 +61,7 @@ const ADMIN_DDL = [
      id SERIAL PRIMARY KEY, provider_id INT REFERENCES ai_providers(id) ON DELETE CASCADE,
      model TEXT, display_name TEXT, model_type TEXT DEFAULT 'chat', features JSONB DEFAULT '[]',
      max_context INT, max_output INT, pricing JSONB, enabled BOOL DEFAULT true, sort INT DEFAULT 0,
+     params JSONB DEFAULT '{}',
      updated_at TIMESTAMPTZ DEFAULT now(), UNIQUE (provider_id, model))`,
 ];
 
@@ -187,6 +188,39 @@ async function main() {
       .then(() => false)
       .catch((e) => e.code === "23505");
     check("UNIQUE(provider_id, model) 生效（23505）", dup === true);
+
+    // 5b) 推理档位配置走 ai_models.params（2026-10-13：不改表结构，复用已有 jsonb 列）
+    await pool.query(
+      `INSERT INTO ai_models (provider_id, model, display_name, features, max_context, max_output, params)
+       VALUES ($1, 'smoke-reasoning', 'Smoke Reasoning', $2::jsonb, 200000, 32000, $3::jsonb)`,
+      [provId, JSON.stringify(["tools", "reasoning", "vision"]), JSON.stringify({ reasoning_levels: ["disabled", "enabled"], reasoning_map: "{}" })],
+    );
+    const rRow = await pool.query(
+      `SELECT features, max_context, max_output, params FROM ai_models WHERE provider_id = $1 AND model = 'smoke-reasoning'`,
+      [provId],
+    );
+    const r = rRow.rows[0];
+    check(
+      "params.reasoning_levels/reasoning_map 与 max_context/max_output 可同库共存（供 /v1/models 下发）",
+      r &&
+        r.max_context === 200000 &&
+        r.max_output === 32000 &&
+        Array.isArray(r.features) &&
+        r.features.includes("reasoning") &&
+        Array.isArray(r.params.reasoning_levels) &&
+        r.params.reasoning_levels.join(",") === "disabled,enabled" &&
+        r.params.reasoning_map === "{}",
+    );
+    // 反例：params 里与本次无关的键（rerank 向量维度）不能被推理配置覆盖掉
+    await pool.query(`UPDATE ai_models SET params = $1::jsonb WHERE provider_id = $2 AND model = 'smoke-reasoning'`, [
+      JSON.stringify({ vector_dimensions: 1024, reasoning_levels: ["low", "high"], reasoning_map: '{"reasoning_effort": reasoningLevel}' }),
+      provId,
+    ]);
+    const merged = await pool.query(`SELECT params FROM ai_models WHERE provider_id = $1 AND model = 'smoke-reasoning'`, [provId]);
+    check(
+      "params 合并语义：写入推理配置不影响 rerank 的 vector_dimensions",
+      merged.rows[0].params.vector_dimensions === 1024 && merged.rows[0].params.reasoning_levels.join(",") === "low,high",
+    );
 
     // 6) 删除 provider → 级联删 models（ON DELETE CASCADE）
     await pool.query(`DELETE FROM ai_providers WHERE id = $1`, [provId]);

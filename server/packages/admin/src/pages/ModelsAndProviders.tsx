@@ -117,6 +117,10 @@ interface ModelForm {
   features: string[];
   maxContext: string;
   maxOutput: string;
+  /** 推理档位可选值，逗号分隔；空 = 不下发，桌面端按「模型是否声明推理」走安全缺省 */
+  reasoningLevels: string;
+  /** 档位→请求体的 CEL 表达式；空串按缺省 "{}"（不写请求体）处理 */
+  reasoningMap: string;
   inputPerM: string;
   outputPerM: string;
   cacheReadPerM: string;
@@ -138,6 +142,18 @@ const FEATURES: Array<{ key: string; label: string }> = [
 
 /** 空串 = 不下发（服务端语义：只改传了的字段）；非法数字交给服务端兜底 */
 const num = (s: string): number | null => (s.trim() === "" ? null : Number(s));
+
+/**
+ * 逗号/空白分隔的字符串 → 去重数组（保留首次出现顺序）。
+ * 推理档位这类"有序集合"用它：桌面端按语义强度从低到高展示，顺序有意义所以不能排序。
+ */
+const splitList = (s: string): string[] => {
+  const items = s
+    .split(/[,，\s]+/)
+    .map((v) => v.trim())
+    .filter(Boolean);
+  return [...new Set(items)];
+};
 
 /** 可见范围的「按角色」选项（与旧 Models 页同口径：本仓只有这三种角色） */
 const SCOPE_ROLES: Array<{ key: string; label: string }> = [
@@ -202,6 +218,8 @@ export function emptyModelForm(): ModelForm {
     features: [],
     maxContext: "",
     maxOutput: "",
+    reasoningLevels: "",
+    reasoningMap: "",
     inputPerM: "",
     outputPerM: "",
     cacheReadPerM: "",
@@ -598,6 +616,8 @@ export function ModelsAndProviders() {
       features: [...(m.features ?? [])],
       maxContext: m.maxContext != null ? String(m.maxContext) : "",
       maxOutput: m.maxOutput != null ? String(m.maxOutput) : "",
+      reasoningLevels: (m.reasoningLevels ?? []).join(", "),
+      reasoningMap: m.reasoningMap ?? "",
       inputPerM: m.pricing?.inputPerM != null ? String(m.pricing.inputPerM) : "",
       outputPerM: m.pricing?.outputPerM != null ? String(m.pricing.outputPerM) : "",
       cacheReadPerM: m.pricing?.cacheReadPerM != null ? String(m.pricing.cacheReadPerM) : "",
@@ -620,6 +640,9 @@ export function ModelsAndProviders() {
         features: modelEdit.features,
         maxContext: num(modelEdit.maxContext),
         maxOutput: num(modelEdit.maxOutput),
+        // 推理档位：与 params 合并写入，不影响 rerank 的向量维度等无关键
+        reasoningLevels: splitList(modelEdit.reasoningLevels),
+        reasoningMap: modelEdit.reasoningMap.trim() || "{}",
         pricing: {
           inputPerM: num(modelEdit.inputPerM),
           outputPerM: num(modelEdit.outputPerM),
@@ -1202,6 +1225,38 @@ export function ModelsAndProviders() {
                         <Input id="me-out" inputMode="numeric" value={modelEdit.maxOutput} onChange={(e) => setModelEdit({ ...modelEdit, maxOutput: e.target.value })} />
                       </div>
                     </div>
+                    {/*
+                      推理档位（2026-10-13）：上面的 features「推理」只是布尔，桌面端需要的是
+                      带可选值集合的 enum spec —— 布尔推不出集合，端侧只能猜，猜错就表现为
+                      「打开思考后无法正常对话」。因此这里显式配置，随 /v1/models 下发。
+                    */}
+                    <div className="flex gap-3">
+                      <div className="field" style={{ flex: 1 }}>
+                        <Label htmlFor="me-rlevels">推理档位（可选值，逗号分隔）</Label>
+                        <Input
+                          id="me-rlevels"
+                          className="mono"
+                          placeholder="disabled, enabled"
+                          value={modelEdit.reasoningLevels}
+                          onChange={(e) => setModelEdit({ ...modelEdit, reasoningLevels: e.target.value })}
+                        />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <Label htmlFor="me-rmap">档位 → 请求体映射（CEL）</Label>
+                        <Input
+                          id="me-rmap"
+                          className="mono"
+                          placeholder='{}'
+                          value={modelEdit.reasoningMap}
+                          onChange={(e) => setModelEdit({ ...modelEdit, reasoningMap: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <span className="hint">
+                      档位按语义强度从低到高排列，顺序有意义。映射留空 = <code>{}</code>（不往请求体写字段，最安全）；
+                      需要真实传参时按上游协议写，如 <code>{'{"reasoning_effort": reasoningLevel}'}</code>。
+                      两者都空且未勾「推理」时，桌面端不展示思考档位。
+                    </span>
                     <div className="mp-grid2">
                       <div className="field">
                         <Label htmlFor="me-in">输入价（¥ / 百万 tokens）</Label>

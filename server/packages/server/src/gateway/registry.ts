@@ -50,6 +50,47 @@ export interface ModelEntry {
    * 换维度意味着整个库的向量作废（需重建列 + 重新向量化）。
    */
   params?: Record<string, unknown>;
+  /**
+   * 推理档位可选值（来自 `params.reasoning_levels`），按语义强度从低到高。
+   * 空数组 = 未配置，端侧按自己的兜底口径处理，不因老数据报错。
+   *
+   * 为什么需要它：桌面端 `optionSpecs.reasoningLevel` 是**带可选值集合的 enum spec**，
+   * 而 `features` 里的 `reasoning` 只是布尔 —— 布尔推不出集合，端侧就只能猜，
+   * 猜错就表现为「打开思考后无法正常对话」。因此由管理台显式配置、随目录下发。
+   */
+  reasoningLevels: readonly string[];
+  /**
+   * 把档位值写进请求体的受限 CEL 表达式（来自 `params.reasoning_map`）。
+   * 缺省 `"{}"` = **不写任何字段**：宁可让思考强度只作为端侧状态（功能降级），
+   * 也不能让「打开思考」直接带上游不认的参数而 400 —— 那正是本次要修的现象。
+   */
+  reasoningMap: string;
+}
+
+/** `params.reasoning_map` 缺省值：空 patch，请求体不被改写。 */
+export const DEFAULT_REASONING_MAP = "{}";
+
+/**
+ * 从 `ai_models.params` 解析推理档位配置。
+ *
+ * 反例兜底：非数组 / 空串项 / 重复项 / 超长项一律忽略，`reasoning_map` 非字符串或超长
+ * 也回落缺省 —— 管理台是人工录入，不能让人手滑把整个模型目录打下线。
+ */
+export function parseReasoningSpec(params: Record<string, unknown> | undefined): {
+  reasoningLevels: readonly string[];
+  reasoningMap: string;
+} {
+  const rawLevels = params?.reasoning_levels;
+  const levels = Array.isArray(rawLevels)
+    ? rawLevels.filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+    : [];
+  const deduped = [...new Set(levels.map((v) => v.trim()))].filter((v) => v.length <= 64);
+  const rawMap = params?.reasoning_map;
+  const map =
+    typeof rawMap === "string" && rawMap.trim().length > 0 && rawMap.length <= 2000
+      ? rawMap.trim()
+      : DEFAULT_REASONING_MAP;
+  return { reasoningLevels: deduped, reasoningMap: map };
 }
 
 export interface ModelBinding {
@@ -314,6 +355,9 @@ export async function createRegistryFromDb(
         pricing: normalizePricing(m.pricing),
         currency: m.currency ?? null,
         ...(m.params !== null && typeof m.params === "object" ? { params: m.params as Record<string, unknown> } : {}),
+        ...parseReasoningSpec(
+          m.params !== null && typeof m.params === "object" ? (m.params as Record<string, unknown>) : undefined,
+        ),
         scope: {
           kind: m.scope_kind ?? "all",
           roles: Array.isArray(m.scope_roles) ? m.scope_roles.filter((r): r is string => typeof r === "string") : [],

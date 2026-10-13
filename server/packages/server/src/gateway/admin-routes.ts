@@ -11,6 +11,7 @@ import type { IdentityDb } from "../identity/db.js";
 import { maskFields, openFields, sealFields, sealSecret, secretFieldNames, stripMaskedFields } from "../common/secrets-crypto.js";
 import { normalizePricing } from "../common/pricing.js";
 import { toCatalogModel } from "./models.js";
+import { parseReasoningSpec } from "./registry.js";
 import { findModelPreset, listModelPresets, MODEL_PRESET_SOURCE } from "./model-presets.js";
 import {
   authHeadersFor,
@@ -161,6 +162,41 @@ function buildPatch(fields: Array<[string, unknown]>): { sets: string[]; params:
     sets.push(`${col} = $${params.length}`);
   }
   return { sets, params };
+}
+
+/**
+ * 归一化管理台传入的推理档位配置，返回要合进 `ai_models.params` 的键。
+ *
+ * 为什么必须**合并**而不是整体覆盖 `params`：该列已有其它用途（rerank 的向量维度，
+ * 见 registry.ts 的 ModelEntry.params 注释），整列覆盖会把无关参数静默清空。
+ * 因此这里只动 `reasoning_levels` / `reasoning_map` 两个键，其余原样带回。
+ *
+ * 返回 null = 本次没有要写的推理配置（调用方据此跳过 params 列，不产生空更新）。
+ */
+function buildReasoningParams(
+  input: { reasoningLevels?: unknown; reasoningMap?: unknown } | undefined,
+  existingParams: Record<string, unknown> | undefined,
+): { params: Record<string, unknown> } | { error: string } | null {
+  if (!input || (input.reasoningLevels === undefined && input.reasoningMap === undefined)) return null;
+  const next: Record<string, unknown> = { ...(existingParams ?? {}) };
+  if (input.reasoningLevels !== undefined) {
+    if (!Array.isArray(input.reasoningLevels)) return { error: "reasoningLevels 必须是字符串数组" };
+    const levels = input.reasoningLevels
+      .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+      .map((v) => v.trim());
+    if (new Set(levels).size !== levels.length) return { error: "reasoningLevels 不能重复" };
+    if (levels.some((v) => v.length > 64)) return { error: "reasoningLevels 单项过长" };
+    if (levels.length === 0) delete next.reasoning_levels;
+    else next.reasoning_levels = levels;
+  }
+  if (input.reasoningMap !== undefined) {
+    if (typeof input.reasoningMap !== "string" || !input.reasoningMap.trim()) {
+      return { error: 'reasoningMap 必须是非空字符串（不改写请求体时传 "{}"）' };
+    }
+    if (input.reasoningMap.length > 2000) return { error: "reasoningMap 过长" };
+    next.reasoning_map = input.reasoningMap.trim();
+  }
+  return { params: next };
 }
 
 /**
@@ -1061,6 +1097,10 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
         currency: r.currency,
         /** 建库时钉死的参数（rerank 向量维度等）；界面只读展示，避免误改导致向量作废 */
         params: r.params && typeof r.params === "object" ? (r.params as Record<string, unknown>) : {},
+        // 推理档位：从 params 解析后平铺输出，管理台表单直接编辑（不让人手工改 params JSON）
+        ...parseReasoningSpec(
+          r.params && typeof r.params === "object" ? (r.params as Record<string, unknown>) : undefined,
+        ),
         /** P2：可见范围（all/role/dept/user，命中任一即可见；口径同 skills/agents） */
         scope: {
           kind: r.scope_kind ?? "all",
@@ -1088,16 +1128,21 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
       scope?: unknown;
       enabled?: boolean;
       sort?: number;
+      reasoningLevels?: unknown;
+      reasoningMap?: unknown;
     } | null;
     if (!body?.providerId || !body.model) return err(c, 400, "providerId/model 必填");
     if (!(await refExists(db, "ai_providers", body.providerId))) return err(c, 400, "Provider 不存在");
+    // 新建时 params 只有推理配置一个来源，不存在会被覆盖的旧键
+    const reasoning = buildReasoningParams(body, undefined);
+    if (reasoning && "error" in reasoning) return err(c, 400, reasoning.error);
     const sc = parseScope(body.scope);
     if ("error" in sc) return err(c, 400, sc.error);
     if (!(await deptsExist(db, sc.scope.deptIds))) return err(c, 400, "可见范围里的部门不存在");
     const { rows } = await db.pool.query<{ id: number }>(
       `INSERT INTO ai_models (provider_id, model, display_name, model_type, features, max_context, max_output, pricing, enabled, sort, currency,
-                              scope_kind, scope_roles, scope_dept_ids, scope_uids)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::text[], $14::int[], $15::text[]) RETURNING id`,
+                              scope_kind, scope_roles, scope_dept_ids, scope_uids, params)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::text[], $14::int[], $15::text[], $16::jsonb) RETURNING id`,
       [
         body.providerId,
         body.model,
@@ -1114,6 +1159,7 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
         sc.scope.roles,
         sc.scope.deptIds,
         sc.scope.uids,
+        JSON.stringify(reasoning && "params" in reasoning ? reasoning.params : {}),
       ],
     );
     // 新建也要留痕（与删除/修改同一口径）：记下新行快照，事后能看出「这条是什么时候冒出来的」
@@ -1143,11 +1189,26 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
       scope?: unknown;
       enabled?: boolean;
       sort?: number;
+      reasoningLevels?: unknown;
+      reasoningMap?: unknown;
     } | null;
     if (!body) return err(c, 400, "请求体非法");
     if (body.providerId != null && !(await refExists(db, "ai_providers", body.providerId))) {
       return err(c, 400, "Provider 不存在");
     }
+    /*
+     * 改前先读旧 params：推理配置是**增量合并**而非整列覆盖 —— params 里还有 rerank 的
+     * 向量维度等与本次无关的键，整列覆盖会把它们静默清空（见 buildReasoningParams 注释）。
+     */
+    const beforeParamsRow = (
+      await db.pool.query<{ params: unknown }>("SELECT params FROM ai_models WHERE id = $1", [id])
+    ).rows[0];
+    const existingParams =
+      beforeParamsRow?.params !== null && typeof beforeParamsRow?.params === "object"
+        ? (beforeParamsRow.params as Record<string, unknown>)
+        : undefined;
+    const reasoning = buildReasoningParams(body, existingParams);
+    if (reasoning && "error" in reasoning) return err(c, 400, reasoning.error);
     if (body.scope !== undefined) {
       const sc = parseScope(body.scope);
       if ("error" in sc) return err(c, 400, sc.error);
@@ -1169,6 +1230,11 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
       ["scope_uids", body.scope === undefined ? undefined : (parseScope(body.scope) as { scope: { uids: string[] } }).scope.uids],
       ["enabled", body.enabled],
       ["sort", body.sort],
+      // 只在此次确实带了推理配置时才写 params，避免把「改个显示名」变成一次无意义的整列重写
+      [
+        "params",
+        reasoning && "params" in reasoning ? JSON.stringify(reasoning.params) : undefined,
+      ],
       ["updated_at", new Date()],
     ]);
     if (sets.length === 0) return err(c, 400, "无可更新字段");

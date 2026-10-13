@@ -79,6 +79,32 @@ export interface ReactorServerModelInfo {
   readonly id: string;
   readonly modelType: string | null;
   readonly displayName: string | null;
+  /** 上下文窗口（网关 `context_length`）；null = 上游/管理台未给，端侧走既有兜底 */
+  readonly contextWindow: number | null;
+  /** 最大输出 tokens（网关 `max_completion_tokens`）；null = 未配置 */
+  readonly maxOutputTokens: number | null;
+  readonly supportsTools: boolean;
+  readonly supportsReasoning: boolean;
+  /** 多模态（网关 `supports_vision`）：决定桌面端 `inputFormat.supportsImage` */
+  readonly supportsVision: boolean;
+  /** 推理档位可选值（网关 `reasoning_levels`）；null = 管理台未配置，端侧按族推断兜底 */
+  readonly reasoningLevels: readonly string[] | null;
+  /** 档位→请求体的 CEL 表达式（网关 `reasoning_map`）；null = 用端侧安全缺省 `"{}"` */
+  readonly reasoningMap: string | null;
+}
+
+/** 只接受正整数：0/负数/小数/字符串一律按「未提供」处理，避免把脏值写进模型配置。 */
+function positiveIntOrNull(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : null;
+}
+
+/** 去空白、去空项；非数组或全空返回 null（区分「配了空数组」与「没配」）。 */
+function stringArrayOrNull(value: unknown): readonly string[] | null {
+  if (!Array.isArray(value)) return null;
+  const items = value
+    .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+    .map((v) => v.trim());
+  return items.length > 0 ? [...new Set(items)] : null;
 }
 
 /** 技能附属文件清单项（落盘集响应内联）。sha256 是服务端按**解码后字节**计算的。 */
@@ -229,7 +255,18 @@ export function createReactorServerClient(apiClient: ApiClient) {
 
     async models(gatewayBaseUrl: string, gatewayToken: string): Promise<ReactorServerModelInfo[]> {
       const { data } = await request<{
-        data?: { id?: unknown; model_type?: unknown; display_name?: unknown }[];
+        data?: {
+          id?: unknown;
+          model_type?: unknown;
+          display_name?: unknown;
+          context_length?: unknown;
+          max_completion_tokens?: unknown;
+          supports_tools?: unknown;
+          supports_reasoning?: unknown;
+          supports_vision?: unknown;
+          reasoning_levels?: unknown;
+          reasoning_map?: unknown;
+        }[];
       }>(`${gatewayBaseUrl}/models`, { method: "GET", apiKey: gatewayToken });
       const list = Array.isArray(data?.data) ? data.data : [];
       const models: ReactorServerModelInfo[] = [];
@@ -239,6 +276,19 @@ export function createReactorServerClient(apiClient: ApiClient) {
           id: item.id,
           modelType: typeof item.model_type === "string" ? item.model_type : null,
           displayName: typeof item.display_name === "string" ? item.display_name : null,
+          // 2026-10-13：以下字段网关早已下发，此前接收段整段丢弃，导致桌面端只能用兜底值
+          // （上下文/最大输出不同步、多模态标识丢失、推理档位推不出来）。见
+          // docs/未完成-网关模型能力同步桌面端-方案-v1.md
+          contextWindow: positiveIntOrNull(item.context_length),
+          maxOutputTokens: positiveIntOrNull(item.max_completion_tokens),
+          supportsTools: item.supports_tools === true,
+          supportsReasoning: item.supports_reasoning === true,
+          supportsVision: item.supports_vision === true,
+          reasoningLevels: stringArrayOrNull(item.reasoning_levels),
+          reasoningMap:
+            typeof item.reasoning_map === "string" && item.reasoning_map.trim()
+              ? item.reasoning_map
+              : null,
         });
       }
       return models;

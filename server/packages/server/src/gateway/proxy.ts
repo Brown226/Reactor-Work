@@ -508,6 +508,10 @@ export function createGatewayHandlers(
             supports_anthropic: hasFeature(m, "anthropic"),
             supports_vision: hasFeature(m, "vision"),
             features: m.features,
+            // 推理档位：features.reasoning 只是布尔，推不出桌面端 enum spec 需要的可选值集合，
+            // 因此显式下发；空数组 = 管理台未配置，端侧走自己的兜底口径。
+            reasoning_levels: m.reasoningLevels,
+            reasoning_map: m.reasoningMap,
             input_price_per_million: m.pricing.inputPerM,
             output_price_per_million: m.pricing.outputPerM,
             cache_read_price_per_million: m.pricing.cacheReadPerM,

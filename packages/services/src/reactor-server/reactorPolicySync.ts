@@ -128,7 +128,8 @@ export function createReactorPolicySync(deps: ReactorPolicySyncDeps): ReactorPol
       return {
         quotaLimit,
         alertThresholds: thresholds,
-        policyMode: policyView.policy?.defaultApprovalMode ?? null,
+        // 2026-10-13：不再下发 policyMode —— 组织 defaultApprovalMode 已不干预桌面端
+        // 对话权限档位，设置页也不再展示它（见 P4 文档头部变更说明）。
         policySource: policyView.source,
         policyStale: policyView.stale,
         commandBlacklistCount: policyView.policy?.commandBlacklist.length ?? 0,

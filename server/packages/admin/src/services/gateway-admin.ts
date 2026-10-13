@@ -78,6 +78,14 @@ export interface AdminModel {
   sort: number;
   /** 建库时钉死的参数（如 rerank 的向量维度）；界面只读展示 */
   params?: Record<string, unknown>;
+  /**
+   * 推理档位可选值（`params.reasoning_levels`），按语义强度从低到高。
+   * 桌面端 `optionSpecs.reasoningLevel` 需要**带可选值集合的 enum spec**，
+   * 而 `features` 里的 `reasoning` 只是布尔 —— 布尔推不出集合。
+   */
+  reasoningLevels?: string[];
+  /** 档位→请求体的受限 CEL 表达式（`params.reasoning_map`）；缺省 "{}" = 不写请求体 */
+  reasoningMap?: string;
 }
 
 /** 「模型发现」候选：上游 /models 的一项 + 是否已入库 */
@@ -227,6 +235,8 @@ export const modelsApi = {
     currency?: string | null;
     scope?: ResourceScope;
     sort?: number;
+    reasoningLevels?: string[];
+    reasoningMap?: string;
   }) => http.post<{ id: number }>("/admin/models", body, AUTH),
   /** 支持改挂供应商（providerId）——网关按 model 路由，改动 TTL 内热生效 */
   patch: (
@@ -234,7 +244,7 @@ export const modelsApi = {
     body: Partial<
       Pick<
         AdminModel,
-        "providerId" | "model" | "displayName" | "modelType" | "features" | "enabled" | "sort" | "maxContext" | "maxOutput" | "pricing" | "currency" | "scope"
+        "providerId" | "model" | "displayName" | "modelType" | "features" | "enabled" | "sort" | "maxContext" | "maxOutput" | "pricing" | "currency" | "scope" | "reasoningLevels" | "reasoningMap"
       >
     >,
   ) => http.patch<{ ok: boolean }>(`/admin/models/${id}`, body, AUTH),

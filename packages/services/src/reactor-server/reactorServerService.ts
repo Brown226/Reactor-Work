@@ -11,7 +11,9 @@ import {
   deriveGatewayBaseUrl,
   normalizeReactorServerUrl,
   ReactorServerHttpError,
+  type ReactorServerModelInfo,
 } from "./reactorServerClient.js";
+import { buildGatewayModelConfig } from "./gatewayModelConfig.js";
 import {
   REACTOR_SERVER_API_KEY_PLACEHOLDER,
   REACTOR_SERVER_CREDENTIAL_KEYS,
@@ -279,21 +281,26 @@ export function createReactorServerService(
    */
   async function reconcileProviderModels(
     providerId: string,
-    desiredModelIds: readonly string[],
+    desiredModels: readonly ReactorServerModelInfo[],
   ): Promise<void> {
-    const desired = new Set(desiredModelIds);
+    const desired = new Set(desiredModels.map((m) => m.id));
     const current = await readPersonalModelIds(providerId);
     const currentSet = new Set(current);
     let added = 0;
     let removed = 0;
-    for (const modelId of desiredModelIds) {
-      if (currentSet.has(modelId)) continue;
-      // config 传空对象：上下文窗口、推理档位等真实参数由 provider 侧推荐配置补齐，
-      // 这里只声明"这个 id 属于该 provider"。
+    for (const model of desiredModels) {
+      if (currentSet.has(model.id)) continue;
+      /*
+       * 用网关下发的真实能力构造 ModelConfig（上下文窗口 / 最大输出 / 多模态 / 推理档位）。
+       * 2026-10-13 前这里传的是空对象 `{}`，注释称"由 provider 侧推荐配置补齐"，
+       * 但网关 provider 并没有这些元数据 —— 结果桌面端只能兜底推断，表现为
+       * 上下文/最大输出与管理台不同步、管理台标了多模态端侧不认、打开思考就 400。
+       * 见 docs/未完成-网关模型能力同步桌面端-方案-v1.md。
+       */
       await providerSettings.addPersonalModel(
         providerId as ProviderId,
-        modelId as ModelId,
-        {},
+        model.id as ModelId,
+        buildGatewayModelConfig(model),
         true,
       );
       added += 1;
@@ -317,7 +324,7 @@ export function createReactorServerService(
    */
   async function writeEnterpriseProvider(
     gatewayBaseUrl: string,
-    modelIds: readonly string[],
+    models: readonly ReactorServerModelInfo[],
   ): Promise<void> {
     const view = await providerSettings.getView();
     const mine = view.providers.filter((provider) => provider.personalConfig !== undefined);
@@ -344,7 +351,7 @@ export function createReactorServerService(
     });
     cachedProviderId = providerId;
     await credentials.save(REACTOR_SERVER_CREDENTIAL_KEYS.providerId, providerId);
-    await reconcileProviderModels(providerId, modelIds);
+    await reconcileProviderModels(providerId, models);
   }
 
   async function syncModels(): Promise<readonly string[]> {
@@ -354,10 +361,11 @@ export function createReactorServerService(
     const gatewayBaseUrl = deriveGatewayBaseUrl(serverUrl);
     const models = await client.models(gatewayBaseUrl, gatewayToken);
     // 只把 chat 板块写进可选清单：embedding/rerank 不是会话模型，混进下拉会让用户选到"一发就 400"的条目。
-    const chatModelIds = models
-      .filter((model) => model.modelType === null || model.modelType === "chat")
-      .map((model) => model.id);
-    await writeEnterpriseProvider(gatewayBaseUrl, chatModelIds);
+    const chatModels = models.filter(
+      (model) => model.modelType === null || model.modelType === "chat",
+    );
+    const chatModelIds = chatModels.map((model) => model.id);
+    await writeEnterpriseProvider(gatewayBaseUrl, chatModels);
     cachedModels = chatModelIds;
     return cachedModels;
   }

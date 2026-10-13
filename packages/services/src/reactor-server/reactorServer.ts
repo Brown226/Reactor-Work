@@ -89,7 +89,6 @@ export interface ReactorServerPolicyView {
 export interface ReactorServerUsageOverview {
   readonly quotaLimit: number | null;
   readonly alertThresholds: readonly number[];
-  readonly policyMode: ReactorDesktopPolicy["defaultApprovalMode"] | null;
   readonly policySource: ReactorServerPolicyView["source"];
   readonly policyStale: boolean;
   /** 策略摘要用：命令黑名单 / 出网白名单条数（0 = 该项不限制）。 */
