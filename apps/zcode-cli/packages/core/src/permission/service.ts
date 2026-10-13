@@ -16,7 +16,6 @@ import {
 } from "@zcode/contracts";
 import {
   OFFICIAL_CUA_PERMISSION_RULE_TOOL_NAME,
-  intersectReactorDesktopPolicyMode,
   matchReactorCommandBlacklist,
   type ReactorDesktopPolicySource,
 } from "@zcode/shared";
@@ -136,16 +135,11 @@ export class PermissionService {
       );
     }
 
-    // P4.2b 模式天花板：与用户档位取交集（只能收紧不能放宽）。判定仍走同一条既有链路，
-    // 只是把生效档位换成交集结果 —— 因此规则来源/规则号/风险等级都不受影响。
-    const effectiveMode = intersectReactorDesktopPolicyMode(
-      context.mode,
-      policy?.defaultApprovalMode,
-    ) as CollaborationMode;
-    const scopedContext =
-      effectiveMode === context.mode ? context : { ...context, mode: effectiveMode };
-
-    return this.decide(scopedContext, toolCapability, projectRules, rulePolicy);
+    // 2026-10-13：原「模式天花板」（把用户档位与组织 defaultApprovalMode 取交集）已移除。
+    // 原因：组织策略被配成 edit 时，用户在桌面端选「完全访问」（yolo）会被静默压成 edit，
+    // 而端上没有任何提示，表现为「设了完全访问但每次仍要确认」。
+    // 现恢复桌面端原始设计：用户切到哪一档就按哪一档判定。命令黑名单这道组织硬边界保留。
+    return this.decide(context, toolCapability, projectRules, rulePolicy);
   }
 
   private decide(

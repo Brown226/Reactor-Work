@@ -2360,16 +2360,9 @@ const enUS: Record<string, string> = {
     "Published by the enterprise server; applies while signed in",
   "settings.reactorServer.policySourceUnknown":
     "No organization policy yet — nothing is restricted",
-  "settings.reactorServer.policyUnrestricted": "Unrestricted",
-  "settings.reactorServer.policyModeHint":
-    "Mode ceiling: the session permission mode cannot go above this level; the command blacklist and egress allowlist are enforced from the same policy.",
   "settings.reactorServer.policyCommandBlacklist": "{count} blocked commands",
   "settings.reactorServer.policyEgressAllowlist": "{count} allowed egress domains",
   "settings.reactorServer.policyStale": "Policy refresh failed; using the cached copy",
-  "settings.reactorServer.policy.mode.plan": "Plan only (plan)",
-  "settings.reactorServer.policy.mode.edit": "File edits (edit)",
-  "settings.reactorServer.policy.mode.build": "Regular development (build)",
-  "settings.reactorServer.policy.mode.yolo": "No extra restriction (yolo)",
   "settings.mcpTitle": "MCP Servers",
   "settings.mcp.description": "Manage MCP server configurations used by Reactor Agent.",
   "settings.mcp.create.open": "Add MCP server",

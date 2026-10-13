@@ -95,7 +95,6 @@ export function AccountOrgPanel({
   const counts = useAccountCapabilityCounts();
   // 企业模型数直接来自登录态里的目录（不额外发网络请求）。
   const modelCount = status.models?.length ?? 0;
-  const policyMode = overview?.policyMode ?? null;
 
   const formatCount = (value: number | null): string =>
     value === null ? "—" : formatAccountTokens(value, locale);
@@ -175,7 +174,10 @@ export function AccountOrgPanel({
         </AccountCardNote>
       </SettingsGroupCard>
 
-      {/* 组织策略卡：能力清单说"我可以做什么"，策略说"组织把它卡在哪一档"。 */}
+      {/* 组织策略卡：能力清单说"我可以做什么"，策略说"组织还加了哪些硬边界"。
+          2026-10-13：原「档位限制」展示已移除——组织 defaultApprovalMode 不再干预桌面端
+          对话权限档位（见 docs/未完成-服务端接线-P4-用量上报与策略.md 头部变更说明），
+          继续展示档位会让用户以为自己的选择被压低。此处只保留仍生效的硬边界。 */}
       <SettingsGroupCard>
         <SettingsRow
           label={intl.formatMessage({ id: "settings.account.policy.title" })}
@@ -191,20 +193,15 @@ export function AccountOrgPanel({
               className="inline-flex items-center gap-1.5 text-ui-base font-medium text-foreground"
             >
               <ShieldCheck className="size-4 text-foreground-subtle" />
-              {policyMode === null
-                ? intl.formatMessage({ id: "settings.reactorServer.policyUnrestricted" })
-                : intl.formatMessage({ id: `settings.reactorServer.policy.mode.${policyMode}` })}
+              {intl.formatMessage(
+                { id: "settings.reactorServer.policyCommandBlacklist" },
+                { count: overview?.commandBlacklistCount ?? 0 },
+              )}
             </span>
           }
           detail={
             <div className="space-y-1 text-ui-base text-foreground-subtle">
-              <p>{intl.formatMessage({ id: "settings.reactorServer.policyModeHint" })}</p>
               <p>
-                {intl.formatMessage(
-                  { id: "settings.reactorServer.policyCommandBlacklist" },
-                  { count: overview?.commandBlacklistCount ?? 0 },
-                )}
-                {" · "}
                 {intl.formatMessage(
                   { id: "settings.reactorServer.policyEgressAllowlist" },
                   { count: overview?.egressAllowlistCount ?? 0 },
