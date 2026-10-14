@@ -180,11 +180,13 @@ pdftoppm -png -r 150 <out_dir>/deck.pdf <out_dir>/slide
 > instance may run at a time — if a conversion hangs, add
 > `--env:UserInstallation=file:///tmp/libreoffice_tmp`.
 >
-> 🔴 **`soffice` not installed? You MUST install it, not substitute it** — using PowerPoint/Keynote/WPS
-> to render instead is forbidden, and a large download is not a reason to skip. Once installed,
-> **register it on `PATH` and re-verify `soffice --version`** so the next probe doesn't reinstall it
-> (step 4 of the hard requirement). See
-> [HARD REQUIREMENT](#-hard-requirement--libreoffice-is-missing) below.
+> ⚙️ **`soffice` is optional on this deployment** — it is needed only for the render steps
+> (PPTX→PDF export, per-slide PNG previews, visual-judge). Editing, creating and structural
+> analysis run on the bundled python-pptx and do not need it. Before concluding it is missing,
+> probe the injected engine env and the standard install locations; if it is genuinely absent,
+> point the user / IT at an intranet-provided engine — **do not download from public mirrors,
+> do not silently substitute another program, and do not claim a render passed when it did not.**
+> See [LibreOffice (optional render engine)](#libreoffice-optional-render-engine) below.
 
 ---
 
@@ -705,99 +707,57 @@ python3 "$PPTX_SKILL_DIR/scripts/prune.py" unpacked/
 | `prune.py` | Drop unreferenced parts from an unpacked deck |
 | `soffice_bridge.py` | Internal LibreOffice bridge used by the render scripts — not an entry point |
 
-`soffice` must be reachable on PATH (see the LibreOffice hard requirement below and the
+For the render scripts only, `soffice` must be reachable on PATH (see
+[LibreOffice (optional render engine)](#libreoffice-optional-render-engine) below and the
 `ZCODE_LIBREOFFICE_PATH` contract in the office four-pack fork spec). The upstream
 `preview.ts` HTTP preview server is intentionally not vendored — rendered PNGs plus the
 `pptx:visual-judge` agent cover the same review loop.
 
 ## Dependencies
 
-Required dependencies (should already be installed):
+**Bundled (already shipped with the app — do not install):** the PPTX pipeline runs on the
+built-in Python engine under `tools/office-engines/python`, which already contains
+**python-pptx** (+ lxml, Pillow, defusedxml) for creating and editing decks, **latex2mathml** /
+`office_skill_lib.omml` for formulas, and the shared render helpers (PyMuPDF, pypdfium2,
+reportlab). Resolve it via `ZCODE_PYTHON_PATH` / `ZCODE_SKILL_ENGINE_ROOT` — the app injects
+these automatically.
 
-- **markitdown**: `pip install "markitdown[pptx]"` (text extraction)
-- **pptxgenjs**: `npm install -g pptxgenjs` (creating presentations)
-- **playwright**: `npm install -g playwright@1.50.0` (HTML rendering)
-- **sharp**: `npm install -g sharp` (SVG rasterization and image processing)
-- **LibreOffice**: PDF conversion — install from the Tsinghua mirror
-  (`https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/`, see the hard
-  requirement below); `sudo apt-get install libreoffice` only as a fallback
-- **Poppler**: `sudo apt-get install poppler-utils` (pdftoppm)
-- **defusedxml**: `pip install defusedxml` (secure XML parsing)
+**Optional render engine (not bundled):**
 
-### 🔴 HARD REQUIREMENT — LibreOffice is missing
+- **LibreOffice** (`soffice`): PPTX→PDF conversion and per-slide PNG previews only. Not required
+  for editing/creating decks — see [LibreOffice (optional render engine)](#libreoffice-optional-render-engine).
+- **Poppler** (`pdftoppm`): PDF→PNG rasterisation; `soffice_bridge.py` falls back to the bundled
+  pypdfium2 when it is absent.
 
-Every PPTX → PDF conversion and every rendered preview/thumbnail step depends on LibreOffice.
+**Not used by this fork:** `markitdown` (text extraction), `pptxgenjs` (JS/Node deck creation),
+`playwright` / `sharp` (HTML pipeline). The SKILL.md reference below mentions them because it is
+inherited from the upstream skill — on this deployment, extraction uses the built-in file-tools
+pipeline and creation uses python-pptx.
 
-**If LibreOffice is not installed, you MUST install it. This is not a choice.**
+### LibreOffice (optional render engine)
 
-**FORBIDDEN — do not do any of these:**
-- ❌ Using Keynote, Microsoft PowerPoint, WPS Office, or any other program already on the user's
-  machine *instead of* installing LibreOffice.
-- ❌ Deciding on the user's behalf that the download is "too large", "too slow", or "not worth it".
-  **The package being large is NOT a reason to skip the install.** It is expected to be large.
-- ❌ Asking the user "should I use Keynote/PowerPoint instead to save time?" — that is the same
-  violation dressed up as a question. Do not offer the substitution.
-- ❌ Silently degrading (shipping the deck without the render check) to avoid installing.
+LibreOffice is required **only** for the optional render steps: PPTX → PDF export, per-slide PNG
+previews, and the visual-judge render check. Everything else in this skill — creating decks,
+editing, restyling, template analysis, text/structure extraction — runs on the bundled
+python-pptx and works without it.
 
-**REQUIRED sequence — no steps skipped, in this order:**
+**If a render step is needed and `soffice` is not found:**
 
-1. **Explain the necessity to the user.** LibreOffice is what renders the deck's real layout —
-   master slides, themes, placeholder geometry — so it is the only way to verify slides actually
-   fit before delivery. Substituting it means shipping an unverified deck.
-2. **Tell them the download is large** (roughly several hundred MB) and may take a while. This is
-   information for the user, **not** a decision point for you — state it and proceed to install.
-3. **Install it now.** **Preferred source — Tsinghua TUNA mirror** (fast in China, current build):
-   `https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/`. Pick the
-   subdirectory matching the OS and CPU arch (`uname -m` / `$env:PROCESSOR_ARCHITECTURE`) and
-   download the main package from it:
+1. **Probe before concluding it is missing.** The app injects `ZCODE_LIBREOFFICE_PATH` /
+   `ZCODE_SKILL_ENGINE_ROOT` when a managed engine exists, and `soffice` may also be installed but
+   off-`PATH` (Windows: `C:\Program Files\LibreOffice\program\soffice.exe`; macOS:
+   `/Applications/LibreOffice.app/Contents/MacOS/soffice`; Linux: `/opt/libreoffice*/program/soffice`).
+   If found off-`PATH`, call it by full path or register it — re-verify with `soffice --version`.
+2. **If it is genuinely absent, route to IT / the intranet.** This is an air-gapped deployment:
+   LibreOffice is provided by the managed base image, an intranet mirror, or a configured engine
+   root. **Do not download it from public mirrors** (e.g. the Tsinghua TUNA mirror referenced by
+   the upstream skill) — the network is unreachable and the attempt will fail.
+3. **Never silently skip or fake the render check.** Do not substitute PowerPoint / Keynote / WPS.
+   If a render is required for delivery and no engine is available, surface it to the user and
+   explain what is blocked — do not ship the deck as if the render check passed.
 
-   | Platform | Path | Main package |
-   |----------|------|--------------|
-   | Linux x86_64 (deb) | `deb/x86_64/` | `LibreOffice_26.8.0_Linux_x86-64_deb.tar.gz` |
-   | Linux ARM64 (deb) | `deb/aarch64/` | `LibreOffice_26.8.0_Linux_aarch64_deb.tar.gz` |
-   | Linux x86_64 (rpm) | `rpm/x86_64/` | `LibreOffice_26.8.0_Linux_x86-64_rpm.tar.gz` |
-   | macOS Apple Silicon | `mac/aarch64/` | `LibreOffice_26.8.0_MacOS_aarch64.dmg` |
-   | macOS Intel | `mac/x86_64/` | `LibreOffice_26.8.0_MacOS_x86-64.dmg` |
-   | Windows x64 | `win/x86_64/` | `LibreOffice_26.8.0_Win_x86-64.msi` |
-   | Windows ARM64 | `win/aarch64/` | `LibreOffice_26.8.0_Win_aarch64.msi` |
-
-   Linux (deb): `tar -xzf <pkg>.tar.gz && sudo dpkg -i LibreOffice_26.8.0*/DEBS/*.deb && sudo apt-get install -f -y`
-   macOS: `hdiutil attach <pkg>.dmg && cp -R /Volumes/LibreOffice/LibreOffice.app /Applications/ && hdiutil detach /Volumes/LibreOffice`
-   Windows: `msiexec /i <pkg>.msi /qn` (needs admin). Verify with `soffice --version`.
-
-   **If 26.8.0 is gone** (the mirror keeps only a few releases), list
-   `https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/` and use the newest version
-   directory, substituting that version number above.
-
-   Package-manager fallback, only if the mirror is unreachable:
-   - macOS: `brew install --cask libreoffice`
-   - Linux (Debian/Ubuntu): `sudo apt-get install libreoffice`
-   - Windows: `winget install TheDocumentFoundation.LibreOffice`
-4. **Register the binary on `PATH`, then re-verify.** Do this as part of the install, not as an
-   afterthought: an install that leaves `soffice` off the executable search path is
-   indistinguishable from "not installed" to the next `command -v soffice` probe — which re-triggers
-   this whole block and makes you download several hundred MB you already have. **The mechanism
-   differs per OS — use the one for the platform you are on:**
-
-   | Platform | Register it | Then verify |
-   |----------|-------------|-------------|
-   | Linux | `sudo ln -sf /opt/libreoffice*/program/soffice /usr/local/bin/soffice` | `soffice --version` |
-   | macOS | `sudo ln -sf /Applications/LibreOffice.app/Contents/MacOS/soffice /usr/local/bin/soffice` | `soffice --version` |
-   | Windows | `setx PATH "$([Environment]::GetEnvironmentVariable('PATH','User'));C:\Program Files\LibreOffice\program"` | `& "C:\Program Files\LibreOffice\program\soffice.exe" --version` |
-
-   Notes: on Apple Silicon `/usr/local/bin` is not always on `PATH` — if the verify still fails, link
-   into `/opt/homebrew/bin` instead. On Windows `setx` only affects **newly launched** shells, so for
-   the rest of the current session call `soffice.exe` by its full path. Only continue once the verify
-   prints a version. Corollary: **probe before installing** — if the binary already exists on disk
-   but off-`PATH` (check `/opt/libreoffice*/program/soffice`,
-   `/Applications/LibreOffice.app/Contents/MacOS/soffice`,
-   `C:\Program Files\LibreOffice\program\soffice.exe`), register it instead of reinstalling.
-5. **Only after that install has actually been attempted AND failed** may you use software already
-   on the user's machine (Keynote, PowerPoint, WPS). Report the install failure and what you
-   switched to, and warn that the rendering may differ from this skill's normal checks.
-
-> **The gate is simple: no install attempt = no substitute program.** If you have not run the
-> install command and seen it fail, using Keynote/PowerPoint/WPS is a violation of this skill.
+> **The gate:** no engine → render steps are reported as unavailable, not silently dropped and
+> not faked. Editing/creating paths proceed normally.
 
 ---
 

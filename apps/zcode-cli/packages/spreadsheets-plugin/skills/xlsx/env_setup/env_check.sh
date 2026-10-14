@@ -67,7 +67,7 @@ if command -v fc-list &>/dev/null; then
     fc-list :lang=zh 2>/dev/null | grep -qi "noto\|simhei\|wenquanyi" || { $QUIET || echo "MISSING: CJK fonts"; FAIL=1; }
 fi
 
-# ── ON-DEMAND but NOT substitutable: recalc / .xlsx→PDF / .csv→.xlsx (LibreOffice/soffice) ──
+# ── ON-DEMAND (optional render engine): recalc / .xlsx→PDF / .csv→.xlsx (LibreOffice/soffice) ──
 required_on_demand "libreoffice (soffice)" command -v soffice
 
 $QUIET || echo "XLSX_SKILL_DIR=$XLSX_SKILL_DIR"

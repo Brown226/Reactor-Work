@@ -27,12 +27,11 @@
 libreoffice --headless --convert-to docx input.doc
 ```
 
-> 🔴 **If `libreoffice` is not installed, you MUST install it — do not substitute.** Using Word, WPS,
-> or Pages *instead of* installing is forbidden, and a large download is **not** a reason to skip it.
-> Required: explain the necessity to the user (only engine that converts legacy `.doc` while
-> preserving styles and layout), tell them the package is large, then install it **from the Tsinghua TUNA mirror** (`https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/`, or the newest version under `.../libreoffice/stable/`; package-manager commands are the fallback). Only after an
-> install attempt has actually **failed** may you use another program. **No install attempt = no
-> substitute program.** See the HARD REQUIREMENT block in `SKILL.md`.
+> ⚙️ **`soffice` is optional on this deployment** — needed only for `.doc` → `.docx` conversion.
+> Probe the injected engine env and the standard install locations first; if it is genuinely
+> absent, route to IT / the intranet (do **not** download from public mirrors, do **not** silently
+> substitute another program). See
+> [LibreOffice (optional render engine)](../SKILL.md#libreoffice-optional-render-engine) in `SKILL.md`.
 
 ## Step 1: Unpack
 
@@ -86,9 +85,10 @@ pandoc "${STEM}_updated.docx" -t plain -o /dev/stdout | head -50
 libreoffice --headless --convert-to pdf "${STEM}_updated.docx"
 ```
 
-> 🔴 **LibreOffice missing? You MUST install it — do not substitute.** Explain its necessity, say the
-> package is large (not a reason to skip), then install it **from the Tsinghua TUNA mirror** (`https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/`, or the newest version under `.../libreoffice/stable/`; package-manager commands are the fallback). Word/WPS is permitted **only** after an
-> install attempt has failed. **No install attempt = no substitute program.** See `SKILL.md`.
+> ⚙️ **`soffice` is optional on this deployment** — needed only for the DOCX → PDF visual check.
+> Probe first; if genuinely absent, route to IT / the intranet (do **not** download from public
+> mirrors, do **not** silently substitute another program). See
+> [LibreOffice (optional render engine)](../SKILL.md#libreoffice-optional-render-engine) in `SKILL.md`.
 
 ---
 

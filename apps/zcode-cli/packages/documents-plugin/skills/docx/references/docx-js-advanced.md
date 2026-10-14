@@ -231,21 +231,13 @@ const doc = new Document({
 
 ## Converting DOCX to PDF
 
-> 🔴 **LibreOffice not installed? You MUST install it — do not substitute.** Using Word/WPS *instead
-> of* installing is forbidden, and a large download is **not** a reason to skip it. Required: explain
-> the necessity to the user (it preserves styles, layout, fonts and pagination faithfully), say the
-> package is large, then install it — **preferred source is the Tsinghua TUNA mirror**
-> `https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/` (pick the
-> platform/arch subdirectory; if that version is gone, take the newest under
-> `.../libreoffice/stable/`; full commands in `env_setup/setup.md`), with
-> `brew install --cask libreoffice` / `sudo apt install libreoffice-core` /
-> `winget install TheDocumentFoundation.LibreOffice` as fallbacks. Only
-> after an install attempt has **failed** may you use another program. **No install attempt = no
-> substitute program.** After installing, **register `soffice` on `PATH` and re-verify
-> `soffice --version`** (per-OS commands: `env_setup/setup.md` → *"Register the binary on PATH"*) —
-> an install left off the search path reads as "not installed" next time and gets reinstalled
-> needlessly. Note this is separate from the TOC rule below, which is about field
-> recalculation, not about avoiding LibreOffice.
+> ⚙️ **`soffice` is optional on this deployment** — needed only for the DOCX → PDF conversion.
+> Probe the injected engine env (`ZCODE_LIBREOFFICE_PATH` / `ZCODE_SKILL_ENGINE_ROOT`) and the
+> standard install locations first; if it is genuinely absent, route to IT / the intranet — do
+> **not** download from public mirrors (e.g. the Tsinghua TUNA mirror referenced by the upstream
+> skill) and do **not** silently substitute another program. Note this is separate from the TOC
+> rule below, which is about field recalculation, not about avoiding LibreOffice. See
+> [LibreOffice (optional render engine)](../SKILL.md#libreoffice-optional-render-engine) in `SKILL.md`.
 
 ```bash
 # Using LibreOffice (headless)

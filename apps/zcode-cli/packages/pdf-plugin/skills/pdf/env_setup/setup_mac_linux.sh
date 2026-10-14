@@ -232,40 +232,26 @@ else
 fi
 echo ""
 
-# ── Step 2h: LibreOffice (install-on-demand, NOT substitutable) ──
+# ── Step 2h: LibreOffice (optional render engine; IT-provisioned) ──
 echo "--- [8/10] LibreOffice (Office→PDF) ---"
 if command -v soffice &>/dev/null; then
     LO_VER=$(soffice --version 2>/dev/null | head -1)
     ok "libreoffice ($LO_VER)"
 else
-    warn "libreoffice not installed — REQUIRED for any .docx/.xlsx/.pptx→PDF task"
-    info "You MUST install it. FORBIDDEN: using Word/WPS/Keynote/Pages instead of"
-    info "installing. A large download is NOT a reason to skip -- it is expected to be"
-    info "large. REQUIRED: explain the necessity to the user, say the package is large,"
-    info "THEN install it."
-    info "PREFERRED source (fast in China, current build): Tsinghua TUNA mirror"
-    info "  https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/"
-    info "  Pick the subdir for this platform/arch ($(uname -m)):"
-    info "    Linux deb  -> deb/x86_64/ or deb/aarch64/   (tar -xzf, then dpkg -i */DEBS/*.deb)"
-    info "    Linux rpm  -> rpm/x86_64/"
-    info "    macOS      -> mac/aarch64/ (Apple Silicon) or mac/x86_64/ (Intel)  (.dmg)"
-    info "  If 26.8.0 is gone, pick the newest version under .../libreoffice/stable/"
-    info "Package-manager FALLBACK (only if the mirror is unreachable):"
+    warn "libreoffice not found — optional render engine on this deployment"
+    info "Needed only for Office→PDF conversion. Probe first: the app injects ZCODE_LIBREOFFICE_PATH /"
+    info "ZCODE_SKILL_ENGINE_ROOT, and soffice may be installed but off-PATH. If genuinely"
+    info "absent, this is an air-gapped deployment — LibreOffice is provided by the managed"
+    info "base image, an intranet mirror, or a configured engine root. Do NOT download from"
+    info "public mirrors (the Tsinghua TUNA mirror the upstream skill references is not"
+    info "reachable here). Route to IT."
+    info "If a soffice binary already exists off-PATH, register it (method differs per OS):"
     case "$PLATFORM" in
-        mac)   info "  brew install --cask libreoffice" ;;
-        linux) info "  sudo apt install libreoffice-core" ;;
-    esac
-    info "AFTER installing, REGISTER the binary on PATH -- the method differs per OS:"
-    case "$PLATFORM" in
-        mac)   info "  sudo ln -sf /Applications/LibreOffice.app/Contents/MacOS/soffice /usr/local/bin/soffice"
-               info "  (Apple Silicon: use /opt/homebrew/bin/soffice if /usr/local/bin is not on PATH)" ;;
-        linux) info "  sudo ln -sf /opt/libreoffice*/program/soffice /usr/local/bin/soffice" ;;
+        Darwin|mac)   info "  sudo ln -sf /Applications/LibreOffice.app/Contents/MacOS/soffice /usr/local/bin/soffice" ;;
+        Linux|linux)  info "  sudo ln -sf /opt/libreoffice*/program/soffice /usr/local/bin/soffice" ;;
     esac
     info "  then re-verify: soffice --version"
-    info "An install left off PATH looks 'not installed' next run and gets reinstalled"
-    info "needlessly. If soffice already exists on disk but is off PATH, just link it."
-    info "Another program is allowed ONLY after an install attempt has FAILED. Report it."
-    info "No install attempt = no substitute program."
+    info "Never silently skip or fake the render/recalc — report it as unavailable if absent."
 fi
 echo ""
 

@@ -233,18 +233,21 @@ def _libreoffice_recalc(filename: str, timeout: int = 30) -> Dict[str, Any]:
     soffice_bin = _find_soffice()
     if not soffice_bin:
         return {"error": (
-            "LibreOffice not found — you MUST install it, not substitute it. "
-            "FORBIDDEN: using Excel / WPS / Numbers / any program already on this machine INSTEAD "
-            "of installing LibreOffice. FORBIDDEN: deciding the download is too large to bother "
-            "with — being large is NOT a reason to skip it. FORBIDDEN: skipping recalculation. "
-            "REQUIRED, in order: (1) explain to the user that LibreOffice is what actually "
-            "recalculates the formulas so errors surface; (2) tell them the package is large "
-            "(several hundred MB) and may take a while — information for them, not a decision "
-            "point for you; "
-            "(3) install it NOW — PREFERRED source is the Tsinghua TUNA mirror 'https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/': pick the subdirectory for this platform/arch (deb/x86_64, deb/aarch64, rpm/x86_64, mac/aarch64, mac/x86_64, win/x86_64, win/aarch64) and install the main package from it; if 26.8.0 is gone, use the newest version under '.../libreoffice/stable/'. Package-manager FALLBACK only if the mirror is unreachable: macOS 'brew install --cask libreoffice'; Debian/Ubuntu 'sudo apt install libreoffice-core'; Windows 'winget install TheDocumentFoundation.LibreOffice'. "
-            "ONLY after that install has been attempted AND failed may you use another program — "
-            "report the failure and which checks were skipped. "
-            "No install attempt = no substitute program."
+            "LibreOffice not found — recalc is unavailable on this deployment. "
+            "FORBIDDEN: silently substituting Excel / WPS / Numbers / any program already on this "
+            "machine, or skipping recalculation. "
+            "REQUIRED, in order: (1) probe first — the app injects ZCODE_LIBREOFFICE_PATH / "
+            "ZCODE_SKILL_ENGINE_ROOT when a managed engine exists, and soffice may be installed but "
+            "off-PATH (Windows: C:\\Program Files\\LibreOffice\\program\\soffice.exe; macOS: "
+            "/Applications/LibreOffice.app/Contents/MacOS/soffice; Linux: "
+            "/opt/libreoffice*/program/soffice); if found off-PATH, call it by full path or register "
+            "it and re-verify with 'soffice --version'; "
+            "(2) if it is genuinely absent, this is an air-gapped deployment — LibreOffice is "
+            "provided by the managed base image, an intranet mirror, or a configured engine root. "
+            "Do NOT download it from public mirrors (e.g. 'https://mirrors.tuna.tsinghua.edu.cn/"
+            "libreoffice/...') — the network is unreachable and the attempt will fail. Route to IT. "
+            "(3) report recalc as unavailable if no engine is present — do not ship the workbook as "
+            "if the formula check passed."
         )}
 
     lo_cmd: List[str] = [

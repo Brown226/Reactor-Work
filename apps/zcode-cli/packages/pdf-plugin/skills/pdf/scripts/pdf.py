@@ -417,11 +417,12 @@ def env_check(argv: list):
             detail = f" ({d})" if d else ""
             print(f"  \u2713 {name}{detail}")
         elif on_demand_required:
-            print(f"  \u25cb {name} (not installed \u2014 MUST be installed, not substituted)")
-            print(f"      \u2192 FORBIDDEN: using Word/WPS/Keynote/Pages instead of installing it.")
-            print(f"        A large download is NOT a reason to skip it.")
-            print(f"        REQUIRED: explain the necessity to the user, tell them the package is")
-            print(f"        large, then INSTALL it. No install attempt = no substitute program.")
+            print(f"  ○ {name} (optional render engine — not installed)")
+            print(f"      → Needed only for Office→PDF conversion. Probe first: the app")
+            print(f"        injects ZCODE_LIBREOFFICE_PATH / ZCODE_SKILL_ENGINE_ROOT, and soffice")
+            print(f"        may be installed but off-PATH. If genuinely absent, this is an")
+            print(f"        air-gapped deployment — route to IT / the intranet; do NOT")
+            print(f"        download from public mirrors. Never silently substitute Word/WPS.")
         elif optional:
             print(f"  \u25cb {name} (optional, not installed \u2014 install on demand)")
         else:
@@ -457,12 +458,9 @@ def env_check(argv: list):
     print("  Core Python: pip install reportlab pypdf PyMuPDF pikepdf pdfplumber")
     print("  Node.js:     brew install node (macOS) / apt install nodejs (Ubuntu)")
     print("  Playwright:  npm install -g playwright && npx playwright install chromium   # large download, minutes")
-    print("  LibreOffice: PREFERRED \u2192 Tsinghua mirror https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/")
-    print("               (pick deb/rpm/mac/win subdir for your arch; newest version if 26.8.0 is gone)")
-    print("               fallback: brew install --cask libreoffice (macOS) / sudo apt install libreoffice-core (Linux)")
-    print("               ↳ MUST be installed, never substituted. Using Word/WPS/Keynote instead")
-    print("                 is forbidden; a large download is NOT a reason to skip it. Explain the")
-    print("                 necessity to the user, then install. No install attempt = no substitute.")
+    print("  LibreOffice: optional render engine (Office->PDF) — probe first; if absent on")
+    print("               this air-gapped deployment, route to IT / the intranet (do NOT download")
+    print("               from public mirrors). See env_setup/setup.md.")
     print("  Tectonic:    curl -fsSL https://drop-sh.fullyjustified.net | sh            # downloads LaTeX packages on first run")
     raise SystemExit(rc)
 
@@ -1831,19 +1829,22 @@ def convert_office(argv: list):
     if binary is None:
         Output.error(
             "DependencyMissing",
-            "LibreOffice not found — you MUST install it, not substitute it",
+            "LibreOffice not found — Office→PDF conversion is unavailable on this deployment",
             hint=(
-                "FORBIDDEN: using Word / WPS / Keynote / Pages / any program already on this "
-                "machine INSTEAD of installing LibreOffice. FORBIDDEN: deciding the download is "
-                "too large to bother with — being large is NOT a reason to skip it. FORBIDDEN: "
-                "asking the user whether to use Word instead. "
-                "REQUIRED, in order: (1) explain to the user that LibreOffice is the engine that "
-                "preserves themes, layouts, master slides, fonts and pagination faithfully; "
-                "(2) tell them the package is large (several hundred MB) and may take a while — "
-                "this is information for them, not a decision point for you; "
-                "(3) install it NOW — PREFERRED source is the Tsinghua TUNA mirror 'https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/': pick the subdirectory for this platform/arch (deb/x86_64, deb/aarch64, rpm/x86_64, mac/aarch64, mac/x86_64, win/x86_64, win/aarch64) and install the main package from it; if 26.8.0 is gone, use the newest version under '.../libreoffice/stable/'. Package-manager FALLBACK only if the mirror is unreachable: macOS 'brew install --cask libreoffice'; Debian/Ubuntu 'sudo apt install libreoffice-core'; Windows 'winget install TheDocumentFoundation.LibreOffice'. "
-                "ONLY after that install has been attempted AND failed may you use another "
-                "program — report the failure. No install attempt = no substitute program."
+                "FORBIDDEN: silently substituting Word / WPS / Keynote / Pages / any program "
+                "already on this machine, or skipping the conversion. "
+                "REQUIRED, in order: (1) probe first — the app injects ZCODE_LIBREOFFICE_PATH / "
+                "ZCODE_SKILL_ENGINE_ROOT when a managed engine exists, and soffice may be installed "
+                "but off-PATH (Windows: C:\\Program Files\\LibreOffice\\program\\soffice.exe; "
+                "macOS: /Applications/LibreOffice.app/Contents/MacOS/soffice; Linux: "
+                "/opt/libreoffice*/program/soffice); if found off-PATH, call it by full path or "
+                "register it and re-verify with 'soffice --version'; "
+                "(2) if it is genuinely absent, this is an air-gapped deployment — LibreOffice is "
+                "provided by the managed base image, an intranet mirror, or a configured engine "
+                "root. Do NOT download it from public mirrors (e.g. the Tsinghua TUNA mirror) — the "
+                "network is unreachable and the attempt will fail. Route to IT. "
+                "(3) the Playwright / HTML fallback route remains available — use it and state "
+                "clearly that it was used instead of a native Office→PDF conversion."
             ),
         )
 

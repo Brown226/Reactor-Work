@@ -79,15 +79,11 @@ pdftoppm -png -r 200 input.pdf page
 
 **Best for**: Visual layout analysis, comparing formatting, generating previews, when user asks "what does it look like".
 
-> 🔴 **This route needs LibreOffice — if it is missing you MUST install it, not substitute it.**
-> Using Word/WPS/Pages to make the preview *instead of* installing is forbidden, and a large download
-> is **not** a reason to skip. Required: explain the necessity (it renders the document exactly as
-> laid out, which is the whole point of a visual check), say the package is large, then install it **from the Tsinghua TUNA mirror** (`https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/`, or the newest version under `.../libreoffice/stable/`; package-manager commands are the fallback). Only
-> after an install attempt has **failed** may you use another program, and you must say so.
-> **No install attempt = no substitute program.** After installing, **register `soffice` on `PATH`
-> and re-verify `soffice --version`** (per-OS commands: `env_setup/setup.md` → *"Register the binary
-> on PATH"*) — an install left off the search path reads as "not installed" next time and gets
-> reinstalled needlessly. See `SKILL.md`.
+> ⚙️ **`soffice` is optional on this deployment** — needed only for the rendered visual preview.
+> Probe the injected engine env and the standard install locations first; if genuinely absent,
+> route to IT / the intranet (do **not** download from public mirrors, do **not** silently
+> substitute another program). See
+> [LibreOffice (optional render engine)](../SKILL.md#libreoffice-optional-render-engine) in `SKILL.md`.
 
 ## Method 4: python-docx Reading
 

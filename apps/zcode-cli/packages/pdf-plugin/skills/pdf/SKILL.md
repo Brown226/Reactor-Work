@@ -684,7 +684,7 @@ palette.cascade --title "..." --format reportlab           # Ready-to-paste Repo
 | Report | ReportLab + pypdf | **ReportLab cover (`cover_render.py`)** | ❌ (tofu □) | Manual pagination |
 | Creative | Playwright *(optional)* | html2pdf-next.js (pdf-lib for post-processing) | ✅ native | ✅ any size |
 | Academic | Tectonic *(optional)* + pypdf | **ReportLab cover (`cover_render.py`)** | ❌ (dropped) | Template-dependent |
-| Process | pikepdf, pdfplumber | LibreOffice (soffice) *(install on demand — not substitutable)* | N/A | N/A |
+| Process | pikepdf, pdfplumber | LibreOffice (soffice) *(optional render engine — see below)* | N/A | N/A |
 
 > **Cover System (V4.0)**: Report and Academic covers are rendered with **ReportLab** via
 > `scripts/cover_render.py` (templates 01–05 report, 06–08 academic dark, 09 institutional) and
@@ -695,24 +695,17 @@ palette.cascade --title "..." --format reportlab           # Ready-to-paste Repo
 > **Optional engines**: Playwright/Chromium (Creative/poster/HTML→PDF) and Tectonic (Academic/LaTeX)
 > are optional — probe first and ask the user before installing (large downloads / long waits).
 >
-> **LibreOffice (Office→PDF) is different — you MUST install it, not substitute it.** Using Word,
-> WPS, Keynote or Pages *instead of* installing is forbidden, and a large download is **not** a reason
-> to skip it. Required: explain the necessity to the user (only engine that preserves
-> themes/layouts/master slides faithfully), say the package is large, then install it — **preferred
-> source is the Tsinghua TUNA mirror**
-> `https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/` (pick the
-> platform/arch subdirectory; if that version is gone, take the newest under
-> `.../libreoffice/stable/`), with `brew install --cask libreoffice` /
-> `sudo apt install libreoffice-core` / `winget install TheDocumentFoundation.LibreOffice` as
-> fallbacks. **Then register the binary on `PATH` and re-verify `soffice --version`** — an install
-> left off the executable search path reads as "not installed" to the next probe and causes a
-> redundant multi-hundred-MB reinstall; the mechanism differs per OS (Linux/macOS symlink into
-> `/usr/local/bin`, Windows `setx` the program dir onto the user `PATH`). So **probe before
-> installing**: a binary already on disk but off-`PATH` needs registering, not reinstalling.
-> Another program is permitted **only after** an
-> install attempt has actually failed. **No install attempt = no substitute program.**
-> See `briefs/process.md` and `env_setup/setup.md` (→ *"Register the binary on PATH"*) for the full
-> procedure.
+> **LibreOffice (Office→PDF) is optional on this deployment.** It is needed only for Office→PDF
+> conversion (`convert.office`); the PDF report / academic / creative pipelines use ReportLab,
+> Playwright, and Tectonic instead. **Probe before concluding it is missing**: the app injects
+> `ZCODE_LIBREOFFICE_PATH` / `ZCODE_SKILL_ENGINE_ROOT` when a managed engine exists, and `soffice`
+> may also be installed but off-`PATH` (Windows: `C:\Program Files\LibreOffice\program\soffice.exe`;
+> macOS: `/Applications/LibreOffice.app/Contents/MacOS/soffice`; Linux:
+> `/opt/libreoffice*/program/soffice`). If it is genuinely absent, route to IT / the intranet —
+> do **not** download from public mirrors (e.g. the Tsinghua TUNA mirror referenced by the upstream
+> skill), and do **not** silently substitute Word/WPS/Keynote/Pages. If an Office→PDF conversion is
+> required and no engine is available, report it as unavailable rather than faking it. See
+> `briefs/process.md` and `env_setup/setup.md` for details.
 >
 > **Fallback**: If Report brief content has emoji → reroute to Creative.
 

@@ -46,7 +46,7 @@ Run the platform-appropriate setup script:
 | Runtime | Python 3 + pip | Spreadsheet generation and processing |
 | Python pkg | openpyxl | Read/write .xlsx files |
 | Python pkg | XlsxWriter | High-performance .xlsx creation |
-| On demand (not substitutable) | LibreOffice | recalc, .xlsx-to-PDF, .csv-to-.xlsx — install it; do not swap in local Excel/WPS |
+| Optional render engine | LibreOffice | recalc, .xlsx-to-PDF, .csv-to-.xlsx only — see "LibreOffice (optional render engine)" below |
 | Font | CJK fonts (pre-installed in /usr/share/fonts) | Chinese text in spreadsheets |
 
 ### Manual Install by Platform
@@ -56,7 +56,7 @@ Run the platform-appropriate setup script:
 ```bash
 brew install python3
 python3 -m pip install openpyxl XlsxWriter
-brew install --cask libreoffice   # on demand (not substitutable) — prefer the Tsinghua mirror below
+brew install --cask libreoffice   # optional render engine — only if IT provisions it; see "LibreOffice (optional render engine)" below
 ```
 
 #### Linux (Debian/Ubuntu)
@@ -64,7 +64,7 @@ brew install --cask libreoffice   # on demand (not substitutable) — prefer the
 ```bash
 sudo apt install python3 python3-pip
 python3 -m pip install openpyxl XlsxWriter
-sudo apt install libreoffice-core   # on demand (not substitutable) — prefer the Tsinghua mirror below
+sudo apt install libreoffice-core   # optional render engine — only if IT provisions it; see "LibreOffice (optional render engine)" below
 ```
 
 #### Windows (PowerShell)
@@ -72,45 +72,31 @@ sudo apt install libreoffice-core   # on demand (not substitutable) — prefer t
 ```powershell
 winget install Python.Python.3.11
 python -m pip install openpyxl XlsxWriter
-winget install TheDocumentFoundation.LibreOffice   # on demand (not substitutable) — prefer the Tsinghua mirror below
+winget install TheDocumentFoundation.LibreOffice   # optional render engine — only if IT provisions it; see "LibreOffice (optional render engine)" below
 ```
 
 Alternative Windows package managers:
 - `choco install python3`
 - `scoop install python`
 
-> 🔴 **HARD REQUIREMENT.** LibreOffice is "on demand" only in the sense that it is installed when a
-> task needs it. Once a task does need it (formula recalculation via `recalc`, .xlsx→PDF, .csv→.xlsx),
-> **you MUST install it. This is not a choice.**
+> ⚙️ **LibreOffice (optional render engine).** It is needed only for `recalc` (formula
+> recalculation), `.xlsx`→PDF, and `.csv`→`.xlsx`. Creating/editing workbooks runs on the bundled
+> Python engine and works without it.
 >
-> **FORBIDDEN:**
-> - ❌ Using Microsoft Excel, WPS Office, Numbers, or any other program already on the user's machine
->   *instead of* installing LibreOffice.
-> - ❌ Deciding on the user's behalf that the download is "too large" or "too slow".
->   **The package being large is NOT a reason to skip the install** — it is expected to be large.
-> - ❌ Asking "should I just use Excel instead to save time?" — same violation, phrased as a question.
-> - ❌ Skipping recalculation/verification altogether to avoid installing.
+> If a `recalc`/conversion step is needed and `soffice` is not found:
+> 1. **Probe first** — the app injects `ZCODE_LIBREOFFICE_PATH` / `ZCODE_SKILL_ENGINE_ROOT`, and
+>    `soffice` may be installed but off-`PATH` (Windows `C:\Program Files\LibreOffice\program\soffice.exe`,
+>    macOS `/Applications/LibreOffice.app/Contents/MacOS/soffice`, Linux `/opt/libreoffice*/program/soffice`).
+>    If found off-`PATH`, call it by full path or register it — re-verify `soffice --version`.
+> 2. **If genuinely absent, route to IT / the intranet.** LibreOffice is provided by the managed
+>    base image, an intranet mirror, or a configured engine root. **Do not download from public
+>    mirrors** (e.g. the Tsinghua TUNA mirror referenced by the upstream skill) — the network is
+>    unreachable.
+> 3. **Never silently skip or fake the recalculation.** Do not substitute Excel/WPS/Numbers. If
+>    `recalc` is required for delivery and no engine is present, report it as unavailable.
 >
-> **REQUIRED sequence, no steps skipped:**
->
-> 1. **Explain the necessity to the user.** LibreOffice is the engine that recalculates formulas and
->    renders the workbook faithfully — without it, formula results cannot be verified and PDF output
->    loses layout fidelity.
-> 2. **Tell them the download is large** (several hundred MB) and may take a while — information for
->    the user, **not** a decision point for you. State it and proceed.
-> 3. **Install it now** — prefer the **Tsinghua TUNA mirror** documented in *"LibreOffice —
->    Recommended Download Source"* at the end of this file
->    (`https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/`); fall back to the
->    platform package manager command above if the mirror is unreachable.
-> 4. **Register the binary on `PATH`, then re-verify `soffice --version`.** An install left off the
->    executable search path reads as "not installed" to the next probe and causes the same
->    several-hundred-MB package to be downloaded twice. The mechanism differs per OS — see
->    *"Register the binary on PATH"* at the end of this file. **Probe before installing**: a binary
->    already on disk but off-`PATH` needs registering, not reinstalling.
-> 5. **Only after that install has actually been attempted AND failed** may you use software already
->    on the user's machine (Excel, WPS, Numbers). Report the failure and which checks were skipped.
->
-> **The gate is simple: no install attempt = no substitute program.**
+> **The gate:** no engine → `recalc`/conversion is reported unavailable, not silently dropped and
+> not faked.
 
 ---
 
@@ -188,103 +174,42 @@ python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host
 | Software | China Mirror |
 |----------|-------------|
 | Python | https://npmmirror.com/mirrors/python/ |
-| LibreOffice | https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/ |
+| LibreOffice | *(not downloaded from public mirrors — provisioned by IT / intranet)* |
 
 ---
 
-## LibreOffice — Recommended Download Source (Tsinghua TUNA mirror)
+## LibreOffice (optional render engine) — Intranet provisioning
 
-**Prefer this mirror over the official libreoffice.org download and over `brew`/`apt`/`winget`
-package sources** — it is much faster on Chinese networks and ships the current full build.
+LibreOffice is **optional** on this deployment. It is needed only for `recalc`, `.xlsx`→PDF, and
+`.csv`→`.xlsx`. Creating and editing workbooks run without it.
 
-- **Recommended base URL:** `https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/`
-- **If 26.8.0 is gone** (the mirror only keeps a few releases), list
-  `https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/` and pick the newest
-  version directory, then substitute that version number everywhere below.
+**Do not download LibreOffice from public mirrors** (e.g. the Tsinghua TUNA mirror referenced by
+the upstream skill) — this is an air-gapped deployment and the network is unreachable.
 
-### Pick the right package for the platform
+### 1. Probe before concluding it is missing
 
-Under the version directory, choose the subdirectory matching the OS and CPU architecture:
+The app injects `ZCODE_LIBREOFFICE_PATH` / `ZCODE_SKILL_ENGINE_ROOT` when a managed engine
+exists, and `soffice` may already be installed but off-`PATH`. Check, in order:
 
-| Platform | Path under the version dir | Main package |
-|----------|---------------------------|--------------|
-| Linux x86_64 (Debian/Ubuntu) | `deb/x86_64/` | `LibreOffice_26.8.0_Linux_x86-64_deb.tar.gz` |
-| Linux ARM64 (Debian/Ubuntu) | `deb/aarch64/` | `LibreOffice_26.8.0_Linux_aarch64_deb.tar.gz` |
-| Linux x86_64 (RHEL/Fedora/openSUSE) | `rpm/x86_64/` | `LibreOffice_26.8.0_Linux_x86-64_rpm.tar.gz` |
-| macOS Apple Silicon (M1+) | `mac/aarch64/` | `LibreOffice_26.8.0_MacOS_aarch64.dmg` |
-| macOS Intel | `mac/x86_64/` | `LibreOffice_26.8.0_MacOS_x86-64.dmg` |
-| Windows 64-bit | `win/x86_64/` | `LibreOffice_26.8.0_Win_x86-64.msi` |
-| Windows ARM64 | `win/aarch64/` | `LibreOffice_26.8.0_Win_aarch64.msi` |
+- the injected env vars above;
+- the standard install locations — Windows: `C:\Program Files\LibreOffice\program\soffice.exe`;
+  macOS: `/Applications/LibreOffice.app/Contents/MacOS/soffice`;
+  Linux: `/opt/libreoffice*/program/soffice`;
+- `command -v soffice`.
 
-Determine the architecture with `uname -m` (macOS/Linux: `x86_64` vs `arm64`/`aarch64`) or
-`$env:PROCESSOR_ARCHITECTURE` (Windows: `AMD64` vs `ARM64`). The base package is English-only; add
-the Chinese UI with the matching `*_langpack_zh-CN.*` file from the same directory if the user wants
-a Chinese interface. Help packs (`*_helppack_*`) are optional and not needed for conversion tasks.
+### 2. If it is genuinely absent, route to IT
 
-### Linux (Debian/Ubuntu) — install from the mirror
+LibreOffice is provisioned by the managed base image, an intranet mirror, or a configured engine
+root. Ask IT to install it into the base image, or point `ZCODE_LIBREOFFICE_PATH` /
+`ZCODE_SKILL_ENGINE_ROOT` at an engine the intranet already provides. Do not attempt a public
+download.
 
-```bash
-LO_VER=26.8.0
-case "$(uname -m)" in x86_64) LO_ARCH=x86_64; LO_TAG=x86-64 ;; aarch64|arm64) LO_ARCH=aarch64; LO_TAG=aarch64 ;; esac
-BASE="https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/$LO_VER/deb/$LO_ARCH"
+### 3. Register the binary on PATH (after the engine is present)
 
-cd /tmp
-curl -fSLO "$BASE/LibreOffice_${LO_VER}_Linux_${LO_TAG}_deb.tar.gz"
-tar -xzf "LibreOffice_${LO_VER}_Linux_${LO_TAG}_deb.tar.gz"
-sudo dpkg -i LibreOffice_${LO_VER}*/DEBS/*.deb
-sudo apt-get install -f -y     # resolve any missing dependencies
-soffice --version              # verify (binary lands in /usr/bin or /opt/libreoffice*/program)
-```
+A LibreOffice that is installed but whose `soffice` binary is not on the executable search path
+is indistinguishable from "not installed" to the next probe. The mechanism differs per OS.
 
-If `soffice` is not on `PATH` after install, register it — see
-*"Register the binary on PATH"* at the end of this section.
-
-`sudo apt install libreoffice-core` from the distro repo remains an acceptable fallback if the
-mirror is unreachable — it is older, but sufficient for conversion.
-
-### macOS — install from the mirror
-
-```bash
-LO_VER=26.8.0
-case "$(uname -m)" in arm64) LO_ARCH=aarch64; LO_TAG=aarch64 ;; x86_64) LO_ARCH=x86_64; LO_TAG=x86-64 ;; esac
-BASE="https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/$LO_VER/mac/$LO_ARCH"
-
-cd /tmp
-curl -fSLO "$BASE/LibreOffice_${LO_VER}_MacOS_${LO_TAG}.dmg"
-hdiutil attach "LibreOffice_${LO_VER}_MacOS_${LO_TAG}.dmg"
-cp -R "/Volumes/LibreOffice/LibreOffice.app" /Applications/
-hdiutil detach "/Volumes/LibreOffice"
-/Applications/LibreOffice.app/Contents/MacOS/soffice --version   # verify
-```
-
-`brew install --cask libreoffice` is the fallback if the mirror is unreachable.
-
-### Windows (PowerShell) — install from the mirror
-
-```powershell
-$LoVer = "26.8.0"
-$LoArch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "aarch64" } else { "x86_64" }
-$LoTag  = if ($LoArch -eq "aarch64") { "aarch64" } else { "x86-64" }
-$Base = "https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/$LoVer/win/$LoArch"
-$Msi  = "$env:TEMP\LibreOffice_${LoVer}_Win_${LoTag}.msi"
-
-Invoke-WebRequest -Uri "$Base/LibreOffice_${LoVer}_Win_${LoTag}.msi" -OutFile $Msi
-Start-Process msiexec.exe -ArgumentList "/i `"$Msi`" /qn" -Wait   # silent install (needs admin)
-& "C:\Program Files\LibreOffice\program\soffice.exe" --version    # verify
-```
-
-`winget install TheDocumentFoundation.LibreOffice` is the fallback if the mirror is unreachable.
-
-### Register the binary on PATH (do this immediately after install)
-
-**Do this as part of the install, not as an afterthought.** A LibreOffice that is installed but whose
-`soffice` binary is not on the executable search path is indistinguishable from "not installed" to
-the next `command -v soffice` probe — which re-triggers the HARD REQUIREMENT and makes you download
-several hundred MB you already have. **The mechanism differs per OS; use the one for the platform you
-are on.**
-
-Before installing anything, probe first — if the binary already exists somewhere on disk, you need
-only the registration step below, **not** a reinstall:
+Before anything else, probe (register, do not reinstall, if the binary already exists):
 
 ```bash
 command -v soffice || ls -d /opt/libreoffice*/program/soffice /Applications/LibreOffice.app/Contents/MacOS/soffice 2>/dev/null
@@ -300,9 +225,6 @@ Get-Command soffice -ErrorAction SilentlyContinue; Test-Path "C:\Program Files\L
 sudo ln -sf /opt/libreoffice*/program/soffice /usr/local/bin/soffice
 soffice --version   # re-verify: must print a version, not "command not found"
 ```
-
-If the distro package was used instead of the mirror, `soffice` normally lands in `/usr/bin` already
-and no link is needed.
 
 #### macOS — symlink the binary inside the .app bundle
 
@@ -324,4 +246,3 @@ if ($UserPath -notlike "*$LoDir*") { setx PATH "$UserPath;$LoDir" }
 
 `setx` only affects **newly launched** shells. For the remainder of the current session, call the
 binary by its full path: `& "C:\Program Files\LibreOffice\program\soffice.exe" --version`.
-

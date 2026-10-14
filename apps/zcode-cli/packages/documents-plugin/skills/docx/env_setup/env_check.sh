@@ -67,7 +67,7 @@ if command -v fc-list &>/dev/null; then
     fc-list :lang=zh 2>/dev/null | grep -qi "noto\|simhei\|wenquanyi" || { $QUIET || echo "MISSING: CJK fonts"; FAIL=1; }
 fi
 
-# ── ON-DEMAND but NOT substitutable: .doc→.docx / DOCX→PDF / visual check (LibreOffice/soffice) ──
+# ── ON-DEMAND (optional render engine): .doc→.docx / DOCX→PDF / visual check (LibreOffice/soffice) ──
 required_on_demand "libreoffice (soffice)" command -v soffice
 
 $QUIET || echo "DOCX_SKILL_DIR=$DOCX_SKILL_DIR"

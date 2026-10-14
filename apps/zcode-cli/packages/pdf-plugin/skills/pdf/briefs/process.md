@@ -4,21 +4,20 @@ Work with existing PDFs: extract, merge, split, fill forms, convert formats, or 
 
 > 🟡 **Playwright preflight (optional engine).** **Playwright/Chromium** (HTML→PDF `convert.html`, xlsx/pptx→HTML fallback) is genuinely optional: do NOT auto-install it — use the **AskUserQuestion** tool to warn about the install/download time and get confirmation first. See `briefs/creative.md` top for the pattern.
 >
-> **LibreOffice/soffice (Office→PDF) is NOT in that category** — do not treat it as an optional engine you may route around. See the hard requirement immediately below.
+> **LibreOffice/soffice (Office→PDF) is optional on this deployment** — it is needed only for
+> Office→PDF (`convert.office`) and the 5-step DOCX pipeline. The PDF report / academic / creative
+> pipelines do not use it. **Probe before concluding it is missing** (see below); if it is
+> genuinely absent, route to IT / the intranet — do **not** download from public mirrors (e.g. the
+> Tsinghua TUNA mirror referenced by the upstream skill), and do **not** silently substitute
+> Word/WPS/Keynote/Pages. If an Office→PDF conversion is required for delivery and no engine is
+> available, report it as unavailable rather than faking it.
 >
-> 🔴 **HARD REQUIREMENT — LibreOffice is missing.** Office→PDF (`convert.office`, `soffice`) and the 5-step DOCX pipeline depend on LibreOffice. **If it is not installed, you MUST install it. This is not a choice.**
->
-> **FORBIDDEN:** ❌ using Microsoft Word/Excel/PowerPoint, WPS Office, Keynote, Pages, or any other program already on the user's machine *instead of* installing LibreOffice. ❌ Deciding for the user that the download is "too large"/"too slow" — **the package being large is NOT a reason to skip the install**; it is expected to be large. ❌ Asking "should I use Word instead to save time?" — that is the same violation dressed up as a question. ❌ Jumping straight to the python-pptx/python-docx + HTML + Playwright fallback to avoid installing.
->
-> **REQUIRED sequence, no steps skipped:**
->
-> 1. **Explain the necessity to the user.** LibreOffice is the conversion engine that preserves themes, layouts, master slides, fonts, and pagination faithfully; other tools produce visibly lower-fidelity PDFs.
-> 2. **Tell them the download is large** (several hundred MB) and may take a while — this is information for the user, **not** a decision point for you. State it and proceed.
-> 3. **Install it now.** **Preferred source — Tsinghua TUNA mirror:** `https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/` — choose the subdirectory for the platform/arch (`deb/x86_64`, `deb/aarch64`, `rpm/x86_64`, `mac/aarch64`, `mac/x86_64`, `win/x86_64`, `win/aarch64`) and install the main package from it (Linux deb: `tar -xzf` then `sudo dpkg -i LibreOffice_26.8.0*/DEBS/*.deb && sudo apt-get install -f -y`; macOS: mount the `.dmg` and copy `LibreOffice.app` to `/Applications`; Windows: `msiexec /i <pkg>.msi /qn`). If 26.8.0 is gone, list `https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/` and use the newest version. Full commands in `env_setup/setup.md` → *"LibreOffice — Recommended Download Source"*. Package-manager fallback if the mirror is unreachable: macOS `brew install --cask libreoffice`; Linux (Debian/Ubuntu) `sudo apt install libreoffice-core`; Windows `winget install TheDocumentFoundation.LibreOffice`.
-> 4. **Register the binary on `PATH`, then re-verify `soffice --version`.** An install that leaves `soffice` off the executable search path is indistinguishable from "not installed" to the next probe — that is what causes the same several-hundred-MB package to be downloaded twice. **The mechanism differs per OS:** Linux `sudo ln -sf /opt/libreoffice*/program/soffice /usr/local/bin/soffice`; macOS `sudo ln -sf /Applications/LibreOffice.app/Contents/MacOS/soffice /usr/local/bin/soffice` (or `/opt/homebrew/bin` on Apple Silicon); Windows `setx PATH "$([Environment]::GetEnvironmentVariable('PATH','User'));C:\Program Files\LibreOffice\program"` (affects only new shells — use the full `soffice.exe` path for the rest of the session). Full commands in `env_setup/setup.md` → *"Register the binary on PATH"*. **Probe before installing**: a binary already on disk but off-`PATH` needs registering, not reinstalling.
-> 5. **Only after that install has actually been attempted AND failed** may you use software already on the user's machine, or the Playwright fallback route. Report the install failure and that fidelity will be lower.
->
-> **The gate is simple: no install attempt = no substitute program.** If you have not run the install command and seen it fail, reaching for Word/WPS/Keynote is a violation of this skill.
+> **Probe order:** the app injects `ZCODE_LIBREOFFICE_PATH` / `ZCODE_SKILL_ENGINE_ROOT` when a
+> managed engine exists, and `soffice` may also be installed but off-`PATH` (Windows:
+> `C:\Program Files\LibreOffice\program\soffice.exe`; macOS:
+> `/Applications/LibreOffice.app/Contents/MacOS/soffice`; Linux:
+> `/opt/libreoffice*/program/soffice`). If found off-`PATH`, call it by full path or register it —
+> re-verify with `soffice --version`.
 
 
 ---
@@ -278,11 +277,11 @@ soffice --headless --convert-to pdf --outdir ./output input.docx
 - Large files (>50MB) may take 1-2 min; set reasonable timeout
 - soffice HTML→PDF is inferior to Playwright for complex CSS
 
-**Priority**: Always use soffice for Office→PDF (preserves themes, layouts, master slides). If soffice is not installed, **you MUST install it** — follow the **HARD REQUIREMENT** block at the top of this brief: explain the necessity to the user, tell them the package is large (not a reason to skip), then install. The user's local Word/WPS/Keynote and the python-pptx/python-docx + HTML + Playwright route are permitted **only after an install attempt has actually failed** — fidelity will be lower, and you must say so. **No install attempt = no substitute program.** After installing, register `soffice` on `PATH` and re-verify `soffice --version` (step 4 of that block) so the next probe doesn't reinstall it.
+**Priority**: Prefer soffice for Office→PDF (preserves themes, layouts, master slides). If soffice is not installed, **probe** the injected engine env and standard install locations first (see the block at the top of this brief); if it is genuinely absent, route to IT / the intranet. The Playwright fallback below remains available and is the supported path when no engine is present — use it and state clearly that it was used instead of a native Office→PDF conversion (fidelity may be lower). Do **not** substitute the user's local Word/WPS/Keynote silently.
 
-### Fallback (post-install-failure only): Spreadsheet → PDF without LibreOffice
+### Fallback: Spreadsheet → PDF without LibreOffice
 
-Use this **only** when the LibreOffice install attempt has failed. Use openpyxl + HTML + Playwright. Let data shape drive layout:
+Use this when no LibreOffice engine is available. Use openpyxl + HTML + Playwright. Let data shape drive layout:
 
 | Factor | Decision |
 |--------|----------|

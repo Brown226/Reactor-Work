@@ -172,6 +172,48 @@ COM 注册完整度需实测，验收以 visual-judge 判决为准。
 真实调用。另有一项待真实桌面复核：Bash 工具进程 PATH 中 Windows 形态目录条的解析
 （与 ripgrep/bfs 等既有内置工具同一机制，非本次引入；env_check 自解析为主路径，不依赖它）。
 
+### 7.7 SKILL.md 的 LibreOffice 表述补齐（2026-10-14）
+
+7.1 只改写了三个 `env_check.sh` 的提示文案，**未同步 SKILL.md 正文**——四个 skill 的
+SKILL.md 仍保留上游的「🔴 HARD REQUIREMENT — LibreOffice is missing」段落：要求缺失时
+强制安装、禁止替代、并给出公网清华镜像地址。内网环境下这段文本会误导 LLM 反复尝试联网
+下载（不可达），与 7.1 的内网语义相悖。
+
+本次先补齐 **presentations（pptx）**，共三处表述反转：
+
+- 正文提示块（原「soffice not installed? You MUST install it」）、`## Dependencies` 段、
+  原 `### 🔴 HARD REQUIREMENT` 段 → 统一改为 `### LibreOffice: optional render engine`；
+- 语义（与 7.1 对齐）：LibreOffice 仅在 PPTX→PDF 导出、逐页 PNG 预览、visual-judge 渲染
+  验收时需要；编辑 / 创建 / 结构分析走内置 python-pptx，缺引擎不阻塞这些路径；确需渲染而
+  引擎缺失时，先探测标准安装位（含运行时注入的 `ZCODE_LIBREOFFICE_PATH` /
+  `ZCODE_SKILL_ENGINE_ROOT`），仍缺则报由 IT 经内网提供，**不得下载公网镜像、不得静默替代、
+  不得谎称渲染或视觉检查成功**；
+- `## Dependencies` 同时澄清打包事实：python-pptx / lxml / Pillow / defusedxml /
+  latex2mathml / office_skill_lib 已随内置 Python（`tools/office-engines/python`）打包；
+  pptxgenjs / playwright / sharp 属上游 HTML/JS 路线，本 fork 不使用。
+
+**补齐（2026-10-14）**：documents（docx）、spreadsheets（xlsx）、pdf 三个 skill 的同类硬要求
+文本已按上口径一并改写。原「🔴 HARD REQUIREMENT — LibreOffice is missing」段（要求强制安装、
+禁止替代、给出公网清华镜像）改为「LibreOffice (optional render engine)」：渲染/转换步骤才需要
+引擎，编辑/创建/结构分析走内置 Python 引擎，缺引擎不阻塞；确需渲染而引擎缺失时先探测标准
+安装位（含 `ZCODE_LIBREOFFICE_PATH` / `ZCODE_SKILL_ENGINE_ROOT`），仍缺则报由 IT 经内网提供，
+**不得下载公网镜像、不得静默替代、不得谎称渲染/重算成功**。
+
+覆盖范围（三插件 x 各类文件）：
+
+- **SKILL.md 正文**：docx / xlsx / pdf 三份的 Dependencies 段、HARD REQUIREMENT 段、内联提示块；
+- **子文档**：docx `routes/{edit,format,read}.md`、`references/docx-js-advanced.md`；
+  xlsx `quality/pipeline.md`；pdf `briefs/process.md`（含 Priority 与 Fallback 段落）；
+- **运行时消息**：xlsx `xlsx.py`、pdf `scripts/pdf.py`（recalc / convert.office 的拒绝文案与
+  `--check` 状态输出）——这些字符串 LLM 会直接读到并照做；
+- **env_setup 指南与安装脚本**：三插件的 `env_setup/setup.md`（末段「Recommended Download
+  Source」整章重写为「Intranet provisioning」）与 `setup.sh` / `setup_mac_linux.sh` /
+  `setup_windows.ps1` 的 LibreOffice 分支、脚本注释头。
+
+保留的底线（未放松）：**禁止假装渲染/视觉检查/重算通过**、**禁止静默用 WPS/Office 替代**——
+只把「必须下载安装」换成了「缺就走内网流程」。非 LibreOffice 的既有镜像源（pip / npm /
+playwright / conda 的 China mirror）属其他可选引擎范畴，不在本次改动范围，原样保留。
+
 ## 8. Phase 3：官方脚本库借入（2026-10-08）
 
 ### 8.1 背景

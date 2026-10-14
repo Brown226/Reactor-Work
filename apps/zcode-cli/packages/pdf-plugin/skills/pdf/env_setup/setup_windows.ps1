@@ -220,7 +220,7 @@ try {
 }
 Write-Host ""
 
-# ── Step 2g: LibreOffice (install-on-demand, NOT substitutable) ──
+# ── Step 2g: LibreOffice (optional render engine; IT-provisioned) ──
 Write-Host "--- [7/9] LibreOffice (Office->PDF conversion) ---"
 $SofficePath = "C:\Program Files\LibreOffice\program\soffice.exe"
 if (Test-Path $SofficePath) {
@@ -228,27 +228,18 @@ if (Test-Path $SofficePath) {
 } elseif (Get-Command soffice -ErrorAction SilentlyContinue) {
     Write-Ok "libreoffice (in PATH)"
 } else {
-    Write-Warn "libreoffice not installed - REQUIRED for any .docx/.xlsx/.pptx -> PDF task"
-    Write-Info "You MUST install it. FORBIDDEN: using Word/WPS/Keynote/Pages instead of"
-    Write-Info "installing. A large download is NOT a reason to skip - it is expected to be large."
-    Write-Info "REQUIRED: explain the necessity to the user, say the package is large, THEN install."
-    Write-Info "PREFERRED source (fast in China, current build): Tsinghua TUNA mirror"
-    Write-Info "  https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/"
-    Write-Info "  Windows x64:   win/x86_64/LibreOffice_26.8.0_Win_x86-64.msi"
-    Write-Info "  Windows ARM64: win/aarch64/LibreOffice_26.8.0_Win_aarch64.msi"
-    Write-Info "  Then: msiexec /i <file>.msi /qn   (needs admin)"
-    Write-Info "  If 26.8.0 is gone, pick the newest version under .../libreoffice/stable/"
-    Write-Info "FALLBACK (only if the mirror is unreachable):"
-    Write-Info "  winget install TheDocumentFoundation.LibreOffice"
-    Write-Info "  or: https://www.libreoffice.org/download/"
-    Write-Info "AFTER installing, REGISTER it on PATH (Windows method - differs per OS):"
+    Write-Warn "libreoffice not found - optional render engine on this deployment"
+    Write-Info "Needed only for any .docx/.xlsx/.pptx -> PDF task. Probe first: the app injects ZCODE_LIBREOFFICE_PATH /"
+    Write-Info "ZCODE_SKILL_ENGINE_ROOT, and soffice may be installed but off-PATH. If genuinely"
+    Write-Info "absent, this is an air-gapped deployment - LibreOffice is provided by the managed"
+    Write-Info "base image, an intranet mirror, or a configured engine root. Do NOT download from"
+    Write-Info "public mirrors (the Tsinghua TUNA mirror the upstream skill references is not"
+    Write-Info "reachable here). Route to IT."
+    Write-Info "If a soffice.exe already exists off-PATH, register it (Windows method):"
     Write-Info '  setx PATH "$([Environment]::GetEnvironmentVariable(''PATH'',''User''));C:\Program Files\LibreOffice\program"'
-    Write-Info "  setx affects NEW shells only - for this session use the full soffice.exe path."
+    Write-Info "  setx affects NEW shells only - use the full soffice.exe path this session."
     Write-Info '  then re-verify: & "C:\Program Files\LibreOffice\program\soffice.exe" --version'
-    Write-Info "An install left off PATH looks 'not installed' next run and gets reinstalled"
-    Write-Info "needlessly. If soffice already exists on disk but is off PATH, just register it."
-    Write-Info "Another program is allowed ONLY after an install attempt has FAILED. Report it."
-    Write-Info "No install attempt = no substitute program."
+    Write-Info "Never silently skip or fake the render/recalc - report it as unavailable if absent."
 }
 Write-Host ""
 

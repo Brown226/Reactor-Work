@@ -47,7 +47,7 @@ Run the platform-appropriate setup script:
 | npm pkg | docx | Word document creation library |
 | Runtime | Python 3 + pip | Post-processing scripts |
 | Python pkg | defusedxml | Safe XML parsing for validation |
-| On demand (not substitutable) | LibreOffice | `.doc`→`.docx`, DOCX→PDF, visual verification — install it; do not swap in local Word/WPS/Pages |
+| Optional render engine | LibreOffice | `.doc`→`.docx`, DOCX→PDF, visual verification only — see "LibreOffice (optional render engine)" below |
 | Font | CJK fonts (from CDN) | Chinese text in documents |
 
 ### Manual Install by Platform
@@ -58,7 +58,7 @@ Run the platform-appropriate setup script:
 brew install node python3
 npm install -g docx
 python3 -m pip install defusedxml
-# On demand, not substitutable: LibreOffice (prefer the Tsinghua mirror below)
+# Optional render engine: LibreOffice (needed only for conversion — see "LibreOffice (optional render engine)" below)
 brew install --cask libreoffice
 ```
 
@@ -68,7 +68,7 @@ brew install --cask libreoffice
 sudo apt install nodejs npm python3 python3-pip
 npm install -g docx
 python3 -m pip install defusedxml
-# On demand, not substitutable: LibreOffice (prefer the Tsinghua mirror below)
+# Optional render engine: LibreOffice (needed only for conversion — see "LibreOffice (optional render engine)" below)
 sudo apt install libreoffice-core
 ```
 
@@ -79,7 +79,7 @@ winget install OpenJS.NodeJS.LTS
 winget install Python.Python.3.11
 npm install -g docx
 python -m pip install defusedxml
-# On demand, not substitutable: LibreOffice (prefer the Tsinghua mirror below)
+# Optional render engine: LibreOffice (needed only for conversion — see "LibreOffice (optional render engine)" below)
 winget install TheDocumentFoundation.LibreOffice
 ```
 
@@ -188,103 +188,43 @@ python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host
 |----------|-------------|
 | Node.js | https://npmmirror.com/mirrors/node/ |
 | Python | https://npmmirror.com/mirrors/python/ |
-| LibreOffice | https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/ |
+| LibreOffice | *(not downloaded from public mirrors — provisioned by IT / intranet)* |
 
 ---
 
-## LibreOffice — Recommended Download Source (Tsinghua TUNA mirror)
+## LibreOffice (optional render engine) — Intranet provisioning
 
-**Prefer this mirror over the official libreoffice.org download and over `brew`/`apt`/`winget`
-package sources** — it is much faster on Chinese networks and ships the current full build.
+LibreOffice is **optional** on this deployment. It is needed only for `.doc` → `.docx`
+conversion, DOCX → PDF export, and visual verification. Creating, editing, and extracting
+documents run without it.
 
-- **Recommended base URL:** `https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/`
-- **If 26.8.0 is gone** (the mirror only keeps a few releases), list
-  `https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/` and pick the newest
-  version directory, then substitute that version number everywhere below.
+**Do not download LibreOffice from public mirrors** (e.g. the Tsinghua TUNA mirror referenced by
+the upstream skill) — this is an air-gapped deployment and the network is unreachable.
 
-### Pick the right package for the platform
+### 1. Probe before concluding it is missing
 
-Under the version directory, choose the subdirectory matching the OS and CPU architecture:
+The app injects `ZCODE_LIBREOFFICE_PATH` / `ZCODE_SKILL_ENGINE_ROOT` when a managed engine
+exists, and `soffice` may already be installed but off-`PATH`. Check, in order:
 
-| Platform | Path under the version dir | Main package |
-|----------|---------------------------|--------------|
-| Linux x86_64 (Debian/Ubuntu) | `deb/x86_64/` | `LibreOffice_26.8.0_Linux_x86-64_deb.tar.gz` |
-| Linux ARM64 (Debian/Ubuntu) | `deb/aarch64/` | `LibreOffice_26.8.0_Linux_aarch64_deb.tar.gz` |
-| Linux x86_64 (RHEL/Fedora/openSUSE) | `rpm/x86_64/` | `LibreOffice_26.8.0_Linux_x86-64_rpm.tar.gz` |
-| macOS Apple Silicon (M1+) | `mac/aarch64/` | `LibreOffice_26.8.0_MacOS_aarch64.dmg` |
-| macOS Intel | `mac/x86_64/` | `LibreOffice_26.8.0_MacOS_x86-64.dmg` |
-| Windows 64-bit | `win/x86_64/` | `LibreOffice_26.8.0_Win_x86-64.msi` |
-| Windows ARM64 | `win/aarch64/` | `LibreOffice_26.8.0_Win_aarch64.msi` |
+- the injected env vars above;
+- the standard install locations — Windows: `C:\Program Files\LibreOffice\program\soffice.exe`;
+  macOS: `/Applications/LibreOffice.app/Contents/MacOS/soffice`;
+  Linux: `/opt/libreoffice*/program/soffice`;
+- `command -v soffice`.
 
-Determine the architecture with `uname -m` (macOS/Linux: `x86_64` vs `arm64`/`aarch64`) or
-`$env:PROCESSOR_ARCHITECTURE` (Windows: `AMD64` vs `ARM64`). The base package is English-only; add
-the Chinese UI with the matching `*_langpack_zh-CN.*` file from the same directory if the user wants
-a Chinese interface. Help packs (`*_helppack_*`) are optional and not needed for conversion tasks.
+### 2. If it is genuinely absent, route to IT
 
-### Linux (Debian/Ubuntu) — install from the mirror
+LibreOffice is provisioned by the managed base image, an intranet mirror, or a configured engine
+root. Ask IT to install it into the base image, or point `ZCODE_LIBREOFFICE_PATH` /
+`ZCODE_SKILL_ENGINE_ROOT` at an engine the intranet already provides. Do not attempt a public
+download.
 
-```bash
-LO_VER=26.8.0
-case "$(uname -m)" in x86_64) LO_ARCH=x86_64; LO_TAG=x86-64 ;; aarch64|arm64) LO_ARCH=aarch64; LO_TAG=aarch64 ;; esac
-BASE="https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/$LO_VER/deb/$LO_ARCH"
+### 3. Register the binary on PATH (after the engine is present)
 
-cd /tmp
-curl -fSLO "$BASE/LibreOffice_${LO_VER}_Linux_${LO_TAG}_deb.tar.gz"
-tar -xzf "LibreOffice_${LO_VER}_Linux_${LO_TAG}_deb.tar.gz"
-sudo dpkg -i LibreOffice_${LO_VER}*/DEBS/*.deb
-sudo apt-get install -f -y     # resolve any missing dependencies
-soffice --version              # verify (binary lands in /usr/bin or /opt/libreoffice*/program)
-```
+A LibreOffice that is installed but whose `soffice` binary is not on the executable search path
+is indistinguishable from "not installed" to the next probe. The mechanism differs per OS.
 
-If `soffice` is not on `PATH` after install, register it — see
-*"Register the binary on PATH"* at the end of this section.
-
-`sudo apt install libreoffice-core` from the distro repo remains an acceptable fallback if the
-mirror is unreachable — it is older, but sufficient for conversion.
-
-### macOS — install from the mirror
-
-```bash
-LO_VER=26.8.0
-case "$(uname -m)" in arm64) LO_ARCH=aarch64; LO_TAG=aarch64 ;; x86_64) LO_ARCH=x86_64; LO_TAG=x86-64 ;; esac
-BASE="https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/$LO_VER/mac/$LO_ARCH"
-
-cd /tmp
-curl -fSLO "$BASE/LibreOffice_${LO_VER}_MacOS_${LO_TAG}.dmg"
-hdiutil attach "LibreOffice_${LO_VER}_MacOS_${LO_TAG}.dmg"
-cp -R "/Volumes/LibreOffice/LibreOffice.app" /Applications/
-hdiutil detach "/Volumes/LibreOffice"
-/Applications/LibreOffice.app/Contents/MacOS/soffice --version   # verify
-```
-
-`brew install --cask libreoffice` is the fallback if the mirror is unreachable.
-
-### Windows (PowerShell) — install from the mirror
-
-```powershell
-$LoVer = "26.8.0"
-$LoArch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "aarch64" } else { "x86_64" }
-$LoTag  = if ($LoArch -eq "aarch64") { "aarch64" } else { "x86-64" }
-$Base = "https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/$LoVer/win/$LoArch"
-$Msi  = "$env:TEMP\LibreOffice_${LoVer}_Win_${LoTag}.msi"
-
-Invoke-WebRequest -Uri "$Base/LibreOffice_${LoVer}_Win_${LoTag}.msi" -OutFile $Msi
-Start-Process msiexec.exe -ArgumentList "/i `"$Msi`" /qn" -Wait   # silent install (needs admin)
-& "C:\Program Files\LibreOffice\program\soffice.exe" --version    # verify
-```
-
-`winget install TheDocumentFoundation.LibreOffice` is the fallback if the mirror is unreachable.
-
-### Register the binary on PATH (do this immediately after install)
-
-**Do this as part of the install, not as an afterthought.** A LibreOffice that is installed but whose
-`soffice` binary is not on the executable search path is indistinguishable from "not installed" to
-the next `command -v soffice` probe — which re-triggers the HARD REQUIREMENT and makes you download
-several hundred MB you already have. **The mechanism differs per OS; use the one for the platform you
-are on.**
-
-Before installing anything, probe first — if the binary already exists somewhere on disk, you need
-only the registration step below, **not** a reinstall:
+Before anything else, probe (register, do not reinstall, if the binary already exists):
 
 ```bash
 command -v soffice || ls -d /opt/libreoffice*/program/soffice /Applications/LibreOffice.app/Contents/MacOS/soffice 2>/dev/null
@@ -300,9 +240,6 @@ Get-Command soffice -ErrorAction SilentlyContinue; Test-Path "C:\Program Files\L
 sudo ln -sf /opt/libreoffice*/program/soffice /usr/local/bin/soffice
 soffice --version   # re-verify: must print a version, not "command not found"
 ```
-
-If the distro package was used instead of the mirror, `soffice` normally lands in `/usr/bin` already
-and no link is needed.
 
 #### macOS — symlink the binary inside the .app bundle
 

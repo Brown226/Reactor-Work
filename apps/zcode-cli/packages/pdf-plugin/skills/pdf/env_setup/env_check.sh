@@ -87,7 +87,7 @@ else
     $QUIET || echo "optional MISSING: tectonic (LaTeX/Academic; install on demand)"
 fi
 
-# ── ON-DEMAND but NOT substitutable: Office→PDF (LibreOffice/soffice) ──
+# ── ON-DEMAND (optional render engine): Office→PDF (LibreOffice/soffice) ──
 required_on_demand "libreoffice (soffice)" command -v soffice
 
 $QUIET || echo "PDF_SKILL_DIR=$PDF_SKILL_DIR"

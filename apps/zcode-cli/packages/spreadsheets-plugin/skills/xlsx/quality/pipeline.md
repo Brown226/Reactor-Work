@@ -18,21 +18,12 @@ All commands: `python3 "$XLSX_SKILL_DIR/xlsx.py" <command> [arguments]`
 | `chart-verify <file>` | Verify embedded charts have data | Builder (self-check) |
 | `validate <file>` | Structural validation (release gate) | Inspector |
 
-> 🔴 **`recalc` needs LibreOffice — if it is missing you MUST install it, not substitute it.**
-> Forbidden: skipping recalculation, or handing the workbook to the user's Excel/WPS/Numbers *instead
-> of* installing. A large download is **not** a reason to skip. Required: explain the necessity (it is
-> what actually recalculates the formulas so errors surface), say the package is large, then install
-> it — **preferred source is the Tsinghua TUNA mirror**
-> `https://mirrors.tuna.tsinghua.edu.cn/libreoffice/libreoffice/stable/26.8.0/` (pick the
-> platform/arch subdirectory; if that version is gone, take the newest under
-> `.../libreoffice/stable/`), with `brew install --cask libreoffice` /
-> `sudo apt install libreoffice-core` / `winget install TheDocumentFoundation.LibreOffice` as
-> fallbacks. Only after an install attempt has **failed**
-> may you use another program, and you must report which verification steps were skipped.
-> **No install attempt = no substitute program.** After installing, **register `soffice` on `PATH`
-> and re-verify `soffice --version`** (per-OS commands: `env_setup/setup.md` → *"Register the binary
-> on PATH"*) — an install left off the search path reads as "not installed" next time and gets
-> reinstalled needlessly. See `env_setup/setup.md`.
+> ⚙️ **`soffice` is optional on this deployment** — needed only for `recalc`. Probe the injected
+> engine env (`ZCODE_LIBREOFFICE_PATH` / `ZCODE_SKILL_ENGINE_ROOT`) and the standard install
+> locations first; if it is genuinely absent, route to IT / the intranet — do **not** download from
+> public mirrors (e.g. the Tsinghua TUNA mirror referenced by the upstream skill) and do **not**
+> silently substitute Excel/WPS/Numbers. If `recalc` is required for delivery and no engine is
+> available, report it as unavailable rather than skipping it silently. See `env_setup/setup.md`.
 
 ---
 
