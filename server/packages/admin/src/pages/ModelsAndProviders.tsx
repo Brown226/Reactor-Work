@@ -57,6 +57,12 @@ import {
   type ResourceScope,
 } from "../services/gateway-admin";
 import { MODEL_TYPE_LABEL, MODEL_TYPES, isModelTypeAvailable, normalizeModelType, type ModelType } from "../lib/model-types";
+import {
+  findReasoningPreset,
+  REASONING_CUSTOM_KEY,
+  REASONING_PRESETS,
+  suggestReasoningPreset,
+} from "../lib/reasoning-presets";
 import { toast } from "../lib/toast";
 import { PageHead, SkeletonRows } from "../ui";
 import type { Tone } from "../components/reactor";
@@ -121,6 +127,12 @@ interface ModelForm {
   reasoningLevels: string;
   /** 档位→请求体的 CEL 表达式；空串按缺省 "{}"（不写请求体）处理 */
   reasoningMap: string;
+  /**
+   * 思考能力预设 key（`lib/reasoning-presets`）；`custom` = 上面两个文本框里的手写值。
+   * 界面只暴露这一个下拉，预设切换时同步写 reasoningLevels / reasoningMap，
+   * 存储格式与探针契约都不变。
+   */
+  reasoningPreset: string;
   inputPerM: string;
   outputPerM: string;
   cacheReadPerM: string;
@@ -133,11 +145,25 @@ interface ModelForm {
   sort: string;
 }
 
+/**
+ * 能力标记。
+ *
+ * 2026-10-14 扩了后 6 个：桌面端「高级配置」里的结构化输出 / 原生联网搜索 / 对话中系统消息 /
+ * 视频 / 音频 / PDF 输入原本在端侧写死 false，管理台勾不勾都一样。扩量后它们与
+ * `registry.ts` 的 KNOWN_FEATURES 一一对应，经 /v1/models 以 supports_* 下发。
+ * 未勾选 = false，与扩量前行为一致，不会让现有模型突然多出能力。
+ */
 const FEATURES: Array<{ key: string; label: string }> = [
   { key: "tools", label: "工具调用" },
   { key: "reasoning", label: "推理" },
   { key: "anthropic", label: "Anthropic 协议" },
   { key: "vision", label: "视觉输入" },
+  { key: "json_schema", label: "结构化输出" },
+  { key: "native_web_search", label: "原生联网搜索" },
+  { key: "mid_conversation_system", label: "对话中系统消息" },
+  { key: "video", label: "视频输入" },
+  { key: "audio", label: "音频输入" },
+  { key: "pdf", label: "PDF 输入" },
 ];
 
 /** 空串 = 不下发（服务端语义：只改传了的字段）；非法数字交给服务端兜底 */
@@ -220,6 +246,7 @@ export function emptyModelForm(): ModelForm {
     maxOutput: "",
     reasoningLevels: "",
     reasoningMap: "",
+    reasoningPreset: "toggle-only",
     inputPerM: "",
     outputPerM: "",
     cacheReadPerM: "",
@@ -618,6 +645,13 @@ export function ModelsAndProviders() {
       maxOutput: m.maxOutput != null ? String(m.maxOutput) : "",
       reasoningLevels: (m.reasoningLevels ?? []).join(", "),
       reasoningMap: m.reasoningMap ?? "",
+      /*
+       * 思考能力预填（2026-10-14）：按模型特征推断一个建议预设，管理员看得见、能改。
+       * 已配过的模型反查预设（配的是非标准写法就落自定义并保留原值，绝不静默改写）；
+       * 没配过的按 id/显示名保守匹配，匹配不上落「不传参」安全缺省。
+       * 推断只是建议，配完可用模型行的「测试」按钮发真实调用验证。
+       */
+      reasoningPreset: suggestReasoningPreset(m),
       inputPerM: m.pricing?.inputPerM != null ? String(m.pricing.inputPerM) : "",
       outputPerM: m.pricing?.outputPerM != null ? String(m.pricing.outputPerM) : "",
       cacheReadPerM: m.pricing?.cacheReadPerM != null ? String(m.pricing.cacheReadPerM) : "",
@@ -1196,7 +1230,8 @@ export function ModelsAndProviders() {
                   <>
                     <div className="field">
                       <Label>能力标记</Label>
-                      <div className="mp-headers">
+                      {/* 两列网格：10 个勾选项纵向堆叠会把表单拉得很长；网格既不用滚动也不会漏看 */}
+                      <div className="mp-features-grid">
                         {FEATURES.map((feat) => (
                           <label key={feat.key} className="flex items-center gap-2" style={{ fontSize: 12.5 }}>
                             <input
@@ -1226,37 +1261,85 @@ export function ModelsAndProviders() {
                       </div>
                     </div>
                     {/*
-                      推理档位（2026-10-13）：上面的 features「推理」只是布尔，桌面端需要的是
-                      带可选值集合的 enum spec —— 布尔推不出集合，端侧只能猜，猜错就表现为
-                      「打开思考后无法正常对话」。因此这里显式配置，随 /v1/models 下发。
+                      思考能力（2026-10-13 上线，2026-10-14 改点选）：上面的 features「推理」
+                      只是布尔，桌面端需要的是带可选值集合的 enum spec —— 布尔推不出集合，
+                      端侧只能猜，猜错就表现为「打开思考后无法正常对话」。
+                      原先这里是两个自由文本框（档位 + CEL），要求管理员既知道上游认哪个参数名
+                      又会写 CEL，实际没人填得对；现在收敛成一个语义化下拉，档位与映射由预设
+                      一次写好，存储格式不变（仍是 params.reasoning_levels + reasoning_map）。
                     */}
-                    <div className="flex gap-3">
-                      <div className="field" style={{ flex: 1 }}>
-                        <Label htmlFor="me-rlevels">推理档位（可选值，逗号分隔）</Label>
-                        <Input
-                          id="me-rlevels"
-                          className="mono"
-                          placeholder="disabled, enabled"
-                          value={modelEdit.reasoningLevels}
-                          onChange={(e) => setModelEdit({ ...modelEdit, reasoningLevels: e.target.value })}
-                        />
-                      </div>
-                      <div className="field" style={{ flex: 1 }}>
-                        <Label htmlFor="me-rmap">档位 → 请求体映射（CEL）</Label>
-                        <Input
-                          id="me-rmap"
-                          className="mono"
-                          placeholder='{}'
-                          value={modelEdit.reasoningMap}
-                          onChange={(e) => setModelEdit({ ...modelEdit, reasoningMap: e.target.value })}
-                        />
-                      </div>
+                    <div className="field">
+                      <Label htmlFor="me-rpreset">思考能力</Label>
+                      <Select
+                        value={modelEdit.reasoningPreset}
+                        onValueChange={(v) => {
+                          const preset = findReasoningPreset(v);
+                          if (preset) {
+                            // 选预设：档位集合与请求体映射一次写好，管理员不必理解 CEL
+                            setModelEdit({
+                              ...modelEdit,
+                              reasoningPreset: v,
+                              reasoningLevels: preset.levels.join(", "),
+                              reasoningMap: preset.map,
+                            });
+                            return;
+                          }
+                          // 切自定义：不动已填的值，展开文本框交给高级用户
+                          setModelEdit({ ...modelEdit, reasoningPreset: v });
+                        }}
+                      >
+                        <SelectTrigger id="me-rpreset">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {REASONING_PRESETS.map((preset) => (
+                            <SelectItem key={preset.key} value={preset.key}>
+                              {preset.label}
+                            </SelectItem>
+                          ))}
+                          <SelectItem value={REASONING_CUSTOM_KEY}>自定义（高级）…</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <span className="hint">
+                        {findReasoningPreset(modelEdit.reasoningPreset)?.hint ??
+                          "自定义：档位按语义强度从低到高排列（顺序有意义）；映射是受限 CEL，变量名为 reasoningLevel。"}
+                      </span>
                     </div>
-                    <span className="hint">
-                      档位按语义强度从低到高排列，顺序有意义。映射留空 = <code>{}</code>（不往请求体写字段，最安全）；
-                      需要真实传参时按上游协议写，如 <code>{'{"reasoning_effort": reasoningLevel}'}</code>。
-                      两者都空且未勾「推理」时，桌面端不展示思考档位。
-                    </span>
+                    {/*
+                      仅自定义态展开：预设态不需要看见原始字段，露出只会让人以为还得手写。
+                      条件渲染不影响保存逻辑（saveModel 始终读写 reasoningLevels/reasoningMap）。
+                    */}
+                    {modelEdit.reasoningPreset === REASONING_CUSTOM_KEY && (
+                      <div className="flex gap-3">
+                        <div className="field" style={{ flex: 1 }}>
+                          <Label htmlFor="me-rlevels">推理档位（可选值，逗号分隔）</Label>
+                          <Input
+                            id="me-rlevels"
+                            className="mono"
+                            placeholder="disabled, enabled"
+                            value={modelEdit.reasoningLevels}
+                            onChange={(e) => setModelEdit({ ...modelEdit, reasoningLevels: e.target.value })}
+                          />
+                        </div>
+                        <div className="field" style={{ flex: 1 }}>
+                          <Label htmlFor="me-rmap">档位 → 请求体映射（CEL）</Label>
+                          <Input
+                            id="me-rmap"
+                            className="mono"
+                            placeholder='{}'
+                            value={modelEdit.reasoningMap}
+                            onChange={(e) => setModelEdit({ ...modelEdit, reasoningMap: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {modelEdit.reasoningPreset === REASONING_CUSTOM_KEY && (
+                      <span className="hint">
+                        映射留空 = <code>{}</code>（不往请求体写字段，最安全）；需要真实传参时按上游协议写，
+                        如 <code>{'{"reasoning_effort": reasoningLevel}'}</code>。档位值会成为请求体里的字面值，
+                        必须用上游认识的值，否则一发就 400。
+                      </span>
+                    )}
                     <div className="mp-grid2">
                       <div className="field">
                         <Label htmlFor="me-in">输入价（¥ / 百万 tokens）</Label>

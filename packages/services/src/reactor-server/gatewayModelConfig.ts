@@ -40,18 +40,21 @@ export function buildGatewayModelConfig(model: ReactorServerModelInfo): ModelCon
   const properties: NonNullable<ModelConfigObject["properties"]> = {
     inputFormat: {
       supportsText: true,
-      // 只有网关明确说支持视觉时才开；网关无 video/audio/pdf 概念，保守全 false
+      // 2026-10-14 起 video/audio/pdf 也由管理台勾选后经网关下发；未勾选 = false，
+      // 与扩量前的硬编码行为一致。旧网关不下发这些字段，`=== true` 判定自然落到 false。
       supportsImage: model.supportsVision,
-      supportsVideo: false,
-      supportsAudio: false,
-      supportsPdf: false,
+      supportsVideo: model.supportsVideo,
+      supportsAudio: model.supportsAudio,
+      supportsPdf: model.supportsPdf,
     },
     outputFormat: { supportsText: true },
     supportsToolCall: model.supportsTools,
-    // 网关不表达这四项能力；false 是最保守值（宁可少用能力，不要承诺做不到的事）
-    supportsJsonSchemaOutput: false,
-    supportsNativeWebSearch: false,
-    supportsMidConversationSystem: false,
+    // 同上：管理台勾选后经网关下发，未勾选保持 false。
+    supportsJsonSchemaOutput: model.supportsJsonSchemaOutput,
+    supportsNativeWebSearch: model.supportsNativeWebSearch,
+    supportsMidConversationSystem: model.supportsMidConversationSystem,
+    // requiresMfjsToolSchema 刻意保持 false：它是桌面端内部工具 schema 转换开关，
+    // 与"模型支持什么"无关，暴露到管理台只会让人困惑，因此没有对应的网关字段。
     requiresMfjsToolSchema: false,
   };
   if (model.contextWindow !== null) properties.contextWindow = model.contextWindow;

@@ -1659,6 +1659,19 @@
   padding: 8px;
   min-width: 0;
 }
+/*
+ * 模型能力标记的勾选网格：两列，让 10 个布尔能力在半幅高度内排完。
+ * 不用 mp-headers 的纵向堆叠 —— 那会把模型编辑表单拉到需要滚动。
+ */
+.mp-features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  padding: 8px;
+  min-width: 0;
+}
 .mp-hrow {
   display: flex;
   gap: 8px;

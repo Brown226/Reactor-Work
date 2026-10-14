@@ -98,8 +98,27 @@ export interface ModelBinding {
   entry: ModelEntry;
 }
 
-/** 已识别的能力标记（features 数组里其它值忽略）。 */
-const KNOWN_FEATURES = ["tools", "reasoning", "anthropic", "vision"] as const;
+/**
+ * 已识别的能力标记（features 数组里其它值忽略）。
+ *
+ * 2026-10-14 扩了后 6 个：它们对应桌面端「高级配置」里原本写死的 6 项能力
+ * （结构化输出 / 原生联网搜索 / 对话中系统消息 / 视频 / 音频 / PDF 输入）。
+ * 未勾选 = 不下发 = 端侧保持 false，与扩量前的硬编码行为一致，不会让现有模型突然多出能力。
+ * `anthropic` 刻意不下发成布尔能力：它是协议标记（决定走哪套 API 格式），不是模型能力，
+ * 桌面端 ModelConfig 没有对应字段。
+ */
+const KNOWN_FEATURES = [
+  "tools",
+  "reasoning",
+  "anthropic",
+  "vision",
+  "json_schema",
+  "native_web_search",
+  "mid_conversation_system",
+  "video",
+  "audio",
+  "pdf",
+] as const;
 
 export function hasFeature(entry: ModelEntry, feature: (typeof KNOWN_FEATURES)[number]): boolean {
   return entry.features.includes(feature);

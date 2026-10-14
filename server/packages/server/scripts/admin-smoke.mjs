@@ -1,7 +1,8 @@
 /**
  * T3-1/T3-4 管理台数据域冒烟（pg 直连，不起 HTTP）：
  *   ensureAdminSchema 等价 SQL 建表 → 幂等 seed（模板/密钥/provider）→
- *   插入/查询/部分更新/引用校验断言 → 清理测试数据 → user_tokens 基本行为。
+ *   插入/查询/部分更新/引用校验断言 → 清理测试数据 → user_tokens 基本行为 →
+ *   推理档位 params 语义与能力标记白名单（2026-10-14）。
  *
  * 注意：本脚本直连 SQL，绕过 HTTP 层，因此不覆盖「密钥加密落盘 / 掩码下发 / 掩码回写保护」
  *      ——那三项由 scripts/t34-smoke.mjs 覆盖。此处对 seed 密钥只断言「不是明文」。
@@ -220,6 +221,88 @@ async function main() {
     check(
       "params 合并语义：写入推理配置不影响 rerank 的 vector_dimensions",
       merged.rows[0].params.vector_dimensions === 1024 && merged.rows[0].params.reasoning_levels.join(",") === "low,high",
+    );
+
+    /*
+     * 5c) 能力标记白名单（2026-10-14）
+     *
+     * 桌面端「高级配置」里原本写死的 6 项能力（结构化输出 / 原生联网搜索 / 对话中系统消息 /
+     * 视频 / 音频 / PDF）改为管理台勾选后经 /v1/models 以 supports_* 下发，前提是
+     * `hasFeature()` 认得这些 key —— KNOWN_FEATURES 没扩的话，registry 类型层就过不去。
+     *
+     * 这里断言两件事：
+     *   1. 6 个新 key 全部被 hasFeature 认得（否则 proxy 的下发体编译不过 / 恒 false）；
+     *   2. 未登记的 key 仍被忽略（白名单语义不能因为扩量而失效）。
+     * proxy.ts 里那 6 行 `hasFeature(m, "json_schema")` 是同模式重复，参数类型由
+     * KNOWN_FEATURES[number] 在编译期保证，故不在此起整套网关验证。
+     */
+    const { ProviderRegistry, hasFeature } = await import(new URL("../dist/gateway/registry.js", import.meta.url).href);
+    const reg = new ProviderRegistry();
+    // registerModel 在 provider 未注册时静默忽略（避免悬空绑定），所以必须先 register
+    reg.register({
+      id: "smoke-prov",
+      name: "Smoke Prov",
+      baseUrl: "https://smoke.invalid/v1",
+      apiKey: "smoke-key",
+      api: "auto",
+      headers: {},
+      modelType: "chat",
+    });
+    const baseEntry = {
+      model: "smoke-capabilities",
+      displayName: "Smoke Capabilities",
+      modelType: "chat",
+      maxContext: null,
+      maxOutput: null,
+      pricing: { inputPerM: 0, outputPerM: 0, cacheReadPerM: null, cacheWritePerM: null },
+      currency: null,
+      scope: { kind: "all", roles: [], deptIds: [], uids: [] },
+    };
+    reg.registerModel("smoke-prov", {
+      ...baseEntry,
+      features: [
+        "tools",
+        "reasoning",
+        "vision",
+        "json_schema",
+        "native_web_search",
+        "mid_conversation_system",
+        "video",
+        "audio",
+        "pdf",
+        "bogus-unknown-key",
+      ],
+    });
+    const capEntry = reg.allModels().find((m) => m.model === "smoke-capabilities");
+    const recognized = [
+      "tools",
+      "reasoning",
+      "vision",
+      "json_schema",
+      "native_web_search",
+      "mid_conversation_system",
+      "video",
+      "audio",
+      "pdf",
+    ];
+    check(
+      "hasFeature 认得全部 9 项能力标记（含 2026-10-14 新增 6 项，供 /v1/models 下发 supports_*）",
+      capEntry !== undefined && recognized.every((f) => hasFeature(capEntry, f) === true),
+      recognized.filter((f) => !hasFeature(capEntry, f)).join(",") || "全部认得",
+    );
+    /*
+     * 注意：这里**不能**断言 `hasFeature(entry, 未知key) === false` —— 它的实现就是
+     * `entry.features.includes(feature)`，把未知 key 放进数组就返回 true（运行时不过滤）。
+     * 白名单职责实际分在三处，这里把划分钉住，避免下次再按错的理解写断言：
+     *   1. 编译期：`hasFeature` 的入参类型是 KNOWN_FEATURES[number]，写错 key 过不了 tsc；
+     *   2. 管理台保存时：ModelsAndProviders 的 FEATURES 常量过滤掉未知 key；
+     *   3. proxy 下发体：只对 9 个已知 key 调 hasFeature，调用点写死。
+     * registry 则**全量保留** features（不过滤）——所以未知 key 会原样出现在 entry 里，
+     * 但永远不会被下发。这条断言钉住的就是这个事实。
+     */
+    check(
+      "registry 全量保留 features：未知 key 原样在 entry 中（过滤职责不在 registry）",
+      capEntry !== undefined && capEntry.features.includes("bogus-unknown-key") === true,
     );
 
     // 6) 删除 provider → 级联删 models（ON DELETE CASCADE）

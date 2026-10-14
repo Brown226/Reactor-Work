@@ -27,6 +27,13 @@ function model(overrides: Partial<ReactorServerModelInfo> = {}): ReactorServerMo
     supportsTools: false,
     supportsReasoning: false,
     supportsVision: false,
+    // 2026-10-14 起的 6 项布尔能力：默认 false，与扩量前的端侧硬编码行为一致
+    supportsVideo: false,
+    supportsAudio: false,
+    supportsPdf: false,
+    supportsJsonSchemaOutput: false,
+    supportsNativeWebSearch: false,
+    supportsMidConversationSystem: false,
     reasoningLevels: null,
     reasoningMap: null,
     ...overrides,
@@ -63,11 +70,45 @@ test("网关未给窗口/最大输出时不写字段（交给桌面端既有兜�
   );
 });
 
-test("网关无 video/audio/pdf 概念：一律保守 false，不因支持视觉就顺带承诺其它模态", () => {
+test("未勾选的能力一律 false：不因支持视觉就顺带承诺 video/audio/pdf 或其它能力", () => {
   const config = buildGatewayModelConfig(model({ supportsVision: true }));
   assert.equal(config.properties?.inputFormat?.supportsVideo, false);
   assert.equal(config.properties?.inputFormat?.supportsAudio, false);
   assert.equal(config.properties?.inputFormat?.supportsPdf, false);
+  assert.equal(config.properties?.supportsJsonSchemaOutput, false);
+  assert.equal(config.properties?.supportsNativeWebSearch, false);
+  assert.equal(config.properties?.supportsMidConversationSystem, false);
+});
+
+test("管理台勾选后，6 项高级能力原样到达桌面端（不再写死 false）", () => {
+  const config = buildGatewayModelConfig(
+    model({
+      supportsVision: true,
+      supportsVideo: true,
+      supportsAudio: true,
+      supportsPdf: true,
+      supportsJsonSchemaOutput: true,
+      supportsNativeWebSearch: true,
+      supportsMidConversationSystem: true,
+    }),
+  );
+  assert.equal(config.properties?.inputFormat?.supportsImage, true);
+  assert.equal(config.properties?.inputFormat?.supportsVideo, true);
+  assert.equal(config.properties?.inputFormat?.supportsAudio, true);
+  assert.equal(config.properties?.inputFormat?.supportsPdf, true);
+  assert.equal(config.properties?.supportsJsonSchemaOutput, true);
+  assert.equal(config.properties?.supportsNativeWebSearch, true);
+  assert.equal(config.properties?.supportsMidConversationSystem, true);
+});
+
+test("requiresMfjsToolSchema 恒 false：它是端侧内部开关，与模型能力无关，管理台不暴露", () => {
+  const config = buildGatewayModelConfig(
+    model({
+      supportsTools: true,
+      supportsJsonSchemaOutput: true,
+    }),
+  );
+  assert.equal(config.properties?.requiresMfjsToolSchema, false);
 });
 
 test("推理档位：服务端显式配置优先，档位与 map 都按配置生成", () => {

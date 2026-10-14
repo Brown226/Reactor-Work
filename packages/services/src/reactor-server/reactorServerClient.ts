@@ -87,6 +87,19 @@ export interface ReactorServerModelInfo {
   readonly supportsReasoning: boolean;
   /** 多模态（网关 `supports_vision`）：决定桌面端 `inputFormat.supportsImage` */
   readonly supportsVision: boolean;
+  /**
+   * 2026-10-14：桌面端「高级配置」里原本写死的 6 项能力，改由管理台勾选后经网关下发。
+   * 未下发 / 非 true 一律 false，与扩量前的端侧硬编码行为一致。
+   */
+  readonly supportsVideo: boolean;
+  readonly supportsAudio: boolean;
+  readonly supportsPdf: boolean;
+  /** 结构化输出（JSON Schema） */
+  readonly supportsJsonSchemaOutput: boolean;
+  /** 原生联网搜索 */
+  readonly supportsNativeWebSearch: boolean;
+  /** 对话进行中插入系统消息 */
+  readonly supportsMidConversationSystem: boolean;
   /** 推理档位可选值（网关 `reasoning_levels`）；null = 管理台未配置，端侧按族推断兜底 */
   readonly reasoningLevels: readonly string[] | null;
   /** 档位→请求体的 CEL 表达式（网关 `reasoning_map`）；null = 用端侧安全缺省 `"{}"` */
@@ -264,6 +277,12 @@ export function createReactorServerClient(apiClient: ApiClient) {
           supports_tools?: unknown;
           supports_reasoning?: unknown;
           supports_vision?: unknown;
+          supports_video?: unknown;
+          supports_audio?: unknown;
+          supports_pdf?: unknown;
+          supports_json_schema?: unknown;
+          supports_native_web_search?: unknown;
+          supports_mid_conversation_system?: unknown;
           reasoning_levels?: unknown;
           reasoning_map?: unknown;
         }[];
@@ -284,6 +303,14 @@ export function createReactorServerClient(apiClient: ApiClient) {
           supportsTools: item.supports_tools === true,
           supportsReasoning: item.supports_reasoning === true,
           supportsVision: item.supports_vision === true,
+          // 2026-10-14：6 项布尔能力。老版本网关不下发这些字段，`=== true` 自然落到 false，
+          // 因此不需要版本协商，也不会让只连旧服务端的用户行为发生变化。
+          supportsVideo: item.supports_video === true,
+          supportsAudio: item.supports_audio === true,
+          supportsPdf: item.supports_pdf === true,
+          supportsJsonSchemaOutput: item.supports_json_schema === true,
+          supportsNativeWebSearch: item.supports_native_web_search === true,
+          supportsMidConversationSystem: item.supports_mid_conversation_system === true,
           reasoningLevels: stringArrayOrNull(item.reasoning_levels),
           reasoningMap:
             typeof item.reasoning_map === "string" && item.reasoning_map.trim()

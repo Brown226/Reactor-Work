@@ -279,6 +279,41 @@ export function createReactorServerService(
    * 真机验证时正是这一条：provider 条目、名称、baseUrl、哨兵密钥全部正确落盘，模型清单却是空的，
    * 聊天里也选不到企业模型。模型必须走 `addPersonalModel` / `deletePersonalModel` 这组领域操作。
    */
+  /**
+   * 把单条网关模型的配置刷成本次下发的值。
+   *
+   * **为什么单独抽出来**：`addPersonalModel` 对已存在的模型会直接 throw（见 config-service.ts），
+   * 所以历史实现只能在 reconcile 里 `continue` 跳过——结果是端侧永远停在**首次登录时**那份配置，
+   * 管理员后来改的上下文窗口/最大输出/多模态/推理档位一律不生效（2026-10-14 修复）。
+   * 走草稿保存而不是"删了再建"：后者会丢掉用户自己排的模型顺序，且中间态会被 UI 看到。
+   *
+   * 服务端是模型能力的唯一事实源，因此这里**覆盖**端侧可能存在的本地改动；
+   * 这与新增路径传真实配置是同一条口径（见 buildGatewayModelConfig 注释）。
+   */
+  async function refreshGatewayModelConfig(
+    providerId: string,
+    model: ReactorServerModelInfo,
+  ): Promise<void> {
+    /*
+     * revision 必须现取：savePersonalModelDraft 带乐观锁，同一轮 reconcile 里
+     * 上一条模型的写入已经让快照 revision 前进，复用旧值会必然冲突。
+     */
+    const view = await providerSettings.getView();
+    await providerSettings.savePersonalModelDraft({
+      providerId: providerId as ProviderId,
+      originalModelId: model.id as ModelId,
+      // 模型 id 由服务端目录决定，端侧不允许改名
+      nextModelId: model.id as ModelId,
+      personalConfig: buildGatewayModelConfig(model),
+      basedOnRevision: view.revision,
+      /*
+       * 不传 useRecommendedConfig：传 true 会把规则类型从 manual-provider-model 改写成
+       * provider-model（推荐规则），让"恢复推荐配置"之类的操作有机会把它冲掉；
+       * 传 false 则相反。缺省值保持模型原有类型，只更新配置内容本身。
+       */
+    });
+  }
+
   async function reconcileProviderModels(
     providerId: string,
     desiredModels: readonly ReactorServerModelInfo[],
@@ -287,9 +322,27 @@ export function createReactorServerService(
     const current = await readPersonalModelIds(providerId);
     const currentSet = new Set(current);
     let added = 0;
+    let updated = 0;
     let removed = 0;
     for (const model of desiredModels) {
-      if (currentSet.has(model.id)) continue;
+      if (currentSet.has(model.id)) {
+        /*
+         * 已存在也要刷新：2026-10-14 前这里是 `continue`（防御 addPersonalModel 抛
+         * "Model 已存在"），但服务端改了模型能力后端侧永不更新，表现为
+         * 「在服务端配好的上下文/多模态，桌面端还是默认初始状态」。
+         * 单条失败不阻断整轮同步：其余模型的增删照常完成，失败只记日志。
+         */
+        try {
+          await refreshGatewayModelConfig(providerId, model);
+          updated += 1;
+        } catch (error) {
+          logger.warn(undefined, "刷新企业模型配置失败（不影响本轮其它模型）", {
+            modelId: model.id,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+        continue;
+      }
       /*
        * 用网关下发的真实能力构造 ModelConfig（上下文窗口 / 最大输出 / 多模态 / 推理档位）。
        * 2026-10-13 前这里传的是空对象 `{}`，注释称"由 provider 侧推荐配置补齐"，
@@ -310,8 +363,8 @@ export function createReactorServerService(
       await providerSettings.deletePersonalModel(providerId as ProviderId, modelId as ModelId);
       removed += 1;
     }
-    if (added > 0 || removed > 0) {
-      logger.info(undefined, "企业模型清单已对齐服务端目录", { added, removed });
+    if (added > 0 || removed > 0 || updated > 0) {
+      logger.info(undefined, "企业模型清单已对齐服务端目录", { added, updated, removed });
     }
   }
 
@@ -489,6 +542,30 @@ export function createReactorServerService(
         error: error instanceof Error ? error.message : String(error),
       });
     });
+
+    /*
+     * 启动时补一次模型目录同步（2026-10-14 新增）。
+     *
+     * 此前模型目录只在 login 时拉一次，而 reconcile 又跳过已存在的模型 —— 两条叠加的后果是：
+     * 管理员在管理台改了上下文窗口/最大输出/多模态/推理档位，桌面端必须用户**重新登录**才可能拿到，
+     * 而即使重新登录，已存在模型仍被跳过，实际表现就是"服务端配了，桌面端永远不生效"。
+     * 现在启动即对齐服务端目录，管理员改完配置、用户重启桌面端即可生效。
+     *
+     * fire-and-forget：失败只记日志，绝不影响启动（未登录时本就无目录可同步）。
+     */
+    void (async () => {
+      const serverUrl = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.serverUrl);
+      // 未登录：没有企业 provider，也没有目录可对齐。
+      if (!serverUrl) return;
+      try {
+        await syncModels();
+        logger.info(undefined, "启动时已对齐企业模型目录");
+      } catch (error: unknown) {
+        logger.warn(undefined, "启动时对齐企业模型目录失败（不影响启动）", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    })();
   }
 
   return {

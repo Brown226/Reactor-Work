@@ -507,6 +507,14 @@ export function createGatewayHandlers(
             supports_reasoning: hasFeature(m, "reasoning"),
             supports_anthropic: hasFeature(m, "anthropic"),
             supports_vision: hasFeature(m, "vision"),
+            // 2026-10-14：补齐桌面端「高级配置」里原本写死的 6 项能力。
+            // 全部是布尔能力标记，管理台不勾就不下发 false，与扩量前的端侧硬编码行为一致。
+            supports_json_schema: hasFeature(m, "json_schema"),
+            supports_native_web_search: hasFeature(m, "native_web_search"),
+            supports_mid_conversation_system: hasFeature(m, "mid_conversation_system"),
+            supports_video: hasFeature(m, "video"),
+            supports_audio: hasFeature(m, "audio"),
+            supports_pdf: hasFeature(m, "pdf"),
             features: m.features,
             // 推理档位：features.reasoning 只是布尔，推不出桌面端 enum spec 需要的可选值集合，
             // 因此显式下发；空数组 = 管理台未配置，端侧走自己的兜底口径。
