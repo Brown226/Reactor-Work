@@ -68,12 +68,22 @@ export async function ensureSchema(db: IdentityDb): Promise<void> {
       role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('platform_admin','dept_head','user')),
       status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','disabled')),
       password_hash TEXT,
+      must_change_password BOOLEAN NOT NULL DEFAULT false,
       department_id INT REFERENCES departments(id) ON DELETE SET NULL,
       ad_dn TEXT,
       last_sync_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
+  `);
+  /**
+   * 已存在的库补列：`CREATE TABLE IF NOT EXISTS` 对老表不生效，
+   * 而 811 用户的生产库早于本字段存在。ADD COLUMN IF NOT EXISTS 幂等可重跑。
+   *
+   * 语义：true = 该用户必须修改初始密码后才能继续使用（初始密码 / 管理员重置均置 true）。
+   */
+  await db.pool.query(`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT false;
   `);
   await db.pool.query(`
     CREATE TABLE IF NOT EXISTS ad_sync_logs (

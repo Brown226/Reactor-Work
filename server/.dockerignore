@@ -10,9 +10,13 @@
 #   packages/shared/{package.json,dist} → 共享契约包（**必须**：skills/agents 做值导入后
 #                                     server/dist 不再自包含，缺它容器启动即 ERR_MODULE_NOT_FOUND）
 #   packages/admin/dist           → 管理台 SPA（identity 在 /console 下静态托管，见 §11.12）
+#   packages/server/scripts       → AD 联调探针（内网目标机没有 ldapsearch，靠它在容器内诊断
+#                                   LDAP 连通/凭据/filter；COPY 一个被 ignore 的文件会直接让
+#                                   build 失败，故必须显式放行）
 *
 !packages/server/package.json
 !packages/server/dist
+!packages/server/scripts
 !packages/shared/package.json
 !packages/shared/dist
 !packages/admin/dist

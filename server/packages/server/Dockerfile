@@ -37,6 +37,10 @@ fs.writeFileSync('/app/package.json',JSON.stringify({name:p.name,version:p.versi
 # ---- 产物层 ----
 COPY packages/server/dist ./dist
 
+# AD 联调探针：内网目标机上没有 ldapsearch，用它逐项诊断 LDAP 连通/凭据/filter。
+# 运行时：docker compose exec identity node scripts/ad-probe.mjs
+COPY packages/server/scripts/ad-probe.mjs ./scripts/ad-probe.mjs
+
 # ---- 共享契约层（@reactor/shared）----
 # 直接当成普通 npm 包装进 node_modules：shared 的 package.json 已有 name/type/main/exports，
 # 且无任何第三方依赖，所以拷 dist + package.json 就能被 Node 正常解析（无需 pnpm workspace）。

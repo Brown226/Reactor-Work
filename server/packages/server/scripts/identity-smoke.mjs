@@ -153,6 +153,92 @@ async function main() {
   const refresh = await post("/auth/refresh", { refreshToken: userLogin.json?.refreshToken });
   check("refresh 出新的 access", refresh.status === 200 && Boolean(refresh.json?.accessToken));
 
+  // 9) 密码链路（初始密码 / 强制改密 / 强度校验 / 管理员重置）
+  //    为什么单独一组：初始密码是「用户名@123」这种可预测值，批量把 AD 用户转本地账号后
+  //    全靠这条链路兜底；它同时是"改密弹窗能不能消失"的服务端依据，值得钉住。
+  const pwUid = "pwtest";
+  const pwInitial = "Abcd@1234"; // 新建时用的强密码（过强度关）
+  const pwNew = "Zqx9!wvm2K";
+
+  const pwCreated = await post(
+    "/users",
+    { uid: pwUid, name: "密码冒烟", password: pwInitial, role: "user" },
+    adminTok,
+  );
+  check(
+    "新建用户 201 且 mustChangePassword=true（强制下次改密）",
+    pwCreated.status === 201 && pwCreated.json?.user?.mustChangePassword === true,
+  );
+
+  // 弱密码在新建时就被拒：否则管理员随手设的弱口令会长期留存
+  const pwWeakCreate = await post(
+    "/users",
+    { uid: "pwtestweak", name: "弱密码", password: "abcdefgh", role: "user" },
+    adminTok,
+  );
+  check("新建用户弱密码 400", pwWeakCreate.status === 400);
+
+  const pwLogin = await login(pwUid, pwInitial);
+  check(
+    "初始密码登录 200 且下发 mustChangePassword=true",
+    pwLogin.status === 200 && pwLogin.json?.user?.mustChangePassword === true,
+  );
+  const pwTok = pwLogin.json?.accessToken;
+
+  const pwWeak = await post(
+    "/auth/change-password",
+    { oldPassword: pwInitial, newPassword: "abcdefgh" },
+    pwTok,
+  );
+  check("改密弱密码 400（服务端也拦，不只靠客户端）", pwWeak.status === 400);
+
+  const pwWrongOld = await post(
+    "/auth/change-password",
+    { oldPassword: "not-the-password", newPassword: pwNew },
+    pwTok,
+  );
+  check("改密原密码错 401", pwWrongOld.status === 401);
+
+  const pwSame = await post(
+    "/auth/change-password",
+    { oldPassword: pwInitial, newPassword: pwInitial },
+    pwTok,
+  );
+  check("改密新密码与原密码相同 400", pwSame.status === 400);
+
+  const pwChanged = await post(
+    "/auth/change-password",
+    { oldPassword: pwInitial, newPassword: pwNew },
+    pwTok,
+  );
+  check(
+    "改密成功 200 且 mustChangePassword 被清掉（否则弹窗一直挡着）",
+    pwChanged.status === 200 && pwChanged.json?.user?.mustChangePassword === false,
+  );
+
+  const pwRelogin = await login(pwUid, pwNew);
+  check("改密后用新密码登录 200", pwRelogin.status === 200 && pwRelogin.json?.user?.mustChangePassword === false);
+  const pwOldFails = await login(pwUid, pwInitial);
+  check("改密后旧密码 401", pwOldFails.status === 401);
+
+  // 管理员重置：规则固定 <uid>@123，前端不传口令
+  const pwReset = await post(`/users/${pwCreated.json.user.id}/reset-password`, {}, adminTok);
+  check(
+    "管理员重置 → 初始密码为 <uid>@123 且重新要求改密",
+    pwReset.status === 200 &&
+      pwReset.json?.initialPassword === `${pwUid}@123` &&
+      pwReset.json?.user?.mustChangePassword === true,
+  );
+  const pwAfterReset = await login(pwUid, `${pwUid}@123`);
+  check(
+    "重置后用 <uid>@123 能登录（批量转本地账号后所有人的兜底入口）",
+    pwAfterReset.status === 200 && pwAfterReset.json?.user?.mustChangePassword === true,
+  );
+
+  // 越权：普通用户不能重置别人密码
+  const pwForbidden = await post(`/users/${pwCreated.json.user.id}/reset-password`, {}, userTok);
+  check("普通用户重置他人密码 403", pwForbidden.status === 403);
+
   child.kill();
   console.log(failed === 0 ? "\nIDENTITY SMOKE PASS" : `\nIDENTITY SMOKE FAIL (${failed})`);
   process.exit(failed === 0 ? 0 : 1);

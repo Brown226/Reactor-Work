@@ -1,7 +1,7 @@
 /**
  * Identity（第 1 批·身份底座）配置——全部来自环境变量。
  * 本地测试用 Docker mock LDAP(dc=cnpe,dc=cc, 端口 1389) + PG(55432)，
- * 真实内网 AD 联调时仅改 URL/BaseDN/服务账号/登录属性即可（见 docs 第 1 批方案 §9）。
+ * 真实内网 AD 联调时改 URL/BaseDN/服务账号/登录属性/userFilter（见 README §真实 AD 接入）。
  */
 
 export type AuthMode = "mixed" | "ldap" | "local";
@@ -27,6 +27,8 @@ export interface IdentityConfig {
     adminPwd: string;
     /** 登录搜索属性：mock LDAP 用 uid；真实 AD 切 sAMAccountName */
     loginAttr: string;
+    /** 用户搜索 filter；缺省 mock 口径 inetOrgPerson，真实 AD 必须显式配置（见 ldap.ts） */
+    userFilter: string;
   };
   /** 内置本地测试号口令（仅 authMode local/mixed 时 seed，测试专用不入 .env.example 真值） */
   test: { adminPwd: string; headPwd: string; userPwd: string };
@@ -58,6 +60,8 @@ export function loadIdentityConfig(env: NodeJS.ProcessEnv = process.env): Identi
       adminDn: env.REACTOR_LDAP_ADMIN_DN ?? "cn=admin,dc=cnpe,dc=cc",
       adminPwd: env.REACTOR_LDAP_ADMIN_PWD ?? "admin123",
       loginAttr: env.REACTOR_LDAP_LOGIN_ATTR ?? "uid",
+      // 缺省保持 mock OpenLDAP 口径；接真实 AD 时 .env 必须显式覆盖（README §AD 接入）
+      userFilter: env.REACTOR_LDAP_USER_FILTER ?? "(objectClass=inetOrgPerson)",
     },
     test: {
       adminPwd: env.REACTOR_TEST_ADMIN_PWD ?? "Admin@123",

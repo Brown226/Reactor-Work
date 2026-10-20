@@ -40,6 +40,13 @@ export const usersApi = {
   create: (body: { uid: string; name: string; email: string | null; role: string; departmentId: number | null; password: string }) =>
     http.post<void>("/users", body, AUTH),
   patch: (id: number, body: Record<string, unknown>) => http.patch<void>(`/users/${id}`, body, AUTH),
+  /**
+   * 重置密码：规则由服务端固定为 `<uid>@123` 并置 mustChangePassword。
+   * 前端**不传口令**（传了也被忽略）——规则只存在于服务端一处，
+   * 管理台不可能把它重置成另一个弱口令。
+   */
+  resetPassword: (id: number) =>
+    http.post<{ user: AdminUser; initialPassword: string }>(`/users/${id}/reset-password`, undefined, AUTH),
   disable: (id: number) => http.post<void>(`/users/${id}/disable`, undefined, AUTH),
 };
 

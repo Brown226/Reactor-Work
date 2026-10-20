@@ -22,6 +22,8 @@ export interface UserRow {
   adDn: string | null;
   lastSyncAt: Date | null;
   passwordHash: string | null;
+  /** true = 首次登录 / 被管理员重置后，必须修改初始密码才能继续使用（阻断式强制改密） */
+  mustChangePassword: boolean;
 }
 
 interface UserDbRow {
@@ -37,6 +39,7 @@ interface UserDbRow {
   ad_dn: string | null;
   last_sync_at: Date | null;
   password_hash: string | null;
+  must_change_password: boolean;
 }
 
 function mapRow(r: UserDbRow): UserRow {
@@ -53,12 +56,13 @@ function mapRow(r: UserDbRow): UserRow {
     adDn: r.ad_dn,
     lastSyncAt: r.last_sync_at,
     passwordHash: r.password_hash,
+    mustChangePassword: r.must_change_password,
   };
 }
 
 export const USER_SELECT = `
   SELECT u.id, u.uid, u.name, u.email, u.source, u.role, u.status,
-         u.department_id, u.ad_dn, u.last_sync_at, u.password_hash,
+         u.department_id, u.ad_dn, u.last_sync_at, u.password_hash, u.must_change_password,
          d.path AS dept_path
   FROM users u LEFT JOIN departments d ON d.id = u.department_id
 `;
@@ -130,16 +134,27 @@ export async function upsertAdUser(
 
 export async function createLocalUser(
   db: IdentityDb,
-  input: { uid: string; name: string; email?: string | null; role: Role; departmentId: number | null; passwordHash: string },
+  input: {
+    uid: string;
+    name: string;
+    email?: string | null;
+    role: Role;
+    departmentId: number | null;
+    passwordHash: string;
+    /** 缺省 false：保持既有调用方（内置测试号）行为不变；管理台新建用户显式传 true。 */
+    mustChangePassword?: boolean;
+  },
 ): Promise<UserRow> {
+  const mustChange = input.mustChangePassword ?? false;
   const { rows } = await db.pool.query<{ id: number }>(
-    `INSERT INTO users (uid, name, email, source, role, status, department_id, password_hash)
-     VALUES ($1, $2, $3, 'local', $4, 'active', $5, $6)
+    `INSERT INTO users (uid, name, email, source, role, status, department_id, password_hash, must_change_password)
+     VALUES ($1, $2, $3, 'local', $4, 'active', $5, $6, $7)
      ON CONFLICT (uid) DO UPDATE SET name = EXCLUDED.name, role = EXCLUDED.role,
        department_id = EXCLUDED.department_id, password_hash = EXCLUDED.password_hash,
+       must_change_password = EXCLUDED.must_change_password,
        status = 'active', updated_at = now()
      RETURNING id`,
-    [input.uid, input.name, input.email ?? null, input.role, input.departmentId, input.passwordHash],
+    [input.uid, input.name, input.email ?? null, input.role, input.departmentId, input.passwordHash, mustChange],
   );
   return (await findUserById(db, rows[0]!.id))!;
 }
@@ -151,6 +166,7 @@ export interface UserPatch {
   name?: string;
   email?: string | null;
   passwordHash?: string;
+  mustChangePassword?: boolean;
 }
 
 export async function updateUser(db: IdentityDb, id: number, patch: UserPatch): Promise<UserRow | null> {
@@ -166,6 +182,7 @@ export async function updateUser(db: IdentityDb, id: number, patch: UserPatch): 
   if (patch.name !== undefined) push("name", patch.name);
   if (patch.email !== undefined) push("email", patch.email);
   if (patch.passwordHash !== undefined) push("password_hash", patch.passwordHash);
+  if (patch.mustChangePassword !== undefined) push("must_change_password", patch.mustChangePassword);
   if (fields.length === 0) return findUserById(db, id);
   params.push(id);
   await db.pool.query(`UPDATE users SET ${fields.join(", ")}, updated_at = now() WHERE id = $${params.length}`, params);
@@ -204,6 +221,7 @@ export function toPublicUser(u: UserRow): PublicUser {
     status: u.status,
     dept: u.departmentId === null || u.deptPath === null ? null : { id: u.departmentId, path: u.deptPath },
     syncedAt: u.lastSyncAt ? u.lastSyncAt.toISOString() : null,
+    mustChangePassword: u.mustChangePassword,
   };
 }
 
@@ -217,4 +235,6 @@ export interface PublicUser {
   status: "active" | "disabled";
   dept: { id: number; path: string } | null;
   syncedAt: string | null;
+  /** true 时客户端必须弹强制改密框，改成功前不放开主界面 */
+  mustChangePassword: boolean;
 }

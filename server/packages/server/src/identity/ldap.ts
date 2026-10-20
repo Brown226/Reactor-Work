@@ -1,7 +1,11 @@
 /**
  * LDAP 客户端（第 1 批）：镜像公司口径——服务账号在 BaseDN(OU=cnpe,DC=cnpe,DC=cc)
  * 下按登录属性搜得用户 DN，再以用户 DN+密码 bind 校验（对应参考 C# 的 ADValid）。
- * mock OpenLDAP 用 loginAttr=uid；真实 AD 切 sAMAccountName 即可（config）。
+ *
+ * 真实 AD 与 mock OpenLDAP 的差异（已踩过的坑）：
+ *  - 用户对象：AD 是 `user`+`objectCategory=person`，mock 是 `inetOrgPerson` → 由 userFilter 配置；
+ *  - 属性：AD 没有 `uid`，登录属性用 `sAMAccountName` → attributes 只请求 loginAttr 与通用属性；
+ *  - 禁用账户/联系人：AD 会在同一 OU 里混放，filter 需显式排除（见 userFilter 注释）。
  */
 
 import * as ldapjsNs from "ldapjs";
@@ -19,6 +23,14 @@ export interface LdapSettings {
   adminDn: string;
   adminPwd: string;
   loginAttr: string;
+  /**
+   * 用户搜索 filter（不含登录属性条件）。
+   * 缺省 `(objectClass=inetOrgPerson)` 是 mock OpenLDAP 口径；
+   * 真实 AD 的用户对象是 `user`（且含联系人/禁用账户），必须显式配置，例如
+   * `(&(objectClass=user)(objectCategory=person)!(userAccountControl:1.2.840.113556.1.4.803:=2))`
+   * —— objectCategory=person 排除联系人/共享邮箱，扩展匹配排除已禁用账户。
+   */
+  userFilter: string;
 }
 
 export interface LdapUser {
@@ -182,7 +194,9 @@ function searchUsers(
     await new Promise<void>((resolve, reject) => {
       client.search(
         settings.baseDn,
-        { scope: "sub", filter, attributes: [settings.loginAttr, "uid", "displayName", "cn", "mail"] },
+        // attributes 只请求真实存在的属性：loginAttr 已在数组内（mock=uid / AD=sAMAccountName），
+        // 不再另写死 uid——AD 没有 uid 属性，请求它会拿到空值甚至被严格实现拒绝。
+        { scope: "sub", filter, attributes: [settings.loginAttr, "displayName", "cn", "mail"] },
         (err: LdapSearchError, res: LdapSearchResponse) => {
           if (err) return reject(err);
           res.on("searchEntry", (raw: unknown) => {
@@ -205,14 +219,14 @@ function searchUsers(
   });
 }
 
-/** 全量枚举（同步用）：BaseDN 下所有 inetOrgPerson。 */
+/** 全量枚举（同步用）：BaseDN 下 userFilter 匹配的全部用户。 */
 export function listLdapUsers(settings: LdapSettings): Promise<LdapUser[]> {
-  return searchUsers(settings, "(objectClass=inetOrgPerson)");
+  return searchUsers(settings, settings.userFilter);
 }
 
 /** 按登录属性查单个用户（登录用）。 */
 export async function findLdapUserByLogin(settings: LdapSettings, login: string): Promise<LdapUser | null> {
-  const filter = `(&(objectClass=inetOrgPerson)(${settings.loginAttr}=${escapeFilter(login)}))`;
+  const filter = `(&${settings.userFilter}(${settings.loginAttr}=${escapeFilter(login)}))`;
   const users = await searchUsers(settings, filter);
   return users[0] ?? null;
 }

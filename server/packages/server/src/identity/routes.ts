@@ -22,7 +22,7 @@ import {
   verifyAccess,
   type TokenClaims,
 } from "./auth.js";
-import { hashPassword } from "./passwords.js";
+import { hashPassword, validatePasswordStrength, verifyPassword } from "./passwords.js";
 import { revokeAll } from "./token-service.js";
 import { listSyncLogs, previewSync, runSync } from "./sync.js";
 import { createReleasesPageRoutes, createUpdatesPublicRoutes } from "../updates/routes.js";
@@ -164,6 +164,37 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
     return c.json({ user: toPublicUser(me), scope });
   });
 
+  /**
+   * 自助修改密码（桌面端强制改密弹窗与「设置 → 账号」共用）。
+   *
+   * 三条边界，缺一条就是漏洞：
+   *  - 必须校验原密码：否则持有一个有效 access token 就能改掉该账号密码（令牌泄露/CSRF 面）；
+   *  - source=ad 的域账号密码归域控，平台无权也不应改 → 明确拒绝并指路，不静默成功；
+   *  - 新密码过强度关后才清 must_change_password：否则"改了个 123 也算完成强制改密"，
+   *    下一次登录又被要求改，用户会以为功能坏了。
+   */
+  authed.post("/auth/change-password", async (c) => {
+    const me = await findUserByUid(db, c.get("claims").sub);
+    if (!me) return err(c, 404, "用户不存在");
+    if (me.source !== "local" || !me.passwordHash) {
+      return err(c, 403, "域账号密码由域控管理，请联系 IT 修改");
+    }
+    const body = (await c.req.json().catch(() => null)) as {
+      oldPassword?: string;
+      newPassword?: string;
+    } | null;
+    if (!body?.oldPassword || !body?.newPassword) throw new AuthError(400, "请填写原密码与新密码");
+    if (!verifyPassword(body.oldPassword, me.passwordHash)) throw new AuthError(401, "原密码不正确");
+    if (body.newPassword === body.oldPassword) throw new AuthError(400, "新密码不能与原密码相同");
+    const weak = validatePasswordStrength(body.newPassword);
+    if (weak) throw new AuthError(400, weak);
+    const updated = await updateUser(db, me.id, {
+      passwordHash: hashPassword(body.newPassword),
+      mustChangePassword: false,
+    });
+    return c.json({ user: updated ? toPublicUser(updated) : null });
+  });
+
   authed.get("/me/nav", (c) => {
     // 管理台菜单授权（迁移清单 T1-3）：服务端下发当前角色可见的导航 key，
     // 前端 menu.tsx 仅据此过滤渲染（标题/图标/分组仍归前端）。
@@ -247,7 +278,10 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
     } | null;
     if (!body?.uid || !body.name || !body.password) throw new AuthError(400, "uid/name/password 必填");
     if (!/^[a-zA-Z0-9._-]{2,64}$/.test(body.uid)) throw new AuthError(400, "uid 仅允许字母数字._-（2-64）");
-    if (body.password.length < 8) throw new AuthError(400, "密码至少 8 位");
+    // 新建用户同样走强度关（原来是只查长度 ≥8），并强制首次登录改密：
+    // 否则管理员随手设的弱口令会长期留存，且用户永远不会被要求改。
+    const weakNew = validatePasswordStrength(body.password);
+    if (weakNew) throw new AuthError(400, weakNew);
     const role: Role = body.role ?? "user";
     if (role !== "user" && role !== "dept_head" && role !== "platform_admin") throw new AuthError(400, "role 非法");
 
@@ -272,6 +306,7 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
         role,
         departmentId,
         passwordHash: hashPassword(body.password),
+        mustChangePassword: true,
       });
       return c.json({ user: toPublicUser(u) }, 201);
     } catch (e) {
@@ -303,6 +338,12 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
         return err(c, 403, "部门负责人不能改角色/部门/密码或处理管理员");
       }
     }
+    // PATCH 带 password 是既有能力（管理台可能仍在用），但同样要过强度关并强制下次改密，
+    // 否则会出现"管理员设了个弱口令却不用改"的长期留存账号。
+    if (body.password) {
+      const weak = validatePasswordStrength(body.password);
+      if (weak) throw new AuthError(400, weak);
+    }
     const updated = await updateUser(db, target.id, {
       role: body.role,
       status: body.status,
@@ -310,6 +351,7 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
       name: body.name,
       email: body.email,
       passwordHash: body.password ? hashPassword(body.password) : undefined,
+      mustChangePassword: body.password ? true : undefined,
     });
     return c.json({ user: updated ? toPublicUser(updated) : null });
   };
@@ -387,6 +429,36 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
 
   authed.post("/users", createUser);
   authed.patch("/users/:id", patchUser);
+  /**
+   * 管理员重置密码：规则**固定**为 `<uid>@123`，服务端自行计算，不接受前端传密码。
+   *
+   * 为什么不复用 PATCH 的 password 字段：那条路允许传任意口令，而"重置"的语义是
+   * 「回到可预期的初始值 + 强制下次登录改密」。单独一个路由让规则只存在于服务端一处，
+   * 前端没有覆盖它的能力，也不会出现"重置成了另一个弱口令"。
+   *
+   * 返回 initialPassword 仅供管理台提示"已重置为 xxx@123"——这是公开规则，不是机密。
+   */
+  authed.post("/users/:id/reset-password", async (c) => {
+    const id = Number(c.req.param("id"));
+    const target = Number.isInteger(id) ? await findUserById(db, id) : null;
+    if (!target) return err(c, 404, "用户不存在");
+    const claims = c.get("claims");
+    if (claims.role === "user") return err(c, 403, "无权重置密码");
+    if (claims.role === "dept_head") {
+      const ids = await subtree(db, claims.deptId);
+      if (!ids.has(target.id) || target.role === "platform_admin") return err(c, 403, "无权重置该用户密码");
+    }
+    // 域账号的密码在 LDAP 里，平台改写不了；给可操作的下一步，而不是笼统的"失败"。
+    if (target.source !== "local") {
+      return err(c, 409, "该账号为域账号，密码由域控管理；如需平台代管请先转为本地账号");
+    }
+    const initial = `${target.uid}@123`;
+    const updated = await updateUser(db, target.id, {
+      passwordHash: hashPassword(initial),
+      mustChangePassword: true,
+    });
+    return c.json({ user: updated ? toPublicUser(updated) : null, initialPassword: initial });
+  });
   authed.post("/users/:id/disable", disableUser);
   authed.post("/auth/sync", sync);
   authed.get("/auth/sync/logs", syncLogs);

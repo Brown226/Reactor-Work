@@ -197,6 +197,59 @@ pnpm docker:down        # 停止；**绝不加 -v**（数据卷是 external，�
 > 数据卷中 `pg-data` / `ldap-data` / `ldap-config` 是 **external**，指回历史卷名（`docker_pg-data` 等）——换目录、改项目名都不会重建空卷；
 > `kb-files` 是 compose 管理的卷（KB 上传件从未真正持久化过，见 §7.1）。
 
+### 3.1 真实 AD 接入（替换 mock LDAP）
+
+配置入口唯一：`packages/server/src/identity/config.ts` 读 6 个环境变量，**没有第二处配置源、没有管理台界面可配**。改完必须重启 identity 容器。
+
+```bash
+REACTOR_AUTH_MODE=mixed                      # 保留 admin 本地号，域控挂了也能进管理台
+REACTOR_LDAP_URL=ldap://10.30.2.5:389        # AD 地址；若域控开了 LDAPS 则用 ldaps://<ip>:636
+REACTOR_LDAP_BASE_DN=OU=cnpe,DC=cnpe,DC=cc   # 搜索根（用户 OU 或其父级）
+REACTOR_LDAP_ADMIN_DN=<服务账号 DN>           # 只读权限即可，如 CN=svc_reactor,OU=...,DC=...,DC=...
+REACTOR_LDAP_ADMIN_PWD=<服务账号口令>
+REACTOR_LDAP_LOGIN_ATTR=sAMAccountName        # AD 登录名（也可 userPrincipalName / mail）
+REACTOR_LDAP_USER_FILTER=(&(objectClass=user)(objectCategory=person)!(userAccountControl:1.2.840.113556.1.4.803:=2))
+```
+
+三条**必须知道**的差异（代码已适配，但配错仍会静默搜不到人）：
+
+1. **用户对象**：AD 是 `objectClass=user` + `objectCategory=person`，mock OpenLDAP 是 `inetOrgPerson`。`REACTOR_LDAP_USER_FILTER` 缺省仍是 mock 口径，**接 AD 不显式改它 = 搜索返回 0 人、同步空跑**。
+2. **登录属性**：AD 没有 `uid` 属性，用 `sAMAccountName`。attributes 只请求 `loginAttr` + `displayName/cn/mail`，不会再要 AD 没有的属性。
+3. **禁用账户与联系人**：AD 会在同一 OU 里混放。filter 里的 `objectCategory=person` 排除联系人与共享邮箱，`!(userAccountControl:1.2.840.113556.1.4.803:=2)` 排除已禁用账户——不排除的话这些人会进用户列表但永远 bind 失败。
+
+部门映射是通用的：按用户 DN 的 `OU=` 段落还原部门树（`ouPathFromDn` → `ensureDeptPath`），AD 的
+`CN=张三,OU=设计管理部,OU=河北分公司,OU=cnpe,DC=cnpe,DC=cc` 天然能映射，**这块不用改**。
+
+切到真实 AD 前先想清楚 mock 数据怎么处理：`sync.ts` 的规则是「AD 源缺失者停用」，
+库里现有 807 个 `source=ad` 的 mock 员工**会被全部停用**（不删除，但都登不了）。想保留就先导出、想干净就清库重同步。
+
+登录链路（`auth/login.ts`）：先查 PG——`source=local` 走 bcrypt，`source=ad` 或未入库的走
+「服务账号按登录属性搜 DN → 用户 DN + 输入密码 bind」。密码**从不落库**，AD 口令归域管。
+
+> ⚠ 389 明文端口有个真实风险：若域控启用了「LDAP 服务器签名要求」（Windows Server 2019+ 默认趋严），
+> 明文 simple bind 会被拒（`strongAuthRequired`）。 ldapjs 不支持 LDAP 签名，只能走 `ldaps://`（636）
+> 或请域管放开该策略。首次联调先跑一次管理台「组织同步 → 预览」，看 `total` 是否为 0 来判断。
+
+#### 3.1.1 两重保障：本地账号与域账号并存
+
+2026-10-14 起，原 mock LDAP 的 807 个账号已**批量转为平台本地账号**（`source=local`，
+初始密码 `<uid>@123`，首次登录强制改密）。因此当前是 `mixed` 模式下的双轨并存：
+
+| 账号来源 | 认证方式 | 密码谁管 |
+|---|---|---|
+| `source=local`（807 名前员工 + admin/head/user） | bcrypt 校验 PG 哈希 | **平台**（可改、可重置、可强制改密） |
+| `source=ad`（接真实 AD 后同步进来的新员工） | LDAP bind | 域控（平台无权也不落库） |
+
+**关键性质**：`sync.ts` 的 `computeSyncDiff` 对 `existing.source === "local"` 是**跳过**而非停用。
+所以将来接入真实 AD 并跑组织同步时，这 807 人**不会**被误判为「AD 缺失」而停用——
+AD 接不通、接错了都不会导致全员登录不了。代价是他们的姓名/部门不再随 AD 自动更新
+（要更新需手工改或写一次性脚本）。
+
+**不要**把 `REACTOR_AUTH_MODE` 切成 `local`——那会让域账号一律不可用（`auth.ts:151`），
+把刚接好的 AD 又关掉。`mixed` 才是两重保障的正确形态。
+
+运维脚本：`node packages/server/scripts/convert-ad-users-to-local.mjs [--apply]`（默认 dry-run）。
+
 ---
 
 ## 4. 冒烟与运维脚本
@@ -231,8 +284,9 @@ pnpm --filter @reactor/server smoke:gateway-embeddings
 | 用途 | 脚本 |
 |---|---|
 | 网关端到端（**依赖未搬迁的 `packages/sidecar`，本工作区跑不了**） | `e2e-smoke.mjs` |
-| 身份底座（登录/刷新/登出/同步） | `identity-smoke.mjs` |
+| 身份底座（登录/刷新/登出/同步 + **密码链路 11 项**：初始密码 / 强制改密 / 强度校验 / 管理员重置 / 越权） | `identity-smoke.mjs`（**24 项全绿**，2026-10-14） |
 | 组织与用户 | `org-smoke.mjs` |
+| **AD 账号批量转本地账号**（运维脚本，**非冒烟**：默认 dry-run，`--apply` 才写库；把 `source=ad` 且 active 的用户转 local、密码设 `<uid>@123`、置 `must_change_password`；见 `docs/未完成-初始密码与强制改密-方案-v1.md` §8） | `node packages/server/scripts/convert-ad-users-to-local.mjs [--apply]` |
 | 管理台 API（供应商/密钥/模型） | `admin-smoke.mjs` |
 | 管理台静态托管（含路径穿越反证） | `admin-static-smoke.mjs`（管理台产物缺失时会 SKIP 并以 0 退出；产物存在时 **6/6 通过**） |
 | 网关鉴权 | `gateway-auth-smoke.mjs` |
@@ -249,6 +303,7 @@ pnpm --filter @reactor/server smoke:gateway-embeddings
 | P4 真机验收·**服务端半边**（登录/网关令牌/四型事件上报与回读/幂等/策略下发/登出吊销；**非冒烟库**，直打运行中的 :8791，结束打印审计测试事件清理命令、策略自动还原） | `acceptance:p4`（**30 项全绿**，2026-10-08；桌面半边见 `docs/未完成-服务端接线-P4-用量上报与策略.md` §17） |
 | 向量化走网关（自带 mock 上游） | `smoke:gateway-embeddings` |
 | **额度分配·管理台视觉验收**（GUI 走查：登录 → 用量与额度 → 额度分配面板 → 新建 5M 规则看换算预览/非法提示/保存/编辑回填/对账表/删除 → **批量分配**对话框（部门下拉/100M 换算预览/超限部门明确报错/ghost uid 的 dryRun 跳过理由/零写入应用回执）；**直打运行中的 :8791**，截图存 `packages/server/shots/`） | `python scripts/quota-admin-walkthrough.py`（**31 项全绿**，2026-10-09；复用系统 Chrome/Edge，未装 playwright 浏览器时 SKIP。覆盖新版面顺序（额度分配→概览→报表）、规则行当期用量、对账折叠） |
+| **标准清单 Excel 导入/筛重/导出**（模板下载 6 项 + 预检/确认/库内判重/文件内判重/多版本行/坏行容忍/导出联动/导回闭环，共 **33 项全绿**；见 `docs/standards-excel-io-spec.md` §7–8） | `node packages/server/std-io-verify.mjs`（**连运行中的实例**，非独立库：自带登录，用 `ZZTEST-` 前缀测试数据，结束自动清理；跑前确认没有真实数据带该前缀） |
 | 密钥运维 | `rotate-secret-key.mjs`、`verify-secret-key.mjs` |
 
 **数据安全**：连库的冒烟都经 `scripts/lib/smoke-db.mjs` 切到独立库 `reactor_smoke`（每次 DROP+CREATE），

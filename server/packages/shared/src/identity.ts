@@ -26,6 +26,11 @@ export interface PublicUser {
   status: UserStatus;
   dept: { id: number; path: string } | null;
   syncedAt: string | null;
+  /**
+   * true = 必须修改初始密码后才能继续使用（初始密码 / 管理员重置后置位）。
+   * 桌面端收到后弹阻断式改密框；本地账号与 AD 账号均可能为 true。
+   */
+  mustChangePassword: boolean;
 }
 
 /** 数据范围：全公司 / 本部门及子部门 / 仅本人 */
