@@ -116,3 +116,19 @@ packages/desktop/tsup.config.bundled_*.mjs
 # 桌面端安装包本地迭代/交付产物（单文件约 324MB，超过 GitHub 单文件 100MB 硬限制，
 # 入库会导致 push 失败）。属交付物而非源码，不入库。
 packages/desktop/安装包迭代/
+
+# 第三方逆向分析报告与对照源码：不含本项目代码，且公开仓库不宜外发。
+# - 根目录 4 份逆向/可吸收点分析报告（含第三方产品授权机制细节）
+# - server/scaffold-master/ 第三方 MIT 脚手架（仅本地对照参考，非本项目产物）
+/逆向分析报告-*.md
+/Namiwork功能可吸收点-*.md
+/NewMax功能可吸收点-*.md
+/UI设计吸收点-*.md
+server/scaffold-master/
+
+# 构建产物（tsc 生成的声明映射，非源码）
+packages/desktop/src/scheduler/*.d.ts.map
+# scaffold 对照评估文档：引用未跟踪的参考副本，随该副本一并留在本地
+server/SCAFFOLD-*.md
+# Excel 导入导出的一次性运行时验证脚本（文件头自述"跑完删除"）
+server/packages/server/std-io-verify.mjs
