@@ -18,6 +18,8 @@ export interface AdminUser {
   status: "active" | "disabled";
   dept: DeptRef | null;
   syncedAt: string | null;
+  /** true = 首次登录/被重置后必须改密；管理台用户列表可据此提示 */
+  mustChangePassword: boolean;
 }
 
 export type Scope = { kind: "all" } | { kind: "dept"; path: string | null } | { kind: "self" };

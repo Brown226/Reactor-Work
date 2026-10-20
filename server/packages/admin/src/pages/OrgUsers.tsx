@@ -21,6 +21,8 @@ import {
   Copy,
   DotsThree,
   Eye,
+  Graph,
+  List,
   MagnifyingGlass,
   PencilSimple,
   Plus,
@@ -33,6 +35,8 @@ import type { DeptNode, Role, SyncDiffResult, SyncRunResult } from "../types";
 import { PageHead, SkeletonRows, type DataScope } from "../ui";
 import { ToneBadge } from "../components/reactor";
 import { DeptTree, ancestorPaths, filterDeptTree, flattenDepts, parentIdOf, subtreeIdsOf, subtreeMemberCount } from "../components/DeptTree";
+import { OrgCanvas } from "../components/OrgCanvas";
+import { buildLeaderMap } from "../lib/org-layout";
 import { UsersTable } from "../components/UsersTable";
 import { Button } from "../components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
@@ -144,6 +148,10 @@ export function OrgUsers() {
   const [members, setMembers] = useState<Map<number, number>>(new Map());
   const [treeQ, setTreeQ] = useState("");
   const [treeHidden, setTreeHidden] = useState(false);
+  /** 组织画布视图开关（默认列表；画布是只读总览，运维操作仍回列表做） */
+  const [viewMode, setViewMode] = useState<"list" | "canvas">("list");
+  /** 部门 id → 负责人姓名列表（画布节点显示；与成员数同源反查，零额外请求） */
+  const [leaders, setLeaders] = useState<Map<number, string[]>>(new Map());
 
   const [editor, setEditor] = useState<EditorMode | null>(null);
   const [editorName, setEditorName] = useState("");
@@ -163,6 +171,8 @@ export function OrgUsers() {
     const m = new Map<number, number>();
     for (const u of all.users) if (u.dept) m.set(u.dept.id, (m.get(u.dept.id) ?? 0) + 1);
     setMembers(m);
+    // 负责人映射：全量可见用户里 role=dept_head 的成员按部门聚合（画布用）
+    setLeaders(buildLeaderMap(all.users));
   }, []);
 
   useEffect(() => {
@@ -353,6 +363,27 @@ export function OrgUsers() {
         scope={dataScope}
       />
 
+      {/* 视图切换：列表（树 + 用户表）↔ 画布（组织总览）。画布选中态与列表
+          共用 URL ?dept=，两边天然联动；组织运维按钮只在列表态，见下方注释 */}
+      {blocks.tree && blocks.users && (
+        <div className="org-viewbar">
+          <span className="org-viewbar-hint">画布可拖拽平移 · Ctrl/⌘+滚轮缩放 · 单击选中同步右侧列表</span>
+          <div className="org-viewbar-btns">
+            <Button size="sm" variant={viewMode === "list" ? "default" : "outline"} className="gap-1" onClick={() => setViewMode("list")}>
+              <List size={13} /> 列表
+            </Button>
+            <Button size="sm" variant={viewMode === "canvas" ? "default" : "outline"} className="gap-1" onClick={() => setViewMode("canvas")}>
+              <Graph size={13} /> 画布
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 画布态：整块替换列表。刻意不在这里放组织运维按钮（新建/移动/同步 AD）——
+          画布是只读总览，运维走列表态那一套现成 UI，不复制第二份操作入口 */}
+      {viewMode === "canvas" && blocks.tree ? (
+        <OrgCanvas tree={tree} members={members} leaders={leaders} selected={selected} onSelect={selectDept} onExit={() => setViewMode("list")} />
+      ) : (
       <div className={`org-wrap ${!blocks.tree || treeHidden ? "tree-hidden" : ""}`} data-orgu-wrap>
         {blocks.tree && !treeHidden && (
           <div className="org-col-tree">
@@ -459,6 +490,7 @@ export function OrgUsers() {
           </div>
         )}
       </div>
+      )}
 
       {/* 部门结构编辑（新建下级/顶层、重命名、移动） */}
       <Dialog open={editor !== null} onOpenChange={(open) => { if (!open) setEditor(null); }}>

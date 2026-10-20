@@ -100,4 +100,46 @@ export const standardsApi = {
       { items },
       AUTH,
     ),
+
+  /**
+   * Excel 导入预检（两段式第一步）：上传 xlsx，服务端解析 + 筛重后返回明细，**不写库**。
+   * 确认入库仍走 `import(items)`，不为 Excel 另开写入路径（见 spec §4.2）。
+   */
+  importExcel: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return http.post<StandardImportPreview>("/admin/standards/import-excel", form, AUTH);
+  },
+
+  /** 下载导入模板（空表头 + 填写说明 sheet）。 */
+  template: () => http.download("/admin/standards/template"),
+
+  /** 导出当前筛选结果为 xlsx，列序与模板一致、状态为中文（改完可直接再导回）。 */
+  exportExcel: (query: StandardListQuery = {}) =>
+    http.download(`/admin/standards/export${qs({ ...query, status: query.status })}`),
 };
+
+/** Excel 导入预检结果（契约见 packages/server/src/standards/routes.ts 的 import-excel）。 */
+export interface StandardImportPreview {
+  /** Excel 数据行总数（不含表头与全空行）。 */
+  received: number;
+  /** 净化后可用行数（已做文件内去重）。 */
+  valid: number;
+  /** 去重后确定新增的条数，等于 items.length。 */
+  willInsert: number;
+  /** 重复条数（文件内重复 + 库中已存在）。 */
+  willSkip: number;
+  /** 无法解析的行，row 为 Excel 行号（含表头偏移）。 */
+  invalid: Array<{ row: number; reason: string }>;
+  /** 重复明细，服务端最多回 100 条；总数看 willSkip。 */
+  duplicates: Array<{
+    row: number;
+    standardNo: string;
+    standardName: string;
+    source: "file" | "db";
+  }>;
+  /** 明细是否被截断（超过 100 条）。 */
+  duplicatesTruncated: boolean;
+  /** 去重后的待新增数据，确认入库时原样回传。 */
+  items: StandardImportItem[];
+}

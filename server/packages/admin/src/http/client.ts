@@ -63,13 +63,22 @@ export class HttpClient {
   constructor(private readonly store: TokenStore) {}
 
   async request<T>(path: string, opts: ReqOpts = {}): Promise<T> {
-    const headers: Record<string, string> = { "content-type": "application/json" };
+    // FormData 分支：multipart 的 boundary 必须由浏览器自动生成，手写 content-type
+    // 会丢掉 boundary 导致服务端解析不出文件（Excel 导入走这条）。
+    const isForm = opts.body instanceof FormData;
+    const headers: Record<string, string> = isForm ? {} : { "content-type": "application/json" };
     const at = this.store.getAccess();
     if (at) headers.authorization = `Bearer ${at}`;
+    // 用 if 而不是三元链：instanceof 只有在 true 分支内才把 body 收窄成 FormData，
+    // 提前存成布尔量会让 TS 丢掉收窄，报 BodyInit 不匹配。
+    let body: BodyInit | undefined;
+    if (opts.body !== undefined) {
+      body = opts.body instanceof FormData ? opts.body : JSON.stringify(opts.body);
+    }
     const res = await fetch(BASE + path, {
       method: opts.method ?? "GET",
       headers,
-      body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+      body,
     });
     if (res.status === 401 && opts.onUnauthorized && (await opts.onUnauthorized())) {
       return this.request<T>(path, { ...opts, onUnauthorized: undefined });

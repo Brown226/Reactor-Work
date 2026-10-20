@@ -319,3 +319,83 @@ export async function listStandardIndex(db: IdentityDb): Promise<{
     total: rows.rows.length,
   };
 }
+
+/**
+ * 按 (编号, 名称) 二元组批量查已存在的键，供 Excel 导入预检做库中筛重。
+ *
+ * 为什么不用 `SELECT *` 再在前端集合里比对：13445 行全拉回来只为判存在性，
+ * 而判重只需要键；且键集用 Set 承载，重复查询的内存峰值与行数成比例而非与列数。
+ *
+ * 二元组比对与 `uq_standard_no_name` 严格一致 —— 只按编号判重会静默丢掉
+ * 「同编号多版本行」（GB 150-1998 现行+废止），见 schema.ts 注释。
+ */
+/**
+ * 判重键：编号与名称之间用 NUL 分隔。
+ *
+ * 为什么不用空格：标准编号形如 "GB/T 50001-2017"、名称也可能含空格，
+ * 空格拼接会产生歧义（"A B"+"C" 与 "A"+"B C" 同键）。NUL 在两者内容里都不可能出现。
+ *
+ * 库中查重（findExistingStandardKeys）与文件内去重（excel.ts）必须共用本函数，
+ * 两侧各写各的分隔符会导致键集永不相等，库中筛重静默失效。
+ */
+export function standardKey(standardNo: string, standardName: string): string {
+  return standardNo + "\u0000" + standardName;
+}
+
+export async function findExistingStandardKeys(
+  db: IdentityDb,
+  keys: readonly { standardNo: string; standardName: string }[],
+): Promise<Set<string>> {
+  const existing = new Set<string>();
+  if (keys.length === 0) return existing;
+  const BATCH = 500;
+  for (let start = 0; start < keys.length; start += BATCH) {
+    const chunk = keys.slice(start, start + BATCH);
+    const values: unknown[] = [];
+    const tuples: string[] = [];
+    for (const key of chunk) {
+      const base = values.length;
+      values.push(key.standardNo, key.standardName);
+      tuples.push(`($${base + 1}, $${base + 2})`);
+    }
+    const rows = await db.pool.query<{ standard_no: string; standard_name: string }>(
+      `SELECT standard_no, standard_name FROM standard
+        WHERE (standard_no, standard_name) IN (${tuples.join(", ")})`,
+      values,
+    );
+    for (const row of rows.rows) existing.add(standardKey(row.standard_no, row.standard_name));
+  }
+  return existing;
+}
+
+/**
+ * 导出用全量查询：与 `listStandards` 共用 `buildWhere`（保证导出与列表口径不漂移），
+ * 但不分页。行数上限由路由层控制（见 spec §4.4），这里只负责把筛中的行取干净。
+ */
+export async function listStandardsForExport(
+  db: IdentityDb,
+  params: Pick<
+    ListStandardsParams,
+    "search" | "status" | "category" | "sortField" | "sortOrder"
+  >,
+  limit: number,
+): Promise<StandardRow[]> {
+  const values: unknown[] = [];
+  const where = buildWhere(params, values);
+  const requested = params.sortField;
+  const sort: StandardSortField = requested && SORTABLE.has(requested) ? requested : "standardNo";
+  const field = SORT_COLUMN[sort];
+  const nullsLast = sort === "publishDate" || sort === "createdAt" ? " NULLS LAST" : "";
+  const dir = params.sortOrder === "desc" ? "DESC" : "ASC";
+  values.push(limit);
+  const rows = await db.pool.query<RawStandardRow>(
+    `SELECT id, standard_no, standard_name, status, category, publish_date, implement_date,
+            abolish_date, replace_info, ident, updated_at
+       FROM standard
+       ${where}
+      ORDER BY ${field} ${dir}${nullsLast}, id ASC
+      LIMIT $${values.length}`,
+    values,
+  );
+  return rows.rows.map(mapRow);
+}

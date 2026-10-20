@@ -10,7 +10,7 @@
 //   表单里「角色/部门/重置密码」是否可改，与「能不能看列表」是两件事（决策 6）。
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { ArrowsClockwise, MagnifyingGlass, PencilSimple, UserPlus, WarningCircle } from "@phosphor-icons/react";
+import { ArrowsClockwise, Key, MagnifyingGlass, PencilSimple, UserPlus, WarningCircle } from "@phosphor-icons/react";
 import { useAuthStore } from "../stores/auth";
 import { deptsApi, usersApi } from "../services/identity-resources";
 import { toast } from "../lib/toast";
@@ -218,6 +218,22 @@ export function UsersTable({ deptIds = null, toolbarExtra, onChanged }: UsersTab
     }
   };
 
+  /**
+   * 重置密码：服务端固定为 `<uid>@123` 并强制该用户下次登录改密。
+   * 只对本地账号显示入口——域账号密码在 LDAP 里，平台改写不了（服务端同样会 409）。
+   */
+  const resetPwd = async (u: AdminUser): Promise<void> => {
+    if (!window.confirm(`把 ${u.uid} 的密码重置为 ${u.uid}@123？\n该用户下次登录时将被要求立即修改。`)) return;
+    try {
+      const r = await usersApi.resetPassword(u.id);
+      toast.ok(`已重置，初始密码 ${r.initialPassword}（下次登录强制修改）`);
+      void load();
+      onChangedRef.current?.();
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
   // 换部门/换筛选条件都要回到第 1 页：否则第 3 页的场景下新条件只有 1 页，表格会空白
   useEffect(() => {
     setPage(1);
@@ -272,7 +288,9 @@ export function UsersTable({ deptIds = null, toolbarExtra, onChanged }: UsersTab
               <TableHead>角色</TableHead>
               <TableHead>来源</TableHead>
               <TableHead>状态</TableHead>
-              <TableHead className="w-[120px]" />
+              {/* 操作列宽度由 styles.css 的 `.users-table th:last-child` 定义（固定 280px，
+                  要容下「编辑 + 重置密码 + 停用」三个按钮）。这里别再写 w-[...]，会与 CSS 打架。 */}
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -308,6 +326,11 @@ export function UsersTable({ deptIds = null, toolbarExtra, onChanged }: UsersTab
                       <Button size="sm" variant="outline" className="gap-1" onClick={() => openEdit(u)}>
                         <PencilSimple size={13} /> 编辑
                       </Button>
+                      {isAdmin && u.source === "local" && (
+                        <Button size="sm" variant="outline" className="gap-1" onClick={() => void resetPwd(u)}>
+                          <Key size={13} /> 重置密码
+                        </Button>
+                      )}
                       {isAdmin && u.uid !== "admin" && (
                         <Button size="sm" variant="destructive" onClick={() => void toggleState(u)}>
                           {u.status === "active" ? "停用" : "启用"}

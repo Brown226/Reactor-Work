@@ -8,6 +8,8 @@ import { permissionsApi, type PermissionPoint, type RolePermissions } from "../s
 import { toast } from "../lib/toast";
 import { PageHead, SkeletonRows } from "../ui";
 import { ToneBadge } from "../components/reactor";
+import { PermissionMatrix } from "../components/PermissionMatrix";
+import { PermissionTree } from "../components/PermissionTree";
 import { Button } from "../components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 
@@ -100,6 +102,30 @@ export function Roles() {
             </div>
           );
         })}
+      </div>
+
+      <div className="panel" style={{ marginBottom: 16 }}>
+        <div className="panel-head">
+          <div>
+            <h3>权限矩阵</h3>
+            <div className="sub">
+              行 = 权限码分组 · 列 = 固定三角色；格子三态（✓ 全授权 / ▣ 部分 / 空 无）。角色映射由服务端固定，这里只做可视化
+            </div>
+          </div>
+        </div>
+        {points === null ? <SkeletonRows n={6} /> : <PermissionMatrix points={points} roles={roles} />}
+      </div>
+
+      <div className="panel" style={{ marginBottom: 16 }}>
+        <div className="panel-head">
+          <div>
+            <h3>权限层级树</h3>
+            <div className="sub">
+              按权限码层级浏览（目录 → 模块 → 动作），行尾为各角色覆盖情况。与上方矩阵互补：矩阵看分组的授权密度，这里看层级结构与逐级覆盖
+            </div>
+          </div>
+        </div>
+        {points === null ? <SkeletonRows n={6} /> : <PermissionTree points={points} roles={roles} />}
       </div>
 
       <div className="panel">

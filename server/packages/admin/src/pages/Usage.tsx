@@ -17,6 +17,7 @@ import {
   type ReconciliationResult,
   type UsageGroupBy,
   type UsageSummaryResult,
+  type UsageSummaryRow,
 } from "../services/audit";
 import { deptsApi } from "../services/identity-resources";
 import type { DeptNode } from "../types";
@@ -44,6 +45,9 @@ import { Label } from "../components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../components/ui/dialog";
 import { Textarea } from "../components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
+import { UsageTrend } from "../components/UsageTrend";
+import { UsageHeatmap } from "../components/UsageHeatmap";
+import { nf, money } from "../lib/usage-format";
 
 const GROUPS: Array<{ key: UsageGroupBy; label: string }> = [
   { key: "dept", label: "按部门" },
@@ -77,8 +81,7 @@ function rangeOf(key: RangeKey): { from: Date; to: Date } {
   return { from: new Date(to.getTime() - days * 24 * 3600 * 1000), to };
 }
 
-const nf = (n: number): string => (n >= 1000 ? `${(n / 1000).toFixed(n >= 100000 ? 0 : 1)}K` : String(n));
-const money = (n: number): string => `¥${n.toFixed(n >= 100 ? 0 : 2)}`;
+// nf / money 已抽到 lib/usage-format.ts —— 图表组件与表格共用同一口径，避免数字展示漂移。
 
 /** 纯 CSS 条形：宽度按占当前最大值的比例。 */
 function Bar({ value, max }: { value: number; max: number }) {
@@ -100,6 +103,8 @@ export function Usage() {
   const [groupBy, setGroupBy] = useState<UsageGroupBy>("dept");
   const [range, setRange] = useState<RangeKey>("7d");
   const [data, setData] = useState<UsageSummaryResult | null>(null);
+  /** 热力图固定看近 365 天，与上方时间筛选解耦（时间筛选只作用于趋势图与表格）。 */
+  const [heatRows, setHeatRows] = useState<UsageSummaryRow[] | null>(null);
   const [rules, setRules] = useState<QuotaRule[]>([]);
   const [depts, setDepts] = useState<Array<{ id: number; path: string }>>([]);
   const [alerts, setAlerts] = useState<QuotaAlertsResult | null>(null);
@@ -175,6 +180,22 @@ export function Usage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  /**
+   * 热力图数据：固定 365 天、groupBy=day，**与时间筛选无关**。
+   *
+   * 为什么不复用 `data.rows`：上方筛选默认是「近 7 天」，而日历热力图要覆盖一整年；
+   * 也不能把筛选改成 365 天——表格会一次铺出几百行。所以单独取一次，只在挂载时拉。
+   * 失败不打断主报表（热力图是补充视图），静默留空即可。
+   */
+  useEffect(() => {
+    const to = new Date();
+    const from = new Date(to.getTime() - 365 * 24 * 3600 * 1000);
+    usageApi
+      .summary({ groupBy: "day", from: from.toISOString(), to: to.toISOString() })
+      .then((r) => setHeatRows(r.rows))
+      .catch(() => setHeatRows([]));
+  }, []);
 
   const rows = data?.rows ?? [];
   const maxTokens = useMemo(() => rows.reduce((m, r) => Math.max(m, r.totalTokens), 0), [rows]);
@@ -556,6 +577,43 @@ export function Usage() {
         )}
       </div>
 
+      {/* 日历热力图：固定看近 365 天（不受时间筛选影响），位置在本期概览之后、趋势图之前 ——
+          从「一年宏观」到「近 30 天细节」逐层收窄。 */}
+      <div className="panel" style={{ marginBottom: 16 }}>
+        <div className="panel-head">
+          <div>
+            <h3>Token 活动</h3>
+            <div className="sub">近 12 个月每日 token 消耗（输入 + 输出），颜色越深用量越高。</div>
+          </div>
+          <div className="right">
+            <ToneBadge tone="neutral">
+              {heatRows === null ? "加载中" : `活跃 ${heatRows.length} 天`}
+            </ToneBadge>
+          </div>
+        </div>
+        {heatRows === null ? (
+          <div className="cell-sub" style={{ padding: "8px 0" }}>加载中…</div>
+        ) : heatRows.length === 0 ? (
+          <div className="cell-sub" style={{ padding: "8px 0" }}>近 12 个月暂无用量数据</div>
+        ) : (
+          <UsageHeatmap rows={heatRows} />
+        )}
+      </div>
+
+      {/* 逐日趋势：只在「按日期」分组显示。
+          非时间分组（部门/模型/用户）不再画 Top 排行条 —— 下方表格的「占比」列已经是同口径的
+          排序条形，两块并排只是同一数据画两遍（2026-10-19 按大王要求删除）。 */}
+      {groupBy === "day" && rows.length > 0 ? (
+        <div className="panel" style={{ marginBottom: 16 }}>
+          <div className="panel-head">
+            <div>
+              <h3>逐日趋势</h3>
+              <div className="sub">按日聚合的 token 用量；悬停查看当日读数。</div>
+            </div>
+          </div>
+          <UsageTrend rows={rows} />
+        </div>
+      ) : null}
 
       <div className="tablewrap">
         <Table>

@@ -9,11 +9,18 @@
 // 页面结构照原核审通 LocalStandardTab 的形状复刻：工具条（搜索/筛选/动作）→ 表格 → 分页。
 // 差别有三处：
 //  1. 不做「展开行编辑标准全文」：标准全文（Standard.content）不进自检链路，也不该进管理台；
-//  2. 导入是 **JSON** 不是 multipart：一次性迁移用运维脚本提交，不为它引入 exceljs；
+//  2. 导入是 **Excel 两段式**（上传预检 → 看筛重明细 → 确认才写库），JSON 入口保留给运维脚本；
+//     契约见 docs/standards-excel-io-spec.md，服务端在 packages/server/src/standards/；
 //  3. 分页是服务端的（13k+ 行不能拉全量），排序/筛选一律走 query 参数。
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowClockwise, Trash, PencilSimple, UploadSimple } from "@phosphor-icons/react";
+import {
+  ArrowClockwise,
+  Download,
+  PencilSimple,
+  Trash,
+  UploadSimple,
+} from "@phosphor-icons/react";
 import { toast } from "../lib/toast";
 import { PageHead, SkeletonRows } from "../ui";
 import { ToneBadge } from "../components/reactor";
@@ -27,7 +34,7 @@ import {
   STANDARD_STATUS_LABELS,
   standardsApi,
   type AdminStandard,
-  type StandardImportItem,
+  type StandardImportPreview,
   type StandardListQuery,
   type StandardStatus,
 } from "../services/standards";
@@ -58,6 +65,16 @@ function formatDate(iso: string | null): string {
 /** 日期统一回落空串：服务端把 null 当"清空日期"处理，不能发 undefined（那表示"不改"）。 */
 const dateOrEmpty = (value: string): string => value;
 
+/** Blob 落地下载（写法同 pages/Audit.tsx 的 exportCsv）。 */
+function triggerDownload(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function Standards() {
   const [rows, setRows] = useState<AdminStandard[] | null>(null);
   const [total, setTotal] = useState(0);
@@ -70,6 +87,8 @@ export function Standards() {
   const [categories, setCategories] = useState<{ value: string; count: number }[]>([]);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
+  /** Excel 导入预检结果：非空即显示「确认导入」弹窗（两段式第二步的输入）。 */
+  const [preview, setPreview] = useState<StandardImportPreview | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(
@@ -157,36 +176,87 @@ export function Standards() {
     }
   }, [load, total]);
 
-  const handleImportFile = useCallback(
-    async (file: File | null) => {
-      if (!file) return;
-      if (file.size > 64 * 1024 * 1024) {
-        toast.error("JSON 文件过大（上限 64MB）");
+  /**
+   * Excel 导入第一步：上传预检（解析 + 筛重），**不写库**。
+   *
+   * 为什么分两步：13445 条治理数据误去重/误覆盖只能靠事前备份回滚，
+   * 所以让管理员先在弹窗里看到「将新增 N / 跳过 M（含重复明细）」再确认。
+   */
+  const handleImportExcel = useCallback(async (file: File | null) => {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".xlsx")) {
+      toast.error("只接受 .xlsx 文件；.xls/.csv 请先用 Excel 另存为 .xlsx");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("文件超过 10MB 上限");
+      return;
+    }
+    setBusy(true);
+    try {
+      const preview = await standardsApi.importExcel(file);
+      if (preview.received === 0) {
+        toast.error("Excel 里没有数据行");
         return;
       }
-      setBusy(true);
-      try {
-        const text = await file.text();
-        const parsed: unknown = JSON.parse(text);
-        const items = Array.isArray(parsed)
-          ? parsed
-          : Array.isArray((parsed as { items?: unknown }).items)
-            ? ((parsed as { items: unknown[] }).items as unknown[])
-            : null;
-        if (!items) throw new Error("JSON 必须是数组，或形如 { items: [...] }");
-        const normalized = items.map((entry) => entry as StandardImportItem);
-        const { inserted, received, skipped } = await standardsApi.import(normalized);
-        toast.ok(`导入完成：新增 ${inserted} 条（收到 ${received}，已存在跳过 ${skipped}）`);
-        setPage(1);
-        void load({ page: 1 });
-      } catch (error) {
-        toast.error((error as Error).message);
-      } finally {
-        setBusy(false);
+      if (preview.willInsert === 0) {
+        toast.error(`没有可新增的数据：${preview.willSkip} 条全部重复`);
+        return;
       }
-    },
-    [load],
-  );
+      // 有坏行不阻断：批量导入要容忍个别坏行，只在弹窗里如实报数。
+      setPreview(preview);
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  /** Excel 导入第二步：确认写库。仍走 JSON 导入端点，不为 Excel 另开写入路径。 */
+  const handleConfirmImport = useCallback(async () => {
+    if (!preview) return;
+    setBusy(true);
+    try {
+      const { inserted, received, skipped } = await standardsApi.import(preview.items);
+      toast.ok(`导入完成：新增 ${inserted} 条（收到 ${received}，已存在跳过 ${skipped}）`);
+      setPreview(null);
+      setPage(1);
+      void load({ page: 1 });
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }, [preview, load]);
+
+  /** 下载导入模板：列定义唯一来源在服务端 STANDARD_HEADERS，前端不复制一份。 */
+  const handleDownloadTemplate = useCallback(async () => {
+    try {
+      const blob = await standardsApi.template();
+      triggerDownload(blob, "standard-template.xlsx");
+      toast.ok("模板已下载");
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
+  }, []);
+
+  /** 导出当前筛选结果：query 与列表页一致（不带分页），列序与模板一致。 */
+  const handleExport = useCallback(async () => {
+    setBusy(true);
+    try {
+      const blob = await standardsApi.exportExcel({
+        search: query,
+        status,
+        category: category === ALL ? "" : category,
+      });
+      triggerDownload(blob, "standards-export.xlsx");
+      toast.ok("已导出当前筛选结果");
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }, [query, status, category]);
 
   const handleSubmitEdit = useCallback(async () => {
     if (!editId || !editForm) return;
@@ -287,22 +357,40 @@ export function Standards() {
 
         <div className="spacer" />
         <ToneBadge tone="info">共 {total} 条</ToneBadge>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5"
+          disabled={busy}
+          onClick={() => void handleDownloadTemplate()}
+        >
+          <Download size={14} /> 下载模板
+        </Button>
         <label className="inline-flex cursor-pointer items-center gap-2">
           <input
             type="file"
-            accept=".json,application/json"
+            accept=".xlsx"
             className="hidden"
             onChange={(event) => {
-              void handleImportFile(event.target.files?.[0] ?? null);
+              void handleImportExcel(event.target.files?.[0] ?? null);
               event.target.value = "";
             }}
           />
           <Button size="sm" variant="outline" className="gap-1.5" disabled={busy} asChild>
             <span>
-              <UploadSimple size={14} /> 导入 JSON
+              <UploadSimple size={14} /> 导入 Excel
             </span>
           </Button>
         </label>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5"
+          disabled={busy || total === 0}
+          onClick={() => void handleExport()}
+        >
+          <Download size={14} /> 导出 Excel
+        </Button>
         <Button size="sm" variant="outline" className="gap-1.5 text-destructive" disabled={busy} onClick={() => void handleClear()}>
           <Trash size={14} /> 清空数据
         </Button>
@@ -480,6 +568,90 @@ export function Standards() {
             </Button>
             <Button onClick={() => void handleSubmitEdit()} disabled={busy}>
               保存
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/*
+        Excel 导入确认弹窗（两段式第二步）。
+        为什么必须让用户看到重复明细再确认：治理数据误去重只能靠事前备份回滚，
+        而「编号+名称」口径下同编号多版本行是合法数据，用户需要自己判断这批
+        重复是不是预期内的。
+      */}
+      <Dialog open={preview !== null} onOpenChange={(open) => !open && setPreview(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>确认导入</DialogTitle>
+          </DialogHeader>
+          {preview && (
+            <div className="space-y-3 text-sm">
+              <div className="flex flex-wrap gap-2">
+                <ToneBadge tone="success">将新增 {preview.willInsert} 条</ToneBadge>
+                <ToneBadge tone={preview.willSkip > 0 ? "warn" : "neutral"}>
+                  跳过重复 {preview.willSkip} 条
+                </ToneBadge>
+                {preview.invalid.length > 0 && (
+                  <ToneBadge tone="danger">{preview.invalid.length} 行无法解析</ToneBadge>
+                )}
+              </div>
+
+              <p className="text-muted-foreground">
+                共读取 {preview.received} 行；按「标准编号 + 标准名称」判重，
+                重复行不会写入（文件内重复与库中已存在都已计入跳过数）。
+              </p>
+
+              {preview.invalid.length > 0 && (
+                <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3">
+                  <div className="mb-1 font-medium text-destructive">无法解析的行（不会导入）</div>
+                  <ul className="max-h-24 space-y-0.5 overflow-auto text-xs text-muted-foreground">
+                    {preview.invalid.slice(0, 10).map((item) => (
+                      <li key={`${item.row}-${item.reason}`}>
+                        第 {item.row} 行：{item.reason}
+                      </li>
+                    ))}
+                  </ul>
+                  {preview.invalid.length > 10 && (
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      等共 {preview.invalid.length} 行
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {preview.duplicates.length > 0 && (
+                <div className="rounded-md border p-3">
+                  <div className="mb-1 font-medium">
+                    重复明细
+                    {preview.duplicatesTruncated && (
+                      <span className="ml-1 text-xs font-normal text-muted-foreground">
+                        （仅显示前 100 条，共 {preview.willSkip} 条）
+                      </span>
+                    )}
+                  </div>
+                  <ul className="max-h-40 space-y-0.5 overflow-auto text-xs">
+                    {preview.duplicates.map((dup) => (
+                      <li key={`${dup.row}-${dup.standardNo}-${dup.standardName}`} className="flex gap-2">
+                        <span className="text-muted-foreground">第 {dup.row} 行</span>
+                        <span className="truncate">
+                          {dup.standardNo} · {dup.standardName}
+                        </span>
+                        <ToneBadge tone={dup.source === "db" ? "info" : "warn"}>
+                          {dup.source === "db" ? "库中已存在" : "文件内重复"}
+                        </ToneBadge>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPreview(null)} disabled={busy}>
+              取消
+            </Button>
+            <Button onClick={() => void handleConfirmImport()} disabled={busy}>
+              确认导入 {preview?.willInsert ?? 0} 条
             </Button>
           </DialogFooter>
         </DialogContent>
