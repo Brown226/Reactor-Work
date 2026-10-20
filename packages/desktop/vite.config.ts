@@ -239,6 +239,7 @@ export default defineConfig(({ mode, command }) => {
           index: resolve(__dirname, "src/renderer/index.html"),
           "resource-manager": resolve(__dirname, "src/renderer/resource-manager.html"),
           "cua-permission-panel": resolve(__dirname, "src/renderer/cua-permission-panel.html"),
+          "quick-input": resolve(__dirname, "src/renderer/quick-input.html"),
         },
       },
     },

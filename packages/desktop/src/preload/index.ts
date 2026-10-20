@@ -79,6 +79,7 @@ import type {
   OpenCuaPermissionOnboardingOptions,
   ConfigureFinalArmsCustomEventE2ERequest,
   FinalArmsCustomEventE2EEntry,
+  ComposerAttachmentInjectionPayload,
 } from "@zcode/shared";
 import {
   InternalChannels,
@@ -108,6 +109,12 @@ let latestPostUpdateReleaseNotes: PostUpdateReleaseNotesPayload | null = null;
 const pendingOpenWorkspacePaths: string[] = [];
 const shareImportCallbacks = new Set<(payload: { shareCode: string }) => void>();
 const pendingShareImports: { shareCode: string }[] = [];
+const injectComposerAttachmentCallbacks = new Set<
+  (payload: ComposerAttachmentInjectionPayload) => void
+>();
+const pendingComposerAttachmentInjections: ComposerAttachmentInjectionPayload[] = [];
+const injectComposerTextCallbacks = new Set<(text: string) => void>();
+const pendingComposerTextInjections: string[] = [];
 const MACOS_WINDOW_CONTROLS_BASE_LEFT_PADDING_PX = 96;
 const WINDOWS_WINDOW_CONTROLS_BASE_RIGHT_PADDING_PX = 136;
 const WINDOWS_TITLE_BAR_HEIGHT_PX = 48;
@@ -202,6 +209,26 @@ ipcRenderer.on(PlatformChannels.ShareImport, (_event: unknown, payload: { shareC
     return;
   }
   for (const callback of shareImportCallbacks) callback(payload);
+});
+
+ipcRenderer.on(
+  PlatformChannels.InjectComposerAttachment,
+  (_event: unknown, payload: ComposerAttachmentInjectionPayload) => {
+    // 与 openWorkspacePath/shareImport 同一套语义：UI 尚未订阅时先接住，待订阅建立后回放。
+    if (injectComposerAttachmentCallbacks.size === 0) {
+      pendingComposerAttachmentInjections.push(payload);
+      return;
+    }
+    for (const callback of injectComposerAttachmentCallbacks) callback(payload);
+  },
+);
+
+ipcRenderer.on(PlatformChannels.InjectComposerText, (_event: unknown, text: string) => {
+  if (injectComposerTextCallbacks.size === 0) {
+    pendingComposerTextInjections.push(text);
+    return;
+  }
+  for (const callback of injectComposerTextCallbacks) callback(text);
 });
 
 function updateRendererProcessTitle(): void {
@@ -635,6 +662,24 @@ contextBridge.exposeInMainWorld("zcode", {
       if (payload) callback(payload);
     }
     return () => shareImportCallbacks.delete(callback);
+  },
+  onInjectComposerAttachment: (
+    callback: (payload: ComposerAttachmentInjectionPayload) => void,
+  ): (() => void) => {
+    injectComposerAttachmentCallbacks.add(callback);
+    while (pendingComposerAttachmentInjections.length > 0) {
+      const payload = pendingComposerAttachmentInjections.shift();
+      if (payload) callback(payload);
+    }
+    return () => injectComposerAttachmentCallbacks.delete(callback);
+  },
+  onInjectComposerText: (callback: (text: string) => void): (() => void) => {
+    injectComposerTextCallbacks.add(callback);
+    while (pendingComposerTextInjections.length > 0) {
+      const text = pendingComposerTextInjections.shift();
+      if (typeof text === "string") callback(text);
+    }
+    return () => injectComposerTextCallbacks.delete(callback);
   },
   /** 通知 main process renderer 已就绪 */
   notifyRendererReady: () => ipcRenderer.send(PlatformChannels.RendererReady),

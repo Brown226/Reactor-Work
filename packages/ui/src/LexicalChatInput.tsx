@@ -57,6 +57,7 @@ import {
 import { logger } from "./logger.js";
 import { recordInputLag } from "./lib/uiPerfArmsTelemetry.js";
 import { navigatePromptHistory } from "./lib/promptHistory.js";
+import { installWindowsImeFocusRecovery } from "./lib/windowsImeFocusRecovery.js";
 import type { MentionItemData } from "@/mentions/mentionTypes.js";
 import type { ComposerMentionPrefill } from "@/store/zcodeSessionStoreTypes.js";
 
@@ -893,6 +894,35 @@ function EditablePlugin({ editable }: { editable: boolean }) {
   return null;
 }
 
+/**
+ * Windows 输入法焦点恢复插件。
+ *
+ * 解决「编辑器活跃时切走窗口再切回，中文输入法打不了字」：失焦前编辑器活跃时，
+ * 切回后用双帧 rAF 先把焦点重置回 body，再挂回编辑器，重置输入法合成上下文。
+ * 非 Windows 平台内部直接 no-op（见 `installWindowsImeFocusRecovery`）。
+ */
+function WindowsImeFocusRecoveryPlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
+    return installWindowsImeFocusRecovery({
+      platform: navigator.platform,
+      windowTarget: window,
+      documentTarget: document,
+      getEditor: () => {
+        const contentDOM = editor.getRootElement();
+        return contentDOM ? { contentDOM, focus: () => editor.focus() } : null;
+      },
+    });
+  }, [editor]);
+
+  return null;
+}
+
 function E2ELexicalInputBridgePlugin({ inputTestId }: { inputTestId?: string }) {
   const [editor] = useLexicalComposerContext();
 
@@ -1494,6 +1524,7 @@ export function LexicalChatInput({
           />
           <PromptHistoryPlugin entries={promptHistory} disabled={disabled} />
           <EditablePlugin editable={!disabled} />
+          <WindowsImeFocusRecoveryPlugin />
           <E2ELexicalInputBridgePlugin inputTestId={inputTestId} />
           <EditorApiPlugin editorApiRef={editorApiRef} />
           <LeadingChineseSlashAliasPlugin disabled={disabled} />

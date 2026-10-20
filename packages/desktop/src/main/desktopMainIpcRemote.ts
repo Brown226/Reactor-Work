@@ -33,7 +33,7 @@ import {
   reportRemoteConnectResultToArms,
   type RemoteConnectionStats,
 } from "./desktopRemoteUsageArmsTelemetry.js";
-import { openPathInDefaultApp } from "./desktopMainIpcHelpers.js";
+import { isTrustedAppRendererUrl, openPathInDefaultApp } from "./desktopMainIpcHelpers.js";
 
 function isAllowedExternalOpenUrl(value: string): boolean {
   try {
@@ -306,9 +306,17 @@ export function registerRemoteIpcHandlers(options: {
     });
   });
 
-  ipcMain.handle(PlatformChannels.OpenExternalFile, async (_event, rawPath: string) =>
-    openPathInDefaultApp(rawPath, options.logger),
-  );
+  ipcMain.handle(PlatformChannels.OpenExternalFile, async (event, rawPath: string) => {
+    // 打开任意本地文件是特权操作：内嵌浏览器的远程页面也能触达本通道，
+    // 必须校验来源是应用自身渲染层，避免被诱导打开任意本地路径。
+    if (!isTrustedAppRendererUrl(event.senderFrame?.url)) {
+      options.logger.warn("[open-external] blocked untrusted sender for file open", {
+        frameUrl: event.senderFrame?.url,
+      });
+      return { success: false, error: "untrusted sender" };
+    }
+    return openPathInDefaultApp(rawPath, options.logger);
+  });
 
   ipcMain.on(PlatformChannels.RendererReady, (event) => {
     const hasPendingOAuthCallback = deliverPendingDeepLink(event.sender);

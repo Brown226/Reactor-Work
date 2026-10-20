@@ -66,6 +66,8 @@ export interface ReactorServerLoginResult extends ReactorServerTokenPair {
     name: string;
     role: string;
     dept?: { id: number; path?: string } | null;
+    /** true = 必须修改初始密码（旧版本服务端不下发该字段，故为可选）。 */
+    mustChangePassword?: boolean;
   };
 }
 
@@ -249,6 +251,23 @@ export function createReactorServerClient(apiClient: ApiClient) {
 
     async logout(serverUrl: string, accessToken: string): Promise<void> {
       await request<unknown>(`${serverUrl}/auth/logout`, { method: "POST", accessToken });
+    },
+
+    /**
+     * 自助修改密码（桌面端强制改密弹窗与「设置 → 账号」共用）。
+     * 服务端会校验原密码与新密码强度，成功后清掉 mustChangePassword 并回传最新 user。
+     */
+    async changePassword(
+      serverUrl: string,
+      accessToken: string,
+      oldPassword: string,
+      newPassword: string,
+    ): Promise<ReactorServerLoginResult["user"]> {
+      const { data } = await request<{ user: ReactorServerLoginResult["user"] }>(
+        `${serverUrl}/auth/change-password`,
+        { method: "POST", accessToken, body: { oldPassword, newPassword } },
+      );
+      return data.user;
     },
 
     async gatewayToken(

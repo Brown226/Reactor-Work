@@ -566,6 +566,15 @@ export default {
       );
     }
   },
+  // 文件关联：把常用文本/标记文档关联到本应用，支持"用 Reactor 打开文件"。
+  // 只关联文本类，避免误双击可执行/二进制；文件打开后映射为"打开其所在目录"（见 main）。
+  fileAssociations: [
+    {
+      ext: ["txt", "md", "markdown", "json", "log"],
+      name: "Text document",
+      role: "Editor",
+    },
+  ],
   extraResources: [
     { from: resolve(workspaceRoot, noticesFileName), to: noticesFileName },
     ...(targetPlatform.os === "darwin"

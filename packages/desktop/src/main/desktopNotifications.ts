@@ -60,6 +60,63 @@ function releaseTaskNotification(notification: Notification) {
   activeTaskNotifications.delete(notification);
 }
 
+/**
+ * 传入窗口的"待停止强调"状态。
+ *
+ * 参考 Namiwork `src/notify/notification-presenter.js`：Windows 用
+ * `win.flashFrame(true)` 闪烁任务栏，macOS 用 `app.dock.bounce("informational")`
+ * 弹跳 Dock；窗口获得焦点后停止。这里同一时刻只保留一个待停止项——
+ * 通知本来就只在"任何窗口都没聚焦"时发出，语义一致。
+ */
+let pendingWindowAttention: { stop: () => void } | null = null;
+
+function clearPendingWindowAttention() {
+  if (!pendingWindowAttention) {
+    return;
+  }
+  pendingWindowAttention.stop();
+  pendingWindowAttention = null;
+}
+
+function startWindowAttention(win: BrowserWindow) {
+  // 前一次强调未被聚焦消费（如再次后台任务完成）时先停掉旧的，避免闪烁/弹跳叠加。
+  clearPendingWindowAttention();
+
+  const onFocus = () => clearPendingWindowAttention();
+  win.once("focus", onFocus);
+
+  let bounceId = -1;
+  if (process.platform === "win32") {
+    if (typeof win.flashFrame === "function") {
+      try {
+        win.flashFrame(true);
+      } catch {
+        /* 闪烁失败不影响通知本身 */
+      }
+    }
+  } else if (process.platform === "darwin") {
+    const id = app.dock?.bounce("informational");
+    bounceId = typeof id === "number" ? id : -1;
+  }
+
+  pendingWindowAttention = {
+    stop: () => {
+      win.removeListener("focus", onFocus);
+      if (process.platform === "win32") {
+        if (!win.isDestroyed() && typeof win.flashFrame === "function") {
+          try {
+            win.flashFrame(false);
+          } catch {
+            /* 停止闪烁失败可忽略 */
+          }
+        }
+      } else if (process.platform === "darwin" && bounceId >= 0) {
+        app.dock?.cancelBounce(bounceId);
+      }
+    },
+  };
+}
+
 function focusTaskNotificationWindow(senderWindow: BrowserWindow) {
   if (senderWindow.isMinimized()) {
     senderWindow.restore();
@@ -153,6 +210,10 @@ export function dispatchTaskNotification(options: {
   });
 
   notification.show();
+  // 系统通知可能被忽略；同时闪烁任务栏（Windows）/弹跳 Dock（macOS），窗口获焦后停止。
+  if (senderWindow && !senderWindow.isDestroyed()) {
+    startWindowAttention(senderWindow);
+  }
   options.event.sender.send(PlatformChannels.TaskNotificationSound);
   return true;
 }

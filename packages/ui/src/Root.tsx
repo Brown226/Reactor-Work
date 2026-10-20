@@ -23,6 +23,7 @@ import { SSHDialog } from "@/SSHDialog.js";
 import { SettingsPage } from "@/SettingsPage.js";
 import { CodingPlanUpgradeDialogProvider } from "@/settings/CodingPlanUpgradeDialogProvider.js";
 import { EnterpriseLoginScreen, type LoginCompleteReason } from "@/EnterpriseLoginScreen.js";
+import { ForcePasswordChangeDialog } from "@/settings/account/ForcePasswordChangeDialog.js";
 import { subscribeProviderSettingsSnapshot } from "@/lib/providerSettingsSnapshot.js";
 import { setDefaultFileDisplayBasePath } from "@/lib/fileDisplay.js";
 import { readRendererLaunchTimings, shouldReportLaunchToInput } from "@/lib/launchToInputReport.js";
@@ -422,6 +423,17 @@ function RootInner({
   const providerAvailabilityLoginEntryGuardEnabled =
     shouldEnableProviderAvailabilityLoginEntryGuard();
   const enterpriseSession = useReactorServer();
+  /**
+   * 强制改密门禁：初始密码是「用户名@123」这种可预测值，必须改过一次才放行。
+   *
+   * 为什么挂在 Root 而不是设置页内：用户可能从头到尾不进设置页，
+   * 门禁必须覆盖整个应用才拦得住；且改密完成后 host 侧已清掉标记，
+   * 这里靠 status 自动消失，不需要额外同步。
+   */
+  const mustChangePasswordUser =
+    enterpriseSession.status?.loggedIn && enterpriseSession.status.user?.mustChangePassword
+      ? enterpriseSession.status.user
+      : null;
   const { startupCheckCompleted: providerAvailabilityStartupCheckCompleted } =
     useProviderAvailabilityLoginEntryGuard({
       enabled: providerAvailabilityLoginEntryGuardEnabled,
@@ -1093,6 +1105,15 @@ function RootInner({
       {rootModelSelectionErrorNode}
       {remoteConnectionDialog}
       {directoryBrowserDialog}
+      {/* 阻断式改密门禁：置顶渲染，未改密前用户点不到底下任何东西。 */}
+      {mustChangePasswordUser ? (
+        <ForcePasswordChangeDialog
+          user={mustChangePasswordUser}
+          busy={enterpriseSession.busy === "changePassword"}
+          error={enterpriseSession.error}
+          onChangePassword={enterpriseSession.changePassword}
+        />
+      ) : null}
       {/* 无项目时只渲染设置页；有项目时渲染工作区内容。 */}
       {!workspaceShellPath ? (
         isSettingsTabActive ? (

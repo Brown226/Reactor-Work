@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import { realpath } from "node:fs/promises";
-import { normalize } from "node:path";
+import { join, normalize } from "node:path";
+import { pathToFileURL } from "node:url";
 import type { BrowserWindow } from "electron";
 import { shell } from "electron";
 
@@ -118,4 +119,49 @@ async function openDarwinPathInFileManager(target: string, logger: DesktopIpcLog
       return { success: false, error: shellMessage };
     }
   }
+}
+
+/**
+ * 特权 IPC 通道的来源校验：判断事件是否来自应用自身的渲染层。
+ *
+ * 生产包 renderer 落在 main 同级的 `../renderer` 目录（`file://`），开发态走
+ * `ELECTRON_RENDERER_URL` 指向的 dev server。内嵌浏览器的远程页面（http/https，
+ * 如 coding-plan 官网、`<webview>` guest）以及任意本地 `file://` 页面都不属于应用
+ * 渲染层——它们带 preload 时能触达平台通道，若特权通道不校验来源，就会被诱导打开
+ * 任意本地路径。因此这里按「renderer 目录前缀 + dev server origin」双重白名单判定。
+ */
+export function isTrustedAppRendererUrl(frameUrl: string | null | undefined): boolean {
+  if (typeof frameUrl !== "string" || frameUrl.length === 0) {
+    return false;
+  }
+  let parsed: URL;
+  try {
+    parsed = new URL(frameUrl);
+  } catch {
+    return false;
+  }
+
+  // 开发态：dev server origin 即应用渲染层。
+  const devServerUrl = process.env["ELECTRON_RENDERER_URL"];
+  if (typeof devServerUrl === "string" && devServerUrl.length > 0) {
+    try {
+      if (parsed.origin === new URL(devServerUrl).origin) {
+        return true;
+      }
+    } catch {
+      // dev server 地址不可解析时继续走生产态判定。
+    }
+  }
+
+  // 生产态：仅接受应用 renderer 目录内的 file:// 页面，挡住其它任意本地 HTML。
+  if (parsed.protocol === "file:") {
+    try {
+      const rendererDirUrl = pathToFileURL(join(import.meta.dirname, "../renderer")).href;
+      return parsed.href.startsWith(rendererDirUrl);
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
 }

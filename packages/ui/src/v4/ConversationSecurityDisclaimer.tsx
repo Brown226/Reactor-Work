@@ -9,6 +9,10 @@ import { cn } from "@/components/lib/utils.js";
  * 文案唯一来源是 i18n key `chat.securityDisclaimer`；渲染挂点在 SessionPane，
  * 按 isDraft 二选一（草稿态绝对定位于面板右下角，会话态在 composer dock 内）——
  * 见 docs/已完成/已完成-conversation-security-disclaimer.md。
+ *
+ * 样式按合规警示处理（不是普通辅助说明）：正文级字号 + 加粗 + 语义 destructive，
+ * 让"严禁上传和处理涉密文件"这句真正被看见。字号仍走 text-ui-* 刻度，
+ * 颜色走 --color-destructive，不硬编码 px/HEX（见 DESIGN.md 语义色与字号规范）。
  */
 export function ConversationSecurityDisclaimer({ className }: { className?: string }) {
   const { intl } = useZCodeIntl();
@@ -16,7 +20,7 @@ export function ConversationSecurityDisclaimer({ className }: { className?: stri
   return (
     <p
       data-v4-conversation-security-disclaimer="true"
-      className={cn("px-1 text-ui-sm text-foreground-subtle", className)}
+      className={cn("px-1 text-ui-base font-semibold text-destructive", className)}
     >
       {intl.formatMessage({ id: "chat.securityDisclaimer" })}
     </p>

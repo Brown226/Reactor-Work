@@ -225,6 +225,9 @@ export type {
   UpdateStatePayload,
   WSLDistro,
   ZCodeStdioTapDevState,
+  ComposerAttachmentInjectionPayload,
+  QuickInputSubmitPayload,
+  QuickInputStatePayload,
 } from "./platform.js";
 export type {
   CuaAccessibilitySettingsResult,

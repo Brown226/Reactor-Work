@@ -50,6 +50,7 @@ export function GeneralSectionContent({
   notificationSoundEnabled,
   closeToTrayOnWindows,
   keepAwakeWhileRunning = false,
+  launchAtLogin = false,
   desktopChromiumHardwareAccelerationEnabled = true,
   receivePreviewUpdates,
   autoDownloadAndInstallUpdates,
@@ -92,6 +93,7 @@ export function GeneralSectionContent({
   onTaskAutoArchiveOlderThanDaysChange,
   onCloseToTrayOnWindowsChange,
   onKeepAwakeWhileRunningChange = async () => {},
+  onLaunchAtLoginChange = async () => {},
   onDesktopChromiumHardwareAccelerationChange = async () => {},
   onReceivePreviewUpdatesChange,
   onAutoDownloadAndInstallUpdatesChange,
@@ -109,6 +111,7 @@ export function GeneralSectionContent({
   notificationSoundEnabled: boolean;
   closeToTrayOnWindows: boolean;
   keepAwakeWhileRunning?: boolean;
+  launchAtLogin?: boolean;
   desktopChromiumHardwareAccelerationEnabled?: boolean;
   receivePreviewUpdates: boolean;
   autoDownloadAndInstallUpdates: boolean;
@@ -152,6 +155,7 @@ export function GeneralSectionContent({
   onTaskAutoArchiveOlderThanDaysChange: (days: number) => Promise<void>;
   onCloseToTrayOnWindowsChange: (enabled: boolean) => Promise<void>;
   onKeepAwakeWhileRunningChange?: (enabled: boolean) => Promise<void>;
+  onLaunchAtLoginChange?: (enabled: boolean) => Promise<void>;
   onDesktopChromiumHardwareAccelerationChange?: (enabled: boolean) => Promise<void>;
   onReceivePreviewUpdatesChange: (enabled: boolean) => Promise<void>;
   onAutoDownloadAndInstallUpdatesChange: (enabled: boolean) => Promise<void>;
@@ -631,6 +635,23 @@ export function GeneralSectionContent({
                 checked={keepAwakeWhileRunning}
                 onCheckedChange={(checked) => {
                   void onKeepAwakeWhileRunningChange(checked);
+                }}
+              />
+            }
+          />
+        ) : null}
+        {isDesktop ? (
+          <SettingsRow
+            label={intl.formatMessage({ id: "settings.launchAtLogin" })}
+            description={intl.formatMessage({
+              id: "settings.launchAtLoginDescription",
+            })}
+            control={
+              <Switch
+                aria-label={intl.formatMessage({ id: "settings.launchAtLogin" })}
+                checked={launchAtLogin}
+                onCheckedChange={(checked) => {
+                  void onLaunchAtLoginChange(checked);
                 }}
               />
             }

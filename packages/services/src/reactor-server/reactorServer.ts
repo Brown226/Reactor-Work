@@ -28,6 +28,11 @@ export interface ReactorServerUserInfo {
   readonly role: string;
   readonly deptId: number | null;
   readonly deptPath: string | null;
+  /**
+   * true = 该账号必须修改初始密码后才能继续使用（首次登录 / 被管理员重置后）。
+   * 桌面端据此弹阻断式改密框；旧版本服务端不下发，客户端一律兜底成 false。
+   */
+  readonly mustChangePassword: boolean;
 }
 
 export interface ReactorServerStatus {
@@ -117,10 +122,15 @@ export interface ReactorServerUsageOverview {
 }
 
 export interface IReactorServerService {
-  getStatus(): Promise<ReactorServerStatus>;  /** 登录并完成"取网关令牌 + 拉模型目录 + 写企业 provider"三步。 */
+  getStatus(): Promise<ReactorServerStatus> /** 登录并完成"取网关令牌 + 拉模型目录 + 写企业 provider"三步。 */;
   login(input: ReactorServerLoginInput): Promise<ReactorServerStatus>;
   /** 退出：尽力通知服务端吊销 refresh，然后清空本地令牌与企业 provider 的模型清单。 */
   logout(): Promise<void>;
+  /**
+   * 自助修改密码。成功后会清掉 mustChangePassword 并刷新本地缓存的 user，
+   * 使强制改密弹窗自动消失（无需重新登录）。
+   */
+  changePassword(oldPassword: string, newPassword: string): Promise<ReactorServerStatus>;
   /** 重新拉取模型目录并写回企业 provider。 */
   syncModels(): Promise<readonly string[]>;
   /**

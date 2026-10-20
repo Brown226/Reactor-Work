@@ -18,6 +18,9 @@ import {
   resolveShareImportFailurePresentation,
   type ShareImportIntent,
 } from "@/root/shareImportIntent.js";
+import { createChatComposerPathAttachment } from "@/lib/chatAttachments.js";
+import { pushSystemComposerInjection } from "@/store/systemComposerInjection.js";
+import { persistV4ComposerDraft, V4_DRAFT_SCOPE_ROOT } from "@/v4/composer/composerDraftStore.js";
 
 export function useRootPlatformEffects({
   initialWorkspaceAbsPath,
@@ -202,6 +205,39 @@ export function useRootPlatformEffects({
           });
         })
       : () => {};
+    const disposeInjectComposerAttachment = platform.onInjectComposerAttachment
+      ? platform.onInjectComposerAttachment((payload) => {
+          // 系统侧内容（截图/外部图片）落到全局注入 store，由唯一焦点 composer 认领。
+          logger.info("[Root] onInjectComposerAttachment:", payload.source);
+          pushSystemComposerInjection({
+            source: payload.source,
+            attachment: createChatComposerPathAttachment(payload.imagePath),
+          });
+        })
+      : () => {};
+    const disposeInjectComposerText = platform.onInjectComposerText
+      ? platform.onInjectComposerText((text) => {
+          if (!activeWorkspacePath || text.trim().length === 0) {
+            return;
+          }
+          // 快捷输入浮窗的文本：先写草稿事实源、再发即时插入请求（与初始提示词同一范式），
+          // 保证当前 composer 立即可见、后续 remount 也恢复同一文本。
+          logger.info("[Root] onInjectComposerText");
+          persistV4ComposerDraft(
+            activeWorkspacePath,
+            activeWorkspaceIdentity ?? undefined,
+            V4_DRAFT_SCOPE_ROOT,
+            { text },
+          );
+          useZCodeSessionStore
+            .getState()
+            .requestComposerTextInsert(
+              activeWorkspacePath,
+              text,
+              activeWorkspaceIdentity ?? undefined,
+            );
+        })
+      : () => {};
     const disposeNotificationClick = platform.onTaskNotificationClick((taskId: string) => {
       logger.info("[Root] onTaskNotificationClick:", taskId);
       // 遍历所有 workspace 找到 taskId 所属的 workspace，然后激活对应 tab 并切换任务
@@ -278,6 +314,8 @@ export function useRootPlatformEffects({
       disposeOpenWorkspace();
       disposeOpenWorkspacePath();
       disposeShareImport();
+      disposeInjectComposerAttachment();
+      disposeInjectComposerText();
       disposeNotificationClick();
       disposeUpdateCheckResult();
     };

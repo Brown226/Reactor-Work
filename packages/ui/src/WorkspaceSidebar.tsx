@@ -319,6 +319,10 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   onOpenWorkspaceFiles?: () => void;
 }) {
   const { intl, localePreference, setLocalePreference } = useZCodeIntl();
+  // 按需求隐藏侧栏项目菜单里的「远程连接」入口，与 ChatEmptyState 空态菜单保持一致：
+  // 只收窄这一处渲染条件，不复用 useRemoteConnectionEntryVisibility——那个开关同时控制
+  // 已有远程工作区的恢复与重连。保留 onOpenRemoteWorkspace 的 props 与 SSHDialog 本体。
+  const showRemoteConnectionMenuEntry = false;
   const handleTaskRowSelect = useCallback(
     (
       targetWorkspacePath: string,
@@ -1492,7 +1496,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
                                         id: "workspace.openFolder",
                                       })}
                                     </DropdownMenuItem>
-                                    {onOpenRemoteWorkspace ? (
+                                    {showRemoteConnectionMenuEntry && onOpenRemoteWorkspace ? (
                                       <DropdownMenuItem onSelect={onOpenRemoteWorkspace}>
                                         <Cloud className="size-4" />
                                         {intl.formatMessage({

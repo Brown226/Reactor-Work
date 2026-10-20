@@ -4,7 +4,40 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reactor</title>
+    <script>
+      // 启动封面层：在样式生效前解析主题偏好，给启动壳铺上主题同色底。
+      // 桌面主窗口是透明窗口（backgroundColor: #00000000），若启动壳没有底色，
+      // 从窗口创建到 React 首帧之间会露出浏览器默认白底——深色主题用户看到一次白闪。
+      // 口径与 packages/ui/src/useTheme.ts 保持一致：dark/zai-dark 为深色，
+      // light/zai-light 为浅色，system 或缺失时跟随系统偏好。
+      (function () {
+        try {
+          var saved = window.localStorage.getItem("zcode-theme");
+          var dark;
+          if (saved === "dark" || saved === "zai-dark") {
+            dark = true;
+          } else if (saved === "light" || saved === "zai-light") {
+            dark = false;
+          } else {
+            dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          }
+          document.documentElement.setAttribute("data-startup-theme", dark ? "dark" : "light");
+        } catch (error) {
+          // 读不到偏好时按产品默认主题（zai-dark）兜底。
+          document.documentElement.setAttribute("data-startup-theme", "dark");
+        }
+      })();
+    </script>
     <style>
+      /* 启动壳封面底色：深浅各一档中性格，脚本未跑到时的默认兜底也用深色。 */
+      html[data-startup-theme="dark"] {
+        --startup-cover-bg: #1a1a1c;
+      }
+
+      html[data-startup-theme="light"] {
+        --startup-cover-bg: #f6f6f7;
+      }
+
       html,
       body,
       #root {
@@ -29,6 +62,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        /* 铺满整窗的主题封面底色，消除透明窗口在 React 首帧前的白闪。 */
+        background-color: var(--startup-cover-bg, #1a1a1c);
         transition: opacity 0.16s ease;
       }
 

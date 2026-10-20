@@ -137,6 +137,7 @@ export function createReactorServerService(
     name: string;
     role: string;
     dept?: { id: number; path?: string } | null;
+    mustChangePassword?: boolean;
   }): ReactorServerUserInfo {
     return {
       uid: user.uid,
@@ -144,6 +145,9 @@ export function createReactorServerService(
       role: user.role,
       deptId: user.dept?.id ?? null,
       deptPath: user.dept?.path ?? null,
+      // 旧版本服务端不下发该字段 → 兜底 false（不兜底会让 UI 收到 undefined，
+      // 而 `undefined` 在条件判断里与 false 等价但类型上骗过了契约）。
+      mustChangePassword: user.mustChangePassword ?? false,
     };
   }
 
@@ -151,7 +155,9 @@ export function createReactorServerService(
     const raw = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.user);
     if (!raw) return null;
     try {
-      return JSON.parse(raw) as ReactorServerUserInfo;
+      // 兜底同上：本机可能存着升级前写入的旧 user JSON（没有该字段）。
+      const parsed = JSON.parse(raw) as ReactorServerUserInfo;
+      return { ...parsed, mustChangePassword: parsed.mustChangePassword ?? false };
     } catch {
       return null;
     }
@@ -476,6 +482,32 @@ export function createReactorServerService(
     return getStatus();
   }
 
+  /**
+   * 自助修改密码（强制改密弹窗与「设置 → 账号」共用）。
+   *
+   * 为什么改完要立刻落盘 user：服务端在校验通过后会把 must_change_password 清掉，
+   * 若不同步回本地缓存，强制改密弹窗会继续挡着界面，用户只能靠重新登录才消失
+   * —— 那正好是最不该让用户做操作的时候。
+   */
+  async function changePassword(
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<ReactorServerStatus> {
+    const serverUrl = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.serverUrl);
+    const tokens = await loadTokens();
+    if (!serverUrl || !tokens) throw new Error("尚未登录企业服务端");
+    const updated = await client.changePassword(
+      serverUrl,
+      tokens.accessToken,
+      oldPassword,
+      newPassword,
+    );
+    const info = toUserInfo(updated);
+    await credentials.save(REACTOR_SERVER_CREDENTIAL_KEYS.user, JSON.stringify(info));
+    logger.info(undefined, "企业服务端密码已修改", { uid: info.uid });
+    return getStatus();
+  }
+
   async function logout(): Promise<void> {
     const serverUrl = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.serverUrl);
     const tokens = await loadTokens();
@@ -572,6 +604,7 @@ export function createReactorServerService(
     getStatus,
     login,
     logout,
+    changePassword,
     syncModels,
     resolveGatewayAuth,
     isEnterpriseProvider: p4.isEnterpriseProvider,

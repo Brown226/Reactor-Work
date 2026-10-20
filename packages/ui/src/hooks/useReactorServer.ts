@@ -14,7 +14,12 @@ import type {
 import { useServices } from "./useServices.js";
 import { useRestartForDataScopeSwitch } from "./useRestartForDataScopeSwitch.js";
 
-export type ReactorServerAction = "login" | "logout" | "syncModels" | "refreshUsage";
+export type ReactorServerAction =
+  | "login"
+  | "logout"
+  | "changePassword"
+  | "syncModels"
+  | "refreshUsage";
 
 export interface UseReactorServerResult {
   status: ReactorServerStatus | null;
@@ -31,6 +36,8 @@ export interface UseReactorServerResult {
   refresh: () => Promise<void>;
   login: (input: ReactorServerLoginInput) => Promise<boolean>;
   logout: () => Promise<boolean>;
+  /** 自助修改密码（设置页与强制改密弹窗共用）；成功后 mustChangePassword 被清掉。 */
+  changePassword: (oldPassword: string, newPassword: string) => Promise<boolean>;
   syncModels: () => Promise<boolean>;
   refreshUsage: () => Promise<boolean>;
 }
@@ -118,11 +125,32 @@ export function useReactorServer(): UseReactorServerResult {
     () => runAction("syncModels", () => reactorServerService.syncModels()),
     [reactorServerService, runAction],
   );
+  // 改密码不是身份切换：不触发数据命名空间重启（runAction 只对 login/logout 重启），
+  // 否则用户改完密码会被强行重启一次，且改密弹窗的状态全丢。
+  const changePassword = useCallback(
+    (oldPassword: string, newPassword: string) =>
+      runAction("changePassword", () =>
+        reactorServerService.changePassword(oldPassword, newPassword),
+      ),
+    [reactorServerService, runAction],
+  );
   // 手动刷新简报：补传一次积压 + 重新拉服务端月度累计（策略不在此列，走 refreshPolicy 的既有触发点）。
   const refreshUsage = useCallback(
     () => runAction("refreshUsage", () => reactorServerService.flushUsageReports()),
     [reactorServerService, runAction],
   );
 
-  return { status, overview, loading, busy, error, refresh, login, logout, syncModels, refreshUsage };
+  return {
+    status,
+    overview,
+    loading,
+    busy,
+    error,
+    refresh,
+    login,
+    logout,
+    changePassword,
+    syncModels,
+    refreshUsage,
+  };
 }

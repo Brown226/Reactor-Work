@@ -220,6 +220,10 @@ export function ChatEmptyWorkspacePreviewMenu({
   // Web 普通模式没有完整远程 workspace 会话链路，不能只依赖全局 feature visibility。
   // 这里叠加壳层能力开关，确保本地 Web 模式的空态菜单不会露出必然失败的远程连接入口。
   const canUseRemoteWorkspace = allowRemoteWorkspace && showRemoteConnectionEntry;
+  // 按需求隐藏工作区菜单里的「远程连接」入口；只收窄这一个菜单项，
+  // 不复用 useRemoteConnectionEntryVisibility——那个开关同时控制已有远程工作区的
+  // tab 恢复与重连，置 false 会连带停用远程会话，超出"隐藏入口"的范围。
+  const showRemoteConnectionMenuEntry = false;
   const currentWorkspaceTab =
     workspaceTabs.find((workspaceTab) =>
       isWorkspaceMenuTabSelected(workspaceTab, {
@@ -397,7 +401,7 @@ export function ChatEmptyWorkspacePreviewMenu({
               <span>{intl.formatMessage({ id: "workspace.openFolder" })}</span>
             </DropdownMenuItem>
           ) : null}
-          {canUseRemoteWorkspace ? (
+          {canUseRemoteWorkspace && showRemoteConnectionMenuEntry ? (
             <DropdownMenuItem
               data-testid={TID_COMPOSER_REMOTE_CONNECTION}
               onSelect={() => {

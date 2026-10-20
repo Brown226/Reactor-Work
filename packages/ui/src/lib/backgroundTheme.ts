@@ -11,9 +11,40 @@
  * 这是本特性的单一事实源：新增预置只改 `BACKGROUND_PRESETS`，新增可调参数只改
  * `BackgroundThemeSettings` 与 `normalizeBackgroundThemeSettings`。
  */
+import birdPerchThumbUrl from "@/assets/background-presets/thumbs/bird-perch.jpg";
+import duskGrassThumbUrl from "@/assets/background-presets/thumbs/dusk-grass.jpg";
+import highlandMistThumbUrl from "@/assets/background-presets/thumbs/highland-mist.jpg";
+import lakesideLodgeThumbUrl from "@/assets/background-presets/thumbs/lakeside-lodge.jpg";
+import moonTerracesThumbUrl from "@/assets/background-presets/thumbs/moon-terraces.jpg";
+import pinkWillowThumbUrl from "@/assets/background-presets/thumbs/pink-willow.jpg";
+import birdPerchUrl from "@/assets/background-presets/bird-perch.jpg";
+import duskGrassUrl from "@/assets/background-presets/dusk-grass.jpg";
+import highlandMistUrl from "@/assets/background-presets/highland-mist.jpg";
+import lakesideLodgeUrl from "@/assets/background-presets/lakeside-lodge.jpg";
+import moonTerracesUrl from "@/assets/background-presets/moon-terraces.jpg";
+import pinkWillowUrl from "@/assets/background-presets/pink-willow.jpg";
 
-/** 预置背景标识。`none` 表示不使用预置；自定义图片存在时以图片为准。 */
-export type BackgroundPresetId = "none" | "mist" | "sky" | "dusk" | "dune" | "basalt";
+/**
+ * 预置背景标识。`none` 表示不使用预置；自定义图片存在时以图片为准。
+ *
+ * 分两族：
+ * - 渐变族（mist/sky/dusk/dune/basalt）：零位图素材，用 CSS 渐变合成；
+ * - 风景族（highland-mist/lakeside-lodge/dusk-grass/pink-willow/moon-terraces/bird-perch）：
+ *   位图壁纸，素材取自 NewMax 1.1.20 的 renderer assets。
+ */
+export type BackgroundPresetId =
+  | "none"
+  | "mist"
+  | "sky"
+  | "dusk"
+  | "dune"
+  | "basalt"
+  | "highland-mist"
+  | "lakeside-lodge"
+  | "dusk-grass"
+  | "pink-willow"
+  | "moon-terraces"
+  | "bird-perch";
 
 export interface BackgroundThemeSettings {
   presetId: BackgroundPresetId;
@@ -28,6 +59,14 @@ export interface BackgroundThemeSettings {
   blurPx: number;
   /** 覆盖色强度（%）：用当前主题底色压在背景上的比例，越高越接近纯色背景。 */
   scrimPercent: number;
+  /**
+   * 动态壁纸：给背景层叠加一层极缓慢的缩放呼吸动效（Ken Burns）。
+   *
+   * 刻意**不做视频壁纸**（C 档，需单独评估解码功耗）；这里只用 CSS 动画，
+   * 对渐变与图片同样有效、零额外素材、待机功耗可忽略。尊重系统「减弱动效」设置。
+   * 默认关闭：动效是「主动选择」的个性化，不是默认负担。
+   */
+  motion: boolean;
 }
 
 export const BACKGROUND_THEME_STORAGE_KEY = "zcode-background-theme";
@@ -66,6 +105,7 @@ export const DEFAULT_BACKGROUND_THEME_SETTINGS: BackgroundThemeSettings = {
   imagePath: null,
   blurPx: 10,
   scrimPercent: 60,
+  motion: false,
 };
 
 /**
@@ -78,6 +118,15 @@ export const DEFAULT_BACKGROUND_THEME_SETTINGS: BackgroundThemeSettings = {
  * 就会被覆盖色冲成一片灰白（实测 55%–88% 的版本肉眼几乎不可见）。
  */
 export const BACKGROUND_PRESETS: ReadonlyArray<{ id: Exclude<BackgroundPresetId, "none"> }> = [
+  // 风景族：位图壁纸，排在前列——写实壁纸的视觉辨识度明显高于纯渐变，
+  // 放在首位让用户第一眼就能看到最有质感的选择。
+  { id: "highland-mist" },
+  { id: "lakeside-lodge" },
+  { id: "dusk-grass" },
+  { id: "pink-willow" },
+  { id: "moon-terraces" },
+  { id: "bird-perch" },
+  // 渐变族：零位图素材，按主题底色合成，排在风景族之后。
   { id: "mist" },
   { id: "sky" },
   { id: "dusk" },
@@ -85,7 +134,85 @@ export const BACKGROUND_PRESETS: ReadonlyArray<{ id: Exclude<BackgroundPresetId,
   { id: "basalt" },
 ];
 
-const PRESET_BACKGROUND_IMAGE: Record<Exclude<BackgroundPresetId, "none">, string> = {
+/**
+ * 风景族预置的位图素材。
+ *
+ * 用打包期资源导入而不是运行时路径：Web 与桌面共用同一份产物，不依赖任何本地文件；
+ * 缩略图单独一份（设置页卡片只有 96px 高），避免为了画缩略图加载 795KB 的原图。
+ */
+const PRESET_BITMAP_IMAGE: Partial<Record<BackgroundPresetId, { full: string; thumb: string }>> = {
+  "highland-mist": {
+    full: highlandMistUrl,
+    thumb: highlandMistThumbUrl,
+  },
+  "lakeside-lodge": {
+    full: lakesideLodgeUrl,
+    thumb: lakesideLodgeThumbUrl,
+  },
+  "dusk-grass": {
+    full: duskGrassUrl,
+    thumb: duskGrassThumbUrl,
+  },
+  "pink-willow": {
+    full: pinkWillowUrl,
+    thumb: pinkWillowThumbUrl,
+  },
+  "moon-terraces": {
+    full: moonTerracesUrl,
+    thumb: moonTerracesThumbUrl,
+  },
+  "bird-perch": {
+    full: birdPerchUrl,
+    thumb: birdPerchThumbUrl,
+  },
+};
+
+/** 渐变族预置标识：只有这些才在 `PRESET_BACKGROUND_IMAGE` 里有取值。 */
+type GradientPresetId = "mist" | "sky" | "dusk" | "dune" | "basalt";
+
+/**
+ * 风景壁纸的调色板：从图片实际主色采样后推导出的强调色与底色倾向。
+ *
+ * 为什么需要：只有背景图时，壁纸与界面配色互不相关，观感像"贴上去的"。
+ * NewMax 的做法是每张壁纸带一份调色板，选中时整套 UI 色阶由它派生。
+ * 这里只取其收益最大的一层：把强调色与主内容区底色染成壁纸的同调色。
+ *
+ * 取值方法（非凭感觉）：
+ * 1. 用 jpeg-js 逐像素采样得到主导色与平均亮度；
+ * 2. 按"适合做弱强调面"的明度/彩度调整——直接用图片主色往往过暗（如 lakeside-lodge
+ *    的 #2e2d17 亮度仅 0.071），做强调色会糊成一片；
+ * 3. 浅色档取该色相的中高明度版本，深色档取同色相的提亮版本（深色主题下强调色需更亮）。
+ *
+ * 只覆盖 6 张风景壁纸。渐变族（mist/sky/...）是合成抽象图形，没有"从图中提取"的语义。
+ */
+export interface WallpaperPalette {
+  /** 浅色主题下的强调色。 */
+  accentLight: string;
+  /** 深色主题下的强调色（深色主题需要更高明度才看得清）。 */
+  accentDark: string;
+}
+
+const WALLPAPER_PALETTE: Partial<Record<BackgroundPresetId, WallpaperPalette>> = {
+  // 湖心小屋：云灰主导（#d1d1ce 占 17%），取其中的雾蓝倾向。
+  "highland-mist": { accentLight: "#7b95a9", accentDark: "#a8c0d4" },
+  // 云雾雪岭：墨绿褐主导（#2e2d17），亮度仅 0.071，需大幅提亮才可读。
+  "lakeside-lodge": { accentLight: "#6b7a52", accentDark: "#9aad7a" },
+  // 暮色草：暖粉调主导（#cfb4b2），取其中的陶土橙。
+  "dusk-grass": { accentLight: "#b5765c", accentDark: "#d99a7d" },
+  // 粉柳晴空：天蓝占 48%，直接以天蓝为强调色。
+  "pink-willow": { accentLight: "#5b9fc4", accentDark: "#8bcce4" },
+  // 月悬楼角：灰蓝 46%、陶土 17%，取灰蓝做主调（陶土作为图像内的撞色保留）。
+  "moon-terraces": { accentLight: "#5f8fa8", accentDark: "#9ab9c6" },
+  // 小鸟白墙：米白 62%，整体极简，取中性米灰避免引入额外色相。
+  "bird-perch": { accentLight: "#8a8a86", accentDark: "#bebbb6" },
+};
+
+/** 某预置是否有调色板（只有风景族有）。 */
+export function getWallpaperPalette(id: BackgroundPresetId): WallpaperPalette | null {
+  return WALLPAPER_PALETTE[id] ?? null;
+}
+
+const PRESET_BACKGROUND_IMAGE: Record<GradientPresetId, string> = {
   // 雾林：深绿林雾，上冷下暖。
   mist: [
     "radial-gradient(120% 85% at 18% 12%, color-mix(in oklab, var(--app-background-base) 12%, #1f5c4a) 0%, transparent 62%)",
@@ -117,7 +244,13 @@ const PRESET_BACKGROUND_IMAGE: Record<Exclude<BackgroundPresetId, "none">, strin
 };
 
 function isBackgroundPresetId(value: unknown): value is BackgroundPresetId {
-  return value === "none" || (typeof value === "string" && value in PRESET_BACKGROUND_IMAGE);
+  // 必须同时认渐变族与位图族：只查 PRESET_BACKGROUND_IMAGE 会把风景族当成非法值，
+  // 持久化后重新载入时被 normalize 回退成 none，用户会看到"选了但没生效"。
+  return (
+    value === "none" ||
+    (typeof value === "string" &&
+      (value in PRESET_BACKGROUND_IMAGE || value in PRESET_BITMAP_IMAGE))
+  );
 }
 
 function clampRounded(value: number, min: number, max: number): number {
@@ -149,6 +282,7 @@ export function normalizeBackgroundThemeSettings(
             MAX_BACKGROUND_SCRIM_PERCENT,
           )
         : fallback.scrimPercent,
+    motion: typeof record.motion === "boolean" ? record.motion : fallback.motion,
   };
 }
 
@@ -156,9 +290,30 @@ export function isBackgroundEnabled(settings: BackgroundThemeSettings): boolean 
   return Boolean(settings.imagePath) || settings.presetId !== "none";
 }
 
-/** 某个预置的 `background-image` 取值。设置页用它画缩略图，与主区域用的是同一份定义。 */
+/** 某个预置在设置页缩略图上用的 `background-image` 取值。位图族优先用缩略图。 */
+export function getBackgroundPresetThumbImage(id: BackgroundPresetId): string {
+  if (id === "none") {
+    return "none";
+  }
+  const bitmap = PRESET_BITMAP_IMAGE[id];
+  if (bitmap) {
+    return `url("${bitmap.thumb}")`;
+  }
+  // 走到这里只剩渐变族：`PRESET_BITMAP_IMAGE` 没命中，`none` 已在上面提前返回。
+  return PRESET_BACKGROUND_IMAGE[id as GradientPresetId];
+}
+
+/** 某个预置的 `background-image` 取值（工作区主区域用）。 */
 export function getBackgroundPresetImage(id: BackgroundPresetId): string {
-  return id === "none" ? "none" : PRESET_BACKGROUND_IMAGE[id];
+  if (id === "none") {
+    return "none";
+  }
+  const bitmap = PRESET_BITMAP_IMAGE[id];
+  if (bitmap) {
+    return `url("${bitmap.full}")`;
+  }
+  // 同上：只剩渐变族。
+  return PRESET_BACKGROUND_IMAGE[id as GradientPresetId];
 }
 
 /**
@@ -187,8 +342,15 @@ export function buildBackgroundThemeCssVariables(
     "--app-background-image": enabled ? resolveBackgroundImageValue(settings, imageUrl) : "none",
     "--app-background-blur": `${settings.blurPx}px`,
     "--app-background-scrim": `${settings.scrimPercent}%`,
+    "--app-background-crossfade": `${BACKGROUND_CROSSFADE_MS}ms`,
   };
 }
+
+/** 交叉淡入时长（ms）。对齐 DESIGN.md「fast and low-drama」。 */
+export const BACKGROUND_CROSSFADE_MS = 240;
+
+/** 上一次交叉淡入的清理定时器；连续切换时先取消，避免上一次的清理把新一次打断。 */
+let crossfadeCleanupTimer: (() => void) | null = null;
 
 /**
  * 把背景主题写到文档根：一个属性（供 CSS 决定是否透出）加三个变量。
@@ -209,10 +371,119 @@ export function applyBackgroundTheme(
     return;
   }
 
-  root.toggleAttribute("data-app-background", isBackgroundEnabled(settings));
-  for (const [name, value] of Object.entries(
-    buildBackgroundThemeCssVariables(settings, imageUrl),
-  )) {
+  const enabled = isBackgroundEnabled(settings);
+  root.toggleAttribute("data-app-background", enabled);
+  // 动态壁纸：开启动效时挂属性，CSS 据此给 ::before 叠加缓慢缩放；关闭时移除、还原静态。
+  root.toggleAttribute("data-app-background-motion", enabled && settings.motion);
+
+  // 写新值前先读旧值，用于判断是否需要交叉淡入。
+  const previousImage = root.style.getPropertyValue("--app-background-image").trim();
+
+  const nextVariables = buildBackgroundThemeCssVariables(settings, imageUrl);
+  for (const [name, value] of Object.entries(nextVariables)) {
     root.style.setProperty(name, value);
   }
+
+  if (!enabled) {
+    // 关闭背景：立刻清理任何进行中的过渡状态。
+    cancelBackgroundCrossfade(root);
+    return;
+  }
+
+  scheduleBackgroundCrossfade(root, previousImage, nextVariables["--app-background-image"]);
+}
+
+/**
+ * 背景图切换的交叉淡入。
+ *
+ * `background-image` 不可插值，浏览器只能硬切；这里把"旧图"作为独立的一层写在
+ * `::after` 上，切图时先把旧图快照到 `--app-background-prev-image`，再用
+ * `data-app-background-fading` 触发 240ms 的 opacity 1→0，露出下面的新 `::before`。
+ *
+ * 只在"旧值非空、且与新值不同"时触发：首次应用（旧值 none/未设置）不淡入，避免启动闪光。
+ * 唯一副作用是文档根上的 `data-app-background-fading` 属性 + `--app-background-prev-image`
+ * 变量，二者都在过渡结束后清理。
+ */
+function scheduleBackgroundCrossfade(
+  root: HTMLElement,
+  previousImage: string,
+  nextImage: unknown,
+): void {
+  const next = typeof nextImage === "string" ? nextImage.trim() : "";
+  if (!next || next === "none") {
+    return;
+  }
+
+  // 旧值为空、为 none，或与新值相同：没有可交叉的对象，直接跳过。
+  if (!previousImage || previousImage === "none" || previousImage === next) {
+    return;
+  }
+
+  crossfadeCleanupTimer?.();
+  root.style.setProperty("--app-background-prev-image", previousImage);
+  root.setAttribute("data-app-background-fading", "");
+
+  const timer = setTimeout(() => {
+    crossfadeCleanupTimer = null;
+    root.removeAttribute("data-app-background-fading");
+    root.style.removeProperty("--app-background-prev-image");
+  }, BACKGROUND_CROSSFADE_MS);
+  crossfadeCleanupTimer = () => clearTimeout(timer);
+}
+
+function cancelBackgroundCrossfade(root: HTMLElement): void {
+  crossfadeCleanupTimer?.();
+  crossfadeCleanupTimer = null;
+  root.removeAttribute("data-app-background-fading");
+  root.style.removeProperty("--app-background-prev-image");
+}
+
+/**
+ * 把壁纸调色板写到文档根，让壁纸配色接管强调色。
+ *
+ * 优先级设计（重要）：用户显式选择的 accent 高于壁纸配色。
+ * 用户既然在某处明确选了强调色，壁纸不该悄悄把它覆盖掉。因此：
+ * - `accentPresetId !== "default"` 时，不挂 `data-app-wallpaper-palette` 属性，
+ *   CSS 的 `:not([data-app-accent])` 守卫也就不会放行壁纸配色；
+ * - 但仍写入 `--accent-color-light/dark`，因为用户可能随时把 accent 切回「跟随主题」，
+ *   那时无需重新计算就能立即生效。
+ *
+ * 与 `applyAccentColor` 共用同一对变量名，由 CSS 属性守卫决定谁生效，
+ * 避免两处写不同变量导致"改了不生效"。
+ */
+export function applyWallpaperPalette(
+  settings: BackgroundThemeSettings,
+  accentPresetId: string,
+): void {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const root = document.documentElement;
+  if (!root?.style?.setProperty) {
+    return;
+  }
+
+  const userChoseAccent = accentPresetId !== "default";
+
+  // 未启用背景（或选的是渐变族）时，不产生任何覆盖，回落到主题块默认值。
+  const palette =
+    !userChoseAccent && isBackgroundEnabled(settings)
+      ? getWallpaperPalette(settings.presetId)
+      : null;
+
+  if (!palette) {
+    root.removeAttribute("data-app-wallpaper-palette");
+    // 只有用户没显式选 accent 时才清理变量；否则会抹掉 applyAccentColor 刚写入的取值。
+    if (!userChoseAccent) {
+      root.style.removeProperty("--accent-color-light");
+      root.style.removeProperty("--accent-color-dark");
+    }
+    return;
+  }
+
+  // 走到这里必然是 accent=default：变量由壁纸提供，属性让 CSS 守卫放行。
+  root.style.setProperty("--accent-color-light", palette.accentLight);
+  root.style.setProperty("--accent-color-dark", palette.accentDark);
+  root.setAttribute("data-app-wallpaper-palette", settings.presetId);
 }

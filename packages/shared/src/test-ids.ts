@@ -303,6 +303,8 @@ export const TID_TASK_SETTINGS_BUTTON = "task-settings-button";
 export const TID_SETTINGS_PAGE = "settings-page";
 /** 设置页返回工作区按钮 */
 export const TID_SETTINGS_BACK_BUTTON = "settings-back-button";
+/** 设置弹窗右下角「完成」按钮 */
+export const TID_SETTINGS_DONE_BUTTON = "settings-done-button";
 /** 设置页左侧分区入口（动态后缀为 section id） */
 export const TID_SETTINGS_SECTION_NAV = "settings-section-nav";
 /** 常规设置中的增强 Find/Grep 开关 */

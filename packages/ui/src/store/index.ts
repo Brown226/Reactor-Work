@@ -30,6 +30,11 @@ import {
   type BackgroundThemeStoreState,
 } from "@/store/backgroundThemeState.js";
 import {
+  createAccentColorStoreActions,
+  type AccentColorStoreState,
+} from "@/store/accentColorState.js";
+import { normalizeAccentColorSettings } from "@/lib/accentColor.js";
+import {
   applyUiFontSizePx,
   loadUiFontSizePx,
   normalizeUiFontSizePx,
@@ -106,7 +111,7 @@ function loadPerformanceMode(): boolean {
 // State 定义
 // ============================================================================
 
-export interface ZCodeState extends BackgroundThemeStoreState {
+export interface ZCodeState extends BackgroundThemeStoreState, AccentColorStoreState {
   /** 展示详情偏好，不改变 Agent 权限或执行能力。 */
   interfaceMode: InterfaceMode;
   setInterfaceMode: (mode: InterfaceMode) => void;
@@ -225,9 +230,16 @@ const BROADCAST_FIELDS = new Set([
   "uiFontSizePx",
   "interfaceMode",
   "backgroundTheme",
+  "accentColor",
 ]);
 
-type BroadcastField = "theme" | "locale" | "uiFontSizePx" | "interfaceMode" | "backgroundTheme";
+type BroadcastField =
+  | "theme"
+  | "locale"
+  | "uiFontSizePx"
+  | "interfaceMode"
+  | "backgroundTheme"
+  | "accentColor";
 
 /** 广播频道名前缀 */
 const STATE_CHANNEL_PREFIX = "state:";
@@ -336,6 +348,11 @@ export function createZCodeStore(
 
     ...createBackgroundThemeStoreActions({
       // 取整份状态：切片只声明它需要的两个字段，其余字段不参与。
+      read: () => get(),
+      write: (patch) => set(patch),
+    }),
+
+    ...createAccentColorStoreActions({
       read: () => get(),
       write: (patch) => set(patch),
     }),
@@ -527,6 +544,8 @@ export function createZCodeStore(
         state.setBackgroundTheme(
           normalizeBackgroundThemeBroadcast(state.backgroundTheme, msg.payload),
         );
+      } else if (field === "accentColor") {
+        state.setAccentColor(normalizeAccentColorSettings(msg.payload, state.accentColor));
       }
     } finally {
       applyingBroadcast = false;

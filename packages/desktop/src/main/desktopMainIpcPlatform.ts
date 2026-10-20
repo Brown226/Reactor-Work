@@ -37,7 +37,11 @@ import { syncWindowControlsOverlayForZoomLevel } from "./desktopWindowButtonPosi
 import { resolveDesktopZoomLevelFromFactor } from "./desktopZoom.js";
 import { resolveDesktopWindowChromeState } from "./desktopWindowChromeState.js";
 import { handleWindowUnreadCountSync } from "./desktopWindowLifecycle.js";
-import { captureWindowScreenshot, openPathInFileManager } from "./desktopMainIpcHelpers.js";
+import {
+  captureWindowScreenshot,
+  isTrustedAppRendererUrl,
+  openPathInFileManager,
+} from "./desktopMainIpcHelpers.js";
 import { registerCuaPermissionIpcHandlers } from "./desktopCuaPermissionIpc.js";
 import {
   registerDesktopBrowserIpcHandlers,
@@ -315,9 +319,17 @@ export function registerPlatformIpcHandlers(options: {
     ).fromRenderer?.(result.data.level, result.data.args);
   });
 
-  ipcMain.handle(PlatformChannels.OpenInFileManager, async (_event, rawPath: string) =>
-    openPathInFileManager(rawPath, options.logger),
-  );
+  ipcMain.handle(PlatformChannels.OpenInFileManager, async (event, rawPath: string) => {
+    // 在系统文件管理器中定位任意路径属特权操作：内嵌浏览器的远程页面也能触达本
+    // 通道，必须校验来源是应用自身渲染层，避免被诱导定位任意本地路径。
+    if (!isTrustedAppRendererUrl(event.senderFrame?.url)) {
+      options.logger.warn("[open-in-file-manager] blocked untrusted sender", {
+        frameUrl: event.senderFrame?.url,
+      });
+      return { success: false, error: "untrusted sender" };
+    }
+    return openPathInFileManager(rawPath, options.logger);
+  });
 
   registerCuaPermissionIpcHandlers({
     logger: options.logger,

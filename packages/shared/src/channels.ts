@@ -56,6 +56,9 @@ import type {
   WSLDistro,
   UpdateCheckResultPayload,
   UpdateStatePayload,
+  ComposerAttachmentInjectionPayload,
+  QuickInputSubmitPayload,
+  QuickInputStatePayload,
   DesktopZoomState,
   DevModeUnlockState,
   DesktopWindowChromeState,
@@ -249,6 +252,14 @@ export const PlatformChannels = {
   OpenWorkspace: "zcode:open-workspace",
   /** Main → Renderer：deep link 直接打开指定本地工作区目录 */
   OpenWorkspacePath: "zcode:open-workspace-path",
+  /** Main → Renderer：把系统侧内容（截图/外部图片）注入当前焦点 composer */
+  InjectComposerAttachment: "zcode:inject-composer-attachment",
+  /** Main → Renderer：把快捷输入浮窗的文本预填进当前焦点 composer */
+  InjectComposerText: "zcode:inject-composer-text",
+  /** 快捷输入浮窗 → Main：提交浮窗内容（文本/图片），转交主窗口 composer */
+  QuickInputSubmit: "zcode:quick-input-submit",
+  /** Main → 快捷输入浮窗：同步当前语言 */
+  QuickInputState: "zcode:quick-input-state",
   /** Main → Renderer：打开内置反馈对话框 */
   OpenFeedbackDialog: "zcode:open-feedback-dialog",
   /** Main → Renderer：打开我的工单面板 */
@@ -720,6 +731,22 @@ export interface PlatformChannelMap {
   };
   [PlatformChannels.OpenWorkspacePath]: {
     request: string;
+    response: void;
+  };
+  [PlatformChannels.InjectComposerAttachment]: {
+    request: ComposerAttachmentInjectionPayload;
+    response: void;
+  };
+  [PlatformChannels.InjectComposerText]: {
+    request: string;
+    response: void;
+  };
+  [PlatformChannels.QuickInputSubmit]: {
+    request: QuickInputSubmitPayload;
+    response: void;
+  };
+  [PlatformChannels.QuickInputState]: {
+    request: QuickInputStatePayload;
     response: void;
   };
   [PlatformChannels.ConnectRemote]: {

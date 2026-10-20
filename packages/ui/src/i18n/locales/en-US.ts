@@ -1071,6 +1071,12 @@ const enUS: Record<string, string> = {
   "markdownExport.failed": "Export failed, please try again",
   "markdownExport.tooLong":
     "This document is long (about {height}px); the exported image may be hard to read. Consider PDF instead",
+  "markdownExport.copyRichText": "Copy as rich text",
+  "markdownExport.copyRichTextSuccess":
+    "Copied as rich text; paste directly into Word or a publishing editor",
+  "markdownExport.copyRichTextFallback":
+    "Rich-text clipboard is unavailable here; copied as plain text instead",
+  "markdownExport.copyRichTextFailed": "Copy failed, please try again",
   "codeViewer.svgMode": "SVG",
   "codeViewer.svgPreview": "Preview",
   "codeViewer.svgSource": "Code",
@@ -1687,6 +1693,9 @@ const enUS: Record<string, string> = {
 
   // Settings
   "settings.title": "Settings",
+  "settings.done": "Done",
+  "settings.searchPlaceholder": "Search settings",
+  "settings.searchEmpty": "No matching settings",
   "settings.breadcrumbLabel": "Settings path",
   "settings.subtitle":
     "Switch major settings on the left and edit the details in the panel on the right.",
@@ -1844,14 +1853,43 @@ const enUS: Record<string, string> = {
     "Choose code themes, font size, and display options independently from the interface font size.",
   "settings.appearance.backgroundTitle": "Background",
   "settings.appearance.backgroundDescription":
-    "Add a background across the whole workspace, sidebar included. Settings, dialogs, and cards keep their own surface colors.",
+    "Add a background to the center conversation area only. The sidebar, side pane, settings, and dialogs keep their own surface colors.",
+  "settings.appearance.accentTitle": "Theme color",
+  "settings.appearance.accentDescription":
+    "Adjust the accent color for weak emphasis surfaces such as selected highlights, independently of the color theme. The brand color is not affected.",
+  "settings.accent.preset": "Accent",
+  "settings.accent.presetDescription":
+    "Affects weak emphasis surfaces only (selection, highlight blocks); the brand color is unchanged.",
+  "settings.accent.preset.default": "Default",
+  "settings.accent.preset.azurite": "Azurite",
+  "settings.accent.preset.teal": "Teal",
+  "settings.accent.preset.violet": "Violet",
+  "settings.accent.preset.amber": "Amber",
+  "settings.accent.presetDescription.default":
+    "Follows the accent color of the current color theme.",
+  "settings.accent.presetDescription.azurite": "A cool sky blue; the most restrained option.",
+  "settings.accent.presetDescription.teal": "Cool teal, comfortable for long reading sessions.",
+  "settings.accent.presetDescription.violet": "A low-saturation violet: emphasized but still soft.",
+  "settings.accent.presetDescription.amber": "Warm amber, contrasting with cool-toned themes.",
   "settings.background.none": "None",
   "settings.background.preset.mist": "Mist",
   "settings.background.preset.sky": "Sky",
   "settings.background.preset.dusk": "Dusk",
   "settings.background.preset.dune": "Dune",
   "settings.background.preset.basalt": "Basalt",
+  "settings.background.preset.highland-mist": "Highland Mist",
+  "settings.background.preset.lakeside-lodge": "Lakeside Lodge",
+  "settings.background.preset.dusk-grass": "Dusk Grass",
+  "settings.background.preset.pink-willow": "Pink Willow",
+  "settings.background.preset.moon-terraces": "Moon Terraces",
+  "settings.background.preset.bird-perch": "Bird Perch",
+  "settings.background.effectsTitle": "Display effects",
+  "settings.background.effectsHint":
+    "Blur and overlay apply to the center conversation area; the animated background respects the system reduce-motion setting.",
   "settings.background.blur": "Blur",
+  "settings.background.motion": "Animated background",
+  "settings.background.motionDescription":
+    "Add a very slow breathing zoom to the background for a livelier look. Respects the system reduce-motion setting.",
   "settings.background.blurDescription":
     "Applies a gaussian blur to the background; higher values look softer.",
   "settings.background.scrim": "Overlay",
@@ -1983,6 +2021,9 @@ const enUS: Record<string, string> = {
   "settings.keepAwakeWhileRunning": "Keep computer running",
   "settings.keepAwakeWhileRunningDescription":
     "Prevent the system from sleeping due to idle. You can still sleep manually or by closing the lid. Desktop only.",
+  "settings.launchAtLogin": "Launch at login",
+  "settings.launchAtLoginDescription":
+    "Start automatically after you sign in. Packaged builds only; dev mode does not register a login item.",
   "settings.messageStreamShowReasoning": "Show reasoning",
   "settings.messageStreamShowReasoningDescription":
     "Show full reasoning inside the message stream. When off, the first reasoning item in each turn remains visible.",
@@ -2268,6 +2309,33 @@ const enUS: Record<string, string> = {
   "settings.account.identity.deptNone": "No department assigned",
   "settings.account.connection.title": "Connection",
   "settings.account.models.title": "Enterprise models",
+  "settings.account.security.title": "Password security",
+  "settings.account.security.changePassword": "Change password",
+  "settings.account.security.changePasswordHint":
+    'The initial password is "<account>@123". Change it to something only you know as soon as possible.',
+  "settings.account.security.expand": "Change password",
+  "settings.account.security.collapse": "Collapse",
+  "settings.account.password.forceTitle": "Change your initial password",
+  "settings.account.password.forceReason":
+    "Account {uid} is still using its initial password, which anyone could guess. Change it to continue.",
+  "settings.account.password.old": "Current password",
+  "settings.account.password.new": "New password",
+  "settings.account.password.confirm": "Confirm new password",
+  "settings.account.password.show": "Show password",
+  "settings.account.password.hide": "Hide password",
+  "settings.account.password.submit": "Save",
+  "settings.account.password.ruleHint":
+    "At least 8 characters, with uppercase, lowercase, a digit and a special character.",
+  "settings.account.password.rule.length": "At least 8 characters",
+  "settings.account.password.rule.lower": "Contains a lowercase letter",
+  "settings.account.password.rule.upper": "Contains an uppercase letter",
+  "settings.account.password.rule.digit": "Contains a digit",
+  "settings.account.password.rule.special": "Contains a special character (e.g. ! @ # $ %)",
+  "settings.account.password.error.oldRequired": "Enter your current password",
+  "settings.account.password.error.weak":
+    "The new password is too weak: at least 8 characters, with uppercase, lowercase, a digit and a special character",
+  "settings.account.password.error.mismatch": "The two new passwords do not match",
+  "settings.account.password.error.sameAsOld": "The new password must differ from the current one",
   "settings.account.role.platform_admin": "Platform administrator",
   "settings.account.role.dept_head": "Department head",
   "settings.account.role.user": "Standard user",

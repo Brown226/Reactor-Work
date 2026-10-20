@@ -3,6 +3,7 @@ import { toast } from "@/components/ui/toast.js";
 import { logger } from "@/logger.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
 import { buildExportHtml } from "@/lib/markdownExportHtml.js";
+import { buildRichClipboardContent, writeRichClipboard } from "@/lib/richClipboardHtml.js";
 import { markdownToDocx } from "@/lib/markdownToDocx.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 
@@ -73,12 +74,7 @@ export function useMarkdownExport(options: UseMarkdownExportOptions) {
         if (!saveResult.success || !saveResult.path) {
           throw new Error(saveResult.error ?? "save_failed");
         }
-        toast(
-          intl.formatMessage(
-            { id: "markdownExport.success" },
-            { path: saveResult.path },
-          ),
-        );
+        toast(intl.formatMessage({ id: "markdownExport.success" }, { path: saveResult.path }));
       } catch (error) {
         logger.error("[useMarkdownExport] Markdown 导出失败", error);
         toast(intl.formatMessage({ id: "markdownExport.failed" }));
@@ -89,5 +85,31 @@ export function useMarkdownExport(options: UseMarkdownExportOptions) {
     [exporting, intl, platform],
   );
 
-  return { exporting, exportAs };
+  /**
+   * 复制为富文本：把预览 DOM 内联样式后写入剪贴板，供粘贴到 Word / 公众号编辑器等
+   * 只认内联 style 的目标。纯前端，不落盘、不新增 IPC。
+   */
+  const copyAsRichText = useCallback(async () => {
+    const { getPreviewRoot } = latest.current;
+    const root = getPreviewRoot();
+    if (!root) {
+      return;
+    }
+    const content = buildRichClipboardContent(root);
+    const ok = await writeRichClipboard(content);
+    if (ok) {
+      toast(intl.formatMessage({ id: "markdownExport.copyRichTextSuccess" }));
+    } else {
+      // 富文本剪贴板不可用时退回纯文本，至少让用户拿到内容。
+      try {
+        await navigator.clipboard.writeText(content.text);
+        toast(intl.formatMessage({ id: "markdownExport.copyRichTextFallback" }));
+      } catch (error) {
+        logger.error("[useMarkdownExport] 复制富文本失败", error);
+        toast(intl.formatMessage({ id: "markdownExport.copyRichTextFailed" }));
+      }
+    }
+  }, [intl]);
+
+  return { exporting, exportAs, copyAsRichText };
 }

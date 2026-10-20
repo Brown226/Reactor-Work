@@ -13,11 +13,7 @@
  */
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
-import {
-  TID_ACCOUNT_SECTION,
-  TID_ACCOUNT_TAB,
-  TID_REACTOR_SERVER_STATUS,
-} from "@zcode/shared";
+import { TID_ACCOUNT_SECTION, TID_ACCOUNT_TAB, TID_REACTOR_SERVER_STATUS } from "@zcode/shared";
 import { SegmentedTabs } from "@/components/ui/segmented-tabs.js";
 import { useReactorServer } from "@/hooks/useReactorServer.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -30,8 +26,17 @@ type AccountTab = "profile" | "org";
 
 export function AccountSection() {
   const { intl } = useZCodeIntl();
-  const { status, overview, loading, busy, error, logout, syncModels, refreshUsage } =
-    useReactorServer();
+  const {
+    status,
+    overview,
+    loading,
+    busy,
+    error,
+    logout,
+    syncModels,
+    refreshUsage,
+    changePassword,
+  } = useReactorServer();
   const [activeTab, setActiveTab] = useState<AccountTab>("profile");
 
   const handleLogout = useCallback(async () => {
@@ -79,7 +84,10 @@ export function AccountSection() {
   }
 
   const tabItems = [
-    { value: "profile" as const, label: intl.formatMessage({ id: "settings.account.tab.profile" }) },
+    {
+      value: "profile" as const,
+      label: intl.formatMessage({ id: "settings.account.tab.profile" }),
+    },
     { value: "org" as const, label: intl.formatMessage({ id: "settings.account.tab.org" }) },
   ];
 
@@ -118,6 +126,7 @@ export function AccountSection() {
           busy={busy}
           onSyncModels={handleSyncModels}
           onLogout={() => void handleLogout()}
+          onChangePassword={(oldPassword, newPassword) => changePassword(oldPassword, newPassword)}
         />
       ) : (
         <AccountOrgPanel

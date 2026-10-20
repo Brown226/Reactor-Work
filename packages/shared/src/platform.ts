@@ -545,6 +545,34 @@ export type CuaOsSupport =
  * 比如 native dialog、窗口生命周期控制等。
  * 业务服务（文件、终端、凭据等）走 IServiceAccessor 的 RPC 通道。
  */
+/**
+ * 系统侧内容注入 composer 的载荷（Main → Renderer）。
+ *
+ * 当前只承载「本地图片路径」一种来源（截图、外部图片交接）；它是运行态一次性移交，
+ * 不含 File/objectUrl 等不可序列化字段，落到 renderer 后由 composer 构造附件。
+ */
+export interface ComposerAttachmentInjectionPayload {
+  /** 来源标识，用于日志与去重。 */
+  source: "external-image" | "quick-input";
+  /** 本地图片绝对路径。 */
+  imagePath: string;
+}
+
+/** 快捷输入浮窗提交的载荷（浮窗 → Main）。文本与图片路径可单选或同时提交。 */
+export interface QuickInputSubmitPayload {
+  /** 浮窗输入的文本；无文本时为空串。 */
+  text: string;
+  /** 浮窗内加入的本地图片路径（截图/选择）；无则省略。 */
+  imagePath?: string;
+  /** true 表示仅请求收起浮窗、不提交内容。 */
+  hide?: boolean;
+}
+
+/** 快捷输入浮窗的语言同步载荷（Main → 浮窗）。 */
+export interface QuickInputStatePayload {
+  locale: Locale;
+}
+
 export interface IPlatformService {
   /** 当前平台的文件选择框是否能返回 agent 可访问的本地绝对路径 */
   canSelectFilePath?: boolean;
@@ -829,6 +857,14 @@ export interface IPlatformService {
 
   /** 注册 main 进程通过 deep link 直接打开本地工作区目录的回调，返回 disposer */
   onOpenWorkspacePath?(handler: (path: string) => void): () => void;
+
+  /** 注册 main 进程注入系统侧内容（截图/外部图片）到焦点 composer 的回调，返回 disposer */
+  onInjectComposerAttachment?(
+    handler: (payload: ComposerAttachmentInjectionPayload) => void,
+  ): () => void;
+
+  /** 注册 main 进程用快捷输入浮窗文本预填焦点 composer 的回调，返回 disposer */
+  onInjectComposerText?(handler: (text: string) => void): () => void;
 
   /** 注册窗口全屏状态变化回调，返回 disposer */
   onWindowFullscreenChanged(handler: (isFullscreen: boolean) => void): () => void;

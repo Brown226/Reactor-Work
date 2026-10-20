@@ -42,6 +42,10 @@ import {
   type ComposerAttachmentUploadItem,
   type ComposerAttachmentUploadStatus,
 } from "@/store/composerAttachmentUploadStore.js";
+import {
+  consumeSystemComposerInjection,
+  useSystemComposerInjectionStore,
+} from "@/store/systemComposerInjection.js";
 import { uploadComposerAttachment, type AttachmentPutFn } from "@/v4/composer/attachmentUpload.js";
 
 const COMPOSER_ATTACHMENT_UPLOAD_CONCURRENCY = 2;
@@ -98,6 +102,8 @@ interface ComposerAttachmentsApi {
   prepareForSend: () => Promise<AttachmentRef[] | null>;
   /** sendText accepted 后才移交远端暂存内容，发送失败时仍由草稿持有。 */
   adoptSentAttachments: (attachmentIds: readonly string[]) => Promise<void>;
+  /** 移交接管系统侧内容（截图/外部图片/快捷输入浮窗），走同一上传链路。 */
+  injectAttachments: (attachments: ChatComposerAttachment[]) => void;
   setAttachmentError: (message: string | null) => void;
 }
 
@@ -703,6 +709,31 @@ export function useComposerAttachments(
     [addPreparedAttachments],
   );
 
+  /** 接管系统侧内容（截图/外部图片/快捷输入浮窗）：复用同一条上传链路。 */
+  const injectAttachments = useCallback(
+    (injected: ChatComposerAttachment[]) => {
+      addPreparedAttachments(injected);
+    },
+    [addPreparedAttachments],
+  );
+
+  // 唯一拥有焦点的 composer（listenAddToChatEvents = SessionPane.focused）认领系统侧注入，
+  // 非焦点 pane 不认领——否则竖切多 pane 时一次注入会被多个 composer 同时塞入。ref 去重
+  // 防止 React 严格模式下的双执行重复入队。
+  const pendingInjections = useSystemComposerInjectionStore((state) => state.pending);
+  const consumedInjectionIdsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!listenAddToChatEvents || disabled || pendingInjections.length === 0) {
+      return;
+    }
+    for (const injection of pendingInjections) {
+      if (consumedInjectionIdsRef.current.has(injection.id)) continue;
+      consumedInjectionIdsRef.current.add(injection.id);
+      consumeSystemComposerInjection(injection.id);
+      addPreparedAttachments([injection.attachment]);
+    }
+  }, [pendingInjections, listenAddToChatEvents, disabled, addPreparedAttachments]);
+
   const openAttachmentPicker = useCallback(() => {
     if (readComposerAttachmentScope(scopeKey).length >= MAX_CHAT_ATTACHMENTS) {
       showAttachmentLimitWarning();
@@ -1083,6 +1114,7 @@ export function useComposerAttachments(
       restoreSessionOwnedAttachments,
       prepareForSend,
       adoptSentAttachments,
+      injectAttachments,
       setAttachmentError,
     }),
     [
@@ -1103,6 +1135,7 @@ export function useComposerAttachments(
       prepareForSend,
       removeAttachment,
       retryAttachment,
+      injectAttachments,
     ],
   );
 }

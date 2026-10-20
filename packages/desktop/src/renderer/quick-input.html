@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reactor Quick Input</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: transparent;
+        font:
+          14px -apple-system,
+          system-ui,
+          "Segoe UI",
+          sans-serif;
+      }
+      .shell {
+        box-sizing: border-box;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        border-radius: 14px;
+        background: rgba(28, 30, 36, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+      }
+      textarea {
+        flex: 1;
+        resize: none;
+        border: 0;
+        outline: none;
+        background: transparent;
+        color: #e8eaee;
+        font: inherit;
+        line-height: 1.5;
+        padding: 4px 2px;
+      }
+      textarea::placeholder {
+        color: rgba(232, 234, 238, 0.42);
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .hint {
+        color: rgba(232, 234, 238, 0.42);
+        font-size: 12px;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font: inherit;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.12);
+        color: #e8eaee;
+      }
+      button:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      button.primary {
+        background: #2fe0f9;
+        color: #062a45;
+        font-weight: 600;
+      }
+      button.primary:hover {
+        background: #57e6fa;
+      }
+      @media (prefers-color-scheme: light) {
+        .shell {
+          background: rgba(250, 250, 250, 0.98);
+          border-color: rgba(0, 0, 0, 0.08);
+          box-shadow: 0 14px 40px rgba(0, 0, 0, 0.2);
+        }
+        textarea {
+          color: #1d1d1f;
+        }
+        textarea::placeholder {
+          color: rgba(29, 29, 31, 0.4);
+        }
+        .hint {
+          color: rgba(29, 29, 31, 0.4);
+        }
+        button {
+          background: rgba(0, 0, 0, 0.06);
+          color: #1d1d1f;
+        }
+        button:hover {
+          background: rgba(0, 0, 0, 0.12);
+        }
+        button.primary {
+          background: #0061af;
+          color: #fff;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <textarea id="input" placeholder="随手问一句…（Enter 发送，Shift+Enter 换行，Esc 收起）"></textarea>
+      <div class="bar">
+        <span class="hint" id="hint">Enter 发送 · Esc 收起</span>
+        <div class="actions">
+          <button type="button" id="send" class="primary">发送</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./quickInput.ts"></script>
+  </body>
+</html>

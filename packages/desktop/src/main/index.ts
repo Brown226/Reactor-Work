@@ -46,7 +46,8 @@ import {
 } from "electron";
 import type { UtilityProcess as ElectronUtilityProcess } from "electron";
 import { spawn } from "node:child_process";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { stat } from "node:fs/promises";
 import { homedir, hostname } from "node:os";
 import {
   createCredentialService,
@@ -87,6 +88,7 @@ import {
 } from "@zcode/shared";
 import { logger } from "./logger.js";
 import { markMainLaunchAppReady } from "./desktopLaunchMarks.js";
+import { startEventLoopLagMonitor } from "./desktopEventLoopLagMonitor.js";
 import { createCuaPipFocusRouter, resolveCuaPipWindowKey } from "./cuaPipFocusRouter.js";
 import { createDesktopTelemetryFetch } from "./desktopTelemetryFetch.js";
 import {
@@ -137,7 +139,8 @@ import { resolveWindowsAppUserModelIdForFlavor } from "../../scripts/desktop-pro
 import type { DesktopWindowSize } from "./desktopWindowSize.js";
 import { maybeWarnArchitectureMismatch } from "./desktopArchitectureGuard.js";
 import { maybeBlockStartupForForceUpdate } from "./forceUpdateGuard.js";
-import { createWindowsDesktopTray, updateWindowsDesktopTrayMenu } from "./desktopTray.js";
+import { createDesktopTray, updateDesktopTrayMenu } from "./desktopTray.js";
+import { createQuickInputWindow } from "./quickInputWindow.js";
 import { createWindowsCuaOperationIndicator } from "./windowsCuaOperationIndicator.js";
 import {
   configureDockMenu,
@@ -185,6 +188,7 @@ import { installFinderOpenFolderWorkflow } from "./desktopFinderOpenFolderWorkfl
 import { installWindowsOpenFolderContextMenu } from "./desktopWindowsOpenFolderContextMenu.js";
 import {
   createDeepLinkSingleInstanceData,
+  extractAssociatedFilePathFromArgs,
   extractWorkspaceOpenPath,
   extractDeepLinkUrlFromArgs,
   extractOpenWorkspacePathFromArgs,
@@ -301,6 +305,12 @@ let closeToTrayOnWindows = true;
 // powerSaveBlocker("prevent-app-suspension")，阻止系统闲置休眠（防不了合盖/手动睡眠）。
 // 不再绑定闲时任务活跃计数——设置页「常规」与 Automations 入口镜像同一配置。
 let keepAwakeWhileRunning = false;
+// 开机自启：用户偏好存 setting.json，这里保存 main 侧最近一次已应用值用于幂等。
+// 开发态（defaultApp）不真正注册登录项，见 applyLaunchAtLogin。
+let launchAtLogin = false;
+// 运行期事件循环延迟采样器；whenReady 后启动，before-quit 停止。纯观测，失败不影响主流程。
+let eventLoopLagMonitor: { stop: () => void } | null = null;
+let desktopQuickInput: { dispose: () => void } | null = null;
 let powerSaveBlockerId: number | null = null;
 function reconcileKeepAwakeBlocker(): void {
   const shouldBlock = keepAwakeWhileRunning;
@@ -972,12 +982,60 @@ function syncCloseToTrayOnWindows(value: unknown) {
   logger.info(`[settings] closeToTrayOnWindows=${value}`);
 }
 
+/**
+ * 把开机自启偏好应用到操作系统。
+ *
+ * 开发态（defaultApp，即 `electron .`/dev 脚本）注册登录项会指向 electron 可执行文件
+ * 而非产品安装体，因此跳过实际注册，只保留偏好读写；打包态才真正写入。
+ */
+function applyLaunchAtLogin(): void {
+  if (process.defaultApp) {
+    logger.info(`[settings] launchAtLogin=${launchAtLogin} (skipped: dev/defaultApp)`);
+    return;
+  }
+
+  try {
+    app.setLoginItemSettings({ openAtLogin: launchAtLogin });
+    logger.info(`[settings] launchAtLogin=${launchAtLogin} applied`);
+  } catch (error) {
+    logger.warn("[settings] failed to apply launchAtLogin", error);
+  }
+}
+
+/**
+ * 把"用本应用打开的文件"路径解析为其所在目录。
+ *
+ * workspace 是目录级概念，没有文件级"在应用内打开"语义；把文件所在目录作为 workspace
+ * 打开是语义安全的最小映射（用户在既有文件树/预览里能看到该文件）。只接受**存在的常规文件**
+ * ——目录、不存在的路径、特殊文件一律返回 null，避免把任意 argv 当作 workspace 打开。
+ */
+async function resolveAssociatedFileDirectory(
+  filePath: string,
+  loggerRef: { warn: (...args: unknown[]) => void },
+): Promise<string | null> {
+  try {
+    const info = await stat(filePath);
+    if (!info.isFile()) {
+      return null;
+    }
+    return dirname(filePath);
+  } catch (error) {
+    loggerRef.warn("[open-file] 关联文件路径不可用，已忽略", { filePath, error });
+    return null;
+  }
+}
+
 function syncImmediateAppSettings(patch: Partial<AppSettings>) {
   syncCloseToTrayOnWindows(patch.closeToTrayOnWindows);
 
   if (typeof patch.keepAwakeWhileRunning === "boolean") {
     keepAwakeWhileRunning = patch.keepAwakeWhileRunning;
     reconcileKeepAwakeBlocker();
+  }
+
+  if (typeof patch.launchAtLogin === "boolean") {
+    launchAtLogin = patch.launchAtLogin;
+    applyLaunchAtLogin();
   }
 
   if (typeof patch.receivePreviewUpdates === "boolean") {
@@ -1466,7 +1524,7 @@ function rebuildMenu() {
       });
     },
   );
-  updateWindowsDesktopTrayMenu();
+  updateDesktopTrayMenu();
 }
 
 function resolveFocusedDesktopZoomLevel(): number {
@@ -1869,6 +1927,27 @@ app.on("second-instance", (_event, argv, _workingDirectory, additionalData) => {
     return;
   }
 
+  // 文件关联：第二实例（双击关联文件）未命中 deep link / workspace 时，按"打开文件所在目录"处理。
+  const secondInstanceFilePath =
+    extractAssociatedFilePathFromArgs(argv) ??
+    extractAssociatedFilePathFromArgs(additionalData ? [String(additionalData)] : []);
+  if (secondInstanceFilePath && !forceUpdateMainWindowCreationBlocked) {
+    void resolveAssociatedFileDirectory(secondInstanceFilePath, logger).then((directory) => {
+      if (!directory) {
+        return;
+      }
+      const handled = handleOpenWorkspacePath(directory, logger, {
+        allowWithoutReadyWindow: true,
+        resolveApplicationWindow: () => getApplicationWindowsExcludingCuaIndicator()[0] ?? null,
+      });
+      if (handled) {
+        return;
+      }
+      const fallback = getApplicationWindowsExcludingCuaIndicator()[0];
+      fallback?.focus();
+    });
+  }
+
   const win = getApplicationWindowsExcludingCuaIndicator()[0];
   if (win) {
     if (win.isMinimized()) {
@@ -1883,6 +1962,8 @@ app.on("second-instance", (_event, argv, _workingDirectory, additionalData) => {
 
 app.whenReady().then(async () => {
   markMainLaunchAppReady();
+  // 运行期可观测：每 60s 汇总一次主进程事件循环延迟，反映真实卡顿而非仅启动耗时。
+  eventLoopLagMonitor = startEventLoopLagMonitor({ logger });
   installLocalMediaPreviewProtocol(session.defaultSession.protocol, {
     isPathAuthorized: localMediaPreviewPathRegistry.isAuthorized,
   });
@@ -1905,6 +1986,9 @@ app.whenReady().then(async () => {
     }
     closeToTrayOnWindows = bootstrapSettings.closeToTrayOnWindows ?? true;
     keepAwakeWhileRunning = bootstrapSettings.keepAwakeWhileRunning ?? false;
+    launchAtLogin = bootstrapSettings.launchAtLogin ?? false;
+    // 每次启动按偏好重新应用开机自启，覆盖用户在系统设置里的手动改动。
+    applyLaunchAtLogin();
     currentDesktopZoomLevel = clampDesktopZoomLevel(bootstrapSettings.desktopZoomLevel ?? 0);
     currentDesktopWindowSize = bootstrapSettings.desktopWindowSize;
     // 全局 keep-awake：启动时若设置已开，立刻持有 powerSaveBlocker，不必等设置变更事件。
@@ -2002,7 +2086,7 @@ app.whenReady().then(async () => {
       ),
     () => showCurrentWindowFromDock(primaryWindowCoordinator),
   );
-  createWindowsDesktopTray({
+  createDesktopTray({
     getLocale: () => currentApplicationLocale,
     showCurrentWindow: () =>
       primaryWindowCoordinator.ensurePrimaryWindow("tray-show-current-window"),
@@ -2013,7 +2097,29 @@ app.whenReady().then(async () => {
     },
     logger,
   });
-
+  // 桌面悬浮球：常驻快捷入口，点击展开动作面板（打开窗口 / 截图送对话），
+  // CommandOrControl+Shift+B 切换显隐。
+  // 快捷输入浮窗（d）：全局热键唤起，内容提交后转交主窗口 composer。
+  desktopQuickInput = createQuickInputWindow({
+    logger,
+    getLocale: () => currentApplicationLocale,
+    rendererDir: join(import.meta.dirname, "../renderer"),
+    rendererDevUrl: process.env["ELECTRON_RENDERER_URL"],
+    injectTextToComposer: (text) => {
+      const target = getApplicationWindowsExcludingCuaIndicator()[0];
+      if (!target || target.isDestroyed()) return;
+      target.webContents.send(PlatformChannels.InjectComposerText, text);
+    },
+    injectImageToComposer: (imagePath) => {
+      const target = getApplicationWindowsExcludingCuaIndicator()[0];
+      if (!target || target.isDestroyed()) return;
+      target.webContents.send(PlatformChannels.InjectComposerAttachment, {
+        source: "quick-input",
+        imagePath,
+      });
+    },
+    showCurrentWindow: () => primaryWindowCoordinator.ensurePrimaryWindow("quick-input-show"),
+  });
   registerPlatformIpcHandlers({
     fetchHelpConfig: readHelpConfig,
     logger,
@@ -2270,6 +2376,21 @@ app.whenReady().then(async () => {
       resolveApplicationWindow: () => getApplicationWindowsExcludingCuaIndicator()[0] ?? null,
     });
   }
+
+  // 文件关联：双击关联的文本文件冷启动时，打开该文件所在目录（目录级 workspace 的
+  // 最小安全映射）。只接受存在的常规文件；目录/不存在路径一律忽略。
+  const associatedFilePath = extractAssociatedFilePathFromArgs(process.argv);
+  if (associatedFilePath) {
+    void resolveAssociatedFileDirectory(associatedFilePath, logger).then((directory) => {
+      if (!directory) {
+        return;
+      }
+      handleOpenWorkspacePath(directory, logger, {
+        allowWithoutReadyWindow: true,
+        resolveApplicationWindow: () => getApplicationWindowsExcludingCuaIndicator()[0] ?? null,
+      });
+    });
+  }
 });
 
 app.on("browser-window-created", (_, win) => {
@@ -2305,6 +2426,11 @@ app.on("window-all-closed", () => {
   app.quit();
 });
 app.on("before-quit", (event) => {
+  // 退出前停止事件循环延迟采样，清理直方图与定时器。
+  eventLoopLagMonitor?.stop();
+  eventLoopLagMonitor = null;
+  desktopQuickInput?.dispose();
+  desktopQuickInput = null;
   // Windows 最后窗口关闭会在 close 阶段提前确认并标记 forceQuit；
   // macOS 的 Cmd+Q / 菜单退出不会走该窗口关闭确认，必须在 before-quit 保留应用级确认兜底。
   if (!forceQuitRef.current && shouldConfirmAppQuit() && !confirmAppQuit()) {

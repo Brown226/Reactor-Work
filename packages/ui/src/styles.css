@@ -58,6 +58,64 @@ body,
   --ui-font-size: 14px;
 }
 
+/* 独立主题色（accent）：只覆盖 --color-accent（弱强调面），不碰 --color-brand。
+   属性 + 两个变量由 applyAccentColor 写在文档根上；.dark 档保证深浅各自取值。
+   特异性（:root[attr] / .dark[attr]）高于主题块里既有的 --color-accent 定义，
+   因此仅在用户选了非默认档时生效，默认档无属性、不产生任何覆盖。 */
+:root[data-app-accent] {
+  --color-accent: var(--accent-color-light);
+}
+.dark[data-app-accent] {
+  --color-accent: var(--accent-color-dark);
+}
+
+/* 壁纸调色板：选中风景壁纸时，强调色跟随该图的主色调。
+   守卫 `:not([data-app-accent])` 保证"用户显式选的 accent"优先于壁纸配色——
+   用户既然明确选过强调色，壁纸不该悄悄覆盖它。
+   仍然只覆盖 --color-accent（弱强调面），不碰 --color-brand（DESIGN.md 品牌色约束）。 */
+:root[data-app-wallpaper-palette]:not([data-app-accent]) {
+  --color-accent: var(--accent-color-light);
+}
+.dark[data-app-wallpaper-palette]:not([data-app-accent]) {
+  --color-accent: var(--accent-color-dark);
+}
+
+/* 弹簧缓动：用于主题选择与壁纸卡片的轻微回弹。
+   近似 NewMax 的 ease-spring-gentle（其实现用 framer-motion 的 useSpring，
+   这里只用 CSS cubic-bezier 达到同等的"越过终点再回弹"手感，不引第三方依赖）。
+   数值 1.56 略大于 1，即控制点越过终点，产生轻微过冲。 */
+:root {
+  --ease-spring-gentle: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 主题选择与壁纸卡片的回弹过渡。尊重系统「减弱动效」。 */
+@media (prefers-reduced-motion: no-preference) {
+  [data-theme-card],
+  [data-wallpaper-card] {
+    transition:
+      transform 200ms var(--ease-spring-gentle),
+      box-shadow 200ms ease-out;
+  }
+  [data-theme-card]:hover,
+  [data-wallpaper-card]:hover {
+    transform: scale(1.02);
+  }
+  /* 选中勾选圆点：从无到有时轻微弹出，比直接出现更有"落下"的手感。 */
+  [data-wallpaper-card][data-selected="true"] [data-selected-dot] {
+    animation: accent-dot-pop 220ms var(--ease-spring-gentle);
+  }
+  @keyframes accent-dot-pop {
+    from {
+      transform: scale(0.4);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+}
+
 body {
   margin: 0;
   overflow: hidden;
@@ -2059,19 +2117,25 @@ body {
 }
 
 /* ── 背景主题 ───────────────────────────────────────────────────────────────
-   背景画在窗口根容器（DesktopWindowFrame）的 ::before 上，整窗铺底：侧栏与主区域都在
-   它上面。外壳把 --color-background 换成半透明值，侧栏与各 pane 用自身底色把它透出来；
-   设置页、弹窗等外壳之外的表面仍是各自的不透明底色。
+   背景只铺在右侧主内容区（`[data-app-background-primary]`），对齐 NewMax 的作用域：
+   侧栏、side pane、设置页、弹窗都保持各自的不透明底色，不参与背景。
+   主内容区内的 `bg-background` 表面通过 `--color-background` 的半透明混色透出背景，
+   该变量只在主内容区子树里被改写，不会漏到侧栏。
    变量由 packages/ui/src/lib/backgroundTheme.ts 写到文档根，
-   语义见 docs/appearance-background-theme.md。 */
-[data-app-background] [data-desktop-window-frame] {
+   语义见 docs/未完成-背景主题作用域与设置分区调整-spec-v1.md。 */
+[data-app-background] [data-app-background-primary] {
   position: relative;
-  /* 窗口根容器自带不透明底色；必须让它自己成为层叠上下文，
-     否则 ::before 的负 z-index 会落到该底色之后（被整窗盖住）。 */
+  /* 场景模糊基线：默认 0，只有场景选择器命中时才被覆盖。放在这里保证
+     ::before/::after 的 calc 始终有值，不会因为变量未定义让 filter 整条失效。 */
+  --app-background-scene-blur: 0px;
+  /* 宿主自带不透明底色；必须让它自己成为层叠上下文，
+     否则 ::before 的负 z-index 会落到该底色之后（被整块盖住）。 */
   isolation: isolate;
+  /* 背景层用 scale(1.06) 防模糊露边，不裁剪会溢出到侧栏上。 */
+  overflow: hidden;
 }
 
-[data-app-background] [data-desktop-window-frame]::before {
+[data-app-background] [data-app-background-primary]::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -2082,22 +2146,75 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  /* 模糊只作用在这一层，内容不受影响；放大一点避免模糊后露出边缘。 */
-  filter: blur(var(--app-background-blur, 0px));
+  /* 模糊只作用在这一层，内容不受影响；放大一点避免模糊后露出边缘。
+     场景模糊（阅读/专注）作为叠加增强，与基准模糊相加而非替换。 */
+  filter: blur(calc(var(--app-background-blur, 0px) + var(--app-background-scene-blur, 0px)));
   transform: scale(1.06);
 }
 
-[data-app-background] [data-app-background-surface] {
-  --color-background: color-mix(
-    in oklab,
-    var(--app-background-base) var(--app-background-scrim, 100%),
-    transparent
-  );
+/* 交叉淡入：切图时把"旧图"画在这层上，240ms 内 opacity 1→0 淡出，露出下面的新 ::before。
+   依赖 [data-app-background-primary] 的 isolation 层叠上下文，z-index:-1 与 ::before 同层，
+   但 ::after 在 ::before 之后绘制，因此盖在新图之上。 */
+[data-app-background][data-app-background-fading] [data-app-background-primary]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--app-background-base);
+  background-image: var(--app-background-prev-image, none);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: blur(calc(var(--app-background-blur, 0px) + var(--app-background-scene-blur, 0px)));
+  transform: scale(1.06);
+  animation: app-background-crossfade var(--app-background-crossfade, 240ms) ease-out forwards;
 }
 
-/* 侧栏自身不画底色（原本透到窗口底色），背景开启时补一层与主区域同源的底板。 */
-[data-app-background] [data-workspace-sidebar-panel] {
-  background-color: color-mix(
+@keyframes app-background-crossfade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* 场景化模糊：内置浏览器沉浸预览（响应式浏览模式）激活时，背景额外叠加一档模糊，
+   让用户专注于浏览器内容。基线 blurPx 仍是用户设定值，这里是叠加增强而非替换。 */
+[data-app-background] [data-app-background-primary]:has([data-responsive-browser-mode="active"]) {
+  --app-background-scene-blur: 8px;
+}
+
+/* 动态壁纸（Ken Burns）：开启时给背景层叠加极缓慢的缩放呼吸。
+   只用 transform（合成层，不触发重排/重绘），待机功耗可忽略；时长取 60s 级别，
+   慢到近乎察觉不到「在动」，只在长时间停留时提供一点生气。
+   尊重系统「减弱动效」设置：命中 prefers-reduced-motion 时停用。 */
+[data-app-background][data-app-background-motion] [data-app-background-primary]::before {
+  animation: app-background-motion 64s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes app-background-motion {
+  from {
+    /* 基线缩放与静态背景一致（1.06），避免开启动效时出现一次跳变 */
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.12) translate3d(-1.2%, -1%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-app-background][data-app-background-motion] [data-app-background-primary]::before {
+    animation: none;
+  }
+}
+
+/* 主内容区内的表面透出背景：把 --color-background 换成"主题底色 × scrim"的半透明混色。
+   只在主内容区子树里生效，侧栏与设置页的 bg-background 不受影响。 */
+[data-app-background] [data-app-background-primary] {
+  --color-background: color-mix(
     in oklab,
     var(--app-background-base) var(--app-background-scrim, 100%),
     transparent

@@ -17,6 +17,11 @@
 - 只展示、不交互：不占点击（草稿态那份带 `pointer-events-none`）、不带链接、
   不随会话状态变化；草稿态发出首条消息后，页面从"新建任务首页"切换为"会话对话页"，
   提示从面板右下角改挂到输入卡下方，不出现两份也不消失。
+- **视觉权重**：按合规警示而非普通辅助说明处理——`text-ui-base`（正文级字号）+
+  `font-semibold`（加粗）+ `text-destructive`（语义红，走 `--color-destructive`）。
+  早期版本用 `text-ui-sm text-foreground-subtle`（次要灰、12px），在内网使用场景下
+  实际几乎看不见，达不到"严禁上传涉密文件"应有的警示强度。
+  字号仍走 DESIGN.md 的 `text-ui-*` 刻度、颜色走语义 token，不硬编码 px/HEX。
 - 草稿态为什么不放 chips 下方：草稿首页的 composer 随空态整体居中、不吸底
   （`centerEmptyStateWithDock`），挂在 dock 里只会贴在推荐 chips 下方，
   与"界面右下角"的产品要求不符，因此改为绝对定位于面板右下角。
