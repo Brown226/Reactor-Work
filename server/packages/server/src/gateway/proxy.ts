@@ -13,6 +13,7 @@ import type { GatewayConfig } from "./config.js";
 import { createGatewayAuthenticator, type Principal } from "../auth/token.js";
 import { joinUrl, type ModelCatalog } from "./models.js";
 import { authHeadersFor, canServe, isScopeVisible, shapeFromPath, upstreamPathFor, type InboundShape } from "./provider-api.js";
+import { convertRequestBody, needsConversion } from "./protocol-convert.js";
 import { hasFeature, type ProviderSource } from "./registry.js";
 import {
   extractUsage,
@@ -25,6 +26,48 @@ import {
 import { quotaExceededResponse, type QuotaGate } from "./quota-gate.js";
 
 const ANTHROPIC_DEFAULT_VERSION = "2023-06-01";
+
+/**
+ * 上游**建连超时**（毫秒）：只覆盖「请求发出 → 收到响应头」这一段，收到响应头即清除。
+ *
+ * 刻意不用 `AbortSignal.timeout()`——它会在整个 fetch（含 body 读取）生命周期内生效，
+ * 长回答的 SSE 流会在超时后被拦腰截断。这里用「手动控制器 + 收到响应头即 clearTimeout」，
+ * 对流式回执安全：连接挂死会被及时中断，正常的长流不受影响。
+ */
+const UPSTREAM_CONNECT_TIMEOUT_MS = 60_000;
+
+/**
+ * 判定「是否应切下一个上游」：只对**网络异常、超时、429、5xx** 切；
+ * 4xx（除 429）是请求本身的问题，切了也是同样结果，原样返回让用户看到真实报错。
+ */
+function shouldFailover(status: number): boolean {
+  return status === 429 || status >= 500;
+}
+
+/** 与上游建连，带建连超时（不约束流式 body）。 */
+async function fetchUpstream(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number = UPSTREAM_CONNECT_TIMEOUT_MS,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** 把（可能是 ArrayBuffer 的）请求体解析成对象；解析失败返回原值交由上游报错。 */
+function safeParseArrayBuffer(body: ArrayBuffer | string): unknown {
+  try {
+    const text = typeof body === "string" ? body : new TextDecoder().decode(body);
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
 
 export function createGatewayHandlers(
   config: GatewayConfig,
@@ -254,6 +297,61 @@ export function createGatewayHandlers(
   });
 
   /**
+   * 带 failover 的对话转发：先打首选上游，命中「网络异常/超时/429/5xx」再按候选链逐个尝试。
+   *
+   * 候选链 = 同名模型的其它上游（见 `registry.resolveModelCandidates`），**无需改 DB 契约**。
+   * **要求候选与首选同协议**：这样 upstreamPath / authHeaders / 已转换 body 全部可复用，
+   * 只需替换 baseUrl 与 apiKey —— 跨协议的候选直接跳过（其请求体形态不同，不在本函数职责内）。
+   *
+   * 任一候选返回成功或 4xx（不该切的响应）即停止并返回；全部失败时返回最后一个响应 /
+   * 抛出最后一个网络异常。无候选时等于一次普通 fetch，行为与改造前逐字相同。
+   */
+  const forwardWithFailover = async (args: {
+    primary: import("./registry.js").ProviderEntry;
+    fallbacks: Array<{ provider: import("./registry.js").ProviderEntry }>;
+    upstreamPath: string;
+    body: ArrayBuffer | string;
+    contentType: string;
+    anthropicVersion: string;
+    warn: (...a: unknown[]) => void;
+  }): Promise<{ response: Response; providerId: string }> => {
+    // 只保留与首选同协议的候选（形态一致才能复用同一份 body）。
+    const candidates = [
+      args.primary,
+      ...args.fallbacks.map((f) => f.provider).filter((p) => p.api === args.primary.api),
+    ];
+    const headersFor = (provider: import("./registry.js").ProviderEntry): Record<string, string> => ({
+      ...provider.headers,
+      ...authHeadersFor(args.primary.api, provider.apiKey, args.anthropicVersion),
+      "content-type": args.contentType,
+    });
+    let lastResponse: Response | null = null;
+    for (let i = 0; i < candidates.length; i += 1) {
+      const provider = candidates[i]!;
+      const isLast = i === candidates.length - 1;
+      try {
+        const response = await fetchUpstream(joinUrl(provider.baseUrl, args.upstreamPath), {
+          method: "POST",
+          headers: headersFor(provider),
+          body: args.body,
+        });
+        if (isLast || !shouldFailover(response.status)) {
+          return { response, providerId: provider.id };
+        }
+        args.warn(`[gateway] 上游 ${provider.id} 返回 ${response.status}，切换下一个候选`);
+        lastResponse = response;
+      } catch (error) {
+        if (isLast) throw error;
+        args.warn(
+          `[gateway] 上游 ${provider.id} 网络异常，切换下一个候选：${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+    if (lastResponse) return { response: lastResponse, providerId: args.primary.id };
+    throw new Error("no upstream candidate available");
+  };
+
+  /**
    * 额度执行门（P3）：在**转发之前**判定，命中 `block` 规则即 429（不消耗上游）。
    *
    * 只在 `principal.kind === "user"` 时检查（dev token 放行，与可见范围同一纪律）；
@@ -305,31 +403,42 @@ export function createGatewayHandlers(
       }
       // P2：协议派发（auto 保持历史行为：入站什么形态就发什么形态）
       const serve = canServe(provider.api, inbound);
-      if (!serve.ok) return protocolMismatch(c, provider.id, serve.reason);
+      // 跨协议转换：供应商只支持另一对话协议时，把请求体转成上游形态，而不是直接报错。
+      const convert = !serve.ok && needsConversion(provider.api, inbound);
+      if (!serve.ok && !convert) return protocolMismatch(c, provider.id, serve.reason);
+      // 目标上游形态：直通时为入站形态；转换时为供应商声明的对话协议。
+      const upstreamShape: InboundShape =
+        serve.ok ? serve.upstreamShape : (provider.api as "anthropic-messages" | "openai-chat");
       // P3：额度硬阻断（开关关闭时零开销；放在上游解析之后 ⇒ 被拒的调用不会打上游）
-      const blocked = await enforceQuota(c, principal, model ?? target.model?.model ?? null, serve.upstreamShape);
+      const blocked = await enforceQuota(c, principal, model ?? target.model?.model ?? null, upstreamShape);
       if (blocked) return blocked;
       const { body, clamped } = clampOutput(raw, parsed, target.model?.maxOutput ?? null);
+      // 转换开启时才解析/重编码 body（直通保持原始 ArrayBuffer，零额外开销）。
+      const outgoingBody = convert
+        ? (() => {
+            const source = typeof body === "string" ? JSON.parse(body) : safeParseArrayBuffer(body);
+            return JSON.stringify(convertRequestBody(source, inbound, upstreamShape));
+          })()
+        : body;
       const meter = metering?.begin({
         principal,
         providerId: provider.id,
         model: model ?? target.model?.model ?? null,
         // 上游形态决定 usage 字段怎么读（anthropic vs openai 的缓存口径不同）
-        shape: serve.upstreamShape,
+        shape: upstreamShape,
         pricing: target.model?.pricing ?? null,
         currency: target.model?.currency ?? null,
       }) ?? null;
-      const upstream = await fetch(joinUrl(provider.baseUrl, upstreamPathFor(serve.upstreamShape)), {
-        method: c.req.method,
-        headers: {
-          // 自定义 headers 先铺底（协议/密钥相关的头后写；重叠项不可能出现 —— denylist 已拦）
-          ...provider.headers,
-          ...authHeadersFor(serve.upstreamShape, provider.apiKey, c.req.header("anthropic-version") ?? ANTHROPIC_DEFAULT_VERSION),
-          "content-type": c.req.header("content-type") ?? "application/json",
-        },
-        body,
+      const forwarded = await forwardWithFailover({
+        primary: provider,
+        fallbacks: target.fallbacks ?? [],
+        upstreamPath: upstreamPathFor(upstreamShape),
+        body: outgoingBody,
+        contentType: c.req.header("content-type") ?? "application/json",
+        anthropicVersion: c.req.header("anthropic-version") ?? ANTHROPIC_DEFAULT_VERSION,
+        warn: (...a) => console.warn(...a),
       });
-      return pipeMetered(upstream, provider.id, principal, serve.upstreamShape, meter, clamped);
+      return pipeMetered(forwarded.response, forwarded.providerId, principal, upstreamShape, meter, clamped);
     },
 
     /** OpenAI Chat Completions 协议透传（Web/其它客户端 → 上游 openai 端点） */
@@ -350,29 +459,38 @@ export function createGatewayHandlers(
       }
       // P2：协议派发
       const serve = canServe(provider.api, inbound);
-      if (!serve.ok) return protocolMismatch(c, provider.id, serve.reason);
+      const convert = !serve.ok && needsConversion(provider.api, inbound);
+      if (!serve.ok && !convert) return protocolMismatch(c, provider.id, serve.reason);
+      const upstreamShape: InboundShape =
+        serve.ok ? serve.upstreamShape : (provider.api as "anthropic-messages" | "openai-chat");
       // P3：额度硬阻断（同 anthropic 路径）
-      const blocked = await enforceQuota(c, principal, model ?? target.model?.model ?? null, serve.upstreamShape);
+      const blocked = await enforceQuota(c, principal, model ?? target.model?.model ?? null, upstreamShape);
       if (blocked) return blocked;
       const { body, clamped } = clampOutput(raw, parsed, target.model?.maxOutput ?? null);
+      const outgoingBody = convert
+        ? (() => {
+            const source = typeof body === "string" ? JSON.parse(body) : safeParseArrayBuffer(body);
+            return JSON.stringify(convertRequestBody(source, inbound, upstreamShape));
+          })()
+        : body;
       const meter = metering?.begin({
         principal,
         providerId: provider.id,
         model: model ?? target.model?.model ?? null,
-        shape: serve.upstreamShape,
+        shape: upstreamShape,
         pricing: target.model?.pricing ?? null,
         currency: target.model?.currency ?? null,
       }) ?? null;
-      const upstream = await fetch(joinUrl(provider.baseUrl, upstreamPathFor(serve.upstreamShape)), {
-        method: c.req.method,
-        headers: {
-          ...provider.headers,
-          ...authHeadersFor(serve.upstreamShape, provider.apiKey),
-          "content-type": c.req.header("content-type") ?? "application/json",
-        },
-        body,
+      const forwarded = await forwardWithFailover({
+        primary: provider,
+        fallbacks: target.fallbacks ?? [],
+        upstreamPath: upstreamPathFor(upstreamShape),
+        body: outgoingBody,
+        contentType: c.req.header("content-type") ?? "application/json",
+        anthropicVersion: c.req.header("anthropic-version") ?? ANTHROPIC_DEFAULT_VERSION,
+        warn: (...a) => console.warn(...a),
       });
-      return pipeMetered(upstream, provider.id, principal, serve.upstreamShape, meter, clamped);
+      return pipeMetered(forwarded.response, forwarded.providerId, principal, upstreamShape, meter, clamped);
     },
 
     /**
@@ -412,7 +530,7 @@ export function createGatewayHandlers(
         pricing: target.model?.pricing ?? null,
         currency: target.model?.currency ?? null,
       }) ?? null;
-      const upstream = await fetch(joinUrl(provider.baseUrl, "embeddings"), {
+      const upstream = await fetchUpstream(joinUrl(provider.baseUrl, "embeddings"), {
         method: "POST",
         headers: {
           ...provider.headers,
@@ -460,7 +578,7 @@ export function createGatewayHandlers(
         pricing: target.model?.pricing ?? null,
         currency: target.model?.currency ?? null,
       }) ?? null;
-      const upstream = await fetch(joinUrl(provider.baseUrl, "rerank"), {
+      const upstream = await fetchUpstream(joinUrl(provider.baseUrl, "rerank"), {
         method: "POST",
         headers: {
           ...provider.headers,

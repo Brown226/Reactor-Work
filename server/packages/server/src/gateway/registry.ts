@@ -254,6 +254,64 @@ export class ProviderRegistry {
     const provider = this.providers.get(picked.providerId);
     return provider ? { provider, entry: picked.entry } : undefined;
   }
+
+  /**
+   * 同名模型的**候选链**（failover 用）：返回所有匹配 `raw` 的 provider 绑定，顺序 = 注册序（sort,id）。
+   *
+   * 与 `resolveModel` 的关系：后者是「命中第一个」，本方法是「命中全部」。
+   * 之所以能直接复用双键结构而无需改表：同名模型本就可挂在不同供应商下
+   * （见 `models` 字段的注释），所以「候选链」只是把已存在的数据读全，不是新契约。
+   *
+   * 第一条与 `resolveModel` 的结果一致 ⇒ 单候选时行为与改造前逐字相同。
+   */
+  resolveModelCandidates(
+    raw: string,
+    type?: ModelType,
+    providerId?: string,
+  ): Array<{ provider: ProviderEntry; entry: ModelEntry }> {
+    const name = raw.trim();
+    if (!name) return [];
+    const lc = name.toLocaleLowerCase();
+    const want = this.typed ? type : undefined;
+
+    let wantProvider = providerId?.trim();
+    let bare = name;
+    if (wantProvider === undefined) {
+      const slash = name.indexOf("/");
+      if (slash > 0) {
+        wantProvider = name.slice(0, slash).trim();
+        bare = name.slice(slash + 1).trim();
+      }
+    }
+
+    let pool = this.modelOrder.filter((b) => {
+      if (want !== undefined && b.entry.modelType !== want) return false;
+      const provider = this.providers.get(b.providerId);
+      if (!provider) return false;
+      if (want !== undefined && provider.modelType !== want) return false;
+      const matches = b.entry.model === name || b.entry.model.toLocaleLowerCase() === lc;
+      if (!matches) return false;
+      if (wantProvider !== undefined && wantProvider !== "") {
+        return b.providerId.toLocaleLowerCase() === wantProvider.toLocaleLowerCase();
+      }
+      return true;
+    });
+    // 显式 provider 未命中普通名时，兼容 `provider/model` 复合写法（与 resolveModel 同口径）。
+    if (pool.length === 0 && wantProvider !== undefined && wantProvider !== "" && bare !== name) {
+      pool = this.modelOrder.filter(
+        (b) =>
+          b.providerId.toLocaleLowerCase() === wantProvider!.toLocaleLowerCase() &&
+          (b.entry.model === bare || b.entry.model.toLocaleLowerCase() === bare.toLocaleLowerCase()) &&
+          (want === undefined || b.entry.modelType === want),
+      );
+    }
+    const resolved: Array<{ provider: ProviderEntry; entry: ModelEntry }> = [];
+    for (const b of pool) {
+      const provider = this.providers.get(b.providerId);
+      if (provider) resolved.push({ provider, entry: b.entry });
+    }
+    return resolved;
+  }
 }
 
 /** 模型目录的双键：providerId 与 model 都做大小写归一（上游大小写不敏感）。 */
@@ -404,6 +462,11 @@ export type ProviderResolution =
       model: ModelEntry | null;
       /** 模型目录是否已配置（true 时为白名单路由） */
       curated: boolean;
+      /**
+       * failover 候选链：与首选 `provider` 同名的其它上游（**不含**首选本身），顺序 = 注册序。
+       * 首选上游网络失败/5xx 时按顺序尝试。无候选（同名只配了一个上游）时为空数组。
+       */
+      fallbacks?: Array<{ provider: ProviderEntry; model: ModelEntry }>;
     }
   | { ok: false; reason: "no-provider" | "model-not-found"; available: string[] };
 
@@ -429,7 +492,18 @@ function resolveFromRegistry(
   const wanted = model?.trim();
   if (!wanted) return { ok: true, provider: first, model: null, curated: true };
   const hit = registry.resolveModel(wanted, want, providerCode);
-  if (hit) return { ok: true, provider: hit.provider, model: hit.entry, curated: true };
+  if (hit) {
+    // failover 候选链：同名模型的其它上游（排除首选）。仅在无显式 providerCode 时收集，
+    // 因为显式点名供应商意味着调用方要的就是那一个，不应悄悄切到别家。
+    const fallbacks =
+      providerCode === undefined
+        ? registry
+            .resolveModelCandidates(wanted, want)
+            .filter((c) => c.provider.id !== hit.provider.id)
+            .map((c) => ({ provider: c.provider, model: c.entry }))
+        : [];
+    return { ok: true, provider: hit.provider, model: hit.entry, curated: true, fallbacks };
+  }
   // 白名单报错要给**本板块**的可选清单：跨板块列出一堆向量模型名只会让排查更糊涂
   const available =
     want === undefined ? registry.allModels().map((m) => m.model) : registry.modelsOfType(want).map((m) => m.model);
