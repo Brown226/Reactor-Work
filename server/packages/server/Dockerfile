@@ -21,6 +21,10 @@
 
 FROM node:22-alpine
 
+# npm 源可覆盖：内网/国内环境直连 registry.npmjs.org 可能极慢或超时，
+# 构建时用 --build-arg NPM_REGISTRY=https://registry.npmmirror.com 切镜像源。
+ARG NPM_REGISTRY=https://registry.npmjs.org
+
 WORKDIR /app
 
 # ---- 依赖层 ----
@@ -31,7 +35,7 @@ RUN node -e "const fs=require('fs');\
 const p=JSON.parse(fs.readFileSync('/tmp/server-package.json','utf8'));\
 delete p.dependencies['@reactor/shared'];\
 fs.writeFileSync('/app/package.json',JSON.stringify({name:p.name,version:p.version,type:p.type,dependencies:p.dependencies},null,2));" \
- && npm install --omit=dev --no-audit --no-fund \
+ && npm install --omit=dev --no-audit --no-fund --registry="${NPM_REGISTRY}" \
  && rm -f /tmp/server-package.json
 
 # ---- 产物层 ----
@@ -55,7 +59,8 @@ COPY packages/admin/dist ./admin-dist
 ENV REACTOR_ADMIN_DIST=/app/admin-dist
 
 ENV NODE_ENV=production
-EXPOSE 8790 8791
+# 8790 网关 / 8791 身份用户面（客户端登录）/ 8792 身份管理面（管理员浏览器开管理台）
+EXPOSE 8790 8791 8792
 
 # 默认身份服务；网关由 compose 的 command 覆盖为 dist/index.js
 CMD ["node", "dist/identity-entry.js"]

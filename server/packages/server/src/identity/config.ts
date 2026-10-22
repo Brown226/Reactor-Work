@@ -8,7 +8,18 @@ export type AuthMode = "mixed" | "ldap" | "local";
 
 export interface IdentityConfig {
   host: string;
+  /** 用户面端口（桌面客户端登录/业务调用连这里）；不挂管理台，`/admin/*` 一律 404。 */
   port: number;
+  /**
+   * 管理面端口（管理员浏览器用）；挂管理台 SPA 且 `GET /` 302 到 `/console/`。
+   *
+   * 分端口的原因：改造前两者同在 8791，任何能访问 `http://<host>:8791/` 的人都会被 302
+   * 送到管理台登录页（routes.ts 的 `GET /` 跳转），普通用户有看到服务端地址、摸到管理 API
+   * 的风险。拆开后 8792 可由防火墙/内网 ACL 只放行管理员网段。
+   *
+   * 与 `port` 相等时**不启用分离**（保持单端口旧行为），便于本地调试与既有脚本。
+   */
+  adminPort: number;
   /** mixed=按用户 source 分流(ad 走 LDAP/local 走本地)；ldap=仅 LDAP；local=仅本地测试号 */
   authMode: AuthMode;
   dbUrl: string;
@@ -37,15 +48,27 @@ export interface IdentityConfig {
 }
 
 export const DEFAULT_IDENTITY_PORT = 8791;
+/** 管理面默认端口：与用户面 8791 相邻，便于运维记忆。 */
+export const DEFAULT_IDENTITY_ADMIN_PORT = 8792;
 
 export function loadIdentityConfig(env: NodeJS.ProcessEnv = process.env): IdentityConfig {
   const authMode = (env.REACTOR_AUTH_MODE ?? "mixed") as AuthMode;
   if (!["mixed", "ldap", "local"].includes(authMode)) {
     throw new Error(`REACTOR_AUTH_MODE 非法: ${authMode}（mixed|ldap|local）`);
   }
+  const port = Number(env.REACTOR_IDENTITY_PORT ?? String(DEFAULT_IDENTITY_PORT));
+  const adminPort = Number(env.REACTOR_IDENTITY_ADMIN_PORT ?? String(DEFAULT_IDENTITY_ADMIN_PORT));
+  // 写错端口名/填了非数字会让 `serve()` 抛一个难懂的底层错误，这里提前给出可读提示。
+  if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+    throw new Error(`REACTOR_IDENTITY_PORT 非法: ${env.REACTOR_IDENTITY_PORT}（应为 1-65535 的整数）`);
+  }
+  if (!Number.isInteger(adminPort) || adminPort <= 0 || adminPort > 65535) {
+    throw new Error(`REACTOR_IDENTITY_ADMIN_PORT 非法: ${env.REACTOR_IDENTITY_ADMIN_PORT}（应为 1-65535 的整数）`);
+  }
   return {
     host: env.REACTOR_IDENTITY_HOST ?? "127.0.0.1",
-    port: Number(env.REACTOR_IDENTITY_PORT ?? String(DEFAULT_IDENTITY_PORT)),
+    port,
+    adminPort,
     authMode,
     dbUrl: env.REACTOR_DB_URL ?? "postgres://reactor:reactor@127.0.0.1:55432/reactor",
     jwtSecret: env.REACTOR_JWT_SECRET ?? "reactor-dev-jwt-secret-change-me",

@@ -50,16 +50,52 @@ async function subtree(db: IdentityDb, deptId: number | null): Promise<Set<numbe
 }
 
 export interface IdentityAppOptions {
-  /** 管理台 SPA 产物目录（配置则挂到 /admin）；见 admin-static.ts */
+  /** 管理台 SPA 产物目录（配置则挂到 /console）；见 admin-static.ts */
   adminDist?: string;
+  /**
+   * 是否作为**管理面**运行（默认 `true`，保持既有单端口行为）。
+   *
+   * `false` = 用户面（桌面客户端连的端口）：不挂管理台 SPA、`GET /` 不再 302 到管理台，
+   * 且 `/admin/*`、`/console*` 一律 404。目的是不让普通用户从登录端口摸到管理台与管理 API。
+   *
+   * ⚠ 这只是**入口隔离**：两个端口共用同一个进程、同一套 JWT 密钥与鉴权。真正的防护
+   *   来自部署侧把管理端口只对管理员网段开放（见 docs/未完成-管理台与用户面端口分离-spec-v1.md）。
+   */
+  adminSurface?: boolean;
 }
 
 export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: IdentityAppOptions = {}): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
+  const adminSurface = opts.adminSurface !== false;
+
+  /**
+   * 用户面：管理入口一律 404，不做任何「这里有个管理台」的暗示。
+   *
+   * ⚠ 必须注册在**一切业务路由之前**，且命中即 `notFound()`（不能 `next()`）——
+   *   否则会继续落到后面注册的 `/admin/*` 处理器上，等于没挡。
+   *
+   * ⚠ 不能改用「不挂 /admin/* 路由」来实现隔离：`permissions.ts` 的 `syncPermissions`
+   *   以**实际挂载后的路由表**为准清理已不存在的权限码。用户面若少挂 /admin/*，
+   *   管理员在管理台点一次「扫描权限点」就会把全部 `admin:*` 码删掉（实测机制见该文件注释）。
+   *   故两个 app 的路由表必须完全相同，隔离只发生在请求入口。
+   */
+  if (!adminSurface) {
+    app.use("*", async (c, next) => {
+      const path = c.req.path;
+      const isManagementEntry =
+        path === "/" ||
+        path === "/admin" ||
+        path.startsWith("/admin/") ||
+        path === ADMIN_MOUNT_PREFIX ||
+        path.startsWith(`${ADMIN_MOUNT_PREFIX}/`);
+      if (isManagementEntry) return c.notFound();
+      await next();
+    });
+  }
 
   // ⚠ 必须在 authed 组之前挂载：authed 用 use("*") 挂在根上（"未登录即 401"），
   //    注册顺序在它之后的路由会被它拦掉（含静态资源）。
-  const consoleMounted = opts.adminDist ? mountAdminSpa(app, opts.adminDist) : false;
+  const consoleMounted = adminSurface && opts.adminDist ? mountAdminSpa(app, opts.adminDist) : false;
 
   // 根路径：浏览器直接打开 http://<host>:<port>/ 应看到管理台，而不是 API 的 401 JSON。
   // ⚠ 用 302 跳转而不是在 `/` 就地返回 index.html：SPA 产物是**相对基址**（vite `base: "./"`），

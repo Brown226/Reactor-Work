@@ -121,7 +121,11 @@ services:
       # 反馈附件（FBK）：丢了管理台详情里的截图与日志就变成 404
       - feedback-files:/app/data/feedback
     ports:
+      # 用户面：桌面客户端登录/业务调用。此端口上管理台与 /admin/* 均为 404。
       - "127.0.0.1:8791:8791"
+      # 管理面：管理员浏览器开 http://<host>:8792/ 进管理台。
+      # 仓库内 dev 编排只绑回环（与 pg/ldap 同口径）；内网部署版见离线包 compose.yml。
+      - "127.0.0.1:8792:8792"
     depends_on:
       pg:
         condition: service_healthy

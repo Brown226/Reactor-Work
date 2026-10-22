@@ -5,6 +5,8 @@
 
 import { serve } from "@hono/node-server";
 import type { ServerType } from "@hono/node-server";
+import type { Hono } from "hono";
+import type { TokenClaims } from "./auth.js";
 import { loadSecretKey } from "../common/secrets-crypto.js";
 import { ensureAuditSchema } from "../audit/schema.js";
 import { resolveAdminDist } from "./admin-static.js";
@@ -41,10 +43,19 @@ import { closeIdentityDb, createIdentityDb, ensureSchema, type IdentityDb } from
 import { ensurePermissionsSchema } from "./permissions.js";
 import { createPermissionsRoutes } from "./permissions-routes.js";
 import { ensureBuiltinLocalAccounts } from "./seed.js";
-import { createIdentityApp } from "./routes.js";
+import { createIdentityApp, type IdentityAppOptions } from "./routes.js";
+
+/** 与各路由模块保持一致：claims 由 authed 中间件写入 Hono 上下文变量。 */
+type AppEnv = { Variables: { claims: TokenClaims } };
 
 export interface IdentityRuntime {
-  server: ServerType;
+  /**
+   * 监听的 server 列表（1 或 2 个）。
+   *
+   * 端口分离启用时是 `[用户面, 管理面]` 两个；`REACTOR_IDENTITY_ADMIN_PORT` 与
+   * `REACTOR_IDENTITY_PORT` 相等时只有 1 个（保持单端口旧行为，供本地调试与既有脚本使用）。
+   */
+  servers: ServerType[];
   db: IdentityDb;
   cfg: IdentityConfig;
 }
@@ -150,55 +161,98 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
   } else if (envEmbedModel) {
     console.log(`[kb] 向量化模型来自环境变量（管理台未启用）：${envEmbedModel}`);
   }
-  const app = createIdentityApp(cfg, db, { adminDist: resolveAdminDist() });
-  // 管理台 API（T3-1/T3-4）：挂在 authed 组之后，鉴权复用 authed 的 Bearer 中间件，
-  // 路由内部仅再校验 claims.role=platform_admin。
-  app.route("/", createAdminRoutes(db, { secretKey }));
-  // 额度规则与告警（额度分配 P2）：新口径挂在自己的路由文件里；
-  // admin-routes.ts 里旧的 /admin/quota-alerts 已移除（避免同路径双注册 —— Hono 取先注册的那条）。
-  app.route("/", createQuotaRoutes(db));
-  // Skills（S-1 管理面 /admin/skills + S-2 下发面 /me/skills）
-  app.route("/", createSkillsRoutes(db));
-  // Agents（A-1 管理面 /admin/agents + A-2 下发面 /me/agents）
-  app.route("/", createAgentsRoutes(db));
-  // 界面模式权限（/admin/interface-mode-policy；下发字段随 audit 的 /desktop/policy 走）
-  app.route("/", createInterfaceModeRoutes(db));
-  // 软件更新（UPD）：管理面 /admin/updates/*在这里挂（复用 authed 的 Bearer）；
-  // 客户端下发面 /api/v1/releases/electron/* 由 createIdentityApp 的公开段挂（不能进 authed）。
-  app.route("/", createUpdatesRoutes(db));
-  // 反馈 / 需求受理（FBK）：管理面 /admin/feedback/* 挂鉴权段后复用 Bearer；
-  // 客户端提交面 /api/v1/feedback/* 必须留在公开段（Reactor 用户没有官方令牌），见 feedback/routes.ts 头注。
-  app.route("/", createFeedbackAdminRoutes(db));
-  // 标准规范清单（STD）：管理面 /admin/standards/* + 消费面 /v1/standards/index。
-  // 消费面是桌面端审查同步标准库的只读入口，只要 Bearer、不带 role 门槛（见 §4.4.3）。
-  app.route("/", createStandardsAdminRoutes(db));
-  app.route("/", createStandardsQueryRoutes(db));
-  // 术语白名单（TRM）：管理面 /admin/terminology/* + 消费面 /v1/terminology/index。
-  // 端侧把全量术语拉成内存 Set，用于**过滤**校对误报（命中即丢弃），不是检索。
-  app.route("/", createTerminologyAdminRoutes(db));
-  app.route("/", createTerminologyQueryRoutes(db));
-  // 规范库（RUL）：管理面 /admin/rule-libraries/* + 消费面 /v1/rule-libraries/*（仅 published 库）。
-  app.route("/", createRuleLibraryAdminRoutes(db));
-  app.route("/", createRuleLibraryQueryRoutes(db));
-  // 公共知识库（KB-⑥）：/v1/kb/* —— 鉴权与 skills/agents 同一套 claims；
-  // 向量化器经网关 /v1/embeddings（KB-⑤），未配置则向量路降级为词法。
   const embedSource: "admin" | "env" | null =
     kbCfg.embeddingEnabled && kbCfg.embeddingModel ? "admin" : envEmbedModel ? "env" : null;
-  app.route("/", createDatasetsRoutes(db, { schema: kbSchema, ...kbEmbedderDeps(effectiveEmbedModel, embedSource) }));
-  // 权限点（U-2）：挂载在最后 —— 扫描时读的就是「已挂载完整路由表」
-  app.route(
-    "/",
-    createPermissionsRoutes(db, () => app.routes.map((route) => ({ method: route.method, path: route.path }))),
+
+  /**
+   * 业务路由挂载。抽成独立函数是为了让「用户面 / 管理面」两个 app
+   * 共用**完全相同的一份路由表**——只差入口处的 `adminSurface` 拦截。
+   *
+   * ⚠ 不能让用户面少挂 /admin/* 来实现隔离：`permissions.ts` 的 `syncPermissions`
+   *   以实际挂载后的路由表为准清理已不存在的权限码，少挂会把 admin:* 权限点全删掉。
+   */
+  const mountRoutes = (app: Hono<AppEnv>) => {
+    // 管理台 API（T3-1/T3-4）：挂在 authed 组之后，鉴权复用 authed 的 Bearer 中间件，
+    // 路由内部仅再校验 claims.role=platform_admin。
+    app.route("/", createAdminRoutes(db, { secretKey }));
+    // 额度规则与告警（额度分配 P2）：新口径挂在自己的路由文件里；
+    // admin-routes.ts 里旧的 /admin/quota-alerts 已移除（避免同路径双注册 —— Hono 取先注册的那条）。
+    app.route("/", createQuotaRoutes(db));
+    // Skills（S-1 管理面 /admin/skills + S-2 下发面 /me/skills）
+    app.route("/", createSkillsRoutes(db));
+    // Agents（A-1 管理面 /admin/agents + A-2 下发面 /me/agents）
+    app.route("/", createAgentsRoutes(db));
+    // 界面模式权限（/admin/interface-mode-policy；下发字段随 audit 的 /desktop/policy 走）
+    app.route("/", createInterfaceModeRoutes(db));
+    // 软件更新（UPD）：管理面 /admin/updates/*在这里挂（复用 authed 的 Bearer）；
+    // 客户端下发面 /api/v1/releases/electron/* 由 createIdentityApp 的公开段挂（不能进 authed）。
+    app.route("/", createUpdatesRoutes(db));
+    // 反馈 / 需求受理（FBK）：管理面 /admin/feedback/* 挂鉴权段后复用 Bearer；
+    // 客户端提交面 /api/v1/feedback/* 必须留在公开段（Reactor 用户没有官方令牌），见 feedback/routes.ts 头注。
+    app.route("/", createFeedbackAdminRoutes(db));
+    // 标准规范清单（STD）：管理面 /admin/standards/* + 消费面 /v1/standards/index。
+    // 消费面是桌面端审查同步标准库的只读入口，只要 Bearer、不带 role 门槛（见 §4.4.3）。
+    app.route("/", createStandardsAdminRoutes(db));
+    app.route("/", createStandardsQueryRoutes(db));
+    // 术语白名单（TRM）：管理面 /admin/terminology/* + 消费面 /v1/terminology/index。
+    // 端侧把全量术语拉成内存 Set，用于**过滤**校对误报（命中即丢弃），不是检索。
+    app.route("/", createTerminologyAdminRoutes(db));
+    app.route("/", createTerminologyQueryRoutes(db));
+    // 规范库（RUL）：管理面 /admin/rule-libraries/* + 消费面 /v1/rule-libraries/*（仅 published 库）。
+    app.route("/", createRuleLibraryAdminRoutes(db));
+    app.route("/", createRuleLibraryQueryRoutes(db));
+    // 公共知识库（KB-⑥）：/v1/kb/* —— 鉴权与 skills/agents 同一套 claims；
+    // 向量化器经网关 /v1/embeddings（KB-⑤），未配置则向量路降级为词法。
+    app.route("/", createDatasetsRoutes(db, { schema: kbSchema, ...kbEmbedderDeps(effectiveEmbedModel, embedSource) }));
+    // 权限点（U-2）：挂载在最后 —— 扫描时读的就是「已挂载完整路由表」
+    app.route(
+      "/",
+      createPermissionsRoutes(db, () => app.routes.map((route) => ({ method: route.method, path: route.path }))),
+    );
+  };
+
+  /** 构造一个完整 app（两种面仅差 `adminSurface`，路由表完全相同）。 */
+  const buildApp = (opts: IdentityAppOptions) => {
+    const app = createIdentityApp(cfg, db, opts);
+    mountRoutes(app);
+    return app;
+  };
+
+  const adminDist = resolveAdminDist();
+  /**
+   * 端口分离开关：管理端口与用户端口相同 ⇒ 退回单端口旧行为。
+   *
+   * 为什么要这个退路：既有本地调试、`p4-acceptance.mjs`、管理台 vite 反代都硬编码 8791，
+   * 让它们全部改端口属于无收益的连带改动。部署时只要 `.env` 里把两者设成不同端口即生效。
+   */
+  const separated = cfg.adminPort !== cfg.port;
+
+  const servers: ServerType[] = [];
+  const userApp = buildApp({ adminSurface: !separated, ...(separated ? {} : { adminDist }) });
+  servers.push(
+    serve({ fetch: userApp.fetch, port: cfg.port, hostname: cfg.host }, (info) => {
+      console.log(`[identity] listening on http://${cfg.host}:${info.port} (authMode=${cfg.authMode})`);
+      console.log(`[identity] pg=${cfg.dbUrl}`);
+      console.log(`[identity] ldap=${cfg.ldap.url} base=${cfg.ldap.baseDn} loginAttr=${cfg.ldap.loginAttr}`);
+      if (separated) console.log(`[identity] 用户面：管理台与管理 API 均返回 404（管理面见 ${cfg.adminPort}）`);
+    }),
   );
-  const server = serve({ fetch: app.fetch, port: cfg.port, hostname: cfg.host }, (info) => {
-    console.log(`[identity] listening on http://${cfg.host}:${info.port} (authMode=${cfg.authMode})`);
-    console.log(`[identity] pg=${cfg.dbUrl}`);
-    console.log(`[identity] ldap=${cfg.ldap.url} base=${cfg.ldap.baseDn} loginAttr=${cfg.ldap.loginAttr}`);
-  });
-  return { server, db, cfg };
+  if (separated) {
+    // 管理面：同一进程、同一连接池、同一套 JWT；只多一个监听端口与管理台静态托管。
+    const adminApp = buildApp({ adminSurface: true, adminDist });
+    servers.push(
+      serve({ fetch: adminApp.fetch, port: cfg.adminPort, hostname: cfg.host }, (info) => {
+        console.log(`[identity] admin listening on http://${cfg.host}:${info.port}`);
+        console.log(`[identity] 管理面：管理台在 /console/，GET / 会 302 过去`);
+      }),
+    );
+  }
+  return { servers, db, cfg };
 }
 
 export async function stopIdentityServer(rt: IdentityRuntime): Promise<void> {
   await closeIdentityDb(rt.db);
-  await new Promise<void>((resolve) => rt.server.close(() => resolve()));
+  await Promise.all(
+    rt.servers.map((server) => new Promise<void>((resolve) => server.close(() => resolve()))),
+  );
 }
