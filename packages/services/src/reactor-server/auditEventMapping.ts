@@ -69,7 +69,7 @@ export function hasBillableUsage(delta: ModelCallUsageDelta): boolean {
  * `reasoningTokens` **不进 `AuditUsage`**：服务端的四段价只认 input/output/cacheRead/cacheWrite
  * （它已包含在 output 里），单独上行会被当成额外计费项。
  */
-export function buildAuditUsage(delta: ModelCallUsageDelta): AuditUsage {
+export function buildAuditUsage(delta: ModelCallUsageDelta, directBaseUrl?: string): AuditUsage {
   return {
     inputTokens: positiveOrUndefined(delta.usage.inputTokens),
     outputTokens: positiveOrUndefined(delta.usage.outputTokens),
@@ -78,6 +78,8 @@ export function buildAuditUsage(delta: ModelCallUsageDelta): AuditUsage {
     totalTokens: positiveOrUndefined(delta.usage.totalTokens),
     model: delta.modelId,
     provider: delta.providerId,
+    // 只有直连调用才带：服务端凭它补记账本，走网关的由网关自己记
+    ...(directBaseUrl ? { directBaseUrl } : {}),
   };
 }
 
@@ -97,7 +99,7 @@ export function resolveAuditEventId(delta: ModelCallUsageDelta): string | null {
  */
 export function buildModelCallAuditEvent(
   delta: ModelCallUsageDelta,
-  options: { ts: string },
+  options: { ts: string; directBaseUrl?: string },
 ): AuditEventInput | null {
   const eventId = resolveAuditEventId(delta);
   if (!eventId) return null;
@@ -111,7 +113,7 @@ export function buildModelCallAuditEvent(
     durationMs: positiveOrUndefined(delta.durationMs),
     errorCode: delta.errorCode,
     summary: truncateAuditSummary(delta.modelId),
-    usage: buildAuditUsage(delta),
+    usage: buildAuditUsage(delta, options.directBaseUrl),
   };
 }
 

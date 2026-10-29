@@ -77,6 +77,13 @@ export interface AuditUsage {
   currency?: string;
   model?: string;
   provider?: string;
+  /**
+   * 本次调用是否走了「客户端直连」（2026-10-22）。非空 = 端侧直接连了该上游地址，
+   * 网关没有参与转发，因此**账本里不会有这条**；服务端收到事件后按此标记补写 usage_ledger，
+   * 否则直连流量的用量报表与部门额度会整体漏计。
+   * 经网关转发的调用不填该字段（网关已记账，再补会重复）。
+   */
+  directBaseUrl?: string;
 }
 
 /** 端侧上报的单条事件。 */

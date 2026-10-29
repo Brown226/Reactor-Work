@@ -25,6 +25,8 @@ export interface ReactorUsageReportingDeps {
   postBatch: AuditBatchPoster;
   isEnterpriseLoggedIn: () => boolean | Promise<boolean>;
   isEnterpriseProvider: (providerId: string) => boolean | Promise<boolean>;
+  /** 直连上游地址解析：非空时服务端会补记账本（直连请求不过网关）。 */
+  resolveDirectBaseUrl?: (providerId: string) => string | null | Promise<string | null>;
   /** 会话流用量事件源；缺省 = 只装 outbox/flush（探针用例）。 */
   subscribeUsageDelta?: (listener: (delta: ModelCallUsageDelta) => void) => () => void;
   /** 行为审计事实源（洞②）；与用量源并列，两者皆缺省时 start() 不订阅任何流。 */
@@ -59,6 +61,7 @@ export function createReactorUsageReporting(
     postBatch: deps.postBatch,
     isEnterpriseLoggedIn: deps.isEnterpriseLoggedIn,
     isEnterpriseProvider: deps.isEnterpriseProvider,
+    ...(deps.resolveDirectBaseUrl ? { resolveDirectBaseUrl: deps.resolveDirectBaseUrl } : {}),
     ...(deps.subscribeUsageDelta ? { subscribeUsageDelta: deps.subscribeUsageDelta } : {}),
     ...(deps.subscribeAuditFacts ? { subscribeAuditFacts: deps.subscribeAuditFacts } : {}),
     ...(deps.debounceMs !== undefined ? { debounceMs: deps.debounceMs } : {}),

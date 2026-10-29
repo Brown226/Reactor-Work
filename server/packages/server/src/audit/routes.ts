@@ -30,7 +30,7 @@ import {
 // 额度评估统一走 metering 域（P2）：用量取账本，支持 org/dept/user 多维度规则
 import { evaluateQuotaFor } from "../metering/quota-eval.js";
 // 报表口径切账本（P4）：/desktop/usage/summary 改用账本聚合
-import { summarizeLedgerUsage, type UsageLedgerFilter } from "../metering/repo.js";
+import { recordUsage, summarizeLedgerUsage, type UsageLedgerFilter } from "../metering/repo.js";
 // 编程模式受众（按 viewer 计算 allowedInterfaceModes，见 interface-mode/repo.ts）
 import { allowedInterfaceModesFor, getInterfaceModePolicy } from "../interface-mode/repo.js";
 
@@ -171,6 +171,73 @@ function toCsv(events: Awaited<ReturnType<typeof queryAudit>>["events"]): string
   return `\uFEFF${lines.join("\n")}`;
 }
 
+/** 审计 outcome → 账本 outcome（账本只认 ok/error/aborted 三态）。 */
+function ledgerOutcome(outcome: AuditEventInput["outcome"]): "ok" | "error" | "aborted" {
+  if (outcome === "error" || outcome === "denied") return "error";
+  if (outcome === "cancelled") return "aborted";
+  return "ok";
+}
+
+/**
+ * 直连调用补记账本（2026-10-22）。
+ *
+ * **为什么需要**：桌面端直连上游时请求不过网关，网关侧 metering 不会写 `usage_ledger`；
+ * 而 `/desktop/usage/summary` 与部门额度评估**都以账本为唯一数据源**（见下方端点注释）。
+ * 不补的话，直连流量的用量报表会偏低、部门额度算不到——这是「按模型分流」必须配套的一环。
+ *
+ * **口径约束**（三条都不能破）：
+ *  · 只认带 `usage.directBaseUrl` 的 `model_call`：经网关转发的调用不带该字段，网关已记过账，
+ *    再补就是重复计费；
+ *  · 被 `validateEvent` 拒掉的事件不记账：不能凭非法上报产生费用；
+ *  · `request_id` 用端侧 `eventId`，离线重传命中 `ON CONFLICT DO NOTHING`，天然幂等。
+ *
+ * **已知取舍**：账本权威性由「网关事实」降为「网关 + 端侧上报」。端侧漏报或崩溃时，
+ * 那次直连调用的用量会缺失；对应的 `model_call` 审计事件仍在，可用于事后对账。
+ */
+async function recordDirectCallsToLedger(
+  db: IdentityDb,
+  actor: AuditActor,
+  events: AuditEventInput[],
+  rejected: ReadonlyArray<{ eventId: string }>,
+): Promise<void> {
+  const rejectedIds = new Set(rejected.map((r) => r.eventId));
+  for (const e of events) {
+    if (e.action !== "model_call") continue;
+    const usage = e.usage;
+    if (!usage?.directBaseUrl) continue;
+    if (rejectedIds.has(e.eventId)) continue;
+    // 全 0 的调用不计账（与端侧 hasBillableUsage、网关 metering 同一口径）
+    const billable =
+      (usage.totalTokens ?? 0) > 0 ||
+      (usage.inputTokens ?? 0) > 0 ||
+      (usage.outputTokens ?? 0) > 0;
+    if (!billable) continue;
+    const hasCost = typeof usage.cost === "number" && Number.isFinite(usage.cost);
+    await recordUsage(db, {
+      requestId: e.eventId,
+      ts: new Date(e.ts),
+      subjectKind: "user",
+      uid: actor.uid,
+      deptId: actor.deptId,
+      deptPath: actor.deptPath,
+      model: usage.model ?? null,
+      // 存直连地址而不是供应商编码：报表里能一眼看出「这条没走网关」
+      provider: usage.directBaseUrl,
+      apiShape: "openai",
+      inputTokens: usage.inputTokens ?? null,
+      outputTokens: usage.outputTokens ?? null,
+      cacheReadTokens: usage.cacheReadTokens ?? null,
+      cacheWriteTokens: usage.cacheWriteTokens ?? null,
+      totalTokens: usage.totalTokens ?? null,
+      cost: hasCost ? usage.cost! : null,
+      costSource: hasCost ? "client" : "none",
+      currency: usage.currency ?? null,
+      outcome: ledgerOutcome(e.outcome),
+      httpStatus: null,
+    });
+  }
+}
+
 export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
 
@@ -190,6 +257,13 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
 
     const actor = await resolveActor(db, claims);
     const result = await insertAuditBatch(db, actor, body.events as AuditEventInput[]);
+    /*
+     * 直连补记账本：必须在审计入库之后做 —— 先拿到 rejected 名单，
+     * 才能保证「被拒的非法事件不会产生费用」。失败不影响上报本身（审计是主路径）。
+     */
+    await recordDirectCallsToLedger(db, actor, body.events as AuditEventInput[], result.rejected).catch((e) => {
+      console.warn(`[audit] 直连补记账本失败（不影响上报）：${e instanceof Error ? e.message : String(e)}`);
+    });
     /**
      * 额度评估（P2 起统一走 metering 域的新引擎）：
      *  · 用量取**账本**（网关权威），不再用本批上报的事件 —— 端侧漏报不会让额度失真；

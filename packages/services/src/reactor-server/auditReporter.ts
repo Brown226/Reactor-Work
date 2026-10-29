@@ -22,6 +22,11 @@ export interface ModelCallReportContext {
   enterpriseLoggedIn: boolean;
   /** 本次调用的 provider 是否为企业哨兵条目（`isReactorServerManagedApiKey`）。 */
   enterpriseProvider: boolean;
+  /**
+   * 直连上游地址（2026-10-22）：非空 = 本次调用未经网关。
+   * 服务端据此把用量补记进计量账本；走网关时不填（网关已记账）。
+   */
+  directBaseUrl?: string;
 }
 
 /** 是否该把这条模型调用计入上报（三个条件同时满足；querySource v1 不区分）。 */
@@ -66,7 +71,10 @@ export function createAuditReporter(options: {
   return {
     async recordModelCallUsage(delta, context) {
       if (!shouldReportModelCall(delta, context)) return false;
-      const event = buildModelCallAuditEvent(delta, { ts: now() });
+      const event = buildModelCallAuditEvent(delta, {
+        ts: now(),
+        ...(context.directBaseUrl ? { directBaseUrl: context.directBaseUrl } : {}),
+      });
       if (!event) return false;
       await options.outbox.append([event]);
       return true;

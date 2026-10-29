@@ -86,7 +86,9 @@ export function validateEvent(e: AuditEventInput, now = Date.now()): string | nu
   if (u !== undefined) {
     if (typeof u !== "object" || u === null) return "usage 非法";
     for (const [k, v] of Object.entries(u)) {
-      if (k === "currency" || k === "model" || k === "provider") continue;
+      // 字符串型分项放行：这些不是 token 计数，不能走 numOrNull 校验。
+      // `directBaseUrl` 是直连标记（见 shared/src/audit.ts 注释），漏加会被当成非法数字而拒掉整条事件。
+      if (k === "currency" || k === "model" || k === "provider" || k === "directBaseUrl") continue;
       if (v !== undefined && numOrNull(v) === null) return `usage.${k} 非法`;
     }
   }

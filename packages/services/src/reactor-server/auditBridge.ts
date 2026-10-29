@@ -30,6 +30,12 @@ export interface ReactorAuditBridgeDeps {
   isEnterpriseLoggedIn: () => boolean | Promise<boolean>;
   isEnterpriseProvider: (providerId: string) => boolean | Promise<boolean>;
   /**
+   * 该 provider 若为「直连」条目，返回其上游地址（2026-10-22）。
+   * 非空会让服务端把这条用量补记进计量账本——直连请求不过网关，没人替它记账。
+   * 返回 null = 经网关转发（网关已记账，不得重复）。
+   */
+  resolveDirectBaseUrl?: (providerId: string) => string | null | Promise<string | null>;
+  /**
    * 用量事件源。缺省 = 只装 outbox/flush（探针、只补传场景），`start()` 不订阅任何流。
    */
   subscribeUsageDelta?: (listener: (delta: ModelCallUsageDelta) => void) => () => void;
@@ -73,13 +79,15 @@ export function createReactorAuditBridge(deps: ReactorAuditBridgeDeps): ReactorA
 
   // 一条增量 = 一次异步判定 + 入队；并发到达时各自独立（outbox 内部串行 append 语义）。
   async function record(delta: ModelCallUsageDelta): Promise<void> {
-    const [enterpriseLoggedIn, enterpriseProvider] = await Promise.all([
+    const [enterpriseLoggedIn, enterpriseProvider, directBaseUrl] = await Promise.all([
       deps.isEnterpriseLoggedIn(),
       deps.isEnterpriseProvider(delta.providerId),
+      deps.resolveDirectBaseUrl ? deps.resolveDirectBaseUrl(delta.providerId) : Promise.resolve(null),
     ]);
     const enqueued = await reporter.recordModelCallUsage(delta, {
       enterpriseLoggedIn,
       enterpriseProvider,
+      ...(directBaseUrl ? { directBaseUrl } : {}),
     });
     if (enqueued) scheduler.schedule();
   }

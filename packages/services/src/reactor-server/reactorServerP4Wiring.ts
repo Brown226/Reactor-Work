@@ -50,6 +50,11 @@ export interface ReactorServerP4WiringDeps {
    * 缺省时回退到旧判定，行为与改造前一致。
    */
   isManagedProvider?: (providerId: string) => Promise<boolean>;
+  /**
+   * 该 provider 若是「直连」条目，返回其上游地址（2026-10-22）。
+   * 服务端凭它把直连用量补记进计量账本（直连请求不过网关，无人记账）。
+   */
+  resolveDirectBaseUrl?: (providerId: string) => Promise<string | null>;
   subscribeUsageDelta?: (listener: (delta: ModelCallUsageDelta) => void) => () => void;
   /** 行为审计事实源（洞②）；Host 装配注入（订阅 CLI 的 tool/permission 生命周期事实）。 */
   subscribeAuditFacts?: (listener: (fact: BehaviorAuditFact) => void) => () => void;
@@ -111,6 +116,7 @@ export function createReactorServerP4Wiring(
     },
     isEnterpriseLoggedIn: () => deps.hasUsableSession(),
     isEnterpriseProvider: (providerId) => isEnterpriseProvider(providerId),
+    ...(deps.resolveDirectBaseUrl ? { resolveDirectBaseUrl: deps.resolveDirectBaseUrl } : {}),
     ...(deps.subscribeUsageDelta ? { subscribeUsageDelta: deps.subscribeUsageDelta } : {}),
     ...(deps.subscribeAuditFacts ? { subscribeAuditFacts: deps.subscribeAuditFacts } : {}),
     ...(deps.auditFlushDebounceMs !== undefined ? { debounceMs: deps.auditFlushDebounceMs } : {}),

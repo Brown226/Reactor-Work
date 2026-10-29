@@ -120,6 +120,7 @@ export function createReactorServerService(
     ensureAccessToken,
     readManagedProviderEntry,
     isManagedProvider,
+    resolveDirectBaseUrl,
     ...(options.subscribeUsageDelta ? { subscribeUsageDelta: options.subscribeUsageDelta } : {}),
     ...(options.subscribeAuditFacts ? { subscribeAuditFacts: options.subscribeAuditFacts } : {}),
     ...(options.auditOutboxPath !== undefined ? { auditOutboxPath: options.auditOutboxPath } : {}),
@@ -482,6 +483,31 @@ export function createReactorServerService(
     if (!provider) return false;
     const access = provider.personalConfig?.access as { apiKey?: unknown } | undefined;
     return isReactorServerManagedApiKey(access?.apiKey);
+  }
+
+  /**
+   * 该 provider 若是「直连」条目，返回其上游地址（2026-10-22）。
+   *
+   * 判据：托管 provider 只有两类 —— 网关 provider（baseUrl = `deriveGatewayBaseUrl`）
+   * 与各直连 provider（baseUrl = 上游地址）。所以「是托管的 且 地址不是网关」即直连。
+   *
+   * 为什么必须区分：直连请求不过网关，网关侧不会写计量账本；只有端侧在用量事件里
+   * 带上这个地址，服务端才能补记，否则直连流量的报表与部门额度会整体漏计。
+   * 经网关转发的调用返回 null —— 网关已经记过账，再补就是重复计费。
+   */
+  async function resolveDirectBaseUrl(providerId: string): Promise<string | null> {
+    const view = await providerSettings.getView();
+    const provider = view.providers.find((candidate) => candidate.providerId === providerId);
+    if (!provider) return null;
+    // 与 isManagedProvider 同判据：先确认是本服务托管的条目，用户自建 provider 不进企业账本
+    const access = provider.personalConfig?.access as { apiKey?: unknown } | undefined;
+    if (!isReactorServerManagedApiKey(access?.apiKey)) return null;
+    // 地址在 `api.baseUrl`（与 ensureManagedProvider 写入、pruneStaleDirectProviders 读取同路径）
+    const baseUrl = provider.personalConfig?.api?.baseUrl ?? provider.effectiveConfig?.api?.baseUrl;
+    if (typeof baseUrl !== "string" || baseUrl.trim() === "") return null;
+    const serverUrl = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.serverUrl);
+    if (!serverUrl) return null;
+    return baseUrl === deriveGatewayBaseUrl(serverUrl) ? null : baseUrl;
   }
 
   async function syncModels(): Promise<readonly string[]> {

@@ -36,8 +36,11 @@ export interface UsageLedgerEntry {
   cacheWriteTokens: number | null;
   totalTokens: number | null;
   cost: number | null;
-  /** server = 按四段价核算；none = 该模型无价目 */
-  costSource: "server" | "none" | null;
+  /**
+   * server = 网关按四段价核算；none = 该模型无价目；
+   * client = 直连调用由端侧上报费用（网关没参与转发，无法自行核算）。
+   */
+  costSource: "server" | "none" | "client" | null;
   currency: string | null;
   /** 计费时所用的费率快照（事后甄别口径用；无价目时为 null） */
   pricingSnapshot?: unknown;
