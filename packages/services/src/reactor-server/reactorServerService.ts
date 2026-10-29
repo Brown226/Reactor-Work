@@ -791,10 +791,37 @@ export function createReactorServerService(
     providerId: string,
     modelId: string,
   ): Promise<ReactorServerRequestAuth | null> {
-    const managedId = await readManagedProviderId();
-    if (!managedId || providerId !== managedId) return null;
+    /*
+     * 2026-10-29 修复：这里原来只认「网关 provider 的 id」（readManagedProviderId 读的是
+     * 登录时写入凭据的那一个）。直连 provider 是另一批 id，不在该记录里，于是：
+     *
+     *   用户选了直连模型 → resolveGatewayAuth 返回 null
+     *   → zcodeAgentService 抛「企业服务端未授权：请在设置中登录企业账号」
+     *   → 用户明明已登录，却被要求重新登录，且请求根本发不出去。
+     *
+     * 判定改为「哨兵 apiKey 扫描」，与 isEnterpriseProvider / resolveDirectBaseUrl 同口径：
+     * 网关 provider 与各直连 provider 都属于企业托管，不能只认其中一个 id。
+     */
+    if (!(await isManagedProvider(providerId))) return null;
     const serverUrl = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.serverUrl);
     if (!serverUrl) return null;
+
+    const directBaseUrl = await resolveDirectBaseUrl(providerId);
+    if (directBaseUrl) {
+      /*
+       * 直连不经网关，网关令牌没有意义。给哨兵占位值而不是 null：
+       * null 会被上层解读为"未登录"，正是本次故障的表现。
+       * 上游（我方内网模型服务）不校验凭据；若将来接的是要求密钥的上游，
+       * 这里应改为读取该 provider 自己配置里的 key。
+       */
+      logger.debug(undefined, "直连 provider 请求使用占位凭据", {
+        providerId,
+        modelId,
+        directBaseUrl,
+      });
+      return { apiKey: REACTOR_SERVER_API_KEY_PLACEHOLDER };
+    }
+
     logger.debug(undefined, "为企业模型请求注入网关令牌", { providerId, modelId });
     return { apiKey: await ensureGatewayToken(serverUrl) };
   }
