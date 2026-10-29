@@ -647,6 +647,8 @@ export function createGatewayHandlers(
             // 出口 IP 从服务器变成用户自己的机器（内网上游按源 IP 限并发时是唯一解）。
             // 为空/缺省时端侧完全不感知，行为与改造前逐字一致。
             direct_base_url: m.directBaseUrl ?? null,
+            // 2026-10-29：直连分组按供应商命名（端侧回退到地址派生名，老端忽略即可）
+            provider_name: m.providerName ?? null,
           })),
         });
       }

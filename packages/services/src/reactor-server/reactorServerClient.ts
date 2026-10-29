@@ -114,6 +114,13 @@ export interface ReactorServerModelInfo {
    * 用量与审计**不依赖流量经网关**（见 reactorServerP4Wiring 的 isEnterpriseProvider），管控不丢。
    */
   readonly directBaseUrl: string | null;
+  /**
+   * 所属供应商在管理台的显示名（网关 `provider_name`，2026-10-29）；null = 老网关未下发。
+   *
+   * 用途只有一个：给直连分组取一个员工看得懂的名字（`· 直连 · Qwen（本部）`），
+   * 而不是从 URL 派生的 `qwen_medium`。为 null 时端侧回退地址派生规则，行为不变。
+   */
+  readonly providerName: string | null;
 }
 
 /** 只接受正整数：0/负数/小数/字符串一律按「未提供」处理，避免把脏值写进模型配置。 */
@@ -314,6 +321,8 @@ export function createReactorServerClient(apiClient: ApiClient) {
           reasoning_map?: unknown;
           /** 客户端直连地址（2026-10-22）；老网关不下发，按 null 处理 */
           direct_base_url?: unknown;
+          /** 供应商显示名（2026-10-29）；老网关不下发，端侧回退地址派生名 */
+          provider_name?: unknown;
         }[];
       }>(`${gatewayBaseUrl}/models`, { method: "GET", apiKey: gatewayToken });
       const list = Array.isArray(data?.data) ? data.data : [];
@@ -349,6 +358,10 @@ export function createReactorServerClient(apiClient: ApiClient) {
           directBaseUrl:
             typeof item.direct_base_url === "string" && item.direct_base_url.trim()
               ? item.direct_base_url.trim()
+              : null,
+          providerName:
+            typeof item.provider_name === "string" && item.provider_name.trim()
+              ? item.provider_name.trim()
               : null,
         });
       }

@@ -389,7 +389,16 @@ export function createReactorServerService(
    * 为什么按 baseUrl 而不是固定 provider id 识别：`createPersonalProvider` 的 id 由配置服务生成，
    * 客户端无权指定，写死 id 等于依赖一个不属于我们的约定（原有网关 provider 同理）。
    */
-  async function ensureManagedProvider(baseUrl: string, providerName: string): Promise<string> {
+  async function ensureManagedProvider(
+    baseUrl: string,
+    providerName: string,
+    /**
+     * 2026-10-29：网关 provider 在「没有任何经网关转发的模型」时置 hidden。
+     * hidden 只影响模型选择列表（model-selection-config / resolver 均跳过 hidden），
+     * 不影响凭据里的 providerId —— 授权层与网关令牌换发仍靠它定位。
+     */
+    visibility: "visible" | "hidden" = "visible",
+  ): Promise<string> {
     const view = await providerSettings.getView();
     const mine = view.providers.filter((provider) => provider.personalConfig !== undefined);
     const existing = mine.find(
@@ -404,7 +413,7 @@ export function createReactorServerService(
       group: "standard-personal",
       access: { type: "api-key", apiKey: REACTOR_SERVER_API_KEY_PLACEHOLDER },
       api: { type: "openai-chat-completions", baseUrl },
-      visibility: "visible",
+      visibility,
     };
     await providerSettings.savePersonalProviderOverlay(providerId as ProviderId, config, {
       providerName,
@@ -416,7 +425,21 @@ export function createReactorServerService(
     gatewayBaseUrl: string,
     models: readonly ReactorServerModelInfo[],
   ): Promise<void> {
-    const providerId = await ensureManagedProvider(gatewayBaseUrl, REACTOR_SERVER_PROVIDER_NAME);
+    /*
+     * 2026-10-29：没有非直连模型时把网关 provider 置为 hidden。
+     *
+     * 反例（本次修复前）：所有供应商都配了 direct_base_url，网关 provider 仍以 visible 存在，
+     * 模型数为 0，用户在模型下拉里看到一个空的「Reactor 企业服务端」，误以为是另一个服务端；
+     * 叠加直连分组后就是"三个分组、模型名还一样、不知道该选哪个"。
+     *
+     * 不能直接删除：这条记录是登录凭据里 providerId 的锚点，授权层与网关令牌换发都依赖它。
+     * 只调可见性，服务端恢复非直连模型后下一次 sync 会自动回到 visible，是可逆的。
+     */
+    const providerId = await ensureManagedProvider(
+      gatewayBaseUrl,
+      REACTOR_SERVER_PROVIDER_NAME,
+      models.length > 0 ? "visible" : "hidden",
+    );
     cachedProviderId = providerId;
     await credentials.save(REACTOR_SERVER_CREDENTIAL_KEYS.providerId, providerId);
     await reconcileProviderModels(providerId, models);
@@ -438,7 +461,15 @@ export function createReactorServerService(
    * `/<模型组>/v1`），没有则退回 hostname。地址相同时本来就复用同一 provider，
    * 不会进到这里，所以无需再拼接完整 URL。
    */
-  function directProviderName(baseUrl: string): string {
+  function directProviderName(baseUrl: string, providerName?: string | null): string {
+    /*
+     * 2026-10-29：优先用管理台里的供应商名。
+     * 员工对「Qwen（本部）」有认知，对 URL 派生的「qwen_medium」没有 —— 后者只在
+     * 老网关不下发 provider_name 时兜底，保证升级前后都能取到名字。
+     */
+    if (typeof providerName === "string" && providerName.trim()) {
+      return `${DIRECT_PROVIDER_NAME} · ${providerName.trim()}`;
+    }
     try {
       const parsed = new URL(baseUrl);
       const segments = parsed.pathname
@@ -473,6 +504,7 @@ export function createReactorServerService(
   async function claimDirectProviderName(
     baseUrl: string,
     reserved: ReadonlySet<string>,
+    providerName?: string | null,
   ): Promise<string> {
     const normalize = (value: string | null | undefined): string =>
       (value ?? "").trim().toLocaleLowerCase();
@@ -495,7 +527,7 @@ export function createReactorServerService(
       if (name) taken.add(name);
     }
 
-    const base = directProviderName(baseUrl);
+    const base = directProviderName(baseUrl, providerName);
     let host = "";
     try {
       host = new URL(baseUrl).host;
@@ -625,15 +657,38 @@ export function createReactorServerService(
      * 为什么不做"非直连也直连"：只有被限并发的上游才需要，其余的经网关能保留统一限流与审计。
      */
     const directGroups = new Map<string, ReactorServerModelInfo[]>();
-    const gatewayModels: ReactorServerModelInfo[] = [];
     for (const model of chatModels) {
       if (model.directBaseUrl && model.directBaseUrl !== gatewayBaseUrl) {
         const list = directGroups.get(model.directBaseUrl);
         if (list) list.push(model);
         else directGroups.set(model.directBaseUrl, [model]);
-      } else {
-        gatewayModels.push(model);
       }
+    }
+    /*
+     * 同名模型直连优先（2026-10-29）。
+     *
+     * 反例：聚合平台与官方供应商都有 `deepseek-v4-flash`，一个配了直连、一个走网关，
+     * 下拉里出现两个同名条目，用户不知道该选哪个。
+     * 规则：直连组已占用的模型 id，网关组不再重复下发。
+     * 取舍：该模型此后只能走直连地址；若该地址在员工机器上不可达，这个模型就不可用，
+     * 需要管理员在管理台撤掉该供应商的直连地址才会回落到网关。
+     */
+    const directModelIds = new Set<string>();
+    for (const list of directGroups.values()) {
+      for (const model of list) directModelIds.add(model.id);
+    }
+    const gatewayModels: ReactorServerModelInfo[] = [];
+    let shadowedByDirect = 0;
+    for (const model of chatModels) {
+      if (model.directBaseUrl && model.directBaseUrl !== gatewayBaseUrl) continue;
+      if (directModelIds.has(model.id)) {
+        shadowedByDirect += 1;
+        continue;
+      }
+      gatewayModels.push(model);
+    }
+    if (shadowedByDirect > 0) {
+      logger.info(undefined, "同名模型直连优先，网关组已剔除重复条目", { count: shadowedByDirect });
     }
 
     await writeEnterpriseProvider(gatewayBaseUrl, gatewayModels);
@@ -645,7 +700,9 @@ export function createReactorServerService(
     const reservedDirectNames = new Set<string>();
     for (const [baseUrl, list] of directGroups) {
       try {
-        const name = await claimDirectProviderName(baseUrl, reservedDirectNames);
+        // 分组名优先取该组第一个模型的供应商名；同 baseUrl 被多个供应商共用时取第一个
+        const providerName = list[0]?.providerName ?? null;
+        const name = await claimDirectProviderName(baseUrl, reservedDirectNames, providerName);
         reservedDirectNames.add(name.trim().toLocaleLowerCase());
         const providerId = await ensureManagedProvider(baseUrl, name);
         await reconcileProviderModels(providerId, list);

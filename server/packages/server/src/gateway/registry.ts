@@ -47,6 +47,14 @@ export interface ModelEntry {
    * 让出口 IP 变成各用户机器自己的（内网上游按源 IP 限并发时这是唯一解）。
    */
   directBaseUrl?: string | null;
+  /**
+   * 所属供应商在管理台的显示名（`ai_providers.name`，2026-10-29）。
+   *
+   * 端侧按 `direct_base_url` 拆直连 provider 时，用它做分组名称 —— 比从 URL 派生
+   * 出的 `qwen_medium` 更贴近管理台的叫法，员工一眼能对上"这是哪个供应商"。
+   * 老网关不下发该字段时端侧回退原有的地址派生规则。
+   */
+  providerName?: string | null;
   /** 可见范围（P2）：与 skills/agents 同口径（all / role / dept / user，命中任一即可见） */
   scope: { kind: string; roles: string[]; deptIds: number[]; uids: string[] };
   /**
@@ -415,6 +423,8 @@ export async function createRegistryFromDb(
       currency: string | null;
       /** 客户端直连地址（2026-10-22）：NULL = 该供应商模型照旧经网关转发 */
       direct_base_url: string | null;
+      /** 供应商显示名（2026-10-29）：端侧据此给直连分组取名 */
+      provider_name: string | null;
       /** 建库时钉住的参数（JSONB）；当前用于 rerank 的向量维度等 */
       params: unknown;
       scope_kind: string | null;
@@ -422,7 +432,7 @@ export async function createRegistryFromDb(
       scope_dept_ids: number[] | null;
       scope_uids: string[] | null;
     }>(
-      `SELECT p.code, m.model, m.display_name, m.model_type, m.features, m.max_context, m.max_output, m.pricing, m.currency,
+      `SELECT p.code, p.name AS provider_name, m.model, m.display_name, m.model_type, m.features, m.max_context, m.max_output, m.pricing, m.currency,
               p.direct_base_url, m.params, m.scope_kind, m.scope_roles, m.scope_dept_ids, m.scope_uids
        FROM ai_models m JOIN ai_providers p ON p.id = m.provider_id
        WHERE m.enabled AND p.enabled
@@ -440,6 +450,8 @@ export async function createRegistryFromDb(
         pricing: normalizePricing(m.pricing),
         currency: m.currency ?? null,
         directBaseUrl: m.direct_base_url ?? null,
+        // 2026-10-29：端侧给直连分组取名用；老端忽略该字段即可
+        providerName: typeof m.provider_name === "string" && m.provider_name.trim() ? m.provider_name.trim() : null,
         ...(m.params !== null && typeof m.params === "object" ? { params: m.params as Record<string, unknown> } : {}),
         ...parseReasoningSpec(
           m.params !== null && typeof m.params === "object" ? (m.params as Record<string, unknown>) : undefined,
