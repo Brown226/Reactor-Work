@@ -456,6 +456,70 @@ export function createReactorServerService(
   }
 
   /**
+   * 为直连地址分配一个**绝不与现有 provider 冲突**的显示名（2026-10-29）。
+   *
+   * 为什么需要两层：`directProviderName` 只按路径末段取名，可读性最好，但
+   * `a.example.com/qwen/v1` 与 `b.example.com/qwen/v1` 会取到同一个名字。
+   * 而 `ProviderConfigService` 强制用户可见名称唯一（`assertProviderLabelMutationIsUnique`），
+   * 撞名会抛错并把整次 syncModels（进而整次登录）带崩。
+   *
+   * 规则：短名 → 已被占则追加 host → 仍被占则追加序号 → 最后退回完整地址。
+   * 比较口径用 `toLocaleLowerCase`，与 ProviderConfigService 的唯一性校验保持一致，
+   * 否则会出现"我们以为不冲突、它判定冲突"的分歧。
+   *
+   * `reserved` 是本轮已分配的名字：同一次 sync 里多个地址先后创建，
+   * provider 视图在第二次读之前可能还没反映第一个的结果。
+   */
+  async function claimDirectProviderName(
+    baseUrl: string,
+    reserved: ReadonlySet<string>,
+  ): Promise<string> {
+    const normalize = (value: string | null | undefined): string =>
+      (value ?? "").trim().toLocaleLowerCase();
+
+    const view = await providerSettings.getView();
+    // 该地址自己的 provider 不计入"占用"：复用场景要允许它继续用原来的名字
+    const selfIds = new Set<string>(
+      view.providers
+        .filter(
+          (provider) =>
+            provider.personalConfig !== undefined &&
+            provider.effectiveConfig.api?.baseUrl === baseUrl,
+        )
+        .map((provider) => String(provider.providerId)),
+    );
+    const taken = new Set<string>(reserved);
+    for (const provider of view.providers) {
+      if (selfIds.has(String(provider.providerId))) continue;
+      const name = normalize(provider.providerName);
+      if (name) taken.add(name);
+    }
+
+    const base = directProviderName(baseUrl);
+    let host = "";
+    try {
+      host = new URL(baseUrl).host;
+    } catch {
+      host = "";
+    }
+
+    const candidates: string[] = [base];
+    if (host) {
+      candidates.push(`${base} (${host})`);
+      for (let index = 2; index <= 20; index += 1) candidates.push(`${base} (${host}) ${index}`);
+    } else {
+      for (let index = 2; index <= 20; index += 1) candidates.push(`${base} ${index}`);
+    }
+    // 最后一档用完整地址：同一地址永远复用同一个 provider，不会走到这里两次
+    candidates.push(`${base} (${baseUrl})`);
+
+    for (const candidate of candidates) {
+      if (!taken.has(normalize(candidate))) return candidate;
+    }
+    return `${base} (${baseUrl})`;
+  }
+
+  /**
    * 回收不再需要的直连 provider 模型清单（服务端撤掉 `direct_base_url` 后调用）。
    *
    * 只清模型、**不删 provider**：删 provider 会级联丢配置，用户可能还在里面手工加过东西；
@@ -573,9 +637,24 @@ export function createReactorServerService(
     }
 
     await writeEnterpriseProvider(gatewayBaseUrl, gatewayModels);
+    /*
+     * 每个直连地址单独一个 provider，名字必须互不冲突（见 claimDirectProviderName）。
+     * 单个地址失败只跳过它、不抛给调用方：直连是"绕开上游 IP 限流"的优化，
+     * 不该因为一个地址配错就让整次登录失败——那些模型仍可经网关使用。
+     */
+    const reservedDirectNames = new Set<string>();
     for (const [baseUrl, list] of directGroups) {
-      const providerId = await ensureManagedProvider(baseUrl, directProviderName(baseUrl));
-      await reconcileProviderModels(providerId, list);
+      try {
+        const name = await claimDirectProviderName(baseUrl, reservedDirectNames);
+        reservedDirectNames.add(name.trim().toLocaleLowerCase());
+        const providerId = await ensureManagedProvider(baseUrl, name);
+        await reconcileProviderModels(providerId, list);
+      } catch (error) {
+        logger.warn(undefined, "直连 provider 准备失败，该地址的模型本次不下发", {
+          baseUrl,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
     }
     // 服务端撤掉直连配置后，端侧必须跟着回收：否则下拉里会留下"能选但打不通"的旧条目。
     await pruneStaleDirectProviders(new Set(directGroups.keys()));
