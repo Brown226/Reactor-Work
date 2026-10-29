@@ -106,6 +106,14 @@ export interface ReactorServerModelInfo {
   readonly reasoningLevels: readonly string[] | null;
   /** 档位→请求体的 CEL 表达式（网关 `reasoning_map`）；null = 用端侧安全缺省 `"{}"` */
   readonly reasoningMap: string | null;
+  /**
+   * 客户端直连地址（网关 `direct_base_url`，2026-10-22）；null = 该模型经网关转发。
+   *
+   * 为什么需要它：部分内网上游按**源 IP** 限并发（如 4），全体用户都从服务器一个出口出去必然打满。
+   * 非空时端侧会为这些模型单独建一个 provider 直连该地址，出口 IP 变成用户自己的机器。
+   * 用量与审计**不依赖流量经网关**（见 reactorServerP4Wiring 的 isEnterpriseProvider），管控不丢。
+   */
+  readonly directBaseUrl: string | null;
 }
 
 /** 只接受正整数：0/负数/小数/字符串一律按「未提供」处理，避免把脏值写进模型配置。 */
@@ -304,6 +312,8 @@ export function createReactorServerClient(apiClient: ApiClient) {
           supports_mid_conversation_system?: unknown;
           reasoning_levels?: unknown;
           reasoning_map?: unknown;
+          /** 客户端直连地址（2026-10-22）；老网关不下发，按 null 处理 */
+          direct_base_url?: unknown;
         }[];
       }>(`${gatewayBaseUrl}/models`, { method: "GET", apiKey: gatewayToken });
       const list = Array.isArray(data?.data) ? data.data : [];
@@ -334,6 +344,11 @@ export function createReactorServerClient(apiClient: ApiClient) {
           reasoningMap:
             typeof item.reasoning_map === "string" && item.reasoning_map.trim()
               ? item.reasoning_map
+              : null,
+          // 老网关不下发该字段 → null，端侧行为与改造前逐字一致（全部经网关转发）
+          directBaseUrl:
+            typeof item.direct_base_url === "string" && item.direct_base_url.trim()
+              ? item.direct_base_url.trim()
               : null,
         });
       }

@@ -39,6 +39,12 @@ export interface AdminProvider {
   bindSecretId: number | null;
   enabled: boolean;
   createdAt: string;
+  /**
+   * 客户端直连地址（2026-10-22）：非空时该供应商名下模型的对话流量由桌面端**直连**该地址，
+   * 不经网关转发——目的是让并发受限的上游按「用户机器 IP」分摊配额。
+   * null / undefined = 照旧经网关（与改造前行为完全一致）。
+   */
+  directBaseUrl?: string | null;
 }
 
 /** P2：上游协议类型 */
@@ -205,10 +211,17 @@ export const providersApi = {
     headers?: Record<string, string>;
     modelType?: ModelType;
     sort?: number;
+    /** 客户端直连地址；省略/空串 = 不经直连（走网关） */
+    directBaseUrl?: string | null;
   }) => http.post<{ id: number }>("/admin/providers", body, AUTH),
   patch: (
     id: number,
-    body: Partial<Pick<AdminProvider, "name" | "baseUrl" | "enabled" | "api" | "headers" | "modelType" | "sort">> & {
+    body: Partial<
+      Pick<
+        AdminProvider,
+        "name" | "baseUrl" | "enabled" | "api" | "headers" | "modelType" | "sort" | "directBaseUrl"
+      >
+    > & {
       /** API Key 直填：省略/空串 = 不改；非空 = 加密覆盖 */
       apiKey?: string;
     },

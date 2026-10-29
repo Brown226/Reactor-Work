@@ -643,6 +643,10 @@ export function createGatewayHandlers(
             cache_read_price_per_million: m.pricing.cacheReadPerM,
             cache_write_price_per_million: m.pricing.cacheWritePerM,
             currency: m.currency,
+            // 2026-10-22：客户端直连地址。非空时桌面端会为该模型单独建 provider 直连上游，
+            // 出口 IP 从服务器变成用户自己的机器（内网上游按源 IP 限并发时是唯一解）。
+            // 为空/缺省时端侧完全不感知，行为与改造前逐字一致。
+            direct_base_url: m.directBaseUrl ?? null,
           })),
         });
       }

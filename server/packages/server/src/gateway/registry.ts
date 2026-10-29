@@ -41,6 +41,12 @@ export interface ModelEntry {
   pricing: ModelPricing;
   /** 计费币种（上游目录带则透传；缺省 null → 下游不展示单位） */
   currency: string | null;
+  /**
+   * 客户端直连地址（2026-10-22）：来自 `ai_providers.direct_base_url`，NULL/缺省 = 照旧经网关转发。
+   * 随 `/v1/models` 下发后，桌面端会为带该字段的模型**单独建一个 provider 直连上游**，
+   * 让出口 IP 变成各用户机器自己的（内网上游按源 IP 限并发时这是唯一解）。
+   */
+  directBaseUrl?: string | null;
   /** 可见范围（P2）：与 skills/agents 同口径（all / role / dept / user，命中任一即可见） */
   scope: { kind: string; roles: string[]; deptIds: number[]; uids: string[] };
   /**
@@ -407,6 +413,8 @@ export async function createRegistryFromDb(
       max_output: number | null;
       pricing: unknown;
       currency: string | null;
+      /** 客户端直连地址（2026-10-22）：NULL = 该供应商模型照旧经网关转发 */
+      direct_base_url: string | null;
       /** 建库时钉住的参数（JSONB）；当前用于 rerank 的向量维度等 */
       params: unknown;
       scope_kind: string | null;
@@ -415,7 +423,7 @@ export async function createRegistryFromDb(
       scope_uids: string[] | null;
     }>(
       `SELECT p.code, m.model, m.display_name, m.model_type, m.features, m.max_context, m.max_output, m.pricing, m.currency,
-              m.params, m.scope_kind, m.scope_roles, m.scope_dept_ids, m.scope_uids
+              p.direct_base_url, m.params, m.scope_kind, m.scope_roles, m.scope_dept_ids, m.scope_uids
        FROM ai_models m JOIN ai_providers p ON p.id = m.provider_id
        WHERE m.enabled AND p.enabled
        ORDER BY m.sort, m.id`,
@@ -431,6 +439,7 @@ export async function createRegistryFromDb(
         maxOutput: m.max_output,
         pricing: normalizePricing(m.pricing),
         currency: m.currency ?? null,
+        directBaseUrl: m.direct_base_url ?? null,
         ...(m.params !== null && typeof m.params === "object" ? { params: m.params as Record<string, unknown> } : {}),
         ...parseReasoningSpec(
           m.params !== null && typeof m.params === "object" ? (m.params as Record<string, unknown>) : undefined,

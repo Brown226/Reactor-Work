@@ -87,6 +87,12 @@ export async function ensureAdminSchema(db: IdentityDb, opts: AdminSchemaOptions
   await db.pool.query(`ALTER TABLE ai_providers ADD COLUMN IF NOT EXISTS api TEXT NOT NULL DEFAULT 'auto'`);
   // 自定义出站头（JSON 对象）。⚠ 不加密，别放密钥（密钥走密钥托管）
   await db.pool.query(`ALTER TABLE ai_providers ADD COLUMN IF NOT EXISTS headers JSONB NOT NULL DEFAULT '{}'::jsonb`);
+  // 客户端直连地址（2026-10-22）：NULL = 该供应商的对话流量照旧经网关转发。
+  // 为什么需要它：部分内网上游按**源 IP** 限并发（例如 4），全体用户都从服务器一个出口出去必然打满。
+  // 配成本机可达的上游地址后，`/v1/models` 会把该地址随模型下发给桌面端，端侧为这些模型单独建一个
+  // provider 直连上游，出口 IP 变成各用户自己的机器 → 天然分散，且用量仍由端侧上报、管控不丢。
+  // ⚠ 只对**不校验密钥**的内网上游有意义：直连意味着端侧直接持有上游地址，安全边界退化为网络可达。
+  await db.pool.query(`ALTER TABLE ai_providers ADD COLUMN IF NOT EXISTS direct_base_url TEXT`);
   // 模型可见范围：**与 skills/agents 完全同口径**（all / role / dept / user，命中任一即可见）
   await db.pool.query(`ALTER TABLE ai_models ADD COLUMN IF NOT EXISTS scope_kind TEXT NOT NULL DEFAULT 'all'`);
   await db.pool.query(`ALTER TABLE ai_models ADD COLUMN IF NOT EXISTS scope_roles TEXT[] NOT NULL DEFAULT '{}'`);

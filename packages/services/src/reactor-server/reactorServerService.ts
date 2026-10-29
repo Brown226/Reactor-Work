@@ -1,4 +1,4 @@
-import type { ApiClient } from "@zcode/shared";
+import { isReactorServerManagedApiKey, type ApiClient } from "@zcode/shared";
 import type { ModelId, ProviderConfigObject, ProviderId } from "@zcode/provider";
 import type { ICredentialService } from "../credential/credential.js";
 import type { IProviderSettingsService } from "../model-provider/providerFacadeServices.js";
@@ -119,6 +119,7 @@ export function createReactorServerService(
     hasUsableSession,
     ensureAccessToken,
     readManagedProviderEntry,
+    isManagedProvider,
     ...(options.subscribeUsageDelta ? { subscribeUsageDelta: options.subscribeUsageDelta } : {}),
     ...(options.subscribeAuditFacts ? { subscribeAuditFacts: options.subscribeAuditFacts } : {}),
     ...(options.auditOutboxPath !== undefined ? { auditOutboxPath: options.auditOutboxPath } : {}),
@@ -381,36 +382,106 @@ export function createReactorServerService(
    * `createPersonalProvider` 的 id 由配置服务生成、客户端无权指定，写死 id 等于依赖一个不属于我们的约定。
    * 找到后把 id 记进凭据，模型请求的热路径据此做 O(1) 判断。
    */
-  async function writeEnterpriseProvider(
-    gatewayBaseUrl: string,
-    models: readonly ReactorServerModelInfo[],
-  ): Promise<void> {
+  /**
+   * 找到或创建**指定 baseUrl** 的托管 provider 并写入配置（不回填模型）。
+   *
+   * 为什么按 baseUrl 而不是固定 provider id 识别：`createPersonalProvider` 的 id 由配置服务生成，
+   * 客户端无权指定，写死 id 等于依赖一个不属于我们的约定（原有网关 provider 同理）。
+   */
+  async function ensureManagedProvider(baseUrl: string, providerName: string): Promise<string> {
     const view = await providerSettings.getView();
     const mine = view.providers.filter((provider) => provider.personalConfig !== undefined);
     const existing = mine.find(
-      (provider) => provider.effectiveConfig.api?.baseUrl === gatewayBaseUrl,
+      (provider) => provider.effectiveConfig.api?.baseUrl === baseUrl,
     );
     const providerId = existing
       ? existing.providerId
-      : (
-          await providerSettings.createPersonalProvider({
-            providerName: REACTOR_SERVER_PROVIDER_NAME,
-          })
-        ).providerId;
+      : (await providerSettings.createPersonalProvider({ providerName })).providerId;
     // 这里不写 personalModelIds：它会被成员关系覆盖（见 reconcileProviderModels 注释），
     // 写上只会让人误以为模型清单由这里决定。
     const config: ProviderConfigObject = {
       group: "standard-personal",
       access: { type: "api-key", apiKey: REACTOR_SERVER_API_KEY_PLACEHOLDER },
-      api: { type: "openai-chat-completions", baseUrl: gatewayBaseUrl },
+      api: { type: "openai-chat-completions", baseUrl },
       visibility: "visible",
     };
     await providerSettings.savePersonalProviderOverlay(providerId as ProviderId, config, {
-      providerName: REACTOR_SERVER_PROVIDER_NAME,
+      providerName,
     });
+    return providerId;
+  }
+
+  async function writeEnterpriseProvider(
+    gatewayBaseUrl: string,
+    models: readonly ReactorServerModelInfo[],
+  ): Promise<void> {
+    const providerId = await ensureManagedProvider(gatewayBaseUrl, REACTOR_SERVER_PROVIDER_NAME);
     cachedProviderId = providerId;
     await credentials.save(REACTOR_SERVER_CREDENTIAL_KEYS.providerId, providerId);
     await reconcileProviderModels(providerId, models);
+  }
+
+  /** 直连 provider 的显示名：与网关分区分组，但不让人误以为是另一个服务端。 */
+  const DIRECT_PROVIDER_NAME = `${REACTOR_SERVER_PROVIDER_NAME} · 直连`;
+
+  /**
+   * 回收不再需要的直连 provider 模型清单（服务端撤掉 `direct_base_url` 后调用）。
+   *
+   * 只清模型、**不删 provider**：删 provider 会级联丢配置，用户可能还在里面手工加过东西；
+   * 清空模型后它在下拉里自然消失，下次需要时原地复用。
+   */
+  async function pruneStaleDirectProviders(activeBaseUrls: ReadonlySet<string>): Promise<void> {
+    const view = await providerSettings.getView();
+    const gatewayProviderId = await readManagedProviderId();
+    for (const provider of view.providers) {
+      if (provider.personalConfig === undefined) continue;
+      if (provider.providerId === gatewayProviderId) continue;
+      const access = provider.personalConfig.access as { apiKey?: unknown } | undefined;
+      if (!isReactorServerManagedApiKey(access?.apiKey)) continue;
+      const baseUrl = provider.effectiveConfig.api?.baseUrl;
+      if (!baseUrl || activeBaseUrls.has(baseUrl)) continue;
+      const staleModels = provider.personalConfig.personalModelIds ?? [];
+      for (const modelId of staleModels) {
+        await providerSettings.deletePersonalModel(
+          provider.providerId as ProviderId,
+          modelId as ModelId,
+        );
+      }
+      if (staleModels.length > 0) {
+        logger.info(undefined, "已回收不再直连的企业 provider 模型", {
+          providerId: provider.providerId,
+          baseUrl,
+          removed: staleModels.length,
+        });
+      }
+    }
+  }
+
+  /** 全部托管 provider（网关 + 各直连）的模型 id 合并，供重启后的状态兜底。 */
+  async function readAllManagedModelIds(): Promise<readonly string[]> {
+    const view = await providerSettings.getView();
+    const ids: string[] = [];
+    for (const provider of view.providers) {
+      if (provider.personalConfig === undefined) continue;
+      const access = provider.personalConfig.access as { apiKey?: unknown } | undefined;
+      if (!isReactorServerManagedApiKey(access?.apiKey)) continue;
+      ids.push(...(provider.personalConfig.personalModelIds ?? []));
+    }
+    return ids;
+  }
+
+  /**
+   * 该 provider 是否由本服务托管（网关 provider 或任一集团直连 provider）。
+   *
+   * 判据是**哨兵 apiKey**，与 baseUrl 无关：这样新增直连 provider 时，
+   * 用量上报的过滤条件不需要跟着维护一张地址表（漏一处就会漏统计）。
+   */
+  async function isManagedProvider(providerId: string): Promise<boolean> {
+    const view = await providerSettings.getView();
+    const provider = view.providers.find((candidate) => candidate.providerId === providerId);
+    if (!provider) return false;
+    const access = provider.personalConfig?.access as { apiKey?: unknown } | undefined;
+    return isReactorServerManagedApiKey(access?.apiKey);
   }
 
   async function syncModels(): Promise<readonly string[]> {
@@ -423,9 +494,37 @@ export function createReactorServerService(
     const chatModels = models.filter(
       (model) => model.modelType === null || model.modelType === "chat",
     );
-    const chatModelIds = chatModels.map((model) => model.id);
-    await writeEnterpriseProvider(gatewayBaseUrl, chatModels);
-    cachedModels = chatModelIds;
+    /*
+     * 2026-10-22：按 `direct_base_url` 分组。
+     *
+     * 空 → 照旧写进网关 provider（流量经服务器转发）；
+     * 非空 → 为**该地址**单独建一个 provider，端侧直接连上游，出口 IP 变成用户自己的机器。
+     *
+     * 为什么按地址分组而不是每个模型一个 provider：provider 是 baseUrl 级语义，
+     * 同地址的模型必须共用一个 provider，否则模型下拉会被拆成几十个分组。
+     * 为什么不做"非直连也直连"：只有被限并发的上游才需要，其余的经网关能保留统一限流与审计。
+     */
+    const directGroups = new Map<string, ReactorServerModelInfo[]>();
+    const gatewayModels: ReactorServerModelInfo[] = [];
+    for (const model of chatModels) {
+      if (model.directBaseUrl && model.directBaseUrl !== gatewayBaseUrl) {
+        const list = directGroups.get(model.directBaseUrl);
+        if (list) list.push(model);
+        else directGroups.set(model.directBaseUrl, [model]);
+      } else {
+        gatewayModels.push(model);
+      }
+    }
+
+    await writeEnterpriseProvider(gatewayBaseUrl, gatewayModels);
+    for (const [baseUrl, list] of directGroups) {
+      const providerId = await ensureManagedProvider(baseUrl, DIRECT_PROVIDER_NAME);
+      await reconcileProviderModels(providerId, list);
+    }
+    // 服务端撤掉直连配置后，端侧必须跟着回收：否则下拉里会留下"能选但打不通"的旧条目。
+    await pruneStaleDirectProviders(new Set(directGroups.keys()));
+
+    cachedModels = chatModels.map((model) => model.id);
     return cachedModels;
   }
 
@@ -433,10 +532,8 @@ export function createReactorServerService(
     const serverUrl = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.serverUrl);
     // 进程刚启动时内存缓存是空的，但企业 provider 里早已写好模型清单。
     // 这里以本地 provider 配置兜底，避免"重启后打开设置显示 0 个模型"的假象（不需要联网）。
-    const models =
-      cachedModels.length > 0
-        ? cachedModels
-        : ((await readManagedProviderEntry())?.config.personalModelIds ?? []);
+    // 兜底读**全部**托管 provider：只有网关 provider 的话，重启后直连那批模型会显示成 0 个。
+    const models = cachedModels.length > 0 ? cachedModels : await readAllManagedModelIds();
     return {
       configured: Boolean(serverUrl),
       loggedIn: Boolean(serverUrl && (await hasUsableSession())),

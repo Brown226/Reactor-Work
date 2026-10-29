@@ -211,10 +211,26 @@ interface ProviderDraft {
    */
   apiKey: string;
   enabled: boolean;
+  /**
+   * 客户端直连地址。空串 = 清空（该供应商名下模型回到经网关转发）。
+   *
+   * 为什么不用 `undefined` 表示「不改」：服务端 patch 里 `undefined` 才是「不改」，
+   * 而这里用户在输入框里删空的内容栏，语义明确是「取消直连」，所以要显式传空串。
+   */
+  directBaseUrl: string;
 }
 
 function emptyDraft(_board: ModelType): ProviderDraft {
-  return { id: null, code: "", name: "", baseUrl: "", api: "auto", apiKey: "", enabled: true };
+  return {
+    id: null,
+    code: "",
+    name: "",
+    baseUrl: "",
+    api: "auto",
+    apiKey: "",
+    enabled: true,
+    directBaseUrl: "",
+  };
 }
 
 function draftOf(p: AdminProvider): ProviderDraft {
@@ -227,6 +243,8 @@ function draftOf(p: AdminProvider): ProviderDraft {
     // 密钥不回填（服务端不回传）：空 = 不改
     apiKey: "",
     enabled: p.enabled,
+    // 直连地址不是密钥，服务端会回传，所以照实回填
+    directBaseUrl: p.directBaseUrl ?? "",
   };
 }
 
@@ -428,6 +446,8 @@ export function ModelsAndProviders() {
           ...(draft.apiKey.trim() !== "" ? { apiKey: draft.apiKey.trim() } : {}),
           api: draft.api as AdminProvider["api"],
           modelType: board,
+          // 空串 = 不直连（走网关），与服务端「空串当未设置」同口径
+          directBaseUrl: draft.directBaseUrl.trim() || null,
         });
         toast.ok(`已在「${MODEL_TYPE_LABEL[board]}」新增供应商`);
       } else {
@@ -438,6 +458,11 @@ export function ModelsAndProviders() {
           ...(draft.apiKey.trim() !== "" ? { apiKey: draft.apiKey.trim() } : {}),
           api: draft.api as AdminProvider["api"],
           enabled: draft.enabled,
+          /*
+           * 显式传空串而不是省略：用户把输入框删空 = 取消直连。
+           * 服务端 `undefined` 才是「不改」，省略会让「取消直连」永远存不进去。
+           */
+          directBaseUrl: draft.directBaseUrl.trim(),
         });
         toast.ok("已保存（网关 TTL 内生效）");
       }
@@ -919,6 +944,24 @@ export function ModelsAndProviders() {
                             <Label>Base URL</Label>
                             <Input className="mono" value={f.baseUrl} onChange={(e) => set({ baseUrl: e.target.value })} placeholder="https://ai.gitee.com/v1" />
                             <span className="hint">上游真实端点；模型拉取与连通性测试都按它拼 /models</span>
+                          </div>
+                          {/*
+                            直连地址**单独一行**、紧跟在 Base URL 之后：
+                            它是「同一个上游的第二种走法」，放在一起用户才看得懂两者的关系。
+                            留空 = 该供应商的对话仍经服务器网关转发（默认，行为与改造前一致）。
+                          */}
+                          <div className="field" style={{ gridColumn: "1 / -1" }}>
+                            <Label>客户端直连地址</Label>
+                            <Input
+                              className="mono"
+                              value={f.directBaseUrl}
+                              onChange={(e) => set({ directBaseUrl: e.target.value })}
+                              placeholder="留空 = 走服务器网关（推荐）；限并发时才填"
+                            />
+                            <span className="hint">
+                              填写后，该供应商名下模型的对话由桌面端<strong>直连该地址</strong>，出口是本机 IP——用于分摊上游的
+                              IP 并发限制。代价：模型下拉会多出「直连」分组，且端侧能拿到该地址（安全边界从网关鉴权退化为网络可达）。留空即回退。
+                            </span>
                           </div>
                           {/*
                             API Key **单独占一行**：密钥是很长的串，半栏宽只看得到一小截，

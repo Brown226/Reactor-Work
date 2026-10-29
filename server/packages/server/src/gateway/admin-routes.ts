@@ -580,7 +580,8 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
       created_at: Date;
       model_type: string | null;
       sort: number;
-    }>(`SELECT id, code, name, base_url, api, headers, bind_secret_id, enabled, created_at, model_type, sort FROM ai_providers ORDER BY model_type, sort, id`);
+      direct_base_url: string | null;
+    }>(`SELECT id, code, name, base_url, api, headers, bind_secret_id, enabled, created_at, model_type, sort, direct_base_url FROM ai_providers ORDER BY model_type, sort, id`);
     return c.json({
       providers: rows.map((r) => ({
         id: r.id,
@@ -607,6 +608,12 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
          * 不为此多查一次 secrets 表。
          */
         hasApiKey: r.bind_secret_id !== null,
+        /**
+         * 客户端直连地址（2026-10-22）：空 = 该供应商对话流量经网关转发。
+         * 配置后该供应商名下模型会在 `/v1/models` 带上 `direct_base_url`，
+         * 桌面端据此单独建 provider 直连，出口 IP 变成各用户自己的机器。
+         */
+        directBaseUrl: r.direct_base_url,
         enabled: r.enabled,
         createdAt: iso(r.created_at),
       })),
@@ -675,6 +682,8 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
       enabled?: boolean;
       modelType?: unknown;
       sort?: number;
+      /** 客户端直连地址（2026-10-22）：空/省略 = 该供应商模型经网关转发 */
+      directBaseUrl?: string | null;
     } | null;
     if (!body?.code || !body.name || !body.baseUrl) return err(c, 400, "code/name/baseUrl 必填");
     // 板块校验：必须是五枚举之一，且**拒绝预留板块**（生图/语音的网关转发还没做，
@@ -690,9 +699,14 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
     const headersParsed = parseHeaders(body.headers);
     if ("error" in headersParsed) return err(c, 400, headersParsed.error);
     const apiKey = typeof body.apiKey === "string" && body.apiKey.trim() !== "" ? body.apiKey.trim() : null;
+    // 空串按「未配置」处理：前端清空输入框时提交的是 ""，存成 "" 会让端侧建出一个 baseUrl 为空的 provider
+    const directBaseUrl =
+      typeof body.directBaseUrl === "string" && body.directBaseUrl.trim() !== ""
+        ? body.directBaseUrl.trim()
+        : null;
     const { rows } = await db.pool.query<{ id: number }>(
-      `INSERT INTO ai_providers (code, name, base_url, api, headers, bind_secret_id, enabled, model_type, sort) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9) RETURNING id`,
-      [body.code, body.name, body.baseUrl, normalizeApi(body.api), JSON.stringify(headersParsed.headers), body.bindSecretId ?? null, body.enabled ?? true, type, body.sort ?? 0],
+      `INSERT INTO ai_providers (code, name, base_url, api, headers, bind_secret_id, enabled, model_type, sort, direct_base_url) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10) RETURNING id`,
+      [body.code, body.name, body.baseUrl, normalizeApi(body.api), JSON.stringify(headersParsed.headers), body.bindSecretId ?? null, body.enabled ?? true, type, body.sort ?? 0, directBaseUrl],
     );
     const providerId = rows[0]!.id;
     // 直填的 Key：供应商已落地，现在把密钥加密写进 secrets 并绑定（见 saveProviderApiKey）
@@ -723,6 +737,8 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
       enabled?: boolean;
       modelType?: unknown;
       sort?: number;
+      /** 客户端直连地址：省略 = 不动；空串 = 清空（恢复经网关转发） */
+      directBaseUrl?: string | null;
     } | null;
     if (!body) return err(c, 400, "请求体非法");
     if (body.bindSecretId != null && !(await refExists(db, "secrets", body.bindSecretId))) {
@@ -741,6 +757,13 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
       if ("error" in parsed) return err(c, 400, parsed.error);
       headersJson = JSON.stringify(parsed.headers);
     }
+    // 三态语义与其它 PATCH 字段一致：undefined = 不动；"" = 清空（回落到经网关转发）；非空 = 设置
+    const directBaseUrl =
+      body.directBaseUrl === undefined
+        ? undefined
+        : typeof body.directBaseUrl === "string" && body.directBaseUrl.trim() !== ""
+          ? body.directBaseUrl.trim()
+          : null;
     const { sets, params } = buildPatch([
       ["code", body.code],
       ["name", body.name],
@@ -751,6 +774,7 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
       ["enabled", body.enabled],
       ["model_type", body.modelType === undefined ? undefined : (body.modelType as string)],
       ["sort", body.sort],
+      ["direct_base_url", directBaseUrl],
       ["updated_at", new Date()],
     ]);
     if (sets.length === 0 && typeof body.apiKey !== "string") return err(c, 400, "无可更新字段");

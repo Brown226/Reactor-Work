@@ -42,6 +42,14 @@ export interface ReactorServerP4WiringDeps {
     providerId: string;
     config: ProviderConfigObject;
   } | null>;
+  /**
+   * 该 provider 是否由企业服务端托管（2026-10-22）。
+   *
+   * 为什么需要：直连改造后托管 provider 不止一个（网关 + 各直连地址），
+   * 而 `readManagedProviderEntry` 只认网关那一个 —— 用它判定会让直连模型的用量全部漏报。
+   * 缺省时回退到旧判定，行为与改造前一致。
+   */
+  isManagedProvider?: (providerId: string) => Promise<boolean>;
   subscribeUsageDelta?: (listener: (delta: ModelCallUsageDelta) => void) => () => void;
   /** 行为审计事实源（洞②）；Host 装配注入（订阅 CLI 的 tool/permission 生命周期事实）。 */
   subscribeAuditFacts?: (listener: (fact: BehaviorAuditFact) => void) => () => void;
@@ -80,6 +88,9 @@ export function createReactorServerP4Wiring(
   const readServerUrl = () => deps.credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.serverUrl);
 
   async function isEnterpriseProvider(providerId: string): Promise<boolean> {
+    // 优先用「扫描全部托管 provider」的判定（网关 + 直连都能覆盖）；
+    // 未注入时回退旧逻辑，保证只升级一端时行为不突变。
+    if (deps.isManagedProvider) return deps.isManagedProvider(providerId);
     const entry = await deps.readManagedProviderEntry();
     if (!entry || entry.providerId !== providerId) return false;
     const access = entry.config.access as { apiKey?: unknown } | undefined;
