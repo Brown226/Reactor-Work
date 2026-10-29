@@ -782,9 +782,21 @@ export function createReactorServerService(
    * 清空同样只能走 `deletePersonalModel`：改 overlay 里的 `personalModelIds` 会被成员关系覆盖。
    */
   async function clearEnterpriseProviderModels(): Promise<void> {
-    const entry = await readManagedProviderEntry();
-    if (!entry) return;
-    await reconcileProviderModels(entry.providerId, []);
+    /*
+     * 2026-10-29 修复：原来只清「网关 provider」一个条目，直连 provider 的模型会留下来。
+     * 后果与注释里写的一样糟甚至更糟：登出后下拉里还留着直连模型，用户选中后
+     * 端侧仍会照配置里的地址直接向上游发请求 —— 这次连"未授权"都不会报，是真的绕过了登录态。
+     *
+     * 改为按哨兵 apiKey 扫描全部托管 provider（网关 + 各直连），逐个清空模型。
+     * 只清模型不删 provider：条目留着，下次登录按 baseUrl 原地复用。
+     */
+    const view = await providerSettings.getView();
+    for (const provider of view.providers) {
+      if (provider.personalConfig === undefined) continue;
+      const access = provider.personalConfig.access as { apiKey?: unknown } | undefined;
+      if (!isReactorServerManagedApiKey(access?.apiKey)) continue;
+      await reconcileProviderModels(String(provider.providerId), []);
+    }
   }
 
   async function resolveGatewayAuth(

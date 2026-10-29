@@ -117,6 +117,32 @@ provider 是 baseUrl 级语义。同地址的模型共用一个 provider，否�
 | 管理台静态产物 | `index-Bm60cuI6.js`，内含「客户端直连地址」文案 |
 | 数据完整性 | users 仍为 811，端口隔离（8791 `/console` 404、8792 `/console` 200）不变 |
 
+## 6.3 直连用量回填账本（2026-10-22 补齐）
+
+**问题**：直连请求不过网关，而 `/desktop/usage/summary` 与部门额度评估**都以 `usage_ledger` 为唯一数据源**（网关转发时写入）。不补的话，被分流的模型用量整体漏计——报表偏低、额度算不到。
+
+**做法**：端侧在 `model_call` 事件的 `usage` 里带 `directBaseUrl`（仅直连时填），服务端在 `/desktop/audit/batch` 接收后补写账本行。
+
+| 约束 | 原因 |
+|---|---|
+| 只认带 `directBaseUrl` 的 `model_call` | 经网关转发的调用不带该字段，网关已记账，再补=重复计费 |
+| 被 `validateEvent` 拒掉的事件不记账 | 不能凭非法上报产生费用 |
+| `request_id` 用端侧 `eventId` | 离线重传命中 `ON CONFLICT DO NOTHING`，天然幂等 |
+
+**踩到的坑**：`validateEvent` 对 `usage` 的每个字段做数字校验，白名单原本只放行 `currency/model/provider`；不加 `directBaseUrl` 会让**整条事件**被判非法拒收。
+
+**实测证据**：
+
+| 场景 | 结果 |
+|---|---|
+| 直连事件上报 | 账本 64 → 65，`provider` 存直连地址、`cost_source=client` |
+| 网关事件上报（无标记） | 账本**不变**，无重复计费 |
+| 同一条重复上报 | `duplicates=1`，账本仍 65（幂等） |
+| `/desktop/usage/summary?groupBy=model` | 命中 `qwen3.8-27b`：calls 1 / 1500 tokens / cost 0.0123 |
+| 清理 | 测试行已删，账本恢复基线 64 |
+
+**取舍**：账本权威性由「网关事实」降为「网关 + 端侧上报」。端侧漏报/崩溃时该次直连用量会缺失，可用 `audit_event` 里的同一条 `model_call` 事后对账。
+
 ## 7. 未验证项（如实记录）
 
 | 项 | 原因 |
@@ -148,3 +174,54 @@ provider 是 baseUrl 级语义。同地址的模型共用一个 provider，否�
 - `DeepSeek` → baseUrl `http://models.ai.cnpe.cc/deepseek/v1`，**留空**（不限并发，照旧经网关）
 
 > 若把两者放进同一个供应商，`direct_base_url` 会在供应商级生效，DeepSeek 也会被迫直连——与「只让 qwen 分流」的目标相反。
+
+---
+
+## 2026-10-29：三处缺陷的系统性修复
+
+### 背景
+
+直连分流把「一个企业 provider」变成了「一个网关 provider + N 个直连 provider」。
+原有代码里多处是**按 providerId 硬判断**写的（只认登录时写入凭据的那一个），
+加出第二个 provider 之后这些判断全部失真。前一天只修了直接报错的两处，
+本次做完整扫描，把同一类问题一次清干净。
+
+### 扫描方法
+
+`grep` 全仓以下模式，逐个人工判定：
+`readManagedProviderId` / `cachedProviderId` / `providerId ===` /
+`isEnterpriseProvider` / `isReactorServerManagedApiKey`。
+
+### 三处缺陷
+
+| # | 位置 | 症状 | 修复 |
+|---|---|---|---|
+| 1 | `reactorServerService.ts` `claimDirectProviderName` | 多个直连地址共用同一 provider 名称，第二个创建时触发唯一性校验抛错，**登录界面报失败**（凭据实际已落盘）。 | 分层取名：短名 → 加 host → 加序号 → 完整地址；冲突判定与 `ProviderConfigService` 同口径（`toLocaleLowerCase`）；同一地址的已有 provider 不计入占用，保证复用不改名。 |
+| 2 | `reactorServerService.ts` `resolveGatewayAuth` | 只认网关 provider 的 id，选直连模型时返回 `null` → 上层抛「企业服务端未授权：请在设置中登录企业账号」，**用户已登录却被要求重新登录**，请求根本发不出去。 | 改为哨兵 apiKey 扫描（与 `isEnterpriseProvider` / `resolveDirectBaseUrl` 同口径），并按是否直连分流：直连返回哨兵占位值，网关返回现场签发的网关令牌。**返回哨兵而不是 null** 是关键。 |
+| 3 | `reactorServerService.ts` `clearEnterpriseProviderModels` | 登出只清网关 provider 的模型，直连 provider 的模型残留。用户仍能选到直连模型，端侧照配置直接请求上游——**真正绕过登录态**，比报未授权更糟。 | 改为扫描全部托管 provider 逐个清空模型。只清模型不删 provider，下次登录原地复用。 |
+
+### 确认无问题的位置
+
+| 位置 | 结论 |
+|---|---|
+| `reactorServerP4Wiring.isEnterpriseProvider` | 已注入 `deps.isManagedProvider`（`reactorServerService.ts:122`），走哨兵扫描 ✅ |
+| `pruneStaleDirectProviders` | 本就按哨兵扫描全部托管 provider ✅ |
+| `readAllManagedModelIds` | 同上 ✅ |
+| `resolveDirectBaseUrl` | 同上 ✅ |
+| CLI `runner.ts:173` | 用 `isReactorServerManagedApiKey` 判断是否走运行时鉴权，直连 provider 的哨兵值能被正确识别 ✅ |
+| UI 层 | 无按 providerId 的硬判断 ✅ |
+
+### 弹性处理
+
+单个直连地址准备失败时只跳过该地址并记 `warn`，不再让整次 `syncModels`（进而整次登录）失败：
+直连是绕开上游 IP 限流的优化，不是核心链路，其模型仍可经网关使用。
+
+### 验证
+
+- `tsc -b packages/services` 通过
+- `pnpm lint` 0 error
+- `pnpm architecture:check --changed` violations 0
+- 取名唯一性：5 类冲突场景（不同路径段 / 同段不同 host / 旧名被占 / 同地址复用 / 10 个同段地址）全部唯一
+
+**未做端到端验证**：开发机在外网，连不上内网上游，无法真实跑「选直连模型 → 发消息 → 上游返回」。
+需在打包装机后于内网实测一次。
