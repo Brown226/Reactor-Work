@@ -422,8 +422,38 @@ export function createReactorServerService(
     await reconcileProviderModels(providerId, models);
   }
 
-  /** 直连 provider 的显示名：与网关分区分组，但不让人误以为是另一个服务端。 */
+  /** 直连 provider 的显示名基名：与网关分区分组，但不让人误以为是另一个服务端。 */
   const DIRECT_PROVIDER_NAME = `${REACTOR_SERVER_PROVIDER_NAME} · 直连`;
+
+  /**
+   * 为某个直连地址生成**唯一**的 provider 显示名（2026-10-29 修复）。
+   *
+   * 反例（修复前的真实缺陷）：所有直连地址共用 `DIRECT_PROVIDER_NAME`。
+   * 当服务端配了 ≥2 个直连地址（例如 qwen 与 deepseek 各自直连）时，
+   * 第二个地址新建 provider 后要改成同名 → 触发 ProviderConfigService 的
+   * 名称唯一性校验 `Provider 名称已存在` → syncModels 抛错 → 登录界面报失败。
+   * 实测：登录凭据其实早已落盘（token 在此之前就保存了），只是模型清单没写进去。
+   *
+   * 取名规则：取 baseUrl 路径里最后一个非 `v1`/`v2` 段（上游聚合服务习惯用
+   * `/<模型组>/v1`），没有则退回 hostname。地址相同时本来就复用同一 provider，
+   * 不会进到这里，所以无需再拼接完整 URL。
+   */
+  function directProviderName(baseUrl: string): string {
+    try {
+      const parsed = new URL(baseUrl);
+      const segments = parsed.pathname
+        .split("/")
+        .filter(Boolean)
+        .filter((segment) => !/^v\d+$/i.test(segment));
+      // 路径无可用段时退回 host:port（不是退回基名）：否则 `http://a:1/v1` 与
+      // `http://b:2/v1` 会双双退回基名而再次撞名，正是本次要看住的那类问题。
+      const tail = segments[segments.length - 1] ?? parsed.host;
+      return `${DIRECT_PROVIDER_NAME} · ${tail}`;
+    } catch {
+      // 非法 URL 不该阻断登录：退回基名，最坏情况仍是原来的行为
+      return DIRECT_PROVIDER_NAME;
+    }
+  }
 
   /**
    * 回收不再需要的直连 provider 模型清单（服务端撤掉 `direct_base_url` 后调用）。
@@ -544,7 +574,7 @@ export function createReactorServerService(
 
     await writeEnterpriseProvider(gatewayBaseUrl, gatewayModels);
     for (const [baseUrl, list] of directGroups) {
-      const providerId = await ensureManagedProvider(baseUrl, DIRECT_PROVIDER_NAME);
+      const providerId = await ensureManagedProvider(baseUrl, directProviderName(baseUrl));
       await reconcileProviderModels(providerId, list);
     }
     // 服务端撤掉直连配置后，端侧必须跟着回收：否则下拉里会留下"能选但打不通"的旧条目。
