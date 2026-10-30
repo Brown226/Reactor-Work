@@ -5,6 +5,7 @@
 #   identity  身份服务 :8791（登录/JWT/权限/组织）
 #   gateway   模型网关 :8790（上游模型代理）
 #   portal    产品门户 :8080（官网 + 说明书静态站，反代 identity 的下载与更新日志）
+#   web       Web 客户端入口 :3030（浏览器访问；Win7 环境只能走这条）
 #
 # 使用：
 #   cd packages/server/docker
@@ -178,6 +179,32 @@ services:
     # 仅下载与更新日志两个反代路径短暂 502（nginx 用变量延迟解析上游，不拖垮整站）。
     restart: unless-stopped
 
+  # Web 客户端入口：给 Win7 等只能用浏览器的环境提供 Reactor 前端。
+  #
+  # 与 identity / gateway 的边界：这两个提供身份与模型能力，web 只提供「界面 + 服务端工作区」。
+  # 登录仍走 identity（浏览器直连 8791）；agent 跑在 web 容器内，访问网关要用服务名
+  # gateway:8790（用 127.0.0.1 会打到自己身上）。
+  #
+  # ⚠ 工作区落在容器内 /data/workspace，不是用户本机磁盘。
+  # ⚠ 当前为单工作区模型：所有 Web 用户共用同一工作区，仅适合小范围试点。
+  # ⚠ 正式环境必须设置 REACTOR_WEB_TOKEN；未设置时任何能访问 3030 的人都会拿到
+  #    工作区与容器 shell。浏览器首次访问用 /?token=<值> 换 cookie。
+  web:
+    image: reactor-web:v1.0.0
+    container_name: reactor-desktop-web
+    environment:
+      ZCODE_SERVER_AUTH_TOKEN: ${REACTOR_WEB_TOKEN:-}
+      ZCODE_SERVER_WORKSPACE: /data/workspace
+      ZCODE_DATA_BASE_DIR: /data
+    ports:
+      - "3030:3030"
+    volumes:
+      - web-data:/data
+    # 只表达依赖意图：identity 未就绪时 web 仍能启动，只是登录换不到会话
+    depends_on:
+      - identity
+    restart: unless-stopped
+
 volumes:
   # ★ 修正历史粘贴事故（2026-09-19，commit 216aff7 引入，旧仓与搬迁前均存在）：
   #   加知识库文件卷时，把属于 pg-data 的 `external/name: docker_pg-data` 整块错粘到了
@@ -196,6 +223,8 @@ volumes:
   updates:
   # 反馈附件（FBK）：独立卷，与 pg 无关；删了管理台里的截图/日志就下不下来。
   feedback-files:
+  # Web 客户端的服务端工作区与运行数据（/data），与 pg/ldap 完全独立。
+  web-data:
   ldap-data:
     external: true
     name: docker_ldap-data
