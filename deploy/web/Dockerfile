@@ -24,6 +24,11 @@ COPY server-dist ./server-dist
 COPY web-dist ./web-dist
 # Agent 运行时：Node 24 直接执行 zcode.cjs，无需 Electron
 COPY agent/zcode.cjs ./agent/zcode.cjs
+# DWG 解析 sidecar（.NET 自包含，linux-x64）。桌面端资产树只有 win32-x64，
+# 交叉发布产物由 dwg-tools-plugin 的 scripts/publish-sidecar.mjs --rid linux-x64 生成。
+# 用 ZCODE_DWG_TOOLS_ASSETS_ROOT 指过去：容器内 cwd 是工作区，包内相对路径找不到 assets。
+COPY agent/dwg-tools ./agent/dwg-tools
+RUN chmod +x /app/agent/dwg-tools/dwg-sidecar/linux-x64/dwg-sidecar
 
 ENV NODE_ENV=production \
     PORT=3030 \
@@ -31,6 +36,7 @@ ENV NODE_ENV=production \
     ZCODE_WEB_STATIC_ROOT=/app/web-dist \
     ZCODE_DATA_BASE_DIR=/data \
     ZCODE_SERVER_WORKSPACE=/data/workspace \
+    ZCODE_DWG_TOOLS_ASSETS_ROOT=/app/agent/dwg-tools \
     ZCODE_AGENT_SERVER_COMMAND=node \
     ZCODE_AGENT_SERVER_ARGS_JSON=["/app/agent/zcode.cjs","app-server","--stdio"]
 

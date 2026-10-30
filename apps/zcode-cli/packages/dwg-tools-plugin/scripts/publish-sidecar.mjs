@@ -80,7 +80,9 @@ execFileSync(
   ],
   { stdio: "inherit", cwd: packageRoot },
 );
-const exeName = process.platform === "win32" ? "dwg-sidecar.exe" : "dwg-sidecar";
+// 产物名必须按**目标 RID** 判断，不能用宿主平台：交叉发布 linux-x64 时宿主是 win32，
+// 用 process.platform 会去找 dwg-sidecar.exe，而实际产物是无后缀的 ELF，误报「发布产物缺失」。
+const exeName = rid.startsWith("win") ? "dwg-sidecar.exe" : "dwg-sidecar";
 if (!existsSync(join(outDir, exeName))) {
   console.error(`[sidecar] 发布产物缺失：${join(outDir, exeName)}`);
   process.exit(1);
