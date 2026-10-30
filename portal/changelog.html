@@ -70,19 +70,163 @@
       return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
     }
 
-    // 更新说明按 Markdown 写（与桌面端发布说明同源），这里只做最小渲染：
-    // 逐行处理"- "列表项与普通段落，避免引入外部 Markdown 依赖（门户零依赖纪律）。
+    // 更新说明按 Markdown 写（与桌面端发布说明同源），这里做**零依赖**的子集渲染：
+    // 标题 / 有序与无序列表 / 粗体 / 斜体 / 行内代码 / 代码块 / 链接 / 引用 / 分割线。
+    //
+    // 反例（上一版）：逐行把非空行都塞进 <li>、只剥掉 "- " 前缀 ——
+    // "## 标题" 和 "**粗体**" 会原样显示，看起来就是"没做转换"。
+    //
+    // 安全：全部用 createElement + textContent 构建，不拼 HTML、不用 innerHTML；
+    // 链接只认 http(s)，其他协议在正则层面就不匹配，会降级成纯文本。
+    var INLINE_MD = /\[([^\]]+)\]\((https?:[^\s)]+)\)|\*\*([^*]+)\*\*|`([^`]+)`|\*([^*]+)\*/g;
+
+    function inlineMd(text) {
+      var frag = document.createDocumentFragment();
+      var last = 0;
+      var m;
+      INLINE_MD.lastIndex = 0;
+      while ((m = INLINE_MD.exec(text)) !== null) {
+        if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        if (m[1] !== undefined) {
+          var a = document.createElement("a");
+          a.textContent = m[1];
+          a.href = m[2];
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          frag.appendChild(a);
+        } else if (m[3] !== undefined) {
+          var strong = document.createElement("strong");
+          strong.textContent = m[3];
+          frag.appendChild(strong);
+        } else if (m[4] !== undefined) {
+          var code = document.createElement("code");
+          code.textContent = m[4];
+          frag.appendChild(code);
+        } else {
+          var em = document.createElement("em");
+          em.textContent = m[5];
+          frag.appendChild(em);
+        }
+        last = INLINE_MD.lastIndex;
+      }
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      return frag;
+    }
+
     function renderNotes(md) {
-      var ul = document.createElement("ul");
-      (md || "").split(/\r?\n/).forEach(function (line) {
-        var t = line.trim();
-        if (!t) return;
-        var li = document.createElement("li");
-        var text = t.replace(/^[-*]\s+/, "");
-        li.textContent = text;
-        ul.appendChild(li);
-      });
-      return ul;
+      var box = document.createElement("div");
+      box.className = "log-notes";
+      var lines = String(md || "").split(/\r?\n/);
+      var para = [];
+      var list = null;
+      var listTag = "";
+      var inCode = false;
+      var codeLines = [];
+
+      function flushPara() {
+        if (para.length === 0) return;
+        var p = document.createElement("p");
+        p.appendChild(inlineMd(para.join(" ")));
+        box.appendChild(p);
+        para = [];
+      }
+      function flushList() {
+        if (list === null) return;
+        box.appendChild(list);
+        list = null;
+        listTag = "";
+      }
+
+      for (var i = 0; i < lines.length; i += 1) {
+        var raw = lines[i];
+        var line = raw.trim();
+
+        if (inCode) {
+          if (line.indexOf("```") === 0) {
+            var pre = document.createElement("pre");
+            var codeEl = document.createElement("code");
+            codeEl.textContent = codeLines.join("\n");
+            pre.appendChild(codeEl);
+            box.appendChild(pre);
+            inCode = false;
+            codeLines = [];
+          } else {
+            codeLines.push(raw);
+          }
+          continue;
+        }
+        if (line.indexOf("```") === 0) {
+          flushPara();
+          flushList();
+          inCode = true;
+          continue;
+        }
+        if (!line) {
+          flushPara();
+          flushList();
+          continue;
+        }
+
+        var heading = /^(#{1,6})\s+(.*)$/.exec(line);
+        if (heading) {
+          flushPara();
+          flushList();
+          // 页面自己的标题是 h1「更新日志」，条目内从 h2 起步，不出现第二个 h1。
+          var level = Math.min(6, heading[1].length + 1);
+          var h = document.createElement("h" + level);
+          h.appendChild(inlineMd(heading[2]));
+          box.appendChild(h);
+          continue;
+        }
+
+        if (/^(-{3,}|\*{3,}|_{3,})$/.test(line)) {
+          flushPara();
+          flushList();
+          box.appendChild(document.createElement("hr"));
+          continue;
+        }
+
+        var quote = /^>\s?(.*)$/.exec(line);
+        if (quote) {
+          flushPara();
+          flushList();
+          var bq = document.createElement("blockquote");
+          bq.appendChild(inlineMd(quote[1]));
+          box.appendChild(bq);
+          continue;
+        }
+
+        var ul = /^[-*+]\s+(.*)$/.exec(line);
+        var ol = /^(\d+)[.)]\s+(.*)$/.exec(line);
+        if (ul || ol) {
+          flushPara();
+          var tag = ul ? "ul" : "ol";
+          if (listTag !== tag) {
+            flushList();
+            listTag = tag;
+            list = document.createElement(tag);
+          }
+          var li = document.createElement("li");
+          li.appendChild(inlineMd(ul ? ul[1] : ol[2]));
+          list.appendChild(li);
+          continue;
+        }
+
+        flushList();
+        para.push(line);
+      }
+
+      if (inCode && codeLines.length > 0) {
+        // 未闭合的代码块也要把内容显示出来，不能吞掉。
+        var preTail = document.createElement("pre");
+        var codeTail = document.createElement("code");
+        codeTail.textContent = codeLines.join("\n");
+        preTail.appendChild(codeTail);
+        box.appendChild(preTail);
+      }
+      flushPara();
+      flushList();
+      return box;
     }
 
     fetch("/api/v1/releases/changelog", { headers: { accept: "application/json" } })

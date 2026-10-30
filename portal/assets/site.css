@@ -103,22 +103,6 @@ a:hover { text-decoration: underline; }
 }
 .topbar-nav a.nav-cta:hover { border-color: var(--ink-3); }
 
-/* ===== 公告条 ===== */
-.announce-wrap { display: flex; justify-content: center; padding: 34px 24px 0; }
-.announce {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
-  color: var(--ink-2);
-  background: var(--bg-soft);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 7px 16px;
-}
-.announce b { color: var(--ink); font-weight: 600; }
-.announce .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: none; }
-
 /* ===== Hero ===== */
 .hero { position: relative; text-align: center; padding: 72px 0 96px; }
 .hero-eyebrow {
@@ -568,8 +552,6 @@ a:hover { text-decoration: underline; }
   .feature-grid, .native-grid { grid-template-columns: 1fr; }
   .section { padding: 64px 0; }
   .hero { padding: 48px 0 64px; }
-  .announce { max-width: 100%; }
-  .announce .dot { display: none; }
 }
 
 /* ===== 更新日志页 ===== */
@@ -631,6 +613,67 @@ a:hover { text-decoration: underline; }
 .log-entry li a { color: var(--accent); }
 .log-empty-note { margin-top: 28px; font-size: 13px; color: var(--ink-3); }
 .log-empty-note code { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
+
+/* ===== 服务端下发的更新说明（Markdown 子集渲染结果） =====
+   列表沿用 .log-entry li 的圆点与缩进；这里只补标题、段落、代码、引用与有序列表的差异。 */
+.log-notes { display: flex; flex-direction: column; gap: 10px; }
+.log-notes > :first-child { margin-top: 0; }
+/* 标题必须分级。上一版把 h2~h6 统一成 15.5px，三个层级视觉上完全一样，
+   读者会以为「Markdown 没有转换成功」——实际是渲染了但看不出层级。
+   映射关系见 changelog.html：原文 # → h2，## → h3，### 及更深 → h4。 */
+.log-notes h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 14px 0 0;
+  color: var(--ink);
+}
+.log-notes h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 10px 0 0;
+  color: var(--ink);
+}
+.log-notes h4, .log-notes h5, .log-notes h6 {
+  font-size: 14.5px;
+  font-weight: 650;
+  margin: 8px 0 0;
+  color: var(--ink);
+}
+.log-notes p { margin: 0; color: var(--ink-2); font-size: 14.5px; line-height: 1.75; }
+.log-notes ul, .log-notes ol { margin: 0; padding-left: 22px; }
+.log-notes ul { list-style: none; }
+/* 有序列表要数字：不能沿用无序列表那条 ::before 圆点 */
+.log-notes ol { list-style: decimal; }
+.log-notes ol > li { padding-left: 0; }
+.log-notes ol > li::before { display: none; }
+.log-notes code {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+.log-notes pre {
+  margin: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.log-notes pre code { border: none; background: none; padding: 0; font-size: 13px; }
+.log-notes blockquote {
+  margin: 0;
+  padding: 8px 14px;
+  border-left: 3px solid var(--accent);
+  color: var(--ink-2);
+  background: var(--card-2);
+  border-radius: 0 8px 8px 0;
+}
+.log-notes hr { border: none; border-top: 1px solid var(--line); margin: 4px 0; }
+.log-notes a { color: var(--accent); }
 
 /* ===== 首页氛围背景（仅首页 body.home 生效，更新日志页不受影响） =====
    参考 DeepSeek Harness 首屏：深蓝黑底 + 一道自右上斜射左下的柔和光束 + 左下副辉光。

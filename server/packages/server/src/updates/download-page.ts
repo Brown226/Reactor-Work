@@ -70,7 +70,20 @@ export function renderDownloadPage(): string {
   .meta { min-width: 0; }
   .meta .name { font-weight: 600; font-size: 15px; }
   .meta .plat { color: #a3a8b2; font-size: 13px; margin-top: 6px; }
-  .meta .notes { color: #8b9099; font-size: 12.5px; margin-top: 8px; line-height: 1.6; white-space: pre-wrap; max-width: 560px; }
+  /* 更新说明按 Markdown 子集渲染成节点（见下方 renderNotes）；
+     不再用 white-space: pre-wrap —— 那是给纯文本留的，富文本会被强制换行打乱排版。 */
+  .meta .notes { color: #8b9099; font-size: 12.5px; margin-top: 8px; line-height: 1.6; max-width: 560px; display: flex; flex-direction: column; gap: 6px; }
+  .meta .notes p { margin: 0; }
+  .meta .notes h2, .meta .notes h3, .meta .notes h4,
+  .meta .notes h5, .meta .notes h6 { font-size: 13px; margin: 2px 0 0; color: #e8eaee; }
+  .meta .notes ul, .meta .notes ol { margin: 0; padding-left: 18px; }
+  .meta .notes li { margin: 0; }
+  .meta .notes code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #23252a; border-radius: 4px; padding: 1px 4px; }
+  .meta .notes pre { margin: 0; padding: 8px 10px; background: #23252a; border-radius: 6px; overflow-x: auto; }
+  .meta .notes pre code { background: none; padding: 0; }
+  .meta .notes blockquote { margin: 0; padding: 4px 10px; border-left: 2px solid #4a4d55; color: #9aa0a8; }
+  .meta .notes hr { border: none; border-top: 1px solid #2c2f35; margin: 2px 0; }
+  .meta .notes a { color: #5aa0ff; }
   .ver { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; color: #8b9099; margin-top: 6px; }
   .btn {
     flex: 0 0 auto; display: inline-block; background: #5b8df7; color: #fff; text-decoration: none;
@@ -122,6 +135,163 @@ export function renderDownloadPage(): string {
       return node;
     }
 
+    // 更新说明按 Markdown 写（管理台「更新说明（中文，Markdown）」）。
+    // 零依赖子集渲染：标题 / 有序与无序列表 / 粗体 / 斜体 / 行内代码 / 代码块 / 链接 / 引用 / 分割线。
+    //
+    // 反例（上一版）：el("div", "notes", row.releaseNotesZh) 把原文直接塞进 textContent，
+    // 页面上看到的就是 "## 标题"、"**粗体**" 这样的原始符号。
+    //
+    // 安全：全部 createElement + textContent，不拼 HTML、不用 innerHTML；
+    // 链接只认 http(s)，其他协议在正则层面就不匹配，会降级成纯文本。
+    var INLINE_MD = /\\[([^\\]]+)\\]\\((https?:[^\\s)]+)\\)|\\*\\*([^*]+)\\*\\*|\\x60([^\\x60]+)\\x60|\\*([^*]+)\\*/g;
+
+    function inlineMd(text) {
+      var frag = document.createDocumentFragment();
+      var last = 0;
+      var m;
+      INLINE_MD.lastIndex = 0;
+      while ((m = INLINE_MD.exec(text)) !== null) {
+        if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        if (m[1] !== undefined) {
+          var a = document.createElement("a");
+          a.textContent = m[1];
+          a.href = m[2];
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          frag.appendChild(a);
+        } else if (m[3] !== undefined) {
+          var strong = document.createElement("strong");
+          strong.textContent = m[3];
+          frag.appendChild(strong);
+        } else if (m[4] !== undefined) {
+          var code = document.createElement("code");
+          code.textContent = m[4];
+          frag.appendChild(code);
+        } else {
+          var em = document.createElement("em");
+          em.textContent = m[5];
+          frag.appendChild(em);
+        }
+        last = INLINE_MD.lastIndex;
+      }
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      return frag;
+    }
+
+    function renderNotes(md) {
+      var box = document.createElement("div");
+      box.className = "notes";
+      var lines = String(md || "").split(/\\r?\\n/);
+      var para = [];
+      var list = null;
+      var listTag = "";
+      var inCode = false;
+      var codeLines = [];
+
+      function flushPara() {
+        if (para.length === 0) return;
+        var p = document.createElement("p");
+        p.appendChild(inlineMd(para.join(" ")));
+        box.appendChild(p);
+        para = [];
+      }
+      function flushList() {
+        if (list === null) return;
+        box.appendChild(list);
+        list = null;
+        listTag = "";
+      }
+
+      for (var i = 0; i < lines.length; i += 1) {
+        var raw = lines[i];
+        var line = raw.trim();
+
+        if (inCode) {
+          if (line.indexOf("\\x60\\x60\\x60") === 0) {
+            var pre = document.createElement("pre");
+            var codeEl = document.createElement("code");
+            codeEl.textContent = codeLines.join("\\n");
+            pre.appendChild(codeEl);
+            box.appendChild(pre);
+            inCode = false;
+            codeLines = [];
+          } else {
+            codeLines.push(raw);
+          }
+          continue;
+        }
+        if (line.indexOf("\\x60\\x60\\x60") === 0) {
+          flushPara();
+          flushList();
+          inCode = true;
+          continue;
+        }
+        if (!line) {
+          flushPara();
+          flushList();
+          continue;
+        }
+
+        var heading = /^(#{1,6})\\s+(.*)$/.exec(line);
+        if (heading) {
+          flushPara();
+          flushList();
+          var level = Math.min(6, heading[1].length + 1);
+          var h = document.createElement("h" + level);
+          h.appendChild(inlineMd(heading[2]));
+          box.appendChild(h);
+          continue;
+        }
+
+        if (/^(-{3,}|\\*{3,}|_{3,})$/.test(line)) {
+          flushPara();
+          flushList();
+          box.appendChild(document.createElement("hr"));
+          continue;
+        }
+
+        var quote = /^>\\s?(.*)$/.exec(line);
+        if (quote) {
+          flushPara();
+          flushList();
+          var bq = document.createElement("blockquote");
+          bq.appendChild(inlineMd(quote[1]));
+          box.appendChild(bq);
+          continue;
+        }
+
+        var ul = /^[-*+]\\s+(.*)$/.exec(line);
+        var ol = /^(\\d+)[.)]\\s+(.*)$/.exec(line);
+        if (ul || ol) {
+          flushPara();
+          var tag = ul ? "ul" : "ol";
+          if (listTag !== tag) {
+            flushList();
+            listTag = tag;
+            list = document.createElement(tag);
+          }
+          var li = document.createElement("li");
+          li.appendChild(inlineMd(ul ? ul[1] : ol[2]));
+          list.appendChild(li);
+          continue;
+        }
+
+        flushList();
+        para.push(line);
+      }
+
+      if (inCode && codeLines.length > 0) {
+        var preTail = document.createElement("pre");
+        var codeTail = document.createElement("code");
+        codeTail.textContent = codeLines.join("\\n");
+        preTail.appendChild(codeTail);
+        box.appendChild(preTail);
+      }
+      flushPara();
+      flushList();
+      return box;
+    }
+
     function renderCard(row) {
       var card = el("div", "card");
       var meta = el("div", "meta");
@@ -131,7 +301,7 @@ export function renderDownloadPage(): string {
       if (row.sizeBytes) plat += " · " + fmtSize(row.sizeBytes);
       meta.appendChild(el("div", "plat", plat));
       meta.appendChild(el("div", "ver", "v" + row.version + (row.fileName ? " · " + row.fileName : "")));
-      if (row.releaseNotesZh) meta.appendChild(el("div", "notes", row.releaseNotesZh));
+      if (row.releaseNotesZh) meta.appendChild(renderNotes(row.releaseNotesZh));
 
       var link = el("a", "btn", "下载");
       link.href = row.downloadPath;
