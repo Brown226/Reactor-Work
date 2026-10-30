@@ -32,7 +32,13 @@ import {
   isConversationSharePath,
   resolveConversationShareCodeFromPath,
 } from "./share/conversationShareRoute.js";
-import type { IPlatformService, RemoteTarget, ServerRemoteInfo } from "@zcode/shared";
+import type {
+  IPlatformService,
+  PlatformFeatureId,
+  RemoteTarget,
+  ServerRemoteInfo,
+} from "@zcode/shared";
+import { PLATFORM_UNAVAILABLE_REASON } from "@zcode/shared";
 import { WEB_DEFAULT_THEME, resolveWebInitialTheme } from "./webThemeSeed.js";
 
 function resolveWebThemePreference(defaultTheme: Theme = WEB_DEFAULT_THEME): Theme {
@@ -100,7 +106,7 @@ function isWebOAuthCallback(params: URLSearchParams): boolean {
 }
 
 function renderWebAuthCallbackPage(): void {
-  document.title = "Reactor - Sign In";
+  document.title = "Reactor 智能应用 - 登录";
   const callbackState = parseOAuthState(
     new URLSearchParams(window.location.search).get("state") ?? "",
   );
@@ -192,8 +198,23 @@ async function renderConversationSharePage(): Promise<void> {
 }
 
 function createWebPlatform(): IPlatformService {
+  // 浏览器沙箱做不到、桌面端才有的能力：UI 据此把入口置灰并悬停说明，
+  // 而不是让用户点了才收到失败提示。清单与文案定义在 @zcode/shared。
+  const unavailableFeatures = new Set<PlatformFeatureId>([
+    "openInEditor",
+    "openInFileManager",
+    "embeddedBrowser",
+    "computerUse",
+    "chromeImport",
+    "mcpLocalDirectory",
+    "exportLogs",
+    "windowScreenshot",
+    "localWallpaper",
+  ]);
   return {
     canSelectFilePath: false,
+    unavailableReason: (feature) =>
+      unavailableFeatures.has(feature) ? PLATFORM_UNAVAILABLE_REASON : null,
     // Web 端无法打开系统目录选择框
     selectDirectory: () => Promise.resolve(null),
     // Web 端无法打开系统文件选择框
@@ -419,7 +440,7 @@ function WebBootstrapErrorScreen({ message }: { message: string }) {
 }
 
 function renderWebBootstrapError(error: unknown): void {
-  document.title = "Reactor - Web";
+  document.title = "Reactor 智能应用";
   root.render(
     <WebBootstrapErrorScreen message={error instanceof Error ? error.message : String(error)} />,
   );
@@ -450,7 +471,7 @@ async function bootstrapWebApp() {
       onClose: () => {},
     });
     const platform = createWebPlatform();
-    document.title = "Reactor - Web + Server";
+    document.title = "Reactor 智能应用";
 
     root.render(
       <AppErrorBoundary>

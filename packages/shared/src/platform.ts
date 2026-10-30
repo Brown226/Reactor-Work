@@ -573,9 +573,33 @@ export interface QuickInputStatePayload {
   locale: Locale;
 }
 
+/**
+ * 桌面端可用、Web 端因浏览器沙箱无法提供的能力清单。
+ * UI 用它做「置灰 + 悬停说明」，而不是让用户点了才看到失败。
+ */
+export type PlatformFeatureId =
+  | "openInEditor"
+  | "openInFileManager"
+  | "embeddedBrowser"
+  | "computerUse"
+  | "chromeImport"
+  | "mcpLocalDirectory"
+  | "exportLogs"
+  | "windowScreenshot"
+  | "localWallpaper";
+
+/** Web 端不可用能力的统一说明文案；置灰悬停时展示。 */
+export const PLATFORM_UNAVAILABLE_REASON = "该功能仅支持客户端使用";
+
 export interface IPlatformService {
   /** 当前平台的文件选择框是否能返回 agent 可访问的本地绝对路径 */
   canSelectFilePath?: boolean;
+
+  /**
+   * 查询某能力在当前平台不可用的原因；返回 null/undefined = 可用。
+   * 桌面端可不实现（视为全部可用）；Web 端对沙箱能力返回统一文案。
+   */
+  unavailableReason?(feature: PlatformFeatureId): string | null;
 
   /** 打开系统目录选择框，返回选中路径或 null */
   selectDirectory(): Promise<string | null>;

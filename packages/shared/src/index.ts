@@ -139,6 +139,7 @@ export {
   DesktopCommandIds,
   buildLocalMediaPreviewUrl,
   createOpenInEditorRemoteTarget,
+  PLATFORM_UNAVAILABLE_REASON,
 } from "./platform.js";
 export type {
   ArmsCustomEventPayload,
@@ -228,6 +229,7 @@ export type {
   ComposerAttachmentInjectionPayload,
   QuickInputSubmitPayload,
   QuickInputStatePayload,
+  PlatformFeatureId,
 } from "./platform.js";
 export type {
   CuaAccessibilitySettingsResult,

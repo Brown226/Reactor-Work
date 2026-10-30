@@ -15,6 +15,7 @@ import { CheckIcon, ImagePlusIcon, XIcon } from "lucide-react";
 import { Switch } from "@/components/ui/switch.js";
 import { cn } from "@/components/lib/utils.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import {
   BACKGROUND_PRESETS,
@@ -191,6 +192,8 @@ export function BackgroundThemeSection() {
 
   const canPickImage =
     platform.canSelectFilePath === true && typeof platform.selectFiles === "function";
+  // Web 端选不了本机图片：入口不隐藏，置灰 + 悬停说明（推广要求让用户看到原因而不是缺一块 UI）
+  const wallpaperUnavailable = usePlatformUnavailable("localWallpaper");
   const hasCustomImage = Boolean(backgroundTheme.imagePath);
   const customImageUrl = backgroundImage.status === "ready" ? backgroundImage.url : null;
 
@@ -296,7 +299,28 @@ export function BackgroundThemeSection() {
               </span>
             )}
           </BackgroundOptionCard>
-        ) : null}
+        ) : (
+          // 平台不可用（Web 端）：置灰 + 原生 title 悬停说明，点击不再触发选择框
+          <div
+            title={wallpaperUnavailable ?? undefined}
+            className="opacity-50"
+            aria-disabled="true"
+            data-testid="background-preset-custom-image-unavailable"
+          >
+            <BackgroundOptionCard
+              key="custom-image-unavailable"
+              testId="background-preset-custom-image"
+              label={intl.formatMessage({ id: "settings.background.uploadImage" })}
+              selected={false}
+              imageBacked={false}
+              onSelect={() => undefined}
+            >
+              <span className="flex h-full w-full items-center justify-center text-foreground-subtle">
+                <ImagePlusIcon className="size-5" aria-hidden="true" />
+              </span>
+            </BackgroundOptionCard>
+          </div>
+        )}
       </div>
 
       {statusMessage ? (
