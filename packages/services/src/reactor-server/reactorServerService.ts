@@ -384,6 +384,40 @@ export function createReactorServerService(
    * 找到后把 id 记进凭据，模型请求的热路径据此做 O(1) 判断。
    */
   /**
+   * 为一个托管 provider 分配**绝不与现有 provider 冲突**的显示名（2026-10-30）。
+   *
+   * 为什么必须有这一层：`savePersonalProviderOverlay` 会无条件把 `metadata.providerName`
+   * 写成传入值，而 `ProviderConfigService.assertProviderLabelMutationIsUnique` 禁止两个
+   * provider 同名（抛 `Provider 名称已存在`）。所以只要本地存有历史重名条目 ——
+   * 例如上一次登录被中断、或 `createPersonalProvider` 自动改名生成的「… 2」——
+   * 即使我们已经按地址复用了**正确的**那个条目，"把它改回主名"这一步仍会抛错，
+   * 并让整次登录失败。这正是二次登录反复报同一个错的原因。
+   *
+   * 口径与 `claimDirectProviderName` 一致（`toLocaleLowerCase`），避免"我们以为不冲突、
+   * 配置服务却判定冲突"。`selfId` 指向的条目不计入占用：同一 provider 反复 sync 时
+   * 必须算出同一个名字，否则每次都会改名、配置反复抖动。
+   */
+  async function claimUniqueProviderName(desired: string, selfId?: string): Promise<string> {
+    const normalize = (value: string | null | undefined): string =>
+      (value ?? "").trim().toLocaleLowerCase();
+    const view = await providerSettings.getView();
+    const taken = new Set<string>();
+    for (const provider of view.providers) {
+      if (selfId !== undefined && String(provider.providerId) === selfId) continue;
+      const name = normalize(provider.providerName);
+      if (name) taken.add(name);
+    }
+    const base = desired.trim() || REACTOR_SERVER_PROVIDER_NAME;
+    if (!taken.has(normalize(base))) return base;
+    for (let index = 2; index <= 99; index += 1) {
+      const candidate = `${base} ${index}`;
+      if (!taken.has(normalize(candidate))) return candidate;
+    }
+    // 99 个前缀名全被占用说明本地数据已经异常；退回 providerId 保证唯一且稳定
+    return selfId ? `${base} (${selfId})` : base;
+  }
+
+  /**
    * 找到或创建**指定 baseUrl** 的托管 provider 并写入配置（不回填模型）。
    *
    * 为什么按 baseUrl 而不是固定 provider id 识别：`createPersonalProvider` 的 id 由配置服务生成，
@@ -418,17 +452,35 @@ export function createReactorServerService(
      * 托管条目本来就是本服务写的，同名即同一逻辑条目，地址变了就地更新即可。
      * 只认哨兵 apiKey：用户自建的 provider 即使同名也绝不覆盖。
      */
+    const isManagedPersonal = (candidate: (typeof mine)[number]): boolean => {
+      const access = candidate.personalConfig?.access as { apiKey?: unknown } | undefined;
+      return isReactorServerManagedApiKey(access?.apiKey);
+    };
     if (!existing) {
       const key = providerName.trim().toLocaleLowerCase();
-      existing = mine.find((provider) => {
-        if ((provider.providerName ?? "").trim().toLocaleLowerCase() !== key) return false;
-        const access = provider.personalConfig?.access as { apiKey?: unknown } | undefined;
-        return isReactorServerManagedApiKey(access?.apiKey);
-      });
+      existing = mine.find(
+        (provider) =>
+          (provider.providerName ?? "").trim().toLocaleLowerCase() === key &&
+          isManagedPersonal(provider),
+      );
     }
-    const providerId = existing
-      ? existing.providerId
-      : (await providerSettings.createPersonalProvider({ providerName })).providerId;
+    /*
+     * 2026-10-30：兜底复用任意「网关族」托管条目，绝不再堆第二个企业 provider。
+     *
+     * 到这一步仍找不到，说明服务端地址又换了一个（按地址没有、按名字也没有）。
+     * 若直接 createPersonalProvider，本地就会出现两个企业 provider：一个占着主名、
+     * 一个被自动改名成「… 2」，用户在模型下拉里看到两个分组，正是要避免的"迷惑"。
+     * 托管条目全部由本服务写入，逻辑上只应有一个网关 provider，因此直接复用旧条目。
+     * 按名字排除直连条目：它们各自对应一个上游地址，不是网关。
+     */
+    if (!existing) {
+      const directPrefix = `${REACTOR_SERVER_PROVIDER_NAME} · 直连`.trim().toLocaleLowerCase();
+      existing = mine.find(
+        (provider) =>
+          isManagedPersonal(provider) &&
+          !(provider.providerName ?? "").trim().toLocaleLowerCase().startsWith(directPrefix),
+      );
+    }
     // 这里不写 personalModelIds：它会被成员关系覆盖（见 reconcileProviderModels 注释），
     // 写上只会让人误以为模型清单由这里决定。
     const config: ProviderConfigObject = {
@@ -437,10 +489,70 @@ export function createReactorServerService(
       api: { type: "openai-chat-completions", baseUrl },
       visibility,
     };
-    await providerSettings.savePersonalProviderOverlay(providerId as ProviderId, config, {
-      providerName,
-    });
-    return providerId;
+    /*
+     * ① 可见条目已命中（地址或名字）：就地更新。
+     *
+     * 改名是**可失败的可选动作**：目标名可能被一个 `visibility: hidden` 的条目占着，
+     * 而 hidden 不在 `getView()` 里（facades.ts 的 createProviderSettingsView 会剔除），
+     * 所以 `claimUniqueProviderName` 根本看不见这个占用者、会误判"可用"。
+     * 一旦 `savePersonalProviderOverlay` 抛 `Provider 名称已存在`，就退回不改名再写一次——
+     * 名字丑一点无所谓，整次登录失败才是真事故。
+     */
+    if (existing) {
+      const desiredName = await claimUniqueProviderName(providerName, String(existing.providerId));
+      const currentName = (existing.providerName ?? "").trim();
+      const rename =
+        currentName.toLocaleLowerCase() === desiredName.toLocaleLowerCase()
+          ? undefined
+          : { providerName: desiredName };
+      try {
+        await providerSettings.savePersonalProviderOverlay(
+          existing.providerId as ProviderId,
+          config,
+          rename,
+        );
+      } catch (error) {
+        if (!rename) throw error;
+        logger.warn(undefined, "企业 provider 改名失败（可能撞上不可见的同名条目），保留原名", {
+          providerId: existing.providerId,
+          desiredName,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        await providerSettings.savePersonalProviderOverlay(existing.providerId as ProviderId, config);
+      }
+      return String(existing.providerId);
+    }
+    /*
+     * ② 凭据锚点：`getView()` 看不见 hidden 的网关 provider，但凭据里的 id 一直可靠。
+     *
+     * 反例（本次真正的根因）：10-29 给「所有模型都直连时把网关 provider 置 hidden」
+     * 之后，下一次登录按地址找不到它 → createPersonalProvider 新建（被自动改名成
+     * 「… 2」）→ 再把名字写回主名 → 撞上那个 hidden 的占用者 → 抛错。
+     * 空壳已经落盘、配置却没写进去，于是每失败一次就多一个空壳（实测堆到 12 个）。
+     * 这里直接按 id 写入且**不改名**，从根上避开"看不见的占用者"。
+     */
+    const anchoredId =
+      cachedProviderId ??
+      ((await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.providerId)) || undefined);
+    if (anchoredId) {
+      try {
+        await providerSettings.savePersonalProviderOverlay(anchoredId as ProviderId, config);
+        return anchoredId;
+      } catch (error) {
+        logger.info(undefined, "凭据中的企业 provider 已不存在，改为重新创建", {
+          anchoredId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+    /*
+     * ③ 新建。`createPersonalProvider` 内部用 nextPersonalProviderLabel 自动去重
+     * （主名被占时自动变成「… 2」），所以这里传主名是安全的；
+     * 写完**不再改名**，避免第二次触发唯一性校验。
+     */
+    const created = await providerSettings.createPersonalProvider({ providerName });
+    await providerSettings.savePersonalProviderOverlay(created.providerId as ProviderId, config);
+    return String(created.providerId);
   }
 
   async function writeEnterpriseProvider(
@@ -465,6 +577,49 @@ export function createReactorServerService(
     cachedProviderId = providerId;
     await credentials.save(REACTOR_SERVER_CREDENTIAL_KEYS.providerId, providerId);
     await reconcileProviderModels(providerId, models);
+    await cleanupOrphanGatewayProviders(providerId);
+  }
+
+  /**
+   * 清理历史遗留的「网关族空壳」（2026-10-30）。
+   *
+   * 反例（真实数据）：某台机器上堆了 12 个「Reactor 企业服务端 2 … 13」，
+   * 每条 `config` 里只有 `access.type`，没有 baseUrl、没有模型。
+   * 成因是旧逻辑每次登录都在 `createPersonalProvider` 之后被名称唯一性校验打断：
+   * 空壳已经落盘，配置却没写进去 —— 于是每失败一次就多一个，越攒越多。
+   *
+   * 只删**同时满足**「网关族名字 + 无 baseUrl + 无模型 + 非本次生效条目」的条目：
+   * 有地址的历史条目（可能还在用）与直连条目一律不碰。删除是安全的，因为空壳不含
+   * 任何用户配置，也不被凭据引用（凭据持有的是本次的 keepId）。
+   * 清理失败不阻断登录：它只是收拾残局，不是业务链路。
+   */
+  async function cleanupOrphanGatewayProviders(keepId: string): Promise<void> {
+    try {
+      const view = await providerSettings.getView();
+      const basePrefix = REACTOR_SERVER_PROVIDER_NAME.trim().toLocaleLowerCase();
+      const directPrefix = `${REACTOR_SERVER_PROVIDER_NAME} · 直连`.trim().toLocaleLowerCase();
+      for (const provider of view.providers) {
+        if (provider.personalConfig === undefined) continue;
+        if (String(provider.providerId) === keepId) continue;
+        const name = (provider.providerName ?? "").trim().toLocaleLowerCase();
+        // 只看网关族：直连条目各有真实上游地址，不在此列
+        if (!name.startsWith(basePrefix) || name.startsWith(directPrefix)) continue;
+        const baseUrl =
+          provider.personalConfig?.api?.baseUrl ?? provider.effectiveConfig?.api?.baseUrl;
+        if (typeof baseUrl === "string" && baseUrl.trim() !== "") continue;
+        const models = provider.personalConfig?.personalModelIds ?? [];
+        if (models.length > 0) continue;
+        await providerSettings.deletePersonalProvider(provider.providerId as ProviderId);
+        logger.info(undefined, "已清理遗留的企业 provider 空壳", {
+          providerId: provider.providerId,
+          providerName: provider.providerName,
+        });
+      }
+    } catch (error) {
+      logger.warn(undefined, "清理企业 provider 空壳失败（不阻断登录）", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 
   /** 直连 provider 的显示名基名：与网关分区分组，但不让人误以为是另一个服务端。 */
@@ -532,13 +687,17 @@ export function createReactorServerService(
       (value ?? "").trim().toLocaleLowerCase();
 
     const view = await providerSettings.getView();
-    // 该地址自己的 provider 不计入"占用"：复用场景要允许它继续用原来的名字
+    // 该地址自己的 provider 不计入"占用"：复用场景要允许它继续用原来的名字。
+    // 地址读取与 ensureManagedProvider 同口径（personalConfig 优先）：老数据可能只落在
+    // personalConfig 上，只看 effectiveConfig 会把"自己"误判成"别人占用"，于是每次 sync
+    // 都算出新名字、反复改名。
+    const readBaseUrl = (candidate: (typeof view.providers)[number]): unknown =>
+      candidate.personalConfig?.api?.baseUrl ?? candidate.effectiveConfig.api?.baseUrl;
     const selfIds = new Set<string>(
       view.providers
         .filter(
           (provider) =>
-            provider.personalConfig !== undefined &&
-            provider.effectiveConfig.api?.baseUrl === baseUrl,
+            provider.personalConfig !== undefined && readBaseUrl(provider) === baseUrl,
         )
         .map((provider) => String(provider.providerId)),
     );

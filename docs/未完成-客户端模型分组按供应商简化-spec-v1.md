@@ -73,6 +73,62 @@ providerName 存在 → 「Reactor 企业服务端 · 直连 · Qwen（本部）
 
 ## 5. 边界
 
-- `hidden` 只影响**模型选择列表**（`model-selection-config` / `resolver` 均跳过 hidden）。凭据、授权、用量上报不受影响。
+- ~~`hidden` 只影响**模型选择列表**（`model-selection-config` / `resolver` 均跳过 hidden）。凭据、授权、用量上报不受影响。~~
+  **2026-10-30 更正**：这条写错了。`getView()` 本身也会剔除 hidden —— `facades.ts` 的
+  `createProviderSettingsView` 里 `visibleProviders = resolvedProviders.filter(visibility !== "hidden")`，
+  且返回的 `providers` 就是 `visibleProviders`。所以 hidden 会让条目从**全部业务视图**中消失，
+  不只是模型选择列表。这条错误认知直接导致了下面 §6 的事故。
 - 同名剔除按 model id 精确匹配，不做大小写折叠（与服务端模型 id 语义一致）。
 - 直连地址若在员工机器上不可达，该组模型不可用；这是直连方案的固有权衡，不在本次范围。
+
+## 6. 事故与修复：二次登录反复报「Provider 名称已存在」（2026-10-30）
+
+### 现象
+
+1.0.7 安装后：首次登录成功，**第二次登录必然失败**，登录卡片显示
+`Provider 名称已存在: Reactor 企业服务端`。
+
+### 真实数据（本机 `~/.reactor/v2/provider_config.json`，scope=tiankd）
+
+```
+new-provider      「Reactor 企业服务端」        base=127.0.0.1:8790/v1  visibility=hidden  3 个模型
+new-provider-2    「… · 直连 · 本地」           base=127.0.0.1:3425/v1  visibility 未设    —
+new-provider-3..14「Reactor 企业服务端 2 … 13」 base 缺失              模型为空            —  ← 12 个空壳
+```
+
+### 因果链
+
+1. §3 的规则 3 引入：全部供应商都直连时，把网关 provider 置 `visibility: "hidden"`。
+2. `getView()` 剔除 hidden（见 §5 更正）→ 下一次登录 `mine` 里**看不到**这个网关 provider。
+3. 按地址找不到 → 走 `createPersonalProvider`；主名已被那个 hidden 条目占用，
+   `nextPersonalProviderLabel` 自动改名成「Reactor 企业服务端 2」。
+4. 紧接着 `savePersonalProviderOverlay(..., { providerName: "Reactor 企业服务端" })`
+   要把名字写回主名 → 撞上 hidden 的占用者 → 抛错。
+5. 抛错发生在配置写入之前，**空壳已经落盘**。于是每登录失败一次就多一个空壳：
+   实测从「2」累积到「13」，共 12 个。
+6. 恶性循环：空壳占着名字，主名却始终被 hidden 条目占着，下一次照样新建 + 抛错。
+
+### 修复
+
+| 改动 | 作用 |
+|---|---|
+| ① 可见条目命中时：改名失败**降级为不改名**再写一次 | 目标名可能被 hidden 条目占着，`claimUniqueProviderName` 看不见它；宁可名字丑，不可登录失败 |
+| ② 引入**凭据锚点**：`cachedProviderId` / `REACTOR_SERVER_CREDENTIAL_KEYS.providerId` 直接按 id 写入，**不改名** | 凭据是唯一不受 hidden 过滤影响的权威定位；从根上避开"看不见的占用者" |
+| ③ 新建分支不传 metadata | `createPersonalProvider` 已自动去重，写完不再二次改名 |
+| ④ 新增 `cleanupOrphanGatewayProviders` | 登录成功后删除「网关族名字 + 无 baseUrl + 无模型 + 非本次条目」的空壳，自动清掉已产生的 12 个 |
+| ⑤ `claimDirectProviderName` 的 selfIds 判据与 `ensureManagedProvider` 对齐（personalConfig 优先） | 避免把自己的 provider 误判成"占用者"，导致直连组每次 sync 都换名字 |
+
+### 验收场景
+
+| # | 场景 | 期望 |
+|---|---|---|
+| 8 | 网关 provider 处于 hidden，重新登录 | 复用原条目，不再新建空壳，登录成功 |
+| 9 | 本地存在 12 个历史空壳 | 登录后自动删除，供应商列表里不再出现「… 2 …13」 |
+| 10 | 本地存在一个可见的历史重名条目 | 改名失败时降级为保留原名，登录仍然成功 |
+| 11 | 连续登录两次 | 第二次不产生任何新 provider 条目 |
+
+### 已知残留
+
+- 若凭据里的 providerId 已被用户删除，② 会失败并回落 ③ 新建；此时主名若被 hidden 条目占用，
+  新条目会叫「… 2」。名字不理想，但登录成功，且②在下次登录起就能稳定命中。
+- 本次修复**未做运行时验证**：开发机外网无法连内网上游，端到端需安装新包后在内网实测。
