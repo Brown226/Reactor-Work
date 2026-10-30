@@ -97,13 +97,17 @@ export function ReactorServerLoginForm({
 
   // 登录失败是可重试状态，统一用 warning 语义（与产品里其它登录失败提示一致），不用红色。
   //
-  // 凭据解密失败刻意不上浮：它描述的是"上一会话留下的令牌在本机解不开了"（系统钥匙串
-  // 密钥更换，或开发构建与打包构建共用同一份凭据文件、safeStorage 密钥却按 profile 隔离），
-  // 用户能做的只有重新登录——而登录框本身已经在要求这件事。这条陈旧诊断对终端用户
-  // 无从理解，只会让人以为装好的软件出了问题，因此只进日志、不进界面。
-  // 「企业登录已过期，请重新登录」这类本次会话可执行的原因仍然显示。
+  // 2026-10-30：凭据解密失败不再静默。它此前被整条吞掉，而它恰恰会让每次登录都 FAIL，
+  // 界面零反馈，用户看到的就是「点登录按钮没有任何反应」（真实事故，见
+  // docs/未完成-企业provider可见性与登录自愈-spec-v1.md）。
+  // 服务层已把该情形降级为「缓存失效 + 自动重建」；万一仍上浮到这里，说明自动重建也失败了，
+  // 必须给一句用户能执行的话，而不是技术原文。
   const rawError = error ?? status?.lastError ?? null;
-  const visibleError = rawError && !isCredentialDecryptError(rawError) ? rawError : null;
+  const visibleError = rawError
+    ? isCredentialDecryptError(rawError)
+      ? intl.formatMessage({ id: "settings.reactorServer.credentialReset" })
+      : rawError
+    : null;
   const errorNode = visibleError ? (
     <div data-testid={TID_REACTOR_SERVER_STATUS} data-state="error" role="alert">
       <Alert variant="warning" className="flex items-start gap-2">

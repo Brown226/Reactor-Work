@@ -115,7 +115,11 @@ interface InitAutoUpdaterOptions {
   locale?: Locale;
   updateFeedSource?: RuntimeUpdateFeedSource;
   deviceMid?: string;
-  resolveEndpointOrigin?: () => string | Promise<string>;
+  /**
+   * 解析更新源端点。返回 `null` 表示当前没有可用更新源（内网部署未登录企业服务端），
+   * 此时更新器必须跳过检查，**不得回退官方 manifest**。
+   */
+  resolveEndpointOrigin?: () => string | null | Promise<string | null>;
 }
 
 let quitAndInstallInFlight = false;
@@ -751,7 +755,29 @@ async function syncAutoUpdateCheckChannelFromSettings(
   activeAutoUpdateCheckChannel = nextChannel;
 }
 
+/**
+ * 内网部署的更新源只有企业服务端这一处：`resolveEndpointOrigin` 返回 null 时说明未登录，
+ * 此时任何检查都只会落到官方 manifest（错误产品线）或无效外网请求。
+ * 未注入解析器的场景（非内网构建 / 测试）保持原有默认端点行为。
+ */
+let autoUpdateEndpointResolver: (() => string | null | Promise<string | null>) | undefined;
+
+async function hasConfiguredUpdateSource(): Promise<boolean> {
+  const resolver = autoUpdateEndpointResolver;
+  if (!resolver) {
+    return true;
+  }
+  try {
+    const origin = await resolver();
+    return typeof origin === "string" && origin.trim().length > 0;
+  } catch (error) {
+    logger.warn("[auto-update] 解析更新源失败，按未配置处理", error);
+    return false;
+  }
+}
+
 function applyManifestUpdateProvider(options: InitAutoUpdaterOptions): void {
+  autoUpdateEndpointResolver = options.resolveEndpointOrigin;
   const manifestUrl = options.updateFeedSource?.url.trim();
   autoUpdater.setFeedURL({
     provider: "custom",
@@ -1522,12 +1548,19 @@ export async function initAutoUpdater(options: InitAutoUpdaterOptions = {}): Pro
     }
 
     const checkId = beginAutoUpdateCheck();
-    const checkForUpdatesPromise = options.settingService
-      ? (async () => {
-          await syncAutoUpdateCheckChannelFromSettings(checkId, options.settingService, reason);
-          await autoUpdater.checkForUpdates();
-        })()
-      : autoUpdater.checkForUpdates();
+    // 更新源只有企业服务端一处。未登录时（解析结果为 null）不发起任何请求：
+    // 走官方 manifest 会拉到另一条产品线的版本与更新说明，内网环境还会产生无效外网请求。
+    const checkForUpdatesPromise = (async () => {
+      if (!(await hasConfiguredUpdateSource())) {
+        logger.info(`[auto-update] skip ${reason}: 未配置企业服务端更新源`);
+        setAutoUpdaterMenuState({ kind: "idle", enabled: true });
+        return;
+      }
+      if (options.settingService) {
+        await syncAutoUpdateCheckChannelFromSettings(checkId, options.settingService, reason);
+      }
+      await autoUpdater.checkForUpdates();
+    })();
 
     checkForUpdatesPromise
       .catch((err) => {
@@ -1908,6 +1941,16 @@ export function checkForUpdateMenuClick(originWindow?: BrowserWindow | null) {
   setAutoUpdaterMenuState({ kind: "checking", enabled: false });
   const checkId = beginAutoUpdateCheck();
   void (async () => {
+    // 与自动检查同一条规则：没有企业服务端地址就没有更新源，不做任何网络请求。
+    if (!(await hasConfiguredUpdateSource())) {
+      logger.info("[auto-update] skip manual check: 未配置企业服务端更新源");
+      setAutoUpdaterMenuState({ kind: "idle", enabled: true });
+      sendManualCheckResult({
+        kind: "error",
+        message: "未登录企业服务端，无法检查更新。请先在设置中登录企业服务端账号。",
+      });
+      return;
+    }
     await clearSkippedUpdateVersionForManualCheck(manualCheckChannel, autoUpdaterSettingService);
     await autoUpdater.checkForUpdates();
   })()

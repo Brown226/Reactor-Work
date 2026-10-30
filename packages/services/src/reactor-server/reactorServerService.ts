@@ -249,7 +249,27 @@ export function createReactorServerService(
 
   async function readManagedProviderId(): Promise<string | null> {
     if (cachedProviderId !== undefined) return cachedProviderId;
-    cachedProviderId = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.providerId);
+    /*
+     * 2026-10-30：凭据解不开不能把整次登录带崩。
+     *
+     * 反例（真实事故）：dev 构建与安装包共用 ~/.reactor/v2，safeStorage 密钥按 profile
+     * 隔离，安装包读 dev 写入的 providerId 时抛「凭据解密失败」→ 每次登录 FAIL，
+     * 而登录表单刻意不显示该错误，用户看到的就是「点登录按钮没有任何反应」。
+     * providerId 只是缓存、不是事实源：解不开就删掉，让后续按地址/名字/完整视图重新识别。
+     */
+    try {
+      cachedProviderId = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.providerId);
+    } catch (error) {
+      logger.warn(undefined, "企业 provider 凭据不可用，按缓存失效处理", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      try {
+        await credentials.delete(REACTOR_SERVER_CREDENTIAL_KEYS.providerId);
+      } catch {
+        // 删除失败不影响主线：下次仍会走同一条"按缓存失效处理"分支
+      }
+      cachedProviderId = null;
+    }
     return cachedProviderId;
   }
 
@@ -264,7 +284,8 @@ export function createReactorServerService(
   } | null> {
     const providerId = await readManagedProviderId();
     if (!providerId) return null;
-    const view = await providerSettings.getView();
+    // hidden 条目也要能读到：否则按凭据 id 定位它会误判成「已被删除」。
+    const view = await providerSettings.getView({ includeHidden: true });
     const provider = view.providers.find((candidate) => candidate.providerId === providerId);
     if (!provider) return null;
     // personalConfig 才是我们写的那一层；纯个人 provider 上两者等价，但读前者更贴合语义。
@@ -273,7 +294,8 @@ export function createReactorServerService(
 
   /** 该 provider 下已配置的个人模型 id（只有 personalConfig 里的这批是我们可改的）。 */
   async function readPersonalModelIds(providerId: string): Promise<readonly string[]> {
-    const view = await providerSettings.getView();
+    // 必须看见 hidden：读不到模型会让 reconcile 误判「当前为空」，把已有模型全删掉。
+    const view = await providerSettings.getView({ includeHidden: true });
     const provider = view.providers.find((candidate) => candidate.providerId === providerId);
     return provider?.personalConfig?.personalModelIds ?? [];
   }
@@ -305,8 +327,9 @@ export function createReactorServerService(
     /*
      * revision 必须现取：savePersonalModelDraft 带乐观锁，同一轮 reconcile 里
      * 上一条模型的写入已经让快照 revision 前进，复用旧值会必然冲突。
+     * 含 hidden：网关 provider 隐藏后仍要能刷新它的模型配置，否则模型能力永远停在旧值。
      */
-    const view = await providerSettings.getView();
+    const view = await providerSettings.getView({ includeHidden: true });
     await providerSettings.savePersonalModelDraft({
       providerId: providerId as ProviderId,
       originalModelId: model.id as ModelId,
@@ -400,7 +423,8 @@ export function createReactorServerService(
   async function claimUniqueProviderName(desired: string, selfId?: string): Promise<string> {
     const normalize = (value: string | null | undefined): string =>
       (value ?? "").trim().toLocaleLowerCase();
-    const view = await providerSettings.getView();
+    // 唯一性校验必须覆盖 hidden：否则改名后会撞上「看不见的占用者」。
+    const view = await providerSettings.getView({ includeHidden: true });
     const taken = new Set<string>();
     for (const provider of view.providers) {
       if (selfId !== undefined && String(provider.providerId) === selfId) continue;
@@ -433,7 +457,11 @@ export function createReactorServerService(
      */
     visibility: "visible" | "hidden" = "visible",
   ): Promise<string> {
-    const view = await providerSettings.getView();
+    /*
+     * 2026-10-30：必须看见 hidden。网关 provider 在「全部模型直连」时被置 hidden，
+     * 若这里看不见它，每次登录都会以为不存在 → 新建 → 撞名 → 堆空壳 → 登录失败。
+     */
+    const view = await providerSettings.getView({ includeHidden: true });
     const mine = view.providers.filter((provider) => provider.personalConfig !== undefined);
     // 地址读取与 resolveDirectBaseUrl 同路径：老数据可能只落在 personalConfig 上
     const readBaseUrl = (candidate: (typeof mine)[number]): string | undefined => {
@@ -518,7 +546,10 @@ export function createReactorServerService(
           desiredName,
           error: error instanceof Error ? error.message : String(error),
         });
-        await providerSettings.savePersonalProviderOverlay(existing.providerId as ProviderId, config);
+        await providerSettings.savePersonalProviderOverlay(
+          existing.providerId as ProviderId,
+          config,
+        );
       }
       return String(existing.providerId);
     }
@@ -531,9 +562,9 @@ export function createReactorServerService(
      * 空壳已经落盘、配置却没写进去，于是每失败一次就多一个空壳（实测堆到 12 个）。
      * 这里直接按 id 写入且**不改名**，从根上避开"看不见的占用者"。
      */
-    const anchoredId =
-      cachedProviderId ??
-      ((await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.providerId)) || undefined);
+    // readManagedProviderId 已内置「解不开即视为失效」，这里不能直接 credentials.load，
+    // 否则凭据损坏时仍会抛「凭据解密失败」把整次登录带崩。
+    const anchoredId = (await readManagedProviderId()) || undefined;
     if (anchoredId) {
       try {
         await providerSettings.savePersonalProviderOverlay(anchoredId as ProviderId, config);
@@ -595,7 +626,8 @@ export function createReactorServerService(
    */
   async function cleanupOrphanGatewayProviders(keepId: string): Promise<void> {
     try {
-      const view = await providerSettings.getView();
+      // 空壳可能是 hidden（历史版本在隐藏后仍反复创建），必须连 hidden 一起扫。
+      const view = await providerSettings.getView({ includeHidden: true });
       const basePrefix = REACTOR_SERVER_PROVIDER_NAME.trim().toLocaleLowerCase();
       const directPrefix = `${REACTOR_SERVER_PROVIDER_NAME} · 直连`.trim().toLocaleLowerCase();
       for (const provider of view.providers) {
@@ -686,7 +718,8 @@ export function createReactorServerService(
     const normalize = (value: string | null | undefined): string =>
       (value ?? "").trim().toLocaleLowerCase();
 
-    const view = await providerSettings.getView();
+    // 唯一性校验要覆盖 hidden 条目：否则改名后会撞上「看不见的占用者」。
+    const view = await providerSettings.getView({ includeHidden: true });
     // 该地址自己的 provider 不计入"占用"：复用场景要允许它继续用原来的名字。
     // 地址读取与 ensureManagedProvider 同口径（personalConfig 优先）：老数据可能只落在
     // personalConfig 上，只看 effectiveConfig 会把"自己"误判成"别人占用"，于是每次 sync
@@ -696,8 +729,7 @@ export function createReactorServerService(
     const selfIds = new Set<string>(
       view.providers
         .filter(
-          (provider) =>
-            provider.personalConfig !== undefined && readBaseUrl(provider) === baseUrl,
+          (provider) => provider.personalConfig !== undefined && readBaseUrl(provider) === baseUrl,
         )
         .map((provider) => String(provider.providerId)),
     );
@@ -739,7 +771,8 @@ export function createReactorServerService(
    * 清空模型后它在下拉里自然消失，下次需要时原地复用。
    */
   async function pruneStaleDirectProviders(activeBaseUrls: ReadonlySet<string>): Promise<void> {
-    const view = await providerSettings.getView();
+    // hidden 的直连条目仍持有模型，漏扫会留下「能选但打不通」的旧模型。
+    const view = await providerSettings.getView({ includeHidden: true });
     const gatewayProviderId = await readManagedProviderId();
     for (const provider of view.providers) {
       if (provider.personalConfig === undefined) continue;
@@ -767,7 +800,8 @@ export function createReactorServerService(
 
   /** 全部托管 provider（网关 + 各直连）的模型 id 合并，供重启后的状态兜底。 */
   async function readAllManagedModelIds(): Promise<readonly string[]> {
-    const view = await providerSettings.getView();
+    // 含 hidden：否则重启后隐藏 provider 的模型读不到，设置页显示成 0 个模型。
+    const view = await providerSettings.getView({ includeHidden: true });
     const ids: string[] = [];
     for (const provider of view.providers) {
       if (provider.personalConfig === undefined) continue;
@@ -785,7 +819,8 @@ export function createReactorServerService(
    * 用量上报的过滤条件不需要跟着维护一张地址表（漏一处就会漏统计）。
    */
   async function isManagedProvider(providerId: string): Promise<boolean> {
-    const view = await providerSettings.getView();
+    // 含 hidden：隐藏是展示态，不影响「这是我们的条目」这一事实判断。
+    const view = await providerSettings.getView({ includeHidden: true });
     const provider = view.providers.find((candidate) => candidate.providerId === providerId);
     if (!provider) return false;
     const access = provider.personalConfig?.access as { apiKey?: unknown } | undefined;
@@ -803,7 +838,8 @@ export function createReactorServerService(
    * 经网关转发的调用返回 null —— 网关已经记过账，再补就是重复计费。
    */
   async function resolveDirectBaseUrl(providerId: string): Promise<string | null> {
-    const view = await providerSettings.getView();
+    // hidden 的直连 provider 仍会承接请求，漏读会让这部分流量不计入账本。
+    const view = await providerSettings.getView({ includeHidden: true });
     const provider = view.providers.find((candidate) => candidate.providerId === providerId);
     if (!provider) return null;
     // 与 isManagedProvider 同判据：先确认是本服务托管的条目，用户自建 provider 不进企业账本
@@ -1027,8 +1063,9 @@ export function createReactorServerService(
      *
      * 改为按哨兵 apiKey 扫描全部托管 provider（网关 + 各直连），逐个清空模型。
      * 只清模型不删 provider：条目留着，下次登录按 baseUrl 原地复用。
+     * 含 hidden：隐藏的直连条目若漏清，登出后仍能绕过登录态直接打上游。
      */
-    const view = await providerSettings.getView();
+    const view = await providerSettings.getView({ includeHidden: true });
     for (const provider of view.providers) {
       if (provider.personalConfig === undefined) continue;
       const access = provider.personalConfig.access as { apiKey?: unknown } | undefined;

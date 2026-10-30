@@ -2265,6 +2265,8 @@ const zhCN: Record<string, string> = {
   "settings.reactorServer.username": "企业账号",
   "settings.reactorServer.password": "密码",
   "settings.reactorServer.login": "登录",
+  "settings.reactorServer.credentialReset":
+    "本机保存的登录凭据已失效且无法读取，已自动清除，请重新点击登录。",
   "settings.reactorServer.entering": "正在进入…",
   "settings.reactorServer.logout": "退出登录",
   "settings.reactorServer.gatewayDescription": "网关地址 {gatewayUrl}",
@@ -5473,7 +5475,7 @@ const zhCN: Record<string, string> = {
   "chat.error.collapseDetails": "收起详情",
   "chat.error.feedback": "反馈问题",
   "chat.error.feedbackOpened": "已打开反馈，并自动带上报错现场",
-  "chat.error.noAvailableModel": "当前没有可用模型。请开通编程套餐或配置自定义模型。",
+  "chat.error.noAvailableModel": "当前没有可用模型。请在设置中配置模型后重试。",
   "chat.error.sendFailed": "发送失败，请稍后重试。",
   "chat.error.modelSettings": "模型设置",
   "chat.error.setModels": "配置",

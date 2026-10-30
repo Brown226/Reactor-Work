@@ -306,7 +306,8 @@ test("用量简报：服务端月度累计 + 额度进度 + 本地积压", async
   assert.equal(overview.quotaLimit, 1000);
   assert.equal(overview.percent, 0.85);
   assert.equal(overview.quotaExceeded, false, "85% 未跨 100% 线");
-  assert.equal(overview.policyMode, "edit");
+  // 2026-10-30：不再断言 policyMode —— 概览自 10-13 起有意不下发该字段
+  // （组织 defaultApprovalMode 不再干预桌面端，见 reactorPolicySync.ts 内注释）。
   assert.equal(overview.policySource, "server");
   assert.equal(overview.pendingEvents, 0);
 });
@@ -319,7 +320,8 @@ test("用量简报：未登录时月度累计为 null（不拿本地缓存冒充
   const overview = await service.getUsageOverview();
   assert.equal(overview.monthTokens, null);
   assert.equal(overview.percent, null);
-  assert.equal(overview.policyMode, null);
+  // policyMode 已随 10-13 的口径变更从概览移除，未登录场景改断言现契约字段。
+  assert.equal(overview.policySource, "unknown");
   assert.equal(
     harness.requests.filter((entry) => entry.includes("/desktop/usage/summary")).length,
     0,

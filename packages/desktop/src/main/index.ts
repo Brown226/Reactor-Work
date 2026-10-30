@@ -697,14 +697,17 @@ async function resolveCurrentZCodeEndpointOrigin() {
 }
 
 /**
- * 更新清单的端点解析：**优先用登录时的企业服务端地址**。
+ * 更新清单的端点解析：**只认登录时的企业服务端地址**。
  *
- * 内网部署的更新权威源是 Reactor Server（`/api/v1/releases/electron/manifest` 由它下发），
- * 而通用端点解析的默认值是 ZCode 官网——换标后官网 manifest 还是旧产品线的版本
- * （实测会拉到 v3.14.5 的更新日志），对 Reactor 1.0.0 用户是错误目的地。
- * 未登录 / 凭据读不到时退回通用解析，行为与改动前一致。
+ * 内网部署的更新权威源是 Reactor Server（`/api/v1/releases/electron/manifest` 由它下发）。
+ * 未登录 / 凭据读不到时**不回退 ZCode 官网**：官网 manifest 属于另一条产品线
+ * （实测会拉到 v3.16.3 及其更新日志，并写入待展示说明），对 Reactor 用户是错误目的地；
+ * 内网机器也普遍连不上该域名，回退只会产生无效请求和虚假的「更新」提示。
+ *
+ * 返回 `null` 表示当前没有可用更新源，更新器据此跳过本次检查（见 `autoUpdater.ts`
+ * 的 `hasConfiguredUpdateSource`）。
  */
-async function resolveUpdateEndpointOrigin(): Promise<string> {
+async function resolveUpdateEndpointOrigin(): Promise<string | null> {
   try {
     const serverUrl = await appTelemetryCredentialService.load("reactor:serverUrl");
     const normalized = serverUrl?.trim();
@@ -713,9 +716,11 @@ async function resolveUpdateEndpointOrigin(): Promise<string> {
       return normalizeZCodeEndpointOrigin(normalized);
     }
   } catch (error) {
-    logger.warn("[auto-update] 读取企业服务端地址失败，回退通用端点解析", { error });
+    // 凭据解密失败等同未登录：跳过检查即可，不得退到官方源。
+    logger.warn("[auto-update] 读取企业服务端地址失败，本次跳过更新检查", { error });
   }
-  return resolveCurrentZCodeEndpointOrigin();
+  logger.info("[auto-update] 未登录企业服务端，跳过更新检查（不回退官方源）");
+  return null;
 }
 let desktopContextPromptRollout: ReturnType<typeof createDesktopContextPromptRollout> | undefined;
 function resolveDesktopContextPromptEnabledForHost(): boolean {

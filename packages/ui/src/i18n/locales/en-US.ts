@@ -2408,6 +2408,8 @@ const enUS: Record<string, string> = {
   "settings.reactorServer.username": "Enterprise account",
   "settings.reactorServer.password": "Password",
   "settings.reactorServer.login": "Sign in",
+  "settings.reactorServer.credentialReset":
+    "The sign-in credentials saved on this device were unreadable and have been cleared. Please sign in again.",
   "settings.reactorServer.entering": "Entering…",
   "settings.reactorServer.logout": "Sign out",
   "settings.reactorServer.gatewayDescription": "Gateway address {gatewayUrl}",
@@ -5716,7 +5718,7 @@ const enUS: Record<string, string> = {
   "chat.error.collapseDetails": "Hide details",
   "chat.error.feedback": "Report issue",
   "chat.error.feedbackOpened": "Feedback opened with the error context attached",
-  "chat.error.noAvailableModel": "No model available. Upgrade or set a custom model.",
+  "chat.error.noAvailableModel": "No model available. Configure a model in Settings and try again.",
   "chat.error.sendFailed": "Failed to send. Try again later.",
   "chat.error.modelSettings": "Model settings",
   "chat.error.setModels": "Set",

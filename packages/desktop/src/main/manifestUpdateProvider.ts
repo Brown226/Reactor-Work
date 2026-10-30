@@ -29,7 +29,7 @@ interface ManifestUpdateProviderOptions extends CustomPublishOptions {
   deviceMid?: string;
   releasePlatform?: string;
   releaseChannel?: ElectronReleaseChannel;
-  resolveEndpointOrigin?: () => string | Promise<string>;
+  resolveEndpointOrigin?: () => string | null | Promise<string | null>;
   resolveReleaseChannel?: () => ElectronReleaseChannel | Promise<ElectronReleaseChannel>;
 }
 
@@ -204,6 +204,10 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
 
   override async getLatestVersion(): Promise<UpdateInfo> {
     const endpointOrigin = await this.resolveEndpointOrigin();
+    if (!endpointOrigin) {
+      // 正常路径已由 autoUpdater 前置跳过；这里是最后一道闸，确保绝不落到官方 manifest。
+      throw new Error("未配置企业服务端更新源，跳过更新检查");
+    }
     const releaseChannel = await this.resolveReleaseChannel();
     const manifestUrl = buildElectronManifestUrl({
       endpointOrigin,
@@ -243,12 +247,21 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
     return resolveManifestFiles(updateInfo, this.resolveBaseUrl, this.linuxExtensions);
   }
 
-  private async resolveEndpointOrigin(): Promise<string> {
-    const resolved =
-      (await this.options.resolveEndpointOrigin?.()) ??
-      this.options.endpointOrigin ??
-      DEFAULT_ZCODE_ENDPOINT_ORIGIN;
-    return normalizeZCodeEndpointOrigin(resolved);
+  private async resolveEndpointOrigin(): Promise<string | null> {
+    const resolved = this.options.resolveEndpointOrigin
+      ? await this.options.resolveEndpointOrigin()
+      : this.options.endpointOrigin;
+    // 注入了解析器却拿到空值 = 当前没有更新源，必须就此终止；
+    // 只有完全未注入解析器（非内网构建 / 测试）才允许退回默认端点。
+    if (resolved && resolved.trim()) {
+      return normalizeZCodeEndpointOrigin(resolved);
+    }
+    if (this.options.resolveEndpointOrigin) {
+      return null;
+    }
+    return normalizeZCodeEndpointOrigin(
+      this.options.endpointOrigin ?? DEFAULT_ZCODE_ENDPOINT_ORIGIN,
+    );
   }
 
   private async resolveReleaseChannel(): Promise<ElectronReleaseChannel> {

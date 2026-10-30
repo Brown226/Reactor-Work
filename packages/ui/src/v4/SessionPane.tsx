@@ -17,7 +17,6 @@ import {
 } from "react";
 import { Hand } from "lucide-react";
 import {
-  BUILTIN_MODEL_PROVIDER_IDS,
   buildCustomSupplierKey,
   TID_CHAT_EMPTY,
   TID_V4_SESSION_PANE,
@@ -3993,14 +3992,6 @@ export function SessionPane({
     setPendingSettingsSectionIntent("modelProvider");
     openSettingsTab();
   }, [openSettingsTab]);
-  const handleOpenModelUpgrade = useCallback(() => {
-    if (!codingPlanUpgradeDialog) return;
-    const providerId =
-      sharedSettings?.providerFamilyDomain === "bigmodel"
-        ? BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan
-        : BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan;
-    codingPlanUpgradeDialog.openCodingPlanUpgrade({ providerId });
-  }, [codingPlanUpgradeDialog, sharedSettings?.providerFamilyDomain]);
   const handleOpenQuotaUpgrade = useCallback(() => {
     const providerId = quotaBanner.upgradeProviderId;
     if (!providerId || !codingPlanUpgradeDialog) return;
@@ -4440,7 +4431,6 @@ export function SessionPane({
       error={composerError}
       onDismissError={handleDismissComposerError}
       onOpenModelSettings={handleOpenModelSettings}
-      onOpenModelUpgrade={handleOpenModelUpgrade}
       onOpenCodeViewer={onOpenCodeViewer}
       suppressGoalCommands={selectionSideChat}
       appSlashCommands={appSlashCommands}
@@ -4567,9 +4557,7 @@ export function SessionPane({
       {composerNode}
       {/* 办公档按开关显示主动任务推荐；审查档始终显示审查类型卡片；编程档保留原有小型场景入口。 */}
       {isDraft &&
-      (isReviewMode ||
-        !isOfficeMode ||
-        sharedSettings?.proactiveSuggestionsEnabled === true) ? (
+      (isReviewMode || !isOfficeMode || sharedSettings?.proactiveSuggestionsEnabled === true) ? (
         <ConversationDraftSuggestedPromptsContainer
           className={isOfficeMode ? "mt-4" : "mt-6"}
           proactive={isOfficeMode}

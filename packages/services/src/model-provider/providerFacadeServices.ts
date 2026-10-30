@@ -40,7 +40,11 @@ export type {
 
 export interface IProviderSettingsService {
   readonly onDidChange: Event<ProviderSettingsView>;
-  getView(): Promise<ProviderSettingsView>;
+  /**
+   * `includeHidden` 仅供服务层做身份识别/清理：hidden 的语义是「不展示」，
+   * 不是「不存在」，管理路径必须能看见它们。
+   */
+  getView(input?: { includeHidden?: boolean }): Promise<ProviderSettingsView>;
   refresh(reason: string): Promise<ProviderSettingsView>;
   createPersonalProvider(
     input?: Parameters<ProviderSettingsFacade["createPersonalProvider"]>[0],
@@ -126,9 +130,9 @@ export function createProviderSettingsService(
 ): IProviderSettingsService {
   return {
     onDidChange: toEvent((listener) => facade.onDidChange(listener)),
-    getView: async () => {
+    getView: async (input) => {
       await ensureReady();
-      return facade.getView();
+      return facade.getView({ includeHidden: input?.includeHidden });
     },
     refresh: async (reason) => {
       await ensureReady();
