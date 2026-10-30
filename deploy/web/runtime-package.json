@@ -1,0 +1,25 @@
+{
+  "name": "reactor-web-runtime",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Reactor Web 运行时依赖：packages/server 的非工作区依赖（@zcode/* 已被 tsup 内联进 bundle）",
+  "dependencies": {
+    "@hono/node-server": "1.19.14",
+    "@hono/node-ws": "1.3.0",
+    "axios": "1.13.6",
+    "combined-stream": "1.0.8",
+    "follow-redirects": "1.16.0",
+    "form-data": "4.0.5",
+    "hono": "4.12.12",
+    "node-forge": "1.4.0",
+    "node-pty": "npm:@lydell/node-pty@1.2.0-beta.10",
+    "proxy-from-env": "1.1.0",
+    "ssh2": "1.17.0",
+    "undici": "6.24.1",
+    "ws": "8.20.0",
+    "yaml": "2.9.0",
+    "yauzl": "3.3.0",
+    "yazl": "3.3.1"
+  }
+}

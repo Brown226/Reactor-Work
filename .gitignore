@@ -132,3 +132,7 @@ packages/desktop/src/scheduler/*.d.ts.map
 server/SCAFFOLD-*.md
 # Excel 导入导出的一次性运行时验证脚本（文件头自述"跑完删除"）
 server/packages/server/std-io-verify.mjs
+
+# 交付包内的镜像归档体积过大，不入库（用 MANIFEST.sha256 校验完整性）
+Reactor Web 交付包/*/images/*.tar.gz
+Reactor 服务端部署镜像/*/images/*.tar.gz

@@ -1,0 +1,24 @@
+services:
+  reactor-web:
+    image: reactor-web:v1.0.0
+    container_name: reactor-web
+    restart: unless-stopped
+    ports:
+      - "3030:3030"
+    environment:
+      # 必填：访问令牌。浏览器首次访问用 /?token=<值> 换 cookie，之后正常使用。
+      # 未设置时服务端不校验任何身份，任何能连端口的人都会拿到工作区与终端权限。
+      ZCODE_SERVER_AUTH_TOKEN: ${REACTOR_WEB_TOKEN:?请在 .env 中设置 REACTOR_WEB_TOKEN}
+      ZCODE_SERVER_WORKSPACE: /data/workspace
+      ZCODE_DATA_BASE_DIR: /data
+    volumes:
+      - web-data:/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3030/api/server-info').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  web-data:
