@@ -15,6 +15,7 @@ import {
   CloudArrowUp,
   Code,
   Database,
+  Devices,
   Gauge,
   ListChecks,
   Package,
@@ -37,6 +38,7 @@ import KbDatasetsPage from "./pages/KbDatasetsPage";
 import { InterfaceModePolicyPage } from "./pages/InterfaceModePolicy";
 import { OrgUsers } from "./pages/OrgUsers";
 import { Planned } from "./pages/planned";
+import { PlatformOps } from "./pages/PlatformOps";
 import { ModelsAndProviders } from "./pages/ModelsAndProviders";
 import { Roles } from "./pages/Roles";
 import { RuleLibraries } from "./pages/RuleLibraries";
@@ -70,6 +72,17 @@ export const NAV: NavGroup[] = [
     label: "运营",
     items: [
       { key: "overview", path: "/", title: "运营总览", icon: Gauge, roles: AH, el: <DashboardPage /> },
+      // 双平台运营看板（docs/未完成-管理端双平台运营看板-方案-v1.md §6）。
+      // ⚠ key 必须与服务端 /me/nav 下发的集合逐项同步：服务端没加 "platform-ops" 时，
+      // 本项会被 navFor 的 key 过滤掉（页面写好也永远不显示）。
+      {
+        key: "platform-ops",
+        path: "/platform",
+        title: "平台运营",
+        icon: Devices,
+        roles: AH,
+        el: <PlatformOps />,
+      },
     ],
   },
   {
