@@ -99,6 +99,17 @@ export default defineConfig(({ mode, command }) => {
       "import.meta.env.VITE_ZAI_OAUTH_CLIENT_ID": JSON.stringify(zaiOAuthClientId),
       "import.meta.env.VITE_ZAI_OAUTH_ORIGIN": JSON.stringify(zaiOAuthOrigin),
     },
+    css: {
+      // 公司内仍有大量 Win7 电脑，其可用浏览器最高只到 Chromium 109（Chrome/Edge 109）。
+      // 共享样式使用 oklch()/color-mix()（Chrome 111+），109 会整条丢弃导致掉色，
+      // 因此这里以 chrome109 为目标处理最终 CSS：lightningcss 输出「静态回退 + @supports 增强」
+      // 双档，旧浏览器拿 sRGB 静态值，现代浏览器仍拿 lab() 增强值（不是整体降级）。
+      // 只作用于 Web 产物；桌面端是 Electron 41（Chromium 142）的独立构建，不受影响。
+      transformer: "lightningcss",
+      lightningcss: {
+        targets: { chrome: 109 << 16 },
+      },
+    },
     build: {
       // 生产不在浏览器产物暴露 sourceMappingURL，避免客户端侧还原业务源码。
       sourcemap: mode === "production" ? "hidden" : true,

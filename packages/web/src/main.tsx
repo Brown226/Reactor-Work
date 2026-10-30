@@ -1,4 +1,8 @@
 /* eslint-disable max-lines -- Web 入口集中编排启动、路由与 workspace shell wiring，与 Root.tsx 同样先保持入口收口，避免跨层状态拆散。 */
+// Win7 客户端最高只能升到 Chromium 109：垫片与颜色回退必须排在任何共享模块之前求值。
+// 两者都只在 Web 入口引入，桌面端 renderer 入口不引用，因此不进桌面产物。
+import "./polyfills.js";
+import "./legacyChrome109.css";
 import { createRoot } from "react-dom/client";
 import {
   AppErrorBoundary,

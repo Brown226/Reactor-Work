@@ -1,0 +1,47 @@
+/*
+ * Chromium 109 颜色回退，只在 Web 产物中引入（packages/web/src/main.tsx）。
+ *
+ * 原因：--color-usage-heatmap-0..4 是共享样式里唯一无法在构建期静态化的 color-mix：
+ * 操作数含 var()，且四个主题作用域各有一套取值，lightningcss 不能替它算出固定色。
+ * 在 Win7 可用的 Chromium 109 上这些 color-mix 声明会被整条丢弃，用量热力图会变成透明。
+ *
+ * 这里给的是逐档等价的 sRGB 静态值（由现代 Chromium 实测 getComputedStyle 得到）。
+ * 全部包在 @supports not (color: color-mix(...)) 内：支持 color-mix 的浏览器完全走
+ * packages/ui/src/styles.css，不会看到本文件；桌面端产物不引入本文件。
+ *
+ * 选择器顺序与共享样式保持一致（:root → .dark → .theme-zai-light → .theme-zai-dark），
+ * 保证同优先级下主题覆盖关系不变。
+ */
+@supports not (color: color-mix(in oklab, red, blue)) {
+  :root {
+    --color-usage-heatmap-0: #00000008;
+    --color-usage-heatmap-1: #0093d334;
+    --color-usage-heatmap-2: #009be561;
+    --color-usage-heatmap-3: #0082cc97;
+    --color-usage-heatmap-4: #0068a8d2;
+  }
+
+  .dark {
+    --color-usage-heatmap-0: #ffffff0d;
+    --color-usage-heatmap-1: #44c6ff47;
+    --color-usage-heatmap-2: #24c0ff72;
+    --color-usage-heatmap-3: #00bdffa3;
+    --color-usage-heatmap-4: #75d4ffca;
+  }
+
+  .theme-zai-light {
+    --color-usage-heatmap-0: #00000008;
+    --color-usage-heatmap-1: #1471dd34;
+    --color-usage-heatmap-2: #1079ef61;
+    --color-usage-heatmap-3: #0e7bf897;
+    --color-usage-heatmap-4: #0166dbd3;
+  }
+
+  .theme-zai-dark {
+    --color-usage-heatmap-0: #ffffff0d;
+    --color-usage-heatmap-1: #5da9ff47;
+    --color-usage-heatmap-2: #50a0ff73;
+    --color-usage-heatmap-3: #489cffa3;
+    --color-usage-heatmap-4: #82bfffca;
+  }
+}
