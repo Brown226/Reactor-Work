@@ -90,6 +90,13 @@ export interface DeptTreeProps {
   members: Map<number, number>;
   /** 根节点徽标口径，默认 direct（= 旧 Org 页行为，未接线即不变行为） */
   rootBadge?: "direct" | "subtree";
+  /**
+   * 可选：多选模式（2026-10-29，授权范围选择器用）。
+   * 传入后每个节点前多一个勾选框；**不传时渲染与行为完全不变**，因此
+   * 「组织与用户」页不受影响。
+   */
+  checkedIds?: Set<number>;
+  onCheck?: (node: DeptNode, next: boolean) => void;
 }
 
 function TreeRow({
@@ -101,6 +108,8 @@ function TreeRow({
   onSelect,
   members,
   rootBadge,
+  checkedIds,
+  onCheck,
 }: {
   node: DeptNode;
   depth: number;
@@ -110,6 +119,8 @@ function TreeRow({
   onSelect: (n: DeptNode) => void;
   members: Map<number, number>;
   rootBadge: "direct" | "subtree";
+  checkedIds?: Set<number>;
+  onCheck?: (n: DeptNode, next: boolean) => void;
 }) {
   const isOpen = expanded.has(node.path);
   const hasKids = node.children.length > 0;
@@ -129,13 +140,36 @@ function TreeRow({
         >
           <CaretRight size={12} />
         </span>
+        {checkedIds ? (
+          // 勾选整个部门：点击不能冒泡到行，否则会同时触发「选中该部门看右侧人员」
+          <input
+            type="checkbox"
+            checked={checkedIds.has(node.id)}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => onCheck?.(node, e.target.checked)}
+            style={{ marginRight: 2, flexShrink: 0 }}
+            title="勾选整个部门"
+          />
+        ) : null}
         <span>{node.name}</span>
         {m > 0 && <span className="cnt" title={subtreeMode ? "含下级成员总数（本节点及所有下级）" : "直接归属本部门的成员数"}>{m}</span>}
       </div>
       {hasKids && isOpen && (
         <div className="tree-children">
           {node.children.map((c) => (
-            <TreeRow key={c.id} node={c} depth={depth + 1} expanded={expanded} onToggle={onToggle} selectedId={selectedId} onSelect={onSelect} members={members} rootBadge={rootBadge} />
+            <TreeRow
+              key={c.id}
+              node={c}
+              depth={depth + 1}
+              expanded={expanded}
+              onToggle={onToggle}
+              selectedId={selectedId}
+              onSelect={onSelect}
+              members={members}
+              rootBadge={rootBadge}
+              checkedIds={checkedIds}
+              onCheck={onCheck}
+            />
           ))}
         </div>
       )}
@@ -147,12 +181,34 @@ function TreeRow({
  * 部门树行集合。**不含** `.tree-panel` 外框 —— 合并页要在同一块面板里把「搜索部门」放在树上方，
  * 外框和搜索框归调用方，组件只管行（骨架态也在这里，免得调用方各写一遍加载判断）。
  */
-export function DeptTree({ tree, expanded, onToggle, selectedId, onSelect, members, rootBadge = "direct" }: DeptTreeProps) {
+export function DeptTree({
+  tree,
+  expanded,
+  onToggle,
+  selectedId,
+  onSelect,
+  members,
+  rootBadge = "direct",
+  checkedIds,
+  onCheck,
+}: DeptTreeProps) {
   if (tree === null) return <SkeletonRows n={8} />;
   return (
     <>
       {tree.map((n) => (
-        <TreeRow key={n.id} node={n} depth={0} expanded={expanded} onToggle={onToggle} selectedId={selectedId} onSelect={onSelect} members={members} rootBadge={rootBadge} />
+        <TreeRow
+          key={n.id}
+          node={n}
+          depth={0}
+          expanded={expanded}
+          onToggle={onToggle}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          members={members}
+          rootBadge={rootBadge}
+          checkedIds={checkedIds}
+          onCheck={onCheck}
+        />
       ))}
     </>
   );

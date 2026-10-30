@@ -25,12 +25,13 @@
  *    改完需重启 identity —— 界面如实提示，不假装热生效。
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   ArrowsClockwise,
   CaretDown,
   CaretUp,
+  Check,
   CloudArrowDown,
   Cpu,
   DotsThree,
@@ -153,18 +154,48 @@ interface ModelForm {
  * `registry.ts` 的 KNOWN_FEATURES 一一对应，经 /v1/models 以 supports_* 下发。
  * 未勾选 = false，与扩量前行为一致，不会让现有模型突然多出能力。
  */
-const FEATURES: Array<{ key: string; label: string }> = [
+/**
+ * 输入类型：模型能接收哪些**非文本**模态。
+ *
+ * 「文本」对所有对话模型恒为真，也没有对应的 feature 键（网关不需要它），
+ * 所以界面上做成锁定项，只用来表达「这一项不可取消」。
+ */
+const INPUT_FEATURES: Array<{ key: string; label: string }> = [
+  { key: "vision", label: "图片" },
+  { key: "video", label: "视频" },
+  { key: "pdf", label: "PDF" },
+  { key: "audio", label: "音频" },
+];
+
+/**
+ * 模型能力：与输入模态无关的行为能力。
+ *
+ * ⚠ `anthropic` 不在此列（2026-10-29 移除）：它是**协议标记**而不是模型能力 ——
+ * 网关走哪套 API 由供应商的 `api` 字段决定，桌面端 ModelConfig 也没有对应字段。
+ * 放在能力勾选里只会让人误以为「勾了就能走 Anthropic 协议」。
+ * 库里存量的 anthropic 值保留（不主动删除），只是不再提供手工勾选入口。
+ */
+const CAPABILITY_FEATURES: Array<{ key: string; label: string }> = [
   { key: "tools", label: "工具调用" },
   { key: "reasoning", label: "推理" },
-  { key: "anthropic", label: "Anthropic 协议" },
-  { key: "vision", label: "视觉输入" },
   { key: "json_schema", label: "结构化输出" },
   { key: "native_web_search", label: "原生联网搜索" },
   { key: "mid_conversation_system", label: "对话中系统消息" },
-  { key: "video", label: "视频输入" },
-  { key: "audio", label: "音频输入" },
-  { key: "pdf", label: "PDF 输入" },
 ];
+
+/** 可落库的能力全集：导入时用它过滤上游给的值（anthropic 不在其中，故不会被带入） */
+const FEATURES: Array<{ key: string; label: string }> = [...INPUT_FEATURES, ...CAPABILITY_FEATURES];
+
+/** 能力胶囊：选中时填充品牌色 + 勾选标记；未选中是描边样式 */
+function FeatureChip(props: { label: string; on: boolean; onToggle: (next: boolean) => void }): ReactElement {
+  return (
+    <label className={`mp-chip${props.on ? " is-on" : ""}`}>
+      <input type="checkbox" checked={props.on} onChange={(e) => props.onToggle(e.target.checked)} />
+      {props.on ? <Check size={11} weight="bold" /> : null}
+      {props.label}
+    </label>
+  );
+}
 
 /** 空串 = 不下发（服务端语义：只改传了的字段）；非法数字交给服务端兜底 */
 const num = (s: string): number | null => (s.trim() === "" ? null : Number(s));
@@ -341,6 +372,7 @@ export function ModelsAndProviders() {
   const [picked, setPicked] = useState<Array<{ id: string; type: ModelType }>>([]);
   const [discoverFilter, setDiscoverFilter] = useState("");
   const [discovering, setDiscovering] = useState(false);
+  const [probing, setProbing] = useState(false);
   const [importing, setImporting] = useState(false);
   const [testRow, setTestRow] = useState<number | null>(null);
 
@@ -511,7 +543,10 @@ export function ModelsAndProviders() {
           (m) => !m.imported && (m.suggestedType ?? "chat") === board,
         );
         setPicked(guess.map((m) => ({ id: m.id, type: board })));
-        toast.ok(`拉到 ${res.total ?? 0} 个模型（已入库 ${res.importedCount ?? 0}）`);
+        toast.ok(
+          `拉到 ${res.total ?? 0} 个模型（已入库 ${res.importedCount ?? 0}）` +
+            (res.autoApplied ? ` · 自动补全能力 ${res.autoApplied} 个` : ""),
+        );
       } else {
         toast.error(res.error ?? "拉取失败");
       }
@@ -519,6 +554,53 @@ export function ModelsAndProviders() {
       toast.error((e as Error).message);
     } finally {
       setDiscovering(false);
+    }
+  };
+
+  /**
+   * 自动检测能力：对已勾选的模型发一次极小的、带 tools 的请求，验证是否**真的**支持工具调用。
+   *
+   * 为什么需要它：聚合型上游既不声明能力、模型名又是平台别名（`auto/dfmodel` 这类），
+   * 名字推断给不出结论，只能实测。串行执行（服务端限制），模型多时会慢。
+   * 结论同时做两件事：① 服务端写库（apply=true）；② 合并进本地候选清单——
+   * 未入库的模型此刻还没有行可写，靠②让后续「导入选中」带上正确能力。
+   */
+  const runProbe = async (): Promise<void> => {
+    if (current === null) return;
+    const ids = picked.map((p) => p.id);
+    if (ids.length === 0) {
+      toast.error("先勾选要检测的模型");
+      return;
+    }
+    setProbing(true);
+    try {
+      const r = await providersApi.probeFeatures(current.id, { models: ids, apply: true });
+      const yes = r.results.filter((x) => x.tools === true).length;
+      const no = r.results.filter((x) => x.tools === false).length;
+      const unknown = r.results.filter((x) => x.tools === null).length;
+      toast.ok(`检测完成：支持 ${yes} / 不支持 ${no} / 无法判定 ${unknown}；已写库 ${r.applied} 条`);
+      const byModel = new Map(r.results.map((x) => [x.model, x.tools]));
+      setDiscover((cur) => {
+        if (!cur?.models) return cur;
+        return {
+          ...cur,
+          models: cur.models.map((m) => {
+            const t = byModel.get(m.id);
+            if (t === undefined || t === null) return m;
+            const rest = (m.features ?? []).filter((f) => f !== "tools");
+            return {
+              ...m,
+              features: t ? [...rest, "tools"] : rest,
+              featureSource: "probe" as const,
+              featureBasis: "实测探测",
+            };
+          }),
+        };
+      });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setProbing(false);
     }
   };
 
@@ -1200,6 +1282,15 @@ export function ModelsAndProviders() {
                     >
                       仅选推测属于本板块
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={probing || picked.length === 0}
+                      onClick={() => void runProbe()}
+                      title="对勾选的模型发一次极小的带 tools 请求，实测是否真支持工具调用（串行执行，模型多时较慢）"
+                    >
+                      {probing ? "检测中…" : "自动检测能力"}
+                    </Button>
                     <Button size="sm" variant="outline" onClick={() => setPicked([])}>清空</Button>
                   </span>
                 </div>
@@ -1234,6 +1325,24 @@ export function ModelsAndProviders() {
                           <span className={`tag ${mismatch ? "w" : ""}`} title="按模型名推测的用途，导入时以本板块为准">
                             推测：{MODEL_TYPE_LABEL[guessed]}
                           </span>
+                          {m.featureSource === "probe" ? (
+                            <span className="tag" title="已用真实请求验证">能力：已实测</span>
+                          ) : m.featureSource === "stored" ? (
+                            <span className="tag" title="以库中已保存的能力为准（可能是手工勾选或此前实测的结果）">
+                              能力：已配置
+                            </span>
+                          ) : m.featureSource === "inferred" ? (
+                            <span
+                              className="tag"
+                              title={`按模型名推断${m.featureBasis ? `（${m.featureBasis}）` : ""}，建议点「自动检测能力」核实`}
+                            >
+                              能力：推断
+                            </span>
+                          ) : m.featureSource === "none" ? (
+                            <span className="tag w" title="上游未声明、内置快照也没有；点「自动检测能力」可实测">
+                              能力：未知
+                            </span>
+                          ) : null}
                           {m.imported ? <span className="tag">已入库</span> : null}
                         </label>
                       );
@@ -1273,23 +1382,58 @@ export function ModelsAndProviders() {
                   <>
                     <div className="field">
                       <Label>能力标记</Label>
-                      {/* 两列网格：10 个勾选项纵向堆叠会把表单拉得很长；网格既不用滚动也不会漏看 */}
-                      <div className="mp-features-grid">
-                        {FEATURES.map((feat) => (
-                          <label key={feat.key} className="flex items-center gap-2" style={{ fontSize: 12.5 }}>
-                            <input
-                              type="checkbox"
-                              checked={modelEdit.features.includes(feat.key)}
-                              onChange={(e) =>
-                                setModelEdit({
-                                  ...modelEdit,
-                                  features: e.target.checked ? [...modelEdit.features, feat.key] : modelEdit.features.filter((x) => x !== feat.key),
-                                })
-                              }
-                            />
-                            {feat.label}
-                          </label>
-                        ))}
+                      {/*
+                        分组展示（2026-10-29）：原来 10 项平铺在一个网格里，模态、行为能力、
+                        协议标记混在一起看不出区别。分组后与桌面端的语义一致：
+                        「输入类型」回答能吃哪些模态，「模型能力」回答能做什么事。
+                      */}
+                      <div className="mp-feature-groups">
+                        <div className="mp-feature-group">
+                          <span className="mp-feature-group-title">输入类型</span>
+                          <div className="mp-feature-chips">
+                            {/* 文本对所有对话模型恒为真，也没有对应 feature 键 —— 做成锁定项，表达「不可取消」 */}
+                            <span className="mp-chip is-on is-locked" title="所有对话模型都支持文本输入，不可取消">
+                              <Check size={11} weight="bold" />
+                              文本
+                              <Lock size={10} />
+                            </span>
+                            {INPUT_FEATURES.map((feat) => (
+                              <FeatureChip
+                                key={feat.key}
+                                label={feat.label}
+                                on={modelEdit.features.includes(feat.key)}
+                                onToggle={(next) =>
+                                  setModelEdit({
+                                    ...modelEdit,
+                                    features: next
+                                      ? [...modelEdit.features, feat.key]
+                                      : modelEdit.features.filter((x) => x !== feat.key),
+                                  })
+                                }
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="mp-feature-group">
+                          <span className="mp-feature-group-title">模型能力</span>
+                          <div className="mp-feature-chips">
+                            {CAPABILITY_FEATURES.map((feat) => (
+                              <FeatureChip
+                                key={feat.key}
+                                label={feat.label}
+                                on={modelEdit.features.includes(feat.key)}
+                                onToggle={(next) =>
+                                  setModelEdit({
+                                    ...modelEdit,
+                                    features: next
+                                      ? [...modelEdit.features, feat.key]
+                                      : modelEdit.features.filter((x) => x !== feat.key),
+                                  })
+                                }
+                              />
+                            ))}
+                          </div>
+                        </div>
                       </div>
                       <span className="hint">经 /v1/models 下发给桌面端（supports_*）；向量/重排模型不需要这些</span>
                     </div>

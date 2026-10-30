@@ -119,6 +119,13 @@ export interface DiscoveredModel {
   /** 元数据来源：upstream=全来自上游 · mixed=上游缺的用内置快照补 · preset=上游什么都没给，全靠快照 · none=都没有 */
   metadataSource?: "upstream" | "mixed" | "preset" | "none";
   /**
+   * 能力标记的来源：upstream=上游声明 · preset=内置快照 · inferred=按模型名推断（需复核）· none=都没有。
+   * `probe` 只在管理台本地出现（「自动检测能力」实测结果合并进候选清单后）。
+   */
+  featureSource?: "upstream" | "preset" | "inferred" | "probe" | "stored" | "none";
+  /** 推断依据（如「家族:deepseek」）；非推断来源为空 */
+  featureBasis?: string;
+  /**
    * 按模型名推测的板块（**建议值**）：上游不会告诉你模型用途，所以这只是「默认帮你勾选」。
    * 落库时服务端按**供应商的板块**强制对齐，推测值不决定归属。
    */
@@ -139,6 +146,28 @@ export interface DiscoverResult {
   error?: string;
   /** 内置快照来源说明（随 discover 下发） */
   presetSource?: string;
+  /** 本次按名字推断自动补上能力的已入库模型数（只补空值，不覆盖已有） */
+  autoApplied?: number;
+}
+
+/** 能力探测的单条结果 */
+export interface ProbeItemResult {
+  model: string;
+  /** true=支持工具调用 · false=上游明确拒绝 · null=无法判定（此时不会写库） */
+  tools: boolean | null;
+  httpStatus: number | null;
+  /** 已脱敏的结论（不含上游响应体原文） */
+  detail: string;
+}
+
+/** 能力探测汇总；整体失败时 ok=false + error（同样返回 200，与 discover 同口径） */
+export interface ProbeFeaturesResult {
+  ok: boolean;
+  code?: string;
+  results: ProbeItemResult[];
+  /** 实际写回 ai_models 的条数（未入库的模型不计数） */
+  applied: number;
+  error?: string;
 }
 
 /** 内置模型目录条目（P1）：按模型名给窗口/最大输出/能力/四段价 */
@@ -232,6 +261,12 @@ export const providersApi = {
     http.post<ProviderTestResult>(`/admin/providers/${id}/test`, body ?? {}, AUTH),
   /** 模型发现（P0）：用该供应商的解密密钥拉上游 /models，返回带元数据的候选清单 */
   discover: (id: number) => http.post<DiscoverResult>(`/admin/providers/${id}/discover`, {}, AUTH),
+  /**
+   * 能力自动探测：对一个或一批模型发极小的、带 tools 的 chat 请求，验证是否真的支持工具调用。
+   * 串行执行（服务端限制），模型多时会慢；`apply=true` 时把结论写回 ai_models.features。
+   */
+  probeFeatures: (id: number, body: { models?: string[]; apply?: boolean }) =>
+    http.post<ProbeFeaturesResult>(`/admin/providers/${id}/probe-features`, body, AUTH),
 };
 
 export const modelsApi = {

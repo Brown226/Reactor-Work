@@ -12,7 +12,7 @@
 // 灰度（rolloutPercent）按 device_mid 稳定分桶，只影响新请求该版本的设备；已下载的下载照旧。
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowCircleUp, CloudArrowUp, Plus, Trash } from "@phosphor-icons/react";
+import { ArrowCircleUp, CloudArrowUp, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import { toast } from "../lib/toast";
 import { PageHead, SkeletonRows } from "../ui";
 import { ToneBadge } from "../components/reactor";
@@ -62,6 +62,23 @@ const emptyDraft = (): DraftForm => ({
   file: null,
 });
 
+/**
+ * 编辑表单：只放后端 PATCH 真正支持的字段。
+ * 反例：把版本号/平台/通道也做成输入框 —— 它们是 manifest 的定位键，
+ * 改了就变成另一条版本，客户端按旧的 sha512 校验会对不上；后端也不接受这些字段（400/被忽略）。
+ */
+interface EditForm {
+  id: number;
+  version: string;
+  platform: string;
+  channel: ReleaseChannel;
+  fileName: string | null;
+  releaseName: string;
+  releaseNotesZh: string;
+  releaseNotesEn: string;
+  rolloutPercent: number;
+}
+
 function isAllowedArtifact(name: string): boolean {
   const lower = name.toLowerCase();
   return RELEASE_ARTIFACT_SUFFIXES.some((suffix) => lower.endsWith(suffix));
@@ -84,6 +101,8 @@ export function SoftwareUpdates() {
   const [progress, setProgress] = useState<number | null>(null);
   /** 目标记录：新建发布时为 null（草稿在提交时才建），单独上传产物时为该行 */
   const [uploadTarget, setUploadTarget] = useState<AdminRelease | null>(null);
+  /** 正在编辑的记录；null = 弹窗关闭 */
+  const [editForm, setEditForm] = useState<EditForm | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -194,6 +213,43 @@ export function SoftwareUpdates() {
     } finally {
       setBusy(false);
       setProgress(null);
+    }
+  };
+
+  const openEdit = (row: AdminRelease) => {
+    setEditForm({
+      id: row.id,
+      version: row.version,
+      platform: row.platform,
+      channel: row.channel,
+      fileName: row.fileName,
+      releaseName: row.releaseName ?? "",
+      releaseNotesZh: row.releaseNotesZh ?? "",
+      releaseNotesEn: row.releaseNotesEn ?? "",
+      rolloutPercent: row.rolloutPercent,
+    });
+  };
+
+  const saveEdit = async () => {
+    if (!editForm) return;
+    setBusy(true);
+    try {
+      await updatesApi.patch(editForm.id, {
+        // 空串一律传 null：列表、门户、客户端都按 falsy 回落到默认标题，
+        // 存空串会让「清空」看起来没生效。
+        releaseName: editForm.releaseName.trim() || null,
+        releaseNotesZh: editForm.releaseNotesZh.trim() || null,
+        releaseNotesEn: editForm.releaseNotesEn.trim() || null,
+        // 与后端 readPositiveInt 的兜底口径一致：非法值不把灰度改坏。
+        rolloutPercent: Math.min(100, Math.max(1, Math.round(editForm.rolloutPercent) || 100)),
+      });
+      toast.ok(`v${editForm.version} 已更新`);
+      setEditForm(null);
+      await load();
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -348,6 +404,9 @@ export function SoftwareUpdates() {
                           <CloudArrowUp size={14} /> 上传产物
                         </Button>
                       )}
+                      <Button size="sm" variant="ghost" className="gap-1" onClick={() => openEdit(row)}>
+                        <PencilSimple size={14} /> 编辑
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -532,6 +591,88 @@ export function SoftwareUpdates() {
             </Button>
             <Button size="sm" variant="default" disabled={busy} onClick={() => void submitDraft()}>
               {busy ? "处理中…" : "创建并上传"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 编辑发布：字段与后端 PATCH 一一对应，不出现「填了也保存不了」的输入框。
+          版本号/平台/通道/产物在此只读展示，并在弹窗里写明原因。 */}
+      <Dialog
+        open={editForm !== null}
+        onOpenChange={(open) => {
+          if (!open && !busy) setEditForm(null);
+        }}
+      >
+        <DialogContent className="modal">
+          <DialogHeader className="modal-head">
+            <DialogTitle>编辑发布</DialogTitle>
+          </DialogHeader>
+          <div className="modal-body" style={{ display: "grid", gap: 12 }}>
+            <div style={{ display: "grid", gap: 3 }}>
+              <div style={{ fontSize: 13 }}>
+                <b>v{editForm?.version}</b> · {editForm?.platform} · {releaseChannelLabel(editForm?.channel ?? "stable")}
+                通道{editForm?.fileName ? ` · ${editForm.fileName}` : " · 暂无产物"}
+              </div>
+              <div className="cell-sub">
+                版本号、平台、通道和安装包不可修改：它们是客户端识别版本的依据。换产物请用列表里的「上传产物」，换版本请删除后重新发布。
+              </div>
+            </div>
+
+            <div>
+              <Label>发布名（留空则列表显示为 —）</Label>
+              <Input
+                value={editForm?.releaseName ?? ""}
+                onChange={(event) =>
+                  setEditForm((current) => (current ? { ...current, releaseName: event.target.value } : current))
+                }
+              />
+            </div>
+
+            <div>
+              <Label>更新说明（中文，Markdown）</Label>
+              <Textarea
+                rows={4}
+                placeholder={"- 修复……\n- 优化……"}
+                value={editForm?.releaseNotesZh ?? ""}
+                onChange={(event) =>
+                  setEditForm((current) => (current ? { ...current, releaseNotesZh: event.target.value } : current))
+                }
+              />
+            </div>
+
+            <div>
+              <Label>更新说明（英文，可空）</Label>
+              <Textarea
+                rows={2}
+                value={editForm?.releaseNotesEn ?? ""}
+                onChange={(event) =>
+                  setEditForm((current) => (current ? { ...current, releaseNotesEn: event.target.value } : current))
+                }
+              />
+            </div>
+
+            <div style={{ maxWidth: 240 }}>
+              <Label>灰度比例（%，100 为全量）</Label>
+              <Input
+                type="number"
+                min={1}
+                max={100}
+                value={String(editForm?.rolloutPercent ?? 100)}
+                onChange={(event) =>
+                  setEditForm((current) =>
+                    current ? { ...current, rolloutPercent: Number(event.target.value) || 100 } : current,
+                  )
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter className="modal-foot">
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => setEditForm(null)}>
+              取消
+            </Button>
+            <Button size="sm" variant="default" disabled={busy} onClick={() => void saveEdit()}>
+              {busy ? "保存中…" : "保存修改"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -5,34 +5,31 @@
 //
 // 为什么是本页独立维护（而不是塞进「模型与供应商」的策略页）：本项受众是**按 viewer 变化**的
 // 组织配置，与审批模式/黑名单这类全组织单值策略不是同一维度；混在一起会让管理员误以为它也是全局开关。
-// 授权口径复用 ScopePicker（与技能/专家同一套 all/role/dept/user 四选一），只在最外层多一个
-// 「是否开放」总开关 —— 关闭即 `off`（仅平台管理员可用）。
+//
+// 2026-10-29 改造：授权范围从「手输账号文本」改成**可视化选择**（左部门树 + 右人员列表）。
+// 受众是 800+ 员工，让管理员凭记忆敲 uid 既慢又容易错；而且「按部门」原来是一长条
+// 全路径复选列表，深层部门几乎没法找。这里复用「组织与用户」页的树形心智。
+// 复用边界：只在本页用，技能/套件那两页仍走 ScopePicker（它们不受本次改造影响）。
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Code, FloppyDisk } from "@phosphor-icons/react";
-import { deptsApi } from "../services/identity-resources";
 import { interfaceModeApi, type InterfaceModePolicy, type InterfaceModeScopeKind } from "../services/interface-mode";
-import type { SkillScope } from "../services/skills";
+import type { SkillScope, SkillScopeKind } from "../services/skills";
 import { toast } from "../lib/toast";
 import { PageHead, SkeletonRows } from "../ui";
 import { ToneBadge } from "../components/reactor";
-import { ScopePicker, scopeLabel } from "../components/ScopePicker";
+import { ROLE_LABELS, SCOPE_LABELS, scopeLabel } from "../components/ScopePicker";
+import { OrgScopePicker } from "../components/OrgScopePicker";
 import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
-import type { DeptNode } from "../types";
-
-function flattenDepts(nodes: DeptNode[], out: Array<{ id: number; path: string }> = []): Array<{ id: number; path: string }> {
-  for (const node of nodes) {
-    out.push({ id: node.id, path: node.path });
-    if (node.children?.length) flattenDepts(node.children, out);
-  }
-  return out;
-}
+import { Label } from "../components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import type { Role } from "../types";
 
 /** 把服务端策略映射成本页表单：off → 开关关闭；其余 → 开关打开 + 对应 scope。 */
-function toForm(policy: InterfaceModePolicy): { open: boolean; scope: SkillScope; uidsText: string } {
+function toForm(policy: InterfaceModePolicy): { open: boolean; scope: SkillScope } {
   if (policy.kind === "off") {
-    return { open: false, scope: { kind: "all", roles: [], deptIds: [], uids: [] }, uidsText: "" };
+    return { open: false, scope: { kind: "all", roles: [], deptIds: [], uids: [] } };
   }
   return {
     open: true,
@@ -42,38 +39,33 @@ function toForm(policy: InterfaceModePolicy): { open: boolean; scope: SkillScope
       deptIds: [...policy.deptIds],
       uids: [...policy.uids],
     },
-    uidsText: policy.uids.join(", "),
   };
 }
 
 /** 表单 → 请求体：开关关闭即 off（其余字段清空，避免残留旧受众）。 */
-function toPayload(open: boolean, scope: SkillScope, uidsText: string): InterfaceModePolicy {
+function toPayload(open: boolean, scope: SkillScope): InterfaceModePolicy {
   if (!open) return { kind: "off", roles: [], deptIds: [], uids: [] };
   const kind = scope.kind as InterfaceModeScopeKind;
   return {
     kind,
     roles: kind === "role" ? scope.roles : [],
     deptIds: kind === "dept" ? scope.deptIds : [],
-    uids: kind === "user" ? uidsText.split(/[,，\s]+/).map((u) => u.trim()).filter(Boolean) : [],
+    uids: kind === "user" ? scope.uids : [],
   };
 }
 
 export function InterfaceModePolicyPage() {
   const [loaded, setLoaded] = useState<InterfaceModePolicy | null>(null);
-  const [depts, setDepts] = useState<Array<{ id: number; path: string }>>([]);
   const [open, setOpen] = useState(false);
   const [scope, setScope] = useState<SkillScope>({ kind: "all", roles: [], deptIds: [], uids: [] });
-  const [uidsText, setUidsText] = useState("");
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    const [p, d] = await Promise.all([interfaceModeApi.get(), deptsApi.tree()]);
+    const p = await interfaceModeApi.get();
     setLoaded(p.policy);
-    setDepts(flattenDepts(d.tree));
     const form = toForm(p.policy);
     setOpen(form.open);
     setScope(form.scope);
-    setUidsText(form.uidsText);
   }, []);
 
   useEffect(() => {
@@ -85,7 +77,12 @@ export function InterfaceModePolicyPage() {
     // 而 useMemo 在首次渲染就求值 —— 整棵 React 树会因此卸载、页面白屏。
     if (!loaded) return "加载中…";
     if (loaded.kind === "off") return "未开放（仅平台管理员可用）";
-    // kind 此时必为 all/role/dept/user，映射成 SkillScope 形状交给 scopeLabel 渲染。
+    // 按账号可能选中大量人，全量列出会把「当前生效」撑成一屏，这里只给前 5 个 + 总数
+    if (loaded.kind === "user") {
+      const preview = loaded.uids.slice(0, 5).join("、");
+      const suffix = loaded.uids.length > 5 ? " 等" : "";
+      return `${preview}${suffix}（共 ${loaded.uids.length} 人）`;
+    }
     return scopeLabel({
       kind: loaded.kind,
       roles: loaded.roles,
@@ -95,10 +92,10 @@ export function InterfaceModePolicyPage() {
   }, [loaded]);
 
   const submit = async (): Promise<void> => {
-    const payload = toPayload(open, scope, uidsText);
+    const payload = toPayload(open, scope);
     if (payload.kind === "role" && payload.roles.length === 0) return void toast.error("按角色开放需至少选一个角色");
-    if (payload.kind === "dept" && payload.deptIds.length === 0) return void toast.error("按部门开放需至少选一个部门");
-    if (payload.kind === "user" && payload.uids.length === 0) return void toast.error("按账号开放需至少填一个账号");
+    if (payload.kind === "dept" && payload.deptIds.length === 0) return void toast.error("按部门开放需至少勾选一个部门");
+    if (payload.kind === "user" && payload.uids.length === 0) return void toast.error("按账号开放需至少勾选一个人员");
     setBusy(true);
     try {
       const r = await interfaceModeApi.put(payload);
@@ -125,8 +122,12 @@ export function InterfaceModePolicyPage() {
       {loaded === null ? (
         <SkeletonRows n={3} />
       ) : (
-        <div className="form-col" style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 560 }}>
-          <div className="flex items-center justify-between rounded border px-3 py-2" style={{ borderColor: "var(--line)" }}>
+        <div className="form-col" style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 940 }}>
+          {/* 同页其余卡片都是白底，这里若留透明会直接透出页面米黄，与 .org-scope-* 一起显得"全同色" */}
+          <div
+            className="flex items-center justify-between rounded border px-3 py-2"
+            style={{ borderColor: "var(--line)", background: "var(--surface)" }}
+          >
             <span style={{ fontSize: 13 }}>
               <Code size={14} style={{ verticalAlign: "-2px", marginRight: 6 }} />
               向指定范围开放编程模式
@@ -139,13 +140,60 @@ export function InterfaceModePolicyPage() {
               当前：<b>不开放</b>（仅平台管理员可用编程模式）。打开上方开关并选择范围后保存即可开放。
             </div>
           ) : (
-            <ScopePicker
-              value={scope}
-              onChange={setScope}
-              depts={depts}
-              uidsText={uidsText}
-              onUidsChange={setUidsText}
-            />
+            <>
+              <div className="grid gap-1.5" style={{ maxWidth: 260 }}>
+                <Label>授权范围</Label>
+                <Select
+                  value={scope.kind}
+                  onValueChange={(kind) => setScope({ ...scope, kind: kind as SkillScopeKind })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(SCOPE_LABELS) as SkillScopeKind[]).map((kind) => (
+                      <SelectItem key={kind} value={kind}>
+                        {SCOPE_LABELS[kind]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {scope.kind === "role" ? (
+                <div className="flex flex-wrap gap-4">
+                  {(Object.keys(ROLE_LABELS) as Role[]).map((role) => (
+                    <label key={role} className="flex items-center gap-2" style={{ fontSize: 13 }}>
+                      <input
+                        type="checkbox"
+                        checked={scope.roles.includes(role)}
+                        onChange={(e) =>
+                          setScope({
+                            ...scope,
+                            roles: e.target.checked ? [...scope.roles, role] : scope.roles.filter((r) => r !== role),
+                          })
+                        }
+                      />
+                      {ROLE_LABELS[role]}
+                    </label>
+                  ))}
+                </div>
+              ) : null}
+
+              {scope.kind === "dept" || scope.kind === "user" ? (
+                <OrgScopePicker
+                  mode={scope.kind}
+                  deptIds={scope.deptIds}
+                  uids={scope.uids}
+                  onDeptIdsChange={(deptIds) => setScope({ ...scope, deptIds })}
+                  onUidsChange={(uids) => setScope({ ...scope, uids })}
+                />
+              ) : null}
+
+              {scope.kind === "all" ? (
+                <div className="cell-sub">全公司开放：所有员工登录后都能看到编程档。</div>
+              ) : null}
+            </>
           )}
 
           <div className="cell-sub">

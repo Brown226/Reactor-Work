@@ -1666,17 +1666,227 @@
   min-width: 0;
 }
 /*
- * 模型能力标记的勾选网格：两列，让 10 个布尔能力在半幅高度内排完。
- * 不用 mp-headers 的纵向堆叠 —— 那会把模型编辑表单拉到需要滚动。
+ * 模型能力标记（2026-10-29 改为分组胶囊）。
+ *
+ * 为什么不再用两列勾选网格：10 项平铺时，「图片/视频/PDF」（输入模态）、
+ * 「工具调用/推理」（行为能力）、「Anthropic 协议」三类语义混在一起，
+ * 用户看不出区别。现在按「输入类型 / 模型能力」分组，胶囊形式与桌面端一致。
  */
-.mp-features-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px 12px;
+.mp-feature-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   border: 1px solid var(--hairline);
   border-radius: var(--r-sm);
-  padding: 8px;
+  padding: 10px 12px;
   min-width: 0;
+}
+.mp-feature-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.mp-feature-group-title {
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+.mp-feature-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+.mp-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 11px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background var(--motion),
+    border-color var(--motion),
+    color var(--motion);
+}
+/* 原生 checkbox 保留可聚焦性（键盘可达），视觉上隐藏 */
+.mp-chip > input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.mp-chip:hover {
+  border-color: var(--accent);
+}
+.mp-chip.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+/* 锁定项（文本）：恒选中且不可取消，用默认光标 + 锁图标表达 */
+.mp-chip.is-locked {
+  cursor: default;
+  opacity: 0.75;
+}
+.mp-chip.is-locked:hover {
+  border-color: var(--accent);
+}
+.mp-chip:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/*
+ * 授权范围可视化选择器（2026-10-29，「界面模式权限」页）
+ *
+ * 左树右列表，与「组织与用户」页同一套心智：先按组织定位，再落到具体人。
+ * 窄屏（<760px）退化成上下两段 —— 管理台主要在桌面浏览，但不能在窄窗里横向爆掉。
+ */
+.org-scope-picker {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+/*
+ * 左右各自成卡（对照「组织与用户」页的两张 .panel）。
+ * 反例：只在 .org-scope-picker 上加一层边框、两栏之间用分隔线 —— 那一版没有背景色，
+ * 整块直接透出页面米黄底，左右糊成一片，看起来像"同色的一个大框"。
+ */
+.org-scope-side,
+.org-scope-main {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  padding: 12px 14px;
+}
+.org-scope-side {
+  min-width: 0;
+}
+.org-scope-tree {
+  max-height: 360px;
+  overflow: auto;
+}
+.org-scope-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.org-scope-summary {
+  font-size: 12.5px;
+}
+.org-scope-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.org-scope-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 160px;
+  color: var(--ink-2);
+}
+.org-scope-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.org-scope-users {
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  max-height: 300px;
+  overflow: auto;
+}
+.org-scope-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.org-scope-row:last-child {
+  border-bottom: none;
+}
+.org-scope-row:hover {
+  background: var(--surface-hover);
+}
+.org-scope-row.is-on {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.org-scope-name {
+  font-weight: 500;
+  white-space: nowrap;
+}
+.org-scope-row .uid {
+  color: var(--ink-2);
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 11.5px;
+}
+.org-scope-empty {
+  padding: 18px 10px;
+  text-align: center;
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+.org-scope-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.org-scope-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.org-scope-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  /* 白卡内再用纯白芯片会看不见，退一档底色 */
+  background: var(--surface-2);
+  border: 1px solid var(--hairline-strong);
+  font-size: 12px;
+  color: var(--ink);
+}
+.org-scope-chip button {
+  border: none;
+  background: none;
+  padding: 0;
+  margin-left: 2px;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+.org-scope-chip button:hover {
+  color: var(--danger);
+}
+@media (max-width: 760px) {
+  /* 窄屏退化成上下两张卡；卡片外观由上面统一给，这里只改列数 */
+  .org-scope-picker {
+    grid-template-columns: 1fr;
+  }
 }
 .mp-hrow {
   display: flex;
