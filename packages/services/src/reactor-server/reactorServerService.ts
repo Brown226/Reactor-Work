@@ -401,9 +401,31 @@ export function createReactorServerService(
   ): Promise<string> {
     const view = await providerSettings.getView();
     const mine = view.providers.filter((provider) => provider.personalConfig !== undefined);
-    const existing = mine.find(
-      (provider) => provider.effectiveConfig.api?.baseUrl === baseUrl,
-    );
+    // 地址读取与 resolveDirectBaseUrl 同路径：老数据可能只落在 personalConfig 上
+    const readBaseUrl = (candidate: (typeof mine)[number]): string | undefined => {
+      const value =
+        candidate.personalConfig?.api?.baseUrl ?? candidate.effectiveConfig.api?.baseUrl;
+      return typeof value === "string" ? value : undefined;
+    };
+    let existing = mine.find((provider) => readBaseUrl(provider) === baseUrl);
+    /*
+     * 2026-10-30：地址变了但名字没变时复用旧条目，而不是新建。
+     *
+     * 反例（登录报 `Provider 名称已存在: Reactor 企业服务端`）：用户换了一个服务端地址
+     * （例如 dev 连 127.0.0.1、正式环境连 10.102.2.39），gatewayBaseUrl 随之变化，
+     * 按地址找不到旧 provider → 走 createPersonalProvider → 撞上 ProviderConfigService
+     * 的名称唯一性校验 → 整次登录报错，模型清单也写不进去。
+     * 托管条目本来就是本服务写的，同名即同一逻辑条目，地址变了就地更新即可。
+     * 只认哨兵 apiKey：用户自建的 provider 即使同名也绝不覆盖。
+     */
+    if (!existing) {
+      const key = providerName.trim().toLocaleLowerCase();
+      existing = mine.find((provider) => {
+        if ((provider.providerName ?? "").trim().toLocaleLowerCase() !== key) return false;
+        const access = provider.personalConfig?.access as { apiKey?: unknown } | undefined;
+        return isReactorServerManagedApiKey(access?.apiKey);
+      });
+    }
     const providerId = existing
       ? existing.providerId
       : (await providerSettings.createPersonalProvider({ providerName })).providerId;
