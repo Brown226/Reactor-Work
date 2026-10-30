@@ -13,6 +13,7 @@ import { normalizePricing } from "../common/pricing.js";
 import { toCatalogModel } from "./models.js";
 import { parseReasoningSpec } from "./registry.js";
 import { findModelPreset, listModelPresets, MODEL_PRESET_SOURCE } from "./model-presets.js";
+import { inferFeatures, probeToolsSupport, type ProbeOutcome } from "./model-capabilities.js";
 import {
   authHeadersFor,
   boardTestRequestFor,
@@ -978,16 +979,38 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
         const upstreamDeclaresFeatures = ["supports_tools", "supports_reasoning", "supports_anthropic", "supports_vision"].some(
           (k) => hasKey(r, k),
         );
-        const features = upstreamDeclaresFeatures
-          ? [
-              m.supportsTools ? "tools" : "",
-              m.supportsReasoning ? "reasoning" : "",
-              m.supportsAnthropic ? "anthropic" : "",
-              m.supportsVision ? "vision" : "",
-            ].filter((f) => f !== "")
-          : preset && preset.features.length > 0
-            ? (fromPreset.push("能力"), preset.features)
-            : [];
+        // 三级兜底（2026-10-22 补第三级）：上游声明 → 内置快照 → 名字推断。
+        // 推断结果**不**计入 fromPreset —— 它不是快照值，混进去会让 metadataSource 把
+        // 「窗口来自上游、只有能力是推断」误报成 mixed。能力来源单独用 featureSource 表达。
+        const inferred = inferFeatures(m.id);
+        let features: string[];
+        let featureSource: "upstream" | "preset" | "inferred" | "none";
+        let featureBasis = inferred.basis;
+        if (upstreamDeclaresFeatures) {
+          features = [
+            m.supportsTools ? "tools" : "",
+            m.supportsReasoning ? "reasoning" : "",
+            m.supportsAnthropic ? "anthropic" : "",
+            m.supportsVision ? "vision" : "",
+          ].filter((f) => f !== "");
+          featureSource = "upstream";
+          featureBasis = "";
+        } else if (preset && preset.features.length > 0) {
+          fromPreset.push("能力");
+          features = preset.features;
+          featureSource = "preset";
+          featureBasis = "";
+        } else if (inferred.features.length > 0) {
+          features = inferred.features;
+          featureSource = "inferred";
+        } else {
+          features = [];
+          featureSource = "none";
+        }
+        // anthropic 是协议标记而非模型能力（2026-10-29 起不再作为能力落库）：
+        // 内置快照里仍带着它，这里统一剔除，避免出现「界面看不到但库里存在」的隐藏值。
+        // 库里存量的值不动，proxy 仍据此回显 supports_anthropic。
+        features = features.filter((f) => f !== "anthropic");
         const pricing = {
           inputPer1M: pick("价目", m.inputPricePer1M, preset?.pricing.inputPerM ?? null, fromPreset),
           outputPer1M: pick("价目", m.outputPricePer1M, preset?.pricing.outputPerM ?? null, fromPreset),
@@ -1006,6 +1029,10 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
           contextWindow: pick("窗口", m.contextWindow, preset?.contextWindow ?? null, fromPreset),
           maxTokens: pick("最大输出", m.maxTokens, preset?.maxTokens ?? null, fromPreset),
           features,
+          /** upstream=上游声明 · preset=内置快照 · inferred=按模型名推断（需复核）· none=都没有 */
+          featureSource,
+          /** 推断依据（如「家族:deepseek」）；非推断来源为空串 */
+          featureBasis,
           currency: pick("币种", m.currency, preset?.currency ?? null, fromPreset),
           inputPricePer1M: pricing.inputPer1M,
           outputPricePer1M: pricing.outputPer1M,
@@ -1022,21 +1049,49 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
         };
       }).filter((m) => m.id.length > 0);
 
-      const { rows: existing } = await db.pool.query<{ id: number; model: string; enabled: boolean }>(
-        `SELECT id, model, enabled FROM ai_models WHERE provider_id = $1`,
+      const { rows: existing } = await db.pool.query<{ id: number; model: string; enabled: boolean; features: unknown }>(
+        `SELECT id, model, enabled, features FROM ai_models WHERE provider_id = $1`,
         [id],
       );
       const byName = new Map(existing.map((r) => [r.model, r]));
 
       const models = found.map((m) => {
         const hit = byName.get(m.id);
+        const stored = Array.isArray(hit?.features)
+          ? hit.features.filter((f): f is string => typeof f === "string")
+          : [];
+        // 已入库的模型以**库值**为准展示：推断/快照只是候选建议，用户在配置页手工勾过
+        // 或「自动检测能力」实测过的结果已经在库里，用建议值覆盖展示会让人误以为能力丢了。
+        // 导入时写回同样的值，是幂等的，不会把改动抹掉。
+        const useStored = Boolean(hit) && stored.length > 0;
         return {
           ...m,
+          features: useStored ? stored : m.features,
+          featureSource: useStored ? ("stored" as const) : m.featureSource,
           imported: Boolean(hit),
           rowId: hit?.id ?? null,
           enabled: hit?.enabled ?? null,
         };
       });
+
+      // 自动补齐（2026-10-22）：已入库但能力为空的模型，若名字推断有高置信结论，直接写回库。
+      // 这是「拉取时自动配置能力」的落点 —— 否则推断值只停在候选清单里，
+      // 用户得再勾选已入库模型并点导入才会生效，实际等于没做。
+      //
+      // 严格限定（三条同时满足才写）：
+      //   ① 已入库（未入库的模型还没有行可写，靠前端「导入选中」带走候选值）；
+      //   ② 来源是 inferred（stored/preset/upstream 都不碰）；
+      //   ③ 当前库值为空（useStored=false 即代表库值为空）。
+      // 因此不会覆盖用户手工勾选或「自动检测能力」实测过的结果，重复拉取也是幂等的。
+      let autoApplied = 0;
+      for (const m of models) {
+        if (!m.imported || m.rowId === null || m.featureSource !== "inferred" || m.features.length === 0) continue;
+        await db.pool.query(`UPDATE ai_models SET features = $2::jsonb, updated_at = now() WHERE id = $1`, [
+          m.rowId,
+          JSON.stringify(m.features),
+        ]);
+        autoApplied += 1;
+      }
 
       return c.json({
         ok: true,
@@ -1045,6 +1100,8 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
         latencyMs,
         total: models.length,
         importedCount: models.filter((m) => m.imported).length,
+        /** 本次按名字推断自动补上能力的模型数（只补空值，不覆盖已有） */
+        autoApplied,
         presetSource: MODEL_PRESET_SOURCE,
         models,
       });
@@ -1059,6 +1116,84 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
         latencyMs: Date.now() - started,
       });
     }
+  });
+
+  /**
+   * 能力自动探测（2026-10-22）：对「上游不声明、快照也匹配不上」的模型做**功能性验证**。
+   *
+   * 为什么不并进 discover：一次探测要真实打上游 chat 端点，多个模型串行要 20–30s，
+   * 且会占用上游并发额度（部分上游只给 4 并发，并行探测直接 429）。拉取应当快，探测显式触发。
+   *
+   * 只判定 `tools`：它是当前故障点（桌面端本地校验拦的就是它），也是唯一能靠单次文本请求
+   * 确认的能力。vision/audio/video 需要不同形状的输入，仍走名字推断或手工勾选。
+   */
+  admin.post("/admin/providers/:id/probe-features", async (c) => {
+    const id = Number(c.req.param("id"));
+    if (!Number.isInteger(id)) return err(c, 400, "id 非法");
+    const body = (await c.req.json().catch(() => ({}))) as { models?: unknown; apply?: unknown };
+    const apply = body.apply === true;
+
+    const up = await resolveProviderUpstream(db, id, secretKey);
+    if (!up.ok) {
+      return up.status === 404 ? err(c, 404, up.error) : c.json({ ok: false, code: up.code, error: up.error });
+    }
+    // `auto` 的语义是「入站什么形态就发什么形态」，探测由我们主动构造请求，
+    // 按 OpenAI Chat 形状发即可（绝大多数上游的实际形态）。其余协议端点路径不同
+    // （anthropic → /messages、responses → /responses），强行探测只会得到 404 误判。
+    if (up.api !== "openai-chat" && up.api !== "auto") {
+      return err(c, 400, `自动探测仅支持 OpenAI Chat 协议（含 auto）的供应商（本供应商为 ${up.api}）`);
+    }
+    // up.target 是 `<base>/v1/models`，换成同级的 chat 端点
+    const chatUrl = new URL("chat/completions", up.target).toString();
+    const headers = { ...up.headers, ...authHeadersFor(up.api, up.apiKey) };
+
+    let targets: string[];
+    if (Array.isArray(body.models)) {
+      targets = body.models.filter((m): m is string => typeof m === "string" && m.trim() !== "").map((m) => m.trim());
+    } else {
+      const { rows } = await db.pool.query<{ model: string }>(
+        `SELECT model FROM ai_models WHERE provider_id = $1 AND enabled = true AND model_type = 'chat' ORDER BY sort, id`,
+        [id],
+      );
+      targets = rows.map((r) => r.model);
+    }
+    if (targets.length === 0) return c.json({ ok: true, code: up.code, results: [], applied: 0 });
+
+    // 串行：避免打爆上游并发额度
+    const results: ProbeOutcome[] = [];
+    for (const model of targets) {
+      results.push(await probeToolsSupport({ url: chatUrl, headers, model }));
+    }
+
+    let applied = 0;
+    if (apply) {
+      for (const r of results) {
+        if (r.tools === null) continue; // 无法判定就不动库，宁可保持现状
+        const { rows } = await db.pool.query<{ id: number; features: unknown }>(
+          `SELECT id, features FROM ai_models WHERE provider_id = $1 AND model = $2 LIMIT 1`,
+          [id, r.model],
+        );
+        const row = rows[0];
+        if (!row) continue;
+        const cur = Array.isArray(row.features) ? row.features.filter((f): f is string => typeof f === "string") : [];
+        // 只增删 tools：其他能力可能是管理员手工勾的，不能被探测结果顺手清掉
+        const next = r.tools ? (cur.includes("tools") ? cur : [...cur, "tools"]) : cur.filter((f) => f !== "tools");
+        if (JSON.stringify(next) === JSON.stringify(cur)) continue;
+        await db.pool.query(`UPDATE ai_models SET features = $2::jsonb, updated_at = now() WHERE id = $1`, [
+          row.id,
+          JSON.stringify(next),
+        ]);
+        applied += 1;
+      }
+    }
+
+    await audit(c, {
+      op: "models.probe_features",
+      target: `providers:${up.code}`,
+      summary: `能力探测 ${results.length} 个模型，写库 ${applied} 条`,
+    });
+
+    return c.json({ ok: true, code: up.code, results, applied });
   });
 
   // ===== Model（ai_models）=====
