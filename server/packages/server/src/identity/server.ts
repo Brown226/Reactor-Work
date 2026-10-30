@@ -44,6 +44,9 @@ import { ensurePermissionsSchema } from "./permissions.js";
 import { createPermissionsRoutes } from "./permissions-routes.js";
 import { ensureBuiltinLocalAccounts } from "./seed.js";
 import { createIdentityApp, type IdentityAppOptions } from "./routes.js";
+// 平台运营指标（双平台看板）：建表与 /admin/metrics/platform/* 路由
+import { ensurePlatformMetricsSchema } from "../metrics/schema.js";
+import { createPlatformMetricsRoutes } from "../metrics/routes.js";
 
 /** 与各路由模块保持一致：claims 由 authed 中间件写入 Hono 上下文变量。 */
 type AppEnv = { Variables: { claims: TokenClaims } };
@@ -136,6 +139,9 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
   // 知识板块另外两个子域：术语白名单（TRM，建表时幂等 seed 112 条内置词条）与规范库（RUL）。
   await ensureTerminologySchema(db);
   await ensureRuleLibrariesSchema(db);
+  // 平台运营指标（双平台看板）：登录时写入的 client_login 表。历史不可回溯，
+  // 越早建表越早开始积累数据（口径见 metrics/schema.ts 头注）。
+  await ensurePlatformMetricsSchema(db);
   // 公共知识库（KB-⑥）：建表会顺带探测 pgvector 可用性 —— 不可用不阻断启动，
   // 由路由把它如实透出到 /v1/kb/health（与端上「未配置即纯词法」同口径）。
   const kbSchema = await ensureDatasetsSchema(db);
@@ -178,6 +184,8 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
     // 额度规则与告警（额度分配 P2）：新口径挂在自己的路由文件里；
     // admin-routes.ts 里旧的 /admin/quota-alerts 已移除（避免同路径双注册 —— Hono 取先注册的那条）。
     app.route("/", createQuotaRoutes(db));
+    // 平台运营指标（双平台看板）：/admin/metrics/platform/*，仅 platform_admin 可见
+    app.route("/", createPlatformMetricsRoutes(db));
     // Skills（S-1 管理面 /admin/skills + S-2 下发面 /me/skills）
     app.route("/", createSkillsRoutes(db));
     // Agents（A-1 管理面 /admin/agents + A-2 下发面 /me/agents）

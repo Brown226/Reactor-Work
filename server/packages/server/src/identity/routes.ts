@@ -36,6 +36,8 @@ import {
   updateUser,
   type Role,
 } from "./users.js";
+// 平台指标：登录是唯一能确定「客户端类型」的采集点，双平台看板依赖这条记录
+import { detectClientPlatform, recordClientLogin } from "../metrics/repo.js";
 
 type AppEnv = { Variables: { claims: TokenClaims } };
 type Ctx = Context<AppEnv>;
@@ -67,6 +69,32 @@ export interface IdentityAppOptions {
 export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: IdentityAppOptions = {}): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
   const adminSurface = opts.adminSurface !== false;
+
+  /**
+   * CORS：Web 客户端由浏览器直连身份接口（页面 3030、接口 8791），属跨源请求。
+   *
+   * ⚠ 必须注册在 authed 之前：浏览器先发 OPTIONS 预检，预检本身不带 Authorization；
+   *   若被 `use("*")` 的 401 拦下，浏览器直接判跨域失败，登录接口永远到不了
+   *   （现象就是登录页报 `fetch failed`）。桌面客户端走主进程 HTTP，不受影响。
+   *
+   * ⚠ 只回显白名单内的 Origin（REACTOR_ALLOWED_ORIGINS）；留空则一律不发 CORS 头，
+   *   避免任意网页借用户浏览器调用身份接口。
+   */
+  app.use("*", async (c, next) => {
+    const origin = c.req.header("origin");
+    if (origin && cfg.allowedOrigins.includes(origin)) {
+      c.header("Access-Control-Allow-Origin", origin);
+      // 浏览器登录态走 Authorization 头，不是 cookie；保留 credentials 兼容分片 cookie 场景
+      c.header("Access-Control-Allow-Credentials", "true");
+      c.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+      c.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+      c.header("Access-Control-Max-Age", "600");
+      c.header("Vary", "Origin");
+    }
+    // 预检在鉴权前短路：真请求仍会带 Bearer 走 authed
+    if (c.req.method === "OPTIONS") return c.body(null, 204);
+    await next();
+  });
 
   /**
    * 用户面：管理入口一律 404，不做任何「这里有个管理台」的暗示。
@@ -114,7 +142,27 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
   app.post("/auth/login", async (c) => {
     const body = (await c.req.json().catch(() => null)) as { username?: string; password?: string } | null;
     if (!body?.username || !body.password) throw new AuthError(400, "请输入账号与密码");
-    return c.json(await login(cfg, db, body.username, body.password));
+    const result = await login(cfg, db, body.username, body.password);
+    // 双平台看板的唯一数据来源：登录成功即落一条平台记录。
+    // 判定顺序与降级规则见 metrics/repo.detectClientPlatform；这里只负责取请求上下文。
+    // 记录失败绝不能让登录失败——指标是旁路观测，不是登录的前置条件。
+    const userAgent = c.req.header("user-agent") ?? null;
+    const detected = detectClientPlatform({
+      clientHeader: c.req.header("x-reactor-client"),
+      userAgent: userAgent ?? undefined,
+    });
+    void recordClientLogin(db, {
+      uid: result.user.uid,
+      deptId: result.user.dept?.id ?? null,
+      deptPath: result.user.dept?.path ?? null,
+      platform: detected.platform,
+      clientVersion: detected.clientVersion,
+      userAgent,
+      ip: c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || null,
+    }).catch((error: unknown) => {
+      console.warn("[identity] 记录登录平台指标失败（不影响登录）:", error);
+    });
+    return c.json(result);
   });
 
   app.post("/auth/refresh", async (c) => {
@@ -248,6 +296,9 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
             // 2026-09-19：密钥管理页已下线（不要再下发它的 key —— 前端已无菜单项，
             // 多发一个 key 会被 t187 的「没有多余 key」断言抓住）。
             "overview", "org-users", "roles", "providers", "usage",
+            // 双平台运营看板（/platform）：与 menu.tsx 的 "platform-ops" 逐项对齐，
+            // 指标接口仅 platform_admin 可见，故不下发给 dept_head。
+            "platform-ops",
             // 导航 key 必须与 packages/admin/src/menu.tsx 逐项对齐：此处漏一个 key，
             // 对应页面即使写好了也**永远不会出现在菜单里**（t186 会断言这条）。
             // 注：界面模式权限页（编程模式受众）的键名为 "interface-mode"（连字符，与 menu.tsx 一致）。

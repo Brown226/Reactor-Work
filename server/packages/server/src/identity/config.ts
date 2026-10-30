@@ -45,6 +45,14 @@ export interface IdentityConfig {
   test: { adminPwd: string; headPwd: string; userPwd: string };
   /** head 测试号数据范围演示用部门路径（root→leaf） */
   headDeptPath: string[];
+  /**
+   * 允许跨域访问身份接口的浏览器来源白名单（形如 `http://localhost:3030`）。
+   *
+   * 桌面客户端走主进程 HTTP，不受同源策略约束；Web 客户端是浏览器直连——
+   * 页面在 3030、接口在 8791，属跨源。不配置时一律不放行，否则任意网页都能
+   * 借用户浏览器调用身份接口。用 REACTOR_ALLOWED_ORIGINS 逗号分隔配置。
+   */
+  allowedOrigins: string[];
 }
 
 export const DEFAULT_IDENTITY_PORT = 8791;
@@ -92,5 +100,10 @@ export function loadIdentityConfig(env: NodeJS.ProcessEnv = process.env): Identi
       userPwd: env.REACTOR_TEST_USER_PWD ?? "User@123",
     },
     headDeptPath: ["河北分公司", "设计管理部"],
+    // 逗号分隔；留空 = 不放行任何跨域来源（桌面端不受影响）
+    allowedOrigins: (env.REACTOR_ALLOWED_ORIGINS ?? "")
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter((origin) => origin.length > 0),
   };
 }

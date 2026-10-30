@@ -94,6 +94,10 @@ services:
     environment:
       # 容器内必须监听 0.0.0.0，否则宿主端口映射进不来
       REACTOR_IDENTITY_HOST: 0.0.0.0
+      # Web 客户端由浏览器直连身份接口（跨源）：必须显式放行页面来源，否则登录页
+      # 报 fetch failed（OPTIONS 预检被 401）。桌面客户端不受影响。
+      # 部署到别的机器/端口时，把该访问地址也加进来，例如 http://10.162.112.166:3030
+      REACTOR_ALLOWED_ORIGINS: ${REACTOR_ALLOWED_ORIGINS:-http://localhost:3030,http://127.0.0.1:3030,http://localhost:5173,http://127.0.0.1:5173}
       # 容器网络内用服务名直连（不是宿主的 127.0.0.1:55432/1389）
       REACTOR_DB_URL: postgres://reactor:reactor@pg:5432/reactor
       REACTOR_LDAP_URL: ldap://ldap:389
