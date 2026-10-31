@@ -13,7 +13,7 @@ import { FileDisplayIcon } from "@/lib/fileDisplay.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { MySpaceEmptyState } from "./MySpaceEmptyState.js";
 import { formatBytes, type SpaceEntriesResult, type SpaceEntry } from "./spaceClient.js";
-import { formatSpaceWhen, spaceFileIconSrc } from "./spaceFileType.js";
+import { spaceFileIconSrc } from "./spaceFileType.js";
 
 export interface SpaceSearchHit {
   path: string;
@@ -143,7 +143,11 @@ function FileRow({
               {name}
             </button>
           ) : (
-            <span className="min-w-0 truncate text-ui-base text-foreground" title={name}>
+            <span
+              className="min-w-0 truncate text-ui-base text-foreground"
+              title={`${name}
+${new Date(entry.mtime).toLocaleString()}`}
+            >
               {name}
             </span>
           )}
@@ -157,11 +161,8 @@ function FileRow({
           ) : null}
         </div>
       </td>
-      <td className="w-24 py-1.5 pr-3 text-right align-middle font-mono text-ui-sm text-foreground-subtle">
+      <td className="w-20 py-1.5 pr-3 text-right align-middle font-mono text-ui-xs text-foreground-subtle">
         {entry.kind === "directory" ? "—" : formatBytes(entry.size)}
-      </td>
-      <td className="w-36 py-1.5 pr-3 text-right align-middle text-ui-sm text-foreground-subtle">
-        <span title={new Date(entry.mtime).toLocaleString()}>{formatSpaceWhen(entry.mtime)}</span>
       </td>
     </tr>
   );
@@ -190,11 +191,8 @@ function TableHead({
         <th className="py-2 pr-3 text-left font-normal">
           {intl.formatMessage({ id: "mySpace.column.name" })}
         </th>
-        <th className="w-24 py-2 pr-3 text-right font-normal">
+        <th className="w-20 py-2 pr-3 text-right font-normal">
           {intl.formatMessage({ id: "mySpace.column.size" })}
-        </th>
-        <th className="w-36 py-2 pr-3 text-right font-normal">
-          {intl.formatMessage({ id: "mySpace.column.modified" })}
         </th>
       </tr>
     </thead>
@@ -302,7 +300,7 @@ export function MySpaceFileTable({
                           </span>
                         </div>
                       </td>
-                      <td className="w-24 py-1.5 pr-3 text-right align-middle font-mono text-ui-sm text-foreground-subtle">
+                      <td className="w-20 py-1.5 pr-3 text-right align-middle font-mono text-ui-xs text-foreground-subtle">
                         {hit.entry.kind === "directory" ? "—" : formatBytes(hit.entry.size)}
                       </td>
                     </tr>

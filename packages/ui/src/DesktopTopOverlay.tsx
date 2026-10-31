@@ -160,6 +160,21 @@ export function DesktopTopOverlay({
             </DesktopTopOverlayActionButton>
           )}
 
+          {/* Web 宿主：收起/展开侧栏的唯一入口。
+              之前只在 Windows/Linux 自定义标题区和 macOS 分支里渲染，Web 端两个条件都不满足，
+              这个位置就是空的——Web 又没有标题栏按钮和快捷键提示，等于完全没有入口。 */}
+          {!isDesktop && (
+            <DesktopTopOverlayActionButton
+              title={toggleSidebarTitle}
+              shortcut={toggleSidebarShortcutLabel}
+              ariaLabel={toggleSidebarTitle}
+              testId="web-sidebar-toggle"
+              onClick={onToggleSidebar}
+            >
+              <SidebarToggleIcon className="size-4" />
+            </DesktopTopOverlayActionButton>
+          )}
+
           {/* 远程控制移动端左上角空间有限，任务前进/后退在这里会与主操作拥挤重叠。*/}
           {hideTaskNavigationButtons ? null : (
             <>

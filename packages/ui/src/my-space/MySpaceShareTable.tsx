@@ -11,7 +11,7 @@ import { FileDisplayIcon } from "@/lib/fileDisplay.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { MySpaceEmptyState } from "./MySpaceEmptyState.js";
 import type { SpaceShareItem } from "./spaceClient.js";
-import { formatSpaceWhen, spaceFileIconSrc } from "./spaceFileType.js";
+import { spaceFileIconSrc } from "./spaceFileType.js";
 
 export function MySpaceShareTable({
   items,
@@ -57,9 +57,6 @@ export function MySpaceShareTable({
                 <th className="w-32 py-2 pr-3 text-left font-normal">
                   {intl.formatMessage({ id: "mySpace.column.status" })}
                 </th>
-                <th className="w-36 py-2 pr-3 text-right font-normal">
-                  {intl.formatMessage({ id: "mySpace.column.expiresAt" })}
-                </th>
                 <th className="w-20 py-2 pr-3 text-right font-normal" aria-hidden="true" />
               </tr>
             </thead>
@@ -102,11 +99,6 @@ export function MySpaceShareTable({
                           />
                         ) : null}
                       </div>
-                    </td>
-                    <td className="w-36 py-1.5 pr-3 text-right align-middle text-ui-sm text-foreground-subtle">
-                      <span title={new Date(item.expiresAt).toLocaleString()}>
-                        {formatSpaceWhen(item.expiresAt)}
-                      </span>
                     </td>
                     <td className="w-20 py-1.5 pr-3 align-middle">
                       <div className="flex items-center justify-end gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">

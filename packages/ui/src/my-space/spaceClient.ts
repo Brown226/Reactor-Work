@@ -142,14 +142,15 @@ export const spaceClient = {
   previewUrl: (path: string) => `/api/space/preview?path=${encodeURIComponent(path)}`,
 
   /** DWG/DXF 图形数据（服务端调用 sidecar 解析，按文件指纹缓存）。 */
-  dwg: (path: string) =>
-    request<DwgGraph>(`/api/space/dwg?path=${encodeURIComponent(path)}`),
+  dwg: (path: string) => request<DwgGraph>(`/api/space/dwg?path=${encodeURIComponent(path)}`),
 
   /** 递归搜索文件名（服务端已跳过 .trash/.uploads/.versions）。 */
   search: (q: string) =>
-    request<{ query: string; results: Array<{ path: string; entry: SpaceEntry }>; truncated: boolean }>(
-      `/api/space/search?q=${encodeURIComponent(q)}`,
-    ),
+    request<{
+      query: string;
+      results: Array<{ path: string; entry: SpaceEntry }>;
+      truncated: boolean;
+    }>(`/api/space/search?q=${encodeURIComponent(q)}`),
 
   /** 历史版本列表。 */
   versions: (path: string) =>
@@ -196,10 +197,12 @@ export const spaceClient = {
       xhr.setRequestHeader("x-file-name", encodeURIComponent(file.name));
       xhr.setRequestHeader("content-type", "application/octet-stream");
       xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable && onProgress) onProgress(Math.round((event.loaded / event.total) * 100));
+        if (event.lengthComputable && onProgress)
+          onProgress(Math.round((event.loaded / event.total) * 100));
       };
       xhr.onload = () => {
-        if (xhr.status === 413) return reject(new SpaceQuotaError("空间不足，请清理回收站或删除文件"));
+        if (xhr.status === 413)
+          return reject(new SpaceQuotaError("空间不足，请清理回收站或删除文件"));
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             return resolve(JSON.parse(xhr.responseText) as { name: string; size: number });
@@ -273,11 +276,14 @@ export const spaceClient = {
       }
     }
     if (!uploadId) {
-      const begin = await request<{ uploadId: string; received: number[] }>("/api/space/upload/begin", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ path: dirPath, name: file.name, size: file.size, totalChunks }),
-      });
+      const begin = await request<{ uploadId: string; received: number[] }>(
+        "/api/space/upload/begin",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ path: dirPath, name: file.name, size: file.size, totalChunks }),
+        },
+      );
       uploadId = begin.uploadId;
       received = begin.received;
       storeUploadId(uploadId);
@@ -315,11 +321,14 @@ export const spaceClient = {
       done.add(index);
       onProgress?.(Math.round((done.size / totalChunks) * 100));
     }
-    const commit = await request<{ entry: { name: string; size: number } }>("/api/space/upload/commit", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ uploadId }),
-    });
+    const commit = await request<{ entry: { name: string; size: number } }>(
+      "/api/space/upload/commit",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ uploadId }),
+      },
+    );
     storeUploadId(null);
     return { name: commit.entry.name, size: commit.entry.size };
   },

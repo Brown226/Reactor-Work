@@ -6870,6 +6870,12 @@ const enUS: Record<string, string> = {
     "This cannot be undone. Quota is released only after permanent deletion.",
   "mySpace.confirm.purgeAll.title": "Empty trash",
   "mySpace.confirm.purgeAll.body": "Permanently delete everything in trash. This cannot be undone.",
+  "mySpace.picker.title": "Choose a working folder",
+  "mySpace.picker.hint":
+    "Browsing is limited to your own space. Files the AI creates later will be saved in the selected folder.",
+  "mySpace.picker.workHere": "Work in this folder",
+  "mySpace.picker.current": "Current working folder",
+  "mySpace.picker.empty": "No subfolders here yet",
   "mySpace.preview.loading": "Loading…",
   "mySpace.preview.unsupported": "Preview is not available for this file type",
   "mySpace.preview.tooLarge": "File is too large to preview here. Download it to view.",

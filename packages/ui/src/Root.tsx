@@ -15,6 +15,7 @@ import { useBackgroundImageSource } from "@/hooks/useBackgroundImageSource.js";
 import { useDevModeUnlockBridge } from "@/lib/devMode.js";
 import { useDynamicWorkflowAvailabilityLoader } from "@/hooks/useDynamicWorkflowAvailability.js";
 import { DirectoryBrowser } from "@/DirectoryBrowser.js";
+import { SpaceFolderPicker } from "@/my-space/index.js";
 import { useTabPersistence } from "@/hooks/useTabPersistence.js";
 import { useTokenRefresh } from "@/hooks/useTokenRefresh.js";
 import { useWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
@@ -412,6 +413,9 @@ function RootInner({
   }, [refreshAppSettings, refreshProviderState, services]);
 
   const shouldPreferDirectoryBrowser = Boolean(preferDirectoryBrowser);
+  // Web 宿主的空间根 = 登录时下发的默认工作区（/data/users/<uid>）。
+  // 「打开文件夹」在 Web 上只允许在这个根内选择，见 SpaceFolderPicker。
+  const spaceRootAbsPath = mySpaceEnabled ? (initialWorkspaceAbsPath ?? null) : null;
   const supportsEmbeddedBrowser = explicitSupportsEmbeddedBrowser ?? Boolean(isDesktop);
   const isResolvingStartupAuthState = isRestoringOAuthSession;
   const rootProviderAvailability = resolveProviderAvailabilityState({
@@ -1023,14 +1027,34 @@ function RootInner({
       resetKeys={["directory-browser"]}
       variant="silent"
     >
-      <DirectoryBrowser
-        services={services}
-        onCancel={() => setDirectoryBrowserOpen(false)}
-        onSelect={(path) => {
-          setDirectoryBrowserOpen(false);
-          void handleSelectProject(path);
-        }}
-      />
+      {/* Web 宿主（mySpaceEnabled）走空间选择器：只能选用户自己空间里的文件夹。
+          桌面端仍然用 DirectoryBrowser / 原生选择器，行为不变。 */}
+      {mySpaceEnabled && spaceRootAbsPath ? (
+        <SpaceFolderPicker
+          rootAbsPath={spaceRootAbsPath}
+          {...(activeWorkspacePath ? { currentWorkspaceAbsPath: activeWorkspacePath } : {})}
+          onCancel={() => setDirectoryBrowserOpen(false)}
+          onSelect={(path) => {
+            setDirectoryBrowserOpen(false);
+            // 双保险：picker 的路径由 /api/space 返回的目录名逐级拼接，本来就出不了空间根；
+            // 这里再断言一次，防止后续改动把越权路径带进工作区切换。
+            if (path !== spaceRootAbsPath && !path.startsWith(`${spaceRootAbsPath}/`)) {
+              logger.error("[Root] 拒绝在用户空间之外打开工作区", { path, spaceRootAbsPath });
+              return;
+            }
+            void handleSelectProject(path);
+          }}
+        />
+      ) : (
+        <DirectoryBrowser
+          services={services}
+          onCancel={() => setDirectoryBrowserOpen(false)}
+          onSelect={(path) => {
+            setDirectoryBrowserOpen(false);
+            void handleSelectProject(path);
+          }}
+        />
+      )}
     </ScopedErrorBoundary>
   ) : null;
 

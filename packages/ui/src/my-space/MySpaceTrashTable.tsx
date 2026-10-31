@@ -12,7 +12,7 @@ import { FileDisplayIcon } from "@/lib/fileDisplay.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { MySpaceEmptyState } from "./MySpaceEmptyState.js";
 import { formatBytes, type SpaceTrashItem } from "./spaceClient.js";
-import { formatSpaceWhen, spaceFileIconSrc } from "./spaceFileType.js";
+import { spaceFileIconSrc } from "./spaceFileType.js";
 
 export function MySpaceTrashTable({
   items,
@@ -77,9 +77,6 @@ export function MySpaceTrashTable({
                 <th className="w-24 py-2 pr-3 text-right font-normal">
                   {intl.formatMessage({ id: "mySpace.column.size" })}
                 </th>
-                <th className="w-36 py-2 pr-3 text-right font-normal">
-                  {intl.formatMessage({ id: "mySpace.column.deletedAt" })}
-                </th>
                 <th className="w-20 py-2 pr-3 text-right font-normal" aria-hidden="true" />
               </tr>
             </thead>
@@ -109,11 +106,6 @@ export function MySpaceTrashTable({
                   </td>
                   <td className="w-24 py-1.5 pr-3 text-right align-middle font-mono text-ui-sm text-foreground-subtle">
                     {formatBytes(item.size)}
-                  </td>
-                  <td className="w-36 py-1.5 pr-3 text-right align-middle text-ui-sm text-foreground-subtle">
-                    <span title={new Date(item.deletedAt).toLocaleString()}>
-                      {formatSpaceWhen(item.deletedAt)}
-                    </span>
                   </td>
                   <td className="w-20 py-1.5 pr-3 align-middle">
                     <div className="flex items-center justify-end gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">

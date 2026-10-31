@@ -9,7 +9,16 @@
  * 文件树面向 agent 干活，这里面向人——容量、批量操作、回收站、分享。
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CloudUpload, FolderPlus, MoreHorizontal, RefreshCw, Search, Upload } from "lucide-react";
+import {
+  CloudUpload,
+  Database,
+  FolderPlus,
+  MoreHorizontal,
+  RefreshCw,
+  Search,
+  Upload,
+} from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card.js";
 import { Button } from "@/components/ui/button.js";
 import {
   DropdownMenu,
@@ -29,10 +38,8 @@ import { MySpaceShareTable } from "./MySpaceShareTable.js";
 import { MySpaceStorageCard } from "./MySpaceStorageCard.js";
 import { MySpaceTrashTable } from "./MySpaceTrashTable.js";
 import {
-  formatBytes,
   SpaceQuotaError,
   spaceClient,
-  usagePercent,
   type SpaceEntriesResult,
   type SpaceShareItem,
   type SpaceTrashItem,
@@ -436,6 +443,24 @@ export function MySpacePage({
               </Button>
             </>
           ) : null}
+          {/* 容量详情不常驻：鼠标悬浮工具栏按钮才弹出，腾出主区空间 */}
+          {usage ? (
+            <HoverCard openDelay={150} closeDelay={120}>
+              <HoverCardTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={intl.formatMessage({ id: "mySpace.storage.title" })}
+                  data-testid="my-space-storage-trigger"
+                >
+                  <Database className="size-4" />
+                </Button>
+              </HoverCardTrigger>
+              <HoverCardContent align="end" className="w-72 p-0">
+                <MySpaceStorageCard usage={usage} />
+              </HoverCardContent>
+            </HoverCard>
+          ) : null}
           {view === "files" ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -517,104 +542,71 @@ export function MySpacePage({
         </div>
       ) : null}
 
-      {/* 窄屏看不到左侧容量卡：用一行汇总把额度信息补回来（含回收站占用）。 */}
-      {usage ? (
-        <div className="mb-2 flex shrink-0 items-center gap-2 rounded-lg bg-surface px-3 py-1.5 text-ui-sm text-foreground-subtle xl:hidden">
-          <span className="shrink-0">{intl.formatMessage({ id: "mySpace.storage.title" })}</span>
-          <span className="shrink-0 font-mono text-foreground">{formatBytes(usage.usedBytes)}</span>
-          <span className="shrink-0 text-foreground-subtlest">
-            / {formatBytes(usage.quotaBytes)}
-          </span>
-          <div className="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-border">
-            <div
-              className={
-                usagePercent(usage) >= 95
-                  ? "h-full rounded-full bg-destructive"
-                  : usagePercent(usage) >= 80
-                    ? "h-full rounded-full bg-warning"
-                    : "h-full rounded-full bg-primary"
-              }
-              style={{ width: `${usagePercent(usage)}%` }}
-            />
-          </div>
-          {usage.trashBytes > 0 ? (
-            <span className="shrink-0 text-ui-xs">
-              {intl.formatMessage(
-                { id: "mySpace.storage.trashShort" },
-                { size: formatBytes(usage.trashBytes) },
-              )}
-            </span>
-          ) : null}
-        </div>
-      ) : null}
-
-      {/* 主体：容量卡 + 列表 + 预览 */}
+      {/* 主体：左窄（文件列表）+ 右宽（预览/详情）。
+          预览要的是面积，列表只需要名字/大小/时间三列——比例反过来后 PDF、图纸、表格
+          才有地方展开（2026-11-01 实测反馈）。窄屏没有第三栏，列表占满、预览走弹窗。 */}
       <div className="flex min-h-0 flex-1 gap-3">
-        <aside className="hidden w-56 shrink-0 flex-col gap-3 xl:flex">
-          <MySpaceStorageCard usage={usage} />
-        </aside>
-
-        {view === "files" ? (
-          <MySpaceFileTable
-            path={path}
-            data={data}
-            loading={loading}
-            selected={selected}
-            active={active}
-            searchResults={searchResults}
-            query={query}
-            onNavigate={(next) => {
-              setPath(next);
-              setSelected(new Set());
-              setActive(null);
-            }}
-            onToggleSelect={toggleSelect}
-            onToggleSelectAll={toggleSelectAll}
-            onOpenDirectory={openDirectory}
-            onActivate={activate}
-            onOpenSearchHit={(hit) => {
-              setPath(parentDir(hit.path));
-              setActive(hit.entry.name);
-              setQuery("");
-            }}
-            onDropFiles={(files) => void uploadFiles(files)}
-            onUpload={() => fileInputRef.current?.click()}
-          />
-        ) : view === "trash" ? (
-          <MySpaceTrashTable
-            items={trash}
-            loading={loading}
-            onRestore={(ids) => void restoreTrash(ids)}
-            onPurge={(ids) => void purgeTrash(ids)}
-          />
-        ) : (
-          <MySpaceShareTable
-            items={shares}
-            loading={loading}
-            onCopy={(item) => void copyShareLink(item)}
-            onRevoke={(item) =>
-              void spaceClient.revokeShare(item.token).then(load).catch(handleError)
-            }
-          />
-        )}
-
-        {view === "files" ? (
-          <aside className="hidden w-[320px] shrink-0 lg:flex">
-            <MySpaceDetails
-              relPath={active ? joinPath(path, active) : null}
-              entry={activeEntry}
-              resolvedTheme={resolvedTheme}
-              onClose={() => setActive(null)}
-              onAddToChat={(rel) => onAddToChat?.([rel])}
-              onShare={(rel) => setShareTarget(rel)}
-              onRename={(rel) => setDialog({ kind: "rename", relPath: rel })}
-              onMove={(rel) => setDialog({ kind: "move", relPath: rel })}
-              onDelete={(paths) => void deletePaths(paths)}
-              onChanged={() => void load()}
-              onError={handleError}
+        <div className="flex min-h-0 w-full min-w-0 flex-col lg:w-[var(--workspace-sidebar-panel-width,264px)] lg:max-w-[320px] lg:min-w-[240px] lg:shrink-0">
+          {view === "files" ? (
+            <MySpaceFileTable
+              path={path}
+              data={data}
+              loading={loading}
+              selected={selected}
+              active={active}
+              searchResults={searchResults}
+              query={query}
+              onNavigate={(next) => {
+                setPath(next);
+                setSelected(new Set());
+                setActive(null);
+              }}
+              onToggleSelect={toggleSelect}
+              onToggleSelectAll={toggleSelectAll}
+              onOpenDirectory={openDirectory}
+              onActivate={activate}
+              onOpenSearchHit={(hit) => {
+                setPath(parentDir(hit.path));
+                setActive(hit.entry.name);
+                setQuery("");
+              }}
+              onDropFiles={(files) => void uploadFiles(files)}
+              onUpload={() => fileInputRef.current?.click()}
             />
-          </aside>
-        ) : null}
+          ) : view === "trash" ? (
+            <MySpaceTrashTable
+              items={trash}
+              loading={loading}
+              onRestore={(ids) => void restoreTrash(ids)}
+              onPurge={(ids) => void purgeTrash(ids)}
+            />
+          ) : (
+            <MySpaceShareTable
+              items={shares}
+              loading={loading}
+              onCopy={(item) => void copyShareLink(item)}
+              onRevoke={(item) =>
+                void spaceClient.revokeShare(item.token).then(load).catch(handleError)
+              }
+            />
+          )}
+        </div>
+
+        <aside className="hidden min-w-0 flex-1 lg:flex">
+          <MySpaceDetails
+            relPath={active ? joinPath(path, active) : null}
+            entry={activeEntry}
+            resolvedTheme={resolvedTheme}
+            onClose={() => setActive(null)}
+            onAddToChat={(rel) => onAddToChat?.([rel])}
+            onShare={(rel) => setShareTarget(rel)}
+            onRename={(rel) => setDialog({ kind: "rename", relPath: rel })}
+            onMove={(rel) => setDialog({ kind: "move", relPath: rel })}
+            onDelete={(paths) => void deletePaths(paths)}
+            onChanged={() => void load()}
+            onError={handleError}
+          />
+        </aside>
       </div>
 
       {dialog && dialogProps ? (

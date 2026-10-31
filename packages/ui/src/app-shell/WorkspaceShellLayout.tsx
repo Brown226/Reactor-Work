@@ -464,7 +464,10 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
   });
   const workspaceSessionActionDisabled =
     Boolean(workspaceReadOnlyReason) || reloadSessionDisabled || reloadSessionPending;
-  const showTopOverlayNewTaskButton = !isSidebarVisible;
+  // Web 收起侧栏时，顶部浮层只保留「展开」按钮：后退/前进/新建任务都不再占位，
+  // 让主视图工具栏（如我的空间的 文件/回收站/分享）整体上移（2026-11-01 反馈）。
+  const isWebCollapsed = !isDesktop && !isSidebarVisible;
+  const showTopOverlayNewTaskButton = !isSidebarVisible && !isWebCollapsed;
   const workspaceSidebarResizeLabel = intl.formatMessage({
     id: "workspaceSidebar.resizeSidebar",
   });
@@ -1796,6 +1799,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                           >
                             <AutomationsMainBreadcrumbFrame
                               isDesktop={Boolean(isDesktop)}
+                              showTopStrip={Boolean(isDesktop) || isSidebarVisible}
                               sectionLabel={intl.formatMessage({
                                 id: "settings.automations.title",
                               })}
@@ -1846,6 +1850,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                           <main className="flex h-full min-h-0 flex-1 flex-col bg-background">
                             <AutomationsMainBreadcrumbFrame
                               isDesktop={Boolean(isDesktop)}
+                              showTopStrip={Boolean(isDesktop) || isSidebarVisible}
                               sectionLabel={intl.formatMessage({
                                 id: "workspace.openPluginsSettings",
                               })}
@@ -1870,6 +1875,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                           <main className="flex h-full min-h-0 flex-1 flex-col bg-background">
                             <AutomationsMainBreadcrumbFrame
                               isDesktop={Boolean(isDesktop)}
+                              showTopStrip={Boolean(isDesktop) || isSidebarVisible}
                               sectionLabel={intl.formatMessage({ id: "marketplace.title" })}
                               ariaLabel={intl.formatMessage({
                                 id: "settings.breadcrumbLabel",
@@ -1893,6 +1899,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                           <main className="flex h-full min-h-0 flex-1 flex-col bg-background">
                             <AutomationsMainBreadcrumbFrame
                               isDesktop={Boolean(isDesktop)}
+                              showTopStrip={Boolean(isDesktop) || isSidebarVisible}
                               sectionLabel={intl.formatMessage({ id: "workspaceHeader.mySpace" })}
                               ariaLabel={intl.formatMessage({ id: "workspaceHeader.mySpace" })}
                             >
@@ -2062,6 +2069,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
             canGoBack={canGoBack}
             canGoForward={canGoForward}
             showNewTaskButton={showTopOverlayNewTaskButton}
+            hideTaskNavigationButtons={isWebCollapsed}
             appLogoUrl={appLogoUrl}
             platform={platform}
             onToggleSidebar={handleToggleSidebar}

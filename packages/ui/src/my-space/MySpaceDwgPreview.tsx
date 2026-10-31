@@ -69,7 +69,12 @@ function DrawingSvg({
   ariaLabel: string;
 }) {
   return (
-    <svg viewBox={`0 0 ${VIEW} ${VIEW}`} className="h-full w-full" role="img" aria-label={ariaLabel}>
+    <svg
+      viewBox={`0 0 ${VIEW} ${VIEW}`}
+      className="h-full w-full"
+      role="img"
+      aria-label={ariaLabel}
+    >
       {segments.map((segment, index) =>
         segment.points.length >= 2 ? (
           <polyline
@@ -129,13 +134,19 @@ export function MySpaceDwgPreview({ relPath }: { relPath: string }) {
   }, [graph]);
 
   const download = (
-    <Button size="sm" variant="outline" onClick={() => window.open(spaceClient.downloadUrl(relPath), "_blank")}>
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => window.open(spaceClient.downloadUrl(relPath), "_blank")}
+    >
       <Download className="mr-2 size-4" /> 下载原件
     </Button>
   );
 
   if (loading) {
-    return <p className="p-4 text-ui-sm text-foreground-subtle">正在解析图纸…（首次打开需要几秒）</p>;
+    return (
+      <p className="p-4 text-ui-sm text-foreground-subtle">正在解析图纸…（首次打开需要几秒）</p>
+    );
   }
 
   if (error) {
@@ -177,7 +188,12 @@ export function MySpaceDwgPreview({ relPath }: { relPath: string }) {
   return (
     <div className="flex h-full flex-col">
       <div className="relative flex-1 overflow-hidden bg-white">
-        <DrawingSvg segments={segments} symbols={graph.symbols} project={project} ariaLabel={relPath} />
+        <DrawingSvg
+          segments={segments}
+          symbols={graph.symbols}
+          project={project}
+          ariaLabel={relPath}
+        />
         <Button
           size="sm"
           variant="outline"
@@ -199,14 +215,19 @@ export function MySpaceDwgPreview({ relPath }: { relPath: string }) {
           <div className="flex flex-wrap gap-x-2">
             {layers.map(([layer, count]) => (
               <span key={layer} className="inline-flex items-center gap-1">
-                <i className="inline-block size-2 rounded-sm" style={{ background: colorForLayer(layer) }} />
+                <i
+                  className="inline-block size-2 rounded-sm"
+                  style={{ background: colorForLayer(layer) }}
+                />
                 {layer} {count}
               </span>
             ))}
           </div>
         ) : null}
         {hiddenSegments > 0 ? (
-          <div>图元过多，仅渲染前 {MAX_RENDER_SEGMENTS} 条（其余 {hiddenSegments} 条请下载原件查看）</div>
+          <div>
+            图元过多，仅渲染前 {MAX_RENDER_SEGMENTS} 条（其余 {hiddenSegments} 条请下载原件查看）
+          </div>
         ) : null}
         {graph.truncated ? <div>服务端解析已截断（超过上限），预览不完整。</div> : null}
         <div>预览只含线段与块引用，圆/圆弧/文字请下载原件查看。</div>
@@ -227,7 +248,12 @@ export function MySpaceDwgPreview({ relPath }: { relPath: string }) {
             </Button>
           </div>
           <div className="min-h-0 flex-1 overflow-hidden rounded-lg bg-white">
-            <DrawingSvg segments={segments} symbols={graph.symbols} project={project} ariaLabel={relPath} />
+            <DrawingSvg
+              segments={segments}
+              symbols={graph.symbols}
+              project={project}
+              ariaLabel={relPath}
+            />
           </div>
         </div>
       ) : null}
