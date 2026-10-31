@@ -200,33 +200,92 @@ export const spaceClient = {
   ): Promise<{ name: string; size: number }> => {
     const CHUNK_SIZE = 4 * 1024 * 1024;
     const totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_SIZE));
-    const begin = await request<{ uploadId: string; received: number[] }>("/api/space/upload/begin", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ path: dirPath, name: file.name, size: file.size, totalChunks }),
-    });
-    const done = new Set(begin.received);
+
+    /*
+     * 断点续传的关键：把 uploadId 落到 localStorage，键包含「目录+文件名+大小+修改时间」。
+     * 只有复用上一次的 uploadId，才能让 /upload/status 返回真实已收分片并跳过它们；
+     * 每次 begin 新会话的写法只是"分片传输"，不是续传（最早那版就是这个问题）。
+     * 浏览器刷新/断网重试后，同一个文件会命中同一个键并接着传。
+     */
+    const resumeKey = `zcode.space.upload:${dirPath}|${file.name}|${file.size}|${file.lastModified}`;
+    const readStoredUploadId = (): string | null => {
+      try {
+        return window.localStorage.getItem(resumeKey);
+      } catch {
+        return null;
+      }
+    };
+    const storeUploadId = (uploadId: string | null): void => {
+      try {
+        if (uploadId) window.localStorage.setItem(resumeKey, uploadId);
+        else window.localStorage.removeItem(resumeKey);
+      } catch {
+        // 隐私模式下 localStorage 不可用：退化为本次会话内续传，不影响功能
+      }
+    };
+
+    // 先尝试复用旧会话：status 404（过期/被清理）就重新 begin
+    let uploadId = readStoredUploadId();
+    let received: number[] = [];
+    if (uploadId) {
+      const status = await request<{ uploadId: string; received: number[] }>(
+        `/api/space/upload/status?uploadId=${encodeURIComponent(uploadId)}`,
+      ).catch(() => null);
+      if (status) received = status.received;
+      else {
+        uploadId = null;
+        storeUploadId(null);
+      }
+    }
+    if (!uploadId) {
+      const begin = await request<{ uploadId: string; received: number[] }>("/api/space/upload/begin", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ path: dirPath, name: file.name, size: file.size, totalChunks }),
+      });
+      uploadId = begin.uploadId;
+      received = begin.received;
+      storeUploadId(uploadId);
+    }
+
+    const done = new Set(received);
+    if (done.size > 0) onProgress?.(Math.round((done.size / totalChunks) * 100));
     for (let index = 0; index < totalChunks; index += 1) {
       if (done.has(index)) continue;
       const chunk = file.slice(index * CHUNK_SIZE, Math.min(file.size, (index + 1) * CHUNK_SIZE));
-      const response = await fetch(
-        `/api/space/upload/chunk?uploadId=${begin.uploadId}&index=${index}`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/octet-stream" },
-          body: chunk,
-        },
-      );
-      if (!response.ok) {
-        throw new SpaceRequestError(`第 ${index + 1}/${totalChunks} 片上传失败`, response.status);
+      // 单片失败重试一次：弱网下丢一片就让整个大文件重来，续传的意义就没了
+      let lastStatus = 0;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const response = await fetch(
+          `/api/space/upload/chunk?uploadId=${uploadId}&index=${index}`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/octet-stream" },
+            body: chunk,
+          },
+        );
+        if (response.ok) {
+          lastStatus = 0;
+          break;
+        }
+        lastStatus = response.status;
       }
-      onProgress?.(Math.round(((index + 1) / totalChunks) * 100));
+      if (lastStatus !== 0) {
+        // 保留 localStorage 里的 uploadId：下次同一个文件会从这一片继续
+        throw new SpaceRequestError(
+          `第 ${index + 1}/${totalChunks} 片上传失败，已保留断点，重试可继续`,
+          lastStatus,
+        );
+      }
+      done.add(index);
+      onProgress?.(Math.round((done.size / totalChunks) * 100));
     }
     const commit = await request<{ entry: { name: string; size: number } }>("/api/space/upload/commit", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ uploadId: begin.uploadId }),
+      body: JSON.stringify({ uploadId }),
     });
+    storeUploadId(null);
     return { name: commit.entry.name, size: commit.entry.size };
   },
 
