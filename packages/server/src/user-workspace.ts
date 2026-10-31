@@ -237,6 +237,19 @@ export function installLoginUidRecorder(services: ServiceCollection): void {
     // 登出必须清掉记录：否则下一个匿名 GET 会静默拿到上一个用户的用量。
     clearLoginUid();
   };
+  /*
+   * 启动恢复：容器重启后凭据仍落盘，前端不会再走登录流程，uid 记录器就会是空的，
+   * 结果「每个用户的空间」退化成共享工作区（实测踩过）。
+   * getStatus 是前端启动时必然调用的只读接口，返回的 user 就是持久化的登录用户，
+   * 在这里补记一次即可，无需额外接口或轮询。
+   */
+  const originalGetStatus = reactorServer.getStatus.bind(reactorServer);
+  reactorServer.getStatus = async () => {
+    const status = await originalGetStatus();
+    if (status.user?.uid) recordLoginUid(status.user.uid);
+    else if (!status.loggedIn) clearLoginUid();
+    return status;
+  };
 }
 
 type UidResolution = { ok: true; uid: string } | { ok: false; status: 400 | 401; message: string };

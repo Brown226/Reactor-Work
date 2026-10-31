@@ -1,7 +1,8 @@
 /* eslint-disable max-lines -- HTTP、WebSocket 与静态资源路由集中注册，保持同一鉴权顺序。 */
 import { randomUUID } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
-import { basename, extname, relative, resolve, sep } from "node:path";
+import { mkdirSync } from "node:fs";
+import { basename, extname, join, relative, resolve, sep } from "node:path";
 import { hostname } from "node:os";
 import { Hono, type Context } from "hono";
 import { serve } from "@hono/node-server";
@@ -38,11 +39,14 @@ import {
 import { connectRemote, createRemoteBackend, type RemoteConnection } from "./remote/index.js";
 import { createHostCapabilityStore } from "./hostCapability.js";
 import {
+  getCurrentLoginUid,
   installLoginUidRecorder,
+  isValidUid,
   registerUserWorkspaceRoutes,
   resolveUserWorkspaceRoot,
   type ServerInfoWithUserWorkspace,
 } from "./user-workspace.js";
+import { createUserSpaceRoutes } from "./user-space/routes.js";
 
 function wrapWebSocket(ws: WebSocket): ISocket {
   const onData = new Emitter<VSBuffer>();
@@ -160,6 +164,27 @@ function resolveServerWorkspaces(options: HttpServerOptions): ServerRemoteWorksp
   if (options.workspaces) {
     return options.workspaces;
   }
+  /*
+   * 每用户空间即默认工作区（产物自动归集）。
+   *
+   * 登录成功后服务端已记下 uid（user-workspace 的登录记录器），此时把工作区指向
+   * `<空间根>/<uid>`：agent 的读写、终端命令、生成的文件全都落在该用户 1GB 配额内，
+   * 不需要任何额外的"搬运到我的空间"逻辑——这就是归集的实现方式。
+   *
+   * 未登录时（登录页首屏、健康检查）回落到共享工作区，保证登录流程本身可用。
+   */
+  const loginUid = getCurrentLoginUid();
+  if (loginUid && isValidUid(loginUid)) {
+    const userDir = join(resolveUserWorkspaceRoot(), loginUid);
+    try {
+      // 首次登录后可能还没人调用过 POST /api/user-workspace，这里补建，
+      // 否则 agent 以不存在的工作区启动会直接失败。
+      mkdirSync(userDir, { recursive: true });
+      return [{ path: userDir, label: loginUid }];
+    } catch (error) {
+      console.warn("[server-info] 创建用户工作区失败，回落到共享工作区:", error);
+    }
+  }
   const workspacePath = readTrimmedEnv("ZCODE_SERVER_WORKSPACE") || process.cwd();
   return [
     {
@@ -240,6 +265,12 @@ function hasValidLiteToken(c: Context, token: string): boolean {
 }
 
 function isTokenProtectedPath(pathname: string): boolean {
+  // 分享链接必须能匿名打开（方案 §4 公开下载、§7.4 无痕窗口验收）：
+  // 匿名访问者没有服务端 lite token cookie。访问控制由 share token + 过期 + 口令
+  // 在 user-space 路由内完成，这里只放行这一条前缀。
+  if (pathname.startsWith("/api/space/shared/")) {
+    return false;
+  }
   return pathname === "/ws" || pathname.startsWith("/ws/") || pathname.startsWith("/api/");
 }
 
@@ -339,6 +370,9 @@ export function createHttpServer(
   // 再挂路由；身份校验的阶段一限制（uid 即身份、显式 uid 可伪造）见 user-workspace.ts。
   installLoginUidRecorder(services);
   registerUserWorkspaceRoutes(app);
+  // 我的空间（方案 §4）：与 user-workspace 共用登录 uid 记录、空间根与配额；
+  // 公开分享路由 /api/space/shared/:token 的身份放行见 isTokenProtectedPath。
+  app.route("/api/space", createUserSpaceRoutes());
 
   // 普通 `/ws` 永远是 terminal-client；浏览器/任意客户端设置旧 mode header
   // 都不能再把自己提升为 trusted host。

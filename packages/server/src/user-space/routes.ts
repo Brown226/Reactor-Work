@@ -1,0 +1,23 @@
+import { Hono } from "hono";
+import { registerFileRoutes } from "./routes-files.js";
+import { registerShareRoutes } from "./routes-shares.js";
+import { registerTrashRoutes } from "./routes-trash.js";
+
+/**
+ * 我的空间后端（方案 §4）。返回挂载到 `/api/space` 的子应用。
+ *
+ * 路由分三组注册：
+ * - 文件区：entries/mkdir/upload/download/preview/rename/move/delete/usage
+ * - 回收站：trash/restore/purge
+ * - 分享：share/shares/revoke，以及公开的 shared/:token
+ *
+ * 身份统一由每个 handler 自己调用 requireRequestUid()：公开路由不能复用
+ * 一个「先解析 uid 再分发」的中间件，否则无登录的分享链接会被 401 拦住。
+ */
+export function createUserSpaceRoutes(): Hono {
+  const app = new Hono();
+  registerFileRoutes(app);
+  registerTrashRoutes(app);
+  registerShareRoutes(app);
+  return app;
+}
