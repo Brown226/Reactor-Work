@@ -67,9 +67,9 @@ Diff 与审查、Git、终端；技能与插件市场、MCP 读取启用；主�
 | 优先 | 缺口 | 现状 | 目标 |
 | --- | --- | --- | --- |
 | P0 | DWG 解析在 Linux 不可用 | ~~`dwg-tools-plugin` 只有 `assets/win32-x64`~~ **已解决（2026-10-31）**：linux-x64 sidecar 已交叉发布并内置 web 镜像（`ZCODE_DWG_TOOLS_ASSETS_ROOT=/app/agent/dwg-tools`）；真实 1.1MB 图纸 read 成功（AC1018，535ms）。交叉发布的产物名校验 bug（宿主 win32 找 .exe）已修复 | 维持：插件在真实 agent 会话里的端到端回归 |
-| P0 | 每用户工作区与配额 | 单工作区 `/data/workspace`，用户互相可见 | 总 20GB / 每用户 1GB；`/data/users/<uid>/` + 应用层配额 |
-| P0 | HTTPS 与同源反代 | `http://host:3030`，跨源登录依赖 CORS | nginx 同源反代，解锁安全上下文类 API |
-| P1 | 大文件上传落用户空间 | 附件进 artifact store，不占用户工作区 | 直传工作区 + 配额校验（图纸级几十 MB） |
+| P0 | 每用户工作区与配额 | **后端已实现（2026-10-31，B 方案）**：`POST /api/user-workspace` / `GET /api/user-workspace/usage`（1GB/用户、20GB 总，软配额），身份优先取服务端登录链路记录的 uid。**未做**：登录后自动进入个人工作区的客户端接线（需先解决 /ws 鉴权 P0，否则自动接线是可伪造的） | 容器实测：目录创建、1GB 配额、穿越拒绝均通过；自动接线待身份验证落地 |
+| P0 | HTTPS 与同源反代 | **已交付（2026-10-31）**：deploy/web 下 nginx.conf/compose.https.yml/gen-self-signed.sh，HTTPS 端到端实测通过（SPA/API/登录/me/nav） | 正式环境替换企业 CA 证书 |
+| P1 | 大文件上传落用户空间 | 附件走 artifact store，不占用户工作区 | 直传工作区 + 配额校验（图纸级几十 MB）；**前置**：客户端按登录 uid 接线到 user-workspace |
 | P1 | 办公四件套生成验证 | **容器实测确认缺条件（2026-10-31）**：无中文字体（fc-list 0 命中）、无 python3、无 libreoffice；PDF/PPT 中文会变空白。镜像需补 `fonts-noto-cjk`（+fontconfig），生成链路逐件实测 | 实测 docx/xlsx/pptx/pdf 生成与中文渲染 |
 | P2 | 不可用功能置灰 | 入口可点但静默失败 | 置灰 + 悬停「该功能仅支持客户端使用」 |
 | P2 | 服务端访问控制 | 未配 `ZCODE_SERVER_AUTH_TOKEN` 时 `/ws` 全开 | 默认强制令牌，或接入登录身份 |
