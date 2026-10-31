@@ -204,6 +204,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
   onOpenMarket,
   marketIntent,
   onOpenModelProviderSettings,
+  onOpenMySpace,
   onConnectRemote,
   onSelectRemoteProject,
   onCancelRemoteProject,
@@ -1634,6 +1635,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                     pluginStoreActive={workspaceMainView === "plugin-store"}
                     onOpenMarket={onOpenMarket}
                     marketActive={workspaceMainView === "market"}
+                    onOpenMySpace={onOpenMySpace}
                     onOpenWorkspaceFiles={handleOpenWorkspaceFiles}
                   />
                 </WorkflowRunOpenProvider>

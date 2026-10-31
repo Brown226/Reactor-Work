@@ -125,6 +125,7 @@ export function App({
   isMacDesktop,
   isWindowsDesktop,
   supportsEmbeddedBrowser: explicitSupportsEmbeddedBrowser,
+  onOpenMySpace,
 }: AppProps) {
   // 展示 label 统一从快捷键生效表取（用户改键后 tooltip 同步更新），不再硬编码键位。
   const toggleSidebarShortcutLabel = useShortcutCommandLabel("toggleSidebar");
@@ -1139,6 +1140,7 @@ export function App({
         handleManageInstalledPlugins={handleManageInstalledPlugins}
         onOpenMarket={handleOpenMarket}
         marketIntent={marketIntent}
+        onOpenMySpace={onOpenMySpace}
         onOpenModelProviderSettings={handleManageModelsFromMarket}
         onConnectRemote={onConnectRemote}
         onSelectRemoteProject={onSelectRemoteProject}

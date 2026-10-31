@@ -110,6 +110,11 @@ export interface AppProps {
   isMacDesktop?: boolean;
   isWindowsDesktop?: boolean;
   supportsEmbeddedBrowser?: boolean;
+  /**
+   * 侧栏「我的空间」入口的打开动作。只有 Web 宿主会传（桌面端的「我的空间」就是本机
+   * 文件管理器，不需要这个入口）；缺省时侧栏不渲染该按钮，桌面端调用点零改动。
+   */
+  onOpenMySpace?: () => void;
 }
 
 export interface GitChangeSummary {

@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- Root 当前集中编排启动和 workspace shell wiring，先保持入口收口避免跨层状态拆散。 */
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FolderOpen, LucideProvider, RefreshCw } from "lucide-react";
+import { LucideProvider, RefreshCw } from "lucide-react";
 import {
   APP_RUNTIME_PREFERENCES_CHANGED_BROADCAST_CHANNEL,
   DesktopCommandIds,
@@ -249,6 +249,9 @@ function RootInner({
   const [directoryBrowserOpen, setDirectoryBrowserOpen] = useState(false);
   // 我的空间面板开关（仅 Web 宿主启用；桌面端 mySpaceEnabled=false，永不渲染）
   const [mySpaceOpen, setMySpaceOpen] = useState(false);
+  // 往下透传到 App → WorkspaceShellLayout → WorkspaceSidebar；必须稳定引用，
+  // 否则每次 Root 重渲染都会打穿 StableWorkspaceApp 的 memo。
+  const handleOpenMySpace = useCallback(() => setMySpaceOpen(true), []);
   const [remoteConnectionInProgress, setRemoteConnectionInProgress] = useState(false);
   const [remoteConnectionRequestId, setRemoteConnectionRequestId] = useState<string | null>(null);
   const [isCreatingFallbackWorkspace, setIsCreatingFallbackWorkspace] = useState(false);
@@ -1122,37 +1125,26 @@ function RootInner({
           onChangePassword={enterpriseSession.changePassword}
         />
       ) : null}
-      {/* 我的空间：仅 Web 宿主启用。入口做成悬浮按钮而不是塞进标题栏，
-          避免为一个平台专属功能改动共享 header 的布局（桌面端完全不渲染）。 */}
+      {/* 我的空间：仅 Web 宿主启用。入口在左侧栏（AppProps.onOpenMySpace），
+          面板本身留在 Root，因为「加入对话」需要把文件注入到当前 composer。 */}
       {mySpaceEnabled ? (
-        <>
-          <button
-            type="button"
-            data-testid="my-space-trigger"
-            onClick={() => setMySpaceOpen(true)}
-            className="fixed bottom-4 left-4 z-40 flex items-center gap-2 rounded-full border border-card-border bg-card px-4 py-2 text-ui-sm text-foreground shadow-md hover:bg-hover"
-          >
-            <FolderOpen className="size-4" />
-            {intl.formatMessage({ id: "workspaceHeader.mySpace" })}
-          </button>
-          <MySpacePanel
-            open={mySpaceOpen}
-            onOpenChange={setMySpaceOpen}
-            onAddToChat={(relPaths) => {
-              // 空间的相对路径 + 当前工作区绝对路径 = agent 可读的绝对路径。
-              // 登录后工作区已指向该用户的空间根，所以两者天然对齐。
-              const base = workspaceShellPath ?? activeWorkspacePath;
-              if (!base) return;
-              for (const rel of relPaths) {
-                pushSystemComposerInjection({
-                  source: "space-file",
-                  attachment: createChatComposerPathAttachment(`${base}/${rel}`),
-                });
-              }
-              setMySpaceOpen(false);
-            }}
-          />
-        </>
+        <MySpacePanel
+          open={mySpaceOpen}
+          onOpenChange={setMySpaceOpen}
+          onAddToChat={(relPaths) => {
+            // 空间的相对路径 + 当前工作区绝对路径 = agent 可读的绝对路径。
+            // 登录后工作区已指向该用户的空间根，所以两者天然对齐。
+            const base = workspaceShellPath ?? activeWorkspacePath;
+            if (!base) return;
+            for (const rel of relPaths) {
+              pushSystemComposerInjection({
+                source: "space-file",
+                attachment: createChatComposerPathAttachment(`${base}/${rel}`),
+              });
+            }
+            setMySpaceOpen(false);
+          }}
+        />
       ) : null}
       {/* 无项目时只渲染设置页；有项目时渲染工作区内容。 */}
       {!workspaceShellPath ? (
@@ -1204,6 +1196,7 @@ function RootInner({
           isMacDesktop={isMacDesktop}
           isWindowsDesktop={isWindowsDesktop}
           supportsEmbeddedBrowser={supportsEmbeddedBrowser}
+          onOpenMySpace={mySpaceEnabled ? handleOpenMySpace : undefined}
         />
       )}
     </RootShell>
