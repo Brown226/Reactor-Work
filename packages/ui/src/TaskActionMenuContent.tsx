@@ -1,4 +1,5 @@
 import { TID_V4_TASK_OPEN_IN_SPLIT } from "@zcode/shared";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 
 interface TaskActionMenuItemProps {
   children: React.ReactNode;
@@ -76,6 +77,12 @@ export function TaskActionMenuContent({
   onViewModelTrajectory?: () => void;
 }) {
   const taskTargetActionsDisabled = disableTaskActions || disableTaskTargetActions;
+  // Web 浏览器沙箱无法打开系统文件管理器/资源管理器；置灰 + 悬停说明，
+  // 避免点击后只在控制台记一条 warn 的静默失败。桌面端与手机远控宿主不实现
+  // unavailableReason，返回 null，行为完全不变。
+  const fileManagerUnavailableReason = usePlatformUnavailable("openInFileManager");
+  const fileManagerDisabled =
+    taskTargetActionsDisabled || Boolean(fileManagerUnavailableReason);
 
   return (
     <>
@@ -135,10 +142,14 @@ export function TaskActionMenuContent({
       <Separator />
       {!hideMobileUnsupportedActions ? (
         <Item
-          disabled={disableTaskActions}
-          title={disableTaskActions ? disabledReason : undefined}
+          disabled={fileManagerDisabled}
+          aria-disabled={fileManagerDisabled || undefined}
+          title={
+            fileManagerUnavailableReason ??
+            (disableTaskActions ? disabledReason : undefined)
+          }
           onSelect={() => {
-            if (!disableTaskActions) {
+            if (!fileManagerDisabled) {
               onOpenTaskPathInFileManager();
             }
           }}

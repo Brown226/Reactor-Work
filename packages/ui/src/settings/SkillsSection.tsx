@@ -29,6 +29,7 @@ import type { CreateTaskRequest } from "@/app-shell/types.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { toast } from "@/components/ui/toast.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useZCodeSessionService } from "@/hooks/useZCodeSessionService.js";
 import {
   useBaseWorkspaceServices,
@@ -118,11 +119,14 @@ function SkillPathDetailField({
   path,
   openLabel,
   onOpen,
+  openDisabledReason,
 }: {
   label: string;
   path: string;
   openLabel: string;
   onOpen: () => void;
+  /** 平台不可用原因（Web 端）：非空时按钮置灰并改用原因做悬停说明。 */
+  openDisabledReason?: string | null;
 }) {
   return (
     <div className="min-w-0 col-span-2">
@@ -132,8 +136,11 @@ function SkillPathDetailField({
           type="button"
           variant="link"
           size="sm"
+          // 平台不可用（Web 端）：置灰 + 原生 title 悬停说明，点击不再触发文件管理器。
+          disabled={Boolean(openDisabledReason)}
+          aria-disabled={openDisabledReason ? true : undefined}
           aria-label={openLabel}
-          title={openLabel}
+          title={openDisabledReason ?? openLabel}
           className="inline-flex h-auto max-w-full items-baseline gap-1.5 whitespace-normal break-all px-0 py-0 text-left align-baseline font-mono text-ui-base font-normal text-foreground-subtle underline-offset-2 hover:text-foreground hover:underline"
           onClick={onOpen}
         >
@@ -176,6 +183,9 @@ export function SkillsSection({
 }: SkillsSectionProps) {
   const { intl, locale } = useZCodeIntl();
   const platform = usePlatform();
+  // Web 浏览器沙箱打不开系统文件管理器；技能详情「打开路径」置灰 + 悬停说明，
+  // 避免点击后才收到失败 toast。
+  const openSkillPathUnavailableReason = usePlatformUnavailable("openInFileManager");
   const baseServices = useBaseWorkspaceServices();
   const plugins = usePluginManagementStore((state) => state.plugins);
   const installedPlugins = usePluginManagementStore((state) => state.installedPlugins);
@@ -1083,6 +1093,7 @@ export function SkillsSection({
                     openLabel={intl.formatMessage({
                       id: "settings.skills.detail.openPath",
                     })}
+                    openDisabledReason={openSkillPathUnavailableReason}
                     onOpen={() => void openSkillFilePath(detailSkill.path)}
                   />
                 </div>

@@ -30,6 +30,8 @@ interface SettingsResourceHeaderActionsProps {
   newTestId?: string;
   refreshLabel?: string;
   newLabel?: string;
+  /** 平台不可用原因（Web 端）：newDisabled 时作为原生 title 悬停说明。 */
+  newDisabledReason?: string | null;
   importActionId?: string;
   exportActionId?: string;
   newActionId?: string;
@@ -49,6 +51,7 @@ export function SettingsResourceHeaderActions({
   newTestId,
   refreshLabel,
   newLabel: customNewLabel,
+  newDisabledReason,
   importActionId,
   exportActionId,
   newActionId,
@@ -129,6 +132,8 @@ export function SettingsResourceHeaderActions({
           aria-label={newLabel}
           data-testid={newTestId}
           disabled={newDisabled}
+          aria-disabled={newDisabledReason ? true : undefined}
+          title={newDisabledReason ?? undefined}
           onClick={onNew}
         >
           <Plus data-icon="inline-start" aria-hidden="true" />

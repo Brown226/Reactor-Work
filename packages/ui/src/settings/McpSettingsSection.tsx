@@ -27,6 +27,7 @@ import { toast } from "@/components/ui/toast.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { logger } from "@/logger.js";
 import { McpServerForm } from "@/settings/McpServerForm.js";
 import { McpServerList, McpStatusDot } from "@/settings/McpServerList.js";
@@ -577,6 +578,11 @@ export function McpSettingsSection({
     remoteTarget,
   );
   const platform = usePlatform();
+  // 本地 workspace 的 CLI MCP（新建/编辑/开关落盘）只能走 desktop platform 写宿主用户目录；
+  // Web 浏览器沙箱没有该通道，保存只会静默留在内存（persistCliMcpToUserDirectory 失败仅 warn）。
+  // 这里取统一原因文案，把「新建服务器」入口置灰并悬停说明；「导入」走 RPC 的
+  // settingsSyncService，在服务端宿主上可用，不随此门控。
+  const localDirectoryUnavailableReason = usePlatformUnavailable("mcpLocalDirectory");
   const baseServices = useBaseWorkspaceServices();
 
   const storedServers = useMcpStore((s) => s.servers);
@@ -1472,6 +1478,8 @@ export function McpSettingsSection({
                   refreshing={refreshingStatusList}
                   onImport={() => setImportDialogOpen(true)}
                   onNew={handleCreate}
+                  newDisabled={Boolean(localDirectoryUnavailableReason)}
+                  newDisabledReason={localDirectoryUnavailableReason}
                   importActionId="settings.mcp.import.open"
                   newActionId="settings.mcp.create.open"
                 />
@@ -1505,10 +1513,14 @@ export function McpSettingsSection({
               })}
               actions={
                 <>
+                  {/* 平台不可用（Web 端）：置灰 + 原生 title 悬停说明，点击不再打开必然保存失败的表单。 */}
                   <Button
                     type="button"
                     variant="default"
                     size="lg"
+                    disabled={Boolean(localDirectoryUnavailableReason)}
+                    aria-disabled={localDirectoryUnavailableReason ? true : undefined}
+                    title={localDirectoryUnavailableReason ?? undefined}
                     onClick={() => {
                       handleCreate();
                     }}

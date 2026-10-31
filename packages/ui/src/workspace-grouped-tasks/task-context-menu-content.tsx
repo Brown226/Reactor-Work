@@ -7,6 +7,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
 } from "@/components/ui/context-menu.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { TaskGroupColorDot } from "@/workspace-grouped-tasks/colors.js";
 import type { TaskGroupMenuItem } from "@/workspace-grouped-tasks/types.js";
 
@@ -47,6 +48,9 @@ export function GroupedTaskContextMenuContent({
   onOpenTaskFeedback: () => void;
   disabledReason?: string;
 }) {
+  // Web 浏览器沙箱无法打开系统文件管理器；置灰 + 悬停说明，避免点击后只落一条
+  // logger.warn 的静默失败。桌面/手机远控宿主不实现 unavailableReason → 行为不变。
+  const fileManagerUnavailableReason = usePlatformUnavailable("openInFileManager");
   return (
     <ContextMenuContent className="w-56">
       <ContextMenuSub>
@@ -130,10 +134,13 @@ export function GroupedTaskContextMenuContent({
       </ContextMenuItem>
       <ContextMenuSeparator />
       <ContextMenuItem
-        disabled={Boolean(disabledReason)}
-        title={disabledReason}
+        disabled={Boolean(disabledReason) || Boolean(fileManagerUnavailableReason)}
+        aria-disabled={
+          (Boolean(disabledReason) || Boolean(fileManagerUnavailableReason)) || undefined
+        }
+        title={fileManagerUnavailableReason ?? disabledReason}
         onSelect={() => {
-          if (!disabledReason) {
+          if (!disabledReason && !fileManagerUnavailableReason) {
             onOpenTaskPathInFileManager();
           }
         }}
