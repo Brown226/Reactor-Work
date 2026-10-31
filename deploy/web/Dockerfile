@@ -47,7 +47,10 @@ ENV NODE_ENV=production \
     ZCODE_SERVER_WORKSPACE=/data/workspace \
     ZCODE_DWG_TOOLS_ASSETS_ROOT=/app/agent/dwg-tools \
     ZCODE_AGENT_SERVER_COMMAND=node \
-    ZCODE_AGENT_SERVER_ARGS_JSON=["/app/agent/zcode.cjs","app-server","--stdio"]
+    ZCODE_AGENT_SERVER_ARGS_JSON='["/app/agent/zcode.cjs","app-server","--stdio"]'
+# ⚠ 上面这个值必须用单引号包住：Docker 的 ENV 解析会剥掉未转义的双引号，
+#   写 ENV K=["a","b"] 实际得到 [a,b] —— 不是合法 JSON，agent 启动直接 JSON.parse 失败，
+#   表现为「聊天一发就报 SyntaxError: Unexpected token '/'」。实测踩过。
 
 # 工作区与数据必须落在可挂载卷内：默认值 /app 会让用户在容器里直接改应用文件。
 RUN mkdir -p /data/workspace

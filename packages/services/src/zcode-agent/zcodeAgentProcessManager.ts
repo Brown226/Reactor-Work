@@ -298,7 +298,19 @@ function parseArgsJson(raw: string | undefined): string[] | undefined {
   if (!trimmed) {
     return undefined;
   }
-  const parsed = JSON.parse(trimmed) as unknown;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    // 容器化部署的高频事故：Dockerfile 里写 ENV K=["a","b"]，Docker 会把内层双引号剥掉，
+    // 实际值是 [a,b] —— JSON.parse 直接抛裸 SyntaxError，线上表现成「一发消息就报
+    // Unexpected token '/'」，很难联想到是环境变量。这里把原始值和正确写法一起报出来。
+    throw new Error(
+      `ZCODE_AGENT_SERVER_ARGS_JSON 不是合法 JSON（当前值：${trimmed}）。` +
+        ` 常见原因：Dockerfile ENV 未加引号导致内层引号被剥离，应写成 ` +
+        `ENV ZCODE_AGENT_SERVER_ARGS_JSON='["a","b"]'。`,
+    );
+  }
   if (!Array.isArray(parsed) || parsed.some((item) => typeof item !== "string")) {
     throw new Error("ZCODE_AGENT_SERVER_ARGS_JSON must be a JSON string array");
   }
