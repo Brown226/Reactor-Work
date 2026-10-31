@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { registerDwgRoutes } from "./dwg.js";
 import { registerExtraRoutes } from "./extras.js";
 import { registerFileRoutes } from "./routes-files.js";
 import { registerShareRoutes } from "./routes-shares.js";
@@ -22,5 +23,7 @@ export function createUserSpaceRoutes(): Hono {
   registerTrashRoutes(app);
   registerShareRoutes(app);
   registerExtraRoutes(app);
+  // 图形预览：复用容器内 dwg-sidecar 的 graph 输出（前端画 SVG）
+  registerDwgRoutes(app);
   return app;
 }

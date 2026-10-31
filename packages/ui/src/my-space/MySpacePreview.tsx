@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button.js";
 import { PptxPreviewContent } from "@/previewPanePptxContent.js";
 import { PreviewPaneOfficeContent } from "@/previewPaneOfficeContent.js";
 import { getOfficeFilePreviewKind } from "@/lib/officeFilePreview.js";
+import { MySpaceDwgPreview } from "./MySpaceDwgPreview.js";
 import { spaceClient } from "./spaceClient.js";
 
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|svg|bmp)$/i;
@@ -74,7 +75,7 @@ export function MySpacePreview({
   const [loading, setLoading] = useState(false);
   const previewUrl = spaceClient.previewUrl(relPath);
   const officeKind = getOfficeFilePreviewKind(relPath);
-  const needsBytes = Boolean(officeKind) || PPTX_EXT.test(relPath) || DWG_EXT.test(relPath);
+  const needsBytes = Boolean(officeKind) || PPTX_EXT.test(relPath);
 
   useEffect(() => {
     if (!needsBytes) return;
@@ -130,17 +131,9 @@ export function MySpacePreview({
     );
   }
 
+  // 图纸：服务端 sidecar 解析出线段/块引用，前端画 SVG（不再是"仅下载"兜底）
   if (DWG_EXT.test(relPath)) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 p-4 text-center">
-        <p className="text-ui-sm text-foreground-subtle">
-          图纸需要服务端解析后才能预览。可以先下载用 CAD 打开，或直接在对话里让 agent 解析这张图纸。
-        </p>
-        <Button size="sm" variant="outline" asChild={false} onClick={() => window.open(spaceClient.downloadUrl(relPath), "_blank")}>
-          <Download className="mr-2 size-4" /> 下载图纸
-        </Button>
-      </div>
-    );
+    return <MySpaceDwgPreview relPath={relPath} />;
   }
 
   if (loading) return <p className="p-4 text-ui-sm text-foreground-subtle">加载中…</p>;

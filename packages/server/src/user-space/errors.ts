@@ -7,7 +7,14 @@ import { formatLogPrefix } from "@zcode/shared";
  * 为什么用异常：路径校验要穿过 routes → repo → trash 多层调用，逐层返回
  * `{ok:false,...}` 会把「拒绝越界」写散成多处 if，漏一个就是目录穿越。
  */
-export type SpaceErrorStatus = 400 | 401 | 403 | 404 | 409 | 410 | 413 | 500;
+/**
+ * 我的空间统一错误码。
+ *
+ * 422/501/502/504 是给「外部解析组件」留的：DWG 预览要调用容器内的 .NET sidecar，
+ * 它的失败分三种语义——没装（501）、图纸本身解析不了（422）、进程超时（504）。
+ * 混用 500 会让前端无法区分「换个文件试试」和「找运维装组件」。
+ */
+export type SpaceErrorStatus = 400 | 401 | 403 | 404 | 409 | 410 | 413 | 422 | 500 | 501 | 502 | 504;
 
 export class SpaceError extends Error {
   readonly status: SpaceErrorStatus;

@@ -46,6 +46,37 @@ export interface SpaceShareItem {
   url: string;
 }
 
+export interface DwgPoint {
+  x: number;
+  y: number;
+}
+
+export interface DwgSegment {
+  kind: string;
+  layer: string;
+  handle?: string;
+  points: DwgPoint[];
+}
+
+export interface DwgSymbol {
+  block: string;
+  layer: string;
+  insert: DwgPoint;
+  rotation?: number;
+}
+
+/** 服务端 dwg-sidecar `graph` 命令的输出（详见 packages/server/src/user-space/dwg.ts）。 */
+export interface DwgGraph {
+  ok: true;
+  command: "graph";
+  version?: string;
+  ms?: number;
+  truncated?: boolean;
+  symbols: DwgSymbol[];
+  segments: DwgSegment[];
+  cached?: boolean;
+}
+
 /** 配额不足（HTTP 413）：UI 要据此高亮容量卡并给出清理建议。 */
 export class SpaceQuotaError extends Error {
   constructor(message: string) {
@@ -109,6 +140,10 @@ export const spaceClient = {
 
   downloadUrl: (path: string) => `/api/space/download?path=${encodeURIComponent(path)}`,
   previewUrl: (path: string) => `/api/space/preview?path=${encodeURIComponent(path)}`,
+
+  /** DWG/DXF 图形数据（服务端调用 sidecar 解析，按文件指纹缓存）。 */
+  dwg: (path: string) =>
+    request<DwgGraph>(`/api/space/dwg?path=${encodeURIComponent(path)}`),
 
   /** 递归搜索文件名（服务端已跳过 .trash/.uploads/.versions）。 */
   search: (q: string) =>
