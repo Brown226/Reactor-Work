@@ -194,7 +194,7 @@ services:
   # ⚠ 正式环境必须设置 REACTOR_WEB_TOKEN；未设置时任何能访问 3030 的人都会拿到
   #    工作区与容器 shell。浏览器首次访问用 /?token=<值> 换 cookie。
   web:
-    image: reactor-web:v1.0.0
+    image: reactor-web:v1.0.8
     container_name: reactor-desktop-web
     environment:
       ZCODE_SERVER_AUTH_TOKEN: ${REACTOR_WEB_TOKEN:-}

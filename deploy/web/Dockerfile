@@ -13,6 +13,15 @@ ARG NPM_REGISTRY=https://registry.npmmirror.com
 
 WORKDIR /app
 
+# 中文字体（Noto CJK）：agent 生成 PDF/PPT/截图类产物时若容器无 CJK 字体，
+# 中文会渲染成空白或豆腐块（2026-10-31 容器实测确认）。fontconfig 供字体发现。
+# apt 源默认换国内镜像（deb.debian.org 在内网环境常不可达），可用 ARG 覆盖。
+ARG APT_MIRROR=mirrors.aliyun.com
+RUN sed -i "s@deb.debian.org@${APT_MIRROR}@g" /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends fonts-noto-cjk fontconfig \
+    && rm -rf /var/lib/apt/lists/*
+
 # 运行时依赖：与 packages/server/tsup.config.ts 的 external 清单一致。
 # 其余依赖已被 tsup 内联进 server-dist，无需在此安装。
 COPY runtime-package.json ./package.json

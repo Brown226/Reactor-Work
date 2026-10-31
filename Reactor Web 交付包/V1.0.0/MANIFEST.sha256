@@ -1,4 +1,8 @@
 6e475b271ba3ece6a1adea0987693a201d4ef7aab4a2e67323970d4cd8a738d6 *./config/.env.example
-3a48f9afc9cd9561a46c15e92c837c0666ea520bd4ccbef56bf2ee15e5b55cf1 *./config/compose.yml
-81329f57d00a690c616e294aad7e2b48ebc1ad8f015c938964eca5782540f0ee *./docs/部署说明.md
-80f9ad36c0f96d0324b72be2cf693c8a2f1925401f74f39ad200c5a7de320410 *./images/reactor-web-v1.0.0.tar.gz
+c588ad1a4fbfe669d3e1009661ed7717021c7ff466cd9f9171df7ce2e38e6817 *./config/compose.https.yml
+b97341513fdb035d7c1985b7cd09dc4f69e2aef337440febe0df9ad76d30b505 *./config/compose.yml
+c2094dcb763deeb846cc55ea665f707302016ab15ae62f4207365323ab9470c5 *./config/gen-self-signed.sh
+6159c3424843d61a4997fd795cbe9f41c2ca33496b80b656cf8508e525cfd0d3 *./config/nginx.conf
+bfd8fab98f601bc0bc375f0c9873e76cbec3bcd5315d820bc656f52815e55888 *./config/proxy-headers.conf
+5b248b3624b43265080ed91defaa02a77fc28141c09b1e41981c31f693254e75 *./docs/部署说明.md
+505d12a00d5c762cbfa15f53838d1cc6159a604dd64bc4e4ee5abd66577a9732 *./images/reactor-web-v1.0.8.tar.gz

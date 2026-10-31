@@ -1,6 +1,6 @@
 services:
   reactor-web:
-    image: reactor-web:v1.0.0
+    image: reactor-web:v1.0.8
     container_name: reactor-web
     restart: unless-stopped
     ports:
