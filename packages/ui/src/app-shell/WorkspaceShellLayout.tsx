@@ -48,6 +48,9 @@ import type {
 import { AutomationsMainBreadcrumbFrame } from "@/settings/AutomationsMainBreadcrumbFrame.js";
 import { PluginStorePage } from "@/settings/PluginStorePage.js";
 import { MarketPage } from "@/marketplace/MarketPage.js";
+import { MySpacePage } from "@/my-space/index.js";
+import { createChatComposerPathAttachment } from "@/lib/chatAttachments.js";
+import { pushSystemComposerInjection } from "@/store/systemComposerInjection.js";
 import { TaskFindDialog } from "@/quickpick/TaskFindDialog.js";
 import { WorkspaceHeader } from "@/WorkspaceHeader.js";
 import { WorkspaceSidebar, type SidebarFileTreeOpenRequest } from "@/WorkspaceSidebar.js";
@@ -1636,6 +1639,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                     onOpenMarket={onOpenMarket}
                     marketActive={workspaceMainView === "market"}
                     onOpenMySpace={onOpenMySpace}
+                    mySpaceActive={workspaceMainView === "my-space"}
                     onOpenWorkspaceFiles={handleOpenWorkspaceFiles}
                   />
                 </WorkflowRunOpenProvider>
@@ -1883,6 +1887,37 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                                   />
                                 </div>
                               </div>
+                            </AutomationsMainBreadcrumbFrame>
+                          </main>
+                        ) : workspaceMainView === "my-space" && onOpenMySpace ? (
+                          <main className="flex h-full min-h-0 flex-1 flex-col bg-background">
+                            <AutomationsMainBreadcrumbFrame
+                              isDesktop={Boolean(isDesktop)}
+                              sectionLabel={intl.formatMessage({ id: "workspaceHeader.mySpace" })}
+                              ariaLabel={intl.formatMessage({ id: "workspaceHeader.mySpace" })}
+                            >
+                              <ScopedErrorBoundary
+                                scope="my-space"
+                                resetKeys={workspaceOnlyResetKeys}
+                                variant="panel"
+                                className="h-full"
+                              >
+                                <MySpacePage
+                                  onAddToChat={(relPaths) => {
+                                    // 空间相对路径 + 当前工作区绝对路径 = agent 可读路径。
+                                    // 登录后工作区已指向该用户空间根，两者天然对齐。
+                                    for (const rel of relPaths) {
+                                      pushSystemComposerInjection({
+                                        source: "space-file",
+                                        attachment: createChatComposerPathAttachment(
+                                          `${workspaceAbsPath}/${rel}`,
+                                        ),
+                                      });
+                                    }
+                                    onWorkspaceMainViewChange("chat");
+                                  }}
+                                />
+                              </ScopedErrorBoundary>
                             </AutomationsMainBreadcrumbFrame>
                           </main>
                         ) : (

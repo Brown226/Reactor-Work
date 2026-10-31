@@ -1,15 +1,28 @@
 /**
- * 我的空间：右侧详情面板。
+ * 我的空间：右侧详情面板（预览 + 操作 + 历史版本）。
  *
- * 从主面板拆出来的原因：预览、下载、加入对话、分享、重命名、版本历史都在这里，
- * 塞进主面板会让它迅速膨胀成上千行（仓库有单文件行数门禁）。
+ * 布局按「预览优先」组织：预览区吃掉剩余高度，操作区固定在底部，
+ * 不再像旧版那样把预览塞进 176px 的盒子里——那样 PDF/表格根本看不清。
  */
 import { useCallback, useEffect, useState } from "react";
-import { Download, History, Paperclip, Pencil, Share2, X } from "lucide-react";
+import {
+  Download,
+  FolderOpen,
+  History,
+  Paperclip,
+  Pencil,
+  Share2,
+  FolderInput,
+  Trash2,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button.js";
-import { Input } from "@/components/ui/input.js";
+import { ControlHintTooltip } from "@/ControlHintTooltip.js";
+import { FileDisplayIcon } from "@/lib/fileDisplay.js";
+import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { MySpacePreview } from "./MySpacePreview.js";
 import { formatBytes, spaceClient, type SpaceEntry } from "./spaceClient.js";
+import { formatSpaceWhen, spaceFileIconSrc, spaceFileTypeLabel } from "./spaceFileType.js";
 
 interface VersionItem {
   id: string;
@@ -17,217 +30,251 @@ interface VersionItem {
   savedAt: string;
 }
 
+export interface MySpaceDetailsProps {
+  relPath: string | null;
+  entry: SpaceEntry | null;
+  resolvedTheme: "light" | "dark";
+  onClose: () => void;
+  onAddToChat: (relPath: string) => void;
+  onShare: (relPath: string) => void;
+  onRename: (relPath: string) => void;
+  onMove: (relPath: string) => void;
+  onDelete: (relPaths: string[]) => void;
+  onChanged: () => void;
+  onError: (e: unknown) => void;
+}
+
 export function MySpaceDetails({
   relPath,
   entry,
   resolvedTheme,
-  selectedCount,
   onClose,
   onAddToChat,
   onShare,
-  onDeleteSelected,
+  onRename,
+  onMove,
+  onDelete,
   onChanged,
   onError,
-}: {
-  relPath: string | null;
-  entry: SpaceEntry | null;
-  resolvedTheme: "light" | "dark";
-  selectedCount: number;
-  onClose: () => void;
-  onAddToChat: (relPath: string) => void;
-  onShare: (relPath: string) => void;
-  onDeleteSelected: () => void;
-  onChanged: () => void;
-  onError: (e: unknown) => void;
-}) {
-  const [renaming, setRenaming] = useState(false);
-  const [draftName, setDraftName] = useState("");
+}: MySpaceDetailsProps) {
+  const { intl } = useZCodeIntl();
   const [versions, setVersions] = useState<VersionItem[] | null>(null);
+  const [versionsLoading, setVersionsLoading] = useState(false);
 
   const loadVersions = useCallback(async () => {
     if (!relPath) return;
+    setVersionsLoading(true);
     try {
       const result = await spaceClient.versions(relPath);
       setVersions(result.items);
     } catch (e) {
       onError(e);
+    } finally {
+      setVersionsLoading(false);
     }
   }, [onError, relPath]);
 
   useEffect(() => {
-    setRenaming(false);
     setVersions(null);
   }, [relPath]);
 
   if (!relPath || !entry) {
     return (
-      <p className="text-ui-sm text-foreground-subtle">
-        选中文件查看详情与预览。删除会进回收站（仍占空间），彻底删除后才释放。
-      </p>
+      <aside className="flex h-full min-h-0 w-full flex-col items-center justify-center gap-2 rounded-xl border border-card-border bg-card p-6 text-center">
+        <span
+          aria-hidden="true"
+          className="flex size-11 items-center justify-center rounded-xl bg-surface text-foreground-subtle ring-1 ring-border"
+        >
+          <FolderOpen className="size-5" />
+        </span>
+        <h3 className="text-ui-base font-medium text-foreground">
+          {intl.formatMessage({ id: "mySpace.details.empty.title" })}
+        </h3>
+        <p className="max-w-[15rem] text-ui-sm text-foreground-subtle">
+          {intl.formatMessage({ id: "mySpace.details.empty.body" })}
+        </p>
+      </aside>
     );
   }
 
+  const isDirectory = entry.kind === "directory";
   const name = entry.name;
-  const dir = relPath.includes("/") ? relPath.slice(0, relPath.lastIndexOf("/")) : "";
-
-  const submitRename = async () => {
-    const next = draftName.trim();
-    if (!next || next === name) {
-      setRenaming(false);
-      return;
-    }
-    try {
-      // rename 接口接收的是完整相对路径与**新名称**（不是新路径）
-      await spaceClient.rename(relPath, next);
-      setRenaming(false);
-      onChanged();
-    } catch (e) {
-      onError(e);
-    }
-  };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="min-w-0 flex-1 truncate text-ui-sm font-medium" title={relPath}>
+    <aside className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border border-card-border bg-card">
+      <header className="flex min-w-0 items-center gap-2 border-b border-border px-3 py-2">
+        <FileDisplayIcon src={spaceFileIconSrc(name, entry.kind)} size={16} className="shrink-0" />
+        <h3
+          className="min-w-0 flex-1 truncate text-ui-base font-medium text-foreground"
+          title={relPath}
+        >
           {name}
         </h3>
-        <Button size="sm" variant="ghost" aria-label="关闭预览" onClick={onClose}>
+        <Button
+          size="icon-md"
+          variant="ghost"
+          aria-label={intl.formatMessage({ id: "mySpace.details.close" })}
+          onClick={onClose}
+        >
           <X className="size-4" />
         </Button>
+      </header>
+
+      {isDirectory ? (
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
+          <FolderOpen className="size-6 text-foreground-subtlest" aria-hidden="true" />
+          <p className="text-ui-sm text-foreground-subtle">
+            {intl.formatMessage({ id: "mySpace.details.folder" })}
+          </p>
+        </div>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <MySpacePreview relPath={relPath} size={entry.size} resolvedTheme={resolvedTheme} />
+        </div>
+      )}
+
+      <div className="space-y-2 border-t border-border px-3 py-2">
+        {!isDirectory ? (
+          <div className="grid grid-cols-2 gap-1.5">
+            <Button
+              size="sm"
+              onClick={() => window.open(spaceClient.downloadUrl(relPath), "_blank")}
+            >
+              <Download className="mr-1.5 size-4" aria-hidden="true" />
+              {intl.formatMessage({ id: "mySpace.action.download" })}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => onAddToChat(relPath)}>
+              <Paperclip className="mr-1.5 size-4" aria-hidden="true" />
+              {intl.formatMessage({ id: "mySpace.action.addToChat" })}
+            </Button>
+          </div>
+        ) : null}
+
+        <div className="flex items-center gap-0.5">
+          {!isDirectory ? (
+            <>
+              <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.share" })}>
+                <Button
+                  size="icon-md"
+                  variant="ghost"
+                  aria-label={intl.formatMessage({ id: "mySpace.action.share" })}
+                  onClick={() => onShare(relPath)}
+                >
+                  <Share2 className="size-4" />
+                </Button>
+              </ControlHintTooltip>
+              <span className="mx-1 h-4 w-px bg-border" aria-hidden="true" />
+            </>
+          ) : null}
+          <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.rename" })}>
+            <Button
+              size="icon-md"
+              variant="ghost"
+              aria-label={intl.formatMessage({ id: "mySpace.action.rename" })}
+              onClick={() => onRename(relPath)}
+            >
+              <Pencil className="size-4" />
+            </Button>
+          </ControlHintTooltip>
+          <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.move" })}>
+            <Button
+              size="icon-md"
+              variant="ghost"
+              aria-label={intl.formatMessage({ id: "mySpace.action.move" })}
+              onClick={() => onMove(relPath)}
+            >
+              <FolderInput className="size-4" />
+            </Button>
+          </ControlHintTooltip>
+          <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.delete" })}>
+            <Button
+              size="icon-md"
+              variant="ghost"
+              className="ml-auto text-destructive"
+              aria-label={intl.formatMessage({ id: "mySpace.action.delete" })}
+              onClick={() => onDelete([relPath])}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </ControlHintTooltip>
+        </div>
       </div>
 
-      <p className="text-ui-xs text-foreground-subtle">
-        {formatBytes(entry.size)} · {new Date(entry.mtime).toLocaleString()}
-      </p>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 border-t border-border px-3 py-2 text-ui-sm">
+        <dt className="text-foreground-subtle">
+          {intl.formatMessage({ id: "mySpace.details.type" })}
+        </dt>
+        <dd className="min-w-0 truncate text-right text-foreground">
+          {spaceFileTypeLabel(name, entry.kind)}
+        </dd>
+        <dt className="text-foreground-subtle">
+          {intl.formatMessage({ id: "mySpace.details.size" })}
+        </dt>
+        <dd className="text-right font-mono text-foreground">
+          {isDirectory ? "—" : formatBytes(entry.size)}
+        </dd>
+        <dt className="text-foreground-subtle">
+          {intl.formatMessage({ id: "mySpace.details.modified" })}
+        </dt>
+        <dd className="text-right text-foreground">
+          <span title={new Date(entry.mtime).toLocaleString()}>{formatSpaceWhen(entry.mtime)}</span>
+        </dd>
+      </dl>
 
-      <div className="h-44 overflow-hidden rounded-lg border border-border bg-surface">
-        <MySpacePreview relPath={relPath} resolvedTheme={resolvedTheme} />
-      </div>
-
-      {renaming ? (
-        <div className="flex items-center gap-2">
-          <Input
-            value={draftName}
-            autoFocus
-            onChange={(event) => setDraftName(event.currentTarget.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") void submitRename();
-              if (event.key === "Escape") setRenaming(false);
-            }}
-          />
-          <Button size="sm" onClick={() => void submitRename()}>
-            确定
-          </Button>
+      {!isDirectory ? (
+        <div className="border-t border-border px-3 py-2">
+          <div className="flex items-center gap-1.5">
+            <History className="size-3.5 text-foreground-subtle" aria-hidden="true" />
+            <span className="text-ui-sm text-foreground-subtle">
+              {intl.formatMessage({ id: "mySpace.details.versions" })}
+            </span>
+            <Button
+              size="xs"
+              variant="ghost"
+              className="ml-auto"
+              disabled={versionsLoading}
+              onClick={() => void loadVersions()}
+            >
+              {intl.formatMessage({ id: "mySpace.details.loadVersions" })}
+            </Button>
+          </div>
+          {versions !== null ? (
+            versions.length === 0 ? (
+              <p className="mt-1 text-ui-xs text-foreground-subtlest">
+                {intl.formatMessage({ id: "mySpace.details.versionsEmpty" })}
+              </p>
+            ) : (
+              <ul className="mt-1 max-h-28 space-y-0.5 overflow-auto">
+                {versions.map((version) => (
+                  <li key={version.id} className="flex items-center gap-2 text-ui-xs">
+                    <span className="min-w-0 flex-1 truncate font-mono text-foreground-subtle">
+                      {new Date(version.savedAt).toLocaleString()}
+                    </span>
+                    <span className="shrink-0 font-mono text-foreground-subtlest">
+                      {formatBytes(version.size)}
+                    </span>
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() =>
+                        void spaceClient
+                          .restoreVersion(relPath, version.id)
+                          .then(() => {
+                            onChanged();
+                            void loadVersions();
+                          })
+                          .catch(onError)
+                      }
+                    >
+                      {intl.formatMessage({ id: "mySpace.action.restore" })}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )
+          ) : null}
         </div>
       ) : null}
-
-      <div className="space-y-2">
-        <Button
-          size="sm"
-          className="w-full justify-start gap-2"
-          onClick={() => window.open(spaceClient.downloadUrl(relPath), "_blank")}
-        >
-          <Download className="size-4" /> 下载到本机
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="w-full justify-start gap-2"
-          onClick={() => onAddToChat(relPath)}
-        >
-          <Paperclip className="size-4" /> 加入对话
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="w-full justify-start gap-2"
-          onClick={() => onShare(relPath)}
-        >
-          <Share2 className="size-4" /> 分享链接
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="w-full justify-start gap-2"
-          onClick={() => {
-            setDraftName(name);
-            setRenaming(true);
-          }}
-        >
-          <Pencil className="size-4" /> 重命名
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="w-full justify-start gap-2"
-          disabled={existingDirIsRoot(dir)}
-          onClick={() => {
-            const target = window.prompt("移动到哪个目录（相对空间根，留空表示根目录）", dir);
-            if (target === null) return;
-            void spaceClient
-              .move([relPath], target.trim())
-              .then(onChanged)
-              .catch(onError);
-          }}
-        >
-          移动到…
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="w-full justify-start gap-2 text-destructive"
-          disabled={selectedCount === 0}
-          onClick={onDeleteSelected}
-        >
-          删除选中（{selectedCount}）
-        </Button>
-      </div>
-
-      <div className="border-t border-border pt-3">
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-2 text-ui-sm text-foreground-subtle">
-            <History className="size-4" /> 历史版本
-          </span>
-          <Button size="sm" variant="ghost" onClick={() => void loadVersions()}>
-            加载
-          </Button>
-        </div>
-        {versions === null ? null : versions.length === 0 ? (
-          <p className="mt-1 text-ui-xs text-foreground-subtle">
-            暂无历史版本。用「上传新版本」覆盖同名文件时会自动留档。
-          </p>
-        ) : (
-          <ul className="mt-2 space-y-1">
-            {versions.map((version) => (
-              <li key={version.id} className="flex items-center gap-2 text-ui-xs">
-                <span className="min-w-0 flex-1 truncate font-mono">{version.savedAt}</span>
-                <span className="text-foreground-subtle">{formatBytes(version.size)}</span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() =>
-                    void spaceClient
-                      .restoreVersion(relPath, version.id)
-                      .then(() => {
-                        onChanged();
-                        void loadVersions();
-                      })
-                      .catch(onError)
-                  }
-                >
-                  还原
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
+    </aside>
   );
-}
-
-/** 根目录没有必要「移动到根目录」，直接禁用避免无意义请求。 */
-function existingDirIsRoot(dir: string): boolean {
-  return dir.length === 0;
 }

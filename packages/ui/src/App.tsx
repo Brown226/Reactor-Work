@@ -125,7 +125,7 @@ export function App({
   isMacDesktop,
   isWindowsDesktop,
   supportsEmbeddedBrowser: explicitSupportsEmbeddedBrowser,
-  onOpenMySpace,
+  mySpaceEnabled = false,
 }: AppProps) {
   // 展示 label 统一从快捷键生效表取（用户改键后 tooltip 同步更新），不再硬编码键位。
   const toggleSidebarShortcutLabel = useShortcutCommandLabel("toggleSidebar");
@@ -867,6 +867,10 @@ export function App({
     setMarketIntent(null);
     setWorkspaceMainView("market");
   }, []);
+  // 我的空间是 Web 专属主视图：桌面端 mySpaceEnabled=false，入口与视图都不存在。
+  const handleOpenMySpace = useCallback(() => {
+    setWorkspaceMainView("my-space");
+  }, []);
   const handleManageModelsFromMarket = useCallback(() => {
     // 子智能体表单「管理模型」→ 设置·模型分区；该分区被治理隐藏时由 settingsNavigation 回落。
     setPendingSettingsSection("modelProvider");
@@ -1140,7 +1144,7 @@ export function App({
         handleManageInstalledPlugins={handleManageInstalledPlugins}
         onOpenMarket={handleOpenMarket}
         marketIntent={marketIntent}
-        onOpenMySpace={onOpenMySpace}
+        onOpenMySpace={mySpaceEnabled ? handleOpenMySpace : undefined}
         onOpenModelProviderSettings={handleManageModelsFromMarket}
         onConnectRemote={onConnectRemote}
         onSelectRemoteProject={onSelectRemoteProject}

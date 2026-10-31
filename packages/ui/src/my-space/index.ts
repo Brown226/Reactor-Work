@@ -1,5 +1,4 @@
-export { MySpacePanel } from "./MySpacePanel.js";
-export type { MySpacePanelProps } from "./MySpacePanel.js";
+export { MySpacePage } from "./MySpacePage.js";
 export { spaceClient, SpaceQuotaError, formatBytes, usagePercent } from "./spaceClient.js";
 export type {
   SpaceEntriesResult,

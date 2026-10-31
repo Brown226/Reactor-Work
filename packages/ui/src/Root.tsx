@@ -81,9 +81,6 @@ import { ensureProviderFamilyDomainMigration } from "@/lib/providerFamilyDomainM
 import { useSettings } from "@/hooks/useSettingService.js";
 import { CLOSE_ACTIVE_CONTEXT_REQUEST_EVENT } from "@/lib/closeActiveContext.js";
 import { AssistantCodeCommentFeatureProvider } from "@/AssistantCodeCommentFeatureProvider.js";
-import { MySpacePanel } from "@/my-space/index.js";
-import { createChatComposerPathAttachment } from "@/lib/chatAttachments.js";
-import { pushSystemComposerInjection } from "@/store/systemComposerInjection.js";
 import {
   disposeConversationTelemetrySupervisors,
   reconcileConversationTelemetryWorkspaceScopes,
@@ -247,11 +244,6 @@ function RootInner({
   const [remoteConnectionOpenPreference, setRemoteConnectionOpenPreference] =
     useState<RemoteConnectionOpenPreference | null>(null);
   const [directoryBrowserOpen, setDirectoryBrowserOpen] = useState(false);
-  // 我的空间面板开关（仅 Web 宿主启用；桌面端 mySpaceEnabled=false，永不渲染）
-  const [mySpaceOpen, setMySpaceOpen] = useState(false);
-  // 往下透传到 App → WorkspaceShellLayout → WorkspaceSidebar；必须稳定引用，
-  // 否则每次 Root 重渲染都会打穿 StableWorkspaceApp 的 memo。
-  const handleOpenMySpace = useCallback(() => setMySpaceOpen(true), []);
   const [remoteConnectionInProgress, setRemoteConnectionInProgress] = useState(false);
   const [remoteConnectionRequestId, setRemoteConnectionRequestId] = useState<string | null>(null);
   const [isCreatingFallbackWorkspace, setIsCreatingFallbackWorkspace] = useState(false);
@@ -1125,27 +1117,6 @@ function RootInner({
           onChangePassword={enterpriseSession.changePassword}
         />
       ) : null}
-      {/* 我的空间：仅 Web 宿主启用。入口在左侧栏（AppProps.onOpenMySpace），
-          面板本身留在 Root，因为「加入对话」需要把文件注入到当前 composer。 */}
-      {mySpaceEnabled ? (
-        <MySpacePanel
-          open={mySpaceOpen}
-          onOpenChange={setMySpaceOpen}
-          onAddToChat={(relPaths) => {
-            // 空间的相对路径 + 当前工作区绝对路径 = agent 可读的绝对路径。
-            // 登录后工作区已指向该用户的空间根，所以两者天然对齐。
-            const base = workspaceShellPath ?? activeWorkspacePath;
-            if (!base) return;
-            for (const rel of relPaths) {
-              pushSystemComposerInjection({
-                source: "space-file",
-                attachment: createChatComposerPathAttachment(`${base}/${rel}`),
-              });
-            }
-            setMySpaceOpen(false);
-          }}
-        />
-      ) : null}
       {/* 无项目时只渲染设置页；有项目时渲染工作区内容。 */}
       {!workspaceShellPath ? (
         isSettingsTabActive ? (
@@ -1196,7 +1167,7 @@ function RootInner({
           isMacDesktop={isMacDesktop}
           isWindowsDesktop={isWindowsDesktop}
           supportsEmbeddedBrowser={supportsEmbeddedBrowser}
-          onOpenMySpace={mySpaceEnabled ? handleOpenMySpace : undefined}
+          mySpaceEnabled={mySpaceEnabled}
         />
       )}
     </RootShell>

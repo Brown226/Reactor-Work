@@ -111,10 +111,10 @@ export interface AppProps {
   isWindowsDesktop?: boolean;
   supportsEmbeddedBrowser?: boolean;
   /**
-   * 侧栏「我的空间」入口的打开动作。只有 Web 宿主会传（桌面端的「我的空间」就是本机
-   * 文件管理器，不需要这个入口）；缺省时侧栏不渲染该按钮，桌面端调用点零改动。
+   * Web 宿主是否启用「我的空间」。桌面端的「我的空间」就是本机文件管理器，
+   * 缺省 false：侧栏不渲染入口、主视图也无法切入 my-space。
    */
-  onOpenMySpace?: () => void;
+  mySpaceEnabled?: boolean;
 }
 
 export interface GitChangeSummary {
@@ -122,7 +122,7 @@ export interface GitChangeSummary {
   removed: number;
 }
 
-export type WorkspaceMainView = "chat" | "automations" | "plugin-store" | "market";
+export type WorkspaceMainView = "chat" | "automations" | "plugin-store" | "market" | "my-space";
 
 /** 市场页导航意图（命令面板等外部入口用）：指定打开哪个视图与市场/我的模式。 */
 export interface MarketIntent {
@@ -145,6 +145,8 @@ export interface WorkspaceShellLayoutProps extends Omit<AppProps, "baseFeedbackS
   handleManageInstalledPlugins: () => void;
   /** 打开「专家·技能」市场主视图（插件市场入口上方的新菜单项）。 */
   onOpenMarket: () => void;
+  /** 切到「我的空间」主视图；只有 Web 宿主传，桌面端侧栏因此不出现该入口。 */
+  onOpenMySpace?: () => void;
   /** 命令面板等入口携带的市场视图意图；MarketPage 挂载/变更时落到指定 tab 与模式。 */
   marketIntent: MarketIntent | null;
   /** 子智能体表单「管理模型」跳设置·模型分区（App 持有 intent+打开逻辑）。 */

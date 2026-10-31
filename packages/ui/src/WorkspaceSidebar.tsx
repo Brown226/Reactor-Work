@@ -264,6 +264,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   marketActive = false,
   onOpenWorkspaceFiles,
   onOpenMySpace,
+  mySpaceActive = false,
 }: {
   workspacePath: string;
   workspaceRemoteSessionId?: string;
@@ -318,8 +319,9 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   marketActive?: boolean;
   /** 打开右侧「工作区文件」面板（文件树已从左侧抽屉迁到右侧）。 */
   onOpenWorkspaceFiles?: () => void;
-  /** 打开「我的空间」面板；仅 Web 宿主传入，桌面端不渲染该入口。 */
+  /** 打开「我的空间」主视图；仅 Web 宿主传入，桌面端不渲染该入口。 */
   onOpenMySpace?: () => void;
+  mySpaceActive?: boolean;
 }) {
   const { intl, localePreference, setLocalePreference } = useZCodeIntl();
   // 按需求隐藏侧栏项目菜单里的「远程连接」入口，与 ChatEmptyState 空态菜单保持一致：
@@ -1322,7 +1324,11 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
                 data-icon="inline-start"
                 data-testid="my-space-trigger"
                 size="lg"
-                className="w-full justify-start gap-2 text-foreground hover:bg-surface-hover hover:text-foreground"
+                aria-pressed={mySpaceActive}
+                className={cn(
+                  "w-full justify-start gap-2 text-foreground hover:bg-surface-hover hover:text-foreground",
+                  mySpaceActive && "bg-selected text-foreground",
+                )}
               >
                 <FolderOpen className="size-4" />
                 <span className="min-w-0 flex-1 truncate text-left">
