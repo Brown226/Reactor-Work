@@ -15,6 +15,13 @@ services:
       # 下发后登录页锁定地址、隐藏输入框，最终用户只填账号密码。
       # ⚠ 值必须是同一 compose 网络内的服务名（默认 identity），不是宿主 IP。
       REACTOR_IDENTITY_URL: ${REACTOR_IDENTITY_URL:-http://identity:8791}
+      # identity 与 gateway 在 compose 里是两个服务（hostname 不同），端口推导会拼出
+      # 不存在的 host；显式给出网关地址，否则登录后模型目录永远为空。
+      REACTOR_GATEWAY_URL: ${REACTOR_GATEWAY_URL:-http://gateway:8790/v1}
+    # Linux 宿主上若模型/服务在宿主侧（host.docker.internal），必须放开下面这行：
+    # Docker Desktop 自带该映射，Linux 默认没有。
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
     volumes:
       - web-data:/data
     healthcheck:

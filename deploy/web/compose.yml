@@ -18,6 +18,10 @@ services:
       # identity 与 gateway 在 compose 里是两个服务（hostname 不同），端口推导会拼出
       # 不存在的 host；显式给出网关地址，否则登录后模型目录永远为空。
       REACTOR_GATEWAY_URL: ${REACTOR_GATEWAY_URL:-http://gateway:8790/v1}
+    # Linux 宿主上若模型/服务在宿主侧（host.docker.internal），必须放开下面这行：
+    # Docker Desktop 自带该映射，Linux 默认没有。
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
     volumes:
       - web-data:/data
     healthcheck:
