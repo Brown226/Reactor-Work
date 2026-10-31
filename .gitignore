@@ -136,3 +136,5 @@ server/packages/server/std-io-verify.mjs
 # 交付包内的镜像归档体积过大，不入库（用 MANIFEST.sha256 校验完整性）
 Reactor Web 交付包/*/images/*.tar.gz
 Reactor 服务端部署镜像/*/images/*.tar.gz
+deploy/web/certs/
+Reactor Web 交付包/*/config/certs/

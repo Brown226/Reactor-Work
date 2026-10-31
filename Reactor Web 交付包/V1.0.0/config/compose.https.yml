@@ -1,0 +1,35 @@
+# HTTPS 同源反代 override：与主 compose.yml 一起使用
+#
+#   docker compose -f compose.yml -f compose.https.yml up -d
+#
+# 生效后：
+#   - 用户从 https://<服务器>/ 访问 Web 客户端（80 强制跳 443）；
+#   - 登录等身份接口经 nginx 同源反代到 identity，浏览器不再跨源，
+#     REACTOR_ALLOWED_ORIGINS 不再是登录的硬依赖；
+#   - identity/gateway 不需要向用户网段暴露端口。
+#
+# 前置：先在 config/ 下生成证书（./gen-self-signed.sh <服务器IP>），
+#       或放入企业 CA 签发的 server.crt / server.key。
+#
+# ⚠ dev 编排（server/packages/server/docker/compose.yml）的服务名是 web，
+#   不是 reactor-web；在 dev 栈启用 HTTPS 时需要把下面的 reactor-web 改成 web。
+
+services:
+  nginx:
+    image: docker.1ms.run/library/nginx:alpine
+    container_name: reactor-desktop-web-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./proxy-headers.conf:/etc/nginx/proxy-headers.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - reactor-web
+
+  # 收回 3030 的对外映射：用户统一走 443。
+  # 内网调试需要直连时，改回 - "3030:3030" 并 up -d reactor-web 重建。
+  reactor-web:
+    ports: !reset []
