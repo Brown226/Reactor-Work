@@ -1,7 +1,7 @@
 import { createOpenInEditorRemoteTarget, type EditorInfo, type RemoteTarget } from "@zcode/shared";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button.js";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ExternalLink } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { persistLastSelectedEditorId, readLastSelectedEditorId } from "@/lib/editorPreference.js";
 import {
@@ -36,6 +37,10 @@ export function WorkspaceEditorButtonGroup({
   const { intl } = useZCodeIntl();
   const platform = usePlatform();
   const isFocusedMode = useIsFocusedMode();
+  // Web 端浏览器沙箱打不开本机编辑器：入口不再随「已装编辑器为空」整组消失，
+  // 而是置灰 + 悬停统一说明，让用户知道该能力需要客户端（桌面端不实现
+  // unavailableReason，恒为 null，走原有渲染路径，行为不变）。
+  const editorUnavailableReason = usePlatformUnavailable("openInEditor");
 
   const [installedEditors, setInstalledEditors] = useState<EditorInfo[]>([]);
   const [selectedEditorId, setSelectedEditorId] = useState<string | null>(() =>
@@ -123,6 +128,26 @@ export function WorkspaceEditorButtonGroup({
       });
     });
   };
+
+  if (editorUnavailableReason) {
+    // 平台能力位判定不可用（Web）：渲染置灰占位。没有已装编辑器图标可展示，
+    // 用通用「外部打开」图标表达语义，悬停文案来自能力位（「该功能仅支持客户端使用」）。
+    return (
+      <div className="flex h-7 items-center rounded-lg border border-border bg-input p-0">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-md"
+          className="size-7 rounded-none border-0"
+          disabled
+          aria-label={intl.formatMessage({ id: "chat.changeSummary.openInEditor" })}
+          title={editorUnavailableReason}
+        >
+          <ExternalLink className="size-3.5" />
+        </Button>
+      </div>
+    );
+  }
 
   if (!selectedEditor) {
     return null;

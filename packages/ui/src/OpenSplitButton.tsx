@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useFileContextActions } from "@/hooks/useFileContextActions.js";
 import { useWorkspaceOpenInEditorTarget } from "@/hooks/useWorkspaceOpenInEditorTarget.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -56,6 +57,9 @@ export function OpenSplitButton({
   const { intl } = useZCodeIntl();
   const platform = usePlatform();
   const fileActions = useFileContextActions();
+  // Web 沙箱装不了本机编辑器：菜单兜底项不再显示「未找到可用 App」误导用户以为没装，
+  // 优先展示能力位统一原因（桌面端不实现 unavailableReason 恒为 null，维持原文案）。
+  const openInEditorUnavailableReason = usePlatformUnavailable("openInEditor");
   const previewSource = target.type === "file" ? target.previewSource : undefined;
   const matchedOpenContext = useWorkspaceOpenInEditorTarget({
     workspacePath: previewSource?.workspacePath,
@@ -271,9 +275,10 @@ export function OpenSplitButton({
               ))
             ) : (
               <DropdownMenuItem disabled>
-                {intl.formatMessage({
-                  id: loadingEditors ? "common.loading" : "chat.previewCards.noOpenApps",
-                })}
+                {loadingEditors
+                  ? intl.formatMessage({ id: "common.loading" })
+                  : (openInEditorUnavailableReason ??
+                    intl.formatMessage({ id: "chat.previewCards.noOpenApps" }))}
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />

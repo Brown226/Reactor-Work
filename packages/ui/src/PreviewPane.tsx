@@ -49,6 +49,7 @@ import { FileDisplayIcon, resolveFileDisplayDescriptor } from "@/lib/fileDisplay
 import { getPathLeaf, isAbsoluteFilePath } from "@/lib/path.js";
 import { decodeBase64ToArrayBuffer, getOfficeFilePreviewKind } from "@/lib/officeFilePreview.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useMarkdownExport } from "@/hooks/useMarkdownExport.js";
 import { useFileContextActions } from "@/hooks/useFileContextActions.js";
 import { useWorkspaceOpenInEditorTarget } from "@/hooks/useWorkspaceOpenInEditorTarget.js";
@@ -540,6 +541,9 @@ export function PreviewPane({
     matchedOpenContext.isRemoteWorkspace,
   );
   const fileActions = useFileContextActions();
+  // Web 端打不开本机编辑器：头部按钮置灰并悬停统一原因，而不是点了没反应
+  // （桌面端不实现 unavailableReason 恒为 null，按钮可用性与标题都不变）。
+  const openInEditorUnavailableReason = usePlatformUnavailable("openInEditor");
   const { fileService, fileWatcherService, mediaPreviewService } = useWorkspaceServices(
     sourceWorkspacePath,
     source?.workspaceRemoteSessionId,
@@ -1776,14 +1780,16 @@ export function PreviewPane({
             onClick={() => {
               void handleOpenInEditor();
             }}
-            disabled={!canOpenInEditor}
+            disabled={!canOpenInEditor || Boolean(openInEditorUnavailableReason)}
             title={
-              selectedEditor
+              // 平台不可用（Web）时原因优先：悬停说明「为什么点不了」，而不是看似可点的功能名
+              openInEditorUnavailableReason ??
+              (selectedEditor
                 ? intl.formatMessage(
                     { id: "appHeader.openInEditor" },
                     { editor: selectedEditor.name },
                   )
-                : intl.formatMessage({ id: "chat.changeSummary.openInEditor" })
+                : intl.formatMessage({ id: "chat.changeSummary.openInEditor" }))
             }
             aria-label={
               selectedEditor

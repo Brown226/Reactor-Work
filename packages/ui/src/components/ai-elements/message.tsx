@@ -93,6 +93,7 @@ import { useZCodeStore } from "@/store/StoreProvider.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { useOptionalPlatform, usePlatform } from "@/hooks/usePlatform.js";
 import { useFileContextActions } from "@/hooks/useFileContextActions.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useWorkspaceOpenInEditorTarget } from "@/hooks/useWorkspaceOpenInEditorTarget.js";
 import { useOptionalServices } from "@/hooks/useServices.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -1118,6 +1119,9 @@ function MessageFileLink({ className, fileIconSrc, fileLink, onOpen }: MessageFi
   const platform = usePlatform();
   const services = useOptionalServices();
   const fileActions = useFileContextActions();
+  // 与 OpenSplitButton 同口径：Web 沙箱装不了本机编辑器，菜单兜底项优先展示
+  // 能力位统一原因，而不是「未找到可用 App」（桌面端恒为 null，维持原文案）。
+  const openInEditorUnavailableReason = usePlatformUnavailable("openInEditor");
   const openInEditorContext = useWorkspaceOpenInEditorTarget({
     workspacePath: fileLink.workspacePath,
     workspaceIdentity: fileLink.workspaceIdentity,
@@ -1228,9 +1232,10 @@ function MessageFileLink({ className, fileIconSrc, fileLink, onOpen }: MessageFi
           ))
         ) : (
           <ContextMenuItem disabled>
-            {intl.formatMessage({
-              id: loadingEditors ? "common.loading" : "chat.previewCards.noOpenApps",
-            })}
+            {loadingEditors
+              ? intl.formatMessage({ id: "common.loading" })
+              : (openInEditorUnavailableReason ??
+                intl.formatMessage({ id: "chat.previewCards.noOpenApps" }))}
           </ContextMenuItem>
         )}
         <ContextMenuSeparator />

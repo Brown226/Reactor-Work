@@ -16,6 +16,7 @@ import {
 import { Switch } from "@/components/ui/switch.js";
 import { toast } from "@/components/ui/toast.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useServices } from "@/hooks/useServices.js";
 import { useZCodeSessionService } from "@/hooks/useZCodeSessionService.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -46,6 +47,7 @@ function BrowserOperationButton({
   operation,
   pendingOperation,
   variant = "outline",
+  title,
   onClick,
 }: {
   children: ReactNode;
@@ -53,6 +55,8 @@ function BrowserOperationButton({
   operation: Exclude<BrowserDataOperation, null>;
   pendingOperation: BrowserDataOperation;
   variant?: "outline" | "destructive";
+  /** 平台不可用原因（Web 端置灰悬停说明）；桌面端不传。 */
+  title?: string;
   onClick: () => void;
 }) {
   const pending = pendingOperation === operation;
@@ -64,6 +68,7 @@ function BrowserOperationButton({
       disabled={disabled || pendingOperation !== null}
       onClick={onClick}
       className="min-w-24"
+      title={title}
     >
       {pending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
       {children}
@@ -81,6 +86,10 @@ export function BrowserSettingsSection({
 }: BrowserSettingsSectionProps) {
   const { intl } = useZCodeIntl();
   const platform = usePlatform();
+  // Web 沙箱没有本机浏览器数据可导入/清理：按钮置灰并悬停统一原因。
+  // 原有 isDesktop 判定保留——远控手机等未实现能力位的宿主行为不变。
+  const chromeImportUnavailableReason = usePlatformUnavailable("chromeImport");
+  const embeddedBrowserUnavailableReason = usePlatformUnavailable("embeddedBrowser");
   const { pluginManagementService, skillsService } = useServices();
   const zcodeSessionService = useZCodeSessionService(
     workspacePath ?? undefined,
@@ -280,7 +289,8 @@ export function BrowserSettingsSection({
                 <BrowserOperationButton
                   operation="import"
                   pendingOperation={pendingOperation}
-                  disabled={operationDisabled}
+                  disabled={operationDisabled || Boolean(chromeImportUnavailableReason)}
+                  title={chromeImportUnavailableReason ?? undefined}
                   onClick={() => void handleImport()}
                 >
                   {intl.formatMessage({ id: "settings.browser.import.action" })}
@@ -349,7 +359,8 @@ export function BrowserSettingsSection({
               <BrowserOperationButton
                 operation="clear-cache"
                 pendingOperation={pendingOperation}
-                disabled={operationDisabled}
+                disabled={operationDisabled || Boolean(embeddedBrowserUnavailableReason)}
+                title={embeddedBrowserUnavailableReason ?? undefined}
                 onClick={() => void handleClear("cache")}
               >
                 {intl.formatMessage({
@@ -369,7 +380,8 @@ export function BrowserSettingsSection({
               <BrowserOperationButton
                 operation="clear-all"
                 pendingOperation={pendingOperation}
-                disabled={operationDisabled}
+                disabled={operationDisabled || Boolean(embeddedBrowserUnavailableReason)}
+                title={embeddedBrowserUnavailableReason ?? undefined}
                 variant="destructive"
                 onClick={() => setConfirmClearAll(true)}
               >
