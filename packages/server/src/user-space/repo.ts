@@ -104,8 +104,13 @@ export async function listEntries(
   }
   const entries: SpaceEntry[] = [];
   for (const dirent of await readdir(dirAbs, { withFileTypes: true })) {
-    // .trash 只通过回收站视图访问（方案 §2），任何层级的文件树都隐藏。
-    if (dirent.name === TRASH_DIR_NAME) {
+    // 内部目录一律不暴露：.trash 只走回收站视图；.uploads 是分片暂存；
+    // .versions 是历史版本仓库。出现在文件树里只会让人误删或困惑。
+    if (
+      dirent.name === TRASH_DIR_NAME ||
+      dirent.name === ".uploads" ||
+      dirent.name === ".versions"
+    ) {
       continue;
     }
     const info = await lstatOrNull(join(dirAbs, dirent.name));
@@ -364,6 +369,11 @@ export async function computeUsage(
       }
       const rel = relative(root, abs);
       const segments = rel.split(sep);
+      // .uploads 是分片上传的暂存区：半成品不该占用用户配额，
+      // 否则传到一半失败会留下「看不见但吃掉空间」的垃圾。
+      if (segments[0] === ".uploads") {
+        continue;
+      }
       // .trash/<id>/meta.json 是回收站实现开销（记录 id→原路径），不是用户数据：
       // 计入 usedBytes 会让「删除文件」反而涨容量。按目录项开销忽略处理（方案 §3），
       // payload 本体仍然照常统计，删除不释放容量的语义才成立。

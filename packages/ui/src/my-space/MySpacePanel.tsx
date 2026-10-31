@@ -11,13 +11,12 @@ import {
   FolderPlus,
   Link2 as LinkSimple,
   RotateCcw as ArrowCounterClockwise,
-  Send as PaperPlaneTilt,
-  Share2 as ShareNetwork,
   Trash2 as Trash,
   Upload as UploadSimple,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
+import { MySpaceDetails } from "./MySpaceDetails.js";
 import { Input } from "@/components/ui/input.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import {
@@ -43,13 +42,12 @@ export interface MySpacePanelProps {
   onPreview?: (relPath: string) => void;
 }
 
-const IMAGE_EXT = /\.(png|jpe?g|gif|webp|svg|bmp)$/i;
 
 function joinPath(base: string, name: string): string {
   return base ? `${base}/${name}` : name;
 }
 
-export function MySpacePanel({ open, onOpenChange, onAddToChat, onPreview }: MySpacePanelProps) {
+export function MySpacePanel({ open, onOpenChange, onAddToChat }: MySpacePanelProps) {
   const { intl } = useZCodeIntl();
   const [view, setView] = useState<View>("files");
   const [path, setPath] = useState("");
@@ -63,9 +61,14 @@ export function MySpacePanel({ open, onOpenChange, onAddToChat, onPreview }: MyS
   const [quotaHit, setQuotaHit] = useState(false);
   const [uploading, setUploading] = useState<{ name: string; percent: number } | null>(null);
   const [shareTarget, setShareTarget] = useState<string | null>(null);
+  // 搜索：输入防抖交给 useEffect，结果只在此面板内存态里，不落存储
+  const [query, setQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Array<{ path: string; entry: SpaceEntry }> | null>(null);
   const [shareTtl, setShareTtl] = useState(24);
   const [sharePwd, setSharePwd] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  /** 「上传新版本」的独立 input：与普通上传分开，避免同一个 input 语义混淆 */
+  const versionInputRef = useRef<HTMLInputElement | null>(null);
 
   const usage: SpaceUsage | null = data?.usage ?? null;
   const percent = usagePercent(usage);
@@ -102,6 +105,22 @@ export function MySpacePanel({ open, onOpenChange, onAddToChat, onPreview }: MyS
     void load();
   }, [load, open]);
 
+  // 搜索：300ms 防抖，避免每敲一个字都递归扫盘（服务端是 O(n) 遍历）。
+  useEffect(() => {
+    const keyword = query.trim();
+    if (!open || view !== "files" || keyword.length === 0) {
+      setSearchResults(null);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void spaceClient
+        .search(keyword)
+        .then((result) => setSearchResults(result.results))
+        .catch(handleError);
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [handleError, open, query, view]);
+
   useEffect(() => {
     if (!open) {
       setSelected(new Set());
@@ -127,9 +146,16 @@ export function MySpacePanel({ open, onOpenChange, onAddToChat, onPreview }: MyS
     for (const file of list) {
       setUploading({ name: file.name, percent: 0 });
       try {
-        await spaceClient.upload(path, file, (percentDone) =>
-          setUploading({ name: file.name, percent: percentDone }),
-        );
+        // 大于 8MB 走分片：整包读进内存对图纸级文件会顶到峰值，且失败只能重头再来。
+        if (file.size > 8 * 1024 * 1024) {
+          await spaceClient.uploadChunked(path, file, (percentDone) =>
+            setUploading({ name: file.name, percent: percentDone }),
+          );
+        } else {
+          await spaceClient.upload(path, file, (percentDone) =>
+            setUploading({ name: file.name, percent: percentDone }),
+          );
+        }
       } catch (e) {
         handleError(e);
         break;
@@ -137,6 +163,25 @@ export function MySpacePanel({ open, onOpenChange, onAddToChat, onPreview }: MyS
     }
     setUploading(null);
     await load();
+  };
+
+  /** 上传新版本：强制用当前文件名，旧内容进版本库（上传别的名字会变成新文件，容易误解）。 */
+  const uploadNewVersion = async (files: FileList | null) => {
+    if (!files?.length || !active || !activeEntry) return;
+    const source = files[0];
+    if (!source) return;
+    const renamed = new File([source], active, { type: source.type });
+    setUploading({ name: active, percent: 0 });
+    try {
+      await spaceClient.uploadVersioned(path, renamed, (percentDone) =>
+        setUploading({ name: active, percent: percentDone }),
+      );
+      await load();
+    } catch (e) {
+      handleError(e);
+    } finally {
+      setUploading(null);
+    }
   };
 
   const removeSelected = async () => {
@@ -185,10 +230,20 @@ export function MySpacePanel({ open, onOpenChange, onAddToChat, onPreview }: MyS
     }
   };
 
-  if (!open) return null;
+  // ⚠ 所有 hook 必须在 `if (!open) return null` 之前调用：
+  // 之前把 useMemo 放在早退之后，open 切换时 hook 数量变化，
+  // 触发 React #310（Rendered more hooks than during the previous render）。
+  const activeEntry: SpaceEntry | null = useMemo(() => {
+    if (!data || !active) return null;
+    return data.entries.find((entry) => entry.name === active) ?? null;
+  }, [active, data]);
+  // 主题只用于 Office 预览的配色（与产品全局主题一致）
+  const resolvedTheme: "light" | "dark" =
+    typeof document !== "undefined" && document.documentElement.classList.contains("dark")
+      ? "dark"
+      : "light";
 
-  const previewUrl = active ? spaceClient.previewUrl(joinPath(path, active)) : null;
-  const activeIsImage = active ? IMAGE_EXT.test(active) : false;
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -221,6 +276,15 @@ export function MySpacePanel({ open, onOpenChange, onAddToChat, onPreview }: MyS
                 </Button>
               ))}
             </nav>
+            {view === "files" ? (
+              <Input
+                className="w-48"
+                value={query}
+                placeholder="搜索文件"
+                data-testid="my-space-search"
+                onChange={(event) => setQuery(event.currentTarget.value)}
+              />
+            ) : null}
           </div>
           <Button size="sm" variant="ghost" aria-label="关闭" onClick={() => onOpenChange(false)}>
             <X className="size-4" />
@@ -277,6 +341,39 @@ export function MySpacePanel({ open, onOpenChange, onAddToChat, onPreview }: MyS
                 <Button size="sm" className="w-full justify-start gap-2" onClick={() => fileInputRef.current?.click()}>
                   <UploadSimple className="size-4" /> 上传文件
                 </Button>
+                {/* 批量下载：多选后打包 zip，避免一个个点 */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full justify-start gap-2"
+                  disabled={selectedPaths.length === 0}
+                  data-testid="my-space-download-selected"
+                  onClick={() =>
+                    void spaceClient.downloadArchive(selectedPaths).catch(handleError)
+                  }
+                >
+                  <Download className="size-4" /> 打包下载（{selectedPaths.length}）
+                </Button>
+                {/* 上传新版本：覆盖同名文件，旧内容自动进版本库 */}
+                {activeEntry ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full justify-start gap-2"
+                    onClick={() => versionInputRef.current?.click()}
+                  >
+                    <ArrowCounterClockwise className="size-4" /> 上传新版本
+                  </Button>
+                ) : null}
+                <input
+                  ref={versionInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={(event) => {
+                    void uploadNewVersion(event.currentTarget.files);
+                    event.currentTarget.value = "";
+                  }}
+                />
                 <Button
                   size="sm"
                   variant="outline"
@@ -334,6 +431,44 @@ export function MySpacePanel({ open, onOpenChange, onAddToChat, onPreview }: MyS
 
             {loading ? (
               <p className="text-ui-sm text-foreground-subtle">加载中…</p>
+            ) : view === "files" && searchResults !== null ? (
+              // 搜索结果视图：点结果跳到它所在目录并选中，而不是直接打开预览——
+              // 用户通常在“找到那个文件”之后还要做搬运/分享等操作。
+              <>
+                <p className="mb-2 text-ui-sm text-foreground-subtle">
+                  「{query.trim()}」找到 {searchResults.length} 个文件
+                </p>
+                {searchResults.length === 0 ? (
+                  <p className="text-ui-sm text-foreground-subtle">没有匹配的文件。</p>
+                ) : (
+                  <ul className="divide-y divide-border rounded-lg border border-border">
+                    {searchResults.map((item) => {
+                      const dir = item.path.includes("/")
+                        ? item.path.slice(0, item.path.lastIndexOf("/"))
+                        : "";
+                      return (
+                        <li
+                          key={item.path}
+                          className="flex cursor-pointer items-center gap-3 px-3 py-2 text-ui-sm hover:bg-hover"
+                          onClick={() => {
+                            setPath(dir);
+                            setActive(item.entry.name);
+                            setQuery("");
+                          }}
+                        >
+                          <span className="min-w-0 flex-1 truncate text-foreground">{item.entry.name}</span>
+                          <span className="min-w-0 max-w-[45%] truncate text-ui-xs text-foreground-subtle">
+                            {dir || "根目录"}
+                          </span>
+                          <span className="w-16 text-right font-mono text-ui-xs text-foreground-subtle">
+                            {formatBytes(item.entry.size)}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </>
             ) : view === "files" ? (
               <>
                 <nav className="mb-3 flex items-center gap-2 text-ui-sm text-foreground-subtle">
@@ -457,66 +592,20 @@ export function MySpacePanel({ open, onOpenChange, onAddToChat, onPreview }: MyS
             )}
           </main>
 
-          {/* 右：详情与操作 */}
-          <aside className="w-72 shrink-0 space-y-3 border-l border-border p-4">
-            {active ? (
-              <>
-                <div className="flex items-center justify-between">
-                  <h3 className="min-w-0 truncate text-ui-sm font-medium">{active}</h3>
-                  <Button size="sm" variant="ghost" onClick={() => setActive(null)}>
-                    <X className="size-4" />
-                  </Button>
-                </div>
-                <div className="h-40 overflow-hidden rounded-lg border border-border bg-surface">
-                  {activeIsImage ? (
-                    <img src={previewUrl ?? ""} alt={active} className="h-full w-full object-contain" />
-                  ) : (
-                    <iframe title={active} src={previewUrl ?? ""} className="h-full w-full" />
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Button
-                    size="sm"
-                    className="w-full justify-start gap-2"
-                    onClick={() => {
-                      if (onPreview) onPreview(joinPath(path, active));
-                      else window.open(previewUrl ?? "", "_blank", "noopener,noreferrer");
-                    }}
-                  >
-                    <Download className="size-4" /> 预览
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full justify-start gap-2"
-                    onClick={() => onAddToChat?.([joinPath(path, active)])}
-                  >
-                    <PaperPlaneTilt className="size-4" /> 加入对话
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full justify-start gap-2"
-                    onClick={() => setShareTarget(joinPath(path, active))}
-                  >
-                    <ShareNetwork className="size-4" /> 分享
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="w-full justify-start gap-2"
-                    onClick={() => void removeSelected()}
-                    disabled={selectedPaths.length === 0}
-                  >
-                    <Trash className="size-4" /> 删除选中（{selectedPaths.length}）
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <p className="text-ui-sm text-foreground-subtle">
-                选中文件查看详情。删除会进回收站（仍占空间），彻底删除后才释放。
-              </p>
-            )}
+          {/* 右：详情与操作（拆到 MySpaceDetails，含预览/下载/版本历史） */}
+          <aside className="w-72 shrink-0 overflow-auto border-l border-border p-4">
+            <MySpaceDetails
+              relPath={active ? joinPath(path, active) : null}
+              entry={activeEntry}
+              resolvedTheme={resolvedTheme}
+              selectedCount={selectedPaths.length}
+              onClose={() => setActive(null)}
+              onAddToChat={(rel) => onAddToChat?.([rel])}
+              onShare={(rel) => setShareTarget(rel)}
+              onDeleteSelected={() => void removeSelected()}
+              onChanged={() => void load()}
+              onError={handleError}
+            />
           </aside>
         </div>
 
