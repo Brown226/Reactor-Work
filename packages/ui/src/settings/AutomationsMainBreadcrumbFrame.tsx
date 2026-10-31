@@ -44,7 +44,7 @@ export function AutomationsMainBreadcrumbFrame({
           </div>
         ) : null}
         {/* 收起侧栏且不显示顶带时，左上角仍悬浮着「展开侧栏」按钮，内容让出这一列 */}
-        <div className={showTopStrip ? "contents" : "flex min-h-0 flex-1 flex-col pl-10"}>
+        <div className={showTopStrip ? "contents" : "flex min-h-0 flex-1 flex-col pl-4"}>
           {children}
         </div>
       </div>
