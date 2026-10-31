@@ -37,6 +37,12 @@ import {
 } from "@zcode/shared";
 import { connectRemote, createRemoteBackend, type RemoteConnection } from "./remote/index.js";
 import { createHostCapabilityStore } from "./hostCapability.js";
+import {
+  installLoginUidRecorder,
+  registerUserWorkspaceRoutes,
+  resolveUserWorkspaceRoot,
+  type ServerInfoWithUserWorkspace,
+} from "./user-workspace.js";
 
 function wrapWebSocket(ws: WebSocket): ISocket {
   const onData = new Emitter<VSBuffer>();
@@ -314,8 +320,22 @@ export function createHttpServer(
     });
   }
 
-  app.get("/api/server-info", (c) => c.json(createServerInfo(options)));
+  // server-info 旧字段保持不变（兼容旧客户端），追加 userWorkspaceRoot 供前端能力发现：
+  // shared 的 ServerRemoteInfo 未含该字段（本任务不碰 packages/shared），JSON 追加未知字段
+  // 对旧客户端向后兼容。
+  app.get("/api/server-info", (c) => {
+    const info: ServerInfoWithUserWorkspace = {
+      ...createServerInfo(options),
+      userWorkspaceRoot: resolveUserWorkspaceRoot(),
+    };
+    return c.json(info);
+  });
   app.post("/api/rpc-host-capability", (c) => c.json(hostCapabilities.issue()));
+
+  // 每用户工作区（B 方案：单容器多目录 + 应用层软配额）：先在登录成功路径上记录当前 uid，
+  // 再挂路由；身份校验的阶段一限制（uid 即身份、显式 uid 可伪造）见 user-workspace.ts。
+  installLoginUidRecorder(services);
+  registerUserWorkspaceRoutes(app);
 
   // 普通 `/ws` 永远是 terminal-client；浏览器/任意客户端设置旧 mode header
   // 都不能再把自己提升为 trusted host。
