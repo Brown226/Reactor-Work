@@ -95,6 +95,11 @@ interface WebBootstrapResult {
   initialTaskId?: string;
   restoreSession?: boolean;
   allowOpenWorkspace?: boolean;
+  /**
+   * 服务端下发的 identity 地址（容器内视角）。有值时登录页锁定该地址、隐藏输入框：
+   * Web 端的登录由 web 容器转发，用户浏览器根本不需要知道这个内网地址。
+   */
+  lockedServerUrl?: string;
 }
 
 function isWebOAuthCallback(params: URLSearchParams): boolean {
@@ -400,12 +405,16 @@ async function resolveWebBootstrap(): Promise<WebBootstrapResult> {
     }
     const serverInfo = (await response.json()) as Partial<ServerRemoteInfo>;
     const workspace = Array.isArray(serverInfo.workspaces) ? serverInfo.workspaces[0] : undefined;
+    const lockedServerUrl =
+      typeof serverInfo.identityUrl === "string" ? serverInfo.identityUrl.trim() : "";
     return {
       wsUrl,
       ...(workspace?.path ? { initialWorkspaceAbsPath: workspace.path } : {}),
       ...(workspace?.workspaceIdentity
         ? { initialWorkspaceIdentity: workspace.workspaceIdentity }
         : {}),
+      // 登录页锁定地址：Web 端登录经服务端转发到 identity，用户无需（也无法）填写
+      ...(lockedServerUrl ? { lockedServerUrl } : {}),
     };
   } catch {
     return { wsUrl };
@@ -482,6 +491,7 @@ async function bootstrapWebApp() {
           <Root
             services={services}
             platform={platform}
+            {...(bootstrap.lockedServerUrl ? { lockedServerUrl: bootstrap.lockedServerUrl } : {})}
             initialWorkspaceAbsPath={bootstrap.initialWorkspaceAbsPath}
             initialWorkspaceIdentity={bootstrap.initialWorkspaceIdentity}
             initialTaskId={bootstrap.initialTaskId}

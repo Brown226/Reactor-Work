@@ -16,10 +16,16 @@ export type LoginCompleteReason = "enterprise";
 export function EnterpriseLoginScreen({
   onComplete,
   showWindowControls = false,
+  lockedServerUrl,
 }: {
   onComplete: (reason: LoginCompleteReason) => void | Promise<void>;
   /** 自绘标题栏平台（Windows / 非 macOS 桌面）必须显示最小化/最大化/关闭，否则登录页无法关窗或缩窗。 */
   showWindowControls?: boolean;
+  /**
+   * 由宿主锁定的服务端地址（Web 端：web 容器经 /api/server-info 下发）。
+   * 传入后登录页不再显示地址输入框；桌面端不传，保持可编辑。
+   */
+  lockedServerUrl?: string;
 }) {
   const { intl } = useZCodeIntl();
 
@@ -45,7 +51,11 @@ export function EnterpriseLoginScreen({
           </div>
         </header>
 
-        <ReactorServerLoginForm variant="login" onLoggedIn={() => onComplete("enterprise")} />
+        <ReactorServerLoginForm
+          variant="login"
+          onLoggedIn={() => onComplete("enterprise")}
+          {...(lockedServerUrl?.trim() ? { lockedServerUrl } : {})}
+        />
 
         <footer className="border-t border-border pt-4 text-ui-base leading-6 text-foreground-subtle">
           <p>{intl.formatMessage({ id: "login.enterprise.helpAdmin" })}</p>

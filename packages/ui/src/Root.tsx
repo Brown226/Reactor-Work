@@ -160,6 +160,7 @@ function RootInner({
   preferDirectoryBrowser,
   supportsEmbeddedBrowser: explicitSupportsEmbeddedBrowser,
   allowRemoteWorkspace = true,
+  lockedServerUrl,
   initialWorkspaceLoadingFallback,
 }: RootProps) {
   useEffect(() => {
@@ -1078,6 +1079,7 @@ function RootInner({
         <EnterpriseLoginScreen
           onComplete={handleWelcomeScreenComplete}
           showWindowControls={Boolean(isWindowsDesktop || (isDesktop && !isMacDesktop))}
+          {...(lockedServerUrl?.trim() ? { lockedServerUrl } : {})}
         />
       </RootShell>
     );

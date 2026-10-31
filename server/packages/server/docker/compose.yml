@@ -200,6 +200,12 @@ services:
       ZCODE_SERVER_AUTH_TOKEN: ${REACTOR_WEB_TOKEN:-}
       ZCODE_SERVER_WORKSPACE: /data/workspace
       ZCODE_DATA_BASE_DIR: /data
+      # Web 登录由本容器转发到 identity：用户浏览器不需要可达该地址。
+      # 下发后登录页锁定服务端地址并隐藏输入框，用户只填账号密码。
+      REACTOR_IDENTITY_URL: ${REACTOR_IDENTITY_URL:-http://identity:8791}
+      # identity 与 gateway 在 compose 里是两个服务（hostname 不同），端口推导会拼出
+      # 不存在的 host；显式给出网关地址，否则登录后模型目录永远为空。
+      REACTOR_GATEWAY_URL: ${REACTOR_GATEWAY_URL:-http://gateway:8790/v1}
     ports:
       - "3030:3030"
     volumes:

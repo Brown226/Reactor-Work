@@ -156,6 +156,10 @@ export function createDesktopPlatform(options: {
     openInEditor: (editorId, path, editorOptions) =>
       window.zcode.openInEditor(editorId, path, editorOptions),
     executeDesktopCommand: (command) => window.zcode.executeDesktopCommand(command),
+    // 桌面端登录后要真重启进程（数据命名空间变更，已打开的 db 句柄不会跟着搬）。
+    // 用显式能力位而不是 duck-typing executeDesktopCommand —— Web 的 stub 也实现了该方法（no-op），
+    // 旧判据在 Web 上恒真，导致登录成功后卡在「登录中…」（2026-10-31 实测）。
+    supportsAppRelaunch: true,
     setApplicationLocale: (locale) => window.zcode.setApplicationLocale(locale),
     getSystemLocale: () =>
       window.zcode.getSystemLocale?.() ??

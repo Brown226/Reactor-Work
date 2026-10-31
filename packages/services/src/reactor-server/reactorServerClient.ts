@@ -189,8 +189,16 @@ export function normalizeReactorServerUrl(input: string): string {
 /**
  * 由身份基址推导网关基址（含 `/v1`）。
  * 约定：同主机，http 下端口换成网关端口；https（反向代理场景）保持隐式 443，只改路径。
+ *
+ * 容器化/离线部署的例外：identity 与 gateway 往往是**两个独立服务**
+ * （如 compose 里的 `identity` 与 `gateway` 两个 hostname），只换端口会拼出一个
+ * 不存在的地址（`http://identity:8790` → DNS 失败 → 登录后模型目录永远为空）。
+ * 因此支持 `REACTOR_GATEWAY_URL` 显式覆盖；未设置时行为与原来完全一致（桌面端不受影响）。
  */
 export function deriveGatewayBaseUrl(serverUrl: string): string {
+  const override =
+    typeof process !== "undefined" ? process.env?.["REACTOR_GATEWAY_URL"]?.trim() : undefined;
+  if (override) return override.replace(/\/+$/, "");
   const url = new URL(serverUrl);
   if (url.protocol === "http:") url.port = GATEWAY_PORT;
   url.pathname = "/v1";

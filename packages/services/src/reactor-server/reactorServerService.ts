@@ -974,7 +974,19 @@ export function createReactorServerService(
     cachedGateway = null;
     cachedProviderId = undefined;
     // 登录即把模型目录拉下来写进企业 provider，UI 随后就能选模型。
-    await syncModels();
+    // ⚠ 同步失败不能连坐登录：2026-10-31 容器化部署实测，目录同步会去官方云
+    //   （zcode.z.ai）拉补充数据，离线环境 DNS 都不通，把已成功的登录整单判成
+    //   "fetch failed"，用户会误以为账号或地址填错了。凭证此刻已落库，
+    //   模型目录属于"可以稍后重试/由管理台兜底"的数据，失败降级为警告。
+    try {
+      await syncModels();
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+      logger.warn(undefined, "登录成功但模型目录同步失败（不影响登录，可稍后重试）", {
+        serverUrl,
+        error: lastError,
+      });
+    }
     logger.info(undefined, "企业服务端登录成功", { serverUrl, uid: result.user.uid });
     // P4.1 / P4.2b：登录成功 = 用量上报的启动点 + 策略拉取点（都 fire-and-forget，不阻断登录）。
     p4.onLogin();

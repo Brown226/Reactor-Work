@@ -11,6 +11,13 @@ services:
       ZCODE_SERVER_AUTH_TOKEN: ${REACTOR_WEB_TOKEN:?请在 .env 中设置 REACTOR_WEB_TOKEN}
       ZCODE_SERVER_WORKSPACE: /data/workspace
       ZCODE_DATA_BASE_DIR: /data
+      # 本容器视角的 identity 地址：Web 登录请求由本容器转发，用户浏览器无需可达。
+      # 下发后登录页锁定地址、隐藏输入框，最终用户只填账号密码。
+      # ⚠ 值必须是同一 compose 网络内的服务名（默认 identity），不是宿主 IP。
+      REACTOR_IDENTITY_URL: ${REACTOR_IDENTITY_URL:-http://identity:8791}
+      # identity 与 gateway 在 compose 里是两个服务（hostname 不同），端口推导会拼出
+      # 不存在的 host；显式给出网关地址，否则登录后模型目录永远为空。
+      REACTOR_GATEWAY_URL: ${REACTOR_GATEWAY_URL:-http://gateway:8790/v1}
     volumes:
       - web-data:/data
     healthcheck:

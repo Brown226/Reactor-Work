@@ -320,13 +320,16 @@ export function createHttpServer(
     });
   }
 
-  // server-info 旧字段保持不变（兼容旧客户端），追加 userWorkspaceRoot 供前端能力发现：
-  // shared 的 ServerRemoteInfo 未含该字段（本任务不碰 packages/shared），JSON 追加未知字段
-  // 对旧客户端向后兼容。
+  // server-info 旧字段保持不变（兼容旧客户端），追加 userWorkspaceRoot 与 identityUrl 供前端能力发现。
+  // identityUrl 的用途：Web 端登录请求由**本服务端**转发到 identity，用户浏览器不需要可达该地址，
+  // 所以真正可用的地址只有服务端知道。下发后登录页会锁定地址并隐藏输入框，
+  // 避免把容器内网服务名（如 http://identity:8791）暴露给最终用户去手填。
   app.get("/api/server-info", (c) => {
+    const identityUrl = readTrimmedEnv("REACTOR_IDENTITY_URL");
     const info: ServerInfoWithUserWorkspace = {
       ...createServerInfo(options),
       userWorkspaceRoot: resolveUserWorkspaceRoot(),
+      ...(identityUrl ? { identityUrl } : {}),
     };
     return c.json(info);
   });

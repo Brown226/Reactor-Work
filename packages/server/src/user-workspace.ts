@@ -172,8 +172,9 @@ export interface UserWorkspaceUsagePayload {
 }
 
 /**
- * server-info 追加字段后的响应形状。shared 的 ServerRemoteInfo 未含 userWorkspaceRoot
- * （本任务约束不碰 packages/shared），在此局部扩展类型；JSON 多出的字段对旧客户端向后兼容。
+ * server-info 追加字段后的响应形状。userWorkspaceRoot / identityUrl 已作为可选字段
+ * 加进 shared 的 ServerRemoteInfo（Web 登录页依赖 identityUrl 锁定服务端地址），
+ * 这里保留局部类型只为把 userWorkspaceRoot 标成必有。
  */
 export interface ServerInfoWithUserWorkspace extends ServerRemoteInfo {
   userWorkspaceRoot: string;

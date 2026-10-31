@@ -601,6 +601,17 @@ export interface IPlatformService {
    */
   unavailableReason?(feature: PlatformFeatureId): string | null;
 
+  /**
+   * 本平台是否支持「重启应用进程」。桌面端为 true（登录后必须重启，
+   * 数据命名空间变更后旧 db 句柄不会迁移）；Web 端不实现 = 不支持，
+   * 登录后走 onLoggedIn 直接进入工作区。
+   *
+   * 为什么需要这个显式能力位：过去用 `typeof executeDesktopCommand === "function"`
+   * 判断，但 Web 的 stub 同样实现了该方法（no-op），判据在 Web 上恒真，
+   * 登录成功后卡在「登录中…」（2026-10-31 实测）。
+   */
+  supportsAppRelaunch?: boolean;
+
   /** 打开系统目录选择框，返回选中路径或 null */
   selectDirectory(): Promise<string | null>;
 

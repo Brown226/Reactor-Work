@@ -32,16 +32,23 @@ export function ReactorServerLoginForm({
   variant,
   onLoggedIn,
   submitLabelId = "settings.reactorServer.login",
+  lockedServerUrl,
 }: {
   variant: ReactorServerLoginFormVariant;
   /** 登录成功后的收尾动作（设置页用来刷新状态，登录页用来进入工作区）。 */
   onLoggedIn?: () => void | Promise<void>;
   submitLabelId?: string;
+  /**
+   * 锁定的服务端地址。由宿主在「它自己知道该连哪个 identity」时传入（Web 端：
+   * web 容器经 /api/server-info 下发），此时隐藏地址输入框，用户只需填账号密码。
+   * 桌面端不传 → 完全保持原有行为（用户可编辑地址）。
+   */
+  lockedServerUrl?: string;
 }) {
   const { intl } = useZCodeIntl();
   const { status, busy, error, login } = useReactorServer();
   const platform = usePlatform();
-  const [serverUrl, setServerUrl] = useState("");
+  const [serverUrl, setServerUrl] = useState(lockedServerUrl?.trim() ?? "");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -51,8 +58,11 @@ export function ReactorServerLoginForm({
     if (!configuredServerUrl) return;
     // 已配置过地址时回填成草稿，省掉每次重新登录手抄内网地址；
     // 用户自己输入的内容优先（例如正在改指向另一台服务端）。
-    setServerUrl((current) => (current.trim() ? current : configuredServerUrl));
-  }, [configuredServerUrl]);
+    // 锁定地址优先级最高：它来自部署配置，不能被历史配置或用户输入覆盖。
+    setServerUrl((current) =>
+      lockedServerUrl?.trim() ? lockedServerUrl.trim() : current.trim() ? current : configuredServerUrl,
+    );
+  }, [configuredServerUrl, lockedServerUrl]);
 
   const isBusy = busy !== null;
   // 登录成功到应用重启完成之间的过渡：避免「点完没反应，界面突然整块换掉」的断裂感。
@@ -76,10 +86,12 @@ export function ReactorServerLoginForm({
     if (ok) {
       setPassword("");
       // 企业登录会切换数据命名空间（marker 由 host 在登录落盘），而 scope 只在进程启动时
-      // 解析一次、已打开的 tasks-index/db 句柄不会跟着搬。不重启的话新账号看到的仍是
-      // 上一个人的任务与会话——这正是服务端登录注释里「Renderer 收到成功响应后会立刻
-      // 重启应用」要求的行为，之前一直没接线。Web 等无桌面命令的平台跳过重启。
-      if (typeof platform.executeDesktopCommand === "function") {
+      // 解析一次、已打开的 tasks-index/db 句柄不会跟着搬。桌面端必须重启，否则新账号
+      // 看到的仍是上一个人的任务与会话。
+      // ⚠ 判据用显式能力位 supportsAppRelaunch，不能再用
+      // `typeof executeDesktopCommand === "function"`：Web 的 stub 同样实现了该方法（no-op），
+      // 旧判据在 Web 上恒真，登录成功后既不重启也不进工作区，卡在「登录中…」。
+      if (platform.supportsAppRelaunch === true) {
         setEntering(true);
         await platform.executeDesktopCommand(DesktopCommandIds.RelaunchApp);
         return;
@@ -174,21 +186,25 @@ export function ReactorServerLoginForm({
           </div>
         </LoginField>
         {/* 登录页不显示地址说明：首次登录的人还没有"网关端口"的概念，
-            这行只会增加噪音；设置页仍保留该说明（见下方 settings 变体）。 */}
-        <LoginField label={intl.formatMessage({ id: "settings.reactorServer.serverUrl" })}>
-          <Input
-            size="lg"
-            data-testid={TID_REACTOR_SERVER_URL_INPUT}
-            value={serverUrl}
-            disabled={isBusy || entering}
-            placeholder={intl.formatMessage({
-              id: "settings.reactorServer.serverUrlPlaceholder",
-            })}
-            className="font-mono"
-            onChange={(event) => setServerUrl(event.target.value)}
-            onKeyDown={onEnter}
-          />
-        </LoginField>
+            这行只会增加噪音；设置页仍保留该说明（见下方 settings 变体）。
+            锁定地址时整块隐藏：Web 端的地址由 web 容器下发，用户无从选择，
+            展示一个不可编辑的内网服务名只会让人困惑。 */}
+        {lockedServerUrl?.trim() ? null : (
+          <LoginField label={intl.formatMessage({ id: "settings.reactorServer.serverUrl" })}>
+            <Input
+              size="lg"
+              data-testid={TID_REACTOR_SERVER_URL_INPUT}
+              value={serverUrl}
+              disabled={isBusy || entering}
+              placeholder={intl.formatMessage({
+                id: "settings.reactorServer.serverUrlPlaceholder",
+              })}
+              className="font-mono"
+              onChange={(event) => setServerUrl(event.target.value)}
+              onKeyDown={onEnter}
+            />
+          </LoginField>
+        )}
 
         {errorNode}
 
@@ -245,25 +261,28 @@ export function ReactorServerLoginForm({
             />
           }
         />
-        <SettingsRow
-          controlLayout="wide"
-          label={intl.formatMessage({ id: "settings.reactorServer.serverUrl" })}
-          description={intl.formatMessage({ id: "settings.reactorServer.serverUrlDescription" })}
-          control={
-            <Input
-              size="lg"
-              data-testid={TID_REACTOR_SERVER_URL_INPUT}
-              value={serverUrl}
-              disabled={isBusy || entering}
-              placeholder={intl.formatMessage({
-                id: "settings.reactorServer.serverUrlPlaceholder",
-              })}
-              className="font-mono"
-              onChange={(event) => setServerUrl(event.target.value)}
-              onKeyDown={onEnter}
-            />
-          }
-        />
+        {/* 锁定地址时设置页同样不显示该行：Web 用户改不了它，暴露只会造成误解 */}
+        {lockedServerUrl?.trim() ? null : (
+          <SettingsRow
+            controlLayout="wide"
+            label={intl.formatMessage({ id: "settings.reactorServer.serverUrl" })}
+            description={intl.formatMessage({ id: "settings.reactorServer.serverUrlDescription" })}
+            control={
+              <Input
+                size="lg"
+                data-testid={TID_REACTOR_SERVER_URL_INPUT}
+                value={serverUrl}
+                disabled={isBusy || entering}
+                placeholder={intl.formatMessage({
+                  id: "settings.reactorServer.serverUrlPlaceholder",
+                })}
+                className="font-mono"
+                onChange={(event) => setServerUrl(event.target.value)}
+                onKeyDown={onEnter}
+              />
+            }
+          />
+        )}
       </SettingsGroupCard>
 
       {errorNode}

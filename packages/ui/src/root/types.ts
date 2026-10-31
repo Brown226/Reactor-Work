@@ -34,6 +34,11 @@ export interface RootProps {
   supportsEmbeddedBrowser?: boolean;
   /** 是否启用远程工作区能力，Web 普通模式先只支持本地 server 工作区 */
   allowRemoteWorkspace?: boolean;
+  /**
+   * 宿主锁定的服务端地址：传入后登录页隐藏地址输入框，用户只填账号密码。
+   * Web 端由 web 容器经 /api/server-info 下发；桌面端不传（保持用户可编辑）。
+   */
+  lockedServerUrl?: string;
   /** 非桌面入口初始 workspace 注入前继续展示的 loading，桌面端不使用 */
   initialWorkspaceLoadingFallback?: ReactNode;
   /** Assistant code-comment 卡片灰度；默认关闭，关闭时保留原始 directive。 */
