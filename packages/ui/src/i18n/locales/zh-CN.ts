@@ -1089,6 +1089,7 @@ const zhCN: Record<string, string> = {
   "appHeader.copyLogPath": "复制日志路径",
   "appHeader.copySessionId": "复制会话 ID",
   "workspaceHeader.help.menu": "帮助",
+  "workspaceHeader.mySpace": "我的空间",
   "workspaceHeader.help.issueReport": "问题上报",
   "workspaceHeader.help.productRequest": "给产品提需求",
   "workspaceHeader.help.productRequestDraft": "我想建议：",

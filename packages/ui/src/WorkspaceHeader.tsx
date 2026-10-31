@@ -62,6 +62,7 @@ export function WorkspaceHeader({
   onReloadSession,
   reloadSessionDisabled,
   reloadSessionPending,
+  onOpenMySpace,
 }: {
   variant?: WorkspaceHeaderVariant;
   draftDropTargetController?: ConversationDropTargetController | null;
@@ -110,6 +111,8 @@ export function WorkspaceHeader({
   }) => void | Promise<void>;
   reloadSessionDisabled?: boolean;
   reloadSessionPending?: boolean;
+  /** 仅 Web 宿主传入：打开「我的空间」。不传则头部不渲染该入口（桌面端零变化）。 */
+  onOpenMySpace?: () => void;
   onCreateTask: () => void;
   onOpenWorkspace: () => void;
   allowOpenWorkspace?: boolean;
@@ -214,6 +217,7 @@ export function WorkspaceHeader({
           toggleSidePaneShortcutLabel={toggleSidePaneShortcutLabel}
           simplifyForNarrowRemote={simplifyForNarrowRemote}
           hideHelpMenu={false}
+          {...(onOpenMySpace ? { onOpenMySpace } : {})}
           showWindowControls={usesInlineWindowControls}
           // 面板操作按钮沿用 macOS 紧凑样式，Windows/Linux 窗控跟随最右侧 Header。
           onSelectedEditorChange={setSelectedEditor}

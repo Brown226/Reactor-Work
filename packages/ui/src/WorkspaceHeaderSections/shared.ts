@@ -73,6 +73,11 @@ export interface WorkspaceHeaderActionSectionProps {
   onSelectedEditorChange?: (editor: EditorInfo | null) => void;
   simplifyForNarrowRemote?: boolean;
   hideHelpMenu?: boolean;
+  /**
+   * 打开「我的空间」（每用户 1GB 空间的资产管理）。
+   * 只有 Web 宿主会传；桌面端不传 → 头部不渲染该入口，视觉与行为零变化。
+   */
+  onOpenMySpace?: () => void;
   showWindowControls?: boolean;
   useWindowsCaptionSpacing?: boolean;
 }

@@ -39,6 +39,11 @@ export interface RootProps {
    * Web 端由 web 容器经 /api/server-info 下发；桌面端不传（保持用户可编辑）。
    */
   lockedServerUrl?: string;
+  /**
+   * 是否启用「我的空间」入口（每用户 1GB 空间的资产管理面板）。
+   * Web 宿主传 true；桌面端不传 → 不渲染入口，行为零变化。
+   */
+  mySpaceEnabled?: boolean;
   /** 非桌面入口初始 workspace 注入前继续展示的 loading，桌面端不使用 */
   initialWorkspaceLoadingFallback?: ReactNode;
   /** Assistant code-comment 卡片灰度；默认关闭，关闭时保留原始 directive。 */

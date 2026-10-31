@@ -38,7 +38,7 @@ import type {
   RemoteTarget,
   ServerRemoteInfo,
 } from "@zcode/shared";
-import { PLATFORM_UNAVAILABLE_REASON } from "@zcode/shared";
+import { DesktopCommandIds, PLATFORM_UNAVAILABLE_REASON } from "@zcode/shared";
 import { WEB_DEFAULT_THEME, resolveWebInitialTheme } from "./webThemeSeed.js";
 
 function resolveWebThemePreference(defaultTheme: Theme = WEB_DEFAULT_THEME): Theme {
@@ -361,7 +361,14 @@ function createWebPlatform(): IPlatformService {
     quitAndInstallUpdate: () => Promise.resolve(),
     getInstalledEditors: () => Promise.resolve([]),
     openInEditor: () => Promise.resolve({ success: false, error: "Not supported in web mode" }),
-    executeDesktopCommand: () => Promise.resolve(),
+    executeDesktopCommand: (command) => {
+      // Web 的「重启应用」= 刷新页面。登录会切换数据命名空间，而工作区（= 用户空间）
+      // 是登录后由 /api/server-info 重新计算的，必须重载一次才能切到该用户的空间目录。
+      if (command === DesktopCommandIds.RelaunchApp) window.location.reload();
+      return Promise.resolve();
+    },
+    // Web 也有"重启"语义（刷新）：把它声明成能力位，登录成功后走与桌面端同一条重启路径
+    supportsAppRelaunch: true,
     setApplicationLocale: (_locale) => Promise.resolve(),
     setTitleBarTheme: () => Promise.resolve(),
     getDeviceId: () => {
@@ -488,10 +495,12 @@ async function bootstrapWebApp() {
           settingService={services.settingService}
           broadcastService={services.broadcastService}
         >
+          {/* Web 才有的「我的空间」（每用户 1GB 资产管理）；桌面端不传该 prop，保持原样 */}
           <Root
             services={services}
             platform={platform}
             {...(bootstrap.lockedServerUrl ? { lockedServerUrl: bootstrap.lockedServerUrl } : {})}
+            mySpaceEnabled={true}
             initialWorkspaceAbsPath={bootstrap.initialWorkspaceAbsPath}
             initialWorkspaceIdentity={bootstrap.initialWorkspaceIdentity}
             initialTaskId={bootstrap.initialTaskId}

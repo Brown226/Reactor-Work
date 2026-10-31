@@ -12,7 +12,7 @@ import type { ChatComposerAttachment } from "@/lib/chatAttachments.js";
  * 认领并消费；非焦点 composer 不认领，避免竖切多 pane 时抢注入。这与既有
  * `whiteboard:add-to-chat` 事件的「焦点 pane 处理」语义一致。
  */
-export type SystemComposerInjectionSource = "external-image" | "quick-input";
+export type SystemComposerInjectionSource = "external-image" | "quick-input" | "space-file";
 
 export interface SystemComposerInjection {
   id: string;
