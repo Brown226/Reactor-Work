@@ -153,3 +153,10 @@ export const ALL_STAGED_PLUGIN_PATHS = [
   ...RUNTIME_PLUGIN_PACKAGES.map((plugin) => plugin.stagedPath),
   ...CONTENT_PLUGIN_SEED_ENTRIES.map((entry) => entry.stagedPath),
 ];
+
+// 共享资产（如 visual-judge.md 四份副本）漂移校验：打包前必须与正本一致。
+// 由 scripts/sync-plugin-shared-assets.mjs 负责同步；这里只做只读校验。
+export function assertSharedPluginAssetsIntegrity(repoRoot = resolve(import.meta.dirname, "..")): void {
+  const { execFileSync } = require("node:child_process") as typeof import("node:child_process");
+  execFileSync(process.execPath, [resolve(repoRoot, "scripts", "sync-plugin-shared-assets.mjs"), "--check"], { stdio: "inherit" });
+}
