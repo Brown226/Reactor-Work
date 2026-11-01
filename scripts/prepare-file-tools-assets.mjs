@@ -20,6 +20,7 @@ import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { downloadFile } from "./lib/download-asset.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const platformKey = readArg("--platform") ?? `${process.platform}-${process.arch}`;
@@ -166,15 +167,9 @@ async function downloadOcrModels(targetDir, cacheDir = null) {
     }
     const url = `${OCR_MODEL_REPO}/${model.path}`;
     process.stdout.write(`[file-tools] download ${fileName}\n`);
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`下载失败 ${url}：HTTP ${response.status}`);
-    const bytes = Buffer.from(await response.arrayBuffer());
-    const digest = createHash("sha256").update(bytes).digest("hex");
-    if (digest !== model.sha256) {
-      throw new Error(`sha256 不匹配：${fileName}（${digest} ≠ ${model.sha256}）`);
-    }
-    writeFileSync(target, bytes);
-    results.push({ file: fileName, sha256: digest, cached: false });
+    // 下载+sha256 校验收口到共享模块（审计 #8）；哈希不符时 downloadFile 抛错
+    await downloadFile([url], target, { sha256: model.sha256 });
+    results.push({ file: fileName, sha256: model.sha256, cached: false });
   }
   return results;
 }

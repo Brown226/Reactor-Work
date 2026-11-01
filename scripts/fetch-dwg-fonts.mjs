@@ -1,5 +1,5 @@
 /**
- * 下载 DWG 查看器（mlightcad）的最小中文字体集到 packages/web/public/dwg-fonts/。
+ * 下载 DWG 查看器（mlightcad）的最小中文字体集到 packages/web/public/dwg/fonts/。
  *
  * 为什么需要：mlightcad 默认从 cdn.jsdelivr.net 拉字体清单与字体文件，内网部署取不到
  * 时 TEXT/MTEXT 整体不渲染（几何正常）。字体有许可与体量问题（~3.7MB），不入库，
@@ -7,11 +7,13 @@
  *
  * 用法：node scripts/fetch-dwg-fonts.mjs [--force]
  * 幂等：目标文件已存在且非空时跳过（--force 重下）。
- * 源：mlightcad/cad-data（GitHub）经多个 jsDelivr 镜像与 raw 代理逐一尝试。
+ * 源：mlightcad/cad-data（GitHub）经多个 jsDelivr 镜像与 raw 代理逐一尝试；
+ * 多镜像回退收口到 scripts/lib/download-asset.mjs（审计 #8）。
  */
 import { mkdir, stat, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { downloadFile } from "./lib/download-asset.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..");
@@ -41,21 +43,12 @@ const FONT_FILES = [
 const force = process.argv.includes("--force");
 
 async function fetchFromMirrors(file) {
-  let lastError = new Error("no mirror attempted");
-  for (const mirror of MIRRORS) {
-    try {
-      const response = await fetch(`${mirror}/${file}`, { signal: AbortSignal.timeout(180_000) });
-      if (!response.ok) {
-        lastError = new Error(`HTTP ${response.status} from ${mirror}`);
-        continue;
-      }
-      return Buffer.from(await response.arrayBuffer());
-    } catch (error) {
-      // 超时（AbortSignal）、连接重置等都只换下一个源，不让异常逃出脚本
-      lastError = error instanceof Error ? error : new Error(String(error));
-    }
-  }
-  throw lastError;
+  const target = join(outDir, file);
+  return downloadFile(
+    MIRRORS.map((mirror) => `${mirror}/${file}`),
+    target,
+    { timeoutMs: 180_000 },
+  );
 }
 
 await mkdir(outDir, { recursive: true });
