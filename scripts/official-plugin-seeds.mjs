@@ -1,3 +1,5 @@
+import { execFileSync } from "node:child_process";
+import { resolve } from "node:path";
 /**
  * 官方插件随包 seed 清单的**单一数据源**。
  *
@@ -156,7 +158,6 @@ export const ALL_STAGED_PLUGIN_PATHS = [
 
 // 共享资产（如 visual-judge.md 四份副本）漂移校验：打包前必须与正本一致。
 // 由 scripts/sync-plugin-shared-assets.mjs 负责同步；这里只做只读校验。
-export function assertSharedPluginAssetsIntegrity(repoRoot = resolve(import.meta.dirname, "..")): void {
-  const { execFileSync } = require("node:child_process") as typeof import("node:child_process");
+export function assertSharedPluginAssetsIntegrity(repoRoot = resolve(import.meta.dirname, "..")) {
   execFileSync(process.execPath, [resolve(repoRoot, "scripts", "sync-plugin-shared-assets.mjs"), "--check"], { stdio: "inherit" });
 }
