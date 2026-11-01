@@ -7,7 +7,7 @@
  */
 import { extname } from "node:path";
 import { z } from "zod";
-import { assertReadableFile, wrapFileContent } from "../guard.js";
+import { assertReadableFile, wrapFileContent } from "@zcode/plugin-guard";
 import { EngineUnavailableError, runOcrCli } from "../ocr-python.js";
 
 export const OCR_SCAN_DESCRIPTION = [

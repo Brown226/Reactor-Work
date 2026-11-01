@@ -7,7 +7,7 @@
  * 边界：与 parse_document 不重复（研究 API vs 正文抽取）；公式候选一律 approx。
  */
 import { readFile } from "node:fs/promises";
-import { FileToolError, assertReadableFile } from "../guard.js";
+import { FileToolError, assertReadableFile } from "@zcode/plugin-guard";
 import { loadPdfjsOnce } from "../raster.js";
 import {
   DOI_RE,

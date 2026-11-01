@@ -41,7 +41,7 @@ function isInsideRoot(target: string, root: string): boolean {
 
 /**
  * spec §4「不跟符号链接出工作区」：realpath 后校验目标没有逃出工作区。
- * 当前边界（file-tools 版本；ocr-tools / dwg-tools 的同名 guard 各管各的）：
+ * 当前边界（三个文件类 MCP 插件共用本实现，由 @zcode/plugin-guard 单源分发）：
  * - 只拦「调用方给的是工作区内路径，但 realpath 后落在工作区外」这一种越界，覆盖
  *   工作区内链接指向区外、以及链接链中途出界的情况。
  * - 调用方显式给出的工作区外绝对路径按既有语义放行：附件、临时目录常在区外，一刀切会

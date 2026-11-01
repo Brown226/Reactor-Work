@@ -18,7 +18,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join } from "node:path";
 import { unzipSync, zipSync } from "fflate";
 import { z } from "zod";
-import { assertReadableFile } from "../guard.js";
+import { assertReadableFile } from "@zcode/plugin-guard";
 
 export const DOCX_PATCH_DESCRIPTION = [
   "Replace text inside an existing .docx while keeping the original formatting (fonts, sizes, bold, paragraphs, tables, numbering, headers/footers).",

@@ -7,7 +7,7 @@
  * 不静默返回空结论（审查板块「无文本层必须明说」的同款纪律）。
  */
 import { z } from "zod";
-import { assertReadableFile, wrapFileContent } from "../guard.js";
+import { assertReadableFile, wrapFileContent } from "@zcode/plugin-guard";
 import { runSidecar } from "../dwg-sidecar.js";
 import { buildDrawingGraph, type DrawingGraph } from "../dwg-graph-fusion.js";
 import type { SidecarSegment, SidecarSymbol, SidecarTextEntity } from "../dwg-graph-fusion.js";

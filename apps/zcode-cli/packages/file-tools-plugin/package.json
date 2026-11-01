@@ -19,6 +19,7 @@
     "@firecrawl/anydoc": "0.2.4",
     "@modelcontextprotocol/server": "2.0.0",
     "@napi-rs/canvas": "^1.0.9",
+    "@zcode/plugin-guard": "workspace:*",
     "fflate": "^0.8.2",
     "pdfjs-dist": "6.2.108",
     "zod": "^4.4.3"

@@ -460,6 +460,9 @@ importers:
       '@modelcontextprotocol/server':
         specifier: 2.0.0
         version: 2.0.0
+      '@zcode/plugin-guard':
+        specifier: workspace:*
+        version: link:../plugin-guard
       zod:
         specifier: ^4.4.3
         version: 4.6.5
@@ -505,6 +508,9 @@ importers:
       '@napi-rs/canvas':
         specifier: ^1.0.9
         version: 1.0.9
+      '@zcode/plugin-guard':
+        specifier: workspace:*
+        version: link:../plugin-guard
       fflate:
         specifier: ^0.8.2
         version: 0.8.3
@@ -570,6 +576,9 @@ importers:
       '@modelcontextprotocol/server':
         specifier: 2.0.0
         version: 2.0.0
+      '@zcode/plugin-guard':
+        specifier: workspace:*
+        version: link:../plugin-guard
       zod:
         specifier: ^4.4.3
         version: 4.6.5
@@ -585,6 +594,12 @@ importers:
         version: 5.9.3
 
   apps/zcode-cli/packages/plugin-creator-plugin: {}
+
+  apps/zcode-cli/packages/plugin-guard:
+    devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.12.2
 
   apps/zcode-cli/packages/shared-types:
     devDependencies:

@@ -12,7 +12,7 @@
  * - 操作单为结构化 ops：replace_text / rename_layer。
  */
 import { z } from "zod";
-import { assertReadableFile, wrapFileContent } from "../guard.js";
+import { assertReadableFile, wrapFileContent } from "@zcode/plugin-guard";
 import { runSidecar } from "../dwg-sidecar.js";
 
 export const DWG_MODIFY_DESCRIPTION = [
