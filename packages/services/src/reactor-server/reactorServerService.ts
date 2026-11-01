@@ -211,24 +211,48 @@ export function createReactorServerService(
   /**
    * 取得有效 access。过期就用 refresh 换（**滚动轮换**，必须存回新的 refresh）。
    * refresh 也失效时清空会话并把原因写进 lastError —— 绝不静默降级成直连上游。
+   *
+   * 单飞：滚动轮换下并发刷新会拿同一个 refresh 换两次，第二次必然 401 →
+   * clearSession 把刚续上的会话又清掉。getStatus 懒刷新让 UI 多处同时进入
+   * 这个窗口变得常见（见 getStatus 的静默续期），必须收口成一次。
    */
+  let refreshInFlight: Promise<string> | null = null;
+
+  function rotateAccessToken(
+    serverUrl: string,
+    options: { clearOnFailure: boolean },
+  ): Promise<string> {
+    if (refreshInFlight) return refreshInFlight;
+    refreshInFlight = (async () => {
+      const tokens = await loadTokens();
+      if (!tokens) throw new Error("尚未登录企业服务端");
+      try {
+        const refreshed = await client.refresh(serverUrl, tokens.refreshToken);
+        await persistTokens(refreshed.accessToken, refreshed.refreshToken);
+        lastError = null;
+        return refreshed.accessToken;
+      } catch (error) {
+        const message =
+          error instanceof ReactorServerHttpError && error.isUnauthorized
+            ? "企业登录已过期，请重新登录"
+            : `刷新企业登录失败：${error instanceof Error ? error.message : String(error)}`;
+        if (options.clearOnFailure) {
+          lastError = message;
+          await clearSession();
+        }
+        throw new Error(message, { cause: error });
+      } finally {
+        refreshInFlight = null;
+      }
+    })();
+    return refreshInFlight;
+  }
+
   async function ensureAccessToken(serverUrl: string): Promise<string> {
     const tokens = await loadTokens();
     if (!tokens) throw new Error("尚未登录企业服务端");
     if (tokens.accessExpiresAt - now() > ACCESS_REFRESH_MARGIN_MS) return tokens.accessToken;
-    try {
-      const refreshed = await client.refresh(serverUrl, tokens.refreshToken);
-      await persistTokens(refreshed.accessToken, refreshed.refreshToken);
-      lastError = null;
-      return refreshed.accessToken;
-    } catch (error) {
-      lastError =
-        error instanceof ReactorServerHttpError && error.isUnauthorized
-          ? "企业登录已过期，请重新登录"
-          : `刷新企业登录失败：${error instanceof Error ? error.message : String(error)}`;
-      await clearSession();
-      throw new Error(lastError, { cause: error });
-    }
+    return rotateAccessToken(serverUrl, { clearOnFailure: true });
   }
 
   async function ensureGatewayToken(serverUrl: string): Promise<string> {
@@ -943,9 +967,28 @@ export function createReactorServerService(
     // 这里以本地 provider 配置兜底，避免"重启后打开设置显示 0 个模型"的假象（不需要联网）。
     // 兜底读**全部**托管 provider：只有网关 provider 的话，重启后直连那批模型会显示成 0 个。
     const models = cachedModels.length > 0 ? cachedModels : await readAllManagedModelIds();
+    // 2026-11-01 实测：access 过期但 refresh 仍有效时，旧逻辑直接判 loggedIn=false，
+    // 专家·技能市场门控据此显示"请先登录企业服务端"，而没有任何路径触发轮换——
+    // refresh token 明明有效，用户却被迫重新输密码。这里在判定前做一次**非破坏性**
+    // 静默轮换：成功 → 会话续上（loggedIn=true）；失败（refresh 失效/网络不通）→
+    // 不清会话，与旧逻辑同样返回 loggedIn=false。真实 API 调用仍走 ensureAccessToken
+    // 的破坏性语义（那边失败必须清会话，防止静默降级）。
+    let loggedIn = false;
+    if (serverUrl) {
+      if (await hasUsableSession()) {
+        loggedIn = true;
+      } else {
+        try {
+          await rotateAccessToken(serverUrl, { clearOnFailure: false });
+          loggedIn = true;
+        } catch {
+          loggedIn = false;
+        }
+      }
+    }
     return {
       configured: Boolean(serverUrl),
-      loggedIn: Boolean(serverUrl && (await hasUsableSession())),
+      loggedIn,
       serverUrl,
       gatewayBaseUrl: serverUrl ? deriveGatewayBaseUrl(serverUrl) : null,
       user: await readUser(),

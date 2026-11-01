@@ -4,7 +4,7 @@
 // 请求：
 //   {"command":"read","path":"...","maxTextEntities":5000}
 //   {"command":"modify","path":"...","ops":[...],"inPlace":true,"outputPath":"..."}
-//   {"command":"graph","path":"...","maxSymbols":20000,"maxSegments":20000}
+//   {"command":"graph","path":"...","maxSymbols":20000,"maxSegments":20000,"maxPoints":200000}
 //
 // 替换 libredwg-web（wasm）的原因：DWG 写入能力 libredwg 仅到 r2004 且 R2010+ CRC 错误，
 // 本 sidecar 实测同一张核桃审 fixture（AC1018）读→改→写→读校验全通，实体/图层零丢失。
@@ -168,27 +168,58 @@ static class Program
     {
         var maxSymbols = root.TryGetProperty("maxSymbols", out var ms) ? ms.GetInt32() : 20000;
         var maxSegments = root.TryGetProperty("maxSegments", out var mg) ? mg.GetInt32() : 20000;
+        var maxPoints = root.TryGetProperty("maxPoints", out var mp) ? mp.GetInt32() : 200000;
         ReadNotes.Clear();
         var sw = System.Diagnostics.Stopwatch.StartNew();
         var doc = OpenDwg(path);
         sw.Stop();
-        return ExtractGraph(doc, maxSymbols, maxSegments, sw.ElapsedMilliseconds, ReadNotes.Count);
+        return ExtractGraph(doc, maxSymbols, maxSegments, maxPoints, sw.ElapsedMilliseconds, ReadNotes.Count);
     }
 
-    /// 只取融合拓扑所需的原始行：INSERT 符号（块名/坐标/旋转/缩放）与 LINE/多段线段点；
-    /// 文本实体供 TS 侧做 tag 空间邻近关联。圆弧/圆/椭圆与块属性（ATTRIB）v1 不收
-    /// （集成方案 §1 非目标）；散落图元绘制的符号不在本命令覆盖范围。
-    static object ExtractGraph(CadDocument doc, int maxSymbols, int maxSegments, long ms, int notes)
+    /// 只取融合拓扑所需的原始行：INSERT 符号（块名/坐标/旋转/缩放）、LINE/多段线/圆弧/
+    /// 圆/椭圆的几何、TEXT/MTEXT 文本。曲线按 ≤10°/段 采样成折线点（ACadSharp 角度一律
+    /// 为弧度，见 ACadSharp.xml 的 Arc.StartAngle），前端不必再处理 Y 翻转后的 SVG sweep
+    /// 方向；文本供 TS 侧做 tag 空间邻近关联，也供空间页预览按真实字高绘制。HATCH、
+    /// DIMENSION 图形、SPLINE、块内图元（INSERT 只给插入点）与 ATTRIB v1 仍不收。
+    static object ExtractGraph(CadDocument doc, int maxSymbols, int maxSegments, int maxPoints, long ms, int notes)
     {
         var symbols = new List<object>();
         var segments = new List<object>();
         var truncated = false;
+        long pointCount = 0;
+
+        // 段数与总点数双预算：曲线采样让单条实体带几十个点，只按段数封顶时
+        // 2 万个圆就是近百万点，会把 JSON 体积和前端渲染一起拖垮。
+        void Add(string kind, string layerName, string handle, List<object> points)
+        {
+            if (segments.Count >= maxSegments || pointCount + points.Count > maxPoints)
+            {
+                truncated = true;
+                return;
+            }
+            segments.Add(new { kind, layer = layerName, handle, points });
+            pointCount += points.Count;
+        }
+
         foreach (var entity in doc.Entities)
         {
             var layerName = entity.Layer?.Name ?? "0";
             var handle = HandleHex(entity.Handle);
             switch (entity)
             {
+                // Arc 继承自 Circle，必须排在 Circle 之前，否则圆弧会被当成整圆输出
+                case Arc arc:
+                    Add("ARC", layerName, handle, SampleRadialCurve(arc.Center.X, arc.Center.Y, arc.Radius, arc.StartAngle, arc.EndAngle, closed: false));
+                    break;
+                case Circle circle:
+                    Add("CIRCLE", layerName, handle, SampleRadialCurve(circle.Center.X, circle.Center.Y, circle.Radius, 0, Math.PI * 2, closed: true));
+                    break;
+                case Ellipse ellipse:
+                    Add("ELLIPSE", layerName, handle, EllipsePoints(ellipse));
+                    break;
+                case LwPolyline lwp:
+                    Add("LWPOLYLINE", layerName, handle, LwPolylinePoints(lwp));
+                    break;
                 case Insert ins:
                     if (symbols.Count < maxSymbols)
                     {
@@ -206,35 +237,17 @@ static class Program
                     else truncated = true;
                     break;
                 case Line ln:
-                    if (segments.Count < maxSegments)
+                    Add("LINE", layerName, handle, new List<object>
                     {
-                        segments.Add(new
-                        {
-                            kind = "LINE",
-                            layer = layerName,
-                            handle,
-                            points = new[]
-                            {
-                                new { x = ln.StartPoint.X, y = ln.StartPoint.Y },
-                                new { x = ln.EndPoint.X, y = ln.EndPoint.Y },
-                            },
-                        });
-                    }
-                    else truncated = true;
+                        new { x = ln.StartPoint.X, y = ln.StartPoint.Y },
+                        new { x = ln.EndPoint.X, y = ln.EndPoint.Y },
+                    });
                     break;
                 case Polyline2D pl:
-                    if (segments.Count < maxSegments)
-                    {
-                        segments.Add(new { kind = "POLYLINE2D", layer = layerName, handle, points = PolylinePoints(pl.Vertices) });
-                    }
-                    else truncated = true;
+                    Add("POLYLINE2D", layerName, handle, PolylinePoints(pl.Vertices));
                     break;
                 case Polyline3D pl:
-                    if (segments.Count < maxSegments)
-                    {
-                        segments.Add(new { kind = "POLYLINE3D", layer = layerName, handle, points = PolylinePoints(pl.Vertices) });
-                    }
-                    else truncated = true;
+                    Add("POLYLINE3D", layerName, handle, PolylinePoints(pl.Vertices));
                     break;
             }
         }
@@ -262,7 +275,110 @@ static class Program
         };
     }
 
+    /// 圆弧/整圆采样：按 ≤10°/段 输出折线点（closed 时首尾重合）。
+    /// ACadSharp 的 StartAngle/EndAngle 是弧度（ACadSharp.xml 明确 radians）。
+    static List<object> SampleRadialCurve(double cx, double cy, double radius, double startRad, double endRad, bool closed)
+    {
+        var span = endRad - startRad;
+        if (span <= 0) span += Math.PI * 2;
+        var steps = Math.Clamp((int)Math.Ceiling(span / (Math.PI / 18)), 8, 64);
+        var points = new List<object>(steps + 1);
+        for (var i = 0; i <= steps; i++)
+        {
+            var angle = startRad + span * i / steps;
+            points.Add(new { x = cx + radius * Math.Cos(angle), y = cy + radius * Math.Sin(angle) });
+        }
+        return points;
+    }
+
+    /// 椭圆采样：参数方程 p(t) = C + A·cos(t) + B·sin(t)。MajorAxisEndPoint 是相对中心
+    /// 的主轴向量，副轴 = 主轴旋转 90° 后按 RadiusRatio 缩短；Start/EndParameter 是
+    /// 弧度参数，整椭圆时补全为 0..2π。
+    static List<object> EllipsePoints(Ellipse ellipse)
+    {
+        var start = ellipse.IsFullEllipse ? 0.0 : ellipse.StartParameter;
+        var end = ellipse.IsFullEllipse ? Math.PI * 2 : ellipse.EndParameter;
+        var span = end - start;
+        if (span <= 0) span += Math.PI * 2;
+        var steps = Math.Clamp((int)Math.Ceiling(span / (Math.PI / 18)), 8, 64);
+        var cx = ellipse.Center.X;
+        var cy = ellipse.Center.Y;
+        var ax = ellipse.MajorAxisEndPoint.X;
+        var ay = ellipse.MajorAxisEndPoint.Y;
+        var bx = -ay * ellipse.RadiusRatio;
+        var by = ax * ellipse.RadiusRatio;
+        var points = new List<object>(steps + 1);
+        for (var i = 0; i <= steps; i++)
+        {
+            var t = start + span * i / steps;
+            points.Add(new
+            {
+                x = cx + ax * Math.Cos(t) + bx * Math.Sin(t),
+                y = cy + ay * Math.Cos(t) + by * Math.Sin(t),
+            });
+        }
+        return points;
+    }
+
+    /// LWPOLYLINE 顶点展开：直线段直接取点，凸度（bulge）段按圆弧采样补中间点。
+    /// 凸度定义 b = tan(θ/4)，θ 为该段圆弧圆心角，b>0 逆时针；圆心在弦行进方向
+    /// 左侧偏移 h = r·cos(θ/2)·sign(θ)。θ=180° 时 h≈0（半圆圆心在弦中点）自然成立。
+    static List<object> LwPolylinePoints(LwPolyline lwp)
+    {
+        var vertices = lwp.Vertices;
+        var points = new List<object>();
+        if (vertices.Count == 0) return points;
+        for (var i = 0; i < vertices.Count; i++)
+        {
+            var vertex = vertices[i];
+            points.Add(new { x = vertex.Location.X, y = vertex.Location.Y });
+            if (i + 1 >= vertices.Count) break;
+            if (vertex.Bulge == 0) continue;
+            var next = vertices[i + 1];
+            AppendBulgeArc(points, vertex.Location.X, vertex.Location.Y, next.Location.X, next.Location.Y, vertex.Bulge);
+        }
+        if (lwp.IsClosed && vertices.Count > 2)
+        {
+            var first = vertices[0];
+            var last = vertices[^1];
+            if (last.Bulge != 0)
+            {
+                AppendBulgeArc(points, last.Location.X, last.Location.Y, first.Location.X, first.Location.Y, last.Bulge);
+            }
+            points.Add(new { x = first.Location.X, y = first.Location.Y });
+        }
+        return points;
+    }
+
+    /// 在 points 里补 A→B 凸度弧的中间点（不含端点）：θ=4·atan(b)，r=弦长/(2·sin(|θ|/2))。
+    static void AppendBulgeArc(List<object> points, double ax, double ay, double bx, double by, double bulge)
+    {
+        var theta = 4.0 * Math.Atan(bulge);
+        var dx = bx - ax;
+        var dy = by - ay;
+        var chord = Math.Sqrt(dx * dx + dy * dy);
+        if (chord < 1e-12) return;
+        var radius = chord / (2 * Math.Sin(Math.Abs(theta) / 2));
+        var h = radius * Math.Cos(theta / 2) * Math.Sign(theta);
+        var ox = (ax + bx) / 2 - dy / chord * h;
+        var oy = (ay + by) / 2 + dx / chord * h;
+        var startAngle = Math.Atan2(ay - oy, ax - ox);
+        var delta = Math.Atan2(by - oy, bx - ox) - startAngle;
+        if (theta > 0) { while (delta <= 0) delta += Math.PI * 2; }
+        else { while (delta >= 0) delta -= Math.PI * 2; }
+        var steps = Math.Clamp((int)Math.Ceiling(Math.Abs(delta) / (Math.PI / 18)), 4, 64);
+        for (var i = 1; i < steps; i++)
+        {
+            var angle = startAngle + delta * i / steps;
+            points.Add(new { x = ox + radius * Math.Cos(angle), y = oy + radius * Math.Sin(angle) });
+        }
+    }
+
     /// 文本实体收集（read 与 graph 共用）：cap 截断语义与旧 parse_dwg 一致。
+    /// height/rotation/anchor/attachment 供预览按真实字高与对齐方式绘制，read 侧多出的
+    /// 字段向后兼容；MTEXT 的 Value 带 {\f…} 格式控制码，预览渲染用 PlainText，
+    /// 契约字段 text 保持原值不动。对齐文本（非左对齐/基线）的真实定位点在
+    /// AlignmentPoint，InsertPoint 此时无意义，故定位点按需切换并附 anchor 说明。
     static (List<object> entities, List<string> contents, bool truncated) CollectTextEntities(CadDocument doc, int maxTexts)
     {
         var entities = new List<object>();
@@ -273,14 +389,35 @@ static class Program
             if (entity is not IText it || string.IsNullOrWhiteSpace(it.Value)) continue;
             if (entities.Count < maxTexts)
             {
-                entities.Add(new
+                var isMText = entity is MText;
+                var insert = it.InsertPoint;
+                string? anchor = null;
+                string? attachment = null;
+                if (entity is TextEntity te &&
+                    (te.HorizontalAlignment != TextHorizontalAlignment.Left ||
+                     te.VerticalAlignment != TextVerticalAlignmentType.Baseline))
                 {
-                    text = it.Value,
-                    layer = entity.Layer?.Name ?? "0",
-                    entityType = entity is MText ? "MTEXT" : "TEXT",
-                    handle = HandleHex(entity.Handle),
-                    insert = new { x = it.InsertPoint.X, y = it.InsertPoint.Y, z = it.InsertPoint.Z },
-                });
+                    insert = te.AlignmentPoint;
+                    anchor = $"{te.HorizontalAlignment}:{te.VerticalAlignment}";
+                }
+                else if (isMText)
+                {
+                    attachment = ((MText)entity).AttachmentPoint.ToString();
+                }
+                    entities.Add(new
+                    {
+                        text = it.Value,
+                        plain = isMText ? ((MText)entity).PlainText : it.Value,
+                        layer = entity.Layer?.Name ?? "0",
+                        entityType = isMText ? "MTEXT" : "TEXT",
+                        handle = HandleHex(entity.Handle),
+                        insert = new { x = insert.X, y = insert.Y, z = insert.Z },
+                        // ACadSharp 的 Rotation 是弧度（实测写入 π/6 → DXF 50 组码为 30°），
+                        // 这里统一换算成度输出，前端 SVG rotate 可直接使用
+                        rotation = it.Rotation * 180.0 / Math.PI,
+                        anchor,
+                        attachment,
+                    });
                 contents.Add(it.Value);
             }
             else
@@ -291,11 +428,11 @@ static class Program
         return (entities, contents, truncated);
     }
 
-    static object[] PolylinePoints(IEnumerable<Vertex2D> vertices) =>
-        vertices.Select(v => new { x = v.Location.X, y = v.Location.Y }).ToArray();
+    static List<object> PolylinePoints(IEnumerable<Vertex2D> vertices) =>
+        vertices.Select(v => (object)new { x = v.Location.X, y = v.Location.Y }).ToList();
 
-    static object[] PolylinePoints(IEnumerable<Vertex3D> vertices) =>
-        vertices.Select(v => new { x = v.Location.X, y = v.Location.Y }).ToArray();
+    static List<object> PolylinePoints(IEnumerable<Vertex3D> vertices) =>
+        vertices.Select(v => (object)new { x = v.Location.X, y = v.Location.Y }).ToList();
 
     // ── 修改 ──────────────────────────────────────────────────────────────
 
