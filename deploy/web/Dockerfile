@@ -16,10 +16,17 @@ WORKDIR /app
 # 中文字体（Noto CJK）：agent 生成 PDF/PPT/截图类产物时若容器无 CJK 字体，
 # 中文会渲染成空白或豆腐块（2026-10-31 容器实测确认）。fontconfig 供字体发现。
 # apt 源默认换国内镜像（deb.debian.org 在内网环境常不可达），可用 ARG 覆盖。
+# 其余 apt 包对齐桌面安装包 bundled-tools 的能力面（2026-11-01 对齐，见
+# scripts/prepare-web-image-linux-tools.mjs）：
+# - libreoffice writer/calc/impress：office 四件套 skill 的文档转换引擎（解析器走 PATH）；
+# - ripgrep / ugrep：agent 搜索工具（buildRuntimeToolEnvPatch 的 PATH 解析）；
+# - python3 + pip：office-engines 的 skill 执行体（ocr_scan / omml 公式等）。
 ARG APT_MIRROR=mirrors.aliyun.com
 RUN sed -i "s@deb.debian.org@${APT_MIRROR}@g" /etc/apt/sources.list.d/debian.sources \
     && apt-get update \
     && apt-get install -y --no-install-recommends fonts-noto-cjk fontconfig \
+       libreoffice-writer libreoffice-calc libreoffice-impress \
+       ripgrep ugrep python3 python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
 # 运行时依赖：与 packages/server/tsup.config.ts 的 external 清单一致。
@@ -39,6 +46,18 @@ COPY agent/zcode.cjs ./agent/zcode.cjs
 COPY agent/dwg-tools ./agent/dwg-tools
 RUN chmod +x /app/agent/dwg-tools/dwg-sidecar/linux-x64/dwg-sidecar
 
+# agent 能力资产（对齐桌面 bundled-tools，见 scripts/prepare-web-image-linux-tools.mjs）：
+# - file-tools：anydoc + canvas 的 linux napi（parse_document / pdf-research 栅格化）；
+# - office-engines：CJK 字体 + OCR 模型 + python 骨架与 office_skill_lib。
+#   三方 Python 依赖在构建期装进 site-packages（Debian CPython 3.11 ↔ manylinux wheel），
+#   容器运行时零网络、零安装。
+COPY bundled-tools ./bundled-tools
+RUN ln -s /usr/bin/python3 /app/bundled-tools/linux-x64/office-engines/python/bin/python3 \
+    && python3 -m pip install --no-cache-dir --break-system-packages \
+       -i https://pypi.tuna.tsinghua.edu.cn/simple \
+       -r /app/bundled-tools/linux-x64/office-engines/python/requirements-linux.txt \
+       --target /app/bundled-tools/linux-x64/office-engines/python/lib/python3.11/site-packages
+
 ENV NODE_ENV=production \
     PORT=3030 \
     HOST=0.0.0.0 \
@@ -46,6 +65,8 @@ ENV NODE_ENV=production \
     ZCODE_DATA_BASE_DIR=/data \
     ZCODE_SERVER_WORKSPACE=/data/workspace \
     ZCODE_DWG_TOOLS_ASSETS_ROOT=/app/agent/dwg-tools \
+    ZCODE_FILE_TOOLS_ASSETS_ROOT=/app/bundled-tools/linux-x64/file-tools \
+    ZCODE_SKILL_ENGINE_ROOT=/app/bundled-tools/linux-x64/office-engines \
     ZCODE_AGENT_SERVER_COMMAND=node \
     ZCODE_AGENT_SERVER_ARGS_JSON='["/app/agent/zcode.cjs","app-server","--stdio"]'
 # ⚠ 上面这个值必须用单引号包住：Docker 的 ENV 解析会剥掉未转义的双引号，
