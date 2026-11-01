@@ -12,6 +12,7 @@
  */
 import { spawn } from "node:child_process";
 import { stat } from "node:fs/promises";
+import { firstExistingPath } from "@zcode/shared/node";
 import { join } from "node:path";
 import type { Hono } from "hono";
 import { resolveUserSpaceConfig } from "./config.js";
@@ -74,9 +75,9 @@ const CACHE_LIMIT = 8;
 const cache = new Map<string, DwgGraph>();
 
 /** 依次尝试：显式 env → 资产根（容器内布局）→ 常见安装位置。返回可执行文件路径或 null。 */
-async function resolveSidecarPath(): Promise<string | null> {
+function resolveSidecarPath(): string | null {
   const explicit = process.env["ZCODE_DWG_SIDECAR_PATH"]?.trim();
-  const candidates: string[] = [];
+  const candidates: Array<string | null> = [];
   if (explicit) {
     candidates.push(
       explicit.endsWith("dwg-sidecar") || explicit.endsWith("dwg-sidecar.exe")
@@ -89,11 +90,8 @@ async function resolveSidecarPath(): Promise<string | null> {
     candidates.push(join(assetsRoot, "dwg-sidecar", "linux-x64", "dwg-sidecar"));
   }
   candidates.push("/app/agent/dwg-tools/dwg-sidecar/linux-x64/dwg-sidecar");
-  for (const candidate of candidates) {
-    const info = await stat(candidate).catch(() => null);
-    if (info?.isFile()) return candidate;
-  }
-  return null;
+  // 候选链求值收口到 shared（8 处同构解析之一）
+  return firstExistingPath(candidates, { kind: "file" });
 }
 
 function parseLastJsonLine(stdout: string): unknown {

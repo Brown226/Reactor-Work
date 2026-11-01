@@ -10,6 +10,7 @@
 import { existsSync } from "node:fs";
 import { dirname, join, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
+import { firstExistingDir } from "@zcode/shared/node";
 
 interface FileToolsAssets {
   /** 资产根目录；null 表示未找到任何候选人。 */
@@ -49,17 +50,9 @@ function resolveAssetsRoot(env: NodeJS.ProcessEnv, cwd: string): string | null {
   candidates.push(
     resolvePath(dirname(fileURLToPath(import.meta.url)), "..", "..", "assets", platformKey()),
   );
-  for (const candidate of candidates) {
-    const dir = dirIfExists(candidate);
-    if (dir && existsSync(join(dir, "canvas"))) return dir;
-  }
-  // 资产根下没有 canvas（例如只做了 anydoc 的最小资产）时仍返回根，
-  // 由各能力自行判定自身资产是否可用。
-  for (const candidate of candidates) {
-    const dir = dirIfExists(candidate);
-    if (dir) return dir;
-  }
-  return null;
+  // 强校验：canvas 是 pdf-research 栅格化必须的原生资产，缺它不算有效根。
+  // 弱回退：只做了 anydoc 的最小资产时仍返回根，由各能力自行判定可用性。
+  return firstExistingDir(candidates, (dir) => existsSync(join(dir, "canvas")));
 }
 
 export function resolveFileToolsAssets(

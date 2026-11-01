@@ -9,6 +9,7 @@ import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { delimiter, dirname, join, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
+import { firstExistingPath } from "@zcode/shared/node";
 
 const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
 
@@ -20,24 +21,14 @@ export class EngineUnavailableError extends Error {
   }
 }
 
-function isFile(path: string): boolean {
-  try {
-    return existsSync(path);
-  } catch {
-    return false;
-  }
-}
-
 function firstExisting(candidates: Array<string | null | undefined>): string | null {
-  for (const candidate of candidates) {
-    if (candidate && isFile(candidate)) return candidate;
-  }
-  return null;
+  // 收口到 shared 候选链求值（8 处同构解析之一）；kind=file 与原 isFile 循环同义
+  return firstExistingPath(candidates, { kind: "file" });
 }
 
 export function resolveOfficePython(env: NodeJS.ProcessEnv = process.env): string | null {
   const explicit = env.ZCODE_PYTHON_PATH?.trim();
-  if (explicit && isFile(explicit)) return explicit;
+  if (explicit && firstExistingPath([explicit], { kind: "file" })) return explicit;
   const root = env.ZCODE_SKILL_ENGINE_ROOT?.trim();
   if (root) {
     const hit = firstExisting([

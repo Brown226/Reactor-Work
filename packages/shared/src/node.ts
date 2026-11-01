@@ -21,3 +21,8 @@ export {
   type NodeSelfResourceSampler,
   type NodeSelfResourceSamplerOptions,
 } from "./node/nodeSelfResourceTelemetry.js";
+export {
+  firstExistingDir,
+  firstExistingPath,
+  type FirstExistingPathOptions,
+} from "./node/firstExistingPath.js";
