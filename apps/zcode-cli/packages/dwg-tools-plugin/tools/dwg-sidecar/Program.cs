@@ -404,17 +404,26 @@ static class Program
                 {
                     attachment = ((MText)entity).AttachmentPoint.ToString();
                 }
-                    entities.Add(new
-                    {
-                        text = it.Value,
-                        plain = isMText ? ((MText)entity).PlainText : it.Value,
+                // MTEXT 的 \U+XXXX 转义（如 \U+0083 上标3）ACadSharp 的 PlainText 不处理，
+                // 直接显示会像乱码；这里统一换成对应字符（图形端没有的字体由浏览器兜底）。
+                var plain = isMText ? ((MText)entity).PlainText : it.Value;
+                if (plain != null && plain.Contains("\\U+"))
+                {
+                    plain = UnicodeEscape.Replace(plain, static m =>
+                        char.ConvertFromUtf32(Convert.ToInt32(m.Groups[1].Value, 16)));
+                }
+                entities.Add(new
+                {
+                    text = it.Value,
+                    plain,
                         layer = entity.Layer?.Name ?? "0",
                         entityType = isMText ? "MTEXT" : "TEXT",
                         handle = HandleHex(entity.Handle),
-                        insert = new { x = insert.X, y = insert.Y, z = insert.Z },
-                        // ACadSharp 的 Rotation 是弧度（实测写入 π/6 → DXF 50 组码为 30°），
-                        // 这里统一换算成度输出，前端 SVG rotate 可直接使用
-                        rotation = it.Rotation * 180.0 / Math.PI,
+                    insert = new { x = insert.X, y = insert.Y, z = insert.Z },
+                    height = it.Height,
+                    // ACadSharp 的 Rotation 是弧度（实测写入 π/6 → DXF 50 组码为 30°），
+                    // 这里统一换算成度输出，前端 SVG rotate 可直接使用
+                    rotation = it.Rotation * 180.0 / Math.PI,
                         anchor,
                         attachment,
                     });
@@ -613,6 +622,8 @@ static class Program
     // ── 标准引用（正则移植自旧 parse_dwg / 核审通口径） ─────────────────────
 
     static readonly Regex StandardRefPattern = new("《.*?》\\s*[(（]?\\s*([A-Za-z/]+)\\s?(\\d+[-/.]?\\d*([-/.:]\\d+)*)[)）]?([(（].*[)）])?");
+    /// MTEXT 的 \U+XXXX Unicode 转义（预览渲染用，plain 字段专用）
+    static readonly Regex UnicodeEscape = new(@"\\U\+([0-9A-Fa-f]{4})");
     static readonly Regex CodeOnlyPattern = new("[(（]?(GB|GB/T|NB|NB/T|HJ|DL|DL/T|CECS|HAF|EJ|EJ/T|JGJ|CJJ|JG|HG|SH|SY|YY|QB|SL|TB|JT|YB|DB|DBJ|QX|GBJ|TJ|BJG|GYJ)\\s?(\\d+[-/.]?\\d*([-/.:]\\d+)*)[)）]?([(（].*[)）」])?");
 
     static string GetStandardIdent(string standardNo)

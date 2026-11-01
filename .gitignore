@@ -138,3 +138,6 @@ Reactor Web 交付包/*/images/*.tar.gz
 Reactor 服务端部署镜像/*/images/*.tar.gz
 deploy/web/certs/
 Reactor Web 交付包/*/config/certs/
+
+# DWG 查看器字体（scripts/fetch-dwg-fonts.mjs 下载，不入库）
+packages/web/public/dwg/

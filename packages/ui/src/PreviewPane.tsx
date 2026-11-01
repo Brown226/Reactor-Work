@@ -48,6 +48,7 @@ import { normalizeCodeViewerSource } from "@/lib/codeViewerSource.js";
 import { FileDisplayIcon, resolveFileDisplayDescriptor } from "@/lib/fileDisplay.js";
 import { getPathLeaf, isAbsoluteFilePath } from "@/lib/path.js";
 import { decodeBase64ToArrayBuffer, getOfficeFilePreviewKind } from "@/lib/officeFilePreview.js";
+import { getDwgFilePreviewKind } from "@/previewPaneDwgContent.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useMarkdownExport } from "@/hooks/useMarkdownExport.js";
@@ -600,6 +601,10 @@ export function PreviewPane({
     () => (source?.type === "file" ? getOfficeFilePreviewKind(source.path) : null),
     [source],
   );
+  const dwgPreviewKind = useMemo(
+    () => (source?.type === "file" ? getDwgFilePreviewKind(source.path) : null),
+    [source],
+  );
   const pptxSource = useMemo(() => resolvePreviewPanePptxSource(source), [source]);
   const showDocumentHeaderDivider = shouldShowPreviewPaneHeaderDivider(source);
   const pptxSourcePath = pptxSource?.path ?? null;
@@ -674,8 +679,7 @@ export function PreviewPane({
     displayOptions;
   // Markdown 导出：互斥状态与失败恢复的唯一 owner；PNG/PDF 快照预览 DOM，docx 重新解析源码。
   const markdownExport = useMarkdownExport({
-    getPreviewRoot: () =>
-      document.querySelector<HTMLElement>('[data-markdown-preview="true"]'),
+    getPreviewRoot: () => document.querySelector<HTMLElement>('[data-markdown-preview="true"]'),
     content: filePreview?.content ?? "",
     fileName: deriveMarkdownExportName(source),
   });
@@ -1283,7 +1287,7 @@ export function PreviewPane({
   useEffect(() => {
     let disposed = false;
 
-    if (!officePreviewKind || source?.type !== "file") {
+    if ((!officePreviewKind && !dwgPreviewKind) || source?.type !== "file") {
       setOfficePreview(null);
       setLoadingOfficePreview(false);
       return () => {
@@ -1330,7 +1334,7 @@ export function PreviewPane({
     return () => {
       disposed = true;
     };
-  }, [fileService, intl, officePreviewKind, source]);
+  }, [fileService, intl, officePreviewKind, dwgPreviewKind, source]);
 
   useEffect(() => {
     const navigation = pptxReferenceNavigation;
@@ -1824,6 +1828,7 @@ export function PreviewPane({
             loadingOfficePreview={loadingOfficePreview}
             officePreview={officePreview}
             officePreviewKind={officePreviewKind}
+            dwgPreviewKind={dwgPreviewKind}
             loadingPptxPreview={loadingPptxPreview}
             pptxPreviewData={pptxPreviewData}
             pptxViewerLabels={pptxViewerLabels}

@@ -34,6 +34,10 @@ import {
   isSaveWorkflowToolCall,
 } from "@/lib/workflowToolNames.js";
 import { CuaToolCallBlock, isCuaToolCall } from "@/ToolCallBlocks/renderers/cua.js";
+import {
+  DwgModifyToolCallBlock,
+  isDwgModifyToolCall,
+} from "@/ToolCallBlocks/renderers/dwg-modify.js";
 import { CuaGroupToolCallBlock } from "@/ToolCallBlocks/renderers/cua-group.js";
 import { GoalToolCallBlock } from "@/ToolCallBlocks/renderers/goal.js";
 import { NodeReplToolCallBlock } from "@/ToolCallBlocks/renderers/node-repl.js";
@@ -86,6 +90,12 @@ export function resolveToolCallRenderer(context: ToolCallBlockRenderContext) {
   // 但字符偏移由 `ReportReviewIssues` 确定性定位，渲染与点击链路与上一条完全一致。
   if (isReportReviewIssuesToolCall(context.toolCallNode.toolCall)) {
     return ReportReviewIssuesToolCallBlock;
+  }
+
+  // DWG 改图（dwg-tools MCP 的 dwg_modify）按名认领：它要把改动的实体 handle
+  // 推给正在看图的 mlightcad 查看器（定位高亮），raw JSON 兜底卡没有这个联动。
+  if (isDwgModifyToolCall(context.toolCallNode.toolCall)) {
+    return DwgModifyToolCallBlock;
   }
 
   // GenUI 消息体：结果里是声明式 UI 树，必须内联渲染而不是原始 JSON 卡。

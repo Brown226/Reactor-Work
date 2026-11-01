@@ -65,6 +65,25 @@ export interface DwgSymbol {
   rotation?: number;
 }
 
+/** 图纸里的文字实体：字段语义见 packages/server/src/user-space/dwg.ts 的注释。 */
+export interface DwgTextEntity {
+  text: string;
+  /** MTEXT 去掉 {\f…} 格式控制码后的纯文本；TEXT 与 text 相同。 */
+  plain?: string;
+  layer: string;
+  entityType: "TEXT" | "MTEXT" | string;
+  handle?: string;
+  insert: DwgPoint;
+  /** 字高（CAD 单位），前端乘投影比例得到字号。 */
+  height?: number;
+  /** 旋转角（度，CAD 逆时针为正）。 */
+  rotation?: number;
+  /** TEXT 非默认对齐时的 "水平:垂直" 说明（如 Center:Middle）。 */
+  anchor?: string | null;
+  /** MTEXT 附着九宫格（如 TopLeft），决定锚点与基线偏移。 */
+  attachment?: string | null;
+}
+
 /** 服务端 dwg-sidecar `graph` 命令的输出（详见 packages/server/src/user-space/dwg.ts）。 */
 export interface DwgGraph {
   ok: true;
@@ -74,6 +93,7 @@ export interface DwgGraph {
   truncated?: boolean;
   symbols: DwgSymbol[];
   segments: DwgSegment[];
+  textEntities: DwgTextEntity[];
   cached?: boolean;
 }
 

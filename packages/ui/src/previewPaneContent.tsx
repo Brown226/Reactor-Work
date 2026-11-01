@@ -22,6 +22,7 @@ import type { CodeCommentPreview, CodeCommentRange } from "@/lib/codeCommentCont
 import type { Theme } from "@/useTheme.js";
 import type { OfficeFilePreviewKind } from "@/lib/officeFilePreview.js";
 import { PreviewPaneOfficeContent } from "@/previewPaneOfficeContent.js";
+import { PreviewPaneDwgContent, type DwgFilePreviewKind } from "@/previewPaneDwgContent.js";
 import { V4_DRAFT_SCOPE_ROOT } from "@/v4/composer/composerDraftStore.js";
 import type { PptxElementReferenceSource } from "@/lib/pptxElementReference.js";
 import type { MediaCodeViewerSource, PptxReferencePreviewNavigation } from "@/lib/codeViewer.js";
@@ -46,6 +47,7 @@ interface PreviewPaneContentProps {
   loadingOfficePreview: boolean;
   officePreview: FileBinaryPreview | null;
   officePreviewKind: OfficeFilePreviewKind | null;
+  dwgPreviewKind: DwgFilePreviewKind | null;
   loadingPptxPreview: boolean;
   pptxPreviewData: ArrayBuffer | null;
   pptxViewerLabels: PptxPreviewViewerLabels;
@@ -116,6 +118,7 @@ export function PreviewPaneContent({
   loadingOfficePreview,
   officePreview,
   officePreviewKind,
+  dwgPreviewKind,
   loadingPptxPreview,
   pptxPreviewData,
   pptxViewerLabels,
@@ -366,6 +369,26 @@ export function PreviewPaneContent({
     );
   }
 
+  if (source.type === "file" && dwgPreviewKind) {
+    return (
+      <PreviewPaneDwgContent
+        error={error}
+        loading={loadingOfficePreview}
+        preview={officePreview}
+        sourcePath={source.path}
+        chatQuote={
+          workspacePath
+            ? {
+                workspacePath,
+                ...(workspaceIdentity ? { workspaceIdentity } : {}),
+                scopeId: V4_DRAFT_SCOPE_ROOT,
+                sessionId: composerSessionId ?? null,
+              }
+            : null
+        }
+      />
+    );
+  }
   if (source.type === "file" && officePreviewKind) {
     return (
       <PreviewPaneOfficeContent

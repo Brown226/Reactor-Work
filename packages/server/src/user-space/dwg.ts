@@ -3,7 +3,9 @@
  *
  * 为什么放在服务端：DWG 是二进制专有格式，浏览器无法直接渲染。产品里已有
  * ACadSharp 的 .NET sidecar（桌面端给 agent 用），这里复用它输出的 graph 数据
- * （INSERT 符号插入点 + LINE/多段线线段坐标）供前端画 SVG。
+ * （INSERT 符号插入点 + LINE/多段线/圆弧/圆/椭圆的采样点 + TEXT/MTEXT 文字）
+ * 供前端画 SVG。曲线由 sidecar 按 ≤10°/段 采样成折线点，前端按 polyline 统一
+ * 渲染；文字带字高（CAD 单位）与旋转角（度，sidecar 已从弧度换算）。
  *
  * 解析结果按「绝对路径 + mtime + size」缓存：一张图纸解析几百毫秒到数秒，
  * 反复点开同一文件不该重复付这个代价；文件被 agent 改写后 key 变化会自动失效。
@@ -38,6 +40,24 @@ export interface DwgSymbol {
   rotation?: number;
 }
 
+export interface DwgTextEntity {
+  text: string;
+  /** MTEXT 去掉格式控制码后的纯文本。 */
+  plain?: string;
+  layer: string;
+  entityType: string;
+  handle?: string;
+  insert: DwgPoint;
+  /** 字高（CAD 单位）。 */
+  height?: number;
+  /** 旋转角（度）。 */
+  rotation?: number;
+  /** TEXT 非默认对齐时的 "水平:垂直" 说明。 */
+  anchor?: string | null;
+  /** MTEXT 附着九宫格（如 TopLeft）。 */
+  attachment?: string | null;
+}
+
 export interface DwgGraph {
   ok: true;
   command: "graph";
@@ -46,6 +66,7 @@ export interface DwgGraph {
   truncated?: boolean;
   symbols: DwgSymbol[];
   segments: DwgSegment[];
+  textEntities: DwgTextEntity[];
 }
 
 const SIDECAR_TIMEOUT_MS = 30_000;
@@ -147,6 +168,7 @@ async function runGraph(absPath: string): Promise<DwgGraph> {
     truncated: parsed.truncated,
     symbols: Array.isArray(parsed.symbols) ? parsed.symbols : [],
     segments: Array.isArray(parsed.segments) ? parsed.segments : [],
+    textEntities: Array.isArray(parsed.textEntities) ? parsed.textEntities : [],
   };
 }
 
