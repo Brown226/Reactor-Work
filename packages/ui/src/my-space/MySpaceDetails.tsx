@@ -6,14 +6,14 @@
  * 重命名、移动、删除交给左侧列表的行菜单，避免同一动作出现两个入口。
  */
 import { useState } from "react";
-import { Download, FolderOpen, History, Paperclip, Share2, X } from "lucide-react";
+import { FolderOpen, History, Paperclip, Share2, X } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { FileDisplayIcon } from "@/lib/fileDisplay.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { MySpacePreview } from "./MySpacePreview.js";
 import { MySpaceVersionsDialog } from "./MySpaceVersionsDialog.js";
-import { formatBytes, spaceClient, type SpaceEntry } from "./spaceClient.js";
+import { formatBytes, type SpaceEntry } from "./spaceClient.js";
 import { formatSpaceWhen, spaceFileIconSrc, spaceFileTypeLabel } from "./spaceFileType.js";
 
 export interface MySpaceDetailsProps {
@@ -73,9 +73,9 @@ export function MySpaceDetails({
           {name}
         </h3>
         {/* 操作全部收进标题行右侧的空白：文件名很少长到占满，那一行本来就空着一大截。
-            顺序按常用度排「加入对话 → 历史版本 → 下载 → 分享」，只有加入对话是主色按钮，
+            顺序按常用度排「加入对话 → 历史版本 → 分享」，只有加入对话是主色按钮，
             其余做成图标，标题行才不会被一排通栏按钮撑高。
-            重命名/移动/删除由左侧列表的行菜单承载，这里不再重复。 */}
+            重命名/移动/删除/下载由左侧列表的行菜单承载，这里不再重复。 */}
         <div className="flex shrink-0 items-center gap-1">
           {!isDirectory ? (
             <>
@@ -93,16 +93,7 @@ export function MySpaceDetails({
                   <History className="size-4" />
                 </Button>
               </ControlHintTooltip>
-              <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.download" })}>
-                <Button
-                  size="icon-md"
-                  variant="ghost"
-                  aria-label={intl.formatMessage({ id: "mySpace.action.download" })}
-                  onClick={() => window.open(spaceClient.downloadUrl(relPath), "_blank")}
-                >
-                  <Download className="size-4" />
-                </Button>
-              </ControlHintTooltip>
+              {/* 下载入口在文件列表的行菜单里，标题行不再重复 */}
               <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.share" })}>
                 <Button
                   size="icon-md"
