@@ -5,10 +5,25 @@
  * `bg-selected`，表头 sticky。单行只做「选中 + 预览」，目录名是单独的按钮——
  * 目录点名字进入、点行选中，和文件行的行为不会互相打架。
  */
-import { ChevronRight, FolderOpen, Upload } from "lucide-react";
+import {
+  ChevronRight,
+  Download,
+  FolderInput,
+  FolderOpen,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
 import { Checkbox } from "@/components/ui/checkbox.js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu.js";
 import { FileDisplayIcon } from "@/lib/fileDisplay.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { MySpaceEmptyState } from "./MySpaceEmptyState.js";
@@ -36,6 +51,11 @@ export interface MySpaceFileTableProps {
   onOpenSearchHit: (hit: SpaceSearchHit) => void;
   onDropFiles: (files: FileList) => void;
   onUpload: () => void;
+  /** 行菜单：下载 / 重命名 / 移动 / 删除（入参是相对空间根的路径） */
+  onDownload: (relPath: string) => void;
+  onRename: (relPath: string) => void;
+  onMove: (relPath: string) => void;
+  onDelete: (relPath: string) => void;
 }
 
 function Breadcrumb({ path, onNavigate }: { path: string; onNavigate: (path: string) => void }) {
@@ -87,6 +107,10 @@ function FileRow({
   onToggleSelect,
   onActivate,
   onOpenDirectory,
+  onDownload,
+  onRename,
+  onMove,
+  onDelete,
   extra,
 }: {
   entry: SpaceEntry;
@@ -96,8 +120,13 @@ function FileRow({
   onToggleSelect: () => void;
   onActivate: () => void;
   onOpenDirectory?: () => void;
+  onDownload: () => void;
+  onRename: () => void;
+  onMove: () => void;
+  onDelete: () => void;
   extra?: string;
 }) {
+  const { intl } = useZCodeIntl();
   return (
     <tr
       tabIndex={0}
@@ -161,8 +190,47 @@ ${new Date(entry.mtime).toLocaleString()}`}
           ) : null}
         </div>
       </td>
-      <td className="w-20 py-1.5 pr-3 text-right align-middle font-mono text-ui-xs text-foreground-subtle">
+      <td className="w-20 py-1.5 pr-1 text-right align-middle font-mono text-ui-xs text-foreground-subtle">
         {entry.kind === "directory" ? "—" : formatBytes(entry.size)}
+      </td>
+      {/* 行菜单：重命名/移动/删除。常驻显示但用最弱的前景色——
+          做成 hover 才显形会让人找不到入口（Web 用户不一定去悬停每一行）。 */}
+      <td className="w-8 py-1.5 pr-2 align-middle">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="icon-md"
+              variant="ghost"
+              aria-label={intl.formatMessage({ id: "mySpace.action.more" })}
+              title={intl.formatMessage({ id: "mySpace.action.more" })}
+              onClick={(event) => event.stopPropagation()}
+              className="text-foreground-subtlest hover:text-foreground"
+            >
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+            {/* 文件夹不在这里下载：它不是一个文件，批量打包走工具栏的「打包下载」。 */}
+            {entry.kind !== "directory" ? (
+              <DropdownMenuItem onSelect={onDownload}>
+                <Download className="size-4" aria-hidden="true" />
+                {intl.formatMessage({ id: "mySpace.action.download" })}
+              </DropdownMenuItem>
+            ) : null}
+            <DropdownMenuItem onSelect={onRename}>
+              <Pencil className="size-4" aria-hidden="true" />
+              {intl.formatMessage({ id: "mySpace.action.rename" })}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onMove}>
+              <FolderInput className="size-4" aria-hidden="true" />
+              {intl.formatMessage({ id: "mySpace.action.move" })}
+            </DropdownMenuItem>
+            <DropdownMenuItem variant="destructive" onSelect={onDelete}>
+              <Trash2 className="size-4" aria-hidden="true" />
+              {intl.formatMessage({ id: "mySpace.action.delete" })}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </td>
     </tr>
   );
@@ -191,9 +259,10 @@ function TableHead({
         <th className="py-2 pr-3 text-left font-normal">
           {intl.formatMessage({ id: "mySpace.column.name" })}
         </th>
-        <th className="w-20 py-2 pr-3 text-right font-normal">
+        <th className="w-20 py-2 pr-1 text-right font-normal">
           {intl.formatMessage({ id: "mySpace.column.size" })}
         </th>
+        <th className="w-8 py-2 pr-2" />
       </tr>
     </thead>
   );
@@ -215,9 +284,14 @@ export function MySpaceFileTable({
   onOpenSearchHit,
   onDropFiles,
   onUpload,
+  onDownload,
+  onRename,
+  onMove,
+  onDelete,
 }: MySpaceFileTableProps) {
   const { intl } = useZCodeIntl();
   const entries = data?.entries ?? [];
+  const relOf = (name: string) => (path ? `${path}/${name}` : name);
   const allSelected = entries.length > 0 && entries.every((entry) => selected.has(entry.name));
   const someSelected = entries.some((entry) => selected.has(entry.name));
 
@@ -300,9 +374,10 @@ export function MySpaceFileTable({
                           </span>
                         </div>
                       </td>
-                      <td className="w-20 py-1.5 pr-3 text-right align-middle font-mono text-ui-xs text-foreground-subtle">
+                      <td className="w-20 py-1.5 pr-1 text-right align-middle font-mono text-ui-xs text-foreground-subtle">
                         {hit.entry.kind === "directory" ? "—" : formatBytes(hit.entry.size)}
                       </td>
+                      <td className="w-8 py-1.5 pr-2" />
                     </tr>
                   );
                 })}
@@ -339,6 +414,10 @@ export function MySpaceFileTable({
                   onToggleSelect={() => onToggleSelect(entry.name)}
                   onActivate={() => onActivate(entry.name)}
                   onOpenDirectory={() => onOpenDirectory(entry.name)}
+                  onDownload={() => onDownload(relOf(entry.name))}
+                  onRename={() => onRename(relOf(entry.name))}
+                  onMove={() => onMove(relOf(entry.name))}
+                  onDelete={() => onDelete(relOf(entry.name))}
                 />
               ))}
             </tbody>

@@ -572,6 +572,10 @@ export function MySpacePage({
               }}
               onDropFiles={(files) => void uploadFiles(files)}
               onUpload={() => fileInputRef.current?.click()}
+              onDownload={(rel) => window.open(spaceClient.downloadUrl(rel), "_blank")}
+              onRename={(rel) => setDialog({ kind: "rename", relPath: rel })}
+              onMove={(rel) => setDialog({ kind: "move", relPath: rel })}
+              onDelete={(rel) => void deletePaths([rel])}
             />
           ) : view === "trash" ? (
             <MySpaceTrashTable
@@ -600,9 +604,6 @@ export function MySpacePage({
             onClose={() => setActive(null)}
             onAddToChat={(rel) => onAddToChat?.([rel])}
             onShare={(rel) => setShareTarget(rel)}
-            onRename={(rel) => setDialog({ kind: "rename", relPath: rel })}
-            onMove={(rel) => setDialog({ kind: "move", relPath: rel })}
-            onDelete={(paths) => void deletePaths(paths)}
             onChanged={() => void load()}
             onError={handleError}
           />
@@ -636,9 +637,6 @@ export function MySpacePage({
               onClose={() => setCompactDetailsOpen(false)}
               onAddToChat={(rel) => onAddToChat?.([rel])}
               onShare={(rel) => setShareTarget(rel)}
-              onRename={(rel) => setDialog({ kind: "rename", relPath: rel })}
-              onMove={(rel) => setDialog({ kind: "move", relPath: rel })}
-              onDelete={(paths) => void deletePaths(paths)}
               onChanged={() => void load()}
               onError={handleError}
             />

@@ -99,6 +99,19 @@ function versionDir(root: string, rel: string): string {
   return join(root, VERSIONS_DIR_NAME, ...(dir ? dir.split("/") : []), name);
 }
 
+/**
+ * 文件名里的时间戳为了跨平台合法，写入时把 `:`/`.` 统一换成了 `-`
+ * （形如 2026-11-01T04-31-22-123Z）。返回给前端前必须还原成真正的 ISO 时间，
+ * 否则客户端 new Date(stamp) 直接得到 Invalid Date（2026-11-01 实测：
+ * 上传新版本后历史版本列表整行显示 "Invalid Date"）。
+ */
+function decodeVersionStamp(stamp: string | undefined): string {
+  if (!stamp) return "";
+  const m = /^(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3}Z)$/.exec(stamp);
+  if (!m) return stamp;
+  return `${m[1]}T${m[2]}:${m[3]}:${m[4]}.${m[5]}`;
+}
+
 export function registerExtraRoutes(app: Hono): void {
   // ---------------- 分片上传 ----------------
 
@@ -306,7 +319,7 @@ export function registerExtraRoutes(app: Hono): void {
         const info = await lstatOrNull(join(dir, name));
         if (!info?.isFile()) continue;
         const [stamp] = name.split("__");
-        items.push({ id: name, size: info.size, savedAt: stamp ?? "" });
+        items.push({ id: name, size: info.size, savedAt: decodeVersionStamp(stamp) });
       }
       items.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
       return c.json({ path: rel, items });
