@@ -31,11 +31,6 @@ export const SERVER_HTTP_EXTERNAL_DEPENDENCIES = [
   "ssh2",
   "node-pty",
   "undici",
-  "axios",
-  "form-data",
-  "combined-stream",
-  "proxy-from-env",
-  "follow-redirects",
   // node-forge 内部用动态 require("crypto")，内联进 server ESM bundle 后 Node 会报
   // Dynamic require of "crypto" is not supported；这里和 desktop main/host 构建保持同一外置策略。
   "node-forge",
@@ -66,7 +61,7 @@ export default defineConfig({
     "@zcode/client",
   ],
   // ssh2 / node-pty 含 .node native addon，不能被 esbuild 处理。
-  // undici / axios 这类 CJS 依赖被内联进 ESM bundle 后，运行时会走到
+  // undici 这类 CJS 依赖被内联进 ESM bundle 后，运行时会走到
   // require("assert") / require("util") / require("url") 等动态 require，Node 的 ESM wrapper 下会直接报 Dynamic require not supported。
   // HTTP server 场景保留为外部依赖，交给 Node 原生加载；remote 单文件 bundle 仍由 build-remote.ts 负责内联。
   external: SERVER_HTTP_EXTERNAL_DEPENDENCIES,

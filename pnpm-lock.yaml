@@ -1008,18 +1008,6 @@ importers:
       '@zcode/shared':
         specifier: workspace:*
         version: link:../shared
-      axios:
-        specifier: ^1.13.6
-        version: 1.13.6
-      combined-stream:
-        specifier: ^1.0.8
-        version: 1.0.8
-      follow-redirects:
-        specifier: ^1.16.0
-        version: 1.16.0
-      form-data:
-        specifier: ^4.0.5
-        version: 4.0.5
       hono:
         specifier: ^4.12.9
         version: 4.12.12
@@ -1028,9 +1016,6 @@ importers:
         version: 1.4.0
       node-pty:
         specifier: ^1.0.0
-        version: 1.1.0
-      proxy-from-env:
-        specifier: ^1.1.0
         version: 1.1.0
       ssh2:
         specifier: ^1.17.0
@@ -5761,9 +5746,6 @@ packages:
     resolution: {integrity: sha512-zJAaP9zxTcvTHRlejau3ZOY4V7SRpiByf3/dxx2uyKxxor19tpmpV2QRsTKikckwhaPmr2dVpxxMr7jOCYVp5g==}
     engines: {node: '>=6.0.0'}
 
-  axios@1.13.6:
-    resolution: {integrity: sha512-ChTCHMouEe2kn713WHbQGcuYrr6fXTBiu460OTwWrWob16g1bXn4vtz07Ope7ewMozJAnEquLk5lWQWtBig9DQ==}
-
   bail@2.0.2:
     resolution: {integrity: sha512-0xO6mYd7JB2YesxDKplafRpsiOzPt9V02ddPCLbY1xYGPOX24NTyN50qnUxgCPcSoYMhKpAuBTjQoRZCAkUDRw==}
 
@@ -6986,15 +6968,6 @@ packages:
 
   fix-dts-default-cjs-exports@1.0.1:
     resolution: {integrity: sha512-pVIECanWFC61Hzl2+oOCtoJ3F17kglZC/6N94eRWycFgBH35hHx0Li604ZIzhseh97mf2p0cv7vVrOZGoqhlEg==}
-
-  follow-redirects@1.16.0:
-    resolution: {integrity: sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
 
   foreground-child@3.3.1:
     resolution: {integrity: sha512-gIXjKqtFuWEgzFRJA9WCQeSJLZDjgJUOMCMzxtvFq/37KojM1BFGufqsCy0r4qSQmYLsZYMeyRqzIWOMup03sw==}
@@ -14605,14 +14578,6 @@ snapshots:
 
   await-to-js@3.0.0: {}
 
-  axios@1.13.6:
-    dependencies:
-      follow-redirects: 1.16.0
-      form-data: 4.0.5
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
-
   bail@2.0.2: {}
 
   balanced-match@1.0.2: {}
@@ -16038,8 +16003,6 @@ snapshots:
       magic-string: 0.30.21
       mlly: 1.8.2
       rollup: 4.60.1
-
-  follow-redirects@1.16.0: {}
 
   foreground-child@3.3.1:
     dependencies:
