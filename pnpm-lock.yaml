@@ -463,6 +463,9 @@ importers:
       '@zcode/plugin-guard':
         specifier: workspace:*
         version: link:../plugin-guard
+      '@zcode/shared':
+        specifier: workspace:*
+        version: link:../../../../packages/shared
       zod:
         specifier: ^4.4.3
         version: 4.6.5
@@ -511,6 +514,9 @@ importers:
       '@zcode/plugin-guard':
         specifier: workspace:*
         version: link:../plugin-guard
+      '@zcode/shared':
+        specifier: workspace:*
+        version: link:../../../../packages/shared
       fflate:
         specifier: ^0.8.2
         version: 0.8.3
@@ -579,6 +585,9 @@ importers:
       '@zcode/plugin-guard':
         specifier: workspace:*
         version: link:../plugin-guard
+      '@zcode/shared':
+        specifier: workspace:*
+        version: link:../../../../packages/shared
       zod:
         specifier: ^4.4.3
         version: 4.6.5

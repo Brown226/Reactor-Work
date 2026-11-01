@@ -141,3 +141,7 @@ Reactor Web 交付包/*/config/certs/
 
 # DWG 查看器字体（scripts/fetch-dwg-fonts.mjs 下载，不入库）
 packages/web/public/dwg/
+
+# 交付快照/镜像 tar 出库管理（放 E:/工作/Reactor-版本更新，不入版本库；仓库只留 MANIFEST）
+/Reactor Web 交付包/
+/Reactor 服务端部署镜像/
