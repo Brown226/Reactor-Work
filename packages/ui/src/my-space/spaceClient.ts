@@ -235,9 +235,14 @@ export const spaceClient = {
     dirPath: string,
     file: File,
     onProgress?: (percent: number) => void,
+    options?: { signal?: AbortSignal },
   ): Promise<{ name: string; size: number }> => {
     const CHUNK_SIZE = 4 * 1024 * 1024;
     const totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_SIZE));
+    // 分片之间检查中止：取消附件时不能再继续烧后面的分片（已收分片由服务端过期清理）
+    const throwIfAborted = (): void => {
+      if (options?.signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    };
 
     /*
      * 断点续传的关键：把 uploadId 落到 localStorage，键包含「目录+文件名+大小+修改时间」。
@@ -292,6 +297,7 @@ export const spaceClient = {
     const done = new Set(received);
     if (done.size > 0) onProgress?.(Math.round((done.size / totalChunks) * 100));
     for (let index = 0; index < totalChunks; index += 1) {
+      throwIfAborted();
       if (done.has(index)) continue;
       const chunk = file.slice(index * CHUNK_SIZE, Math.min(file.size, (index + 1) * CHUNK_SIZE));
       // 单片失败重试一次：弱网下丢一片就让整个大文件重来，续传的意义就没了
@@ -321,6 +327,7 @@ export const spaceClient = {
       done.add(index);
       onProgress?.(Math.round((done.size / totalChunks) * 100));
     }
+    throwIfAborted();
     const commit = await request<{ entry: { name: string; size: number } }>(
       "/api/space/upload/commit",
       {
@@ -336,23 +343,29 @@ export const spaceClient = {
   /**
    * 上传：用 XHR 而不是 fetch，只为拿到 progress 事件（大图纸几十 MB，没有进度
    * 用户会以为卡死）。文件名走 header，避免 query 里出现中文与分隔符问题。
+   * signal 用于 composer 移除附件时中止 XHR（不中止的话带宽照跑、chip 却已消失）。
    */
   upload: (
     dirPath: string,
     file: File,
     onProgress?: (percent: number) => void,
+    options?: { signal?: AbortSignal },
   ): Promise<{ name: string; size: number }> =>
     new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("POST", `/api/space/upload?path=${encodeURIComponent(dirPath)}`);
       xhr.setRequestHeader("x-file-name", encodeURIComponent(file.name));
       xhr.setRequestHeader("content-type", "application/octet-stream");
+      const onAbort = () => xhr.abort();
+      options?.signal?.addEventListener("abort", onAbort, { once: true });
+      const cleanup = () => options?.signal?.removeEventListener("abort", onAbort);
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable && onProgress) {
           onProgress(Math.round((event.loaded / event.total) * 100));
         }
       };
       xhr.onload = () => {
+        cleanup();
         if (xhr.status === 413) {
           reject(new SpaceQuotaError("空间不足，请清理回收站或删除文件"));
           return;
@@ -374,7 +387,14 @@ export const spaceClient = {
         }
         reject(new SpaceRequestError(message, xhr.status));
       };
-      xhr.onerror = () => reject(new SpaceRequestError("上传中断，请重试", 0));
+      xhr.onerror = () => {
+        cleanup();
+        reject(new SpaceRequestError("上传中断，请重试", 0));
+      };
+      xhr.onabort = () => {
+        cleanup();
+        reject(new DOMException("Aborted", "AbortError"));
+      };
       xhr.send(file);
     }),
 };

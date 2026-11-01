@@ -15,7 +15,8 @@ import { useBackgroundImageSource } from "@/hooks/useBackgroundImageSource.js";
 import { useDevModeUnlockBridge } from "@/lib/devMode.js";
 import { useDynamicWorkflowAvailabilityLoader } from "@/hooks/useDynamicWorkflowAvailability.js";
 import { DirectoryBrowser } from "@/DirectoryBrowser.js";
-import { SpaceFolderPicker } from "@/my-space/index.js";
+import { SpaceFolderPicker, spaceClient } from "@/my-space/index.js";
+import { setWorkspaceFileUploadBridge } from "@/v4/composer/workspaceFileUploadBridge.js";
 import { useTabPersistence } from "@/hooks/useTabPersistence.js";
 import { useTokenRefresh } from "@/hooks/useTokenRefresh.js";
 import { useWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
@@ -667,6 +668,48 @@ function RootInner({
     // 这里由 Root 在 workspace 切换时同步一份当前上下文，既保留工具层复用性，也不把 Zustand 依赖硬塞进工具函数。
     setDefaultFileDisplayBasePath(activeWorkspacePath);
   }, [activeWorkspacePath]);
+
+  useEffect(() => {
+    // Web 宿主：拖拽/选择的聊天附件自动落到当前工作区（必在用户空间内）的「对话附件/」，
+    // 完成后以工作区路径进对话——agent 直接读文件，且内容进「我的空间」可管理（配额/版本/回收站）。
+    // 桌面端不注册桥：composer 保留本地路径零复制与内联字节链路，两端行为由桥的存在与否决定。
+    if (!mySpaceEnabled || !spaceRootAbsPath) return;
+    setWorkspaceFileUploadBridge({
+      upload: async ({ file, workspacePath, onProgress, signal }) => {
+        const normalize = (value: string) => value.replace(/\\/g, "/");
+        const normalizedRoot = normalize(spaceRootAbsPath);
+        const normalizedWorkspace = normalize(workspacePath);
+        // 空间根校验失败说明桥被误用（工作区指向了空间之外），宁可失败也不能越权写。
+        if (normalizedWorkspace !== normalizedRoot && !normalizedWorkspace.startsWith(`${normalizedRoot}/`)) {
+          throw new Error("工作区不在用户空间内，附件无法自动归档");
+        }
+        const relativeBase =
+          normalizedWorkspace === normalizedRoot
+            ? ""
+            : normalizedWorkspace.slice(normalizedRoot.length + 1);
+        const dir = relativeBase ? `${relativeBase}/对话附件` : "对话附件";
+        // 与「我的空间」页面同一套上传通道：大文件分片续传，服务端同名自动 (n) 后缀防覆盖，
+        // 返回的 name 是防覆盖后的最终名，必须用它拼路径。
+        const doUpload = () =>
+          file.size > 8 * 1024 * 1024
+            ? spaceClient.uploadChunked(dir, file, onProgress, { signal })
+            : spaceClient.upload(dir, file, onProgress, { signal });
+        let uploaded;
+        try {
+          uploaded = await doUpload();
+        } catch (error) {
+          // 「对话附件/」只在首次拖拽时缺失：上传接口要求父目录已存在（404），
+          // 这里建目录后重试一次；之后每次拖拽都直接命中已存在的目录，无额外请求。
+          const status = (error as { status?: number }).status;
+          if (status !== 404) throw error;
+          await spaceClient.mkdir(dir);
+          uploaded = await doUpload();
+        }
+        return `${workspacePath}/${dir}/${uploaded.name}`;
+      },
+    });
+    return () => setWorkspaceFileUploadBridge(null);
+  }, [mySpaceEnabled, spaceRootAbsPath]);
 
   useEffect(() => {
     if (!activeWorkspacePath) {

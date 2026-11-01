@@ -33,6 +33,12 @@ export interface ComposerAttachmentUploadItem extends ChatComposerAttachment {
   adopted: boolean;
   showComplete: boolean;
   localZeroCopy: boolean;
+  /**
+   * Web 拖拽/选择的文件：字节不进会话附件暂存，改由 workspaceFileUploadBridge
+   * 落到当前工作区（用户空间）的「对话附件/」，完成后 attachmentRef 即工作区路径。
+   * 不依赖 session，runtime 换代也不需要重传——路径始终有效。
+   */
+  workspaceUpload?: boolean;
 }
 
 interface ComposerAttachmentUploadStoreState {
