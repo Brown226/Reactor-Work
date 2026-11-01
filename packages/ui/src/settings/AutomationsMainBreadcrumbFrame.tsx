@@ -15,17 +15,24 @@ export function AutomationsMainBreadcrumbFrame({
   isDesktop,
   sectionLabel,
   showTopStrip = true,
+  reserveFloatingToggleGutter,
 }: {
   ariaLabel: string;
   children: ReactNode;
   isDesktop: boolean;
   sectionLabel: string;
   /**
-   * 是否保留顶部 h-12 空带。Web 收起侧栏时传 false：
-   * 浮层只剩「展开」按钮，主视图工具栏要整体上移最大化利用空间，
-   * 这里改为给内容加左侧让位（pl-12）避免与悬浮按钮重叠。
+   * 是否保留顶部 h-12 空带。这条带在 Web 端没有任何实际内容（面包屑只渲染给桌面端），
+   * 只是历史遗留的拖拽区占位；调用方可传 false 让主视图工具栏整体上移。
    */
   showTopStrip?: boolean;
+  /**
+   * 内容左侧是否为顶部浮层（「展开侧栏」按钮）让出一列。
+   * 默认跟随 showTopStrip：不显示顶带就默认需要让位。
+   * 但 Web 展开侧栏时主视图本来就位于侧栏右侧，没有遮挡，此时应显式传 false——
+   * 否则会平白多出 16px 左padding，内容右移。
+   */
+  reserveFloatingToggleGutter?: boolean;
 }) {
   const [items, setItems] = useState<readonly SettingsBreadcrumbItem[]>([]);
 
@@ -44,7 +51,13 @@ export function AutomationsMainBreadcrumbFrame({
           </div>
         ) : null}
         {/* 收起侧栏且不显示顶带时，左上角仍悬浮着「展开侧栏」按钮，内容让出这一列 */}
-        <div className={showTopStrip ? "contents" : "flex min-h-0 flex-1 flex-col pl-4"}>
+        <div
+          className={
+            (reserveFloatingToggleGutter ?? !showTopStrip)
+              ? "flex min-h-0 flex-1 flex-col pl-4"
+              : "contents"
+          }
+        >
           {children}
         </div>
       </div>

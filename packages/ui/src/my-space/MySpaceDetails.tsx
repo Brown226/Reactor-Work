@@ -133,9 +133,12 @@ export function MySpaceDetails({
         </div>
       )}
 
-      <div className="space-y-2 border-t border-border px-3 py-2">
+      {/* 底部操作区压成两行：一行按钮 + 一行元信息。
+          旧版是「两个通栏大按钮 / 图标行 / 三行 类型·大小·时间 / 历史版本」共 5 行，
+          下沿吃掉 200px 以上，预览区被挤得只剩一条；信息量没变，只是不再各占一行。 */}
+      <div className="flex min-w-0 items-center gap-1 border-t border-border px-3 py-1.5">
         {!isDirectory ? (
-          <div className="grid grid-cols-2 gap-1.5">
+          <>
             <Button
               size="sm"
               onClick={() => window.open(spaceClient.downloadUrl(relPath), "_blank")}
@@ -147,134 +150,117 @@ export function MySpaceDetails({
               <Paperclip className="mr-1.5 size-4" aria-hidden="true" />
               {intl.formatMessage({ id: "mySpace.action.addToChat" })}
             </Button>
-          </div>
+            <span className="mx-0.5 h-4 w-px shrink-0 bg-border" aria-hidden="true" />
+            <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.share" })}>
+              <Button
+                size="icon-md"
+                variant="ghost"
+                aria-label={intl.formatMessage({ id: "mySpace.action.share" })}
+                onClick={() => onShare(relPath)}
+              >
+                <Share2 className="size-4" />
+              </Button>
+            </ControlHintTooltip>
+          </>
         ) : null}
-
-        <div className="flex items-center gap-0.5">
-          {!isDirectory ? (
-            <>
-              <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.share" })}>
-                <Button
-                  size="icon-md"
-                  variant="ghost"
-                  aria-label={intl.formatMessage({ id: "mySpace.action.share" })}
-                  onClick={() => onShare(relPath)}
-                >
-                  <Share2 className="size-4" />
-                </Button>
-              </ControlHintTooltip>
-              <span className="mx-1 h-4 w-px bg-border" aria-hidden="true" />
-            </>
-          ) : null}
-          <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.rename" })}>
-            <Button
-              size="icon-md"
-              variant="ghost"
-              aria-label={intl.formatMessage({ id: "mySpace.action.rename" })}
-              onClick={() => onRename(relPath)}
-            >
-              <Pencil className="size-4" />
-            </Button>
-          </ControlHintTooltip>
-          <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.move" })}>
-            <Button
-              size="icon-md"
-              variant="ghost"
-              aria-label={intl.formatMessage({ id: "mySpace.action.move" })}
-              onClick={() => onMove(relPath)}
-            >
-              <FolderInput className="size-4" />
-            </Button>
-          </ControlHintTooltip>
-          <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.delete" })}>
-            <Button
-              size="icon-md"
-              variant="ghost"
-              className="ml-auto text-destructive"
-              aria-label={intl.formatMessage({ id: "mySpace.action.delete" })}
-              onClick={() => onDelete([relPath])}
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </ControlHintTooltip>
-        </div>
+        <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.rename" })}>
+          <Button
+            size="icon-md"
+            variant="ghost"
+            aria-label={intl.formatMessage({ id: "mySpace.action.rename" })}
+            onClick={() => onRename(relPath)}
+          >
+            <Pencil className="size-4" />
+          </Button>
+        </ControlHintTooltip>
+        <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.move" })}>
+          <Button
+            size="icon-md"
+            variant="ghost"
+            aria-label={intl.formatMessage({ id: "mySpace.action.move" })}
+            onClick={() => onMove(relPath)}
+          >
+            <FolderInput className="size-4" />
+          </Button>
+        </ControlHintTooltip>
+        <ControlHintTooltip title={intl.formatMessage({ id: "mySpace.action.delete" })}>
+          <Button
+            size="icon-md"
+            variant="ghost"
+            className="ml-auto text-destructive"
+            aria-label={intl.formatMessage({ id: "mySpace.action.delete" })}
+            onClick={() => onDelete([relPath])}
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        </ControlHintTooltip>
       </div>
 
-      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 border-t border-border px-3 py-2 text-ui-sm">
-        <dt className="text-foreground-subtle">
-          {intl.formatMessage({ id: "mySpace.details.type" })}
-        </dt>
-        <dd className="min-w-0 truncate text-right text-foreground">
-          {spaceFileTypeLabel(name, entry.kind)}
-        </dd>
-        <dt className="text-foreground-subtle">
-          {intl.formatMessage({ id: "mySpace.details.size" })}
-        </dt>
-        <dd className="text-right font-mono text-foreground">
-          {isDirectory ? "—" : formatBytes(entry.size)}
-        </dd>
-        <dt className="text-foreground-subtle">
-          {intl.formatMessage({ id: "mySpace.details.modified" })}
-        </dt>
-        <dd className="text-right text-foreground">
-          <span title={new Date(entry.mtime).toLocaleString()}>{formatSpaceWhen(entry.mtime)}</span>
-        </dd>
-      </dl>
-
-      {!isDirectory ? (
-        <div className="border-t border-border px-3 py-2">
-          <div className="flex items-center gap-1.5">
-            <History className="size-3.5 text-foreground-subtle" aria-hidden="true" />
-            <span className="text-ui-sm text-foreground-subtle">
-              {intl.formatMessage({ id: "mySpace.details.versions" })}
-            </span>
-            <Button
-              size="xs"
-              variant="ghost"
-              className="ml-auto"
-              disabled={versionsLoading}
-              onClick={() => void loadVersions()}
-            >
-              {intl.formatMessage({ id: "mySpace.details.loadVersions" })}
-            </Button>
-          </div>
-          {versions !== null ? (
-            versions.length === 0 ? (
-              <p className="mt-1 text-ui-xs text-foreground-subtlest">
-                {intl.formatMessage({ id: "mySpace.details.versionsEmpty" })}
-              </p>
-            ) : (
-              <ul className="mt-1 max-h-28 space-y-0.5 overflow-auto">
-                {versions.map((version) => (
-                  <li key={version.id} className="flex items-center gap-2 text-ui-xs">
-                    <span className="min-w-0 flex-1 truncate font-mono text-foreground-subtle">
-                      {new Date(version.savedAt).toLocaleString()}
-                    </span>
-                    <span className="shrink-0 font-mono text-foreground-subtlest">
-                      {formatBytes(version.size)}
-                    </span>
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      onClick={() =>
-                        void spaceClient
-                          .restoreVersion(relPath, version.id)
-                          .then(() => {
-                            onChanged();
-                            void loadVersions();
-                          })
-                          .catch(onError)
-                      }
-                    >
-                      {intl.formatMessage({ id: "mySpace.action.restore" })}
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            )
-          ) : null}
+      {/* 历史版本默认收起，展开时只占自己那一块，不影响下面的元信息行 */}
+      {!isDirectory && versions !== null ? (
+        <div className="border-t border-border px-3 py-1.5">
+          {versions.length === 0 ? (
+            <p className="text-ui-xs text-foreground-subtlest">
+              {intl.formatMessage({ id: "mySpace.details.versionsEmpty" })}
+            </p>
+          ) : (
+            <ul className="max-h-28 space-y-0.5 overflow-auto">
+              {versions.map((version) => (
+                <li key={version.id} className="flex items-center gap-2 text-ui-xs">
+                  <span className="min-w-0 flex-1 truncate font-mono text-foreground-subtle">
+                    {new Date(version.savedAt).toLocaleString()}
+                  </span>
+                  <span className="shrink-0 font-mono text-foreground-subtlest">
+                    {formatBytes(version.size)}
+                  </span>
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    onClick={() =>
+                      void spaceClient
+                        .restoreVersion(relPath, version.id)
+                        .then(() => {
+                          onChanged();
+                          void loadVersions();
+                        })
+                        .catch(onError)
+                    }
+                  >
+                    {intl.formatMessage({ id: "mySpace.action.restore" })}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       ) : null}
+
+      {/* 元信息一行到底：类型 · 大小 · 修改时间，右侧挂历史版本入口 */}
+      <div className="flex min-w-0 items-center gap-1.5 border-t border-border px-3 py-1 text-ui-xs text-foreground-subtle">
+        <span className="shrink-0">{spaceFileTypeLabel(name, entry.kind)}</span>
+        <span aria-hidden="true">·</span>
+        <span className="shrink-0 font-mono">{isDirectory ? "—" : formatBytes(entry.size)}</span>
+        <span aria-hidden="true">·</span>
+        <span className="min-w-0 truncate" title={new Date(entry.mtime).toLocaleString()}>
+          {formatSpaceWhen(entry.mtime)}
+        </span>
+        {!isDirectory ? (
+          <Button
+            size="xs"
+            variant="ghost"
+            className="ml-auto shrink-0"
+            disabled={versionsLoading}
+            onClick={() => {
+              // 再点一次收起，避免列表常驻挤占预览高度
+              if (versions !== null) setVersions(null);
+              else void loadVersions();
+            }}
+          >
+            <History className="mr-1 size-3" aria-hidden="true" />
+            {intl.formatMessage({ id: "mySpace.details.versions" })}
+          </Button>
+        ) : null}
+      </div>
     </aside>
   );
 }

@@ -6842,13 +6842,9 @@ const enUS: Record<string, string> = {
     "Select a file to preview it. Deleted files go to trash and still use quota until permanently deleted.",
   "mySpace.details.close": "Close",
   "mySpace.details.folder": "Folder: rename, move or delete it. Its size counts the files inside.",
-  "mySpace.details.type": "Type",
-  "mySpace.details.size": "Size",
-  "mySpace.details.modified": "Modified",
   "mySpace.details.versions": "Version history",
   "mySpace.details.versionsEmpty":
     "No versions yet. Uploading a new version over a file keeps the old content here.",
-  "mySpace.details.loadVersions": "Show versions",
   "mySpace.dialog.cancel": "Cancel",
   "mySpace.dialog.confirm": "Confirm",
   "mySpace.dialog.newFolder.title": "New folder",

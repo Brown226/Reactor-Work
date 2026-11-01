@@ -1899,7 +1899,10 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                           <main className="flex h-full min-h-0 flex-1 flex-col bg-background">
                             <AutomationsMainBreadcrumbFrame
                               isDesktop={Boolean(isDesktop)}
-                              showTopStrip={Boolean(isDesktop) || isSidebarVisible}
+                              // Web 端这条 h-12 带没有任何内容（面包屑只渲染给桌面端），
+                              // 展开侧栏时留着就是顶部一大块空白，工具栏被凭空压下 48px。
+                              showTopStrip={Boolean(isDesktop)}
+                              reserveFloatingToggleGutter={!isDesktop && !isSidebarVisible}
                               sectionLabel={intl.formatMessage({ id: "workspaceHeader.mySpace" })}
                               ariaLabel={intl.formatMessage({ id: "workspaceHeader.mySpace" })}
                             >
