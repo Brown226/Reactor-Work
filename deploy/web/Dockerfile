@@ -56,9 +56,16 @@ RUN chmod +x /app/agent/dwg-tools/dwg-sidecar/linux-x64/dwg-sidecar
 #   三方 Python 依赖在构建期装进 site-packages（Debian CPython 3.11 ↔ manylinux wheel），
 #   容器运行时零网络、零安装。
 COPY bundled-tools ./bundled-tools
-# ln -sf：构建上下文可能来自既有镜像的 docker cp（已带 bin/python3），
-# 非幂等的 ln -s 会因 File exists 直接失败。
-RUN ln -sf /usr/bin/python3 /app/bundled-tools/linux-x64/office-engines/python/bin/python3 \
+# office-engines 的 Python 依赖装在自带 site-packages（--target），系统 python3 不会自动
+# 把它加入 sys.path；这里生成 wrapper 而不是 symlink，保证 docx/pptx/xlsx 等 skill
+# 直接调用 ZCODE_PYTHON_PATH 时也能 import 到 numpy/onnxruntime/python-pptx。
+# 同时保留 symlink 的幂等性（构建上下文可能来自既有镜像的 docker cp）。
+RUN printf '%s\n' \
+      '#!/bin/sh' \
+      'export PYTHONPATH="/app/bundled-tools/linux-x64/office-engines/python/lib/python3.11/site-packages${PYTHONPATH:+:$PYTHONPATH}"' \
+      'exec /usr/bin/python3 "$@"' \
+      > /app/bundled-tools/linux-x64/office-engines/python/bin/python3 \
+    && chmod +x /app/bundled-tools/linux-x64/office-engines/python/bin/python3 \
     && python3 -m pip install --no-cache-dir --break-system-packages \
        -i https://pypi.tuna.tsinghua.edu.cn/simple \
        -r /app/bundled-tools/linux-x64/office-engines/python/requirements-linux.txt \

@@ -59,6 +59,9 @@ export function resolveOfficeSkillLibRoot(env: NodeJS.ProcessEnv = process.env):
     for (const rel of [
       join("python", "Lib", "site-packages"),
       join("python", "lib", "site-packages"),
+      // Debian/Ubuntu 系统 Python 的版本化目录（Web 镜像：python/lib/python3.11/site-packages）。
+      // 旧候选只覆盖 Windows embeddable 的 Lib/ 与非版本化 lib/，Linux 上会误报找不到模块。
+      join("python", "lib", "python3.11", "site-packages"),
       join("site-packages"),
     ]) {
       const candidate = join(root, rel);

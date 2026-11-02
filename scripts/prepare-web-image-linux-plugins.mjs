@@ -54,6 +54,7 @@ const PLUGIN_NAMES = [
   "research-plugin",
   "obsidian-plugin",
   "superpowers-plugin",
+  "review-skills-plugin",
   "skill-creator-plugin",
   "zcode-guide-plugin",
 ];
@@ -128,18 +129,35 @@ function assertSeedFiles(pluginName, target) {
 rmSync(targetRoot, { recursive: true, force: true });
 mkdirSync(targetRoot, { recursive: true });
 
+const RUNTIME_PLUGINS = new Set(["file-tools-plugin", "ocr-tools-plugin", "dwg-tools-plugin"]);
+
 for (const name of PLUGIN_NAMES) {
   const fromDesktop = join(desktopPlugins, name);
-  const source = existsSync(fromDesktop) ? fromDesktop : join(sourcePlugins, name);
+  const fromRepo = join(sourcePlugins, name);
+  // 插件壳/skills/入口统一用桌面 stage 树（已按 seed 白名单裁剪，避免把 tools/bin、src
+  // 等开发产物带进镜像）；运行时插件的 dist 必须用仓库刚构建的版本 —— 桌面树可能落后于
+  // 本次修复（例如 OCR 的 office_skill_lib Linux 路径）。
+  const source = existsSync(fromDesktop) ? fromDesktop : fromRepo;
   if (!existsSync(source)) {
     throw new Error(`找不到插件源：${name}（桌面 stage 树与仓库源码都没有）`);
   }
   const target = join(targetRoot, name);
   process.stdout.write(`[web-image] stage plugin ${name}\n`);
   copyDirectory(source, target);
+  const repoDist = join(fromRepo, "dist");
+  if (RUNTIME_PLUGINS.has(name) && existsSync(join(repoDist, "mcp", "server.js"))) {
+    // 只取 MCP server 产物：仓库 dist 下还有 sidecar/win 平台产物与 source map，
+    // 它们不是插件 seed 资产（sidecar 由 ZCODE_DWG_TOOLS_ASSETS_ROOT 提供）。
+    rmSync(join(target, "dist"), { recursive: true, force: true });
+    mkdirSync(join(target, "dist"), { recursive: true });
+    cpSync(join(repoDist, "mcp"), join(target, "dist", "mcp"), {
+      recursive: true,
+      filter: (path) => !path.endsWith(".map"),
+    });
+  }
   replaceAssets(name, target);
   // 内容型插件没有 dist/mcp/server.js；只对运行时插件做强校验。
-  if (["file-tools-plugin", "ocr-tools-plugin", "dwg-tools-plugin"].includes(name)) {
+  if (RUNTIME_PLUGINS.has(name)) {
     assertSeedFiles(name, target);
   }
 }
