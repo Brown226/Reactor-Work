@@ -115,6 +115,23 @@ export class SpaceRequestError extends Error {
   }
 }
 
+/**
+ * 上传接口统一返回 `{ entry: { name, size }, path, usedBytes, quotaBytes }`。
+ * 早期前端把响应体直接当 `{ name, size }`，导致 `uploaded.name === undefined`；
+ * 聊天附件桥用它拼路径就变成「对话附件/undefined」，agent 读取失败。
+ */
+function parseUploadEntry(
+  raw: string,
+  status: number,
+  fallbackSize: number,
+): { name: string; size: number } {
+  const parsed = JSON.parse(raw) as { entry?: { name?: unknown; size?: unknown } };
+  const name = typeof parsed.entry?.name === "string" ? parsed.entry.name : "";
+  if (!name) throw new SpaceRequestError("上传响应缺少文件名", status);
+  const size = typeof parsed.entry?.size === "number" ? parsed.entry.size : fallbackSize;
+  return { name, size };
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init);
   if (response.status === 413) {
@@ -225,7 +242,7 @@ export const spaceClient = {
           return reject(new SpaceQuotaError("空间不足，请清理回收站或删除文件"));
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
-            return resolve(JSON.parse(xhr.responseText) as { name: string; size: number });
+            return resolve(parseUploadEntry(xhr.responseText, xhr.status, file.size));
           } catch {
             return reject(new SpaceRequestError("上传响应解析失败", xhr.status));
           }
@@ -392,7 +409,7 @@ export const spaceClient = {
         }
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
-            resolve(JSON.parse(xhr.responseText) as { name: string; size: number });
+            resolve(parseUploadEntry(xhr.responseText, xhr.status, file.size));
           } catch {
             reject(new SpaceRequestError("上传响应解析失败", xhr.status));
           }
