@@ -1,6 +1,6 @@
 services:
   reactor-web:
-    image: reactor-web:v1.0.10
+    image: reactor-web:v1.1.0
     container_name: reactor-web
     restart: unless-stopped
     ports:
@@ -25,7 +25,13 @@ services:
     volumes:
       - web-data:/data
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3030/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3030/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3
