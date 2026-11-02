@@ -3,6 +3,7 @@
 // 两者都只在 Web 入口引入，桌面端 renderer 入口不引用，因此不进桌面产物。
 import "./polyfills.js";
 import "./legacyChrome109.css";
+import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   AppErrorBoundary,
@@ -428,6 +429,77 @@ async function resolveWebBootstrap(): Promise<WebBootstrapResult> {
   }
 }
 
+/**
+ * 访问令牌缺失/无效时的专用页面。
+ *
+ * 为什么需要：服务端设置了 ZCODE_SERVER_AUTH_TOKEN 后，未带令牌的请求（含 /ws 握手）
+ * 一律 401。早前所有失败都落到「Web 启动失败」，用户看到的是假故障（2026-11-01
+ * 部署演练实况：直接开 localhost:3030 即触发）。这里把鉴权失败单独引导到令牌入口：
+ * 提交后跳 `/?token=xxx` 换 cookie（与 compose 注释承诺的访问方式一致）。
+ */
+function WebBootstrapTokenScreen({ hint }: { hint: string }) {
+  const isZh = /^zh\b/i.test(navigator.language);
+  const [value, setValue] = useState("");
+  return (
+    <div className="h-dvh min-h-dvh w-screen bg-background text-foreground">
+      <div className="mx-auto flex h-full w-full max-w-lg items-center px-4">
+        <section className="w-full rounded-xl border border-card-border bg-card p-5">
+          <div className="flex items-center gap-3">
+            <span className="size-2 rounded-full bg-primary" />
+            <h1 className="text-ui-xs font-medium">
+              {isZh ? "需要访问令牌" : "Access token required"}
+            </h1>
+          </div>
+          <p className="mt-2 text-ui-xs/relaxed text-foreground-subtle">{hint}</p>
+          <form
+            className="mt-4 space-y-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const token = value.trim();
+              if (!token) return;
+              const url = new URL(window.location.href);
+              url.searchParams.set("token", token);
+              window.location.assign(url.toString());
+            }}
+          >
+            <input
+              autoFocus
+              type="password"
+              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-ui-xs"
+              placeholder={isZh ? "粘贴访问令牌" : "Paste access token"}
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+            />
+            <button
+              type="submit"
+              className="rounded-lg border border-border bg-surface px-3 py-2 text-ui-xs text-foreground hover:bg-surface-hover"
+            >
+              {isZh ? "进入" : "Continue"}
+            </button>
+          </form>
+          <p className="mt-3 text-ui-xs text-foreground-subtle">
+            {isZh
+              ? "令牌 = 服务端 .env 中的 REACTOR_WEB_TOKEN；首次使用 ?token=<令牌> 访问后浏览器会记住。"
+              : "The token is REACTOR_WEB_TOKEN in the server .env; visit ?token=<token> once and the browser remembers it."}
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+/** server-info 探针：区分「未授权 401」与「服务不可达」，避免把鉴权失败报成启动失败。 */
+async function probeServerAuth(): Promise<"ok" | "auth-required" | "unreachable"> {
+  try {
+    const response = await fetch("/api/server-info", { cache: "no-store" });
+    if (response.status === 401) return "auth-required";
+    if (!response.ok) return "unreachable";
+    return "ok";
+  } catch {
+    return "unreachable";
+  }
+}
+
 function WebBootstrapErrorScreen({ message }: { message: string }) {
   return (
     <div className="h-dvh min-h-dvh w-screen bg-background text-foreground">
@@ -474,6 +546,17 @@ async function bootstrapWebApp() {
     return;
   }
 
+  // 先区分「未授权」与「不可达」：401 引导到令牌输入，而不是报「启动失败」
+  const authProbe = await probeServerAuth();
+  if (authProbe === "auth-required") {
+    renderWebBootstrapToken(params.has("token"));
+    return;
+  }
+  if (authProbe === "unreachable") {
+    renderWebBootstrapError(new Error("无法连接服务端（/api/server-info 不可达）"));
+    return;
+  }
+
   let bootstrap: WebBootstrapResult;
   try {
     bootstrap = await resolveWebBootstrap();
@@ -514,8 +597,29 @@ async function bootstrapWebApp() {
       </AppErrorBoundary>,
     );
   } catch (error) {
+    // WS 失败再探一次：令牌过期/被清时才落到这里 —— 引导重新输入令牌，
+    // 只有真正的服务端不可达才显示「启动失败」。
+    const retryProbe = await probeServerAuth();
+    if (retryProbe === "auth-required") {
+      renderWebBootstrapToken(params.has("token"));
+      return;
+    }
     renderWebBootstrapError(error);
   }
+}
+
+/** 令牌页渲染入口：hint 区分「没带令牌」与「令牌无效/已过期」。 */
+function renderWebBootstrapToken(hadToken: boolean): void {
+  document.title = "Reactor 智能应用";
+  root.render(
+    <WebBootstrapTokenScreen
+      hint={
+        hadToken
+          ? "访问令牌无效或已过期（服务端可能更换了 REACTOR_WEB_TOKEN），请重新输入。"
+          : "该服务端已开启访问令牌校验。输入 .env 中的 REACTOR_WEB_TOKEN 后即可进入。"
+      }
+    />,
+  );
 }
 
 void bootstrapWebApp();
