@@ -71,6 +71,9 @@ RUN printf '%s\n' \
        -r /app/bundled-tools/linux-x64/office-engines/python/requirements-linux.txt \
        --target /app/bundled-tools/linux-x64/office-engines/python/lib/python3.11/site-packages
 
+# CLI 的会话库 / 插件缓存用 homedir()（/root），不走 ZCODE_DATA_BASE_DIR。
+# 用符号链接落到持久卷：容器重建后会话仍在；同时不改 HOME，v1 凭据密文的
+# 环境推导键（platform + homedir + user）保持不变，否则旧凭据会解密失败。
 ENV NODE_ENV=production \
     PORT=3030 \
     HOST=0.0.0.0 \
@@ -87,7 +90,10 @@ ENV NODE_ENV=production \
 #   表现为「聊天一发就报 SyntaxError: Unexpected token '/'」。实测踩过。
 
 # 工作区与数据必须落在可挂载卷内：默认值 /app 会让用户在容器里直接改应用文件。
-RUN mkdir -p /data/workspace
+# /root/.reactor → /data/.reactor：CLI 会话库/插件缓存跟随 home，但数据落持久卷。
+RUN mkdir -p /data/workspace /data/.reactor \
+    && rm -rf /root/.reactor \
+    && ln -s /data/.reactor /root/.reactor
 VOLUME ["/data"]
 EXPOSE 3030
 
