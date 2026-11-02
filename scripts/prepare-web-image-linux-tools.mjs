@@ -19,6 +19,7 @@
  * npm tarball 下载/解包收口到 scripts/lib/download-asset.mjs（审计 #8）。
  * 用法：node scripts/prepare-web-image-linux-tools.mjs <构建上下文目录>
  */
+import { execFileSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
@@ -136,6 +137,13 @@ function dirSizeMB(path) {
 
 const fileToolsRoot = stageFileTools();
 const officeRoot = stageOfficeEngines();
+// 官方插件 seed 源（插件市场 + dwg/ocr/file MCP 工具）：必须与 bundled-tools 一起 stage，
+// 否则容器里只有工具资产、没有插件包，bootstrap 的 filesystem seed 找不到插件根。
+execFileSync(
+  process.execPath,
+  [resolve(repoRoot, "scripts", "prepare-web-image-linux-plugins.mjs"), outRoot],
+  { stdio: "inherit" },
+);
 console.log(`[web-image] file-tools: ${dirSizeMB(fileToolsRoot)}MB`);
 console.log(`[web-image] office-engines: ${dirSizeMB(officeRoot)}MB`);
 console.log(`[web-image] 完成：${targetRoot}`);

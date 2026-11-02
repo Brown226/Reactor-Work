@@ -40,6 +40,10 @@ COPY server-dist ./server-dist
 COPY web-dist ./web-dist
 # Agent 运行时：Node 24 直接执行 zcode.cjs，无需 Electron
 COPY agent/zcode.cjs ./agent/zcode.cjs
+# 内置官方插件（seed 源）：bootstrap 从入口目录的 packages/<name>-plugin 找插件根。
+# 不随包 stage 会导致插件市场为空、dwg_modify/parse_document/OCR 等 MCP 工具不可达
+# （见 scripts/prepare-web-image-linux-plugins.mjs）。
+COPY agent/packages ./agent/packages
 # DWG 解析 sidecar（.NET 自包含，linux-x64）。桌面端资产树只有 win32-x64，
 # 交叉发布产物由 dwg-tools-plugin 的 scripts/publish-sidecar.mjs --rid linux-x64 生成。
 # 用 ZCODE_DWG_TOOLS_ASSETS_ROOT 指过去：容器内 cwd 是工作区，包内相对路径找不到 assets。
@@ -52,7 +56,9 @@ RUN chmod +x /app/agent/dwg-tools/dwg-sidecar/linux-x64/dwg-sidecar
 #   三方 Python 依赖在构建期装进 site-packages（Debian CPython 3.11 ↔ manylinux wheel），
 #   容器运行时零网络、零安装。
 COPY bundled-tools ./bundled-tools
-RUN ln -s /usr/bin/python3 /app/bundled-tools/linux-x64/office-engines/python/bin/python3 \
+# ln -sf：构建上下文可能来自既有镜像的 docker cp（已带 bin/python3），
+# 非幂等的 ln -s 会因 File exists 直接失败。
+RUN ln -sf /usr/bin/python3 /app/bundled-tools/linux-x64/office-engines/python/bin/python3 \
     && python3 -m pip install --no-cache-dir --break-system-packages \
        -i https://pypi.tuna.tsinghua.edu.cn/simple \
        -r /app/bundled-tools/linux-x64/office-engines/python/requirements-linux.txt \
