@@ -6,6 +6,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { resolveZCodeEndpointOrigin, pickProductEndpointEnv } from "@zcode/shared/zcodeEndpoint";
 import { pdfJsCMapsPlugin } from "../ui/vite/pdfJsCMapsPlugin.js";
+import { dwgViewerAssetsPlugin } from "../ui/vite/dwgViewerAssetsPlugin.js";
 import { getBuildMetadata } from "./scripts/build-metadata.mjs";
 import { resolveDesktopProductFlavor } from "./scripts/desktop-product-identity.mjs";
 
@@ -174,6 +175,8 @@ export default defineConfig(({ mode, command }) => {
   const plugins = [
     ...(e2eCoverageEnabled ? [createE2EUIRendererCoveragePlugin(repoRoot)] : []),
     pdfJsCMapsPlugin(),
+    // CAD 看图资产（worker/wasm + 字体）：桌面渲染进程走 file://，字体也由插件代发
+    dwgViewerAssetsPlugin({ includeFonts: true }),
     react(),
     tailwindcss(),
   ];

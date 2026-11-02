@@ -26,10 +26,23 @@ import {
   type DwgChatQuoteTarget,
 } from "./dwgChatQuote.js";
 
-const DWG_ASSETS_BASE = "/dwg-assets/";
+/**
+ * 静态资产地址解析：与 pdfjs 资产同一口径（见 lib/pdfJsAssets.ts）。
+ * Web 端 BASE_URL="/" → 源站根；桌面端 BASE_URL="./" 且渲染进程走 file:// →
+ * 必须经 `new URL(BASE_URL, location.href)` 推成绝对 file URL，手写 "/dwg-assets/"
+ * 在桌面端会解析到磁盘根而 404（2026-11-02 桌面接线时确认）。
+ */
+function resolveDwgAsset(relativePath: string): string {
+  const viteBaseUrl =
+    typeof import.meta.env?.BASE_URL === "string" ? import.meta.env.BASE_URL : "/";
+  const applicationBaseUrl = new URL(viteBaseUrl, window.location.href);
+  return new URL(relativePath, applicationBaseUrl).href;
+}
+
+const DWG_ASSETS_BASE = resolveDwgAsset("dwg-assets/");
 /** DocManager 的字体库根：实际清单 URL = <root>/fonts/fonts.json。 */
-const DWG_FONT_REPO_ROOT = "/dwg";
-const DWG_FONTS_BASE_URL = `${DWG_FONT_REPO_ROOT}/fonts/`;
+const DWG_FONT_REPO_ROOT = resolveDwgAsset("dwg");
+const DWG_FONTS_BASE_URL = resolveDwgAsset("dwg/fonts/");
 /** 中文图纸兜底字体链：GB 大字体 + 宋体 + 基础 SHX（cad-data 仓库的最小集）。 */
 const DEFAULT_FONT_CHAIN = ["hztxt", "gbcbig", "simsun", "txt", "simplex"];
 

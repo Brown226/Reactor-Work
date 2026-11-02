@@ -1,6 +1,7 @@
+import { existsSync, readdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import type { Plugin } from "vite";
 
 const require = createRequire(import.meta.url);
@@ -34,9 +35,23 @@ function resolveDwgStaticAssets(): DwgStaticAsset[] {
   }));
 }
 
-export function dwgViewerAssetsPlugin(): Plugin {
+export interface DwgViewerAssetsPluginOptions {
+  /** 桌面端（file://）没有 public 目录托管字体：由插件从 web public 目录代发。 */
+  includeFonts?: boolean;
+}
+
+const FONT_SOURCE_DIRECTORY = "packages/web/public/dwg/fonts";
+const FONT_URL_PREFIX = "dwg/fonts";
+
+export function dwgViewerAssetsPlugin(options: DwgViewerAssetsPluginOptions = {}): Plugin {
   const assets = resolveDwgStaticAssets();
   const assetMap = new Map(assets.map((asset) => [asset.fileName, asset]));
+  // 字体：构建/中间件启动时枚举一次（文件由 fetch-dwg-fonts 脚本落盘）
+  const fontSourceDir = resolve(import.meta.dirname, "..", "..", "..", FONT_SOURCE_DIRECTORY);
+  const fontFiles =
+    options.includeFonts && existsSync(fontSourceDir)
+      ? readdirSync(fontSourceDir).filter((name) => !name.startsWith("."))
+      : [];
   return {
     name: "zcode:dwg-viewer-assets",
     // 开发态不支持 emitFile，产物只在 generateBundle 输出；dev 走中间件。
@@ -48,8 +63,36 @@ export function dwgViewerAssetsPlugin(): Plugin {
           source: await asset.source(),
         });
       }
+      for (const fontFile of fontFiles) {
+        this.emitFile({
+          type: "asset",
+          fileName: `${FONT_URL_PREFIX}/${fontFile}`,
+          source: await readFile(join(fontSourceDir, fontFile)),
+        });
+      }
     },
     configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        // 桌面 dev（file:// 不适用，dev 走 http）与需要统一路径的宿主：字体由插件代发
+        const requestPath = (request.url ?? "").split("?", 1)[0] ?? "";
+        const fontMarker = `/${FONT_URL_PREFIX}/`;
+        const fontIndex = requestPath.indexOf(fontMarker);
+        if (fontIndex >= 0) {
+          const fontName = requestPath.slice(fontIndex + fontMarker.length);
+          if (!fontFiles.includes(fontName)) {
+            next();
+            return;
+          }
+          void readFile(join(fontSourceDir, fontName))
+            .then((source) => response.end(source))
+            .catch(() => {
+              response.statusCode = 404;
+              response.end();
+            });
+          return;
+        }
+        next();
+      });
       server.middlewares.use((request, response, next) => {
         const requestPath = request.url?.split("?", 1)[0] ?? "";
         const marker = `/${DWG_ASSETS_OUTPUT_DIRECTORY}/`;
