@@ -195,6 +195,11 @@ export class ProviderRegistry {
     return [...this.providers.values()];
   }
 
+  /** 按 providerId 取条目（含解密后的 apiKey）；直连模式下发要拿它下发上游密钥。 */
+  providerEntry(providerId: string): ProviderEntry | undefined {
+    return this.providers.get(providerId);
+  }
+
   first(): ProviderEntry | undefined {
     return this.providers.values().next().value;
   }
@@ -543,6 +548,11 @@ export interface ProviderSource {
   resolve(model?: string, type?: ModelType, providerCode?: string): Promise<ProviderResolution>;
   /** 目录：curated=true 表示来自管理台（ai_models），false 表示需回退上游拉取。 */
   models(type?: ModelType): Promise<{ curated: boolean; models: Array<ModelEntry & { providerId: string }> }>;
+  /**
+   * provider 级上游密钥（解密后）：仅 direct_base_url 非空的模型在目录下发时使用。
+   * 直连绕开网关，桌面端必须拿到真密钥才能直呼上游；env 来源没有密钥表返回 null。
+   */
+  providerApiKey(providerId: string): string | null;
   /** 供日志/健康检查展示当前来源。 */
   describe(): string;
 }
@@ -555,6 +565,9 @@ export function createEnvProviderSource(registry: ProviderRegistry): ProviderSou
     },
     async models() {
       return { curated: false, models: [] };
+    },
+    providerApiKey() {
+      return null;
     },
     describe: () => "env",
   };
@@ -597,6 +610,10 @@ export function createDbProviderSource(
       const registry = await fresh();
       if (type === undefined || !registry.typedEnabled) return { curated: registry.hasModels(), models: registry.allModels() };
       return { curated: registry.hasModels(), models: registry.modelsOfType(type) };
+    },
+    providerApiKey(providerId) {
+      // 用闭包里最近一次加载的注册表（与 resolve 同源，TTL 语义一致）
+      return current?.providerEntry(providerId)?.apiKey ?? null;
     },
     describe: () => `db(ttl=${ttlMs}ms)`,
   };

@@ -649,6 +649,10 @@ export function createGatewayHandlers(
             direct_base_url: m.directBaseUrl ?? null,
             // 2026-10-29：直连分组按供应商命名（端侧回退到地址派生名，老端忽略即可）
             provider_name: m.providerName ?? null,
+            // 2026-11-02：直连上游需要真密钥。配了 direct_base_url 的模型把供应商密钥
+            // （解密后）一并下发——直连绕开网关，桌面端只能凭它直呼上游；普通网关模型
+            // 不下发，继续走现场签发的短期令牌（不扩大暴露面）。
+            direct_api_key: m.directBaseUrl ? source.providerApiKey(m.providerId) : null,
           })),
         });
       }

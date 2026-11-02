@@ -271,8 +271,8 @@ function draftOf(p: AdminProvider): ProviderDraft {
     name: p.name,
     baseUrl: p.baseUrl,
     api: p.api ?? "auto",
-    // 密钥不回填（服务端不回传）：空 = 不改
-    apiKey: "",
+    // 2026-11-02：服务端改为明文回传，直接回填便于二次核对与编辑（留空 = 不改）
+    apiKey: p.apiKey ?? "",
     enabled: p.enabled,
     // 直连地址不是密钥，服务端会回传，所以照实回填
     directBaseUrl: p.directBaseUrl ?? "",
@@ -1008,7 +1008,16 @@ export function ModelsAndProviders() {
                   const isNew = draft !== null && draft.id === null;
                   const hasKey = !isNew && current?.hasApiKey === true;
                   const set = (patch: Partial<ProviderDraft>): void =>
-                    setDraft((d) => (d === null ? d : { ...d, ...patch }));
+                    setDraft((d) => {
+                      /*
+                       * 2026-11-02 修复「输入框/开关点了没反应」：配置态初始渲染用的是
+                       * draftOf(current) 的临时值，而这里原来在 draft === null 时直接返回 null，
+                       * 所有 onChange 都是空操作（输入被丢弃、开关点不动）。改为以当前记录
+                       * 为底立即建草稿，第一次编辑就进入可保存状态。
+                       */
+                      const base = d ?? (current !== null ? draftOf(current) : null);
+                      return base === null ? base : { ...base, ...patch };
+                    });
                   return (
                     <>
                       <div className="mp-formbody">
@@ -1053,8 +1062,8 @@ export function ModelsAndProviders() {
                             <Label htmlFor="mp-apikey">API Key</Label>
                             <Input
                               id="mp-apikey"
-                              type="password"
-                              autoComplete="new-password"
+                              type="text"
+                              autoComplete="off"
                               className="mono"
                               value={f.apiKey}
                               placeholder={hasKey ? "已配置 · 留空则不修改" : "粘贴上游 API Key"}
@@ -1062,8 +1071,8 @@ export function ModelsAndProviders() {
                             />
                             <span className="hint">
                               {hasKey
-                                ? "已配置（服务端加密存储，不回传）；留空则保持原值"
-                                : "加密后落库（AES-256-GCM），任何接口都不会回传明文"}
+                                ? "明文展示（服务端加密存储、管理台专用接口回传）；清空则保持原值"
+                                : "加密后落库（AES-256-GCM）；保存后在管理台明文可见"}
                             </span>
                           </div>
                           {/*

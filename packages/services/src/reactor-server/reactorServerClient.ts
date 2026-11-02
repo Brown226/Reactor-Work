@@ -115,6 +115,12 @@ export interface ReactorServerModelInfo {
    */
   readonly directBaseUrl: string | null;
   /**
+   * 直连上游的 API Key（网关 `direct_api_key`，2026-11-02）。
+   * 直连绕开网关，桌面端必须凭真密钥直呼上游；仅 directBaseUrl 非空时由服务端下发，
+   * 老网关不下发 → null，走占位兜底（内网免鉴权上游客场行为不变）。
+   */
+  readonly directApiKey: string | null;
+  /**
    * 所属供应商在管理台的显示名（网关 `provider_name`，2026-10-29）；null = 老网关未下发。
    *
    * 用途只有一个：给直连分组取一个员工看得懂的名字（`· 直连 · Qwen（本部）`），
@@ -331,6 +337,8 @@ export function createReactorServerClient(apiClient: ApiClient) {
           direct_base_url?: unknown;
           /** 供应商显示名（2026-10-29）；老网关不下发，端侧回退地址派生名 */
           provider_name?: unknown;
+          /** 直连上游密钥（2026-11-02）；仅 direct_base_url 非空的模型下发 */
+          direct_api_key?: unknown;
         }[];
       }>(`${gatewayBaseUrl}/models`, { method: "GET", apiKey: gatewayToken });
       const list = Array.isArray(data?.data) ? data.data : [];
@@ -370,6 +378,10 @@ export function createReactorServerClient(apiClient: ApiClient) {
           providerName:
             typeof item.provider_name === "string" && item.provider_name.trim()
               ? item.provider_name.trim()
+              : null,
+          directApiKey:
+            typeof item.direct_api_key === "string" && item.direct_api_key.trim()
+              ? item.direct_api_key.trim()
               : null,
         });
       }

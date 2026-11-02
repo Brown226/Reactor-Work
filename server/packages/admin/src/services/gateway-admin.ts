@@ -32,6 +32,8 @@ export interface AdminProvider {
    * 界面据此把输入框显示成「已配置 · 留空不改」。
    */
   hasApiKey?: boolean;
+  /** 明文 API Key（2026-11-02 起服务端回传，管理台明文展示/编辑） */
+  apiKey?: string;
   /** P2：上游协议类型（auto=入站什么形态就发什么形态，与历史一致） */
   api: ProviderApi;
   /** P2：自定义出站请求头（已校验；不加密，不放密钥） */

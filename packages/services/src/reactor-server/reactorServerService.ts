@@ -682,6 +682,14 @@ export function createReactorServerService(
   const DIRECT_PROVIDER_NAME = `${REACTOR_SERVER_PROVIDER_NAME} · 直连`;
 
   /**
+   * 直连上游密钥的凭据键（2026-11-02）。
+   * 配置里仍保留哨兵做「托管条目」标记（prune/登出清理都按它扫描），
+   * 真密钥单独存凭据库 —— 上游（如 stepfun）按 key 鉴权，直连时必须带真值。
+   */
+  const directApiKeyCredentialKey = (providerId: string): string =>
+    `reactor:directApiKey:${providerId}`;
+
+  /**
    * 为某个直连地址生成**唯一**的 provider 显示名（2026-10-29 修复）。
    *
    * 反例（修复前的真实缺陷）：所有直连地址共用 `DIRECT_PROVIDER_NAME`。
@@ -947,6 +955,14 @@ export function createReactorServerService(
         reservedDirectNames.add(name.trim().toLocaleLowerCase());
         const providerId = await ensureManagedProvider(baseUrl, name);
         await reconcileProviderModels(providerId, list);
+        // 2026-11-02：直连上游按其 API Key 鉴权（服务端在 /v1/models 下发 direct_api_key）。
+        // 配置里保留哨兵做托管标记，真密钥按 providerId 存凭据库；未下发时清掉旧值。
+        const directApiKey = list.find((model) => model.directApiKey)?.directApiKey ?? null;
+        if (directApiKey) {
+          await credentials.save(directApiKeyCredentialKey(providerId), directApiKey);
+        } else {
+          await credentials.delete(directApiKeyCredentialKey(providerId));
+        }
       } catch (error) {
         logger.warn(undefined, "直连 provider 准备失败，该地址的模型本次不下发", {
           baseUrl,
@@ -1126,6 +1142,8 @@ export function createReactorServerService(
       const access = provider.personalConfig.access as { apiKey?: unknown } | undefined;
       if (!isReactorServerManagedApiKey(access?.apiKey)) continue;
       await reconcileProviderModels(String(provider.providerId), []);
+      // 真密钥不留在本地：登出后任何人翻凭据库都不该再拿到上游 key（2026-11-02）
+      await credentials.delete(directApiKeyCredentialKey(String(provider.providerId)));
     }
   }
 
@@ -1156,6 +1174,15 @@ export function createReactorServerService(
        * 上游（我方内网模型服务）不校验凭据；若将来接的是要求密钥的上游，
        * 这里应改为读取该 provider 自己配置里的 key。
        */
+      const storedDirectKey = await credentials.load(directApiKeyCredentialKey(providerId));
+      if (storedDirectKey) {
+        logger.debug(undefined, "直连 provider 请求使用上游密钥", {
+          providerId,
+          modelId,
+          directBaseUrl,
+        });
+        return { apiKey: storedDirectKey };
+      }
       logger.debug(undefined, "直连 provider 请求使用占位凭据", {
         providerId,
         modelId,

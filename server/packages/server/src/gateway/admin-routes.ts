@@ -582,7 +582,15 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
       model_type: string | null;
       sort: number;
       direct_base_url: string | null;
-    }>(`SELECT id, code, name, base_url, api, headers, bind_secret_id, enabled, created_at, model_type, sort, direct_base_url FROM ai_providers ORDER BY model_type, sort, id`);
+      /** 绑定密钥的字段值（加密态）与模板定义：用于管理台明文回显 */
+      field_values: Record<string, unknown> | null;
+      template_fields: unknown;
+    }>(`SELECT p.id, p.code, p.name, p.base_url, p.api, p.headers, p.bind_secret_id, p.enabled, p.created_at, p.model_type, p.sort, p.direct_base_url,
+              s.field_values, t.fields AS template_fields
+       FROM ai_providers p
+       LEFT JOIN secrets s ON s.id = p.bind_secret_id
+       LEFT JOIN secret_templates t ON t.key = s.template_key
+       ORDER BY p.model_type, p.sort, p.id`);
     return c.json({
       providers: rows.map((r) => ({
         id: r.id,
@@ -608,6 +616,18 @@ export function createAdminRoutes(db: IdentityDb, opts: AdminRoutesOptions = {})
          * 代价：历史遗留的空值密钥记录会被报成「已配置」；平台侧实装时一键重填即可，
          * 不为此多查一次 secrets 表。
          */
+        /**
+         * 明文 API Key（2026-11-02，用户明确要求）：管理台要能二次核对与直接编辑。
+         * 解密失败（主密钥不匹配/历史空值）不阻塞列表，apiKey 置空、hasApiKey 仍按绑定关系给出。
+         * 本接口只挂在管理台鉴权链路上；与「密钥托管」页同一权限边界。
+         */
+        apiKey: (() => {
+          try {
+            return String(openFields(r.field_values ?? {}, r.template_fields, secretKey).apiKey ?? "");
+          } catch {
+            return "";
+          }
+        })(),
         hasApiKey: r.bind_secret_id !== null,
         /**
          * 客户端直连地址（2026-10-22）：空 = 该供应商对话流量经网关转发。
