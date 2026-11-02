@@ -35,6 +35,12 @@ import type { ZCodeAgentPresentationSurface } from "./zcodeAgentPresentationSurf
 import { shouldSpawnInDetachedProcessGroup } from "../process/processTreeTerminator.js";
 import type { RuntimeProcessLifecycleReporter } from "../process/runtimeProcessLifecycle.js";
 import { buildAgentWorkspaceIdentityEnv } from "../runtime-tools/agentProxyEnv.js";
+import {
+  describeWebUserSandbox,
+  materializeWebUserProviderPaths,
+  prepareWebUserSandbox,
+  type WebUserSandbox,
+} from "./webUserSandbox.js";
 
 export interface ZCodeAgentCommand {
   /** 本地配套 CLI bundle 的存储专用 Worker 入口；远端/自定义命令不推断能力。 */
@@ -1027,21 +1033,79 @@ export class ZCodeAgentProcessManager {
       workspaceKey,
       spawnPreflight,
     });
+    // Web 单容器多用户：agent 子进程必须降权到该用户 UID，否则 root 可读所有用户/凭据。
+    // 沙箱开启时解析失败要 fail-closed，绝不能静默回退成 root 进程。
+    const webSandbox: WebUserSandbox | null =
+      process.env.ZCODE_WEB_USER_SANDBOX?.trim() === "1"
+        ? prepareWebUserSandbox(params.workspacePath)
+        : null;
+    if (process.env.ZCODE_WEB_USER_SANDBOX?.trim() === "1" && !webSandbox) {
+      throw new Error(`Web 用户沙箱无法准备工作区：${params.workspacePath}`);
+    }
+    if (webSandbox) {
+      log("Web 用户沙箱已启用", {
+        workspaceKey,
+        sandbox: describeWebUserSandbox(webSandbox),
+      });
+    }
+    const webSandboxProviderPaths = webSandbox
+      ? materializeWebUserProviderPaths(webSandbox, spawnEnv)
+      : null;
+    const childEnv: NodeJS.ProcessEnv = {
+      ...sanitizeZCodeRuntimeEnv(process.env),
+      [ZCODE_RUNTIME_ENV_KEY]: runtimeEnv,
+      ...spawnEnv,
+      ...effectiveCommand.env,
+      // 身份/隔离语义使用 workspaceIdentity；cwd 继续使用 workspacePath。
+      ...buildAgentWorkspaceIdentityEnv(params.workspaceIdentity),
+      ...buildE2EAgentCoverageEnv(),
+      // 必须最后合入：HOME/数据根都要指向该用户沙箱，不能被继承的 host 环境覆盖。
+      ...(webSandbox
+        ? {
+            HOME: webSandbox.home,
+            TMPDIR: webSandbox.tmpdir,
+            TMP: webSandbox.tmpdir,
+            XDG_CONFIG_HOME: join(webSandbox.home, ".config"),
+            XDG_CACHE_HOME: join(webSandbox.home, ".cache"),
+            ZCODE_DATA_BASE_DIR: webSandbox.home,
+            USER: `reactor-${webSandbox.uid}`,
+            LOGNAME: `reactor-${webSandbox.uid}`,
+          }
+        : {}),
+    };
+    if (webSandbox) {
+      // Web 访问令牌只属于 host HTTP/WS 入口，不能漏给 agent/MCP/Bash 子进程；
+      // 否则 prompt injection 可直接带 token 调本机 /api、绕过外层入口。
+      delete childEnv.ZCODE_SERVER_AUTH_TOKEN;
+      delete childEnv.REACTOR_WEB_TOKEN;
+    }
+    if (webSandboxProviderPaths) {
+      // 覆盖 host 下发的 /data/.reactor 绝对路径：对沙箱用户不可读。
+      childEnv.ZCODE_BUILTIN_PROVIDER_CONFIG_FILE = webSandboxProviderPaths.builtin;
+      childEnv.ZCODE_PERSONAL_PROVIDER_CONFIG_FILE = webSandboxProviderPaths.personal;
+    }
     const spawnRequestedAt = Date.now();
-    const child = spawn(effectiveCommand.command, spawnPreflight.args, {
+    // setpriv 而不是 spawn 的 uid/gid：Node 的 uid/gid 只改 euid/egid，不清理补充组，
+    // 子进程仍带着 root 组（实测 id 为 groups=20001,0）。必须 --clear-groups。
+    const spawnCommand = webSandbox ? "setpriv" : effectiveCommand.command;
+    const spawnArgs = webSandbox
+      ? [
+          "--reuid",
+          String(webSandbox.uid),
+          "--regid",
+          String(webSandbox.gid),
+          "--clear-groups",
+          "--",
+          effectiveCommand.command,
+          ...spawnPreflight.args,
+        ]
+      : spawnPreflight.args;
+    const child = spawn(spawnCommand, spawnArgs, {
       cwd: spawnPreflight.cwd,
       // agent 可能再派生实际 runtime/MCP 子进程。POSIX 下让 wrapper 进入独立进程组，
       // 关闭时才能按进程树整体回收；Windows 保持非 detached，交给 taskkill /T 处理。
       detached: shouldSpawnInDetachedProcessGroup(),
-      env: {
-        ...sanitizeZCodeRuntimeEnv(process.env),
-        [ZCODE_RUNTIME_ENV_KEY]: runtimeEnv,
-        ...spawnEnv,
-        ...effectiveCommand.env,
-        // 身份/隔离语义使用 workspaceIdentity；cwd 继续使用 workspacePath。
-        ...buildAgentWorkspaceIdentityEnv(params.workspaceIdentity),
-        ...buildE2EAgentCoverageEnv(),
-      },
+      env: childEnv,
       stdio: ["pipe", "pipe", "pipe"],
     });
     const startedAt = Date.now();

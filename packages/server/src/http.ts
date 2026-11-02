@@ -213,6 +213,8 @@ function createServerInfo(options: HttpServerOptions): ServerRemoteInfo {
 }
 
 const zcodeLiteTokenCookieName = "zcode_lite_token";
+/** 访问令牌 cookie 有效期：30 天（部署级共享入口，避免每次新开浏览器重输）。 */
+const LITE_TOKEN_COOKIE_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 const staticMimeTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -257,7 +259,9 @@ function hasValidLiteToken(c: Context, token: string): boolean {
   if (url.searchParams.get("token") === token) {
     c.header(
       "Set-Cookie",
-      `${zcodeLiteTokenCookieName}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax`,
+      // 30 天：访问令牌是部署级共享入口，不应每次新开浏览器都重输。
+      // 令牌轮换后旧 cookie 会自然失配，重新用 ?token= 访问即可。
+      `${zcodeLiteTokenCookieName}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${LITE_TOKEN_COOKIE_MAX_AGE_SECONDS}`,
     );
     return true;
   }

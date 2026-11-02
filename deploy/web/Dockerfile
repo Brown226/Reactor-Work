@@ -20,13 +20,14 @@ WORKDIR /app
 # scripts/prepare-web-image-linux-tools.mjs）：
 # - libreoffice writer/calc/impress：office 四件套 skill 的文档转换引擎（解析器走 PATH）；
 # - ripgrep / ugrep：agent 搜索工具（buildRuntimeToolEnvPatch 的 PATH 解析）；
-# - python3 + pip：office-engines 的 skill 执行体（ocr_scan / omml 公式等）。
+# - python3 + pip：office-engines 的 skill 执行体（ocr_scan / omml 公式等）；
+# - acl：每用户工作区默认 ACL（Web 宿主 root 上传的文件也要让该 UID 可读）。
 ARG APT_MIRROR=mirrors.aliyun.com
 RUN sed -i "s@deb.debian.org@${APT_MIRROR}@g" /etc/apt/sources.list.d/debian.sources \
     && apt-get update \
     && apt-get install -y --no-install-recommends fonts-noto-cjk fontconfig \
        libreoffice-writer libreoffice-calc libreoffice-impress \
-       ripgrep ugrep python3 python3-pip \
+       ripgrep ugrep python3 python3-pip acl \
     && rm -rf /var/lib/apt/lists/*
 
 # 运行时依赖：与 packages/server/tsup.config.ts 的 external 清单一致。
@@ -83,6 +84,7 @@ ENV NODE_ENV=production \
     ZCODE_DWG_TOOLS_ASSETS_ROOT=/app/agent/dwg-tools \
     ZCODE_FILE_TOOLS_ASSETS_ROOT=/app/bundled-tools/linux-x64/file-tools \
     ZCODE_SKILL_ENGINE_ROOT=/app/bundled-tools/linux-x64/office-engines \
+    ZCODE_WEB_USER_SANDBOX=1 \
     ZCODE_AGENT_SERVER_COMMAND=node \
     ZCODE_AGENT_SERVER_ARGS_JSON='["/app/agent/zcode.cjs","app-server","--stdio"]'
 # ⚠ 上面这个值必须用单引号包住：Docker 的 ENV 解析会剥掉未转义的双引号，
@@ -90,8 +92,11 @@ ENV NODE_ENV=production \
 #   表现为「聊天一发就报 SyntaxError: Unexpected token '/'」。实测踩过。
 
 # 工作区与数据必须落在可挂载卷内：默认值 /app 会让用户在容器里直接改应用文件。
-# /root/.reactor → /data/.reactor：CLI 会话库/插件缓存跟随 home，但数据落持久卷。
-RUN mkdir -p /data/workspace /data/.reactor \
+# /data/users 711：可穿过、不可列；/data/.reactor 700：凭据/宿主会话库仅 root。
+# /root/.reactor → /data/.reactor：宿主 CLI 会话库/插件缓存跟随 home，但数据落持久卷。
+RUN mkdir -p /data/workspace /data/users /data/homes /data/.reactor \
+    && chmod 711 /data/users /data/homes \
+    && chmod 700 /data/.reactor \
     && rm -rf /root/.reactor \
     && ln -s /data/.reactor /root/.reactor
 VOLUME ["/data"]

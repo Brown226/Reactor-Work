@@ -12,6 +12,7 @@ import {
   type TerminalThemeProfile,
 } from "./terminalProfile.js";
 import { registerMemoryDiagnosticsProvider } from "#src/memoryDiagnostics.js";
+import { prepareWebUserSandbox } from "#src/zcode-agent/webUserSandbox.js";
 
 const require = createRequire(import.meta.url);
 type NodePtyModule = typeof import("node-pty");
@@ -238,11 +239,20 @@ function spawnTerminalProcess(params: {
   rows: number;
   cwd: string;
   env: NodeJS.ProcessEnv;
+  uid?: number;
+  gid?: number;
 }): IPty {
-  const { nodePty, shell, cols, rows, cwd, env } = params;
+  const { nodePty, shell, cols, rows, cwd, env, uid, gid } = params;
 
   if (process.platform !== "win32") {
-    return nodePty.spawn(shell, [], {
+    // 同 agent 子进程：node-pty 的 uid/gid 不清补充组，必须 setpriv --clear-groups，
+    // 否则 PTY 仍带 root 组。
+    const command = uid !== undefined ? "setpriv" : shell;
+    const args =
+      uid !== undefined
+        ? ["--reuid", String(uid), "--regid", String(gid ?? uid), "--clear-groups", "--", shell]
+        : [];
+    return nodePty.spawn(command, args, {
       name: "xterm-256color",
       cols,
       rows,
@@ -362,7 +372,33 @@ export function createTerminalService(dependencies: {
       const id = String(nextId++);
       const shell = resolveTerminalShell();
       const cwd = resolveTerminalCwd(params.cwd);
-      const env = resolveTerminalEnv();
+      // Web 单容器多用户：终端 PTY 与 agent 子进程一样降权到用户 UID；
+      // 工作区不在 /data/users 下时 fail-closed，不能退回 root shell。
+      const webSandboxEnabled = process.env.ZCODE_WEB_USER_SANDBOX?.trim() === "1";
+      const webSandbox = webSandboxEnabled ? prepareWebUserSandbox(cwd) : null;
+      if (webSandboxEnabled && !webSandbox) {
+        throw new Error(`终端工作区不在 Web 用户沙箱内：${cwd}`);
+      }
+      const env: NodeJS.ProcessEnv = {
+        ...resolveTerminalEnv(),
+        ...(webSandbox
+          ? {
+              HOME: webSandbox.home,
+              TMPDIR: webSandbox.tmpdir,
+              TMP: webSandbox.tmpdir,
+              XDG_CONFIG_HOME: join(webSandbox.home, ".config"),
+              XDG_CACHE_HOME: join(webSandbox.home, ".cache"),
+              ZCODE_DATA_BASE_DIR: webSandbox.home,
+              USER: `reactor-${webSandbox.uid}`,
+              LOGNAME: `reactor-${webSandbox.uid}`,
+            }
+          : {}),
+      };
+      if (webSandbox) {
+        // 访问令牌只属于 host 入口，不能出现在用户终端环境里。
+        delete env.ZCODE_SERVER_AUTH_TOKEN;
+        delete env.REACTOR_WEB_TOKEN;
+      }
       const terminalProfileSettings = await dependencies.settingService.get().catch(() => ({
         terminalFontFamily: undefined,
         terminalInheritSystemProfile: true,
@@ -385,6 +421,7 @@ export function createTerminalService(dependencies: {
           rows: params.rows,
           cwd,
           env,
+          ...(webSandbox ? { uid: webSandbox.uid, gid: webSandbox.gid } : {}),
         });
       } catch (error) {
         throw new Error(
