@@ -30,10 +30,10 @@ export const ADMIN_MOUNT_PREFIX = "/console";
 /**
  * 额外挂在**根路径**的品牌资源。
  *
- * 管理台侧栏/登录页写的是绝对路径 `/brand/logo-cube.jpg`，index.html 的 favicon 也是
+ * 管理台侧栏/登录页写的是绝对路径 `/brand/reactor-icon.png`，index.html 的 favicon 也是
  * `/favicon.svg`；dev 期 vite 把 `public/` serve 在根，所以这些绝对路径在 dev 下本来就能取到。
- * 反例（实测复现）：只挂 `/console` 前缀时，`/brand/logo-cube.jpg` 解析不到文件
- * ——8791 上 `/console/brand/logo-cube.jpg` 返回 200 image/jpeg，而 `/brand/logo-cube.jpg`
+ * 反例（实测复现）：只挂 `/console` 前缀时，`/brand/reactor-icon.png` 解析不到文件
+ * ——8791 上 `/console/brand/reactor-icon.png` 返回 200 image/png，而 `/brand/reactor-icon.png`
  * 被 authed 组的 `use("*")` 拦成 401，`<img>` 取不到图就退化成浏览器破图占位符。
  * 反例：把前端改成相对路径 `./brand/...` 也不能修——SPA 有 `/console/datasets/:id` 这类
  * 两级路由，相对基址会解析成 `/console/datasets/brand/...`，详情页反而坏。

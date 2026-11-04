@@ -8,7 +8,7 @@
  *  4) /console/assets/<不存在>.js → 404（**不**回退成 HTML，避免把缺资源伪装成页面）
  *  5) 路径穿越尝试不泄露仓库文件（.env 等）
  *  6) API 与前端路由不冲突：/admin/models 仍是 JSON（曾把 SPA 挂在 /admin 造成冲突）
- *  7) 根路径品牌资源：/brand/logo-cube.jpg、/favicon.svg 直接可用
+ *  7) 根路径品牌资源：/brand/reactor-icon.png、/favicon.svg 直接可用
  *     （管理台 <img src="/brand/..."> 用绝对路径；只挂 /console 时会破图占位符）
  *  8) /brand/* 的路径穿越同样不泄露仓库文件
  *
@@ -139,8 +139,8 @@ async function main() {
     `status=${api.status} type=${apiType}`,
   );
 
-  // 7) 根路径品牌资源（管理台侧栏/登录页的 <img src="/brand/logo-cube.jpg"> 与 favicon 用绝对路径引用）
-  const brand = await fetch(`${BASE}/brand/logo-cube.jpg`);
+  // 7) 根路径品牌资源（管理台侧栏/登录页的 <img src="/brand/reactor-icon.png"> 与 favicon 用绝对路径引用）
+  const brand = await fetch(`${BASE}/brand/reactor-icon.png`);
   const brandType = brand.headers.get("content-type") ?? "";
   check(
     "7 /brand/* 在根路径可用（否则管理台图标退化成破图占位符）",

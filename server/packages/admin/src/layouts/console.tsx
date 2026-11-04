@@ -64,7 +64,7 @@ function AppSidebar({ groups }: { groups: ReturnType<typeof navFor> }) {
     <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2.5 px-2 py-1.5">
-          <img className="brand-mark shrink-0" src="/brand/logo-cube.jpg" alt="" width={28} height={28} data-admin-brand-logo="" />
+          <img className="brand-mark shrink-0" src="/brand/reactor-icon.png" alt="" width={28} height={28} data-admin-brand-logo="" />
           <div className="brand-name grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden" data-admin-brand-name="">
             Reactor
             <small>数智堆脑 · 管理台</small>

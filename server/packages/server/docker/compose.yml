@@ -189,16 +189,16 @@ services:
   # 登录仍走 identity（浏览器直连 8791）；agent 跑在 web 容器内，访问网关要用服务名
   # gateway:8790（用 127.0.0.1 会打到自己身上）。
   #
-  # ⚠ 工作区落在容器内 /data/workspace，不是用户本机磁盘。
-  # ⚠ 当前为单工作区模型：所有 Web 用户共用同一工作区，仅适合小范围试点。
-  # ⚠ 正式环境必须设置 REACTOR_WEB_TOKEN；未设置时任何能访问 3030 的人都会拿到
-  #    工作区与容器 shell。浏览器首次访问用 /?token=<值> 换 cookie。
+  # 工作区落在容器内 /data/users/<企业uid>，不是用户本机磁盘。
+  # 每浏览器企业登录会话 + 每 uid worker；不再下发共享令牌。
+  # 未登录访问只看到登录页，/api 与 /ws 一律 401。
   web:
-    image: reactor-web:v1.0.8
+    image: reactor-web:v1.1.0
     container_name: reactor-desktop-web
     environment:
-      ZCODE_SERVER_AUTH_TOKEN: ${REACTOR_WEB_TOKEN:-}
-      ZCODE_SERVER_WORKSPACE: /data/workspace
+      REACTOR_WEB_SESSION_AUTH: "1"
+      REACTOR_WEB_SESSION_TTL_SECONDS: ${REACTOR_WEB_SESSION_TTL_SECONDS:-604800}
+      REACTOR_WEB_COOKIE_SECURE: ${REACTOR_WEB_COOKIE_SECURE:-0}
       ZCODE_DATA_BASE_DIR: /data
       # Web 登录由本容器转发到 identity：用户浏览器不需要可达该地址。
       # 下发后登录页锁定服务端地址并隐藏输入框，用户只填账号密码。
