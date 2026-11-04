@@ -28,6 +28,11 @@ const RECENT_COMMITS_LABEL = "Recent commits";
 const CLEAN_GIT_STATUS = "(clean)";
 const DIRTY_GIT_STATUS = "(dirty)";
 const UNKNOWN_GIT_STATUS = "(unknown)";
+// 2026-11-04：Reactor 部署在内网离线环境，agent 常见的失败模式是反复尝试
+// npm/pip/apt 联网装包、拉 GitHub 资源，白等几分钟后报错。把大前提写进环境段，
+// 要求优先检索本地已装工具与本地资产。
+const OFFLINE_ENVIRONMENT_NOTICE =
+  "This deployment runs in an offline intranet (air-gapped). Do NOT attempt network package installs (npm/pip/apt/go get), pull Git repositories, or download assets from the internet — those calls will fail and only waste time. Prefer the tools and Python packages already installed locally (check with `which` / `python3 -c \"import ...\"`), and read local files, assets and documentation first.";
 
 export function buildEnvInfoSection(envInfo: EnvInfo, model?: Model): ContextSection {
   const content = buildEnvInfoContent(envInfo, model);
@@ -73,6 +78,7 @@ function buildEnvInfoContent(info: EnvInfo, model?: Model): string {
     `- ${PLATFORM_LABEL}: ${info.platform}`,
     `- ${SHELL_LABEL}: ${info.shell}`,
     `- ${OS_VERSION_LABEL}: ${info.osVersion}`,
+    `- Network: ${OFFLINE_ENVIRONMENT_NOTICE}`,
     // 旧环境快照可能携带历史模型字段；渲染只读取本步骤实际执行的 Model。
     ...(model
       ? [`- You are powered by the model named ${model.providerId}/${model.modelId}.`]

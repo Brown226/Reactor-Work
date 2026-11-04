@@ -130,6 +130,25 @@ const PACKAGE_PINS = {
   latex2mathml: "latex2mathml-3.81.1-py3-none-any.whl",
   // pptx 公式插入（insert_math.py → mc:AlternateContent）
   "python-pptx": "python_pptx-1.0.2-py3-none-any.whl",
+  // 通用办公增量（2026-11-04）：表格数据分析（pandas）、报告配图/统计图（matplotlib）、
+  // HTTP 调用（requests）、配置解析（PyYAML）。内网离线部署下必须随包提供，
+  // agent 无法在客户机上联网 pip install。
+  pandas: "pandas-2.2.3-cp312-cp312-win_amd64.whl",
+  "python-dateutil": "python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+  pytz: "pytz-2024.2-py2.py3-none-any.whl",
+  tzdata: "tzdata-2024.2-py2.py3-none-any.whl",
+  six: "six-1.16.0-py2.py3-none-any.whl",
+  matplotlib: "matplotlib-3.9.2-cp312-cp312-win_amd64.whl",
+  contourpy: "contourpy-1.3.0-cp312-cp312-win_amd64.whl",
+  cycler: "cycler-0.12.1-py3-none-any.whl",
+  fonttools: "fonttools-4.54.1-py3-none-any.whl",
+  kiwisolver: "kiwisolver-1.4.7-cp312-cp312-win_amd64.whl",
+  pyparsing: "pyparsing-3.1.4-py3-none-any.whl",
+  requests: "requests-2.32.3-py3-none-any.whl",
+  urllib3: "urllib3-2.2.3-py3-none-any.whl",
+  idna: "idna-3.10-py3-none-any.whl",
+  certifi: "certifi-2024.8.30-py3-none-any.whl",
+  PyYAML: "PyYAML-6.0.2-cp312-cp312-win_amd64.whl",
 };
 
 /**

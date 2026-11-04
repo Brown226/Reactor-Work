@@ -28,6 +28,7 @@ RUN sed -i "s@deb.debian.org@${APT_MIRROR}@g" /etc/apt/sources.list.d/debian.sou
     && apt-get install -y --no-install-recommends fonts-noto-cjk fontconfig \
        libreoffice-writer libreoffice-calc libreoffice-impress \
        ripgrep ugrep python3 python3-pip acl util-linux \
+       git curl unzip zip poppler-utils file \
     && rm -rf /var/lib/apt/lists/*
 
 # 运行时依赖：与 packages/server/tsup.config.ts 的 external 清单一致。
@@ -61,15 +62,36 @@ COPY bundled-tools ./bundled-tools
 # 把它加入 sys.path；这里生成 wrapper 而不是 symlink，保证 docx/pptx/xlsx 等 skill
 # 直接调用 ZCODE_PYTHON_PATH 时也能 import 到 numpy/onnxruntime/python-pptx。
 # 同时保留 symlink 的幂等性（构建上下文可能来自既有镜像的 docker cp）。
+# 另外在 /usr/local/bin 放一个转发壳（PATH 优先于 /usr/bin）：agent/运维自检常直接
+# 执行 `python3 -c "import numpy"`，系统解释器看不到 --target 装的依赖，会被误判为
+# 「Python 资源缺失」（2026-11-04 现场自检复现）。/usr/bin/python3 保持原生，技能链路
+# （ZCODE_PYTHON_PATH）与系统脚本不受影响。
 RUN printf '%s\n' \
       '#!/bin/sh' \
       'export PYTHONPATH="/app/bundled-tools/linux-x64/office-engines/python/lib/python3.11/site-packages${PYTHONPATH:+:$PYTHONPATH}"' \
       'exec /usr/bin/python3 "$@"' \
       > /app/bundled-tools/linux-x64/office-engines/python/bin/python3 \
     && chmod +x /app/bundled-tools/linux-x64/office-engines/python/bin/python3 \
+    && printf '%s\n' \
+      '#!/bin/sh' \
+      'export PYTHONPATH="/app/bundled-tools/linux-x64/office-engines/python/lib/python3.11/site-packages${PYTHONPATH:+:$PYTHONPATH}"' \
+      'exec /usr/bin/python3 "$@"' \
+      > /usr/local/bin/python3 \
+    && chmod +x /usr/local/bin/python3 \
     && python3 -m pip install --no-cache-dir --break-system-packages \
        -i https://pypi.tuna.tsinghua.edu.cn/simple \
        -r /app/bundled-tools/linux-x64/office-engines/python/requirements-linux.txt \
+       --target /app/bundled-tools/linux-x64/office-engines/python/lib/python3.11/site-packages
+
+# 通用办公工具增量层（2026-11-04）：报告配图/统计图（matplotlib）、PDF 合并拆分
+# 与水印（pypdf）、7z 压缩包（p7zip-full）、命令行 JSON（jq）。单独成层是为了
+# 不破坏上面 apt/pip 的大缓存；内部镜像离线部署，这些必须随包提供。
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends p7zip-full jq \
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 -m pip install --no-cache-dir --break-system-packages \
+       -i https://pypi.tuna.tsinghua.edu.cn/simple \
+       matplotlib pypdf \
        --target /app/bundled-tools/linux-x64/office-engines/python/lib/python3.11/site-packages
 
 # CLI 的会话库 / 插件缓存用 homedir()（/root），不走 ZCODE_DATA_BASE_DIR。

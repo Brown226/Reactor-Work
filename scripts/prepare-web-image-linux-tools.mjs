@@ -102,7 +102,12 @@ function stageOfficeEngines() {
   mkdirSync(join(root, "python", "bin"), { recursive: true });
   // office_skill_lib 是纯 Python，直接进 site-packages
   cpSync(join(repoRoot, "scripts", "office_skill_lib"), join(sitePackages, "office_skill_lib"), { recursive: true });
-  // 二方依赖钉版清单（与桌面 wheels 同版本，Linux 由 pip 解 manylinux wheel）
+  // 二方依赖钉版清单（与桌面 wheels 同版本，Linux 由 pip 解 manylinux wheel）。
+  // 除 office 技能自身依赖外，补齐「agent 干活直接写 Python 脚本」的通用库：
+  // pandas/openpyxl（表格）、python-docx（文档）、requests（HTTP）、PyYAML（配置）。
+  // 2026-11-04 现场自检发现 agent 会用系统 python3 判断能力面，缺这些会被报为
+  // 「Python 资源缺失」并直接放弃任务（镜像定位是办公/审查，不是数据科学环境，
+  // scipy/matplotlib/torch 仍不装）。
   writeFileSync(
     join(root, "python", "requirements-linux.txt"),
     [
@@ -114,6 +119,11 @@ function stageOfficeEngines() {
       "python-pptx==1.0.2",
       "cryptography",
       "pillow",
+      "pandas",
+      "openpyxl",
+      "python-docx",
+      "requests",
+      "PyYAML",
     ].join("\n"),
   );
   return root;
