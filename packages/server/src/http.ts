@@ -270,6 +270,9 @@ const staticMimeTypes: Record<string, string> = {
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".js": "text/javascript; charset=utf-8",
+  // pdf.js 的 worker 是 .mjs（import worker 走 module script）；缺这条会按
+  // application/octet-stream 返回，浏览器拒绝执行 → PDF 预览报「加载失败」。
+  ".mjs": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".map": "application/json; charset=utf-8",
   ".png": "image/png",

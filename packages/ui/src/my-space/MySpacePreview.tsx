@@ -146,6 +146,18 @@ export function MySpacePreview({
   }
 
   if (kind === "pdf") {
+    // Chromium 109 无法跑 pdf.js 5.x 的渲染管线（canvas 全白）：Web 入口在补垫片前
+    // 记录了 __REACTOR_LEGACY_PDF_VIEWER__，这类浏览器改用内置 PDF 查看器。
+    // 桌面端（Electron 41）没有该标记，仍走 PdfPreviewContent。
+    if ((globalThis as unknown as { __REACTOR_LEGACY_PDF_VIEWER__?: boolean }).__REACTOR_LEGACY_PDF_VIEWER__) {
+      return (
+        <iframe
+          src={previewUrl}
+          title={relPath}
+          className="h-full w-full border-0 bg-white"
+        />
+      );
+    }
     return <PdfPreviewContent source={previewUrl} labels={pdfLabels} fileName={relPath} />;
   }
 

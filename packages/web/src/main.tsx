@@ -2,6 +2,8 @@
 // Win7 客户端最高只能升到 Chromium 109：垫片与颜色回退必须排在任何共享模块之前求值。
 // 两者都只在 Web 入口引入，桌面端 renderer 入口不引用，因此不进桌面产物。
 import "./polyfills.js";
+// pdf.js 的 worker 线程需要同一份垫片；必须在 UI 模块之前把 workerSrc 指过去。
+import "./web-pdf-worker.js";
 import "./legacyChrome109.css";
 import { useState } from "react";
 import { createRoot } from "react-dom/client";

@@ -18,7 +18,11 @@ import { ReviewQuoteCallout } from "@/review/ReviewQuoteCallout.js";
 import { useReviewMarksStore } from "@/store/reviewMarksStore.js";
 import { createQuotePageScan, type QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 
-pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+// Web 入口会在加载 UI 之前把 workerSrc 指到「带 Chromium 109 垫片的自定义 worker」；
+// 这里只在未设置时兜底，避免覆盖 Web 端的设置（桌面端仍用默认 worker）。
+if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+  pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+}
 
 // 与 service 层 readFileRange 的默认分段大小对齐，一次 range 请求对应一次 RPC 调用。
 const RANGE_CHUNK_BYTES = 256 * 1024;
