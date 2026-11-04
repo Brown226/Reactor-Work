@@ -46,8 +46,27 @@ if ! docker image inspect reactor-web:v1.1.1 >/dev/null 2>&1; then
   fi
 fi
 
-echo "==> 2/3 构建运维镜像 reactor-ops:v1.1.1"
-docker build -t reactor-ops:v1.1.1 .
+echo "==> 2/3 准备运维镜像 reactor-ops:v1.1.1（离线导入）"
+# 运维镜像必须在开发机构建后随包导出：Dockerfile 需要 apt 装 docker.io 等，
+# 内网离线环境现场构建必然失败（这也是 3040 打不开的最常见原因）。
+if [ -n "${REACTOR_OPS_IMAGE_TAR:-}" ] && [ -f "$REACTOR_OPS_IMAGE_TAR" ]; then
+  echo "    导入 $REACTOR_OPS_IMAGE_TAR"
+  docker load -i "$REACTOR_OPS_IMAGE_TAR"
+elif [ -f images/reactor-ops-v1.1.1.tar.gz ]; then
+  echo "    导入 images/reactor-ops-v1.1.1.tar.gz"
+  docker load -i images/reactor-ops-v1.1.1.tar.gz
+elif docker image inspect reactor-ops:v1.1.1 >/dev/null 2>&1; then
+  echo "    本地已有 reactor-ops:v1.1.1，跳过导入"
+elif [ "${REACTOR_OPS_ALLOW_BUILD:-0}" = "1" ]; then
+  echo "    REACTOR_OPS_ALLOW_BUILD=1 → 现场构建（需要外网 apt，仅开发机使用）"
+  docker build -t reactor-ops:v1.1.1 .
+else
+  echo "!! 未找到运维镜像：ops/images/reactor-ops-v1.1.1.tar.gz"
+  echo "   内网离线环境不能现场构建（Dockerfile 需要 apt 联网）。"
+  echo "   请使用随包的 images/reactor-ops-v1.1.1.tar.gz，" 
+  echo "   或用 REACTOR_OPS_IMAGE_TAR 指定镜像 tar 路径。"
+  exit 1
+fi
 
 echo "==> 3/3 启动运维台（独立项目 reactor-ops）"
 $COMPOSE_CMD -p reactor-ops -f "$COMPOSE_FILE" up -d
