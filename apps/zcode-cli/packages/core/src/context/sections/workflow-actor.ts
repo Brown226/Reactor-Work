@@ -4,7 +4,7 @@
 //
 // 动态工作流子代理（workflow child）的身份段。
 //
-// 它替换的是交互式的 Agent Identity（「You are an interactive ZCode agent that helps
+// 它替换的是交互式的 Agent Identity（「You are an interactive Reactor agent that helps
 // users」）：子代理的读者是脚本，不是人。它**不**替换基座的其他段——安全 IMPORTANT 行与
 // `# Harness` 块从 identity 逐字复用，memory / skills / 项目指令由 builder 照常追加。
 // 作者写的 persona 叠加在开场句之后、契约之前：角色比通用规则更靠前、更醒目，但开场句先把

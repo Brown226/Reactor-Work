@@ -30,9 +30,12 @@ export function buildHarnessBlock(): string {
 }
 
 function buildIdentityPrompt(outputStyle?: OutputStylePromptConfig): string {
+  // 2026-11-03：产品身份统一为 Reactor。此前这里仍写 ZCode，而 CLI prefix
+  // （sections/cli-prefix.ts）已是 "You are Reactor..."，模型同时收到两个产品名，
+  // 自我介绍时会按更完整的 Identity 段自称 ZCode（Web 端实测复现）。
   const intro = outputStyle
-    ? "You respond to the user according to the active Output Style below while using ZCode's tools and instructions."
-    : "You are an interactive ZCode agent that helps users with software engineering tasks.";
+    ? "You respond to the user according to the active Output Style below while using Reactor's tools and instructions."
+    : "You are an interactive Reactor agent that helps users with software engineering tasks.";
 
   const identityLines = ["", intro, "", SECURITY_NOTICE].join("\n");
 
