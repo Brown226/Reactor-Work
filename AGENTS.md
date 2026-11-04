@@ -18,6 +18,7 @@
 | 格式检查         | `pnpm fmt:check`                          |
 | 桌面开发         | `pnpm dev:desktop`                        |
 | Web 开发         | `pnpm dev:web`                            |
+| 交付打包         | `node scripts/release/package-release.mjs <desktop\|web\|server\|portal\|all>` |
 | 提交前检查       | `pnpm verify:pre-push`（Lint 与架构检查） |
 | 架构检查         | `pnpm architecture:check --changed`       |
 | 模块阅读包       | `pnpm architecture:context <module-id>`   |
@@ -33,6 +34,7 @@
 - `packages/shared`：共享协议与类型；`packages/client`：Agent 客户端 SDK。
 - `apps/zcode-cli`：Agent CLI 与运行时。
 - `portal/`：产品门户（官网 + 说明书离线站点），独立 Docker 镜像部署到内网，不参与本仓构建门禁。
+- `docs/交付打包流程.md`：四端交付打包标准流程（桌面 win x64、Web / 服务端 / 门户镜像）与现场升级脚本注意事项；出包前必读，`scripts/release/` 是其可执行实现。
 - `CONTEXT.md`：插件商店领域词汇；修改相关 UI 前阅读。
 - `DESIGN.md`：UI 设计规范；修改 UI 前阅读。
 
