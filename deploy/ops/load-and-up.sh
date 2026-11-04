@@ -31,12 +31,15 @@ detect_compose
 
 echo "==> 1/3 检查基础镜像 reactor-web:v1.1.1"
 if ! docker image inspect reactor-web:v1.1.1 >/dev/null 2>&1; then
-  if [ -f ../images/reactor-web-v1.1.1.tar.gz ]; then
+  if [ -n "${REACTOR_WEB_IMAGE_TAR:-}" ] && [ -f "$REACTOR_WEB_IMAGE_TAR" ]; then
+    echo "    导入 $REACTOR_WEB_IMAGE_TAR"
+    docker load -i "$REACTOR_WEB_IMAGE_TAR"
+  elif [ -f ../web/images/reactor-web-v1.1.1.tar.gz ]; then
+    echo "    导入 ../web/images/reactor-web-v1.1.1.tar.gz"
+    docker load -i ../web/images/reactor-web-v1.1.1.tar.gz
+  elif [ -f ../images/reactor-web-v1.1.1.tar.gz ]; then
     echo "    导入 ../images/reactor-web-v1.1.1.tar.gz"
     docker load -i ../images/reactor-web-v1.1.1.tar.gz
-  elif [ -f ../../web/images/reactor-web-v1.1.1.tar.gz ]; then
-    echo "    导入 ../../web/images/reactor-web-v1.1.1.tar.gz"
-    docker load -i ../../web/images/reactor-web-v1.1.1.tar.gz
   else
     echo "!! 缺少基础镜像 reactor-web:v1.1.1，请先部署主 Web 端（web/load-and-up.sh）。"
     exit 1
