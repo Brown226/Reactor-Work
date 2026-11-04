@@ -388,6 +388,9 @@ export function createHttpServer(
   const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
   const hostCapabilities = createHostCapabilityStore();
   const sessionAuth = options.sessionAuth === true;
+  // 运维台（独立特权的 reactor-ops 容器）只允许平台管理员登录：普通用户可以进主 Web，
+  // 但不能进持有宿主机能力的运维容器。默认关闭，仅运维编排显式打开。
+  const adminOnly = process.env.REACTOR_WEB_ADMIN_ONLY === "1";
   const identityUrl = options.identityUrl?.trim() || resolveIdentityBaseUrl();
   const sessionStore = sessionAuth ? createWebSessionStore() : null;
   const workerRegistry: WebWorkerRegistry | null = sessionAuth
@@ -457,6 +460,11 @@ export function createHttpServer(
       }
       try {
         const identity = await loginWithIdentity(identityUrl, username, password);
+        if (adminOnly && identity.user.role !== "platform_admin") {
+          loginRateLimiter?.recordFailure(rateKey);
+          authLog("登录被拒绝（非管理员）", { username, role: identity.user.role });
+          return c.json({ error: "仅平台管理员可登录运维台" }, 403);
+        }
         const uid = identity.user.uid;
         const status = await workerRegistry!.login(uid, username, password);
         if (!status.loggedIn || status.user?.uid !== uid) {

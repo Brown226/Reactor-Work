@@ -130,7 +130,12 @@ function buildWorkerEnv(
     // worker home 本身已经按 uid 隔离，不需要再切 `users/<scope>` 子目录；
     // 固定 local 还能避免「登录写 marker → worker 重启后任务库搬到 scoped 路径」的撕裂。
     ZCODE_DATA_SCOPE: "local",
-    ZCODE_SERVER_WORKSPACE: join(getWebUsersRoot(), uid),
+    // 运维台（REACTOR_WEB_PRIVILEGED=1）：worker 直接以宿主根为工作区（/host）。
+    // 普通 Web 容器保持每 uid 独立工作区。
+    ZCODE_SERVER_WORKSPACE:
+      process.env.REACTOR_WEB_PRIVILEGED === "1"
+        ? process.env.ZCODE_SERVER_WORKSPACE?.trim() || "/"
+        : join(getWebUsersRoot(), uid),
     REACTOR_WEB_WORKSPACE_ROOT: getWebUsersRoot(),
     REACTOR_WEB_USERS_ROOT: getWebUsersRoot(),
     REACTOR_WEB_HOMES_ROOT: getWebHomesRoot(),
@@ -218,9 +223,17 @@ export function createWebWorkerRegistry(
   const starting = new Map<string, Promise<WebWorkerHandle>>();
 
   async function spawnWorker(uid: string): Promise<WorkerEntry> {
-    const workspace = join(getWebUsersRoot(), uid);
-    const sandbox = prepareWebUserSandbox(workspace, { copyProviderConfig: false });
-    if (!sandbox) {
+    // 运维台（REACTOR_WEB_PRIVILEGED=1）：worker 以容器 root 运行、不降权，
+    // 工作区直接是宿主根（/host，见 deploy/ops）。仅独立的 reactor-ops 容器开启，
+    // 普通 Web 容器永远走下面的每用户沙箱分支。
+    const privileged = process.env.REACTOR_WEB_PRIVILEGED === "1";
+    const workspace = privileged
+      ? process.env.ZCODE_SERVER_WORKSPACE?.trim() || "/"
+      : join(getWebUsersRoot(), uid);
+    const sandbox = privileged
+      ? null
+      : prepareWebUserSandbox(workspace, { copyProviderConfig: false });
+    if (!privileged && !sandbox) {
       throw new WebWorkerError(`无法为 uid=${uid} 准备工作区沙箱`);
     }
     const port = await getFreePort();
@@ -229,25 +242,34 @@ export function createWebWorkerRegistry(
       uid,
       port,
       token,
-      sandbox.home,
-      sandbox.tmpdir,
+      sandbox?.home ?? (process.env.HOME?.trim() || "/root"),
+      sandbox?.tmpdir ?? "/tmp",
       options.identityUrl,
     );
-    const args = [
-      "--reuid",
-      String(sandbox.uid),
-      "--regid",
-      String(sandbox.gid),
-      "--clear-groups",
-      "--",
-      process.execPath,
-      entryPath,
-    ];
-    const child = spawn("setpriv", args, {
-      env,
-      stdio: ["ignore", "pipe", "pipe"],
-      detached: false,
-    });
+    const entryArgs = [entryPath];
+    const args = sandbox
+      ? [
+          "--reuid",
+          String(sandbox.uid),
+          "--regid",
+          String(sandbox.gid),
+          "--clear-groups",
+          "--",
+          process.execPath,
+          ...entryArgs,
+        ]
+      : entryArgs;
+    const child = sandbox
+      ? spawn("setpriv", args, {
+          env,
+          stdio: ["ignore", "pipe", "pipe"],
+          detached: false,
+        })
+      : spawn(process.execPath, args, {
+          env,
+          stdio: ["ignore", "pipe", "pipe"],
+          detached: false,
+        });
     let resolveReady!: (handle: WebWorkerHandle) => void;
     let rejectReady!: (error: unknown) => void;
     const ready = new Promise<WebWorkerHandle>((resolve, reject) => {
@@ -302,7 +324,7 @@ export function createWebWorkerRegistry(
       },
     );
     await entry.ready;
-    log(`worker(${uid}) 已就绪`, { port, numericUid: sandbox.uid });
+    log(`worker(${uid}) 已就绪`, { port, numericUid: sandbox?.uid ?? 0 });
     return entry;
   }
 
