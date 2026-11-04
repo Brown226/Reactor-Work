@@ -142,7 +142,7 @@ export function DesktopTopOverlay({
               <img
                 src={appLogoUrl}
                 alt="Reactor"
-                className="size-5 transition-opacity duration-150 group-hover:opacity-0"
+                className="size-5 rounded-[22%] transition-opacity duration-150 group-hover:opacity-0"
                 draggable={false}
               />
               <SidebarToggleIcon className="absolute inset-0 m-auto size-4 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
