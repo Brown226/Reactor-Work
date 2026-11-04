@@ -2,6 +2,13 @@
 
 Reactor（中文名「数智堆脑」）的品牌视觉素材。本目录是**设计参考与源素材**，供生成各平台生产资产使用；生产资产按下方清单派生到各自位置，不直接引用本目录文件。
 
+## 当前标记（2026-11-03 更新）
+
+产品统一改用**“原子 + R”方形标记**，旧等距立方体标记退役。生产侧以
+`packages/ui/src/assets/reactor-mark.png` 为界面/桌面/Web 方形图标来源，
+横版品牌 lockup 使用门户 `portal/assets/reactor-logo-white.png`。
+下方立方体与风车素材仅作历史存档，不再作为生产标记。
+
 ## 素材清单
 
 | 文件 | 尺寸 | 内容 |
@@ -61,9 +68,10 @@ Reactor（中文名「数智堆脑」）的品牌视觉素材。本目录是**�
 | 近白／前景文字 | `#F4F8FA` | 字标文字 |
 | 纯白 | `#FFFFFF` | 素材底色、中心点 |
 
-## 标记选定（已确认）
+## 历史标记选定（已退役）
 
-**立方体标记为 Reactor 的唯一产品标记**，风车（叶轮）系列素材不使用。
+以下为 2026-11-03 之前的决策记录：**立方体标记曾为 Reactor 的唯一产品标记**，
+风车（叶轮）系列素材不使用。当前生产标记已改为“原子 + R”，见上方「当前标记」。
 
 因此下方同名文件的实际内容为准：`mark-pinwheel-matte.jpg` 承载的是立方体标记（文件名与内容不符，属历史命名遗留，不再作为待办）；`mark-pinwheel-*.jpg` 与 `poster-reference.jpg` 为未采用的早期方案，保留仅作存档。
 
@@ -82,22 +90,22 @@ Reactor（中文名「数智堆脑」）的品牌视觉素材。本目录是**�
 
 | 产物 | 位置 | 来源 |
 | --- | --- | --- |
-| 应用图标全套（16–1024 PNG、ICO、ICNS） | `packages/desktop/build/`、`public/logo/icons/` | 由 `mark-pinwheel-matte.jpg`（立方体）抠底生成 |
+| 应用图标全套（16–1024 PNG、ICO、ICNS） | `packages/desktop/build/`、`public/logo/icons/` | 由原子+R 方形主图派生（2026-11-03 起） |
 | 安装器图标 | `packages/desktop/build/icon_installer.*` | 同上 |
-| 界面内标记 | `packages/ui/src/assets/reactor-mark.png`，经 `ReactorLogo` 组件使用 | 同上（256px） |
-| 启动闪烁页标记 | `packages/web/index.html`、`packages/desktop/src/renderer/index.html` | 同上（112px，base64 内嵌，保持零网络请求） |
-| About 窗口标记 | `packages/desktop/src/main/aboutWindow.ts` | 同上（96px，data URL 文档无法解析相对路径） |
-| Z.AI 账号位 provider 图标 | `packages/ui/src/assets/provider-icons/model-provider-zai-app.png` | 同上（裁内容 bbox 后长边适配 116px、居中 128×128 透明画布），2026-10-12 起替换原 ZCode 应用图标副本 |
+| 界面内标记 | `packages/ui/src/assets/reactor-mark.png`，经 `ReactorLogo` 组件使用 | 原子+R 方形主图（256px） |
+| 启动闪烁页标记 | `packages/web/index.html`、`packages/desktop/src/renderer/index.html` | 原子+R 方形主图（128px，base64 内嵌，保持零网络请求） |
+| About 窗口标记 | `packages/desktop/src/main/aboutWindow.ts` | 原子+R 方形主图（128px，data URL 文档无法解析相对路径） |
+| Z.AI 账号位 provider 图标 | `packages/ui/src/assets/provider-icons/model-provider-zai-app.png` | 原子+R 方形主图（128×128），2026-11-03 起替换原立方体副本 |
 | macOS 安装盘背景 | `packages/desktop/build/dmg_background.png`、`@2x` | 同上；2026-10-12 去除旧品牌字样，箭头与浅灰线稿装饰原样保留 |
 
-标记采用**位图**而非矢量：立方体素材内部几何并非简单内缩（白框贴边、立方体本体更小），纯几何重绘会与品牌稿产生可见偏差。矢量源仍是长期方向——见下方待补齐项。
+当前原子+R 方形标记也采用**位图**接入（源图 2048px），矢量源仍是长期方向——见下方待补齐项。
 
 
 ## 生产资产清单
 
 ### 已完成
 
-- [x] 透明底 PNG 全套：1024 / 512 / 256 / 128 / 64 / 48 / 32 / 16
+- [x] 方形 PNG 全套（白底，深浅背景均可读）：1024 / 512 / 256 / 128 / 64 / 48 / 32 / 16
 - [x] Windows `icon.ico`（7 档尺寸）、macOS `icon.icns`
 - [x] 安装器图标 `icon_installer.ico` / `.icns` / `.png`
 - [x] 界面内标记位图 `reactor-mark.png`（256px）

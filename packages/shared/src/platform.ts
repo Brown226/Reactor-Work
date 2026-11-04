@@ -611,6 +611,8 @@ export interface IPlatformService {
    * 登录成功后卡在「登录中…」（2026-10-31 实测）。
    */
   supportsAppRelaunch?: boolean;
+  /** Web 网关会话模式：登出必须同时吊销服务端会话，而不是只清企业登录态。 */
+  webSessionAuth?: boolean;
 
   /** 打开系统目录选择框，返回选中路径或 null */
   selectDirectory(): Promise<string | null>;

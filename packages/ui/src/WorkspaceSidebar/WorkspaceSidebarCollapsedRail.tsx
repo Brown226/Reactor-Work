@@ -35,7 +35,7 @@ export function WorkspaceSidebarCollapsedRail({
               <img
                 src={appLogoUrl}
                 alt="Reactor"
-                className="size-5 transition-opacity group-hover:opacity-0"
+                className="size-5 rounded-[22%] transition-opacity group-hover:opacity-0"
                 draggable={false}
               />
               <PanelLeftOpen className="absolute size-4 opacity-0 transition-opacity group-hover:opacity-100" />

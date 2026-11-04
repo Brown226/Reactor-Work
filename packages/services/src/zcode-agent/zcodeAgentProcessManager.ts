@@ -1073,7 +1073,7 @@ export class ZCodeAgentProcessManager {
           }
         : {}),
     };
-    if (webSandbox) {
+    if (webSandbox || process.env.ZCODE_WEB_WORKER?.trim() === "1") {
       // Web 访问令牌只属于 host HTTP/WS 入口，不能漏给 agent/MCP/Bash 子进程；
       // 否则 prompt injection 可直接带 token 调本机 /api、绕过外层入口。
       delete childEnv.ZCODE_SERVER_AUTH_TOKEN;

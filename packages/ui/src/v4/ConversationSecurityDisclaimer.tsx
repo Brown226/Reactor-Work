@@ -11,8 +11,9 @@ import { cn } from "@/components/lib/utils.js";
  * 见 docs/已完成/已完成-conversation-security-disclaimer.md。
  *
  * 样式按合规警示处理（不是普通辅助说明）：正文级字号 + 加粗 + 语义 destructive，
- * 让"严禁上传和处理涉密文件"这句真正被看见。字号仍走 text-ui-* 刻度，
- * 颜色走 --color-destructive，不硬编码 px/HEX（见 DESIGN.md 语义色与字号规范）。
+ * 整行（含科室名）统一提示红，让"严禁上传和处理涉密文件"这句真正被看见。
+ * 字号仍走 text-ui-* 刻度，颜色走语义 token，不硬编码 px/HEX（见 DESIGN.md
+ * 语义色与字号规范）。
  */
 export function ConversationSecurityDisclaimer({ className }: { className?: string }) {
   const { intl } = useZCodeIntl();

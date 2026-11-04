@@ -1,15 +1,21 @@
 import type { Context } from "hono";
 import { getCurrentLoginUid, isValidUid } from "../user-workspace.js";
+import { getWebAuthSession, isSessionAuthEnabled } from "../web/sessionAuth.js";
 import { SpaceError } from "./errors.js";
 
 /**
  * 身份解析：复用 user-workspace 的「登录成功记录 uid」唯一所有者，不另建状态。
  *
- * **可伪造警告**：显式 `?uid=` 是阶段一联调后门 —— /ws 尚无鉴权（独立 P0），
- * 任何客户端都能报任意 uid 读到别人的空间。这里保留它只为了前端显式传参兜底；
- * 接入会话身份后应改为「uid 必须来自已认证会话」并移除 query 入口。
+ * 会话模式只认 session.uid，彻底移除 `?uid=` 身份入口；旧模式保留 query 仅为兼容。
  */
 export function requireRequestUid(c: Context): string {
+  if (isSessionAuthEnabled()) {
+    const session = getWebAuthSession(c);
+    if (!session) {
+      throw new SpaceError("未登录", 401);
+    }
+    return session.uid;
+  }
   const explicit = c.req.query("uid")?.trim();
   const uid = explicit || getCurrentLoginUid();
   if (!uid) {

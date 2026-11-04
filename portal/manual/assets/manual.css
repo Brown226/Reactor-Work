@@ -27,7 +27,7 @@
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --sans: "Microsoft YaHei UI", "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC",
     system-ui, sans-serif;
-  --topbar-h: 56px;
+  --topbar-h: 64px;
 }
 
 * { box-sizing: border-box; }
@@ -102,22 +102,18 @@ code {
   display: flex;
   align-items: center;
   gap: 14px;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+  /* 与官网顶栏一致：通栏铺满，品牌贴窗口左侧；不再居中收窄 */
+  max-width: none;
+  padding: 0 48px;
   height: var(--topbar-h);
 }
 .brand {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 16px;
-  letter-spacing: 0.02em;
+  align-items: center;
   color: var(--ink);
 }
 .brand:hover { text-decoration: none; }
-.brand-sub { font-size: 13px; font-weight: 400; color: var(--ink-3); letter-spacing: normal; }
+.brand-logo { display: block; width: 112px; height: auto; }
 .top-home {
   margin-left: auto;
   font-size: 13px;
@@ -204,9 +200,9 @@ code {
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr) 224px;
   gap: 44px;
-  max-width: 1360px;
-  margin: 0 auto;
-  padding: 0 24px;
+  /* 与顶栏同一条左切线：目录栏贴左，正文与右侧本页目录随窗口展开 */
+  max-width: none;
+  padding: 0 48px;
   align-items: start;
 }
 .docs-main { padding: 40px 0 80px; min-width: 0; }
@@ -513,6 +509,7 @@ code {
 @media (max-width: 960px) {
   .nav-toggle { display: inline-block; }
   .top-home { display: none; }
+  .topbar-inner { padding: 0 20px; }
   .docs-layout { grid-template-columns: minmax(0, 1fr); padding: 0 20px; }
   .docs-sidebar {
     position: fixed;

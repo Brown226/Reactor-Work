@@ -40,7 +40,7 @@
       ],
       "sourceUrl": "repository:packages/ui/src/assets/reactor-mark.png",
       "sourceOwner": "Reactor",
-      "normalization": "Replaced on 2026-10-12 with the Reactor brand cube (was the ZCode application glyph). Cropped to the glyph bbox of reactor-mark.png, long edge fitted to 116px and centered on a 128x128 transparent canvas; transparent background replaces the former opaque Dock tile so light and dark themes both stay clean."
+      "normalization": "Replaced on 2026-11-03 with the Reactor atom+R square mark (was the ZCode application glyph). Derived from reactor-mark.png, which is now the single square product mark; the 128x128 asset is the same mark at provider-icon scale."
     },
     {
       "brand": "BigModel",

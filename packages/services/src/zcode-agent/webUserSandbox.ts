@@ -39,11 +39,26 @@ export interface WebUserSandbox {
   userName: string;
 }
 
-const WEB_USERS_ROOT = "/data/users";
-const WEB_HOMES_ROOT = "/data/homes";
-const WEB_UID_MAP_FILE = "/data/.reactor/web-user-uid-map.json";
+const WEB_USERS_ROOT = process.env.REACTOR_WEB_USERS_ROOT?.trim() || "/data/users";
+const WEB_HOMES_ROOT = process.env.REACTOR_WEB_HOMES_ROOT?.trim() || "/data/homes";
+const WEB_UID_MAP_FILE =
+  process.env.REACTOR_WEB_UID_MAP_FILE?.trim() ||
+  join(process.env.REACTOR_WEB_DATA_ROOT?.trim() || "/data/.reactor", "web-user-uid-map.json");
 const WEB_UID_MIN = 20000;
 const WEB_UID_MAX = 49999;
+
+export function getWebUsersRoot(): string {
+  return WEB_USERS_ROOT;
+}
+
+export function getWebHomesRoot(): string {
+  return WEB_HOMES_ROOT;
+}
+
+/** Web 宿主持有的凭据/会话根；沙箱用户不可读。 */
+export function getWebDataRoot(): string {
+  return dirname(WEB_UID_MAP_FILE);
+}
 
 interface WebUidMapFile {
   version: 1;
@@ -80,7 +95,7 @@ function writeUidMap(map: WebUidMapFile): void {
 }
 
 function allocateUid(userName: string): { uid: number; map: WebUidMapFile } {
-  mkdirSync("/data/.reactor", { recursive: true, mode: 0o700 });
+  mkdirSync(getWebDataRoot(), { recursive: true, mode: 0o700 });
   const map = readUidMap();
   const existing = map.users[userName];
   if (existing) return { uid: existing, map };
@@ -142,7 +157,7 @@ function hardenWorkspace(workspace: string, uid: number, gid: number): void {
 }
 
 function copyProviderConfig(home: string, uid: number): void {
-  const sourceDir = "/data/.reactor/v2";
+  const sourceDir = join(getWebDataRoot(), "v2");
   const source = join(sourceDir, "provider_config.json");
   if (!existsSync(source)) return;
   const targetDir = join(home, ".reactor", "v2");
@@ -209,7 +224,10 @@ export function materializeWebUserProviderPaths(
  * 解析工作区所属用户并完成沙箱准备；非 Web 沙箱或工作区不在 /data/users 下返回 null。
  * 必须在 spawn 子进程前调用（host 为 root）。
  */
-export function prepareWebUserSandbox(workspacePath: string): WebUserSandbox | null {
+export function prepareWebUserSandbox(
+  workspacePath: string,
+  options: { copyProviderConfig?: boolean } = {},
+): WebUserSandbox | null {
   if (!isWebUserSandboxEnabled()) return null;
   const resolved = join(workspacePath);
   const rel = relative(WEB_USERS_ROOT, resolved);
@@ -223,16 +241,14 @@ export function prepareWebUserSandbox(workspacePath: string): WebUserSandbox | n
   const tmpdir = join(home, "tmp");
 
   // 父目录语义：/data/users 711（可穿过、不可列）；/data/.reactor 700（凭据/会话库 root only）。
-  try {
-    chmodSync(WEB_USERS_ROOT, 0o711);
-  } catch {
-    // 目录不存在等由下面 mkdir 兜底
-  }
+  // 父目录语义：/data/users 711（可穿过、不可列）。先确保存在，再收紧权限；
+  // 不能只 chmod，否则首次启动时 mkdir 会按默认 755 建目录。
+  ensureDir(WEB_USERS_ROOT, 0o711);
   ensureDir(home, 0o700, uid, uid);
   ensureDir(join(home, ".reactor"), 0o700, uid, uid);
   ensureDir(tmpdir, 0o700, uid, uid);
   try {
-    chmodSync("/data/.reactor", 0o700);
+    chmodSync(getWebDataRoot(), 0o700);
   } catch {
     // ignore
   }
@@ -245,8 +261,11 @@ export function prepareWebUserSandbox(workspacePath: string): WebUserSandbox | n
   } else {
     ensureDir(userRoot, 0o700, uid, uid);
   }
-  // 每次 spawn 都刷新一份只读 provider 配置：host 同步完供应商后，子进程下次启动即可见。
-  copyProviderConfig(home, uid);
+  // 旧单进程模型由 host 把全局 provider 配置复制给 agent；per-uid worker 模型的
+  // home 本身就是配置源，不能再从全局目录反向覆盖，否则会串用上一个账号的模型。
+  if (options.copyProviderConfig !== false) {
+    copyProviderConfig(home, uid);
+  }
   if (!existsSync(resolved)) {
     ensureDir(resolved, 0o700, uid, uid);
   }

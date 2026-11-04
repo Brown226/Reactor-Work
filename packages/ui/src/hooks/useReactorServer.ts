@@ -12,6 +12,7 @@ import type {
   ReactorServerUsageOverview,
 } from "@zcode/services";
 import { useServices } from "./useServices.js";
+import { useOptionalPlatform } from "./usePlatform.js";
 import { useRestartForDataScopeSwitch } from "./useRestartForDataScopeSwitch.js";
 
 export type ReactorServerAction =
@@ -48,6 +49,7 @@ function getErrorMessage(error: unknown): string {
 
 export function useReactorServer(): UseReactorServerResult {
   const { reactorServerService } = useServices();
+  const platform = useOptionalPlatform();
   // 登录/登出会改写本机数据命名空间（企业用户隔离），成功后必须重启应用才生效。
   const restartForDataScopeSwitch = useRestartForDataScopeSwitch();
   const [status, setStatus] = useState<ReactorServerStatus | null>(null);
@@ -91,6 +93,17 @@ export function useReactorServer(): UseReactorServerResult {
       setError(null);
       try {
         await operation();
+        // Web 没有 Electron RelaunchApp：登出必须同时吊销网关会话并回到登录页，
+        // 否则浏览器会话还在，worker 却已登出，下一次登录会复用旧 uid 的 worker。
+        if (action === "logout" && platform?.webSessionAuth === true) {
+          await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "same-origin",
+            signal: AbortSignal.timeout(5_000),
+          }).catch(() => undefined);
+          window.location.reload();
+          return true;
+        }
         // 身份切换即数据切换：登出后不回本地态、登录后不进该用户命名空间，
         // 同一台机器上的下一个用户就会看到上一任的任务与消息（方案文档 §1）。
         // 重启必须排在状态刷新**之前**：刷新走 host 的登录态查询，过期会话的令牌刷新
@@ -110,7 +123,7 @@ export function useReactorServer(): UseReactorServerResult {
         if (requestIdRef.current === requestId) setBusy(null);
       }
     },
-    [reactorServerService, restartForDataScopeSwitch],
+    [platform, reactorServerService, restartForDataScopeSwitch],
   );
 
   const login = useCallback(

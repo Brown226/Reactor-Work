@@ -127,6 +127,13 @@ export type {
   CuaHelperInstallerOptions,
 } from "./cua-permission-broker/index.js";
 export { createFileWatcherService } from "./fileWatcher/fileWatcherService.js";
+export {
+  getWebDataRoot,
+  getWebHomesRoot,
+  getWebUsersRoot,
+  prepareWebUserSandbox,
+  type WebUserSandbox,
+} from "./zcode-agent/webUserSandbox.js";
 export { createOAuthService } from "./oauth/oauthService.js";
 export { createOAuthProviderLogoutHandler } from "./oauth/oauthProviderLogout.js";
 export { OAuthCredentialRepo } from "./oauth/repo/oauthCredentialRepo.js";

@@ -14,6 +14,7 @@
     "build:remote": "tsx build-remote.ts",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
+    "test": "tsx --test test/*.test.ts",
     "smoke:user-space": "tsx scripts/user-space-smoke.ts"
   },
   "dependencies": {

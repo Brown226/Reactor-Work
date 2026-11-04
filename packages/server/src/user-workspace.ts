@@ -1,8 +1,12 @@
 import { mkdir, readdir, stat } from "node:fs/promises";
 import { relative, resolve, sep } from "node:path";
-import type { Hono } from "hono";
+import type { Context, Hono } from "hono";
 import { formatLogPrefix, type ServerRemoteInfo } from "@zcode/shared";
 import { IReactorServerService, type ServiceCollection } from "@zcode/services";
+import { getWebAuthSession, isSessionAuthEnabled } from "./web/sessionAuth.js";
+import { isValidWebUid as isValidUid, WEB_UID_PATTERN } from "./web/uid.js";
+
+export { isValidWebUid as isValidUid } from "./web/uid.js";
 
 /**
  * Web 端「每用户工作区 + 应用层配额」（B 方案：单容器多目录）。
@@ -30,9 +34,6 @@ const DEFAULT_TOTAL_QUOTA_BYTES = 20 * 1024 * 1024 * 1024;
  * 换来避免每次请求都全量递归扫描目录。
  */
 const USAGE_CACHE_TTL_MS = 30_000;
-/** uid 白名单：首字符字母数字，其余限字母数字与 . _ -。天然排除路径分隔符与 `..`。 */
-const UID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
-
 const warnedEnvNames = new Set<string>();
 
 function readPositiveIntEnv(name: string, fallback: number): number {
@@ -73,10 +74,6 @@ export function resolveUserWorkspaceConfig(): UserWorkspaceConfig {
 /** server-info 能力发现字段用：告知前端每用户工作区根目录。 */
 export function resolveUserWorkspaceRoot(): string {
   return resolveUserWorkspaceConfig().root;
-}
-
-export function isValidUid(uid: string): boolean {
-  return UID_PATTERN.test(uid);
 }
 
 /** 与 http.ts 的 isInsideDirectory 同逻辑；那边未导出，6 行小函数不值得为此拉公共文件。 */
@@ -255,13 +252,19 @@ export function installLoginUidRecorder(services: ServiceCollection): void {
 type UidResolution = { ok: true; uid: string } | { ok: false; status: 400 | 401; message: string };
 
 /**
- * 解析本次请求的身份：显式 uid（POST body / GET query）优先，其次登录成功记录的 uid。
+ * 解析本次请求的身份：会话模式只认 session.uid；旧模式才回退到显式 uid / 登录记录。
  *
- * **假设标注**：显式 uid 是阶段一的可伪造后门 —— /ws 无鉴权（计划 §4 P2 独立 P0），
- * 任何客户端都能报任意 uid 拿到别人目录的用量。保留它只为联调与前端显式传参兜底；
- * 接入登录身份后应移除或收紧为「uid 必须来自已认证会话」。
+ * 会话模式（REACTOR_WEB_SESSION_AUTH=1）下显式 uid 一律忽略，身份只来自 session；
+ * 旧模式保留显式 uid 仅用于联调兼容。
  */
-function resolveRequestUid(explicitUid: string | undefined): UidResolution {
+function resolveRequestUid(c: Context, explicitUid?: string): UidResolution {
+  if (isSessionAuthEnabled()) {
+    const session = getWebAuthSession(c);
+    if (!session) {
+      return { ok: false, status: 401, message: "未登录" };
+    }
+    return { ok: true, uid: session.uid };
+  }
   const uid = explicitUid?.trim() || getCurrentLoginUid();
   if (!uid) {
     return {
@@ -274,7 +277,7 @@ function resolveRequestUid(explicitUid: string | undefined): UidResolution {
     return {
       ok: false,
       status: 400,
-      message: `uid 不合法：需匹配 ${UID_PATTERN.source}`,
+      message: `uid 不合法：需匹配 ${WEB_UID_PATTERN.source}`,
     };
   }
   return { ok: true, uid };
@@ -307,7 +310,7 @@ export function registerUserWorkspaceRoutes(app: Hono): void {
       typeof rawBody === "object" && rawBody !== null && typeof (rawBody as { uid?: unknown }).uid === "string"
         ? (rawBody as { uid: string }).uid
         : undefined;
-    const resolved = resolveRequestUid(bodyUid);
+    const resolved = resolveRequestUid(c, bodyUid);
     if (!resolved.ok) {
       return c.json({ error: resolved.message }, resolved.status);
     }
@@ -328,7 +331,7 @@ export function registerUserWorkspaceRoutes(app: Hono): void {
 
   // 只读用量：不创建目录；uid 缺省回落登录记录（无需 body，便于 UI 轮询展示）。
   app.get("/api/user-workspace/usage", async (c) => {
-    const resolved = resolveRequestUid(c.req.query("uid"));
+    const resolved = resolveRequestUid(c, c.req.query("uid"));
     if (!resolved.ok) {
       return c.json({ error: resolved.message }, resolved.status);
     }

@@ -394,7 +394,7 @@ export function createTerminalService(dependencies: {
             }
           : {}),
       };
-      if (webSandbox) {
+      if (webSandbox || process.env.ZCODE_WEB_WORKER?.trim() === "1") {
         // 访问令牌只属于 host 入口，不能出现在用户终端环境里。
         delete env.ZCODE_SERVER_AUTH_TOKEN;
         delete env.REACTOR_WEB_TOKEN;

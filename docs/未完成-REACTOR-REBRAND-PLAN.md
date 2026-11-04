@@ -19,7 +19,8 @@
 ## 一、P1 可见品牌层（零兼容风险，首批交付）
 
 > **状态：已完成**（2026-09-21）。文案、图标、logo 均已落地并通过验证；细节与遗留项见 [brand/README.md](brand/未完成-README.md) 的「生产资产清单」。
-> 已确认标记：**立方体**（风车系列不使用）。因立方体素材内部几何非规则内缩，标记以位图接入，矢量源待补。
+> 2026-11-03 更新：产品标记已统一改为**原子 + R 方形标记**；以下“立方体”内容为历史记录。
+> 历史决策：立方体（风车系列不使用）。因立方体素材内部几何非规则内缩，标记以位图接入，矢量源待补。
 
 ### 1.1 界面文案（约 190 处，集中在 4 个文件）
 
@@ -227,7 +228,7 @@ ls -d ~/.reactor && ls ~/.zcode/v2 | wc -l   # 新目录已建；官方版 ~/.zc
 
 - [x] `packages/ui/src/useTheme.ts`：`Theme` 联合类型的 `zai-light`/`zai-dark` 是**默认主题**（默认 `zai-dark`）——标识符按上述决策保留
 - [x] `packages/ui/src/styles.css`：`.theme-zai-light` / `.theme-zai-dark` 的 `--color-brand`、`--color-primary`、`--color-primary-foreground`、`--color-accent` → Reactor 品牌色
-- [x] `packages/web/index.html`：localStorage key `zcode-theme` 保持原样（属保留项）；启动闪屏已换成 Reactor 立方体标记
+- [x] `packages/web/index.html`：localStorage key `zcode-theme` 保持原样（属保留项）；启动闪屏已换成 Reactor 方形标记
 
 **强制约束（`DESIGN.md`）**：UI 字号只能使用 `text-ui-xl/lg/base/caption/sm/xs`；禁止 `text-sm`/`text-xs`/`text-[13px]` 或内联 `font-size`；禁止通过改 `html.fontSize` 实现字号缩放（只能改 `--ui-font-size`）。违反视为设计系统缺陷。
 

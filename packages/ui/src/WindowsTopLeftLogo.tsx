@@ -22,7 +22,7 @@ export function WindowsTopLeftLogo({
       <img
         src={reactorMarkUrl}
         alt="Reactor"
-        className={cn("pointer-events-none size-5 select-none", imageClassName)}
+        className={cn("pointer-events-none size-5 select-none rounded-[22%]", imageClassName)}
         draggable={false}
       />
     </div>

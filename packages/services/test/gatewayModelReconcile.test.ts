@@ -75,6 +75,11 @@ interface ReconcileHarnessOptions {
   models?: readonly WireModel[];
   /** 让某条模型的刷新抛错，用于验证单条失败不阻断整轮。 */
   failRefreshFor?: string;
+  /**
+   * `/v1/models` 响应钩子（按第几次请求返回不同内容 / 延迟）。
+   * 用于验证并发 syncModels 的串行化：先发的慢请求不能覆盖后发的新目录。
+   */
+  modelsResponder?: (callIndex: number) => Promise<readonly WireModel[]>;
 }
 
 function createReconcileHarness(options: ReconcileHarnessOptions = {}) {
@@ -88,6 +93,7 @@ function createReconcileHarness(options: ReconcileHarnessOptions = {}) {
   // 这样连续两次 sync 时看到的是"上一轮写完之后"的真实状态。
   const personalModelIds: string[] = [...(options.existingModelIds ?? [])];
   let wireModels = options.models ?? [];
+  let modelsCallCount = 0;
 
   const added: Array<{ modelId: string; config: unknown }> = [];
   const deleted: string[] = [];
@@ -142,8 +148,12 @@ function createReconcileHarness(options: ReconcileHarnessOptions = {}) {
         });
       if (url.endsWith("/auth/gateway-token")) return json({ token: "gw", expiresIn: 7200 });
       if (url.endsWith("/models")) {
+        modelsCallCount += 1;
+        const list = options.modelsResponder
+          ? await options.modelsResponder(modelsCallCount)
+          : wireModels;
         // 网关下发形态：data[] + 顶层能力字段（见 proxy.ts 的下发体）
-        return json({ data: wireModels });
+        return json({ data: list });
       }
       if (url.endsWith("/auth/logout")) return json({ ok: true });
       return json({ error: { code: "404", message: url } }, 404);
@@ -367,4 +377,45 @@ test("未登录时启动不做模型同步（没有企业 provider，也无目�
 
   assert.equal(harness.drafted().length, 0);
   assert.equal(harness.added().length, 0);
+});
+
+test("并发 syncModels 串行化：先发的慢请求不得覆盖后发的新目录（2026-11-02 回归）", async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), "reactor-reconcile-concurrent-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  /*
+   * 缺陷原貌（现场实测）：启动同步 / 登录同步 / 手动「刷新模型」几乎同时触发，
+   * 三次 sync 各拿一份 /v1/models 快照并发 reconcile。最早发起的那次耗时 12.9s，
+   * 最后才完成，用改动前的旧目录把新结果覆盖 —— 服务端两个直连供应商，端侧只剩一个。
+   *
+   * 这里用「第 1 次响应故意延迟」复现同一时序：若没有单飞 + 尾随，最终落盘的会是 old-model。
+   */
+  const harness = createReconcileHarness({
+    existingModelIds: [],
+    modelsResponder: async (callIndex) => {
+      if (callIndex === 1) {
+        await new Promise((resolve) => setTimeout(resolve, 80));
+        return [{ id: "old-model", model_type: "chat" }];
+      }
+      return [
+        { id: "new-model-a", model_type: "chat" },
+        { id: "new-model-b", model_type: "chat" },
+      ];
+    },
+  });
+  const service = createService(harness, dir);
+
+  const first = service.syncModels();
+  // 等第一个同步真正发出 /models 请求后再并发触发第二次
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  const second = service.syncModels();
+  const [firstModels, secondModels] = await Promise.all([first, second]);
+
+  assert.deepEqual(firstModels, ["old-model"], "第一次同步返回它拿到的旧目录");
+  assert.deepEqual(secondModels, ["new-model-a", "new-model-b"], "尾随同步必须重新拉取最新目录");
+  assert.deepEqual(
+    harness.existingIds().sort(),
+    ["new-model-a", "new-model-b"],
+    "最终落盘必须是最后一次同步看到的新目录，而不是先发慢请求的旧目录",
+  );
 });

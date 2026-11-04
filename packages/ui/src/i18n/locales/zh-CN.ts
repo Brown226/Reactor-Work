@@ -4209,7 +4209,8 @@ const zhCN: Record<string, string> = {
   "chat.empty.greeting.evening": "晚上好呀，今天辛苦啦",
   "chat.empty.greeting.lateNight": "夜深啦，别忘了照顾好自己哦",
   "chat.empty.greeting.withName": "您好，{name}，{greeting}",
-  "chat.securityDisclaimer": "本工具严禁上传和处理涉密文件，AI生成内容仅供参考！",
+  "chat.securityDisclaimer":
+    "设计管理部 ● 数字化管理科：本工具严禁上传和处理涉密文件，AI生成内容仅供参考！",
   "chat.draft.suggestedPrompt.recentCommits": "检查近 7 天的 commit",
   "chat.draft.suggestedPrompt.recentCommits.prompt":
     "检查当前工作区近 7 天的 Git commit，概括主要改动并指出潜在风险。",

@@ -22,6 +22,7 @@ import {
   createZCodeAgentConnectionScope,
   IFileService,
   IGitService,
+  IReactorServerService,
   ISystemService,
   ITerminalService,
   IProviderProvisioningTargetService,
@@ -47,6 +48,30 @@ import {
   type ServerInfoWithUserWorkspace,
 } from "./user-workspace.js";
 import { createUserSpaceRoutes } from "./user-space/routes.js";
+import {
+  IdentityLoginError,
+  clearWebSessionCookie,
+  createLoginRateLimiter,
+  getWebAuthSession,
+  isCrossSiteMutation,
+  isSessionProtectedPath,
+  loginWithIdentity,
+  readClientIp,
+  readWebSessionCookie,
+  resolveIdentityBaseUrl,
+  setWebAuthSession,
+  setWebSessionCookie,
+} from "./web/sessionAuth.js";
+import {
+  createWebSessionStore,
+  resolveWebSessionTtlSeconds,
+  type WebSession,
+} from "./web/sessionStore.js";
+import { createWorkerWsBridge, type WorkerWsBridge } from "./web/workerBridge.js";
+import {
+  createWebWorkerRegistry,
+  type WebWorkerRegistry,
+} from "./web/workerRegistry.js";
 
 function wrapWebSocket(ws: WebSocket): ISocket {
   const onData = new Emitter<VSBuffer>();
@@ -132,7 +157,10 @@ function setupChannelServer(
 }
 
 /** 存储 web 模式下的远程连接，key 为随机 ID */
-const remoteConnections = new Map<string, RemoteConnection>();
+const remoteConnections = new Map<
+  string,
+  { connection: RemoteConnection; uid: string | null }
+>();
 
 function generateId(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -144,6 +172,12 @@ interface HttpServerOptions {
   host?: string;
   authRequired?: boolean;
   authToken?: string;
+  /** Web 网关：每浏览器会话鉴权；worker 不使用该模式。 */
+  sessionAuth?: boolean;
+  /** 会话登录转发的 identity 地址；worker 也用它做企业登录。 */
+  identityUrl?: string;
+  /** 当前进程是某个 uid 的 worker：开放 /api/internal/*。 */
+  webWorker?: boolean;
   spaFallback?: boolean;
   staticRoot?: string;
   workspaces?: ServerRemoteWorkspaceInfo[];
@@ -160,7 +194,10 @@ function resolveServerId(options: HttpServerOptions): string {
   );
 }
 
-function resolveServerWorkspaces(options: HttpServerOptions): ServerRemoteWorkspaceInfo[] {
+function resolveServerWorkspaces(
+  options: HttpServerOptions,
+  sessionUid?: string | null,
+): ServerRemoteWorkspaceInfo[] {
   if (options.workspaces) {
     return options.workspaces;
   }
@@ -173,7 +210,7 @@ function resolveServerWorkspaces(options: HttpServerOptions): ServerRemoteWorksp
    *
    * 未登录时（登录页首屏、健康检查）回落到共享工作区，保证登录流程本身可用。
    */
-  const loginUid = getCurrentLoginUid();
+  const loginUid = sessionUid ?? (options.sessionAuth ? null : getCurrentLoginUid());
   if (loginUid && isValidUid(loginUid)) {
     const userDir = join(resolveUserWorkspaceRoot(), loginUid);
     try {
@@ -185,6 +222,10 @@ function resolveServerWorkspaces(options: HttpServerOptions): ServerRemoteWorksp
       console.warn("[server-info] 创建用户工作区失败，回落到共享工作区:", error);
     }
   }
+  // 会话模式下未登录不暴露任何服务器路径；共享工作区只属于旧的单用户部署。
+  if (options.sessionAuth) {
+    return [];
+  }
   const workspacePath = readTrimmedEnv("ZCODE_SERVER_WORKSPACE") || process.cwd();
   return [
     {
@@ -194,7 +235,10 @@ function resolveServerWorkspaces(options: HttpServerOptions): ServerRemoteWorksp
   ];
 }
 
-function createServerInfo(options: HttpServerOptions): ServerRemoteInfo {
+function createServerInfo(
+  options: HttpServerOptions,
+  sessionUid?: string | null,
+): ServerRemoteInfo {
   return {
     serverId: resolveServerId(options),
     ...(options.name?.trim() || readTrimmedEnv("ZCODE_SERVER_NAME")
@@ -202,8 +246,10 @@ function createServerInfo(options: HttpServerOptions): ServerRemoteInfo {
       : {}),
     version: ZCODE_VERSION,
     protocolVersion: SERVER_REMOTE_PROTOCOL_VERSION,
-    authRequired: options.authRequired ?? Boolean(readTrimmedEnv("ZCODE_SERVER_TOKEN")),
-    workspaces: resolveServerWorkspaces(options),
+    authRequired:
+      options.authRequired ??
+      Boolean(options.sessionAuth || readTrimmedEnv("ZCODE_SERVER_TOKEN")),
+    workspaces: resolveServerWorkspaces(options, sessionUid),
     capabilities: {
       desktopContinuous: true,
       websocketRpc: true,
@@ -341,9 +387,35 @@ export function createHttpServer(
   const app = new Hono();
   const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
   const hostCapabilities = createHostCapabilityStore();
+  const sessionAuth = options.sessionAuth === true;
+  const identityUrl = options.identityUrl?.trim() || resolveIdentityBaseUrl();
+  const sessionStore = sessionAuth ? createWebSessionStore() : null;
+  const workerRegistry: WebWorkerRegistry | null = sessionAuth
+    ? createWebWorkerRegistry({ identityUrl })
+    : null;
+  const loginRateLimiter = sessionAuth ? createLoginRateLimiter() : null;
+  const authLog = (...args: unknown[]) =>
+    console.log(formatLogPrefix("zcode-server:web-auth", process.pid), ...args);
 
-  const authToken = options.authToken?.trim();
-  if (authToken) {
+  const authToken = sessionAuth ? undefined : options.authToken?.trim();
+  if (sessionAuth) {
+    app.use("*", async (c, next) => {
+      const pathname = new URL(c.req.url).pathname;
+      if (!isSessionProtectedPath(pathname)) {
+        await next();
+        return;
+      }
+      if (isCrossSiteMutation(c)) {
+        return c.json({ error: "Forbidden" }, 403);
+      }
+      const session = sessionStore?.get(readWebSessionCookie(c));
+      if (!session) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+      setWebAuthSession(c, session);
+      await next();
+    });
+  } else if (authToken) {
     app.use("*", async (c, next) => {
       const pathname = new URL(c.req.url).pathname;
       const validToken = hasValidLiteToken(c, authToken);
@@ -355,56 +427,307 @@ export function createHttpServer(
     });
   }
 
+  if (sessionAuth) {
+    app.post("/api/auth/login", async (c) => {
+      if (!identityUrl) {
+        return c.json({ error: "服务端未配置身份服务" }, 503);
+      }
+      if (isCrossSiteMutation(c)) {
+        return c.json({ error: "Forbidden" }, 403);
+      }
+      let raw: unknown;
+      try {
+        raw = await c.req.json();
+      } catch {
+        return c.json({ error: "请求体必须是 JSON" }, 400);
+      }
+      const body =
+        typeof raw === "object" && raw !== null
+          ? (raw as { username?: unknown; password?: unknown })
+          : {};
+      const username = typeof body.username === "string" ? body.username.trim() : "";
+      const password = typeof body.password === "string" ? body.password : "";
+      if (!username || !password) {
+        return c.json({ error: "请输入账号与密码" }, 400);
+      }
+      const ip = readClientIp(c);
+      const rateKey = `${ip ?? "unknown"}|${username.toLocaleLowerCase()}`;
+      if (loginRateLimiter?.isBlocked(rateKey)) {
+        return c.json({ error: "登录失败次数过多，请稍后重试" }, 429);
+      }
+      try {
+        const identity = await loginWithIdentity(identityUrl, username, password);
+        const uid = identity.user.uid;
+        const status = await workerRegistry!.login(uid, username, password);
+        if (!status.loggedIn || status.user?.uid !== uid) {
+          if (status.loggedIn) {
+            await workerRegistry!.logout(uid).catch(() => undefined);
+          }
+          throw new IdentityLoginError(502, "企业登录身份与网关会话不一致");
+        }
+        loginRateLimiter?.reset(rateKey);
+        const session = sessionStore!.create({
+          uid,
+          username,
+          userAgent: c.req.header("user-agent"),
+          ip,
+        });
+        setWebSessionCookie(c, session.sid, resolveWebSessionTtlSeconds());
+        authLog("登录成功", { uid, username });
+        return c.json({
+          user: { uid, username },
+          mustChangePassword: status.user?.mustChangePassword ?? false,
+        });
+      } catch (error) {
+        loginRateLimiter?.recordFailure(rateKey);
+        const status = error instanceof IdentityLoginError ? error.status : 502;
+        const message =
+          error instanceof IdentityLoginError
+            ? error.message
+            : error instanceof Error
+              ? error.message
+              : String(error);
+        authLog("登录失败", { username, error: message });
+        const clientStatus = status === 401 || status === 403 ? 401 : 502;
+        return c.json(
+          { error: clientStatus === 401 ? message : "登录失败，请稍后重试" },
+          clientStatus,
+        );
+      }
+    });
+
+    app.get("/api/auth/session", async (c) => {
+      const session = sessionStore?.get(readWebSessionCookie(c));
+      if (!session) return c.json({ error: "Unauthorized" }, 401);
+      try {
+        const identity = await workerRegistry!.status(session.uid);
+        if (!identity.loggedIn || identity.uid !== session.uid) {
+          sessionStore?.revoke(session.sid);
+          clearWebSessionCookie(c);
+          return c.json({ error: "Unauthorized" }, 401);
+        }
+      } catch (error) {
+        authLog("会话校验无法读取 worker 身份", {
+          uid: session.uid,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return c.json({ error: "Session unavailable" }, 503);
+      }
+      return c.json({ user: { uid: session.uid, username: session.username } });
+    });
+
+    app.post("/api/auth/logout", async (c) => {
+      const session: WebSession | null = getWebAuthSession(c);
+      if (!session) return c.json({ error: "Unauthorized" }, 401);
+      sessionStore?.revoke(session.sid);
+      clearWebSessionCookie(c);
+      if ((sessionStore?.countActiveForUid(session.uid) ?? 0) === 0) {
+        await workerRegistry?.logout(session.uid).catch((error: unknown) => {
+          authLog("worker 登出失败（会话已吊销）", {
+            uid: session.uid,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+        await workerRegistry?.stop(session.uid);
+      }
+      return c.body(null, 204);
+    });
+  }
+
   // server-info 旧字段保持不变（兼容旧客户端），追加 userWorkspaceRoot 与 identityUrl 供前端能力发现。
   // identityUrl 的用途：Web 端登录请求由**本服务端**转发到 identity，用户浏览器不需要可达该地址，
   // 所以真正可用的地址只有服务端知道。下发后登录页会锁定地址并隐藏输入框，
   // 避免把容器内网服务名（如 http://identity:8791）暴露给最终用户去手填。
   app.get("/api/server-info", (c) => {
-    const identityUrl = readTrimmedEnv("REACTOR_IDENTITY_URL");
+    const session = sessionAuth ? sessionStore?.get(readWebSessionCookie(c)) : null;
     const info: ServerInfoWithUserWorkspace = {
-      ...createServerInfo(options),
+      ...createServerInfo(options, session?.uid ?? null),
       userWorkspaceRoot: resolveUserWorkspaceRoot(),
       ...(identityUrl ? { identityUrl } : {}),
     };
     return c.json(info);
   });
-  app.post("/api/rpc-host-capability", (c) => c.json(hostCapabilities.issue()));
+  app.post("/api/rpc-host-capability", (c) =>
+    sessionAuth ? c.json({ error: "disabled" }, 403) : c.json(hostCapabilities.issue()),
+  );
+
+  if (options.webWorker) {
+    const reactorServer = services.getOptional(IReactorServerService);
+    app.post("/api/internal/reactor-login", async (c) => {
+      if (!reactorServer) return c.json({ error: "企业服务未装配" }, 503);
+      let raw: unknown;
+      try {
+        raw = await c.req.json();
+      } catch {
+        return c.json({ error: "请求体必须是 JSON" }, 400);
+      }
+      const body =
+        typeof raw === "object" && raw !== null
+          ? (raw as { username?: unknown; password?: unknown; serverUrl?: unknown })
+          : {};
+      const username = typeof body.username === "string" ? body.username.trim() : "";
+      const password = typeof body.password === "string" ? body.password : "";
+      const serverUrl =
+        (typeof body.serverUrl === "string" && body.serverUrl.trim()) ||
+        readTrimmedEnv("REACTOR_IDENTITY_URL");
+      if (!username || !password || !serverUrl) {
+        return c.json({ error: "缺少登录参数" }, 400);
+      }
+      try {
+        return c.json(await reactorServer.login({ serverUrl, username, password }));
+      } catch (error) {
+        return c.json(
+          { error: error instanceof Error ? error.message : String(error) },
+          502,
+        );
+      }
+    });
+    app.get("/api/internal/reactor-status", async (c) => {
+      if (!reactorServer) return c.json({ error: "企业服务未装配" }, 503);
+      try {
+        return c.json(await reactorServer.getStatus());
+      } catch (error) {
+        return c.json(
+          { error: error instanceof Error ? error.message : String(error) },
+          502,
+        );
+      }
+    });
+    app.get("/api/internal/reactor-identity", async (c) => {
+      if (!reactorServer) return c.json({ error: "企业服务未装配" }, 503);
+      try {
+        const user = await reactorServer.getSessionIdentity();
+        return c.json({ loggedIn: Boolean(user), user });
+      } catch (error) {
+        return c.json(
+          { error: error instanceof Error ? error.message : String(error) },
+          502,
+        );
+      }
+    });
+    app.post("/api/internal/reactor-logout", async (c) => {
+      if (!reactorServer) return c.json({ error: "企业服务未装配" }, 503);
+      try {
+        await reactorServer.logout();
+        return c.json({ ok: true });
+      } catch (error) {
+        return c.json(
+          { error: error instanceof Error ? error.message : String(error) },
+          502,
+        );
+      }
+    });
+  }
 
   // 每用户工作区（B 方案：单容器多目录 + 应用层软配额）：先在登录成功路径上记录当前 uid，
   // 再挂路由；身份校验的阶段一限制（uid 即身份、显式 uid 可伪造）见 user-workspace.ts。
-  installLoginUidRecorder(services);
+  if (!sessionAuth) {
+    installLoginUidRecorder(services);
+  }
   registerUserWorkspaceRoutes(app);
   // 我的空间（方案 §4）：与 user-workspace 共用登录 uid 记录、空间根与配额；
   // 公开分享路由 /api/space/shared/:token 的身份放行见 isTokenProtectedPath。
   app.route("/api/space", createUserSpaceRoutes());
 
-  // 普通 `/ws` 永远是 terminal-client；浏览器/任意客户端设置旧 mode header
-  // 都不能再把自己提升为 trusted host。
-  app.get(
-    "/ws",
-    upgradeWebSocket(() => ({
-      onOpen(_event, ws) {
-        setupChannelServer(ws.raw as WebSocket, services, "web-remote-replayable");
-      },
-    })),
-  );
+  if (sessionAuth) {
+    app.use("/ws", async (c, next) => {
+      if (new URL(c.req.url).pathname !== "/ws") {
+        await next();
+        return;
+      }
+      const session = getWebAuthSession(c);
+      if (!session) return c.json({ error: "Unauthorized" }, 401);
+      try {
+        await workerRegistry!.ensure(session.uid);
+        const status = await workerRegistry!.status(session.uid);
+        if (!status.loggedIn || status.uid !== session.uid) {
+          sessionStore?.revoke(session.sid);
+          clearWebSessionCookie(c);
+          return c.json({ error: "Unauthorized" }, 401);
+        }
+      } catch (error) {
+        authLog("worker 启动失败", {
+          uid: session.uid,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return c.json({ error: "worker unavailable" }, 503);
+      }
+      await next();
+    });
+    app.get(
+      "/ws",
+      upgradeWebSocket((c) => {
+        const session = getWebAuthSession(c);
+        const worker = session ? workerRegistry!.get(session.uid) : undefined;
+        if (!session || !worker) {
+          return {
+            onOpen(_event, ws) {
+              ws.close(1011, "worker unavailable");
+            },
+          };
+        }
+        let bridge: WorkerWsBridge | null = null;
+        let released = false;
+        const release = (): void => {
+          if (released) return;
+          released = true;
+          bridge?.close();
+          workerRegistry!.markConnectionClosed(session.uid);
+        };
+        return {
+          onOpen(_event, ws) {
+            workerRegistry!.markConnectionOpened(session.uid);
+            bridge = createWorkerWsBridge(ws, worker);
+          },
+          onMessage(event, _ws) {
+            bridge?.send(event.data as string | ArrayBuffer | Uint8Array);
+          },
+          onClose() {
+            release();
+          },
+          onError() {
+            release();
+          },
+        };
+      }),
+    );
+  } else {
+    // 普通 `/ws` 永远是 terminal-client；浏览器/任意客户端设置旧 mode header
+    // 都不能再把自己提升为 trusted host。
+    app.get(
+      "/ws",
+      upgradeWebSocket(() => ({
+        onOpen(_event, ws) {
+          setupChannelServer(ws.raw as WebSocket, services, "web-remote-replayable");
+        },
+      })),
+    );
+  }
 
   const upgradeTrustedHostWebSocket = upgradeWebSocket(() => ({
     onOpen(_event, ws) {
       setupChannelServer(ws.raw as WebSocket, services, "desktop-continuous");
     },
   }));
-  app.use("/ws/host", async (c, next) => {
-    const capability = c.req.header(ZCODE_RPC_HOST_CAPABILITY_HEADER);
-    if (!hostCapabilities.consume(capability)) {
-      return c.json({ error: "Invalid or expired host capability" }, 401);
-    }
-    await next();
-  });
-  app.get("/ws/host", upgradeTrustedHostWebSocket);
+  if (sessionAuth) {
+    app.all("/ws/host", (c) => c.json({ error: "disabled" }, 403));
+  } else {
+    app.use("/ws/host", async (c, next) => {
+      const capability = c.req.header(ZCODE_RPC_HOST_CAPABILITY_HEADER);
+      if (!hostCapabilities.consume(capability)) {
+        return c.json({ error: "Invalid or expired host capability" }, 401);
+      }
+      await next();
+    });
+    app.get("/ws/host", upgradeTrustedHostWebSocket);
+  }
 
   // Web 模式下发起远程连接
   app.post("/api/connect-remote", async (c) => {
+    const session = sessionAuth ? getWebAuthSession(c) : null;
+    if (sessionAuth && !session) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
     const rawBody = await c.req.json();
     const parsedBody = remoteTargetSchema.safeParse(rawBody);
     if (!parsedBody.success) {
@@ -416,7 +739,7 @@ export function createHttpServer(
       const backend = await createRemoteBackend(body);
       const connection = await connectRemote(backend);
       const id = generateId();
-      remoteConnections.set(id, connection);
+      remoteConnections.set(id, { connection, uid: session?.uid ?? null });
 
       return c.json({ id });
     } catch (err: unknown) {
@@ -436,11 +759,19 @@ export function createHttpServer(
             ws.close(4000, "Missing remote connection id");
             return;
           }
-          const connection = remoteConnections.get(id);
-          if (!connection) {
+          const entry = remoteConnections.get(id);
+          if (!entry) {
             ws.close(4004, "Remote connection not found");
             return;
           }
+          if (
+            sessionAuth &&
+            entry.uid !== getWebAuthSession(c)?.uid
+          ) {
+            ws.close(4003, "Remote connection does not belong to this session");
+            return;
+          }
+          const { connection } = entry;
           // 一个连接只给一个 WS 客户端使用，取出后从 Map 移除
           remoteConnections.delete(id);
 
@@ -482,6 +813,10 @@ export function createHttpServer(
   });
 
   injectWebSocket(server);
+  server.on("close", () => {
+    sessionStore?.close();
+    void workerRegistry?.stopAll();
+  });
 
   return server;
 }

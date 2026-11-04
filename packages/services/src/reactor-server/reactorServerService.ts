@@ -165,6 +165,12 @@ export function createReactorServerService(
     }
   }
 
+  async function getSessionIdentity(): Promise<ReactorServerUserInfo | null> {
+    const serverUrl = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.serverUrl);
+    if (!serverUrl) return null;
+    return readUser();
+  }
+
   async function persistTokens(
     accessToken: string,
     refreshToken: string,
@@ -480,6 +486,12 @@ export function createReactorServerService(
      * 不影响凭据里的 providerId —— 授权层与网关令牌换发仍靠它定位。
      */
     visibility: "visible" | "hidden" = "visible",
+    /**
+     * 2026-11-02：区分网关 provider 与直连 provider。
+     * 网关独有的两步兜底（网关族名字兜底、凭据锚点）绝不能被直连调用复用，
+     * 否则直连地址/名字同时变化时会把网关 provider 覆盖成直连条目。
+     */
+    kind: "gateway" | "direct" = "gateway",
   ): Promise<string> {
     /*
      * 2026-10-30：必须看见 hidden。网关 provider 在「全部模型直连」时被置 hidden，
@@ -523,14 +535,13 @@ export function createReactorServerService(
      * 若直接 createPersonalProvider，本地就会出现两个企业 provider：一个占着主名、
      * 一个被自动改名成「… 2」，用户在模型下拉里看到两个分组，正是要避免的"迷惑"。
      * 托管条目全部由本服务写入，逻辑上只应有一个网关 provider，因此直接复用旧条目。
-     * 按名字排除直连条目：它们各自对应一个上游地址，不是网关。
+     *
+     * 2026-11-02：直连条目的名字已改成「网关基名 · 供应商名」，不再带「直连」前缀；
+     * 这里按名字形态识别网关族（基名 / 基名 + 序号），且只给网关调用兜底。
      */
-    if (!existing) {
-      const directPrefix = `${REACTOR_SERVER_PROVIDER_NAME} · 直连`.trim().toLocaleLowerCase();
+    if (!existing && kind === "gateway") {
       existing = mine.find(
-        (provider) =>
-          isManagedPersonal(provider) &&
-          !(provider.providerName ?? "").trim().toLocaleLowerCase().startsWith(directPrefix),
+        (provider) => isManagedPersonal(provider) && isGatewayFamilyName(provider.providerName),
       );
     }
     // 这里不写 personalModelIds：它会被成员关系覆盖（见 reconcileProviderModels 注释），
@@ -588,16 +599,19 @@ export function createReactorServerService(
      */
     // readManagedProviderId 已内置「解不开即视为失效」，这里不能直接 credentials.load，
     // 否则凭据损坏时仍会抛「凭据解密失败」把整次登录带崩。
-    const anchoredId = (await readManagedProviderId()) || undefined;
-    if (anchoredId) {
-      try {
-        await providerSettings.savePersonalProviderOverlay(anchoredId as ProviderId, config);
-        return anchoredId;
-      } catch (error) {
-        logger.info(undefined, "凭据中的企业 provider 已不存在，改为重新创建", {
-          anchoredId,
-          error: error instanceof Error ? error.message : String(error),
-        });
+    // 2026-11-02：锚点指向的是**网关** provider，直连调用不能拿它写配置。
+    if (kind === "gateway") {
+      const anchoredId = (await readManagedProviderId()) || undefined;
+      if (anchoredId) {
+        try {
+          await providerSettings.savePersonalProviderOverlay(anchoredId as ProviderId, config);
+          return anchoredId;
+        } catch (error) {
+          logger.info(undefined, "凭据中的企业 provider 已不存在，改为重新创建", {
+            anchoredId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
       }
     }
     /*
@@ -636,6 +650,21 @@ export function createReactorServerService(
   }
 
   /**
+   * 判断显示名是否属于「网关族」：`Reactor 企业服务端` 或自动去重后的 `… 2`。
+   *
+   * 2026-11-02：直连条目改为「网关基名 · 供应商名」（不再带「直连」字样），
+   * 名字同样以基名开头，因此不能再用 `startsWith(base)` 判断族属；
+   * 只有「基名」和「基名 + 纯数字序号」才算网关族。
+   */
+  function isGatewayFamilyName(raw: string | null | undefined): boolean {
+    const name = (raw ?? "").trim().toLocaleLowerCase();
+    const base = REACTOR_SERVER_PROVIDER_NAME.trim().toLocaleLowerCase();
+    if (name === base) return true;
+    if (!name.startsWith(`${base} `)) return false;
+    return /^\d+$/.test(name.slice(base.length + 1));
+  }
+
+  /**
    * 清理历史遗留的「网关族空壳」（2026-10-30）。
    *
    * 反例（真实数据）：某台机器上堆了 12 个「Reactor 企业服务端 2 … 13」，
@@ -652,14 +681,12 @@ export function createReactorServerService(
     try {
       // 空壳可能是 hidden（历史版本在隐藏后仍反复创建），必须连 hidden 一起扫。
       const view = await providerSettings.getView({ includeHidden: true });
-      const basePrefix = REACTOR_SERVER_PROVIDER_NAME.trim().toLocaleLowerCase();
-      const directPrefix = `${REACTOR_SERVER_PROVIDER_NAME} · 直连`.trim().toLocaleLowerCase();
       for (const provider of view.providers) {
         if (provider.personalConfig === undefined) continue;
         if (String(provider.providerId) === keepId) continue;
         const name = (provider.providerName ?? "").trim().toLocaleLowerCase();
-        // 只看网关族：直连条目各有真实上游地址，不在此列
-        if (!name.startsWith(basePrefix) || name.startsWith(directPrefix)) continue;
+        // 只看网关族：直连条目是「基名 · 供应商名」，各有真实上游地址，不在此列
+        if (!isGatewayFamilyName(name)) continue;
         const baseUrl =
           provider.personalConfig?.api?.baseUrl ?? provider.effectiveConfig?.api?.baseUrl;
         if (typeof baseUrl === "string" && baseUrl.trim() !== "") continue;
@@ -678,8 +705,12 @@ export function createReactorServerService(
     }
   }
 
-  /** 直连 provider 的显示名基名：与网关分区分组，但不让人误以为是另一个服务端。 */
-  const DIRECT_PROVIDER_NAME = `${REACTOR_SERVER_PROVIDER_NAME} · 直连`;
+  /**
+   * 直连 provider 的兜底显示名基名（2026-11-02 起不再使用「直连」字样）。
+   * 正常情况下直接用服务端供应商名（deep / ccc）；只有老网关不下发 provider_name 时
+   * 才退回「Reactor 企业服务端 · 地址末段」。名字唯一性由 claimDirectProviderName 兜底。
+   */
+  const DIRECT_PROVIDER_NAME = REACTOR_SERVER_PROVIDER_NAME;
 
   /**
    * 直连上游密钥的凭据键（2026-11-02）。
@@ -698,6 +729,10 @@ export function createReactorServerService(
    * 名称唯一性校验 `Provider 名称已存在` → syncModels 抛错 → 登录界面报失败。
    * 实测：登录凭据其实早已落盘（token 在此之前就保存了），只是模型清单没写进去。
    *
+   * 2026-11-02：显示名直接用管理台的供应商名（deep / ccc），不再拼「直连」字样；
+   * 模型设置页左侧列表很窄，共用前缀会被截断成同一个名字，反而分不清。
+   * 老网关不下发 provider_name 时才用「基名 · 地址末段」兜底。
+   *
    * 取名规则：取 baseUrl 路径里最后一个非 `v1`/`v2` 段（上游聚合服务习惯用
    * `/<模型组>/v1`），没有则退回 hostname。地址相同时本来就复用同一 provider，
    * 不会进到这里，所以无需再拼接完整 URL。
@@ -709,7 +744,7 @@ export function createReactorServerService(
      * 老网关不下发 provider_name 时兜底，保证升级前后都能取到名字。
      */
     if (typeof providerName === "string" && providerName.trim()) {
-      return `${DIRECT_PROVIDER_NAME} · ${providerName.trim()}`;
+      return providerName.trim();
     }
     try {
       const parsed = new URL(baseUrl);
@@ -885,7 +920,38 @@ export function createReactorServerService(
     return baseUrl === deriveGatewayBaseUrl(serverUrl) ? null : baseUrl;
   }
 
-  async function syncModels(): Promise<readonly string[]> {
+  /*
+   * 2026-11-02：模型目录同步必须串行化（单飞 + 尾随一次）。
+   *
+   * 反例（现场实际发生）：启动同步、登录同步、手动「刷新模型」几乎同时触发时，
+   * 三个请求各拿一份 /v1/models 快照并发 reconcile。最早发起的那次耗时 12.9s，
+   * 最后才完成，用**改动前的旧目录**把已经写好的新目录覆盖掉 —— 服务端明明有两个
+   * 直连供应商，桌面端只剩一个，且名字与模型对不上。
+   *
+   * 规则：同一时刻只允许一次 runSyncModels 写配置；期间到来的调用合并成**一次**
+   * 尾随同步，等当前结束后再跑，保证最后一次落盘的一定是最新目录。
+   */
+  let syncInFlight: Promise<readonly string[]> | null = null;
+  let syncPending: Promise<readonly string[]> | null = null;
+
+  function syncModels(): Promise<readonly string[]> {
+    if (!syncInFlight) {
+      syncInFlight = runSyncModels().finally(() => {
+        syncInFlight = null;
+      });
+      return syncInFlight;
+    }
+    // 已有同步在跑：复用并登记一次尾随同步（多次并发调用也只补一次）。
+    syncPending ??= syncInFlight
+      .catch(() => [])
+      .then(() => {
+        syncPending = null;
+        return syncModels();
+      });
+    return syncPending;
+  }
+
+  async function runSyncModels(): Promise<readonly string[]> {
     const serverUrl = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.serverUrl);
     if (!serverUrl) return [];
     const gatewayToken = await ensureGatewayToken(serverUrl);
@@ -953,7 +1019,7 @@ export function createReactorServerService(
         const providerName = list[0]?.providerName ?? null;
         const name = await claimDirectProviderName(baseUrl, reservedDirectNames, providerName);
         reservedDirectNames.add(name.trim().toLocaleLowerCase());
-        const providerId = await ensureManagedProvider(baseUrl, name);
+        const providerId = await ensureManagedProvider(baseUrl, name, "visible", "direct");
         await reconcileProviderModels(providerId, list);
         // 2026-11-02：直连上游按其 API Key 鉴权（服务端在 /v1/models 下发 direct_api_key）。
         // 配置里保留哨兵做托管标记，真密钥按 providerId 存凭据库；未下发时清掉旧值。
@@ -1230,6 +1296,7 @@ export function createReactorServerService(
 
   return {
     getStatus,
+    getSessionIdentity,
     login,
     logout,
     changePassword,

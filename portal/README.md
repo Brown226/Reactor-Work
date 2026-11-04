@@ -16,7 +16,8 @@ portal/
 ├── changelog.html      # 更新日志（内含拉取服务端发布说明的渐进增强脚本）
 ├── assets/
 │   ├── site.css        # 官网唯一样式来源（深色主题，含响应式与日志页样式）
-│   └── icon.png        # 站点图标 favicon（浏览器标签页；官网顶栏/页脚品牌为纯文字字标，不用位图）
+│   ├── reactor-logo-white.png # 官网顶栏/页脚反白品牌 lockup
+│   └── icon.png        # 站点图标 favicon（浏览器标签页；独立小图标，不复用横版 lockup）
 ├── manual/             # 产品说明书（离线多页站点）
 │   ├── pages/*.md      # 内容源（入库）
 │   ├── *.html          # 构建产物（不入库，index.html 除外）
@@ -81,7 +82,7 @@ node portal/manual/smoke-render.mjs  # 浏览器渲染冒烟
 
   写作口径、截图占位、`related` / `last-verified` 用法见 [`manual/AUTHORING.md`](manual/AUTHORING.md)。
 
-- **官网**：Hero 应用窗口是纯 HTML/CSS 静态演示，界面大改时同步调整；版本号出现在公告条、页脚与更新日志，来自根 `package.json` 的 `version`，发版时手动同步。更新日志页只静态维护 **v1.0.0 基线**，之后的版本由服务端同步（发版时在管理台填写更新说明即可）。
+- **官网**：Hero 应用窗口是纯 HTML/CSS 静态演示，界面大改时同步调整；顶栏/页脚品牌使用 `assets/reactor-logo-white.png`（反白 lockup），说明书顶栏使用同一资产（`../assets/reactor-logo-white.png`），favicon 使用 `assets/icon.png`（原子+R 方形标记）。版本号出现在公告条、页脚与更新日志，来自根 `package.json` 的 `version`，发版时手动同步。更新日志页只静态维护 **v1.0.0 基线**，之后的版本由服务端同步（发版时在管理台填写更新说明即可）。
 - **内容纪律**：只写本仓提供的能力；不出现外链、套餐权益、社群入口、其他产品名。
 - 两站互链是相对路径（官网卡片 → `manual/<页面>.html`），同处一个镜像内天然可达。
 - 本目录不在 `pnpm-workspace.yaml` 内，不参与本仓 lint / typecheck / 架构门禁。

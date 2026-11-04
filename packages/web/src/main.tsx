@@ -18,6 +18,7 @@ import "@zcode/ui/styles.css";
 import { connectViaWebSocket } from "@zcode/client";
 import { WebCallbackPage } from "./auth/WebCallbackPage.js";
 import { createWebAuthService } from "./auth/webAuthService.js";
+import { WebLoginScreen } from "./auth/WebLoginScreen.js";
 import { WEB_ZAI_OAUTH_CONFIG, resolveWebAuthDevReturnTo } from "./auth/webZaiOAuthConfig.js";
 import { parseOAuthState, resolveSafeAppReturnTo } from "./auth/oauthStateCodec.js";
 import { resolveWebCommunityUrl, resolveWebHelpConfig } from "./communityUrl.js";
@@ -370,6 +371,7 @@ function createWebPlatform(): IPlatformService {
     },
     // Web 也有"重启"语义（刷新）：把它声明成能力位，登录成功后走与桌面端同一条重启路径
     supportsAppRelaunch: true,
+    webSessionAuth: true,
     setApplicationLocale: (_locale) => Promise.resolve(),
     setTitleBarTheme: () => Promise.resolve(),
     getDeviceId: () => {
@@ -500,6 +502,35 @@ async function probeServerAuth(): Promise<"ok" | "auth-required" | "unreachable"
   }
 }
 
+async function readPublicServerInfo(): Promise<Partial<ServerRemoteInfo> | null> {
+  try {
+    const response = await fetch("/api/server-info", { cache: "no-store" });
+    if (!response.ok) return null;
+    return (await response.json()) as Partial<ServerRemoteInfo>;
+  } catch {
+    return null;
+  }
+}
+
+/** 网关会话探针：401 = 需要企业登录；404 = 旧部署（继续走共享令牌流程）。 */
+async function probeWebSession(): Promise<"ok" | "login-required" | "unavailable"> {
+  try {
+    const response = await fetch("/api/auth/session", { cache: "no-store" });
+    if (response.status === 401) return "login-required";
+    if (response.ok) return "ok";
+    return "unavailable";
+  } catch {
+    return "unavailable";
+  }
+}
+
+async function renderWebLogin(): Promise<void> {
+  const info = await readPublicServerInfo();
+  const identityUrl = typeof info?.identityUrl === "string" ? info.identityUrl.trim() : "";
+  document.title = "Reactor 智能应用 - 登录";
+  root.render(<WebLoginScreen identityUrl={identityUrl} />);
+}
+
 function WebBootstrapErrorScreen({ message }: { message: string }) {
   return (
     <div className="h-dvh min-h-dvh w-screen bg-background text-foreground">
@@ -556,6 +587,10 @@ async function bootstrapWebApp() {
     renderWebBootstrapError(new Error("无法连接服务端（/api/server-info 不可达）"));
     return;
   }
+  if ((await probeWebSession()) === "login-required") {
+    await renderWebLogin();
+    return;
+  }
 
   let bootstrap: WebBootstrapResult;
   try {
@@ -602,6 +637,10 @@ async function bootstrapWebApp() {
     const retryProbe = await probeServerAuth();
     if (retryProbe === "auth-required") {
       renderWebBootstrapToken(params.has("token"));
+      return;
+    }
+    if ((await probeWebSession()) === "login-required") {
+      await renderWebLogin();
       return;
     }
     renderWebBootstrapError(error);

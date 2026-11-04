@@ -123,6 +123,11 @@ export interface ReactorServerUsageOverview {
 
 export interface IReactorServerService {
   getStatus(): Promise<ReactorServerStatus> /** 登录并完成"取网关令牌 + 拉模型目录 + 写企业 provider"三步。 */;
+  /**
+   * 只读本地登录身份（serverUrl + user 凭据），不刷新 token、不发网络请求。
+   * Web worker 用它校验「网关会话 uid」与「worker 当前登录 uid」一致。
+   */
+  getSessionIdentity(): Promise<ReactorServerUserInfo | null>;
   login(input: ReactorServerLoginInput): Promise<ReactorServerStatus>;
   /** 退出：尽力通知服务端吊销 refresh，然后清空本地令牌与企业 provider 的模型清单。 */
   logout(): Promise<void>;

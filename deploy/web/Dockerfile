@@ -27,7 +27,7 @@ RUN sed -i "s@deb.debian.org@${APT_MIRROR}@g" /etc/apt/sources.list.d/debian.sou
     && apt-get update \
     && apt-get install -y --no-install-recommends fonts-noto-cjk fontconfig \
        libreoffice-writer libreoffice-calc libreoffice-impress \
-       ripgrep ugrep python3 python3-pip acl \
+       ripgrep ugrep python3 python3-pip acl util-linux \
     && rm -rf /var/lib/apt/lists/*
 
 # 运行时依赖：与 packages/server/tsup.config.ts 的 external 清单一致。
@@ -85,6 +85,9 @@ ENV NODE_ENV=production \
     ZCODE_FILE_TOOLS_ASSETS_ROOT=/app/bundled-tools/linux-x64/file-tools \
     ZCODE_SKILL_ENGINE_ROOT=/app/bundled-tools/linux-x64/office-engines \
     ZCODE_WEB_USER_SANDBOX=1 \
+    REACTOR_WEB_SESSION_AUTH=1 \
+    REACTOR_WEB_SESSION_DB=/data/.reactor/web-sessions/sessions.sqlite \
+    ZCODE_WEB_WORKER_ENTRY=/app/server-dist/entry-http.js \
     ZCODE_AGENT_SERVER_COMMAND=node \
     ZCODE_AGENT_SERVER_ARGS_JSON='["/app/agent/zcode.cjs","app-server","--stdio"]'
 # ⚠ 上面这个值必须用单引号包住：Docker 的 ENV 解析会剥掉未转义的双引号，
@@ -94,9 +97,9 @@ ENV NODE_ENV=production \
 # 工作区与数据必须落在可挂载卷内：默认值 /app 会让用户在容器里直接改应用文件。
 # /data/users 711：可穿过、不可列；/data/.reactor 700：凭据/宿主会话库仅 root。
 # /root/.reactor → /data/.reactor：宿主 CLI 会话库/插件缓存跟随 home，但数据落持久卷。
-RUN mkdir -p /data/workspace /data/users /data/homes /data/.reactor \
+RUN mkdir -p /data/workspace /data/users /data/homes /data/.reactor /data/.reactor/web-sessions \
     && chmod 711 /data/users /data/homes \
-    && chmod 700 /data/.reactor \
+    && chmod 700 /data/.reactor /data/.reactor/web-sessions \
     && rm -rf /root/.reactor \
     && ln -s /data/.reactor /root/.reactor
 VOLUME ["/data"]

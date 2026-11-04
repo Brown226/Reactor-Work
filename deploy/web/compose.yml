@@ -1,14 +1,18 @@
 services:
   reactor-web:
-    image: reactor-web:v1.1.0
+    image: reactor-web:v1.1.1
     container_name: reactor-web
     restart: unless-stopped
     ports:
       - "3030:3030"
     environment:
-      # 必填：访问令牌。浏览器首次访问用 /?token=<值> 换 cookie，之后正常使用。
-      # 未设置时服务端不校验任何身份，任何能连端口的人都会拿到工作区与终端权限。
-      ZCODE_SERVER_AUTH_TOKEN: ${REACTOR_WEB_TOKEN:?请在 .env 中设置 REACTOR_WEB_TOKEN}
+      # 每浏览器企业登录会话；不再下发部署级共享令牌。
+      # 未登录访问只看到登录页，/api 与 /ws 一律 401。
+      REACTOR_WEB_SESSION_AUTH: "1"
+      # 默认 7 天，固定有效期；应与 identity 的 REACTOR_REFRESH_TTL_SECONDS 对齐。
+      REACTOR_WEB_SESSION_TTL_SECONDS: ${REACTOR_WEB_SESSION_TTL_SECONDS:-604800}
+      # HTTPS 部署必须设为 1；纯 HTTP 内网联调保持 0，否则浏览器不会回传 Cookie。
+      REACTOR_WEB_COOKIE_SECURE: ${REACTOR_WEB_COOKIE_SECURE:-0}
       ZCODE_SERVER_WORKSPACE: /data/workspace
       ZCODE_DATA_BASE_DIR: /data
       # 本容器视角的 identity 地址：Web 登录请求由本容器转发，用户浏览器无需可达。

@@ -21,7 +21,8 @@ export const NAV = [
     items: [
       { slug: "index", title: "说明书首页", isIndex: true },
       { slug: "welcome", title: "概述与核心能力", related: ["install", "model-access", "about"] },
-      { slug: "install", title: "安装与部署", related: ["model-access", "qa", "linux-wsl"] },
+      { slug: "install", title: "安装与部署", related: ["model-access", "web-client", "qa", "linux-wsl"] },
+      { slug: "web-client", title: "Web 端（浏览器入口）", related: ["my-space", "install", "model-access"] },
       { slug: "model-access", title: "接入模型", related: ["install", "server-usage-policy", "feedback"] },
       { slug: "feedback", title: "反馈与支持", related: ["qa", "about"] },
     ],
@@ -32,6 +33,7 @@ export const NAV = [
       { slug: "agent", title: "Reactor Agent", related: ["task-management", "goal", "keyboard-shortcuts"] },
       { slug: "goal", title: "目标模式", related: ["agent", "automations"] },
       { slug: "memory", title: "项目记忆", related: ["agent", "data-contracts"] },
+      { slug: "my-space", title: "我的空间", related: ["web-client", "task-management", "data-contracts"] },
       { slug: "repo-wiki", title: "仓库百科", related: ["agent", "memory"] },
       { slug: "task-management", title: "任务与文件管理", related: ["agent", "edit-history", "review-panel"] },
       { slug: "edit-history", title: "编辑历史对话", related: ["task-management"] },
@@ -365,12 +367,13 @@ function renderPageShell({ slug, title, body, isIndex, lastVerified, toc, crumb 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${escapeHtml(pageTitle)}</title>
 <meta name="description" content="${escapeHtml(PRODUCT_FULL)} 内网部署的产品说明书：按本仓库实际行为整理。" />
+<link rel="icon" type="image/png" href="../assets/icon.png" />
 <link rel="stylesheet" href="assets/manual.css" />
 </head>
 <body>
 <header class="docs-topbar">
   <div class="topbar-inner">
-    <a class="brand" href="index.html">${escapeHtml(PRODUCT)}<span class="brand-sub">数智堆脑</span></a>
+    <a class="brand" href="index.html"><img class="brand-logo" src="../assets/reactor-logo-white.png" alt="${escapeHtml(PRODUCT_FULL)}" /></a>
     <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="manual-nav">目录</button>
     <a class="top-home" href="../index.html">官网 ↗</a>
   </div>

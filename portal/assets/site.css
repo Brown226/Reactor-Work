@@ -1,7 +1,7 @@
 /* Reactor 官网样式：深色单页，零依赖、可离线打开。
    与 docs/manual 说明书共用同一套品牌口径：
    - 同一色相的强调蓝：手册浅底用 #1d4ed8（hsl 224），官网深底用其同相亮档 #5b8df7；
-   - 同一中文优先字体栈、同一 brand 处理（600 字重 + 灰色副标）。 */
+   - 同一中文优先字体栈；官网深底统一使用反白 lockup 位图。 */
 
 :root {
   --bg: #161616;
@@ -55,40 +55,18 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: 28px;
-  height: 60px;
+  max-width: none;
+  margin: 0 auto;
+  padding: 0 48px;
+  height: 72px;
 }
 .brand {
   display: flex;
   align-items: center;
-  gap: 9px;
-  font-weight: 600;
-  font-size: 16px;
-  letter-spacing: 0.02em;
   color: var(--ink);
 }
 .brand:hover { text-decoration: none; }
-/* 品牌字标：纯文字形态（无位图图标）。
-   主名用「白 → 浅蓝 → 强调蓝」的斜向渐变，副标用竖线分隔。
-   注：此处只做视觉缩放，不改变 .brand 的 16px 基准字号，
-   避免顶栏/页脚沿用同一 .brand 时字号被放大破坏版式。 */
-.brand-name {
-  background: linear-gradient(120deg, #ffffff 8%, #bcd2ff 52%, var(--accent) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  font-size: 1.32em;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-/* 副标：前置竖线分隔，弱化呈现，营造「主标 · 副标」的舒展层次 */
-.brand-sub {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--ink-3);
-  letter-spacing: normal;
-  padding-left: 10px;
-  border-left: 1px solid var(--line-strong);
-}
+.brand-logo { display: block; width: 128px; height: auto; }
 /* 交叉轴居中：导航文字链接无内边距，flex 默认 stretch 会把它拉到整栏高、文字从顶部排，
    实测比「产品说明书」按钮的字形中心偏高 8.3px；置中后与按钮同基线。 */
 .topbar-nav { display: flex; align-items: center; gap: 26px; margin-left: auto; }
@@ -535,18 +513,21 @@ a:hover { text-decoration: underline; }
 /* ===== 页脚 ===== */
 .footer { border-top: 1px solid var(--line); padding: 40px 0 48px; }
 .footer-inner { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; color: var(--ink-3); font-size: 13.5px; }
-.footer-inner .brand { font-size: 15px; }
+.footer-inner .brand-logo { width: 104px; }
 .footer-links { margin-left: auto; display: flex; gap: 22px; }
 .footer-links a { color: var(--ink-2); }
 .footer-links a:hover { color: var(--ink); }
 
 /* ===== 响应式 ===== */
 @media (max-width: 960px) {
+  .topbar-inner { padding: 0 28px; }
   .win-body { grid-template-columns: 1fr; }
   .win-side, .win-right { display: none; }
   .feature-grid, .native-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 620px) {
+  .topbar-inner { height: 64px; padding: 0 20px; }
+  .brand-logo { width: 112px; }
   .topbar-nav { gap: 16px; }
   .topbar-nav a:not(.nav-cta) { display: none; }
   .feature-grid, .native-grid { grid-template-columns: 1fr; }
