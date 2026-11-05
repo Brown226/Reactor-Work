@@ -345,7 +345,7 @@ function renderPageShell({ slug, title, body, isIndex, lastVerified, toc, crumb 
 <body>
 <header class="docs-topbar">
   <div class="topbar-inner">
-    <a class="brand" href="index.html"><img class="brand-logo" src="../assets/reactor-logo-white.png" alt="${escapeHtml(PRODUCT_FULL)}" /></a>
+    <a class="brand" href="index.html"><img class="brand-logo" src="../assets/reactor-logo-dark.png" alt="${escapeHtml(PRODUCT_FULL)}" /></a>
     <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="manual-nav">目录</button>
     <a class="top-home" href="../index.html">官网 ↗</a>
   </div>
