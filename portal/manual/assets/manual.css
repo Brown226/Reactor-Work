@@ -1,27 +1,27 @@
-/* Reactor 说明书样式：深色阅读站，与 portal/ 官网共用同一套品牌 token 与字体栈。
+/* Reactor 说明书样式：浅色产品手册，与 portal/ 官网共用同一套品牌 token 与字体栈。
    布局骨架：左侧全站目录栏 + 正文 + 右侧本页目录 + 上下页翻页器（窄屏左栏变抽屉）。
-   视觉定位：素面深色——刻意不使用官网首页的斜向光束背景，靠留白、细边框、顶部微弱
+   视觉定位：素面浅色——刻意不使用官网首页的斜向光束背景，靠留白、细边框、顶部微弱
    氛围光与克制的强调色做出阅读级的精致感。零外部资源，仅离线使用。
    注意：.nav-toggle / #manual-nav / a.is-current / .toc-rail a / .is-active / .to-top
    由 assets/manual.js 读取，类名契约不可改。 */
 
 :root {
-  --bg: #161616;
-  --bg-soft: #1b1b1d;
-  --panel: #1d1d20;
-  --card: #202023;
-  --card-2: #2a2a2e;
-  --ink: #f5f5f7;
-  --ink-2: #a6a6ad;
-  --ink-3: #6f6f76;
-  --line: rgba(255, 255, 255, 0.09);
-  --line-strong: rgba(255, 255, 255, 0.16);
-  --accent: #5b8df7;
-  --accent-deep: #3f74e8;
-  --accent-soft: rgba(91, 141, 247, 0.14);
+  --bg: #f6f8fb;
+  --bg-soft: #ffffff;
+  --panel: #ffffff;
+  --card: #ffffff;
+  --card-2: #eef2f8;
+  --ink: #16213a;
+  --ink-2: #4a5568;
+  --ink-3: #78849a;
+  --line: rgba(20, 40, 80, 0.10);
+  --line-strong: rgba(20, 40, 80, 0.18);
+  --accent: #1f5fd0;
+  --accent-deep: #164aa8;
+  --accent-soft: rgba(31, 95, 208, 0.10);
   --ok: #34c759;
   --warn: #f59e0b;
-  --code-bg: #111113;
+  --code-bg: #eef2f8;
   --radius: 12px;
   --radius-lg: 14px;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
