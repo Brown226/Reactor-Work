@@ -4494,7 +4494,7 @@ const enUS: Record<string, string> = {
   "chat.empty.greeting.lateNight": "It's late—remember to take care of yourself.",
   "chat.empty.greeting.withName": "Hello, {name}, {greeting}",
   "chat.securityDisclaimer":
-    "Design Management Department ● Digital Management Section: This tool strictly prohibits uploading or processing classified files. AI-generated content is for reference only!",
+    "Digital Management Section: This tool strictly prohibits uploading or processing classified files. AI-generated content is for reference only!",
   "chat.draft.suggestedPrompt.recentCommits": "Review commits from the last 7 days",
   "chat.draft.suggestedPrompt.recentCommits.prompt":
     "Review Git commits from the last 7 days in this workspace, summarize the main changes, and identify potential risks.",
