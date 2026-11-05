@@ -12,8 +12,8 @@
   --card: #ffffff;
   --card-2: #eef2f8;
   --ink: #16213a;
-  --ink-2: #4a5568;
-  --ink-3: #78849a;
+  --ink-2: #3d4757;
+  --ink-3: #5a6577;
   --line: rgba(20, 40, 80, 0.10);
   --line-strong: rgba(20, 40, 80, 0.18);
   --accent: #1f5fd0;
@@ -71,7 +71,7 @@ a:hover { text-decoration: underline; }
 code {
   font-family: var(--mono);
   font-size: 0.9em;
-  color: #1f2d45;
+  color: #16213a;
   background: var(--card-2);
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -300,7 +300,7 @@ code {
   margin: 16px 0 20px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.012);
+  background: rgba(20, 40, 80, 0.02);
 }
 .docs-article table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .docs-article th {
@@ -309,8 +309,8 @@ code {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 1px;
-  color: var(--ink-3);
-  background: linear-gradient(180deg, rgba(91, 141, 247, 0.06), var(--bg-soft));
+  color: var(--ink-2);
+  background: linear-gradient(180deg, rgba(31, 95, 208, 0.05), var(--bg-soft));
   border-bottom: 1px solid var(--line-strong);
   white-space: nowrap;
 }
@@ -337,7 +337,7 @@ code {
   padding: 0;
   font-size: 13px;
   line-height: 1.8;
-  color: #d8d8dc;
+  color: #1f2d45;
 }
 .docs-article hr { margin: 36px 0; border: none; border-top: 1px solid var(--line); }
 
@@ -389,7 +389,7 @@ code {
   font-weight: 600;
   font-size: 14px;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.012);
+  background: rgba(20, 40, 80, 0.02);
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 .related-card:hover {
@@ -409,7 +409,7 @@ code {
   border-radius: var(--radius);
   color: var(--ink-2);
   font-size: 12.5px;
-  background: rgba(255, 255, 255, 0.012);
+  background: rgba(20, 40, 80, 0.02);
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 .pager-cell b { display: block; margin-top: 4px; font-size: 14.5px; color: var(--ink); }
