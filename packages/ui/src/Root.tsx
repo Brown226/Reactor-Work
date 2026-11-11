@@ -498,7 +498,9 @@ function RootInner({
     }
     if (wasEnterpriseLoggedInRef.current) {
       wasEnterpriseLoggedInRef.current = false;
-      setWelcomeScreenOpenReason("manual-login");
+      // [本地免登录改造] 原本此处强制回到登录页。本机无身份服务，
+      // 掉线后回到登录页等于锁死应用，因此保持停留在工作区。
+      logger.info("[Root] 企业登录态失效，本地免登录模式下保持当前视图");
     }
   }, [enterpriseSession.loading, enterpriseSession.status]);
 
