@@ -57,8 +57,9 @@ const BUILTIN_SKILL_DESCRIPTIONS: Record<string, Record<"zh-CN" | "en-US", strin
     "en-US": "Use before any creative work, including creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements, and design before implementation.",
   },
   "control-browser": {
-    "zh-CN": "控制 ZCode 内置浏览器，用于打开、检查、点击、输入、截图或验证网页和本地开发页面。",
-    "en-US": "Control ZCode's built-in browser to open, inspect, click, type, screenshot, or verify webpages and local development targets.",
+    "zh-CN": "控制 Reactor 内置浏览器，用于打开、检查、点击、输入、截图或验证网页和本地开发页面。",
+    "en-US":
+      "Control Reactor's built-in browser to open, inspect, click, type, screenshot, or verify webpages and local development targets.",
   },
   "design": {
     "zh-CN": "设计工作流：交付物是写入工作区的 HTML 设计稿、可交互原型或 HTML 演示稿时使用，覆盖需求理解、新建与改版、品牌配色、视觉探索与审查。对话内的交互视图用 visualize，.pptx 文件交给 presentations。",
@@ -117,8 +118,8 @@ const BUILTIN_SKILL_DESCRIPTIONS: Record<string, Record<"zh-CN" | "en-US", strin
     "en-US": "Inspect, plan, or restore old ACP-era ZCode sessions into the new ZCode task and session stores.",
   },
   "plugin-creator": {
-    "zh-CN": "创建、校验 ZCode 插件，并指导本地安装与更新。",
-    "en-US": "Create and validate ZCode plugins, and guide local installation and updates.",
+    "zh-CN": "创建、校验 Reactor 插件，并指导本地安装与更新。",
+    "en-US": "Create and validate Reactor plugins, and guide local installation and updates.",
   },
   "skill-creator": {
     "zh-CN": "创建新技能、编辑现有技能并迭代措辞。适用于从零编写 SKILL.md、改进已有技能、把重复工作流沉淀为可复用技能，或优化技能描述以提升触发可靠性。",
@@ -149,8 +150,10 @@ const BUILTIN_SKILL_DESCRIPTIONS: Record<string, Record<"zh-CN" | "en-US", strin
     "en-US": "Use before claiming work is complete, fixed, or passing. Requires running verification commands and confirming output before success claims.",
   },
   "web-gui-tester": {
-    "zh-CN": "使用 ZCode Browser Use 对网页和本地 Web 前端执行纯 GUI 黑盒测试，通过真实用户交互、DOM 语义证据和截图验证功能、交互与响应式布局。",
-    "en-US": "Run pure GUI black-box tests against websites and local web frontends with ZCode Browser Use, combining real user interactions, semantic DOM evidence, and inspected screenshots.",
+    "zh-CN":
+      "使用 Reactor Browser Use 对网页和本地 Web 前端执行纯 GUI 黑盒测试，通过真实用户交互、DOM 语义证据和截图验证功能、交互与响应式布局。",
+    "en-US":
+      "Run pure GUI black-box tests against websites and local web frontends with Reactor Browser Use, combining real user interactions, semantic DOM evidence, and inspected screenshots.",
   },
   "writing-plans": {
     "zh-CN": "已有规格或多步骤任务需求，在动代码前用于编写实现计划。",
@@ -170,10 +173,12 @@ export function resolveSkillSourceLabel(scope: SkillScope, locale?: Locale): str
   if (locale === "zh-CN") {
     if (scope === "workspace") return "工作区";
     if (scope === "plugin") return "插件";
+    if (scope === "server") return "服务端";
     return "用户";
   }
   if (scope === "workspace") return "Workspace";
   if (scope === "plugin") return "Plugin";
+  if (scope === "server") return "Server";
   return "User";
 }
 

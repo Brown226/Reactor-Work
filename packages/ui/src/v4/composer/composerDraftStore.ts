@@ -28,6 +28,9 @@ export interface V4ComposerDraft {
   /** 有合法 mode 表示已经初始化；没有模型仍是明确空态，不能按旧文本草稿补默认。 */
   mode?: SubmissionMode;
   planEnabled?: boolean;
+  /** 已处理的工具变更，防止重连快照再次覆盖用户选择。 */
+  lastPlanTransitionId?: string;
+  lastPermissionGrantId?: string;
   modelSelection?: ModelSelection;
   updatedAt: number;
 }
@@ -295,6 +298,12 @@ function readDraft(value: unknown): V4ComposerDraft | null {
       : mode.success
         ? { planEnabled: mode.data === "plan" }
         : {}),
+    ...(typeof value.lastPlanTransitionId === "string"
+      ? { lastPlanTransitionId: value.lastPlanTransitionId }
+      : {}),
+    ...(typeof value.lastPermissionGrantId === "string"
+      ? { lastPermissionGrantId: value.lastPermissionGrantId }
+      : {}),
     ...(modelSelection ? { modelSelection } : {}),
     updatedAt:
       typeof value.updatedAt === "number" && Number.isFinite(value.updatedAt) ? value.updatedAt : 0,

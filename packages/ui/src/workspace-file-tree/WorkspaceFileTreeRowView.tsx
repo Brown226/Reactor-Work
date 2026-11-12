@@ -29,6 +29,7 @@ import {
   useFileApplications,
 } from "@/file-menu/index.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { FileDisplayIcon, resolveFileDisplayDescriptor } from "@/lib/fileDisplay.js";
 import { logger } from "@/logger.js";
 import { resolveWorkspaceFileManagerEditor } from "@/lib/workspaceEditorSelection.js";
@@ -125,6 +126,9 @@ export function WorkspaceFileTreeRowView({
   const relativePath = getWorkspaceFileRelativePath(workspacePath, row.path);
   const isDirectory = row.type === "directory";
   const isDeletedFile = isWorkspaceFileTreeDeletedFile(row, gitStatus);
+  // Web 沙箱没有本机文件管理器/编辑器：菜单项保持可见但置灰，悬停给统一原因
+  // （桌面端不实现 unavailableReason 恒为 null，菜单行为与文案都不变）。
+  const openInFileManagerUnavailableReason = usePlatformUnavailable("openInFileManager");
   const wslFileManagerEditor = resolveWorkspaceFileManagerEditor(installedEditors, remoteTarget);
   const rowStyle = {
     ...style,
@@ -437,6 +441,7 @@ export function WorkspaceFileTreeRowView({
           <ContextMenuSeparator />
           <ContextMenuItem
             disabled={!canRevealInFileManager}
+            title={openInFileManagerUnavailableReason ?? undefined}
             onSelect={() => void handleRevealInFileManager()}
           >
             <FolderOpenIcon aria-hidden="true" className="size-4" />

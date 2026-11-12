@@ -48,7 +48,10 @@ function getErrorMessage(error: unknown): string {
 }
 
 export function useReactorServer(): UseReactorServerResult {
+  // 该 hook 只在「接入企业服务端的 host」上挂载（设置页账号分区 / 登录页），
+  // 这些 host 必定提供 reactorServerService。Web 前端不挂载本 hook。
   const { reactorServerService } = useServices();
+  const reactorServer = reactorServerService!;
   const platform = useOptionalPlatform();
   // 登录/登出会改写本机数据命名空间（企业用户隔离），成功后必须重启应用才生效。
   const restartForDataScopeSwitch = useRestartForDataScopeSwitch();
@@ -64,13 +67,13 @@ export function useReactorServer(): UseReactorServerResult {
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
     try {
-      const next = await reactorServerService.getStatus();
+      const next = await reactorServer.getStatus();
       if (requestIdRef.current !== requestId) return;
       setStatus(next);
       setError(null);
       // 简报依赖登录态（未登录直接返回空视图），因此状态先落地再拉简报：
       // 两者并行会让"退出登录后还闪一下上个月用量"。
-      const nextOverview = await reactorServerService.getUsageOverview();
+      const nextOverview = await reactorServer.getUsageOverview();
       if (requestIdRef.current !== requestId) return;
       setOverview(nextOverview);
     } catch (cause) {
@@ -79,7 +82,7 @@ export function useReactorServer(): UseReactorServerResult {
     } finally {
       if (requestIdRef.current === requestId) setLoading(false);
     }
-  }, [reactorServerService]);
+  }, [reactorServer]);
 
   useEffect(() => {
     void refresh();
@@ -113,8 +116,8 @@ export function useReactorServer(): UseReactorServerResult {
           await restartForDataScopeSwitch();
         }
         if (requestIdRef.current !== requestId) return true;
-        setStatus(await reactorServerService.getStatus());
-        setOverview(await reactorServerService.getUsageOverview());
+        setStatus(await reactorServer.getStatus());
+        setOverview(await reactorServer.getUsageOverview());
         return true;
       } catch (cause) {
         if (requestIdRef.current === requestId) setError(getErrorMessage(cause));
@@ -123,19 +126,19 @@ export function useReactorServer(): UseReactorServerResult {
         if (requestIdRef.current === requestId) setBusy(null);
       }
     },
-    [platform, reactorServerService, restartForDataScopeSwitch],
+    [platform, reactorServer, restartForDataScopeSwitch],
   );
 
   const login = useCallback(
-    (input: ReactorServerLoginInput) => runAction("login", () => reactorServerService.login(input)),
+    (input: ReactorServerLoginInput) => runAction("login", () => reactorServer.login(input)),
     [reactorServerService, runAction],
   );
   const logout = useCallback(
-    () => runAction("logout", () => reactorServerService.logout()),
+    () => runAction("logout", () => reactorServer.logout()),
     [reactorServerService, runAction],
   );
   const syncModels = useCallback(
-    () => runAction("syncModels", () => reactorServerService.syncModels()),
+    () => runAction("syncModels", () => reactorServer.syncModels()),
     [reactorServerService, runAction],
   );
   // 改密码不是身份切换：不触发数据命名空间重启（runAction 只对 login/logout 重启），
@@ -143,13 +146,13 @@ export function useReactorServer(): UseReactorServerResult {
   const changePassword = useCallback(
     (oldPassword: string, newPassword: string) =>
       runAction("changePassword", () =>
-        reactorServerService.changePassword(oldPassword, newPassword),
+        reactorServer.changePassword(oldPassword, newPassword),
       ),
     [reactorServerService, runAction],
   );
   // 手动刷新简报：补传一次积压 + 重新拉服务端月度累计（策略不在此列，走 refreshPolicy 的既有触发点）。
   const refreshUsage = useCallback(
-    () => runAction("refreshUsage", () => reactorServerService.flushUsageReports()),
+    () => runAction("refreshUsage", () => reactorServer.flushUsageReports()),
     [reactorServerService, runAction],
   );
 

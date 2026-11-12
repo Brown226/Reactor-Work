@@ -31,9 +31,22 @@ export const DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS: ReadonlySet<string> = new Set(
   "plugin-creator@zcode-plugins-official",
   "zcode-guide@zcode-plugins-official",
   "zcode-site@zcode-plugins-official",
+  // 文件能力三件套：文档解析 / 扫描件 OCR / DWG 图纸（docs/未完成-file-tools拆三插件方案.md）。
   // 电脑控制和交互视图默认关闭，故 computer-use、visualize 不在此名单内。
   // 该集合必须与 official-plugin-definitions.ts 里标了 defaultEnabled 的插件逐一对应，
-  // bootstrap 的「Settings 默认启用集合与 CLI 的官方插件声明一致」单测机械对照两者。
+  // bootstrap 的 default-enabled-ids.test.ts 机械对照两者。
+  "file-tools@zcode-plugins-official",
+  "ocr-tools@zcode-plugins-official",
+  "dwg-tools@zcode-plugins-official",
+  // 审查技能：文件审查板块的 6 个技能随包内置，不再依赖企业服务端下发（官方插件 review-skills）。
+  "review-skills@zcode-plugins-official",
+  "superpowers@zcode-plugins-official",
+  "obsidian@zcode-plugins-official",
+  "accounting-and-reporting@zcode-plugins-official",
+  // research / analytics：eb9bcc5 借入上游脚本库时加进了 definitions 的 defaultEnabled，
+  // 但漏改这份名单 —— 结果是 seed 默认开、设置页不认（bootstrap 单测当场抓到）。
+  "research@zcode-plugins-official",
+  "analytics@zcode-plugins-official",
 ]);
 
 export const DEFAULT_PLUGIN_MARKETPLACES: DefaultPluginMarketplace[] = [

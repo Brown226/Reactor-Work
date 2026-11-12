@@ -54,6 +54,7 @@ interface RootWorkspaceContentProps {
   isWindowsDesktop?: RootProps["isWindowsDesktop"];
   supportsEmbeddedBrowser: NonNullable<RootProps["supportsEmbeddedBrowser"]>;
   windowsWindowControlsRightPaddingPx?: number;
+  mySpaceEnabled?: boolean;
 }
 
 export function RootWorkspaceContent({
@@ -97,6 +98,7 @@ export function RootWorkspaceContent({
   isWindowsDesktop,
   supportsEmbeddedBrowser,
   windowsWindowControlsRightPaddingPx,
+  mySpaceEnabled,
 }: RootWorkspaceContentProps) {
   const workspaceKey = workspaceIdentity?.trim() || workspaceShellPath;
 
@@ -187,6 +189,7 @@ export function RootWorkspaceContent({
                 isMacDesktop={isMacDesktop}
                 isWindowsDesktop={isWindowsDesktop}
                 supportsEmbeddedBrowser={supportsEmbeddedBrowser}
+                mySpaceEnabled={mySpaceEnabled}
               />
             </ScopedErrorBoundary>
           </ServiceProvider>

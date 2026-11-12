@@ -1,4 +1,8 @@
 declare module "*.css";
+declare module "*?worker&url" {
+  const src: string;
+  export default src;
+}
 declare module "@zcode/ui/styles.css";
 // core-js 不带类型声明，polyfills.ts 只做副作用导入。
 declare module "core-js/stable/*";

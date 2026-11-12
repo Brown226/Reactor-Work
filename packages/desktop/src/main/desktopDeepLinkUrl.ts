@@ -248,6 +248,34 @@ export function extractOpenWorkspacePathFromArgs(args: readonly string[]): strin
   return null;
 }
 
+/**
+ * 从 argv 里解析"用本应用打开的文件"路径。
+ *
+ * 文件关联（双击关联文件）在 Windows/Linux 下会以裸路径 argv 传入。这里只挑出
+ * **以已关联扩展名结尾且不是目录/开关**的参数；真正的存在性与文件类型校验放在
+ * 调用方（main）用 fs 判断，保持本模块为纯字符串解析、可单测。
+ */
+const ASSOCIATED_FILE_EXTENSIONS = [".txt", ".md", ".markdown", ".json", ".log"];
+
+export function extractAssociatedFilePathFromArgs(args: readonly string[]): string | null {
+  for (const arg of args) {
+    if (!arg || arg.startsWith("-")) {
+      continue;
+    }
+    const candidate = trimArgValue(arg);
+    // 含 \0 的路径一律拒绝；路径分隔符按 Windows/Unix 双兼容处理。
+    if (!candidate || candidate.includes("\0")) {
+      continue;
+    }
+    const lower = candidate.replace(/\\/g, "/").toLowerCase();
+    if (ASSOCIATED_FILE_EXTENSIONS.some((extension) => lower.endsWith(extension))) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
 export function createDeepLinkSingleInstanceData(args: readonly string[]): Record<string, string> {
   const url = extractDeepLinkUrlFromArgs(args);
   const openWorkspacePath = extractOpenWorkspacePathFromArgs(args);

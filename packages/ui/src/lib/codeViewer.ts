@@ -3,6 +3,11 @@ import type { BundledLanguage } from "shiki";
 import { getMediaPreviewFormat, type MediaPreviewKind } from "@zcode/shared";
 import type { TaskChatToolCall as ChatToolCall } from "@/lib/taskChatMessageTypes.js";
 import type { CodeViewerWorkspaceScope } from "@/lib/codeViewerWorkspaceScope.js";
+import type {
+  QuoteHighlightNote,
+  QuoteHighlightTarget,
+  ReviewQuoteMarkTarget,
+} from "@/lib/quoteSearch.js";
 import {
   decodeFilePathUriEscapes,
   getPathLeaf,
@@ -27,6 +32,15 @@ export interface FileCodeViewerSource extends CodeViewerWorkspaceScope {
   type: "file";
   title: string;
   path: string;
+  /**
+   * 打开原件时顺带标出这句原文（审查定位用）。
+   *
+   * 为什么原件也要能高亮：审查问题的真相在**原件**里（版式、上下文都是原件说了算），用户点一条问题
+   * 首先想看的是「这是在原件哪一页哪一句话」。原件的渲染面（docx 预览的 DOM）不含字符偏移，
+   * 所以和提取正文一样按「片段 + 第几处」重新定位（见 lib/quoteHighlightDom.ts）。
+   * 只对能高亮的原件类型有意义（docx）；xlsx 是 canvas 渲染、没有文本层，PDF 需要逐页搜，暂不声明。
+   */
+  quoteHighlight?: QuoteHighlightTarget;
 }
 
 export interface CodeReviewAnchor {
@@ -36,6 +50,39 @@ export interface CodeReviewAnchor {
   priority?: 0 | 1 | 2 | 3;
   startLine?: number;
   endLine?: number;
+  /**
+   * 字符级定位（相对**被打开文件的文本**）：审查问题多来自提取文本（docx/pdf 无行号），
+   * 错别字往往在行中间，只有行号不足以指出位置。
+   *
+   * 展示侧目前只能做到「按偏移换算出所在行 + 行高亮」，并把 `quote` 作为评论的
+   * selectedText 显示出来 —— `@pierre/diffs` 的 FileOptions 没有字符级装饰钩子
+   * （见 docs/未完成-审查板块-方案-v1.md §3.3 的说明），字符级背景色需要自渲染文本层。
+   */
+  startOffset?: number;
+  endOffset?: number;
+  /** 命中的原文片段：无偏移时的兜底定位，同时让人一眼看到命中的是哪几个字 */
+  quote?: string;
+  /**
+   * 片段在正文里是第几次出现（1 起）。渲染后的 markdown 预览里没有字符偏移的概念，只能按
+   * 片段文字重新定位；同一句话在文中重复时靠这个序号才能落在工具栏说的那一处（偏移与序号
+   * 都由工具在提取正文上算出，见 docs/未完成-审查板块-方案-v1.md §3.3）。
+   */
+  occurrence?: number;
+  /** 严重度：与结构化问题条的 severity 同口径，供卡片着色 */
+  severity?: "error" | "warning" | "info";
+  /** 定位卡内容：原件/正文预览上贴着命中处显示的「这是什么问题 + 改成什么」 */
+  note?: QuoteHighlightNote;
+  /** 采纳标记载荷：定位卡右上角对号写进 marks store 的内容 */
+  mark?: ReviewQuoteMarkTarget;
+  /**
+   * 被打开正文的形态。审查定位打开的是**提取出来的正文**（docx/xlsx/pdf 经解析工具转成
+   * markdown），要按正文渲染并按片段高亮；代码评论锚点打开的是源码，必须走代码预览器。
+   *
+   * 缺省按 `"plain"`（源码）—— 这条缺省是安全方向的：把源码当 markdown 渲染会吃掉缩进与
+   * 特殊字符，把正文当源码显示只是不好看。扩展名不能承担这个判断：`.txt` 快照是历史遗留，
+   * 内容同样是提取正文（见 docs/未完成-审查板块-方案-v1.md §3.3）。
+   */
+  textFormat?: "markdown" | "plain";
 }
 
 export interface CodeReviewCodeViewerSource extends CodeViewerWorkspaceScope {
@@ -87,6 +134,11 @@ export interface PdfCodeViewerSource extends CodeViewerWorkspaceScope {
   type: "pdf";
   title: string;
   path: string;
+  /**
+   * 审查定位：PDF 预览有文本层（react-pdf 默认渲染），可在原件里按片段标出高亮。
+   * PDF 一次只挂一页，所以消费方要先用 pdf.js 的文本抽取找出片段在第几页，再跳页 + 高亮。
+   */
+  quoteHighlight?: QuoteHighlightTarget;
 }
 
 export interface PptxCodeViewerSource extends CodeViewerWorkspaceScope {

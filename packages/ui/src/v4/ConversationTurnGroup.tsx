@@ -7,7 +7,7 @@ import { BotTopicPreparation } from "@/v4/BotTopicPreparation.js";
 import { useBotTopicInterruption } from "@/v4/botGroupDeliveryContext.js";
 import { ConnectedBotGroupDeliveryAction } from "@/v4/BotGroupDeliveryAction.js";
 /* eslint-disable max-lines -- turn group 需要在同一处维护普通 assistant 与后台结果的严格行序，拆分会重复 actions/preview/tail 协议。 */
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
 import {
   Fragment,
   memo,
@@ -64,6 +64,10 @@ import {
   type HighspeedShareMetrics,
 } from "@/highspeed/highspeedTurnStore.js";
 import type { AssistantPreviewCard } from "@/lib/assistantPreviewCards.js";
+import {
+  collectReviewResults,
+  type ReviewResultGathering,
+} from "@/review/reviewResultGroups.js";
 import { useAssistantCodeCommentFeatureEnabled } from "@/AssistantCodeCommentFeatureProvider.js";
 import {
   buildAssistantCodeCommentCards,
@@ -686,6 +690,7 @@ function ConversationWorkSegmentFlow({
   assistantPreviewCardsAutoOpenKey,
   assistantCodeCommentCards,
   assistantCodeCommentProjectionEnabled,
+  assistantReviewResults,
   canForkLatestAssistant,
   canRetryLatestAssistant,
   highspeed,
@@ -704,6 +709,7 @@ function ConversationWorkSegmentFlow({
   assistantPreviewCardsAutoOpenKey?: string;
   assistantCodeCommentCards: AssistantCodeCommentCard[];
   assistantCodeCommentProjectionEnabled: boolean;
+  assistantReviewResults?: ReviewResultGathering;
   canForkLatestAssistant: boolean;
   canRetryLatestAssistant: boolean;
   highspeed: boolean;
@@ -781,6 +787,7 @@ function ConversationWorkSegmentFlow({
               }
               assistantCodeCommentCards={item.latest ? assistantCodeCommentCards : undefined}
               assistantCodeCommentProjectionEnabled={assistantCodeCommentProjectionEnabled}
+              assistantReviewResults={item.latest ? assistantReviewResults : undefined}
             />
           );
         } else {
@@ -872,6 +879,12 @@ function ConversationTurnFlow({
     fileChangesState: unit.header?.fileChanges?.state,
     fetchFileChanges: context.fetchFileChanges,
   });
+  // 整轮审查结果聚合一次，只交给轮尾正文渲染（见 docs/未完成-审查板块-方案-v1.md §3.2）：
+  // 几个工具调用合成一个面板，工具行本身退化成摘要，不再各自长一张卡。
+  const assistantReviewResults = useMemo(
+    () => collectReviewResults(unit.assistantWorkRows),
+    [unit.assistantWorkRows],
+  );
 
   if (unit.timelineOnly) {
     return (
@@ -955,6 +968,7 @@ function ConversationTurnFlow({
           assistantPreviewCardsAutoOpenKey={assistantPreviewCardsAutoOpenKey}
           assistantCodeCommentCards={assistantCodeCommentCards}
           assistantCodeCommentProjectionEnabled={assistantCodeCommentProjectionEnabled}
+          assistantReviewResults={assistantReviewResults}
           canForkLatestAssistant={canForkLatestAssistant}
           canRetryLatestAssistant={canRetryLatestAssistant}
           highspeed={highspeed}
@@ -1077,6 +1091,10 @@ function ConversationBackgroundResultWork({
     fileChangesState: unit.header?.fileChanges?.state,
     fetchFileChanges: context.fetchFileChanges,
   });
+  const assistantReviewResults = useMemo(
+    () => collectReviewResults(unit.assistantWorkRows),
+    [unit.assistantWorkRows],
+  );
 
   // 后台唤醒轮与普通回复使用相同的完成态折叠；耗时只统计本次唤醒轮。
   //
@@ -1191,6 +1209,7 @@ function ConversationBackgroundResultWork({
           assistantPreviewCardsAutoOpenKey={assistantPreviewCardsAutoOpenKey}
           assistantCodeCommentCards={assistantCodeCommentCards}
           assistantCodeCommentProjectionEnabled={assistantCodeCommentProjectionEnabled}
+          assistantReviewResults={assistantReviewResults}
         />
       ) : null}
       {hasFollowing ? (
@@ -1220,7 +1239,7 @@ function ConversationTurnGroupImpl({
   onEdit,
   topClearedByTimeline = false,
 }: ConversationTurnGroupProps) {
-  const isOfficeMode = useIsOfficeMode();
+  const isFocusedMode = useIsFocusedMode();
   const { intl } = useZCodeIntl();
   const visibleUserRows = useMemo(() => unit.visibleUserInputs, [unit.visibleUserInputs]);
   const sourceCommandId = unit.header?.sourceCommandId ?? visibleUserRows[0]?.sourceCommandId;
@@ -1568,7 +1587,7 @@ function ConversationTurnGroupImpl({
               完成后的结果摘要，必须等回复结束再跟随最终 assistant 正文收尾。 */}
             <CronAutomationTurnCards cards={cronAutomationTurnCards} context={context} />
             <OffPeakTurnCards cards={offPeakTurnCards} context={context} />
-            {!isOfficeMode && unit.header?.fileChanges ? (
+            {!isFocusedMode && unit.header?.fileChanges ? (
               <ConversationFileSummaryPanel
                 header={unit.header}
                 context={context}

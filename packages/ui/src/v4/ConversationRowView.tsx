@@ -4,7 +4,7 @@ import { ConversationUserInputBubble } from "@/v4/ConversationUserInputBubble.js
 import { expandTopicInputMessages } from "@/v4/topicInputMessages.js";
 import { ConnectedBotGroupDeliveryAction } from "@/v4/BotGroupDeliveryAction.js";
 /* oxlint-disable eslint(max-lines) -- v4 逐行 row 渲染分发集中收口（每种 row 一个 memo 叶子 + timelineMarker 分隔线），拆分会打散行类型对照。 */
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
 import {
   type ComponentProps,
   memo,
@@ -57,6 +57,8 @@ import type {
 } from "@zcode/shared/zcode-protocol-v4";
 import { AssistantPreviewCards } from "@/AssistantPreviewCards.js";
 import { AssistantCodeCommentCards } from "@/AssistantCodeCommentCards.js";
+import { ReviewResultPanel } from "@/review/ReviewResultPanel.js";
+import type { ReviewResultGathering } from "@/review/reviewResultGroups.js";
 import { useAssistantCodeCommentFeatureEnabled } from "@/AssistantCodeCommentFeatureProvider.js";
 import {
   Attachment,
@@ -378,6 +380,11 @@ export interface ConversationRowViewProps {
   assistantCodeCommentCards?: AssistantCodeCommentCard[];
   /** 由 TurnGroup 统一裁决整轮正文是否隐藏 code-comment 协议原文。 */
   assistantCodeCommentProjectionEnabled?: boolean;
+  /**
+   * 整轮审查结果的聚合（一个统一面板）。只由 TurnGroup 为轮尾终态 assistant text 计算后下发，
+   * 一轮只渲染一次 —— 面板挂在正文下方，工作流水里的审查工具行只剩摘要。
+   */
+  assistantReviewResults?: ReviewResultGathering;
 }
 
 // ── 每种行拆成独立 memo 叶子：虚拟列表下父级重渲染时，只有 props 真变的行重渲染；
@@ -1527,6 +1534,7 @@ const AssistantTextRowView = memo(function AssistantTextRowView({
   previewCardsAutoOpenKey,
   codeCommentCards,
   codeCommentProjectionEnabled,
+  reviewResults,
 }: {
   row: AssistantTextRow;
   context: ConversationRowRenderContext;
@@ -1540,9 +1548,10 @@ const AssistantTextRowView = memo(function AssistantTextRowView({
   previewCardsAutoOpenKey?: string;
   codeCommentCards?: AssistantCodeCommentCard[];
   codeCommentProjectionEnabled?: boolean;
+  reviewResults?: ReviewResultGathering;
 }) {
   const streaming = row.state === "streaming";
-  const isOfficeMode = useIsOfficeMode();
+  const isFocusedMode = useIsFocusedMode();
   const codeCommentCardsEnabled = useAssistantCodeCommentFeatureEnabled();
   const projectsCodeComments = codeCommentCardsEnabled && codeCommentProjectionEnabled === true;
   const visibleText = useMemo(
@@ -1621,7 +1630,7 @@ const AssistantTextRowView = memo(function AssistantTextRowView({
           workspaceRemoteSessionId={context.workspaceRemoteSessionId}
           theme={context.theme}
           codePreviewSettings={context.codePreviewSettings}
-          forceCodeWrap={isOfficeMode}
+          forceCodeWrap={isFocusedMode}
           onOpenCodeViewer={context.onOpenCodeViewer}
           onOpenFileLink={context.onOpenFileLink}
           onOpenExternalUrl={context.onOpenBrowserUrl}
@@ -1655,6 +1664,20 @@ const AssistantTextRowView = memo(function AssistantTextRowView({
             autoOpenPptxKey={previewCardsAutoOpenKey}
             onAutoOpenPptx={context.onAutoOpenAssistantPptx}
             compactForRemoteControl={context.compactForRemoteControl}
+          />
+        </div>
+      ) : null}
+      {/* 审查结果是这一轮的产物，挂在正文下方、操作栏之上：结论必须与总结连读，
+          而不是收进上方「工作过程」里（见 docs/未完成-审查板块-方案-v1.md §3.2）。 */}
+      {reviewResults?.hasContent ? (
+        <div className="mt-3">
+          <ReviewResultPanel
+            gathering={reviewResults}
+            sessionId={context.sessionId ?? undefined}
+            workspacePath={context.workspacePath}
+            workspaceIdentity={context.workspaceIdentity}
+            workspaceRemoteSessionId={context.workspaceRemoteSessionId}
+            onOpenCodeViewer={context.onOpenCodeViewer}
           />
         </div>
       ) : null}
@@ -1739,7 +1762,9 @@ const TimelineMarkerRowView = memo(function TimelineMarkerRowView({
   row: TimelineMarkerRow;
   context: ConversationRowRenderContext;
 }) {
-  const isOfficeMode = useIsOfficeMode();
+  const isFocusedMode = useIsFocusedMode();
+  // 本地三档界面模式（常规/办公/审查）：「办公 + 审查」都属于收纳编程向 UI 的收敛档，
+  // 分隔线的自动上下文优化文案沿用本地判据 useIsFocusedMode，不复用上游的办公档单档判断。
   // "已创建 worktree"是可展开的输出块，不是分隔线（docs/git/worktree.md §3.3）。
   // 它依赖 App 侧 managed-worktrees 能力，留在宿主这里，不进分享只读页共用的分隔线组件。
   if (row.marker.type === "worktreeCreated") {
@@ -1748,7 +1773,7 @@ const TimelineMarkerRowView = memo(function TimelineMarkerRowView({
   return (
     <ConversationTimelineMarkerDivider
       row={row}
-      isOfficeMode={isOfficeMode}
+      isOfficeMode={isFocusedMode}
       modelSelectionView={context.modelSelectionView ?? null}
       onNavigateToRow={context.onNavigateToRow}
     />
@@ -1900,6 +1925,9 @@ const ToolCallRowView = memo(function ToolCallRowView({
         <ToolCallBlock
           toolCallNode={toolCallNode}
           workspacePath={context.workspacePath}
+          // GenUI 按钮/表单回传要知道写进哪个会话的输入框；身份同样随行（远程不得只按路径匹配）。
+          workspaceIdentity={context.workspaceIdentity}
+          sessionId={context.sessionId}
           theme={context.theme}
           codePreviewSettings={context.codePreviewSettings}
           showTodoToolCalls={context.messageStreamShowTodos === true}
@@ -2017,6 +2045,7 @@ function ConversationRowViewImpl({
   assistantPreviewCardsAutoOpenKey,
   assistantCodeCommentCards,
   assistantCodeCommentProjectionEnabled,
+  assistantReviewResults,
   reasoningContentVariant,
   userInputStatus,
 }: ConversationRowViewProps) {
@@ -2046,6 +2075,7 @@ function ConversationRowViewImpl({
           previewCardsAutoOpenKey={assistantPreviewCardsAutoOpenKey}
           codeCommentCards={assistantCodeCommentCards}
           codeCommentProjectionEnabled={assistantCodeCommentProjectionEnabled}
+          reviewResults={assistantReviewResults}
         />
       );
     case "reasoning":

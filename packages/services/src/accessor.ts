@@ -62,6 +62,9 @@ import type { ISourceServerWorkspaceService } from "./source-server-workspace/so
 import type { ISourceServerManagementService } from "./source-server-management/sourceServerManagement.js";
 import type { IOnboardingRecordService } from "./onboarding/onboardingRecord.js";
 import type { IConversationShareService } from "./conversation-share/conversationShare.js";
+import type { IReactorServerService } from "./reactor-server/reactorServer.js";
+import type { IServerSkillSyncService } from "./server-skills/serverSkillSync.js";
+import type { IServerAgentSyncService } from "./server-agents/serverAgentSync.js";
 
 /** UI 层消费的统一服务接口 */
 export interface IServiceAccessor {
@@ -146,4 +149,15 @@ export interface IServiceAccessor {
   readonly settingsSyncService: ISettingsSyncService;
   readonly feedbackService: IFeedbackService;
   readonly promptAttachmentTransferService: IPromptAttachmentTransferService;
+
+  // ===== [本地定制] 企业服务端（Reactor Server）接入 =====
+  // 上游 v3.18.0 无这三个服务；整包同步会用上游 accessor.ts 覆盖本文件，勿删。
+  // Web 前端与旧 host wire 可不提供，故全部可选。
+
+  /** 企业服务端：登录 / 登出 / 网关令牌 / 服务端下发模型目录。 */
+  readonly reactorServerService?: IReactorServerService;
+  /** 企业服务端技能同步（server-skills 目录唯一写者）。 */
+  readonly serverSkillSyncService?: IServerSkillSyncService;
+  /** 企业服务端 Agent 同步（server-agents 目录唯一写者）。 */
+  readonly serverAgentSyncService?: IServerAgentSyncService;
 }

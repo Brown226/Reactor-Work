@@ -2,6 +2,7 @@ import { Component, lazy, Suspense, useMemo, type ErrorInfo, type ReactNode } fr
 import type { FileBinaryPreview } from "@zcode/shared";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { decodeBase64ToArrayBuffer, type OfficeFilePreviewKind } from "@/lib/officeFilePreview.js";
+import type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 import { logger } from "@/logger.js";
 
 const LazyXlsxContent = lazy(async () => {
@@ -75,6 +76,7 @@ export function PreviewPaneOfficeContent({
   loading,
   onOpenBrowserUrl,
   preview,
+  quoteHighlight,
   resolvedTheme,
   sourcePath,
 }: {
@@ -83,6 +85,8 @@ export function PreviewPaneOfficeContent({
   loading: boolean;
   onOpenBrowserUrl?: (url: string) => void;
   preview: FileBinaryPreview | null;
+  /** 审查定位：打开原件时标出这句原文（只有 docx 预览有 DOM 文本层可标） */
+  quoteHighlight?: QuoteHighlightTarget;
   resolvedTheme: "light" | "dark";
   sourcePath: string;
 }) {
@@ -123,6 +127,7 @@ export function PreviewPaneOfficeContent({
             buffer={buffer}
             errorMessage={errorMessage}
             onOpenBrowserUrl={onOpenBrowserUrl}
+            quoteHighlight={quoteHighlight}
             sourcePath={sourcePath}
           />
         ) : (

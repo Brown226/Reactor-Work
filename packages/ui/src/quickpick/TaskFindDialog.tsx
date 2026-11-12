@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
 import {
   getConversationFindState,
   resolveConversationFindNavigationSelection,
@@ -64,7 +64,7 @@ export function TaskFindDialog({
   onFileChangeFindNavigate,
   onOpenFileChanges,
 }: TaskFindDialogProps) {
-  const isOfficeMode = useIsOfficeMode();
+  const isFocusedMode = useIsFocusedMode();
   const { intl } = useZCodeIntl();
   const titleId = useId();
   const descriptionId = useId();
@@ -304,7 +304,7 @@ export function TaskFindDialog({
           onClick: () => moveSelection("next"),
           children: <ArrowDownIcon className="size-3.5" />,
         })}
-        {(!isOfficeMode || scope === "changes") &&
+        {(!isFocusedMode || scope === "changes") &&
           renderFindIconButton({
             label: nextScopeLabel,
             tooltipLabel: scopeTooltipLabel,

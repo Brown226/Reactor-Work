@@ -1,3 +1,4 @@
+import type { ConversationCuaGroupRenderItem } from "@/v4/conversationCuaGroups.js";
 import type {
   AssistantTextRow,
   ConversationRow,
@@ -11,7 +12,8 @@ export type ConversationTurnFlowItem =
   | { kind: "userInput"; row: UserInputRow }
   | { kind: "assistantHistory"; rows: AssistantWorkRow[] }
   | { kind: "assistantText"; row: AssistantTextRow; latest: boolean }
-  | { kind: "assistantWork"; rows: AssistantWorkRow[] };
+  | { kind: "assistantWork"; rows: AssistantWorkRow[] }
+  | ConversationCuaGroupRenderItem;
 
 function isUserInputRow(row: ConversationRow): row is UserInputRow {
   return row.kind === "userInput";

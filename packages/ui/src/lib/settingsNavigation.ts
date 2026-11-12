@@ -1,5 +1,6 @@
 /* eslint-disable max-lines -- 设置导航意图集中管理 sessionStorage、事件桥接和解析校验，拆分会让一次性意图消费顺序更难保证。 */
 import { logger } from "@/logger.js";
+import { isDevModeUnlocked } from "@/lib/devMode.js";
 
 export type SettingsSectionId =
   | "general"
@@ -8,6 +9,7 @@ export type SettingsSectionId =
   | "migration"
   | "browser"
   | "modelProvider"
+  | "account"
   | "remoteDevices"
   | "dataSync"
   | "personalization"
@@ -48,6 +50,10 @@ const HIDDEN_SETTINGS_SECTIONS = new Set<SettingsSectionId>([
   "automations",
   // 旧插件市场已迁出设置页；保留 id 只用于迁移历史偏好和旧调用。
   "plugins",
+  // 技能管理已迁入「专家·技能」市场（我的视图）；保留 id 只用于迁移历史偏好和旧调用。
+  "skill",
+  // 子智能体管理已同迁「专家·技能」市场（我的·专家视图）；保留 id 同上。
+  "subagents",
   // 工作区搜索（.zcodeignore）设置入口先隐藏：规则文件仍生效并可手动编辑，
   // 编辑页代码保留，放开时从这里移除即可。
   "workspaceFileSearch",
@@ -76,6 +82,7 @@ function isSettingsSectionId(value: string): value is SettingsSectionId {
     value === "migration" ||
     value === "browser" ||
     value === "modelProvider" ||
+    value === "account" ||
     value === "remoteDevices" ||
     value === "dataSync" ||
     value === "personalization" ||
@@ -99,7 +106,12 @@ function isSettingsSectionId(value: string): value is SettingsSectionId {
 }
 
 export function isSettingsSectionEnabled(section: SettingsSectionId): boolean {
-  return !HIDDEN_SETTINGS_SECTIONS.has(section);
+  if (HIDDEN_SETTINGS_SECTIONS.has(section)) return false;
+  // 「模型设置」是本地模型配置界面：企业会话下它是一条绕过目录治理的旁路，因此默认隐藏，
+  // 连点版本号 7 下解锁开发者模式后才出现（含解锁/反锁的收尾规则，见
+  // docs/已完成/已完成-model-governance-and-dev-mode.md）。隐藏策略与手势的单一事实源在 lib/devMode.ts。
+  if (section === "modelProvider") return isDevModeUnlocked();
+  return true;
 }
 
 export function resolveSettingsSection(
@@ -150,6 +162,11 @@ export function readLastSettingsSectionPreference(
     if (raw === "codePreview") {
       storage.setItem(SETTINGS_LAST_SECTION_STORAGE_KEY, "appearance");
       return "appearance";
+    }
+    // 旧版「企业服务端」分区已改名为「账号」：不清迁移，用户升级后仍停在同一页。
+    if (raw === "reactorServer") {
+      storage.setItem(SETTINGS_LAST_SECTION_STORAGE_KEY, "account");
+      return "account";
     }
     if (raw && isSettingsSectionId(raw)) {
       return resolveSettingsSection(raw, fallbackSection);
@@ -349,6 +366,10 @@ export function consumePendingSettingsSection(
     if (raw === "skills") {
       // 旧 Skills 使用复数 id；迁移到当前独立 skill 分区。
       return "skill";
+    }
+    if (raw === "reactorServer") {
+      // 旧「企业服务端」分区 id；一次性跳转意图同样迁移到「账号」。
+      return "account";
     }
     if (raw && isSettingsSectionId(raw)) {
       return resolveSettingsSection(raw, fallbackSection);

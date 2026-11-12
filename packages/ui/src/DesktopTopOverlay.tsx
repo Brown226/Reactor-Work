@@ -11,7 +11,6 @@ import {
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { UpdateStatusButton } from "@/UpdateStatusButton.js";
 import { DesktopTopOverlayActionButton } from "@/DesktopTopOverlayActionButton.js";
-import { ZCodeStartupLogoBadge } from "@/root/RootStartupLoading.js";
 import {
   createWindowsCaptionControlsStyle,
   WINDOWS_CAPTION_CONTROLS_RIGHT_INSET_VAR,
@@ -67,7 +66,7 @@ export function DesktopTopOverlay({
   canGoBack: _canGoBack,
   canGoForward: _canGoForward,
   showNewTaskButton,
-  appLogoUrl: _appLogoUrl,
+  appLogoUrl,
   platform,
   onToggleSidebar,
   onCreateTask,
@@ -144,13 +143,13 @@ export function DesktopTopOverlay({
                 buttonClassName="group relative overflow-hidden rounded-lg"
                 onClick={onToggleSidebar}
               >
-                <span
-                  aria-hidden="true"
+                <img
                   data-desktop-logo-visual
-                  className="flex size-5 items-center justify-center transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0"
-                >
-                  <ZCodeStartupLogoBadge size="titlebar" animated={false} />
-                </span>
+                  src={appLogoUrl}
+                  alt="Reactor"
+                  className="size-5 rounded-[22%] transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0"
+                  draggable={false}
+                />
                 <SidebarToggleIcon className="absolute inset-0 m-auto size-4 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100" />
               </DesktopTopOverlayActionButton>
             )}
@@ -160,6 +159,21 @@ export function DesktopTopOverlay({
                 title={toggleSidebarTitle}
                 shortcut={toggleSidebarShortcutLabel}
                 ariaLabel={toggleSidebarTitle}
+                onClick={onToggleSidebar}
+              >
+                <SidebarToggleIcon className="size-4" />
+              </DesktopTopOverlayActionButton>
+            )}
+
+            {/* Web 宿主：收起/展开侧栏的唯一入口。
+                之前只在 Windows/Linux 自定义标题区和 macOS 分支里渲染，Web 端两个条件都不满足，
+                这个位置就是空的——Web 又没有标题栏按钮和快捷键提示，等于完全没有入口。 */}
+            {!isDesktop && (
+              <DesktopTopOverlayActionButton
+                title={toggleSidebarTitle}
+                shortcut={toggleSidebarShortcutLabel}
+                ariaLabel={toggleSidebarTitle}
+                testId="web-sidebar-toggle"
                 onClick={onToggleSidebar}
               >
                 <SidebarToggleIcon className="size-4" />

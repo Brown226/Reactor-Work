@@ -21,7 +21,7 @@ import { getLocalTtftObserver } from "@/v4/telemetry/local-ttft/contract.js";
 import { BotGroupDeliveryProvider } from "@/v4/BotGroupDeliveryAction.js";
 /* oxlint-disable eslint(max-lines) -- SessionPane 是单 pane 竖切的命令编排收口（订阅/发送/停止/fork/edit/retry/queue/slash 全集），与旧 ChatView 同粒度；HEAD 已超限（693 行计数），拆散命令组会打散 dispatchCommand/snapshotRef 的闭包纪律。 */
 import { useOptionalProjectDirectoryActions } from "@/project-sidebar/index.js";
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode, useIsOfficeMode, useIsReviewMode } from "@/hooks/useInterfaceMode.js";
 import {
   useCallback,
   useEffect,
@@ -34,7 +34,6 @@ import {
 } from "react";
 import { Hand } from "lucide-react";
 import {
-  BUILTIN_MODEL_PROVIDER_IDS,
   buildCustomSupplierKey,
   isRemoteWorkspaceIdentity,
   ZCODE_AGENT_PROVIDER,
@@ -223,7 +222,9 @@ import {
 import { ConversationFileRewindDialog } from "@/v4/ConversationFileRewindDialog.js";
 import { useConversationPanePresentation } from "@/side-pane-full-view/index.js";
 import { ConversationDraftEmptyState } from "@/v4/ConversationDraftEmptyState.js";
+import { DraftInterfaceModeToggle } from "@/v4/DraftInterfaceModeToggle.js";
 import { ConversationDraftSuggestedPromptsContainer } from "@/v4/ConversationDraftSuggestedPromptsContainer.js";
+import { ConversationSecurityDisclaimer } from "@/v4/ConversationSecurityDisclaimer.js";
 import { ConversationHeader, type PaneWorkspaceBadge } from "@/v4/ConversationHeader.js";
 import { ConversationQueuePanel } from "@/v4/ConversationQueuePanel.js";
 import { projectPendingGuideQueue } from "@/v4/pendingGuideProjection.js";
@@ -375,6 +376,7 @@ import type {
   SyncSubagentSessionTabsRequest,
   OpenSubagentSideTabRequest,
 } from "@/lib/workspaceSidePane.js";
+import { matchesComposerTextInsertTarget } from "@/lib/composerTextInsert.js";
 import {
   buildSelectionSideChatKey,
   clearSelectionSideChat,
@@ -5648,11 +5650,15 @@ export function SessionPane({
     setSelectionSideChatBlocked(sessionId, Boolean(blockingInteractionId));
     return () => setSelectionSideChatBlocked(sessionId, false);
   }, [blockingInteractionId, selectionSideChat, sessionId]);
+  // 状态面板里的 git 模型属编程向信息，办公与审查两档都要收敛掉，故用收敛判据。
+  const isFocusedMode = useIsFocusedMode();
+  // 主动任务推荐是办公档独有能力（按开关显示）；审查档固定显示审查类型卡片。
   const isOfficeMode = useIsOfficeMode();
+  const isReviewMode = useIsReviewMode();
   const statusPanelModel = useMemo(
     () =>
       buildConversationStatusPanelModel({
-        isOfficeMode,
+        isFocusedMode,
         workspacePath,
         gitSummary,
         gitDirtyFileCount,
@@ -5665,7 +5671,7 @@ export function SessionPane({
         workflowRuns: snapshot?.workflowRuns?.runs ?? [],
       }),
     [
-      isOfficeMode,
+      isFocusedMode,
       gitDirtyFileCount,
       gitSummary,
       gitWorktreeChangeSummary,
@@ -5872,14 +5878,6 @@ export function SessionPane({
     setPendingSettingsSectionIntent("modelProvider");
     openSettingsTab();
   }, [openSettingsTab]);
-  const handleOpenModelUpgrade = useCallback(() => {
-    if (!codingPlanUpgradeDialog) return;
-    const providerId =
-      sharedSettings?.providerFamilyDomain === "bigmodel"
-        ? BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan
-        : BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan;
-    codingPlanUpgradeDialog.openCodingPlanUpgrade({ providerId });
-  }, [codingPlanUpgradeDialog, sharedSettings?.providerFamilyDomain]);
   const handleOpenQuotaUpgrade = useCallback(() => {
     const providerId = quotaBanner.upgradeProviderId;
     if (!providerId || !codingPlanUpgradeDialog) return;
@@ -6322,7 +6320,13 @@ export function SessionPane({
       }
       blockingRequestId={blockingInteractionId}
       listenAddToChatEvents={focused}
-      externalTextInsertRequest={focused && sessionId === null ? composerTextInsertRequest : null}
+      // 请求存在 workspace 级状态里，必须按目标会话归因：新建任务态照旧吃无目标请求，
+      // 已有会话只吃目标等于本会话的请求（PDF「引用进会话」/ GenUI 动作回传）。
+      externalTextInsertRequest={
+        focused && matchesComposerTextInsertTarget(composerTextInsertRequest, sessionId)
+          ? composerTextInsertRequest
+          : null
+      }
       onExternalTextInsertApplied={handleExternalTextInsertApplied}
       autoFocusEnabled={focused}
       disabled={
@@ -6389,7 +6393,6 @@ export function SessionPane({
       onRetryInitialization={handleRetrySubscribe}
       onRetryError={retryConfigReadEnabled ? handleRetryConfigRead : undefined}
       onOpenModelSettings={handleOpenModelSettings}
-      onOpenModelUpgrade={handleOpenModelUpgrade}
       modelConfigTarget={modelConfigTarget}
       onOpenCodeViewer={onOpenCodeViewer}
       suppressGoalCommands={selectionSideChat}
@@ -6563,11 +6566,11 @@ export function SessionPane({
           onConversationOnly={handleComposerEditConflictConversationOnly}
         />
       ) : null}
-      {/* 办公模式显示主动任务推荐；编程模式保留原有小型场景入口。 */}
+      {/* 办公档按开关显示主动任务推荐；审查档始终显示审查类型卡片；编程档保留原有小型场景入口。 */}
       {/* 完整视图浮窗只露出输入框，草稿推荐提示不进入浮窗。 */}
       {isDraft &&
       !isFloatingPresentation &&
-      (!isOfficeMode || sharedSettings?.proactiveSuggestionsEnabled === true) ? (
+      (isReviewMode || !isOfficeMode || sharedSettings?.proactiveSuggestionsEnabled === true) ? (
         <ConversationDraftSuggestedPromptsContainer
           className={isOfficeMode ? "mt-4" : "mt-6"}
           proactive={isOfficeMode}
@@ -6583,6 +6586,10 @@ export function SessionPane({
           isDesktop={isDesktop}
         />
       ) : null}
+      {/* 合规提示：会话态在 dock 内、输入卡下方居中，填进输入卡与面板底边的空隙。
+          草稿态首页的 composer 随空态整体居中、不吸底，提示挂进 dock 只会贴在
+          chips 下方，因此改为绝对定位于面板右下角——两种互斥，同一时刻只有一份。 */}
+      {!isDraft ? <ConversationSecurityDisclaimer className="mt-2 text-center" /> : null}
     </>
   );
   // 插件图片与草稿附件共用有效 session，首发提升不迁移附件。
@@ -6893,10 +6900,14 @@ export function SessionPane({
                           {intl.formatMessage({ id: "remote.conversation.placeholder" })}
                         </div>
                       ) : isDraft ? (
-                        <div data-testid={TID_CHAT_EMPTY} className="w-full">
-                          <ConversationDraftEmptyState
-                            compactForRemoteControl={compactForRemoteControl}
-                          />
+                        // 竖排：问候语在上，界面模式切换贴近输入卡；两者同属空态，随空态一起居中。
+                        <div className="flex w-full flex-col items-center">
+                          <div data-testid={TID_CHAT_EMPTY} className="w-full">
+                            <ConversationDraftEmptyState
+                              compactForRemoteControl={compactForRemoteControl}
+                            />
+                          </div>
+                          <DraftInterfaceModeToggle />
                         </div>
                       ) : null
                     }
@@ -6953,6 +6964,13 @@ export function SessionPane({
             </SessionPluginReferenceIconBoundary>
           )}
         </div>
+        {/* 草稿态首页的合规提示：composer 随空态整体居中、不吸底，挂进 dock 只会贴在
+            推荐 chips 下方，这里改为绝对定位于面板右下角（产品规则见
+            docs/已完成/已完成-conversation-security-disclaimer.md）；
+            pointer-events-none 保证这块角落的命中不被文字占走。 */}
+        {isDraft && !readOnly ? (
+          <ConversationSecurityDisclaimer className="pointer-events-none absolute bottom-3 right-4 text-right" />
+        ) : null}
       </div>
     </PluginUiSessionProvider>
   );

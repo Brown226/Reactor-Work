@@ -8,13 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog.js";
-import { Input } from "@/components/ui/input.js";
 import { Textarea } from "@/components/ui/textarea.js";
 import { FeedbackErrorTip, RequiredMarker } from "@/feedback/feedbackBadges.js";
-import {
-  readFeedbackContactPreference,
-  rememberFeedbackContactInput,
-} from "@/feedback/feedbackContactPreference.js";
 import { ScrollFadeViewport } from "@/components/ui/scroll-fade-viewport.js";
 import { SubmitProgressView } from "@/feedback/FeedbackSubmitProgressView.js";
 import {
@@ -31,7 +26,6 @@ import { useFeedbackStore } from "@/feedback/feedbackStore.js";
 import { toast } from "@/components/ui/toast.js";
 
 const FEATURE_TEXT_MAX = 2000;
-const CONTACT_MAX = 200;
 
 export const FeatureRequestDialog = memo(function FeatureRequestDialogComponent({
   feedbackService,
@@ -48,7 +42,6 @@ export const FeatureRequestDialog = memo(function FeatureRequestDialogComponent(
   );
   const [description, setDescription] = useState("");
   const [solution, setSolution] = useState("");
-  const [contact, setContact] = useState(() => readFeedbackContactPreference());
   const [submitting, setSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] =
     useState<FeedbackSubmissionProgressState | null>(null);
@@ -132,7 +125,6 @@ export const FeatureRequestDialog = memo(function FeatureRequestDialogComponent(
         feedbackService,
         title: trimmedDescription,
         description: structuredDescription,
-        contact,
         screenshots: [],
         includeLogs: false,
         ticketType: "feature",
@@ -170,7 +162,6 @@ export const FeatureRequestDialog = memo(function FeatureRequestDialogComponent(
       setSubmitting(false);
     }
   }, [
-    contact,
     copy,
     description,
     feedbackService,
@@ -226,23 +217,6 @@ export const FeatureRequestDialog = memo(function FeatureRequestDialogComponent(
               placeholder={formatMessage("feedback.featureRequest.solutionPlaceholder")}
               onChange={setSolution}
             />
-            <section className="space-y-2">
-              <h3 className="text-ui-base font-semibold text-foreground">
-                {formatMessage("feedback.featureRequest.contactLabel")}
-              </h3>
-              <Input
-                type="text"
-                inputMode="email"
-                autoComplete="email"
-                value={contact}
-                onChange={(event) => {
-                  setContact(rememberFeedbackContactInput(event.target.value));
-                }}
-                maxLength={CONTACT_MAX}
-                placeholder={formatMessage("feedback.submit.contact.placeholder")}
-                className="h-10 rounded-xl border-input-border bg-input px-3 text-ui-base text-foreground placeholder:text-foreground-subtlest hover:border-input-border-hover focus-visible:border-input-border-focused focus-visible:bg-input-focused"
-              />
-            </section>
             {error ? <FeedbackErrorTip message={error} /> : null}
           </div>
         </ScrollFadeViewport>

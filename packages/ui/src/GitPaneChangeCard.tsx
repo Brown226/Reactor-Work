@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/context-menu.js";
 import { getDiffFallbackMessageId, getGitPaneDiffPreviewPlan } from "@/GitPane/helpers.js";
 import { FileDisplayInline } from "@/lib/fileDisplay.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import type { GitPaneFileChange } from "@/hooks/useGitRepository.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import type { CodePreviewSettings } from "@/store/index.js";
@@ -53,6 +54,8 @@ export function GitPaneChangeCard({
   onRevealInFileTree?: (change: GitPaneFileChange) => void;
 }) {
   const { intl } = useZCodeIntl();
+  // Web 沙箱没有本机文件管理器：置灰项悬停给统一原因（桌面端恒为 null，不影响）。
+  const fileManagerUnavailableReason = usePlatformUnavailable("openInFileManager");
   const diffPreviewPlan = useMemo(() => getGitPaneDiffPreviewPlan(diffState), [diffState]);
   const multiFileDiffFiles = useMemo(() => {
     if (diffState?.availability !== "patch" || diffState.afterContent === null) {
@@ -127,6 +130,7 @@ export function GitPaneChangeCard({
         <ContextMenuContent className="w-56">
           <ContextMenuItem
             disabled={!canRevealInFileManager}
+            title={fileManagerUnavailableReason ?? undefined}
             onSelect={() => onRevealInFileManager(change)}
           >
             <FolderOpenIcon className="size-4" />

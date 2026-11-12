@@ -555,6 +555,7 @@ const appSettingsObjectSchema = z.object({
   // default(false)：新装与存量用户首次启动都视为未归位，由 main 进程按平台决定是否迁移。
   closeToTrayLinuxMigrationInitialized: z.boolean().default(false),
   keepAwakeWhileRunning: z.boolean().default(false),
+  launchAtLogin: z.boolean().default(false),
   // 本机 offline push 上报开关（spec：docs/web-remote-control/mobile-event-push.md 6.4）。
   // 必须声明在完整 schema，否则合并后显式 false 会被剥离。
   mobilePushEnabled: z.boolean().default(true),
@@ -653,6 +654,7 @@ export const appSettingsPatchSchema = z.object({
   taskAutoArchiveOlderThanDays: z.number().int().positive().max(365).optional(),
   closeToTrayOnWindows: z.boolean().optional(),
   keepAwakeWhileRunning: z.boolean().optional(),
+  launchAtLogin: z.boolean().optional(),
   mobilePushEnabled: z.boolean().optional(),
   closeToTrayOnWindowsMigrationInitialized: z.boolean().optional(),
   closeToTrayLinuxMigrationInitialized: z.boolean().optional(),

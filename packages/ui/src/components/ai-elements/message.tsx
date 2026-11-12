@@ -107,6 +107,7 @@ import { FileApplicationChoices, FileSaveAsMenuItem } from "@/file-menu/index.js
 import { useFileApplications } from "@/file-menu/index.js";
 import { useWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import { useFileContextActions } from "@/hooks/useFileContextActions.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useWorkspaceOpenInEditorTarget } from "@/hooks/useWorkspaceOpenInEditorTarget.js";
 import { useOptionalServices } from "@/hooks/useServices.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -1663,6 +1664,9 @@ function ScopedMessageFileLink({ className, fileIconSrc, fileLink, onOpen }: Mes
     fileLink.workspaceRemoteSessionId,
     fileLink.workspaceIdentity,
   );
+  // 与 OpenSplitButton 同口径：Web 沙箱装不了本机编辑器，菜单兜底项优先展示
+  // 能力位统一原因，而不是「未找到可用 App」（桌面端恒为 null，维持原文案）。
+  const openInEditorUnavailableReason = usePlatformUnavailable("openInEditor");
   const [pathKind, setPathKind] = useState<"file" | "directory" | null>(null);
   const openInEditorContext = useWorkspaceOpenInEditorTarget({
     workspacePath: fileLink.workspacePath,
@@ -1824,6 +1828,9 @@ function ScopedMessageFileLink({ className, fileIconSrc, fileLink, onOpen }: Mes
           />
         )}
         <ContextMenuSeparator />
+        {!loadingEditors && sortedEditors.length === 0 && openInEditorUnavailableReason ? (
+          <ContextMenuItem disabled>{openInEditorUnavailableReason}</ContextMenuItem>
+        ) : null}
         {canReveal && (
           <ContextMenuItem
             onSelect={() =>

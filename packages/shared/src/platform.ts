@@ -802,6 +802,14 @@ export type CuaOsSupport =
  * 比如 native dialog、窗口生命周期控制等。
  * 业务服务（文件、终端、凭据等）走 IServiceAccessor 的 RPC 通道。
  */
+/** 外部图片注入 composer 的载荷（快捷输入浮窗 / 系统分享 → 焦点会话输入框）。 */
+export interface ComposerAttachmentInjectionPayload {
+  /** 来源标识，用于日志与去重。 */
+  source: "external-image" | "quick-input";
+  /** 本地图片绝对路径。 */
+  imagePath: string;
+}
+
 export interface IPlatformService {
   /** 是否支持当前客户端本机文件的默认应用与目录操作；Web 不具备此能力。 */
   canOpenLocalFiles?: boolean;
@@ -1212,8 +1220,22 @@ export interface IPlatformService {
   /** 注册 main 进程通过 deep link 直接打开本地工作区目录的回调，返回 disposer */
   onOpenWorkspacePath?(handler: (path: string) => void): () => void;
 
+  /** 注册 main 进程把外部图片注入焦点 composer 的回调，返回 disposer */
+  onInjectComposerAttachment?(
+    handler: (payload: ComposerAttachmentInjectionPayload) => void,
+  ): () => void;
+
+  /** 注册 main 进程用快捷输入浮窗文本预填焦点 composer 的回调，返回 disposer */
+  onInjectComposerText?(handler: (text: string) => void): () => void;
+
   /** 注册窗口全屏状态变化回调，返回 disposer */
   onWindowFullscreenChanged(handler: (isFullscreen: boolean) => void): () => void;
+
+  /** 上报开发者模式解锁态（About 版本号连点触发）；桌面 main 侧持久化。 */
+  reportDevModeUnlock?(unlocked: boolean): void;
+
+  /** 订阅开发者模式解锁态变化（main → renderer 广播），返回 disposer */
+  onDevModeUnlockChanged?(handler: (state: { unlocked: boolean }) => void): () => void;
 
   /** 读取当前桌面窗口最大化状态与系统原生圆角能力 */
   getDesktopWindowChromeState?(): Promise<DesktopWindowChromeState>;
@@ -1399,6 +1421,31 @@ export interface IPlatformService {
    *   抗浏览器/网络/语言/时区变化，换手机才会变
    */
   getDeviceId(): string;
+
+  // ===== [本地定制] Reactor 平台能力位（上游 v3.18.0 无） =====
+
+  /**
+   * 查询某能力在当前平台不可用的原因；返回 null/undefined = 可用。
+   * 桌面端可不实现（视为全部可用）；Web 端对沙箱能力返回统一文案。
+   */
+  unavailableReason?(feature: PlatformFeatureId): string | null;
+
+  /**
+   * 本平台是否支持「重启应用进程」。桌面端为 true（登录后必须重启，
+   * 数据命名空间变更后旧 db 句柄不会迁移）；Web 端不实现 = 不支持，
+   * 登录后走 onLoggedIn 直接进入工作区。
+   *
+   * 为什么需要这个显式能力位：过去用 `typeof executeDesktopCommand === "function"`
+   * 判断，但 Web 的 stub 同样实现了该方法（no-op），判据在 Web 上恒真，
+   * 登录成功后卡在「登录中…」（2026-10-31 实测）。
+   */
+  supportsAppRelaunch?: boolean;
+
+  /** Web 网关会话模式：登出必须同时吊销服务端会话，而不是只清企业登录态。 */
+  webSessionAuth?: boolean;
+
+  /** 把自包含 HTML 导出为 PNG 长图 / PDF；仅 Desktop 实现。 */
+  exportMarkdownPage?(payload: MarkdownExportRequest): Promise<MarkdownExportResult>;
 }
 
 // ============================================================
@@ -1425,3 +1472,27 @@ export type PlatformFeatureId =
 
 /** Web 端不可用能力的统一说明文案；置灰悬停时展示。 */
 export const PLATFORM_UNAVAILABLE_REASON = "该功能仅支持客户端使用";
+
+
+// ===== [本地定制] Markdown 导出契约（上游无）=====
+
+/** Markdown 导出请求：自包含 HTML → PNG 长图 / PDF。docx 不经此通道。 */
+export interface MarkdownExportRequest {
+  format: "png" | "pdf";
+  /** 自包含 HTML：本地图片已内联为 dataURL，不引用外部资源 */
+  html: string;
+  /** PNG 专用：输出宽度（CSS px），默认 760 */
+  width?: number;
+  /** PNG 专用：像素密度，默认 2 */
+  scale?: number;
+  /** PNG 专用：正文高度（CSS px），用于全页捕获范围 */
+  contentHeight?: number;
+}
+
+export interface MarkdownExportResult {
+  success: boolean;
+  /** 成功时的字节 */
+  data?: ArrayBuffer;
+  /** "busy" | "load_failed" | "render_failed" */
+  error?: string;
+}

@@ -1,6 +1,5 @@
-import { useSetInterfaceModeWithTelemetry } from "@/lib/appTelemetry.js";
 import { SidebarNativeTooltip, ControlHintTooltip } from "@/ControlHintTooltip.js";
-/* oxlint-disable eslint(max-lines) -- footer 聚合账户、主题、模式和快捷键菜单。 */
+/* oxlint-disable eslint(max-lines) -- footer 聚合账户、主题和快捷键菜单。 */
 import type { Locale, UserInfo } from "@zcode/shared";
 import { memo, useCallback, useEffect, useState, type ReactNode } from "react";
 import { DesktopCommandIds, LOCALE_NATIVE_NAMES, SUPPORTED_LOCALES } from "@zcode/shared";
@@ -30,7 +29,6 @@ import {
 } from "@/components/ui/dropdown-menu.js";
 import {
   Copy,
-  PencilRuler,
   Globe,
   Gift,
   LoaderCircle,
@@ -44,11 +42,11 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { useReactorServer } from "@/hooks/useReactorServer.js";
 import { useOpenRewards } from "@/rewards/RewardsProvider.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
 import { useZCodeStore } from "@/store/StoreProvider.js";
-import { normalizeInterfaceMode } from "@/lib/interfaceMode.js";
 import type { Theme } from "@/useTheme.js";
 import { WorkspaceWebRemoteControlTrigger } from "@/WorkspaceWebRemoteControlTrigger.js";
 import {
@@ -74,19 +72,8 @@ function getSidebarProfileName(user?: UserInfo | null): string {
   return "ZCode";
 }
 
-function getSidebarProfileBadge(
-  user: UserInfo | null | undefined,
-  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
-): string {
-  if (user) {
-    return getSidebarProfileName(user);
-  }
-
-  return formatMessage({ id: "sidebar.profile.notLoggedIn" });
-}
-
-function getAvatarFallbackText(user: UserInfo | null | undefined): string {
-  const source = user?.displayName?.trim() || user?.username?.trim() || "Z";
+function getAvatarFallbackText(profileName: string | null): string {
+  const source = profileName?.trim() || "Z";
   return source[0]?.toUpperCase() ?? "Z";
 }
 
@@ -134,16 +121,20 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
   const { intl } = useZCodeIntl();
   const platform = usePlatform();
   const openRewards = useOpenRewards();
-  const interfaceMode = useZCodeStore((state) => state.interfaceMode);
-  const setInterfaceMode = useSetInterfaceModeWithTelemetry(platform, "app.profile");
   const zoomInShortcutLabel = useShortcutCommandLabel("zoomIn");
   const zoomOutShortcutLabel = useShortcutCommandLabel("zoomOut");
   const resetZoomShortcutLabel = useShortcutCommandLabel("resetZoom");
   const isRestoringOAuthSession = useZCodeStore((state) => state.isRestoringOAuthSession);
-  const profileBadge = getSidebarProfileBadge(user, intl.formatMessage);
-  const avatarFallbackText = getAvatarFallbackText(user);
-  const avatarKey = user?.avatarUrl ?? user?.id ?? "guest";
-  const showAuthRestoreLoading = !user && isRestoringOAuthSession;
+  const enterpriseSession = useReactorServer();
+  // 企业登录态与官方账号是两套身份：没有官方账号时，头像/姓名回落到企业账号，
+  // 否则登录成功后侧栏仍显示「登录」，用户看不出自己是以谁登录的。
+  const enterpriseUser = enterpriseSession.status?.loggedIn ? enterpriseSession.status.user : null;
+  const profileName = user ? getSidebarProfileName(user) : enterpriseUser?.name?.trim() || null;
+  const profileBadge = profileName ?? intl.formatMessage({ id: "sidebar.profile.notLoggedIn" });
+  const avatarFallbackText = getAvatarFallbackText(profileName);
+  const avatarKey =
+    user?.avatarUrl ?? user?.id ?? (enterpriseUser ? `enterprise:${enterpriseUser.uid}` : "guest");
+  const showAuthRestoreLoading = !user && !enterpriseUser && isRestoringOAuthSession;
   const usageSummaryState = useWorkspaceSidebarFooterUsageSummaryState({
     enabled: true,
     workspaceIdentity,
@@ -163,7 +154,7 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
       <Avatar key={avatarKey} size="default">
         {user?.avatarUrl ? <AvatarImage src={user.avatarUrl} alt={profileBadge} /> : null}
         <AvatarFallback className="bg-background text-foreground">
-          {user ? (
+          {profileName ? (
             avatarFallbackText
           ) : showAuthRestoreLoading ? (
             <>
@@ -367,31 +358,11 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
                 </DropdownMenuRadioGroup>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <PencilRuler className="size-4" />
-                {intl.formatMessage({ id: "settings.interfaceMode" })}
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="w-48">
-                <DropdownMenuRadioGroup
-                  value={interfaceMode}
-                  onValueChange={(value) => setInterfaceMode(normalizeInterfaceMode(value))}
-                >
-                  <DropdownMenuRadioItem value="coding">
-                    {intl.formatMessage({ id: "settings.interfaceMode.coding" })}
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="office">
-                    {intl.formatMessage({ id: "settings.interfaceMode.office" })}
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            {/* 快捷键设置（a58fdef 一系）：缩放子菜单 label 读生效表，设置页改绑后即时跟随 */}
-            {/* Bugfix: ecc6952 收口重复缩放子菜单时误留了语言之后的那份，导致菜单顺序变成
-                语言→缩放→主题；账户菜单分组顺序固定为 语言→主题→界面模式→缩放→用量→登录/登出，
-                这里把唯一一份（读生效表）挪回用量摘要之前。
-                staging 的 1d3179cb83 独立做过同一处移动（位置一致、缺本注释与 JSX 缩进），
-                合并时保留本版本，不要再补第二份缩放子菜单。 */}
+            {/* 快捷键设置：缩放子菜单 label 读生效表，设置页改绑后即时跟随 */}
+            {/* 收口重复缩放子菜单时误留了语言之后的那份，导致菜单顺序变成
+                语言→缩放→主题；账户菜单分组顺序固定为 语言→主题→缩放→用量→登录/登出，
+                这里把唯一一份（读生效表）挪回用量摘要之前，不要再补第二份缩放子菜单。
+                界面模式子菜单已删除：主面板草稿区的分段切换是该状态的唯一入口（docs/已完成/已完成-interface-mode.md）。 */}
             {isDesktop ? (
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
@@ -444,12 +415,26 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
                 </Badge>
               </DropdownMenuItem>
             ) : null}
-            {onLogin && !user ? (
+            {onLogin && !user && !enterpriseUser ? (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={onLogin} data-testid={TID_LOGIN_MENU_ITEM}>
                   <LogInIcon className="size-4" />
                   {intl.formatMessage({ id: "app.login" })}
+                </DropdownMenuItem>
+              </>
+            ) : null}
+            {/* 企业账号没有官方 OAuth 会话，退出只能走企业服务端登出；
+                登出后 Root 的强制登录门禁会把用户带回登录页。 */}
+            {!user && enterpriseUser ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => void enterpriseSession.logout()}
+                  data-testid={TID_LOGOUT_BUTTON}
+                >
+                  <LogOut className="size-4" />
+                  {intl.formatMessage({ id: "app.logout" })}
                 </DropdownMenuItem>
               </>
             ) : null}
@@ -462,6 +447,9 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
             ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
+        {/* 右侧只保留设置按钮，与左侧登录/头像同一基线单行。
+            版本号（开发者模式连点入口）已迁到「帮助 → 关于 Reactor」的版本号上，
+            见 docs/已完成/已完成-model-governance-and-dev-mode.md。 */}
         <div className="flex shrink-0 items-center gap-1.5">
           {isDesktop && workspacePath ? (
             <WorkspaceWebRemoteControlTrigger

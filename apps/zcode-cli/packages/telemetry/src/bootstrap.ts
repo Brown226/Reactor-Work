@@ -12,6 +12,7 @@ import type {
 } from "@zcode/contracts/telemetry";
 import type { ModelStatusSink } from "@zcode/contracts/model";
 import { NoopAgentExecutionTelemetry } from "./agent-trace-runtime.js";
+import { USER_DATA_DIR_NAME } from "./user-data-dir.js";
 
 type EnvRecord = Record<string, string | undefined>;
 
@@ -225,7 +226,7 @@ async function resolveStandaloneDeviceMid(
 ): Promise<string | undefined> {
   const stateFile = zcodeHome
     ? join(zcodeHome, "v2", "telemetry-state.json")
-    : join(homedir(), ".zcode", "v2", "telemetry-state.json");
+    : join(homedir(), USER_DATA_DIR_NAME, "v2", "telemetry-state.json");
   const pending = pendingStandaloneDeviceMidByStateFile.get(stateFile);
   if (pending) return pending;
   const resolution = resolveStandaloneDeviceMidFromFile(stateFile);

@@ -5,6 +5,7 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { pdfJsCMapsPlugin } from "../ui/vite/pdfJsCMapsPlugin.js";
+import { dwgViewerAssetsPlugin } from "../ui/vite/dwgViewerAssetsPlugin.js";
 import { thirdPartyNoticesVitePlugin } from "../../scripts/third-party-notices.mjs";
 import { resolveRemoteFrontendVersion } from "./vite/remoteFrontendVersion.mjs";
 // Bugfix: Vite 配置在 Node 加载期执行，不能导入 @zcode/shared 根入口。
@@ -27,7 +28,13 @@ function resolveZCodeEnv(value: string | undefined): "test" | "production" {
   return value?.trim().toLowerCase() === "production" ? "production" : "test";
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
+  // 与 packages/desktop/vite.config.ts 同因：进程级 NODE_ENV=production（全局环境变量 / CI 镜像）
+  // 会让 @vitejs/plugin-react 判定 isProduction 并跳过 $RefreshSig$/$RefreshReg$ preamble 注入，
+  // 但 oxc 的 jsx.refresh 仍按 command === "serve" 打开，dev 下即 "ReferenceError: $RefreshSig$ is not defined"。
+  if (command === "serve" && process.env.NODE_ENV === "production") {
+    process.env.NODE_ENV = "development";
+  }
   // `.env*` 只提供链接常量；当前产品环境由启动脚本或 CI 注入 ZCODE_ENV。
   // 启动脚本通过 process.env 显式选择 test/production；它必须优先于 .env 文件，
   // 否则 share:test 可能被 mode 的旧配置误解析到错误 endpoint。
@@ -45,7 +52,13 @@ export default defineConfig(({ mode }) => {
   const zaiOAuthClientId = resolveZaiOAuthClientId(endpointEnv);
 
   return {
-    plugins: [pdfJsCMapsPlugin(), react(), tailwindcss(), thirdPartyNoticesVitePlugin()],
+    plugins: [
+      pdfJsCMapsPlugin(),
+      dwgViewerAssetsPlugin(),
+      react(),
+      tailwindcss(),
+      thirdPartyNoticesVitePlugin(),
+    ],
     resolve: {
       alias: [
         // 修复 UI 组件库中的 @ 别名解析失败。
@@ -123,6 +136,17 @@ export default defineConfig(({ mode }) => {
       "import.meta.env.VITE_ZAI_OAUTH_CLIENT_ID": JSON.stringify(zaiOAuthClientId),
       "import.meta.env.VITE_ZAI_OAUTH_ORIGIN": JSON.stringify(zaiOAuthOrigin),
       "import.meta.env.VITE_BIGMODEL_OAUTH_ORIGIN": JSON.stringify(bigmodelOAuthOrigin),
+    },
+    css: {
+      // 公司内仍有大量 Win7 电脑，其可用浏览器最高只到 Chromium 109（Chrome/Edge 109）。
+      // 共享样式使用 oklch()/color-mix()（Chrome 111+），109 会整条丢弃导致掉色，
+      // 因此这里以 chrome109 为目标处理最终 CSS：lightningcss 输出「静态回退 + @supports 增强」
+      // 双档，旧浏览器拿 sRGB 静态值，现代浏览器仍拿 lab() 增强值（不是整体降级）。
+      // 只作用于 Web 产物；桌面端是 Electron 41（Chromium 142）的独立构建，不受影响。
+      transformer: "lightningcss",
+      lightningcss: {
+        targets: { chrome: 109 << 16 },
+      },
     },
     build: {
       // 生产不在浏览器产物暴露 sourceMappingURL，避免客户端侧还原业务源码。

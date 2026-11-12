@@ -39,6 +39,7 @@ import {
   useFileApplications,
 } from "@/file-menu/index.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useFileContextActions } from "@/hooks/useFileContextActions.js";
 import { useWorkspaceOpenInEditorTarget } from "@/hooks/useWorkspaceOpenInEditorTarget.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -98,7 +99,9 @@ export function OpenSplitButton({
 }: OpenSplitButtonProps) {
   const { intl } = useZCodeIntl();
   const platform = usePlatform();
-
+  // Web 沙箱装不了本机编辑器：菜单兜底项不再显示「未找到可用 App」误导用户以为没装，
+  // 优先展示能力位统一原因（桌面端不实现 unavailableReason 恒为 null，维持原文案）。
+  const openInEditorUnavailableReason = usePlatformUnavailable("openInEditor");
   const previewSource = target.type === "file" ? target.previewSource : undefined;
   const matchedOpenContext = useWorkspaceOpenInEditorTarget({
     workspacePath: previewSource?.workspacePath,
@@ -476,6 +479,7 @@ export function OpenSplitButton({
               canOpenNative && platform.openExternalFile ? handleOpenDefault : undefined
             }
             reveal={canReveal ? { label: fileManagerLabel, onSelect: handleReveal } : undefined}
+            openInEditorUnavailableReason={openInEditorUnavailableReason ?? undefined}
           />
           {viewMenuItems ? (
             <>
@@ -517,6 +521,7 @@ function OpenSplitButtonDropdownActions({
   handleOpenDefault,
   canOpenWith,
   reveal,
+  openInEditorUnavailableReason,
 }: {
   target:
     | { type: "website" }
@@ -537,6 +542,7 @@ function OpenSplitButtonDropdownActions({
   handleOpenDefault?: () => void;
   canOpenWith: boolean;
   reveal?: { label: string; onSelect: () => void };
+  openInEditorUnavailableReason?: string;
 }) {
   const { intl } = useZCodeIntl();
   const fileActions = useFileContextActions();
@@ -570,6 +576,12 @@ function OpenSplitButtonDropdownActions({
               onSelect={handleOpenInEditor}
             />
           )}
+          {!loadingEditors && !handleOpenDefault && !canOpenWith ? (
+            <DropdownMenuItem disabled>
+              {openInEditorUnavailableReason ??
+                intl.formatMessage({ id: "chat.previewCards.noOpenApps" })}
+            </DropdownMenuItem>
+          ) : null}
           {(handleOpenDefault || canOpenWith) && <DropdownMenuSeparator />}
           {revealItem}
           <FileSaveAsMenuItem path={target.path} {...target.previewSource} />

@@ -14,6 +14,8 @@ import {
 } from "@zcode/shared";
 import { persistLastSelectedAgentProvider } from "@/lib/zcodeProviderPreference.js";
 import { areConfigOptionsEquivalent } from "@/lib/configOptionsEquality.js";
+// 目标会话归一化放在 lib：store 与 v4/composer 都要用，放任一侧都会形成 store ↔ v4 互相引用的环。
+import { normalizeComposerTextInsertSessionId } from "@/lib/composerTextInsert.js";
 import type { ZCodeUiError } from "@/lib/zcodeUiError.js";
 import { pushNavEntry } from "@/lib/taskNavigationHistory.js";
 import { notifyTaskNavigationCommitted } from "@/store/zcodeSessionStoreNavigation.js";
@@ -24,6 +26,7 @@ import type {
   ComposerInitialization,
   ConfigOptionsStatus,
   ComposerMentionPrefill,
+  ComposerTextInsertMode,
   ModelSwitchStage,
   WorkspaceZCodeUIState,
 } from "@/store/zcodeSessionStoreTypes.js";
@@ -350,8 +353,11 @@ export function createWorkspaceSlice(set: SetFn) {
       text: string,
       workspaceIdentity?: string,
       mention?: ComposerMentionPrefill,
-      mode?: "replace" | "prepend-if-missing",
+      mode?: ComposerTextInsertMode,
+      sessionId?: string | null,
     ) => {
+      // 目标会话先归一化：空白串等同「新建任务草稿槽」，避免 composer 侧按不同空值各判一次。
+      const targetSessionId = normalizeComposerTextInsertSessionId(sessionId);
       let nextRequestId = 0;
       set((state) =>
         updateWorkspaceState(
@@ -368,6 +374,7 @@ export function createWorkspaceSlice(set: SetFn) {
                 text,
                 ...(mention ? { mention } : {}),
                 ...(mode ? { mode } : {}),
+                ...(targetSessionId ? { sessionId: targetSessionId } : {}),
               },
             };
           },

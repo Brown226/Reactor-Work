@@ -20,17 +20,20 @@ export function mapSkillsToMentionItemsForTest(
   locale?: Locale,
 ): MentionItem[] {
   const uniqueSkillsByName = new Map<string, (typeof skills)[number]>();
+  // 同名折叠优先级（数字越小越优先）：workspace > server > plugin > user。
+  // server 夹在中间：服务端下发是组织级事实源，优先于用户自建的同名技能，但项目内覆盖仍最高。
   const scopePriority: Record<SkillScope, number> = {
     workspace: 0,
-    plugin: 1,
-    user: 2,
+    server: 1,
+    plugin: 2,
+    user: 3,
   };
   for (const skill of skills) {
     const key = skill.name.trim().toLowerCase();
     const current = uniqueSkillsByName.get(key);
     // `$` 面板是执行入口，不是来源管理页。
-    // 同名技能如果来自 workspace/user/plugin 多个路径，继续全部展示会让用户看到“同一个 skill”重复刷屏。
-    // 这里按名称折叠，并优先选择 workspace，其次 plugin，最后 user；Settings 页仍保留完整来源列表用于管理。
+    // 同名技能如果来自 workspace/user/plugin/server 多个路径，继续全部展示会让用户看到“同一个 skill”重复刷屏。
+    // 这里按名称折叠，并优先选择 workspace，其次 server / plugin，最后 user；Settings 页仍保留完整来源列表用于管理。
     if (!current || scopePriority[skill.scope] < scopePriority[current.scope]) {
       uniqueSkillsByName.set(key, skill);
     }

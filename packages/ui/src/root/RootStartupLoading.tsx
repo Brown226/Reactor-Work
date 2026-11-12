@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ReactorLogo } from "@/components/ui/ReactorLogo.js";
 import { cn } from "@/components/lib/utils.js";
 
 interface RootStartupLoadingProps {
@@ -18,14 +19,14 @@ export function RootStartupLoading({ label, children, busy = true }: RootStartup
       aria-label={label}
       data-testid="root-startup-loading"
     >
-      <ZCodeStartupLogoBadge />
+      <ReactorStartupLogo />
       {children}
     </div>
   );
 }
 
-/** 初始化与引导共用品牌图标，保持底色、描边、圆角和标志比例一致。 */
-export function ZCodeStartupLogoBadge({
+/** 初始化与引导共用品牌标记；标记自带白底，不再依赖外层深色壳提供对比。 */
+export function ReactorStartupLogo({
   animated = true,
   size = "default",
 }: {
@@ -35,17 +36,15 @@ export function ZCodeStartupLogoBadge({
   return (
     <div
       data-desktop-logo-badge={size === "titlebar" ? "true" : undefined}
-      className={cn(
-        "relative flex items-center justify-center bg-[linear-gradient(180deg,#000000_0%,#151718_100%)] text-[#ffffff] before:pointer-events-none before:absolute before:inset-0 before:rounded-[inherit] before:border before:border-[rgba(255,255,255,0.1)] before:content-['']",
-        size === "titlebar"
-          ? "size-5 rounded shadow-sm/20 before:border-white/20"
-          : "size-24 rounded-3xl shadow-xl/20",
-      )}
+      className="flex items-center justify-center"
+      aria-label="Reactor"
+      role="img"
     >
-      {/* Button 会给 SVG 默认尺寸；紧凑 Logo 显式恢复自动高度，保持标志原始比例。 */}
-      <ZCodeStartupLogo
-        className={size === "titlebar" ? "size-auto w-3.25" : "h-auto w-14"}
-        animated={animated}
+      <ReactorLogo
+        className={cn(
+          size === "titlebar" ? "size-auto w-3.25" : "h-auto w-20",
+          animated && "motion-safe:animate-pulse",
+        )}
       />
     </div>
   );
@@ -88,5 +87,31 @@ export function ZCodeStartupLogo({
         d="M121.601 217.732L139.65 192.134C142.465 188.166 147.076 185.734 152.067 185.734H249.604V217.736H121.601V217.732Z"
       />
     </svg>
+  );
+}
+
+export function ZCodeStartupLogoBadge({
+  animated = true,
+  size = "default",
+}: {
+  animated?: boolean;
+  size?: "default" | "titlebar";
+}) {
+  return (
+    <div
+      data-desktop-logo-badge={size === "titlebar" ? "true" : undefined}
+      className={cn(
+        "relative flex items-center justify-center bg-[linear-gradient(180deg,#000000_0%,#151718_100%)] text-[#ffffff] before:pointer-events-none before:absolute before:inset-0 before:rounded-[inherit] before:border before:border-[rgba(255,255,255,0.1)] before:content-['']",
+        size === "titlebar"
+          ? "size-5 rounded shadow-sm/20 before:border-white/20"
+          : "size-24 rounded-3xl shadow-xl/20",
+      )}
+    >
+      {/* Button 会给 SVG 默认尺寸；紧凑 Logo 显式恢复自动高度，保持标志原始比例。 */}
+      <ZCodeStartupLogo
+        className={size === "titlebar" ? "size-auto w-3.25" : "h-auto w-14"}
+        animated={animated}
+      />
+    </div>
   );
 }

@@ -74,6 +74,8 @@ import {
 } from "./onboarding/localUsageEvidence.js";
 import {
   buildLocalMediaPreviewUrl,
+  isProviderProvisioningAccountCredentialKey,
+  USER_DATA_DIR_NAME,
   OAUTH_LINKED_BIGMODEL_KEY,
   OAUTH_SESSION_REVISION_KEY,
   type DynamicWorkflowMode,
@@ -222,6 +224,13 @@ export type {
 export { createProjectWorkspaceNavigation } from "#src/project-workspace-navigation/index.js";
 export { createBotsService } from "./bots/botsService.js";
 export { createFileWatcherService } from "./fileWatcher/fileWatcherService.js";
+export {
+  getWebDataRoot,
+  getWebHomesRoot,
+  getWebUsersRoot,
+  prepareWebUserSandbox,
+  type WebUserSandbox,
+} from "./zcode-agent/webUserSandbox.js";
 export { createOAuthService } from "./oauth/oauthService.js";
 export { createOAuthProviderLogoutHandler } from "./oauth/oauthProviderLogout.js";
 export { OAuthCredentialRepo } from "./oauth/repo/oauthCredentialRepo.js";
@@ -341,6 +350,10 @@ export { createHooksService } from "./hooks/hooksService.js";
 export { createMemoryService } from "./memory/memoryService.js";
 export { createOutputStyleService } from "./output-style/outputStyleService.js";
 export { createSettingsSyncService } from "./settings-sync/settingsSyncService.js";
+export { createServerSkillSyncService } from "./server-skills/serverSkillSyncService.js";
+export { createServerAgentSyncService } from "./server-agents/serverAgentSyncService.js";
+// 知识缓存同步（文件审查的依据）：只读登录态与凭据，把标准清单/术语白名单/规范库拉到用户数据目录。
+export { createKnowledgeSyncService } from "./knowledge/knowledgeSyncService.js";
 export { createFeedbackDiagnosticArchive } from "./feedback/feedbackLogArchive.js";
 export { createFeedbackService } from "./feedback/feedbackService.js";
 export type { CreateFeedbackServiceOptions } from "./feedback/feedbackService.js";
@@ -551,6 +564,19 @@ import {
   createAccountRequestAuthService,
   type IAccountRequestAuthService,
 } from "./model-provider/accountRequestAuthService.js";
+// 企业服务端接入（Reactor Server）：工厂从实现文件直接导入（根 index 只导出 descriptor/类型，
+// 原因是根 index 会被 renderer 拉进浏览器包，见 services/index.ts 的注释）。
+import { createReactorServerService } from "./reactor-server/reactorServerService.js";
+import { IReactorServerService } from "./reactor-server/reactorServer.js";
+// 企业服务端技能同步：工厂从实现文件直接导入（根 index 只导出 descriptor/类型，同上）。
+import { createServerSkillSyncService } from "./server-skills/serverSkillSyncService.js";
+import { IServerSkillSyncService } from "./server-skills/serverSkillSync.js";
+// 企业服务端 Agent 同步：工厂同上（根 index 只导出 descriptor/类型）。
+import { createServerAgentSyncService } from "./server-agents/serverAgentSyncService.js";
+import { IServerAgentSyncService } from "./server-agents/serverAgentSync.js";
+// 知识缓存同步：工厂同上（根 index 只导出 descriptor/类型，避免 renderer 包拉进 node:fs）。
+import { createKnowledgeSyncService } from "./knowledge/knowledgeSyncService.js";
+import type { IKnowledgeSyncService } from "./knowledge/knowledgeSyncService.js";
 import { createSourceServerWorkspaceService } from "./source-server-workspace/sourceServerWorkspaceService.js";
 import { createUsageStatsService } from "./usage-stats/usageStatsService.js";
 import { createCodingPlanSubscriptionService } from "./coding-plan-subscription/codingPlanSubscriptionService.js";
@@ -1211,7 +1237,7 @@ export { isOfficialCuaPluginEnabledForWorkspace };
 
 export function hasGlobalCliZCodeCuaServer(env: NodeJS.ProcessEnv = process.env): boolean {
   const home = env.HOME?.trim() || homedir();
-  const configPath = join(home, ".zcode", "cli", "config.json");
+  const configPath = join(home, USER_DATA_DIR_NAME, "cli", "config.json");
   let parsed: unknown;
   try {
     parsed = JSON.parse(readFileSync(configPath, "utf8"));
@@ -2291,6 +2317,113 @@ export function createLocalServices(options: {
           resolveOffPeakClientConfig: () => codingPlanSubscriptionService.getOffPeakClientConfig(),
           resolveOffPeakTaskService: () => offPeakTaskServiceForAgent,
         };
+  // 企业服务端（Reactor Server）接入：登录态与令牌的唯一所有者。
+  // 它同时是企业 provider 的唯一写入者（经 providerSettings overlay），因此必须先于 agent 服务创建。
+  // 登录/登出钩子晚绑定：同步器依赖 reactorServer 实例，钩子又引用同步器，用 holder 闭包回填，
+  // 避免构造顺序死锁（登录后台同步 / 登出清空 server-agents，见 P3 计划 §4.3）。
+  let serverAgentSyncHolder: IServerAgentSyncService | null = null;
+  // 知识缓存同步器的 late-bind holder：登录钩子在 reactorServer 构造时就绑定了，
+  // 而同步器依赖 reactorServer 实例，只能用闭包回填（与 serverAgentSyncHolder 同一个理由）。
+  let knowledgeSyncHolder: IKnowledgeSyncService | null = null;
+  // P4.1b 用量事件源的 late-bind holder：reactorServer 先建（它是登录态与企业 provider 的所有者），
+  // agent 服务后建，而订阅入口在 agent 服务上（`onDynamicUsageFact`），只能用闭包回填。
+  // 订阅只会在登录成功 / 启动补一次时安装，届时 agent 服务必然已经构造完成。
+  let usageFactSourceHolder: Pick<IZCodeAgentService, "onDynamicUsageFact"> | null = null;
+  // 行为审计事实源（洞②）：与用量源同一套 late-bind 理由与同一回填点。
+  let auditFactSourceHolder: Pick<IZCodeAgentService, "onDynamicAuditFact"> | null = null;
+  const reactorServerWiringLog = createServiceLogger("reactor-server-wiring");
+  const reactorServerService = createReactorServerService({
+    apiClient,
+    credentials: credentialService,
+    providerSettings: providerRuntime.providerSettings,
+    onLoginSuccess: () => {
+      void serverAgentSyncHolder?.sync();
+      // 登录后台补齐审查知识缓存：审查端（CLI 工具）只读本地缓存，这里不补就等于自检没有依据。
+      // fire-and-forget：钩子失败只记日志，绝不阻断登录。
+      void knowledgeSyncHolder?.sync();
+    },
+    onLogout: () => serverAgentSyncHolder?.clearLocal(),
+    // 用量事实源：CLI 的 `usage.delta`（含 providerId/modelId/token 分项）。只做字段搬运，
+    // 是否入库（登录态 / 企业 provider / 有有效 token）由 Reporter 与 service 判定。
+    subscribeUsageDelta: (listener) => {
+      const source = usageFactSourceHolder;
+      if (!source) {
+        // 只会出现在"agent 服务尚未构造"的异常装配顺序下：宁可漏订阅也不抛进会话热路径。
+        reactorServerWiringLog.warn(undefined, "用量上报未接线：agent 服务尚未构造，订阅被跳过");
+        return () => undefined;
+      }
+      const disposable = source.onDynamicUsageFact()((fact) => {
+        listener({
+          // 幂等键 = 会话 id + 事件 id：eventId 只在会话内唯一，跨会话可能撞号。
+          eventId: `${fact.sessionId}:${fact.eventId}`,
+          ts: new Date(fact.occurredAt).toISOString(),
+          sessionId: fact.sessionId,
+          providerId: fact.providerId ?? "",
+          modelId: fact.modelId ?? "",
+          usage: {
+            inputTokens: fact.inputTokens,
+            outputTokens: fact.outputTokens,
+            totalTokens: fact.totalTokens,
+            cachedInputTokens: fact.cacheReadTokens,
+            cachedWriteInputTokens: fact.cacheWriteTokens,
+          },
+        });
+      });
+      return () => disposable.dispose();
+    },
+    // 行为审计事实源（洞②）：透传原始 fact，过滤与映射在上报桥（buildBehaviorAuditEvent）做，
+    // 与用量链路「Host 只搬运、门禁在 Reporter」的分工一致。
+    subscribeAuditFacts: (listener) => {
+      const source = auditFactSourceHolder;
+      if (!source) {
+        reactorServerWiringLog.warn(
+          undefined,
+          "行为审计上报未接线：agent 服务尚未构造，订阅被跳过",
+        );
+        return () => undefined;
+      }
+      const disposable = source.onDynamicAuditFact()((fact) => listener(fact));
+      return () => disposable.dispose();
+    },
+  });
+
+  // 企业服务端技能同步：server-skills 目录的唯一写者。只读登录态与凭据库里的
+  // reactor:* 令牌，不碰 provider；HTTP 复用 reactorServerClient（见 docs/已完成/已完成-server-skill-sync.md §5）。
+  const serverSkillSyncService = createServerSkillSyncService({
+    apiClient,
+    credentials: credentialService,
+    reactorServer: reactorServerService,
+  });
+
+  // 企业服务端 Agent 同步：server-agents 目录的唯一写者（docs/已完成/已完成-服务端接线-P3-Agent下发.md）。
+  // 只物化 installed && installEnabled；发现层（GUI/CLI）只读，启停不落本地第二套状态。
+  const serverAgentSyncService = createServerAgentSyncService({
+    apiClient,
+    credentials: credentialService,
+    reactorServer: reactorServerService,
+  });
+  serverAgentSyncHolder = serverAgentSyncService;
+
+  // 知识缓存同步（文件审查）：标准清单 / 术语白名单 / 规范库 → 用户数据目录 knowledge/。
+  // 只读 reactor:* 凭据，不碰 provider；消费面只要求登录态，不校验角色（见方案 §4.4.3）。
+  const knowledgeSyncService = createKnowledgeSyncService({
+    apiClient,
+    credentials: credentialService,
+    reactorServer: reactorServerService,
+  });
+  knowledgeSyncHolder = knowledgeSyncService;
+  // 启动补一次：已登录则后台同步（与 server-agents 同口径，失败保留上一份可用缓存）。
+  void reactorServerService
+    .getStatus()
+    .then((status) => (status.loggedIn ? knowledgeSyncService.sync() : undefined))
+    .catch(() => undefined);
+
+  // 启动补一次：已登录则后台对齐服务端目录（失败静默，登录/安装/手动触发会再收敛）。
+  void reactorServerService
+    .getStatus()
+    .then((status) => (status.loggedIn ? serverAgentSyncService.sync() : undefined))
+    .catch(() => undefined);
+
   const setWorkspaceProjection =
     options?.setWorkspaceProjection ?? localSettings?.setWorkspaceProjection;
   setWorkspaceProjection?.(async (settings) => {
@@ -2437,6 +2570,8 @@ export function createLocalServices(options: {
       ? { accountProviderConfigSource: agentAccountProviderConfigSource }
       : {}),
     accountRequestAuthService,
+    // 企业服务端 provider 的鉴权材料由这里现场解析（见 docs/未完成-服务端接线-方案-v1.md §4.2）。
+    reactorServerAuth: reactorServerService,
     readRequestVerificationConfig: () =>
       codingPlanSubscriptionService.getRequestVerificationConfig(),
     ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
@@ -2652,6 +2787,11 @@ export function createLocalServices(options: {
         }),
   });
   providerConnectivityAgentService = zcodeAgentService;
+  // 回填用量事实源（P4.1b）：reactorServer 的订阅钩子此刻起可用；
+  // 登录成功 / 启动补一次时才会真正安装订阅。
+  usageFactSourceHolder = zcodeAgentService;
+  // 行为审计事实源（洞②）同点回填。
+  auditFactSourceHolder = zcodeAgentService;
   // Helper health probe 短暂超时不应在 Computer Use turn 中途回收 Agent。resolver 会把 restart
   // 推迟到下一个 request/turn 边界；若 broker 确实已失效，当前 turn 会自然失败并由下一次请求恢复。
   hasActiveTurnRef = () => zcodeAgentService.hasActiveCuaOperationTurn();
@@ -3292,6 +3432,14 @@ export function createLocalServices(options: {
         apiClient,
         credentialService,
         oauthService,
+        // 企业版：反馈跟着企业服务端走，管理台才能受理（docs/已完成/已完成-feedback-module.md §2）。
+        // 用 getStatus() 而不是装配时读一次 —— 服务端地址是登录时才填的、还可能换。
+        // 未配置企业服务端时返回 undefined，回落官方后端，开源用法不受影响。
+        getApiBaseUrl: async () => {
+          const status = await reactorServerService.getStatus();
+          if (!status.serverUrl) return undefined;
+          return `${status.serverUrl.replace(/\/+$/, "")}/api/v1`;
+        },
       }),
     )
     .register(IPromptAttachmentTransferService, createLocalPromptAttachmentTransferService());
@@ -3332,7 +3480,13 @@ export function createLocalServices(options: {
   }
   services
     .register(IProviderSettingsService, providerRuntime.providerSettings)
-    .register(IModelSelectionService, providerRuntime.modelSelection);
+    .register(IModelSelectionService, providerRuntime.modelSelection)
+    // 企业服务端接入：UI 经此登录/登出/读状态；模型请求的鉴权注入走 agent 服务的 runtime header 分支。
+    .register(IReactorServerService, reactorServerService)
+    // 企业服务端技能同步：server-skills 目录唯一写者；UI 经此手动同步/更新/卸载。
+    .register(IServerSkillSyncService, serverSkillSyncService)
+    // 企业服务端 Agent 同步：server-agents 目录唯一写者；UI 经此安装/启停/卸载/手动同步。
+    .register(IServerAgentSyncService, serverAgentSyncService);
   if (isDesktopAttachedRemote || options.providerProvisioningTargetEnabled === true) {
     services.register(
       IProviderProvisioningTargetService,

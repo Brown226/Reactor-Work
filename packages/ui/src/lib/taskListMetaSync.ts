@@ -1,4 +1,5 @@
 import type { ZCodeTaskMeta } from "@zcode/shared";
+import { removeTaskFromTaskQueryCaches } from "@/store/taskQueryCacheStore.js";
 import { getTaskMeta, useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
 import { mergeTaskMetaCandidates } from "@/lib/zcodeTaskMetaMerge.js";
 import {
@@ -120,4 +121,23 @@ export function insertTaskIntoTaskCaches(params: {
     ensureInWorkspaceTaskCache:
       params.membership.pinned === false && params.membership.archived === false,
   });
+}
+
+// ===== [本地定制] removeTaskFromTaskCaches（上游 v3.18.0 无此导出，整包同步会覆盖本文件）=====
+export function removeTaskFromTaskCaches(params: {
+  workspacePath: string;
+  workspaceIdentity?: string;
+  taskId: string;
+}): boolean {
+  const store = useZCodeSessionStore.getState();
+  const workspaceState = store.getWorkspaceState(params.workspacePath, params.workspaceIdentity);
+  if (workspaceState.taskListCache) {
+    store.setTaskListCache(
+      params.workspacePath,
+      workspaceState.taskListCache.filter((task) => task.taskId !== params.taskId),
+      params.workspaceIdentity,
+    );
+  }
+  store.removeTaskState(params.workspacePath, params.taskId, params.workspaceIdentity);
+  return removeTaskFromTaskQueryCaches(params);
 }

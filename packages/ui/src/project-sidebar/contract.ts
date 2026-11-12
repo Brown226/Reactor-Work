@@ -167,6 +167,18 @@ export interface ProjectSidebarProps {
   pluginStoreActive?: boolean;
   /** 「插件市场」之后的扩展导航条目（docs/plugins/extension-host.md §16.4）；Shell 提供打开入口。 */
   navPrimarySlot?: import("@/extension-slots/contract.js").NavPrimarySlotHost;
+  /**
+   * 以下四项是 Reactor 定制入口（上游侧栏没有 market / my-space / 工作区文件树）。
+   * Shell 按宿主能力传入；缺省时不渲染对应按钮，桌面端保持上游侧栏原样。
+   */
+  /** 插件市场主视图入口（本地「市场」）。 */
+  onOpenMarket?: () => void;
+  marketActive?: boolean;
+  /** 我的空间（Web 宿主专属入口）。 */
+  onOpenMySpace?: () => void;
+  mySpaceActive?: boolean;
+  /** 打开工作区文件树（本地 files 侧栏 tab）。 */
+  onOpenWorkspaceFiles?: () => void;
   onFileTreeOpenChange?: (open: boolean) => void;
   onWebRemoteTaskOpen?: (options: { crossWorkspace: boolean }) => void;
   onWebRemoteTaskSwitchingChange?: (switching: boolean) => void;

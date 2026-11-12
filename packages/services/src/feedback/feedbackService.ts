@@ -18,6 +18,8 @@ import { arch, platform, release, type as osType } from "node:os";
 
 import type { LocalCredentialService } from "../credential/credentialService.js";
 import type { IOAuthService } from "../oauth/oauth.js";
+// 企业登录令牌的凭据键：提交反馈时用它当 Authorization，自建服务端才能解析出姓名与部门。
+import { REACTOR_SERVER_CREDENTIAL_KEYS } from "../reactor-server/reactorServer.js";
 import type { FeedbackUploadProgress, IFeedbackService } from "./feedback.js";
 import {
   FeedbackHttpClient,
@@ -35,6 +37,12 @@ export interface CreateFeedbackServiceOptions {
   oauthService: IOAuthService;
   apiClient: ApiClient;
   apiBaseUrl?: string;
+  /**
+   * 企业登录后反馈的实时基址（`<serverUrl>/api/v1`）。**仅在没有显式基址时生效**：
+   * `apiBaseUrl` / `ZCODE_FEEDBACK_API_BASE` 是本地调试的硬覆盖，优先级更高。
+   * 返回 undefined 回落到官方后端。
+   */
+  getApiBaseUrl?: () => Promise<string | undefined>;
   createFullLogArchive?: (
     sourceDir: string,
     options?: {
@@ -82,8 +90,13 @@ function buildDeviceSnapshot(): FeedbackDeviceInfo {
 }
 
 export function createFeedbackService(options: CreateFeedbackServiceOptions): IFeedbackService {
+  // 显式基址（本地调试用 env / 传参）时不要接企业端解析，否则覆盖会被静默吃掉。
+  const hasExplicitBaseUrl = Boolean(
+    options.apiBaseUrl?.trim() || process.env.ZCODE_FEEDBACK_API_BASE?.trim(),
+  );
   const httpClient = new FeedbackHttpClient({
     baseUrl: resolveApiBaseUrl(options.apiBaseUrl),
+    ...(hasExplicitBaseUrl ? {} : { getBaseUrl: options.getApiBaseUrl }),
     apiClient: options.apiClient,
   });
   const uploadProgressEmitters = new Map<string, Emitter<FeedbackUploadProgress>>();
@@ -97,6 +110,13 @@ export function createFeedbackService(options: CreateFeedbackServiceOptions): IF
   // 已登录只带 JWT，未登录只带 access token。两者都没有时调用方不能发请求：
   // 服务端会把不带凭证的请求按通参里的 X-Device-Mid 当成旧版身份。
   async function loadRequestAuth(): Promise<FeedbackRequestAuth | undefined> {
+    // 企业登录态优先：自建服务端只认 identity 签的 JWT（claims 里带姓名与部门，
+    // 服务端据此写 reporter_display/reporter_dept），官方 zcodejwttoken 它验不过、
+    // 只会退化成匿名提交 —— 所以两条链路的令牌不能混着优先级发。
+    const enterpriseToken = await loadCredential(REACTOR_SERVER_CREDENTIAL_KEYS.accessToken);
+    if (enterpriseToken) {
+      return userRequestAuth(enterpriseToken);
+    }
     const jwtToken = await loadCredential(ZCODE_JWT_TOKEN_KEY);
     if (jwtToken) {
       return userRequestAuth(jwtToken);

@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Import,
   Plus,
+  RefreshCw,
   Trash2,
   UploadCloud,
   WandSparkles,
@@ -29,8 +30,10 @@ import type { CreateTaskRequest } from "@/app-shell/types.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { toast } from "@/components/ui/toast.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useConfigWorkspaceServicesResolution as useWorkspaceServicesResolution } from "@/workspace-config-catalog/index.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
+import { useServerSkillSync } from "@/hooks/useServerSkillSync.js";
 import { buildSkillMentionMarkdown } from "@/mentions/mentionMarkdown.js";
 import { filterSkillsForProvider } from "@/lib/skillSourceFilter.js";
 import { invalidateDeferredDraftSessionForSkillChange } from "@/lib/zcodeDraftSkillInvalidation.js";
@@ -48,6 +51,7 @@ import {
 } from "@/settings/PluginInstallEmptyState.js";
 import {
   resolvePluginDisplayName,
+  resolveUniquePluginItemByName,
   resolveUniquePluginListingByName,
 } from "@/settings/pluginStoreListing.js";
 import { groupSkillsByPlugin } from "@/settings/pluginManagedResourceGroups.js";
@@ -116,11 +120,14 @@ function SkillPathDetailField({
   path,
   openLabel,
   onOpen,
+  openDisabledReason,
 }: {
   label: string;
   path: string;
   openLabel: string;
   onOpen: () => void;
+  /** 平台不可用原因（Web 端）：非空时按钮置灰并改用原因做悬停说明。 */
+  openDisabledReason?: string | null;
 }) {
   return (
     <div className="min-w-0 col-span-2">
@@ -130,8 +137,11 @@ function SkillPathDetailField({
           type="button"
           variant="link"
           size="sm"
+          // 平台不可用（Web 端）：置灰 + 原生 title 悬停说明，点击不再触发文件管理器。
+          disabled={Boolean(openDisabledReason)}
+          aria-disabled={openDisabledReason ? true : undefined}
           aria-label={openLabel}
-          title={openLabel}
+          title={openDisabledReason ?? openLabel}
           className="inline-flex h-auto max-w-full items-baseline gap-1.5 whitespace-normal break-all px-0 py-0 text-left align-baseline font-mono text-ui-base font-normal text-foreground-subtle underline-offset-2 hover:text-foreground hover:underline"
           onClick={onOpen}
         >
@@ -183,6 +193,9 @@ export function SkillsSection({
 }: SkillsSectionProps) {
   const { intl, locale } = useZCodeIntl();
   const platform = usePlatform();
+  // Web 浏览器沙箱打不开系统文件管理器；技能详情「打开路径」置灰 + 悬停说明，
+  // 避免点击后才收到失败 toast。
+  const openSkillPathUnavailableReason = usePlatformUnavailable("openInFileManager");
   const plugins = usePluginManagementStore((state) => state.plugins);
   const installedPlugins = usePluginManagementStore((state) => state.installedPlugins);
   const availablePlugins = usePluginManagementStore((state) => state.availablePlugins);
@@ -197,6 +210,8 @@ export function SkillsSection({
   // useConfirmDialog 是纯 Zustand selector（不含 useState），放在这里不会影响 SkillsSection
   // 既有的「按 useState 调用次序」单测桩（见下方 selectedSkill 附近的注释）。
   const confirmDialog = useConfirmDialog();
+  // 企业服务端技能同步（server-skills）：host 未注册该服务时 available=false，入口整体隐藏。
+  const serverSkillSync = useServerSkillSync();
   const activeWorkspacePath = workspacePath ?? null;
   const activeWorkspaceIdentity = workspaceIdentity;
   const targetServiceResolution = useWorkspaceServicesResolution(
@@ -291,6 +306,9 @@ export function SkillsSection({
                 locale,
               )
             : intl.formatMessage({ id: "settings.skills.scope.plugin" });
+        case "server":
+          // 服务端下发的技能：来源与卸载都在服务端，本地不提供删除入口（见 docs/已完成/已完成-server-skill-sync.md）。
+          return intl.formatMessage({ id: "settings.skills.scope.server" });
         case "user":
         default:
           return intl.formatMessage({ id: "settings.skills.scope.personal" });
@@ -425,7 +443,8 @@ export function SkillsSection({
   // 复用应用根部已挂载的确认弹窗 store（useConfirmDialog），与子智能体删除流程保持一致。
   const handleDeleteSkill = useCallback(
     async (skill: SkillSummary) => {
-      if (!activeWorkspacePath || skill.scope === "plugin") {
+      // plugin 由卸载插件管理；server 由服务端卸载 API 管理（服务端写 dismissal，本地删除会被同步写回）。
+      if (!activeWorkspacePath || skill.scope === "plugin" || skill.scope === "server") {
         return;
       }
       const confirmed = await confirmDialog({
@@ -468,6 +487,62 @@ export function SkillsSection({
       selectedSkill,
       skillsService,
     ],
+  );
+
+  // ── 企业服务端技能（scope=server）───────────────────────────────────────
+  // 同步/更新/卸载全部转发给 host 侧同步器（server-skills 目录唯一写者），
+  // 本地不碰文件；启停仍走 setEnabled 的路径 key map（docs/已完成/已完成-server-skill-sync.md）。
+  const reloadAfterServerSkillMutation = useCallback(async () => {
+    await Promise.all([loadSkills(false), refreshSharedSkillStoreForCurrentWorkspace()]);
+  }, [loadSkills, refreshSharedSkillStoreForCurrentWorkspace]);
+
+  const handleServerSkillSync = useCallback(async () => {
+    const result = await serverSkillSync.sync();
+    if (!result) return;
+    await reloadAfterServerSkillMutation();
+    if (result.authExpired) {
+      toast(intl.formatMessage({ id: "settings.skills.serverSync.authExpired" }));
+    } else if (result.skippedNotLoggedIn) {
+      toast(intl.formatMessage({ id: "settings.skills.serverSync.notLoggedIn" }));
+    } else if (result.offline) {
+      toast(intl.formatMessage({ id: "settings.skills.serverSync.offline" }));
+    } else {
+      toast(
+        intl.formatMessage(
+          { id: "settings.skills.serverSync.done" },
+          { changed: result.changed.length, removed: result.removed.length },
+        ),
+      );
+    }
+  }, [intl, reloadAfterServerSkillMutation, serverSkillSync]);
+
+  const handleServerSkillUpdate = useCallback(
+    async (skill: SkillSummary) => {
+      await serverSkillSync.refreshFromServer(skill.name);
+      await reloadAfterServerSkillMutation();
+    },
+    [reloadAfterServerSkillMutation, serverSkillSync],
+  );
+
+  const handleServerSkillUninstall = useCallback(
+    async (skill: SkillSummary) => {
+      const confirmed = await confirmDialog({
+        title: intl.formatMessage({ id: "settings.skills.server.uninstall.title" }),
+        description: intl.formatMessage(
+          { id: "settings.skills.server.uninstall.description" },
+          { name: skill.name },
+        ),
+        confirmLabel: intl.formatMessage({ id: "settings.skills.server.uninstall.confirm" }),
+      });
+      if (!confirmed) {
+        return;
+      }
+      const ok = await serverSkillSync.uninstall(skill.name);
+      if (ok) {
+        await reloadAfterServerSkillMutation();
+      }
+    },
+    [confirmDialog, intl, reloadAfterServerSkillMutation, serverSkillSync],
   );
 
   const scopedProviderSkills = useMemo(() => {
@@ -515,7 +590,9 @@ export function SkillsSection({
       new Map(
         plugins.map((plugin) => [
           plugin.id,
-          { name: plugin.name, listing: pluginListingById.get(plugin.id) },
+          // id 必须随 item 一起传：PluginStoreAvatar 据此命中 pluginIconSource 的本地
+          // 打包图标，缺失时会回退 listing.icon 指向的旧 CDN 资产（内网可达时直接显示上游旧标）。
+          { id: plugin.id, name: plugin.name, listing: pluginListingById.get(plugin.id) },
         ]),
       ),
     [pluginListingById, plugins],
@@ -592,10 +669,8 @@ export function SkillsSection({
     const pluginIconItem = skill.pluginId
       ? pluginIconItemById.get(skill.pluginId)
       : skill.pluginName
-        ? {
-            name: skill.pluginName,
-            listing: resolveUniquePluginListingByName(availablePlugins, skill.pluginName),
-          }
+        ? // 同名唯一时才解析，且必须带 id：否则图标回退到 listing.icon 的旧 CDN 资产。
+          resolveUniquePluginItemByName(availablePlugins, skill.pluginName)
         : undefined;
     return (
       <div
@@ -626,6 +701,19 @@ export function SkillsSection({
         >
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <span className="truncate text-ui-base font-medium text-foreground">{skill.name}</span>
+            {/* 来源徽标：服务端下发的技能在列表行内即可辨（详情弹窗另有作用域标签）。 */}
+            {skill.scope === "server" ? (
+              <span className="shrink-0 rounded-md bg-surface px-1.5 py-0.5 text-ui-xs text-foreground-subtle">
+                {intl.formatMessage({ id: "settings.skills.scope.server" })}
+              </span>
+            ) : null}
+            {/* 已下架：服务端 enabled=false 的只读投影（在落盘集但不在注入集，契约 R5）。 */}
+            {skill.scope === "server" &&
+            serverSkillSync.result?.disabledNames.includes(skill.name) ? (
+              <span className="shrink-0 rounded-md bg-warning/10 px-1.5 py-0.5 text-ui-xs text-warning">
+                {intl.formatMessage({ id: "settings.skills.server.offlineBadge" })}
+              </span>
+            ) : null}
           </div>
           <div className="mt-0.5 truncate text-ui-sm text-foreground-subtle">
             {skill.description ||
@@ -635,6 +723,8 @@ export function SkillsSection({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {/* server 技能只启停、不本地删除；启停仍走 setEnabled（写按路径的 enabled map）。
+              更新/卸载都走服务端同步器，不经 skillsService.deleteSkill。 */}
           {skill.scope === "plugin" ? null : (
             <>
               <Switch
@@ -643,17 +733,46 @@ export function SkillsSection({
                   void setEnabled(skill.id, checked);
                 }}
               />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="shrink-0 text-foreground-subtle hover:bg-destructive/10 hover:text-destructive"
-                aria-label={intl.formatMessage({ id: "common.delete" })}
-                title={intl.formatMessage({ id: "common.delete" })}
-                onClick={() => void handleDeleteSkill(skill)}
-              >
-                <Trash2 className="size-3.5" aria-hidden="true" />
-              </Button>
+              {skill.scope === "server" ? (
+                <>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="shrink-0 text-foreground-subtle"
+                    aria-label={intl.formatMessage({ id: "settings.skills.server.update" })}
+                    title={intl.formatMessage({ id: "settings.skills.server.update" })}
+                    onClick={() => void handleServerSkillUpdate(skill)}
+                  >
+                    <RefreshCw className="size-3.5" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="shrink-0 text-foreground-subtle hover:bg-destructive/10 hover:text-destructive"
+                    aria-label={intl.formatMessage({
+                      id: "settings.skills.server.uninstall.confirm",
+                    })}
+                    title={intl.formatMessage({ id: "settings.skills.server.uninstall.confirm" })}
+                    onClick={() => void handleServerSkillUninstall(skill)}
+                  >
+                    <Trash2 className="size-3.5" aria-hidden="true" />
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="shrink-0 text-foreground-subtle hover:bg-destructive/10 hover:text-destructive"
+                  aria-label={intl.formatMessage({ id: "common.delete" })}
+                  title={intl.formatMessage({ id: "common.delete" })}
+                  onClick={() => void handleDeleteSkill(skill)}
+                >
+                  <Trash2 className="size-3.5" aria-hidden="true" />
+                </Button>
+              )}
             </>
           )}
         </div>
@@ -670,14 +789,36 @@ export function SkillsSection({
   );
 
   const skillHeaderActions = (
-    <SettingsResourceHeaderActions
-      onRefresh={() => void Promise.all([refresh(), refreshSharedSkillStoreForCurrentWorkspace()])}
-      onImport={() => setImportDialogOpen(true)}
-      onNew={handleCreateSkill}
-      importDisabled={!capability?.userScopeAvailable}
-      importActionId="settings.skills.import.open"
-      newActionId="settings.skills.create.open"
-    />
+    <>
+      <SettingsResourceHeaderActions
+        onRefresh={() =>
+          void Promise.all([refresh(), refreshSharedSkillStoreForCurrentWorkspace()])
+        }
+        onImport={() => setImportDialogOpen(true)}
+        onNew={handleCreateSkill}
+        importDisabled={!capability?.userScopeAvailable}
+        importActionId="settings.skills.import.open"
+        newActionId="settings.skills.create.open"
+      />
+      {/* 企业服务端技能手动同步：host 未注册同步服务（旧 wire/测试 double）时整体隐藏。 */}
+      {serverSkillSync.available ? (
+        <ControlHintTooltip title={intl.formatMessage({ id: "settings.skills.serverSync.open" })}>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-lg"
+            disabled={serverSkillSync.busy}
+            aria-label={intl.formatMessage({ id: "settings.skills.serverSync.open" })}
+            onClick={() => void handleServerSkillSync()}
+          >
+            <RefreshCw
+              className={serverSkillSync.busy ? "size-3.5 animate-spin" : "size-3.5"}
+              aria-hidden="true"
+            />
+          </Button>
+        </ControlHintTooltip>
+      ) : null}
+    </>
   );
   const remoteSyncAction = dataSync.visible ? (
     <ControlHintTooltip title={intl.formatMessage({ id: "settings.skills.remoteSync.open" })}>
@@ -971,6 +1112,7 @@ export function SkillsSection({
                     openLabel={intl.formatMessage({
                       id: "settings.skills.detail.openPath",
                     })}
+                    openDisabledReason={openSkillPathUnavailableReason}
                     onOpen={() => void openSkillFilePath(detailSkill.path)}
                   />
                 </div>

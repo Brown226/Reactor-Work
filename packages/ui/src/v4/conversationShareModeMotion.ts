@@ -25,3 +25,25 @@ export function resolveConversationShareSelectionPanelMotion(prefersReducedMotio
     },
   };
 }
+
+// ===== [本地定制] resolveConversationShareSelectionScrimMotion（上游 v3.18.0 无此导出，整包同步会覆盖本文件）=====
+export function resolveConversationShareSelectionScrimMotion(prefersReducedMotion: boolean) {
+  if (prefersReducedMotion) {
+    return {
+      initial: false as const,
+      animate: { opacity: 1 },
+      exit: { opacity: 1 },
+      transition: { duration: 0 },
+    };
+  }
+
+  return {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: {
+      duration: CONVERSATION_SHARE_MODE_TRANSITION_DURATION_SECONDS,
+      ease: CONVERSATION_SHARE_MODE_EASING,
+    },
+  };
+}

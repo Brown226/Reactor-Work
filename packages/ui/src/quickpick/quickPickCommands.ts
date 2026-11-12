@@ -1,7 +1,6 @@
 export type QuickPickCommandIcon =
   | "book"
   | "browser"
-  | "community"
   | "diff"
   | "feedback"
   | "folder"
@@ -55,7 +54,6 @@ interface QuickPickCommandHandlers {
   openMcpSettings: () => void;
   switchTheme: () => void;
   openFeedback: () => void | Promise<void>;
-  openCommunity: () => void | Promise<void>;
   openProductDocs: () => void | Promise<void>;
   login?: () => void | Promise<void>;
   logout?: () => void | Promise<void>;
@@ -73,12 +71,11 @@ interface QuickPickCommandHandlers {
 
 interface CreateQuickPickCommandsOptions {
   allowOpenWorkspace: boolean;
-  canOpenCommunity: boolean;
   isSidebarVisible: boolean;
   isLoggedIn: boolean;
   supportsEmbeddedBrowser?: boolean;
   supportsTerminal?: boolean;
-  supportsReview?: boolean;
+  supportsChanges?: boolean;
   themeTarget: "dark" | "light";
   shortcuts: {
     newTask: string;
@@ -91,12 +88,11 @@ interface CreateQuickPickCommandsOptions {
 
 export function createQuickPickCommands({
   allowOpenWorkspace,
-  canOpenCommunity,
   isSidebarVisible,
   isLoggedIn,
   supportsEmbeddedBrowser = true,
   supportsTerminal = true,
-  supportsReview = true,
+  supportsChanges = true,
   themeTarget,
   shortcuts,
   handlers,
@@ -191,11 +187,11 @@ export function createQuickPickCommands({
         ]
       : []),
     {
-      id: "add-review-tab",
+      id: "add-changes-tab",
       sectionId: "panels",
-      titleId: "quickPick.command.addReviewTab",
+      titleId: "quickPick.command.addChangesTab",
       icon: "diff",
-      keywords: ["add", "review", "diff", "changes", "添加审查", "审查标签", "变更"],
+      keywords: ["add", "review", "diff", "changes", "添加变更审查", "变更审查标签", "变更"],
       run: handlers.openReviewTab,
     },
     {
@@ -254,16 +250,7 @@ export function createQuickPickCommands({
     run: handlers.openFeedback,
   });
 
-  if (canOpenCommunity) {
-    commands.push({
-      id: "community",
-      sectionId: "app",
-      titleId: "quickPick.command.community",
-      icon: "community",
-      keywords: ["community", "users", "chat", "用户社群", "社群"],
-      run: handlers.openCommunity,
-    });
-  }
+  // 「用户社群」命令已移除：社群入口不再出现在命令面板，帮助菜单仍保留同一平台能力。
 
   if (handlers.reloadExtensions) {
     commands.push({
@@ -286,7 +273,6 @@ export function createQuickPickCommands({
       run: handlers.openExtensionLogs,
     });
   }
-
   commands.push({
     id: "product-docs",
     sectionId: "app",
@@ -321,6 +307,6 @@ export function createQuickPickCommands({
     (command) =>
       (supportsTerminal ||
         (command.id !== "toggle-terminal" && command.id !== "add-terminal-tab")) &&
-      (supportsReview || command.id !== "add-review-tab"),
+      (supportsChanges || command.id !== "add-changes-tab"),
   );
 }

@@ -1,9 +1,16 @@
-import { useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MarkdownSelectionTooltip } from "@/v4/MarkdownSelectionTooltip.js";
 import type { MarkdownSelectionTarget } from "@/lib/conversationSelectionReference.js";
 import { MessageResponse } from "@/components/ai-elements/message.js";
 import type { CodePreviewSettings } from "@/lib/codePreviewSettings.js";
+import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { scheduleReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
+import { ReviewQuoteCallout } from "@/review/ReviewQuoteCallout.js";
+import { useReviewMarksStore } from "@/store/reviewMarksStore.js";
+import type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 import type { Theme } from "@/useTheme.js";
+
+export type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 
 interface MarkdownPreviewContentProps {
   content: string;
@@ -17,6 +24,7 @@ interface MarkdownPreviewContentProps {
   /** 代码预览设置（store 耦合剥离）：透传给 markdown 渲染，需保持引用稳定。 */
   codePreviewSettings?: CodePreviewSettings;
   onOpenBrowserUrl?: (url: string) => void;
+  quoteHighlight?: QuoteHighlightTarget;
 }
 
 export function MarkdownPreviewContent({
@@ -29,18 +37,60 @@ export function MarkdownPreviewContent({
   theme,
   codePreviewSettings,
   onOpenBrowserUrl,
+  quoteHighlight,
 }: MarkdownPreviewContentProps) {
+  const { intl } = useZCodeIntl();
   const rootRef = useRef<HTMLDivElement>(null);
+  const calloutHostRef = useRef<HTMLDivElement>(null);
+  const [quoteMissing, setQuoteMissing] = useState(false);
+  const [quoteRange, setQuoteRange] = useState<Range | null>(null);
+  const quoteMark = quoteHighlight?.mark;
+  const quoteMarked = useReviewMarksStore((state) =>
+    quoteMark ? Boolean(state.marks[quoteMark.key]) : false,
+  );
+  const toggleQuoteMark = useReviewMarksStore((state) => state.toggle);
+  const onToggleQuoteMark = useCallback(() => {
+    if (!quoteMark) return;
+    toggleQuoteMark(quoteMark);
+  }, [quoteMark, toggleQuoteMark]);
+
   const selectionScope = useMemo(
     () => ({}),
     [content, sourceKey, sourcePath, selectionTarget?.workspaceKey, selectionTarget?.sessionId],
   );
+  const quote = quoteHighlight?.quote ?? null;
+  const occurrence = quoteHighlight?.occurrence ?? null;
+  const focusRequestId = quoteHighlight?.focusRequestId ?? null;
+
+  useEffect(() => {
+    if (!quote) {
+      setQuoteMissing(false);
+      return undefined;
+    }
+    return scheduleReviewQuoteHighlight({
+      getRoot: () => rootRef.current,
+      quote,
+      occurrence,
+      onSettled: (range) => {
+        setQuoteRange(range);
+        setQuoteMissing(range === null);
+      },
+    });
+  }, [content, occurrence, quote, focusRequestId]);
+
   return (
+    <div ref={calloutHostRef} className="relative h-full w-full">
     <div
       ref={rootRef}
       data-markdown-preview="true"
       className="w-full h-full bg-background overflow-auto"
     >
+      {quoteMissing ? (
+        // 找不到就不画：偏移在渲染后的正文里没有对应位置，标错地方比不标更误导复核者。
+        <div className="border-b border-amber-500/40 bg-amber-500/5 px-3 py-2 text-ui-sm">
+          {intl.formatMessage({ id: "review.quote.notFound" })}
+        </div>
+      ) : null}
       {selectionTarget && sourceKey ? (
         <MarkdownSelectionTooltip
           scopeKey={selectionScope}
@@ -62,6 +112,15 @@ export function MarkdownPreviewContent({
           {content}
         </MessageResponse>
       </div>
+    </div>
+      <ReviewQuoteCallout
+        range={quoteRange}
+        note={quoteHighlight?.note}
+        hostRef={calloutHostRef}
+        marked={quoteMarked}
+        {...(quoteMark ? { onToggleMarked: onToggleQuoteMark } : {})}
+        onDismiss={() => setQuoteRange(null)}
+      />
     </div>
   );
 }

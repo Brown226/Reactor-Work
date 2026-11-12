@@ -51,6 +51,18 @@ export interface GitSidePaneTab {
   openedAt?: number;
 }
 
+/**
+ * 工作区文件树 tab：一个 workspace 一份（id 固定），复用左侧原有的 `WorkspaceFileTree`。
+ * 文件树从左侧抽屉迁到右侧面板后，这里只承载"打开/激活/关闭"，不再有自己的目标状态。
+ */
+export interface FilesSidePaneTab {
+  id: "files";
+  type: "files";
+  ownerTaskId?: string | null;
+  workspaceKey?: string | null;
+  openedAt?: number;
+}
+
 export interface FileManagerTarget {
   workspacePath: string;
   workspaceName?: string;
@@ -575,6 +587,7 @@ export type WorkspaceSidePaneTab =
   | BrowserSidePaneTab
   | BrowserPermissionsSidePaneTab
   | GitSidePaneTab
+  | FilesSidePaneTab
   | CodeViewerSidePaneTab
   | TreemappingSidePaneTab
   | WhiteboardSidePaneTab
@@ -712,6 +725,11 @@ function createGitSidePaneTab(): GitSidePaneTab {
   return { id: "git", type: "git", openedAt: Date.now() };
 }
 
+function createFilesSidePaneTab(): FilesSidePaneTab {
+  // 与 git tab 同样的单实例语义：同一 workspace 只应有一份文件树。
+  return { id: "files", type: "files", openedAt: Date.now() };
+}
+
 function createTreemappingSidePaneTab(
   source: TreemappingSidePaneSource = { kind: "current" },
 ): TreemappingSidePaneTab {
@@ -722,7 +740,6 @@ function createTreemappingSidePaneTab(
     source,
   };
 }
-
 function createModelTrajectorySidePaneTab(options: {
   taskId: string;
   title?: string | null;
@@ -1185,6 +1202,8 @@ export function isSidePaneTabVisibleInScope(
   if (!sidePaneTabMatchesWorkspace(tab, scope.workspaceKey)) return false;
   switch (tab.type) {
     case "git":
+    // 本地定制：文件树 tab 与 git 同为「每 workspace 单实例」的工作区级 tab。
+    case "files":
     case "developer-tools":
     // 扩展视图是工作区级（docs/plugins/extension-host.md §8）：草稿首发、切换会话后保留。
     case "extension-view":
@@ -1865,6 +1884,13 @@ export function activateGitSidePane(
   current: WorkspaceSidePaneState | null,
 ): WorkspaceSidePaneState {
   return activateSidePaneTab(current, createGitSidePaneTab());
+}
+
+/** 打开（或激活）右侧的「工作区文件」面板。 */
+export function activateFilesSidePane(
+  current: WorkspaceSidePaneState | null,
+): WorkspaceSidePaneState {
+  return activateSidePaneTab(current, createFilesSidePaneTab());
 }
 
 export function activateTreemappingSidePane(

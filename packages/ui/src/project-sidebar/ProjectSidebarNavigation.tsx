@@ -1,4 +1,4 @@
-import { Blocks, CalendarClock } from "lucide-react";
+import { Blocks, Bot, CalendarClock, FolderOpen } from "lucide-react";
 import { memo } from "react";
 import { TID_AUTOMATIONS_OPEN } from "@zcode/shared/test-ids";
 import type { ProjectSidebarProps } from "@/project-sidebar/contract.js";
@@ -21,6 +21,11 @@ export const ProjectSidebarNavigation = memo(function ProjectSidebarNavigation({
     | "automationsActive"
     | "onOpenPluginStore"
     | "pluginStoreActive"
+    | "onOpenMarket"
+    | "marketActive"
+    | "onOpenMySpace"
+    | "mySpaceActive"
+    | "onOpenWorkspaceFiles"
     | "webRemoteControlWorkspaceSwitcher"
     | "navPrimarySlot"
     | "workspacePath"
@@ -65,6 +70,48 @@ export const ProjectSidebarNavigation = memo(function ProjectSidebarNavigation({
         >
           <Blocks className="size-4" />
           {intl.formatMessage({ id: "workspace.openPluginsSettings" })}
+        </Button>
+      ) : null}
+      {/* Reactor 定制入口：插件市场 / 我的空间 / 工作区文件树。上游侧栏没有这三项。 */}
+      {props.onOpenWorkspaceFiles ? (
+        <Button
+          variant="ghost"
+          size="lg"
+          className={`w-full justify-start gap-2 ${false ? "bg-selected text-foreground" : ""}`}
+          onClick={() => props.onOpenWorkspaceFiles?.()}
+          data-icon="inline-start"
+        >
+          <FolderOpen className="size-4" />
+          {intl.formatMessage({ id: "sidePane.files" })}
+        </Button>
+      ) : null}
+      {props.onOpenMarket ? (
+        <Button
+          variant="ghost"
+          size="lg"
+          className={`w-full justify-start gap-2 ${props.marketActive ? "bg-selected text-foreground" : ""}`}
+          aria-pressed={props.marketActive ?? false}
+          onClick={() => props.onOpenMarket?.()}
+          data-icon="inline-start"
+          data-testid="marketplace-open"
+        >
+          <Bot className="size-4" />
+          {intl.formatMessage({ id: "marketplace.title" })}
+        </Button>
+      ) : null}
+      {/* 我的空间只有 Web 宿主会传 onOpenMySpace（桌面端的「我的空间」就是本机文件管理器）。 */}
+      {props.onOpenMySpace ? (
+        <Button
+          variant="ghost"
+          size="lg"
+          className={`w-full justify-start gap-2 ${props.mySpaceActive ? "bg-selected text-foreground" : ""}`}
+          aria-pressed={props.mySpaceActive ?? false}
+          onClick={() => props.onOpenMySpace?.()}
+          data-icon="inline-start"
+          data-testid="my-space-trigger"
+        >
+          <FolderOpen className="size-4" />
+          {intl.formatMessage({ id: "workspaceHeader.mySpace" })}
         </Button>
       ) : null}
       {/* 扩展导航条目（nav.primary）：手机远控与「插件市场」一同隐藏；逻辑都在 extension-slots。 */}

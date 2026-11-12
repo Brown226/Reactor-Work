@@ -15,10 +15,11 @@ import type {
   SkillsListResult,
   SkillsCapability,
 } from "@zcode/shared";
-import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS } from "@zcode/shared";
+import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, USER_DATA_DIR_NAME } from "@zcode/shared";
 import type { ISkillsService } from "./skills.js";
 import { SKILL_FILE_NAME, walkSkillMarkdownPaths } from "./skillDiscoveryWalk.js";
 import { readInstalledPluginRoots } from "#src/plugins/installedPluginRoots.js";
+import { resolveServerSkillRoot } from "#src/server-skills/serverSkillsRoot.js";
 import { updateJsonObjectFile } from "#src/fs/atomicFileUtils.js";
 
 interface DiscoverResult {
@@ -38,8 +39,8 @@ interface ParsedFrontmatter {
 }
 
 const SKILL_META_FILE_NAME = "_meta.json";
-const SKILL_SETTINGS_DIR = join(resolveUserHomeDir(), ".zcode", "v2");
-const SKILL_CLI_SETTINGS_DIR = join(resolveUserHomeDir(), ".zcode", "cli");
+const SKILL_SETTINGS_DIR = join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "v2");
+const SKILL_CLI_SETTINGS_DIR = join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "cli");
 const SKILL_CLI_CONFIG_FILE = join(SKILL_CLI_SETTINGS_DIR, "config.json");
 const GIT_MARKER = ".git";
 const HOME_PREFIX = "~/";
@@ -72,13 +73,16 @@ function getWorkspaceAgentsSkillRoot(workspacePath: string): string {
 
 /** ZCode Agent 用户级技能目录。 */
 function getUserZcodeSkillRoot(): string {
-  return join(resolveUserHomeDir(), ".zcode", "skills");
+  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "skills");
 }
 
 /** 兼容目录: 用户级 `~/.agents/skills`。 */
 function getUserAgentsSkillRoot(): string {
   return join(resolveUserHomeDir(), ".agents", "skills");
 }
+
+// server-skills 根目录由同步服务侧单一持有（serverSkillsRoot.ts），发现层只复用，
+// 不在此重复一份路径口径——写入方与读取方分叉会出现「同步了但发现不到」。
 
 function normalizeSkillNameKey(name: string): string {
   return name.trim().toLowerCase();
@@ -264,6 +268,36 @@ function buildActivatedSkillsPromptBlock(skills: SkillSummary[]): string {
     ),
     "</available_skills>",
   ].join("\n");
+}
+
+/**
+ * 同名技能解析优先级（docs/已完成/已完成-server-skill-sync.md §6.1）。
+ * 企业下发优先于其余来源；server 版被本地停用时，同名回落到下一优先级（workspace→plugin→user）。
+ */
+const SCOPE_RESOLUTION_PRIORITY: Record<SkillScope, number> = {
+  server: 0,
+  workspace: 1,
+  plugin: 2,
+  user: 3,
+};
+
+/**
+ * `$` 注入的同名折叠：mentioned+enabled 集合内按 name 去重，只保留解析优先级最高的一个。
+ * 不折叠会让 server 与用户自建同名技能**双双注入**，模型收到两份互相矛盾的指令。
+ */
+function resolveSameNameSkills(skills: SkillSummary[]): SkillSummary[] {
+  const winnerByName = new Map<string, SkillSummary>();
+  for (const skill of skills) {
+    const current = winnerByName.get(skill.name);
+    if (
+      !current ||
+      SCOPE_RESOLUTION_PRIORITY[skill.scope] < SCOPE_RESOLUTION_PRIORITY[current.scope]
+    ) {
+      winnerByName.set(skill.name, skill);
+    }
+  }
+  // 保持原列表（按 name、scope 排序）的相对顺序，注入块稳定。
+  return skills.filter((skill) => winnerByName.get(skill.name) === skill);
 }
 
 async function appendSkillsAuditLog(params: {
@@ -641,7 +675,7 @@ function readStorageDirFromConfig(config: Record<string, unknown>): string {
   const storage = isObjectRecord(config.storage) ? config.storage : {};
   return typeof storage.dir === "string" && storage.dir.trim().length > 0
     ? storage.dir
-    : "~/.zcode";
+    : `~/${USER_DATA_DIR_NAME}`;
 }
 
 function resolveConfigPath(path: string): string {
@@ -858,6 +892,11 @@ async function discoverSkills(params: {
     roots.push({
       scope: "user" as const,
       rootPath: getUserAgentsSkillRoot(),
+    });
+    // 企业服务端下发目录：与 skills/ 隔离，scope 单独标记便于 UI 卸载护栏。
+    roots.push({
+      scope: "server" as const,
+      rootPath: resolveServerSkillRoot(),
     });
   }
   roots.push(...(await resolvePluginSkillRootDescriptors()));
@@ -1107,8 +1146,8 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
         workspaceIdentity: params.workspaceIdentity,
         provider: params.provider,
       });
-      const activatedSkills = skills.filter(
-        (skill) => skill.enabled && mentionedSkillNames.has(skill.name),
+      const activatedSkills = resolveSameNameSkills(
+        skills.filter((skill) => skill.enabled && mentionedSkillNames.has(skill.name)),
       );
       if (activatedSkills.length === 0) {
         return { prompt: params.prompt, activatedSkillNames: [] };
@@ -1196,6 +1235,11 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
       const skill = skills.find((s) => s.id === params.skillId);
       if (!skill) {
         throw new Error(`Skill not found: ${params.skillId}`);
+      }
+      // server 作用域（server-skills/）只能经服务端卸载 API 解除安装：服务端会写 dismissal
+      // 防止下次同步又写回来，本地直接删既会被同步覆盖，也绕过了管理端的授权管理。
+      if (skill.scope === "server") {
+        throw new Error("服务端下发的技能不可本地删除，请在设置中卸载");
       }
       // plugin 作用域的技能由其所属插件管理，应通过卸载插件移除，这里拒绝单独删除。
       if (skill.scope === "plugin") {

@@ -14,6 +14,7 @@ import {
   FileIcon,
   FileCode2Icon,
   FileDiffIcon,
+  FolderTreeIcon,
   MapIcon,
   MessageSquareTextIcon,
   ListTreeIcon,
@@ -336,6 +337,11 @@ export function SidePaneTabIcon({ tab }: { tab: WorkspaceSidePaneTab }) {
     return <FileDiffIcon className="size-3.5" />;
   }
 
+  // 工作区文件树：FolderTree 与目录型 tab 的 ListTree 区分开（一个是文件树，一个是名单目录）。
+  if (tab.type === "files") {
+    return <FolderTreeIcon className="size-3.5" />;
+  }
+
   if (tab.type === "treemapping") {
     return <MapIcon className="size-3.5" />;
   }
@@ -550,7 +556,11 @@ export function getSidePaneTabTitle(
   }
 
   if (tab.type === "git") {
-    return formatMessage({ id: "sidePane.review" });
+    return formatMessage({ id: "sidePane.changes" });
+  }
+
+  if (tab.type === "files") {
+    return formatMessage({ id: "sidePane.files" });
   }
 
   if (tab.type === "treemapping") {

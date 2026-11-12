@@ -60,6 +60,7 @@ import {
 } from "@zcode/shared";
 import { requestPluginReferenceCatalog } from "#src/zcode-agent/pluginReferenceCatalogRequest.js";
 import {
+  USER_DATA_DIR_NAME,
   localTtftFactsSchema,
   sessionDebugSnapshotSchema,
   type LocalTtftFacts,
@@ -216,6 +217,7 @@ import type {
   AccountRequestAuthMaterial,
   IAccountRequestAuthService,
 } from "#src/model-provider/accountRequestAuthService.js";
+import type { IReactorServerService } from "#src/reactor-server/reactorServer.js";
 import {
   mergeAutomationMutationToolDenylist,
   mergeOffPeakMutationToolDenylist,
@@ -310,6 +312,8 @@ import type {
   ZCodeAgentDescribePluginParams,
   ZCodeAgentListMcpServerStatusesParams,
   ZCodeAgentWorkspaceTarget,
+  ZCodeAgentUsageFact,
+  ZCodeAgentAuditFact,
   ZCodeAgentCuaPermissionObservation,
   ZCodeAgentCreateAutomationParams,
   ZCodeAgentUpdateAutomationParams,
@@ -623,7 +627,7 @@ function savedWorkflowScopeParam(params: ZCodeAgentSavedWorkflowTarget): {
 }
 
 function ensurePluginManagementWorkspacePath(): string {
-  const workspacePath = join(getDataBaseDir(), ".zcode", PLUGIN_MANAGEMENT_WORKSPACE_DIR_NAME);
+  const workspacePath = join(getDataBaseDir(), USER_DATA_DIR_NAME, PLUGIN_MANAGEMENT_WORKSPACE_DIR_NAME);
   // 插件管理是控制面能力，不能复用可能因真实 workspace 被删而 EPIPE 的会话进程。
   // 这里给它固定一个内部 cwd；真实 workspace 仍通过协议参数传给 CLI 做 workspace-scope 判定。
   mkdirSync(workspacePath, { recursive: true });
@@ -632,7 +636,7 @@ function ensurePluginManagementWorkspacePath(): string {
 
 // NOTE: this counts ONLY the per-session MCP servers passed through the ZCode Protocol
 // session/create params (the app→protocol channel). It is deliberately independent of the
-// CLI/bootstrap MCP servers configured in ~/.zcode/cli/config.json (mcp.servers), which the agent
+// CLI/bootstrap MCP servers configured in ~/{USER_DATA_DIR_NAME}/cli/config.json (mcp.servers), which the agent
 // runtime connects separately and reports via the `mcp.server.connected`/toolCount events. So a
 // createSession log line with mcpServerCount:0 is EXPECTED when zcode-cua is a CLI-config MCP server
 // (e.g. the product Helper broker path injected through the gated bootstrap env): the model still receives those
@@ -1143,6 +1147,12 @@ interface CreateZCodeAgentServiceBaseOptions extends Omit<
   /** 仅供 MCP 状态探测进程使用，不能把空闲回收传给 chat。 */
   mcpStatusIdleTimeoutMs?: number;
   accountProviderConfigSource?: ProviderSource<AccountProviderConfigSnapshot>;
+  accountRequestAuthService?: IAccountRequestAuthService;
+  /**
+   * 企业服务端（Reactor Server）的模型请求鉴权解析器。
+   * 该 provider 的网关令牌 TTL 很短，由这里每次请求现场签发（见 docs/未完成-服务端接线-方案-v1.md §4.2）。
+   */
+  reactorServerAuth?: Pick<IReactorServerService, "resolveGatewayAuth">;
   /** Desktop Host 请求 Main 登记 Agent 已授权的精确本地视频路径。 */
   authorizeLocalMediaPreviewPath?: (path: string) => Promise<string>;
   modelSelectionReadinessSource?: ModelSelectionReadinessSource;
@@ -1498,6 +1508,12 @@ export function createZCodeAgentService(
   const conversationFrameEmitters = new Map<string, Emitter<ConversationTopicWireCandidate>>();
   const localTtftFactsEmitter = new Emitter<{ workspaceKey: string; facts: LocalTtftFacts }>();
   const conversationTelemetryFactEmitters = new Map<string, Emitter<ConversationTelemetryFact>>();
+  // 全局用量事实：与 conversationTelemetryFact 同一通知，只把 `usage.delta` 旁路给可信 Host
+  // （P4 用量上报入队源）。跨 workspace 汇总到一条事件面，Host 记账不必枚举 workspace。
+  const usageFactEmitter = new Emitter<ZCodeAgentUsageFact>();
+  // 全局行为审计事实（洞②）：tool.lifecycle 终态与 permission.lifecycle 结论旁路给可信 Host
+  // （审计上报入队源）。与 usageFactEmitter 同一通知、同一跨 workspace 口径。
+  const auditFactEmitter = new Emitter<ZCodeAgentAuditFact>();
   const contextComposition = createContextCompositionClient({
     getExistingClient: (target) => getReadOnlyClient(target, "existing-only"),
     isRuntimeUnavailableError: (error) =>
@@ -1709,6 +1725,7 @@ export function createZCodeAgentService(
   const accountConfigReceivedRevisionByClient = new WeakMap<ZCodeProtocolClient, string>();
   const sessionTraceIdBySessionKey = new Map<string, TraceId>();
   const accountRequestAuthService = options?.accountRequestAuthService;
+  const reactorServerAuth = options?.reactorServerAuth;
   const accountProviderConfigSource = options?.accountProviderConfigSource;
   const modelSelectionReadinessSource = options?.modelSelectionReadinessSource;
   const sessionRuntimePreferencesAuthority = options?.sessionRuntimePreferencesAuthority ?? "local";
@@ -1813,6 +1830,56 @@ export function createZCodeAgentService(
         sessionId: params.pending.request.sessionId,
         error: error instanceof Error ? error.message : String(error),
         workspaceKey: resolveWorkspaceKey(params.pending.request.workspace),
+      });
+      await params.pending.client.respond(params.pending.protocolRequestId, {
+        headersApplied: false,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      if (pendingProviderRuntimeHeaders.get(params.key) === params.pending) {
+        pendingProviderRuntimeHeaders.delete(params.key);
+      }
+    }
+  }
+
+  /**
+   * 企业服务端 provider 的鉴权应答：与账号路径同构，但材料来自 ReactorServerService
+   * **现场签发**的网关令牌（TTL 短、从不落盘），因此每次模型请求都会走到这里。
+   */
+  async function respondReactorRequestAuthWithoutInteraction(params: {
+    key: string;
+    pending: PendingProviderRuntimeHeadersRequest;
+  }): Promise<void> {
+    params.pending.responding = true;
+    try {
+      const auth = await reactorServerAuth?.resolveGatewayAuth(
+        params.pending.request.providerId,
+        params.pending.request.modelSelection.modelId,
+      );
+      if (pendingProviderRuntimeHeaders.get(params.key) !== params.pending) return;
+      if (!auth) {
+        // 未登录 / 会话已失效 / provider 不再归属企业服务端：都要给出可分辨的原因，
+        // 绝不能"假装成功"后让请求带着哨兵值打到上游（那会变成一次静默的 401）。
+        throw new Error("企业服务端未授权：请在设置中登录企业账号");
+      }
+      await params.pending.client.respond(params.pending.protocolRequestId, {
+        headersApplied: true,
+        requestAuth: { apiKey: auth.apiKey },
+      });
+      logger.info(undefined, "企业服务端模型请求鉴权已注入", {
+        modelId: params.pending.request.modelSelection.modelId,
+        providerId: params.pending.request.providerId,
+        requestId: params.pending.request.requestId,
+        sessionId: params.pending.request.sessionId,
+        workspaceKey: resolveWorkspaceKey(params.pending.request.workspace),
+      });
+    } catch (error) {
+      if (pendingProviderRuntimeHeaders.get(params.key) !== params.pending) return;
+      logger.warn(undefined, "企业服务端模型请求鉴权失败", {
+        modelId: params.pending.request.modelSelection.modelId,
+        providerId: params.pending.request.providerId,
+        sessionId: params.pending.request.sessionId,
+        error: error instanceof Error ? error.message : String(error),
       });
       await params.pending.client.respond(params.pending.protocolRequestId, {
         headersApplied: false,
@@ -2793,6 +2860,17 @@ export function createZCodeAgentService(
             // 远控事实由执行服务独占，避免桌面同时打开该会话时重复计 step。
             if (!collectRemoteConversationFact(workspace, parsed.data))
               getConversationTelemetryFactEmitter(workspace).fire(parsed.data);
+            // 用量事实同时广播到全局面（Host 侧上报的入队源）。这里不做 workspace 过滤：
+            // 远程 workspace 的模型调用同样是本机发出的企业用量，必须计入。
+            if (parsed.data.kind === "usage.delta") usageFactEmitter.fire(parsed.data);
+            // 行为审计事实（洞②）：同一通知旁路 tool/permission 两支，过滤与映射在上报桥做
+            // （事实面保持原样透传，避免 Host 侧提前丢掉 renderer 也要用的字段）。
+            else if (
+              parsed.data.kind === "tool.lifecycle" ||
+              parsed.data.kind === "permission.lifecycle"
+            ) {
+              auditFactEmitter.fire(parsed.data);
+            }
           } else {
             // 严格丢弃未知字段，避免 CLI runtime 新字段未经审计穿透到 renderer reporter。
             logger.warn(undefined, "丢弃无效 v4 conversation telemetry fact", {
@@ -3232,6 +3310,14 @@ export function createZCodeAgentService(
             workspaceKey: resolveWorkspaceKey(workspace),
             workspacePath: workspace.workspacePath,
           });
+          const accountAccess = parsed.data.accountAccess;
+          if (reactorServerAuth && !accountAccess) {
+            // 企业服务端 provider：走 plain api-key 形态（CLI 侧靠哨兵值识别，见 runner.ts），
+            // 令牌只活 2 小时且从不落盘，因此每次请求都现场换新的。
+            // ⚠ 必须排在账号/验证路由之前判断：下面的路由会直接把这类请求判为"无账号凭据"。
+            void respondReactorRequestAuthWithoutInteraction({ key: pendingKey, pending });
+            return;
+          }
           // 根因：路由失败时 catch 要 await 失败响应，transport 已关闭或写入失败会让
           // respond 拒绝，void 调用把它变成未处理拒绝。拒绝前 pending 已删除，这里只
           // 记录，不能再补发第二个响应。
@@ -4258,7 +4344,7 @@ export function createZCodeAgentService(
   // 就绪的 workspace 级方法，管理面进程正是为这种「不寄居真实项目」的控制面能力准备的，且不会因
   // 真实 workspace 生命周期被 watchdog 回收；getOrStartReadOnlyClient 反而会把这个合成 workspace
   // 塞进 activeClientsByWorkspaceKey 并跑一遍交互偏好同步，污染会话 client map。两条路径都在本机，
-  // homedir() 即用户家目录，全局根 `~/.zcode/workflows/` 因此解析到真实目录。
+  // homedir() 即用户家目录，全局根 `~/{USER_DATA_DIR_NAME}/workflows/` 因此解析到真实目录。
   // 远程 runtime（SSH/WSL identity 或带 remoteSessionId）的 home 不是本机，绝不选它当载体。
   function isLocalActiveWorkspaceClient(workspace: ZCodeAgentWorkspaceTarget): boolean {
     return (
@@ -4348,6 +4434,8 @@ export function createZCodeAgentService(
     for (const emitter of offPeakLifecycleEmitters.values()) emitter.dispose();
     offPeakLifecycleEmitters.clear();
     localTtftFactsEmitter.dispose();
+    usageFactEmitter.dispose();
+    auditFactEmitter.dispose();
     cuaPermissionObservationEmitter.dispose();
     pluginUiToolResultEmitter.dispose();
     for (const emitter of workspaceConfigFrameEmitters.values()) {
@@ -7593,6 +7681,17 @@ export function createZCodeAgentService(
       const control = offPeakControlParamsSchema.parse(params.control);
       const client = await getReadOnlyClient(params, "existing-only");
       return client.request(V4_METHODS.offPeakControl, control, offPeakControlResultSchema);
+    },
+
+    onDynamicUsageFact() {
+      // 不按 workspace 分桶的用量事实面：只服务 Host 侧记账（P4），
+      // renderer/mobile 由 connection facade 挡在外面（见 zcodeAgentConnectionScope）。
+      return usageFactEmitter.event;
+    },
+
+    onDynamicAuditFact() {
+      // 行为审计事实面（洞②）：与用量事实同一道门——仅可信 Host 订阅。
+      return auditFactEmitter.event;
     },
 
     onDynamicPluginUiToolResult() {

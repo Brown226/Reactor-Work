@@ -24,8 +24,14 @@ import { FileManagerPane } from "@/WorkspaceFileTree.js";
 import type { FileManagerTarget } from "@/lib/workspaceSidePane.js";
 import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
 import { composerScopeKey, resolveComposerScope } from "@/v4/composer/composerDraftStore.js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu.js";
 import { SidePaneTerminalPane } from "@/SidePaneTerminalPane.js";
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
 import { WorkspaceSidePaneToggleButton } from "@/WorkspaceSidePaneToggleButton.js";
 import {
   SIDE_PANE_FULL_VIEW_CONVERSATION_TAB_VALUE,
@@ -40,6 +46,8 @@ import { findScreenshotSurfaceTabForRender } from "@/browser-use/useBrowserScree
 import { HumanBrowserView } from "@/browser-use/HumanBrowserView.js";
 import { ScopedErrorBoundary } from "@/ErrorBoundary.js";
 import { GitPane } from "@/GitPane.js";
+import { WorkspaceFileTree } from "@/WorkspaceFileTree.js";
+import { FolderTreeIcon } from "lucide-react";
 import { TreemappingPane } from "@/TreemappingPane.js";
 import { WhiteboardPane } from "@/WhiteboardPane.js";
 import { ModelTrajectoryPane } from "@/ModelTrajectoryPane.js";
@@ -351,7 +359,8 @@ export function AnimatedSidePanePanel({
   onOpenPluginMarket,
   onCreateTask,
   onOpenTerminalTab,
-  onOpenReviewTab,
+  onOpenChangesTab,
+  onOpenWorkspaceFiles,
   onOpenSelectionSideConversation,
   onRevealGitFileInTree,
   onOpenBrowserUrl,
@@ -443,7 +452,8 @@ export function AnimatedSidePanePanel({
   onOpenPluginMarket?: () => void;
   onCreateTask?: (request?: CreateTaskRequest) => void;
   onOpenTerminalTab: () => void;
-  onOpenReviewTab: () => void;
+  onOpenChangesTab: () => void;
+  onOpenWorkspaceFiles: () => void;
   onOpenSelectionSideConversation: () => void;
   onRevealGitFileInTree?: (path: string) => void;
   onOpenBrowserUrl: (url: string) => void;
@@ -477,7 +487,7 @@ export function AnimatedSidePanePanel({
   const pluginUiWorkspaceKey =
     pluginUiTarget.workspaceIdentity?.trim() || pluginUiTarget.workspacePath;
   const { intl, locale } = useZCodeIntl();
-  const isOfficeMode = useIsOfficeMode();
+  const isFocusedMode = useIsFocusedMode();
   const developerToolsEnabled = useDeveloperToolsVisibility();
   const isMobileTextInputViewport = useIsMobileTextInputViewport();
   const isDragCollapsible = !isVisible;
@@ -549,7 +559,7 @@ export function AnimatedSidePanePanel({
   );
   const isWindowResizeSettling = useWindowResizeSettling(hasRenderedSidePane);
   const panelLayout = resolveAnimatedSidePanePanelLayout({ mobileOverlay });
-  const hasReviewTab = visibleTabs.some((tab) => tab.type === "git");
+  const hasChangesTab = visibleTabs.some((tab) => tab.type === "git");
   const canOpenSelectionSideConversation = shouldOfferSelectionSideConversation({
     activeTaskId,
     isMobileTextInputViewport,
@@ -731,22 +741,99 @@ export function AnimatedSidePanePanel({
     };
   }, [visibleActiveTabId, visibleTabs]);
 
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+
   const addTabButton = (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon-md"
-      className="shrink-0"
-      data-side-pane-add-trigger
-      data-side-pane-add-tab-trigger=""
-      aria-label={intl.formatMessage({ id: "sidePane.addTab" })}
-      onClick={() => {
-        fullView?.onSelectSurface("side-pane");
-        onOpenNewTab();
-      }}
-    >
-      <PlusIcon className="size-4" />
-    </Button>
+    <DropdownMenu open={isAddMenuOpen} onOpenChange={setIsAddMenuOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-md"
+          className="shrink-0"
+          data-side-pane-add-trigger
+          data-side-pane-add-tab-trigger=""
+          aria-label={intl.formatMessage({
+            id: "sidePane.addTab",
+          })}
+        >
+          <PlusIcon className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem
+          data-side-pane-add-item="new-tab"
+          onSelect={() => {
+            fullView?.onSelectSurface("side-pane");
+            onOpenNewTab();
+          }}
+        >
+          <PlusIcon className="size-4" />
+          <span>{intl.formatMessage({ id: "sidePane.newTab" })}</span>
+        </DropdownMenuItem>
+        {canOpenSelectionSideConversation ? (
+          <DropdownMenuItem
+            data-side-pane-add-item="selection-side-conversation"
+            onSelect={onOpenSelectionSideConversation}
+          >
+            <MessageSquareTextIcon className="size-4" />
+            <span>{intl.formatMessage({ id: "sidePane.selectionChat" })}</span>
+          </DropdownMenuItem>
+        ) : null}
+        {!isFocusedMode && !hasChangesTab ? (
+          <DropdownMenuItem
+            onSelect={() => {
+              onOpenChangesTab();
+            }}
+          >
+            <FileDiffIcon className="size-4" />
+            <span>{intl.formatMessage({ id: "sidePane.changes" })}</span>
+          </DropdownMenuItem>
+        ) : null}
+        {/* 画板入口未启用 */}
+        {/* <DropdownMenuItem
+          onSelect={() => {
+            onOpenWhiteboard();
+          }}
+        >
+          <PaletteIcon className="size-4" />
+          <span>{intl.formatMessage({ id: "whiteboard.title" })}</span>
+        </DropdownMenuItem> */}
+        {!isFocusedMode ? (
+          <DropdownMenuItem
+            data-side-pane-add-item="terminal"
+            onSelect={() => {
+              onOpenTerminalTab();
+            }}
+          >
+            <SquareTerminalIcon className="size-4" />
+            <span>{intl.formatMessage({ id: "terminal.title" })}</span>
+          </DropdownMenuItem>
+        ) : null}
+        {supportsEmbeddedBrowser ? (
+          <DropdownMenuItem
+            data-side-pane-add-item="browser"
+            onSelect={() => {
+              onOpenBrowserTab();
+            }}
+          >
+            <GlobeIcon className="size-4" />
+            <span>{intl.formatMessage({ id: "browser.title" })}</span>
+          </DropdownMenuItem>
+        ) : null}
+        {developerToolsEnabled ? (
+          <DropdownMenuItem
+            data-side-pane-add-item="developer-tools"
+            onSelect={() => {
+              onOpenDeveloperTools();
+            }}
+          >
+            <BugIcon className="size-4" />
+            <span>{intl.formatMessage({ id: "developerTools.title" })}</span>
+          </DropdownMenuItem>
+        ) : null}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
   const openTabLauncherItemById: Record<OpenTabLauncherItemId, OpenTabLauncherItem> = {
     sites: {
@@ -763,19 +850,19 @@ export function AnimatedSidePanePanel({
       icon: MessageSquareTextIcon,
       onOpen: onOpenSelectionSideConversation,
     },
-    files: {
-      id: "files",
-      label: intl.formatMessage({ id: "fileManager.title" }),
-      description: intl.formatMessage({ id: "fileManager.empty" }),
-      icon: FolderOpenIcon,
-      onOpen: () => onOpenFileManager(),
-    },
-    review: {
-      id: "review",
-      label: intl.formatMessage({ id: "sidePane.review" }),
+    changes: {
+      id: "changes",
+      label: intl.formatMessage({ id: "sidePane.changes" }),
       description: intl.formatMessage({ id: "sidePane.launcher.review" }),
       icon: FileDiffIcon,
-      onOpen: onOpenReviewTab,
+      onOpen: onOpenChangesTab,
+    },
+    files: {
+      id: "files",
+      label: intl.formatMessage({ id: "sidePane.files" }),
+      description: intl.formatMessage({ id: "sidePane.launcher.files" }),
+      icon: FolderTreeIcon,
+      onOpen: onOpenWorkspaceFiles,
     },
     terminal: {
       id: "terminal",
@@ -803,10 +890,10 @@ export function AnimatedSidePanePanel({
     canOpenSelectionSideConversation,
     canOpenSites,
     developerToolsEnabled,
-    hasReviewTab,
+    hasChangesTab,
     supportsEmbeddedBrowser,
   })
-    .filter((itemId) => !isOfficeMode || (itemId !== "terminal" && itemId !== "review"))
+    .filter((itemId) => !isFocusedMode || (itemId !== "terminal" && itemId !== "changes"))
     .map((itemId) => openTabLauncherItemById[itemId]);
   const closeSidePaneButton =
     isVisible && !mobileOverlay && onCloseSidePane ? (
@@ -917,7 +1004,7 @@ export function AnimatedSidePanePanel({
         closeTab: (title) => intl.formatMessage({ id: "sidePane.closeTab" }, { title }),
         relativeTime: (timestamp) => formatTaskRelativeTime(timestamp, intl),
         browserTitle: intl.formatMessage({ id: "browser.title" }),
-        reviewTitle: intl.formatMessage({ id: "sidePane.review" }),
+        changesTitle: intl.formatMessage({ id: "sidePane.changes" }),
         fileManagerTitle: intl.formatMessage({ id: "fileManager.title" }),
         codeViewerTitle: intl.formatMessage({ id: "codeViewer.title" }),
         treemappingTitle: intl.formatMessage({ id: "treemapping.title" }),
@@ -1324,6 +1411,10 @@ export function AnimatedSidePanePanel({
                             onNavigate={(source) => onNavigateFileManager(tab.id, source)}
                             onClose={() => onCloseTab(tab.id)}
                             workspacePath={taskCwd ?? workspaceAbsPath}
+                            workspaceIdentity={workspaceIdentity}
+                            // 预览所属会话：PDF 论文模式「引用进会话」要落到当前会话输入框
+                            // （draft 态 activeTaskId 为 null，仍进新建任务草稿槽）。
+                            composerSessionId={activeTaskId}
                             onOpenBrowserUrl={onOpenBrowserUrl}
                             onOpenCodeViewer={onOpenCodeViewer}
                             // inactive/窄条/resize 中的 code preview 不应继续让
@@ -1358,6 +1449,16 @@ export function AnimatedSidePanePanel({
                             onClose={onCloseGit}
                             onRefresh={onRefreshGit}
                             onRevealFileInTree={onRevealGitFileInTree}
+                          />
+                        ) : tab.type === "files" ? (
+                          <WorkspaceFileTree
+                            workspacePath={workspaceAbsPath}
+                            workspaceIdentity={workspaceIdentity}
+                            workspaceRemoteSessionId={workspaceRemoteSessionId}
+                            canOpenLocalFileManager={isDesktop}
+                            onClose={() => onCloseTab(tab.id)}
+                            onOpenBrowserUrl={isDesktop ? onOpenBrowserUrl : undefined}
+                            onOpenPreview={onOpenCodeViewer}
                           />
                         ) : tab.type === "treemapping" ? (
                           <TreemappingPane

@@ -44,6 +44,16 @@ export const serverRemoteInfoSchema = z.object({
     processResourceTelemetry: z.boolean().optional(),
     remoteConversationTelemetry: z.boolean().optional(),
   }),
+  /**
+   * 服务端视角的身份服务地址（如容器内的 http://identity:8791）。
+   *
+   * Web 端登录由**服务端**转发到 identity，所以这个地址只在服务端可达；
+   * 有值时 Web 登录页会锁定该地址并隐藏输入框，用户只需填账号密码。
+   * 桌面端不使用该字段（它的登录请求从用户电脑发出）。
+   */
+  identityUrl: z.string().trim().min(1).optional(),
+  /** 每用户工作区根目录（Web 端配额模型），用于前端展示与能力发现。 */
+  userWorkspaceRoot: z.string().trim().min(1).optional(),
 });
 
 export const serverRemoteInfoOutputSchema = z

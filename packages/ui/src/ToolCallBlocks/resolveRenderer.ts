@@ -32,6 +32,10 @@ import {
   isSaveWorkflowToolCall,
 } from "@/lib/workflowToolNames.js";
 import { CuaToolCallBlock, isCuaToolCall } from "@/ToolCallBlocks/renderers/cua.js";
+import {
+  DwgModifyToolCallBlock,
+  isDwgModifyToolCall,
+} from "@/ToolCallBlocks/renderers/dwg-modify.js";
 import { GoalToolCallBlock } from "@/ToolCallBlocks/renderers/goal.js";
 import { NodeReplToolCallBlock } from "@/ToolCallBlocks/renderers/node-repl.js";
 import { McpToolCallBlock, readMcpToolPresentation } from "@/ToolCallBlocks/renderers/mcp.js";
@@ -49,6 +53,11 @@ import { TaskOutputToolCallBlock } from "@/ToolCallBlocks/renderers/task-output.
 import { TaskStopToolCallBlock } from "@/ToolCallBlocks/renderers/task-stop.js";
 import { TodoToolCallBlock } from "@/ToolCallBlocks/renderers/todo.js";
 import { AskQuestionToolCallBlock } from "@/ToolCallBlocks/renderers/ask-question.js";
+import { KnowledgeCheckToolCallBlock } from "@/ToolCallBlocks/renderers/knowledge-check.js";
+import { ReportReviewIssuesToolCallBlock } from "@/ToolCallBlocks/renderers/report-review-issues.js";
+import { isKnowledgeCheckToolCall, isReportReviewIssuesToolCall } from "@/lib/reviewToolNames.js";
+import { isEmitUiToolCall } from "@/lib/genUiToolNames.js";
+import { EmitUiTreeToolCallBlock } from "@/ToolCallBlocks/renderers/emit-ui-tree.js";
 import { resolveToolCallIdentity } from "@/lib/toolIdentity.js";
 import type { ToolCallBlockRenderContext } from "@/ToolCallBlocks/shared.js";
 
@@ -58,6 +67,30 @@ export function resolveToolCallRenderer(context: ToolCallBlockRenderContext) {
   }
 
   const identity = resolveToolCallIdentity(context.toolCallNode.toolCall);
+
+  // 知识板块工具同样按名先分流、排在 family 之前：`KnowledgeCheck` 不在已知工具表里
+  // （identity 回 unknown → 原始 JSON 兜底卡），而它的结论是一串带原文位置的判定，
+  // 必须渲染成可点击的问题条才能「点问题 → 打开正文并高亮」。
+  if (isKnowledgeCheckToolCall(context.toolCallNode.toolCall)) {
+    return KnowledgeCheckToolCallBlock;
+  }
+
+  // 自述型审查（校对/一致性/以文审文/合同风险）的问题清单同样要能点：结论由模型给出，
+  // 但字符偏移由 `ReportReviewIssues` 确定性定位，渲染与点击链路与上一条完全一致。
+  if (isReportReviewIssuesToolCall(context.toolCallNode.toolCall)) {
+    return ReportReviewIssuesToolCallBlock;
+  }
+
+  // DWG 改图（dwg-tools MCP 的 dwg_modify）按名认领：它要把改动的实体 handle
+  // 推给正在看图的 mlightcad 查看器（定位高亮），raw JSON 兜底卡没有这个联动。
+  if (isDwgModifyToolCall(context.toolCallNode.toolCall)) {
+    return DwgModifyToolCallBlock;
+  }
+
+  // GenUI 消息体：结果里是声明式 UI 树，必须内联渲染而不是原始 JSON 卡。
+  if (isEmitUiToolCall(context.toolCallNode.toolCall)) {
+    return EmitUiTreeToolCallBlock;
+  }
 
   // 工具目录查询只复用搜索卡片；不改 search family，避免被聚合为 Explore 内容搜索。
   const toolCall = context.toolCallNode.toolCall;

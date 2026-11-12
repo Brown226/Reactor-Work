@@ -88,6 +88,16 @@ export interface RootProps {
   supportsEmbeddedBrowser?: boolean;
   /** 是否启用远程工作区能力，Web 普通模式先只支持本地 server 工作区 */
   allowRemoteWorkspace?: boolean;
+  /**
+   * 宿主锁定的服务端地址：传入后登录页隐藏地址输入框，用户只填账号密码。
+   * Web 端由 web 容器经 /api/server-info 下发；桌面端不传（保持用户可编辑）。
+   */
+  lockedServerUrl?: string;
+  /**
+   * 是否启用「我的空间」入口（每用户 1GB 空间的资产管理面板）。
+   * Web 宿主传 true；桌面端不传 → 不渲染入口，行为零变化。
+   */
+  mySpaceEnabled?: boolean;
   /** Web 远程控制模式下的已打开 workspace 切换入口 */
   webRemoteControlWorkspaceSwitcher?: WebRemoteControlWorkspaceSwitcherApi;
   /** Web 远控跨 workspace 点击任务后的单次移动端落点 */

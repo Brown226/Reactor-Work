@@ -4,7 +4,7 @@ import type { WorkspaceSidePaneTab } from "@/lib/workspaceSidePane.js";
 export interface SidePaneTabPresentationLabels {
   fileManagerTitle?: string;
   browserTitle: string;
-  reviewTitle: string;
+  changesTitle: string;
   codeViewerTitle: string;
   treemappingTitle: string;
   whiteboardTitle: string;
@@ -86,6 +86,7 @@ export function getSidePaneTabSearchHint(tab: WorkspaceSidePaneTab): string {
   }
   if (tab.type === "terminal" || tab.type === "bash-output")
     return `${tab.title} terminal shell command`;
+  if (tab.type === "files") return "workspace files tree";
   if (tab.type === "file-manager") return `${tab.target.workspacePath} ${tab.source?.path ?? ""}`;
   return tab.source.path ?? tab.source.title;
 }
@@ -102,7 +103,9 @@ export function getLocalizedSidePaneTabTitle(
         "fileManager.title": labels.fileManagerTitle ?? labels.codeViewerTitle,
         "browser.title": labels.browserTitle,
         "browser.permission.settings": labels.browserPermissionsTitle,
-        "sidePane.review": labels.reviewTitle,
+        "sidePane.changes": labels.changesTitle,
+        "sidePane.review": labels.changesTitle,
+        "sidePane.files": labels.fileManagerTitle ?? labels.codeViewerTitle,
         "codeViewer.title": labels.codeViewerTitle,
         "treemapping.title": labels.treemappingTitle,
         "whiteboard.title": labels.whiteboardTitle,
@@ -148,7 +151,7 @@ export function getSidePaneTabTypeLabel(
   if (tab.type === "browser" || tab.type === "browser-use") return labels.browserTitle;
   if (tab.type === "browser-permissions") return labels.browserPermissionsTitle;
   if (tab.type === "file-manager") return labels.fileManagerTitle ?? labels.codeViewerTitle;
-  if (tab.type === "git") return labels.reviewTitle;
+  if (tab.type === "git") return labels.changesTitle;
   if (tab.type === "treemapping") return labels.treemappingTitle;
   if (tab.type === "whiteboard") return labels.whiteboardTitle;
   if (tab.type === "model-trajectory") return labels.modelTrajectoryTitle;

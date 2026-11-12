@@ -310,6 +310,12 @@ export interface AppSettings {
   closeToTrayOnWindows?: boolean;
   /** 存在执行中的闲时任务时阻止系统闲置休眠（手动开关，防不了合盖）。 */
   keepAwakeWhileRunning?: boolean;
+  /**
+   * 桌面端开机自启。用户偏好落在 setting.json，main 每次启动按此值重新应用
+   * `app.setLoginItemSettings`，避免用户在系统设置里手改后偏好与真实状态不一致。
+   * 开发态（defaultApp）不真正注册登录项；Web/手机端不参与。
+   */
+  launchAtLogin?: boolean;
   /** 本机 offline push 上报开关，缺省视为开启（spec：docs/web-remote-control/mobile-event-push.md 6.4）。 */
   mobilePushEnabled?: boolean;
   /** Windows 关闭到托盘默认值是否已执行过一次性迁移；只用于设置迁移，不参与业务判断。 */
@@ -366,6 +372,7 @@ export interface AppSettings {
   toolSearchMode?: AppToolSearchMode;
   /** 新建或冷恢复 Session 是否启用 Memory；默认关闭。 */
   memoryEnabled?: boolean;
+  /** 首启引导选择的职业；仅用于 onboarding 记录回填与设置页回显。 */
   onboardingOccupation?:
     | "office"
     | "developer"

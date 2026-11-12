@@ -12,6 +12,8 @@ import {
   PLUGIN_SYNC_METADATA_ARCHIVE_PATH,
 } from "./pluginSyncArchive.js";
 import { normalizePluginSyncRelativePath, resolvePluginSyncPathWithin } from "./pluginSyncPath.js";
+import { checkRemoteSyncDirectoriesWriteAccess } from "../remote-sync/remoteSyncWriteAccess.js";
+import { USER_DATA_DIR_NAME } from "@zcode/shared";
 import { createInlinePluginDataSyncMethods } from "../data-sync/node.js";
 
 export interface PluginManifestInfo {
@@ -117,11 +119,11 @@ export function resolveUserHomeDir(): string {
 }
 
 export function getUserZcodeConfigPath(): string {
-  return join(resolveUserHomeDir(), ".zcode", "cli", "config.json");
+  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "cli", "config.json");
 }
 
 export function getUserZcodePluginRoot(): string {
-  return join(resolveUserHomeDir(), ".zcode", "plugins");
+  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "plugins");
 }
 
 async function exportMarketplaceSourceArchiveInternal(

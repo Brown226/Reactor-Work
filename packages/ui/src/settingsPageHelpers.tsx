@@ -42,7 +42,7 @@ import { useOptionalServices } from "@/hooks/useServices.js";
 import { ProactiveSuggestionsSetting } from "@/settings/ProactiveSuggestionsSetting.js";
 import { PluginAutoRecommendationSetting } from "@/settings/PluginAutoRecommendationSetting.js";
 import { DynamicWorkflowModeSetting } from "@/settings/DynamicWorkflowModeSetting.js";
-import { normalizeInterfaceMode, type InterfaceMode } from "@/lib/interfaceMode.js";
+import type { InterfaceMode } from "@/lib/interfaceMode.js";
 import {
   createSettingsPageConfig,
   resolveSettingsSectionForPlatform,
@@ -137,12 +137,11 @@ export function TaskAutoArchiveSettings({
 
 export function GeneralSectionContent({
   localePreference,
-  interfaceMode = "coding",
-  setInterfaceMode = () => {},
   notificationEnabled,
   notificationSoundEnabled,
   closeToTrayOnWindows,
   keepAwakeWhileRunning = false,
+  launchAtLogin = false,
   mobilePushEnabled = true,
   onMobilePushEnabledChange = async () => {},
   desktopChromiumHardwareAccelerationEnabled = true,
@@ -175,18 +174,21 @@ export function GeneralSectionContent({
   onHttpProxyCaCertPathChange = async () => {},
   onCloseToTrayOnWindowsChange,
   onKeepAwakeWhileRunningChange = async () => {},
+  onLaunchAtLoginChange = async () => {},
   onDesktopChromiumHardwareAccelerationChange = async () => {},
   onReceivePreviewUpdatesChange,
   onAutoDownloadAndInstallUpdatesChange,
   onOpenOnboardingDialog,
 }: {
   localePreference: LocalePreference;
+  /** 本地已移除设置页的界面模式下拉（三档切换在主面板草稿区）；仍接收调用方传参以保持接口稳定。 */
   interfaceMode?: InterfaceMode;
   setInterfaceMode?: (mode: InterfaceMode) => void;
   notificationEnabled: boolean;
   notificationSoundEnabled: boolean;
   closeToTrayOnWindows: boolean;
   keepAwakeWhileRunning?: boolean;
+  launchAtLogin?: boolean;
   /** 本机 offline push 上报开关（spec：docs/web-remote-control/mobile-event-push.md 6.4），仅桌面端展示 */
   mobilePushEnabled?: boolean;
   onMobilePushEnabledChange?: (enabled: boolean) => Promise<void>;
@@ -230,6 +232,7 @@ export function GeneralSectionContent({
   onHttpProxyCaCertPathChange?: (caCertPath: string) => Promise<void>;
   onCloseToTrayOnWindowsChange: (enabled: boolean) => Promise<void>;
   onKeepAwakeWhileRunningChange?: (enabled: boolean) => Promise<void>;
+  onLaunchAtLoginChange?: (enabled: boolean) => Promise<void>;
   onDesktopChromiumHardwareAccelerationChange?: (enabled: boolean) => Promise<void>;
   onReceivePreviewUpdatesChange: (enabled: boolean) => Promise<void>;
   onAutoDownloadAndInstallUpdatesChange: (enabled: boolean) => Promise<void>;
@@ -383,37 +386,12 @@ export function GeneralSectionContent({
         />
       </SettingsGroupCard>
 
-      <SettingsGroupCard>
-        <SettingsRow
-          searchId="settings.interfaceMode"
-          controlLayout="wide"
-          label={intl.formatMessage({ id: "settings.interfaceMode" })}
-          description={intl.formatMessage({ id: "settings.interfaceMode.description" })}
-          control={
-            <Select
-              value={interfaceMode}
-              onValueChange={(value) => setInterfaceMode(normalizeInterfaceMode(value))}
-            >
-              <SelectTrigger
-                size="lg"
-                className="w-full min-w-0 sm:w-64"
-                aria-label={intl.formatMessage({ id: "settings.interfaceMode" })}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="coding">
-                  {intl.formatMessage({ id: "settings.interfaceMode.coding" })}
-                </SelectItem>
-                <SelectItem value="office">
-                  {intl.formatMessage({ id: "settings.interfaceMode.office" })}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          }
-        />
-        {hasServices ? <ProactiveSuggestionsSetting /> : null}
-      </SettingsGroupCard>
+      {/* 界面模式选择已移除：主面板草稿区的分段切换是唯一入口（docs/已完成/已完成-interface-mode.md）。 */}
+      {hasServices ? (
+        <SettingsGroupCard>
+          <ProactiveSuggestionsSetting />
+        </SettingsGroupCard>
+      ) : null}
 
       <SettingsGroupCard>
         <SettingsRow
@@ -746,6 +724,23 @@ export function GeneralSectionContent({
                 checked={keepAwakeWhileRunning}
                 onCheckedChange={(checked) => {
                   void onKeepAwakeWhileRunningChange(checked);
+                }}
+              />
+            }
+          />
+        ) : null}
+        {isDesktop ? (
+          <SettingsRow
+            label={intl.formatMessage({ id: "settings.launchAtLogin" })}
+            description={intl.formatMessage({
+              id: "settings.launchAtLoginDescription",
+            })}
+            control={
+              <Switch
+                aria-label={intl.formatMessage({ id: "settings.launchAtLogin" })}
+                checked={launchAtLogin}
+                onCheckedChange={(checked) => {
+                  void onLaunchAtLoginChange(checked);
                 }}
               />
             }

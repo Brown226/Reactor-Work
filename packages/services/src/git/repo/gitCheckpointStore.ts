@@ -1,6 +1,6 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { getAppConfigDir, getWorkspaceHash } from "../../paths.js";
+import { getUserScopedAppConfigDir, getWorkspaceHash } from "../../paths.js";
 import type { GitCheckpointMeta } from "@zcode/shared";
 
 function isGitCheckpointMeta(value: unknown): value is GitCheckpointMeta {
@@ -22,7 +22,7 @@ function isGitCheckpointMeta(value: unknown): value is GitCheckpointMeta {
 
 /** 一个 workspace 的检查点目录；项目数据删除按同一规则定位，不能另算 hash。 */
 export function getWorkspaceCheckpointDirectory(workspacePath: string, rootDir?: string): string {
-  return join(rootDir ?? join(getAppConfigDir(), "checkpoints"), getWorkspaceHash(workspacePath));
+  return join(rootDir ?? join(getUserScopedAppConfigDir(), "checkpoints"), getWorkspaceHash(workspacePath));
 }
 
 export class GitCheckpointStore {

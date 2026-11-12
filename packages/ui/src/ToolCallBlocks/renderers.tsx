@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
-import { FileDisplayIcon, resolveFileDisplayDescriptor } from "@/lib/fileDisplay.js";
+import { FileDisplayIcon, resolveFileDisplayDescriptor, getFileDisplayPath } from "@/lib/fileDisplay.js";
 import { FlipMetricValue } from "@/components/ui/flip-metric-value.js";
 import { getPathLeaf } from "@/lib/path.js";
 import { inferEditOperation } from "@/ToolCallBlocks/fileSummaries.js";
@@ -260,6 +260,21 @@ export function CollapsedChangeSummary({
           +{files.length}
         </span>
       </span>
+    </span>
+  );
+}
+
+// ===== [本地定制] renderFilePath（上游 v3.18.0 无此导出，整包同步会覆盖本文件）=====
+export function renderFilePath(path: string | null | undefined, basePath?: string) {
+  if (!path) {
+    return null;
+  }
+
+  return (
+    <span className="min-w-0 truncate text-foreground-subtlest @max-[360px]/conversation:hidden">
+      {/* 窄会话流里父目录会与文件名争抢空间，Read/Edit 最终只剩动作标签和省略号。
+          小容器隐藏次要路径，让文件名继续承担主识别信息。 */}
+      {getFileDisplayPath(path, basePath)}
     </span>
   );
 }

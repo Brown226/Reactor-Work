@@ -19,7 +19,8 @@ export interface PluginHookRow {
   pluginId: string;
   pluginName: string;
   pluginScope?: PluginScope;
-  pluginIconItem?: Pick<StorePluginItem, "name" | "listing">;
+  pluginIconItem?: Pick<StorePluginItem, "name" | "listing"> &
+    Partial<Pick<StorePluginItem, "id">>;
 }
 
 type HookSection =

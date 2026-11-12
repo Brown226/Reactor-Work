@@ -1,5 +1,6 @@
 import {
   Code2,
+  FileSearch2,
   ShieldCheck,
   PanelsTopLeft,
   PenTool,
@@ -35,6 +36,7 @@ export type OccupationValue = (typeof occupations)[number];
 export const modeOptionIcons = {
   coding: Code2,
   office: PanelsTopLeft,
+  review: FileSearch2,
 } as const;
 
 const occupationIcons = [

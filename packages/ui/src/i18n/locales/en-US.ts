@@ -3,10 +3,8 @@ import { requestSecurityMessagesEnUS } from "@/request-security-edition/messages
 const enUS: Record<string, string> = {
   "plugin.discovery.installAndEnable": "Install and enable in this workspace",
   "plugin.discovery.enableInWorkspace": "Enable in this workspace",
-  "plugin.discovery.workspaceInstall":
-    "Install the plugin and enable it in this workspace. Other workspace settings stay unchanged; configuration or authorization may still be required.",
-  "plugins.startupTimeout":
-    "Plugin loading timed out. Plugin skills, commands, MCP servers and hooks are unavailable for this run. Restart the app to try again.",
+  "plugin.discovery.workspaceInstall": "Install the plugin and enable it in this workspace. Other workspace settings stay unchanged; configuration or authorization may still be required.",
+  "plugins.startupTimeout": "Plugin loading timed out. Plugin skills, commands, MCP servers and hooks are unavailable for this run. Restart the app to try again.",
   "imageEditor.addedToChat": "Added. You can remove it before sending.",
   "imageEditor.unsavedTitle": "Your drawing has not been added",
   "imageEditor.unsavedDescription": "Add the edited image to chat?",
@@ -20,22 +18,19 @@ const enUS: Record<string, string> = {
   "preview.image.copy": "Copy image",
   "preview.image.actions": "Image actions",
   "preview.image.added": "Added to chat",
-  "preview.image.addFailed":
-    "Could not add the image. Open an editable chat in this workspace first.",
+  "preview.image.addFailed": "Could not add the image. Open an editable chat in this workspace first.",
   "preview.image.copied": "Image copied",
   "preview.image.copyFailed": "Could not copy image. Check clipboard access and try again.",
   "archives.nav": "Archive management",
   "conversationShare.manage.nav": "Shares",
   "conversationShare.manage.loginTitle": "Sign in to manage your shares",
-  "conversationShare.manage.loginDescription":
-    "Sign in with the account you used to create the shares.",
+  "conversationShare.manage.loginDescription": "Sign in with the account you used to create the shares.",
   "conversationShare.manage.login": "Sign in",
   "conversationShare.manage.loading": "Loading…",
   "conversationShare.manage.loadFailed": "Unable to load your shares.",
   "conversationShare.manage.retry": "Retry",
   "conversationShare.manage.emptyTitle": "No active shares",
-  "conversationShare.manage.emptyDescription":
-    "Conversations you share appear here. Expired shares are not shown.",
+  "conversationShare.manage.emptyDescription": "Conversations you share appear here. Expired shares are not shown.",
   "conversationShare.manage.statusActive": "Active",
   "conversationShare.manage.statusRevoked": "Stopped",
   "conversationShare.manage.visibilityPrivate": "Only me",
@@ -62,43 +57,34 @@ const enUS: Record<string, string> = {
   "conversationShare.manage.loadMoreFailed": "Unable to load more. Try again.",
   "conversationShare.manage.cancel": "Cancel",
   "conversationShare.manage.revokeTitle": "Stop this share?",
-  "conversationShare.manage.revokeDescription":
-    "The link stops working now. You can resume it later. Download links in pages that are already open expire shortly; imported copies are not affected.",
+  "conversationShare.manage.revokeDescription": "The link stops working now. You can resume it later. Download links in pages that are already open expire shortly; imported copies are not affected.",
   "conversationShare.manage.removeTitle": "Delete this share?",
-  "conversationShare.manage.removeDescription":
-    "The link stops working permanently and the shared content is removed. You cannot undo this.",
+  "conversationShare.manage.removeDescription": "The link stops working permanently and the shared content is removed. You cannot undo this.",
   "conversationShare.manage.rowFailed": "The action failed. Try again.",
   "conversationShare.manage.rowRateLimited": "Too many requests. Try again later.",
-  "conversationShare.manage.rowRemovedNotice":
-    "A share is no longer available and was removed from the list.",
+  "conversationShare.manage.rowRemovedNotice": "A share is no longer available and was removed from the list.",
   "archives.checking": "Checking…",
   "archives.checkingProgress": "Checking sessions: {completed}/{total}…",
-  "archives.checkingDescription":
-    "Nothing is deleted during this check. Cancel at any time to stop further checks.",
+  "archives.checkingDescription": "Nothing is deleted during this check. Cancel at any time to stop further checks.",
   "archives.deleteCount": "Permanently delete {count} sessions",
   "archives.willDelete": "Will be deleted",
   "archives.willKeep": "Will be kept",
   "archives.cannotDelete": "Cannot be deleted now",
   "archives.none": "None",
-  "archives.deleteItem":
-    "“{title}”: conversation, {children} owned child sessions, input history and indexes, {files} private attachment or execution record files",
+  "archives.deleteItem": "“{title}”: conversation, {children} owned child sessions, input history and indexes, {files} private attachment or execution record files",
   "archives.keepFork": "Independent fork: “{title}” (may contain original conversation content)",
   "archives.keepAttachment": "Attachment {name}: referenced by {referrers}; file will be kept",
   "archives.previousReference": "previously confirmed conversations",
   "archives.keepShares": "Published share links and shared copies remain unchanged and accessible.",
-  "archives.keepExternal":
-    "Workspace files, Git/worktrees, directory-level memory and checkpoints, exports, backups and application logs are outside this deletion.",
+  "archives.keepExternal": "Workspace files, Git/worktrees, directory-level memory and checkpoints, exports, backups and application logs are outside this deletion.",
   "archives.resumeDeletion": "“{title}”: finish the previous permanent deletion",
-  "archives.incomplete":
-    "Deletion has not been confirmed complete. Retry; removed content cannot be restored.",
-  "archives.reason.running":
-    "Work or queued input is pending. Stop the task and resolve its queue first.",
+  "archives.incomplete": "Deletion has not been confirmed complete. Retry; removed content cannot be restored.",
+  "archives.reason.running": "Work or queued input is pending. Stop the task and resolve its queue first.",
   "archives.reason.in-use": "Another process is using this session. Close it there and retry.",
   "archives.reason.not-found": "Original session data was not found. Nothing was deleted.",
   "archives.reason.not-archived": "The session is no longer archived. Nothing was deleted.",
   "archives.reason.changed": "The deletion scope changed. Review and confirm again.",
-  "archives.reason.unavailable":
-    "Cannot safely inspect or delete: the host is unavailable, its version is unsupported, or reading failed. Resolve the issue and retry.",
+  "archives.reason.unavailable": "Cannot safely inspect or delete: the host is unavailable, its version is unsupported, or reading failed. Resolve the issue and retry.",
   "archives.deleteFiltered": "Permanently delete filtered results",
   "archives.deletedResult": "“{title}” permanently deleted; {count} referenced attachments kept.",
   "archives.localDevice": "This device",
@@ -122,8 +108,7 @@ const enUS: Record<string, string> = {
   "archives.unarchiveAll": "Unarchive all",
   "archives.showMore": "Show more",
   "archives.deleteTitle": "Permanently delete {count} archived sessions?",
-  "archives.deleteDescription":
-    "Session records will be permanently removed from this device or their remote host. You cannot restore them in the app. Review the scope below.",
+  "archives.deleteDescription": "Session records will be permanently removed from this device or their remote host. You cannot restore them in the app. Review the scope below.",
   "archives.working": "Processing…",
   "archives.result": "Succeeded: {succeeded}; failed: {failed}; skipped: {skipped}",
   "archives.loadFailed": "Could not load archived sessions",
@@ -132,8 +117,7 @@ const enUS: Record<string, string> = {
   "archives.empty": "No archived sessions",
   "archives.noResults": "No matching archived sessions",
   "projectManagement.nav": "Project Management",
-  "projectManagement.intro":
-    "Removing a project takes it out of the sidebar and the project picker. Its sessions stay in Recent and search, and nothing on disk is touched.",
+  "projectManagement.intro": "Removing a project takes it out of the sidebar and the project picker. Its sessions stay in Recent and search, and nothing on disk is touched.",
   "projectManagement.manage": "Manage projects…",
   "projectManagement.suggestion.title": "{count} projects look unused",
   "projectManagement.suggestion.titleOne": "1 project looks unused",
@@ -182,42 +166,29 @@ const enUS: Record<string, string> = {
   "projectManagement.removeSelectedOne": "Remove 1 project",
   "projectManagement.confirm.title": "Remove {count} projects?",
   "projectManagement.confirm.titleOne": "Remove 1 project?",
-  "projectManagement.confirm.description":
-    "They leave the sidebar and the project picker. Their sessions ({sessions}) stay in Recent and search. Folders on disk are not touched.",
-  "projectManagement.confirm.descriptionOne":
-    "It leaves the sidebar and the project picker. Its sessions ({sessions}) stay in Recent and search. The folder on disk is not touched.",
-  "projectManagement.confirm.remoteNote":
-    "Removed from this computer only. They stay on {device} for its other clients.",
-  "projectManagement.confirm.remoteNoteOne":
-    "Removed from this computer only. It stays on {device} for its other clients.",
-  "projectManagement.confirm.restoreLocal":
-    "Projects on this computer can be restored later from Removed projects on this page.",
-  "projectManagement.confirm.restoreRemote":
-    "To bring back a remote project later, add it again from its device.",
+  "projectManagement.confirm.description": "They leave the sidebar and the project picker. Their sessions ({sessions}) stay in Recent and search. Folders on disk are not touched.",
+  "projectManagement.confirm.descriptionOne": "It leaves the sidebar and the project picker. Its sessions ({sessions}) stay in Recent and search. The folder on disk is not touched.",
+  "projectManagement.confirm.remoteNote": "Removed from this computer only. They stay on {device} for its other clients.",
+  "projectManagement.confirm.remoteNoteOne": "Removed from this computer only. It stays on {device} for its other clients.",
+  "projectManagement.confirm.restoreLocal": "Projects on this computer can be restored later from Removed projects on this page.",
+  "projectManagement.confirm.restoreRemote": "To bring back a remote project later, add it again from its device.",
   "projectManagement.confirm.data.option": "Also delete their ZCode data",
   "projectManagement.confirm.data.optionOne": "Also delete its ZCode data",
-  "projectManagement.confirm.data.note":
-    "Sessions, session files, checkpoints and memory of the {count} projects on this computer.",
-  "projectManagement.confirm.data.noteOne":
-    "Sessions, session files, checkpoints and memory of the project on this computer.",
+  "projectManagement.confirm.data.note": "Sessions, session files, checkpoints and memory of the {count} projects on this computer.",
+  "projectManagement.confirm.data.noteOne": "Sessions, session files, checkpoints and memory of the project on this computer.",
   "projectManagement.confirm.data.calculating": "Calculating…",
   "projectManagement.confirm.data.sessions": "{count} sessions and their files",
   "projectManagement.confirm.data.sessionsOne": "1 session and its files",
   "projectManagement.confirm.data.checkpoints": "File checkpoints",
   "projectManagement.confirm.data.memory": "Memory",
   "projectManagement.confirm.data.notDeleted": "Not deleted: your folders and app logs.",
-  "projectManagement.confirm.data.notDeletedRemote":
-    "Not deleted: your folders, app logs, and data on {devices}.",
+  "projectManagement.confirm.data.notDeletedRemote": "Not deleted: your folders, app logs, and data on {devices}.",
   "projectManagement.confirm.data.title": "Remove {count} projects and delete their data?",
   "projectManagement.confirm.data.titleOne": "Remove 1 project and delete its data?",
-  "projectManagement.confirm.data.description":
-    "They leave the sidebar and the project picker. The {sessions} of the {count} projects on this computer are deleted with their files. Folders on disk are not touched.",
-  "projectManagement.confirm.data.descriptionOne":
-    "They leave the sidebar and the project picker. The {sessions} of the project on this computer are deleted with their files. Folders on disk are not touched.",
-  "projectManagement.confirm.data.noRestore":
-    "The {count} projects on this computer can’t be restored afterwards.",
-  "projectManagement.confirm.data.noRestoreOne":
-    "The project on this computer can’t be restored afterwards.",
+  "projectManagement.confirm.data.description": "They leave the sidebar and the project picker. The {sessions} of the {count} projects on this computer are deleted with their files. Folders on disk are not touched.",
+  "projectManagement.confirm.data.descriptionOne": "They leave the sidebar and the project picker. The {sessions} of the project on this computer are deleted with their files. Folders on disk are not touched.",
+  "projectManagement.confirm.data.noRestore": "The {count} projects on this computer can’t be restored afterwards.",
+  "projectManagement.confirm.data.noRestoreOne": "The project on this computer can’t be restored afterwards.",
   "projectManagement.confirm.data.type": "Type {word} to confirm",
   "projectManagement.confirm.data.word": "delete",
   "projectManagement.confirm.data.confirm": "Remove and delete {size}",
@@ -240,8 +211,7 @@ const enUS: Record<string, string> = {
   "projectManagement.failure.undoOne": "1 project couldn’t be restored: {name} — {reason}",
   "projectManagement.failure.restore": "Couldn’t restore {name} — {reason}",
   "projectManagement.failure.restoreOne": "Couldn’t restore {name} — {reason}",
-  "projectManagement.failure.purge":
-    "The data of {count} projects wasn’t deleted: {name} — {reason}",
+  "projectManagement.failure.purge": "The data of {count} projects wasn’t deleted: {name} — {reason}",
   "projectManagement.failure.purgeOne": "The data of 1 project wasn’t deleted: {name} — {reason}",
   "projectManagement.retry": "Retry",
   "projectManagement.dismiss": "Dismiss",
@@ -254,15 +224,12 @@ const enUS: Record<string, string> = {
   "projectManagement.noResults": "No matching projects",
   "projectManagement.noUnused": "Nothing looks unused right now",
   "project.dataSessionRunning": "a session is still running; try again when it finishes",
-  "project.dataSessionReferenced":
-    "a fork in another project still uses the attachments of a session, so that session was kept",
+  "project.dataSessionReferenced": "a fork in another project still uses the attachments of a session, so that session was kept",
   "project.dataDeleteFailed": "some files couldn’t be deleted",
   "project.dataUnavailable": "this version of the agent can’t delete project data",
-  "project.undoUnavailable":
-    "This entry has no project identity, so it can’t be added back automatically.",
+  "project.undoUnavailable": "This entry has no project identity, so it can’t be added back automatically.",
   "project.switchDevice": "Switch device?",
-  "project.switchDeviceDescription":
-    "The selected folders will be cleared. The project name will be kept.",
+  "project.switchDeviceDescription": "The selected folders will be cleared. The project name will be kept.",
   "project.connectAndBrowse": "Connect and choose folder",
   "project.hostRemoved": "This device was removed from the project list. Select a device again.",
   "project.connectionUnavailable": "This device is unavailable. Reconnect it in settings.",
@@ -290,8 +257,7 @@ const enUS: Record<string, string> = {
   "project.create": "Create project",
   "project.trustFolderTitle": "Trust this folder?",
   "project.trustFoldersTitle": "Trust these folders?",
-  "project.trustFoldersDescription":
-    "ZCode can read and edit files in these folders and run commands within your current permission settings. Continue only if you trust every folder listed.",
+  "project.trustFoldersDescription": "ZCode can read and edit files in these folders and run commands within your current permission settings. Continue only if you trust every folder listed.",
   "project.trustFoldersAndCreate": "Trust folders and create",
   "project.trustFoldersAndRestore": "Trust folders and restore",
   "project.existingOnDeviceHint": "Already have projects on this device?",
@@ -369,8 +335,7 @@ const enUS: Record<string, string> = {
   "git.managedWorktree.name": "{repo} · {bucket}",
   "git.managedWorktree.error.not-repository": "The project folder isn't a Git repository",
   "git.managedWorktree.error.invalid-start-ref": "The selected starting point doesn't exist",
-  "git.managedWorktree.error.start-ref-missing-subdir":
-    "The selected starting point doesn't contain the project folder",
+  "git.managedWorktree.error.start-ref-missing-subdir": "The selected starting point doesn't contain the project folder",
   "git.managedWorktree.error.bucket-exhausted": "Couldn't allocate a worktree folder",
   "git.managedWorktree.error.worktree-dirty": "The worktree has uncommitted changes",
   "git.managedWorktree.error.worktree-in-use": "A task is using this worktree",
@@ -380,15 +345,13 @@ const enUS: Record<string, string> = {
   "git.managedWorktree.error.task-immovable": "Worktree tasks can't be moved to another project",
   "git.managedWorktree.error.generic": "The worktree operation failed",
   "git.managedWorktree.toggle.label": "worktree",
-  "git.managedWorktree.toggle.tooltip":
-    "Run in a new worktree: an isolated copy that works in parallel with your local checkout",
+  "git.managedWorktree.toggle.tooltip": "Run in a new worktree: an isolated copy that works in parallel with your local checkout",
   "git.managedWorktree.ref.title": "Create the new worktree from",
   "git.managedWorktree.ref.currentHead": "Current HEAD ({ref})",
   "git.managedWorktree.ref.detached": "detached · {sha}",
   "git.managedWorktree.ref.localBranches": "Local branches",
   "git.managedWorktree.ref.remoteBranches": "Remote branches",
-  "git.managedWorktree.ref.note":
-    "The new worktree is created from the selected branch. Your local branch does not change. Uncommitted changes are not included.",
+  "git.managedWorktree.ref.note": "The new worktree is created from the selected branch. Your local branch does not change. Uncommitted changes are not included.",
   "git.managedWorktree.creation.creating": "Creating worktree",
   "git.managedWorktree.creation.startingSession": "Starting task",
   "git.managedWorktree.creation.failed": "Worktree setup failed",
@@ -400,18 +363,13 @@ const enUS: Record<string, string> = {
   "git.managedWorktree.creation.hideOutput": "Hide output",
   "git.managedWorktree.creation.sidebarRow": "Creating worktree…",
   "git.managedWorktree.created.title": "Worktree created",
-  "git.managedWorktree.error.slash-unsupported":
-    "The first message of a worktree task can't be a command",
+  "git.managedWorktree.error.slash-unsupported": "The first message of a worktree task can't be a command",
   "git.managedWorktree.error.copy-failed": "Couldn't copy files listed in .worktreeinclude",
-  "git.managedWorktree.error.session-failed":
-    "The worktree was created, but the task failed to start",
+  "git.managedWorktree.error.session-failed": "The worktree was created, but the task failed to start",
   "git.managedWorktree.error.unsupported-agent": "This Agent version doesn't support worktrees",
-  "git.managedWorktree.error.carry-failed":
-    "Couldn't carry uncommitted changes into the new worktree",
-  "git.managedWorktree.error.session-close-failed":
-    "Couldn't unload the tasks using this worktree. The worktree was kept.",
-  "git.managedWorktree.error.command-unconfirmed":
-    "Couldn't confirm whether the task started. Nothing was deleted. Try again later.",
+  "git.managedWorktree.error.carry-failed": "Couldn't carry uncommitted changes into the new worktree",
+  "git.managedWorktree.error.session-close-failed": "Couldn't unload the tasks using this worktree. The worktree was kept.",
+  "git.managedWorktree.error.command-unconfirmed": "Couldn't confirm whether the task started. Nothing was deleted. Try again later.",
   "git.managedWorktree.error.removing": "This worktree is being deleted. Try again later.",
   "git.managedWorktree.dialog.title": "Worktrees",
   "git.managedWorktree.dialog.description": "Worktrees that ZCode manages for {project}",
@@ -430,22 +388,17 @@ const enUS: Record<string, string> = {
   "git.managedWorktree.dialog.openInEditorFailed": "Couldn't open in {editor}",
   "git.managedWorktree.dialog.confirm.title": "Delete worktree {name}?",
   "git.managedWorktree.dialog.confirm.directory": "The worktree directory will be deleted.",
-  "git.managedWorktree.dialog.confirm.ignored":
-    "Ignored files, such as dependencies and build output, are also deleted.",
-  "git.managedWorktree.dialog.confirm.tasks":
-    "Tasks that use it are kept, but they become read-only.",
+  "git.managedWorktree.dialog.confirm.ignored": "Ignored files, such as dependencies and build output, are also deleted.",
+  "git.managedWorktree.dialog.confirm.tasks": "Tasks that use it are kept, but they become read-only.",
   "git.managedWorktree.dialog.error.dirty": "The worktree has uncommitted changes",
   "git.managedWorktree.dialog.error.running": "A task is running",
-  "git.managedWorktree.dialog.error.terminal":
-    "Close the terminals running in this directory first",
-  "git.managedWorktree.dialog.confirm.discardChanges":
-    "This worktree has uncommitted changes. They will be discarded.",
+  "git.managedWorktree.dialog.error.terminal": "Close the terminals running in this directory first",
+  "git.managedWorktree.dialog.confirm.discardChanges": "This worktree has uncommitted changes. They will be discarded.",
   "git.managedWorktree.dialog.error.creating": "This worktree is still being created",
   "git.managedWorktree.dialog.error.generic": "Couldn't delete the worktree",
   "git.managedWorktree.dialog.error.tasks": "A task is using this worktree",
   "git.managedWorktree.dialog.error.removing": "This worktree is being deleted",
-  "git.managedWorktree.dialog.error.sessionClose":
-    "Couldn't unload the tasks using this worktree. The worktree was kept.",
+  "git.managedWorktree.dialog.error.sessionClose": "Couldn't unload the tasks using this worktree. The worktree was kept.",
   "chat.message.fork.here": "Fork in the current folder",
   "chat.message.fork.hereWorktree": "Fork in the current worktree",
   "chat.message.fork.toWorktree": "Fork into a new worktree",
@@ -454,8 +407,7 @@ const enUS: Record<string, string> = {
   "taskList.managedWorktreeLabel": "Worktree task",
   "project.edit": "Edit project",
   "project.deviceSettings": "Remote device settings",
-  "project.description":
-    "Group folders on the same host. Existing tasks keep their working directory.",
+  "project.description": "Group folders on the same host. Existing tasks keep their working directory.",
   "project.name": "Project name",
   "project.folders": "Source folders",
   "project.primary": "Primary folder",
@@ -483,14 +435,12 @@ const enUS: Record<string, string> = {
   "settings.source.info.deviceId": "Device ID",
   "settings.source.unfinishedConnections": "Unfinished connections",
   "settings.source.clearUnfinished": "Clear all",
-  "settings.source.clearUnfinishedDescription":
-    "Delete all unfinished connection records. Previously connected devices are kept.",
+  "settings.source.clearUnfinishedDescription": "Delete all unfinished connection records. Previously connected devices are kept.",
   "remote.chooseLater": "Choose later",
   "remote.conversation.unavailable": "Reconnect to continue working.",
   "remote.conversation.tasksContinue": "Tasks already running on the device will continue.",
   "remote.conversation.reconnect": "Reconnect",
-  "remote.conversation.placeholder":
-    "Device disconnected. Reconnect to continue this conversation.",
+  "remote.conversation.placeholder": "Device disconnected. Reconnect to continue this conversation.",
   "remote.conversation.sendUnavailable": "Device disconnected. Sending is unavailable.",
   "remote.conversation.draft": "Unsent draft",
   "remote.status.online": "Connected",
@@ -510,15 +460,12 @@ const enUS: Record<string, string> = {
   "remote.action.update-desktop": "Update desktop app",
   "remote.action.downgrade-server": "Switch remote to {version}",
   "remote.downgradeConfirmTitle": "Switch the remote to {version}?",
-  "remote.downgradeConfirmDescription":
-    "The remote ZCode service will switch from {current} to {version}, the same version as this desktop app. Devices that still use the newer desktop app must update the remote again when they connect. The older version may not fully show content that the newer version wrote.",
+  "remote.downgradeConfirmDescription": "The remote ZCode service will switch from {current} to {version}, the same version as this desktop app. Devices that still use the newer desktop app must update the remote again when they connect. The older version may not fully show content that the newer version wrote.",
   "remote.downgradeConfirm": "Switch",
-  "remote.downgradedHint":
-    "An older desktop app switched this remote from {from} to the current version. The remote updates only after you confirm.",
+  "remote.downgradedHint": "An older desktop app switched this remote from {from} to the current version. The remote updates only after you confirm.",
   "remote.action.install": "Install and connect",
   "remote.action.confirm-identity": "Use as a new device",
-  "remote.reusedConnection":
-    "This device is already connected through {connection}. The existing connection is now in use.",
+  "remote.reusedConnection": "This device is already connected through {connection}. The existing connection is now in use.",
   "remote.connectionCancelled": "Cancelled",
   "remote.cancelConnection": "Cancel connection",
   "remote.action.credentials": "Enter password",
@@ -531,42 +478,28 @@ const enUS: Record<string, string> = {
   "remote.error.authentication": "SSH authentication failed",
   "remote.error.authenticationUnsupported": "Server requires additional verification",
   "remote.error.details": "Details",
-  "remote.error.hostUnreachable.reason":
-    "Check the device address and port, and make sure it is running and reachable.",
-  "remote.error.connectionTimeout.reason":
-    "The device did not respond in time. Check your connection and retry.",
+  "remote.error.hostUnreachable.reason": "Check the device address and port, and make sure it is running and reachable.",
+  "remote.error.connectionTimeout.reason": "The device did not respond in time. Check your connection and retry.",
   "remote.error.hostNotFound.reason": "Check the hostname or try an IP address.",
-  "remote.error.hostKeyChanged.reason":
-    "The device identity differs from the saved record. Verify it with your administrator before updating your known hosts.",
-  "remote.error.downloadFailed.reason":
-    "The installation package could not be downloaded. Check your connection and retry.",
-  "remote.error.uploadFailed.reason":
-    "The installation package could not be sent to the device. Check your connection and retry.",
-  "remote.error.preflightFailed.reason":
-    "The device does not meet the installation requirements. View details.",
+  "remote.error.hostKeyChanged.reason": "The device identity differs from the saved record. Verify it with your administrator before updating your known hosts.",
+  "remote.error.downloadFailed.reason": "The installation package could not be downloaded. Check your connection and retry.",
+  "remote.error.uploadFailed.reason": "The installation package could not be sent to the device. Check your connection and retry.",
+  "remote.error.preflightFailed.reason": "The device does not meet the installation requirements. View details.",
   "remote.error.installFailed.reason": "Installation did not complete. View details and retry.",
   "remote.error.spaceInsufficient.reason": "Free up disk space on the device and retry.",
-  "remote.error.permissionDenied.reason":
-    "The current user cannot write to the installation directory. Check its permissions.",
-  "remote.error.platformUnsupported.reason":
-    "Remote connections support Linux and macOS on x64 and arm64. On Windows, connect through WSL or use a Linux device.",
-  "remote.error.connectionCanceled.reason":
-    "The connection was canceled. You can reconnect at any time.",
-  "remote.error.credentialsRequired.reason":
-    "Enter the password or key passphrase for this connection.",
-  "remote.error.authentication.reason":
-    "Check your SSH username, password or private key and retry.",
-  "remote.error.authenticationUnsupported.reason":
-    "After the password, this server asks for more verification (for example a one-time code). Only password, private key, and SSH agent sign-in are supported. Use a private key instead.",
+  "remote.error.permissionDenied.reason": "The current user cannot write to the installation directory. Check its permissions.",
+  "remote.error.platformUnsupported.reason": "Remote connections support Linux and macOS on x64 and arm64. On Windows, connect through WSL or use a Linux device.",
+  "remote.error.connectionCanceled.reason": "The connection was canceled. You can reconnect at any time.",
+  "remote.error.credentialsRequired.reason": "Enter the password or key passphrase for this connection.",
+  "remote.error.authentication.reason": "Check your SSH username, password or private key and retry.",
+  "remote.error.authenticationUnsupported.reason": "After the password, this server asks for more verification (for example a one-time code). Only password, private key, and SSH agent sign-in are supported. Use a private key instead.",
   "remote.error.unknown.reason": "Unable to connect. Retry or view details.",
   "remote.error.hostUnreachable.wsl": "Cannot access WSL distribution",
-  "remote.error.hostUnreachable.wsl.reason":
-    "Make sure the distribution is installed and can start.",
+  "remote.error.hostUnreachable.wsl.reason": "Make sure the distribution is installed and can start.",
   "remote.error.hostUnreachable.docker": "Cannot access container",
   "remote.error.hostUnreachable.docker.reason": "Make sure the container exists and is running.",
   "remote.error.connectionTimeout.wsl": "WSL connection timed out",
-  "remote.error.connectionTimeout.wsl.reason":
-    "Make sure the distribution is installed and can start.",
+  "remote.error.connectionTimeout.wsl.reason": "Make sure the distribution is installed and can start.",
   "remote.error.connectionTimeout.docker": "Container connection timed out",
   "remote.error.connectionTimeout.docker.reason": "Make sure the container exists and is running.",
   "remote.error.hostNotFound.wsl": "Distribution not found",
@@ -574,8 +507,7 @@ const enUS: Record<string, string> = {
   "remote.error.hostNotFound.docker": "Container not found",
   "remote.error.hostNotFound.docker.reason": "Make sure the container exists and is running.",
   "remote.error.preflightFailed.wsl": "Distribution environment check failed",
-  "remote.error.preflightFailed.wsl.reason":
-    "Make sure the distribution is installed and can start.",
+  "remote.error.preflightFailed.wsl.reason": "Make sure the distribution is installed and can start.",
   "remote.error.preflightFailed.docker": "Container environment check failed",
   "remote.error.preflightFailed.docker.reason": "Make sure the container exists and is running.",
   "remote.error.installFailed.wsl": "Distribution installation failed",
@@ -583,55 +515,35 @@ const enUS: Record<string, string> = {
   "remote.error.installFailed.docker": "Container installation failed",
   "remote.error.installFailed.docker.reason": "Make sure the container exists and is running.",
   "remote.error.spaceInsufficient.wsl": "Distribution is out of space",
-  "remote.error.spaceInsufficient.wsl.reason":
-    "Make sure the distribution is installed and can start.",
+  "remote.error.spaceInsufficient.wsl.reason": "Make sure the distribution is installed and can start.",
   "remote.error.spaceInsufficient.docker": "Container is out of space",
   "remote.error.spaceInsufficient.docker.reason": "Make sure the container exists and is running.",
   "remote.error.permissionDenied.wsl": "No write permission in distribution",
-  "remote.error.permissionDenied.wsl.reason":
-    "Make sure the distribution is installed and can start.",
+  "remote.error.permissionDenied.wsl.reason": "Make sure the distribution is installed and can start.",
   "remote.error.permissionDenied.docker": "No write permission in container",
   "remote.error.permissionDenied.docker.reason": "Make sure the container exists and is running.",
-  "remote.error.sourceServerInstallRequired.reason":
-    "View details, follow the instructions, and retry.",
-  "remote.error.sourceServerIdentityChangePending.reason":
-    "View details, follow the instructions, and retry.",
-  "remote.error.sourceServerUpgradeRequired.reason":
-    "View details, follow the instructions, and retry.",
-  "remote.error.sourceServerRunningTasks.reason":
-    "View details, follow the instructions, and retry.",
-  "remote.error.sourceServerDowngradeUnconfirmed.reason":
-    "Reconnect to read the latest version of the remote device.",
-  "remote.error.sourceServerUpdateInProgress.reason":
-    "This connection was not started. Retry after the update finishes.",
-  "remote.error.workspaceTaskIdentityConflict.reason":
-    "View details, follow the instructions, and retry.",
-  "remote.error.workspaceConfigConflict.reason":
-    "View details, follow the instructions, and retry.",
+  "remote.error.sourceServerInstallRequired.reason": "View details, follow the instructions, and retry.",
+  "remote.error.sourceServerIdentityChangePending.reason": "View details, follow the instructions, and retry.",
+  "remote.error.sourceServerUpgradeRequired.reason": "View details, follow the instructions, and retry.",
+  "remote.error.sourceServerRunningTasks.reason": "View details, follow the instructions, and retry.",
+  "remote.error.sourceServerDowngradeUnconfirmed.reason": "Reconnect to read the latest version of the remote device.",
+  "remote.error.sourceServerUpdateInProgress.reason": "This connection was not started. Retry after the update finishes.",
+  "remote.error.workspaceTaskIdentityConflict.reason": "View details, follow the instructions, and retry.",
+  "remote.error.workspaceConfigConflict.reason": "View details, follow the instructions, and retry.",
   "remote.error.bindCanceled.reason": "View details, follow the instructions, and retry.",
   "remote.error.bindSessionMissing.reason": "View details, follow the instructions, and retry.",
-  "remote.error.workspaceDirectoryUnavailable.reason":
-    "View details, follow the instructions, and retry.",
-  "remote.error.workspaceDirectoryUnresponsive.reason":
-    "If the remote device is a Mac, check the Mac for a folder access prompt. If the folder is on a network or external drive, make sure the drive is available. Then retry.",
-  "remote.error.recoveryBudgetExhausted.reason":
-    "View details, follow the instructions, and retry.",
-  "remote.error.sourceServerStopFailed.reason":
-    "The remote service didn't exit cleanly. Try again later, or sign in to the device to check it.",
-  "remote.error.sourceServerControlUnresponsive.reason":
-    "The remote service didn't answer the request. Sign in to the device to check it, then try again.",
-  "remote.error.workspaceMigrationPlanDiverged.reason":
-    "View details, follow the instructions, and retry.",
-  "remote.error.workspaceSessionGenerationChanged.reason":
-    "View details, follow the instructions, and retry.",
+  "remote.error.workspaceDirectoryUnavailable.reason": "View details, follow the instructions, and retry.",
+  "remote.error.workspaceDirectoryUnresponsive.reason": "If the remote device is a Mac, check the Mac for a folder access prompt. If the folder is on a network or external drive, make sure the drive is available. Then retry.",
+  "remote.error.recoveryBudgetExhausted.reason": "View details, follow the instructions, and retry.",
+  "remote.error.sourceServerStopFailed.reason": "The remote service didn't exit cleanly. Try again later, or sign in to the device to check it.",
+  "remote.error.sourceServerControlUnresponsive.reason": "The remote service didn't answer the request. Sign in to the device to check it, then try again.",
+  "remote.error.workspaceMigrationPlanDiverged.reason": "View details, follow the instructions, and retry.",
+  "remote.error.workspaceSessionGenerationChanged.reason": "View details, follow the instructions, and retry.",
   "remote.error.retryableHint.reason": "View details, follow the instructions, and retry.",
   "remote.error.connectionClosed.reason": "View details, follow the instructions, and retry.",
-  "settings.source.error.source-server-remove-callback-missing.reason":
-    "View details, follow the instructions, and retry.",
-  "settings.source.error.source-server-remove-callback-failed.reason":
-    "View details, follow the instructions, and retry.",
-  "settings.source.error.source-server-remove-persist-failed.reason":
-    "View details, follow the instructions, and retry.",
+  "settings.source.error.source-server-remove-callback-missing.reason": "View details, follow the instructions, and retry.",
+  "settings.source.error.source-server-remove-callback-failed.reason": "View details, follow the instructions, and retry.",
+  "settings.source.error.source-server-remove-persist-failed.reason": "View details, follow the instructions, and retry.",
   "remote.continueInBackground": "Continue in background",
   "remote.copyLog": "Copy logs",
   "remote.phaseSub.downloading": "Downloading installation package",
@@ -643,20 +555,16 @@ const enUS: Record<string, string> = {
   "remote.status.connected": "Connected",
   "remote.infoUnavailable": "Unavailable",
   "remote.installSize": "Installation package size",
-  "remote.runningTasksUnavailable":
-    "The device did not provide a task list. Forcing the update will interrupt running tasks.",
+  "remote.runningTasksUnavailable": "The device did not provide a task list. Forcing the update will interrupt running tasks.",
   "remote.transferTimeUnknown": "Estimating remaining time",
   "remote.transferTimeRemaining": "About {seconds} s remaining",
   "remote.phase.channel.ssh": "Connecting to SSH host",
   "remote.phase.channel.wsl": "Starting and connecting to distribution",
   "remote.phase.channel.docker": "Connecting to container",
-  "startPlan.recommendation.subagentDescription":
-    "Your Start Plan has quota available for {model}. Switch this subagent’s model to the Start Plan?",
-  "startPlan.recommendation.preferenceSaveFailed":
-    "Could not save “Don’t ask again”. Continuing with your choice for this operation.",
+  "startPlan.recommendation.subagentDescription": "Your Start Plan has quota available for {model}. Switch this subagent’s model to the Start Plan?",
+  "startPlan.recommendation.preferenceSaveFailed": "Could not save “Don’t ask again”. Continuing with your choice for this operation.",
   "startPlan.recommendation.title": "Start Plan quota available",
-  "startPlan.recommendation.description":
-    "Your Start Plan still has quota for {model}. Would you like to use it?",
+  "startPlan.recommendation.description": "Your Start Plan still has quota for {model}. Would you like to use it?",
   "startPlan.recommendation.switch": "Switch plan",
   "startPlan.recommendation.decline": "Not now",
   "startPlan.recommendation.dismiss": "Don’t show again",
@@ -664,11 +572,9 @@ const enUS: Record<string, string> = {
   "occupationOnboarding.modeTitle": "Choose your UI mode",
   "occupationOnboarding.modeDescription": "How would you like ZCode to show its work?",
   "occupationOnboarding.coding": "Coding mode",
-  "occupationOnboarding.codingDescription":
-    "I want to see code, command output, and change details throughout the development process.",
+  "occupationOnboarding.codingDescription": "I want to see code, command output, and change details throughout the development process.",
   "occupationOnboarding.officeMode": "Office mode",
-  "occupationOnboarding.officeModeDescription":
-    "I focus on task progress and results, without needing code, command output, or other technical details.",
+  "occupationOnboarding.officeModeDescription": "I focus on task progress and results, without needing code, command output, or other technical details.",
   "chat.initialization.failed": "Initialization failed. Sending is unavailable.",
   "chat.initialization.retry": "Retry",
   "chat.officeSuggestions.setting": "Proactive task suggestions",
@@ -700,8 +606,7 @@ const enUS: Record<string, string> = {
   "occupationOnboarding.stepRole": "Your work",
   "occupationOnboarding.stepPreferences": "Preferences",
   "occupationOnboarding.heroTitle": "Simple, Fast, Vibe‑Ready!",
-  "occupationOnboarding.heroDescription":
-    "Tackle complex goals with multiple agents.\nStay in control, wherever you are.",
+  "occupationOnboarding.heroDescription": "Tackle complex goals with multiple agents.\nStay in control, wherever you are.",
   "occupationOnboarding.title": "What do you do?",
   "occupationOnboarding.description": "Choose the closest match to your everyday work.",
   "occupationOnboarding.office": "Office professional",
@@ -715,34 +620,30 @@ const enUS: Record<string, string> = {
   "occupationOnboarding.memory": "Enable Workspace Memory",
   "occupationOnboarding.memoryDescription": "Let ZCode remember your preferences and work context.",
   "occupationOnboarding.suggestions": "Enable proactive task suggestions",
-  "occupationOnboarding.suggestionsDescription":
-    "Show suggestions in new conversations. Click to fill the composer.",
+  "occupationOnboarding.suggestionsDescription": "Show suggestions in new conversations. Click to fill the composer.",
   "occupationOnboarding.close": "Exit onboarding",
   "plugin.discovery.confirmTitle": "Official plugin recommendation",
   "plugin.discovery.official": "ZCode official marketplace",
   "plugin.discovery.workspaceEnable": "Enable this plugin in the current workspace.",
-  "plugin.discovery.userInstall":
-    "Installed plugins are saved for this user. Configuration or authorization may still be required.",
+  "plugin.discovery.userInstall": "Installed plugins are saved for this user. Configuration or authorization may still be required.",
   "plugin.discovery.responseFailed": "Could not submit your choice. Please try again.",
   "plugin.discovery.skip": "Skip",
   "plugin.discovery.install": "Install",
   "plugin.discovery.enable": "Enable",
-  "startup.global.silent": "Starting ZCode",
+  "startup.global.silent": "Starting Reactor",
   "startup.global.upgrading": "Upgrading local data",
   "startup.global.initializing": "Initializing local data",
   "startup.global.waiting": "Waiting for database preparation",
   "startup.global.saving": "Saving updates",
   "startup.global.finishing": "Finishing startup",
-  "startup.global.servicesFailed":
-    "Local data is ready, but app services failed to start. Copy the diagnostics, then exit and reopen ZCode.",
+  "startup.global.servicesFailed": "Local data is ready, but app services failed to start. Copy the diagnostics, then exit and reopen Reactor.",
   "startup.global.starting": "Preparing local data",
   "startup.global.preparing_host_storage": "Preparing task index",
   "startup.global.preparing_session_storage": "Preparing chat history",
-  "startup.global.starting_services": "Starting ZCode",
+  "startup.global.starting_services": "Starting Reactor",
   "startup.global.ready": "Local data is ready",
   "startup.global.failed": "Startup preparation failed",
-  "startup.global.help":
-    "ZCode will open when preparation finishes. Large histories may take longer. Please keep the app running.",
+  "startup.global.help": "Reactor will open when preparation finishes. Large histories may take longer. Please keep the app running.",
   "startup.global.diagnostic": "Diagnostic ID",
   "startup.global.copy": "Copy diagnostics",
   "startup.global.exportLogs": "Export logs",
@@ -752,31 +653,18 @@ const enUS: Record<string, string> = {
   "startup.global.exit": "Exit",
   "startup.global.copied": "Copied",
   "startup.global.copyFailed": "Copy failed. Please note the diagnostic ID.",
-  "startup.global.error.storage_full":
-    "Storage is full or a capacity limit was reached. Check the drives containing your data and system temporary directories. Free space or adjust the quota, then retry.",
-  "startup.global.error.permission_denied":
-    "The database is not writable. Check permissions for the data and temporary directories, then retry.",
-  "startup.global.error.io_error":
-    "Database I/O failed. Check the disk or storage connection, then retry.",
-  "startup.global.error.out_of_memory":
-    "A memory allocation failed while preparing data. Close other apps to free memory, then retry.",
-  "startup.global.error.corrupt":
-    "The database appears damaged. Preserve your data and diagnostics and contact support. Do not delete the database.",
-  "startup.global.error.checksum_mismatch":
-    "The migration records do not match this app version. Preserve your data and diagnostics and contact support.",
-  "startup.global.error.open_failed":
-    "The database could not be opened. Check that the data directory exists and is accessible, then retry.",
-  "startup.global.error.lock_timeout":
-    "Waiting for the database write lock timed out. Another ZCode or CLI process may be updating data. Retry after it finishes.",
-  "startup.global.error.sql_failed":
-    "Preparation did not finish. Copy the diagnostics and check the logs. Resolve the issue, then retry manually. The app will not retry automatically.",
-  "startup.global.error.startup_status_timeout":
-    "No startup status was received. Exit and reopen ZCode. If it fails again, provide the diagnostics to support.",
-  "startup.global.error.transport_closed":
-    "The preparation process exited or disconnected. Exit and reopen ZCode to check the migration records again.",
-  "startup.global.error.unsupported_runtime":
-    "The configured Agent does not support storage preparation. Restore the bundled Agent, then reopen ZCode.",
-
+  "startup.global.error.storage_full": "Storage is full or a capacity limit was reached. Check the drives containing your data and system temporary directories. Free space or adjust the quota, then retry.",
+  "startup.global.error.permission_denied": "The database is not writable. Check permissions for the data and temporary directories, then retry.",
+  "startup.global.error.io_error": "Database I/O failed. Check the disk or storage connection, then retry.",
+  "startup.global.error.out_of_memory": "A memory allocation failed while preparing data. Close other apps to free memory, then retry.",
+  "startup.global.error.corrupt": "The database appears damaged. Preserve your data and diagnostics and contact support. Do not delete the database.",
+  "startup.global.error.checksum_mismatch": "The migration records do not match this app version. Preserve your data and diagnostics and contact support.",
+  "startup.global.error.open_failed": "The database could not be opened. Check that the data directory exists and is accessible, then retry.",
+  "startup.global.error.lock_timeout": "Waiting for the database write lock timed out. Another Reactor or CLI process may be updating data. Retry after it finishes.",
+  "startup.global.error.sql_failed": "Preparation did not finish. Copy the diagnostics and check the logs. Resolve the issue, then retry manually. The app will not retry automatically.",
+  "startup.global.error.startup_status_timeout": "No startup status was received. Exit and reopen Reactor. If it fails again, provide the diagnostics to support.",
+  "startup.global.error.transport_closed": "The preparation process exited or disconnected. Exit and reopen Reactor to check the migration records again.",
+  "startup.global.error.unsupported_runtime": "The configured Agent does not support storage preparation. Restore the bundled Agent, then reopen Reactor.",
   "startup.database.checking": "Checking history",
   "startup.database.waiting_for_lock": "Waiting for another window to prepare data",
   "startup.database.migrating": "Upgrading history",
@@ -784,11 +672,9 @@ const enUS: Record<string, string> = {
   "startup.database.ready": "History is ready",
   "startup.database.failed": "Could not prepare history",
   "startup.database.help": "The workspace will open when ready. Keep the app running.",
-  "startup.database.failedHelp":
-    "The original database has been preserved. Check diagnostic logs, resolve the issue, and retry.",
+  "startup.database.failedHelp": "The original database has been preserved. Check diagnostic logs, resolve the issue, and retry.",
   "startup.database.elapsed": "Elapsed: {minutes} min {seconds} sec",
-  "startup.database.longRunning":
-    "Large histories can take longer. The app is still waiting for the database to finish.",
+  "startup.database.longRunning": "Large histories can take longer. The app is still waiting for the database to finish.",
   "rewards.title": "Rewards",
   "rewards.menuTitle": "Refer a friend",
   "rewards.menuBadge": "Rewards",
@@ -803,16 +689,12 @@ const enUS: Record<string, string> = {
   "bashOutput.error.unsupported": "This runtime does not support background output",
   "bashOutput.error.read_failed": "Could not read the output file",
   "bashOutput.error.query_failed": "Could not connect to the task runtime",
-
   "purchase.entry.loading": "Loading plans…",
   "purchase.entry.retry": "Could not load plans. Retry",
   "bots.runtime.deliveryFailed": "Bot reply delivery failed",
-  "bots.runtime.deliveryFailedDescription":
-    "The message could not be delivered. Share the details below for troubleshooting. This notice clears after the next successful send.",
-  "chat.selections.previewSideBlocked":
-    "Resolve pending requests in the main task or side conversation first.",
-  "chat.selections.previewSideUnavailable":
-    "Use an editable main task that supports side conversations.",
+  "bots.runtime.deliveryFailedDescription": "The message could not be delivered. Share the details below for troubleshooting. This notice clears after the next successful send.",
+  "chat.selections.previewSideBlocked": "Resolve pending requests in the main task or side conversation first.",
+  "chat.selections.previewSideUnavailable": "Use an editable main task that supports side conversations.",
   "chat.selections.file": "{name} · Selection",
   "chat.selections.mixedCount": "{count} selections",
   "chat.previewCards.openExternalFailed": "Could not open this file in the browser",
@@ -830,38 +712,30 @@ const enUS: Record<string, string> = {
   "offPeak.chatCreated.queued": "Queued for idle-time compute",
   "offPeak.chatCreated.queuedAt": "#{position} in queue",
   "offPeak.chatCreated.open": "Go to idle-time tasks",
-  "settings.computerUse.disabledToast":
-    "Computer Use is disabled. Existing conversations require a ZCode restart to take effect.",
+  "settings.computerUse.disabledToast": "Computer Use is disabled. Existing conversations require a Reactor restart to take effect.",
   "settings.modelProvider.connectionUnavailableNotice": "The current plan is unavailable.",
   "settings.modelProvider.switchConnection": "Switch to “{connection}”",
-  "settings.modelProvider.connectionSuggestionStale":
-    "Plan availability has changed. Please select a connection in model settings.",
-  "settings.modelProvider.connectionSwitchFailed":
-    "Could not switch plans. The original connection is unchanged. Please retry.",
-  "settings.modelProvider.connectionUnavailable":
-    "The selected connection is unavailable. Please choose another connection.",
-  "settings.modelProvider.navigationUnavailable":
-    "The requested provider is unavailable. Please choose another provider.",
+  "settings.modelProvider.connectionSuggestionStale": "Plan availability has changed. Please select a connection in model settings.",
+  "settings.modelProvider.connectionSwitchFailed": "Could not switch plans. The original connection is unchanged. Please retry.",
+  "settings.modelProvider.connectionUnavailable": "The selected connection is unavailable. Please choose another connection.",
+  "settings.modelProvider.navigationUnavailable": "The requested provider is unavailable. Please choose another provider.",
   "marketingTouch.idle": "Ready",
   "marketingTouch.verifying": "Verifying…",
   "marketingTouch.submitting": "Processing…",
   "marketingTouch.preparing": "Succeeded. Preparing the result…",
   "marketingTouch.failed": "The action failed. Please try again later.",
-  "marketingTouch.uncertain":
-    "The result could not be confirmed. Check your benefits later. This action will not be retried this session to avoid duplicate submissions.",
+  "marketingTouch.uncertain": "The result could not be confirmed. Check your benefits later. This action will not be retried this session to avoid duplicate submissions.",
   "marketingTouch.succeeded": "Action succeeded",
   "workspace.context.lastActivity": "Last active {time}",
   "bots.privateDelivery.retry": "Resend reply",
-  "bots.privateDelivery.retryHint":
-    "Resends the full reply as text. Content already received may be duplicated.",
+  "bots.privateDelivery.retryHint": "Resends the full reply as text. Content already received may be duplicated.",
   "bots.privateDelivery.retryFailed": "Sending failed. Check the error details before retrying.",
   "bots.boundGroups.title": "Bound groups",
   "bots.boundGroups.count": "{count} topics",
   "bots.boundGroups.countOne": "{count} topic",
   "bots.boundGroups.toggle": "Enable group: {name}",
   "bots.boundGroups.loading": "Loading groups…",
-  "bots.boundGroups.empty":
-    "No bound groups. Mention the bot with /enable in a group to add it here.",
+  "bots.boundGroups.empty": "No bound groups. Mention the bot with /enable in a group to add it here.",
   "bots.boundGroups.botOff": "The bot is off. Enable it to change group switches.",
   "bots.boundGroups.loadFailed": "Could not load groups. Refresh to retry.",
   "bots.boundGroups.saveFailed": "The group change could not be confirmed. Refresh and retry.",
@@ -873,8 +747,7 @@ const enUS: Record<string, string> = {
   "bots.topic.coverage": "{count} discussion messages archived; only the read range is covered.",
   "bots.topic.gap": "{count} discussion messages archived; some history is not covered.",
   "bots.topic.historyOn": "The next mention reads new topic discussion.",
-  "bots.topic.historyOff":
-    "Topic history is off; only the current request and explicit references are submitted.",
+  "bots.topic.historyOff": "Topic history is off; only the current request and explicit references are submitted.",
   "bots.topic.context": "Turn background and summary",
   "bots.topic.correction": "Submit corrections as a new request. Original records are retained.",
   "bots.group.syncing": "Replies sync to the Feishu/Lark group",
@@ -885,7 +758,6 @@ const enUS: Record<string, string> = {
   "bots.group.confirmReceived": "Checked: received",
   "bots.group.confirmNotReceived": "Checked: not received",
   "bots.group.resend": "Resend result",
-
   "bots.group.provider.feishu": "Feishu",
   "manualClaimPlan.banner.aria": "Claimable trial plan",
   "manualClaimPlan.banner.tag": "Limited-time offer",
@@ -900,8 +772,7 @@ const enUS: Record<string, string> = {
   "manualClaimPlan.banner.close": "Close offer",
   "manualClaimPlan.banner.claim": "Claim",
   "manualClaimPlan.banner.dismissConfirm.title": "You’ll miss a claim opportunity",
-  "manualClaimPlan.banner.dismissConfirm.description":
-    "Claim opportunities for this offer are limited. If you close it, you may miss this opportunity. Would you like to claim it now?",
+  "manualClaimPlan.banner.dismissConfirm.description": "Claim opportunities for this offer are limited. If you close it, you may miss this opportunity. Would you like to claim it now?",
   "manualClaimPlan.banner.dismissConfirm.claim": "Claim now",
   "manualClaimPlan.banner.dismissConfirm.close": "Close anyway",
   "manualClaimPlan.claim.success.title": "You now have access to {plan}",
@@ -915,18 +786,14 @@ const enUS: Record<string, string> = {
   "manualClaimPlan.claim.failure.notFound": "This plan does not exist.",
   "manualClaimPlan.claim.failure.unavailable": "This offer has ended or is unavailable.",
   "manualClaimPlan.claim.failure.alreadyClaimed": "You have already claimed this plan.",
-  "manualClaimPlan.claim.failure.ineligible":
-    "Your account or app version is not eligible for this offer.",
+  "manualClaimPlan.claim.failure.ineligible": "Your account or app version is not eligible for this offer.",
   "manualClaimPlan.claim.failure.quotaExhausted": "Today's claim quota has been exhausted.",
-  "manualClaimPlan.claim.failure.quotaExhausted.nextTime":
-    "Today's claim quota has been exhausted. Please check back next time.",
-  "manualClaimPlan.claim.failure.quotaExhausted.tomorrow":
-    "Today's claim quota has been exhausted. Please try again tomorrow.",
+  "manualClaimPlan.claim.failure.quotaExhausted.nextTime": "Today's claim quota has been exhausted. Please check back next time.",
+  "manualClaimPlan.claim.failure.quotaExhausted.tomorrow": "Today's claim quota has been exhausted. Please try again tomorrow.",
   "manualClaimPlan.claim.failure.invalidRequest": "Invalid claim request. Refresh and try again.",
   "manualClaimPlan.claim.failure.loginRequired": "Sign in before claiming this plan.",
   "manualClaimPlan.claim.failure.generic": "Claim failed. Please try again later.",
-  "manualClaimPlan.claim.startUsingUnavailable":
-    "Start Plan is not ready yet. Your model settings were not changed; refresh and try again later.",
+  "manualClaimPlan.claim.startUsingUnavailable": "Start Plan is not ready yet. Your model settings were not changed; refresh and try again later.",
   "manualClaimPlan.claim.dialog.confirm": "Start using",
   "manualClaimPlan.claim.dialog.modelSettings": "View plan",
   "manualClaimPlan.claim.dialog.acknowledge": "Got it",
@@ -942,10 +809,9 @@ const enUS: Record<string, string> = {
   "manualClaimPlan.claim.share.copyTextSucceeded": "Text copied",
   "manualClaimPlan.claim.share.copyImageSucceeded": "Image copied",
   "manualClaimPlan.claim.share.actionFailed": "Share action failed. Please try again.",
-  "manualClaimPlan.claim.share.twitterText":
-    "I claimed {subtitle} on ZCode. Download and install ZCode to claim yours. https://zcode.z.ai",
+  "manualClaimPlan.claim.share.twitterText": "I claimed {subtitle} on ZCode. Download and install ZCode to claim yours. https://zcode.z.ai",
   "manualClaimPlan.claim.share.twitterTextLabel": "Twitter/X post text",
-  // Common
+// Common
   "common.loading": "Loading...",
   "common.listSeparator": ", ",
   "common.generating": "Generating...",
@@ -1018,17 +884,12 @@ const enUS: Record<string, string> = {
   "conversationShare.publishSucceeded": "Share link created",
   "conversationShare.publishSucceededWithSkips": "Share link created; {count} file(s) were skipped",
   "conversationShare.copyFailed": "Could not copy share link",
-  "conversationShare.error.serviceUnavailable":
-    "The sharing service is temporarily unavailable. Try again later.",
-  "conversationShare.error.safetyCheckRejected":
-    "Content did not pass the safety check. Adjust the selected conversation or files.",
-  "conversationShare.error.safetyCheckUnavailable":
-    "The safety check service is unavailable. Try again later.",
-  "conversationShare.error.preparationNotFound":
-    "Share preparation is no longer available. Generate a new link.",
+  "conversationShare.error.serviceUnavailable": "The sharing service is temporarily unavailable. Try again later.",
+  "conversationShare.error.safetyCheckRejected": "Content did not pass the safety check. Adjust the selected conversation or files.",
+  "conversationShare.error.safetyCheckUnavailable": "The safety check service is unavailable. Try again later.",
+  "conversationShare.error.preparationNotFound": "Share preparation is no longer available. Generate a new link.",
   "conversationShare.error.preparationExpired": "Share preparation expired. Generate a new link.",
-  "conversationShare.import.notAllowed":
-    "This share is view-only. Ask the author to enable importing.",
+  "conversationShare.import.notAllowed": "This share is view-only. Ask the author to enable importing.",
   "conversationShare.import.unsupportedVersion": "This share format is unsupported. Update ZCode.",
   "conversationShare.issue.ruleLabel": "Validation rule",
   "conversationShare.issue.pathLabel": "Field path",
@@ -1036,130 +897,70 @@ const enUS: Record<string, string> = {
   "conversationShare.issue.rowLabel": "Content row (starting at 1)",
   "conversationShare.issue.rowKindLabel": "Content type",
   "conversationShare.publishFailed": "Could not generate the share link. Try again.",
-  "conversationShare.error.authenticationRequired":
-    "Sign in to ZCode before sharing. If you're already signed in, sign in again and retry.",
+  "conversationShare.error.authenticationRequired": "Sign in to ZCode before sharing. If you're already signed in, sign in again and retry.",
   "conversationShare.error.featureDisabled": "Sharing is currently unavailable. Try again later.",
-  "conversationShare.error.artifactNotAllowed":
-    "A previewed file type is not supported for sharing. Deselect that conversation and retry.",
-  "conversationShare.error.limitExceeded":
-    "The selected conversation or its files exceed the sharing limit. Select fewer conversations.",
+  "conversationShare.error.artifactNotAllowed": "A previewed file type is not supported for sharing. Deselect that conversation and retry.",
+  "conversationShare.error.limitExceeded": "The selected conversation or its files exceed the sharing limit. Select fewer conversations.",
   "conversationShare.error.rateLimited": "Too many share attempts. Wait a moment, then try again.",
-  "conversationShare.error.invalidContractHttp":
-    "The share service returned HTTP {status}. Retry, and provide the error details if the problem persists.",
-  "conversationShare.error.invalidContract":
-    "ZCode could not read the share service’s response, so sharing could not finish. Try again later. If it still fails, copy the request ID from Error details and contact support.",
+  "conversationShare.error.invalidContractHttp": "The share service returned HTTP {status}. Retry, and provide the error details if the problem persists.",
+  "conversationShare.error.invalidContract": "ZCode could not read the share service’s response, so sharing could not finish. Try again later. If it still fails, copy the request ID from Error details and contact support.",
   "conversationShare.issue.clientRequestIdLabel": "Client request ID",
   "conversationShare.issue.codeLabel": "Error code",
-  "conversationShare.error.network":
-    "The share connection was interrupted or timed out. Check your network and retry.",
-  "conversationShare.error.safetyCheckTimeout":
-    "The share safety check took too long. Try again later.",
-  "conversationShare.error.invalidSelection":
-    "The selected conversation changed. Reopen the share panel and select it again.",
-  "conversationShare.error.invalidConversation":
-    "The selected conversation cannot be published. Review the specific issues and retry.",
-  "conversationShare.error.runningTurn":
-    "A selected turn is still running. Deselect it and wait for it to finish before sharing.",
-  "conversationShare.error.streamingRow":
-    "A selected response is still streaming. Wait for the turn to finish before sharing.",
-  "conversationShare.error.activeToolCall":
-    "A selected tool call is still active. Wait for it to finish before sharing.",
-  "conversationShare.error.activeSubagent":
-    "A selected subtask is still running. Wait for it to finish before sharing.",
-  "conversationShare.error.inputAttachment":
-    "A user-input attachment could not be shared. Check that it still exists and try again.",
-  "conversationShare.error.inlineToolImage":
-    "A selected turn contains an unsupported inline tool image. Deselect that turn and retry.",
-  "conversationShare.error.unsupportedTimeline":
-    "A selected turn contains an unsupported branch or restore record. Deselect that turn and retry.",
-  "conversationShare.error.unsafeUrl":
-    "The selected content contains a local or inline file URL. Remove it before sharing.",
-  "conversationShare.error.missingProductTurn":
-    "The selected conversation is incomplete. Reopen the share panel and select the turn again.",
-  "conversationShare.error.artifactTypeNotAllowed":
-    "A previewed file type is not allowed for sharing. Deselect its turn and retry.",
-  "conversationShare.error.artifactExtensionMissing":
-    "A previewed file has no valid extension. Check the file and retry.",
-  "conversationShare.error.artifactOutsideWorkspace":
-    "A previewed file is outside the current workspace. Regenerate or move it, then retry.",
-  "conversationShare.error.artifactChanged":
-    "A previewed file changed before sharing. Regenerate the preview file and retry.",
-  "conversationShare.error.artifactReadFailed":
-    "A previewed file could not be read. Check that it still exists and is accessible, then retry.",
-  "conversationShare.error.artifactSizeLimit":
-    "A file exceeds the per-file size limit. Deselect that turn or use a smaller file, then retry.",
-  "conversationShare.error.artifactManifest":
-    "The preview file manifest is incomplete. Regenerate the file and refresh the share panel.",
-  "conversationShare.error.payloadLimit":
-    "The selected conversation or files exceed the sharing limit. Select less and retry.",
-  "conversationShare.error.disclosureRequired":
-    "Review and confirm the shared content before creating the link.",
-  "conversationShare.error.uploadFailed":
-    "Upload is incomplete or the share state changed. Try again.",
-  "conversationShare.error.connectionUnavailable":
-    "Desktop connection is not ready. Reopen the share panel and try again.",
-  "conversationShare.error.noShareableContent":
-    "The current selection has no shareable content. Select different turns.",
-  "conversationShare.error.summary":
-    "Share failed: {count} issue(s) found. See the share panel for details.",
-  "conversationShare.issue.artifactTypeNotAllowed":
-    "Turn {turnOrdinal}: {artifactDisplayName} ({artifactType}) cannot be shared and will be skipped. Supported types: {allowedFormats}.",
-  "conversationShare.issue.artifactExtensionMissing":
-    "Turn {turnOrdinal}: the preview file has no valid extension. Check the file name and try again.",
-  "conversationShare.issue.artifactOutsideWorkspace":
-    "Turn {turnOrdinal}: the preview file is outside the current workspace. Move or regenerate it and try again.",
-  "conversationShare.issue.artifactChanged":
-    "Turn {turnOrdinal}: {artifactDisplayName} changed while it was being read. Regenerate the file and try again.",
-  "conversationShare.issue.contentUnavailable":
-    "Some workflow content is shared as a summary. See the availability notes in the share.",
-  "conversationShare.issue.artifactReadFailed":
-    "Turn {turnOrdinal}: {artifactDisplayName} could not be read. Check that it still exists and is accessible.",
-  "conversationShare.issue.inputAttachment":
-    "Turn {turnOrdinal} contains a user-input attachment, which is not supported in this version. Deselect this turn.",
-  "conversationShare.issue.inputAttachmentUnavailable":
-    "Turn {turnOrdinal} contains a user-input attachment that no longer exists or cannot be read.",
-  "conversationShare.issue.inlineToolImage":
-    "Turn {turnOrdinal} contains an inline tool image that cannot be included in a public share.",
-  "conversationShare.issue.runningTurn":
-    "Turn {turnOrdinal} is still running. Wait for it to finish or deselect it.",
-  "conversationShare.issue.streamingRow":
-    "Turn {turnOrdinal} is still generating. Wait for it to finish or deselect it.",
-  "conversationShare.issue.activeToolCall":
-    "Turn {turnOrdinal} has an unfinished tool call. Deselect this turn.",
-  "conversationShare.issue.activeSubagent":
-    "Turn {turnOrdinal} has a running subtask. Wait for it to finish or deselect it.",
-  "conversationShare.issue.unsupportedTimeline":
-    "Turn {turnOrdinal} contains a timeline record that cannot be included in a public share.",
-  "conversationShare.issue.noShareableContent":
-    "The current selection has no shareable content. Select different turns.",
-  "conversationShare.issue.unsafeUrl":
-    "Turn {turnOrdinal} contains a local or inline file address, which is not supported. Remove it and try again.",
-  "conversationShare.issue.missingProductTurn":
-    "The selection is missing a complete turn identity. Re-select the conversation.",
-  "conversationShare.issue.invalidSelection":
-    "The selected turns changed. Return to selection and choose them again.",
-  "conversationShare.issue.invalidConversation":
-    "The selected conversation is incomplete. Deselect the affected turn(s) and try again.",
-  "conversationShare.issue.staleConversation":
-    "The conversation changed while the share was prepared. Return to selection and try again.",
-  "conversationShare.issue.rowsLimit":
-    "The conversation has {actual} rows, above the limit of {limit}. Reduce the selected turns.",
-  "conversationShare.issue.artifactCountLimit":
-    "The conversation has {actual} artifacts, above the limit of {limit}. Reduce the selected turns.",
-  "conversationShare.issue.artifactSizeLimit":
-    "{artifactDisplayName} is {actual}, above the per-file limit of {limit}. Deselect the turn or regenerate a smaller file.",
-  "conversationShare.issue.artifactTotalSizeLimit":
-    "Artifacts total {actual}, above the limit of {limit}. Reduce artifacts or deselect the affected turn(s).",
-  "conversationShare.issue.payloadSizeLimit":
-    "The share request is {actual}, above the limit of {limit}. Reduce the selected turns or artifacts.",
-  "conversationShare.issue.artifactManifest":
-    "The preview artifact manifest is duplicated or incomplete. Regenerate files and refresh the share panel.",
-  "conversationShare.issue.uploadIncomplete":
-    "The upload acknowledgement for {artifactDisplayName} does not match the file. Ensure it did not change and try again.",
-  "conversationShare.issue.invalidServiceResponse":
-    "The share service returned an unreadable response. Try again later.",
-  "conversationShare.issue.unknown":
-    "Sharing failed; the cause could not be determined. Retry, and provide the error details if it persists.",
+  "conversationShare.error.network": "The share connection was interrupted or timed out. Check your network and retry.",
+  "conversationShare.error.safetyCheckTimeout": "The share safety check took too long. Try again later.",
+  "conversationShare.error.invalidSelection": "The selected conversation changed. Reopen the share panel and select it again.",
+  "conversationShare.error.invalidConversation": "The selected conversation cannot be published. Review the specific issues and retry.",
+  "conversationShare.error.runningTurn": "A selected turn is still running. Deselect it and wait for it to finish before sharing.",
+  "conversationShare.error.streamingRow": "A selected response is still streaming. Wait for the turn to finish before sharing.",
+  "conversationShare.error.activeToolCall": "A selected tool call is still active. Wait for it to finish before sharing.",
+  "conversationShare.error.activeSubagent": "A selected subtask is still running. Wait for it to finish before sharing.",
+  "conversationShare.error.inputAttachment": "A user-input attachment could not be shared. Check that it still exists and try again.",
+  "conversationShare.error.inlineToolImage": "A selected turn contains an unsupported inline tool image. Deselect that turn and retry.",
+  "conversationShare.error.unsupportedTimeline": "A selected turn contains an unsupported branch or restore record. Deselect that turn and retry.",
+  "conversationShare.error.unsafeUrl": "The selected content contains a local or inline file URL. Remove it before sharing.",
+  "conversationShare.error.missingProductTurn": "The selected conversation is incomplete. Reopen the share panel and select the turn again.",
+  "conversationShare.error.artifactTypeNotAllowed": "A previewed file type is not allowed for sharing. Deselect its turn and retry.",
+  "conversationShare.error.artifactExtensionMissing": "A previewed file has no valid extension. Check the file and retry.",
+  "conversationShare.error.artifactOutsideWorkspace": "A previewed file is outside the current workspace. Regenerate or move it, then retry.",
+  "conversationShare.error.artifactChanged": "A previewed file changed before sharing. Regenerate the preview file and retry.",
+  "conversationShare.error.artifactReadFailed": "A previewed file could not be read. Check that it still exists and is accessible, then retry.",
+  "conversationShare.error.artifactSizeLimit": "A file exceeds the per-file size limit. Deselect that turn or use a smaller file, then retry.",
+  "conversationShare.error.artifactManifest": "The preview file manifest is incomplete. Regenerate the file and refresh the share panel.",
+  "conversationShare.error.payloadLimit": "The selected conversation or files exceed the sharing limit. Select less and retry.",
+  "conversationShare.error.disclosureRequired": "Review and confirm the shared content before creating the link.",
+  "conversationShare.error.uploadFailed": "Upload is incomplete or the share state changed. Try again.",
+  "conversationShare.error.connectionUnavailable": "Desktop connection is not ready. Reopen the share panel and try again.",
+  "conversationShare.error.noShareableContent": "The current selection has no shareable content. Select different turns.",
+  "conversationShare.error.summary": "Share failed: {count} issue(s) found. See the share panel for details.",
+  "conversationShare.issue.artifactTypeNotAllowed": "Turn {turnOrdinal}: {artifactDisplayName} ({artifactType}) cannot be shared and will be skipped. Supported types: {allowedFormats}.",
+  "conversationShare.issue.artifactExtensionMissing": "Turn {turnOrdinal}: the preview file has no valid extension. Check the file name and try again.",
+  "conversationShare.issue.artifactOutsideWorkspace": "Turn {turnOrdinal}: the preview file is outside the current workspace. Move or regenerate it and try again.",
+  "conversationShare.issue.artifactChanged": "Turn {turnOrdinal}: {artifactDisplayName} changed while it was being read. Regenerate the file and try again.",
+  "conversationShare.issue.contentUnavailable": "Some workflow content is shared as a summary. See the availability notes in the share.",
+  "conversationShare.issue.artifactReadFailed": "Turn {turnOrdinal}: {artifactDisplayName} could not be read. Check that it still exists and is accessible.",
+  "conversationShare.issue.inputAttachment": "Turn {turnOrdinal} contains a user-input attachment, which is not supported in this version. Deselect this turn.",
+  "conversationShare.issue.inputAttachmentUnavailable": "Turn {turnOrdinal} contains a user-input attachment that no longer exists or cannot be read.",
+  "conversationShare.issue.inlineToolImage": "Turn {turnOrdinal} contains an inline tool image that cannot be included in a public share.",
+  "conversationShare.issue.runningTurn": "Turn {turnOrdinal} is still running. Wait for it to finish or deselect it.",
+  "conversationShare.issue.streamingRow": "Turn {turnOrdinal} is still generating. Wait for it to finish or deselect it.",
+  "conversationShare.issue.activeToolCall": "Turn {turnOrdinal} has an unfinished tool call. Deselect this turn.",
+  "conversationShare.issue.activeSubagent": "Turn {turnOrdinal} has a running subtask. Wait for it to finish or deselect it.",
+  "conversationShare.issue.unsupportedTimeline": "Turn {turnOrdinal} contains a timeline record that cannot be included in a public share.",
+  "conversationShare.issue.noShareableContent": "The current selection has no shareable content. Select different turns.",
+  "conversationShare.issue.unsafeUrl": "Turn {turnOrdinal} contains a local or inline file address, which is not supported. Remove it and try again.",
+  "conversationShare.issue.missingProductTurn": "The selection is missing a complete turn identity. Re-select the conversation.",
+  "conversationShare.issue.invalidSelection": "The selected turns changed. Return to selection and choose them again.",
+  "conversationShare.issue.invalidConversation": "The selected conversation is incomplete. Deselect the affected turn(s) and try again.",
+  "conversationShare.issue.staleConversation": "The conversation changed while the share was prepared. Return to selection and try again.",
+  "conversationShare.issue.rowsLimit": "The conversation has {actual} rows, above the limit of {limit}. Reduce the selected turns.",
+  "conversationShare.issue.artifactCountLimit": "The conversation has {actual} artifacts, above the limit of {limit}. Reduce the selected turns.",
+  "conversationShare.issue.artifactSizeLimit": "{artifactDisplayName} is {actual}, above the per-file limit of {limit}. Deselect the turn or regenerate a smaller file.",
+  "conversationShare.issue.artifactTotalSizeLimit": "Artifacts total {actual}, above the limit of {limit}. Reduce artifacts or deselect the affected turn(s).",
+  "conversationShare.issue.payloadSizeLimit": "The share request is {actual}, above the limit of {limit}. Reduce the selected turns or artifacts.",
+  "conversationShare.issue.artifactManifest": "The preview artifact manifest is duplicated or incomplete. Regenerate files and refresh the share panel.",
+  "conversationShare.issue.uploadIncomplete": "The upload acknowledgement for {artifactDisplayName} does not match the file. Ensure it did not change and try again.",
+  "conversationShare.issue.invalidServiceResponse": "The share service returned an unreadable response. Try again later.",
+  "conversationShare.issue.unknown": "Sharing failed; the cause could not be determined. Retry, and provide the error details if it persists.",
   "conversationShare.issue.details": "Error details",
   "conversationShare.issue.requestIdLabel": "Server request ID",
   "conversationShare.issue.requestId": "Server request ID: {requestId}",
@@ -1168,39 +969,27 @@ const enUS: Record<string, string> = {
   "conversationShare.issue.deselectTurn": "Deselect this turn",
   "conversationShare.issue.retryPreflight": "Check again",
   "conversationShare.issue.more": "{count} more issue(s) not shown.",
-  "conversationShare.warning.summary":
-    "Shared successfully. {count} file(s) were skipped and are not included in the link.",
-  "conversationShare.warning.artifactSkipped":
-    "Turn {turnOrdinal}: {artifactDisplayName} could not be read, so it was skipped. If it should have been shared, regenerate the file and share again.",
-  "conversationShare.warning.inputAttachmentSkipped":
-    "Turn {turnOrdinal}: the input attachment is not included in the share; the turn's text is still shared.",
-  "conversationShare.warning.inputAttachmentUnavailable":
-    "Turn {turnOrdinal}: {artifactDisplayName} no longer exists or cannot be read and was skipped.",
-  "conversationShare.warning.artifactTypeSkipped":
-    "Turn {turnOrdinal}: {artifactDisplayName} ({artifactType}) is not supported and was skipped. Supported types: {allowedFormats}.",
-  "conversationShare.warning.artifactChangedSkipped":
-    "Turn {turnOrdinal}: {artifactDisplayName} changed before sharing and was skipped.",
+  "conversationShare.warning.summary": "Shared successfully. {count} file(s) were skipped and are not included in the link.",
+  "conversationShare.warning.artifactSkipped": "Turn {turnOrdinal}: {artifactDisplayName} could not be read, so it was skipped. If it should have been shared, regenerate the file and share again.",
+  "conversationShare.warning.inputAttachmentSkipped": "Turn {turnOrdinal}: the input attachment is not included in the share; the turn's text is still shared.",
+  "conversationShare.warning.inputAttachmentUnavailable": "Turn {turnOrdinal}: {artifactDisplayName} no longer exists or cannot be read and was skipped.",
+  "conversationShare.warning.artifactTypeSkipped": "Turn {turnOrdinal}: {artifactDisplayName} ({artifactType}) is not supported and was skipped. Supported types: {allowedFormats}.",
+  "conversationShare.warning.artifactChangedSkipped": "Turn {turnOrdinal}: {artifactDisplayName} changed before sharing and was skipped.",
   "conversationShare.partial.panelLabel": "Select conversations to share",
   "conversationShare.partial.empty": "There are no completed conversations to share",
   "conversationShare.preflight.reviewIssues": "Review share issues",
   "conversationShare.preflight.reviewSkipped": "Files will be skipped · Details",
   "conversationShare.preflight.reviewDeferred": "Some files need checking · Details",
   "conversationShare.partial.preflightChecking": "Checking share content…",
-  "conversationShare.partial.preflightUnavailable":
-    "Unable to check this share. Follow the instructions below.",
-  "conversationShare.partial.preflightBlocked":
-    "Some content cannot be shared. Fix the issues below first.",
-  "conversationShare.partial.preflightSkipped":
-    "{count} file(s) will not be included in the share. They will be skipped if you continue.",
-  "conversationShare.partial.preflightDeferred":
-    "Some files cannot be checked yet. They will be verified again when publishing.",
+  "conversationShare.partial.preflightUnavailable": "Unable to check this share. Follow the instructions below.",
+  "conversationShare.partial.preflightBlocked": "Some content cannot be shared. Fix the issues below first.",
+  "conversationShare.partial.preflightSkipped": "{count} file(s) will not be included in the share. They will be skipped if you continue.",
+  "conversationShare.partial.preflightDeferred": "Some files cannot be checked yet. They will be verified again when publishing.",
   "conversationShare.publish.failedTitle": "Share publication failed",
-  "conversationShare.publish.failedDescription":
-    "Review the failure reason and error details below.",
+  "conversationShare.publish.failedDescription": "Review the failure reason and error details below.",
   "conversationShare.publish.retry": "Retry generation",
   "conversationShare.publish.footerMeta": "Share {selected} conversation turn(s), {access}",
-  "conversationShare.publish.failedFooter":
-    "Your selection is preserved. Review the error and retry.",
+  "conversationShare.publish.failedFooter": "Your selection is preserved. Review the error and retry.",
   "conversationShare.partial.selectAll": "Select all",
   "conversationShare.partial.selectionCount": "{selected}/{total}",
   "conversationShare.partial.cancel": "Cancel",
@@ -1227,49 +1016,35 @@ const enUS: Record<string, string> = {
   "conversationShare.disclosure.scope.trigger": "What to check",
   "conversationShare.disclosure.scope.title": "Review scope",
   "conversationShare.disclosure.scope.reviewLabel": "Review these areas",
-  "conversationShare.disclosure.scope.conversation":
-    "Conversation content: user messages, assistant replies, and task titles",
-  "conversationShare.disclosure.scope.tools":
-    "Tool inputs and outputs: commands, parameters, and results",
-  "conversationShare.disclosure.scope.generated":
-    "Generated content: code, files, and preview content",
+  "conversationShare.disclosure.scope.conversation": "Conversation content: user messages, assistant replies, and task titles",
+  "conversationShare.disclosure.scope.tools": "Tool inputs and outputs: commands, parameters, and results",
+  "conversationShare.disclosure.scope.generated": "Generated content: code, files, and preview content",
   "conversationShare.disclosure.scope.sensitiveLabel": "Check carefully",
-  "conversationShare.disclosure.scope.sensitive":
-    "Credentials, tokens, passwords, private keys, internal addresses, and personal information",
-  "conversationShare.disclosure.scope.note":
-    "The system does not scan or redact this content automatically. Review each item before sharing.",
+  "conversationShare.disclosure.scope.sensitive": "Credentials, tokens, passwords, private keys, internal addresses, and personal information",
+  "conversationShare.disclosure.scope.note": "The system does not scan or redact this content automatically. Review each item before sharing.",
   "conversationShare.import.source": "Imported from share: {title}",
   "conversationShare.import.dividerLabel": "Imported from share",
-  "conversationShare.import.fallbackRemoteWorkspace":
-    "Imported from share: {title}. The current workspace is remote, which import does not support yet, so the session was created in the local workspace {workspacePath}.",
-  "conversationShare.import.fallbackDefaultWorkspace":
-    "Imported from share: {title}. No target workspace was available, so the session was created in the default workspace {workspacePath}.",
+  "conversationShare.import.fallbackRemoteWorkspace": "Imported from share: {title}. The current workspace is remote, which import does not support yet, so the session was created in the local workspace {workspacePath}.",
+  "conversationShare.import.fallbackDefaultWorkspace": "Imported from share: {title}. No target workspace was available, so the session was created in the default workspace {workspacePath}.",
   "conversationShare.import.downloading": "Downloading shared files: {completed}/{total}",
   "conversationShare.import.installing": "Installing shared files",
   "conversationShare.import.committing": "Creating the shared conversation",
   "conversationShare.import.complete": "Share import complete",
-  "conversationShare.import.loginRequired":
-    "This share cannot be imported anonymously. Sign in to ZCode and try again",
-  "conversationShare.import.notFound":
-    "Share not found or access denied. Check the link and your account.",
+  "conversationShare.import.loginRequired": "This share cannot be imported anonymously. Sign in to Reactor and try again",
+  "conversationShare.import.notFound": "Share not found or access denied. Check the link and your account.",
   "conversationShare.import.expired": "The share expired. Ask the author to create a new one",
   "conversationShare.import.revoked": "This share was revoked. Ask the author to share it again",
-  "conversationShare.import.integrityFailed":
-    "Share verification failed. Ask the author to create a new link.",
-  "conversationShare.import.failed":
-    "Share import failed. Try again later; if this persists, contact support.",
-  "conversationShare.import.integrityFailedWithArtifact":
-    "Verification failed for shared file {artifactDisplayName}; import stopped. Ask the author to create a new link.",
-  "conversationShare.import.failedWithArtifact":
-    "Downloading shared file {artifactDisplayName} failed. Check your network and retry.",
+  "conversationShare.import.integrityFailed": "Share verification failed. Ask the author to create a new link.",
+  "conversationShare.import.failed": "Share import failed. Try again later; if this persists, contact support.",
+  "conversationShare.import.integrityFailedWithArtifact": "Verification failed for shared file {artifactDisplayName}; import stopped. Ask the author to create a new link.",
+  "conversationShare.import.failedWithArtifact": "Downloading shared file {artifactDisplayName} failed. Check your network and retry.",
   "conversationShare.import.retry": "Retry",
   "settings.resourceGroup.item.one": "{count} item",
   "settings.resourceGroup.item.other": "{count} items",
   "pluginCreator.add": "Add",
   "pluginCreator.create": "Create plugin",
   "pluginCreator.addMarketplace": "Add plugin marketplace",
-  "pluginCreator.unavailable":
-    "Plugin Creator is unavailable. Check the connection, then enable or restore Plugin Creator in the marketplace and retry.",
+  "pluginCreator.unavailable": "Plugin Creator is unavailable. Check the connection, then enable or restore Plugin Creator in the marketplace and retry.",
   "settings.create.action": "New",
   "settings.resourceActions.import": "Import",
   "settings.resourceActions.export": "Export",
@@ -1317,7 +1092,7 @@ const enUS: Record<string, string> = {
   "quickPick.command.switchThemeToLight": "Switch theme to light",
   "quickPick.command.mcpServers": "MCP Servers",
   "quickPick.command.personalization": "Personalization",
-  "quickPick.command.skills": "Skills",
+  "quickPick.command.skills": "Manage skills",
   "quickPick.command.toggleSidebar": "Toggle sidebar",
   "quickPick.command.toggleTerminal": "Toggle terminal",
   "quickPick.command.togglePreview": "Toggle preview",
@@ -1366,12 +1141,11 @@ const enUS: Record<string, string> = {
   "extensions.mention.failed": "Couldn't load suggestions",
   "extensions.view.title": "Extension view",
   "extensions.view.loading": "Loading the extension view…",
-  "extensions.view.hostNotRunning":
-    "Extensions are not running. The view reopens when they recover.",
+  "extensions.view.hostNotRunning": "Extensions are not running. The view reopens when they recover.",
   "extensions.view.unavailable": "This extension view is not available right now.",
   "extensions.view.unsupported": "Extension views are not supported here.",
   "extensions.view.failed": "The extension view failed to load: {reason}",
-  // Extension permissions (docs/plugins/extension-host.md 17.7). The dialog body follows the spec text.
+// Extension permissions (docs/plugins/extension-host.md 17.7). The dialog body follows the spec text.
   "extensions.grants.needsConsent": "Needs permission",
   "extensions.grants.grant": "Grant",
   "extensions.grants.tier.sessions.read": "Read sessions",
@@ -1381,36 +1155,28 @@ const enUS: Record<string, string> = {
   "extensions.grants.dialog.titleRead": "Allow “{plugin}” to read sessions?",
   "extensions.grants.dialog.titleWrite": "Allow “{plugin}” to read and change sessions?",
   "extensions.grants.dialog.titleNotifications": "Allow “{plugin}” to send system notifications?",
-  "extensions.grants.dialog.notificationsBody":
-    "System notifications: the plugin can show system notifications while the window is in the background, with the plugin name before the title. At most 1 per minute and 20 per day. You can turn them off on the plugin details page; nothing is shown while system notifications are off in Settings.",
-  "extensions.grants.dialog.body":
-    "Extension code runs in the same process as other extensions, with no isolation between them. Any enabled extension can technically use the permissions granted here. Only enable plugins you trust.\n\nRead: the titles, status and full conversations of all sessions, including tool output. Write: create, fork, send messages to, interrupt, rename, open, archive and pin any session on this computer. If the target session runs in full access mode, a message from the plugin makes the Agent run tools directly.\n\nSessions in the plugin's project: the plugin can also approve or deny tool calls for you, answer the Agent's questions and switch the permission mode.\n\nActions started by a plugin show their source and are written to the audit log.",
-  "extensions.grants.dialog.fullAccessBody":
-    "Full access: the plugin can switch sessions in its project to full access, so the Agent reads and writes files, runs commands and uses the network without asking. Only grant this to plugins you trust.",
+  "extensions.grants.dialog.notificationsBody": "System notifications: the plugin can show system notifications while the window is in the background, with the plugin name before the title. At most 1 per minute and 20 per day. You can turn them off on the plugin details page; nothing is shown while system notifications are off in Settings.",
+  "extensions.grants.dialog.body": "Extension code runs in the same process as other extensions, with no isolation between them. Any enabled extension can technically use the permissions granted here. Only enable plugins you trust.\n\nRead: the titles, status and full conversations of all sessions, including tool output. Write: create, fork, send messages to, interrupt, rename, open, archive and pin any session on this computer. If the target session runs in full access mode, a message from the plugin makes the Agent run tools directly.\n\nSessions in the plugin's project: the plugin can also approve or deny tool calls for you, answer the Agent's questions and switch the permission mode.\n\nActions started by a plugin show their source and are written to the audit log.",
+  "extensions.grants.dialog.fullAccessBody": "Full access: the plugin can switch sessions in its project to full access, so the Agent reads and writes files, runs commands and uses the network without asking. Only grant this to plugins you trust.",
   "extensions.grants.grantedToast": "Granted “{plugin}”",
   "extensions.grants.revokedToast": "Revoked the permissions of “{plugin}”",
   "extensions.grants.failedToast": "Couldn't update the extension permission",
   "extensions.grants.holder": "“{plugin}” ({tiers})",
   "extensions.grants.enable.title": "Enable “{plugin}”?",
-  "extensions.grants.enable.body":
-    "Extensions already hold session permissions: {holders}.\n\nExtension code runs in the same process as other extensions, with no isolation between them. Once “{plugin}” is enabled, its code can use these permissions too. Only enable plugins you trust.",
-  "extensions.grants.enable.bodyUnknown":
-    "The granted session permissions could not be checked.\n\nExtension code runs in the same process as other extensions, with no isolation between them. Once “{plugin}” is enabled, its code can use any permission granted to any extension. Only enable plugins you trust.",
+  "extensions.grants.enable.body": "Extensions already hold session permissions: {holders}.\n\nExtension code runs in the same process as other extensions, with no isolation between them. Once “{plugin}” is enabled, its code can use these permissions too. Only enable plugins you trust.",
+  "extensions.grants.enable.bodyUnknown": "The granted session permissions could not be checked.\n\nExtension code runs in the same process as other extensions, with no isolation between them. Once “{plugin}” is enabled, its code can use any permission granted to any extension. Only enable plugins you trust.",
   "extensions.grants.enable.confirm": "Enable",
-  // Confirmation after installing from the plugin store, before activation (§17.7).
+// Confirmation after installing from the plugin store, before activation (§17.7).
   "extensions.activation.needsConfirmation": "Needs confirmation",
   "extensions.activation.description": "Newly installed extension code, not running yet",
   "extensions.activation.review": "Review",
   "extensions.activation.dialog.title": "Activate the extension code of “{plugin}”?",
-  "extensions.activation.dialog.body":
-    "Extensions already hold session permissions: {holders}.\n\n“{plugin}” was just installed from the plugin store. It contains extension code, which is not running yet. Extension code runs in the same process as other extensions, with no isolation between them. Once activated, its code can use these permissions too. Only activate plugins you trust.\n\nIf you keep it inactive, the plugin's skills and MCP still work.",
-  "extensions.activation.dialog.bodyUnknown":
-    "The granted session permissions could not be checked.\n\n“{plugin}” was just installed from the plugin store. It contains extension code, which is not running yet. Extension code runs in the same process as other extensions, with no isolation between them. Once activated, its code can use any permission granted to any extension. Only activate plugins you trust.\n\nIf you keep it inactive, the plugin's skills and MCP still work.",
+  "extensions.activation.dialog.body": "Extensions already hold session permissions: {holders}.\n\n“{plugin}” was just installed from the plugin store. It contains extension code, which is not running yet. Extension code runs in the same process as other extensions, with no isolation between them. Once activated, its code can use these permissions too. Only activate plugins you trust.\n\nIf you keep it inactive, the plugin's skills and MCP still work.",
+  "extensions.activation.dialog.bodyUnknown": "The granted session permissions could not be checked.\n\n“{plugin}” was just installed from the plugin store. It contains extension code, which is not running yet. Extension code runs in the same process as other extensions, with no isolation between them. Once activated, its code can use any permission granted to any extension. Only activate plugins you trust.\n\nIf you keep it inactive, the plugin's skills and MCP still work.",
   "extensions.activation.allow": "Activate",
   "extensions.activation.decline": "Keep inactive",
   "extensions.activation.allowedToast": "Activated “{plugin}”",
-  "extensions.activation.declinedToast":
-    "The extension code of “{plugin}” will not run. To activate it, disable and then enable the plugin in Settings.",
+  "extensions.activation.declinedToast": "The extension code of “{plugin}” will not run. To activate it, disable and then enable the plugin in Settings.",
   "extensions.activation.failedToast": "Could not update the extension",
   "extensions.permissions.title": "Permissions",
   "extensions.permissions.status.granted": "Granted",
@@ -1425,8 +1191,7 @@ const enUS: Record<string, string> = {
   "extensions.permissions.action.notificationsOn": "Turned system notifications on",
   "extensions.permissions.action.notificationsOff": "Turned system notifications off",
   "extensions.permissions.notifications": "System notifications",
-  "extensions.permissions.notificationsNote":
-    "When system notifications are off in Settings, nothing is shown even if this is on.",
+  "extensions.permissions.notificationsNote": "When system notifications are off in Settings, nothing is shown even if this is on.",
   "extensions.permissions.action.other": "{capability}",
   "extensions.permissions.action.createSession": "Created a session",
   "extensions.permissions.action.forkSession": "Forked a session",
@@ -1462,22 +1227,18 @@ const enUS: Record<string, string> = {
   "commandCenter.empty.recentTasks": "No recent tasks",
   "commandCenter.moreResults": "Show more results",
   "confirmDialog.taskDeleteTitle": "Delete this task?",
-  "confirmDialog.taskDeleteDescription":
-    "Task “{taskTitle}” will be removed from this workspace, and the current record cannot be restored.",
+  "confirmDialog.taskDeleteDescription": "Task “{taskTitle}” will be removed from this workspace, and the current record cannot be restored.",
   "confirmDialog.archivedTaskDeleteTitle": "Delete this archived task?",
-  "confirmDialog.archivedTaskDeleteDescription":
-    "Tasks will be removed from the task list and Archive.",
+  "confirmDialog.archivedTaskDeleteDescription": "Tasks will be removed from the task list and Archive.",
   "taskList.deleteAllArchived": "Delete all archived tasks",
   "taskList.archivedActions": "Archive actions",
   "taskList.archivedTaskCount": "{count} archived tasks",
   "taskList.deleteAllArchivedMenu": "Delete all archived tasks…",
   "taskList.deleteAllArchivedTitle": "Delete {count} archived tasks?",
   "taskList.deleteAllArchivedBusy": "Processing…",
-  "taskList.deleteAllArchivedUnavailable":
-    "These projects cannot be processed right now: {projects}. Try again after reconnecting.",
+  "taskList.deleteAllArchivedUnavailable": "These projects cannot be processed right now: {projects}. Try again after reconnecting.",
   "taskList.deleteAllArchivedResult": "Deleted {deleted}, skipped {skipped}, failed {failed}.",
-  "taskList.deleteAllArchivedError":
-    "The operation or list refresh failed. Refresh to check the remaining tasks.",
+  "taskList.deleteAllArchivedError": "The operation or list refresh failed. Refresh to check the remaining tasks.",
   "taskList.noArchivedTasks": "No archived tasks",
   "bots.title": "Bots",
   "bots.description": "Connect external chats and webhooks to ZCode bots.",
@@ -1491,8 +1252,7 @@ const enUS: Record<string, string> = {
   "bots.setup.setBot": "Set bot",
   "bots.setup.next": "Next",
   "bots.setup.finish": "Finish",
-  "bots.setup.bindDescription":
-    "Create a bind code, then send the bind command in the bot private chat.",
+  "bots.setup.bindDescription": "Create a bind code, then send the bind command in the bot private chat.",
   "bots.setup.bindCodeCreating": "Creating bind code...",
   "bots.setup.bindExpiresIn": "Bind code expires in {time}",
   "bots.setup.bindRegenerating": "Bind code expired. Creating a new one...",
@@ -1506,74 +1266,47 @@ const enUS: Record<string, string> = {
   "bots.setup.allowedSelectedShort": "Selected",
   "bots.setup.allowedAllDescription": "This bot can use every configured workspace.",
   "bots.setupDescription.chooseBot": "Choose the third-party chat bot to connect.",
-  "bots.setupDescription.createBot":
-    "Enter bot or webhook credentials. The next step tests connectivity first.",
-  "bots.setupDescription.bindBot":
-    "Create a bind code and bind the account in the bot private chat.",
-  "bots.setupDescription.setBot":
-    "Set the default context, allowed workspaces, and third-party reply detail.",
+  "bots.setupDescription.createBot": "Enter bot or webhook credentials. The next step tests connectivity first.",
+  "bots.setupDescription.bindBot": "Create a bind code and bind the account in the bot private chat.",
+  "bots.setupDescription.setBot": "Set the default context, allowed workspaces, and third-party reply detail.",
   "bots.setup.guide.createTitle": "Preparation guide",
   "bots.setup.guide.bindTitle": "Binding guide",
-  "bots.setup.guide.createNote":
-    "Prepare the third-party side first, then come back and click Test and continue.",
+  "bots.setup.guide.createNote": "Prepare the third-party side first, then come back and click Test and continue.",
   "bots.setup.callbackUrlTitle": "Callback URL",
-  "bots.setup.callbackUrlDescription.webhook":
-    "Your external system should send inbound message callbacks to this address. Asynchronous outbound replies still use the Webhook URL entered on the left.",
-  "bots.setup.callbackUrlDescription.webhookBind":
-    "Webhook binding uses the same endpoint: send a private callback request here with text = /bind <code>.",
+  "bots.setup.callbackUrlDescription.webhook": "Your external system should send inbound message callbacks to this address. Asynchronous outbound replies still use the Webhook URL entered on the left.",
+  "bots.setup.callbackUrlDescription.webhookBind": "Webhook binding uses the same endpoint: send a private callback request here with text = /bind <code>.",
   "bots.setup.guide.telegram.create.1": "Open @BotFather in Telegram and create a new bot.",
-  "bots.setup.guide.telegram.create.2":
-    "Copy the HTTP API token returned by BotFather and paste it into this form.",
-  "bots.setup.guide.telegram.create.3":
-    "It helps to open the bot's private chat now because the bind command must be sent there.",
-  "bots.setup.guide.telegram.bind.1":
-    "Return to Telegram and open the private chat with the bot you created.",
-  "bots.setup.guide.telegram.bind.2":
-    "If the chat has never started, press Start or send any message first, then send {command}.",
+  "bots.setup.guide.telegram.create.2": "Copy the HTTP API token returned by BotFather and paste it into this form.",
+  "bots.setup.guide.telegram.create.3": "It helps to open the bot's private chat now because the bind command must be sent there.",
+  "bots.setup.guide.telegram.bind.1": "Return to Telegram and open the private chat with the bot you created.",
+  "bots.setup.guide.telegram.bind.2": "If the chat has never started, press Start or send any message first, then send {command}.",
   "bots.setup.guide.telegram.bind.3": "Come back here after Telegram confirms the bind succeeded.",
-  "bots.setup.guide.weixin.create.1":
-    "Start Weixin QR login, scan the QR code with Weixin, then confirm on your phone.",
-  "bots.setup.guide.weixin.create.2":
-    "ZCode saves the bot_token returned by iLink automatically; after scanning, send any message to the bot in Weixin to activate the chat.",
-  "bots.setup.guide.weixin.create.3":
-    "ZCode uses a built-in iLink client: `/ilink/bot/getupdates` for long polling and `/ilink/bot/sendmessage` for replies.",
+  "bots.setup.guide.weixin.create.1": "Start Weixin QR login, scan the QR code with Weixin, then confirm on your phone.",
+  "bots.setup.guide.weixin.create.2": "ZCode saves the bot_token returned by iLink automatically; after scanning, send any message to the bot in Weixin to activate the chat.",
+  "bots.setup.guide.weixin.create.3": "ZCode uses a built-in iLink client: `/ilink/bot/getupdates` for long polling and `/ilink/bot/sendmessage` for replies.",
   "bots.setup.guide.weixin.bind.1": "Open the Weixin direct chat you want to bind.",
   "bots.setup.guide.weixin.bind.2": "Send {command}.",
-  "bots.setup.guide.weixin.bind.3":
-    "Come back here after the bind succeeds to finish the workspace and CLI defaults.",
-  "bots.setup.guide.feishu.create.1":
-    "Create a self-built app in the Feishu/Lark developer console and enable bot capability.",
-  "bots.setup.guide.feishu.create.2":
-    "Copy the App ID and App Secret, then enable persistent connection events for `im.message.receive_v1` and card actions.",
-  "bots.setup.guide.feishu.create.3":
-    "Choose the matching Feishu or Lark domain here, then paste the credentials into the form.",
-  "bots.setup.guide.feishu.bind.1":
-    "Install the app into your tenant and open a direct chat with the bot.",
+  "bots.setup.guide.weixin.bind.3": "Come back here after the bind succeeds to finish the workspace and CLI defaults.",
+  "bots.setup.guide.feishu.create.1": "Create a self-built app in the Feishu/Lark developer console and enable bot capability.",
+  "bots.setup.guide.feishu.create.2": "Copy the App ID and App Secret, then enable persistent connection events for `im.message.receive_v1` and card actions.",
+  "bots.setup.guide.feishu.create.3": "Choose the matching Feishu or Lark domain here, then paste the credentials into the form.",
+  "bots.setup.guide.feishu.bind.1": "Install the app into your tenant and open a direct chat with the bot.",
   "bots.setup.guide.feishu.bind.2": "Send {command} in that direct chat.",
-  "bots.setup.guide.feishu.bind.3":
-    "Return here after the bind succeeds to finish the workspace and CLI defaults.",
-  "bots.setup.guide.webhook.create.1":
-    "Webhook mode does not require a native bot in the third-party product; your integration only needs to POST messages to ZCode.",
-  "bots.setup.guide.webhook.create.2":
-    "Set a shared secret first; add an outbound webhook URL as well if you want asynchronous replies pushed back.",
-  "bots.setup.guide.webhook.create.3":
-    "Keep one stable userId per external user so binding and future context resolve to the same person.",
-  "bots.setup.guide.webhook.bind.1":
-    "POST a private-message callback to ZCode's `/api/bots/webhook` endpoint.",
-  "bots.setup.guide.webhook.bind.2":
-    'The payload should at least include this botId, a stable userId, `chatType: "private"`, and set text to {command}.',
-  "bots.setup.guide.webhook.bind.3":
-    "If the bot uses a secret, also send `x-zcode-bot-secret`; then return here after the bind succeeds.",
+  "bots.setup.guide.feishu.bind.3": "Return here after the bind succeeds to finish the workspace and CLI defaults.",
+  "bots.setup.guide.webhook.create.1": "Webhook mode does not require a native bot in the third-party product; your integration only needs to POST messages to ZCode.",
+  "bots.setup.guide.webhook.create.2": "Set a shared secret first; add an outbound webhook URL as well if you want asynchronous replies pushed back.",
+  "bots.setup.guide.webhook.create.3": "Keep one stable userId per external user so binding and future context resolve to the same person.",
+  "bots.setup.guide.webhook.bind.1": "POST a private-message callback to ZCode's `/api/bots/webhook` endpoint.",
+  "bots.setup.guide.webhook.bind.2": 'The payload should at least include this botId, a stable userId, `chatType: "private"`, and set text to {command}.',
+  "bots.setup.guide.webhook.bind.3": "If the bot uses a secret, also send `x-zcode-bot-secret`; then return here after the bind succeeds.",
   "bots.setup.footer.choose": "Choose a supported bot to continue.",
   "bots.setup.footer.create": "Connectivity must pass before binding.",
   "bots.setup.testSuccess": "Connectivity test passed",
   "bots.setup.testFailed": "Connectivity test failed",
-  "bots.setup.footer.bind":
-    "The bind code initially allows all workspaces; the final scope is saved next.",
+  "bots.setup.footer.bind": "The bind code initially allows all workspaces; the final scope is saved next.",
   "bots.setup.footer.set": "Finish enables the bot and returns it to the added list.",
   "bots.setup.discardTitle": "Discard this bot?",
-  "bots.setup.discardDescription":
-    "This setup flow is not finished. The temporary bot will be deleted.",
+  "bots.setup.discardDescription": "This setup flow is not finished. The temporary bot will be deleted.",
   "bots.setup.discardConfirm": "Discard setup",
   "bots.refresh": "Refresh bots",
   "bots.namePlaceholder": "Bot name",
@@ -1602,17 +1335,13 @@ const enUS: Record<string, string> = {
   "bots.replyGranularity": "Bot reply granularity",
   "bots.replyGranularity.description": "Message detail level.",
   "bots.replyGranularity.assistantChanges": "Standard reply",
-  "bots.replyGranularity.assistantChanges.description":
-    "Send assistant text and file changes, without tool-call progress.",
+  "bots.replyGranularity.assistantChanges.description": "Send assistant text and file changes, without tool-call progress.",
   "bots.replyGranularity.assistantToolcallsChanges": "Full reply",
-  "bots.replyGranularity.assistantToolcallsChanges.description":
-    "Send assistant text, tool-call progress, and file changes.",
+  "bots.replyGranularity.assistantToolcallsChanges.description": "Send assistant text, tool-call progress, and file changes.",
   "bots.replyGranularity.summaryChanges": "Summary reply",
-  "bots.replyGranularity.summaryChanges.description":
-    "Send only the final result and change summary for quieter notifications.",
+  "bots.replyGranularity.summaryChanges.description": "Send only the final result and change summary for quieter notifications.",
   "bots.replyGranularity.streamingCard": "Streaming card",
-  "bots.replyGranularity.streamingCard.description":
-    "Feishu/Lark only support Card JSON 2.0 streaming cards, with tool calls shown only as collapsed summaries.",
+  "bots.replyGranularity.streamingCard.description": "Feishu/Lark only support Card JSON 2.0 streaming cards, with tool calls shown only as collapsed summaries.",
   "bots.add": "Add",
   "bots.channel.telegram": "Telegram",
   "bots.channel.weixin": "Weixin",
@@ -1624,8 +1353,7 @@ const enUS: Record<string, string> = {
   "bots.channel.webhook": "Webhook",
   "bots.newBot.title": "New bot",
   "bots.newBot.chooseChannel": "Choose channel",
-  "bots.newBot.description":
-    "Choose where this bot will receive messages. After selecting a channel, configure credentials, binding, allowed workspaces, and defaults.",
+  "bots.newBot.description": "Choose where this bot will receive messages. After selecting a channel, configure credentials, binding, allowed workspaces, and defaults.",
   "bots.newBot.selectProviderHint": "Choose a channel on the right to create a bot.",
   "bots.newBot.fallbackName": "New bot",
   "bots.newBot.comingSoon": "Coming soon",
@@ -1634,8 +1362,7 @@ const enUS: Record<string, string> = {
   "bots.newBot.providerDescription.feishu": "Scan to create an app, then bind by message.",
   "bots.newBot.providerDescription.lark": "Scan to create an app, then bind by message.",
   "bots.newBot.providerDescription.dingding": "DingTalk bot integration is planned.",
-  "bots.newBot.providerDescription.webhook":
-    "Receive callbacks from your own system and optionally push replies back.",
+  "bots.newBot.providerDescription.webhook": "Receive callbacks from your own system and optionally push replies back.",
   "bots.newBot.providerDescription.discord": "Discord bot integration is planned.",
   "bots.newBot.providerDescription.wecom": "WeCom bot integration is planned.",
   "bots.empty": "No bots configured.",
@@ -1648,25 +1375,21 @@ const enUS: Record<string, string> = {
   "bots.webhookUrl": "Webhook URL",
   "bots.providerSettings": "Channel settings",
   "bots.providerSettings.telegram": "Save the BotFather token.",
-  "bots.providerSettings.weixin":
-    "Credentials are saved after scan; the first Weixin message activates the chat.",
+  "bots.providerSettings.weixin": "Credentials are saved after scan; the first Weixin message activates the chat.",
   "bots.providerSettings.feishu": "Scan to get app credentials.",
   "bots.providerSettings.lark": "Scan to get app credentials.",
-  "bots.providerSettings.webhook":
-    "Webhook uses a callback secret for inbound requests and an optional outbound URL for replies.",
+  "bots.providerSettings.webhook": "Webhook uses a callback secret for inbound requests and an optional outbound URL for replies.",
   "bots.providerSettings.discord": "Discord support is not available yet.",
   "bots.providerSettings.wecom": "WeCom support is not available yet.",
   "bots.telegramBotToken": "Link bot",
   "bots.weixinRegistrationTitle": "Weixin QR login",
-  "bots.weixinRegistrationDescription":
-    "Scan to log in, then send any message in Weixin to activate the chat.",
+  "bots.weixinRegistrationDescription": "Scan to log in, then send any message in Weixin to activate the chat.",
   "bots.weixinRegistrationButton": "Scan",
   "bots.weixinRegistrationQrAlt": "Weixin login QR code",
   "bots.weixinRegistrationScanHint": "Scan with Weixin and confirm login.",
   "bots.weixinRegistrationStarted": "Weixin QR login started",
   "bots.weixinRegistrationSuccess": "Weixin bot linked. Send any message in Weixin to activate it.",
-  "bots.weixinActivationHint":
-    "Send any message to the bot in Weixin; the first message will receive a welcome and command guide.",
+  "bots.weixinActivationHint": "Send any message to the bot in Weixin; the first message will receive a welcome and command guide.",
   "bots.weixinRegistrationFailed": "Failed to start Weixin QR login: {error}",
   "bots.weixinRegistration.pending": "Waiting for scan",
   "bots.weixinRegistration.scanned": "Scanned, waiting for confirmation",
@@ -1697,8 +1420,7 @@ const enUS: Record<string, string> = {
   "bots.runtime.telegramLongPollingRunning": "Telegram long polling is running.",
   "bots.runtime.telegramLongPollingStarting": "Telegram long polling is starting.",
   "bots.runtime.telegramLongPollingStopped": "Telegram long polling is stopped.",
-  "bots.runtime.telegramLongPollingHandledElsewhere":
-    "Telegram long polling is handled by another ZCode window.",
+  "bots.runtime.telegramLongPollingHandledElsewhere": "Telegram long polling is handled by another ZCode window.",
   "bots.runtime.telegramTokenMissing": "Telegram bot credential is missing.",
   "bots.runtime.telegramPollingFailedRetrying": "Telegram polling failed; retrying.",
   "bots.runtime.feishuWebSocketStarting": "Feishu WebSocket is starting.",
@@ -1713,16 +1435,11 @@ const enUS: Record<string, string> = {
   "bots.runtime.feishuConnectionInterrupted": "Feishu connection interrupted",
   "bots.runtime.larkConnectionInterrupted": "Lark connection interrupted",
   "bots.runtime.boundConnectionInterrupted": "Disconnected",
-  "bots.runtime.boundConnectionInterruptedDescription":
-    "The bot is bound, but its persistent connection is interrupted.",
-  "bots.runtime.credentialsSavedConnectionFailedDescription":
-    "App credentials are saved, but the persistent connection failed.",
-  "bots.runtime.connectionBlocksBinding":
-    "The bot cannot receive messages, so binding is temporarily unavailable.",
-  "bots.runtime.feishuConnectionRecoverySuggestion":
-    "The long-connection limit may have been reached, or Feishu may be busy. Try again later; if the problem persists, bind a new bot.",
-  "bots.runtime.larkConnectionRecoverySuggestion":
-    "The long-connection limit may have been reached, or Lark may be busy. Try again later; if the problem persists, bind a new bot.",
+  "bots.runtime.boundConnectionInterruptedDescription": "The bot is bound, but its persistent connection is interrupted.",
+  "bots.runtime.credentialsSavedConnectionFailedDescription": "App credentials are saved, but the persistent connection failed.",
+  "bots.runtime.connectionBlocksBinding": "The bot cannot receive messages, so binding is temporarily unavailable.",
+  "bots.runtime.feishuConnectionRecoverySuggestion": "The long-connection limit may have been reached, or Feishu may be busy. Try again later; if the problem persists, bind a new bot.",
+  "bots.runtime.larkConnectionRecoverySuggestion": "The long-connection limit may have been reached, or Lark may be busy. Try again later; if the problem persists, bind a new bot.",
   "bots.runtime.errorCode": "Error code",
   "bots.runtime.errorDetail": "Details",
   "bots.runtime.unknownError": "Unknown connection error",
@@ -1750,8 +1467,7 @@ const enUS: Record<string, string> = {
   "bots.editDescription": "Review runtime state, default context, reply detail, and bound users.",
   "bots.edit.basicSettings": "Basic settings",
   "bots.edit.binding": "Bound users",
-  "bots.edit.emptyUsers":
-    "No users bound yet. Create a bind code, then send the bind command in the bot private chat.",
+  "bots.edit.emptyUsers": "No users bound yet. Create a bind code, then send the bind command in the bot private chat.",
   "bots.edit.userWorkspaces": "{count} workspace(s) allowed",
   "bots.test": "Test",
   "bots.bind": "Bind",
@@ -1759,21 +1475,18 @@ const enUS: Record<string, string> = {
   "bots.delete": "Delete bot",
   "bots.delete.description": "Remove this bot.",
   "bots.deleteConfirmTitle": 'Delete bot "{name}"?',
-  "bots.deleteConfirmDescription":
-    "This removes the bot configuration, credentials, and binding state. This cannot be undone.",
+  "bots.deleteConfirmDescription": "This removes the bot configuration, credentials, and binding state. This cannot be undone.",
   "bots.bindCode": "Binding code",
   "bots.bindHint": "Send {command} in a private bot chat.",
   "bots.bindCodeExpires": "Bind code expires in {time}",
   "bots.bindCodeExpired": "Bind code expired. Generate a new code.",
   "bots.bindSuccess": "Bound successfully",
   "bots.copyBindCommand": "Copy bind command",
-  "bots.bindCommandGuide":
-    "Copy the bind command below, then send it to the bot in a private chat.",
+  "bots.bindCommandGuide": "Copy the bind command below, then send it to the bot in a private chat.",
   "bots.bindCommandStep.copy": "Copy the bind command",
   "bots.bindCommandStep.openChat": "Open the private chat with the bot",
   "bots.bindCommandStep.send": "Paste and send it to bind the current workspace",
-  "bots.bindCommandCopied":
-    "Bind command copied. Open the private bot chat, then paste and send it.",
+  "bots.bindCommandCopied": "Bind command copied. Open the private bot chat, then paste and send it.",
   "bots.bindCommandCopyFailed": "Failed to copy bind command: {error}",
   "bots.loadFailed": "Failed to load bots: {error}",
   "bots.saveSuccess": "Bot saved",
@@ -1784,44 +1497,36 @@ const enUS: Record<string, string> = {
   "bots.unbindSuccess": "Bot unbound",
   "bots.unbindFailed": "Failed to unbind bot: {error}",
   "bots.deleteFailed": "Failed to delete bot: {error}",
-
-  // Welcome / Login
-  "welcome.title": "Welcome to ZCode",
+// Welcome / Login
+  "welcome.title": "Welcome to Reactor",
   "welcome.username": "Username",
   "welcome.password": "Password",
   "welcome.login": "Login",
   "welcome.loggingIn": "Logging in...",
   "welcome.loginFailed": "Login failed",
-  "login.title": "Welcome to ZCode",
-  "login.description": "Log in to Z.AI to start using ZCode",
+  "login.title": "Welcome to Reactor",
+  "login.description": "Connect your account to start using Reactor",
   "login.copyright": "© 2026 ZCode All rights reserved.",
   "login.agreement.prefix": "By signing in, you agree to our",
   "login.agreement.conjunction": "and",
   "login.agreement.terms": "Terms of Service",
   "login.agreement.privacy": "Privacy Policy",
   "login.singleLogin.browserButton": "Login with Browser",
-  // 切换链接使用目标区域语言，和当前界面语言相反：给目标区域用户看的入口。
+// 切换链接使用目标区域语言，和当前界面语言相反：给目标区域用户看的入口。
   "login.singleLogin.switchToGlobal": "Switch to Global",
   "login.singleLogin.switchToDomestic": "切换到中国",
   "login.singleLogin.waiting": "Waiting for browser authentication...",
-  "login.oauth.activeProviderHint":
-    "Current active provider: {provider}. Signing in again replaces the current identity.",
+  "login.oauth.activeProviderHint": "Current active provider: {provider}. Signing in again replaces the current identity.",
   "login.credentialStore.title": "Credential storage needs recovery",
-  "login.credentialStore.description":
-    "The credential file is damaged. You can back it up and create an empty credential store.",
+  "login.credentialStore.description": "The credential file is damaged. You can back it up and create an empty credential store.",
   "login.credentialStore.restore": "Back up and reset credentials",
-  "login.credentialStore.confirm":
-    "This resets all stored credentials. You will need to sign in again and reconfigure API keys, bots, MCP services and remote access. The original file will be preserved in a verified backup. Cancel to keep the original file unchanged.",
-  "login.credentialStore.done":
-    "The original file was backed up and the empty credential store is ready. Reload to sign in again.",
-  "login.credentialStore.changed":
-    "The credential file has changed. Nothing was reset. Reload to use its current state.",
-  "login.credentialStore.failed":
-    "Recovery could not be completed or confirmed. Check the connection, available disk space and file permissions, then try again.",
+  "login.credentialStore.confirm": "This resets all stored credentials. You will need to sign in again and reconfigure API keys, bots, MCP services and remote access. The original file will be preserved in a verified backup. Cancel to keep the original file unchanged.",
+  "login.credentialStore.done": "The original file was backed up and the empty credential store is ready. Reload to sign in again.",
+  "login.credentialStore.changed": "The credential file has changed. Nothing was reset. Reload to use its current state.",
+  "login.credentialStore.failed": "Recovery could not be completed or confirmed. Check the connection, available disk space and file permissions, then try again.",
   "login.credentialStore.reload": "Reload",
   "login.oauth.loadingProviders": "Loading account providers...",
-  "login.oauth.noProviders":
-    "No account providers are available right now. Please try again later.",
+  "login.oauth.noProviders": "No account providers are available right now. Please try again later.",
   "login.oauth.button": "Continue with {provider}",
   "login.oauth.button.zai": "Connect to Z.ai",
   "login.oauth.button.bigmodel": "Connect to BigModel",
@@ -1849,32 +1554,27 @@ const enUS: Record<string, string> = {
   "login.apiKey.cancel": "Cancel",
   "login.apiKey.continue": "Continue",
   "login.apiKey.emptyError": "Enter an API key.",
-  "login.apiKey.providerMissingError":
-    "Built-in provider configuration for {provider} was not found. Please try again later.",
+  "login.apiKey.providerMissingError": "Built-in provider configuration for {provider} was not found. Please try again later.",
   "login.apiKey.saveError": "Failed to save API key: {error}",
   "login.apiKey.skipError": "Failed to skip API key setup: {error}",
   "login.skip": "Skip for now",
   "settings.onboarding": "Onboard",
-  "settings.onboardingDescription":
-    "Choose your role, interface mode, and preferences again. Use Migration settings to import data.",
+  "settings.onboardingDescription": "Choose your role, interface mode, and preferences again. Use Migration settings to import data.",
   "settings.onboardingOpen": "Open onboarding",
-
-  // App header
+// App header
   "app.currentTheme": "Current: {theme}",
-  "app.login": "Connect",
+  "app.login": "Sign in",
   "app.logout": "Disconnect",
-  "logout.confirm.title": "Disconnect and restart ZCode?",
-  "logout.confirm.descriptionWithRunningSessions":
-    "{count} session(s) are currently running. Disconnecting will interrupt them and restart the app.",
-  "logout.confirm.descriptionDefault":
-    "The app will restart after disconnecting. You will need to connect your account again.",
+  "logout.confirm.title": "Disconnect and restart Reactor?",
+  "logout.confirm.descriptionWithRunningSessions": "{count} session(s) are currently running. Disconnecting will interrupt them and restart the app.",
+  "logout.confirm.descriptionDefault": "The app will restart after disconnecting. You will need to connect your account again.",
   "logout.confirm.ok": "Disconnect and restart",
   "logout.confirm.cancel": "Cancel",
   "sidebar.profile.accountId": "ID: {id}",
   "sidebar.profile.copyUserId": "Click to copy user ID",
   "sidebar.profile.userIdCopied": "User ID copied",
   "sidebar.profile.userIdCopyFailed": "Copy failed. Please try again",
-  "sidebar.profile.notLoggedIn": "Connect",
+  "sidebar.profile.notLoggedIn": "Sign in",
   "app.selectFile": "Select a file to get started",
   "app.workspace": "Workspace",
   "browser.title": "Browser",
@@ -1884,8 +1584,7 @@ const enUS: Record<string, string> = {
   "browser.permission.siteInfo": "View site information",
   "browser.permission.settings": "Site permissions",
   "browser.permission.close": "Close",
-  "browser.permission.saved":
-    "Permissions updated. Reload the page to apply changes to active resources.",
+  "browser.permission.saved": "Permissions updated. Reload the page to apply changes to active resources.",
   "browser.permission.readError": "Could not load permissions.",
   "browser.permission.saveError": "Could not save permission changes.",
   "browser.permission.resetError": "Could not complete the permission reset.",
@@ -1919,8 +1618,7 @@ const enUS: Record<string, string> = {
   "browser.permission.deviceBluetooth": "Bluetooth devices",
   "browser.permission.unknownCapability": "an unknown capability",
   "browser.permission.screenShareTitle": "{origin} wants to share your screen",
-  "browser.permission.screenShareDescription":
-    "Choose the screen or window to share. This choice applies only to this session.",
+  "browser.permission.screenShareDescription": "Choose the screen or window to share. This choice applies only to this session.",
   "browser.permission.deviceTitle": "{origin} wants to connect a device",
   "browser.permission.connect": "Connect",
   "browser.permission.screenGroup.screen": "Entire Screen",
@@ -1955,13 +1653,11 @@ const enUS: Record<string, string> = {
   "browser.responsive.fitToWindow": "Fit to window",
   "browser.responsive.dimensionRangeError": "Enter an integer between {min} and {max}",
   "browser.design.pluginRequired.title": "Design plugin required",
-  "browser.design.pluginRequired.description":
-    "Selecting elements requires the Design plugin to be installed and enabled. Open its plugin page to set it up.",
+  "browser.design.pluginRequired.description": "Selecting elements requires the Design plugin to be installed and enabled. Open its plugin page to set it up.",
   "browser.design.pluginRequired.action": "Open plugin page",
   "browser.design.pluginCheckFailed": "Could not load the Design plugin status. Please try again.",
   "browser.design.toolbar": "Design tools",
-  "browser.design.contextUnavailable":
-    "No composer can receive this. Open an editable conversation first.",
+  "browser.design.contextUnavailable": "No composer can receive this. Open an editable conversation first.",
   "browser.design.panel": "Adjust panel",
   "browser.design.variant": "Version",
   "browser.design.variant.all": "All versions",
@@ -1969,8 +1665,7 @@ const enUS: Record<string, string> = {
   "browser.design.slideNext": "Next slide",
   "browser.design.inspector.title": "Adjust panel",
   "browser.design.inspector.layout": "Layout",
-  "browser.design.inspector.empty":
-    "Click an element on the page to inspect and edit it. Shift-click to select more.",
+  "browser.design.inspector.empty": "Click an element on the page to inspect and edit it. Shift-click to select more.",
   "browser.design.inspector.selectedCount": "{count} selected",
   "browser.design.inspector.close": "Close adjust panel",
   "browser.design.inspector.width": "W",
@@ -2011,18 +1706,13 @@ const enUS: Record<string, string> = {
   "browser.design.edit.customColor": "Custom",
   "browser.design.variables": "Variables",
   "browser.design.variables.empty": "This page has no adjustable variables",
-  "browser.design.source.pageUnavailable":
-    "View only here. To change it, tell the agent in the composer.",
-  "browser.design.source.notMatched":
-    "This element is generated by the page, so it's view only here. To change it, tell the agent in the composer.",
+  "browser.design.source.pageUnavailable": "View only here. To change it, tell the agent in the composer.",
+  "browser.design.source.notMatched": "This element is generated by the page, so it's view only here. To change it, tell the agent in the composer.",
   "browser.design.source.notFound": "This element wasn't found in the source. Nothing was written.",
-  "browser.design.source.changed":
-    "The file was just changed by someone else. Nothing was written.",
+  "browser.design.source.changed": "The file was just changed by someone else. Nothing was written.",
   "browser.design.source.undoUnavailable": "The file has changed since. Undo is unavailable.",
-  "browser.design.source.writeFailed":
-    "Couldn't read or write the source file. Nothing was written.",
-  "browser.design.source.unreadable":
-    "To keep this file safe, it's view only here. To change it, tell the agent in the composer.",
+  "browser.design.source.writeFailed": "Couldn't read or write the source file. Nothing was written.",
+  "browser.design.source.unreadable": "To keep this file safe, it's view only here. To change it, tell the agent in the composer.",
   "browser.elementPicker.start": "Select page element for chat",
   "browser.elementPicker.cancel": "Cancel element selection",
   "browser.elementPickerFailed": "Failed to select page element: {message}",
@@ -2038,19 +1728,16 @@ const enUS: Record<string, string> = {
   "browser.recentVisits.title": "Recently visited",
   "browser.recentVisits.remove": "Remove from recent visits",
   "browser.guestFailed.title": "The built-in browser failed to start",
-  "browser.guestFailed.description":
-    "The browser process exited before it could display the page. You can retry after checking the system environment.",
+  "browser.guestFailed.description": "The browser process exited before it could display the page. You can retry after checking the system environment.",
   "browser.guestFailed.detail": "Renderer: {reason} (exit code {exitCode})",
   "browser.guestFailed.retry": "Retry browser",
   "browser.invalidUrl": "Only http, https, file, about, and data URLs are supported",
   "browser.loadFailed": "Failed to load page: {message}",
   "browser.loadError.title": "This page could not be opened",
   "browser.loadError.certTitle": "This site's HTTPS certificate is not trusted",
-  "browser.loadError.certHint":
-    'If you trust this address, enable "Ignore certificate errors" under Settings → Browser → Security, then restart the app to access it.',
+  "browser.loadError.certHint": 'If you trust this address, enable "Ignore certificate errors" under Settings → Browser → Security, then restart the app to access it.',
   "browser.loadError.retry": "Reload",
-  "browser.resizeDuringOperationWarning":
-    "The browser size changed and may affect the current automated action",
+  "browser.resizeDuringOperationWarning": "The browser size changed and may affect the current automated action",
   "diff.title": "Diff",
   "diff.toggle": "Toggle diff panel",
   "diff.close": "Close diff panel",
@@ -2109,8 +1796,7 @@ const enUS: Record<string, string> = {
   "chat.selections.addToTask": "Add to chat",
   "chat.selections.askInSideChat": "Add in side chat",
   "chat.selections.comment": "Annotate",
-  "chat.selections.commentPlaceholder":
-    "Add a comment (optional); it's sent to the model with this text",
+  "chat.selections.commentPlaceholder": "Add a comment (optional); it's sent to the model with this text",
   "chat.selections.commentHint": "Can be left empty · Shift + ↵ for new line",
   "chat.selections.commentSave": "Add annotation",
   "chat.selections.commentAddTitle": "Add annotation · comment optional",
@@ -2124,8 +1810,7 @@ const enUS: Record<string, string> = {
   "chat.selections.listHeader": "{count} annotations will be sent with your next message",
   "chat.selections.listHint": "Numbers match the reply",
   "chat.selections.removeAll": "Remove all annotations",
-  "chat.selections.sideBlocked":
-    "Resolve the side conversation request before adding another selection.",
+  "chat.selections.sideBlocked": "Resolve the side conversation request before adding another selection.",
   "chat.selections.count": "{count} annotations",
   "chat.selections.remove": "Delete annotation",
   "chat.selections.type.user": "User message",
@@ -2137,6 +1822,7 @@ const enUS: Record<string, string> = {
   "chat.selections.limit.total": "Annotations can quote at most 16,000 characters in total.",
   "sidePane.launcher.selection-side-conversation": "Continue a conversation in the side pane.",
   "sidePane.launcher.sites": "View sites, deployments, and usage.",
+  "sidePane.launcher.files": "Browse the workspace file tree.",
   "sidePane.launcher.review": "Review code changes and diffs.",
   "sidePane.launcher.terminal": "Run commands and view output.",
   "sidePane.launcher.browser": "Browse websites and preview apps.",
@@ -2218,7 +1904,7 @@ const enUS: Record<string, string> = {
   "modelTrajectory.refresh": "Refresh",
   "modelTrajectory.close": "Close",
   "modelTrajectory.loading": "Loading trajectory…",
-  "modelTrajectory.empty": "No model calls recorded (only ZCode Agent writes model-io)",
+  "modelTrajectory.empty": "No model calls recorded (only Reactor Agent writes model-io)",
   "modelTrajectory.error": "Failed to load trajectory",
   "modelTrajectory.truncatedNotice": "Too many records, showing the most recent calls",
   "modelTrajectory.summaryCalls": "{count} calls",
@@ -2270,8 +1956,7 @@ const enUS: Record<string, string> = {
   "treemapping.summary.diff": "Diff",
   "treemapping.summary.views": "Views",
   "treemapping.empty.title": "No file activity yet",
-  "treemapping.empty.description":
-    "Treemapping appears after this turn reads, searches, edits, creates, or deletes files.",
+  "treemapping.empty.description": "Treemapping appears after this turn reads, searches, edits, creates, or deletes files.",
   "treemapping.empty.running": "{count} tool call(s) are running without a file path yet.",
   "treemapping.change.written": "Written",
   "treemapping.change.modified": "Modified",
@@ -2279,10 +1964,8 @@ const enUS: Record<string, string> = {
   "treemapping.change.viewed": "Viewed only",
   "treemapping.detail.directoryFiles": "{count} files",
   "diff.placeholder.badge": "UI placeholder",
-  "diff.placeholder.description":
-    "This phase focuses on the right-side Diff panel shell first. Real Git services and command execution will be connected later.",
-  "diff.placeholder.toast":
-    "The Diff panel is still using UI placeholder mode for now because the Git service is not fully wired up yet.",
+  "diff.placeholder.description": "This phase focuses on the right-side Diff panel shell first. Real Git services and command execution will be connected later.",
+  "diff.placeholder.toast": "The Diff panel is still using UI placeholder mode for now because the Git service is not fully wired up yet.",
   "git.readonly": "Read-only",
   "git.head.detached": "Detached HEAD",
   "git.summary.aheadBehind": "Ahead {ahead} / Behind {behind}",
@@ -2306,19 +1989,15 @@ const enUS: Record<string, string> = {
   "git.kind.conflicted": "Conflicted",
   "git.diff.title": "Diff preview",
   "git.diff.selectFile": "Select a file to preview the diff",
-  "git.diff.selectFileDescription":
-    "Switch sources, expand directories, and pick a file on the left to preview its diff here.",
+  "git.diff.selectFileDescription": "Switch sources, expand directories, and pick a file on the left to preview its diff here.",
   "git.diff.binaryTitle": "Binary diff preview is unavailable",
   "git.diff.truncatedTitle": "Diff has been truncated",
   "git.diff.unavailableTitle": "This diff is unavailable right now",
-  "git.diff.unavailableDescription":
-    "The placeholder data currently keeps summary information only. Full results will appear after the real service is connected.",
-  "diff.loading.description":
-    "Loading the real diff data from the environment that owns this workspace.",
+  "git.diff.unavailableDescription": "The placeholder data currently keeps summary information only. Full results will appear after the real service is connected.",
+  "diff.loading.description": "Loading the real diff data from the environment that owns this workspace.",
   "diff.error.title": "Failed to load diff data",
   "diff.error.description": "Please try again later. Current error: {message}",
-  "diff.preview.truncatedLines":
-    "Diff preview truncated: {count} lines omitted to keep UI responsive.",
+  "diff.preview.truncatedLines": "Diff preview truncated: {count} lines omitted to keep UI responsive.",
   "sidePane.tabOverview": "Search tabs",
   "sidePane.searchTabs": "Search tabs...",
   "sidePane.openTabs": "Open tabs",
@@ -2348,47 +2027,35 @@ const enUS: Record<string, string> = {
   "git.tree.searchPlaceholder": "Filter files...",
   "git.tree.clearSearch": "Clear file filter",
   "git.tree.emptyTitle": "No directories are available here",
-  "git.tree.emptyDescription":
-    "This source does not currently expose any directory structure for navigation.",
+  "git.tree.emptyDescription": "This source does not currently expose any directory structure for navigation.",
   "git.tree.emptySearchTitle": "No files match this filter",
-  "git.tree.emptySearchDescription":
-    "Adjust the search text, or clear the filter to see every file in the current tree.",
+  "git.tree.emptySearchDescription": "Adjust the search text, or clear the filter to see every file in the current tree.",
   "git.tree.emptyDirectoryTitle": "No changed files are in this directory",
-  "git.tree.emptyDirectoryDescription":
-    "Switch to another directory, or click the current directory again to return to the full list.",
+  "git.tree.emptyDirectoryDescription": "Switch to another directory, or click the current directory again to return to the full list.",
   "git.selection.count": "{count} selected",
   "git.selection.toggle": "Toggle selection for {file}",
   "git.empty.title": "No changes are available in this source",
-  "git.empty.description":
-    "Switch to another source, or wait until this workspace has new Git changes to inspect.",
+  "git.empty.description": "Switch to another source, or wait until this workspace has new Git changes to inspect.",
   "git.loading.description": "Reading Git status and changed files for the current workspace.",
   "git.error.title": "Could not load Git changes",
   "git.error.description": "Git returned an error: {message}",
   "git.empty.gitUnavailableTitle": "Git is not available in this environment",
-  "git.empty.gitUnavailableDescription":
-    "Install Git first, or make sure the current runtime environment can execute the git command.",
+  "git.empty.gitUnavailableDescription": "Install Git first, or make sure the current runtime environment can execute the git command.",
   "git.empty.notRepositoryTitle": "This workspace is not inside a Git repository",
-  "git.empty.notRepositoryDescription":
-    "Open a Git repository directory and this pane will show changes scoped to the current workspace.",
+  "git.empty.notRepositoryDescription": "Open a Git repository directory and this pane will show changes scoped to the current workspace.",
   "git.empty.lastTurnTitle": "The current task has no last-turn file changes yet",
-  "git.empty.lastTurnDescription":
-    "Once the agent writes files, this view will reuse the existing task snapshot as a read-only review surface.",
+  "git.empty.lastTurnDescription": "Once the agent writes files, this view will reuse the existing task snapshot as a read-only review surface.",
   "git.commit.identityTitle": "Commit identity",
-  "git.commit.identityMissing":
-    "Real user.name / user.email loading is not connected yet, so the commit button stays disabled for now.",
-  "git.commit.noStagedChanges":
-    "There are no staged changes yet. Select files on the left and stage them first.",
+  "git.commit.identityMissing": "Real user.name / user.email loading is not connected yet, so the commit button stays disabled for now.",
+  "git.commit.noStagedChanges": "There are no staged changes yet. Select files on the left and stage them first.",
   "git.commit.enterMessage": "Enter a commit message.",
-  "git.commit.ready":
-    "The frontend validation is satisfied. The real commit will work once the service layer is connected.",
-  "git.commit.placeholder":
-    "Enter a commit message (UI placeholder only, no real git commit will run yet)",
+  "git.commit.ready": "The frontend validation is satisfied. The real commit will work once the service layer is connected.",
+  "git.commit.placeholder": "Enter a commit message (UI placeholder only, no real git commit will run yet)",
   "git.actionMenu.trigger": "Commit or push",
   "git.actionMenu.trigger.ariaLabel": "Commit or push",
   "git.actionMenu.push": "Push",
   "git.actionMenu.commitDialog.title": "Commit changes",
-  "git.actionMenu.commitDialog.description":
-    "Save the current uncommitted workspace changes as a commit.",
+  "git.actionMenu.commitDialog.description": "Save the current uncommitted workspace changes as a commit.",
   "git.actionMenu.commitDialog.currentBranchLabel": "Current branch",
   "git.actionMenu.commitDialog.changesLabel": "Changes",
   "git.actionMenu.commitDialog.changesValue": "{count} files",
@@ -2401,29 +2068,22 @@ const enUS: Record<string, string> = {
   "git.actionMenu.commitDialog.action.commit": "Commit",
   "git.actionMenu.commitDialog.action.commitAndPush": "Commit and push",
   "git.actionMenu.commitDialog.confirm": "Commit",
-  "git.actionMenu.commitDialog.identityMissing":
-    "No Git commit identity is available yet. Configure user.name and user.email first.",
+  "git.actionMenu.commitDialog.identityMissing": "No Git commit identity is available yet. Configure user.name and user.email first.",
   "git.actionMenu.commitDialog.error.noChanges": "There are no changes available to commit.",
-  "git.actionMenu.commitDialog.error.messageRequired":
-    "Enter or generate a commit message before committing.",
-  "git.actionMenu.commitDialog.error.generateFailed":
-    "Commit message generation failed. Try again or enter one manually.",
+  "git.actionMenu.commitDialog.error.messageRequired": "Enter or generate a commit message before committing.",
+  "git.actionMenu.commitDialog.error.generateFailed": "Commit message generation failed. Try again or enter one manually.",
   "git.actionMenu.commitDialog.error.requestFailed": "Commit failed: {error}",
   "git.actionMenu.commitDialog.error.pushAfterCommitFailed": "Committed, but push failed: {error}",
   "git.actionMenu.commitDialog.toast.success": "Committed the current changes",
-  "git.actionMenu.commitDialog.toast.commitAndPushSuccess":
-    "Committed and pushed the current changes",
+  "git.actionMenu.commitDialog.toast.commitAndPushSuccess": "Committed and pushed the current changes",
   "git.actionMenu.pushDialog.title": "Push changes",
-  "git.actionMenu.pushDialog.description.tracked":
-    "Push the latest commits on the current branch to the remote branch.",
-  "git.actionMenu.pushDialog.description.untracked":
-    "The first push will publish the current branch remotely and set its upstream.",
+  "git.actionMenu.pushDialog.description.tracked": "Push the latest commits on the current branch to the remote branch.",
+  "git.actionMenu.pushDialog.description.untracked": "The first push will publish the current branch remotely and set its upstream.",
   "git.actionMenu.pushDialog.currentBranchLabel": "Branch",
   "git.actionMenu.pushDialog.upstreamLabel": "Remote branch",
   "git.actionMenu.pushDialog.aheadBehindLabel": "Sync status",
   "git.actionMenu.pushDialog.aheadBehindValue": "Ahead {ahead} / Behind {behind}",
-  "git.actionMenu.pushDialog.upstreamPending":
-    "The first push will automatically create the upstream branch for the current branch.",
+  "git.actionMenu.pushDialog.upstreamPending": "The first push will automatically create the upstream branch for the current branch.",
   "git.actionMenu.pushDialog.pushLabel": "Next step",
   "git.actionMenu.pushDialog.pushValue": "Push",
   "git.actionMenu.pushDialog.upToDate": "There are no commits to push on the current branch.",
@@ -2443,56 +2103,40 @@ const enUS: Record<string, string> = {
   "git.branchSwitcher.currentDirty": "Uncommitted changes: {count} files",
   "git.branchSwitcher.createAction": "Create and switch to new branch...",
   "git.branchSwitcher.createDialog.title": "Create and switch to a new branch",
-  "git.branchSwitcher.createDialog.description":
-    "Create a new local branch from the current HEAD and switch to it immediately after it succeeds.",
+  "git.branchSwitcher.createDialog.description": "Create a new local branch from the current HEAD and switch to it immediately after it succeeds.",
   "git.branchSwitcher.createDialog.nameLabel": "Branch name",
   "git.branchSwitcher.createDialog.placeholder": "For example, feature/git-branch-switcher",
-  "git.branchSwitcher.createDialog.helper":
-    "Support creating and switching from the current HEAD only.",
+  "git.branchSwitcher.createDialog.helper": "Support creating and switching from the current HEAD only.",
   "git.branchSwitcher.createDialog.confirm": "Create and switch",
   "git.branchSwitcher.blockedDialog.title": "Commit changes to switch branches",
-  "git.branchSwitcher.blockedDialog.description.tracked":
-    "Your changes to the following files would be overwritten by checkout:",
-  "git.branchSwitcher.blockedDialog.description.untracked":
-    "The following untracked files would be overwritten by checkout:",
+  "git.branchSwitcher.blockedDialog.description.tracked": "Your changes to the following files would be overwritten by checkout:",
+  "git.branchSwitcher.blockedDialog.description.untracked": "The following untracked files would be overwritten by checkout:",
   "git.branchSwitcher.blockedDialog.filesLabel": "Affected files",
-  "git.branchSwitcher.blockedDialog.helper":
-    "Commit the current changes first, then continue switching branches.",
+  "git.branchSwitcher.blockedDialog.helper": "Commit the current changes first, then continue switching branches.",
   "git.branchSwitcher.blockedDialog.submitAction": "Commit and switch branch...",
   "git.branchSwitcher.commitDialog.title": "Commit changes",
-  "git.branchSwitcher.commitDialog.description":
-    "After the commit finishes, switching to {branchName} will continue automatically.",
+  "git.branchSwitcher.commitDialog.description": "After the commit finishes, switching to {branchName} will continue automatically.",
   "git.branchSwitcher.commitDialog.currentBranchLabel": "Current branch",
   "git.branchSwitcher.commitDialog.targetBranchLabel": "Target branch",
   "git.branchSwitcher.commitDialog.changesLabel": "Changes",
   "git.branchSwitcher.commitDialog.changesValue": "{count} files",
   "git.branchSwitcher.commitDialog.messageLabel": "Commit message",
-  "git.branchSwitcher.commitDialog.messagePlaceholder":
-    "Leave empty to generate a commit message automatically",
-  "git.branchSwitcher.commitDialog.messageHelper":
-    "This will commit all uncommitted changes inside the current workspace by default.",
+  "git.branchSwitcher.commitDialog.messagePlaceholder": "Leave empty to generate a commit message automatically",
+  "git.branchSwitcher.commitDialog.messageHelper": "This will commit all uncommitted changes inside the current workspace by default.",
   "git.branchSwitcher.commitDialog.confirm": "Commit and switch branch",
-  "git.branchSwitcher.commitDialog.identityMissing":
-    "No Git commit identity is available yet. Configure user.name and user.email first.",
+  "git.branchSwitcher.commitDialog.identityMissing": "No Git commit identity is available yet. Configure user.name and user.email first.",
   "git.branchSwitcher.commitDialog.error.requestFailed": "Commit failed: {error}",
   "git.branchSwitcher.toast.switchSuccess": "Switched to branch {branchName}",
   "git.branchSwitcher.toast.createSuccess": "Created and switched to branch {branchName}",
-  "git.branchSwitcher.error.invalidBranchName":
-    "The branch name is invalid. Enter a different name.",
-  "git.branchSwitcher.error.branchAlreadyExists":
-    "That branch already exists. Choose another name.",
+  "git.branchSwitcher.error.invalidBranchName": "The branch name is invalid. Enter a different name.",
+  "git.branchSwitcher.error.branchAlreadyExists": "That branch already exists. Choose another name.",
   "git.branchSwitcher.error.targetBranchNotFound": "The target branch does not exist locally yet.",
-  "git.branchSwitcher.error.trackedOverwrite":
-    "Switch blocked because tracked files would be overwritten: {paths}{extraPaths}.",
-  "git.branchSwitcher.error.untrackedOverwrite":
-    "Switch blocked because untracked files would be overwritten: {paths}{extraPaths}.",
+  "git.branchSwitcher.error.trackedOverwrite": "Switch blocked because tracked files would be overwritten: {paths}{extraPaths}.",
+  "git.branchSwitcher.error.untrackedOverwrite": "Switch blocked because untracked files would be overwritten: {paths}{extraPaths}.",
   "git.branchSwitcher.error.moreFiles": " and {count} more files",
-  "git.branchSwitcher.error.conflictsPresent":
-    "The repository still has unresolved conflicts. Resolve them before switching branches.",
-  "git.branchSwitcher.error.operationInProgress":
-    "Another Git operation is still in progress. Finish it before switching branches.",
-  "git.branchSwitcher.error.branchInOtherWorktree":
-    "That branch is already checked out in another worktree.",
+  "git.branchSwitcher.error.conflictsPresent": "The repository still has unresolved conflicts. Resolve them before switching branches.",
+  "git.branchSwitcher.error.operationInProgress": "Another Git operation is still in progress. Finish it before switching branches.",
+  "git.branchSwitcher.error.branchInOtherWorktree": "That branch is already checked out in another worktree.",
   "git.branchSwitcher.error.unknown": "Switching branches failed. Please try again.",
   "git.branchSwitcher.error.requestFailed": "Branch operation failed: {error}",
   "gitGraph.title": "Git Graph",
@@ -2537,8 +2181,7 @@ const enUS: Record<string, string> = {
   "codeViewer.loadingMedia": "Loading media preview...",
   "codeViewer.mediaUnavailable": "This media preview is currently unavailable.",
   "codeViewer.mediaUnsupported": "This environment cannot play this media format.",
-  "codeViewer.mediaLoadFailed":
-    "Media failed to load. Try again later or open it in an external application.",
+  "codeViewer.mediaLoadFailed": "Media failed to load. Try again later or open it in an external application.",
   "codeViewer.loadingPdf": "Loading PDF preview...",
   "codeViewer.pdfUnavailable": "This PDF preview is currently unavailable.",
   "codeViewer.pdf.loading": "Loading PDF...",
@@ -2558,10 +2201,8 @@ const enUS: Record<string, string> = {
   "codeViewer.pptx.loadError": "Failed to load presentation",
   "codeViewer.pptx.noSlides": "This presentation has no slides",
   "codeViewer.pptx.fileTooLarge": "This presentation exceeds the 64 MB preview limit.",
-  "codeViewer.pptx.legacyFileTooLarge":
-    "This remote environment can preview presentations up to 8 MB.",
-  "codeViewer.pptx.incomplete":
-    "This presentation changed or was truncated while it was being read, so it cannot be previewed. Try again.",
+  "codeViewer.pptx.legacyFileTooLarge": "This remote environment can preview presentations up to 8 MB.",
+  "codeViewer.pptx.incomplete": "This presentation changed or was truncated while it was being read, so it cannot be previewed. Try again.",
   "codeViewer.pptx.previousPage": "Previous slide",
   "codeViewer.pptx.nextPage": "Next slide",
   "codeViewer.pptx.pageInput": "Slide number",
@@ -2580,8 +2221,7 @@ const enUS: Record<string, string> = {
   "codeViewer.pptx.exportPdfSuccess": "PDF saved to {path}",
   "codeViewer.pptx.exportPdfFailed": "Failed to export PDF",
   "codeViewer.empty": "File is empty",
-  "codeViewer.fileTooLarge":
-    "This file exceeds the 256 KB preview limit. Open it in another editor to view the full contents.",
+  "codeViewer.fileTooLarge": "This file exceeds the 256 KB preview limit. Open it in another editor to view the full contents.",
   "codeViewer.viewCode": "View code",
   "codeViewer.viewDiff": "View diff",
   "codeViewer.openSourcePreview": "Source preview",
@@ -2629,8 +2269,7 @@ const enUS: Record<string, string> = {
   "codeViewer.comment.range": "Comment on lines {startLine} to {endLine}",
   "codeViewer.comment.contextLabel": "Code context",
   "codeViewer.comment.commentLabel": "Comment",
-  "codeViewer.review.targetLineMissing":
-    "The target line does not exist. The comment is shown at the top of the file.",
+  "codeViewer.review.targetLineMissing": "The target line does not exist. The comment is shown at the top of the file.",
   "chat.codeComments.one": "1 comment",
   "chat.codeComments.many": "{count} comments",
   "chat.codeComments.remove": "Remove code comments",
@@ -2642,12 +2281,9 @@ const enUS: Record<string, string> = {
   "chat.pptxElements.many": "{count} slide elements",
   "chat.pptxElements.remove": "Remove slide element",
   "chat.pptxElements.previewFileMissing": "The referenced presentation no longer exists.",
-  "chat.pptxElements.previewPageMissing":
-    "Slide {pageNumber} no longer exists. The presentation was opened instead.",
-  "chat.pptxElements.previewSourceChanged":
-    "The presentation has changed. Slide {pageNumber} was opened, but its content may differ.",
-  "chat.pptxElements.previewScopeUnavailable":
-    "This presentation reference is not available in the current workspace.",
+  "chat.pptxElements.previewPageMissing": "Slide {pageNumber} no longer exists. The presentation was opened instead.",
+  "chat.pptxElements.previewSourceChanged": "The presentation has changed. Slide {pageNumber} was opened, but its content may differ.",
+  "chat.pptxElements.previewScopeUnavailable": "This presentation reference is not available in the current workspace.",
   "chat.webElements.many": "{count} selected",
   "chat.webElements.remove": "Remove web element context",
   "appHeader.openInFinder": "Open in Finder",
@@ -2661,8 +2297,7 @@ const enUS: Record<string, string> = {
   "fileActions.downloadStarted": "Download started",
   "fileActions.saveAs": "Save as…",
   "fileActions.saveAsUnavailable": "Saving files is unavailable here",
-  "fileActions.saveAsFailed":
-    "Could not save this file. Check the source connection and try again.",
+  "fileActions.saveAsFailed": "Could not save this file. Check the source connection and try again.",
   "fileActions.saveAsTooLarge": "Files larger than 50 MiB cannot be saved here.",
   "fileActions.moreOpenWith": "More apps",
   "fileActions.scrollMoreApps": "Scroll to see more apps",
@@ -2694,8 +2329,7 @@ const enUS: Record<string, string> = {
   "workspaceHeader.help.docs": "Product docs",
   "workspaceHeader.help.copyDeviceMid": "Copy device MID",
   "workspaceHeader.help.deviceMidCopied": "Device MID copied",
-  "workspaceHeader.help.deviceMidCopyFailed":
-    "Could not copy device MID. Check clipboard access and try again.",
+  "workspaceHeader.help.deviceMidCopyFailed": "Could not copy device MID. Check clipboard access and try again.",
   "titleBar.menu.file": "File",
   "titleBar.menu.view": "View",
   "titleBar.menu.help": "Help",
@@ -2709,7 +2343,7 @@ const enUS: Record<string, string> = {
   "titleBar.menu.view.actualSize": "Actual size",
   "titleBar.menu.view.zoomIn": "Zoom in",
   "titleBar.menu.view.zoomOut": "Zoom out",
-  "titleBar.menu.help.about": "About ZCode",
+  "titleBar.menu.help.about": "About Reactor",
   "titleBar.menu.help.checkForUpdates": "Check for updates",
   "titleBar.menu.help.feedback": "Feedback",
   "sidebar.menu.community": "Community",
@@ -2718,10 +2352,8 @@ const enUS: Record<string, string> = {
   "titleBar.menu.help.resourceManager": "Resource manager",
   "titleBar.menu.help.toggleZCodeStdioTap": "Capture agent stdio traffic",
   "titleBar.menu.help.clearAllData": "Clear all data",
-
-  // Directory browser
-  "directoryBrowser.errorUnavailable":
-    "Cannot open this folder. Check that it exists and you have access, or choose another folder.",
+// Directory browser
+  "directoryBrowser.errorUnavailable": "Cannot open this folder. Check that it exists and you have access, or choose another folder.",
   "remote.directory.willOpen": "Will open {path}",
   "directoryBrowser.title": "Choose directory",
   "directoryBrowser.pathPlaceholder": "Enter path",
@@ -2733,16 +2365,14 @@ const enUS: Record<string, string> = {
   "directoryBrowser.opening": "Opening…",
   "directoryBrowser.errorSystem": "Failed to get system info",
   "directoryBrowser.errorReadDir": "Failed to read directory: {error}",
-
-  // Update ready button
+// Update ready button
   "updateReady.shortTitle": "Update",
   "updateReady.title": "Update v{version}",
   "updateReady.releaseNotesTitle": "v{version} Release Notes",
   "updateReady.tooltip": "v{version} ready, click to restart and update",
   "updateAvailable.tooltip": "New version v{version} is available. Click to review.",
   "updateReady.confirm.title": "Update to v{version}?",
-  "updateReady.confirm.description":
-    "The app will quit and restart to update. In-progress tasks will be interrupted.",
+  "updateReady.confirm.description": "The app will quit and restart to update. In-progress tasks will be interrupted.",
   "updateReady.confirm.ok": "Restart & update now",
   "updateReady.confirm.cancel": "Later",
   "updateDialog.availableTitle": "New version v{version}",
@@ -2767,9 +2397,8 @@ const enUS: Record<string, string> = {
   "update.toast.ready": "v{version} downloaded, restart to install",
   "update.toast.devSkipped": "Updates are disabled in dev builds",
   "update.toast.error": "Update check failed: {error}",
-  "forceUpdate.title": "Update ZCode to continue",
-  "forceUpdate.description":
-    "Your current version v{currentVersion} is below the minimum supported version v{minimalVersion}. Update first before continuing with this client.",
+  "forceUpdate.title": "Update Reactor to continue",
+  "forceUpdate.description": "Your current version v{currentVersion} is below the minimum supported version v{minimalVersion}. Update first before continuing with this client.",
   "forceUpdate.currentVersion": "Current version",
   "forceUpdate.minimalVersion": "Minimum version",
   "forceUpdate.action.check": "Check and download update",
@@ -2783,35 +2412,29 @@ const enUS: Record<string, string> = {
   "desktopMenu.help.restartToUpdate": "Restart to update ({version})",
   "postUpdateReleaseNotes.title": "Release notes",
   "postUpdateReleaseNotes.acknowledge": "I know",
-
   "projectSelector.heroTitle": "Open fast. Stay focused.",
   "projectSelector.heroDescription": "Pick a workspace, jump back in, and keep the surface clean.",
   "appError.title": "The app ran into a problem",
-  "appError.description":
-    "The page error was caught, so the app does not need to fall back to a blank screen. Try again first, and refresh the app if the issue keeps happening.",
+  "appError.description": "The page error was caught, so the app does not need to fall back to a blank screen. Try again first, and refresh the app if the issue keeps happening.",
   "appError.retry": "Try again",
   "appError.reload": "Reload app",
   "appError.hint": "Diagnostic details have been recorded to help investigation.",
   "appError.details": "View component stack",
   "appError.unknown": "Unknown error",
   "appError.sectionTitle": "This section ran into a problem",
-  "appError.sectionDescription":
-    "The error is isolated to this section, so the rest of the app can keep running. Try this section again first, and refresh the app if the issue keeps happening.",
+  "appError.sectionDescription": "The error is isolated to this section, so the rest of the app can keep running. Try this section again first, and refresh the app if the issue keeps happening.",
   "appError.sectionRetry": "Try this section again",
   "appError.sectionHint": "Diagnostic details have been recorded to help investigation.",
-
-  // Workspace
+// Workspace
   "workspace.openWorkspace": "Open workspace",
   "workspace.openFolder": "Open folder",
   "workspace.openPluginsSettings": "Plugin Marketplace",
   "workspace.backToWorkspace": "Back to workspace",
   "workspace.wslUncPrompt.title": "Open this through WSL remote connection?",
-  "workspace.wslUncPrompt.description":
-    "You selected a WSL path:\n{path}\n\nWe recommend opening it through WSL connection, though you can still continue with the path.",
+  "workspace.wslUncPrompt.description": "You selected a WSL path:\n{path}\n\nWe recommend opening it through WSL connection, though you can still continue with the path.",
   "workspace.wslUncPrompt.openWsl": "Open WSL connection",
   "workspace.wslUncPrompt.continuePath": "Continue with path",
-  "taskList.codexConnectivityUnavailable":
-    "Warmup could not reach {host}. Starting a conversation may fail until the network is available.",
+  "taskList.codexConnectivityUnavailable": "Warmup could not reach {host}. Starting a conversation may fail until the network is available.",
   "workspaceSidebar.workspaces": "Tasks",
   "workspaceSidebar.addProject": "Add project",
   "workspaceSidebar.archivedTasks": "Archived",
@@ -2834,8 +2457,7 @@ const enUS: Record<string, string> = {
   "workspaceSidebar.remoteProject": "Remote project",
   "workspaceSidebar.connectionDetails": "View connection details for {device}",
   "workspaceSidebar.openProjectHint": "Click the project name to open it",
-  "workspaceSidebar.reconnectProjectHint":
-    "Click the project name to reconnect and open this directory",
+  "workspaceSidebar.reconnectProjectHint": "Click the project name to reconnect and open this directory",
   "workspaceSidebar.projectPath": "Directory",
   "workspaceSidebar.projectDevice": "Device",
   "workspaceSidebar.projectLine": "Connection",
@@ -2846,42 +2468,27 @@ const enUS: Record<string, string> = {
   "workspaceSidebar.recoveringAutomaticShort": "Recovering {attempt}/{limit}",
   "workspaceSidebar.manageDevice": "Manage in settings",
   "workspaceSidebar.newRemoteConnection": "New remote connection…",
-  "workspaceSidebar.recoveringAutomaticAttempt":
-    "Recovering connection automatically ({attempt}/{limit})",
+  "workspaceSidebar.recoveringAutomaticAttempt": "Recovering connection automatically ({attempt}/{limit})",
   "workspaceSidebar.reconnectingManual": "Reconnecting manually",
   "workspaceSidebar.notConnected": "Not connected",
-  "remote.error.sourceServerInstallRequired":
-    "The remote device is not installed. Confirm installation to continue.",
-  "remote.error.sourceServerIdentityChangePending":
-    "The connection target identity has changed. Confirm whether to use it as a new device.",
-  "remote.error.credentialsRequired":
-    "No usable SSH password or private-key credential is available. Return to settings to add one.",
-  "remote.error.sourceServerUpgradeRequired":
-    "remote device is incompatible with this ZCode Desktop version and must be upgraded.",
-  "remote.error.sourceServerRunningTasks":
-    "remote device still has running tasks. Wait for them to finish or confirm a forced update.",
-  "remote.error.sourceServerDowngradeUnconfirmed":
-    "The remote device was updated to a newer version. This operation did not downgrade it.",
+  "remote.error.sourceServerInstallRequired": "The remote device is not installed. Confirm installation to continue.",
+  "remote.error.sourceServerIdentityChangePending": "The connection target identity has changed. Confirm whether to use it as a new device.",
+  "remote.error.credentialsRequired": "No usable SSH password or private-key credential is available. Return to settings to add one.",
+  "remote.error.sourceServerUpgradeRequired": "remote device is incompatible with this ZCode Desktop version and must be upgraded.",
+  "remote.error.sourceServerRunningTasks": "remote device still has running tasks. Wait for them to finish or confirm a forced update.",
+  "remote.error.sourceServerDowngradeUnconfirmed": "The remote device was updated to a newer version. This operation did not downgrade it.",
   "remote.error.sourceServerUpdateInProgress": "The remote device is updating its remote service",
-  "remote.error.workspaceTaskIdentityConflict":
-    "This remote directory contains task identity conflicts that cannot be merged automatically.",
-  "remote.error.workspaceConfigConflict":
-    "This remote directory contains configuration conflicts that cannot be merged automatically.",
+  "remote.error.workspaceTaskIdentityConflict": "This remote directory contains task identity conflicts that cannot be merged automatically.",
+  "remote.error.workspaceConfigConflict": "This remote directory contains configuration conflicts that cannot be merged automatically.",
   "remote.error.bindCanceled": "The remote workspace attachment was canceled.",
-  "remote.error.bindSessionMissing":
-    "The remote workspace session is no longer available. Reconnect and try again.",
-  "remote.error.workspaceDirectoryUnavailable":
-    "The remote project directory is missing, is not a folder, or cannot be accessed. Check the directory and permissions, then try again.",
-  "remote.error.workspaceDirectoryUnresponsive":
-    "The remote device did not respond for 30 seconds while reading the project folder",
-  "remote.error.recoveryBudgetExhausted":
-    "Automatic recovery stopped after {attempt}/{limit} attempts. Reconnect manually to try again.",
+  "remote.error.bindSessionMissing": "The remote workspace session is no longer available. Reconnect and try again.",
+  "remote.error.workspaceDirectoryUnavailable": "The remote project directory is missing, is not a folder, or cannot be accessed. Check the directory and permissions, then try again.",
+  "remote.error.workspaceDirectoryUnresponsive": "The remote device did not respond for 30 seconds while reading the project folder",
+  "remote.error.recoveryBudgetExhausted": "Automatic recovery stopped after {attempt}/{limit} attempts. Reconnect manually to try again.",
   "remote.error.sourceServerStopFailed": "The remote service didn't stop",
   "remote.error.sourceServerControlUnresponsive": "The remote service isn't responding",
-  "remote.error.workspaceMigrationPlanDiverged":
-    "A new workspace identity appeared while migration was paused. Review the migration report before retrying.",
-  "remote.error.workspaceSessionGenerationChanged":
-    "The session database changed while migration was paused. Restore the recorded generation before retrying.",
+  "remote.error.workspaceMigrationPlanDiverged": "A new workspace identity appeared while migration was paused. Review the migration report before retrying.",
+  "remote.error.workspaceSessionGenerationChanged": "The session database changed while migration was paused. Restore the recorded generation before retrying.",
   "remote.error.hostUnreachable": "Unable to connect to host",
   "remote.error.connectionTimeout": "Connection timed out",
   "remote.error.hostNotFound": "Host not found",
@@ -2898,8 +2505,7 @@ const enUS: Record<string, string> = {
   "settings.source.recentLog": "View recent logs",
   "remote.error.retryableHint": "You can try again later.",
   "remote.error.connectionClosed": "The remote connection was closed",
-  "workspaceSidebar.unavailableLocalDirectory":
-    "The workspace directory does not exist or cannot be accessed. You can only view history for now. Restore the directory and restart ZCode to continue.",
+  "workspaceSidebar.unavailableLocalDirectory": "The workspace directory does not exist or cannot be accessed. You can only view history for now. Restore the directory and restart Reactor to continue.",
   "workspaceSidebar.toggleSidebar": "Toggle sidebar",
   "workspaceSidebar.resizeSidebar": "Resize sidebar",
   "workspaceSidebar.showFileTree": "Show files",
@@ -2919,8 +2525,7 @@ const enUS: Record<string, string> = {
   "workspaceFileTree.openFailed": "Could not open this item",
   "workspaceFileTree.addToChat": "Add to chat",
   "workspaceFileTree.gitStatus.ignored": "Ignored",
-
-  // SSH dialog
+// SSH dialog
   "ssh.trigger": "SSH Connection",
   "ssh.title": "SSH Remote connection",
   "ssh.host": "Host",
@@ -2935,8 +2540,7 @@ const enUS: Record<string, string> = {
   "ssh.advancedOptions": "Advanced options",
   "ssh.assetInstallMode.local-download-upload": "Download locally, then upload",
   "ssh.assetInstallMode.remote-download": "Download on remote server",
-  "ssh.assetInstallModeDescription":
-    "Remote server download reduces upload waiting, but the server must reach the ZCode CDN and have download, extract, and checksum tools.",
+  "ssh.assetInstallModeDescription": "Remote server download reduces upload waiting, but the server must reach the Reactor CDN and have download, extract, and checksum tools.",
   "ssh.password": "Password",
   "ssh.passwordPlaceholder": "Enter your SSH password",
   "ssh.privateKey": "Private key",
@@ -2948,10 +2552,8 @@ const enUS: Record<string, string> = {
   "ssh.configAliasPlaceholder": "No alias selected",
   "ssh.configAliasSearchPlaceholder": "Search SSH config alias",
   "ssh.configAliasEmpty": "No SSH config aliases available on this machine.",
-  "ssh.configAliasLoadFailed":
-    "Failed to load SSH config aliases. You can still enter connection info manually.",
-  "ssh.configAliasDescription":
-    "Prefilled host, port, username, and private key from ~/.ssh/config; editing any field detaches the alias.",
+  "ssh.configAliasLoadFailed": "Failed to load SSH config aliases. You can still enter connection info manually.",
+  "ssh.configAliasDescription": "Prefilled host, port, username, and private key from ~/.ssh/config; editing any field detaches the alias.",
   "ssh.connect": "Connect",
   "ssh.cancel": "Cancel",
   "ssh.connecting": "Connecting...",
@@ -2980,8 +2582,7 @@ const enUS: Record<string, string> = {
   "remote.selection.new.wsl": "Enter WSL manually",
   "remote.selection.new.docker": "Enter Docker manually",
   "remote.selection.new.server": "Development Server",
-  "remote.selection.keyboard":
-    "Tab / ↑↓ to select · Enter to connect · Click a recent directory to open",
+  "remote.selection.keyboard": "Tab / ↑↓ to select · Enter to connect · Click a recent directory to open",
   "remote.selection.back": "Back to list",
   "remote.background.ready": "Connection complete",
   "remote.background.continue": "Continue",
@@ -3024,8 +2625,7 @@ const enUS: Record<string, string> = {
   "remote.phaseSub.verifyingArchive": "Verifying the archive",
   "remote.phaseSub.verifyingFiles": "Verifying server files",
   "remote.phaseSub.restarting": "Restarting the remote server",
-  "remote.connectingSubtitleFailed":
-    "Connection failed · retry, or adjust the configuration and try again",
+  "remote.connectingSubtitleFailed": "Connection failed · retry, or adjust the configuration and try again",
   "remote.phase.channel": "Connect to device",
   "remote.phase.identify": "Identify device",
   "remote.phase.deploy": "Install ZCode Server",
@@ -3042,8 +2642,7 @@ const enUS: Record<string, string> = {
   "remote.link.deviceHint": "Device details appear after connecting",
   "remote.link.devicePending": "Remote device",
   "remote.recognizedDevice": "Connected to device {device}",
-  "remote.recognizedDeviceBody":
-    "This connection ({profile}) is ready; task and workspace history stays unchanged.",
+  "remote.recognizedDeviceBody": "This connection ({profile}) is ready; task and workspace history stays unchanged.",
   "remote.connectedBanner": "Connected {device} · {profile} · {version}",
   "remote.connectedSummary": "Connection ready: {device}",
   "remote.remoteRecord": "Remote record",
@@ -3058,13 +2657,11 @@ const enUS: Record<string, string> = {
   "remote.useRemoteDownload": "Download directly on the device",
   "remote.errorRetry": "Retry",
   "remote.renameDevice": "Device name",
-  "remote.renameDeviceHint":
-    "Give it a memorable name on first connect; change it anytime in Settings · Remote devices",
+  "remote.renameDeviceHint": "Give it a memorable name on first connect; change it anytime in Settings · Remote devices",
   "remote.quickOpen": "Quick open",
   "remote.connectionLogLines": "{count} line(s)",
   "remote.errorPanel.uploadFailedTitle": "Asset upload failed",
-  "remote.errorPanel.uploadFailedHint":
-    'If the target server has internet access, "Download on remote server" is usually faster.',
+  "remote.errorPanel.uploadFailedHint": 'If the target server has internet access, "Download on remote server" is usually faster.',
   "remote.phaseSub.channelEstablished.ssh": "Connected to the SSH host",
   "remote.phaseSub.channelEstablished.wsl": "Connected to the distribution",
   "remote.phaseSub.channelEstablished.docker": "Connected to the container",
@@ -3087,12 +2684,10 @@ const enUS: Record<string, string> = {
   "webRemoteControl.triggerStatus.connected": "Phone connected",
   "webRemoteControl.triggerStatus.error": "Remote control failed",
   "webRemoteControl.authRequired.title": "Sign in required",
-  "webRemoteControl.authRequired.description":
-    "Sign in to control this computer from your phone. Use the same account on both devices.",
+  "webRemoteControl.authRequired.description": "Sign in to control this computer from your phone. Use the same account on both devices.",
   "webRemoteControl.authRequired.login": "Sign in",
   "webRemoteControl.title": "Mobile remote control",
-  "webRemoteControl.description":
-    "Scan the QR code or open the link on your phone to control this workspace.",
+  "webRemoteControl.description": "Scan the QR code or open the link on your phone to control this workspace.",
   "webRemoteControl.statusLabel": "Session status",
   "webRemoteControl.status.idle": "Idle",
   "webRemoteControl.status.starting": "Starting",
@@ -3127,40 +2722,26 @@ const enUS: Record<string, string> = {
   "webRemoteControl.botChannel.manageBots": "Manage bots",
   "webRemoteControl.linkLabel": "Remote control link",
   "webRemoteControl.linkPending": "The remote control link will appear here once ready.",
-  "webRemoteControl.singlePageNote":
-    "This relay pairing supports one phone page at a time. If it is already open elsewhere, close the old page first.",
+  "webRemoteControl.singlePageNote": "This relay pairing supports one phone page at a time. If it is already open elsewhere, close the old page first.",
   "webRemoteControl.copyLink.description": "Can't scan? Open the link on your phone.",
-  "webRemoteControl.failure.sessionNotFound":
-    "This Web remote control link is no longer valid. Start it again from desktop.",
-  "webRemoteControl.failure.sessionExpired":
-    "This Web remote control session has already ended. Generate a new link from desktop to continue.",
-  "webRemoteControl.failure.sessionConflict":
-    "This link is already being used by another page. Close the other page and scan again.",
-  "webRemoteControl.failure.kicked":
-    "The relay kicked this pairing. Close the other page and generate a new QR code from desktop.",
-  "webRemoteControl.failure.workspaceClosed":
-    "The shared desktop window has been closed. Go back to desktop and start Web remote control again.",
-  "webRemoteControl.failure.desktopDisconnected":
-    "The desktop side disconnected, so this Web remote control session can no longer continue.",
-  "webRemoteControl.failure.invalidMobileConnection":
-    "The current mobile connection is no longer valid. Reload the page and reconnect.",
-  "webRemoteControl.failure.desktopBootstrapTimeout":
-    "The desktop window did not respond in time. Make sure it is still running, then reload.",
-  "webRemoteControl.failure.connectionRecoveryTimeout":
-    "The mobile connection did not recover in time, so Web remote control cannot keep syncing yet.",
-  "webRemoteControl.failure.relayUnavailable":
-    "The external relay connection is unavailable. Make sure desktop is online, then try again.",
-  "webRemoteControl.failure.unsupportedAction":
-    "Web remote control mode can only open workspaces that are already open in the current desktop window.",
-  "webRemoteControl.failure.unexpectedError":
-    "Could not start mobile remote control. Try again from desktop.",
+  "webRemoteControl.failure.sessionNotFound": "This Web remote control link is no longer valid. Start it again from desktop.",
+  "webRemoteControl.failure.sessionExpired": "This Web remote control session has already ended. Generate a new link from desktop to continue.",
+  "webRemoteControl.failure.sessionConflict": "This link is already being used by another page. Close the other page and scan again.",
+  "webRemoteControl.failure.kicked": "The relay kicked this pairing. Close the other page and generate a new QR code from desktop.",
+  "webRemoteControl.failure.workspaceClosed": "The shared desktop window has been closed. Go back to desktop and start Web remote control again.",
+  "webRemoteControl.failure.desktopDisconnected": "The desktop side disconnected, so this Web remote control session can no longer continue.",
+  "webRemoteControl.failure.invalidMobileConnection": "The current mobile connection is no longer valid. Reload the page and reconnect.",
+  "webRemoteControl.failure.desktopBootstrapTimeout": "The desktop window did not respond in time. Make sure it is still running, then reload.",
+  "webRemoteControl.failure.connectionRecoveryTimeout": "The mobile connection did not recover in time, so Web remote control cannot keep syncing yet.",
+  "webRemoteControl.failure.relayUnavailable": "The external relay connection is unavailable. Make sure desktop is online, then try again.",
+  "webRemoteControl.failure.unsupportedAction": "Web remote control mode can only open workspaces that are already open in the current desktop window.",
+  "webRemoteControl.failure.unexpectedError": "Could not start mobile remote control. Try again from desktop.",
   "webRemoteControl.copyLink": "Copy link",
   "webRemoteControl.copyLink.copied": "Remote control link copied",
   "webRemoteControl.copyLinkFailed": "Could not copy remote control link: {error}",
   "webRemoteControl.refreshQr": "Refresh QR",
   "webRemoteControl.refreshQr.confirmTitle": "Refresh QR code?",
-  "webRemoteControl.refreshQr.confirmDescription":
-    "Refreshing will invalidate any remote control links that were copied or scanned before. Connected phones will need to scan the new QR code.",
+  "webRemoteControl.refreshQr.confirmDescription": "Refreshing will invalidate any remote control links that were copied or scanned before. Connected phones will need to scan the new QR code.",
   "webRemoteControl.refreshQr.success": "Remote control QR refreshed",
   "webRemoteControl.refreshQr.failed": "Could not refresh remote control QR: {error}",
   "webRemoteControl.stop": "Stop",
@@ -3194,8 +2775,7 @@ const enUS: Record<string, string> = {
   "remote.kind.server": "Server",
   "remote.kind.wsl": "WSL",
   "remote.kind.docker": "Docker",
-  "remote.kind.server.note":
-    "Server (direct connection to a running ZCode service) is shown only in development builds.",
+  "remote.kind.server.note": "Server (direct connection to a running ZCode service) is shown only in development builds.",
   "remote.addAndConnect": "Add and connect",
   "remote.connect": "Connect",
   "remote.connecting": "Connecting...",
@@ -3207,15 +2787,13 @@ const enUS: Record<string, string> = {
   "remote.connectionLogEmpty": "waiting for connection output...",
   "remote.connectingConfirmTitle": "Stop the current connection?",
   "remote.sourceServerInstallTitle": "ZCode Server installation required",
-  "remote.sourceServerInstallDescription":
-    "ZCode will upload the matching release, install it under ~/.zcode/server, and start the remote service. Existing legacy remote files will be preserved.",
+  "remote.sourceServerInstallDescription": "ZCode will upload the matching release, install it under ~/.zcode/server, and start the remote service. Existing legacy remote files will be preserved.",
   "remote.sourceServerInstallConfirm": "Install and continue",
   "remote.installTarget": "Target account",
   "remote.installVersion": "Install version",
   "remote.installLocation": "Install location",
   "remote.sourceServerBoundaryTitle": "Local offline, tasks keep running",
-  "remote.sourceServerBoundaryDescription":
-    "Remote tasks keep running, even when you close ZCode or put your computer to sleep.",
+  "remote.sourceServerBoundaryDescription": "Remote tasks keep running, even when you close ZCode or put your computer to sleep.",
   "remote.sourceServerBoundaryEyebrow": "New remote connection",
   "remote.sourceServerBoundaryLocalDevice": "This computer",
   "remote.sourceServerBoundaryLocalStatus": "Sleeping / closed",
@@ -3225,21 +2803,17 @@ const enUS: Record<string, string> = {
   "settings.source.offline": "Not connected",
   "settings.source.uninstalled": "Uninstalled",
   "settings.source.operationFailed": "The operation failed. Try again later.",
-  "settings.source.versionDetails":
-    "Current v{current} · Minimum compatible v{minimum} · Remote tasks pause briefly during the update",
+  "settings.source.versionDetails": "Current v{current} · Minimum compatible v{minimum} · Remote tasks pause briefly during the update",
   "settings.source.managementTitle": "Remote connections",
   "settings.remoteDevicesTitle": "Remote devices",
-  "settings.remoteDevicesDescription":
-    "Manage your servers, WSL distributions, and Docker containers.",
+  "settings.remoteDevicesDescription": "Manage your servers, WSL distributions, and Docker containers.",
   "settings.source.newConnection": "New connection",
   "settings.source.addRoute": "Add a connection — use another SSH target for this device",
   "settings.source.archivedAt": "archived {time}",
-  "settings.source.retiredReason.reinstalled":
-    "Archived after the connection target identity changed; kept for records",
+  "settings.source.retiredReason.reinstalled": "Archived after the connection target identity changed; kept for records",
   "settings.source.retiredEntryNote": "Connection target changed; new identity confirmed",
   "settings.source.retiredNameSuffix": " (old)",
-  "settings.source.reinstallRequired":
-    "ZCode Server was uninstalled remotely; connection and task records remain on this device.",
+  "settings.source.reinstallRequired": "ZCode Server was uninstalled remotely; connection and task records remain on this device.",
   "settings.source.reinstallAndConnect": "Reinstall and connect",
   "settings.source.copyDeviceId": "Copy device ID",
   "common.justNow": "just now",
@@ -3250,29 +2824,23 @@ const enUS: Record<string, string> = {
   "settings.source.linesTitle": "Connections",
   "settings.source.editConnection": "Edit",
   "settings.source.editConnectionTitle": "Edit connection",
-  "settings.source.editConnectionDescription":
-    "Connection changes take effect the next time you connect. Existing projects and tasks are unchanged.",
+  "settings.source.editConnectionDescription": "Connection changes take effect the next time you connect. Existing projects and tasks are unchanged.",
   "settings.source.deviceName": "Device name",
   "settings.source.removeSourceServer": "Remove device",
   "settings.source.restartRemoteService": "Restart remote service",
   "settings.source.restartRemoteServiceTitle": "Restart the remote service?",
   "settings.source.reinstallRemoteService": "Reinstall remote service",
-  "settings.source.reinstallRemoteServiceHint":
-    "Uses this computer's version. Projects and tasks are kept.",
+  "settings.source.reinstallRemoteServiceHint": "Uses this computer's version. Projects and tasks are kept.",
   "settings.source.reinstallRemoteServiceTitle": "Reinstall the remote service?",
-  "settings.source.reinstallRemoteServiceDescription":
-    "ZCode Server {version} will be reinstalled on {source}. Damaged program files are replaced. Projects, tasks, settings, and sign-in information are kept.",
+  "settings.source.reinstallRemoteServiceDescription": "ZCode Server {version} will be reinstalled on {source}. Damaged program files are replaced. Projects, tasks, settings, and sign-in information are kept.",
   "settings.source.reinstallRemoteServiceConfirm": "Reinstall",
   "settings.source.stopRemoteService": "Stop remote service",
   "settings.source.stopRemoteServiceTitle": "Stop the remote service?",
-  "settings.source.remoteServiceInterruptionDescription":
-    "This interrupts all running tasks on this device. They won't resume automatically.",
+  "settings.source.remoteServiceInterruptionDescription": "This interrupts all running tasks on this device. They won't resume automatically.",
   "settings.source.remoteServiceRunningTasksUnavailable": "The device didn't provide a task list.",
   "settings.source.remoteServiceNoRunningTasks": "No tasks are running on this device right now.",
-  "settings.source.remoteServiceOtherClientsNotice":
-    "If ZCode on another computer is connected to this device, it may start the remote service again.",
-  "settings.source.stopRemoteServiceStartupReconnectNotice":
-    "“Reconnect automatically at startup” is on, so the remote service will start again the next time you open ZCode.",
+  "settings.source.remoteServiceOtherClientsNotice": "If ZCode on another computer is connected to this device, it may start the remote service again.",
+  "settings.source.stopRemoteServiceStartupReconnectNotice": "“Reconnect automatically at startup” is on, so the remote service will start again the next time you open ZCode.",
   "settings.source.remoteServiceUpdateRequired": "Available after updating the remote service",
   "settings.source.removeOpenProjects": "These open projects will be disconnected:\n{projects}",
   "settings.source.noOpenProjects": "This device has no open projects.",
@@ -3282,18 +2850,12 @@ const enUS: Record<string, string> = {
   "settings.source.connectionAddress": "Address",
   "settings.source.connectionNameHint": "Used only to distinguish this connection in ZCode.",
   "settings.source.deviceNameRequired": "Device name is required.",
-  "settings.source.error.connection-profile-unavailable":
-    "This connection is no longer available. Refresh and try again.",
-  "settings.source.error.recent-project-unresolved":
-    "The original project cannot be identified. Select a project from the sidebar.",
-  "settings.source.error.credentials-required":
-    "Couldn't get the SSH credentials automatically. Connect to this device once first.",
-  "settings.source.error.source-server-stop-failed":
-    "The remote service didn't stop. Try again later, or sign in to the device to check it.",
-  "settings.source.error.source-server-control-unresponsive":
-    "The remote service isn't responding. Sign in to the device to check it, then try again.",
-  "settings.source.error.source-server-operation-in-progress":
-    "Another operation is in progress on this device. Try again later.",
+  "settings.source.error.connection-profile-unavailable": "This connection is no longer available. Refresh and try again.",
+  "settings.source.error.recent-project-unresolved": "The original project cannot be identified. Select a project from the sidebar.",
+  "settings.source.error.credentials-required": "Couldn't get the SSH credentials automatically. Connect to this device once first.",
+  "settings.source.error.source-server-stop-failed": "The remote service didn't stop. Try again later, or sign in to the device to check it.",
+  "settings.source.error.source-server-control-unresponsive": "The remote service isn't responding. Sign in to the device to check it, then try again.",
+  "settings.source.error.source-server-operation-in-progress": "Another operation is in progress on this device. Try again later.",
   "settings.source.connectionNameRequired": "Connection name is required.",
   "settings.source.keepSavedSecret": "Leave blank to keep the saved credential",
   "settings.source.otherSavedConnections": "Other saved connections",
@@ -3347,29 +2909,21 @@ const enUS: Record<string, string> = {
   "settings.source.pendingMigrationCount": "{count} pending",
   "settings.source.removeAllLines": "Remove all connections",
   "settings.source.removeSourceServerTitle": "Remove this device?",
-  "settings.source.removeSourceServerDescription":
-    "This removes all local connections, credentials, and project records. Remote services and data are not affected.",
+  "settings.source.removeSourceServerDescription": "This removes all local connections, credentials, and project records. Remote services and data are not affected.",
   "settings.source.preferences": "Preferences",
   "settings.source.hideProjectDeviceNames": "Hide device names in project rows",
-  "settings.source.hideProjectDeviceNamesDescription":
-    "Hide remote device names in task list project rows. Hover to view them.",
+  "settings.source.hideProjectDeviceNamesDescription": "Hide remote device names in task list project rows. Hover to view them.",
   "settings.source.startupAutoReconnect": "Reconnect automatically at startup",
-  "settings.source.startupAutoReconnectDescription":
-    "Reconnects devices seen online in the last 7 days at startup. Changes take effect on the next startup.",
+  "settings.source.startupAutoReconnectDescription": "Reconnects devices seen online in the last 7 days at startup. Changes take effect on the next startup.",
   "settings.source.updateAvailableVersion": "Update to v{version}",
-  "settings.source.error.source-server-remove-callback-missing":
-    "The device cannot be removed because desktop connection cleanup is not ready.",
-  "settings.source.error.source-server-remove-callback-failed":
-    "The device cannot be removed because connection cleanup failed. Nothing was deleted.",
-  "settings.source.error.source-server-remove-persist-failed":
-    "The device is disconnected, but local records could not be fully deleted. Try again later.",
+  "settings.source.error.source-server-remove-callback-missing": "The device cannot be removed because desktop connection cleanup is not ready.",
+  "settings.source.error.source-server-remove-callback-failed": "The device cannot be removed because connection cleanup failed. Nothing was deleted.",
+  "settings.source.error.source-server-remove-persist-failed": "The device is disconnected, but local records could not be fully deleted. Try again later.",
   "settings.source.identityChangeTitle": "Connection target identity has changed",
-  "settings.source.identityChangeDescription":
-    "Confirm to create a new device record and independent connection record. Existing task history stays with the previous device.",
+  "settings.source.identityChangeDescription": "Confirm to create a new device record and independent connection record. Existing task history stays with the previous device.",
   "settings.source.identityChangeConfirm": "Use as a new device",
   "settings.source.removeProfileTitle": "Remove this connection?",
-  "settings.source.removeProfileDescription":
-    "{name} and its saved credentials will be removed from this device.",
+  "settings.source.removeProfileDescription": "{name} and its saved credentials will be removed from this device.",
   "settings.source.connect": "Connect",
   "settings.source.reconnect": "Reconnect",
   "settings.source.disconnect": "Disconnect",
@@ -3377,49 +2931,37 @@ const enUS: Record<string, string> = {
   "settings.source.update": "Update",
   "settings.source.updateNow": "Update now",
   "sourceServer.updateAvailableToast": "{source} has an update\nDevice {current} → {available}.",
-  "sourceServer.updateRequiredToast":
-    "{source} must be updated before it can connect\nCurrent {current}; required {available}.",
+  "sourceServer.updateRequiredToast": "{source} must be updated before it can connect\nCurrent {current}; required {available}.",
   "sourceServer.updateStartedToast": "Updating {source}…",
   "sourceServer.updateCompletedToast": "{source} was updated and reconnected.",
-  "sourceServer.updateFailedToast":
-    "{source} could not be updated. Review the log under Remote devices and try again.",
+  "sourceServer.updateFailedToast": "{source} could not be updated. Review the log under Remote devices and try again.",
   "sourceServer.reinstallCompletedToast": "{source} was reinstalled and reconnected.",
-  "sourceServer.reinstallFailedToast":
-    "{source} could not be reinstalled. Review the log under Remote devices and try again.",
+  "sourceServer.reinstallFailedToast": "{source} could not be reinstalled. Review the log under Remote devices and try again.",
   "sourceServer.stopCompletedToast": "Stopped the remote service on {source}.",
   "sourceServer.stopFailedToast": "Couldn't stop the remote service on {source}. View details.",
   "sourceServer.restartCompletedToast": "Restarted the remote service on {source} and reconnected.",
-  "sourceServer.restartFailedToast":
-    "Couldn't restart the remote service on {source}. View details.",
-  "sourceServer.controllerUpdateAvailableToast":
-    "ZCode has an update for {source}\nDesktop {current} → {available}; update ZCode to match this Source.",
+  "sourceServer.restartFailedToast": "Couldn't restart the remote service on {source}. View details.",
+  "sourceServer.controllerUpdateAvailableToast": "ZCode has an update for {source}\nDesktop {current} → {available}; update ZCode to match this Source.",
   "settings.source.forceUpdate": "Force update",
   "settings.source.forceUpdateTitle": "Force-update this device?",
-  "settings.source.forceUpdateDescription":
-    "A forced update stops tasks that are still running on this device. Confirm that those tasks may be interrupted.",
-  "settings.source.controllerUpdateRequired":
-    "Update this ZCode Desktop first; the Server cannot be updated from here.",
+  "settings.source.forceUpdateDescription": "A forced update stops tasks that are still running on this device. Confirm that those tasks may be interrupted.",
+  "settings.source.controllerUpdateRequired": "Update this ZCode Desktop first; the Server cannot be updated from here.",
   "settings.source.neverConnected": "Not connected",
   "settings.source.unidentifiedProfiles": "Not connected",
-  "settings.source.unidentifiedProfilesDescription":
-    "Saved records from older versions or not yet successfully connected. Device details update after a successful connection.",
+  "settings.source.unidentifiedProfilesDescription": "Saved records from older versions or not yet successfully connected. Device details update after a successful connection.",
   "settings.source.retiredProfiles": "Archived connections",
   "settings.source.retiredProfilesWithCount": "Archived connections ({count})",
-  "settings.source.retiredProfilesDescription":
-    "Archived after the connection target identity changed; kept for records",
+  "settings.source.retiredProfilesDescription": "Archived after the connection target identity changed; kept for records",
   "settings.source.empty": "No remote device connections yet.",
-  "settings.source.migrationCountsRequireConnection":
-    "Connect this device to inspect its migration counts.",
+  "settings.source.migrationCountsRequireConnection": "Connect this device to inspect its migration counts.",
   "settings.source.migrationReport": "Migration report",
-  "settings.source.loginUnavailable":
-    "Account login must be completed on this device and is unavailable from Settings.",
+  "settings.source.loginUnavailable": "Account login must be completed on this device and is unavailable from Settings.",
   "settings.source.exportMigrationReport": "Export JSON",
   "settings.source.exportMigrationJson": "Export migration details JSON",
   "settings.source.noMigrationIssues": "No migration issues.",
   "settings.source.abandonMigration": "Abandon merge",
   "settings.source.abandonMigrationTitle": "Keep current history and stop automatic merging?",
-  "settings.source.abandonMigrationDescription":
-    "Other history will be archived. This directory keeps the current history; you can retry merging later.",
+  "settings.source.abandonMigrationDescription": "Other history will be archived. This directory keeps the current history; you can retry merging later.",
   "settings.source.retryMigration": "Retry merge",
   "settings.source.migrationConflictCount": "{count} conflict(s)",
   "settings.source.migrationMergedHistory": "Merged history from {count} connection(s)",
@@ -3446,21 +2988,17 @@ const enUS: Record<string, string> = {
   "settings.source.migrationPhase.configDirsMerged": "Configuration directories merged",
   "settings.source.migrationPhase.aliasPublished": "Workspace alias published",
   "settings.source.migrationPhase.completed": "Migration completed",
-  "remote.connectingConfirmDescription":
-    "The remote connection is still in progress. If you go back or close this window now, the current connection attempt will be cancelled.",
+  "remote.connectingConfirmDescription": "The remote connection is still in progress. If you go back or close this window now, the current connection attempt will be cancelled.",
   "remote.stopConnecting": "Stop connecting",
   "remote.connectedConfirmTitle": "Leave this connected session?",
-  "remote.connectedConfirmDescription":
-    "The remote connection is ready, but no directory has been opened yet. If you go back or close this window now, the current remote session will be discarded.",
+  "remote.connectedConfirmDescription": "The remote connection is ready, but no directory has been opened yet. If you go back or close this window now, the current remote session will be discarded.",
   "remote.leaveConnectedSession": "Leave session",
-  "remote.optionsLoadFailed":
-    "Failed to load local runtime options. You can still enter values manually.",
+  "remote.optionsLoadFailed": "Failed to load local runtime options. You can still enter values manually.",
   "remote.log.prepare": "Wizard parameters validated. Preparing the connection request.",
   "remote.log.sshTarget": "SSH target: {username}@{host}:{port}",
   "remote.log.dockerTarget": "Docker container target: {container}",
   "remote.log.requestingSession": "Requesting the host process to create a remote session...",
-  "remote.log.sessionReady":
-    "Remote session created successfully. You can choose a directory next.",
+  "remote.log.sessionReady": "Remote session created successfully. You can choose a directory next.",
   "server.description": "Connect to an already running ZCode server.",
   "server.url": "Server URL",
   "server.urlPlaceholder": "e.g. https://studio.example.com:3030",
@@ -3470,42 +3008,33 @@ const enUS: Record<string, string> = {
   "server.tokenPlaceholder": "Enter connection token",
   "server.workspacePath": "Default directory (optional)",
   "server.workspacePathPlaceholder": "e.g. /srv/project",
-  "server.workspacePathDescription":
-    "Leave empty to choose a directory on the server after connecting.",
+  "server.workspacePathDescription": "Leave empty to choose a directory on the server after connecting.",
   "server.validation.urlRequired": "Server URL is required",
   "server.validation.invalidUrl": "Server URL is invalid",
   "wsl.distro": "Distribution",
   "wsl.defaultDistro": "Default distribution",
   "wsl.user": "Linux user",
   "wsl.defaultUser": "Default user",
-  "wsl.userDescription":
-    "Leave empty to use the distribution default user. Enter root or another existing Linux user to run WSL commands as that user.",
-  "wsl.rootWarning":
-    "Root mode runs the remote host, agent, and terminal as root. Files created during the session may be owned by root.",
-  "wsl.validation.invalidUser":
-    "Linux user names cannot contain control characters, colons, slashes, or backslashes, and must be 64 characters or fewer.",
+  "wsl.userDescription": "Leave empty to use the distribution default user. Enter root or another existing Linux user to run WSL commands as that user.",
+  "wsl.rootWarning": "Root mode runs the remote host, agent, and terminal as root. Files created during the session may be owned by root.",
+  "wsl.validation.invalidUser": "Linux user names cannot contain control characters, colons, slashes, or backslashes, and must be 64 characters or fewer.",
   "wsl.loading": "Detecting WSL distribution...",
   "wsl.detectedCount": "{count} distribution detected on this device.",
-  "wsl.noDistros":
-    "No WSL distribution were detected. You can still connect to the default distribution if WSL is installed.",
+  "wsl.noDistros": "No WSL distribution were detected. You can still connect to the default distribution if WSL is installed.",
   "docker.container": "Container",
   "docker.containerPlaceholder": "Enter container name or ID, e.g. my-container",
-  "docker.manualContainerHint":
-    "If the running container list is incomplete, enter a container name or ID manually to connect.",
+  "docker.manualContainerHint": "If the running container list is incomplete, enter a container name or ID manually to connect.",
   "docker.selectContainer": "Choose a running container",
   "docker.loading": "Detecting running containers...",
   "docker.unavailable": "Docker is unavailable",
   "docker.noContainers": "No running containers",
   "docker.validation.required": "Container name or ID is required",
-
-  // Locale switch
+// Locale switch
   "locale.switchLanguage": "Switch language",
-
-  // File tree
+// File tree
   "fileTree.loading": "Loading...",
   "fileTree.error": "Failed to load",
-
-  // Terminal
+// Terminal
   "terminal.exited": "[Process exited]",
   "terminal.title": "Terminal",
   "terminal.show": "Toggle terminal",
@@ -3518,28 +3047,22 @@ const enUS: Record<string, string> = {
   "terminal.contextMenu.paste": "Paste",
   "chat.history.loadingOlderMessages": "Loading earlier messages...",
   "chat.history.loadOlderMessages": "Load earlier messages",
-  "chat.pendingCommand.discarded":
-    "An input submitted before the CLI restarted did not reach the conversation. Confirm whether to send it again.",
+  "chat.pendingCommand.discarded": "An input submitted before the CLI restarted did not reach the conversation. Confirm whether to send it again.",
   "chat.pendingCommand.resend": "Send again",
   "chat.pendingCommand.dismiss": "Later",
-  "chat.runtimeExit.outOfMemory":
-    "The background runtime exited unexpectedly because the system ran out of memory. Another program may be using a lot of memory. Running tasks and subagents were interrupted.",
-  "chat.runtimeExit.generic":
-    "The background runtime exited unexpectedly. Running tasks and subagents were interrupted.",
+  "chat.runtimeExit.outOfMemory": "The background runtime exited unexpectedly because the system ran out of memory. Another program may be using a lot of memory. Running tasks and subagents were interrupted.",
+  "chat.runtimeExit.generic": "The background runtime exited unexpectedly. Running tasks and subagents were interrupted.",
   "chat.runtimeExit.dismiss": "Dismiss",
-  // 软门禁（D4）：工作区 Hook 待审核时 composer 图标与浮层
+// 软门禁（D4）：工作区 Hook 待审核时 composer 图标与浮层
   "chat.workspaceHookPending.label": "Workspace hooks pending review",
-  "chat.workspaceHookPending.message":
-    "{count} workspace hook(s) pending review; disabled for this session",
+  "chat.workspaceHookPending.message": "{count} workspace hook(s) pending review; disabled for this session",
   "chat.workspaceHookPending.review": "Review",
   "chat.workspaceHookPending.dismiss": "Dismiss",
   "chat.workspaceMcpPending.label": "Workspace MCP servers awaiting trust",
-  "chat.workspaceMcpPending.message":
-    "{count} workspace MCP server(s) await trust. Trust changes apply to new or restarted chats; you can continue chatting.",
+  "chat.workspaceMcpPending.message": "{count} workspace MCP server(s) await trust. Trust changes apply to new or restarted chats; you can continue chatting.",
   "chat.workspaceMcpPending.review": "Review",
   "chat.workspaceMcpPending.dismiss": "Dismiss",
-
-  // Task list
+// Task list
   "taskList.title": "Task list",
   "taskList.newThread": "New task",
   "taskList.forkedUntitled": "New task",
@@ -3560,17 +3083,14 @@ const enUS: Record<string, string> = {
   "taskList.renamePlaceholder": "Task name",
   "taskList.renameFailed": "Could not rename task",
   "taskList.pinFailed": "Could not update pinned state",
-  "taskList.restartUnsupported":
-    "This Agent version does not support restarting tasks. Update it first.",
+  "taskList.restartUnsupported": "This Agent version does not support restarting tasks. Update it first.",
   "taskList.recoverWorkspace": "Restart Agent process",
-  "taskList.recoverWorkspaceDescription":
-    "Task resources could not be safely released. Continuing stops every task sharing this Agent process, including tasks in other workspaces. Conversation history is kept.",
+  "taskList.recoverWorkspaceDescription": "Task resources could not be safely released. Continuing stops every task sharing this Agent process, including tasks in other workspaces. Conversation history is kept.",
   "taskList.restart": "Restart task",
   "taskList.restarting": "Restarting task…",
   "taskList.restartFailed": "Restart failed. Check the task status and try again.",
-  // 命令说明沿用 CLI 英文目录；任务菜单名称仍按界面语言展示。
-  "chat.slash.app.reload.description":
-    "Reload the task runtime, preserving history and stopping current execution.",
+// 命令说明沿用 CLI 英文目录；任务菜单名称仍按界面语言展示。
+  "chat.slash.app.reload.description": "Reload the task runtime, preserving history and stopping current execution.",
   "taskList.markAsUnread": "Mark as unread",
   "chat.toolCall.agent.openInSidePane": "Open in side pane",
   "v4Pane.renamePlaceholder": "Rename session…",
@@ -3620,13 +3140,11 @@ const enUS: Record<string, string> = {
   "chat.changeSummary.review": "Review",
   "chat.changeSummary.openInEditor": "Open in editor",
   "chat.changeSummary.rewind": "Undo",
-  "chat.changeSummary.rewindLocked":
-    "The session is running or has a pending request. You can undo after it finishes.",
+  "chat.changeSummary.rewindLocked": "The session is running or has a pending request. You can undo after it finishes.",
   "chat.changeSummary.reapply": "Reapply",
   "chat.changeSummary.reverted": "Undone",
   "chat.changeSummary.rewindDialog.title": "Undo file changes",
-  "chat.changeSummary.rewindDialog.description":
-    "ZCode checks current file content again before writing. If another process changed a file, no files will be written.",
+  "chat.changeSummary.rewindDialog.description": "Reactor checks current file content again before writing. If another process changed a file, no files will be written.",
   "chat.changeSummary.rewindDialog.loading": "Checking reversible files…",
   "chat.changeSummary.rewindDialog.safeTitle": "Safe to undo {count}",
   "chat.changeSummary.rewindDialog.unsafeTitle": "Unsafe to undo {count}",
@@ -3635,8 +3153,7 @@ const enUS: Record<string, string> = {
   "chat.changeSummary.rewindDialog.noUnsafeFiles": "No unsafe files found.",
   "chat.changeSummary.rewindDialog.noPreview": "No preview is available yet.",
   "chat.changeSummary.rewindDialog.confirm": "Undo files",
-  "chat.changeSummary.rewindDialog.cannotApply":
-    "At least one file is unsafe, so no files were written.",
+  "chat.changeSummary.rewindDialog.cannotApply": "At least one file is unsafe, so no files were written.",
   "chat.changeSummary.rewindDialog.error": "The file undo request failed. Please try again.",
   "chat.changeSummary.rewindDialog.operationCount": "{count} change(s)",
   "chat.changeSummary.rewindDialog.reason.bashIgnored": "bash/shell change ignored",
@@ -3644,20 +3161,16 @@ const enUS: Record<string, string> = {
   "chat.changeSummary.rewindDialog.reason.checkpointUnreadable": "checkpoint unreadable",
   "chat.changeSummary.rewindDialog.reason.externalModified": "file changed externally",
   "chat.changeSummary.rewindDialog.reason.fileReadFailed": "current file unreadable",
-  "chat.changeSummary.rewindDialog.reason.unsupportedCheckpoint":
-    "old checkpoint cannot be safely restored",
+  "chat.changeSummary.rewindDialog.reason.unsupportedCheckpoint": "old checkpoint cannot be safely restored",
   "chat.edit.resetConversationAndFiles": "Reset chat + files",
   "chat.edit.resetConversationAndFiles.tooltip": "Reset with files",
-  "chat.edit.resetConversationAndFiles.available":
-    "Restore this turn's files, reset the conversation, and send",
+  "chat.edit.resetConversationAndFiles.available": "Restore this turn's files, reset the conversation, and send",
   "chat.edit.resetConversationAndFiles.noFiles": "This turn has no reversible file changes",
   "chat.edit.resetConversationAndFiles.reverted": "This turn's file changes are already undone",
   "chat.edit.resetConversationAndFiles.running": "Wait for the current work to stop",
-  "chat.edit.resetConversationAndFiles.unavailable":
-    "The session is running or has a pending request. You can undo after it finishes.",
+  "chat.edit.resetConversationAndFiles.unavailable": "The session is running or has a pending request. You can undo after it finishes.",
   "chat.edit.workspaceConflict.title": "Files could not be safely reset",
-  "chat.edit.workspaceConflict.description":
-    "No conversation history was changed. Review the conflicting or ignored files, then reset only the conversation or cancel.",
+  "chat.edit.workspaceConflict.description": "No conversation history was changed. Review the conflicting or ignored files, then reset only the conversation or cancel.",
   "chat.edit.workspaceConflict.conversationOnly": "Reset chat only and send",
   "chat.previewCards.website": "Website",
   "chat.previewCards.htmlWebsite": "Website · HTML",
@@ -3683,24 +3196,20 @@ const enUS: Record<string, string> = {
   "chat.turnNavigator.emptyAssistant": "No assistant text yet",
   "chat.turnNavigator.runningAssistant": "Assistant is still working",
   "chat.turnNavigator.userFallback": "User query",
-  "chat.rewind.conflictConfirm":
-    "These files changed outside this turn. Force rewinding may create conflicts:\n\n{paths}",
+  "chat.rewind.conflictConfirm": "These files changed outside this turn. Force rewinding may create conflicts:\n\n{paths}",
   "taskNav.back": "Go back",
   "taskNav.forward": "Go forward",
   "taskNav.noMoreBack": "No previous tasks",
   "taskNav.noMoreForward": "No next tasks",
-  "taskList.switchBlockedByModelRestart":
-    "Model provider switch in progress. Task switching is temporarily disabled.",
+  "taskList.switchBlockedByModelRestart": "Model provider switch in progress. Task switching is temporarily disabled.",
   "sidebar.exportLogs": "Export logs",
   "sidebar.exportLogs.pending": "Exporting logs...",
   "sidebar.exportLogs.error": "Failed to export logs: {error}",
   "sidebar.newTask": "New task",
-
-  // Settings
+// Settings
   "settings.title": "Settings",
   "settings.breadcrumbLabel": "Settings path",
-  "settings.subtitle":
-    "Switch major settings on the left and edit the details in the panel on the right.",
+  "settings.subtitle": "Switch major settings on the left and edit the details in the panel on the right.",
   "settings.navLabel": "Sections",
   "settings.sidebar.group.basics": "Basics",
   "settings.sidebar.group.agentCapabilities": "Agent capabilities",
@@ -3713,8 +3222,7 @@ const enUS: Record<string, string> = {
   "settings.interfaceMode": "Interface mode",
   "settings.interfaceMode.office": "Office mode",
   "settings.interfaceMode.coding": "Coding mode",
-  "settings.interfaceMode.description":
-    "Office mode focuses on summaries and results. Coding mode shows commands, output, and code changes.",
+  "settings.interfaceMode.description": "Office and review modes focus on summaries and results. Coding mode shows commands, output, and code changes.",
   "chat.toolCall.execute.conciseCompleted": "Ran a command",
   "chat.contextOptimization.started": "Optimizing conversation",
   "chat.contextOptimization.skipped": "No conversation optimization needed",
@@ -3739,8 +3247,7 @@ const enUS: Record<string, string> = {
   "settings.shortcuts.searchEmpty": "No matching commands",
   "settings.shortcuts.resetAll": "Reset all to defaults",
   "settings.shortcuts.resetAllConfirmTitle": "Reset all shortcuts to defaults?",
-  "settings.shortcuts.resetAllConfirmDescription":
-    "This clears all custom keybinding overrides and restores every command to its default binding.",
+  "settings.shortcuts.resetAllConfirmDescription": "This clears all custom keybinding overrides and restores every command to its default binding.",
   "settings.shortcuts.columnHeaderCommand": "Command",
   "settings.shortcuts.columnHeaderBinding": "Keybinding",
   "settings.shortcuts.columnHeaderActions": "Actions",
@@ -3750,15 +3257,12 @@ const enUS: Record<string, string> = {
   "settings.shortcuts.scopeComposer": "Composer",
   "settings.shortcuts.scopeGlobal": "Global",
   "settings.shortcuts.recording": "Press new combination…",
-  "settings.shortcuts.recordingHint":
-    "Esc to cancel · Backspace to reset · press a new combo after a conflict",
+  "settings.shortcuts.recordingHint": "Esc to cancel · Backspace to reset · press a new combo after a conflict",
   "settings.shortcuts.conflictReserved": "This combination is reserved by the system",
   "settings.shortcuts.conflictOccupied": 'Already used by "{command}"',
-  "settings.shortcuts.clearConflict":
-    'The default key is already used by "{command}"; restoring it would create a conflict. Adjust that command first',
+  "settings.shortcuts.clearConflict": 'The default key is already used by "{command}"; restoring it would create a conflict. Adjust that command first',
   "settings.shortcuts.stealConfirm": "Rebind anyway (current command loses it)",
-  "settings.shortcuts.invalidNoModifier":
-    "At least one modifier key is required (Ctrl / Cmd / Alt)",
+  "settings.shortcuts.invalidNoModifier": "At least one modifier key is required (Ctrl / Cmd / Alt)",
   "settings.shortcuts.invalidKey": "Unsupported key",
   "settings.shortcuts.rebindAria": 'Rebind shortcut for "{command}"',
   "settings.shortcuts.addAria": 'Add a binding for "{command}"',
@@ -3793,65 +3297,50 @@ const enUS: Record<string, string> = {
   "settings.appearance.interfaceTitle": "Interface Setting",
   "settings.appearance.interfaceDescription": "Choose the app theme and interface text size.",
   "settings.appearance.codeTitle": "Code settings",
-  "settings.appearance.codeDescription":
-    "Choose code themes, font size, and display options independently from the interface font size.",
+  "settings.appearance.codeDescription": "Choose code themes, font size, and display options independently from the interface font size.",
   "settings.uiFontSize": "UI font size",
-  "settings.uiFontSizeDescription":
-    "Adjust interface text without changing icons or layout dimensions.",
+  "settings.uiFontSizeDescription": "Adjust interface text without changing icons or layout dimensions.",
   "settings.agentBehavior.title": "Behavior and tools",
   "settings.systemTitle": "General",
   "settings.systemDescription": "These preferences affect the current window experience.",
   "settings.locale": "Language",
   "settings.localeDescription": "Choose the display language used by the application UI.",
   "settings.terminalProfile": "Inherit system terminal profile",
-  "settings.terminalProfileDescription":
-    "When launching the built-in terminal, inherit login shell environment, proxy, Kubernetes variables, and local terminal font when possible.",
+  "settings.terminalProfileDescription": "When launching the built-in terminal, inherit login shell environment, proxy, Kubernetes variables, and local terminal font when possible.",
   "settings.terminalFontFamily": "Terminal font",
-  "settings.terminalFontFamilyDescription":
-    "Leave blank to auto-detect system terminal settings; set a value to override the ZCode terminal font.",
+  "settings.terminalFontFamilyDescription": "Leave blank to auto-detect system terminal settings; set a value to override the Reactor terminal font.",
   "settings.terminalFontFamilyPlaceholder": "Leave blank to inherit, e.g. MesloLGS NF, monospace",
   "settings.integratedTerminalShell": "Integrated terminal shell",
-  "settings.integratedTerminalShellDescription":
-    "Used in new sessions and sessions restored after an app restart. Active sessions keep their current shell. On Windows, Bash uses this shell; Auto tries Git Bash, then cmd.exe.",
+  "settings.integratedTerminalShellDescription": "Used in new sessions and sessions restored after an app restart. Active sessions keep their current shell. On Windows, Bash uses this shell; Auto tries Git Bash, then cmd.exe.",
   "settings.integratedTerminalShell.auto": "Auto",
   "settings.toolSearch": "Tool search",
-  "settings.toolSearchDescription":
-    "Auto selects native or local search for the model. Local loads tools on demand. Off sends the full tool catalog. Applies to new sessions and sessions restored after an app restart; active sessions keep their settings.",
-  "settings.toolSearchExperimentalNotice":
-    "Experimental feature. Using native mode with a model provider that does not fully support native ToolSearch may invalidate prompt caching and increase token usage.",
+  "settings.toolSearchDescription": "Auto selects native or local search for the model. Local loads tools on demand. Off sends the full tool catalog. Applies to new sessions and sessions restored after an app restart; active sessions keep their settings.",
+  "settings.toolSearchExperimentalNotice": "Experimental feature. Using native mode with a model provider that does not fully support native ToolSearch may invalidate prompt caching and increase token usage.",
   "settings.toolSearch.auto": "Auto",
   "settings.toolSearch.local": "Local",
   "settings.toolSearch.off": "Off",
   "settings.nativeSearchEnhancements": "Enhanced Find and Grep",
-  "settings.nativeSearchEnhancementsDescription":
-    "Use enhanced Find and Grep in new sessions and sessions restored after an app restart. Active sessions keep their current setting; Find remains unchanged on Windows.",
+  "settings.nativeSearchEnhancementsDescription": "Use enhanced Find and Grep in new sessions and sessions restored after an app restart. Active sessions keep their current setting; Find remains unchanged on Windows.",
   "settings.memory": "Memory",
   "settings.personalization.title": "Personalization",
-  "settings.personalization.description":
-    "Add custom instructions to personalize Agent responses. Instructions apply to future conversations of the local Agent; remote devices need separate configuration.",
+  "settings.personalization.description": "Add custom instructions to personalize Agent responses. Instructions apply to future conversations of the local Agent; remote devices need separate configuration.",
   "settings.personalization.placeholder": "Add custom instructions...",
   "settings.personalization.editorLabel": "Custom instructions editor",
   "settings.personalization.saved": "Saved; effective for new conversations",
   "settings.personalization.saveFailed": "Failed to save. Check the logs",
   "settings.personalization.loadFailed": "Failed to load custom instructions. Check the logs",
-  "settings.personalization.localOnly":
-    "Custom instructions can only be edited on the local desktop. Open Settings → Personalization in the desktop app.",
+  "settings.personalization.localOnly": "Custom instructions can only be edited on the local desktop. Open Settings → Personalization in the desktop app.",
   "settings.personalization.unsaved": "Unsaved changes",
   "settings.personalization.sizeCount": "{used} / {limit}",
-  "settings.personalization.sizeOverLimit":
-    "Content exceeds the 100 KB limit the Agent reads; anything beyond it is ignored. Trim before saving.",
+  "settings.personalization.sizeOverLimit": "Content exceeds the 100 KB limit the Agent reads; anything beyond it is ignored. Trim before saving.",
   "settings.memory.workspaceMemory": "Workspace Memory",
-  "settings.memoryDescription":
-    "Save and reuse long-term context in workspaces. Applies to new sessions and may increase model requests and token costs.",
+  "settings.memoryDescription": "Save and reuse long-term context in workspaces. Applies to new sessions and may increase model requests and token costs.",
   "settings.memory.viewer.disabled": "Enable Workspace Memory to view saved memories.",
-  "settings.memory.viewer.remoteUnavailable":
-    "Memory details for remote devices are not available yet.",
-  "settings.memory.viewer.localOnly":
-    "Memory details are available only in the local desktop app. Open Memory settings there to view them.",
+  "settings.memory.viewer.remoteUnavailable": "Memory details for remote devices are not available yet.",
+  "settings.memory.viewer.localOnly": "Memory details are available only in the local desktop app. Open Memory settings there to view them.",
   "settings.memory.viewer.title": "Saved workspace memories",
   "settings.memory.viewer.description": "Browse memories saved by workspace on this device.",
-  "settings.memory.viewer.projectsDescription":
-    "Select a project to view all of its saved memories.",
+  "settings.memory.viewer.projectsDescription": "Select a project to view all of its saved memories.",
   "settings.memory.viewer.refresh": "Refresh",
   "settings.memory.viewer.loading": "Loading memories…",
   "settings.memory.viewer.empty": "No saved workspace memories",
@@ -3879,46 +3368,33 @@ const enUS: Record<string, string> = {
   "settings.memory.viewer.collapse": "Collapse memory items",
   "settings.memory.viewer.expand": "Expand memory items",
   "settings.memory.viewer.fileLoading": "Loading file…",
-  "settings.memory.viewer.fileDeleted":
-    "This memory file has been deleted. Refresh the file list to update it.",
+  "settings.memory.viewer.fileDeleted": "This memory file has been deleted. Refresh the file list to update it.",
   "settings.memory.viewer.fileTooLarge": "This memory file exceeds the 5 MiB preview limit.",
-  "settings.memory.viewer.fileChanged":
-    "This memory file was updated while being read. Reopen it or refresh the file list.",
+  "settings.memory.viewer.fileChanged": "This memory file was updated while being read. Reopen it or refresh the file list.",
   "settings.memory.viewer.noSelection": "Select a memory file to preview it.",
   "settings.httpProxy": "HTTP Proxy",
-  "settings.httpProxyDescription":
-    'Route model, MCP, command-tool, extension, and app renderer egress traffic through this proxy; system environment variables are not read. Leave blank and that traffic connects directly, while the embedded browser follows your system proxy settings. Restart the app to take effect; for extensions you can also run "Reload extensions" from the command center.',
-  "settings.httpProxyPlaceholder":
-    "Blank means the embedded browser follows the system proxy, e.g. http://127.0.0.1:7890",
+  "settings.httpProxyDescription": 'Route model, MCP, command-tool, extension, and app renderer egress traffic through this proxy; system environment variables are not read. Leave blank and that traffic connects directly, while the embedded browser follows your system proxy settings. Restart the app to take effect; for extensions you can also run "Reload extensions" from the command center.',
+  "settings.httpProxyPlaceholder": "Blank means the embedded browser follows the system proxy, e.g. http://127.0.0.1:7890",
   "settings.httpProxyNoProxy": "No proxy",
-  "settings.httpProxyNoProxyDescription":
-    "Requests matching these hosts connect directly instead of using the HTTP proxy. Separate rules with commas. Restart the app to take effect.",
+  "settings.httpProxyNoProxyDescription": "Requests matching these hosts connect directly instead of using the HTTP proxy. Separate rules with commas. Restart the app to take effect.",
   "settings.httpProxyNoProxyPlaceholder": "e.g. localhost,127.0.0.1,::1,.example.com,*.corp.com",
   "settings.httpProxyCaCertPath": "Custom certificate",
-  "settings.httpProxyCaCertPathDescription":
-    "Optional. Set a PEM root certificate path to inject it as NODE_EXTRA_CA_CERTS for models, MCP, command tools, and extensions, and to trust it in renderer certificate verification. Restart the app to take effect.",
+  "settings.httpProxyCaCertPathDescription": "Optional. Set a PEM root certificate path to inject it as NODE_EXTRA_CA_CERTS for models, MCP, command tools, and extensions, and to trust it in renderer certificate verification. Restart the app to take effect.",
   "settings.httpProxyCaCertPathPlaceholder": "e.g. /Users/name/certs/root-ca.pem",
   "settings.httpProxySavedHint": "Network proxy settings saved. Restart the app to take effect.",
   "settings.desktopChromiumHardwareAcceleration": "Chrome hardware acceleration",
-  "settings.desktopChromiumHardwareAccelerationDescription":
-    "Turn this off to work around blank windows, crashes, or rendering issues caused by some GPUs or drivers. Restart the app to take effect.",
-  "settings.desktopChromiumHardwareAccelerationSavedHint":
-    "Chrome hardware acceleration setting saved. Restart the app to take effect.",
+  "settings.desktopChromiumHardwareAccelerationDescription": "Turn this off to work around blank windows, crashes, or rendering issues caused by some GPUs or drivers. Restart the app to take effect.",
+  "settings.desktopChromiumHardwareAccelerationSavedHint": "Chrome hardware acceleration setting saved. Restart the app to take effect.",
   "settings.receivePreviewUpdates": "Receive preview updates early",
-  "settings.receivePreviewUpdatesDescription":
-    "When enabled, you will get the earliest access to new features and improvements. When disabled, you will receive update pushes according to the regular release schedule.",
+  "settings.receivePreviewUpdatesDescription": "When enabled, you will get the earliest access to new features and improvements. When disabled, you will receive update pushes according to the regular release schedule.",
   "settings.autoDownloadAndInstallUpdates": "Automatically download and install updates",
-  "settings.autoDownloadAndInstallUpdatesDescription":
-    "When enabled, updates start downloading as soon as they are found. Restart still requires confirmation when tasks are running.",
+  "settings.autoDownloadAndInstallUpdatesDescription": "When enabled, updates start downloading as soon as they are found. Restart still requires confirmation when tasks are running.",
   "settings.notification": "Task notifications",
-  "settings.notificationDescription":
-    "Send desktop notifications when a task completes, fails, or needs approval.",
+  "settings.notificationDescription": "Send desktop notifications when a task completes, fails, or needs approval.",
   "settings.notificationSound": "Notification sound",
-  "settings.notificationSoundDescription":
-    "When notifications are enabled, you can mute the task notification sound separately.",
+  "settings.notificationSoundDescription": "When notifications are enabled, you can mute the task notification sound separately.",
   "settings.mobilePush": "Mobile push notifications",
-  "settings.mobilePushDescription":
-    "When you are away from this desktop, completed, failed, or waiting tasks are pushed to the signed-in ZCode App.",
+  "settings.mobilePushDescription": "When you are away from this desktop, completed, failed, or waiting tasks are pushed to the signed-in ZCode App.",
   "notification.taskWithTitle": "Task: {title}",
   "notification.taskWaiting": "Task waiting for your confirmation",
   "notification.completed": "Task completed",
@@ -3931,71 +3407,54 @@ const enUS: Record<string, string> = {
   "notification.command": "Command: {command}",
   "notification.file": "File: {paths}",
   "settings.closeToTrayOnWindows": "Hide to tray when closing window",
-  "settings.closeToTrayOnWindowsDescription":
-    "The close button and close-window shortcut hide the window, while Quit from the tray still exits the app. On by default on Windows; on Linux it depends on whether the desktop environment provides a system tray.",
-  "settings.closeToTrayUnavailable":
-    "Your desktop environment has no system tray, so close-to-tray cannot be enabled.",
-  "settings.closeToTrayGnomeHint":
-    "On GNOME, install an AppIndicator extension and restart the app to enable this.",
+  "settings.closeToTrayOnWindowsDescription": "The close button and close-window shortcut hide the window, while Quit from the tray still exits the app. On by default on Windows; on Linux it depends on whether the desktop environment provides a system tray.",
+  "settings.closeToTrayUnavailable": "Your desktop environment has no system tray, so close-to-tray cannot be enabled.",
+  "settings.closeToTrayGnomeHint": "On GNOME, install an AppIndicator extension and restart the app to enable this.",
   "settings.keepAwakeWhileRunning": "Keep computer running",
-  "settings.keepAwakeWhileRunningDescription":
-    "Prevent the system from sleeping due to idle. You can still sleep manually or by closing the lid. Desktop only.",
+  "settings.keepAwakeWhileRunningDescription": "Prevent the system from sleeping due to idle. You can still sleep manually or by closing the lid. Desktop only.",
   "settings.messageStreamShowReasoning": "Show reasoning",
-  "settings.messageStreamShowReasoningDescription":
-    "Show full reasoning inside the message stream. When off, the first reasoning item in each turn remains visible.",
+  "settings.messageStreamShowReasoningDescription": "Show full reasoning inside the message stream. When off, the first reasoning item in each turn remains visible.",
   "settings.messageStreamShowTodos": "Show todos",
   "settings.messageStreamShowTodosDescription": "Show Todo tool cards inside the message stream. ",
   "settings.zcodeInteractionBehavior": "Interaction behavior",
-  "settings.zcodeInteractionBehaviorDescription":
-    "While ZCode is running, add follow-up actions to the queue or guide them to run after the next tool call.",
+  "settings.zcodeInteractionBehaviorDescription": "While Reactor is running, add follow-up actions to the queue or guide them to run after the next tool call.",
   "settings.zcodeInteractionBehavior.option.queue": "Queue",
   "settings.zcodeInteractionBehavior.option.guide": "Guide",
   "settings.pluginAutoRecommendation": "Automatic plugin recommendations",
-  "settings.pluginAutoRecommendationDescription":
-    "Let the agent find and recommend plugins in conversations. When off, you can still install plugins in Settings. Applies from your next message. Installation requires confirmation.",
+  "settings.pluginAutoRecommendationDescription": "Let the agent find and recommend plugins in conversations. When off, you can still install plugins in Settings. Applies from your next message. Installation requires confirmation.",
   "settings.pluginAutoRecommendationSaveError": "Could not save. Try again.",
   "settings.askUserQuestionAutoResolution": "Automatically continue questions",
-  "settings.askUserQuestionAutoResolutionDescription":
-    "When enabled, Agent questions automatically continue after 5 minutes without an answer. When disabled, current and future questions wait for your response.",
+  "settings.askUserQuestionAutoResolutionDescription": "When enabled, Agent questions automatically continue after 5 minutes without an answer. When disabled, current and future questions wait for your response.",
   "settings.dynamicWorkflow": "Dynamic workflows",
-  "settings.dynamicWorkflowDescription":
-    "Let the model orchestrate many subagents working in parallel, so it can take on complex tasks and deliver polished results.",
+  "settings.dynamicWorkflowDescription": "Let the model orchestrate many subagents working in parallel, so it can take on complex tasks and deliver polished results.",
   "settings.dynamicWorkflow.option.disabled": "Off",
-  "settings.dynamicWorkflow.option.disabled.description":
-    "Turn workflows off. The model cannot start new ones, and the Workflows tab leaves the Automations page. Workflows already in your conversations stay readable.",
+  "settings.dynamicWorkflow.option.disabled.description": "Turn workflows off. The model cannot start new ones, and the Workflows tab leaves the Automations page. Workflows already in your conversations stay readable.",
   "settings.dynamicWorkflow.option.onDemand": "On command",
-  "settings.dynamicWorkflow.option.onDemand.description":
-    "The model starts a workflow only when you type /workflow.",
+  "settings.dynamicWorkflow.option.onDemand.description": "The model starts a workflow only when you type /workflow.",
   "settings.dynamicWorkflow.option.alwaysOn": "Always on",
-  "settings.dynamicWorkflow.option.alwaysOn.description":
-    "You can type /workflow, and the model can also start a workflow on its own when your request calls for one.",
+  "settings.dynamicWorkflow.option.alwaysOn.description": "You can type /workflow, and the model can also start a workflow on its own when your request calls for one.",
   "settings.dynamicWorkflow.defaultTag": "Default",
   "settings.dynamicWorkflow.saveError": "Could not save the dynamic workflow setting",
   "settings.modelIoFullRetention": "Keep complete model I/O",
-  "settings.modelIoFullRetentionDescription":
-    "Keep complete model requests and responses without compression, size limits, or automatic deletion.",
+  "settings.modelIoFullRetentionDescription": "Keep complete model requests and responses without compression, size limits, or automatic deletion.",
   "settings.performanceMode": "Performance mode",
   "settings.performanceModeDescription": "Simplify rendered output to improve performance.",
   "settings.taskAutoArchive": "Auto-archive old sessions",
-  "settings.taskAutoArchiveDescription":
-    "Periodically archive sessions whose last activity is older than the retention window; pinned and running sessions are never affected.",
+  "settings.taskAutoArchiveDescription": "Periodically archive sessions whose last activity is older than the retention window; pinned and running sessions are never affected.",
   "settings.taskAutoArchiveDays": "Archive retention",
-  "settings.taskAutoArchiveDaysDescription":
-    "A session becomes eligible for auto-archive only after its last update is older than this window.",
+  "settings.taskAutoArchiveDaysDescription": "A session becomes eligible for auto-archive only after its last update is older than this window.",
   "settings.taskAutoArchiveDays.option.3": "Archive after 3 days",
   "settings.taskAutoArchiveDays.option.7": "Archive after 7 days",
   "settings.taskAutoArchiveDays.option.14": "Archive after 14 days",
   "settings.taskAutoArchiveDays.option.30": "Archive after 30 days",
   "settings.dataBaseDir": "Data storage path",
-  "settings.dataBaseDirDescription":
-    "Root directory for app data (defaults to user home directory). Existing data will be copied to the new location. The .zcode/v2 suffix cannot be changed.",
+  "settings.dataBaseDirDescription": "Root directory for app data (defaults to user home directory). Existing data will be copied to the new location. The .zcode/v2 suffix cannot be changed.",
   "settings.dataBaseDirPlaceholder": "Default: user home directory",
   "settings.dataBaseDirBrowse": "Choose folder",
   "settings.dataBaseDirSave": "Save",
   "settings.dataBaseDirCopying": "Copying data, please do not close the app...",
   "settings.dataBaseDirCopyFailed": "Data copy failed. Path was not changed.",
-  "settings.dataBaseDirForbiddenInstallDir":
-    "The data directory cannot be the ZCode installation folder on Windows. Choose a folder outside the app install location.",
+  "settings.dataBaseDirForbiddenInstallDir": "The data directory cannot be the Reactor installation folder on Windows. Choose a folder outside the app install location.",
   "settings.dataBaseDirRestartRequired": "Data saved. Please restart the app to take effect.",
   "settings.locale.system": "System default",
   "settings.locale.zh-CN": "中文简体",
@@ -4010,24 +3469,19 @@ const enUS: Record<string, string> = {
   "sidebar.settings.theme.dark": "Dark theme",
   "settings.migration.title": "Migration",
   "settings.migration.sectionTitle": "Claude History Migration",
-  "settings.migration.sectionDescription":
-    "Scan native Claude Code history on this machine, optionally filter by workspace and activity window, then import the selected sessions into their matching ZCode task lists.",
+  "settings.migration.sectionDescription": "Scan native Claude Code history on this machine, optionally filter by workspace and activity window, then import the selected sessions into their matching Reactor task lists.",
   "settings.migration.badge.localOnly": "Local Claude records",
   "settings.migration.badge.manualOnly": "Manual only",
   "settings.migration.currentWorkspace": "Current workspace",
-  "settings.migration.currentWorkspaceDescription":
-    "This is only an optional filter. If you do not choose the current workspace, the scan covers all Claude records.",
-  "settings.migration.workspaceEmpty":
-    "No active workspace on this page. You can still scan all records.",
+  "settings.migration.currentWorkspaceDescription": "This is only an optional filter. If you do not choose the current workspace, the scan covers all Claude records.",
+  "settings.migration.workspaceEmpty": "No active workspace on this page. You can still scan all records.",
   "settings.migration.sourceDirectory": "Source directory",
   "settings.migration.noticeTitle": "How migration works",
-  "settings.migration.noticeDescription":
-    "Migration copies the native jsonl files and generates minimal task snapshots. Without a workspace filter, the scan covers all Claude records and imports each session back into its own source workspace.",
+  "settings.migration.noticeDescription": "Migration copies the native jsonl files and generates minimal task snapshots. Without a workspace filter, the scan covers all Claude records and imports each session back into its own source workspace.",
   "settings.migration.unsupported.title": "Migration is unavailable here",
   "settings.migration.unsupported.desktopOnly": "Migration is currently available on desktop only.",
   "settings.migration.filtersTitle": "Filters",
-  "settings.migration.filtersDescription":
-    "Filter by workspace, recent activity, and result size, then manually fetch the candidate sessions.",
+  "settings.migration.filtersDescription": "Filter by workspace, recent activity, and result size, then manually fetch the candidate sessions.",
   "settings.migration.workspaceFilterLabel": "Workspace filter",
   "settings.migration.workspaceFilter.all": "All workspaces",
   "settings.migration.workspaceFilter.current": "Current workspace only",
@@ -4042,8 +3496,7 @@ const enUS: Record<string, string> = {
   "settings.migration.scanFailedTitle": "Scan failed",
   "settings.migration.scanFailedDescription": "Failed to read Claude native history: {error}",
   "settings.migration.candidatesTitle": "Candidates",
-  "settings.migration.candidatesDescription":
-    "Select one or more sessions to import. Each imported session is written back into the task list for its own workspace.",
+  "settings.migration.candidatesDescription": "Select one or more sessions to import. Each imported session is written back into the task list for its own workspace.",
   "settings.migration.candidatesCount": "{count} candidates",
   "settings.migration.selectedCount": "{count} selected",
   "settings.migration.selectAll": "Select all",
@@ -4054,31 +3507,27 @@ const enUS: Record<string, string> = {
   "settings.migration.resultTitle": "Latest migration result",
   "settings.migration.resultSummary": "Imported {imported}, skipped {skipped}, failed {failed}.",
   "settings.migration.emptyTitle": "No candidate sessions yet",
-  "settings.migration.emptyDescription":
-    "Adjust the filters, then click 'Scan sessions' to load matching results.",
+  "settings.migration.emptyDescription": "Adjust the filters, then click 'Scan sessions' to load matching results.",
   "settings.migration.workspacePathLabel": "Workspace",
   "settings.migration.updatedAt": "Last active: {time}",
   "settings.migration.skippedTitle": "Skipped",
   "settings.migration.failedTitle": "Failures",
-  "settings.migration.reason.session_not_found_or_workspace_mismatch":
-    "The source session was not found, or it no longer matches the current workspace filter.",
+  "settings.migration.reason.session_not_found_or_workspace_mismatch": "The source session was not found, or it no longer matches the current workspace filter.",
   "settings.usageTitle": "Usage stats",
-  "settings.usageDescription":
-    "Review rough activity and model usage aggregated from local sessions.",
-  "resourceManager.storage.summaryTotal": "Total used by ZCode",
+  "settings.usageDescription": "Review rough activity and model usage aggregated from local sessions.",
+  "resourceManager.storage.summaryTotal": "Total used by Reactor",
   "resourceManager.storage.scanning": "Calculating…",
   "resourceManager.storage.lastScanned": "Last calculated {time}",
   "resourceManager.storage.idle": "Not calculated yet",
   "resourceManager.storage.failed": "Calculation failed",
   "resourceManager.storage.rescan": "Recalculate",
   "resourceManager.storage.disk": "Disk",
-  "resourceManager.storage.diskUsage": "ZCode uses {used}",
+  "resourceManager.storage.diskUsage": "Reactor uses {used}",
   "resourceManager.storage.diskFree": "{free} free of {total}",
   "resourceManager.storage.diskUnknown": "Disk capacity unavailable",
   "resourceManager.storage.roots": "Data directories",
   "resourceManager.storage.legendMore": "{count} other categories",
-  "resourceManager.storage.estimate":
-    "Sizes are estimates; hard links and cloned files may be counted twice.",
+  "resourceManager.storage.estimate": "Sizes are estimates; hard links and cloned files may be counted twice.",
   "resourceManager.storage.errors": "{count} directories could not be read; totals may be low.",
   "resourceManager.storage.filesCount": "{count} files",
   "resourceManager.storage.moreEntries": "{count} more items",
@@ -4103,126 +3552,83 @@ const enUS: Record<string, string> = {
   "resourceManager.storage.category.runtimes": "Agent runtimes & plugins",
   "resourceManager.storage.category.config": "Settings, credentials & workspace",
   "resourceManager.storage.category.other": "Other",
-  "resourceManager.storage.categoryDescription.sessionStore":
-    "Task index, session snapshots and checkpoints; cleaned by deleting or archiving tasks.",
-  "resourceManager.storage.categoryDescription.subagentTranscripts":
-    "Full conversation records of subagent runs (transcript.jsonl), up to tens of MB each; sessions active in the last 24 hours are kept.",
-  "resourceManager.storage.categoryDescription.toolOutputs":
-    "Archived tool results, full command outputs, image caches and temporary files; not cleanable yet.",
-  "resourceManager.storage.categoryDescription.modelTrajectory":
-    "Full model request/response records used by the trajectory viewer.",
-  "resourceManager.storage.categoryDescription.devTraces":
-    "Development protocol captures and retired diagnostics directories.",
-  "resourceManager.storage.categoryDescription.logs":
-    "App and agent logs plus crash reports; today's files are kept.",
-  "resourceManager.storage.categoryDescription.backups":
-    "Database and settings copies made before upgrades or migrations.",
-  "resourceManager.storage.categoryDescription.exports":
-    "Exported log bundles and feedback attachments.",
-  "resourceManager.storage.categoryDescription.runtimes":
-    "Bundled agent runtimes, Computer Use components and plugins.",
-  "resourceManager.storage.categoryDescription.config":
-    "Settings, credentials, memories and default workspace files.",
-  "resourceManager.storage.categoryDescription.other":
-    "Unclassified files and stale copies left after changing the data directory.",
-  "resourceManager.storage.confirmDescription.backups":
-    "These copies allow recovery if an upgrade or migration goes wrong; deleting them cannot be undone.",
+  "resourceManager.storage.categoryDescription.sessionStore": "Task index, session snapshots and checkpoints; cleaned by deleting or archiving tasks.",
+  "resourceManager.storage.categoryDescription.subagentTranscripts": "Full conversation records of subagent runs (transcript.jsonl), up to tens of MB each; sessions active in the last 24 hours are kept.",
+  "resourceManager.storage.categoryDescription.toolOutputs": "Archived tool results, full command outputs, image caches and temporary files; not cleanable yet.",
+  "resourceManager.storage.categoryDescription.modelTrajectory": "Full model request/response records used by the trajectory viewer.",
+  "resourceManager.storage.categoryDescription.devTraces": "Development protocol captures and retired diagnostics directories.",
+  "resourceManager.storage.categoryDescription.logs": "App and agent logs plus crash reports; today's files are kept.",
+  "resourceManager.storage.categoryDescription.backups": "Database and settings copies made before upgrades or migrations.",
+  "resourceManager.storage.categoryDescription.exports": "Exported log bundles and feedback attachments.",
+  "resourceManager.storage.categoryDescription.runtimes": "Bundled agent runtimes, Computer Use components and plugins.",
+  "resourceManager.storage.categoryDescription.config": "Settings, credentials, memories and default workspace files.",
+  "resourceManager.storage.categoryDescription.other": "Unclassified files and stale copies left after changing the data directory.",
+  "resourceManager.storage.confirmDescription.backups": "These copies allow recovery if an upgrade or migration goes wrong; deleting them cannot be undone.",
   "settings.browser.title": "Browser Use",
   "settings.browser.control.title": "Enable built-in browser control",
-  "settings.browser.control.description":
-    "Enable the official Browser Use plugin so new sessions can access and control web pages in the built-in browser.",
+  "settings.browser.control.description": "Enable the official Browser Use plugin so new sessions can access and control web pages in the built-in browser.",
   "settings.browser.control.enabledToast": "Built-in browser control enabled",
   "settings.browser.control.disabledToast": "Built-in browser control disabled",
   "settings.browser.open.section": "Opening files",
   "settings.browser.htmlClickOpensBrowser": "Open HTML files in the built-in browser on click",
-  "settings.browser.htmlClickOpensBrowserDescription":
-    "When on, clicking a local .html file in the file tree opens it in the built-in browser. When off, it opens the source preview. Open in the context menu always opens the source preview.",
+  "settings.browser.htmlClickOpensBrowserDescription": "When on, clicking a local .html file in the file tree opens it in the built-in browser. When off, it opens the source preview. Open in the context menu always opens the source preview.",
   "settings.browser.htmlClickOpensBrowserSaveError": "Couldn't save the setting. Try again.",
   "settings.browser.security.section": "Security",
   "settings.embeddedBrowserAllowInsecureCertificates": "Ignore certificate errors",
-  "settings.embeddedBrowserAllowInsecureCertificatesDescription":
-    "When enabled, the built-in browser stops verifying HTTPS certificates. Affects the built-in browser only. Restart to take effect.",
-  "settings.embeddedBrowserAllowInsecureCertificatesSavedHint":
-    "Certificate setting saved. Restart the app to take effect.",
+  "settings.embeddedBrowserAllowInsecureCertificatesDescription": "When enabled, the built-in browser stops verifying HTTPS certificates. Affects the built-in browser only. Restart to take effect.",
+  "settings.embeddedBrowserAllowInsecureCertificatesSavedHint": "Certificate setting saved. Restart the app to take effect.",
   "settings.browser.data.section": "Browser data",
-  "settings.browser.desktopOnly": "Browser data can only be managed in the ZCode desktop app.",
+  "settings.browser.desktopOnly": "Browser data can only be managed in the Reactor desktop app.",
   "settings.browser.import.title": "Import Chrome sign-in state",
-  "settings.browser.import.description":
-    "Bring your Chrome sign-in state into the built-in browser once, so the AI can open sites you are already signed in to and work more smoothly.",
+  "settings.browser.import.description": "Bring your Chrome sign-in state into the built-in browser once, so the AI can open sites you are already signed in to and work more smoothly.",
   "settings.browser.import.action": "Import browser data",
-  "settings.browser.import.notFound":
-    "No importable Chrome profile was found. Open Chrome and make sure the profile contains browsing data.",
-  "settings.browser.import.ambiguous":
-    "Multiple Chrome profiles were found, but the most recently used profile could not be determined. Open the profile you want to import and try again.",
-  "settings.browser.import.executableNotFound":
-    "Chrome was not found. Install Chrome and try again.",
-  "settings.browser.import.accessDenied":
-    "Import canceled: access to Chrome Safe Storage in the macOS Keychain was not allowed. No Chrome data was imported.",
-  "settings.browser.import.elevationRequired":
-    "Confirm administrator access before importing Chrome cookies protected by App-Bound encryption.",
-  "settings.browser.import.elevationCancelled":
-    "Windows administrator access was canceled. No cookies were imported.",
-  "settings.browser.import.helperVerificationFailed":
-    "ZCode could not verify its Windows secure import component. Reinstall or update ZCode before importing cookies.",
-  "settings.browser.import.appBoundFailed":
-    "Windows could not unlock Chrome's App-Bound cookies. No cookies were imported.",
-  "settings.browser.import.adminConfirmTitle":
-    "Allow administrator access to import Chrome cookies?",
-  "settings.browser.import.adminConfirmDescription":
-    "Chrome protects cookies with App-Bound encryption on Windows. For this import only, ZCode will request administrator access, start a temporary system service, and delete it immediately afterward. Chrome passwords are never read or imported.",
-  "settings.browser.import.adminConsent":
-    "I confirm administrator access for this cookie import only",
+  "settings.browser.import.notFound": "No importable Chrome profile was found. Open Chrome and make sure the profile contains browsing data.",
+  "settings.browser.import.ambiguous": "Multiple Chrome profiles were found, but the most recently used profile could not be determined. Open the profile you want to import and try again.",
+  "settings.browser.import.executableNotFound": "Chrome was not found. Install Chrome and try again.",
+  "settings.browser.import.accessDenied": "Import canceled: access to Chrome Safe Storage in the macOS Keychain was not allowed. No Chrome data was imported.",
+  "settings.browser.import.elevationRequired": "Confirm administrator access before importing Chrome cookies protected by App-Bound encryption.",
+  "settings.browser.import.elevationCancelled": "Windows administrator access was canceled. No cookies were imported.",
+  "settings.browser.import.helperVerificationFailed": "Reactor could not verify its Windows secure import component. Reinstall or update Reactor before importing cookies.",
+  "settings.browser.import.appBoundFailed": "Windows could not unlock Chrome's App-Bound cookies. No cookies were imported.",
+  "settings.browser.import.adminConfirmTitle": "Allow administrator access to import Chrome cookies?",
+  "settings.browser.import.adminConfirmDescription": "Chrome protects cookies with App-Bound encryption on Windows. For this import only, Reactor will request administrator access, start a temporary system service, and delete it immediately afterward. Chrome passwords are never read or imported.",
+  "settings.browser.import.adminConsent": "I confirm administrator access for this cookie import only",
   "settings.browser.import.adminConfirmAction": "Continue and request access",
-  "settings.browser.import.cookieProtected":
-    "Chrome cookies are protected by application-bound encryption and cannot be imported safely. No LocalStorage data was available to import.",
-  "settings.browser.import.profileLocked":
-    "The Chrome profile is in use and a consistent snapshot could not be created. Close Chrome and try again.",
-  "settings.browser.import.localStorageFailed":
-    "The Chrome LocalStorage snapshot could not be read. Close Chrome and try again.",
+  "settings.browser.import.cookieProtected": "Chrome cookies are protected by application-bound encryption and cannot be imported safely. No LocalStorage data was available to import.",
+  "settings.browser.import.profileLocked": "The Chrome profile is in use and a consistent snapshot could not be created. Close Chrome and try again.",
+  "settings.browser.import.localStorageFailed": "The Chrome LocalStorage snapshot could not be read. Close Chrome and try again.",
   "settings.browser.import.failed": "Chrome browser data import failed.",
-  "settings.browser.import.success":
-    "Imported {cookies} cookies and {entries} LocalStorage entries from {origins} sites.",
-  "settings.browser.import.successWithSkipped":
-    "Imported {cookies} cookies and {entries} LocalStorage entries from {origins} sites; {skipped} cookies were not imported.",
-  "settings.browser.import.partialCookieProtected":
-    "Imported {cookies} cookies and {entries} LocalStorage entries from {origins} sites; {skipped} cookies were protected by Chrome and were not imported.",
-  "settings.browser.import.partialAppBound":
-    "Imported {entries} LocalStorage entries from {origins} sites, but Windows App-Bound cookies were not imported.",
-  "settings.browser.import.partialLocalStorage":
-    "Imported {cookies} cookies, but some LocalStorage data was not imported. Closing Chrome before retrying may improve the result.",
+  "settings.browser.import.success": "Imported {cookies} cookies and {entries} LocalStorage entries from {origins} sites.",
+  "settings.browser.import.successWithSkipped": "Imported {cookies} cookies and {entries} LocalStorage entries from {origins} sites; {skipped} cookies were not imported.",
+  "settings.browser.import.partialCookieProtected": "Imported {cookies} cookies and {entries} LocalStorage entries from {origins} sites; {skipped} cookies were protected by Chrome and were not imported.",
+  "settings.browser.import.partialAppBound": "Imported {entries} LocalStorage entries from {origins} sites, but Windows App-Bound cookies were not imported.",
+  "settings.browser.import.partialLocalStorage": "Imported {cookies} cookies, but some LocalStorage data was not imported. Closing Chrome before retrying may improve the result.",
   "settings.browser.clearCache.title": "Clear built-in browser cache",
-  "settings.browser.clearCache.description":
-    "Clear HTTP cache, Cache Storage, and service workers while keeping cookies, local site data, and recent visits.",
+  "settings.browser.clearCache.description": "Clear HTTP cache, Cache Storage, and service workers while keeping cookies, local site data, and recent visits.",
   "settings.browser.clearCache.action": "Clear cache",
   "settings.browser.clearCache.success": "Built-in browser cache cleared",
   "settings.browser.clearAll.title": "Clear all browser data",
-  "settings.browser.clearAll.description":
-    "Delete cookies, site data, cache, and recent visits from the built-in browser. This cannot be undone.",
+  "settings.browser.clearAll.description": "Delete cookies, site data, cache, and recent visits from the built-in browser. This cannot be undone.",
   "settings.browser.clearAll.action": "Clear all",
   "settings.browser.clearAll.success": "All built-in browser data cleared",
   "settings.browser.clear.failed": "Failed to clear built-in browser data.",
   "settings.browser.clearAll.confirmTitle": "Clear all built-in browser data?",
-  "settings.browser.clearAll.confirmDescription":
-    "This signs you out of sites in the built-in browser and deletes cookies, site data, cache, and recent visits. This cannot be undone.",
+  "settings.browser.clearAll.confirmDescription": "This signs you out of sites in the built-in browser and deletes cookies, site data, cache, and recent visits. This cannot be undone.",
   "settings.browser.clearAll.confirmAction": "Clear data",
   "settings.lightTheme": "Light code theme",
-  "settings.lightThemeDescription":
-    "Highlighting theme used for code content in the light interface.",
+  "settings.lightThemeDescription": "Highlighting theme used for code content in the light interface.",
   "settings.darkTheme": "Dark code theme",
-  "settings.darkThemeDescription":
-    "Highlighting theme used for code content in the dark interface.",
+  "settings.darkThemeDescription": "Highlighting theme used for code content in the dark interface.",
   "settings.showLineNumbers": "Show line numbers",
   "settings.showLineNumbersDescription": "Display line numbers in code and diff views.",
   "settings.wrapLongLines": "Wrap long lines",
   "settings.wrapLongLinesDescription": "Wrap long code lines automatically.",
   "settings.fontSize": "Code font size",
-  "settings.fontSizeDescription":
-    "Adjust the default font size for code blocks, file previews, and diff views.",
+  "settings.fontSizeDescription": "Adjust the default font size for code blocks, file previews, and diff views.",
   "settings.previewSectionTitle": "Code preview",
   "settings.previewLight": "Light preview",
   "settings.previewDark": "Dark preview",
-  "settings.previewDescription":
-    "Preview the light and dark code themes together. The theme used by the current interface is marked as active.",
+  "settings.previewDescription": "Preview the light and dark code themes together. The theme used by the current interface is marked as active.",
   "settings.previewBadge.active": "Active",
   "settings.previewBadge.light": "Light",
   "settings.previewBadge.dark": "Dark",
@@ -4232,13 +3638,11 @@ const enUS: Record<string, string> = {
   "settings.mcp.trust.revoke": "Revoke trust",
   "settings.mcp.trust.title": "Trust workspace MCP: {name}",
   "settings.mcp.trust.revokeTitle": "Revoke workspace MCP trust: {name}",
-  "settings.mcp.trust.description":
-    "Connections may run code or send data. Trust does not enable MCP. Existing chats keep their authorization. Changes apply to new or restarted chats.",
+  "settings.mcp.trust.description": "Connections may run code or send data. Trust does not enable MCP. Existing chats keep their authorization. Changes apply to new or restarted chats.",
   "settings.mcp.trust.pending": "Current declaration awaits trust",
   "settings.mcp.trust.trusted": "Current declaration trusted",
-  "settings.mcp.trust.failed":
-    "The declaration changed or trust is unavailable. Refresh and try again.",
-  "settings.mcp.description": "Manage MCP server configurations used by ZCode Agent.",
+  "settings.mcp.trust.failed": "The declaration changed or trust is unavailable. Refresh and try again.",
+  "settings.mcp.description": "Manage MCP server configurations used by Reactor Agent.",
   "settings.mcp.create.open": "Add MCP server",
   "settings.mcp.import.open": "Import MCP servers from external agents",
   "settings.mcp.import.action": "Import",
@@ -4252,28 +3656,21 @@ const enUS: Record<string, string> = {
   "settings.plugins.remoteSync.open": "Sync Plugin",
   "settings.mcp.remoteContext": "Current remote workspace: {target}",
   "settings.mcp.plugin.active": "Built-in",
-  "settings.mcp.plugin.activeDescription":
-    "This MCP server is provided by an enabled plugin and is managed by that plugin.",
+  "settings.mcp.plugin.activeDescription": "This MCP server is provided by an enabled plugin and is managed by that plugin.",
   "settings.mcp.plugin.connecting": "Connecting",
-  "settings.mcp.plugin.connectingDescription":
-    "This plugin MCP server is connecting to its runtime.",
+  "settings.mcp.plugin.connectingDescription": "This plugin MCP server is connecting to its runtime.",
   "settings.mcp.plugin.connected": "Connected",
   "settings.mcp.plugin.connectedDescription": "This plugin MCP server is connected and available.",
   "settings.mcp.plugin.disconnected": "Disconnected",
-  "settings.mcp.plugin.disconnectedDescription":
-    "This plugin MCP server is loaded but not currently connected.",
+  "settings.mcp.plugin.disconnectedDescription": "This plugin MCP server is loaded but not currently connected.",
   "settings.mcp.plugin.disabled": "Plugin disabled",
-  "settings.mcp.plugin.disabledDescription":
-    "This MCP server is built into a plugin. Enable the plugin to load it.",
+  "settings.mcp.plugin.disabledDescription": "This MCP server is built into a plugin. Enable the plugin to load it.",
   "settings.mcp.plugin.unavailable": "Not loaded",
-  "settings.mcp.plugin.unavailableDescription":
-    "This plugin declares the MCP server, but it is not currently loaded. Check plugin diagnostics.",
+  "settings.mcp.plugin.unavailableDescription": "This plugin declares the MCP server, but it is not currently loaded. Check plugin diagnostics.",
   "settings.mcp.plugin.authorizationRequired": "Authorization required",
-  "settings.mcp.plugin.authorizationRequiredDescription":
-    "Open authorization to finish connecting this plugin MCP server.",
+  "settings.mcp.plugin.authorizationRequiredDescription": "Open authorization to finish connecting this plugin MCP server.",
   "settings.mcp.oauth.openAuthorization": "Open authorization",
-  "settings.mcp.statusOnlyUnsupported":
-    "This ZCode Agent cannot refresh OAuth status. Upgrade or restart ZCode, then reopen MCP settings to run a full refresh.",
+  "settings.mcp.statusOnlyUnsupported": "This Reactor Agent cannot refresh OAuth status. Upgrade or restart Reactor, then reopen MCP settings to run a full refresh.",
   "settings.mcp.refreshFailed": "Failed to refresh MCP status: {error}",
   "settings.mcp.status.toolCount": "{count} tools",
   "settings.mcp.status.connectedReason": "Connected and available.",
@@ -4281,92 +3678,55 @@ const enUS: Record<string, string> = {
   "settings.mcp.status.errorReason": "The MCP server failed to connect.",
   "settings.mcp.status.disconnectedReason": "The MCP server is not connected.",
   "settings.mcp.status.unknownReason": "The MCP server status is unavailable.",
-  "settings.mcp.failure.config_invalid":
-    "The MCP configuration is invalid. Check the server settings.",
-  "settings.mcp.failure.runtime_unavailable":
-    "The MCP runtime is unavailable. Check the plugin and local dependencies.",
+  "settings.mcp.failure.config_invalid": "The MCP configuration is invalid. Check the server settings.",
+  "settings.mcp.failure.runtime_unavailable": "The MCP runtime is unavailable. Check the plugin and local dependencies.",
   "settings.mcp.failure.process_start_failed": "The MCP process failed to start.",
-  "settings.mcp.failure.network_unreachable":
-    "Unable to connect to the MCP server. Check the network, proxy, and server URL.",
-  "settings.mcp.failure.connection_timeout":
-    "The MCP server connection timed out. Try again later.",
-  "settings.mcp.failure.protocol_negotiation_failed":
-    "MCP protocol negotiation failed. The server version may be incompatible. Try editing this server and switching Protocol version to Legacy compatibility.",
-  "settings.mcp.failure.tool_list_failed":
-    "Connected to the MCP server, but failed to retrieve its tool list.",
+  "settings.mcp.failure.network_unreachable": "Unable to connect to the MCP server. Check the network, proxy, and server URL.",
+  "settings.mcp.failure.connection_timeout": "The MCP server connection timed out. Try again later.",
+  "settings.mcp.failure.protocol_negotiation_failed": "MCP protocol negotiation failed. The server version may be incompatible. Try editing this server and switching Protocol version to Legacy compatibility.",
+  "settings.mcp.failure.tool_list_failed": "Connected to the MCP server, but failed to retrieve its tool list.",
   "settings.mcp.failure.unexpected_disconnect": "The MCP connection was closed unexpectedly.",
-  "settings.mcp.failure.oauth_authorization_failed":
-    "MCP authorization was not completed or timed out. Authorize again.",
-  "settings.mcp.failure.official_origin_untrusted":
-    "The MCP server URL failed the security check. The connection was blocked.",
-  "settings.mcp.failure.not_authenticated":
-    "You are not signed in. Sign in to ZCode to use this MCP server.",
-  "settings.mcp.failure.coding_plan_required":
-    "This account has no Coding Plan. Purchase or configure a Coding Plan to use this MCP server.",
-  "settings.mcp.failure.server_not_found":
-    "The MCP server was not found. Check the plugin or server configuration.",
-  "settings.mcp.failure.server_unavailable":
-    "The MCP service is temporarily unavailable. Try again later.",
+  "settings.mcp.failure.oauth_authorization_failed": "MCP authorization was not completed or timed out. Authorize again.",
+  "settings.mcp.failure.official_origin_untrusted": "The MCP server URL failed the security check. The connection was blocked.",
+  "settings.mcp.failure.not_authenticated": "You are not signed in. Sign in to Reactor to use this MCP server.",
+  "settings.mcp.failure.coding_plan_required": "This account has no Coding Plan. Purchase or configure a Coding Plan to use this MCP server.",
+  "settings.mcp.failure.server_not_found": "The MCP server was not found. Check the plugin or server configuration.",
+  "settings.mcp.failure.server_unavailable": "The MCP service is temporarily unavailable. Try again later.",
   "settings.mcp.failure.rate_limited": "Too many MCP requests. Try again later.",
-  "settings.mcp.failure.server_internal_error":
-    "The MCP service encountered an internal error. Try again later.",
-  "settings.mcp.failure.protocol_error":
-    "The MCP protocol request failed. The client and server may be incompatible.",
-  "settings.mcp.failure.status_unavailable":
-    "Unable to retrieve MCP status. Refresh or restart the Agent.",
+  "settings.mcp.failure.server_internal_error": "The MCP service encountered an internal error. Try again later.",
+  "settings.mcp.failure.protocol_error": "The MCP protocol request failed. The client and server may be incompatible.",
+  "settings.mcp.failure.status_unavailable": "Unable to retrieve MCP status. Refresh or restart the Agent.",
   "settings.mcp.failure.connection_failed": "Failed to connect to the MCP server. Try again later.",
-  "settings.mcp.failureAdvice.config_invalid":
-    "Check the MCP command, arguments, server address, and environment variables. Correct the configuration, then refresh the status.",
-  "settings.mcp.failureAdvice.runtime_unavailable":
-    "On the device running this MCP, install or configure its required runtime and make sure ZCode can find the startup command.",
-  "settings.mcp.failureAdvice.process_start_failed":
-    "On the device running this MCP, check the startup command, working directory, script paths, and execute permissions. Install Python dependencies from the plugin’s requirements file (such as requirements.txt), using the interpreter or virtual environment of that command. For Node MCPs, check Node.js and package dependencies. Refresh after fixing the environment.",
-  "settings.mcp.failureAdvice.network_unreachable":
-    "Check that the device running MCP can reach the server address. Review proxy, VPN, firewall, and port settings.",
-  "settings.mcp.failureAdvice.connection_timeout":
-    "Confirm the server is running, check the network and proxy, and review server logs. If startup is slow, check the configured connection timeout.",
-  "settings.mcp.failureAdvice.protocol_negotiation_failed":
-    "Check the MCP versions supported by the server. For an older server, try Legacy mode in its configuration. Make sure ordinary logs are not written to protocol output.",
-  "settings.mcp.failureAdvice.tool_list_failed":
-    "Review server logs and confirm tools/list returns a valid MCP tool list, then refresh the status.",
-  "settings.mcp.failureAdvice.unexpected_disconnect":
-    "Review the error below and server logs. Check whether the process exited, a dependency is missing, or the connection was interrupted, then refresh the status.",
-  "settings.mcp.failureAdvice.oauth_authorization_failed":
-    "Open this MCP server’s authorization link again. Complete browser authorization, then return to ZCode and refresh the status.",
-  "settings.mcp.failureAdvice.official_origin_untrusted":
-    "Check that the plugin and server address come from trusted configuration. Do not disable security checks or enter login credentials for an unknown address.",
-  "settings.mcp.failureAdvice.not_authenticated":
-    "Sign in to ZCode, then refresh the MCP status. If the account still appears signed in, sign in again and retry.",
-  "settings.mcp.failureAdvice.coding_plan_required":
-    "In model settings, check the account’s Coding Plan and selected team or project. Refresh after confirming access is active.",
-  "settings.mcp.failureAdvice.server_not_found":
-    "Check the server address, path, and plugin version. If the address comes from a plugin, check for updates or contact the plugin provider.",
-  "settings.mcp.failureAdvice.server_unavailable":
-    "Refresh the status later. If the problem continues, share the error below and its request ID, if present, with the service provider.",
-  "settings.mcp.failureAdvice.rate_limited":
-    "Pause repeated retries. Refresh after the rate limit clears and check the account’s request limits.",
-  "settings.mcp.failureAdvice.server_internal_error":
-    "Try again later. If the problem continues, share the error below and its request ID, if present, with the service provider.",
-  "settings.mcp.failureAdvice.protocol_error":
-    "Check the client and server MCP versions and review protocol errors in server logs. Update the plugin or server if needed.",
-  "settings.mcp.failureAdvice.status_unavailable":
-    "Refresh the status. If it remains unavailable, restart the Agent and check logs on the corresponding device.",
-  "settings.mcp.failureAdvice.connection_failed":
-    "Use the error below to check that the server is running and the configuration and network are correct. Correct the issue, then refresh the status.",
+  "settings.mcp.failureAdvice.config_invalid": "Check the MCP command, arguments, server address, and environment variables. Correct the configuration, then refresh the status.",
+  "settings.mcp.failureAdvice.runtime_unavailable": "On the device running this MCP, install or configure its required runtime and make sure ZCode can find the startup command.",
+  "settings.mcp.failureAdvice.process_start_failed": "On the device running this MCP, check the startup command, working directory, script paths, and execute permissions. Install Python dependencies from the plugin’s requirements file (such as requirements.txt), using the interpreter or virtual environment of that command. For Node MCPs, check Node.js and package dependencies. Refresh after fixing the environment.",
+  "settings.mcp.failureAdvice.network_unreachable": "Check that the device running MCP can reach the server address. Review proxy, VPN, firewall, and port settings.",
+  "settings.mcp.failureAdvice.connection_timeout": "Confirm the server is running, check the network and proxy, and review server logs. If startup is slow, check the configured connection timeout.",
+  "settings.mcp.failureAdvice.protocol_negotiation_failed": "Check the MCP versions supported by the server. For an older server, try Legacy mode in its configuration. Make sure ordinary logs are not written to protocol output.",
+  "settings.mcp.failureAdvice.tool_list_failed": "Review server logs and confirm tools/list returns a valid MCP tool list, then refresh the status.",
+  "settings.mcp.failureAdvice.unexpected_disconnect": "Review the error below and server logs. Check whether the process exited, a dependency is missing, or the connection was interrupted, then refresh the status.",
+  "settings.mcp.failureAdvice.oauth_authorization_failed": "Open this MCP server’s authorization link again. Complete browser authorization, then return to ZCode and refresh the status.",
+  "settings.mcp.failureAdvice.official_origin_untrusted": "Check that the plugin and server address come from trusted configuration. Do not disable security checks or enter login credentials for an unknown address.",
+  "settings.mcp.failureAdvice.not_authenticated": "Sign in to ZCode, then refresh the MCP status. If the account still appears signed in, sign in again and retry.",
+  "settings.mcp.failureAdvice.coding_plan_required": "In model settings, check the account’s Coding Plan and selected team or project. Refresh after confirming access is active.",
+  "settings.mcp.failureAdvice.server_not_found": "Check the server address, path, and plugin version. If the address comes from a plugin, check for updates or contact the plugin provider.",
+  "settings.mcp.failureAdvice.server_unavailable": "Refresh the status later. If the problem continues, share the error below and its request ID, if present, with the service provider.",
+  "settings.mcp.failureAdvice.rate_limited": "Pause repeated retries. Refresh after the rate limit clears and check the account’s request limits.",
+  "settings.mcp.failureAdvice.server_internal_error": "Try again later. If the problem continues, share the error below and its request ID, if present, with the service provider.",
+  "settings.mcp.failureAdvice.protocol_error": "Check the client and server MCP versions and review protocol errors in server logs. Update the plugin or server if needed.",
+  "settings.mcp.failureAdvice.status_unavailable": "Refresh the status. If it remains unavailable, restart the Agent and check logs on the corresponding device.",
+  "settings.mcp.failureAdvice.connection_failed": "Use the error below to check that the server is running and the configuration and network are correct. Correct the issue, then refresh the status.",
   "settings.mcp.failure.adviceTitle": "Suggested steps",
   "settings.mcp.failure.errorDetails": "Error details",
   "settings.mcp.failure.technicalDetails": "Details",
   "settings.mcp.deleteConfirmTitle": 'Delete MCP server "{name}"?',
-  "settings.mcp.deleteConfirmDescription":
-    "This action cannot be undone. The server configuration will be removed from the file.",
+  "settings.mcp.deleteConfirmDescription": "This action cannot be undone. The server configuration will be removed from the file.",
   "settings.mcp.deleteConfirmAction": "Delete server",
   "settings.mcp.form.backToList": "Back",
   "settings.mcp.form.createTitle": "New MCP server",
   "settings.mcp.form.editTitle": "Edit MCP server",
-  "settings.mcp.form.createDescription":
-    "Fill in the new MCP configuration, then save to return to the list.",
-  "settings.mcp.form.editDescription":
-    "Modify the current MCP configuration, then save to return to the list.",
+  "settings.mcp.form.createDescription": "Fill in the new MCP configuration, then save to return to the list.",
+  "settings.mcp.form.editDescription": "Modify the current MCP configuration, then save to return to the list.",
   "settings.mcp.form.jsonParseError": "JSON parsing failed",
   "settings.mcp.form.envOptional": "Environment variables (optional)",
   "settings.mcp.form.headersOptional": "Headers (optional)",
@@ -4390,8 +3750,7 @@ const enUS: Record<string, string> = {
   "settings.mcpServers.import.open": "Import MCP servers from external agents",
   "settings.mcpServers.import.title": "Import external agent MCP servers",
   "settings.mcpServers.import.scanning": "Scanning importable MCP servers...",
-  "settings.mcpServers.import.empty":
-    "No importable MCP servers found. Check the external agent MCP config files and scan again.",
+  "settings.mcpServers.import.empty": "No importable MCP servers found. Check the external agent MCP config files and scan again.",
   "settings.mcpServers.import.summary": "Found {count} importable MCP servers",
   "settings.mcpServers.import.scopeLabel": "Scope",
   "settings.mcpServers.import.scope.global": "Global",
@@ -4410,15 +3769,14 @@ const enUS: Record<string, string> = {
   "settings.mcpServers.import.targetLabel": "Import target",
   "settings.mcpServers.import.target.global": "Import to Global",
   "settings.mcpServers.import.target.project": "Import to Project",
-  "settings.mcpServers.import.importing": "Importing MCP servers into ZCode",
+  "settings.mcpServers.import.importing": "Importing MCP servers into Reactor",
   "settings.mcpServers.import.imported": "Imported",
   "settings.mcpServers.import.skipped": "Skipped",
   "settings.mcpServers.import.failed": "Failed",
   "settings.mcpServers.import.resultList": "MCP server results",
   "settings.mcpServers.import.resultEmpty": "No MCP server results were returned.",
   "settings.mcpServers.import.finish": "Done",
-  "settings.scope.deviceOffline":
-    "{device} is offline. Its configuration cannot be read or changed until it reconnects.",
+  "settings.scope.deviceOffline": "{device} is offline. Its configuration cannot be read or changed until it reconnects.",
   "settings.scope.deviceConnecting": "Connecting to {device}…",
   "settings.scope.localDevice": "This computer",
   "settings.scope.label": "Scope",
@@ -4430,23 +3788,18 @@ const enUS: Record<string, string> = {
   "settings.scope.noMatchingProjects": "No matching projects",
   "settings.plugins.scope.restoreUserDefault": "Restore User default",
   "settings.plugins.scope.restored": "Restored {plugin} to User default",
-  "settings.plugins.scope.workspaceHint":
-    "Changes here affect only this workspace and override the User default.",
+  "settings.plugins.scope.workspaceHint": "Changes here affect only this workspace and override the User default.",
   "settings.plugins.toggle.enable": "Enable {plugin}",
   "settings.plugins.toggle.disable": "Disable {plugin}",
   "settings.plugins.toggle.enabled": "Enabled {plugin}",
   "settings.plugins.toggle.disabled": "Disabled {plugin}",
-  "settings.plugins.toggle.workspaceEnabled":
-    "Enabled {plugin} in this workspace (overriding User default)",
-  "settings.plugins.toggle.workspaceDisabled":
-    "Disabled {plugin} in this workspace (overriding User default)",
+  "settings.plugins.toggle.workspaceEnabled": "Enabled {plugin} in this workspace (overriding User default)",
+  "settings.plugins.toggle.workspaceDisabled": "Disabled {plugin} in this workspace (overriding User default)",
   "settings.plugins.toggle.failed": "Couldn't update {plugin}. Try again.",
-  "settings.modelProviderDescription":
-    "Manage custom model providers. Once configured, they can be selected during chat.",
+  "settings.modelProviderDescription": "Manage custom model providers. Once configured, they can be selected during chat.",
   "settings.modelProvider.add": "Add provider",
   "settings.modelProvider.createCustomProvider": "Create custom provider",
-  "settings.modelProvider.templateCreateFailed":
-    "Failed to create provider: invalid personal provider configuration",
+  "settings.modelProvider.templateCreateFailed": "Failed to create provider: invalid personal provider configuration",
   "settings.modelProvider.templateCreateRetry": "Retry",
   "settings.modelProvider.edit": "Edit",
   "settings.modelProvider.editModel": "Edit model settings",
@@ -4466,8 +3819,7 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.name": "Name",
   "settings.modelProvider.namePlaceholder": "e.g. Z.ai GLM",
   "settings.modelProvider.addProviderTitle": "Add model provider",
-  "settings.modelProvider.addProviderDescription":
-    "Configure a custom API endpoint and initial model.",
+  "settings.modelProvider.addProviderDescription": "Configure a custom API endpoint and initial model.",
   "settings.modelProvider.addFromCatalog": "Provider catalog",
   "settings.modelProvider.addPureCustom": "Custom endpoint",
   "settings.modelProvider.catalogProviderSelect": "Select provider",
@@ -4478,8 +3830,7 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.templateGroup.zhipu": "Zhipu",
   "settings.modelProvider.templateGroup.other": "Other",
   "settings.modelProvider.templatePickerBack": "Back to provider details",
-  "settings.modelProvider.addProviderModelReminder":
-    "Add at least one model before adding the provider.",
+  "settings.modelProvider.addProviderModelReminder": "Add at least one model before adding the provider.",
   "settings.modelProvider.baseUrl": "Base URL",
   "settings.modelProvider.baseUrlPlaceholder": "https://api.example.com/v1",
   "settings.modelProvider.readOnlyField": "{field} (read only)",
@@ -4487,8 +3838,7 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.apiFormat": "API format",
   "settings.modelProvider.apiFormat.chatCompletions": "Chat completions (/v1/chat/completions)",
   "settings.modelProvider.apiFormat.responses": "Responses (/responses)",
-  "settings.modelProvider.apiFormat.anthropicMessages":
-    "Anthropic messages (/anthropic/v1/messages)",
+  "settings.modelProvider.apiFormat.anthropicMessages": "Anthropic messages (/anthropic/v1/messages)",
   "settings.modelProvider.apiFormat.short.chatCompletions": "Chat",
   "settings.modelProvider.apiFormat.short.responses": "Responses",
   "settings.modelProvider.apiFormat.short.anthropicMessages": "Anthropic",
@@ -4500,8 +3850,7 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.openaiEndpoint": "OpenAI endpoint",
   "settings.modelProvider.openaiEndpointPlaceholder": "e.g. https://api.openai.com/v1",
   "settings.modelProvider.geminiEndpoint": "Gemini endpoint",
-  "settings.modelProvider.geminiEndpointPlaceholder":
-    "e.g. https://generativelanguage.googleapis.com",
+  "settings.modelProvider.geminiEndpointPlaceholder": "e.g. https://generativelanguage.googleapis.com",
   "settings.modelProvider.endpointNoMatch": "No matching endpoint",
   "settings.modelProvider.apiKey": "API key",
   "settings.modelProvider.apiKeyPlaceholder": "Enter API key",
@@ -4524,14 +3873,12 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.connectionMode.teamPlanBadge": "Team",
   "settings.modelProvider.connectionMode.loadFailed": "Connection settings failed",
   "settings.modelProvider.connectionMode.noAvailablePlan": "No available plan",
-  "settings.modelProvider.accountProviderConfigMissing":
-    "The account provider configuration is unavailable. Refresh and try again.",
+  "settings.modelProvider.accountProviderConfigMissing": "The account provider configuration is unavailable. Refresh and try again.",
   "settings.modelProvider.startPlan.login": "Log in",
   "settings.modelProvider.startPlan.status.loginRequired": "Log in to view and use your Start Plan",
   "settings.modelProvider.startPlan.status.expired": "Start Plan expired",
   "settings.modelProvider.startPlan.status.noPlan": "No available Start Plan",
-  "settings.modelProvider.startPlan.status.loginExpired":
-    "Your login has expired. Please log in again.",
+  "settings.modelProvider.startPlan.status.loginExpired": "Your login has expired. Please log in again.",
   "settings.modelProvider.startPlan.title": "{provider} - Coding Plan",
   "settings.modelProvider.startPlan.meta.today": "Today",
   "settings.modelProvider.startPlan.meta.tomorrow": "Tomorrow",
@@ -4548,56 +3895,39 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.startPlan.balance.used": "{value} used",
   "settings.modelProvider.startPlan.highlight.trial.label": "Trial period",
   "settings.modelProvider.startPlan.highlight.trial.value": "5 calendar days",
-  "settings.modelProvider.startPlan.highlight.trial.description":
-    "Timing starts after signing in to ZCode 3.x.",
+  "settings.modelProvider.startPlan.highlight.trial.description": "Timing starts after signing in to Reactor 3.x.",
   "settings.modelProvider.startPlan.highlight.quota.label": "Daily quota",
   "settings.modelProvider.startPlan.highlight.quota.value": "3M tokens daily",
-  "settings.modelProvider.startPlan.highlight.quota.description":
-    "Platform GLM flagship models share a 3M token daily trial quota.",
+  "settings.modelProvider.startPlan.highlight.quota.description": "Platform GLM flagship models share a 3M token daily trial quota.",
   "settings.modelProvider.startPlan.highlight.metering.label": "Metering",
   "settings.modelProvider.startPlan.highlight.metering.value": "After platform model use",
-  "settings.modelProvider.startPlan.highlight.metering.description":
-    "Metered only after using platform GLM flagship models.",
-  "settings.modelProvider.startPlan.compatibility":
-    "Supports BYOK and BYOA. Base URL, API format, and API Key are maintained by ZCode automatically.",
+  "settings.modelProvider.startPlan.highlight.metering.description": "Metered only after using platform GLM flagship models.",
+  "settings.modelProvider.startPlan.compatibility": "Supports BYOK and BYOA. Base URL, API format, and API Key are maintained by Reactor automatically.",
   "settings.modelProvider.codingPlan.title": "{provider} - Coding Plan",
   "settings.modelProvider.codingPlan.webview.title": "Upgrade Plan",
-  "settings.modelProvider.codingPlan.webview.authInjectFailed":
-    "Couldn't sign you into the plan page. Please retry.",
+  "settings.modelProvider.codingPlan.webview.authInjectFailed": "Couldn't sign you into the plan page. Please retry.",
   "settings.modelProvider.codingPlan.webview.retry": "Retry",
   "settings.modelProvider.codingPlan.webview.loadFailed": "The plan page failed to load.",
   "settings.modelProvider.codingPlan.webview.openWebsite": "Buy on the official website",
   "settings.modelProvider.codingPlan.status.loginRequired": "Not signed in",
   "settings.modelProvider.codingPlan.status.disconnected": "Not connected",
   "settings.modelProvider.codingPlan.status.checking": "Checking",
-  "settings.modelProvider.codingPlan.status.notPurchased":
-    "Not subscribed, enabled after subscription",
+  "settings.modelProvider.codingPlan.status.notPurchased": "Not subscribed, enabled after subscription",
   "settings.modelProvider.codingPlan.status.purchased": "Subscribed",
   "settings.modelProvider.codingPlan.status.unavailable": "Fetch failed",
-  "settings.modelProvider.remoteOAuthNotReady":
-    "OAuth sign-in cannot be started directly on a remote Source. Configure an API key or sync the signed-in account from the local Source.",
-  "settings.modelProvider.codingPlan.status.teamExpired":
-    "Team plan expired. Contact your team administrator.",
-  "settings.modelProvider.codingPlan.status.teamUnavailable":
-    "Team plan not assigned. Contact your team admin.",
+  "settings.modelProvider.remoteOAuthNotReady": "OAuth sign-in cannot be started directly on a remote Source. Configure an API key or sync the signed-in account from the local Source.",
+  "settings.modelProvider.codingPlan.status.teamExpired": "Team plan expired. Contact your team administrator.",
+  "settings.modelProvider.codingPlan.status.teamUnavailable": "Team plan not assigned. Contact your team admin.",
   "settings.modelProvider.codingPlan.status.unsupported": "Not supported yet",
-  "settings.modelProvider.codingPlan.bigmodel.unregisteredHint":
-    "This BigModel account is not registered yet. Register first.",
+  "settings.modelProvider.codingPlan.bigmodel.unregisteredHint": "This BigModel account is not registered yet. Register first.",
   "settings.modelProvider.codingPlan.bigmodel.registerAction": "Register",
-  "settings.modelProvider.codingPlan.description.disconnected":
-    "Connect to view Coding Plan entitlements.",
-  "settings.modelProvider.codingPlan.description.checking":
-    "Checking Coding Plan entitlement with the current provider API key.",
-  "settings.modelProvider.codingPlan.description.notPurchased":
-    "No active Coding Plan was found for the current API key or account.",
-  "settings.modelProvider.codingPlan.description.purchased":
-    "Coding Plan is active and can be used by this provider.",
-  "settings.modelProvider.codingPlan.description.credentialFailed":
-    "Failed to retrieve your plan. Please sign in again and retry.",
-  "settings.modelProvider.codingPlan.description.unavailable":
-    "Could not verify Coding Plan entitlement. Connect again and retry.",
-  "settings.modelProvider.codingPlan.description.unsupported":
-    "This provider does not support Coding Plan status checks yet.",
+  "settings.modelProvider.codingPlan.description.disconnected": "Connect to view Coding Plan entitlements.",
+  "settings.modelProvider.codingPlan.description.checking": "Checking Coding Plan entitlement with the current provider API key.",
+  "settings.modelProvider.codingPlan.description.notPurchased": "No active Coding Plan was found for the current API key or account.",
+  "settings.modelProvider.codingPlan.description.purchased": "Coding Plan is active and can be used by this provider.",
+  "settings.modelProvider.codingPlan.description.credentialFailed": "Failed to retrieve your plan. Please sign in again and retry.",
+  "settings.modelProvider.codingPlan.description.unavailable": "Could not verify Coding Plan entitlement. Connect again and retry.",
+  "settings.modelProvider.codingPlan.description.unsupported": "This provider does not support Coding Plan status checks yet.",
   "settings.modelProvider.codingPlan.login": "Sign in to {provider}",
   "settings.modelProvider.codingPlan.connect": "Connect to {provider}",
   "settings.modelProvider.codingPlan.purchaseLoginRequiredShort": "Sign in to purchase",
@@ -4613,8 +3943,7 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.codingPlan.cancelUpgrade": "Back",
   "settings.modelProvider.codingPlan.purchase.title": "Upgrade Coding Plan",
   "settings.modelProvider.codingPlan.purchase.pricingTitle": "Pricing",
-  "settings.modelProvider.codingPlan.purchase.pricingDescription":
-    "Find the perfect plan for you and kick-start your AI coding journey.",
+  "settings.modelProvider.codingPlan.purchase.pricingDescription": "Find the perfect plan for you and kick-start your AI coding journey.",
   "settings.modelProvider.codingPlan.purchase.moreInfo": "More Info",
   "settings.modelProvider.codingPlan.purchase.billingCycleTitle": "Choose billing cycle",
   "settings.modelProvider.codingPlan.purchase.paymentConfirmTitle": "Confirm payment",
@@ -4624,42 +3953,30 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.codingPlan.purchase.individualsSectionTitle": "For Individuals",
   "settings.modelProvider.codingPlan.purchase.teamsSectionTitle": "For Teams",
   "settings.modelProvider.codingPlan.purchaseBanner.startPlanTitle": "Start Plan",
-  "settings.modelProvider.codingPlan.purchaseBanner.startPlanDescription":
-    "Try platform GLM flagship model quota for free.",
+  "settings.modelProvider.codingPlan.purchaseBanner.startPlanDescription": "Try platform GLM flagship model quota for free.",
   "settings.modelProvider.codingPlan.purchaseBanner.personalTitle": "For Individuals",
-  "settings.modelProvider.codingPlan.purchaseBanner.personalDescription":
-    "For individual developers with dedicated Coding Plan quota.",
+  "settings.modelProvider.codingPlan.purchaseBanner.personalDescription": "For individual developers with dedicated Coding Plan quota.",
   "settings.modelProvider.codingPlan.purchaseBanner.temporarilySoldOut": "Temporarily sold out",
   "settings.modelProvider.codingPlan.purchaseBanner.teamTitle": "For Teams",
-  "settings.modelProvider.codingPlan.purchaseBanner.teamDescription":
-    "For team collaboration with seats and centralized billing.",
-  "settings.modelProvider.codingPlan.purchaseBanner.teamStandardDescription":
-    "For small teams that need shared quota and seat management.",
-  "settings.modelProvider.codingPlan.purchaseBanner.teamAdvancedDescription":
-    "For high-throughput engineering teams that need more quota and flexible seats.",
+  "settings.modelProvider.codingPlan.purchaseBanner.teamDescription": "For team collaboration with seats and centralized billing.",
+  "settings.modelProvider.codingPlan.purchaseBanner.teamStandardDescription": "For small teams that need shared quota and seat management.",
+  "settings.modelProvider.codingPlan.purchaseBanner.teamAdvancedDescription": "For high-throughput engineering teams that need more quota and flexible seats.",
   "settings.modelProvider.codingPlan.purchase.choosePlan": "Choose a plan",
-  "settings.modelProvider.codingPlan.purchase.choosePlanDescription":
-    "Compare plan capacity first. Billing cycle and final payment are confirmed next.",
+  "settings.modelProvider.codingPlan.purchase.choosePlanDescription": "Compare plan capacity first. Billing cycle and final payment are confirmed next.",
   "settings.modelProvider.codingPlan.purchase.selectPlan": "Select",
   "settings.modelProvider.codingPlan.purchase.select": "Select",
   "settings.modelProvider.codingPlan.purchase.selected": "Selected",
   "settings.modelProvider.codingPlan.purchase.fromPrice": "{price}+",
   "settings.modelProvider.codingPlan.purchase.fromPriceSuffix": "",
   "settings.modelProvider.codingPlan.purchase.previewLoading": "Calculating payment amount",
-  "settings.modelProvider.codingPlan.purchase.previewLoadingDescription":
-    "Please wait. Confirmation and payment use the same payment details.",
-  "settings.modelProvider.codingPlan.purchase.previewUnavailableDescription":
-    "Payment amount is unavailable. Go back and choose the billing cycle again.",
+  "settings.modelProvider.codingPlan.purchase.previewLoadingDescription": "Please wait. Confirmation and payment use the same payment details.",
+  "settings.modelProvider.codingPlan.purchase.previewUnavailableDescription": "Payment amount is unavailable. Go back and choose the billing cycle again.",
   "settings.modelProvider.codingPlan.purchase.teamTitle": "Team plans",
-  "settings.modelProvider.codingPlan.purchase.teamDescription":
-    "Seats, shared quota, and centralized billing are coming later.",
-  "settings.modelProvider.codingPlan.purchase.teamCardDescription":
-    "Shared quota, seat management, and centralized billing.",
+  "settings.modelProvider.codingPlan.purchase.teamDescription": "Seats, shared quota, and centralized billing are coming later.",
+  "settings.modelProvider.codingPlan.purchase.teamCardDescription": "Shared quota, seat management, and centralized billing.",
   "settings.modelProvider.codingPlan.purchase.comingSoon": "Coming soon",
-  "settings.modelProvider.codingPlan.purchase.chooseBillingCycle":
-    "Choose billing cycle for {plan}",
-  "settings.modelProvider.codingPlan.purchase.billingCycleDescription":
-    "Prices and discounts are refreshed before payment. Final amount is confirmed in the payment step.",
+  "settings.modelProvider.codingPlan.purchase.chooseBillingCycle": "Choose billing cycle for {plan}",
+  "settings.modelProvider.codingPlan.purchase.billingCycleDescription": "Prices and discounts are refreshed before payment. Final amount is confirmed in the payment step.",
   "settings.modelProvider.codingPlan.purchase.continueToPayment": "Continue to payment",
   "settings.modelProvider.codingPlan.purchase.summaryPlan": "Plan",
   "settings.modelProvider.codingPlan.purchase.summaryBillingCycle": "Billing cycle",
@@ -4669,36 +3986,25 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.codingPlan.purchase.durationValue": "{duration} {unit}",
   "settings.modelProvider.codingPlan.purchase.autoRenewPeriod": "Auto-renews every {period}",
   "settings.modelProvider.codingPlan.purchase.renewalPolicyTitle": "Renewal policy",
-  "settings.modelProvider.codingPlan.purchase.renewalPolicyCharge":
-    "Your subscription renews automatically at {price}{unit} unless cancelled.",
-  "settings.modelProvider.codingPlan.purchase.renewalPolicyPreview":
-    "Final discounts, credits, and payment amount are confirmed in the next payment preview.",
-  "settings.modelProvider.codingPlan.purchase.renewalPolicyCancel":
-    "You can turn off auto-renewal from plan management before the next renewal.",
-  "settings.modelProvider.codingPlan.purchase.termsAccepted":
-    "I understand and agree to the renewal policy and subscription terms.",
+  "settings.modelProvider.codingPlan.purchase.renewalPolicyCharge": "Your subscription renews automatically at {price}{unit} unless cancelled.",
+  "settings.modelProvider.codingPlan.purchase.renewalPolicyPreview": "Final discounts, credits, and payment amount are confirmed in the next payment preview.",
+  "settings.modelProvider.codingPlan.purchase.renewalPolicyCancel": "You can turn off auto-renewal from plan management before the next renewal.",
+  "settings.modelProvider.codingPlan.purchase.termsAccepted": "I understand and agree to the renewal policy and subscription terms.",
   "settings.modelProvider.codingPlan.purchase.paymentPreparing": "Preparing payment",
-  "settings.modelProvider.codingPlan.purchase.securityChecking":
-    "Waiting for security verification",
+  "settings.modelProvider.codingPlan.purchase.securityChecking": "Waiting for security verification",
   "settings.modelProvider.codingPlan.purchase.paymentPolling": "Waiting for payment confirmation",
-  "settings.modelProvider.codingPlan.purchase.paymentStarted":
-    "Complete payment on this payment page",
-  "settings.modelProvider.codingPlan.purchase.paymentStartedDescription":
-    "Keep this panel open while the payment channel finishes. You can go back to the payment confirmation page before payment succeeds.",
+  "settings.modelProvider.codingPlan.purchase.paymentStarted": "Complete payment on this payment page",
+  "settings.modelProvider.codingPlan.purchase.paymentStartedDescription": "Keep this panel open while the payment channel finishes. You can go back to the payment confirmation page before payment succeeds.",
   "settings.modelProvider.codingPlan.purchase.paymentInProgress": "Payment in progress",
   "settings.modelProvider.codingPlan.purchase.successTitle": "Payment successful",
-  "settings.modelProvider.codingPlan.purchase.successDescription":
-    "Your Coding Plan payment was successful. The provider status will refresh after you close this panel.",
-  "settings.modelProvider.codingPlan.purchase.successRefreshingDescription":
-    "Your payment was successful. We are refreshing plan status; you can close this panel and the provider page will continue refreshing.",
+  "settings.modelProvider.codingPlan.purchase.successDescription": "Your Coding Plan payment was successful. The provider status will refresh after you close this panel.",
+  "settings.modelProvider.codingPlan.purchase.successRefreshingDescription": "Your payment was successful. We are refreshing plan status; you can close this panel and the provider page will continue refreshing.",
   "settings.modelProvider.codingPlan.purchase.statusSyncing": "Syncing",
   "settings.modelProvider.codingPlan.purchase.statusActive": "Active",
   "settings.modelProvider.codingPlan.purchase.refreshNow": "Refresh now",
   "settings.modelProvider.codingPlan.purchase.done": "Done",
-  "settings.modelProvider.codingPlan.purchase.teamMemberNoticeTitle":
-    "Assign members to your team plan",
-  "settings.modelProvider.codingPlan.purchase.teamMemberNoticeDescription":
-    "Add yourself or other members on the BigModel team plan management page. Once assigned, the team quota will be available in ZCode.",
+  "settings.modelProvider.codingPlan.purchase.teamMemberNoticeTitle": "Assign members to your team plan",
+  "settings.modelProvider.codingPlan.purchase.teamMemberNoticeDescription": "Add yourself or other members on the BigModel team plan management page. Once assigned, the team quota will be available in Reactor.",
   "settings.modelProvider.codingPlan.purchase.manageTeamPlan": "Manage team plan",
   "settings.modelProvider.codingPlan.manage": "Manage",
   "settings.modelProvider.planCard.codingPlan": "Coding Plan",
@@ -4732,108 +4038,77 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.codingPlan.unit.cny.year": "/year",
   "settings.modelProvider.codingPlan.monthlyEquivalent": "Equivalent to {price}/month",
   "settings.modelProvider.codingPlan.monthlyFlexibleBilling": "Flexible monthly billing",
-  "settings.modelProvider.codingPlan.providerFormDescription":
-    "These settings are maintained by Coding Plan. Use the API Key entry for manual keys.",
+  "settings.modelProvider.codingPlan.providerFormDescription": "These settings are maintained by Coding Plan. Use the API Key entry for manual keys.",
   "settings.modelProvider.codingPlan.retry": "Retry",
   "settings.modelProvider.codingPlan.viewPrices": "View prices",
   "settings.modelProvider.codingPlan.productsLoading": "Loading Coding Plan",
-  "settings.modelProvider.codingPlan.productsLoadingDescription":
-    "Fetching the latest plans and prices from {provider}.",
-  "settings.modelProvider.codingPlan.purchase.authStateError":
-    "Failed to read your sign-in status. Please retry.",
+  "settings.modelProvider.codingPlan.productsLoadingDescription": "Fetching the latest plans and prices from {provider}.",
+  "settings.modelProvider.codingPlan.purchase.authStateError": "Failed to read your sign-in status. Please retry.",
   "settings.modelProvider.codingPlan.purchase.authStateRetry": "Retry sign-in status",
   "settings.modelProvider.codingPlan.productsError": "Could not load plans",
   "settings.modelProvider.codingPlan.productsReconnectTitle": "Connect to view plans",
   "settings.modelProvider.codingPlan.reconnectToViewPlans": "Reconnect",
-  "settings.modelProvider.codingPlan.productsLoginRequired":
-    "Reconnect your {provider} account to refresh prices and available Coding Plan products.",
-  "settings.modelProvider.codingPlan.purchaseLoginRequired":
-    "Reconnect your account and try again.",
+  "settings.modelProvider.codingPlan.productsLoginRequired": "Reconnect your {provider} account to refresh prices and available Coding Plan products.",
+  "settings.modelProvider.codingPlan.purchaseLoginRequired": "Reconnect your account and try again.",
   "settings.modelProvider.codingPlan.productsEmpty": "No plans available",
-  "settings.modelProvider.codingPlan.productsEmptyDescription":
-    "{provider} did not return any purchasable Coding Plan products for this account.",
+  "settings.modelProvider.codingPlan.productsEmptyDescription": "{provider} did not return any purchasable Coding Plan products for this account.",
   "settings.modelProvider.codingPlan.dynamicUnsupportedTitle": "Dynamic plans are not available",
-  "settings.modelProvider.codingPlan.dynamicUnsupportedDescription":
-    "In-app subscription is only connected for Z.ai / BigModel Coding Plan right now.",
+  "settings.modelProvider.codingPlan.dynamicUnsupportedDescription": "In-app subscription is only connected for Z.ai / BigModel Coding Plan right now.",
   "settings.modelProvider.codingPlan.priceUnavailable": "Price unavailable",
   "settings.modelProvider.codingPlan.systemBusy": "The system is busy. Please try again later.",
   "settings.modelProvider.codingPlan.subscriptionBusy": "Subscription busy",
   "settings.modelProvider.codingPlan.subscriptionBusyButton": "System busy",
-  "settings.modelProvider.codingPlan.pendingOrder":
-    "There is an unfinished order. Complete or cancel it before starting another purchase.",
-  "settings.modelProvider.codingPlan.paymentTimeout":
-    "Payment is still pending. Recheck your Coding Plan status after the payment page finishes.",
-  "settings.modelProvider.codingPlan.zaiOverseasPaymentRequired":
-    "Z.ai global plans must be paid through PayPal or the official Z.ai payment page, not the Alipay signing flow.",
-  "settings.modelProvider.codingPlan.paypalSetupRequired":
-    "Authorize PayPal before continuing the payment.",
-  "settings.modelProvider.codingPlan.paypalApproveUrlMissing":
-    "PayPal did not return an approval link. Try again later.",
-  "settings.modelProvider.codingPlan.paypalUnsupported":
-    "PayPal is not supported for this account or region.",
-  "settings.modelProvider.codingPlan.paypalCancelled":
-    "PayPal authorization was cancelled. Choose PayPal again to retry.",
-  "settings.modelProvider.codingPlan.paypalSubscribeFailed":
-    "PayPal subscription could not be created. Confirm that PayPal authorization finished, then try again or pay by card.",
-  "settings.modelProvider.codingPlan.securityVerificationRequired":
-    "Complete the security verification before continuing the purchase.",
-  "settings.modelProvider.codingPlan.securityVerificationCancelled":
-    "Security verification was cancelled.",
-  "settings.modelProvider.codingPlan.securityVerificationFailed":
-    "Security verification failed. Try again in a moment.",
+  "settings.modelProvider.codingPlan.pendingOrder": "There is an unfinished order. Complete or cancel it before starting another purchase.",
+  "settings.modelProvider.codingPlan.paymentTimeout": "Payment is still pending. Recheck your Coding Plan status after the payment page finishes.",
+  "settings.modelProvider.codingPlan.zaiOverseasPaymentRequired": "Z.ai global plans must be paid through PayPal or the official Z.ai payment page, not the Alipay signing flow.",
+  "settings.modelProvider.codingPlan.paypalSetupRequired": "Authorize PayPal before continuing the payment.",
+  "settings.modelProvider.codingPlan.paypalApproveUrlMissing": "PayPal did not return an approval link. Try again later.",
+  "settings.modelProvider.codingPlan.paypalUnsupported": "PayPal is not supported for this account or region.",
+  "settings.modelProvider.codingPlan.paypalCancelled": "PayPal authorization was cancelled. Choose PayPal again to retry.",
+  "settings.modelProvider.codingPlan.paypalSubscribeFailed": "PayPal subscription could not be created. Confirm that PayPal authorization finished, then try again or pay by card.",
+  "settings.modelProvider.codingPlan.securityVerificationRequired": "Complete the security verification before continuing the purchase.",
+  "settings.modelProvider.codingPlan.securityVerificationCancelled": "Security verification was cancelled.",
+  "settings.modelProvider.codingPlan.securityVerificationFailed": "Security verification failed. Try again in a moment.",
   "settings.modelProvider.codingPlan.start.loginEnable": "Connect to enable",
   "settings.modelProvider.codingPlan.start.loginTrial": "Connect Z.ai",
   "settings.modelProvider.codingPlan.start.enabled": "Enabled",
   "settings.modelProvider.codingPlan.start.freeBadge": "Free",
   "settings.modelProvider.codingPlan.start.freeEquityTitle": "Start free plan",
-  "settings.modelProvider.codingPlan.start.freeEquityDetails":
-    "Basic coding capability is available after sign-in.",
+  "settings.modelProvider.codingPlan.start.freeEquityDetails": "Basic coding capability is available after sign-in.",
   "settings.modelProvider.codingPlan.paymentDialog.title": "{product} auto-renewal plan",
   "settings.modelProvider.codingPlan.paymentDialog.close": "Close payment dialog",
   "settings.modelProvider.codingPlan.paymentDialog.originalAmount": "Plan price",
   "settings.modelProvider.codingPlan.paymentDialog.discountActivity": "Discount",
-  "settings.modelProvider.codingPlan.paymentDialog.currentPlanCredit":
-    "Current plan remaining value",
+  "settings.modelProvider.codingPlan.paymentDialog.currentPlanCredit": "Current plan remaining value",
   "settings.modelProvider.codingPlan.paymentDialog.payAmount": "Amount due",
   "settings.modelProvider.codingPlan.paymentDialog.deductions": "Deductions",
   "settings.modelProvider.codingPlan.paymentDialog.alipayScan": "Scan with Alipay to pay",
   "settings.modelProvider.codingPlan.paymentDialog.polling": "Waiting for payment confirmation",
   "settings.modelProvider.codingPlan.paymentDialog.qrAlt": "Payment QR code",
   "settings.modelProvider.codingPlan.paymentDialog.qrLoading": "Generating QR code",
-  "settings.modelProvider.codingPlan.paymentDialog.qrError":
-    "Could not generate the QR code. Try again.",
+  "settings.modelProvider.codingPlan.paymentDialog.qrError": "Could not generate the QR code. Try again.",
   "settings.modelProvider.codingPlan.paymentDialog.qrExpired": "QR code expired",
   "settings.modelProvider.codingPlan.paymentDialog.refreshQr": "Refresh QR code",
-  "settings.modelProvider.codingPlan.paymentDialog.tipAutoRenew":
-    "The subscription will auto-renew at {price}/month.",
-  "settings.modelProvider.codingPlan.paymentDialog.tipDeduction":
-    "Deduction priority: credits first, then balance, then Alipay.",
-  "settings.modelProvider.codingPlan.paymentDialog.tipPeriodic":
-    "The plan renews monthly until you cancel it according to the service terms.",
-  "settings.modelProvider.codingPlan.paymentDialog.tipCancel":
-    "You can turn off auto-renewal at least 3 days before the renewal date from your plan overview.",
-  "settings.modelProvider.codingPlan.paymentDialog.tipCancelPrefix":
-    "You can turn off auto-renewal at least 3 days before the renewal date from your ",
+  "settings.modelProvider.codingPlan.paymentDialog.tipAutoRenew": "The subscription will auto-renew at {price}/month.",
+  "settings.modelProvider.codingPlan.paymentDialog.tipDeduction": "Deduction priority: credits first, then balance, then Alipay.",
+  "settings.modelProvider.codingPlan.paymentDialog.tipPeriodic": "The plan renews monthly until you cancel it according to the service terms.",
+  "settings.modelProvider.codingPlan.paymentDialog.tipCancel": "You can turn off auto-renewal at least 3 days before the renewal date from your plan overview.",
+  "settings.modelProvider.codingPlan.paymentDialog.tipCancelPrefix": "You can turn off auto-renewal at least 3 days before the renewal date from your ",
   "settings.modelProvider.codingPlan.paymentDialog.planOverviewLink": "plan overview",
   "settings.modelProvider.codingPlan.paymentDialog.tipCancelSuffix": ".",
   "settings.modelProvider.codingPlan.paymentDialog.ruleTitle": "Account usage policy",
-  "settings.modelProvider.codingPlan.paymentDialog.ruleDescription":
-    "Use the subscribed account only within officially permitted product scopes. Do not lend, transfer, or provide it to third parties, and do not use it for improper or rule-breaking behavior. If violations are found, the platform may restrict or ban the account without refund.",
-  "settings.modelProvider.codingPlan.paymentDialog.agreement":
-    "Payment means you agree to the service and subscription auto-renewal terms. Virtual products are not refundable after payment.",
+  "settings.modelProvider.codingPlan.paymentDialog.ruleDescription": "Use the subscribed account only within officially permitted product scopes. Do not lend, transfer, or provide it to third parties, and do not use it for improper or rule-breaking behavior. If violations are found, the platform may restrict or ban the account without refund.",
+  "settings.modelProvider.codingPlan.paymentDialog.agreement": "Payment means you agree to the service and subscription auto-renewal terms. Virtual products are not refundable after payment.",
   "settings.modelProvider.codingPlan.enterprise.purchaseMethod": "Service method",
-  "settings.modelProvider.codingPlan.enterprise.purchaseMethodTooltipTitle":
-    "Service method details",
-  "settings.modelProvider.codingPlan.enterprise.purchaseMethodTooltipDescription":
-    "1. Monthly one-time purchase only supports 1, 3, 6, or 12 months. 12 months gets 10% off.\n2. Continuous subscription: auto-renewal deducts in this order: gift balance > balance > Alipay.",
+  "settings.modelProvider.codingPlan.enterprise.purchaseMethodTooltipTitle": "Service method details",
+  "settings.modelProvider.codingPlan.enterprise.purchaseMethodTooltipDescription": "1. Monthly one-time purchase only supports 1, 3, 6, or 12 months. 12 months gets 10% off.\n2. Continuous subscription: auto-renewal deducts in this order: gift balance > balance > Alipay.",
   "settings.modelProvider.codingPlan.enterprise.tier.lite": "Lite",
   "settings.modelProvider.codingPlan.enterprise.tier.pro": "Pro",
   "settings.modelProvider.codingPlan.enterprise.tier.max": "Max",
   "settings.modelProvider.codingPlan.enterprise.configTitle": "Team plan configuration",
   "settings.modelProvider.codingPlan.enterprise.packageType": "Plan type",
   "settings.modelProvider.codingPlan.enterprise.packageSeats": "Plan seats",
-  "settings.modelProvider.codingPlan.enterprise.autoRenewAuthorization":
-    "You authorize us to enable auto-renewal for you",
+  "settings.modelProvider.codingPlan.enterprise.autoRenewAuthorization": "You authorize us to enable auto-renewal for you",
   "settings.modelProvider.codingPlan.enterprise.seatMonthlyPrice": "{price} / seat / month",
   "settings.modelProvider.codingPlan.enterprise.refresh": "Refresh",
   "settings.modelProvider.codingPlan.enterprise.singleSeatPrice": "single-seat price",
@@ -4850,18 +4125,13 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.codingPlan.enterprise.durationInputUnit.year": "years",
   "settings.modelProvider.codingPlan.enterprise.durationDiscountOption": "10% off",
   "settings.modelProvider.codingPlan.enterprise.calculating": "Calculating",
-  "settings.modelProvider.codingPlan.enterprise.productsLoadingDescription":
-    "Loading team plan pricing from BigModel.",
-  "settings.modelProvider.codingPlan.enterprise.productsEmptyDescription":
-    "No team plan products are currently available.",
+  "settings.modelProvider.codingPlan.enterprise.productsLoadingDescription": "Loading team plan pricing from BigModel.",
+  "settings.modelProvider.codingPlan.enterprise.productsEmptyDescription": "No team plan products are currently available.",
   "settings.modelProvider.codingPlan.enterprise.productsError": "Could not load team plans",
   "settings.modelProvider.codingPlan.enterprise.choosePurchaseMethod": "Service method",
-  "settings.modelProvider.codingPlan.enterprise.purchaseMethodDescription":
-    "You authorize us to enable auto-renewal for you. Select service method, seats, and one-time purchase duration before confirming payment.",
-  "settings.modelProvider.codingPlan.enterprise.continuousDescription":
-    "Auto-renews for the selected billing period.",
-  "settings.modelProvider.codingPlan.enterprise.oneTimeDescription":
-    "One-time purchase for the selected duration.",
+  "settings.modelProvider.codingPlan.enterprise.purchaseMethodDescription": "You authorize us to enable auto-renewal for you. Select service method, seats, and one-time purchase duration before confirming payment.",
+  "settings.modelProvider.codingPlan.enterprise.continuousDescription": "Auto-renews for the selected billing period.",
+  "settings.modelProvider.codingPlan.enterprise.oneTimeDescription": "One-time purchase for the selected duration.",
   "settings.modelProvider.codingPlan.enterprise.unit.monthly": "/ seat / month",
   "settings.modelProvider.codingPlan.enterprise.unit.quarterly": "/ seat / quarter",
   "settings.modelProvider.codingPlan.enterprise.unit.yearly": "/ seat / year",
@@ -4871,21 +4141,17 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.codingPlan.enterprise.balanceTitle": "Balance deduction",
   "settings.modelProvider.codingPlan.enterprise.useGiftBalance": "Use gift balance",
   "settings.modelProvider.codingPlan.enterprise.useCashBalance": "Use balance",
-  "settings.modelProvider.codingPlan.enterprise.currentGiftBalance":
-    "Current gift balance {amount}",
-  "settings.modelProvider.codingPlan.enterprise.currentCashBalance":
-    "Current account balance {amount}",
+  "settings.modelProvider.codingPlan.enterprise.currentGiftBalance": "Current gift balance {amount}",
+  "settings.modelProvider.codingPlan.enterprise.currentCashBalance": "Current account balance {amount}",
   "settings.modelProvider.codingPlan.enterprise.recharge": "Top up",
   "settings.modelProvider.codingPlan.enterprise.giftBalance": "Gift balance",
   "settings.modelProvider.codingPlan.enterprise.cashBalance": "Cash balance",
   "settings.modelProvider.codingPlan.enterprise.balanceAvailable": "Available {amount}",
   "settings.modelProvider.codingPlan.enterprise.giftBalanceDeduction": "Gift balance deduction",
   "settings.modelProvider.codingPlan.enterprise.cashBalanceDeduction": "Cash balance deduction",
-  "settings.modelProvider.codingPlan.enterprise.calculateDescription":
-    "Payment amount will update after the order estimate is ready.",
+  "settings.modelProvider.codingPlan.enterprise.calculateDescription": "Payment amount will update after the order estimate is ready.",
   "settings.modelProvider.codingPlan.enterprise.paymentNotesTitle": "Payment notes",
-  "settings.modelProvider.codingPlan.enterprise.paymentNotesDescription":
-    "Balance and gift deductions are estimated by BigModel. Continuous subscriptions must keep at least the required third-party payment amount.",
+  "settings.modelProvider.codingPlan.enterprise.paymentNotesDescription": "Balance and gift deductions are estimated by BigModel. Continuous subscriptions must keep at least the required third-party payment amount.",
   "settings.modelProvider.codingPlan.enterprise.amountDetails": "Amount details",
   "settings.modelProvider.codingPlan.enterprise.seatQuantity": "Seats",
   "settings.modelProvider.codingPlan.enterprise.seatCountValue": "{count} seats",
@@ -4896,30 +4162,21 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.codingPlan.enterprise.cancel": "Cancel",
   "settings.modelProvider.codingPlan.enterprise.confirmPay": "Confirm and pay",
   "settings.modelProvider.codingPlan.enterprise.confirmTitle": "Buy {product} enterprise plan",
-  "settings.modelProvider.codingPlan.enterprise.paymentDialog.title":
-    "{product} enterprise plan payment",
-  "settings.modelProvider.codingPlan.enterprise.paymentDialog.tipTotal":
-    "The QR amount is the calculated total for seats and purchase duration.",
-  "settings.modelProvider.codingPlan.enterprise.paymentDialog.tipDeduction":
-    "Balance and gift deductions follow the confirmed estimate on the payment confirmation page.",
-  "settings.modelProvider.codingPlan.enterprise.paymentDialog.tipComplete":
-    "After payment succeeds, enterprise pricing and Coding Plan entitlement will refresh automatically.",
+  "settings.modelProvider.codingPlan.enterprise.paymentDialog.title": "{product} enterprise plan payment",
+  "settings.modelProvider.codingPlan.enterprise.paymentDialog.tipTotal": "The QR amount is the calculated total for seats and purchase duration.",
+  "settings.modelProvider.codingPlan.enterprise.paymentDialog.tipDeduction": "Balance and gift deductions follow the confirmed estimate on the payment confirmation page.",
+  "settings.modelProvider.codingPlan.enterprise.paymentDialog.tipComplete": "After payment succeeds, enterprise pricing and Coding Plan entitlement will refresh automatically.",
   "settings.modelProvider.codingPlan.enterprise.pendingOrderTitle": "You have an unpaid order",
-  "settings.modelProvider.codingPlan.enterprise.pendingOrderDescription":
-    "Continue with it? You can cancel this order and choose a new plan, or continue paying for the original order.",
+  "settings.modelProvider.codingPlan.enterprise.pendingOrderDescription": "Continue with it? You can cancel this order and choose a new plan, or continue paying for the original order.",
   "settings.modelProvider.codingPlan.enterprise.pendingOrderCancel": "Cancel order",
   "settings.modelProvider.codingPlan.enterprise.pendingOrderContinue": "Continue payment",
-  "settings.modelProvider.codingPlan.enterprise.pendingOrderProductMissing":
-    "The plan for this unpaid order was not found. Refresh plans and try again.",
+  "settings.modelProvider.codingPlan.enterprise.pendingOrderProductMissing": "The plan for this unpaid order was not found. Refresh plans and try again.",
   "settings.modelProvider.codingPlan.overseasPayment.title": "{product} global payment",
-  "settings.modelProvider.codingPlan.overseasPayment.description":
-    "Amount due: {price}. Choose PayPal or continue on the official Z.ai payment page.",
+  "settings.modelProvider.codingPlan.overseasPayment.description": "Amount due: {price}. Choose PayPal or continue on the official Z.ai payment page.",
   "settings.modelProvider.codingPlan.overseasPayment.paypal": "PayPal",
-  "settings.modelProvider.codingPlan.overseasPayment.paypalDescription":
-    "Open PayPal authorization, then return here to continue.",
+  "settings.modelProvider.codingPlan.overseasPayment.paypalDescription": "Open PayPal authorization, then return here to continue.",
   "settings.modelProvider.codingPlan.overseasPayment.paypalAuthorize": "Continue to PayPal",
-  "settings.modelProvider.codingPlan.overseasPayment.paypalContinue":
-    "I authorized PayPal, continue payment",
+  "settings.modelProvider.codingPlan.overseasPayment.paypalContinue": "I authorized PayPal, continue payment",
   "settings.modelProvider.codingPlan.overseasPayment.selectPaymentMethod": "Payment method",
   "settings.modelProvider.codingPlan.overseasPayment.cardPayment": "Credit card / debit card",
   "settings.modelProvider.codingPlan.overseasPayment.savedCards": "Saved cards",
@@ -4934,8 +4191,7 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.codingPlan.overseasPayment.nameOnCard": "Name on card",
   "settings.modelProvider.codingPlan.overseasPayment.billingAddress": "Billing address",
   "settings.modelProvider.codingPlan.overseasPayment.country": "Country",
-  "settings.modelProvider.codingPlan.overseasPayment.countryRequired":
-    "Select a billing country or region.",
+  "settings.modelProvider.codingPlan.overseasPayment.countryRequired": "Select a billing country or region.",
   "settings.modelProvider.codingPlan.overseasPayment.addressLine1": "Address line 1",
   "settings.modelProvider.codingPlan.overseasPayment.city": "City",
   "settings.modelProvider.codingPlan.overseasPayment.postalCode": "Postal code",
@@ -4944,22 +4200,15 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.codingPlan.overseasPayment.confirm": "Confirm",
   "settings.modelProvider.codingPlan.overseasPayment.amount.originalAmount": "Original price",
   "settings.modelProvider.codingPlan.overseasPayment.amount.discountActivity": "Discount",
-  "settings.modelProvider.codingPlan.overseasPayment.amount.currentPlanCredit":
-    "Current plan credit",
+  "settings.modelProvider.codingPlan.overseasPayment.amount.currentPlanCredit": "Current plan credit",
   "settings.modelProvider.codingPlan.overseasPayment.amount.payAmount": "Amount due",
   "settings.modelProvider.codingPlan.overseasPayment.amount.deductions": "Deductions",
-  "settings.modelProvider.codingPlan.overseasPayment.addCardBeforeConfirm":
-    "Add a card before confirming.",
-  "settings.modelProvider.codingPlan.overseasPayment.stripeNotReady":
-    "Stripe is still loading. Try again in a moment.",
-  "settings.modelProvider.codingPlan.overseasPayment.cardElementMissing":
-    "Card input is not ready. Refresh and try again.",
-  "settings.modelProvider.codingPlan.overseasPayment.stripe3dsFailed":
-    "Stripe 3DS verification failed.",
-  "settings.modelProvider.codingPlan.overseasPayment.stripePaymentMethodFailed":
-    "Stripe payment method failed.",
-  "settings.modelProvider.codingPlan.overseasPayment.stripePublishableKeyMissing":
-    "Stripe card entry is not configured in this build.",
+  "settings.modelProvider.codingPlan.overseasPayment.addCardBeforeConfirm": "Add a card before confirming.",
+  "settings.modelProvider.codingPlan.overseasPayment.stripeNotReady": "Stripe is still loading. Try again in a moment.",
+  "settings.modelProvider.codingPlan.overseasPayment.cardElementMissing": "Card input is not ready. Refresh and try again.",
+  "settings.modelProvider.codingPlan.overseasPayment.stripe3dsFailed": "Stripe 3DS verification failed.",
+  "settings.modelProvider.codingPlan.overseasPayment.stripePaymentMethodFailed": "Stripe payment method failed.",
+  "settings.modelProvider.codingPlan.overseasPayment.stripePublishableKeyMissing": "Stripe card entry is not configured in this build.",
   "settings.modelProvider.codingPlan.overseasPayment.close": "Maybe later",
   "settings.modelProvider.codingPlan.overseasPayment.renewalPolicyTitle": "Renewal Policy",
   "settings.modelProvider.codingPlan.overseasPayment.accountPolicyTitle": "Account Usage Policy",
@@ -4969,49 +4218,34 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.codingPlan.overseasPayment.recurringPeriod.month": "Monthly",
   "settings.modelProvider.codingPlan.overseasPayment.recurringPeriod.quarter": "Quarterly",
   "settings.modelProvider.codingPlan.overseasPayment.recurringPeriod.year": "Yearly",
-  "settings.modelProvider.codingPlan.overseasPayment.renewalCharge":
-    "{price} will be charged automatically per {period}.",
-  "settings.modelProvider.codingPlan.overseasPayment.renewalChargeFallback":
-    "Future renewals will follow your selected subscription cycle. The actual renewal amount is subject to your renewal invoice.",
-  "settings.modelProvider.codingPlan.overseasPayment.renewalDeduction":
-    "Payments will be deducted first from bonus credits, then from your account balance, and finally via credit card.",
-  "settings.modelProvider.codingPlan.overseasPayment.renewalMinimum":
-    "Please note that a small minimum applies when charging your credit card. If the remaining amount is less, we will round up the deduction to meet this minimum.",
-  "settings.modelProvider.codingPlan.overseasPayment.renewalRecurring":
-    "{period} charges will continue on a recurring basis until you cancel in accordance with our Terms of Service.",
-  "settings.modelProvider.codingPlan.overseasPayment.renewalCancelPrefix":
-    "You may disable auto-renewal at least 1 day before the renewal date in your ",
-  "settings.modelProvider.codingPlan.overseasPayment.subscriptionSettingLink":
-    "subscription setting",
+  "settings.modelProvider.codingPlan.overseasPayment.renewalCharge": "{price} will be charged automatically per {period}.",
+  "settings.modelProvider.codingPlan.overseasPayment.renewalChargeFallback": "Future renewals will follow your selected subscription cycle. The actual renewal amount is subject to your renewal invoice.",
+  "settings.modelProvider.codingPlan.overseasPayment.renewalDeduction": "Payments will be deducted first from bonus credits, then from your account balance, and finally via credit card.",
+  "settings.modelProvider.codingPlan.overseasPayment.renewalMinimum": "Please note that a small minimum applies when charging your credit card. If the remaining amount is less, we will round up the deduction to meet this minimum.",
+  "settings.modelProvider.codingPlan.overseasPayment.renewalRecurring": "{period} charges will continue on a recurring basis until you cancel in accordance with our Terms of Service.",
+  "settings.modelProvider.codingPlan.overseasPayment.renewalCancelPrefix": "You may disable auto-renewal at least 1 day before the renewal date in your ",
+  "settings.modelProvider.codingPlan.overseasPayment.subscriptionSettingLink": "subscription setting",
   "settings.modelProvider.codingPlan.overseasPayment.renewalCancelSuffix": ".",
-  "settings.modelProvider.codingPlan.overseasPayment.accountPolicyPrefix":
-    "The GLM Coding Plan is strictly limited to use by the subscriber within ",
-  "settings.modelProvider.codingPlan.overseasPayment.supportedProductsLink":
-    "officially supported products",
-  "settings.modelProvider.codingPlan.overseasPayment.accountPolicyAfterSupportedProducts":
-    ". Any sharing, resale, transfer, or third-party access is strictly prohibited. Any improper, unauthorized, or policy-violating use may result in immediate account restriction or suspension with no refunds. Please comply with our ",
+  "settings.modelProvider.codingPlan.overseasPayment.accountPolicyPrefix": "The GLM Coding Plan is strictly limited to use by the subscriber within ",
+  "settings.modelProvider.codingPlan.overseasPayment.supportedProductsLink": "officially supported products",
+  "settings.modelProvider.codingPlan.overseasPayment.accountPolicyAfterSupportedProducts": ". Any sharing, resale, transfer, or third-party access is strictly prohibited. Any improper, unauthorized, or policy-violating use may result in immediate account restriction or suspension with no refunds. Please comply with our ",
   "settings.modelProvider.codingPlan.overseasPayment.termsLink": "Terms",
   "settings.modelProvider.codingPlan.overseasPayment.accountPolicyBetween": " and ",
   "settings.modelProvider.codingPlan.overseasPayment.policyLink": "Policy",
   "settings.modelProvider.codingPlan.overseasPayment.accountPolicySuffix": ".",
-  "settings.modelProvider.codingPlan.overseasPayment.authorizationPrefix":
-    "You agree that Z.ai will charge your card the above amount now and on a recurring basis according to your subscription plan until you cancel in accordance with our ",
+  "settings.modelProvider.codingPlan.overseasPayment.authorizationPrefix": "You agree that Z.ai will charge your card the above amount now and on a recurring basis according to your subscription plan until you cancel in accordance with our ",
   "settings.modelProvider.codingPlan.overseasPayment.authorizationTermsLink": "terms",
   "settings.modelProvider.codingPlan.overseasPayment.authorizationSuffix": ".",
-  "settings.modelProvider.codingPlan.paymentDialog.agreementPrefix":
-    "Payment means you agree to the ",
+  "settings.modelProvider.codingPlan.paymentDialog.agreementPrefix": "Payment means you agree to the ",
   "settings.modelProvider.codingPlan.paymentDialog.serviceAgreementLink": "Service agreement",
   "settings.modelProvider.codingPlan.paymentDialog.agreementBetween": " and the ",
-  "settings.modelProvider.codingPlan.paymentDialog.subscriptionAgreementLink":
-    "Subscription and auto-renewal agreement",
-  "settings.modelProvider.codingPlan.paymentDialog.agreementSuffix":
-    ". Virtual products are not refundable after payment.",
+  "settings.modelProvider.codingPlan.paymentDialog.subscriptionAgreementLink": "Subscription and auto-renewal agreement",
+  "settings.modelProvider.codingPlan.paymentDialog.agreementSuffix": ". Virtual products are not refundable after payment.",
   "settings.modelProvider.codingPlan.product.soldOut": "Sold out",
   "settings.modelProvider.codingPlan.product.forbidden": "Unavailable for this account",
   "settings.modelProvider.codingPlan.product.unavailable": "Unavailable",
   "settings.modelProvider.codingPlan.product.subscribeNow": "Subscribe now",
-  "settings.modelProvider.codingPlan.product.unavailableTooltipPrefix":
-    "This plan is unavailable for purchase. ",
+  "settings.modelProvider.codingPlan.product.unavailableTooltipPrefix": "This plan is unavailable for purchase. ",
   "settings.modelProvider.codingPlan.product.unavailableTooltipLink": "view details",
   "settings.modelProvider.codingPlan.product.included": "Included",
   "settings.modelProvider.codingPlan.product.firstPromo": "First-time subscription discount",
@@ -5019,39 +4253,27 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.codingPlan.zai.plan.lite.name": "Lite",
   "settings.modelProvider.codingPlan.zai.plan.lite.summary": "Base usage limits",
   "settings.modelProvider.codingPlan.zai.plan.pro.name": "Pro",
-  "settings.modelProvider.codingPlan.zai.plan.pro.summary":
-    "Everything in Lite, plus 5x Lite usage",
+  "settings.modelProvider.codingPlan.zai.plan.pro.summary": "Everything in Lite, plus 5x Lite usage",
   "settings.modelProvider.codingPlan.zai.plan.max.name": "Max",
-  "settings.modelProvider.codingPlan.zai.plan.max.summary":
-    "Everything in Pro, plus 20x Lite usage",
+  "settings.modelProvider.codingPlan.zai.plan.max.summary": "Everything in Pro, plus 20x Lite usage",
   "settings.modelProvider.codingPlan.bigmodel.plan.lite.name": "Lite",
   "settings.modelProvider.codingPlan.bigmodel.plan.lite.summary": "Base usage quota",
   "settings.modelProvider.codingPlan.bigmodel.plan.pro.name": "Pro",
-  "settings.modelProvider.codingPlan.bigmodel.plan.pro.summary":
-    "5x Lite usage quota + all Lite benefits",
+  "settings.modelProvider.codingPlan.bigmodel.plan.pro.summary": "5x Lite usage quota + all Lite benefits",
   "settings.modelProvider.codingPlan.bigmodel.plan.max.name": "Max",
-  "settings.modelProvider.codingPlan.bigmodel.plan.max.summary":
-    "20x Lite usage quota + all Pro benefits",
+  "settings.modelProvider.codingPlan.bigmodel.plan.max.summary": "20x Lite usage quota + all Pro benefits",
   "settings.modelProvider.codingPlan.bigmodel.purchase.plan.lite.detail0": "Base usage allowance",
-  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.lite.detail1":
-    "Light iteration for small repos",
-  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.lite.detail2":
-    "Latest models rolled out over time",
+  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.lite.detail1": "Light iteration for small repos",
+  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.lite.detail2": "Latest models rolled out over time",
   "settings.modelProvider.codingPlan.bigmodel.purchase.plan.lite.detail3": "20+ coding tools",
   "settings.modelProvider.codingPlan.bigmodel.purchase.plan.pro.detail0": "5x Lite usage allowance",
-  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.pro.detail1":
-    "Daily development for mid-sized repos",
-  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.pro.detail2":
-    "Priority access to latest models",
+  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.pro.detail1": "Daily development for mid-sized repos",
+  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.pro.detail2": "Priority access to latest models",
   "settings.modelProvider.codingPlan.bigmodel.purchase.plan.pro.detail3": "Curated MCP tools",
-  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.max.detail0":
-    "20x Lite usage allowance",
-  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.max.detail1":
-    "Deep work on mid-to-large repos",
-  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.max.detail2":
-    "First access to latest models",
-  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.max.detail3":
-    "Peak-time resource priority",
+  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.max.detail0": "20x Lite usage allowance",
+  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.max.detail1": "Deep work on mid-to-large repos",
+  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.max.detail2": "First access to latest models",
+  "settings.modelProvider.codingPlan.bigmodel.purchase.plan.max.detail3": "Peak-time resource priority",
   "settings.modelProvider.codingPlan.zai.purchase.plan.lite.detail0": "Base usage included",
   "settings.modelProvider.codingPlan.zai.purchase.plan.lite.detail1": "Small repo iteration",
   "settings.modelProvider.codingPlan.zai.purchase.plan.lite.detail2": "Latest models over time",
@@ -5080,24 +4302,15 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.restoreConfig": "Restore",
   "settings.modelProvider.resetForm": "Reset form",
   "settings.modelProvider.fieldHelp": "About {field}",
-  "settings.modelProvider.help.contextWindow":
-    "The context capacity the model can process at once, in tokens. ZCode uses this to manage context.\nDo not exceed the model's actual limit.",
-  "settings.modelProvider.help.maxOutputTokens":
-    "The maximum number of tokens a single model request may generate.\nDo not exceed the model's actual limit.",
-  "settings.modelProvider.help.inputModalities":
-    "Set the content types the model can receive:\n\n- **Text**: Receives text content. Required.\n- **Images**: Receives image content.\n- **Video**: Receives video content.\n- **PDF**: Receives PDF documents directly.",
-  "settings.modelProvider.help.outputModalities":
-    "The content type of the model's replies. Only text is currently supported.",
-  "settings.modelProvider.help.capabilities":
-    "- **Structured output**: Supports JSON Schema constraints on output fields, types, and structure.\n- **Native web search**: Supports the model API's built-in web search capability.\n- **Mid-conversation system messages**: Supports inserting system instructions during a conversation.\n\nDo not enable capabilities the model does not support.",
-  "settings.modelProvider.help.reasoningLevelsOrdered":
-    "Set the reasoning levels available in chat. **They must be ordered from lowest to highest reasoning effort**.\nDo not configure reasoning levels the model does not support.",
-  "settings.modelProvider.help.reasoningLevelMapping":
-    "Use a CEL expression to map the current reasoning level, `reasoningLevel`, to model API request fields. The JSON object returned by the expression is merged into the outgoing request body.",
-  "settings.modelProvider.help.advanced":
-    "**MFJS tool schema**: Enables Moonshot Flavored JSON Schema compatibility, commonly used by Moonshot's Kimi model API. Enable only when the model API requires this format.",
-  "settings.modelProvider.help.followRecommendedConfig":
-    "Matches recommended configuration using the model ID, Base URL, and API format. ZCode continually updates recommendations and automatically syncs them to you.\nWhen you manually change a setting, that setting becomes manually managed and stops following recommendation updates; other settings remain managed by smart configuration.",
+  "settings.modelProvider.help.contextWindow": "The context capacity the model can process at once, in tokens. Reactor uses this to manage context.\nDo not exceed the model's actual limit.",
+  "settings.modelProvider.help.maxOutputTokens": "The maximum number of tokens a single model request may generate.\nDo not exceed the model's actual limit.",
+  "settings.modelProvider.help.inputModalities": "Set the content types the model can receive:\n\n- **Text**: Receives text content. Required.\n- **Images**: Receives image content.\n- **Video**: Receives video content.\n- **PDF**: Receives PDF documents directly.",
+  "settings.modelProvider.help.outputModalities": "The content type of the model's replies. Only text is currently supported.",
+  "settings.modelProvider.help.capabilities": "- **Structured output**: Supports JSON Schema constraints on output fields, types, and structure.\n- **Native web search**: Supports the model API's built-in web search capability.\n- **Mid-conversation system messages**: Supports inserting system instructions during a conversation.\n\nDo not enable capabilities the model does not support.",
+  "settings.modelProvider.help.reasoningLevelsOrdered": "Set the reasoning levels available in chat. **They must be ordered from lowest to highest reasoning effort**.\nDo not configure reasoning levels the model does not support.",
+  "settings.modelProvider.help.reasoningLevelMapping": "Use a CEL expression to map the current reasoning level, `reasoningLevel`, to model API request fields. The JSON object returned by the expression is merged into the outgoing request body.",
+  "settings.modelProvider.help.advanced": "**MFJS tool schema**: Enables Moonshot Flavored JSON Schema compatibility, commonly used by Moonshot's Kimi model API. Enable only when the model API requires this format.",
+  "settings.modelProvider.help.followRecommendedConfig": "Matches recommended configuration using the model ID, Base URL, and API format. Reactor continually updates recommendations and automatically syncs them to you.\nWhen you manually change a setting, that setting becomes manually managed and stops following recommendation updates; other settings remain managed by smart configuration.",
   "settings.modelProvider.modelDefaultsLoaded": "Smart configuration matched for this model",
   "settings.modelProvider.modelConfigIncomplete": "Model configuration is incomplete",
   "settings.modelProvider.models": "Model list",
@@ -5121,10 +4334,8 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.reasoningLevelAdd": "Add reasoning level",
   "settings.modelProvider.reasoningLevelMapping": "Reasoning parameter mapping",
   "settings.modelProvider.reasoningLevelDelete": "Delete reasoning level",
-  "settings.modelProvider.modelMetadata.invalid.reasoningLevelValues":
-    "Reasoning levels cannot be empty or duplicated",
-  "settings.modelProvider.modelMetadata.invalid.reasoningLevelMap":
-    "Reasoning parameter mapping is invalid",
+  "settings.modelProvider.modelMetadata.invalid.reasoningLevelValues": "Reasoning levels cannot be empty or duplicated",
+  "settings.modelProvider.modelMetadata.invalid.reasoningLevelMap": "Reasoning parameter mapping is invalid",
   "settings.modelProvider.contextWindowBadgeLabel": "Context window: {value}",
   "model.capability.vision": "Vision",
   "settings.modelProvider.advanced": "Advanced settings",
@@ -5141,17 +4352,14 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.modality.pdf": "PDF",
   "settings.modelProvider.modelMetadata.invalid.id": "Model ID is required",
   "settings.modelProvider.modelMetadata.invalid.kinds": "Select at least one API format",
-  "settings.modelProvider.modelMetadata.invalid.contextWindow":
-    "Context window must be a positive integer",
-  "settings.modelProvider.modelMetadata.invalid.maxOutputTokens":
-    "Max output tokens must be a positive integer",
+  "settings.modelProvider.modelMetadata.invalid.contextWindow": "Context window must be a positive integer",
+  "settings.modelProvider.modelMetadata.invalid.maxOutputTokens": "Max output tokens must be a positive integer",
   "settings.modelProvider.modelMetadata.invalid.inputModalities": "Text input type is required",
   "settings.modelProvider.newProviderName": "New provider",
   "settings.modelProvider.modelsPlaceholder": "One model name per line",
   "settings.modelProvider.modelsCount": "{count} models",
   "settings.modelProvider.claudeMapping": "Claude model mapping",
-  "settings.modelProvider.claudeMappingDescription":
-    "Choose a matching model for each Claude model slot",
+  "settings.modelProvider.claudeMappingDescription": "Choose a matching model for each Claude model slot",
   "settings.modelProvider.slot.haiku": "Haiku (light tasks)",
   "settings.modelProvider.slot.sonnet": "Sonnet (general tasks)",
   "settings.modelProvider.slot.opus": "Opus (complex tasks)",
@@ -5162,34 +4370,26 @@ const enUS: Record<string, string> = {
   "settings.usage.sectionDescription": "Built from local app session history.",
   "settings.usage.tab.appUsage": "App usage",
   "settings.usage.tab.codingPlan": "Individual Plan",
-  "settings.usage.sectionDescriptionRemote":
-    "Synced from the selected provider monitor API for real token and tool usage.",
+  "settings.usage.sectionDescriptionRemote": "Synced from the selected provider monitor API for real token and tool usage.",
   "settings.usage.remoteTokenHint": "From the selected provider model-usage API",
   "settings.usage.calls": "Calls",
   "settings.usage.toolCallsTotal": "Tool calls",
   "settings.usage.toolCallsEmpty": "No tool calls in this window",
   "settings.usage.toolCallsUnit": "calls",
   "settings.usage.toolChartTitle": "Tool usage breakdown",
-  "settings.usage.toolChartDescription":
-    "From the selected provider tool-usage API: Network Search / Web Reader / Zread call counts.",
+  "settings.usage.toolChartDescription": "From the selected provider tool-usage API: Network Search / Web Reader / Zread call counts.",
   "settings.usage.sourceProvider": "Source: {provider}",
   "settings.usage.billingBanner.title": "{provider} Coding Plan",
-  "settings.usage.billingBanner.description":
-    "Connect your {provider} account to query Coding Plan entitlement, then keep coding in ZCode after purchase or setup.",
-  "settings.usage.billingBanner.compactDescription":
-    "Connect your {provider} account to sync usage.",
+  "settings.usage.billingBanner.description": "Connect your {provider} account to query Coding Plan entitlement, then keep coding in Reactor after purchase or setup.",
+  "settings.usage.billingBanner.compactDescription": "Connect your {provider} account to sync usage.",
   "settings.usage.billingBanner.buy": "Buy Coding Plan",
   "settings.usage.billingBanner.apiKeys": "API keys",
   "settings.usage.billingBanner.usageDetails": "Usage details",
   "settings.usage.entitlementTitle": "Coding Plan entitlement",
-  "settings.usage.entitlementDescription":
-    "Sync exact plan level, 5-hour prompt pool, weekly quota, and monthly tool quota from the connected Coding Plan account.",
-  "settings.usage.entitlementError":
-    "Unable to load Coding Plan entitlement. Try again later or check the provider configuration.",
-  "usage.error.entitlement.credential":
-    "No Coding Plan entitlement was found. Reconnect the Coding Plan account or confirm that the account has an active plan.",
-  "usage.error.entitlement.generic":
-    "Unable to load Coding Plan entitlement. Try again later or check the provider configuration.",
+  "settings.usage.entitlementDescription": "Sync exact plan level, 5-hour prompt pool, weekly quota, and monthly tool quota from the connected Coding Plan account.",
+  "settings.usage.entitlementError": "Unable to load Coding Plan entitlement. Try again later or check the provider configuration.",
+  "usage.error.entitlement.credential": "No Coding Plan entitlement was found. Reconnect the Coding Plan account or confirm that the account has an active plan.",
+  "usage.error.entitlement.generic": "Unable to load Coding Plan entitlement. Try again later or check the provider configuration.",
   "settings.usage.entitlementRemaining": "Tool usage",
   "settings.usage.entitlementRealtime": "Synced from the provider quota api",
   "settings.usage.entitlementHidden": "Provider marked this balance as hidden",
@@ -5215,8 +4415,7 @@ const enUS: Record<string, string> = {
   "codingPlan.quotaReset.dialog.expiresInSoonest": "Soonest expires in {time}",
   "codingPlan.quotaReset.dialog.itemCount": "×{count}",
   "codingPlan.quotaReset.dialog.back": "Back",
-  "codingPlan.quotaReset.dialog.confirmHint":
-    "This uses 1 reset (expires {date}) and can't be undone.",
+  "codingPlan.quotaReset.dialog.confirmHint": "This uses 1 reset (expires {date}) and can't be undone.",
   "codingPlan.quotaReset.opportunity": "{count} reset available",
   "codingPlan.quotaReset.expiresIn": "Expires in {time}",
   "codingPlan.quotaReset.contextReminder.available": "{count} reset available",
@@ -5242,7 +4441,7 @@ const enUS: Record<string, string> = {
   "settings.usage.entitlementFiveHourUsage": "5-hour remaining",
   "settings.usage.entitlementWeeklyUsage": "Weekly remaining",
   "settings.usage.entitlementMonthlyMcpUsage": "Tool calls",
-  "settings.usage.entitlementServerMcpUsage": "ZCode MCP",
+  "settings.usage.entitlementServerMcpUsage": "Reactor MCP",
   "settings.usage.entitlementResetAt": "Resets {time}",
   "settings.usage.entitlementUsageDetails": "Tool usage detail",
   "settings.usage.entitlementPromptCap": "5-hour prompt pool",
@@ -5251,11 +4450,9 @@ const enUS: Record<string, string> = {
   "settings.usage.entitlementToolCapValue": "{value}/month",
   "settings.usage.entitlementConcurrency": "Concurrency priority",
   "settings.usage.entitlementConcurrencyValue": "{value}",
-  "settings.usage.entitlementPolicyHint":
-    "Quota values follow the current usage guide and may change with platform policy.",
+  "settings.usage.entitlementPolicyHint": "Quota values follow the current usage guide and may change with platform policy.",
   "settings.usage.entitlementLoginRequired": "Login required",
-  "settings.usage.entitlementNotConfigured":
-    "No connected Z.ai or BigModel Coding Plan account is available for quota lookup. Connect a Coding Plan account first.",
+  "settings.usage.entitlementNotConfigured": "No connected Z.ai or BigModel Coding Plan account is available for quota lookup. Connect a Coding Plan account first.",
   "settings.usage.entitlementStatusActive": "Active",
   "settings.usage.entitlementStatusError": "Error",
   "settings.usage.entitlementStatusLoading": "Loading",
@@ -5300,15 +4497,14 @@ const enUS: Record<string, string> = {
   "sidebar.usage.plan.fiveHour": "5 hours",
   "sidebar.usage.plan.weekly": "Weekly",
   "sidebar.usage.plan.toolCalls": "Tool calls",
-  "sidebar.usage.plan.mcp": "ZCode MCP",
-  "sidebar.usage.plan.zcodeMcp": "ZCode MCP",
-  "sidebar.usage.plan.zcodeMcpDescription": "Daily aggregate quota for ZCode built-in plugin MCPs",
+  "sidebar.usage.plan.mcp": "Reactor MCP",
+  "sidebar.usage.plan.zcodeMcp": "Reactor MCP",
+  "sidebar.usage.plan.zcodeMcpDescription": "Daily aggregate quota for Reactor built-in plugin MCPs",
   "chat.planUsage.title": "Plan usage",
   "chat.planUsage.titleWithPlan": "{plan} Plan usage",
   "chat.planUsage.providerFallback": "Current provider",
   "chat.planUsage.open": "Details",
-  "chat.planUsage.noPlan":
-    "No active Coding Plan was found for this account. Confirm that the connected account is subscribed.",
+  "chat.planUsage.noPlan": "No active Coding Plan was found for this account. Confirm that the connected account is subscribed.",
   "chat.planUsage.contextWindow": "Current context window",
   "chat.planUsage.contextDetail": "{used} / {total}",
   "chat.planUsage.promptPool": "5-hour prompt pool",
@@ -5318,12 +4514,9 @@ const enUS: Record<string, string> = {
   "chat.planUsage.toolQuota": "Monthly MCP / tool usage",
   "chat.planUsage.toolRemaining": "{remaining} / {total} remaining · resets {time}",
   "chat.planUsage.toolUsed": "{used} / {total} used · resets {time}",
-  "chat.planUsage.noQuotaLimits":
-    "No Coding Plan quota was found. Confirm that the connected account has an active Coding Plan.",
-  "usage.error.chatPlan.credential":
-    "Unable to read plan quota. Reconnect the Coding Plan account or confirm that the account has an active plan.",
-  "usage.error.chatPlan.generic":
-    "Unable to read plan quota. Try again later or check the provider configuration.",
+  "chat.planUsage.noQuotaLimits": "No Coding Plan quota was found. Confirm that the connected account has an active Coding Plan.",
+  "usage.error.chatPlan.credential": "Unable to read plan quota. Reconnect the Coding Plan account or confirm that the account has an active plan.",
+  "usage.error.chatPlan.generic": "Unable to read plan quota. Try again later or check the provider configuration.",
   "settings.usage.range.all": "All time",
   "settings.usage.range.7d": "Last 7 days",
   "settings.usage.range.30d": "Last 30 days",
@@ -5343,18 +4536,13 @@ const enUS: Record<string, string> = {
   "settings.usage.healthLiteDecode": "Lite peak average decode speed",
   "settings.usage.refresh": "Refresh",
   "settings.usage.loadingTitle": "Computing usage",
-  "settings.usage.appUsageLoadingDescription":
-    "Reading local app session history, so it can take a moment.",
-  "settings.usage.codingPlanLoadingDescription":
-    "Reading the selected provider monitor API, so it can take a moment.",
+  "settings.usage.appUsageLoadingDescription": "Reading local app session history, so it can take a moment.",
+  "settings.usage.codingPlanLoadingDescription": "Reading the selected provider monitor API, so it can take a moment.",
   "settings.usage.lastRefreshTime": "Last refreshed: {time}",
-  "settings.usage.error":
-    "Unable to load usage stats. Try again later or check the network and provider configuration.",
+  "settings.usage.error": "Unable to load usage stats. Try again later or check the network and provider configuration.",
   "settings.usage.checkApiKey": "Check account",
-  "usage.error.stats.credential":
-    "Unable to load usage stats. Reconnect the Coding Plan account or confirm that the account has an active plan.",
-  "usage.error.stats.generic":
-    "Unable to load usage stats. Try again later or check the network and provider configuration.",
+  "usage.error.stats.credential": "Unable to load usage stats. Reconnect the Coding Plan account or confirm that the account has an active plan.",
+  "usage.error.stats.generic": "Unable to load usage stats. Try again later or check the network and provider configuration.",
   "settings.usage.emptyTitle": "No usage data yet",
   "settings.usage.emptyDescription": "The selected range has no usage data yet.",
   "settings.usage.estimationHint": "Estimated from local session history",
@@ -5384,10 +4572,8 @@ const enUS: Record<string, string> = {
   "settings.usage.heatmapToolCell": "{date}\n{tokens} tokens · {tools} tools",
   "settings.usage.heatmapWeeklyCell": "{date} week\n{tokens} tokens · {turns} messages",
   "settings.usage.heatmapWeeklyToolCell": "{date} week\n{tokens} tokens · {tools} tools",
-  "settings.usage.heatmapCumulativeCell":
-    "Through {date} week cumulative\n{tokens} tokens · {turns} messages",
-  "settings.usage.heatmapCumulativeToolCell":
-    "Through {date} week cumulative\n{tokens} tokens · {tools} tools",
+  "settings.usage.heatmapCumulativeCell": "Through {date} week cumulative\n{tokens} tokens · {turns} messages",
+  "settings.usage.heatmapCumulativeToolCell": "Through {date} week cumulative\n{tokens} tokens · {tools} tools",
   "settings.usage.heatmapDescription": "The busiest day was {day}, with about {tokens} tokens.",
   "settings.usage.heatmap.intensity": "Peak intensity",
   "settings.usage.heatmap.less": "Less",
@@ -5405,13 +4591,10 @@ const enUS: Record<string, string> = {
   "settings.usage.tokenTotal": "Total token usage",
   "settings.usage.timesUnit": " times",
   "settings.usage.codingPlanNotConfiguredTitle": "Coding Plan is not connected",
-  "settings.usage.codingPlanNotConfiguredDescription":
-    "Connect a Z.ai or BigModel Coding Plan provider in Model Settings to view plan quota, model usage, and tool usage.",
+  "settings.usage.codingPlanNotConfiguredDescription": "Connect a Z.ai or BigModel Coding Plan provider in Model Settings to view plan quota, model usage, and tool usage.",
   "settings.usage.codingPlanCurrentConnectionTitle": "Current connection is not using Coding Plan",
-  "settings.usage.codingPlanCurrentConnectionDescription":
-    "Switch the workspace model connection to an Individual Plan or Team Plan to view its quota and usage here.",
-  "settings.usage.modelChartDescription":
-    "{model} currently has the highest share at about {share}.",
+  "settings.usage.codingPlanCurrentConnectionDescription": "Switch the workspace model connection to an Individual Plan or Team Plan to view its quota and usage here.",
+  "settings.usage.modelChartDescription": "{model} currently has the highest share at about {share}.",
   "settings.usage.modelChart.other": "Other models",
   "settings.usage.modelChart.input": "In",
   "settings.usage.modelChart.cachedInput": "Cached",
@@ -5425,8 +4608,7 @@ const enUS: Record<string, string> = {
   "settings.usage.dayLabel.mon": "Mon",
   "settings.usage.dayLabel.wed": "Wed",
   "settings.usage.dayLabel.fri": "Fri",
-  "settings.modelProvider.presetDescription":
-    "Built-in Z.ai and BigModel providers with OAuth-assisted configuration.",
+  "settings.modelProvider.presetDescription": "Built-in Z.ai and BigModel providers with OAuth-assisted configuration.",
   "settings.modelProvider.presetEmpty": "Not synced yet. Complete OAuth login first.",
   "settings.modelProvider.customTitle": "Custom providers",
   "settings.modelProvider.refresh": "Refresh",
@@ -5435,22 +4617,17 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.empty": "No custom model providers yet",
   "settings.modelProvider.deleteConfirm": 'Delete "{name}"?',
   "settings.modelProvider.deleteConfirmTitle": 'Delete provider "{name}"?',
-  "settings.modelProvider.deleteConfirmDescription":
-    "This removes the custom provider configuration. Related edits on the current settings page will not be restored automatically.",
+  "settings.modelProvider.deleteConfirmDescription": "This removes the custom provider configuration. Related edits on the current settings page will not be restored automatically.",
   "settings.modelProvider.deleteConfirmAction": "Delete provider",
   "settings.modelProvider.testModel": "Test model",
   "settings.modelProvider.testModel.enableProviderFirst": "Enable the provider first",
-  "settings.modelProvider.testModel.providerUnavailable":
-    "This provider is currently unavailable for connectivity testing.",
-  "settings.modelProvider.testModel.modelUnavailable":
-    "This model is currently unavailable for connectivity testing.",
+  "settings.modelProvider.testModel.providerUnavailable": "This provider is currently unavailable for connectivity testing.",
+  "settings.modelProvider.testModel.modelUnavailable": "This model is currently unavailable for connectivity testing.",
   "settings.modelProvider.testModel.connectingWithIdentity": "Testing {provider} / {model}",
   "settings.modelProvider.testModel.successWithIdentity": "{provider} / {model} connected",
   "settings.modelProvider.testModel.failed": "Connection failed",
-  "settings.modelProvider.testModel.failedWithIdentity":
-    "Failed to connect {provider} / {model}: {reason}",
-  "settings.modelProvider.testModel.localWorkspaceUnavailable":
-    "A local workspace is unavailable for connectivity testing.",
+  "settings.modelProvider.testModel.failedWithIdentity": "Failed to connect {provider} / {model}: {reason}",
+  "settings.modelProvider.testModel.localWorkspaceUnavailable": "A local workspace is unavailable for connectivity testing.",
   "settings.modelProvider.testModel.error.auth": "Authentication failed",
   "settings.modelProvider.testModel.error.model_not_found": "Model not found",
   "settings.modelProvider.testModel.error.rate_limit": "Rate limited",
@@ -5459,8 +4636,7 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.testModel.error.unknown": "Test failed",
   "settings.modelProvider.testModel.error.noEndpoint": "No endpoint configured",
   "settings.skills.title": "Skills",
-  "settings.skills.description":
-    "Manage workspace and user skills. Enabled skills can be referenced in chat with $skill-name.",
+  "settings.skills.description": "Manage workspace and user skills. Enabled skills can be referenced in chat with $skill-name.",
   "settings.skills.searchPlaceholder": "Search skills...",
   "settings.skills.refresh": "Refresh",
   "settings.skills.refreshing": "Refreshing...",
@@ -5485,21 +4661,17 @@ const enUS: Record<string, string> = {
   "settings.skills.copyFailed": "Failed to copy skill.",
   "settings.skills.removeFailed": "Failed to remove skill.",
   "settings.skills.delete.title": "Delete skill",
-  "settings.skills.delete.description":
-    'Delete "{name}"? This removes the skill folder from disk and cannot be undone.',
+  "settings.skills.delete.description": 'Delete "{name}"? This removes the skill folder from disk and cannot be undone.',
   "settings.skills.agent.glm": "ZCode Agent",
   "settings.skills.agent.unknown": "Unknown source",
   "settings.skills.create.open": "New skill",
-  "settings.skills.create.taskCreateFailed":
-    "Could not create a new task for the selected agent. Check availability and try again.",
+  "settings.skills.create.taskCreateFailed": "Could not create a new task for the selected agent. Check availability and try again.",
   "settings.skills.import.open": "Import skills from external agents",
   "settings.skills.import.action": "Import",
   "settings.skills.import.title": "Import external agent skills",
-  "settings.skills.import.description":
-    "Scan reusable skills from Claude Code, Codex CLI, and OpenCode. Only missing skills are imported.",
+  "settings.skills.import.description": "Scan reusable skills from Claude Code, Codex CLI, and OpenCode. Only missing skills are imported.",
   "settings.skills.import.scanning": "Scanning importable skills...",
-  "settings.skills.import.empty":
-    "No importable skills found. Check the external agent skills directories and scan again.",
+  "settings.skills.import.empty": "No importable skills found. Check the external agent skills directories and scan again.",
   "settings.skills.import.summary": "Found {count} importable skills",
   "settings.skills.import.scopeLabel": "Scope",
   "settings.skills.import.scope.global": "Global",
@@ -5513,8 +4685,7 @@ const enUS: Record<string, string> = {
   "settings.skills.import.selectSource": "Select all skills from this source",
   "settings.skills.import.deselectSource": "Deselect all skills from this source",
   "settings.skills.import.skillCount": "{count} skills",
-  "settings.skills.import.skillDetailsEmpty":
-    "No skill details available. Scan again after the app services refresh.",
+  "settings.skills.import.skillDetailsEmpty": "No skill details available. Scan again after the app services refresh.",
   "settings.skills.import.itemCount": "{count} skills",
   "settings.skills.import.importable": "Importable",
   "settings.skills.import.skipReason.targetExists": "Directory exists",
@@ -5527,22 +4698,18 @@ const enUS: Record<string, string> = {
   "settings.skills.import.modeHelp": "Import mode help",
   "settings.skills.import.mode.copy": "Copy",
   "settings.skills.import.mode.symlink": "Symlink",
-  "settings.skills.import.mode.copy.description":
-    "Copy the full skill directory into ZCode. Later changes in the external agent directory will not sync automatically.",
-  "settings.skills.import.mode.symlink.description":
-    "Create a directory link to the external agent skill. ZCode follows later source changes, but the skill depends on that source path remaining available.",
-  "settings.skills.import.importing": "Importing skills into ZCode",
+  "settings.skills.import.mode.copy.description": "Copy the full skill directory into Reactor. Later changes in the external agent directory will not sync automatically.",
+  "settings.skills.import.mode.symlink.description": "Create a directory link to the external agent skill. Reactor follows later source changes, but the skill depends on that source path remaining available.",
+  "settings.skills.import.importing": "Importing skills into Reactor",
   "settings.skills.import.imported": "Imported",
   "settings.skills.import.skipped": "Skipped",
   "settings.skills.import.failed": "Failed",
   "settings.skills.import.resultList": "Skill results",
   "settings.skills.import.resultEmpty": "No skill results were returned.",
-  "settings.skills.import.completeDescription":
-    "The skills list has been refreshed. Existing same-name skills were kept.",
+  "settings.skills.import.completeDescription": "The skills list has been refreshed. Existing same-name skills were kept.",
   "settings.skills.import.finish": "Done",
   "settings.skills.remoteSync.open": "Sync Skill",
-  "settings.skills.userScopeDesktopOnly":
-    "User-level skills are available on desktop only in this phase.",
+  "settings.skills.userScopeDesktopOnly": "User-level skills are available on desktop only in this phase.",
   "settings.skills.detail.description": "Description",
   "settings.skills.detail.path": "File path",
   "settings.skills.detail.openPath": "Open",
@@ -5557,8 +4724,7 @@ const enUS: Record<string, string> = {
   "settings.skills.scope.personal": "Personal",
   "settings.skills.scope.plugin": "Plugin",
   "settings.skills.scope.workspaceFallback": "Project",
-  "settings.skills.diagnostics.summary":
-    "Skill diagnostics: {errorCount} error(s), {warningCount} warning(s)",
+  "settings.skills.diagnostics.summary": "Skill diagnostics: {errorCount} error(s), {warningCount} warning(s)",
   "settings.skills.diagnostics.expand": "Expand diagnostics",
   "settings.skills.diagnostics.collapse": "Collapse diagnostics",
   "settings.skills.diagnostics.code.skill_root_not_found": "Skill root directory not found",
@@ -5567,40 +4733,31 @@ const enUS: Record<string, string> = {
   "settings.skills.diagnostics.code.skill_missing_frontmatter": "Missing YAML frontmatter",
   "settings.skills.diagnostics.code.skill_invalid_frontmatter": "Invalid frontmatter format",
   "settings.skills.diagnostics.code.skill_missing_name": "Frontmatter missing `name` field",
-  "settings.skills.diagnostics.code.skill_invalid_name":
-    "`name` must be lowercase / digits / hyphens",
-  "settings.skills.diagnostics.code.skill_missing_description":
-    "Frontmatter missing `description` field",
+  "settings.skills.diagnostics.code.skill_invalid_name": "`name` must be lowercase / digits / hyphens",
+  "settings.skills.diagnostics.code.skill_missing_description": "Frontmatter missing `description` field",
   "settings.skills.diagnostics.code.skill_description_too_long": "`description` exceeds 1024 chars",
   "settings.skills.diagnostics.code.skill_unknown_frontmatter": "Unrecognized frontmatter key",
   "settings.skills.diagnostics.code.skill_duplicate_name": "Duplicate skill name ignored",
   "settings.skills.diagnostics.code.skill_too_large": "SKILL.md too large; content truncated",
   "settings.skills.diagnostics.code.skill_not_found": "Skill not found",
   "settings.subagents.title": "Subagents",
-  "settings.subagents.description":
-    "Manage user-level subagent Markdown files consumed by ZCode Agent.",
-  "settings.subagents.workspaceScopeUnsupported":
-    "Workspace-level creation or editing is unsupported",
+  "settings.subagents.description": "Manage user-level subagent Markdown files consumed by Reactor Agent.",
+  "settings.subagents.workspaceScopeUnsupported": "Workspace-level creation or editing is unsupported",
   "settings.subagents.searchPlaceholder": "Search subagents...",
   "settings.subagents.empty": "No subagents found",
   "settings.subagents.addNew": "New subagent",
-  "settings.subagents.addDescription":
-    "Fill in the subagent name, tools, and system prompt, then save to return to the list.",
+  "settings.subagents.addDescription": "Fill in the subagent name, tools, and system prompt, then save to return to the list.",
   "settings.subagents.edit": "Edit subagent",
-  "settings.subagents.editDescription":
-    "Modify the subagent configuration, then save to return to the list.",
+  "settings.subagents.editDescription": "Modify the subagent configuration, then save to return to the list.",
   "settings.subagents.backToList": "Back",
   "settings.subagents.openUserAgentsFolder": "Open user subagents folder",
   "settings.subagents.noDescription": "No description",
-  "settings.subagents.userScopeDesktopOnly":
-    "User-level subagents are currently available on desktop only.",
+  "settings.subagents.userScopeDesktopOnly": "User-level subagents are currently available on desktop only.",
   "settings.subagents.group.user": "Installed",
   "settings.subagents.group.plugin": "Plugin subagents",
-  "settings.subagents.group.plugin.hint":
-    "Plugin profiles are loaded from enabled plugins; only the model and reasoning effort can be overridden here.",
+  "settings.subagents.group.plugin.hint": "Plugin profiles are loaded from enabled plugins; only the model and reasoning effort can be overridden here.",
   "settings.subagents.group.builtIn": "Built-in subagents",
-  "settings.subagents.group.builtIn.hint":
-    "Built-in profiles are runtime defaults and cannot be edited here.",
+  "settings.subagents.group.builtIn.hint": "Built-in profiles are runtime defaults and cannot be edited here.",
   "settings.subagents.scope.builtIn": "Built-in",
   "settings.subagents.scope.plugin": "Plugin",
   "settings.subagents.scope.workspace": "Workspace",
@@ -5619,10 +4776,8 @@ const enUS: Record<string, string> = {
   "settings.subagents.tools.all": "All tools",
   "settings.subagents.toggleAria": "Toggle {name}",
   "settings.subagents.delete.title": "Delete subagent",
-  "settings.subagents.delete.description":
-    'Are you sure you want to delete the subagent "{name}"? This action cannot be undone.',
-  "settings.subagents.form.description":
-    "Save writes a user-level Markdown profile into the same storage root used by the runtime.",
+  "settings.subagents.delete.description": 'Are you sure you want to delete the subagent "{name}"? This action cannot be undone.',
+  "settings.subagents.form.description": "Save writes a user-level Markdown profile into the same storage root used by the runtime.",
   "settings.subagents.form.name.label": "Name",
   "settings.subagents.form.name.placeholder": "code-reviewer",
   "settings.subagents.form.description.label": "Description",
@@ -5640,8 +4795,7 @@ const enUS: Record<string, string> = {
   "settings.subagents.form.disallowedTools.label": "Disallowed tools",
   "settings.subagents.form.skills.label": "Skills",
   "settings.subagents.form.background.label": "Run in background",
-  "settings.subagents.form.background.description":
-    "Allow the subagent to run as a background task when requested by the model.",
+  "settings.subagents.form.background.description": "Allow the subagent to run as a background task when requested by the model.",
   "settings.subagents.form.injectAgentsMd.label": "Inject AGENTS.md",
   "settings.subagents.form.systemPrompt.label": "System prompt",
   "settings.subagents.form.systemPrompt.placeholder": "Describe this subagent's role and rules...",
@@ -5650,8 +4804,7 @@ const enUS: Record<string, string> = {
   "settings.subagents.form.validation.descriptionRequired": "Description is required",
   "settings.subagents.form.validation.promptRequired": "System prompt is required",
   "settings.subagents.form.validation.modelUnavailable": "Select an available model before saving",
-  "settings.subagents.form.validation.thoughtLevelUnavailable":
-    "Select a reasoning effort supported by this model",
+  "settings.subagents.form.validation.thoughtLevelUnavailable": "Select a reasoning effort supported by this model",
   "settings.subagents.reasoningUnavailable": "Reasoning effort unavailable",
   "settings.subagents.model.inherit": "Inherit",
   "settings.subagents.model.defaultMain": "Inherit default",
@@ -5696,37 +4849,30 @@ const enUS: Record<string, string> = {
   "settings.plugin.plugins.searchPlaceholder": "Search plugins…",
   "settings.plugin.plugins.empty": "No plugins are installed in this scope.",
   "settings.plugin.plugins.emptyInstalledTitle": "No plugins installed",
-  "settings.plugin.plugins.emptyInstalledDescription":
-    "Discover and install plugins to add MCPs, skills, and more.",
+  "settings.plugin.plugins.emptyInstalledDescription": "Discover and install plugins to add MCPs, skills, and more.",
   "settings.plugin.mcp.emptyInstalledTitle": "No MCP servers installed",
-  "settings.plugin.mcp.emptyInstalledDescription":
-    "Add a server manually or import an existing configuration.",
+  "settings.plugin.mcp.emptyInstalledDescription": "Add a server manually or import an existing configuration.",
   "settings.plugin.mcp.newServer": "New MCP server",
   "settings.plugin.mcp.searchEmpty": "No MCP servers match your search",
   "settings.plugin.skills.emptyInstalledTitle": "No skills installed",
   "settings.plugin.skills.installed": "Installed",
-  "settings.plugin.skills.emptyInstalledDescription":
-    "Create a skill or import one from an external agent.",
+  "settings.plugin.skills.emptyInstalledDescription": "Create a skill or import one from an external agent.",
   "settings.plugin.skills.newSkill": "New skill",
   "settings.plugin.skills.searchEmpty": "No skills match your search",
   "settings.plugin.commands.installed": "Installed",
   "settings.plugin.commands.emptyInstalledTitle": "No commands installed",
-  "settings.plugin.commands.emptyInstalledDescription":
-    "Create a command or import one from an external agent.",
+  "settings.plugin.commands.emptyInstalledDescription": "Create a command or import one from an external agent.",
   "settings.plugin.commands.searchEmpty": "No commands match your search",
   "settings.plugin.hooks.emptyInstalledTitle": "No hooks installed",
-  "settings.plugin.hooks.emptyInstalledDescription":
-    "Create a hook to run commands during task lifecycle events.",
+  "settings.plugin.hooks.emptyInstalledDescription": "Create a hook to run commands during task lifecycle events.",
   "settings.plugin.noWorkspace": "Open a workspace to manage capabilities.",
-  "settings.plugin.scopeUnavailableFallback":
-    "That workspace is no longer available. Showing User plugin settings instead.",
+  "settings.plugin.scopeUnavailableFallback": "That workspace is no longer available. Showing User plugin settings instead.",
   "settings.plugin.edit": "Edit",
   "settings.plugin.done": "Done",
   "settings.plugin.add": "Add",
   "settings.plugin.new": "New",
   "settings.plugin.source.plugin": "Plugin",
-  "settings.plugins.description":
-    "Enable or disable installed plugins. Plugins bundle skills, commands, hooks, and MCP servers.",
+  "settings.plugins.description": "Enable or disable installed plugins. Plugins bundle skills, commands, hooks, and MCP servers.",
   "settings.plugins.store.searchPlaceholder": "Search plugins",
   "settings.plugins.store.searchResults": "Search results ({count})",
   "settings.plugins.store.searchEmpty": "No plugins match your search",
@@ -5736,14 +4882,11 @@ const enUS: Record<string, string> = {
   "settings.plugins.store.communityEmpty": "No community plugins yet",
   "settings.plugins.store.ui.open": "Open",
   "settings.plugins.store.ui.unsupported": "Plugin UI is available in local desktop projects only.",
-  "settings.plugins.store.ui.needsSession":
-    "Open this plugin in an available session of the current project.",
-  "settings.plugins.store.ui.unavailable":
-    "No plugin UI is available in this project. Check whether the plugin is enabled.",
+  "settings.plugins.store.ui.needsSession": "Open this plugin in an available session of the current project.",
+  "settings.plugins.store.ui.unavailable": "No plugin UI is available in this project. Check whether the plugin is enabled.",
   "settings.plugins.store.ui.chooseSurface": "Choose a plugin interface",
   "settings.plugins.store.ui.preview": "Enlarge preview",
-  "settings.plugins.store.ui.capability":
-    "Provides interactive interfaces that open in the side pane.",
+  "settings.plugins.store.ui.capability": "Provides interactive interfaces that open in the side pane.",
   "settings.plugins.store.ui.title": "App plugins",
   "settings.plugins.store.segment.public": "Public",
   "settings.plugins.store.segment.personal": "Personal",
@@ -5760,20 +4903,16 @@ const enUS: Record<string, string> = {
   "settings.plugins.store.showLess": "Show less",
   "settings.plugins.store.install": "Install",
   "settings.plugins.store.extension.requiresUpdate": "Requires newer ZCode",
-  "settings.plugins.store.extension.incompatibleHint":
-    "This plugin needs a newer version of ZCode. Update ZCode, then install it.",
+  "settings.plugins.store.extension.incompatibleHint": "This plugin needs a newer version of ZCode. Update ZCode, then install it.",
   "settings.plugins.store.extension.title": "Includes resident code",
-  "settings.plugins.store.extension.description":
-    "When enabled, the plugin's extension code keeps running inside ZCode.",
+  "settings.plugins.store.extension.description": "When enabled, the plugin's extension code keeps running inside ZCode.",
   "settings.plugins.store.extension.grantsTitle": "Requested permissions",
   "settings.plugins.store.extension.noGrants": "No permissions requested",
-  "settings.plugins.store.extension.consentNote":
-    "For information only. After you install, the plugin can use these permissions only after you grant them in the permission dialog.",
+  "settings.plugins.store.extension.consentNote": "For information only. After you install, the plugin can use these permissions only after you grant them in the permission dialog.",
   "settings.plugins.store.paidPlanBadge": "Coding Plan",
   "settings.plugins.store.requiresPaidPlan": "This plugin works better with a Coding Plan",
   "settings.plugins.store.tryNow": "Try now",
-  "settings.plugins.store.sourceMissing":
-    "Marketplace source is missing. This plugin remains usable, but updates are unavailable.",
+  "settings.plugins.store.sourceMissing": "Marketplace source is missing. This plugin remains usable, but updates are unavailable.",
   "settings.plugins.store.menu.label": "More actions",
   "settings.plugins.store.menu.enable": "Enable",
   "settings.plugins.store.menu.disable": "Disable",
@@ -5799,8 +4938,7 @@ const enUS: Record<string, string> = {
   "settings.plugins.store.info.website": "Website",
   "settings.plugins.store.info.privacyPolicy": "Privacy policy",
   "settings.plugins.store.info.termsOfService": "Terms of service",
-  "settings.plugins.store.personalEmpty":
-    "No plugins from personal sources yet. Use Create to add a marketplace source.",
+  "settings.plugins.store.personalEmpty": "No plugins from personal sources yet. Use Create to add a marketplace source.",
   "settings.plugins.filter.label": "Status filter",
   "settings.plugins.footerSummary": "{total} plugins · {enabled} enabled",
   "settings.plugins.searchPlaceholder": "Search plugins...",
@@ -5810,8 +4948,7 @@ const enUS: Record<string, string> = {
   "settings.plugins.noWorkspace": "Open a workspace to manage plugins.",
   "settings.plugins.source.builtin": "Built-in",
   "settings.plugins.source.fromMarketplace": "From {marketplace}",
-  "settings.plugins.capability":
-    "{skills} skills · {commands} commands · {hooks} hooks · {mcp} MCP",
+  "settings.plugins.capability": "{skills} skills · {commands} commands · {hooks} hooks · {mcp} MCP",
   "settings.plugins.tab.installed": "Installed",
   "settings.plugins.tab.marketplace": "Discover",
   "settings.plugins.installed.title": "Installed",
@@ -5822,10 +4959,8 @@ const enUS: Record<string, string> = {
   "settings.plugins.marketplaces.dropHint": "Drag a file or folder here, or choose a directory.",
   "settings.plugins.marketplaces.validate": "Validate marketplace",
   "settings.plugins.marketplaces.add": "Add marketplace",
-  "settings.plugins.marketplaces.riskWarning":
-    "Unofficial plugin marketplaces may contain malicious plugins that can harm your device. Verify the source and take precautions before adding.",
-  "settings.plugins.marketplaces.riskAcknowledgement":
-    "I understand the risks, have verified the source, and have taken precautions.",
+  "settings.plugins.marketplaces.riskWarning": "Unofficial plugin marketplaces may contain malicious plugins that can harm your device. Verify the source and take precautions before adding.",
+  "settings.plugins.marketplaces.riskAcknowledgement": "I understand the risks, have verified the source, and have taken precautions.",
   "settings.plugins.marketplaces.update": "Update marketplace",
   "settings.plugins.marketplaces.remove": "Remove marketplace",
   "settings.plugins.marketplaces.empty": "No marketplaces added",
@@ -5842,8 +4977,7 @@ const enUS: Record<string, string> = {
   "settings.plugins.marketplace.catalogLoading": "Loading plugins…",
   "settings.plugins.marketplace.sourceInfo.label": "Discover source information",
   "settings.plugins.marketplace.sourceInfo.title": "Discover uses GitHub marketplaces",
-  "settings.plugins.marketplace.sourceInfo.description":
-    "Make sure this workspace can reach GitHub. Plugin catalogs, details, and installs may fail when GitHub is unavailable.",
+  "settings.plugins.marketplace.sourceInfo.description": "Make sure this workspace can reach GitHub. Plugin catalogs, details, and installs may fail when GitHub is unavailable.",
   "settings.plugins.marketplace.searchResults": "{count} matching plugins",
   "settings.plugins.marketplace.groupCount": "{count} plugins",
   "settings.plugins.marketplace.expandGroup": "Show {count} more",
@@ -5862,15 +4996,13 @@ const enUS: Record<string, string> = {
   "settings.plugins.updateAll": "Update all ({count})",
   "settings.plugins.updateAll.done": "Updated {count} plugin(s)",
   "settings.plugins.updateAll.partial": "Updated {succeeded}, failed {failed}: {plugins}",
-  "settings.plugins.updateAll.aborted":
-    "Update all stopped because the plugin scope changed; updated {count} plugin(s)",
+  "settings.plugins.updateAll.aborted": "Update all stopped because the plugin scope changed; updated {count} plugin(s)",
   "settings.plugins.list.updateAvailable": "Update",
   "settings.plugins.list.versionChanged": "Changed",
   "settings.plugins.restore": "Restore",
   "settings.plugins.restorableBuiltins.title": "Restore built-in plugins",
   "settings.plugins.uninstall.confirmTitle": "Uninstall {name}?",
-  "settings.plugins.uninstall.confirmDescription":
-    "This removes the plugin's cached files, its data directory, and any saved configuration. This cannot be undone.",
+  "settings.plugins.uninstall.confirmDescription": "This removes the plugin's cached files, its data directory, and any saved configuration. This cannot be undone.",
   "settings.plugins.uninstall.confirm": "Uninstall",
   "settings.plugins.detail.empty": "Select a plugin to view details.",
   "settings.plugins.detail.enabled": "Enabled",
@@ -5912,21 +5044,17 @@ const enUS: Record<string, string> = {
   "settings.plugins.detail.installPath": "Install path",
   "settings.plugins.detail.installedAt": "Installed at",
   "settings.plugins.detail.none": "None",
-  "settings.plugins.detail.hooksUnavailable":
-    "Hook details are not exposed by the current plugin protocol.",
-  "settings.plugins.detail.installForFullDetails":
-    "Install the plugin to view the full component list when the runtime exposes it.",
+  "settings.plugins.detail.hooksUnavailable": "Hook details are not exposed by the current plugin protocol.",
+  "settings.plugins.detail.installForFullDetails": "Install the plugin to view the full component list when the runtime exposes it.",
   "settings.plugins.marketplace.allMarketplaces": "All marketplaces",
   "settings.plugins.marketplace.sectionTitle": "Browse plugins",
   "settings.plugins.marketplace.back": "Back",
   "settings.plugins.marketplace.get": "Get",
   "settings.plugins.marketplace.installing": "Installing…",
   "settings.plugins.marketplace.componentsLoading": "Loading components…",
-  "settings.plugins.marketplace.componentsError":
-    "Couldn't load the component list. Showing available info only.",
+  "settings.plugins.marketplace.componentsError": "Couldn't load the component list. Showing available info only.",
   "settings.plugins.marketplace.componentsRetry": "Retry",
-  "settings.plugins.marketplace.componentsEmpty":
-    "This plugin doesn't declare components, or they couldn't be read.",
+  "settings.plugins.marketplace.componentsEmpty": "This plugin doesn't declare components, or they couldn't be read.",
   "settings.plugins.config.title": "Configuration",
   "settings.plugins.config.required": "Required",
   "settings.plugins.config.save": "Save configuration",
@@ -5936,13 +5064,11 @@ const enUS: Record<string, string> = {
   "settings.plugins.config.undoClearSecret": "Keep saved secret",
   "settings.plugins.config.restoreOption": "Restore inherited value",
   "settings.plugins.config.undoRestoreOption": "Keep workspace override",
-  "settings.plugins.config.sensitiveUnavailable":
-    "Secure storage is required before this value can be configured.",
+  "settings.plugins.config.sensitiveUnavailable": "Secure storage is required before this value can be configured.",
   "settings.plugins.import.open": "Import plugins from external agents",
   "settings.plugins.import.title": "Import external agent plugins",
   "settings.plugins.import.scanning": "Scanning importable plugins...",
-  "settings.plugins.import.empty":
-    "No importable plugins found. Check the external agent plugins directories and scan again.",
+  "settings.plugins.import.empty": "No importable plugins found. Check the external agent plugins directories and scan again.",
   "settings.plugins.import.summary": "Found {count} importable plugins",
   "settings.plugins.import.scopeLabel": "Scope",
   "settings.plugins.import.scope.global": "Global",
@@ -5966,11 +5092,9 @@ const enUS: Record<string, string> = {
   "settings.plugins.import.modeHelp": "Import mode help",
   "settings.plugins.import.mode.copy": "Copy",
   "settings.plugins.import.mode.symlink": "Symlink",
-  "settings.plugins.import.mode.copy.description":
-    "Copy the full plugin directory into ZCode and register it in plugins.dirs. Later changes in the external agent directory will not sync automatically.",
-  "settings.plugins.import.mode.symlink.description":
-    "Create a directory link to the external agent plugin and register it in plugins.dirs. ZCode follows later source changes, but the plugin depends on that source path remaining available.",
-  "settings.plugins.import.importing": "Importing plugins into ZCode",
+  "settings.plugins.import.mode.copy.description": "Copy the full plugin directory into Reactor and register it in plugins.dirs. Later changes in the external agent directory will not sync automatically.",
+  "settings.plugins.import.mode.symlink.description": "Create a directory link to the external agent plugin and register it in plugins.dirs. Reactor follows later source changes, but the plugin depends on that source path remaining available.",
+  "settings.plugins.import.importing": "Importing plugins into Reactor",
   "settings.plugins.import.imported": "Imported",
   "settings.plugins.import.skipped": "Skipped",
   "settings.plugins.import.failed": "Failed",
@@ -5978,20 +5102,17 @@ const enUS: Record<string, string> = {
   "settings.plugins.import.resultEmpty": "No plugin results were returned.",
   "settings.plugins.import.finish": "Done",
   "settings.commands.title": "Commands",
-  "settings.commands.description":
-    "Manage ZCode Agent .md command files. Commands can be invoked with /command-name in chat.",
+  "settings.commands.description": "Manage Reactor Agent .md command files. Commands can be invoked with /command-name in chat.",
   "settings.commands.sourceFilterLabel": "Source filter",
-  "settings.commands.source.zcodeAgent": "ZCode Agent",
+  "settings.commands.source.zcodeAgent": "Reactor Agent",
   "settings.commands.add": "New",
   "settings.commands.addNew": "New command",
-  "settings.commands.addDescription":
-    "Fill in the command name and prompt, then save to return to the list.",
+  "settings.commands.addDescription": "Fill in the command name and prompt, then save to return to the list.",
   "settings.commands.edit": "Edit command",
   "settings.commands.editDescription": "Modify the command and save to return to the list.",
   "settings.commands.backToList": "Back",
   "settings.commands.delete.title": "Delete command",
-  "settings.commands.delete.description":
-    'Are you sure you want to delete the command "{name}"? This action cannot be undone.',
+  "settings.commands.delete.description": 'Are you sure you want to delete the command "{name}"? This action cannot be undone.',
   "settings.commands.empty": "No user commands",
   "settings.commands.searchPlaceholder": "Search commands...",
   "settings.commands.group.local": "User commands",
@@ -6005,18 +5126,15 @@ const enUS: Record<string, string> = {
   "settings.commands.form.argumentHint.label": "Argument hint (optional)",
   "settings.commands.form.argumentHint.placeholder": "e.g. <file-path>",
   "settings.commands.form.prompt.label": "Prompt",
-  "settings.commands.form.prompt.placeholder":
-    "Write the prompt that will be sent when this command is invoked...",
+  "settings.commands.form.prompt.placeholder": "Write the prompt that will be sent when this command is invoked...",
   "settings.commands.form.validation.nameLength": "Length must be between {min} and {max}",
-  "settings.commands.form.validation.nameCharacters":
-    "Only letters, numbers, hyphens, and underscores allowed",
+  "settings.commands.form.validation.nameCharacters": "Only letters, numbers, hyphens, and underscores allowed",
   "settings.commands.form.validation.promptRequired": "Prompt is required",
   "settings.commands.import.open": "Import commands from external agents",
   "settings.commands.import.action": "Import",
   "settings.commands.import.title": "Import external agent commands",
   "settings.commands.import.scanning": "Scanning importable commands...",
-  "settings.commands.import.empty":
-    "No importable commands found. Check the external agent commands directories and scan again.",
+  "settings.commands.import.empty": "No importable commands found. Check the external agent commands directories and scan again.",
   "settings.commands.import.summary": "Found {count} importable commands",
   "settings.commands.import.scopeLabel": "Scope",
   "settings.commands.import.scope.global": "Global",
@@ -6040,21 +5158,17 @@ const enUS: Record<string, string> = {
   "settings.commands.import.modeHelp": "Import mode help",
   "settings.commands.import.mode.copy": "Copy",
   "settings.commands.import.mode.symlink": "Symlink",
-  "settings.commands.import.mode.copy.description":
-    "Copy the command file into ZCode. Later changes in the external agent file will not sync automatically.",
-  "settings.commands.import.mode.symlink.description":
-    "Create a file link to the external agent command. ZCode follows later source changes, but the command depends on that source path remaining available.",
-  "settings.commands.import.importing": "Importing commands into ZCode",
+  "settings.commands.import.mode.copy.description": "Copy the command file into Reactor. Later changes in the external agent file will not sync automatically.",
+  "settings.commands.import.mode.symlink.description": "Create a file link to the external agent command. Reactor follows later source changes, but the command depends on that source path remaining available.",
+  "settings.commands.import.importing": "Importing commands into Reactor",
   "settings.commands.import.imported": "Imported",
   "settings.commands.import.skipped": "Skipped",
   "settings.commands.import.failed": "Failed",
   "settings.commands.import.resultList": "Command results",
   "settings.commands.import.resultEmpty": "No command results were returned.",
   "settings.commands.import.finish": "Done",
-
   "settings.hooks.review.trust": "Trust",
-  "settings.hooks.review.notice":
-    "Hooks can run outside of the sandbox so we ask you to review any recently installed or modified hooks",
+  "settings.hooks.review.notice": "Hooks can run outside of the sandbox so we ask you to review any recently installed or modified hooks",
   "settings.hooks.review.unavailable": "This connection cannot trust this Hook.",
   "settings.hooks.review.reason.review_superseded": "Review was updated — please confirm again",
   "settings.hooks.review.reason.snapshot_mismatch": "Hook configuration changed — review required",
@@ -6070,10 +5184,8 @@ const enUS: Record<string, string> = {
   "settings.hooks.review.reason.rejected": "Request rejected",
   "settings.hooks.title": "Hooks",
   "settings.workspaceFileSearch.title": "Workspace Search Scope",
-  "settings.workspaceFileSearch.description":
-    "Edit .zcodeignore rules (gitignore syntax) that scope workspace file search. Takes effect on the next search after saving.",
-  "settings.workspaceFileSearch.templateHint":
-    ".zcodeignore does not exist yet: the content below is the initial preview (.gitignore copy + default exclusions); it is written to the workspace only after saving.",
+  "settings.workspaceFileSearch.description": "Edit .zcodeignore rules (gitignore syntax) that scope workspace file search. Takes effect on the next search after saving.",
+  "settings.workspaceFileSearch.templateHint": ".zcodeignore does not exist yet: the content below is the initial preview (.gitignore copy + default exclusions); it is written to the workspace only after saving.",
   "settings.workspaceFileSearch.editorLabel": "Workspace search ignore rules editor",
   "settings.workspaceFileSearch.save": "Save",
   "settings.workspaceFileSearch.saved": "Saved; effective on the next search",
@@ -6081,15 +5193,12 @@ const enUS: Record<string, string> = {
   "settings.workspaceFileSearch.loadFailed": "Failed to load ignore rules; check the logs",
   "settings.workspaceFileSearch.resync": "Sync from .gitignore",
   "settings.workspaceFileSearch.restoreDefaults": "Restore default rules",
-  "settings.workspaceFileSearch.transformFailed":
-    "Failed to apply the section operation; check the logs",
+  "settings.workspaceFileSearch.transformFailed": "Failed to apply the section operation; check the logs",
   "settings.workspaceFileSearch.reveal": "Reveal file location",
   "settings.workspaceFileSearch.revealHint": "Save first; .zcodeignore lives at the workspace root",
   "settings.workspaceFileSearch.unsaved": "Unsaved changes",
-  "settings.workspaceFileSearch.noWorkspace":
-    "No workspace is open, so search ignore rules cannot be configured.",
-  "settings.hooks.description":
-    "Manage task lifecycle hooks to automatically execute commands on specific events.",
+  "settings.workspaceFileSearch.noWorkspace": "No workspace is open, so search ignore rules cannot be configured.",
+  "settings.hooks.description": "Manage task lifecycle hooks to automatically execute commands on specific events.",
   "settings.hooks.enabled": "Enabled",
   "settings.hooks.disabled": "Disabled",
   "settings.hooks.scopeUnknown": "Scope unknown",
@@ -6134,15 +5243,14 @@ const enUS: Record<string, string> = {
   "settings.hooks.customJsonParseError": "Custom fields JSON parsing failed.",
   "settings.plugins.zcodeOnly": "ZCode Agent only",
   "settingsSync.dialog.title": "Import Settings",
-  "settingsSync.dialog.description":
-    "Only missing items will be imported. Existing settings will be skipped automatically.",
+  "settingsSync.dialog.description": "Only missing items will be imported. Existing settings will be skipped automatically.",
   "settingsSync.action.skip": "Not now",
   "settingsSync.action.rescan": "Scan again",
   "settingsSync.action.rescanning": "Scanning...",
   "settingsSync.action.importSelected": "Import selected",
   "settingsSync.action.importing": "Importing...",
-  "settingsSync.action.finish": "Start using ZCode",
-  "settingsSync.agent.zcode": "ZCode Agent",
+  "settingsSync.action.finish": "Start using Reactor",
+  "settingsSync.agent.zcode": "Reactor Agent",
   "settingsSync.agent.claudeCode": "Claude Code",
   "settingsSync.agent.codexCli": "Codex CLI",
   "settingsSync.agent.openCode": "OpenCode",
@@ -6184,14 +5292,11 @@ const enUS: Record<string, string> = {
   "settingsSync.importing.summary.skipped": "Skipped {count}",
   "settingsSync.importing.summary.failed": "Failed {count}",
   "settingsSync.complete.title": "Settings import complete",
-  "settingsSync.complete.summary":
-    "Imported {successCount} items, skipped {skippedCount}, failed {failedCount}.",
+  "settingsSync.complete.summary": "Imported {successCount} items, skipped {skippedCount}, failed {failedCount}.",
   "settingsSync.complete.finished": "The import flow has finished.",
   "settingsSync.discovery.title": "Found importable settings",
-  "settingsSync.discovery.description":
-    "Importable agent settings are no longer scanned automatically.",
-  "settingsSync.discovery.helper":
-    "Only missing items will be imported and your current ZCode settings will not be overwritten.",
+  "settingsSync.discovery.description": "Importable agent settings are no longer scanned automatically.",
+  "settingsSync.discovery.helper": "Only missing items will be imported and your current Reactor settings will not be overwritten.",
   "settingsSync.discovery.agentCount": "Agents found: {count}",
   "settingsSync.discovery.categoryCount": "Categories found: {count}",
   "settingsSync.discovery.error": "Scan failed: {error}",
@@ -6205,38 +5310,28 @@ const enUS: Record<string, string> = {
   "onboarding.step.agentsFile": "AGENTS.md",
   "onboarding.step.agentSettings": "Agent settings",
   "onboarding.step.migration": "Migration",
-  "onboarding.stepDescription.session":
-    "Review what we found and choose sessions and workspaces to migrate.",
-  "onboarding.stepDescription.skillsImport":
-    "Import selected skills from external agents before the final migration.",
-  "onboarding.stepDescription.mcpImport":
-    "Import selected MCP server definitions from external agent configs.",
-  "onboarding.stepDescription.pluginsImport":
-    "Import selected plugins from external agents before the final migration.",
-  "onboarding.stepDescription.commandsImport":
-    "Import selected commands from external agents before the final migration.",
+  "onboarding.stepDescription.session": "Review what we found and choose sessions and workspaces to migrate.",
+  "onboarding.stepDescription.skillsImport": "Import selected skills from external agents before the final migration.",
+  "onboarding.stepDescription.mcpImport": "Import selected MCP server definitions from external agent configs.",
+  "onboarding.stepDescription.pluginsImport": "Import selected plugins from external agents before the final migration.",
+  "onboarding.stepDescription.commandsImport": "Import selected commands from external agents before the final migration.",
   "onboarding.stepDescription.agentSettings": "Choose which agents' providers to bring in.",
-  "onboarding.stepDescription.migration":
-    "Start migration and wait while ZCode imports your selections.",
-  "onboarding.sessions.empty":
-    "No workspaces yet. Scan local history, then pick workspaces to migrate.",
+  "onboarding.stepDescription.migration": "Start migration and wait while ZCode imports your selections.",
+  "onboarding.sessions.empty": "No workspaces yet. Scan local history, then pick workspaces to migrate.",
   "onboarding.sessions.count": "{count} sessions",
   "onboarding.sessions.unlimited": "Unlimited",
   "onboarding.sessions.chooseWorkspace": "Choose workspace",
-  "onboarding.agentSettings.empty":
-    "Nothing to import right now. Scan again or continue without migration.",
+  "onboarding.agentSettings.empty": "Nothing to import right now. Scan again or continue without migration.",
   "onboarding.agentSettings.providersToggleAllAria": "Select or clear providers for all agents",
   "onboarding.agentSettings.categoryToggleAllAria": "Select or clear {category} for all agents",
   "onboarding.agentsFile.copyTitle": "Copy CLAUDE.md to AGENTS.md",
   "onboarding.agentsFile.sourceLabel": "Source",
   "onboarding.agentsFile.targetLabel": "Target",
   "onboarding.agentsFile.loading": "Checking...",
-  "onboarding.agentsFile.missingSource":
-    "Could not find ~/.claude/CLAUDE.md, so Claude user memory cannot be migrated.",
+  "onboarding.agentsFile.missingSource": "Could not find ~/.claude/CLAUDE.md, so Claude user memory cannot be migrated.",
   "onboarding.agentsFile.error": "Could not check AGENTS.md migration status: {error}",
   "onboarding.agentsFile.confirmTitle": "Overwrite default AGENTS.md?",
-  "onboarding.agentsFile.confirmDescription":
-    "ZCode will copy {source} to {target}.\nIf the target file already exists, the ZCode default AGENTS configuration will be overwritten.",
+  "onboarding.agentsFile.confirmDescription": "ZCode will copy {source} to {target}.\nIf the target file already exists, the ZCode default AGENTS configuration will be overwritten.",
   "onboarding.agentsFile.confirmAction": "Overwrite and migrate",
   "onboarding.finish.summary.label.imported": "Imported",
   "onboarding.finish.summary.label.skipped": "Skipped",
@@ -6249,25 +5344,20 @@ const enUS: Record<string, string> = {
   "onboarding.migration.progress": "Migrating... {progress}%",
   "onboarding.migration.ready": "Preparing migration plan...",
   "onboarding.migration.confirmCloseTitle": "Migration still running",
-  "onboarding.migration.confirmCloseDescription":
-    "History migration is still in progress. Closing now will interrupt the current import flow. Close anyway?",
+  "onboarding.migration.confirmCloseDescription": "History migration is still in progress. Closing now will interrupt the current import flow. Close anyway?",
   "onboarding.migration.confirmCloseConfirm": "Close anyway",
   "onboarding.finish.done": "Migration complete",
   "onboarding.finish.ready": "Review what was imported before you continue.",
-  "onboarding.finish.workspaceRequired":
-    "{count} items need a project and were not imported. Open a project, then migrate them again.",
+  "onboarding.finish.workspaceRequired": "{count} items need a project and were not imported. Open a project, then migrate them again.",
   "onboarding.finish.currentWorkspace": "Migrating sessions from {workspace}",
   "onboarding.finish.currentAgentsFile": "Migrating AGENTS.md",
   "onboarding.finish.currentSettings": "Importing agent settings",
   "onboarding.finish.summary.sessions": "Session migration",
-  "onboarding.finish.summary.sessions.detail":
-    "Imported {imported}, skipped {skipped}, failed {failed}.",
+  "onboarding.finish.summary.sessions.detail": "Imported {imported}, skipped {skipped}, failed {failed}.",
   "onboarding.finish.summary.settings": "Settings import",
   "onboarding.finish.summary.agentsFile": "AGENTS.md",
-  "onboarding.finish.summary.settings.detail":
-    "Imported {imported}, skipped {skipped}, failed {failed}.",
-
-  // Chat
+  "onboarding.finish.summary.settings.detail": "Imported {imported}, skipped {skipped}, failed {failed}.",
+// Chat
   "chat.empty.title": "Start a Conversation",
   "chat.empty.description": "Start a new task in {workspace}",
   "chat.empty.description.beforeWorkspace": "Start a new task in",
@@ -6279,15 +5369,12 @@ const enUS: Record<string, string> = {
   "chat.empty.greeting.evening": "Evening, nice work today",
   "chat.empty.greeting.lateNight": "It's late—remember to take care of yourself.",
   "chat.draft.suggestedPrompt.recentCommits": "Review commits from the last 7 days",
-  "chat.draft.suggestedPrompt.recentCommits.prompt":
-    "Review Git commits from the last 7 days in this workspace, summarize the main changes, and identify potential risks.",
+  "chat.draft.suggestedPrompt.recentCommits.prompt": "Review Git commits from the last 7 days in this workspace, summarize the main changes, and identify potential risks.",
   "chat.draft.suggestedPrompt.createPdf": "Create a PDF",
-  "chat.draft.suggestedPrompt.createPdf.prompt":
-    "Create a PDF document based on the contents of the current workspace.",
+  "chat.draft.suggestedPrompt.createPdf.prompt": "Create a PDF document based on the contents of the current workspace.",
   "chat.draft.suggestedPrompt.plugin.documentSkills": "Document Skills",
   "chat.draft.suggestedPrompt.plugin.github": "Github",
-  "chat.draft.suggestedPrompt.pluginUnavailable":
-    "{pluginLabel} plugin is not enabled or installed",
+  "chat.draft.suggestedPrompt.pluginUnavailable": "{pluginLabel} plugin is not enabled or installed",
   "chat.draft.suggestedPrompt.pluginFlow.installing": "Installing the plugin…",
   "chat.draft.suggestedPrompt.pluginFlow.enabling": "Enabling the plugin…",
   "chat.draft.suggestedPrompt.pluginFlow.checking": "Checking plugin status…",
@@ -6296,8 +5383,7 @@ const enUS: Record<string, string> = {
   "chat.draft.suggestedPrompt.pluginFlow.confirm": "Confirm",
   "chat.draft.suggestedPrompt.pluginFlow.installSucceeded": "Installation successful",
   "chat.draft.suggestedPrompt.pluginFlow.installFailed": "Plugin installation failed",
-  "chat.draft.suggestedPrompt.pluginFlow.installFailureToast":
-    "Could not install {pluginLabel}: {error}",
+  "chat.draft.suggestedPrompt.pluginFlow.installFailureToast": "Could not install {pluginLabel}: {error}",
   "chat.draft.suggestedPrompt.pluginFlow.installTimedOut": "Installation timed out",
   "chat.draft.suggestedPrompt.pluginFlow.installReturnedEmpty": "No installed plugin was returned",
   "chat.draft.suggestedPrompt.pluginFlow.enableSucceeded": "Plugin enabled successfully",
@@ -6305,8 +5391,7 @@ const enUS: Record<string, string> = {
   "chat.empty.newRemoteConnection": "New remote connection…",
   "chat.remoteFolder.restored": "Returned to {device} · {project}",
   "chat.remoteFolder.confirm": "Select folder",
-  "chat.remoteFolder.unresolved":
-    "This folder has no selected project. Choose another folder or cancel.",
+  "chat.remoteFolder.unresolved": "This folder has no selected project. Choose another folder or cancel.",
   "chat.empty.createProjectOnDevice": "Create project on this device",
   "chat.empty.workspaceMenu": "Choose workspace",
   "chat.empty.selectProject": "Select project",
@@ -6323,11 +5408,9 @@ const enUS: Record<string, string> = {
   "chat.empty.createWorkspace.error.separator": "Workspace name cannot contain / or \\.",
   "chat.empty.createWorkspace.error.createFailed": "Could not create workspace.",
   "chat.emptyResult.title": "No visible output",
-  "chat.emptyResult.description":
-    "This task finished without any chat content. It may have been stopped before the model produced a response.",
-  "chat.placeholder.newTask":
-    "Ask ZCode anything, @ to add context, / for commands or capabilities",
-  "chat.placeholder.newTaskMobile": "Ask ZCode anything…",
+  "chat.emptyResult.description": "This task finished without any chat content. It may have been stopped before the model produced a response.",
+  "chat.placeholder.newTask": "Ask Reactor anything, @ to add context, / for commands or capabilities",
+  "chat.placeholder.newTaskMobile": "Ask Reactor anything…",
   "chat.placeholder.followUpAsk": "Ask for follow-up changes",
   "chat.placeholder.followUpQueue": "Keep typing to queue follow-up changes",
   "chat.placeholder.loading": "Initializing task...",
@@ -6369,8 +5452,7 @@ const enUS: Record<string, string> = {
   "chat.message.expand": "Expand",
   "chat.message.collapse": "Collapse",
   "chat.userInput.epilogue.label": "Workflow engine instructions",
-  "chat.message.bodyPreview.notice":
-    "This reply is large. Showing a preview only ({previewBytes} / {fullBytes}).",
+  "chat.message.bodyPreview.notice": "This reply is large. Showing a preview only ({previewBytes} / {fullBytes}).",
   "chat.message.bodyPreview.loadFull": "View full message",
   "chat.message.bodyPreview.loading": "Loading...",
   "chat.message.bodyPreview.retry": "Load failed, retry",
@@ -6378,8 +5460,7 @@ const enUS: Record<string, string> = {
   "chat.message.toolSlice.loadMore": "Load more tool calls",
   "chat.message.toolSlice.loading": "Loading...",
   "chat.message.toolSlice.retry": "Load failed, retry",
-  "chat.message.toolSnapshot.notice":
-    "{toolCount} tool calls ({fullBytes}) total, previewing {previewBytes}.",
+  "chat.message.toolSnapshot.notice": "{toolCount} tool calls ({fullBytes}) total, previewing {previewBytes}.",
   "chat.message.toolSnapshot.loadAll": "Load all tool data",
   "chat.message.toolSnapshot.loading": "Loading...",
   "chat.message.toolSnapshot.retry": "Load failed, retry",
@@ -6402,14 +5483,12 @@ const enUS: Record<string, string> = {
   "chat.stop": "Stop",
   "chat.stop.short": "Stop",
   "chat.promptEnhance.title": "Enhance prompt",
-  "chat.promptEnhance.description":
-    "Refine the current draft with the selected model configuration.",
+  "chat.promptEnhance.description": "Refine the current draft with the selected model configuration.",
   "chat.promptEnhance.cancel": "Cancel enhance",
   "chat.promptEnhance.cancelDescription": "Click again to cancel the current prompt enhancement.",
   "chat.promptEnhance.cancelled": "Cancelled prompt enhancement",
   "chat.promptEnhance.empty": "Type a prompt before enhancing it",
-  "chat.promptEnhance.unsupported":
-    "The selected model does not currently expose a direct enhancement configuration.",
+  "chat.promptEnhance.unsupported": "The selected model does not currently expose a direct enhancement configuration.",
   "chat.promptEnhance.error": "Prompt enhancement failed. Please try again.",
   "chat.promptEnhance.errorWithDetail": "Prompt enhancement failed: {error}",
   "chat.queue.enqueue": "Queue message",
@@ -6420,30 +5499,22 @@ const enUS: Record<string, string> = {
   "chat.queue.edit": "Edit",
   "chat.composerEdit.editingUserQuery": "Editing your last message",
   "chat.composerEdit.editingQueueItem": "Editing a queued message",
-  "chat.composerEdit.invalid.notLatest":
-    "This is no longer the last message. Sending will create a new message.",
-  "chat.composerEdit.invalid.queueItemRemoved":
-    "The queued message is no longer in the queue. Sending will create a new message.",
-  "chat.composerEdit.invalid.editLockLost":
-    "Editing was released from another device. Sending will create a new message.",
+  "chat.composerEdit.invalid.notLatest": "This is no longer the last message. Sending will create a new message.",
+  "chat.composerEdit.invalid.queueItemRemoved": "The queued message is no longer in the queue. Sending will create a new message.",
+  "chat.composerEdit.invalid.editLockLost": "Editing was released from another device. Sending will create a new message.",
   "chat.composerEdit.inComposerHint": "Editing below",
   "chat.composerEdit.busy": "Wait for the current send or upload to finish before editing.",
   "chat.composerEdit.switchTitle": "Discard current edits?",
-  "chat.composerEdit.switchDescription":
-    "Switching to another message discards your current edits.",
+  "chat.composerEdit.switchDescription": "Switching to another message discards your current edits.",
   "chat.composerEdit.switchConfirm": "Discard and switch",
   "chat.composerEdit.lockFailed.reserved": "This message is being sent and can't be edited.",
-  "chat.composerEdit.lockFailed.locked":
-    "This message is being edited in another window or device.",
+  "chat.composerEdit.lockFailed.locked": "This message is being edited in another window or device.",
   "chat.composerEdit.lockFailed.generic": "Couldn't edit this message. Try again.",
   "chat.composerEdit.saveFailed": "Couldn't save the edit. Try again.",
   "chat.composerEdit.applyQueue.title": "Apply to queued messages?",
-  "chat.composerEdit.applyQueue.modelAndMode":
-    "You changed the permission to {mode} and the model to {model}. Apply this to all queued messages too?",
-  "chat.composerEdit.applyQueue.model":
-    "You changed the model to {model}. Apply this to all queued messages too?",
-  "chat.composerEdit.applyQueue.mode":
-    "You changed the permission to {mode}. Apply this to all queued messages too?",
+  "chat.composerEdit.applyQueue.modelAndMode": "You changed the permission to {mode} and the model to {model}. Apply this to all queued messages too?",
+  "chat.composerEdit.applyQueue.model": "You changed the model to {model}. Apply this to all queued messages too?",
+  "chat.composerEdit.applyQueue.mode": "You changed the permission to {mode}. Apply this to all queued messages too?",
   "chat.composerEdit.applyQueue.confirm": "Apply to queue",
   "chat.composerEdit.applyQueue.cancel": "Only this message",
   "chat.composerEdit.applyQueue.failed": "Could not apply to queued messages",
@@ -6459,8 +5530,7 @@ const enUS: Record<string, string> = {
   "chat.queue.resume": "Continue",
   "chat.queue.resume.description": "Continue sending queued items in order",
   "chat.queue.sendConfirm.title": "Send message?",
-  "chat.queue.sendConfirm.description":
-    "You're about to send a message. Clear the {count} previously queued messages?",
+  "chat.queue.sendConfirm.description": "You're about to send a message. Clear the {count} previously queued messages?",
   "chat.queue.sendConfirm.clear": "Clear queue",
   "chat.queue.sendConfirm.keep": "Send message",
   "chat.message.turnSteer.guided": "Conversation steered",
@@ -6497,8 +5567,7 @@ const enUS: Record<string, string> = {
   "chat.reasoning.durationSeconds": "{seconds} seconds",
   "chat.contextUsage": "Context usage {used} of {total}",
   "chat.contextUsage.title": "Context windows",
-  "chat.contextUsageDescription":
-    "Prompt text, tool calls, and responses all share this context window.",
+  "chat.contextUsageDescription": "Prompt text, tool calls, and responses all share this context window.",
   "chat.contextUsage.cacheHitRate": "Average cache hit rate",
   "chat.contextUsage.breakdown": "Context sources",
   "chat.contextUsage.breakdown.messages": "Messages",
@@ -6512,8 +5581,7 @@ const enUS: Record<string, string> = {
   "chat.contextUsage.compressDescription": "Send {command} to compress the current context",
   "tokenDebug.open": "Open token debug",
   "tokenDebug.column.tps": "TPS (tokens/s)",
-  "tokenDebug.tpsDescription":
-    "Output tokens ÷ seconds from first output token to request completion",
+  "tokenDebug.tpsDescription": "Output tokens ÷ seconds from first output token to request completion",
   "developerTools.loadError": "Unable to read debug data. Retrying; previous records may be stale.",
   "tokenDebug.title": "Token debug",
   "tokenDebug.summary.requests": "Main requests",
@@ -6594,8 +5662,7 @@ const enUS: Record<string, string> = {
   "chat.composer.backgroundWorks.tooltipWorkflow": "Open running workflows",
   "chat.composer.backgroundWorks.tooltipWorkflowDetails": "Open workflow details",
   "chat.composer.backgroundWorks.tooltipMixed": "Open running terminals and agents",
-  "chat.composer.backgroundWorks.ariaLabel":
-    "Open running background tasks: {bashCount} Bash, {workflowCount} workflow, {subagentCount} Subagent, {count} total",
+  "chat.composer.backgroundWorks.ariaLabel": "Open running background tasks: {bashCount} Bash, {workflowCount} workflow, {subagentCount} Subagent, {count} total",
   "chat.summaryPanel.goalIterationValue": "Iteration {count}",
   "chat.summaryPanel.todoGoalIterationGroup": "Iteration {count}",
   "chat.summaryPanel.todoSessionGroup": "Session",
@@ -6630,8 +5697,7 @@ const enUS: Record<string, string> = {
   "chat.toolbar.combined.selectModel": "Select model",
   "chat.toolbar.model.label": "Choose model",
   "chat.toolbar.draftConfigWriteFailed": "Failed to update configuration. Please try again.",
-  "chat.toolbar.model.description":
-    "Choose the model used by this task. The shortcut opens the model menu.",
+  "chat.toolbar.model.description": "Choose the model used by this task. The shortcut opens the model menu.",
   "chat.agentSwitch.switchTo": "{provider}",
   "chat.agentSwitch.success": "Switched to {provider}",
   "chat.agentSwitch.failed": "Could not switch agent",
@@ -6644,8 +5710,7 @@ const enUS: Record<string, string> = {
   "chat.toolbar.modelSwitch.stage.restartingRuntime": "Restarting model runtime...",
   "chat.toolbar.modelSwitch.stage.syncingSession": "Syncing session model...",
   "chat.toolbar.modelSwitch.stage.persistingWorkspace": "Saving workspace default model...",
-  "chat.toolbar.modelSwitch.lockedByRunningTask":
-    "A task is running. Finish it before switching model providers.",
+  "chat.toolbar.modelSwitch.lockedByRunningTask": "A task is running. Finish it before switching model providers.",
   "chat.toolbar.modelSwitch.lockedByRunningTask.short": "busy",
   "chat.goal.runningBlocked": "Set a goal after the current task finishes.",
   "chat.goal.planModeBlocked": "Goal is unavailable in Plan mode. Switch modes to continue.",
@@ -6654,34 +5719,24 @@ const enUS: Record<string, string> = {
   "chat.compact.queued": "Compaction queued and will run in order.",
   "chat.compact.duplicateBlocked": "A compaction is already running or queued.",
   "chat.modelSwitch.contextWindowGuard.title": "Compress context before switching models",
-  "chat.modelSwitch.contextWindowGuard.description":
-    "This conversation has used {used} tokens, which exceeds {modelName}'s available context of {target} tokens after reserving maximum output.\nCompress the current conversation with the current model first. If the compressed context fits, ZCode will continue switching models.",
+  "chat.modelSwitch.contextWindowGuard.description": "This conversation has used {used} tokens, which exceeds {modelName}'s available context of {target} tokens after reserving maximum output.\nCompress the current conversation with the current model first. If the compressed context fits, Reactor will continue switching models.",
   "chat.modelSwitch.contextWindowGuard.compress": "Compress",
-  "chat.modelSwitch.contextWindowGuard.runningBlocked":
-    "This conversation has used more context than the target model's available context after reserving maximum output. The conversation must be compressed before switching models, but the current task is still running and context compression cannot run now. Wait for the task to finish, then switch models again.",
-  "chat.modelSwitch.contextWindowGuard.stillTooLarge":
-    "After compression, the context used by this conversation is still larger than the target model's available context after reserving maximum output. Model switching was canceled.",
+  "chat.modelSwitch.contextWindowGuard.runningBlocked": "This conversation has used more context than the target model's available context after reserving maximum output. The conversation must be compressed before switching models, but the current task is still running and context compression cannot run now. Wait for the task to finish, then switch models again.",
+  "chat.modelSwitch.contextWindowGuard.stillTooLarge": "After compression, the context used by this conversation is still larger than the target model's available context after reserving maximum output. Model switching was canceled.",
   "chat.toolbar.mode.label": "Switch mode",
-  // CUA composer entry button
+// CUA composer entry button
   "chat.toolbar.computerUse.label": "Computer Use",
-  "chat.toolbar.computerUse.tooltip.idle":
-    "Computer Use is idle — it will start automatically on first use",
+  "chat.toolbar.computerUse.tooltip.idle": "Computer Use is idle — it will start automatically on first use",
   "chat.toolbar.computerUse.tooltip.starting": "Enabling Computer Use plugin…",
-  "chat.toolbar.computerUse.tooltip.ready":
-    "Computer Use ready — just describe what you want ZCode to do",
-  "chat.toolbar.computerUse.tooltip.permissionRequired":
-    "Missing macOS permissions — click to grant",
-  "chat.toolbar.computerUse.tooltip.error":
-    "Computer Use enablement failed. Please restart ZCode app and retry, or ask ZCode to investigate the logs",
-  "chat.toolbar.computerUse.tooltip.sessionBusy":
-    "A conversation is running. Computer Use can't be toggled right now — try again after it finishes.",
-  "chat.toolbar.mode.description":
-    "Switch the task's permission and execution mode, such as default, plan, or accept edits.",
+  "chat.toolbar.computerUse.tooltip.ready": "Computer Use ready — just describe what you want Reactor to do",
+  "chat.toolbar.computerUse.tooltip.permissionRequired": "Missing macOS permissions — click to grant",
+  "chat.toolbar.computerUse.tooltip.error": "Computer Use enablement failed. Please restart Reactor app and retry, or ask Reactor to investigate the logs",
+  "chat.toolbar.computerUse.tooltip.sessionBusy": "A conversation is running. Computer Use can't be toggled right now — try again after it finishes.",
+  "chat.toolbar.mode.description": "Switch the task's permission and execution mode, such as default, plan, or accept edits.",
   "chat.toolbar.thoughtLevel.label": "Reasoning effort",
   "chat.toolbar.thoughtLevel.tooltip": "Thought level",
   "chat.toolbar.thoughtLevel.placeholder": "Select reasoning level",
-  "chat.toolbar.thoughtLevel.description":
-    "Adjust how much the agent thinks before answering. Higher effort is usually steadier but slower.",
+  "chat.toolbar.thoughtLevel.description": "Adjust how much the agent thinks before answering. Higher effort is usually steadier but slower.",
   "chat.toolbar.thoughtLevel.value.off": "Off",
   "chat.toolbar.thoughtLevel.value.on": "On",
   "chat.toolbar.thoughtLevel.value.minimal": "Minimal",
@@ -6789,8 +5844,7 @@ const enUS: Record<string, string> = {
   "chat.toolCall.edit.editing": "Editing",
   "chat.toolCall.edit.edited": "Edited",
   "chat.toolCall.edit.multipleFiles": "{count} files",
-  "chat.toolCall.snapshot.notice":
-    "{fields} tool field(s) were truncated. Showing preview {previewBytes} / {fullBytes}.",
+  "chat.toolCall.snapshot.notice": "{fields} tool field(s) were truncated. Showing preview {previewBytes} / {fullBytes}.",
   "chat.toolCall.snapshot.loadFull": "Load full tool data",
   "chat.toolCall.snapshot.loading": "Loading...",
   "chat.toolCall.snapshot.retry": "Load failed, retry",
@@ -6888,10 +5942,8 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.ran": "Workflow",
   "chat.toolCall.workflow.fallbackName": "Workflow script",
   "chat.toolCall.workflow.feedback": "Compiler feedback",
-  "chat.toolCall.workflow.feedback.lede":
-    "Typecheck did not pass, so nothing ran. The feedback went back to the model to revise and resubmit.",
-  "chat.toolCall.workflow.feedback.lede.saved":
-    "The saved workflow file did not pass typecheck, so nothing ran. The feedback went back to the model to fix the file or save a corrected version.",
+  "chat.toolCall.workflow.feedback.lede": "Typecheck did not pass, so nothing ran. The feedback went back to the model to revise and resubmit.",
+  "chat.toolCall.workflow.feedback.lede.saved": "The saved workflow file did not pass typecheck, so nothing ran. The feedback went back to the model to fix the file or save a corrected version.",
   "chat.toolCall.workflow.feedback.count": "{count} notes",
   "chat.toolCall.workflow.feedback.countOne": "{count} note",
   "chat.toolCall.workflow.feedback.rule": "rule {code}",
@@ -6921,11 +5973,10 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.timeline.roster.failed": "{count} failed",
   "chat.toolCall.workflow.timeline.roster.pending": "{count} pending",
   "chat.toolCall.workflow.timeline.roster.more": "{count} more",
-  "chat.toolCall.workflow.timeline.roster.moreTitle":
-    "{count} more subagents · list everyone in the run pane",
+  "chat.toolCall.workflow.timeline.roster.moreTitle": "{count} more subagents · list everyone in the run pane",
   "chat.toolCall.workflow.timeline.roster.door.list": "{count} more subagents · list them here",
   "chat.toolCall.workflow.timeline.roster.door.fold": "{count} more subagents · fold",
-  // 门后名单末尾的那一行：被淘汰的子代理没有行，差额在这里说明（本仓的轻量 intl 无 ICU 复数）。
+// 门后名单末尾的那一行：被淘汰的子代理没有行，差额在这里说明（本仓的轻量 intl 无 ICU 复数）。
   "chat.toolCall.workflow.timeline.roster.unlisted.one": "1 more subagent not listed",
   "chat.toolCall.workflow.timeline.roster.unlisted.many": "{count} more subagents not listed",
   "chat.toolCall.workflow.timeline.ledge.earlier": "{count} earlier phase(s), scrolled out of view",
@@ -6952,7 +6003,7 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.card.artifacts": "{count} artifacts",
   "chat.toolCall.workflow.digest.question": "{count} question",
   "chat.toolCall.workflow.digest.questions": "{count} questions",
-  // ── Holes (docs/dynamic-workflow/presentation.md "Holes on the timeline", transcript-and-notifications.md "The hole row's live state") ──
+// ── Holes (docs/dynamic-workflow/presentation.md "Holes on the timeline", transcript-and-notifications.md "The hole row's live state") ──
   "chat.toolCall.workflow.digest.hole": "{count} hole to fill",
   "chat.toolCall.workflow.digest.holes": "{count} holes to fill",
   "chat.toolCall.workflow.card.hole": "{count} hole",
@@ -6961,7 +6012,7 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.hole.head.title": "Hole “{name}” · filled by the agent · {time}",
   "chat.toolCall.workflow.hole.head.title.untimed": "Hole “{name}” · filled by the agent",
   "chat.toolCall.workflow.hole.open": "Open the fill of “{name}”",
-  // Kind words of the FillWorkflowHole row (same table as CreateWorkflow / AmendWorkflow).
+// Kind words of the FillWorkflowHole row (same table as CreateWorkflow / AmendWorkflow).
   "chat.toolCall.workflow.hole.writing": "Filling hole",
   "chat.toolCall.workflow.hole.revising": "Revising hole fill",
   "chat.toolCall.workflow.hole.draft": "Hole draft",
@@ -6969,9 +6020,8 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.hole.ran": "Hole fill",
   "chat.toolCall.workflow.hole.filled": "Hole filled",
   "chat.toolCall.workflow.hole.phasesAdded": "{count} phases",
-  // The notification row's expanded body.
-  "chat.toolCall.workflow.hole.stands.between":
-    "The hole stands after “{before}” and before “{after}”;",
+// The notification row's expanded body.
+  "chat.toolCall.workflow.hole.stands.between": "The hole stands after “{before}” and before “{after}”;",
   "chat.toolCall.workflow.hole.stands.after": "The hole stands after “{before}”;",
   "chat.toolCall.workflow.hole.stands.before": "The hole stands before “{after}”;",
   "chat.toolCall.workflow.hole.draftPath": "Draft",
@@ -6979,14 +6029,14 @@ const enUS: Record<string, string> = {
   "chat.backgroundResult.workflow.hole.waiting": "Workflow waiting for code",
   "chat.backgroundResult.workflow.hole.filled": "Hole filled",
   "chat.backgroundResult.workflow.hole.left": "Workflow left a hole",
-  // The run pane.
+// The run pane.
   "chat.toolCall.workflow.run.hole.waitingFor": "Waiting for the agent to fill it",
   "chat.toolCall.workflow.run.hole.filledAt": "Filled · {time}",
-  // The confirmation window.
+// The confirmation window.
   "chat.permission.workflow.hole.title": "Fill this hole?",
   "chat.permission.workflow.holes.label": "Holes",
   "chat.permission.workflow.holes.note": "The run pauses at a hole until the agent fills it.",
-  // The sidebar run line.
+// The sidebar run line.
   "taskList.workflowRun.holeWaiting": "{name} · waiting",
   "chat.toolCall.workflow.digest.showAgents": "Show subagents",
   "chat.toolCall.workflow.digest.hideAgents": "Hide subagents",
@@ -7007,19 +6057,17 @@ const enUS: Record<string, string> = {
   "chat.workflowLaunch.settings.sessionModel": "session model",
   "chat.workflowLaunch.settings.defaultLimit": "default",
   "chat.workflowLaunch.settings.defaultLimitValue": "default {n}",
-  // ── 可复用工作流（docs/dynamic-workflow/launch.md）：SaveWorkflow / ListSavedWorkflows
-  // 的聊天卡。overwrite 这个词由保存确认窗共用——同一次保存在两个面上必须同名，
-  // 照 run 卡复用 chat.toolCall.workflow.run.status.* 词汇表的同一条先例。
+// ── 可复用工作流（docs/dynamic-workflow/launch.md）：SaveWorkflow / ListSavedWorkflows
+// 的聊天卡。overwrite 这个词由保存确认窗共用——同一次保存在两个面上必须同名，
+// 照 run 卡复用 chat.toolCall.workflow.run.status.* 词汇表的同一条先例。
   "chat.toolCall.workflow.save.saving": "Saving workflow",
   "chat.toolCall.workflow.save.saved": "Saved workflow",
   "chat.toolCall.workflow.save.overwrite": "overwrite",
   "chat.toolCall.workflow.save.scope.label": "Scope",
   "chat.toolCall.workflow.save.scope.project": "Project",
   "chat.toolCall.workflow.save.scope.global": "Global · visible from every project",
-  "chat.toolCall.workflow.save.scope.hidesGlobal":
-    "A global workflow with this name will be hidden by this one",
-  "chat.toolCall.workflow.save.scope.hiddenByProject":
-    "This project already has a workflow with this name, which will hide this one here",
+  "chat.toolCall.workflow.save.scope.hidesGlobal": "A global workflow with this name will be hidden by this one",
+  "chat.toolCall.workflow.save.scope.hiddenByProject": "This project already has a workflow with this name, which will hide this one here",
   "chat.toolCall.workflow.scope.global": "Global",
   "chat.toolCall.workflow.list.listing": "Listing saved workflows",
   "chat.toolCall.workflow.list.listed": "Saved workflows",
@@ -7039,12 +6087,10 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.models.levelsNoDefault": "Thinking levels: {levels}",
   "chat.toolCall.workflow.models.noLevels": "No thinking levels",
   "chat.toolCall.workflow.models.truncated": "Not all models are shown",
-
   "automations.pageTab.ariaLabel": "Automations page",
   "automations.pageTab.automation": "Automations",
   "automations.pageTab.workflow": "Workflows",
-  "workflows.hub.description":
-    "Workflows saved in your open projects. Fill in the arguments and run them again.",
+  "workflows.hub.description": "Workflows saved in your open projects. Fill in the arguments and run them again.",
   "workflows.hub.sectionTitle": "Saved workflows",
   "workflows.hub.refresh": "Refresh",
   "workflows.hub.openSettings": "Workflow settings",
@@ -7052,14 +6098,11 @@ const enUS: Record<string, string> = {
   "workflows.hub.group.current": "Current",
   "workflows.hub.global.title": "Global",
   "workflows.hub.global.hint": "Visible from every project",
-  "workflows.hub.global.empty":
-    "No global workflows yet. Good for flows that depend on no particular project, such as deep research.",
+  "workflows.hub.global.empty": "No global workflows yet. Good for flows that depend on no particular project, such as deep research.",
   "workflows.hub.global.unsupported": "The current agent does not support global workflows.",
-  "workflows.hub.global.noLocalRuntime":
-    "Could not reach the local agent; global workflows are unavailable.",
+  "workflows.hub.global.noLocalRuntime": "Could not reach the local agent; global workflows are unavailable.",
   "workflows.hub.empty.title": "No saved workflows in your open projects yet",
-  "workflows.hub.empty.hint":
-    "Design a workflow with ZCode in chat, then have it save the workflow to a project once it works. Projects that aren't open don't appear here.",
+  "workflows.hub.empty.hint": "Design a workflow with Reactor in chat, then have it save the workflow to a project once it works. Projects that aren't open don't appear here.",
   "workflows.hub.noWorkspace": "Open a workspace to see its workflows.",
   "workflows.hub.loadError": "Could not read workflows: {error}",
   "workflows.hub.invalid": "{count} files could not be read",
@@ -7080,8 +6123,7 @@ const enUS: Record<string, string> = {
   "workflows.hub.lastRun.stopped": "Stopped",
   "workflows.hub.copied": "Path copied",
   "workflows.hub.delete.title": 'Delete workflow "{name}"?',
-  "workflows.hub.delete.description":
-    "This removes {path} from the project. Existing run records are kept.",
+  "workflows.hub.delete.description": "This removes {path} from the project. Existing run records are kept.",
   "workflows.hub.delete.confirm": "Delete",
   "workflows.hub.deleted": 'Deleted workflow "{name}"',
   "workflows.hub.deleteFailed": "Delete failed: {reason}",
@@ -7110,8 +6152,7 @@ const enUS: Record<string, string> = {
   "workflows.hub.launch.error.compile_failed": "The workflow script did not compile",
   "workflows.hub.launch.error.session_busy": "The session is busy; try again",
   "workflows.hub.launch.error.start_failed": "The workflow could not be started",
-  "workflows.hub.launch.error.unsupported":
-    "The current agent does not support running workflows directly",
+  "workflows.hub.launch.error.unsupported": "The current agent does not support running workflows directly",
   "workflows.hub.launch.error.generic": "The workflow could not be started",
   "workflows.hub.detail.tab.definition": "Definition",
   "workflows.hub.detail.tab.history": "Run history",
@@ -7121,8 +6162,7 @@ const enUS: Record<string, string> = {
   "workflows.hub.detail.basics": "Basics",
   "workflows.hub.detail.description": "Description",
   "workflows.hub.detail.whenToUse": "When to use",
-  "workflows.hub.detail.whenToUse.help":
-    "A routing hint for ZCode: when this workflow is the right pick.",
+  "workflows.hub.detail.whenToUse.help": "A routing hint for Reactor: when this workflow is the right pick.",
   "workflows.hub.detail.args": "Arguments",
   "workflows.hub.detail.args.name": "Name",
   "workflows.hub.detail.args.type": "Type",
@@ -7134,23 +6174,20 @@ const enUS: Record<string, string> = {
   "workflows.hub.detail.args.error.empty_name": "Argument needs a name",
   "workflows.hub.detail.args.error.duplicate_name": "Duplicate argument name",
   "workflows.hub.detail.args.error.invalid_default": "Default does not match the type",
-  "workflows.hub.detail.meta.note":
-    "Only the metadata at the top of the file changes; the script body stays as is.",
+  "workflows.hub.detail.meta.note": "Only the metadata at the top of the file changes; the script body stays as is.",
   "workflows.hub.detail.meta.discard": "Discard changes",
   "workflows.hub.detail.meta.save": "Save metadata",
   "workflows.hub.detail.meta.saved": "Metadata saved",
   "workflows.hub.detail.meta.saveFailed": "Save failed: {reason}",
   "workflows.hub.detail.meta.descriptionRequired": "Description is required",
   "workflows.hub.detail.script": "Script",
-  "workflows.hub.detail.script.note":
-    "The script is read-only. To change it, revise it with ZCode in chat and save a new version.",
+  "workflows.hub.detail.script.note": "The script is read-only. To change it, revise it with Reactor in chat and save a new version.",
   "workflows.hub.detail.script.copy": "Copy script",
   "workflows.hub.detail.loadError": "Could not read this workflow: {reason}",
   "workflows.hub.detail.notFound": "This workflow is no longer in the project.",
   "workflows.hub.history.empty": "No runs yet.",
   "workflows.hub.history.open": "Open run",
-  "workflows.hub.history.note":
-    'Run records come from this project\'s workflow journal and survive restarts. "Open run" returns to the chat that started it and opens the run details.',
+  "workflows.hub.history.note": 'Run records come from this project\'s workflow journal and survive restarts. "Open run" returns to the chat that started it and opens the run details.',
   "workflows.hub.history.tokens": "{tokens} tokens",
   "workflows.hub.artifacts.latest": "Latest artifacts",
   "workflows.hub.reason.invalid_name": "Invalid name",
@@ -7159,23 +6196,20 @@ const enUS: Record<string, string> = {
   "workflows.hub.reason.read_error": "File could not be read",
   "workflows.hub.time.duration.seconds": "{seconds}s",
   "workflows.hub.time.duration.minutes": "{minutes}m {seconds}s",
-  // ── Observation tool cards  ──
+// ── Observation tool cards  ──
   "chat.toolCall.workflow.getRun.fetching": "Checking workflow status",
   "chat.toolCall.workflow.getRun.runningNodes": "{count} running nodes",
   "chat.toolCall.workflow.getRun.fetched": "Workflow status",
-  "chat.toolCall.workflow.getRun.nodesLine":
-    "{observed} nodes · {done} done · {running} running · {failed} failed",
+  "chat.toolCall.workflow.getRun.nodesLine": "{observed} nodes · {done} done · {running} running · {failed} failed",
   "chat.toolCall.workflow.getRun.section.actors": "Subagents",
   "chat.toolCall.workflow.getRun.section.logTail": "Logs",
   "chat.toolCall.workflow.getRun.section.result": "Result",
   "chat.toolCall.workflow.getRun.section.error": "Error",
   "chat.toolCall.workflow.getRun.logEmpty": "No logs yet",
-  "chat.toolCall.workflow.getRun.interruptedHint":
-    "This session cannot confirm this run is still alive: it may have been interrupted.",
+  "chat.toolCall.workflow.getRun.interruptedHint": "This session cannot confirm this run is still alive: it may have been interrupted.",
   "chat.toolCall.workflow.getRun.age": "{age} ago",
   "chat.toolCall.workflow.getRun.truncated": "Some rows were left off this card.",
-  "chat.toolCall.workflow.getRun.questionsUnknown":
-    "This session cannot see this run's pending questions. Resuming the run re-asks whatever a subagent still needs.",
+  "chat.toolCall.workflow.getRun.questionsUnknown": "This session cannot see this run's pending questions. Resuming the run re-asks whatever a subagent still needs.",
   "chat.toolCall.workflow.getRun.phase.state.done": "done",
   "chat.toolCall.workflow.getRun.phase.state.current": "current",
   "chat.toolCall.workflow.getRun.phase.state.ahead": "ahead",
@@ -7219,15 +6253,12 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.getRun.health.failuresOne": "{count} consecutive failure",
   "chat.toolCall.workflow.getRun.health.cachedSteps": "{count} cached steps",
   "chat.toolCall.workflow.getRun.health.cachedStepsOne": "{count} cached step",
-  "chat.toolCall.workflow.getRun.health.leftover":
-    "The {count} steps below marked running are leftovers of the exited process, not live work.",
-  "chat.toolCall.workflow.getRun.health.leftoverOne":
-    "The step below marked running is a leftover of the exited process, not live work.",
+  "chat.toolCall.workflow.getRun.health.leftover": "The {count} steps below marked running are leftovers of the exited process, not live work.",
+  "chat.toolCall.workflow.getRun.health.leftoverOne": "The step below marked running is a leftover of the exited process, not live work.",
   "chat.toolCall.workflow.resumeRun.resuming": "Resuming workflow run",
   "chat.toolCall.workflow.resumeRun.label": "Workflow run resumed",
   "chat.toolCall.workflow.resumeRun.inBackground": "Running in background",
-  "chat.toolCall.workflow.resumeRun.hint":
-    "The run continues under the same run ID: finished steps are replayed from the journal, unfinished ones are dispatched again. A completion notification with the final output will arrive.",
+  "chat.toolCall.workflow.resumeRun.hint": "The run continues under the same run ID: finished steps are replayed from the journal, unfinished ones are dispatched again. A completion notification with the final output will arrive.",
   "chat.toolCall.workflow.listRuns.listing": "Listing workflow runs",
   "chat.toolCall.workflow.listRuns.listed": "Workflow runs",
   "chat.toolCall.workflow.listRuns.count": "{count} runs",
@@ -7246,21 +6277,20 @@ const enUS: Record<string, string> = {
   "chat.backgroundResult.workflow.completed": "Workflow completed",
   "chat.backgroundResult.workflow.errored": "Workflow errored",
   "chat.backgroundResult.workflow.stopped": "Workflow stopped",
-  // run 级停滞通知：run 还在跑，只是没有进展。
+// run 级停滞通知：run 还在跑，只是没有进展。
   "chat.backgroundResult.workflow.stall": "Workflow waiting on the model",
-  "chat.backgroundResult.workflow.stall.body":
-    "No model request in this run has succeeded for {minutes} min. It is still running and retrying with backoff; stop it from the run card if you no longer need it.",
+  "chat.backgroundResult.workflow.stall.body": "No model request in this run has succeeded for {minutes} min. It is still running and retrying with backoff; stop it from the run card if you no longer need it.",
   "chat.backgroundResult.workflow.stall.reason": "Retry reason",
   "chat.backgroundResult.workflow.stall.cap": "Max concurrency",
-  // 主代理闲着、run 还欠着决定时的提醒：计数词复用 digest.question(s) / card.hole(s)。
+// 主代理闲着、run 还欠着决定时的提醒：计数词复用 digest.question(s) / card.hole(s)。
   "chat.backgroundResult.workflow.blocked": "Workflow waiting on the agent",
   "chat.backgroundResult.workflow.blocked.openFor": "open for {minutes} min",
   "chat.backgroundResult.workflow.waiting": "Subagent is waiting for an answer",
   "chat.backgroundResult.workflow.answered": "Subagent question answered",
   "chat.backgroundResult.workflow.asked": "Subagent asked a question",
   "chat.backgroundResult.workflow.artifacts.more": "+{count}",
-  // ── Escalation tool cards ──
-  // escalate：子代理把阻塞问题升级给主代理，停驻等答案。asking 相可能持续很久，措辞要平静。
+// ── Escalation tool cards ──
+// escalate：子代理把阻塞问题升级给主代理，停驻等答案。asking 相可能持续很久，措辞要平静。
   "chat.toolCall.workflow.escalate.asking": "Asking the main agent",
   "chat.toolCall.workflow.escalate.asked": "Asked the main agent",
   "chat.toolCall.workflow.escalate.question": "Question",
@@ -7279,7 +6309,7 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.run.status.completed": "Completed",
   "chat.toolCall.workflow.run.status.errored": "Errored",
   "chat.toolCall.workflow.run.status.stopped": "Stopped",
-  // stopped 的原因词，跟在状态词后。
+// stopped 的原因词，跟在状态词后。
   "chat.toolCall.workflow.run.stopReason.user": "by you",
   "chat.toolCall.workflow.run.stopReason.model": "by the agent",
   "chat.toolCall.workflow.run.stopReason.provider": "model error",
@@ -7294,44 +6324,33 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.run.usage.label": "Usage",
   "chat.toolCall.workflow.run.usage.tokens": "{tokens} tokens",
   "chat.toolCall.workflow.run.usage.value": "{tokens} tokens · {steps} steps",
-  // 实例表撞界后卡与详情页各有的那一句：停的是每一步的**详情**，不是 run，
-  // 它上面那些计数已经把表外的实例算进来了（docs/dynamic-workflow/presentation.md）。
+// 实例表撞界后卡与详情页各有的那一句：停的是每一步的**详情**，不是 run，
+// 它上面那些计数已经把表外的实例算进来了（docs/dynamic-workflow/presentation.md）。
   "chat.toolCall.workflow.run.truncated": "Details shown for {shown} of {total} steps",
   "chat.toolCall.workflow.run.cancel": "Stop run",
   "chat.toolCall.workflow.run.cancelling": "Stopping…",
   "chat.toolCall.workflow.run.cancelDisabled": "Only a running workflow can be stopped.",
   "chat.toolCall.workflow.run.stopHint": "You can resume later; finished steps are kept.",
-  "chat.toolCall.workflow.run.rejection.cancel.not_found":
-    "This run is not running in this agent, so nothing was stopped.",
-  "chat.toolCall.workflow.run.rejection.cancel.not_running":
-    "This run has already ended, so nothing was stopped.",
-  "chat.toolCall.workflow.run.rejection.cancel.cancel_not_supported":
-    "This run cannot be stopped from here.",
-  "chat.toolCall.workflow.run.rejection.cancel.unsupported":
-    "This agent cannot stop workflow runs.",
+  "chat.toolCall.workflow.run.rejection.cancel.not_found": "This run is not running in this agent, so nothing was stopped.",
+  "chat.toolCall.workflow.run.rejection.cancel.not_running": "This run has already ended, so nothing was stopped.",
+  "chat.toolCall.workflow.run.rejection.cancel.cancel_not_supported": "This run cannot be stopped from here.",
+  "chat.toolCall.workflow.run.rejection.cancel.unsupported": "This agent cannot stop workflow runs.",
   "chat.toolCall.workflow.run.rejection.cancel.generic": "The run could not be stopped ({code}).",
-  "chat.toolCall.workflow.run.rejection.resume.compile_failed":
-    "The stored script no longer compiles with this version of the workflow facade. Ask the agent to amend the workflow instead of resuming it.",
-  "chat.toolCall.workflow.run.rejection.resume.not_found":
-    "This run is not in this session's journal.",
+  "chat.toolCall.workflow.run.rejection.resume.compile_failed": "The stored script no longer compiles with this version of the workflow facade. Ask the agent to amend the workflow instead of resuming it.",
+  "chat.toolCall.workflow.run.rejection.resume.not_found": "This run is not in this session's journal.",
   "chat.toolCall.workflow.run.rejection.resume.not_resumable": "Only a stopped run can be resumed.",
-  "chat.toolCall.workflow.run.rejection.resume.superseded":
-    "An amended run has replaced this one; open the successor instead.",
+  "chat.toolCall.workflow.run.rejection.resume.superseded": "An amended run has replaced this one; open the successor instead.",
   "chat.toolCall.workflow.run.rejection.resume.already_running": "This run is already in flight.",
-  "chat.toolCall.workflow.run.rejection.resume.script_missing":
-    "This run has no stored script to re-run.",
-  "chat.toolCall.workflow.run.rejection.resume.script_mismatch":
-    "The stored script no longer matches its recorded hash.",
-  "chat.toolCall.workflow.run.rejection.resume.unsupported":
-    "This agent cannot resume workflow runs.",
+  "chat.toolCall.workflow.run.rejection.resume.script_missing": "This run has no stored script to re-run.",
+  "chat.toolCall.workflow.run.rejection.resume.script_mismatch": "The stored script no longer matches its recorded hash.",
+  "chat.toolCall.workflow.run.rejection.resume.unsupported": "This agent cannot resume workflow runs.",
   "chat.toolCall.workflow.run.rejection.resume.generic": "The run could not be resumed ({code}).",
   "chat.toolCall.workflow.run.resume": "Resume run",
-  "chat.toolCall.workflow.run.resumeHint":
-    "Continue from where it stopped: finished steps are reused, interrupted steps run again.",
-  // 「配置」弹层（docs/dynamic-workflow/presentation.md「The settings popover」）：改子代理模型与最大并发数，
-  // 应用即一次 GUI 修订（新 run 接着跑，旧 run 停下，已完成的步骤作缓存带过去）。
-  // 完成卡与 run 侧板上的「保存 / 再次运行」（docs/dynamic-workflow/transcript-and-notifications.md
-  // 「Saving the run, and running it again」）。两条路：交给 ZCode 提炼，或按原样直接写下去。
+  "chat.toolCall.workflow.run.resumeHint": "Continue from where it stopped: finished steps are reused, interrupted steps run again.",
+// 「配置」弹层（docs/dynamic-workflow/presentation.md「The settings popover」）：改子代理模型与最大并发数，
+// 应用即一次 GUI 修订（新 run 接着跑，旧 run 停下，已完成的步骤作缓存带过去）。
+// 完成卡与 run 侧板上的「保存 / 再次运行」（docs/dynamic-workflow/transcript-and-notifications.md
+// 「Saving the run, and running it again」）。两条路：交给 ZCode 提炼，或按原样直接写下去。
   "chat.toolCall.workflow.saveRun.action": "Save",
   "chat.toolCall.workflow.saveRun.runAgain": "Run again",
   "chat.toolCall.workflow.saveRun.starting": "Starting…",
@@ -7341,8 +6360,7 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.saveRun.announce.global": "Saved as a global workflow",
   "chat.toolCall.workflow.saveRun.title": "Save workflow",
   "chat.toolCall.workflow.saveRun.lead": "Let ZCode refine and save it",
-  "chat.toolCall.workflow.saveRun.lead.hint":
-    "ZCode distills a reusable workflow for you, then asks you to confirm.",
+  "chat.toolCall.workflow.saveRun.lead.hint": "ZCode distills a reusable workflow for you, then asks you to confirm.",
   "chat.toolCall.workflow.saveRun.lead.sending": "Handed to ZCode…",
   "chat.toolCall.workflow.saveRun.lead.unsupported": "This agent cannot save directly.",
   "chat.toolCall.workflow.saveRun.or": "or save it as is",
@@ -7350,28 +6368,20 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.saveRun.name.placeholder": "pr-layered-review",
   "chat.toolCall.workflow.saveRun.name.helper": "Letters, digits, - _ . ; 64 characters at most",
   "chat.toolCall.workflow.saveRun.name.invalid": "Only letters, digits and - _ .",
-  "chat.toolCall.workflow.saveRun.scope.remoteOnly":
-    "A remote project can only save into the project.",
+  "chat.toolCall.workflow.saveRun.scope.remoteOnly": "A remote project can only save into the project.",
   "chat.toolCall.workflow.saveRun.description": "Description",
-  "chat.toolCall.workflow.saveRun.description.helper":
-    "When-to-use and arguments can be added later in the workflow hub.",
-  "chat.toolCall.workflow.saveRun.consequence":
-    "Writes {path}; afterwards it runs again by name from Automations › Workflows.",
-  "chat.toolCall.workflow.saveRun.overwrite":
-    "This project already has a workflow of this name; saving overwrites it. Its run records stay.",
+  "chat.toolCall.workflow.saveRun.description.helper": "When-to-use and arguments can be added later in the workflow hub.",
+  "chat.toolCall.workflow.saveRun.consequence": "Writes {path}; afterwards it runs again by name from Automations › Workflows.",
+  "chat.toolCall.workflow.saveRun.overwrite": "This project already has a workflow of this name; saving overwrites it. Its run records stay.",
   "chat.toolCall.workflow.saveRun.shadowing": "{text}.",
   "chat.toolCall.workflow.saveRun.submit": "Save as is",
   "chat.toolCall.workflow.saveRun.submit.overwrite": "Overwrite and save as is",
   "chat.toolCall.workflow.saveRun.submit.saving": "Saving…",
   "chat.toolCall.workflow.saveRun.error.invalid_name": "Only letters, digits and - _ .",
-  "chat.toolCall.workflow.saveRun.error.run_not_found":
-    "This run has no record here, so it cannot be saved directly.",
-  "chat.toolCall.workflow.saveRun.error.script_missing":
-    "This run did not keep its script, so use the path above.",
-  "chat.toolCall.workflow.saveRun.error.target_exists":
-    "A workflow of this name exists; confirm the overwrite and save again.",
-  "chat.toolCall.workflow.saveRun.error.compile_failed":
-    "The script did not pass typecheck; nothing was written.",
+  "chat.toolCall.workflow.saveRun.error.run_not_found": "This run has no record here, so it cannot be saved directly.",
+  "chat.toolCall.workflow.saveRun.error.script_missing": "This run did not keep its script, so use the path above.",
+  "chat.toolCall.workflow.saveRun.error.target_exists": "A workflow of this name exists; confirm the overwrite and save again.",
+  "chat.toolCall.workflow.saveRun.error.compile_failed": "The script did not pass typecheck; nothing was written.",
   "chat.toolCall.workflow.saveRun.error.write_error": "Writing failed; nothing was saved.",
   "chat.toolCall.workflow.saveRun.error.generic": "Saving failed.",
   "chat.toolCall.workflow.run.configure": "Configure",
@@ -7380,54 +6390,37 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.run.settings.model.session": "session model",
   "chat.toolCall.workflow.run.settings.model.sessionFallback": "Session model",
   "chat.toolCall.workflow.run.settings.model.unavailable": "unavailable",
-  "chat.toolCall.workflow.run.settings.model.noCatalog":
-    "This agent has no model catalog; subagents stay on the session model.",
+  "chat.toolCall.workflow.run.settings.model.noCatalog": "This agent has no model catalog; subagents stay on the session model.",
   "chat.toolCall.workflow.run.settings.limit": "Max concurrency",
   "chat.toolCall.workflow.run.settings.limit.default": "default {n}",
   "chat.toolCall.workflow.run.settings.limit.atDefault": "= default",
   "chat.toolCall.workflow.run.settings.limit.decrease": "Lower max concurrency",
   "chat.toolCall.workflow.run.settings.limit.increase": "Raise max concurrency",
-  "chat.toolCall.workflow.run.settings.consequence.running":
-    "Stops this run and starts a new one with these settings; finished steps are kept.",
-  "chat.toolCall.workflow.run.settings.consequence.pending":
-    "Starts a new run with these settings; this one has not begun any step yet.",
-  "chat.toolCall.workflow.run.settings.consequence.stopped":
-    "Continues as a new run with these settings; finished steps are kept.",
-  "chat.toolCall.workflow.run.settings.consequence.errored":
-    "Retries as a new run with these settings; finished steps are kept.",
-  // 只改并发上限、而且运行正在跑：就地生效（docs/dynamic-workflow/concurrency.md）。
-  "chat.toolCall.workflow.run.settings.consequence.concurrencyLive":
-    "Applies to this run right away; no new run is started.",
+  "chat.toolCall.workflow.run.settings.consequence.running": "Stops this run and starts a new one with these settings; finished steps are kept.",
+  "chat.toolCall.workflow.run.settings.consequence.pending": "Starts a new run with these settings; this one has not begun any step yet.",
+  "chat.toolCall.workflow.run.settings.consequence.stopped": "Continues as a new run with these settings; finished steps are kept.",
+  "chat.toolCall.workflow.run.settings.consequence.errored": "Retries as a new run with these settings; finished steps are kept.",
+// 只改并发上限、而且运行正在跑：就地生效（docs/dynamic-workflow/concurrency.md）。
+  "chat.toolCall.workflow.run.settings.consequence.concurrencyLive": "Applies to this run right away; no new run is started.",
   "chat.toolCall.workflow.run.settings.apply": "Apply",
   "chat.toolCall.workflow.run.settings.applying": "Applying…",
-  "chat.toolCall.workflow.run.settings.rejection.not_found":
-    "This run is not in this conversation's records.",
-  "chat.toolCall.workflow.run.settings.rejection.not_configurable":
-    "This run can no longer be configured.",
-  "chat.toolCall.workflow.run.settings.rejection.unchanged":
-    "These are the run's current settings.",
-  "chat.toolCall.workflow.run.settings.rejection.script_missing":
-    "This run has no stored script, so its settings cannot be changed here.",
-  "chat.toolCall.workflow.run.settings.rejection.model_unavailable":
-    "That model is not available on this agent now.",
-  "chat.toolCall.workflow.run.settings.rejection.compile_failed":
-    "The stored script no longer compiles with this version of the workflow facade. Ask the agent to amend the workflow.",
-  "chat.toolCall.workflow.run.settings.rejection.missing_boundaries":
-    "This run's records are too old to carry its finished work over.",
-  "chat.toolCall.workflow.run.settings.rejection.start_failed":
-    "The new run could not be started ({message}).",
-  "chat.toolCall.workflow.run.settings.rejection.unsupported":
-    "This agent cannot change workflow settings from here.",
-  "chat.toolCall.workflow.run.settings.rejection.generic":
-    "The settings could not be changed ({code}).",
+  "chat.toolCall.workflow.run.settings.rejection.not_found": "This run is not in this conversation's records.",
+  "chat.toolCall.workflow.run.settings.rejection.not_configurable": "This run can no longer be configured.",
+  "chat.toolCall.workflow.run.settings.rejection.unchanged": "These are the run's current settings.",
+  "chat.toolCall.workflow.run.settings.rejection.script_missing": "This run has no stored script, so its settings cannot be changed here.",
+  "chat.toolCall.workflow.run.settings.rejection.model_unavailable": "That model is not available on this agent now.",
+  "chat.toolCall.workflow.run.settings.rejection.compile_failed": "The stored script no longer compiles with this version of the workflow facade. Ask the agent to amend the workflow.",
+  "chat.toolCall.workflow.run.settings.rejection.missing_boundaries": "This run's records are too old to carry its finished work over.",
+  "chat.toolCall.workflow.run.settings.rejection.start_failed": "The new run could not be started ({message}).",
+  "chat.toolCall.workflow.run.settings.rejection.unsupported": "This agent cannot change workflow settings from here.",
+  "chat.toolCall.workflow.run.settings.rejection.generic": "The settings could not be changed ({code}).",
   "chat.toolCall.workflow.settingsChange.kind": "Settings changed",
   "chat.toolCall.workflow.settingsChange.model": "subagents on {model}",
   "chat.toolCall.workflow.settingsChange.modelSession": "subagents back on the session model",
   "chat.toolCall.workflow.settingsChange.limit": "at most {n} at once",
   "chat.toolCall.workflow.settingsChange.limitDefault": "limit back to the default",
   "chat.toolCall.workflow.run.result.title": "Result",
-  "chat.toolCall.workflow.run.result.completedHint":
-    "This run finished. Its result was delivered to the conversation as a background result message.",
+  "chat.toolCall.workflow.run.result.completedHint": "This run finished. Its result was delivered to the conversation as a background result message.",
   "chat.toolCall.workflow.run.result.erroredTitle": "Run errored",
   "chat.toolCall.workflow.run.result.stoppedTitle": "Run stopped",
   "chat.toolCall.workflow.run.result.noError": "No error detail was recorded.",
@@ -7446,42 +6439,34 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.run.artifacts.previousVersion": "Previous version",
   "chat.toolCall.workflow.run.artifacts.nextVersion": "Next version",
   "chat.toolCall.workflow.run.artifacts.open": "Open artifact",
-  // 动作。「下载」（存到用户挑的位置）仍缺席；「作为文件打开」
-  // 落的是宿主 ~/.zcode/tmp 下的副本，不是用户挑的位置。
+// 动作。「下载」（存到用户挑的位置）仍缺席；「作为文件打开」
+// 落的是宿主 ~/.zcode/tmp 下的副本，不是用户挑的位置。
   "chat.toolCall.workflow.run.artifacts.reveal": "Reveal in workspace",
   "chat.toolCall.workflow.run.artifacts.copy": "Copy",
   "chat.toolCall.workflow.run.artifacts.copied": "Copied",
   "chat.toolCall.workflow.run.artifacts.openAsFile": "Open as file",
   "chat.toolCall.workflow.run.artifacts.openAsFileFailed": "Could not open this artifact as a file",
   "chat.toolCall.workflow.run.artifacts.openInBrowser": "Open in browser",
-  "chat.toolCall.workflow.run.artifacts.openInBrowserNote":
-    "Opens the copy in your workspace, not the bytes pinned to this version.",
-  "chat.toolCall.workflow.run.artifacts.localOnly":
-    "Preview is only available in a local workspace.",
+  "chat.toolCall.workflow.run.artifacts.openInBrowserNote": "Opens the copy in your workspace, not the bytes pinned to this version.",
+  "chat.toolCall.workflow.run.artifacts.localOnly": "Preview is only available in a local workspace.",
   "chat.toolCall.workflow.run.artifacts.loading": "Loading artifact…",
   "chat.toolCall.workflow.run.artifacts.missing": "This artifact is no longer available.",
   "chat.toolCall.workflow.run.artifacts.loadError": "Failed to load this artifact.",
-  "chat.toolCall.workflow.run.artifacts.unsupported":
-    "No preview for this file type. It stays available in the workspace.",
-  "chat.toolCall.workflow.run.artifacts.presetInvalid":
-    "This dashboard definition cannot be rendered.",
-  "chat.toolCall.workflow.run.artifacts.unavailable":
-    "Artifact details are not available for this conversation.",
+  "chat.toolCall.workflow.run.artifacts.unsupported": "No preview for this file type. It stays available in the workspace.",
+  "chat.toolCall.workflow.run.artifacts.presetInvalid": "This dashboard definition cannot be rendered.",
+  "chat.toolCall.workflow.run.artifacts.unavailable": "Artifact details are not available for this conversation.",
   "chat.toolCall.workflow.run.artifacts.preset.otherColumn": "Other",
   "chat.toolCall.workflow.run.artifacts.preset.empty": "No data yet",
   "chat.toolCall.workflow.run.artifacts.preset.items": "{count} items",
-  // 待答问题区（升级问答）：actor 停驻在自己那次 ask 里等
-  // 主代理回话。只读——应答者是主代理，不是用户，所以文案不能读起来像在请用户作答。
+// 待答问题区（升级问答）：actor 停驻在自己那次 ask 里等
+// 主代理回话。只读——应答者是主代理，不是用户，所以文案不能读起来像在请用户作答。
   "chat.toolCall.workflow.run.questions.title": "Waiting on an answer",
-  "chat.toolCall.workflow.run.graph.unavailable":
-    "The workflow graph is not in this conversation's visible history.",
+  "chat.toolCall.workflow.run.graph.unavailable": "The workflow graph is not in this conversation's visible history.",
   "chat.toolCall.workflow.run.untracked.title": "No longer tracked live",
-  "chat.toolCall.workflow.run.untracked.body":
-    "This run is outside the most recent runs kept for live status. Its record is still complete.",
+  "chat.toolCall.workflow.run.untracked.body": "This run is outside the most recent runs kept for live status. Its record is still complete.",
   "chat.toolCall.workflow.script.title": "Script",
   "chat.toolCall.workflow.script.notStarted.title": "The script has not run anything yet",
-  "chat.toolCall.workflow.script.notStarted.body":
-    "Reads, searches and commands appear here the moment the script touches the project.",
+  "chat.toolCall.workflow.script.notStarted.body": "Reads, searches and commands appear here the moment the script touches the project.",
   "chat.toolCall.workflow.script.summary.phases": "{count} phases",
   "chat.toolCall.workflow.script.summary.phases.one": "1 phase",
   "chat.toolCall.workflow.script.summary.steps": "{count} steps",
@@ -7492,29 +6477,25 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.script.startedAgo": "started {ago} ago",
   "chat.toolCall.workflow.script.now": "now",
   "chat.toolCall.workflow.script.result.more": "… {count} more",
-  "chat.toolCall.workflow.script.unavailable":
-    "This session cannot show the script's steps. Update the CLI to read them.",
+  "chat.toolCall.workflow.script.unavailable": "This session cannot show the script's steps. Update the CLI to read them.",
   "chat.toolCall.workflow.script.loadFailed": "Could not load the script's steps: {error}",
   "chat.toolCall.workflow.script.listTruncated": "Only the first {count} steps are shown.",
   "chat.toolCall.workflow.script.kind.step": "Step",
   "chat.toolCall.workflow.script.status.exit": "exit {code}",
   "chat.toolCall.workflow.script.status.timedOut": "timed out",
   "chat.toolCall.workflow.script.status.replayed": "replayed",
-  "chat.toolCall.workflow.script.status.replayedHint":
-    "Replayed from the journal of an earlier run; the command did not run again.",
+  "chat.toolCall.workflow.script.status.replayedHint": "Replayed from the journal of an earlier run; the command did not run again.",
   "chat.toolCall.workflow.script.result.files": "{count} files",
   "chat.toolCall.workflow.script.result.matches": "{count} matches",
   "chat.toolCall.workflow.script.result.lines": "{count} lines",
   "chat.toolCall.workflow.script.result.empty": "Nothing matched.",
   "chat.toolCall.workflow.script.result.loading": "Loading…",
   "chat.toolCall.workflow.script.result.loadFailed": "Could not load the result: {error}",
-  "chat.toolCall.workflow.script.result.truncated":
-    "Showing the first {shown} of {total}; the full result stays in the journal.",
+  "chat.toolCall.workflow.script.result.truncated": "Showing the first {shown} of {total}; the full result stays in the journal.",
   "chat.toolCall.workflow.script.result.stderr": "stderr",
   "chat.toolCall.workflow.script.args.truncated": "Arguments were shortened before journaling.",
   "chat.toolCall.workflow.run.actor.notStarted.title": "Not started yet",
-  "chat.toolCall.workflow.run.actor.notStarted.body":
-    "This subagent has not been asked anything yet. The transcript appears here as soon as its first step is dispatched.",
+  "chat.toolCall.workflow.run.actor.notStarted.body": "This subagent has not been asked anything yet. The transcript appears here as soon as its first step is dispatched.",
   "chat.toolCall.workflow.run.event.runStarted": "Run started",
   "chat.toolCall.workflow.run.event.actorCreated": "Subagent created",
   "chat.toolCall.workflow.run.event.nodeQueued": "Queued",
@@ -7525,7 +6506,7 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.run.event.nodeSettledCached": "Settled · {outcome} (cached)",
   "chat.toolCall.workflow.run.event.usageUpdated": "Usage updated",
   "chat.toolCall.workflow.run.event.log": "Log",
-  // amend-resume: the first workspace write closed the predecessor cache; later steps run live.
+// amend-resume: the first workspace write closed the predecessor cache; later steps run live.
   "chat.toolCall.workflow.run.event.importCacheClosed": "Cache closed by a workspace write",
   "chat.toolCall.workflow.run.event.report": "Reported",
   "chat.toolCall.workflow.run.event.phaseEntered": "Entered phase",
@@ -7534,23 +6515,21 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.run.event.runSettled": "Run settled · {status}",
   "chat.toolCall.workflow.run.event.unknown": "{type}",
   "chat.toolCall.workflow.run.event.nodeWaitingSlot": "Waiting for a slot",
-  "chat.toolCall.workflow.run.event.nodeWaitingBackoff":
-    "Waiting for provider ({reason}) · retry in {seconds}s",
+  "chat.toolCall.workflow.run.event.nodeWaitingBackoff": "Waiting for provider ({reason}) · retry in {seconds}s",
   "chat.toolCall.workflow.run.event.nodeExecuting": "Request sent",
   "chat.toolCall.workflow.run.event.concurrencyChanged": "Concurrency {previous} → {next}",
-  // 上一条是治理器在压共享桶；这一条是用户改了这次 run 自己的上限（就地生效，不另起一次运行）。
+// 上一条是治理器在压共享桶；这一条是用户改了这次 run 自己的上限（就地生效，不另起一次运行）。
   "chat.toolCall.workflow.run.event.runCapsChanged": "Concurrency limit {previous} → {next}",
   "chat.toolCall.workflow.run.throttle.reason.rateLimited": "rate limited",
   "chat.toolCall.workflow.run.throttle.reason.overloaded": "overloaded",
   "chat.toolCall.workflow.run.throttle.reason.offpeak": "off-peak queue",
   "chat.toolCall.workflow.run.throttle.reason.transient": "transient error",
-  // 芯片上的数是一条界（min(共享 cap, 本 run 的 limit)），不是此刻在跑的个数。
+// 芯片上的数是一条界（min(共享 cap, 本 run 的 limit)），不是此刻在跑的个数。
   "chat.toolCall.workflow.run.concurrency.label": "Max concurrency {cap}",
   "chat.toolCall.workflow.run.concurrency.cooldown": "cooling down until {time}",
   "chat.toolCall.workflow.run.subagentModel.label": "Subagents {model}",
   "chat.toolCall.workflow.subagentModel.withLevel": "{model} · thinking {level}",
-  "chat.toolCall.workflow.subagentModel.tooltip":
-    "Subagents run on {model}. The main agent stays on the session model.",
+  "chat.toolCall.workflow.subagentModel.tooltip": "Subagents run on {model}. The main agent stays on the session model.",
   "chat.toolCall.todo.updating": "Updating todos",
   "chat.toolCall.todo.updated": "Updated todo",
   "chat.toolCall.search.find": "Find",
@@ -7582,8 +6561,7 @@ const enUS: Record<string, string> = {
   "chat.toolCall.agent.backgroundLaunched": "Launched",
   "chat.toolCall.agent.backgroundActivity": "Activity",
   "chat.toolCall.agent.backgroundActivityStreaming": "Running in background, syncing output",
-  "chat.toolCall.agent.backgroundActivityRunningWaiting":
-    "Running in background, waiting for output",
+  "chat.toolCall.agent.backgroundActivityRunningWaiting": "Running in background, waiting for output",
   "chat.toolCall.agent.backgroundActivityReceived": "SubAgent output received",
   "chat.toolCall.agent.backgroundActivityWaiting": "Waiting for SubAgent output",
   "chat.toolCall.agent.outputFile": "Output file",
@@ -7592,30 +6570,22 @@ const enUS: Record<string, string> = {
   "chat.toolCall.agent.output.syncing": "Syncing",
   "chat.toolCall.agent.output.error": "Sync failed: {error}",
   "chat.toolCall.agent.output.recentRows": "Latest {visible} rows / {total} total",
-  "chat.toolCall.agent.output.hiddenRows":
-    "{count} earlier rows omitted; open split view for full output",
+  "chat.toolCall.agent.output.hiddenRows": "{count} earlier rows omitted; open split view for full output",
   "chat.toolCall.agent.output.empty": "No output yet",
   "chat.toolCall.copyError": "Copy",
   "chat.toolCall.copyError.copied": "Copied",
   "chat.attachments.add": "Add attachment",
-  "chat.attachments.add.description":
-    "Add file attachments to the current message. You can also paste images directly.",
+  "chat.attachments.add.description": "Add file attachments to the current message. You can also paste images directly.",
   "chat.attachments.remove": "Remove attachment",
   "chat.attachments.maxFiles": "You can attach up to {count} attachments",
   "chat.attachments.maxFileSize": "Attachments must be {sizeMb} MB or smaller",
   "chat.attachments.readFailed": "Failed to read attachment: {message}",
-  "chat.attachments.missingInlineImageContent":
-    "Image attachment {filename} is missing its file content. Please add it again.",
-  "chat.attachments.missingInlinePdfContent":
-    "PDF attachment {filename} is missing its file content. Please add it again.",
-  "chat.attachments.oversizedInlineImage":
-    "Image attachment {filename} is too large ({size}). Please compress it to {maxSize} or smaller and try again.",
-  "chat.attachments.oversizedInlineVideo":
-    "Video attachment {filename} is too large ({size}). Please compress it to {maxSize} or smaller and try again.",
-  "chat.attachments.oversizedInlinePdf":
-    "PDF attachment {filename} is too large ({size}). Please compress it to {maxSize} or smaller and try again.",
-  "chat.attachments.restoreDropped":
-    "Some draft attachments could not be restored after restart. Please add them again: {filenames}",
+  "chat.attachments.missingInlineImageContent": "Image attachment {filename} is missing its file content. Please add it again.",
+  "chat.attachments.missingInlinePdfContent": "PDF attachment {filename} is missing its file content. Please add it again.",
+  "chat.attachments.oversizedInlineImage": "Image attachment {filename} is too large ({size}). Please compress it to {maxSize} or smaller and try again.",
+  "chat.attachments.oversizedInlineVideo": "Video attachment {filename} is too large ({size}). Please compress it to {maxSize} or smaller and try again.",
+  "chat.attachments.oversizedInlinePdf": "PDF attachment {filename} is too large ({size}). Please compress it to {maxSize} or smaller and try again.",
+  "chat.attachments.restoreDropped": "Some draft attachments could not be restored after restart. Please add them again: {filenames}",
   "chat.attachments.clipboardText": "Pasted text",
   "chat.attachments.clipboardText.description": "{lineCount} lines",
   "chat.attachments.preview.open": "Open image preview",
@@ -7654,19 +6624,16 @@ const enUS: Record<string, string> = {
   "chat.attachments.preview.videoLoading": "Loading video preview…",
   "chat.attachments.preview.unavailable": "This image is no longer available to preview.",
   "chat.attachments.preview.videoUnavailable": "This video is no longer available to preview.",
-  "chat.attachments.preview.videoUnsupported":
-    "This video can still be sent, but this device cannot preview its format or codec.",
+  "chat.attachments.preview.videoUnsupported": "This video can still be sent, but this device cannot preview its format or codec.",
   "chat.attachments.upload.waitingSession": "Waiting for session",
   "chat.attachments.upload.queued": "Waiting to upload",
   "chat.attachments.upload.uploading": "Uploading {progress}%",
   "chat.attachments.upload.committing": "Finishing upload",
   "chat.attachments.upload.ready": "Upload complete",
   "chat.attachments.upload.failed": "Upload failed: {message}",
-  "chat.attachments.upload.runtimeRestarted":
-    "The runtime restarted and invalidated this attachment",
+  "chat.attachments.upload.runtimeRestarted": "The runtime restarted and invalidated this attachment",
   "chat.composer.draftRuntimeRebuilding": "Rebuilding session, please wait",
-  "chat.attachments.upload.remoteMaterializationRequired":
-    "This remote attachment could not be staged, so its local path was not sent.",
+  "chat.attachments.upload.remoteMaterializationRequired": "This remote attachment could not be staged, so its local path was not sent.",
   "chat.attachments.upload.retry": "Retry upload",
   "chat.composer.actionMenu": "Add context",
   "chat.composer.insertMentionShortcut": "Use @ to add context",
@@ -7674,10 +6641,8 @@ const enUS: Record<string, string> = {
   "chat.composer.insertSlashShortcut": "Use / for capabilities",
   "chat.composer.insertSkillShortcut": "Use $ for skills",
   "chat.send.description": "Send the current text and attachments.",
-  "chat.queue.enqueue.description":
-    "Queue the current draft and send it automatically after the current response finishes.",
-  "chat.stop.description":
-    "Stop only the current response. Queued messages stay held until you continue them.",
+  "chat.queue.enqueue.description": "Queue the current draft and send it automatically after the current response finishes.",
+  "chat.stop.description": "Stop only the current response. Queued messages stay held until you continue them.",
   "chat.mention.title": "Mention",
   "chat.mention.back": "Back to categories",
   "chat.mention.selectItem": "Choose an item to insert into the editor",
@@ -7714,10 +6679,9 @@ const enUS: Record<string, string> = {
   "chat.slash.skills.empty": "No matching skills",
   "chat.slash.subagents.title": "Agents",
   "chat.slash.subagents.empty": "No matching agents",
-  "chat.slash.emptyUnavailable":
-    "No slash commands have been broadcast for the current ZCode Agent session",
+  "chat.slash.emptyUnavailable": "No slash commands have been broadcast for the current Reactor Agent session",
   "chat.slash.emptyResults": "No matching slash commands",
-  // Errors
+// Errors
   "chat.error.connectionLost": "Connection to agent lost",
   "chat.error.processExited": "Agent process exited unexpectedly",
   "chat.error.dismiss": "Dismiss error",
@@ -7735,43 +6699,29 @@ const enUS: Record<string, string> = {
   "chat.error.collapseDetails": "Hide details",
   "chat.error.feedback": "Report issue",
   "chat.error.feedbackOpened": "Feedback opened with the error context attached",
-  "chat.error.noAvailableModel": "No model available. Upgrade or set a custom model.",
-  "chat.error.remoteNoAvailableModel":
-    "This remote device has no available model yet. Configure models on this computer first; they will sync to the remote device automatically after you save.",
+  "chat.error.noAvailableModel": "No model available. Configure a model in Settings and try again.",
+  "chat.error.remoteNoAvailableModel": "This remote device has no available model yet. Configure models on this computer first; they will sync to the remote device automatically after you save.",
   "chat.error.sendFailed": "Failed to send. Try again later.",
   "chat.error.modelSettings": "Model settings",
   "chat.error.setModels": "Set",
-
-  // Start Plan per-bucket quota reminders
-  "chat.quota.startPlan.bucketDailyLow":
-    "{model} has {percent} of its daily quota remaining ({remaining} tokens).",
-  "chat.quota.startPlan.bucketActivityLow":
-    "{model} has {percent} of its promotional quota remaining ({remaining} tokens).",
-  "chat.quota.startPlan.modelVeryLow":
-    "{model} has {percent} of its plan quota remaining ({remaining} tokens).",
-  "chat.quota.startPlan.modelExhausted":
-    "All available quota for {model} has been used up. Switch to another model or to a Coding Plan subscription.",
-  "chat.quota.startPlan.dailyExhausted":
-    "Your Start Plan quota has been used up. Switch to a Coding Plan subscription, or wait for the quota to reset.",
-  "chat.quota.startPlan.concurrentLimit":
-    "The system is busy. Please switch models, switch to a Coding Plan subscription, or try again later.",
-  "chat.quota.startPlan.concurrentLimit.retryExhausted":
-    "The system is busy, and automatic retries have reached the maximum count. Please try again later or switch to a Coding Plan subscription.",
-  "chat.quota.startPlan.concurrentLimit.switchModel":
-    "The current model request concurrency limit has been reached. Switch models to continue your current task.",
-  "chat.quota.mcp.quotaExhausted":
-    'ZCode MCP "{server}" has used up today\'s quota. It resets tomorrow.',
-  "chat.quota.mcp.codingPlanRequired":
-    'No ZCode MCP "{server}" quota. Sign in or get a Coding Plan to use it.',
-  "chat.quota.providerLimited":
-    "The current account quota or plan limit has been reached. Upgrade or adjust the plan to continue.",
+// Start Plan per-bucket quota reminders
+  "chat.quota.startPlan.bucketDailyLow": "{model} has {percent} of its daily quota remaining ({remaining} tokens).",
+  "chat.quota.startPlan.bucketActivityLow": "{model} has {percent} of its promotional quota remaining ({remaining} tokens).",
+  "chat.quota.startPlan.modelVeryLow": "{model} has {percent} of its plan quota remaining ({remaining} tokens).",
+  "chat.quota.startPlan.modelExhausted": "All available quota for {model} has been used up. Switch to another model or to a Coding Plan subscription.",
+  "chat.quota.startPlan.dailyExhausted": "Your Start Plan quota has been used up. Switch to a Coding Plan subscription, or wait for the quota to reset.",
+  "chat.quota.startPlan.concurrentLimit": "The system is busy. Please switch models, switch to a Coding Plan subscription, or try again later.",
+  "chat.quota.startPlan.concurrentLimit.retryExhausted": "The system is busy, and automatic retries have reached the maximum count. Please try again later or switch to a Coding Plan subscription.",
+  "chat.quota.startPlan.concurrentLimit.switchModel": "The current model request concurrency limit has been reached. Switch models to continue your current task.",
+  "chat.quota.mcp.quotaExhausted": 'Reactor MCP "{server}" has used up today\'s quota. It resets tomorrow.',
+  "chat.quota.mcp.codingPlanRequired": 'No Reactor MCP "{server}" quota. Sign in or get a Coding Plan to use it.',
+  "chat.quota.providerLimited": "The current account quota or plan limit has been reached. Upgrade or adjust the plan to continue.",
   "chat.quota.action.upgrade": "Upgrade",
   "chat.quota.action.renew": "Renew",
   "chat.quota.action.switchModel": "Switch model",
   "chat.quota.action.switchProvider": "Switch provider",
   "chat.quota.action.refresh": "Refresh quota",
-
-  // Permissions
+// Permissions
   "chat.permission.title": "Permission required",
   "chat.permission.awaitingApproval": "Awaiting approval",
   "chat.permission.approve": "Allow",
@@ -7779,20 +6729,16 @@ const enUS: Record<string, string> = {
   "chat.permission.allowForSession": "Allow for session",
   "chat.permission.responseFailed": "Approval did not complete. Please retry.",
   "chat.permission.switchAction": "Allow and switch to",
-  "chat.permission.retryCommittedMode":
-    "{mode} was already saved. Select the approval action again to finish in that mode.",
+  "chat.permission.retryCommittedMode": "{mode} was already saved. Select the approval action again to finish in that mode.",
   "chat.permission.allowAndSwitch": "Allow and switch to {mode}",
   "chat.permission.switchProjectHint": "New sessions in this project will also use this mode.",
   "chat.permission.fullAccess": "Full access",
-  "chat.permission.fullAccess.description":
-    "Grant the agent full access without further confirmation.",
-  "chat.permission.allowCommand.description":
-    "Do not ask again for matching commands in this project",
+  "chat.permission.fullAccess.description": "Grant the agent full access without further confirmation.",
+  "chat.permission.allowCommand.description": "Do not ask again for matching commands in this project",
   "chat.permission.allowCommand": "Always allow this command",
   "chat.permission.allowForProject": "Always allow in this project",
   "chat.permission.cua.allowForProject": "Always allow Computer Use in this project",
-  "chat.permission.cua.allowForProject.description":
-    "Do not ask again for official Computer Use actions in this project",
+  "chat.permission.cua.allowForProject.description": "Do not ask again for official Computer Use actions in this project",
   "chat.permission.deny": "Deny",
   "chat.permission.denyAlways": "Always deny",
   "chat.permission.files": "Files",
@@ -7805,45 +6751,41 @@ const enUS: Record<string, string> = {
   "chat.permission.workflow.refine": "Refine",
   "chat.permission.workflow.refine.placeholder": "Describe how the workflow should change…",
   "chat.permission.workflow.allowForSession": "Always allow in this session",
-  "chat.permission.workflow.allowForSession.description":
-    "Do not ask again for workflows in this session",
+  "chat.permission.workflow.allowForSession.description": "Do not ask again for workflows in this session",
   "chat.permission.workflow.amend.title": "Amend this workflow?",
   "chat.permission.workflow.amends": "Amends run",
   "chat.permission.workflow.amends.running": "still running, will be stopped",
   "chat.permission.workflow.amends.scriptUnchanged": "script unchanged",
   "chat.permission.workflow.maxConcurrency": "At most {count} subagents at once",
   "chat.permission.workflow.subagentModel": "Subagents run on {model}",
-  // 脚本给某些子代理点名了模型时（docs/dynamic-workflow/launch.md「Models the script names」）：那些
-  // 名字不列（作者模型的选择），这一句只改口「默认」——它不再替每一个子代理说话。
+// 脚本给某些子代理点名了模型时（docs/dynamic-workflow/launch.md「Models the script names」）：那些
+// 名字不列（作者模型的选择），这一句只改口「默认」——它不再替每一个子代理说话。
   "chat.permission.workflow.subagentModelDefault": "By default, subagents run on {model}",
-  // 确认窗里可调的两句（docs/dynamic-workflow/presentation.md「The confirmation window」）：句中的值
-  // 就是控件，所以句子被拆成控件前后的两截；改过的那一行句尾多一截「· 原为 X ↺」。
+// 确认窗里可调的两句（docs/dynamic-workflow/presentation.md「The confirmation window」）：句中的值
+// 就是控件，所以句子被拆成控件前后的两截；改过的那一行句尾多一截「· 原为 X ↺」。
   "chat.permission.workflow.settings.model.lead": "Subagents run on",
   "chat.permission.workflow.settings.model.noCatalog": "Subagents stay on the session model",
   "chat.permission.workflow.settings.model.noCatalogReason": "this agent has no model catalog",
   "chat.permission.workflow.settings.model.leadDefault": "By default, subagents run on",
-  "chat.permission.workflow.settings.model.noCatalogDefault":
-    "By default, subagents stay on the session model",
+  "chat.permission.workflow.settings.model.noCatalogDefault": "By default, subagents stay on the session model",
   "chat.permission.workflow.settings.limit.lead": "At most",
   "chat.permission.workflow.settings.limit.trail": "subagents at once",
   "chat.permission.workflow.settings.limit.none": "no limit of its own",
   "chat.permission.workflow.settings.was": "was {value}",
   "chat.permission.workflow.settings.reset": "Back to the proposed value",
-  // 改过设置后前两个选项换描述（docs/dynamic-workflow/launch.md「The options」）：会话免确认只管
-  // 「以后不再问」，调整只随这一次应答走。
+// 改过设置后前两个选项换描述（docs/dynamic-workflow/launch.md「The options」）：会话免确认只管
+// 「以后不再问」，调整只随这一次应答走。
   "chat.permission.workflow.allowOnce.adjusted": "Run once with the adjusted settings",
-  "chat.permission.workflow.allowForSession.adjusted":
-    "This run with the adjusted settings; later runs are not asked and carry their own",
-  // ── 可复用工作流（docs/dynamic-workflow/launch.md）──
-  // saved 来源徽标（运行确认窗）：只说明脚本来自哪个文件、带了什么实参。
-  // 它不表达任何信任——保存不产生信任，已保存的工作流照样过完整的运行确认。
+  "chat.permission.workflow.allowForSession.adjusted": "This run with the adjusted settings; later runs are not asked and carry their own",
+// ── 可复用工作流（docs/dynamic-workflow/launch.md）──
+// saved 来源徽标（运行确认窗）：只说明脚本来自哪个文件、带了什么实参。
+// 它不表达任何信任——保存不产生信任，已保存的工作流照样过完整的运行确认。
   "chat.permission.workflow.saved.badge": "Saved workflow",
   "chat.permission.workflow.saved.scope.project": "project",
   "chat.permission.workflow.saved.args": "Arguments",
   "chat.permission.workflow.save.title": "Save this workflow to the project?",
   "chat.permission.workflow.save.overwriteTitle": "Overwrite the existing saved workflow?",
-  "chat.permission.workflow.save.overwriteHint":
-    "A workflow with this name already exists at this path. Saving replaces the whole file.",
+  "chat.permission.workflow.save.overwriteHint": "A workflow with this name already exists at this path. Saving replaces the whole file.",
   "chat.permission.workflow.save.path": "Path",
   "chat.permission.workflow.save.description": "Description",
   "chat.permission.workflow.save.whenToUse": "When to use",
@@ -7861,14 +6803,12 @@ const enUS: Record<string, string> = {
   "chat.interactionOrigin.subagent": "Subagent",
   "chat.interactionOrigin.subagent.title": "Request from subagent: {agentType}",
   "chat.interactionOrigin.subagent.named": "Subagent · {description}",
-  "chat.interactionOrigin.subagent.titleNamed":
-    "Request from subagent: {agentType} · {description}",
+  "chat.interactionOrigin.subagent.titleNamed": "Request from subagent: {agentType} · {description}",
   "chat.cuaPermission.openAccessibility": "Open Accessibility Settings",
   "chat.cuaPermission.openScreenRecording": "Open Screen Recording",
   "chat.cuaPermission.opening": "Opening...",
   "chat.cuaPermission.openFailed": "Could not open CUA permissions: {error}",
-
-  // Elicitation
+// Elicitation
   "chat.elicitation.title": "Input required",
   "chat.elicitation.keyboardHint": "Use Tab / arrow keys to choose, then Enter or Space to select",
   "chat.elicitation.customAnswer": "Custom answer",
@@ -7896,21 +6836,17 @@ const enUS: Record<string, string> = {
   "chat.permission.allowOnce.description": "Allow only this time",
   "chat.permission.allowAlways.description.command": "Do not ask again for the same command",
   "chat.permission.allowAlways.description.file": "Do not ask again for the same file operation",
-  "chat.permission.allowAlways.description.generic":
-    "Do not ask again for the same permission request",
+  "chat.permission.allowAlways.description.generic": "Do not ask again for the same permission request",
   "chat.permission.denyOnce.description": "Reject it for now",
   "chat.permission.denyAlways.description.command": "Always reject the same command in the future",
-  "chat.permission.denyAlways.description.file":
-    "Always reject the same file operation in the future",
-  "chat.permission.denyAlways.description.generic":
-    "Always reject the same permission request in the future",
+  "chat.permission.denyAlways.description.file": "Always reject the same file operation in the future",
+  "chat.permission.denyAlways.description.generic": "Always reject the same permission request in the future",
   "chat.permission.fileChange.add": "Create",
   "chat.permission.fileChange.update": "Edit",
   "chat.permission.fileChange.addMany": "Creates {count} files",
   "chat.permission.fileChange.updateMany": "Updates {count} files",
   "chat.permission.fileChange.mixedMany": "Update {count} files",
-
-  // Modes
+// Modes
   "mode.default": "Default",
   "mode.plan": "Plan",
   "mode.acceptEdits": "Accept edits",
@@ -7921,20 +6857,15 @@ const enUS: Record<string, string> = {
   "mode.label.glm.guarded": "Autonomous mode",
   "mode.description.glm.guarded": "Ask when there’s risk",
   "mode.yoloConfirmation.title": "Enable full access?",
-  "mode.yoloConfirmation.description":
-    "Tasks can perform the following actions without asking for your approval each time.",
+  "mode.yoloConfirmation.description": "Tasks can perform the following actions without asking for your approval each time.",
   "mode.yoloConfirmation.files": "Files and folders",
   "mode.yoloConfirmation.files.description": "Read, create, change, and delete accessible files.",
   "mode.yoloConfirmation.commands": "Terminal commands",
-  "mode.yoloConfirmation.commands.description":
-    "Run commands, install software, or change system settings.",
+  "mode.yoloConfirmation.commands.description": "Run commands, install software, or change system settings.",
   "mode.yoloConfirmation.network": "Network and apps",
-  "mode.yoloConfirmation.network.description":
-    "Access the network, send data, and use connected apps.",
-  "mode.yoloConfirmation.risk":
-    "These actions may cause data loss or disclosure. Enable only for tasks you trust. You can switch to another permission mode at any time.",
-  "mode.yoloConfirmation.acknowledgement":
-    "I understand the risks and take responsibility for my data security.",
+  "mode.yoloConfirmation.network.description": "Access the network, send data, and use connected apps.",
+  "mode.yoloConfirmation.risk": "These actions may cause data loss or disclosure. Enable only for tasks you trust. You can switch to another permission mode at any time.",
+  "mode.yoloConfirmation.acknowledgement": "I understand the risks and take responsibility for my data security.",
   "mode.yoloConfirmation.confirm": "Confirm",
   "mode.label.glm.yolo": "Full access",
   "mode.description.glm.default": "Use default confirmations.",
@@ -7962,62 +6893,40 @@ const enUS: Record<string, string> = {
   "planTool.panel.syncing": "Syncing plan…",
   "planTool.guidance.enterMode": "Entered plan mode",
   "chat.permission.switchMode.placeholder": "Implementation plan",
-
-  // ZCode Agent
+// ZCode Agent
   "zcode.unavailable": "AI agent not available",
   "zcode.initFailed": "Failed to start AI agent",
   "zcode.error.TASK_OWNED_BY_OTHER_HOST": "This task is already running in another connected view.",
   "zcode.error.STALE_TASK_OWNER_COMMAND": "This action belongs to an older run and was ignored.",
   "zcode.error.NO_ACTIVE_TASK_OWNER": "No active task owner is available for this action.",
   "zcode.error.OWNER_COMMAND_FAILED": "The task owner could not complete this action.",
-  "zcode.error.MEDIA_BUDGET_CURRENT_ATTACHMENT_TOO_LARGE":
-    "Current attachments are too large for one request. Remove or compress attachments and try again.",
-  "zcode.error.MEDIA_BUDGET_CURRENT_IMAGE_TOO_LARGE":
-    "Current image attachments are too large. Remove or compress images and try again.",
-  "zcode.error.MEDIA_BUDGET_CURRENT_VIDEO_TOO_LARGE":
-    "Current video attachments are too large. Remove or compress videos and try again.",
-  "zcode.error.ZCODE_RUNTIME_MODEL_UNAVAILABLE":
-    "The current model is no longer available. Select an available model from the current model list to continue.",
-  "zcode.error.ZCODE_BIGMODEL_TEAM_PLAN_MEMBER_REQUIRED":
-    "The current model is unavailable. Check whether the current account has been added to the project member list.",
-  "zcode.error.CLAUDE_UNKNOWN_COMMAND":
-    "Claude Code does not recognize {command}. Check the command name, or switch to an Agent/skill that supports it and try again.",
-  "zcode.error.CLAUDE_UNKNOWN_COMMAND_WITH_ARGS":
-    "Claude Code does not recognize {command} (args: {args}). Check the command name, or switch to an Agent/skill that supports it and try again.",
+  "zcode.error.MEDIA_BUDGET_CURRENT_ATTACHMENT_TOO_LARGE": "Current attachments are too large for one request. Remove or compress attachments and try again.",
+  "zcode.error.MEDIA_BUDGET_CURRENT_IMAGE_TOO_LARGE": "Current image attachments are too large. Remove or compress images and try again.",
+  "zcode.error.MEDIA_BUDGET_CURRENT_VIDEO_TOO_LARGE": "Current video attachments are too large. Remove or compress videos and try again.",
+  "zcode.error.ZCODE_RUNTIME_MODEL_UNAVAILABLE": "The current model is no longer available. Select an available model from the current model list to continue.",
+  "zcode.error.ZCODE_BIGMODEL_TEAM_PLAN_MEMBER_REQUIRED": "The current model is unavailable. Check whether the current account has been added to the project member list.",
+  "zcode.error.CLAUDE_UNKNOWN_COMMAND": "Claude Code does not recognize {command}. Check the command name, or switch to an Agent/skill that supports it and try again.",
+  "zcode.error.CLAUDE_UNKNOWN_COMMAND_WITH_ARGS": "Claude Code does not recognize {command} (args: {args}). Check the command name, or switch to an Agent/skill that supports it and try again.",
   "zcode.error.providerBusiness.1006": "Your login session has expired. Please sign in again.",
-  "zcode.error.providerBusiness.1005":
-    "Today's free plan quota has been used up. Switch to a Coding Plan subscription or another model, or wait for the quota to reset.",
-  "zcode.error.providerBusiness.3006":
-    "The current model is not included in this plan. Switch to an allowed model and try again.",
-  "zcode.error.providerBusiness.3002":
-    "You're sending requests too quickly. Please try again later.",
-  "zcode.error.providerBusiness.3001":
-    "The request parameters are invalid. Check the input and try again.",
-  "zcode.error.providerBusiness.3008":
-    "The system is busy. Please switch models, switch to a Coding Plan subscription, or try again later.",
-  "zcode.error.providerBusiness.3009":
-    "The system is busy. Please switch models, switch to a Coding Plan subscription, or try again later.",
-  "zcode.error.providerBusiness.3010":
-    "The system is busy. Please switch models, switch to a Coding Plan subscription, or try again later.",
-  "zcode.error.providerBusiness.3102":
-    "Your device was offline when this task reached the front of the queue. The quota has been returned. Keep your device online and create a new idle-time task.",
-  "zcode.error.providerBusiness.3106":
-    "This run exceeded the maximum single-run time. Create a new idle-time task to continue.",
-  "zcode.error.offPeakTicketExpired":
-    "This idle-time task can no longer continue. Create a new idle-time task.",
-  "zcode.error.providerBusiness.2007":
-    "The upstream service is temporarily unavailable. Please try again later.",
-  "zcode.error.providerBusiness.429":
-    "You're sending requests too quickly. Please try again later.",
-
-  // Debug info bar
+  "zcode.error.providerBusiness.1005": "Today's free plan quota has been used up. Switch to a Coding Plan subscription or another model, or wait for the quota to reset.",
+  "zcode.error.providerBusiness.3006": "The current model is not included in this plan. Switch to an allowed model and try again.",
+  "zcode.error.providerBusiness.3002": "You're sending requests too quickly. Please try again later.",
+  "zcode.error.providerBusiness.3001": "The request parameters are invalid. Check the input and try again.",
+  "zcode.error.providerBusiness.3008": "The system is busy. Please switch models, switch to a Coding Plan subscription, or try again later.",
+  "zcode.error.providerBusiness.3009": "The system is busy. Please switch models, switch to a Coding Plan subscription, or try again later.",
+  "zcode.error.providerBusiness.3010": "The system is busy. Please switch models, switch to a Coding Plan subscription, or try again later.",
+  "zcode.error.providerBusiness.3102": "Your device was offline when this task reached the front of the queue. The quota has been returned. Keep your device online and create a new idle-time task.",
+  "zcode.error.providerBusiness.3106": "This run exceeded the maximum single-run time. Create a new idle-time task to continue.",
+  "zcode.error.offPeakTicketExpired": "This idle-time task can no longer continue. Create a new idle-time task.",
+  "zcode.error.providerBusiness.2007": "The upstream service is temporarily unavailable. Please try again later.",
+  "zcode.error.providerBusiness.429": "You're sending requests too quickly. Please try again later.",
+// Debug info bar
   "debugInfo.taskId": "Task ID",
   "debugInfo.traceId": "Trace ID",
   "debugInfo.sessionId": "Session ID",
   "debugInfo.provider": "Provider",
   "debugInfo.copied": "Copied",
-
-  // Resource manager
+// Resource manager
   "resourceManager.title": "Resource manager",
   "resourceManager.loading": "Reading resource usage...",
   "resourceManager.unavailable": "Resource manager bridge is unavailable",
@@ -8025,8 +6934,7 @@ const enUS: Record<string, string> = {
   "resourceManager.cpu": "CPU",
   "resourceManager.memory": "Memory",
   "resourceManager.network": "Network",
-  "resourceManager.network.description":
-    "Records local app requests while this window is open. Keeps the latest 1,000.",
+  "resourceManager.network.description": "Records local app requests while this window is open. Keeps the latest 1,000.",
   "resourceManager.network.filter": "Filter by URL, process, PID or method",
   "resourceManager.network.clear": "Clear",
   "resourceManager.network.unavailable": "Network requests are unavailable",
@@ -8039,7 +6947,7 @@ const enUS: Record<string, string> = {
   "resourceManager.network.empty": "Waiting for new network requests…",
   "resourceManager.network.noMatches": "No matching requests",
   "resourceManager.storage": "Storage",
-  "resourceManager.appUsage": "ZCode",
+  "resourceManager.appUsage": "Reactor",
   "resourceManager.systemUsage": "System",
   "resourceManager.category.base": "Base services",
   "resourceManager.category.task": "Task processes",
@@ -8049,8 +6957,7 @@ const enUS: Record<string, string> = {
   "resourceManager.sampling": "Sampling metrics",
   "resourceManager.column.process": "Process",
   "resourceManager.column.pid": "PID",
-
-  // Feedback
+// Feedback
   "feedback.center.title": "Feedback",
   "feedback.center.description": "Describe the issue and track progress after submitting.",
   "feedback.center.submitTitle": "Submit feedback",
@@ -8061,8 +6968,7 @@ const enUS: Record<string, string> = {
   "feedback.background.title": "Submitting feedback",
   "feedback.background.open": "Open feedback submission details",
   "feedback.background.openDetail": "Open details",
-  "feedback.background.defaultDetail":
-    "Feedback submission continues and stops if you quit the app",
+  "feedback.background.defaultDetail": "Feedback submission continues and stops if you quit the app",
   "feedback.background.expand": "Expand feedback submission status",
   "feedback.background.collapse": "Collapse feedback submission status",
   "feedback.background.dismiss": "Hide feedback submission status",
@@ -8090,18 +6996,13 @@ const enUS: Record<string, string> = {
   "feedback.status.released": "Released",
   "feedback.statusHint.pendingReview": "We received it and will handle it soon.",
   "feedback.statusHint.needInfo": "We need a bit more information. Check the team reply below.",
-  "feedback.statusHint.accepted":
-    "Your feedback was accepted. We will schedule a fix or improvement.",
-  "feedback.statusHint.closedByReply":
-    "The product team replied and closed this feedback. Submit a new one if the issue remains.",
-  "feedback.statusHint.archived":
-    "The product team replied and closed this feedback. Submit a new one if the issue remains.",
-  "feedback.statusHint.rejected":
-    "This feedback is not planned for now. You can check the explanation below.",
+  "feedback.statusHint.accepted": "Your feedback was accepted. We will schedule a fix or improvement.",
+  "feedback.statusHint.closedByReply": "The product team replied and closed this feedback. Submit a new one if the issue remains.",
+  "feedback.statusHint.archived": "The product team replied and closed this feedback. Submit a new one if the issue remains.",
+  "feedback.statusHint.rejected": "This feedback is not planned for now. You can check the explanation below.",
   "feedback.statusHint.inDevelopment": "We are working on it. Updates will appear below.",
   "feedback.statusHint.resolved": "The issue has been fixed and is waiting for release.",
-  "feedback.statusHint.released":
-    "The related fix or improvement is live. Thanks for the feedback.",
+  "feedback.statusHint.released": "The related fix or improvement is live. Thanks for the feedback.",
   "feedback.time.justNow": "just now",
   "feedback.time.minutesAgo": "{count} min ago",
   "feedback.time.hoursAgo": "{count} hr ago",
@@ -8112,12 +7013,10 @@ const enUS: Record<string, string> = {
   "feedback.tickets.newFeedback": "New feedback",
   "feedback.tickets.backToList": "Back to list",
   "feedback.tickets.empty.title": "No feedback yet",
-  "feedback.tickets.empty.description":
-    "Send a note whenever you run into an issue. We will sync progress here.",
+  "feedback.tickets.empty.description": "Send a note whenever you run into an issue. We will sync progress here.",
   "feedback.tickets.empty.action": "Submit feedback",
   "feedback.tickets.placeholder.title": "Select feedback to view details",
-  "feedback.tickets.placeholder.description":
-    "Replies from our team will appear here. You can also add reproduction steps, screenshots, or logs in the details.",
+  "feedback.tickets.placeholder.description": "Replies from our team will appear here. You can also add reproduction steps, screenshots, or logs in the details.",
   "feedback.tickets.group.last24h": "Last 24 hours",
   "feedback.tickets.group.last7d": "Last 7 days",
   "feedback.tickets.group.earlier": "Earlier",
@@ -8157,8 +7056,7 @@ const enUS: Record<string, string> = {
   "feedback.timeline.event.fullLogUploaded": "Full logs uploaded; feedback submitted",
   "feedback.timeline.event.statusChanged": "Status changed to {status}",
   "feedback.timeline.event.agentSubmitted": "{name} submitted feedback via Agent",
-  "feedback.timeline.event.progressUpdatedWithStatus":
-    "Progress updated (status to {status}): {message}",
+  "feedback.timeline.event.progressUpdatedWithStatus": "Progress updated (status to {status}): {message}",
   "feedback.timeline.event.progressUpdatedWithMessage": "Progress updated: {message}",
   "feedback.timeline.event.markedStatus": "Marked as {status}: {message}",
   "feedback.actor.user": "User",
@@ -8170,11 +7068,9 @@ const enUS: Record<string, string> = {
   "feedback.duration.hours": "{count} hr",
   "feedback.duration.days": "{count} day(s)",
   "feedback.supplement.title": "Additional information",
-  "feedback.supplement.description":
-    "Add reproduction steps, screenshot notes, log snippets, or more clues here.",
+  "feedback.supplement.description": "Add reproduction steps, screenshot notes, log snippets, or more clues here.",
   "feedback.supplement.continueTitle": "Add more information",
-  "feedback.supplement.continueDescription":
-    "You can add reproduction steps, screenshot notes, log snippets, or new clues while viewing the process.",
+  "feedback.supplement.continueDescription": "You can add reproduction steps, screenshot notes, log snippets, or new clues while viewing the process.",
   "feedback.supplement.attachmentLimit": "You can add up to {count} attachments",
   "feedback.supplement.attachmentTooLarge": "{name} is over 100 MB and cannot be uploaded yet.",
   "feedback.supplement.attachment": "Attachment",
@@ -8182,8 +7078,7 @@ const enUS: Record<string, string> = {
   "feedback.supplement.addAttachment": "Add attachment",
   "feedback.supplement.placeholder": "Add more details, paste a screenshot, or add a local file...",
   "feedback.supplement.removeAttachment": "Remove {name}",
-  "feedback.supplement.attachmentHint":
-    "Supports pasted screenshots or local files. Each attachment must be under 100 MB.",
+  "feedback.supplement.attachmentHint": "Supports pasted screenshots or local files. Each attachment must be under 100 MB.",
   "feedback.supplement.sending": "Sending",
   "feedback.supplement.send": "Send update",
   "feedback.type.bug.label": "Bug",
@@ -8201,30 +7096,25 @@ const enUS: Record<string, string> = {
   "feedback.submit.bug.titleLabel": "Title",
   "feedback.submit.bug.titlePlaceholder": "Example: SSH connection fails",
   "feedback.submit.bug.descriptionLabel": "Details",
-  "feedback.submit.bug.descriptionPlaceholder":
-    "Describe what you ran into: where you clicked, what happened, what you expected, and whether there was an error. We keep your original description and analyze it after submission.",
+  "feedback.submit.bug.descriptionPlaceholder": "Describe what you ran into: where you clicked, what happened, what you expected, and whether there was an error. We keep your original description and analyze it after submission.",
   "feedback.submit.bug.helper.1": "Location",
   "feedback.submit.bug.helper.2": "Steps to reproduce",
   "feedback.submit.bug.helper.3": "Expected result",
   "feedback.submit.bug.helper.4": "Actual result / error",
   "feedback.submit.bug.supplementalDescription": "",
-  "feedback.submit.bug.screenshotHint":
-    "Paste a screenshot, or add a local screenshot as an attachment.",
+  "feedback.submit.bug.screenshotHint": "Paste a screenshot, or add a local screenshot as an attachment.",
   "feedback.submit.bug.missingTitle": "Please enter a title",
   "feedback.submit.bug.missingDescription": "Please describe the issue",
   "feedback.submit.usage.sectionTitle": "Where are you stuck?",
   "feedback.submit.usage.titleLabel": "Question title",
-  "feedback.submit.usage.titlePlaceholder":
-    "Example: Not sure how to configure a remote connection",
+  "feedback.submit.usage.titlePlaceholder": "Example: Not sure how to configure a remote connection",
   "feedback.submit.usage.descriptionLabel": "Blocked step",
-  "feedback.submit.usage.descriptionPlaceholder":
-    "Describe what you are trying to do, where you got stuck, what prompt you saw, and how you want us to explain or guide you.",
+  "feedback.submit.usage.descriptionPlaceholder": "Describe what you are trying to do, where you got stuck, what prompt you saw, and how you want us to explain or guide you.",
   "feedback.submit.usage.helper.1": "Current task",
   "feedback.submit.usage.helper.2": "Blocked step",
   "feedback.submit.usage.helper.3": "What you tried",
   "feedback.submit.usage.helper.4": "Help needed",
-  "feedback.submit.usage.supplementalDescription":
-    "Module and model help us locate documentation, guidance, or default configuration issues.",
+  "feedback.submit.usage.supplementalDescription": "Module and model help us locate documentation, guidance, or default configuration issues.",
   "feedback.submit.usage.screenshotHint": "You can paste a screenshot of the blocked screen.",
   "feedback.submit.usage.missingTitle": "Please enter a question title",
   "feedback.submit.usage.missingDescription": "Please describe where you are stuck",
@@ -8232,32 +7122,26 @@ const enUS: Record<string, string> = {
   "feedback.submit.feature.titleLabel": "Suggestion title",
   "feedback.submit.feature.titlePlaceholder": "Example: Support one-click task report export",
   "feedback.submit.feature.descriptionLabel": "Suggestion",
-  "feedback.submit.feature.descriptionPlaceholder":
-    "Describe what you want added or improved: the scenario, what is inconvenient now, the ideal behavior, and what it would save you.",
+  "feedback.submit.feature.descriptionPlaceholder": "Describe what you want added or improved: the scenario, what is inconvenient now, the ideal behavior, and what it would save you.",
   "feedback.submit.feature.helper.1": "Scenario",
   "feedback.submit.feature.helper.2": "Current friction",
   "feedback.submit.feature.helper.3": "Expected capability / interaction",
   "feedback.submit.feature.helper.4": "Value",
-  "feedback.submit.feature.supplementalDescription":
-    "Choose a module so we can assess priority and impact.",
-  "feedback.submit.feature.screenshotHint":
-    "You can attach a reference screenshot, sketch, or current awkward screen.",
+  "feedback.submit.feature.supplementalDescription": "Choose a module so we can assess priority and impact.",
+  "feedback.submit.feature.screenshotHint": "You can attach a reference screenshot, sketch, or current awkward screen.",
   "feedback.submit.feature.missingTitle": "Please enter a suggestion title",
   "feedback.submit.feature.missingDescription": "Please describe the suggestion",
   "feedback.submit.performance.sectionTitle": "What feels slow?",
   "feedback.submit.performance.titleLabel": "Performance issue title",
   "feedback.submit.performance.titlePlaceholder": "Example: Task list opens slowly",
   "feedback.submit.performance.descriptionLabel": "Where it is slow",
-  "feedback.submit.performance.descriptionPlaceholder":
-    "Describe which operation is slow, how slow it feels, whether it happens every time, and the approximate data or task size.",
+  "feedback.submit.performance.descriptionPlaceholder": "Describe which operation is slow, how slow it feels, whether it happens every time, and the approximate data or task size.",
   "feedback.submit.performance.helper.1": "Operation",
   "feedback.submit.performance.helper.2": "Delay felt",
   "feedback.submit.performance.helper.3": "Stable reproduction",
   "feedback.submit.performance.helper.4": "Task scale / data size",
-  "feedback.submit.performance.supplementalDescription":
-    "Performance reports attach logs by default. Module and model help locate the slow path.",
-  "feedback.submit.performance.screenshotHint":
-    "You can attach loading, stuck, or resource-usage screenshots.",
+  "feedback.submit.performance.supplementalDescription": "Performance reports attach logs by default. Module and model help locate the slow path.",
+  "feedback.submit.performance.screenshotHint": "You can attach loading, stuck, or resource-usage screenshots.",
   "feedback.submit.performance.missingTitle": "Please enter a performance issue title",
   "feedback.submit.performance.missingDescription": "Please describe what is slow",
   "feedback.submit.template.bug.problem": "Problem:",
@@ -8278,19 +7162,17 @@ const enUS: Record<string, string> = {
   "feedback.submit.template.occurredAtPrefix": "Time:",
   "feedback.submit.template.proposedAt": "Proposed at: {timestamp}",
   "feedback.submit.template.proposedAtPrefix": "Proposed at:",
-  "feedback.submit.template.section.errorHeading":
-    "I encountered an error during use. Please help investigate.",
+  "feedback.submit.template.section.errorHeading": "I encountered an error during use. Please help investigate.",
   "feedback.submit.template.section.errorSummary": "Error Summary",
   "feedback.submit.template.section.errorSummaryLine": "Error Summary: {message}",
   "feedback.submit.template.section.errorDetail": "Error Details",
   "feedback.submit.template.section.errorTraceId": "TraceID: {traceId}",
-  "feedback.submit.template.section.copyErrorHeading": "ZCode Error Info",
+  "feedback.submit.template.section.copyErrorHeading": "Reactor Error Info",
   "feedback.submit.template.section.notProvided": "Not provided",
   "feedback.submit.template.section.remoteLogEmpty": "No connection logs captured",
   "feedback.submit.template.section.taskFeedbackTitle": "Feedback about task: {title}",
   "feedback.submit.template.section.remoteConnectFailed": "Remote connection failed",
-  "feedback.submit.template.section.taskHeading":
-    "I encountered a problem with this task. Please help investigate.",
+  "feedback.submit.template.section.taskHeading": "I encountered a problem with this task. Please help investigate.",
   "feedback.submit.template.section.taskInfo": "Task Info",
   "feedback.submit.template.section.taskTitle": "Task title: {title}",
   "feedback.submit.template.section.taskId": "Task ID: {id}",
@@ -8301,8 +7183,7 @@ const enUS: Record<string, string> = {
   "feedback.submit.template.section.whatDoing": "What I Was Doing",
   "feedback.submit.template.section.expectedResult": "Expected result",
   "feedback.submit.template.section.supplement": "Please describe:",
-  "feedback.submit.template.section.remoteHeading":
-    "An error occurred during remote connection. Please help investigate.",
+  "feedback.submit.template.section.remoteHeading": "An error occurred during remote connection. Please help investigate.",
   "feedback.submit.template.section.remoteLog": "Connection logs (last 30)",
   "feedback.submit.template.section.remoteEnvironment": "Environment I Was Connecting To",
   "feedback.submit.template.section.featureSource": "Source",
@@ -8310,24 +7191,20 @@ const enUS: Record<string, string> = {
   "feedback.submit.type.hint": "Changing it updates the description guide below",
   "feedback.submit.simple.descriptionTitle": "Issue description",
   "feedback.submit.simple.descriptionLabel": "Description",
-  "feedback.submit.simple.descriptionPlaceholder":
-    "Describe the issue, where it happened, what you expected, or what you want improved.",
+  "feedback.submit.simple.descriptionPlaceholder": "Describe the issue, where it happened, what you expected, or what you want improved.",
   "feedback.submit.simple.screenshotTitle": "Screenshots",
   "feedback.submit.simple.screenshotHint": "Paste, drag images here, or choose files.",
-  "feedback.submit.simple.screenshotPrivacyHint":
-    "Please check images for private information before uploading.",
+  "feedback.submit.simple.screenshotPrivacyHint": "Please check images for private information before uploading.",
   "feedback.submit.simple.contactTitle": "Contact",
   "feedback.submit.simple.logsTitle": "Logs",
   "feedback.submit.simple.logsLabel": "Upload diagnostic logs",
-  "feedback.submit.simple.logsHint":
-    "On by default; you can turn it off. Uploads today's diagnostic logs, a safe projection of CLI configuration, and today's model-call traces; databases are excluded. Automatic redaction may not remove all business information. Please choose carefully.",
+  "feedback.submit.simple.logsHint": "On by default; you can turn it off. Uploads today's diagnostic logs, a safe projection of CLI configuration, and today's model-call traces; databases are excluded. Automatic redaction may not remove all business information. Please choose carefully.",
   "feedback.submit.simple.footerHint": "Track progress later in My feedback.",
   "feedback.submit.missingDescription": "Please describe the issue first",
   "feedback.submit.addScreenshot": "Add screenshot",
   "feedback.submit.removeScreenshot": "Remove",
   "feedback.submit.contact.label": "Contact",
-  "feedback.submit.contact.hint":
-    "Optional, for follow-up. You can also enter another social account.",
+  "feedback.submit.contact.hint": "Optional, for follow-up. You can also enter another social account.",
   "feedback.submit.contact.placeholder": "example@domain.com / social account",
   "feedback.submit.supplemental.title": "Additional information",
   "feedback.submit.module.label": "Module",
@@ -8341,21 +7218,17 @@ const enUS: Record<string, string> = {
   "feedback.submit.screenshotLimit": "You can add up to {count} screenshots",
   "feedback.featureRequest.title": "Request a feature",
   "feedback.featureRequest.descriptionLabel": "Request description",
-  "feedback.featureRequest.descriptionPlaceholder":
-    "Example: I want to save common prompts while a task is running, then insert them with one click later.",
+  "feedback.featureRequest.descriptionPlaceholder": "Example: I want to save common prompts while a task is running, then insert them with one click later.",
   "feedback.featureRequest.solutionLabel": "Expected solution",
-  "feedback.featureRequest.solutionPlaceholder":
-    "Example: Add a quick prompt menu next to the composer with create, edit, and insert actions.",
+  "feedback.featureRequest.solutionPlaceholder": "Example: Add a quick prompt menu next to the composer with create, edit, and insert actions.",
   "feedback.featureRequest.contactLabel": "Contact",
   "feedback.featureRequest.reset": "Reset",
   "feedback.featureRequest.submit": "Submit request",
-  "feedback.featureRequest.missingRequired":
-    "Please fill in the request description and expected solution",
+  "feedback.featureRequest.missingRequired": "Please fill in the request description and expected solution",
   "feedback.featureRequest.source": "Workspace Header help menu / Request a feature",
   "feedback.featureRequest.submittedToast": "Request submitted. We will review it carefully.",
   "feedback.submission.connectingLabel": "Connecting to feedback service",
-  "feedback.submission.connectingDetail":
-    "Screenshots and logs will continue uploading after the ticket is created",
+  "feedback.submission.connectingDetail": "Screenshots and logs will continue uploading after the ticket is created",
   "feedback.submission.cancelingCreateLabel": "Canceling submission",
   "feedback.submission.cancelingCreateDetail": "Cancel request received. Stopping ticket creation.",
   "feedback.submission.canceledLabel": "Feedback submission canceled",
@@ -8365,22 +7238,18 @@ const enUS: Record<string, string> = {
   "feedback.submission.submittedDetail": "We will review it soon.",
   "feedback.submission.submittedToast": "Feedback submitted. We will review it soon.",
   "feedback.submission.failedLabel": "Feedback submission failed",
-  "feedback.submission.networkErrorDetail":
-    "Could not connect to the feedback service. Check your network, VPN, or proxy settings, then try again.",
-  "feedback.submission.postCreateNetworkErrorDetail":
-    "Feedback was created, but additional materials failed to upload. Open the existing feedback to add the missing files; do not submit it again.",
+  "feedback.submission.networkErrorDetail": "Could not connect to the feedback service. Check your network, VPN, or proxy settings, then try again.",
+  "feedback.submission.postCreateNetworkErrorDetail": "Feedback was created, but additional materials failed to upload. Open the existing feedback to add the missing files; do not submit it again.",
   "feedback.submission.pausingLogLabel": "Pausing log upload",
   "feedback.submission.pausingLogDetail": "Cancel request received. Please wait.",
   "feedback.submission.exportingLogLabel": "Exporting full logs",
-  "feedback.submission.exportingLogDetail":
-    "This may take a few seconds depending on local log size",
+  "feedback.submission.exportingLogDetail": "This may take a few seconds depending on local log size",
   "feedback.submission.uploadingLogLabel": "Uploading full logs",
   "feedback.submission.logUploadSuccessLabel": "Log upload completed",
   "feedback.submission.logUploadPausedLabel": "Log upload paused",
-  "feedback.submission.logUploadPausedDetail":
-    "Logs are required for investigation. Please continue the upload.",
+  "feedback.submission.logUploadPausedDetail": "Logs are required for investigation. Please continue the upload.",
   "feedback.submission.preparingUploadDetail": "Preparing upload",
-  // Forms
+// Forms
   "forms.labels.name": "Name",
   "forms.labels.description": "Description",
   "forms.labels.color": "Color",
@@ -8398,7 +7267,7 @@ const enUS: Record<string, string> = {
   "forms.validation.agentDescriptionHint": "Briefly describe the subagent's purpose",
   "forms.validation.agentSystemPromptHint": "Define the subagent's behavior and capabilities",
   "forms.validation.fileExists": "File {fileName} already exists",
-  // ---- Scheduled tasks / Automations ----
+// ---- Scheduled tasks / Automations ----
   "taskList.cronTaskLabel": "Scheduled task",
   "taskList.offPeakTaskLabel": "Idle-time task",
   "taskList.workflowRun.ariaLabel": "Workflow run {name}: {status}",
@@ -8412,15 +7281,13 @@ const enUS: Record<string, string> = {
   "settings.automations.betaBadge": "Beta",
   "automations.noWorkspace": "Open a workspace to manage its scheduled tasks.",
   "automations.workspace.label": "Project",
-  "automations.description":
-    "Schedule recurring tasks or queue background work that runs during idle time.",
+  "automations.description": "Schedule recurring tasks or queue background work that runs during idle time.",
   "automations.description.populated": "Run tasks on a schedule or whenever you need them.",
   "automations.refresh": "Refresh",
   "automations.refreshing": "Refreshing…",
   "automations.create": "Create",
   "automations.createViaChat": "Create in chat",
-  "automations.createViaChat.prompt":
-    "Every weekday at 9 AM, summarize code changes and follow-ups for this project.",
+  "automations.createViaChat.prompt": "Every weekday at 9 AM, summarize code changes and follow-ups for this project.",
   "automations.createManually": "Create scheduled task",
   "automations.list.title": "Scheduled tasks",
   "automations.createdLabel": "Task created",
@@ -8429,14 +7296,11 @@ const enUS: Record<string, string> = {
   "offPeak.notify.failed.title": "Idle-time task failed",
   "offPeak.notify.failed.body": '"{title}" stopped with an error.',
   "offPeak.sidebar.groupTitle": "Idle-time tasks",
-  "offPeak.newTask.bannerText":
-    'New feature for subscribers: Create "Idle-time task" , We will complete your assigned task for free during periods of surplus computing power.',
-  "offPeak.newTask.bannerTipText":
-    "This feature does not consume your subscription plan quota and is available exclusively to subscribers.",
+  "offPeak.newTask.bannerText": 'New feature for subscribers: Create "Idle-time task" , We will complete your assigned task for free during periods of surplus computing power.',
+  "offPeak.newTask.bannerTipText": "This feature does not consume your subscription plan quota and is available exclusively to subscribers.",
   "offPeak.newTask.carousel.goToSlide": "Go to idle-time task template {index}",
   "offPeak.newTask.template.customize.title": "Customize",
-  "offPeak.newTask.template.customize.description":
-    "Skip the template and tell it directly what you want to do.",
+  "offPeak.newTask.template.customize.description": "Skip the template and tell it directly what you want to do.",
   "offPeak.tabs.scheduled": "Scheduled tasks",
   "offPeak.tabs.idle": "Idle-time task",
   "automations.statusFilter.all": "All",
@@ -8444,17 +7308,14 @@ const enUS: Record<string, string> = {
   "automations.statusFilter.completed": "Completed",
   "automations.statusFilter.failed": "Failed",
   "automations.statusFilter.empty": "No tasks match this filter",
-  "offPeak.keepAwakeBanner": "Keep your computer awake while ZCode is running a chat.",
+  "offPeak.keepAwakeBanner": "Keep your computer awake while Reactor is running a chat.",
   "offPeak.sectionTitle": "Idle-time tasks",
   "offPeak.createButton": "Create idle-time task",
   "offPeak.templates.sectionTitle": "Idle-time task template",
-  "offPeak.list.empty":
-    "No idle-time tasks yet. Create one to run it during off-peak hours at no extra cost.",
+  "offPeak.list.empty": "No idle-time tasks yet. Create one to run it during off-peak hours at no extra cost.",
   "offPeak.badge.pausedPosition": "#{position} Paused",
-  "offPeak.action.pauseHint":
-    "Tasks paused beyond the queue wait time will be placed back in the queue",
-  "offPeak.action.continueHint":
-    "If the queue ticket has expired, Continue re-queues the task at the back.",
+  "offPeak.action.pauseHint": "Tasks paused beyond the queue wait time will be placed back in the queue",
+  "offPeak.action.continueHint": "If the queue ticket has expired, Continue re-queues the task at the back.",
   "offPeak.badge.queuePosition": "#{position} in queue",
   "offPeak.status.queued": "Waiting for idle compute",
   "offPeak.status.paused": "Paused",
@@ -8465,8 +7326,7 @@ const enUS: Record<string, string> = {
   "offPeak.goToSession": "Go to session",
   "offPeak.boundSession.label": "Runs in: {title}",
   "offPeak.nav.listUnavailable": "Idle-time task list failed to load. Refresh and try again.",
-  "offPeak.boundSession.hint":
-    "Runs in that session; stopping the session while the task runs cancels it.",
+  "offPeak.boundSession.hint": "Runs in that session; stopping the session while the task runs cancels it.",
   "offPeak.chatCreated.boundHint": "Runs in this session",
   "offPeak.action.pause": "Pause",
   "offPeak.action.continue": "Continue",
@@ -8474,36 +7334,28 @@ const enUS: Record<string, string> = {
   "offPeak.cancel.title": "Cancel idle-time task?",
   "offPeak.cancel.description": '"{title}" will stop running. Files it already changed are kept.',
   "offPeak.delete.title": "Delete this idle-time task?",
-  "offPeak.delete.description":
-    "This action can't be undone. If the task is currently queued or running, it will stop immediately.",
+  "offPeak.delete.description": "This action can't be undone. If the task is currently queued or running, it will stop immediately.",
   "offPeak.delete.confirm": "Delete idle-time task",
   "offPeak.error.quota": "Free tier limit reached. Try again later.",
-  "offPeak.error.unavailable":
-    "Idle-time task service is temporarily unavailable. Try again later.",
+  "offPeak.error.unavailable": "Idle-time task service is temporarily unavailable. Try again later.",
   "offPeak.error.generic": "Idle-time task operation failed.",
   "offPeak.create.title": "New Idle-time task",
   "offPeak.create.subtitle": "Configure the instructions and how this task runs during idle time.",
   "offPeak.create.defaultTitle": "Untitled",
   "offPeak.edit.title": "Edit Idle-time task",
   "offPeak.edit.subtitle": "Update the instructions and how this task runs during idle time.",
-  "offPeak.modelSelection.repairRequired":
-    "The model configuration needs updating. Choose a model again and save.",
-  "modelSelection.invalidated.fallback":
-    "The previous model selection is no longer available. Switched to the current default; review it before continuing.",
-  "modelSelection.invalidated.reselect":
-    "The previous model selection is no longer available. Choose a model again.",
+  "offPeak.modelSelection.repairRequired": "The model configuration needs updating. Choose a model again and save.",
+  "modelSelection.invalidated.fallback": "The previous model selection is no longer available. Switched to the current default; review it before continuing.",
+  "modelSelection.invalidated.reselect": "The previous model selection is no longer available. Choose a model again.",
   "offPeak.create.submit": "Create Idle-time task",
   "offPeak.edit.save": "Save",
-  "offPeak.edit.peakHoursWarning":
-    "This task runs during peak hours, which may cause errors to occur.",
+  "offPeak.edit.peakHoursWarning": "This task runs during peak hours, which may cause errors to occur.",
   "offPeak.form.soonestAvailable": "Soonest available",
   "offPeak.form.titleLabel": "Task title",
   "offPeak.form.titlePlaceholder": "e.g. Nightly refactor",
   "offPeak.form.instructionsLabel": "Instructions",
-  "offPeak.form.instructionsPlaceholder":
-    "Describe a task ZCode can work on in the background, including the expected result and any constraints…",
-  "offPeak.form.permissionWarning":
-    "Idle-time runs are unattended. Actions that need confirmation will pause the task until you respond.",
+  "offPeak.form.instructionsPlaceholder": "Describe a task Reactor can work on in the background, including the expected result and any constraints…",
+  "offPeak.form.permissionWarning": "Idle-time runs are unattended. Actions that need confirmation will pause the task until you respond.",
   "offPeak.form.modelLabel": "Model",
   "offPeak.thought.max": "Max",
   "offPeak.thought.high": "High",
@@ -8512,8 +7364,7 @@ const enUS: Record<string, string> = {
   "offPeak.thought.off": "Off",
   "offPeak.thought.nothink": "No thinking",
   "offPeak.form.keepAwakeLabel": "Keep your computer running",
-  "offPeak.form.keepAwakeHint":
-    "Prevent idle sleep (desktop-wide switch; also available under Settings → General).",
+  "offPeak.form.keepAwakeHint": "Prevent idle sleep (desktop-wide switch; also available under Settings → General).",
   "offPeak.tab.settings": "Settings",
   "offPeak.tab.history": "History",
   "offPeak.history.empty": "No history yet.",
@@ -8526,14 +7377,12 @@ const enUS: Record<string, string> = {
   "offPeak.discard.confirm": "Discard",
   "offPeak.create.codingPlanOnly": "Coding plan users only",
   "offPeak.create.availabilityUnavailable": "Could not verify availability. Refresh and try again.",
-  "offPeak.create.limitReachedAt":
-    "Free tier limit reached. You can create another task in {time}.",
+  "offPeak.create.limitReachedAt": "Free tier limit reached. You can create another task in {time}.",
   "offPeak.create.remaining.hoursMinutes": "{hours} hr {minutes} min",
   "offPeak.create.remaining.hours": "{hours} hr",
   "offPeak.create.remaining.minutes": "{minutes} min",
   "offPeak.create.remaining.lessThanMinute": "less than 1 min",
-  "offPeak.create.codingPlanToast":
-    "Idle-time tasks are available for Coding Plan subscribers only.",
+  "offPeak.create.codingPlanToast": "Idle-time tasks are available for Coding Plan subscribers only.",
   "automations.moreIdeas": "Scheduled task template",
   "automations.templates.unavailable": "No templates available",
   "automations.runNow": "Run now",
@@ -8541,24 +7390,20 @@ const enUS: Record<string, string> = {
   "automations.runNowAlreadyRunning": "A run is already in progress",
   "automations.runNowFailed": "Could not trigger run",
   "automations.error.create": "Could not create the task. Try again.",
-  "automations.error.createLimit":
-    "You can keep up to {limit} scheduled tasks, including paused, completed, and failed tasks. Delete one before creating another.",
+  "automations.error.createLimit": "You can keep up to {limit} scheduled tasks, including paused, completed, and failed tasks. Delete one before creating another.",
   "automations.error.update": "Could not save changes. Try again.",
   "automations.error.toggle": "Could not update the task status. Try again.",
   "automations.error.restart": "Could not restart the task. Try again.",
   "automations.error.delete": "Could not delete the task. Try again.",
-  "automations.error.targetNotFound":
-    "This scheduled task was not found. It may have been deleted.",
+  "automations.error.targetNotFound": "This scheduled task was not found. It may have been deleted.",
   "automations.edit.newTask": "New task",
-  "automations.edit.createSubtitle":
-    "Configure when this task runs, what it does, and how it works.",
+  "automations.edit.createSubtitle": "Configure when this task runs, what it does, and how it works.",
   "automations.edit.editSubtitle": "Adjust when this task runs, what it does, and how it works.",
   "automations.edit.tab.settings": "Settings",
   "automations.edit.tab.history": "History",
   "automations.edit.createButton": "Create scheduled task",
   "automations.edit.titlePlaceholder": "Untitled Automation",
-  "automations.edit.promptPlaceholder":
-    "e.g. Review commits from the last 24 hours and summarize likely bugs and fixes",
+  "automations.edit.promptPlaceholder": "e.g. Review commits from the last 24 hours and summarize likely bugs and fixes",
   "automations.empty.title": "No scheduled tasks yet.",
   "automations.empty.description": "Create a task to run a prompt on a recurring schedule.",
   "automations.empty.createManually": "Create manually",
@@ -8604,8 +7449,7 @@ const enUS: Record<string, string> = {
   "automations.schedule.custom": "Every {interval} {unit} at {time}",
   "automations.schedule.customWeekly": "Every {interval} weeks on {days} at {time}",
   "automations.schedule.customMonthlyDates": "Every {interval} months on day {days} at {time}",
-  "automations.schedule.customMonthlyWeekday":
-    "Every {interval} months on the first {day} at {time}",
+  "automations.schedule.customMonthlyWeekday": "Every {interval} months on the first {day} at {time}",
   "automations.schedule.customYearly": "Every {interval} year(s) on {month}/{day} at {time}",
   "automations.schedule.once": "One-time",
   "automations.time.soon": "soon",
@@ -8662,8 +7506,7 @@ const enUS: Record<string, string> = {
   "automations.form.model.label": "Model",
   "automations.form.model.previewRetry": "Model info failed to load. Retry",
   "automations.form.workspaceUnavailableLabel": "No available project",
-  "automations.form.workspaceUnavailable":
-    "Open an available project before creating a scheduled task.",
+  "automations.form.workspaceUnavailable": "Open an available project before creating a scheduled task.",
   "automations.form.recurring.label": "Repeat indefinitely",
   "automations.form.recurring.hint": "Turn off to stop after a fixed number of runs.",
   "automations.form.maxRuns.label": "Max runs",
@@ -8689,16 +7532,13 @@ const enUS: Record<string, string> = {
   "automations.runs.status.stopped": "Stopped",
   "automations.runs.status.skipped": "Skipped",
   "automations.runs.openSession": "Go to session",
-  "automations.runs.openSessionFailed":
-    "The target project is not connected, so this session cannot be opened.",
+  "automations.runs.openSessionFailed": "The target project is not connected, so this session cannot be opened.",
   "automations.runs.delete": "Delete run",
   "automations.runs.prevPage": "Previous",
   "automations.runs.nextPage": "Next",
-  // CUA (Computer Use)
-  "chat.cuaReadiness.toolsNotLoaded":
-    "ZCode Computer Use is still preparing — its tools aren't loaded yet ({count} loaded). Grant the permissions below; tools appear once the helper is ready.",
-  "chat.cuaReadiness.toolsPreparing":
-    "ZCode Computer Use is still preparing — its tools aren't loaded yet. Grant the permissions below; tools appear once the helper is ready.",
+// CUA (Computer Use)
+  "chat.cuaReadiness.toolsNotLoaded": "Reactor Computer Use is still preparing — its tools aren't loaded yet ({count} loaded). Grant the permissions below; tools appear once the helper is ready.",
+  "chat.cuaReadiness.toolsPreparing": "Reactor Computer Use is still preparing — its tools aren't loaded yet. Grant the permissions below; tools appear once the helper is ready.",
   "chat.toolCall.cua.requestAccess": "Check Computer Use access",
   "chat.toolCall.cua.appName": "Computer Use",
   "chat.toolCall.cua.listApps": "List running apps",
@@ -8776,11 +7616,9 @@ const enUS: Record<string, string> = {
   "chat.toolCall.cua.details.permissionOwner": "Permission owner",
   "chat.toolCall.cua.details.elementStale": "Element is stale",
   "chat.toolCall.cua.details.failureReason": "Failure reason",
-  "chat.toolCall.cua.details.elementStaleReason":
-    "The interface changed and the original element is no longer available.",
+  "chat.toolCall.cua.details.elementStaleReason": "The interface changed and the original element is no longer available.",
   "chat.toolCall.cua.details.suggestedAction": "Suggested action",
-  "chat.toolCall.cua.details.elementStaleAction":
-    "Read the app interface again, then select the target from the new state.",
+  "chat.toolCall.cua.details.elementStaleAction": "Read the app interface again, then select the target from the new state.",
   "chat.toolCall.cua.details.duration": "Wait duration",
   "chat.toolCall.cua.details.waited": "Waited {duration} seconds",
   "chat.toolCall.cua.details.screenshotCaptured": "Screen captured",
@@ -8811,60 +7649,45 @@ const enUS: Record<string, string> = {
   "chat.toolCall.cua.writeClipboard": "Write clipboard",
   "chat.toolCall.cua.stop": "Stop computer control",
   "chat.toolCall.cua.default": "Use Computer Use",
-  "cuaPermission.modal.unavailable":
-    "Couldn't verify the Helper permission status yet (it may still be starting). Check again before opening System Settings.",
+  "cuaPermission.modal.unavailable": "Couldn't verify the Helper permission status yet (it may still be starting). Check again before opening System Settings.",
   "cuaPermission.live.title": "Computer Use needs macOS permissions",
-  "cuaPermission.live.description":
-    "A running Computer Use task needs macOS permissions. Open the authorization guide?",
+  "cuaPermission.live.description": "A running Computer Use task needs macOS permissions. Open the authorization guide?",
   "cuaPermission.live.confirm": "Authorize",
   "cuaPermission.live.cancel": "Not now",
   "cuaPermission.modal.restartButton": "Restart Helper",
   "cuaPermission.modal.restarting": "Restarting Helper…",
   "cuaPermission.modal.restartFailed": "Couldn't restart Helper: {error}",
-  "cuaPermission.modal.relaunchAppButton": "Restart ZCode",
-  "cuaPermission.modal.relaunchAppHint":
-    "Still not working after restarting Helper? Restart ZCode to fully reload the Helper process.",
+  "cuaPermission.modal.relaunchAppButton": "Restart Reactor",
+  "cuaPermission.modal.relaunchAppHint": "Still not working after restarting Helper? Restart Reactor to fully reload the Helper process.",
   "cuaPermission.status.granted": "Granted",
   "cuaPermission.status.missing": "Missing",
   "cuaPermission.status.unknown": "Unknown",
   "cuaPermission.status.stale": "Authorization needs verification",
   "cuaPermission.status.verifying": "Granted, verifying",
-  "cuaPermission.probeVerifyingHint":
-    "System permission is present. Verifying real control and screen capture now.",
-  "cuaPermission.tools.preparing":
-    "System permissions and local control are ready. Waiting for this session to load Computer Use tools.",
+  "cuaPermission.probeVerifyingHint": "System permission is present. Verifying real control and screen capture now.",
+  "cuaPermission.tools.preparing": "System permissions and local control are ready. Waiting for this session to load Computer Use tools.",
   "cuaPermission.grantAlreadySatisfied": "This permission has already been granted.",
-  "cuaPermission.tools.agentUpdateRequired":
-    "The connected Agent is too old for a safe readiness check. Update or restart it, then check again.",
-  "cuaPermission.tools.untrustedRuntime":
-    "Computer Use tools were found, but they did not come from the verified ZCode plugin. Review the plugin installation, then check again.",
+  "cuaPermission.tools.agentUpdateRequired": "The connected Agent is too old for a safe readiness check. Update or restart it, then check again.",
+  "cuaPermission.tools.untrustedRuntime": "Computer Use tools were found, but they did not come from the verified Reactor plugin. Review the plugin installation, then check again.",
   "cuaPermission.perm.accessibility": "Accessibility",
   "cuaPermission.perm.accessibility.purpose": "Read/drive UI elements + synthesize input",
   "cuaPermission.perm.screenRecording": "Screen Recording",
   "cuaPermission.perm.screenRecording.purpose": "Capture the screen",
-  "cuaPermission.osFloorTitle":
-    "Computer Use requires macOS {minimum} or later (currently around macOS {current})",
-  "cuaPermission.osFloorDescription":
-    "Please upgrade macOS before using it. Permission setup cannot be completed on older versions.",
+  "cuaPermission.osFloorTitle": "Computer Use requires macOS {minimum} or later (currently around macOS {current})",
+  "cuaPermission.osFloorDescription": "Please upgrade macOS before using it. Permission setup cannot be completed on older versions.",
   "cuaPermission.ready": "Permissions ready",
-  "cuaPermission.ready.sessionValidationHint":
-    "ZCode will verify the Computer Use tools against the exact session when your first session starts.",
+  "cuaPermission.ready.sessionValidationHint": "Reactor will verify the Computer Use tools against the exact session when your first session starts.",
   "settings.computerUse.title": "Computer Use",
   "settings.computerUse.toggleLabel": "Enable Computer Use",
-  "settings.computerUse.toggleDescription":
-    "Turning this on enables Computer Use — its MCP server and skills.",
+  "settings.computerUse.toggleDescription": "Turning this on enables Computer Use — its MCP server and skills.",
   "settings.computerUse.composerEntry.label": "Show Computer Use button in the composer",
   "settings.computerUse.composerEntry.description": "When off, the composer button is hidden.",
-  "settings.computerUse.composerEntry.requiresEnabled":
-    "Turn on Computer Use first to show this button in the composer.",
+  "settings.computerUse.composerEntry.requiresEnabled": "Turn on Computer Use first to show this button in the composer.",
   "settings.computerUse.composerEntry.saveFailed": "Failed to save: {error}",
-  "settings.computerUse.pluginDisabledHint":
-    "The Computer Use plugin is not enabled. Enable it in Plugins to use Computer Use.",
+  "settings.computerUse.pluginDisabledHint": "The Computer Use plugin is not enabled. Enable it in Plugins to use Computer Use.",
   "settings.computerUse.unsupported.title": "Computer Use is unavailable here",
-  "settings.computerUse.unsupported.remoteDescription":
-    "Computer Use is not yet supported for SSH, WSL, Docker, or other remote environments. Switch to a local macOS or Windows workspace.",
-  "settings.computerUse.unsupported.linuxDescription":
-    "Computer Use is not yet supported on Linux desktops. Switch to a local macOS or Windows workspace.",
+  "settings.computerUse.unsupported.remoteDescription": "Computer Use is not yet supported for SSH, WSL, Docker, or other remote environments. Switch to a local macOS or Windows workspace.",
+  "settings.computerUse.unsupported.linuxDescription": "Computer Use is not yet supported on Linux desktops. Switch to a local macOS or Windows workspace.",
   "settings.computerUse.unsupported.badge": "Unavailable here",
   "settings.computerUse.unsupported.group": "Unavailable built-in capabilities",
   "scheduledPreview.keepAwakeEnabled": "Keep awake enabled",
@@ -8884,10 +7707,8 @@ const enUS: Record<string, string> = {
   "chat.highspeed.shareFailed": "Could not share. Try again later.",
   "chat.highspeed.savedDuration": "About {duration} saved",
   "chat.highspeed.statusTag": "HighSpeed",
-  "chat.highspeed.cardExpiredFallback":
-    "The Highspeed card has expired. The rest of this turn will continue with the original model.",
-  "chat.highspeed.requestFailedFallback":
-    "Highspeed is temporarily unavailable. The rest of this turn will continue with the original model.",
+  "chat.highspeed.cardExpiredFallback": "The Highspeed card has expired. The rest of this turn will continue with the original model.",
+  "chat.highspeed.requestFailedFallback": "Highspeed is temporarily unavailable. The rest of this turn will continue with the original model.",
   "globalNotice.highspeed.title": "Highspeed run completed",
   "globalNotice.highspeed.summary": "{tokens} output tokens · {duration}s",
   "globalNotice.highspeed.tagline": "Share a Highspeed moment",
@@ -8904,8 +7725,7 @@ const enUS: Record<string, string> = {
   "globalNotice.highspeed.relativeTaskDuration": "Relative generation time",
   "globalNotice.highspeed.speedSummary": "HighSpeed · {duration}",
   "globalNotice.highspeed.lessWaiting": "{percent}% less waiting",
-  "globalNotice.highspeed.copySummary":
-    "I used the ZCode Highspeed card and saved {duration}s. Give it a try. Download ZCode https://zcode.z.ai",
+  "globalNotice.highspeed.copySummary": "I used the ZCode Highspeed card and saved {duration}s. Give it a try. Download ZCode https://zcode.z.ai",
   "globalNotice.highspeed.imageSummary": "{tokens} tokens · {duration}s saved",
   "globalNotice.highspeed.close": "Close Highspeed share card",
   "remoteSync.title": "Data sync",
@@ -8914,8 +7734,7 @@ const enUS: Record<string, string> = {
   "remoteSync.rules.description": "Only adds or updates items. Remote-only content is preserved.",
   "remoteSync.device.status.online": "Connected",
   "remoteSync.empty.title": "No connected devices",
-  "remoteSync.empty.description":
-    "Connect an SSH, WSL, or Docker device to push this device's configuration to its ~/.zcode directory.",
+  "remoteSync.empty.description": "Connect an SSH, WSL, or Docker device to push this device's configuration to its ~/.zcode directory.",
   "remoteSync.empty.connect": "Connect remote device",
   "remoteSync.device.neverSynced": "Not synced yet",
   "remoteSync.device.lastSynced.today": "Synced today at {time}",
@@ -8945,8 +7764,7 @@ const enUS: Record<string, string> = {
   "remoteSync.minimized.failed": "Sync needs attention. Click to view",
   "remoteSync.minimized.restore": "Click to restore sync",
   "remoteSync.dialog.categories": "Sync content",
-  "remoteSync.dialog.offline":
-    "The device is offline, so actions are disabled. The list refreshes automatically when the device is back online.",
+  "remoteSync.dialog.offline": "The device is offline, so actions are disabled. The list refreshes automatically when the device is back online.",
   "remoteSync.category.overview": "Overview",
   "remoteSync.category.plugins": "Plugins",
   "remoteSync.category.subagents": "Subagents",
@@ -8956,8 +7774,7 @@ const enUS: Record<string, string> = {
   "remoteSync.category.hooks": "Hooks",
   "remoteSync.category.empty": "No items on this device to sync",
   "remoteSync.category.loadFailed": "Failed to load: {error}",
-  "remoteSync.overview.description":
-    "Review configuration differences between this device and the target.",
+  "remoteSync.overview.description": "Review configuration differences between this device and the target.",
   "remoteSync.overview.column.category": "Category",
   "remoteSync.overview.column.local": "Local",
   "remoteSync.overview.column.remote": "Remote",
@@ -8977,19 +7794,13 @@ const enUS: Record<string, string> = {
   "remoteSync.operation.synced": "Synced",
   "remoteSync.blocked.sizeLimit": "Exceeds the size limit and cannot be synced",
   "remoteSync.blocked.containsSymlink": "Contains a symbolic link and cannot be synced",
-  "remoteSync.blocked.targetSymlink":
-    "The remote item is a symbolic link and cannot be overwritten",
-  "remoteSync.blocked.compatDirectory":
-    "The remote item is in the ~/.agents compatibility directory and cannot be overwritten",
-  "remoteSync.blocked.externalDirectory":
-    "The remote plugin with the same name is outside ~/.zcode/plugins (for example a development checkout) and cannot be updated",
-  "remoteSync.blocked.targetCompatConfig":
-    "The remote device uses the ~/.agents compatibility config; pushing would disable it",
+  "remoteSync.blocked.targetSymlink": "The remote item is a symbolic link and cannot be overwritten",
+  "remoteSync.blocked.compatDirectory": "The remote item is in the ~/.agents compatibility directory and cannot be overwritten",
+  "remoteSync.blocked.externalDirectory": "The remote plugin with the same name is outside ~/.zcode/plugins (for example a development checkout) and cannot be updated",
+  "remoteSync.blocked.targetCompatConfig": "The remote device uses the ~/.agents compatibility config; pushing would disable it",
   "remoteSync.blocked.sourceRemoved": "The source was removed and cannot be synced",
-  "remoteSync.blocked.remoteLatestMismatch":
-    "The latest version from the remote source differs from the version on this device",
-  "remoteSync.blocked.crossMarketplaceDependency":
-    "Depends on a plugin from another marketplace. Mirroring does not support cross-marketplace dependencies",
+  "remoteSync.blocked.remoteLatestMismatch": "The latest version from the remote source differs from the version on this device",
+  "remoteSync.blocked.crossMarketplaceDependency": "Depends on a plugin from another marketplace. Mirroring does not support cross-marketplace dependencies",
   "remoteSync.blocked.unsupportedSource": "This source type cannot be synced",
   "remoteSync.item.conflict": "The remote item changed. Refresh and try again.",
   "remoteSync.item.failed": "Sync failed: {error}",
@@ -9000,23 +7811,19 @@ const enUS: Record<string, string> = {
   "remoteSync.dependency.nameSeparator": ", ",
   "remoteSync.dependency.groupSeparator": "; ",
   "remoteSync.subagents.builtInModel": "Built-in · Model {model}",
-  "remoteSync.subagents.builtInModelWithReasoning":
-    "Built-in · Model {model} · Reasoning effort {level}",
+  "remoteSync.subagents.builtInModelWithReasoning": "Built-in · Model {model} · Reasoning effort {level}",
   "remoteSync.subagents.targetModel": "Remote: {model}",
   "remoteSync.subagents.targetModelWithReasoning": "Remote: {model} · Reasoning effort {level}",
   "remoteSync.error.offline": "The device disconnected during the push. The push did not finish.",
-  "remoteSync.error.preflightTimeout":
-    "Checking remote write access timed out. Nothing was written.",
+  "remoteSync.error.preflightTimeout": "Checking remote write access timed out. Nothing was written.",
   "remoteSync.error.pushFailed": "Push failed: {error}",
   "remoteSync.category.providers": "Model providers",
-  "remoteSync.category.providers.warning":
-    "This device's model configuration is the source of truth and syncs to the remote automatically after you save. API keys and sign-in state sync with it.",
+  "remoteSync.category.providers.warning": "This device's model configuration is the source of truth and syncs to the remote automatically after you save. API keys and sign-in state sync with it.",
   "remoteSync.overview.autoSync": "Auto sync",
   "remoteSync.overview.syncFailed": "Sync failed",
   "remoteSync.providers.empty": "No custom model providers on this device",
   "remoteSync.providers.apiKey": "API key {key}",
-  "remoteSync.providers.status.noLane":
-    "Syncs automatically after you open a project on this device",
+  "remoteSync.providers.status.noLane": "Syncs automatically after you open a project on this device",
   "remoteSync.providers.status.running": "Syncing automatically…",
   "remoteSync.providers.status.never": "Not synced automatically yet",
   "remoteSync.providers.status.success": "Synced automatically {time}",
@@ -9024,16 +7831,11 @@ const enUS: Record<string, string> = {
   "remoteSync.providers.status.loadFailed": "Could not read the automatic sync status",
   "remoteSync.providers.error.sourceReadFailed": "Could not read the local model configuration",
   "remoteSync.providers.error.targetCallFailed": "Could not reach the remote sync service",
-  "remoteSync.providers.error.targetWriteFailed":
-    "The remote device could not write the configuration",
-  "remoteSync.providers.error.targetRefreshFailed":
-    "The remote device could not reload the model configuration",
-  "remoteSync.providers.error.targetCommitFailed":
-    "The remote device could not record the sync result",
-  "remoteSync.providers.error.targetApplyFailed":
-    "The remote device could not apply the configuration",
-  "remoteSync.providers.error.capabilityUnavailable":
-    "The remote version does not support model configuration sync",
+  "remoteSync.providers.error.targetWriteFailed": "The remote device could not write the configuration",
+  "remoteSync.providers.error.targetRefreshFailed": "The remote device could not reload the model configuration",
+  "remoteSync.providers.error.targetCommitFailed": "The remote device could not record the sync result",
+  "remoteSync.providers.error.targetApplyFailed": "The remote device could not apply the configuration",
+  "remoteSync.providers.error.capabilityUnavailable": "The remote version does not support model configuration sync",
   "remoteSync.providers.error.sessionUnavailable": "The remote connection is no longer available",
   "remoteSync.providers.error.hostExecutionFailed": "The sync could not run on this device",
   "remoteSync.providers.error.unknown": "Unknown error",
@@ -9043,38 +7845,695 @@ const enUS: Record<string, string> = {
   "voiceInput.button.recognizing": "Recognizing…",
   "voiceInput.action.openPrivacySettings": "Open System Settings",
   "voiceInput.action.openSoundSettings": "Open Sound Settings",
-  "voiceInput.error.permissionDenied.mac":
-    "ZCode cannot use the microphone. Allow ZCode in System Settings › Privacy & Security › Microphone. On some macOS versions, restart the app after you change it.",
-  "voiceInput.error.permissionDenied.windows":
-    'ZCode cannot use the microphone. In Settings › Privacy & security › Microphone, turn on both "Microphone access" and "Let desktop apps access your microphone".',
-  "voiceInput.error.permissionDenied.linux":
-    "Cannot access the microphone. Check the system microphone permission and the PulseAudio / PipeWire input device.",
-  "voiceInput.error.silent":
-    "No sound came from the microphone. Usually the system microphone permission is off or the wrong input device is selected.",
-  "voiceInput.error.silent.linux":
-    "No sound came from the microphone. Check the PulseAudio / PipeWire input device and volume.",
+  "voiceInput.error.permissionDenied.mac": "ZCode cannot use the microphone. Allow ZCode in System Settings › Privacy & Security › Microphone. On some macOS versions, restart the app after you change it.",
+  "voiceInput.error.permissionDenied.windows": 'ZCode cannot use the microphone. In Settings › Privacy & security › Microphone, turn on both "Microphone access" and "Let desktop apps access your microphone".',
+  "voiceInput.error.permissionDenied.linux": "Cannot access the microphone. Check the system microphone permission and the PulseAudio / PipeWire input device.",
+  "voiceInput.error.silent": "No sound came from the microphone. Usually the system microphone permission is off or the wrong input device is selected.",
+  "voiceInput.error.silent.linux": "No sound came from the microphone. Check the PulseAudio / PipeWire input device and volume.",
   "voiceInput.error.noDevice": "No microphone found. Connect a microphone and try again.",
-  "voiceInput.error.noDevice.linux":
-    "No microphone found. Connect a microphone and check the PulseAudio / PipeWire input device.",
+  "voiceInput.error.noDevice.linux": "No microphone found. Connect a microphone and check the PulseAudio / PipeWire input device.",
   "voiceInput.error.deviceBusy": "The microphone cannot be used. Another app may be using it.",
-  "voiceInput.error.deviceBusy.linux":
-    "The microphone cannot be used. Another app may be using it. Check the PulseAudio / PipeWire input device.",
+  "voiceInput.error.deviceBusy.linux": "The microphone cannot be used. Another app may be using it. Check the PulseAudio / PipeWire input device.",
   "voiceInput.error.device_ended": "The microphone was disconnected. Voice input was cancelled.",
-  "voiceInput.error.too_quiet":
-    "No sound detected. Check that the microphone is not muted or too far away.",
+  "voiceInput.error.too_quiet": "No sound detected. Check that the microphone is not muted or too far away.",
   "voiceInput.error.audio_too_short": "The recording is too short. Try again.",
-  "voiceInput.error.no_speech":
-    "No speech was recognized. Move closer to the microphone and try again.",
+  "voiceInput.error.no_speech": "No speech was recognized. Move closer to the microphone and try again.",
   "voiceInput.error.network": "Cannot connect to speech recognition. Check your network.",
-  "voiceInput.error.proxy":
-    'Cannot connect to speech recognition through the HTTP proxy. Make sure the proxy supports WebSocket, or add the service address to "No proxy", then restart the app.',
+  "voiceInput.error.proxy": 'Cannot connect to speech recognition through the HTTP proxy. Make sure the proxy supports WebSocket, or add the service address to "No proxy", then restart the app.',
   "voiceInput.error.rate_limited": "Speech recognition is busy. Try again later.",
   "voiceInput.error.unavailable": "Speech recognition is unavailable. Try again later.",
   "voiceInput.error.upstream_timeout": "Speech recognition timed out. Try again.",
-  "voiceInput.error.audio_limit_exceeded":
-    "The recording reached the maximum length. The recognized text was kept.",
+  "voiceInput.error.audio_limit_exceeded": "The recording reached the maximum length. The recognized text was kept.",
   "voiceInput.error.failed": "Speech recognition failed. Try again.",
-  ...requestSecurityMessagesEnUS,
+  "conversationShare.permission.privateHint": "For personal notes",
+  "conversationShare.permission.linkViewerHint": "Cannot import and continue",
+  "conversationShare.permission.linkEditorHint": "Import into Reactor",
+  "conversationShare.result.description": "Your link is ready to copy or view in a browser.",
+  "conversationShare.selection.reopen": "Reopen selection panel",
+  "conversationShare.partial.selectionStageHint": "Select completed conversations to share, then continue to the next step.",
+  "conversationShare.partial.continueWithSkips": "Continue (skip {count} file(s))",
+  "conversationShare.partial.selectionHint": "Review the title, access, and sensitive-content acknowledgement, then create the link.",
+  "conversationShare.partial.confirmationTitle": "Confirm shared content",
+  "conversationShare.partial.deselectAll": "Deselect all",
+  "conversationShare.partial.selectedSummary": "Selected {selected} / {total}",
+  "conversationShare.partial.next": "Next",
+  "conversationShare.partial.back": "Back",
+  "conversationShare.publicWarning": "Check conversations, tool inputs and outputs, and artifacts for sensitive information.",
+  "quickPick.command.addChangesTab": "Add changes review tab",
+  "confirmDialog.taskArchiveTitle": "Archive this task?",
+  "confirmDialog.taskArchiveDescription": "Task “{taskTitle}” will move to the archive list and can still be restored later.",
+  "confirmDialog.projectRemoveTitle": "Remove this project?",
+  "confirmDialog.projectRemoveDescription": "Project “{projectName}” will be removed from the sidebar, but files on disk will remain untouched.",
+  "login.enterprise.eyebrow": "Enterprise server",
+  "login.password.show": "Show password",
+  "login.password.hide": "Hide password",
+  "login.enterprise.helpAdmin": "No enterprise account? Ask your administrator for one and for the server address.",
+  "sidePane.openTabDescription": "Choose a tab to open in the side pane.",
+// Git change review (tab type "git"). File review reuses sidePane.review if it ever needs a side pane entry.
+  "sidePane.changes": "Changes review",
+  "sidePane.files": "Workspace files",
+  "markdownExport.label": "Export",
+  "markdownExport.png": "Export as image (PNG)",
+  "markdownExport.word": "Export as Word (DOCX)",
+  "markdownExport.pdf": "Export as PDF",
+  "markdownExport.success": "Exported to {path}",
+  "markdownExport.failed": "Export failed, please try again",
+  "markdownExport.tooLong": "This document is long (about {height}px); the exported image may be hard to read. Consider PDF instead",
+  "markdownExport.copyRichText": "Copy as rich text",
+  "markdownExport.copyRichTextSuccess": "Copied as rich text; paste directly into Word or a publishing editor",
+  "markdownExport.copyRichTextFallback": "Rich-text clipboard is unavailable here; copied as plain text instead",
+  "markdownExport.copyRichTextFailed": "Copy failed, please try again",
+  "paperMode.title": "Paper mode",
+  "paperMode.close": "Close",
+  "paperMode.reopenSidebar": "Sidebar",
+  "paperMode.tab.outline": "Outline",
+  "paperMode.tab.citations": "Citations",
+  "paperMode.tab.figures": "Figures",
+  "paperMode.tab.formulas": "Formulas",
+  "paperMode.figuresEmpty": "No figure captions found (first 80 pages scanned).",
+  "paperMode.formulasEmpty": "No formula candidates found (first 80 pages scanned).",
+  "paperMode.outlineEmpty": "This PDF has no bookmarks; use the pdf_structure tool for heuristic sections.",
+  "paperMode.quoteIntoComposer": "Quote into chat",
+  "paperMode.action.copy": "Copy",
+  "paperMode.action.explain": "Explain",
+  "paperMode.action.translate": "Translate",
+  "paperMode.action.ask": "Ask",
+  "paperMode.openTitle": "Open paper mode: outline / citations / quote into chat",
+  "paperMode.exitTitle": "Exit paper mode and return to the normal preview",
+  "paperMode.instruction.answer": "Please answer using the passage above.",
+  "paperMode.instruction.explain": "Please explain this passage.",
+  "paperMode.instruction.translate": "Please translate this into Chinese.",
+  "paperMode.instruction.ask": "I would like to ask about this passage:",
+  "paperMode.instruction.citationRelation": "Please explain how this reference relates to the current discussion.",
+  "workspaceHeader.mySpace": "My space",
+  "help.productDocs.notConfigured": "The product docs URL is not configured on the server yet. Contact your administrator.",
+  "workspace.addNewWorkspace": "Add new workspace",
+  "workspace.startFromScratch": "Start from scratch",
+  "workspace.noActiveForNewTask": "There is no available workspace yet. Open a workspace first.",
+  "workspaceSidebar.noConversations": "No tasks yet",
+  "workspaceSidebar.noProjects": "No open projects",
+  "workspaceSidebar.viewByWorkspace": "By project",
+  "workspaceSidebar.organizeChronologicalList": "Timeline",
+  "workspaceSidebar.expandAllGroups": "Expand all",
+  "workspaceSidebar.collapseAllGroups": "Collapse all",
+  "workspaceSidebar.searchTasks": "Search tasks",
+  "workspaceSidebar.searchTasksPlaceholder": "Search tasks...",
+  "workspaceSidebar.searchArchivedTasksPlaceholder": "Search archived tasks...",
+  "workspaceSidebar.closeTaskSearch": "Close task search",
+  "workspaceSidebar.remove": "Remove",
+  "workspaceSidebar.removeRunningWorkspace.title": "Remove a running project?",
+  "workspaceSidebar.removeRunningWorkspace.description": "This project still has a running chat or Agent. Removing it will stop and release the related runtime state, but task history will not be deleted.",
+  "workspaceSidebar.removeRunningWorkspace.confirm": "Remove and stop",
+  "workspaceSidebar.windowsReservedNameRisk": "Project removed, but {count} Windows reserved-name file(s) were detected and may affect later folder deletion or renaming: {path}",
+  "workspaceSidebar.empty": "No workspaces yet. Open a workspace to get started.",
+  "workspaceSidebar.showSidebar": "Toggle sidebar",
+  "workspaceSidebar.hideSidebar": "Toggle sidebar",
+  "workspaceSidebar.toggleArchivedTasks": "Archived",
+  "workspaceSidebar.sshConnectionTitle": "SSH connection",
+  "workspaceSidebar.sshConnectionAlias": "Alias",
+  "workspaceSidebar.sshConnectionHost": "Host",
+  "workspaceSidebar.sshConnectionPath": "Path",
+  "ssh.validation.required": "Host and username are required",
+  "remote.step.kind": "Choose method",
+  "remote.step.settings": "Fill settings",
+  "remote.step.connecting": "Connecting",
+  "remote.kindStepTitle": "Choose method",
+  "remote.kindStepDescription": "Choose how you want to access this workspace, then continue with the matching connection settings.",
+  "remote.settingsStepDescription": "Enter the details needed for your {method} connection so we can prepare the remote session.",
+  "remote.title": "Connect remote environment",
+  "remote.description": "Connect to a remote workspace over SSH, Server, WSL, or Docker, then choose a directory in the current window.",
+  "remote.step.connect": "Connect",
+  "remote.step.selectDirectory": "Choose directory",
+  "remote.kind.ssh.wizardDescription": "Remote host",
+  "remote.kind.wsl.wizardDescription": "Windows Subsystem for Linux",
+  "remote.kind.docker.wizardDescription": "Local container",
+  "remote.success": "Connected. Choose a directory to continue.",
+  "wsl.description": "Connect to the default distro, or choose a specific distro installed on this device.",
+  "docker.description": "Connect to a local container using docker exec and docker cp.",
+// Task list
+  "taskList.newTask": "New task",
+  "taskList.syncingRemoteWorkspaces": "Loading remote tasks...",
+  "taskList.recentSection": "Recent",
+  "taskList.delete": "Delete task",
+  "taskList.archiveLocal": "Archive local task",
+  "taskList.archiveRemote": "Archive remote task",
+  "taskList.openInSplitPane": "Open in split view",
+  "v4Pane.splitRight": "Split right",
+  "v4Pane.splitRightTitle": "Split a new pane to the right (new session)",
+  "v4Pane.splitDown": "Split down",
+  "v4Pane.splitDownTitle": "Split a new pane below (new session)",
+  "taskList.resume": "Resume",
+  "taskList.status.streaming": "Running",
+  "taskList.status.restoring": "Restoring",
+  "taskList.status.ready": "Ready",
+  "taskList.status.completed": "Done",
+  "taskList.status.failed": "Failed",
+  "taskList.status.notReady": "Not ready",
+  "settings.done": "Done",
+  "settings.searchPlaceholder": "Search settings",
+  "settings.searchEmpty": "No matching settings",
+  "settings.interfaceMode.review": "Review mode",
+  "chat.empty.greeting.review": "Hand me a file to review",
+// KnowledgeCheck card: each finding is clickable and locates the hit in the extracted text
+  "review.tool.standards": "Standard reference check",
+  "review.tool.issues": "Review findings",
+  "review.issues.summary": "{total} findings, {problems} to address",
+  "review.issues.noIssues": "{total} findings",
+  "review.issues.clean": "Nothing to address",
+  "review.severity.error": "Must fix",
+  "review.severity.warning": "Should fix",
+  "review.severity.info": "Note",
+  "review.issue.unlocated": "Not located",
+  "review.card.occurrence": "{index}/{total} match",
+  "review.tool.terminology": "Terminology whitelist filter",
+  "review.standards.summary": "{total} references, {ok} ok, {problems} to handle",
+  "review.standards.noIssues": "{total} references",
+  "review.standards.clean": "Nothing to handle",
+  "review.standards.stale": "Knowledge cache not synced — cannot judge",
+  "review.terminology.summary": "{hit} whitelisted, {remaining} left to judge",
+  "review.terminology.stale": "Whitelist not synced — do not drop any candidate",
+  "review.terminology.whitelisted": "Whitelisted (drop these)",
+  "review.terminology.remaining": "Still to judge",
+  "review.card.title": "Review finding",
+  "review.panel.title": "Review results",
+  "review.panel.totals": "{total} findings",
+  "review.panel.count": "{count}",
+  "review.panel.passed": "{count} passed",
+  "review.panel.unlocated": "{count} could not be located in the text and are not clickable",
+  "review.panel.sourceless": "Source not stated",
+  "review.mark.mark": "Accept this suggestion",
+  "review.mark.unmark": "Remove acceptance",
+  "review.mark.count": "{count} accepted",
+  "review.mark.apply": "Apply accepted fixes",
+  "review.mark.applyFailed": "The request could not be sent (the session may be busy). Your marks are kept — try again in a moment.",
+  "review.family.punct": "Punctuation",
+  "review.family.typo": "Typos",
+  "review.family.grammar": "Grammar",
+  "review.family.terminology": "Terminology",
+  "review.family.wording": "Wording",
+  "review.family.style": "Style",
+  "review.family.format": "Format",
+  "review.family.layout": "Layout",
+  "review.family.spacing": "Spacing",
+  "review.family.quantity": "Quantity",
+  "review.family.unit": "Units",
+  "review.family.numbering": "Numbering",
+  "review.family.table": "Tables",
+  "review.family.figure": "Figures",
+  "review.family.reference": "References",
+  "review.family.date": "Dates",
+  "review.family.consistency": "Consistency",
+  "review.family.completeness": "Completeness",
+  "review.family.contract": "Contract terms",
+  "review.quote.notFound": "This passage was not found in the rendered text (formatting may have been rewritten). Switch to the source view to compare.",
+  "review.card.line": "line {line}",
+  "review.card.suggestion": "Suggestion",
+  "review.card.textPath": "Extracted text",
+  "review.issue.abolished": "Abolished standard cited",
+  "review.issue.noYear": "Missing year",
+  "review.issue.noVersion": "Missing version note",
+  "review.issue.notInLibrary": "Number not in library",
+  "review.issue.familyNotCollected": "System not covered by library",
+  "review.issue.missing": "Not in library",
+  "review.issue.upcoming": "Not yet in force",
+  "review.issue.ok": "Passed",
+  "review.issue.unknown": "Finding ({code})",
+  "settings.appearance.backgroundTitle": "Background",
+  "settings.appearance.backgroundDescription": "Add a background to the center conversation area only. The sidebar, side pane, settings, and dialogs keep their own surface colors.",
+  "settings.appearance.accentTitle": "Theme color",
+  "settings.appearance.accentDescription": "Adjust the accent color for weak emphasis surfaces such as selected highlights, independently of the color theme. The brand color is not affected.",
+  "settings.accent.preset": "Accent",
+  "settings.accent.presetDescription": "Affects weak emphasis surfaces only (selection, highlight blocks); the brand color is unchanged.",
+  "settings.accent.preset.default": "Default",
+  "settings.accent.preset.azurite": "Azurite",
+  "settings.accent.preset.teal": "Teal",
+  "settings.accent.preset.violet": "Violet",
+  "settings.accent.preset.amber": "Amber",
+  "settings.accent.presetDescription.default": "Follows the accent color of the current color theme.",
+  "settings.accent.presetDescription.azurite": "A cool sky blue; the most restrained option.",
+  "settings.accent.presetDescription.teal": "Cool teal, comfortable for long reading sessions.",
+  "settings.accent.presetDescription.violet": "A low-saturation violet: emphasized but still soft.",
+  "settings.accent.presetDescription.amber": "Warm amber, contrasting with cool-toned themes.",
+  "settings.background.none": "None",
+  "settings.background.preset.mist": "Mist",
+  "settings.background.preset.sky": "Sky",
+  "settings.background.preset.dusk": "Dusk",
+  "settings.background.preset.dune": "Dune",
+  "settings.background.preset.basalt": "Basalt",
+  "settings.background.preset.highland-mist": "Highland Mist",
+  "settings.background.preset.lakeside-lodge": "Lakeside Lodge",
+  "settings.background.preset.dusk-grass": "Dusk Grass",
+  "settings.background.preset.pink-willow": "Pink Willow",
+  "settings.background.preset.moon-terraces": "Moon Terraces",
+  "settings.background.preset.bird-perch": "Bird Perch",
+  "settings.background.effectsTitle": "Display effects",
+  "settings.background.effectsHint": "Blur and overlay apply to the center conversation area; the animated background respects the system reduce-motion setting.",
+  "settings.background.blur": "Blur",
+  "settings.background.motion": "Animated background",
+  "settings.background.motionDescription": "Add a very slow breathing zoom to the background for a livelier look. Respects the system reduce-motion setting.",
+  "settings.background.blurDescription": "Applies a gaussian blur to the background; higher values look softer.",
+  "settings.background.scrim": "Overlay",
+  "settings.background.scrimDescription": "How much of the theme color is layered over the background. Higher keeps text clearer and the background subtler.",
+  "settings.background.uploadImage": "Upload image",
+  "settings.background.replaceImage": "Replace image",
+  "settings.background.removeImage": "Remove image",
+  "settings.background.imageLoading": "Loading image…",
+  "settings.background.imageUnsupported": "Only PNG, JPG, WebP, GIF, BMP, or AVIF images work.",
+  "settings.background.imageFailed": "Could not read the image and fell back to the preset background (PNG, JPG, WebP, GIF, BMP, or AVIF up to 8 MB).",
+  "settings.appInfo.title": "App info",
+  "settings.appInfo.description": "Version and build info, to confirm which package is running.",
+  "settings.appInfo.version": "Version",
+  "settings.appInfo.buildTime": "Build time (hover the version to see it)",
+  "settings.devMode.unlocked": "Developer mode on: Settings → Model settings is now visible",
+  "settings.devMode.locked": "Developer mode off: Model settings is hidden (config stays on disk)",
+  "settings.launchAtLogin": "Launch at login",
+  "settings.launchAtLoginDescription": "Start automatically after you sign in. Packaged builds only; dev mode does not register a login item.",
+  "settings.toolGroupingExplore": "Group exploration tools",
+  "settings.toolGroupingExploreDescription": "Group consecutive reads and searches into an Explore section.",
+  "settings.toolGroupingTerminal": "Group terminal commands",
+  "settings.toolGroupingTerminalDescription": "Group consecutive non-read-only shell commands into a Terminal section.",
+  "settings.toolGroupingChanges": "Group file changes",
+  "settings.toolGroupingChangesDescription": "Group consecutive Write, Edit, and ApplyPatch calls into a Changes section.",
+  "settings.account.title": "Account",
+  "settings.account.status.loading": "Reading enterprise sign-in state…",
+  "settings.account.status.loggedIn": "Signed in to the enterprise server",
+  "settings.account.tab.profile": "Account",
+  "settings.account.tab.org": "Organization",
+  "settings.account.tab.ariaLabel": "Account information category",
+  "settings.account.identity.source": "Enterprise server account",
+  "settings.account.identity.uid": "Sign-in account",
+  "settings.account.identity.dept": "Department",
+  "settings.account.identity.deptNone": "No department assigned",
+  "settings.account.connection.title": "Connection",
+  "settings.account.models.title": "Enterprise models",
+  "settings.account.security.title": "Password security",
+  "settings.account.security.changePassword": "Change password",
+  "settings.account.security.changePasswordHint": 'The initial password is "<account>@123". Change it to something only you know as soon as possible.',
+  "settings.account.security.expand": "Change password",
+  "settings.account.security.collapse": "Collapse",
+  "settings.account.password.forceTitle": "Change your initial password",
+  "settings.account.password.forceReason": "Account {uid} is still using its initial password, which anyone could guess. Change it to continue.",
+  "settings.account.password.old": "Current password",
+  "settings.account.password.new": "New password",
+  "settings.account.password.confirm": "Confirm new password",
+  "settings.account.password.show": "Show password",
+  "settings.account.password.hide": "Hide password",
+  "settings.account.password.submit": "Save",
+  "settings.account.password.ruleHint": "At least 8 characters, with uppercase, lowercase, a digit and a special character.",
+  "settings.account.password.rule.length": "At least 8 characters",
+  "settings.account.password.rule.lower": "Contains a lowercase letter",
+  "settings.account.password.rule.upper": "Contains an uppercase letter",
+  "settings.account.password.rule.digit": "Contains a digit",
+  "settings.account.password.rule.special": "Contains a special character (e.g. ! @ # $ %)",
+  "settings.account.password.error.oldRequired": "Enter your current password",
+  "settings.account.password.error.weak": "The new password is too weak: at least 8 characters, with uppercase, lowercase, a digit and a special character",
+  "settings.account.password.error.mismatch": "The two new passwords do not match",
+  "settings.account.password.error.sameAsOld": "The new password must differ from the current one",
+  "settings.account.role.platform_admin": "Platform administrator",
+  "settings.account.role.dept_head": "Department head",
+  "settings.account.role.user": "Standard user",
+  "settings.account.scope.title": "Data scope",
+  "settings.account.scope.role": "My role",
+  "settings.account.scope.range": "Visible data scope",
+  "settings.account.scope.all": "Entire company",
+  "settings.account.scope.dept": "My department and below",
+  "settings.account.scope.self": "Only me",
+  "settings.account.scope.unknown": "Unknown",
+  "settings.account.scope.hint": "Determines which usage, report, and member data you can see.",
+  "settings.account.permissions.title": "Available permissions",
+  "settings.account.permissions.unknown": "No permission description is available for this role. Contact your administrator.",
+  "settings.account.permissions.note": "Capabilities listed by role, based on the server's role definitions. Individual permission points are maintained by administrators in the admin console.",
+  "settings.account.capability.title": "Available capabilities",
+  "settings.account.capability.models": "Enterprise models",
+  "settings.account.capability.skills": "Enterprise skills",
+  "settings.account.capability.experts": "Enterprise experts",
+  "settings.account.capability.note": "“—” means this machine has not synced that catalog yet, not that the organization has none. Sync in the Experts · Skills marketplace and check again.",
+  "settings.account.capability.admin.users": "Users, organizations, and roles: full management",
+  "settings.account.capability.admin.modules": "All modules: models, providers, skills, experts",
+  "settings.account.capability.admin.sync": "Trigger AD sync and scan permission points",
+  "settings.account.capability.admin.audit": "Audit and reports: full access",
+  "settings.account.capability.dept.members": "Manage members of my department (transfer, disable, profile)",
+  "settings.account.capability.dept.reports": "Reports and usage for my department",
+  "settings.account.capability.dept.limits": "Cannot change roles or cross department boundaries",
+  "settings.account.capability.user.profile": "Personal center: my own account profile",
+  "settings.account.capability.user.desktop": "Desktop sessions and tool capabilities (constrained by organization policy)",
+  "settings.account.capability.user.usage": "View my own usage",
+  "settings.account.capability.user.noAdmin": "No access to the admin console",
+  "settings.account.policy.title": "Organization policy",
+  "settings.account.quota.title": "Available quota",
+  "settings.account.quota.hint": "Tokens accumulated this month through the enterprise gateway (server-side counting). Informational only; calls are never interrupted.",
+  "settings.account.quota.usageOrganization": "Organization used this month",
+  "settings.account.quota.usageDepartment": "My department used this month",
+  "settings.account.quota.usageSelf": "I used this month",
+  "settings.account.quota.usageValue": "{usageLabel} {used} / organization limit {limit} tokens ({percent}%)",
+  "settings.account.quota.usageNoLimit": "{usageLabel} {used} tokens; no organization quota configured",
+  "settings.account.quota.usageNoPercent": "{usageLabel} {used} tokens; organization quota limit {limit} tokens (different bases, so no percentage)",
+  "settings.account.quota.noteOrganization": "Usage and limit share the organization-wide basis, so the percentage is directly meaningful.",
+  "settings.account.quota.noteScoped": "Usage counts only calls within your visible scope, while the limit is organization-wide, so no percentage is shown.",
+  "settings.account.quota.row.org": "Organization quota",
+  "settings.account.quota.row.dept": "Department quota",
+  "settings.account.quota.row.self": "My quota",
+  "settings.account.quota.row.period": "Monthly",
+  "settings.account.quota.rowNoLimit": "{used} tokens used this month; no limit configured for this scope",
+  "settings.account.quota.rowThreshold": "Alerts at {thresholds}",
+  "settings.account.quota.rowReset": "Resets {date}",
+  "settings.account.quota.action.warn": "Alert only",
+  "settings.account.quota.action.block": "Blocks when exceeded",
+  "settings.account.quota.blocked": "This month's quota is used up; new model calls will be rejected by the server.",
+  "settings.account.quota.blockedReset": "Access resumes automatically on {date}.",
+  "settings.reactorServer.serverUrl": "Server address",
+  "settings.reactorServer.serverUrlDescription": "Address of the enterprise identity service, for example http://192.168.1.10:8791. The gateway address is derived on the same host at port 8790.",
+  "settings.reactorServer.serverUrlPlaceholder": "http://192.168.1.10:8791",
+  "settings.reactorServer.username": "Enterprise account",
+  "settings.reactorServer.password": "Password",
+  "settings.reactorServer.login": "Sign in",
+  "settings.reactorServer.credentialReset": "The sign-in credentials saved on this device were unreadable and have been cleared. Please sign in again.",
+  "settings.reactorServer.entering": "Entering…",
+  "settings.reactorServer.logout": "Sign out",
+  "settings.reactorServer.gatewayDescription": "Gateway address {gatewayUrl}",
+  "settings.reactorServer.modelsHint": "Written to the “{provider}” provider; model requests are authorized and metered by the enterprise gateway.",
+  "settings.reactorServer.modelsEmpty": "The server has not published any chat model yet. Select “Refresh models” to retry.",
+  "settings.reactorServer.modelsMore": "and {count} more",
+  "settings.reactorServer.refreshModels": "Refresh models",
+  "settings.reactorServer.usageRefresh": "Refresh usage",
+  "settings.reactorServer.usageUnavailable": "Monthly usage is unavailable (not signed in or server unreachable)",
+  "settings.reactorServer.usageExceeded": "The organization quota alert line ({percent}%) is reached; model calls are not interrupted",
+  "settings.reactorServer.usagePending": "{count} usage events are still queued locally",
+  "settings.reactorServer.usageReportError": "Last upload failed: {error}",
+  "settings.reactorServer.policySourceServer": "Published by the enterprise server; applies while signed in",
+  "settings.reactorServer.policySourceUnknown": "No organization policy yet — nothing is restricted",
+  "settings.reactorServer.policyCommandBlacklist": "{count} blocked commands",
+  "settings.reactorServer.policyEgressAllowlist": "{count} allowed egress domains",
+  "settings.reactorServer.policyStale": "Policy refresh failed; using the cached copy",
+  "settings.remoteSync.open": "Sync",
+  "settings.remoteSync.preflighting": "Checking remote write access...",
+  "settings.remoteSync.preflightTimeout": "Remote write check timed out after {seconds}s. Check the remote connection and try again.",
+  "settings.remoteSync.preflightFailed": "Remote target is not writable: {path}. {error}",
+  "settings.mcp.remoteSync.title": "Sync MCP servers to remote target",
+  "settings.mcp.remoteSync.warningTitle": "MCP data and environment availability",
+  "settings.mcp.remoteSync.warningDescription": "Sync copies local user MCP server configuration to the remote host. HTTP MCP URLs are copied, and filesystem MCP paths are rewritten for the selected remote workspace, but not all dependent data and system environment capabilities can be guaranteed. If an MCP server is unavailable because of the remote environment, permissions, or missing dependencies, install it or add the dependencies on the remote server.",
+  "settings.mcp.remoteSync.target": "Target: {target}",
+  "settings.mcp.remoteSync.loading": "Loading local MCP servers...",
+  "settings.mcp.remoteSync.empty": "No local user MCP servers found.",
+  "settings.mcp.remoteSync.filteredEmpty": "All local user MCP servers already exist on the remote host.",
+  "settings.mcp.remoteSync.showExisting": "Show existing remote MCP servers",
+  "settings.mcp.remoteSync.selectAll": "Select all",
+  "settings.mcp.remoteSync.start": "Sync selected",
+  "settings.mcp.remoteSync.syncing": "Syncing MCP servers...",
+  "settings.mcp.remoteSync.existing": "Already exists on remote",
+  "settings.mcp.remoteSync.synced": "Synced",
+  "settings.mcp.remoteSync.skipped": "Skipped",
+  "settings.mcp.remoteSync.failed": "Failed",
+  "settings.mcp.remoteSync.resultEmpty": "No MCP sync results were returned.",
+  "settings.mcp.remoteSync.selectionCount": "{selected}/{total} selected",
+  "settings.mcp.remoteSync.noSelection": "Select at least one missing MCP server.",
+  "settings.plugins.remoteSync.title": "Sync Plugins to remote target",
+  "settings.plugins.remoteSync.warningTitle": "Remote execution reminder",
+  "settings.plugins.remoteSync.warningDescription": "Synced plugins can load or run Skills, Commands, Hooks, and MCP servers in the remote environment. Marketplace plugins are reinstalled on the remote target and require remote access to their marketplace source.",
+  "settings.plugins.remoteSync.target": "Target: {target}",
+  "settings.plugins.remoteSync.loading": "Loading local Plugins...",
+  "settings.plugins.remoteSync.empty": "No local plugins available for remote sync.",
+  "settings.plugins.remoteSync.filteredEmpty": "All local plugins already exist on the remote host.",
+  "settings.plugins.remoteSync.showExisting": "Show existing remote plugins",
+  "settings.plugins.remoteSync.selectAll": "Select all",
+  "settings.plugins.remoteSync.start": "Sync selected",
+  "settings.plugins.remoteSync.syncing": "Syncing plugins...",
+  "settings.plugins.remoteSync.queued": "Queued",
+  "settings.plugins.remoteSync.existing": "Already exists on remote",
+  "settings.plugins.remoteSync.synced": "Synced",
+  "settings.plugins.remoteSync.skipped": "Skipped",
+  "settings.plugins.remoteSync.failed": "Failed",
+  "settings.plugins.remoteSync.stopped": "Stopped",
+  "settings.plugins.remoteSync.stop": "Stop sync",
+  "settings.plugins.remoteSync.logTooltip": "Sync log",
+  "settings.plugins.remoteSync.optionsSummary": "Options: {syncable} will be attempted; {manual} require manual setup on remote",
+  "settings.plugins.remoteSync.resultEmpty": "No plugin sync results were returned.",
+  "settings.plugins.remoteSync.selectionCount": "{selected}/{total} selected",
+  "settings.plugins.remoteSync.noSelection": "Select at least one missing plugin.",
+  "settings.mcp.host.active": "Host built-in",
+  "settings.mcp.host.activeDescription": "Reactor provides this MCP server for the {pluginName} plugin. Its runtime identity is managed by the host.",
+  "settings.plugins.scope.inheritedUser": "Inherits User default",
+  "settings.plugins.scope.userDefault": "User default",
+  "settings.plugins.scope.workspaceOverride": "Workspace override",
+  "settings.plugins.toggle.pending": "Updating {plugin}...",
+  "settings.modelProvider.pullModels": "Pull models",
+  "settings.modelProvider.pullModels.title": "Pull model catalog",
+  "settings.modelProvider.pullModels.description": "Pulls the provider's model catalog in one go so you can select and add many models instead of typing them one by one.",
+  "settings.modelProvider.pullModels.source": "Source: {baseUrl}",
+  "settings.modelProvider.pullModels.loading": "Fetching the model catalog…",
+  "settings.modelProvider.pullModels.empty": "This provider returned an empty model catalog.",
+  "settings.modelProvider.pullModels.exists": "Already added",
+  "settings.modelProvider.pullModels.allAdded": "Every model in the catalog is already added.",
+  "settings.modelProvider.pullModels.selected": "{count} selected",
+  "settings.modelProvider.pullModels.addSelected": "Add selected ({count})",
+  "settings.modelProvider.pullModels.adding": "Adding…",
+  "settings.modelProvider.pullModels.addFailed": "Failed to add: {message}",
+  "settings.skills.serverSync.open": "Sync skills from enterprise server",
+  "settings.skills.serverSync.done": "Server skills synced: {changed} added/updated, {removed} removed",
+  "settings.skills.serverSync.offline": "Server unreachable; local copies are kept as-is",
+  "settings.skills.serverSync.authExpired": "Enterprise session expired, please sign in again",
+  "settings.skills.serverSync.notLoggedIn": "Not signed in to the enterprise server",
+  "settings.skills.server.update": "Update",
+  "settings.skills.server.uninstall.title": "Uninstall server skill",
+  "settings.skills.server.uninstall.description": 'Uninstall "{name}"? This removes the install on the enterprise server and deletes the local copy; it will not come back on the next sync.',
+  "settings.skills.server.uninstall.confirm": "Uninstall",
+  "settings.skills.server.offlineBadge": "Delisted",
+  "settings.skills.remoteSync.title": "Sync Skills to remote target",
+  "settings.skills.remoteSync.warningTitle": "Skill data and environment availability",
+  "settings.skills.remoteSync.warningDescription": "Sync migrates local user-level Skills to the remote host, but not all dependent data and system environment capabilities can be guaranteed. If a Skill is unavailable because of the remote environment, permissions, or missing dependencies, install it or add the dependencies on the remote server.",
+  "settings.skills.remoteSync.target": "Target: {target}",
+  "settings.skills.remoteSync.loading": "Loading local Skills...",
+  "settings.skills.remoteSync.empty": "No local user skills found.",
+  "settings.skills.remoteSync.filteredEmpty": 'Only Skills that already exist on the remote are available. Enable "Show existing remote skills" to view them.',
+  "settings.skills.remoteSync.showExisting": "Show existing remote skills",
+  "settings.skills.remoteSync.selectAll": "Select all",
+  "settings.skills.remoteSync.clearAll": "Clear all",
+  "settings.skills.remoteSync.start": "Sync selected",
+  "settings.skills.remoteSync.syncing": "Syncing skills...",
+  "settings.skills.remoteSync.existing": "Already exists on remote",
+  "settings.skills.remoteSync.expandDescription": "Show more",
+  "settings.skills.remoteSync.collapseDescription": "Show less",
+  "settings.skills.remoteSync.synced": "Synced",
+  "settings.skills.remoteSync.skipped": "Skipped",
+  "settings.skills.remoteSync.failed": "Failed",
+  "settings.skills.remoteSync.complete": "Skill sync complete.",
+  "settings.skills.remoteSync.selectionCount": "{selected}/{total} selected",
+  "settings.skills.remoteSync.noSelection": "Select at least one missing skill.",
+  "settings.skills.remoteSync.sizeLimit.selectedContent": "Sync failed: the selected Skills contain about {actualSize} of content, exceeding the {maxSize} per-sync limit. Deselect some Skills and try again. Nothing was written to the remote host.",
+  "settings.skills.remoteSync.sizeLimit.archive": "Sync failed: the generated sync archive is about {actualSize}, exceeding the {maxSize} per-sync limit. Deselect some Skills and try again. Nothing was written to the remote host.",
+  "settings.skills.remoteSync.sizeLimit.extractedContent": "Sync failed: the extracted Skill content is about {actualSize}, exceeding the {maxSize} remote limit. Deselect some Skills and try again.",
+  "settings.skills.scope.server": "Server",
+  "settings.subagents.group.server": "Enterprise experts",
+  "marketplace.title": "Experts & Skills",
+  "marketplace.tab.expert": "Experts",
+  "marketplace.tab.skill": "Skills",
+  "marketplace.search.placeholder": "Search experts or skills…",
+  "marketplace.sort.default": "Recommended",
+  "marketplace.sort.hot": "Hot",
+  "marketplace.sort.new": "Newest",
+  "marketplace.category.all": "All",
+  "marketplace.category.office": "Office",
+  "marketplace.category.dev": "Development",
+  "marketplace.category.data": "Data",
+  "marketplace.category.content": "Content",
+  "marketplace.category.other": "Other",
+  "marketplace.mine.experts": "My experts",
+  "marketplace.mine.skills": "Installed",
+  "marketplace.mine.back": "Back to market",
+  "marketplace.mine.empty": "Nothing installed yet",
+  "marketplace.card.installed": "Installed",
+  "marketplace.card.use": "Use",
+  "marketplace.featured": "Featured",
+  "marketplace.empty": "No matches",
+  "marketplace.dialog.uses": "{count} uses",
+  "marketplace.dialog.install": "Install",
+  "marketplace.dialog.uninstall": "Uninstall",
+  "marketplace.dialog.enable": "Enable",
+  "marketplace.dialog.disable": "Disable",
+  "marketplace.dialog.summon": "Summon expert",
+  "marketplace.dialog.use": "Use",
+  "marketplace.dialog.startersExpert": "What the expert does",
+  "marketplace.dialog.baseInfo": "Basic info",
+  "marketplace.dialog.version": "Version",
+  "marketplace.dialog.source": "Source",
+  "marketplace.dialog.sourceValue": "Enterprise server",
+  "marketplace.dialog.category": "Category",
+  "marketplace.dialog.favorite": "Add to favorites",
+  "marketplace.dialog.unfavorite": "Remove from favorites",
+  "marketplace.dialog.noDescription": "No description yet",
+  "marketplace.login.title": "Sign in to the enterprise server first",
+  "marketplace.login.body": "Experts and skills are delivered by your enterprise server. Sign in at Settings · Account.",
+  "marketplace.unavailable": "Market sync is unavailable in this session.",
+  "marketplace.segment.skills": "Skills",
+  "marketplace.segment.bundles": "Bundles",
+  "marketplace.bundles.empty": "No bundles available",
+  "marketplace.bundle.title": "Skill bundle",
+  "marketplace.bundle.detailLoading": "Loading bundle…",
+  "marketplace.bundle.detailFailed": "Failed to load bundle",
+  "marketplace.bundle.memberCount": "{count} skills",
+  "marketplace.bundle.installedProgress": "{installed}/{total} installed",
+  "marketplace.bundle.installAll": "Install all",
+  "marketplace.bundle.installing": "Installing…",
+  "marketplace.bundle.allInstalled": "All installed",
+  "marketplace.bundle.installDone": "All {total} bundle members are installed.",
+  "marketplace.bundle.installPartial": "Install finished: {installed}/{total} installed. The rest may be invisible or disabled for you.",
+  "marketplace.bundle.installFailed": "Bundle install failed",
+  "marketplace.bundle.members": "Bundle skills",
+  "marketplace.bundle.noMembers": "No visible member skills in this bundle.",
+  "marketplace.dialog.detailLoading": "Loading details…",
+  "marketplace.dialog.detailFailed": "Failed to load details",
+  "marketplace.dialog.skillMd": "SKILL.md preview",
+  "marketplace.dialog.noContent": "No content",
+  "marketplace.dialog.attachments": "Attachments",
+  "marketplace.dialog.noAttachments": "No attachments",
+  "marketplace.dialog.executable": "executable",
+  "marketplace.dialog.allowedTools": "Allowed tools",
+  "marketplace.dialog.summonModelUnavailable": "The expert’s model {model} is not in the server’s available model list. You can still summon it; the effective model is resolved by the system.",
+  "marketplace.dialog.summonDraft.withTags": "Hi {title}, I would like your help with a task.\n\nYour strengths: {tags}.\n\nTask description (fill in the goal, context and expected outcome):\n\nPlease confirm you understand it before starting.",
+  "marketplace.dialog.summonDraft.plain": "Hi {title}, I would like your help with a task.\n\nTask description (fill in the goal, context and expected outcome):\n\nPlease confirm you understand it before starting.",
+  "settings.subagents.server.catalog": "Server catalog",
+  "settings.subagents.server.sync": "Sync",
+  "settings.subagents.server.install": "Install",
+  "settings.subagents.server.uninstall": "Uninstall",
+  "settings.subagents.server.enable": "Enable",
+  "settings.subagents.server.disable": "Disable",
+  "settings.subagents.server.state.ready": "Active",
+  "settings.subagents.server.state.disabled": "Disabled",
+  "settings.subagents.server.state.notInstalled": "Not installed",
+  "settings.subagents.server.uninstall.title": "Uninstall enterprise expert?",
+  "settings.subagents.server.uninstall.description": "Removes the server install and deletes the local file: {name}",
+  "settings.subagents.server.uninstall.confirm": "Uninstall",
+  "settings.subagents.serverSync.notLoggedIn": "Not signed in to the enterprise server; cannot sync experts.",
+  "settings.subagents.serverSync.authExpired": "Enterprise session expired. Please sign in again.",
+  "settings.subagents.serverSync.offline": "Server unreachable; local copy kept.",
+  "settings.subagents.serverSync.done": "Enterprise experts synced: {changed} updated, {removed} removed.",
+  "settings.plugin.plugins.browse": "Browse plugins",
+  "settings.plugins.store.subtitle": "Extend Reactor with skills, commands, and MCP servers from plugins",
+  "chat.empty.greeting.withName": "Hello, {name}, {greeting}",
+  "chat.securityDisclaimer": "Digital Management Section: This tool strictly prohibits uploading or processing classified files. AI-generated content is for reference only!",
+  "chat.queue.editDraftConflict": "Send or clear the current draft before editing a queued message.",
+  "chat.queue.editRestoreFailed": "Couldn't return the queued message to the composer. Try again.",
+  "chat.plan.attachmentsBlocked": "The /plan shortcut supports text only for now. Remove attachments or context and try again.",
+  "chat.toolCall.executeGroup.label": "Terminal",
+  "chat.toolCall.changesGroup.label": "Changes",
+  "chat.toolCall.changesGroup.file.one": "{count} file",
+  "chat.toolCall.changesGroup.file.other": "{count} files",
+  "chat.toolCall.changesGroup.tool.one": "{count} tool",
+  "chat.toolCall.changesGroup.tool.other": "{count} tools",
+  "chat.toolCall.executeGroup.command.one": "{count} command",
+  "chat.toolCall.executeGroup.command.other": "{count} commands",
+  "chat.toolCall.executeGroup.failed": "{count} failed",
+  "chat.toolCall.executeGroup.stopped": "{count} stopped",
+  "chat.workflowLaunch.settings.machineLimit": "this machine's limit",
+  "chat.workflowLaunch.settings.machineLimitValue": "{n} (this machine's limit)",
+  "chat.toolCall.workflow.run.settings.limit.ceiling": "this machine allows up to {n}",
+  "chat.toolCall.workflow.run.settings.limit.atCeiling": "= this machine's limit",
+  "chat.toolCall.workflow.settingsChange.limitCeiling": "limit back to this machine's default",
+  "chat.toolCall.explore.bucket.search.one": "search",
+  "chat.toolCall.explore.bucket.search.other": "searches",
+  "chat.toolCall.explore.bucket.list.one": "list",
+  "chat.toolCall.explore.bucket.list.other": "lists",
+  "chat.toolCall.explore.bucket.file.one": "file",
+  "chat.toolCall.explore.bucket.file.other": "files",
+  "chat.toolCall.explore.bucket.items": "items",
+  "chat.toolCall.cua.group.completedLabel": "Computer Use",
+  "chat.toolCall.cua.group.event.one": "{count} event",
+  "chat.toolCall.cua.group.event.other": "{count} events",
+  "chat.toolCall.cua.group.message.one": "{count} message",
+  "chat.toolCall.cua.group.message.other": "{count} messages",
+  "mySpace.tab.files": "Files",
+  "mySpace.tab.trash": "Trash",
+  "mySpace.tab.shares": "Shares",
+  "mySpace.action.upload": "Upload files",
+  "mySpace.action.newFolder": "New folder",
+  "mySpace.action.archive": "Download as ZIP",
+  "mySpace.action.more": "More",
+  "mySpace.action.refresh": "Refresh",
+  "mySpace.action.download": "Download",
+  "mySpace.action.addToChat": "Add to chat",
+  "mySpace.action.share": "Share link",
+  "mySpace.action.rename": "Rename",
+  "mySpace.action.move": "Move to…",
+  "mySpace.action.delete": "Delete",
+  "mySpace.action.deleteSelected": "Delete selected ({count})",
+  "mySpace.action.restore": "Restore",
+  "mySpace.action.restoreAll": "Restore all",
+  "mySpace.action.purge": "Delete permanently",
+  "mySpace.action.emptyTrash": "Empty trash",
+  "mySpace.action.copyLink": "Copy link",
+  "mySpace.action.revoke": "Revoke",
+  "mySpace.action.uploadVersion": "Upload new version",
+  "mySpace.search.placeholder": "Search files",
+  "mySpace.search.result": "{count} files match “{query}”",
+  "mySpace.search.empty": "No matching files",
+  "mySpace.storage.title": "Storage",
+  "mySpace.storage.used": "{used} / {quota}",
+  "mySpace.storage.percent": "{percent}% used",
+  "mySpace.storage.trashShort": "Trash {size}",
+  "mySpace.storage.trashNote": "Trash holds {size}, which also counts against the quota",
+  "mySpace.storage.full": "Storage is full. Clean up and try again.",
+  "mySpace.storage.categories": "Usage by category",
+  "mySpace.category.document": "Documents",
+  "mySpace.category.image": "Images",
+  "mySpace.category.drawing": "Drawings",
+  "mySpace.category.other": "Other",
+  "mySpace.column.name": "Name",
+  "mySpace.column.size": "Size",
+  "mySpace.column.modified": "Modified",
+  "mySpace.column.deletedAt": "Deleted",
+  "mySpace.column.status": "Status",
+  "mySpace.column.expiresAt": "Expires",
+  "mySpace.root": "Space root",
+  "mySpace.list.itemCount": "{count} items",
+  "mySpace.list.selectedCount": "{count} selected",
+  "mySpace.list.loading": "Loading…",
+  "mySpace.empty.files.title": "No files yet",
+  "mySpace.empty.files.body": "Upload files, or ask the agent to create them here.",
+  "mySpace.empty.trash.title": "Trash is empty",
+  "mySpace.empty.trash.body": "Deleted files stay in trash and still use quota until permanently deleted.",
+  "mySpace.empty.shares.title": "No shares yet",
+  "mySpace.empty.shares.body": "Select a file and choose “Share link” to create a download link with an expiry.",
+  "mySpace.trash.from": "Originally at {path}",
+  "mySpace.shares.expired": "Expired",
+  "mySpace.shares.password": "Password required",
+  "mySpace.shares.public": "Public",
+  "mySpace.details.empty.title": "No file selected",
+  "mySpace.details.empty.body": "Select a file to preview it. Deleted files go to trash and still use quota until permanently deleted.",
+  "mySpace.details.close": "Close",
+  "mySpace.details.folder": "Folder: rename, move or delete it. Its size counts the files inside.",
+  "mySpace.details.versions": "Version history",
+  "mySpace.details.versionsEmpty": "No versions yet. Uploading a new version over a file keeps the old content here.",
+  "mySpace.dialog.cancel": "Cancel",
+  "mySpace.dialog.confirm": "Confirm",
+  "mySpace.dialog.newFolder.title": "New folder",
+  "mySpace.dialog.newFolder.placeholder": "Folder name",
+  "mySpace.dialog.rename.title": "Rename",
+  "mySpace.dialog.move.title": "Move to",
+  "mySpace.dialog.move.placeholder": "Target folder (relative to space root; leave empty for root)",
+  "mySpace.dialog.share.description": "Anyone with the link can download it before it expires. A password adds one more check.",
+  "mySpace.dialog.share.title": "Share “{name}”",
+  "mySpace.dialog.share.ttl": "Expires in (hours)",
+  "mySpace.dialog.share.password": "Password (optional)",
+  "mySpace.dialog.share.submit": "Create link",
+  "mySpace.confirm.delete.title": "Move to trash",
+  "mySpace.confirm.delete.body": "Move {count} item(s) to trash? They keep using quota and can be restored.",
+  "mySpace.confirm.purge.title": "Delete permanently",
+  "mySpace.confirm.purge.body": "This cannot be undone. Quota is released only after permanent deletion.",
+  "mySpace.confirm.purgeAll.title": "Empty trash",
+  "mySpace.confirm.purgeAll.body": "Permanently delete everything in trash. This cannot be undone.",
+  "mySpace.picker.title": "Choose a working folder",
+  "mySpace.picker.hint": "Browsing is limited to your own space. Files the AI creates later will be saved in the selected folder.",
+  "mySpace.picker.workHere": "Work in this folder",
+  "mySpace.picker.current": "Current working folder",
+  "mySpace.picker.empty": "No subfolders here yet",
+  "mySpace.preview.loading": "Loading…",
+  "mySpace.preview.unsupported": "Preview is not available for this file type",
+  "mySpace.preview.tooLarge": "File is too large to preview here. Download it to view.",
+  "mySpace.preview.binary": "Binary file. Preview is not available.",
+  "mySpace.preview.error": "Failed to load preview",
+...requestSecurityMessagesEnUS,
+  "zcode.error.providerBusiness.3007": "The request was rejected by the gateway security check. Please try again later or contact support.",
+  "zcode.error.modelSuspiciousEmpty": "The model returned no content (often caused by an expired token or plan issues). Please send again.",
 };
 
 export default enUS;

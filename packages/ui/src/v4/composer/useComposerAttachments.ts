@@ -42,7 +42,12 @@ import {
   type ComposerAttachmentUploadItem,
   type ComposerAttachmentUploadStatus,
 } from "@/store/composerAttachmentUploadStore.js";
+import {
+  consumeSystemComposerInjection,
+  useSystemComposerInjectionStore,
+} from "@/store/systemComposerInjection.js";
 import { uploadComposerAttachment, type AttachmentPutFn } from "@/v4/composer/attachmentUpload.js";
+import { getWorkspaceFileUploadBridge } from "@/v4/composer/workspaceFileUploadBridge.js";
 
 export const COMPOSER_ATTACHMENT_UPLOAD_CONCURRENCY = 2;
 export const COMPOSER_ATTACHMENT_AUTO_RETRY_DELAY_MS = 500;
@@ -110,6 +115,8 @@ export interface ComposerAttachmentsApi {
   ) => Promise<void>;
   /** 当前附件 scope 的 key；提交时冻结，供结算时传回。 */
   scopeKey: string;
+  /** 移交接管系统侧内容（截图/外部图片/快捷输入浮窗），走同一上传链路。 */
+  injectAttachments: (attachments: ChatComposerAttachment[]) => void;
   setAttachmentError: (message: string | null) => void;
 }
 
@@ -380,7 +387,41 @@ export function useComposerAttachments(
         const item = readComposerAttachmentScope(targetScopeKey).find(
           (candidate) => candidate.id === attachmentId,
         );
-        if (!item || !target.sessionId) return;
+        if (!item) return;
+        // Web 拖拽/选择：字节不进会话附件暂存，直接落到当前工作区（必在用户空间内）的
+        // 「对话附件/」。这条链不依赖 session——没建会话也能先传完；runtime 换代也无需重传。
+        if (item.workspaceUpload && item.file && target) {
+          const bridge = getWorkspaceFileUploadBridge();
+          if (bridge) {
+            const absolutePath = await bridge.upload({
+              file: item.file,
+              workspacePath: target.workspacePath,
+              onProgress: (percent) => {
+                if (controllersRef.current.get(controllerKey) !== controller) return;
+                updateItem(targetScopeKey, attachmentId, (current) => ({
+                  ...current,
+                  uploadStatus: "uploading",
+                  uploadProgress: Math.max(current.uploadProgress, Math.min(percent, 99)),
+                }));
+              },
+              signal: controller.signal,
+            });
+            if (controllersRef.current.get(controllerKey) !== controller) return;
+            finishWithReady(
+              targetScopeKey,
+              attachmentId,
+              {
+                ref: absolutePath,
+                fileName: item.filename,
+                mime: item.mimeType,
+                bytes: item.sizeBytes || item.file.size,
+              },
+              false,
+            );
+            return;
+          }
+        }
+        if (!target.sessionId) return;
         if (item.localPath && isRemoteAttachmentTarget(target)) {
           if (!target.remoteSessionId) {
             updateItem(targetScopeKey, attachmentId, (current) => ({
@@ -558,13 +599,19 @@ export function useComposerAttachments(
       const waitingForRemoteSession = Boolean(
         target && item.localPath && isRemoteAttachmentTarget(target) && !target.remoteSessionId,
       );
-      if (!target?.sessionId || waitingForRemoteSession) {
+      // 空间上传不依赖 session：web 拖拽在会话冷启动期间也能先传完，
+      // 不再出现「等待会话」卡住整批附件的情况。
+      const canUploadWithoutSession = Boolean(
+        item.workspaceUpload && item.file && getWorkspaceFileUploadBridge(),
+      );
+      if ((!target?.sessionId && !canUploadWithoutSession) || waitingForRemoteSession) {
         updateItem(entry.scopeKey, entry.attachmentId, (current) => ({
           ...current,
           uploadStatus: "waitingSession",
         }));
         continue;
       }
+      if (!target) continue;
       activeUploadsRef.current += 1;
       void runUpload(entry.scopeKey, entry.attachmentId, target);
     }
@@ -612,6 +659,9 @@ export function useComposerAttachments(
           if (
             item.referenceOwnership === "session" ||
             item.localZeroCopy ||
+            // 空间路径附件不依赖 runtime：上传完成后的 ref 在换代后依然有效，
+            // 作废重传只会把已经落盘的文件再传一遍。
+            item.workspaceUpload ||
             item.uploadStatus === "failed"
           ) {
             continue;
@@ -698,7 +748,10 @@ export function useComposerAttachments(
   }, [intl, scopeKey]);
 
   const addPreparedAttachments = useCallback(
-    (selectedAttachments: ChatComposerAttachment[]): string[] => {
+    (
+      selectedAttachments: ChatComposerAttachment[],
+      options?: { workspaceUpload?: boolean },
+    ): string[] => {
       if (selectedAttachments.length === 0) return [];
       const current = readComposerAttachmentScope(scopeKey);
       const remainingSlots = MAX_CHAT_ATTACHMENTS - current.length;
@@ -715,11 +768,22 @@ export function useComposerAttachments(
         const localZeroCopy = Boolean(
           attachment.localPath && target && !isRemoteAttachmentTarget(target),
         );
+        // 只有用户主动拖拽/选择的文件才落空间；截图、白板等临时内容维持会话暂存通道。
+        const workspaceUpload = Boolean(
+          options?.workspaceUpload &&
+            !attachment.localPath &&
+            attachment.file &&
+            getWorkspaceFileUploadBridge(),
+        );
         return {
           ...attachment,
           referenceOwnership: "composer",
           operationId: `prompt-attachment-${attachment.id}`,
-          uploadStatus: localZeroCopy ? "ready" : target?.sessionId ? "queued" : "waitingSession",
+          uploadStatus: localZeroCopy
+            ? "ready"
+            : target?.sessionId || workspaceUpload
+              ? "queued"
+              : "waitingSession",
           uploadProgress: localZeroCopy ? 100 : 0,
           ...(localZeroCopy && attachment.localPath
             ? {
@@ -737,6 +801,7 @@ export function useComposerAttachments(
           adopted: false,
           showComplete: false,
           localZeroCopy,
+          workspaceUpload,
         };
       });
       commitScope(scopeKey, (existing) => [...existing, ...items]);
@@ -751,7 +816,10 @@ export function useComposerAttachments(
   );
 
   const addAttachmentFiles = useCallback(
-    (selectedFiles: File[], fromPicker = false): string[] => {
+    (
+      selectedFiles: File[],
+      options?: { fromPicker?: boolean; workspaceUpload?: boolean },
+    ): string[] => {
       return addPreparedAttachments(
         selectedFiles.map((file) => {
           let localPath: string | undefined;
@@ -763,13 +831,15 @@ export function useComposerAttachments(
             logger.warn("[v4-composer-attachments] 解析附件本地路径失败", error);
           }
           const attachment = createChatComposerAttachment(file, localPath);
-          if (fromPicker && localPath && !attachment.mimeType.startsWith("image/")) {
+          if (options?.fromPicker && localPath && !attachment.mimeType.startsWith("image/")) {
             // Bug 原因：共享入口剥离非图片 File 会让拖入视频/PDF 丢失预览；仅选择器走原路径附件。
             revokeChatComposerAttachment(attachment);
             return createChatComposerPathAttachment(localPath);
           }
           return attachment;
         }),
+        // 用户拖拽/选择/粘贴的文件默认落空间；只有白板导出这类临时内容显式传 false。
+        { workspaceUpload: options?.workspaceUpload ?? true },
       );
     },
     [addPreparedAttachments, platform],
@@ -782,6 +852,33 @@ export function useComposerAttachments(
       append: (file) => addAttachmentFiles([file]).length === 1,
     });
   }, [listenAddToChatEvents, disabled, addAttachmentFiles, scopeKey]);
+
+  /** 接管系统侧内容（截图/外部图片/快捷输入浮窗）：复用同一条上传链路。 */
+  const injectAttachments = useCallback(
+    (injected: ChatComposerAttachment[]) => {
+      // 系统侧注入是临时内容（截图/白板导出），不落用户空间——那是「看得见」的文件区，
+      // 常驻垃圾不该由这里产生；它们继续走会话暂存通道。
+      addPreparedAttachments(injected);
+    },
+    [addPreparedAttachments],
+  );
+
+  // 唯一拥有焦点的 composer（listenAddToChatEvents = SessionPane.focused）认领系统侧注入，
+  // 非焦点 pane 不认领——否则竖切多 pane 时一次注入会被多个 composer 同时塞入。ref 去重
+  // 防止 React 严格模式下的双执行重复入队。
+  const pendingInjections = useSystemComposerInjectionStore((state) => state.pending);
+  const consumedInjectionIdsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!listenAddToChatEvents || disabled || pendingInjections.length === 0) {
+      return;
+    }
+    for (const injection of pendingInjections) {
+      if (consumedInjectionIdsRef.current.has(injection.id)) continue;
+      consumedInjectionIdsRef.current.add(injection.id);
+      consumeSystemComposerInjection(injection.id);
+      addPreparedAttachments([injection.attachment]);
+    }
+  }, [pendingInjections, listenAddToChatEvents, disabled, addPreparedAttachments]);
 
   const openAttachmentPicker = useCallback(() => {
     if (readComposerAttachmentScope(scopeKey).length >= MAX_CHAT_ATTACHMENTS) {
@@ -796,7 +893,7 @@ export function useComposerAttachments(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.currentTarget.files ?? []);
       event.currentTarget.value = "";
-      addAttachmentFiles(files, true);
+      addAttachmentFiles(files, { fromPicker: true });
     },
     [addAttachmentFiles],
   );
@@ -934,7 +1031,8 @@ export function useComposerAttachments(
         return;
       }
       try {
-        addAttachmentFiles([createWhiteboardPngFile(board)]);
+        // 白板导出是一次性图片，与截图同策略：不落用户空间，走会话暂存。
+        addAttachmentFiles([createWhiteboardPngFile(board)], { workspaceUpload: false });
       } catch (error) {
         setAttachmentError(
           intl.formatMessage(
@@ -1157,6 +1255,7 @@ export function useComposerAttachments(
       restoreSessionOwnedAttachments,
       prepareForSend,
       adoptSentAttachments,
+      injectAttachments,
       setAttachmentError,
     }),
     [
@@ -1180,6 +1279,7 @@ export function useComposerAttachments(
       prepareForSend,
       removeAttachment,
       retryAttachment,
+      injectAttachments,
     ],
   );
 }

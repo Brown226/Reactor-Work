@@ -10,6 +10,8 @@ import {
   shouldWalkSkillDirectoryEntry,
   walkSkillMarkdownPaths,
 } from "../skills/skillDiscoveryWalk.js";
+import { checkRemoteSyncDirectoryWriteAccess } from "../remote-sync/remoteSyncWriteAccess.js";
+import { USER_DATA_DIR_NAME } from "@zcode/shared";
 import { createSkillDataSyncMethods } from "../data-sync/node.js";
 
 const SKILL_FILE_NAME = "SKILL.md";
@@ -34,7 +36,7 @@ export function resolveUserHomeDir(): string {
 }
 
 export function getUserZcodeSkillRoot(): string {
-  return join(resolveUserHomeDir(), ".zcode", "skills");
+  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "skills");
 }
 
 function getUserAgentsSkillRoot(): string {

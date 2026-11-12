@@ -39,6 +39,9 @@ import type {
   SessionUsageState,
 } from "@zcode/shared/zcode-protocol-v4";
 import { ModelConfigSelect, type ModelSelectGroup } from "@/ModelConfigSelect.js";
+import { useReactorServer } from "@/hooks/useReactorServer.js";
+import { useDevModeUnlocked } from "@/lib/devMode.js";
+import { resolveEnterpriseModelScope, scopeModelSelectionView } from "@/lib/modelScope.js";
 import type { ComposerModelOptions } from "@/chat-input-toolbar/ComposerModelMenu.js";
 import { Button } from "@/components/ui/button.js";
 import { HighspeedModelIndicator } from "@/highspeed/HighspeedModelIndicator.js";
@@ -59,15 +62,9 @@ import {
 } from "@/chat-input-toolbar/thoughtLevelOptions.js";
 import type { V4ComposerConfigPicker } from "@/v4/composer/configPickerState.js";
 import { useToolbarShortcutBindings } from "@/v4/composer/toolbarShortcuts.js";
-import {
-  resolveModelSelectTriggerDisplay,
-  shouldShowManageModelsAction,
-} from "@/chat-input-toolbar/modelSelection.js";
+import { resolveModelSelectTriggerDisplay } from "@/chat-input-toolbar/modelSelection.js";
 import { resolveV4ModelTriggerDisplay } from "@/v4/composer/modelTriggerDisplay.js";
-import {
-  setPendingSettingsSectionIntent,
-  setPendingSettingsUsageCodingPlanIntent,
-} from "@/lib/settingsNavigation.js";
+import { setPendingSettingsUsageCodingPlanIntent } from "@/lib/settingsNavigation.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";
 import type { ModelSelectionView } from "@zcode/services";
 import type {
@@ -525,6 +522,10 @@ function V4ComposerModelControlsImpl({
     [onConfigPickerOpenChange],
   );
 
+  // 模型可见性收敛的两个输入：企业会话下发的目录 + 开发者模式是否解锁（解锁即旁路）。
+  const enterpriseSession = useReactorServer();
+  const devModeUnlocked = useDevModeUnlocked();
+
   const modelOption = modelSelectionView?.providers.some((provider) => provider.models.length > 0)
     ? ({
         id: "model",
@@ -888,18 +889,29 @@ function V4ComposerModelControlsImpl({
   );
   const modelSelectGroups = useMemo<ModelSelectGroup[]>(() => {
     if (!modelSelectionView) return [];
-    return buildRegistryModelSelectGroups(displayProvider, modelSelectionView, modelGroupLabels);
-  }, [displayProvider, modelGroupLabels, modelSelectionView]);
+    // 企业会话激活时，可选模型收敛到服务端下发的目录（解锁开发者模式即解除）。
+    // 单一过滤点与边界见 lib/modelScope.ts + docs/已完成/已完成-model-governance-and-dev-mode.md。
+    const scopedView = scopeModelSelectionView(
+      modelSelectionView,
+      resolveEnterpriseModelScope({
+        enterpriseModels: enterpriseSession.status?.models ?? null,
+        devModeUnlocked,
+      }),
+    );
+    return buildRegistryModelSelectGroups(
+      displayProvider,
+      scopedView ?? modelSelectionView,
+      modelGroupLabels,
+    );
+  }, [
+    devModeUnlocked,
+    displayProvider,
+    enterpriseSession.status?.models,
+    modelGroupLabels,
+    modelSelectionView,
+  ]);
 
-  // 修复：恢复「管理模型」入口（老版 onManageModels = 打开设置页并定位模型供应商区）。
-  const handleOpenModelProviderSettings = useCallback(() => {
-    setPendingSettingsSectionIntent("modelProvider");
-    openSettingsTab();
-  }, [openSettingsTab]);
-  const showManageModelsAction = shouldShowManageModelsAction(handleOpenModelProviderSettings);
-  const manageModelsLabel = intl.formatMessage({
-    id: "chat.toolbar.model.manageModels",
-  });
+  // 聊天输入框不再提供「管理模型」入口（改由设置页承担）；模型菜单只负责选择当前模型。
 
   // 当前投影模型的编码值：provider 命中目录则按自定义模型编码，否则回落裸 model id。
   const rawModelValue = useMemo(() => {
@@ -917,14 +929,8 @@ function V4ComposerModelControlsImpl({
   // 不在可选组（失效/下线/退登）→ 回落占位/默认「选择模型」，不直显协议内部占位符或失效
   // 模型 id。复用存活的 resolveModelSelectTriggerDisplay。
   const triggerDisplay = useMemo(
-    () =>
-      resolveModelSelectTriggerDisplay(
-        rawModelValue,
-        modelSelectGroups,
-        showManageModelsAction,
-        manageModelsLabel,
-      ),
-    [manageModelsLabel, modelSelectGroups, rawModelValue, showManageModelsAction],
+    () => resolveModelSelectTriggerDisplay(rawModelValue, modelSelectGroups),
+    [modelSelectGroups, rawModelValue],
   );
   const normalizedModelValue = triggerDisplay.value ?? "";
 
@@ -1230,8 +1236,8 @@ function V4ComposerModelControlsImpl({
   // 键盘热键（旧 useToolbarShortcutBindings）：Ctrl+M 打开模型菜单、Ctrl+T 循环思考深度。
   // 模式循环（Ctrl+Shift+M）由 V4ComposerModeSwitch 单独绑定（modeOption 在彼处）。
   // 模型留空是正常的待选择状态，包括已有会话；不能因为没有已选模型隐藏重选入口。
-  // 有可选组时正常显示；无组但有「管理模型」入口时也显示，避免用户零模型入口。
-  const modelMenuVisible = modelSelectGroups.length > 0 || showManageModelsAction;
+  // 有可选组时才显示重选入口；模型留空是正常的待选择状态。
+  const modelMenuVisible = modelSelectGroups.length > 0;
   // 配置恢复不是用户改选：未知时不显示“选择模型”，首次恢复不播放新旧标签滚动。
   const sessionConfigPending = sessionId !== null && draftConfig?.mode === undefined;
   // Bug 根因：手机端固定宽度的二级菜单没有消费 Radix 测得的当前方向可用宽度，
@@ -1327,21 +1333,6 @@ function V4ComposerModelControlsImpl({
                 : "chat.toolbar.model.targetMissing",
           })}
         </span>
-      ) : modelMenuVisible &&
-        !providerSourcesLoading &&
-        planGroups.length === 0 &&
-        !connectionSwitch.pending ? (
-        // 空配置是正常状态；直接复用 Provider 设置入口，不展开无名称、无模型的菜单。
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2 text-ui-sm"
-          data-testid="chat-model-select-trigger"
-          onClick={handleOpenModelProviderSettings}
-        >
-          {manageModelsLabel}
-        </Button>
       ) : modelMenuVisible ? (
         <ModelConfigSelect
           key={JSON.stringify([
@@ -1352,13 +1343,12 @@ function V4ComposerModelControlsImpl({
           modelGroups={modelSelectGroups}
           contentAlign="center"
           normalizedValue={normalizedModelValue}
-          triggerLabel={
-            sessionConfigPending && !effectiveConfig?.model ? "" : modelTriggerDisplay.modelLabel
-          }
+          triggerLabel={modelTriggerDisplay.fullLabel}
+          triggerLabelPrefix={modelTriggerDisplay.providerPrefix}
+          triggerLabelValue={modelTriggerDisplay.modelLabel}
+          triggerLabelPrefixClassName="composer-provider-prefix hidden @2xl/composer:inline group-data-[composer-provider-compact=true]/toolbar:hidden"
           composerOptions={composerOptions}
-          showManageModelsAction={showManageModelsAction}
-          manageModelsLabel={manageModelsLabel}
-          onManageModels={handleOpenModelProviderSettings}
+          showManageModelsAction={false}
           lockReasonMessage={intl.formatMessage({
             id: modelLocked
               ? "chat.highspeed.modelLocked"

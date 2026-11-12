@@ -41,7 +41,9 @@ import { applyTheme, normalizeThemePreference, resolveTheme } from "../useTheme.
 
 import {
   INTERFACE_MODE_STORAGE_KEY,
+  normalizeAvailableInterfaceModes,
   normalizeInterfaceMode,
+  resolveAvailableInterfaceMode,
   type InterfaceMode,
 } from "@/lib/interfaceMode.js";
 import { logger } from "@/logger.js";
@@ -133,6 +135,15 @@ export interface ZCodeState {
   /** 展示详情偏好，不改变 Agent 权限或执行能力。 */
   interfaceMode: InterfaceMode;
   setInterfaceMode: (mode: InterfaceMode) => void;
+  /**
+   * 服务端下发的「可用界面模式」集合（`policy.allowedInterfaceModes`）。
+   * `null` = **尚未拿到**（登录前 / 拉取中）：此时切换器按白名单关闭默认过滤，
+   * 但**不兜底**已经选定的档（避免已授权用户在策略回来前被误踢出编程档）。
+   * 见 docs/未完成-编程模式权限-方案-v1.md。
+   */
+  availableInterfaceModes: InterfaceMode[] | null;
+  /** 写入服务端下发的可用档，并把当前档兜底到可用项（未授权编程的用户自动落办公档）。 */
+  applyServerInterfaceModes: (modes: readonly InterfaceMode[] | unknown) => void;
 
   /** 当前主题 */
   theme: Theme;
@@ -323,8 +334,14 @@ export function createZCodeStore(
       write: (patch) => set(patch),
     }),
     interfaceMode: normalizeInterfaceMode(readSafeLocalStorage(INTERFACE_MODE_STORAGE_KEY)),
+    availableInterfaceModes: null,
     setInterfaceMode: (mode) => {
-      const interfaceMode = normalizeInterfaceMode(mode);
+      const requested = normalizeInterfaceMode(mode);
+      const available = get().availableInterfaceModes;
+      // 已知可用档时，拒绝切到不可用档（防呆；入口已隐藏，这里兜住其它调用路径）。
+      const interfaceMode = available
+        ? resolveAvailableInterfaceMode(requested, available)
+        : requested;
       if (get().interfaceMode !== interfaceMode) {
         logger.debug("[InterfaceMode] 切换界面模式", {
           interfaceMode,
@@ -333,6 +350,27 @@ export function createZCodeStore(
       }
       writeSafeLocalStorage(INTERFACE_MODE_STORAGE_KEY, interfaceMode);
       set({ interfaceMode });
+    },
+    applyServerInterfaceModes: (modes) => {
+      // null/undefined = 未就绪（登出 / 拉取失败）：只清集合回 null，**不动当前档**
+      // —— 这两种时刻都不是「已确认未授权」，兜底会把已授权用户误踢出编程档。
+      if (modes === null || modes === undefined) {
+        set({ availableInterfaceModes: null });
+        return;
+      }
+      const available = normalizeAvailableInterfaceModes(modes);
+      const next = resolveAvailableInterfaceMode(get().interfaceMode, available);
+      // 当前档不在可用集合内（例如受限用户本地存着 coding）：兜底写回 localStorage，
+      // 否则下次启动又会从旧值读回 coding —— 白名单在重启后失效。
+      if (next !== get().interfaceMode) {
+        logger.debug("[InterfaceMode] 可用模式受限，兜底当前档", {
+          from: get().interfaceMode,
+          to: next,
+          available,
+        });
+        writeSafeLocalStorage(INTERFACE_MODE_STORAGE_KEY, next);
+      }
+      set({ availableInterfaceModes: available, interfaceMode: next });
     },
     // 默认主题统一收敛到 Zai dark，避免首次启动时 store 与其他主题入口表现不一致。
     // 仍然优先尊重 localStorage 中已保存的用户选择，不覆盖已有偏好。

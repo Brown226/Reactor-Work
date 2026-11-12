@@ -5,6 +5,11 @@ import {
   installDocumentLinkSafety,
   type DocxPreviewFit,
 } from "@/lib/officeFilePreview.js";
+import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { scheduleReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
+import { ReviewQuoteCallout } from "@/review/ReviewQuoteCallout.js";
+import { useReviewMarksStore } from "@/store/reviewMarksStore.js";
+import type { QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 import { logger } from "@/logger.js";
 
 const DOCX_RENDER_OPTIONS = {
@@ -51,11 +56,14 @@ export function PreviewPaneOfficeDocxContent({
   buffer,
   errorMessage,
   onOpenBrowserUrl,
+  quoteHighlight,
   sourcePath,
 }: {
   buffer: ArrayBuffer;
   errorMessage: string;
   onOpenBrowserUrl?: (url: string) => void;
+  /** 审查定位：渲染完成后在原件 DOM 里标出这句原文（docx 无字符偏移，只能按片段找） */
+  quoteHighlight?: QuoteHighlightTarget;
   sourcePath: string;
 }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -64,6 +72,20 @@ export function PreviewPaneOfficeDocxContent({
   const [previewClassName] = useState(createDocxPreviewClassName);
   const [fit, setFit] = useState<DocxPreviewFit | null>(null);
   const [renderState, setRenderState] = useState<"loading" | "ready" | "error">("loading");
+  const [quoteMissing, setQuoteMissing] = useState(false);
+  const [quoteRange, setQuoteRange] = useState<Range | null>(null);
+  const calloutHostRef = useRef<HTMLDivElement | null>(null);
+  const { intl } = useZCodeIntl();
+  const quoteMark = quoteHighlight?.mark;
+  const quoteMarked = useReviewMarksStore((state) =>
+    quoteMark ? Boolean(state.marks[quoteMark.key]) : false,
+  );
+  const toggleQuoteMark = useReviewMarksStore((state) => state.toggle);
+  const onToggleQuoteMark = useCallback(() => {
+    if (!quoteMark) return;
+    toggleQuoteMark(quoteMark);
+  }, [quoteMark, toggleQuoteMark]);
+
 
   const updateFit = useCallback(() => {
     const viewport = viewportRef.current;
@@ -172,6 +194,34 @@ export function PreviewPaneOfficeDocxContent({
     };
   }, [buffer, onOpenBrowserUrl, previewClassName, sourcePath]);
 
+  // 原件里的审查定位：docx 渲染完才有 DOM 文本，按「片段 + 第几处」重新找一次并滚过去。
+  // 找不到就**不画**（标错地方比不标更误导复核者），只给一行提示让用户自己搜。
+  useEffect(() => {
+    const quote = quoteHighlight?.quote;
+    if (renderState !== "ready" || !quote) {
+      setQuoteMissing(false);
+      setQuoteRange(null);
+      return undefined;
+    }
+    return scheduleReviewQuoteHighlight({
+      getRoot: () => renderContainerRef.current,
+      quote,
+      occurrence: quoteHighlight?.occurrence ?? null,
+      onSettled: (range) => {
+        setQuoteRange(range);
+        setQuoteMissing(range === null);
+      },
+    });
+    // fit.scale 必须进依赖：docx 先按原始纸张尺寸渲染、再按可用宽度缩放，缩放提交前量到的是
+    // 旧几何，滚完内容一收缩命中就跑到视口外（用户得自己往上翻）。缩放定稿后重跑一次即可对齐。
+  }, [
+    fit?.scale,
+    quoteHighlight?.focusRequestId,
+    quoteHighlight?.occurrence,
+    quoteHighlight?.quote,
+    renderState,
+  ]);
+
   useLayoutEffect(() => {
     if (renderState !== "ready") {
       return;
@@ -196,14 +246,20 @@ export function PreviewPaneOfficeDocxContent({
 
   return (
     <div
+      ref={calloutHostRef}
       aria-busy={renderState === "loading" ? "true" : undefined}
-      className="h-full min-h-0 w-full min-w-0 bg-background"
+      className="relative h-full min-h-0 w-full min-w-0 bg-background"
       data-office-preview-kind="docx"
       data-office-preview-pending={renderState === "loading" ? "" : undefined}
     >
       {renderState === "error" ? (
         <div className="p-3 text-ui-base text-destructive" role="alert">
           {errorMessage}
+        </div>
+      ) : null}
+      {quoteMissing ? (
+        <div className="border-b border-amber-500/40 bg-amber-500/5 px-3 py-2 text-ui-sm">
+          {intl.formatMessage({ id: "review.quote.notFound" })}
         </div>
       ) : null}
       <div
@@ -242,6 +298,15 @@ export function PreviewPaneOfficeDocxContent({
           </div>
         </div>
       </div>
+      {/* 定位卡挂在**不滚动**的外层：卡片不跟着内容滚，也不吃 docx 的 scale 缩放 */}
+      <ReviewQuoteCallout
+        range={quoteRange}
+        note={quoteHighlight?.note}
+        hostRef={calloutHostRef}
+        marked={quoteMarked}
+        {...(quoteMark ? { onToggleMarked: onToggleQuoteMark } : {})}
+        onDismiss={() => setQuoteRange(null)}
+      />
     </div>
   );
 }

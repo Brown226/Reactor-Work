@@ -1,17 +1,18 @@
 /* eslint-disable max-lines -- 推荐语料按表格逐条维护，集中放置便于对照审核。 */
-import finderIcon from "@/onboarding/assets/finder.png";
-import terminalIcon from "@/onboarding/assets/terminal.png";
-import feishuIcon from "@/onboarding/assets/feishu.png";
+import finderIcon from "@/assets/feature-prompt-icons/finder.png";
+import terminalIcon from "@/assets/feature-prompt-icons/terminal.png";
+import feishuIcon from "@/assets/feature-prompt-icons/feishu.png";
 import documentsIcon from "@/assets/plugin-icons/documents.png";
 import pdfIcon from "@/assets/plugin-icons/pdf.png";
 import presentationsIcon from "@/assets/plugin-icons/presentations.png";
 import spreadsheetsIcon from "@/assets/plugin-icons/spreadsheets.png";
 import type { DraftSuggestedPromptItem } from "@/v4/draftSuggestedPromptItems.js";
+import { reviewQuickActionPrompts } from "@/v4/reviewQuickActionPrompts.js";
 
 const ASSETS = "https://cdn-zcode.z.ai/zcode/official-plugin/assets";
 
 type FeatureRecommendedPrompt = DraftSuggestedPromptItem & {
-  mode: "office" | "coding";
+  mode: "office" | "coding" | "review";
 };
 
 // 本期推荐按模式硬分池；展示文案和填入正文分别维护。
@@ -560,9 +561,15 @@ export const featureSuggestedPrompts: FeatureRecommendedPrompt[] = [
       en: "Set up an idle-time task for the open local repository. Trace how timeouts, disconnections, rate limits, and errors from external APIs, databases, and third-party services affect important user flows. Follow each path to the caller and user-visible result, reproduce high-risk gaps where feasible, and deliver a severity-ranked report with code locations, runtime evidence, and fixes. Do not present unverified risks as incidents or make broad code changes. Ask me to select a local repository if none is open.",
     },
   },
+  // ── 审查档（review）的审查类型卡片 ────────────────────────────────────────────
+  // 与办公/编程推荐池同源同机制：点击即预填提示词，不自动发送。
+  // 卡片定义在 reviewQuickActionPrompts.ts：每张卡片硬绑定内置插件 `review-skills` 的一个技能，
+  // 正文以 `$<skill-name>` 开头（见该文件注释与 docs/未完成-审查板块-方案-v1.md §2）。
+  ...reviewQuickActionPrompts,
 ];
 
-export function getRecommendedPromptPool(isOfficeMode: boolean): DraftSuggestedPromptItem[] {
-  const mode = isOfficeMode ? "office" : "coding";
+export function getRecommendedPromptPool(
+  mode: FeatureRecommendedPrompt["mode"],
+): DraftSuggestedPromptItem[] {
   return featureSuggestedPrompts.filter((item) => item.mode === mode);
 }

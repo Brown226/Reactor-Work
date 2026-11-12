@@ -5,7 +5,7 @@ import {
 import { SUBAGENT_WORKFLOW_COLOR } from "@/lib/subagentColors.js";
 import { useToolPresentationCapabilities } from "@/ToolCallBlocks/presentationCapabilities.js";
 /* oxlint-disable eslint(max-lines) -- 状态面板同时维护收起态摘要、展开态分区、菜单策略和宽度自适应，同文件能保证两种形态共享同一内容优先级。 */
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
 import {
   forwardRef,
   memo,
@@ -1972,11 +1972,11 @@ function ConversationStatusPanelImpl({
   onOpenWorkflowRunDirectory,
   className,
 }: ConversationStatusPanelProps) {
-  const isOfficeMode = useIsOfficeMode();
+  const isFocusedMode = useIsFocusedMode();
   const model = useMemo(
     () =>
       buildConversationStatusPanelModel({
-        isOfficeMode,
+        isFocusedMode,
         gitSummary,
         gitDirtyFileCount,
         gitWorktreeChangeSummary,
@@ -1989,7 +1989,7 @@ function ConversationStatusPanelImpl({
         workflowRuns,
       }),
     [
-      isOfficeMode,
+      isFocusedMode,
       backgroundWorks,
       gitDirtyFileCount,
       gitSummary,

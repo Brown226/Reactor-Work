@@ -6,41 +6,42 @@ export const SITES_PLUGIN_ID = "zcode-site@zcode-plugins-official";
 export type OpenTabLauncherItemId =
   | "sites"
   | "selection-side-conversation"
+  | "changes"
   | "files"
-  | "review"
   | "terminal"
   | "browser"
   | "developer-tools";
 
 export function resolveOpenTabLauncherItemIds({
   developerToolsEnabled,
-  hasReviewTab,
+  hasChangesTab,
   canOpenSelectionSideConversation = false,
   canOpenSites = false,
   supportsEmbeddedBrowser = true,
 }: {
   developerToolsEnabled: boolean;
-  hasReviewTab: boolean;
+  hasChangesTab: boolean;
   canOpenSelectionSideConversation?: boolean;
   canOpenSites?: boolean;
   supportsEmbeddedBrowser?: boolean;
 }): OpenTabLauncherItemId[] {
+  // 工作区文件：与变更审查/终端并列的常驻入口（文件树从左侧抽屉迁到右侧后的主入口）。
   const itemIds: OpenTabLauncherItemId[] = ["files"];
 
   if (supportsEmbeddedBrowser) {
     itemIds.push("browser");
   }
 
-  itemIds.push("terminal");
-
-  if (!hasReviewTab) {
-    itemIds.push("review");
+  if (!hasChangesTab) {
+    itemIds.push("changes");
   }
 
   // Sites 面板是官方插件 zcode-site 的 UI surface，产品要求作为内置入口排在辅助对话前。
   if (canOpenSites) {
     itemIds.push("sites");
   }
+
+  itemIds.push("terminal");
 
   if (canOpenSelectionSideConversation) {
     itemIds.push("selection-side-conversation");

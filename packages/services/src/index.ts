@@ -1,6 +1,11 @@
 // Descriptors & collection (browser-safe)
 export { type ServiceDescriptor, createServiceDescriptor } from "./descriptors.js";
 export { ServiceCollection, type ServiceExposurePolicy } from "./collection.js";
+export type {
+  ProviderModelCatalogEntry,
+  ProviderModelCatalogRequest,
+  ProviderModelCatalogResult,
+} from "./model-provider/providerModelCatalog.js";
 export {
   IModelSelectionService,
   IProviderSettingsService,

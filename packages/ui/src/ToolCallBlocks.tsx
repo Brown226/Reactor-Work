@@ -1,10 +1,9 @@
-import { useContext } from "react";
+import { memo, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { SummaryIconOnlyContext } from "@/v4/conversationRowContext.js";
 import { useToolPresentationHostCapabilities } from "@/hooks/useToolPresentationHostCapabilities.js";
 import { ToolPresentationCapabilitiesProvider } from "@/ToolCallBlocks/presentationCapabilities.js";
-import { memo, useMemo } from "react";
 import { TID_CHAT_TOOL_CALL_BLOCK, testId } from "@zcode/shared/test-ids";
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode, useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { mapToolStatus } from "@/lib/mapToolStatus.js";
 import { buildToolDisplayModel } from "@/lib/toolDisplay.js";
@@ -27,6 +26,49 @@ import type { MessageFileLinkTarget } from "@/components/ai-elements/message.js"
 const NESTED_TOOLCALL_CONTAINER_CLASS =
   "ml-2 space-y-2 border-border border-l pl-3.5 border-border";
 
+const MAX_TOOL_ENTRANCE_ANIMATION_KEYS = 800;
+const TOOL_ENTRANCE_ANIMATION_CLEANUP_MS = 1000;
+const toolEntranceAnimationKeys = new Map<string, number>();
+
+function pruneToolEntranceAnimationKeys() {
+  if (toolEntranceAnimationKeys.size <= MAX_TOOL_ENTRANCE_ANIMATION_KEYS) {
+    return;
+  }
+
+  const staleKeys = Array.from(toolEntranceAnimationKeys.entries())
+    .sort(([, left], [, right]) => left - right)
+    .slice(0, toolEntranceAnimationKeys.size - MAX_TOOL_ENTRANCE_ANIMATION_KEYS)
+    .map(([key]) => key);
+
+  for (const key of staleKeys) {
+    toolEntranceAnimationKeys.delete(key);
+  }
+}
+
+function normalizeToolEntranceAnimationKey(key: string) {
+  const normalizedKey = key.trim();
+  return normalizedKey.length > 0 ? normalizedKey : null;
+}
+
+function hasPlayedToolEntranceAnimation(key: string) {
+  const normalizedKey = normalizeToolEntranceAnimationKey(key);
+  return normalizedKey === null || toolEntranceAnimationKeys.has(normalizedKey);
+}
+
+function recordToolEntranceAnimation(key: string) {
+  const normalizedKey = normalizeToolEntranceAnimationKey(key);
+  if (normalizedKey === null) {
+    return;
+  }
+
+  toolEntranceAnimationKeys.set(normalizedKey, Date.now());
+  pruneToolEntranceAnimationKeys();
+}
+
+function canPlayToolEntranceAnimation(key: string, active: boolean) {
+  return active && !hasPlayedToolEntranceAnimation(key);
+}
+
 export function isAgentToolCall(toolCall: TaskChatToolCallTreeNode["toolCall"]): boolean {
   return resolveToolCallIdentity(toolCall).family === "agent";
 }
@@ -35,6 +77,8 @@ function ToolCallBlockComponent({
   toolCallNode,
   depth = 0,
   workspacePath,
+  workspaceIdentity,
+  sessionId,
   theme,
   codePreviewSettings,
   showIcon = true,
@@ -57,12 +101,20 @@ function ToolCallBlockComponent({
   showTodoToolCalls = true,
   disableSummaryContentAnimation = false,
   animateDiffCountOnMount = false,
+  streamingEntranceActive = false,
+  streamingEntranceKeyPrefix = "tool",
   agentSummaryAction,
   authoritativeAgentType,
 }: {
   toolCallNode: TaskChatToolCallTreeNode;
   depth?: number;
   workspacePath: string;
+  /**
+   * GenUI 动作回传的写入身份：远程 workspace 必须带 workspaceIdentity，
+   * 会话内回传必须带 sessionId（否则文本会落到新建任务草稿槽）。
+   */
+  workspaceIdentity?: string;
+  sessionId?: string | null;
   /** 应用主题（store 耦合剥离）：由宿主（v4 SessionPane 等）传入，缺省按 "system" 兜底。 */
   theme?: ToolCallBlockRenderContext["theme"];
   /** 代码预览设置（store 耦合剥离）：由宿主传入并保持引用稳定。 */
@@ -97,6 +149,10 @@ function ToolCallBlockComponent({
   showTodoToolCalls?: boolean;
   disableSummaryContentAnimation?: boolean;
   animateDiffCountOnMount?: boolean;
+  /** 流式工具卡入场动画：是否处于流式阶段（新出现的卡才播放一次）。 */
+  streamingEntranceActive?: boolean;
+  /** 入场动画 key 前缀：聚合卡与单个工具卡用不同前缀，避免 key 相撞误吞动画。 */
+  streamingEntranceKeyPrefix?: string;
   agentSummaryAction?: ToolCallBlockRenderContext["agentSummaryAction"];
   authoritativeAgentType?: ToolCallBlockRenderContext["authoritativeAgentType"];
 }) {
@@ -105,6 +161,41 @@ function ToolCallBlockComponent({
   const pluginUi = providedPluginUi ?? inheritedPluginUi;
   const { toolCall, childToolCalls } = toolCallNode;
   const { intl } = useZCodeIntl();
+  const isFocusedMode = useIsFocusedMode();
+  const toolEntranceAnimationKey = `${streamingEntranceKeyPrefix}:${toolCall.toolId}`;
+  // tool 在流式对话中新出现时如果没有淡入，会和同一段文字的渐入节奏割裂。
+  // 这里按 toolId 记录已经展示过的 tool，切换任务或虚拟列表重挂时不重复播放。
+  // 记录动作放在 effect 里延迟执行，避免 React 开发态重挂把第一次动画误吞掉。
+  const [shouldPlayEntranceAnimation, setShouldPlayEntranceAnimation] = useState(() =>
+    canPlayToolEntranceAnimation(toolEntranceAnimationKey, streamingEntranceActive),
+  );
+  useEffect(() => {
+    if (!streamingEntranceActive || shouldPlayEntranceAnimation) {
+      return;
+    }
+
+    if (canPlayToolEntranceAnimation(toolEntranceAnimationKey, streamingEntranceActive)) {
+      setShouldPlayEntranceAnimation(true);
+    }
+  }, [shouldPlayEntranceAnimation, streamingEntranceActive, toolEntranceAnimationKey]);
+
+  useEffect(() => {
+    if (!shouldPlayEntranceAnimation) {
+      return;
+    }
+
+    const markAnimatedTimer = window.setTimeout(() => {
+      recordToolEntranceAnimation(toolEntranceAnimationKey);
+    }, 0);
+    const cleanupTimer = window.setTimeout(() => {
+      setShouldPlayEntranceAnimation(false);
+    }, TOOL_ENTRANCE_ANIMATION_CLEANUP_MS);
+
+    return () => {
+      window.clearTimeout(markAnimatedTimer);
+      window.clearTimeout(cleanupTimer);
+    };
+  }, [shouldPlayEntranceAnimation, toolEntranceAnimationKey]);
   const isOfficeMode = useIsOfficeMode();
   // 注意：下面的 early return 必须放在所有 hook 调用之后。
   // 之前这里在 useMemo 之前就 `return null`，导致当某个 toolCall 的
@@ -203,8 +294,11 @@ function ToolCallBlockComponent({
     () => ({
       nestedToolRenderer: ToolCallBlock,
       isOfficeMode,
+      isFocusedMode,
       toolCallNode,
       workspacePath,
+      workspaceIdentity,
+      sessionId,
       theme,
       codePreviewSettings,
       displayModel,
@@ -241,6 +335,7 @@ function ToolCallBlockComponent({
       onLoadFullToolCallFields,
     }),
     [
+      isFocusedMode,
       isOfficeMode,
       agentSummaryAction,
       authoritativeAgentType,
@@ -275,6 +370,8 @@ function ToolCallBlockComponent({
       workflowRun,
       workflowDraft,
       workspacePath,
+      workspaceIdentity,
+      sessionId,
     ],
   );
 

@@ -12,7 +12,18 @@ import {
   useRef,
   useState,
 } from "react";
-import { ChevronRightIcon, Ellipsis, EyeIcon, FileCode2Icon } from "lucide-react";
+import type { EditorInfo } from "@zcode/shared";
+import {
+  ChevronRightIcon,
+  Ellipsis,
+  EyeIcon,
+  ExternalLinkIcon,
+  FileCode2Icon,
+  FileTextIcon,
+  DownloadIcon,
+  ImageIcon,
+  CopyIcon,
+} from "lucide-react";
 import { nanoid } from "nanoid";
 import { Button } from "@/components/ui/button.js";
 import { toast } from "@/components/ui/toast.js";
@@ -38,7 +49,13 @@ import { normalizeCodeViewerSource } from "@/lib/codeViewerSource.js";
 import { FileDisplayIcon, resolveFileDisplayDescriptor } from "@/lib/fileDisplay.js";
 import { getPathLeaf, isAbsoluteFilePath } from "@/lib/path.js";
 import { decodeBase64ToArrayBuffer, getOfficeFilePreviewKind } from "@/lib/officeFilePreview.js";
+import { getDwgFilePreviewKind } from "@/previewPaneDwgContent.js";
 import { OpenSplitButton } from "@/OpenSplitButton.js";
+import { usePlatform } from "@/hooks/usePlatform.js";
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
+import { useMarkdownExport } from "@/hooks/useMarkdownExport.js";
+import { useFileContextActions } from "@/hooks/useFileContextActions.js";
+import { useWorkspaceOpenInEditorTarget } from "@/hooks/useWorkspaceOpenInEditorTarget.js";
 import { logger } from "@/logger.js";
 import { useZCodeStore } from "@/store/StoreProvider.js";
 import { useCodeCommentPreviewStore } from "@/store/codeCommentPreviewStore.js";
@@ -48,9 +65,13 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
+  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.js";
 import { PreviewPaneContent } from "@/previewPaneContent.js";
@@ -328,6 +349,8 @@ export function resolvePreviewPanePdfSource(
     type: "pdf",
     title: source.title,
     path: source.path,
+    // 审查点一条问题时会带上定位请求：原件（PDF）渲染完就把这句原文标出来。
+    ...(source.quoteHighlight ? { quoteHighlight: source.quoteHighlight } : {}),
   };
 }
 
@@ -391,6 +414,13 @@ function isPlainCodeSource(source: CodeViewerSource | null): boolean {
   return false;
 }
 
+/** 导出默认文件名：优先文件路径 basname，其次标题，均去掉扩展名 */
+function deriveMarkdownExportName(source: CodeViewerSource | null): string {
+  const raw = (source && "path" in source && source.path) || source?.title || "";
+  const base = raw.split(/[\\/]/).pop() ?? "";
+  return base.replace(/\.[^.]+$/, "") || "markdown";
+}
+
 export function getPreviewPaneDisplayOptions(
   source: CodeViewerSource | null,
   viewModes: {
@@ -400,7 +430,11 @@ export function getPreviewPaneDisplayOptions(
 ) {
   const canToggleMarkdownView =
     source !== null &&
-    (isMarkdownSource(source) || (source.type === "file" && isMarkdownFilePath(source.path)));
+    (isMarkdownSource(source) ||
+      (source.type === "file" && isMarkdownFilePath(source.path)) ||
+      // 审查定位打开的是提取正文（可能落在历史 `.txt` 快照上）：正文/源码两视图都要给，
+      // 判据与 previewPaneContent 的分支一致 —— 看锚点声明，不看扩展名。
+      (source.type === "code-review" && source.review.textFormat === "markdown"));
   const canToggleSvgView =
     source !== null &&
     (isSvgSource(source) || (source.type === "file" && isSvgFilePath(source.path)));
@@ -501,6 +535,8 @@ export function resolvePreviewPaneImageFileReference(
 export function PreviewPane({
   source: rawSource,
   workspacePath,
+  workspaceIdentity,
+  composerSessionId,
   onOpenBrowserUrl,
   onOpenCodeViewer,
   renderHeavyContent = true,
@@ -510,6 +546,10 @@ export function PreviewPane({
   source: CodeViewerSource | null;
   onClose: () => void;
   workspacePath?: string;
+  /** workspace 身份 key：PDF「引用进会话」写草稿/插入请求时不能只按路径匹配（AGENTS.md）。 */
+  workspaceIdentity?: string;
+  /** 预览归属会话：有值时 PDF「引用进会话」进该会话输入框，空值进新建任务草稿槽。 */
+  composerSessionId?: string | null;
   onOpenBrowserUrl?: (url: string) => void;
   onOpenCodeViewer?: (source: CodeViewerSource) => void;
   renderHeavyContent?: boolean;
@@ -595,6 +635,10 @@ export function PreviewPane({
     () => (source?.type === "file" ? getOfficeFilePreviewKind(source.path) : null),
     [source],
   );
+  const dwgPreviewKind = useMemo(
+    () => (source?.type === "file" ? getDwgFilePreviewKind(source.path) : null),
+    [source],
+  );
   const pptxSource = useMemo(() => resolvePreviewPanePptxSource(source), [source]);
   const showDocumentHeaderDivider = shouldShowPreviewPaneHeaderDivider(source);
   const pptxSourcePath = pptxSource?.path ?? null;
@@ -656,6 +700,13 @@ export function PreviewPane({
   );
   const { canToggleCodeWrap, canToggleMarkdownView, canToggleSvgView, hasMoreMenu } =
     displayOptions;
+  // Markdown 导出：互斥状态与失败恢复的唯一 owner；PNG/PDF 快照预览 DOM，docx 重新解析源码。
+  const markdownExport = useMarkdownExport({
+    getPreviewRoot: () => document.querySelector<HTMLElement>('[data-markdown-preview="true"]'),
+    content: filePreview?.content ?? "",
+    fileName: deriveMarkdownExportName(source),
+  });
+  const { exporting: exportingMarkdown, exportAs: exportMarkdownAs } = markdownExport;
   const codeCommentLabels = useMemo(
     () => ({
       addComment: intl.formatMessage({ id: "codeViewer.comment.add" }),
@@ -683,8 +734,12 @@ export function PreviewPane({
       return;
     }
 
+    // 审查正文快照同样是 markdown（提取工具转出来的）：默认进正文视图 —— 高亮按片段画在
+    // 渲染后的正文上；要核对源码就切到「源码」。非 markdown 的审查目标仍直接进源码视图。
     setMarkdownViewMode(
-      source.type !== "code-review" && (isMarkdownSource(source) || isMarkdownFilePath(source.path))
+      isMarkdownSource(source) ||
+        (source.type === "code-review" && source.review.textFormat === "markdown") ||
+        (isMarkdownFilePath(source.path) && source.type !== "code-review")
         ? "preview"
         : "code",
     );
@@ -1232,7 +1287,7 @@ export function PreviewPane({
   useEffect(() => {
     let disposed = false;
 
-    if (!officePreviewKind || source?.type !== "file") {
+    if ((!officePreviewKind && !dwgPreviewKind) || source?.type !== "file") {
       setOfficePreview(null);
       setLoadingOfficePreview(false);
       return () => {
@@ -1279,7 +1334,7 @@ export function PreviewPane({
     return () => {
       disposed = true;
     };
-  }, [fileService, intl, officePreviewKind, source]);
+  }, [fileService, intl, officePreviewKind, dwgPreviewKind, source]);
 
   useEffect(() => {
     const navigation = pptxReferenceNavigation;
@@ -1545,6 +1600,40 @@ export function PreviewPane({
           </DropdownMenuCheckboxItem>
         </>
       ) : null}
+      {canToggleMarkdownView ? (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <DownloadIcon className="size-4" />
+              {intl.formatMessage({ id: "markdownExport.label" })}
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem
+                disabled={exportingMarkdown !== null}
+                onSelect={() => void exportMarkdownAs("png")}
+              >
+                <ImageIcon className="size-4" />
+                {intl.formatMessage({ id: "markdownExport.png" })}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={exportingMarkdown !== null}
+                onSelect={() => void exportMarkdownAs("docx")}
+              >
+                <FileTextIcon className="size-4" />
+                {intl.formatMessage({ id: "markdownExport.word" })}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={exportingMarkdown !== null}
+                onSelect={() => void exportMarkdownAs("pdf")}
+              >
+                <FileTextIcon className="size-4" />
+                {intl.formatMessage({ id: "markdownExport.pdf" })}
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        </>
+      ) : null}
     </>
   ) : null;
 
@@ -1680,6 +1769,7 @@ export function PreviewPane({
             loadingOfficePreview={loadingOfficePreview}
             officePreview={officePreview}
             officePreviewKind={officePreviewKind}
+            dwgPreviewKind={dwgPreviewKind}
             loadingPptxPreview={loadingPptxPreview}
             pptxPreviewData={pptxPreviewData}
             pptxViewerLabels={pptxViewerLabels}
@@ -1709,6 +1799,8 @@ export function PreviewPane({
             resolvedTheme={resolvedTheme}
             theme={theme}
             workspacePath={sourceWorkspacePath}
+            workspaceIdentity={workspaceIdentity}
+            composerSessionId={composerSessionId ?? null}
             onOpenBrowserUrl={onOpenBrowserUrl}
             markdownSelectionTarget={
               markdownSelectionTarget &&

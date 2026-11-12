@@ -968,6 +968,20 @@ export function createZCodeAgentConnectionScope(
       }
       return base.onDynamicCuaPermissionObservation();
     },
+    onDynamicUsageFact() {
+      assertOpen();
+      // 全局用量事实只服务 Host 侧记账（P4 用量上报）：renderer/mobile attachment 不订阅，
+      // 也不该拿到跨 workspace 的用量流。与 processResourceSample 同一道门。
+      if (role !== "trusted-host-relay") return RpcEvent.None;
+      return base.onDynamicUsageFact();
+    },
+    onDynamicAuditFact() {
+      assertOpen();
+      // 行为审计事实（洞②）与用量事实同一道门：只给可信 Host 记账，
+      // renderer/mobile attachment 不订阅、不拿跨 workspace 的工具/审批流。
+      if (role !== "trusted-host-relay") return RpcEvent.None;
+      return base.onDynamicAuditFact();
+    },
     onDynamicProcessResourceSample() {
       assertOpen();
       // CLI 资源样本只供远端 Desktop Host relay 回传 main；renderer/mobile attachment

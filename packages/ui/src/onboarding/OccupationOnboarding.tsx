@@ -250,7 +250,10 @@ export function OccupationOnboarding({
           // mode 在第 2 步跳过时置 null，偏好页整体跳过时两个布尔记 null）。
           await appendOnboardingRecord(onboardingRecord, platform.getDeviceId(), {
             occupation,
-            interfaceMode: mode,
+            // 引导记录的服务端枚举只有 coding/office（审查档与办公同族，见
+            // packages/shared/src/desktopPolicy.ts 的 REACTOR_INTERFACE_MODES），
+            // 上报前把 review 归入 office，避免上游 schema 校验把整条记录拒掉。
+            interfaceMode: mode === "review" ? "office" : mode,
             memoryEnabled: skip ? null : memory,
             proactiveSuggestionsEnabled: skip ? null : mode === "office" && suggestions,
             completedAt: new Date().toISOString(),

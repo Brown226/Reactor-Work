@@ -7,3 +7,8 @@ apps/zcode-cli/
 # oxfmt 解析会报错；只排除这两个文件，其余 graphs fixture 仍参与格式检查。
 apps/zcode-cli/packages/dynamic-workflow/tests/graphs/control-flow-for-await.ts
 apps/zcode-cli/packages/dynamic-workflow/tests/graphs/async-promise-for-await-of.ts
+
+# server/：从 Reactor-Desktop 搬来的独立 pnpm workspace（服务端）。它不是本仓的 workspace
+# 成员，代码按「零改动搬迁」保留原仓格式，不参与根仓 oxfmt —— 否则一次全仓格式化会让服务端
+# 与新仓的 diff 无法对照，也让旧仓的验证结论失效。
+server/

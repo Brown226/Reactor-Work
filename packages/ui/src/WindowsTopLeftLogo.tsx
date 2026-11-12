@@ -1,5 +1,5 @@
 import { cn } from "@/components/lib/utils.js";
-import { ZCodeStartupLogoBadge } from "@/root/RootStartupLoading.js";
+import reactorMarkUrl from "@/assets/reactor-mark.png";
 
 export function WindowsTopLeftLogo({
   className,
@@ -16,17 +16,12 @@ export function WindowsTopLeftLogo({
         className,
       )}
     >
-      <span
-        role="img"
-        aria-label="ZCode"
-        data-testid="settings-logo"
-        className={cn(
-          "pointer-events-none flex size-5 items-center justify-center select-none",
-          imageClassName,
-        )}
-      >
-        <ZCodeStartupLogoBadge size="titlebar" animated={false} />
-      </span>
+      <img
+        src={reactorMarkUrl}
+        alt="Reactor"
+        className={cn("pointer-events-none size-5 select-none rounded-[22%]", imageClassName)}
+        draggable={false}
+      />
     </div>
   );
 }

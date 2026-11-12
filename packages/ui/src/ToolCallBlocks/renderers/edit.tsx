@@ -6,6 +6,7 @@ import { ToolSnapshotFieldNotice } from "@/ToolCallBlocks/ToolSnapshotFieldNotic
 import { getFileDisplayPath } from "@/lib/fileDisplay.js";
 import type { ToolInlinePreview } from "@/lib/toolDisplay.js";
 import { ToolLayout } from "../ToolLayout.js";
+import { renderFilePath } from "../renderers.js";
 import type { ToolCallBlockRenderContext } from "../shared.js";
 import { EditInlineDiffContent } from "@/ToolCallBlocks/renderers/EditInlineDiffContent.js";
 import {
@@ -173,6 +174,14 @@ export function EditToolCallBlock(context: ToolCallBlockRenderContext) {
       ),
     [intl, primaryText, rawFileSummaries.length],
   );
+  // 单文件时把路径作为副标题（本地定制的标题/副标题两行摘要）。
+  const secondaryText = useMemo(
+    () =>
+      rawFileSummaries.length === 1
+        ? renderFilePath(rawFileSummaries[0]?.filePath, context.workspacePath)
+        : undefined,
+    [context.workspacePath, rawFileSummaries],
+  );
   const singleFileInlinePreview = buildEditInlinePreview(
     rawFileSummaries.length === 1 ? (rawFileSummaries[0] ?? null) : null,
   );
@@ -308,14 +317,15 @@ export function EditToolCallBlock(context: ToolCallBlockRenderContext) {
         // edit 的 diff 预览挂在 content 里；单文件和子文件如果不可展开，
         // 用户只能看到摘要行，无法在消息流里直接查看变更。
         {...layoutConfig}
-        canToggle={!context.isOfficeMode && layoutConfig.canToggle}
-        forceOpen={!context.isOfficeMode && layoutConfig.forceOpen}
+        canToggle={!context.isFocusedMode && layoutConfig.canToggle}
+        forceOpen={!context.isFocusedMode && layoutConfig.forceOpen}
         kindLabel={context.kindLabelOverride ?? kindLabel}
         sourceLabel={context.sourceLabel}
         primaryText={primaryText}
         prioritizePrimaryText
         expandedPrimaryText={expandedPrimaryText}
-        diffCount={context.isOfficeMode ? undefined : diffCount}
+        secondaryText={secondaryText}
+        diffCount={context.isFocusedMode ? undefined : diffCount}
         hideDiffCountWhenOpen={hasMultipleFiles}
         statusLabel={effectiveStatusLabel}
         statusTooltip={isFailed ? errorText : undefined}

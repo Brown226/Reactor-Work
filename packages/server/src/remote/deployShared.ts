@@ -1,10 +1,14 @@
 import { join } from "node:path";
 import { access } from "node:fs/promises";
+import { USER_DATA_DIR_NAME } from "@zcode/shared";
 import type { StdioStream } from "@zcode/server/remote/backend.js";
 import { quotePosixPathArg } from "@zcode/server/remote/posixShell.js";
 import type { RemoteAssetNetworkPort } from "@zcode/server/remote/remoteAssetNetwork.js";
 
-export const REMOTE_BASE = "~/.zcode/server";
+export const REMOTE_BASE = `~/${USER_DATA_DIR_NAME}/server`;
+
+/** shell 形态：posix shell 不展开 `~`，统一用 `$HOME`。 */
+export const REMOTE_BASE_SHELL = `$HOME/${USER_DATA_DIR_NAME}/server`;
 
 export interface RemoteAssetDeployOptions {
   /** 取消当前连接初始化；共享 cache 仍可独立完成，但不得继续写入远端 staging。 */

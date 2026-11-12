@@ -1,7 +1,7 @@
 import type { MarkdownSelectionTarget } from "@/lib/conversationSelectionReference.js";
 /* eslint-disable max-lines -- PreviewPane 内容路由同时承载文本、图片、媒体、Office、PDF 和 PPTX 渲染。 */
 import type { BundledTheme } from "shiki";
-import { useMemo, type Ref, type SyntheticEvent, type UIEventHandler } from "react";
+import { useMemo, useState, type Ref, type SyntheticEvent, type UIEventHandler } from "react";
 import type { FileBinaryPreview, FileMediaPreview, FileTextSlice } from "@zcode/shared";
 import { inferCodeLanguage } from "@/lib/codeViewer.js";
 import type { CodeViewerSource } from "@/lib/codeViewer.js";
@@ -23,8 +23,11 @@ import type { CodeCommentPreview, CodeCommentRange } from "@/lib/codeCommentCont
 import type { Theme } from "@/useTheme.js";
 import type { OfficeFilePreviewKind } from "@/lib/officeFilePreview.js";
 import { PreviewPaneOfficeContent } from "@/previewPaneOfficeContent.js";
+import { PreviewPaneDwgContent, type DwgFilePreviewKind } from "@/previewPaneDwgContent.js";
+import { V4_DRAFT_SCOPE_ROOT } from "@/v4/composer/composerDraftStore.js";
 import type { PptxElementReferenceSource } from "@/lib/pptxElementReference.js";
 import type { MediaCodeViewerSource, PptxReferencePreviewNavigation } from "@/lib/codeViewer.js";
+import { ReviewTextContent } from "@/ReviewTextContent.js";
 import { resolveCodeReviewContentProjection } from "@/previewPaneCodeReview.js";
 
 interface PreviewPaneContentProps {
@@ -47,6 +50,7 @@ interface PreviewPaneContentProps {
   loadingOfficePreview: boolean;
   officePreview: FileBinaryPreview | null;
   officePreviewKind: OfficeFilePreviewKind | null;
+  dwgPreviewKind: DwgFilePreviewKind | null;
   loadingPptxPreview: boolean;
   pptxPreviewData: ArrayBuffer | null;
   pptxViewerLabels: PptxPreviewViewerLabels;
@@ -60,6 +64,15 @@ interface PreviewPaneContentProps {
   /** 应用主题（store 耦合剥离）：透传给 markdown/mermaid 预览，缺省按 "system" 兜底。 */
   theme?: Theme;
   workspacePath?: string;
+  /**
+   * workspace 身份 key：远程 workspace 的草稿/插入请求都不能只按路径匹配（AGENTS.md），
+   * 由预览 pane 宿主透传，供 PDF「引用进会话」写入正确的 workspace 分桶。
+   */
+  workspaceIdentity?: string;
+  /**
+   * 预览 pane 归属的会话：有值时 PDF「引用进会话」进该会话输入框，空值进新建任务草稿槽。
+   */
+  composerSessionId?: string | null;
   onOpenBrowserUrl?: (url: string) => void;
   markdownSelectionTarget?: MarkdownSelectionTarget;
   markdownViewMode: "preview" | "code";
@@ -110,6 +123,7 @@ export function PreviewPaneContent({
   loadingOfficePreview,
   officePreview,
   officePreviewKind,
+  dwgPreviewKind,
   loadingPptxPreview,
   pptxPreviewData,
   pptxViewerLabels,
@@ -122,6 +136,8 @@ export function PreviewPaneContent({
   resolvedTheme,
   theme,
   workspacePath,
+  workspaceIdentity,
+  composerSessionId,
   onOpenBrowserUrl,
   markdownSelectionTarget,
   markdownViewMode,
@@ -137,6 +153,8 @@ export function PreviewPaneContent({
   scrollContainerRef,
 }: PreviewPaneContentProps) {
   const { intl } = useZCodeIntl();
+  /** 论文模式默认关：审查定位（quoteHighlight）走普通预览，避免两套高亮语义叠加。 */
+  const [paperMode, setPaperMode] = useState(false);
   const fileMissingMessage = intl.formatMessage({ id: "codeViewer.fileMissing" });
   const mediaLabels = {
     loading: intl.formatMessage({ id: "codeViewer.loadingMedia" }),
@@ -319,9 +337,72 @@ export function PreviewPaneContent({
       );
     }
 
-    return <PdfPreviewContent source={pdfViewerSource} labels={pdfViewerLabels} />;
+    return (
+      <div className="flex h-full min-h-0 flex-col">
+        <div className="flex items-center justify-end gap-2 border-b border-border px-2 py-1">
+          <button
+            type="button"
+            className={`rounded-md px-2 py-1 text-ui-base ${
+              paperMode
+                ? "bg-primary text-primary-foreground"
+                : "text-foreground-subtle hover:bg-surface-sunken"
+            }`}
+            onClick={() => setPaperMode((v) => !v)}
+            title={intl.formatMessage({
+              id: paperMode ? "paperMode.exitTitle" : "paperMode.openTitle",
+            })}
+          >
+            {intl.formatMessage({ id: "paperMode.title" })}
+          </button>
+        </div>
+        <div className="min-h-0 flex-1">
+          <PdfPreviewContent
+            source={pdfViewerSource}
+            labels={pdfViewerLabels}
+            {...(paperMode ? { paperMode: true } : {})}
+            fileName={source.path ?? source.title ?? "document.pdf"}
+            {...(workspacePath
+              ? {
+                  composerScope: {
+                    workspacePath,
+                    // 修复：此前只传 workspacePath + 根草稿 scopeId，已有会话里点「引用进会话」
+                    // 会把文本写进新建任务草稿槽；这里补齐身份与目标会话，交给
+                    // appendPdfQuoteToComposerDraft 选「进该会话输入框」还是「进根草稿槽」。
+                    ...(workspaceIdentity ? { workspaceIdentity } : {}),
+                    sessionId: composerSessionId ?? null,
+                    scopeId: V4_DRAFT_SCOPE_ROOT,
+                  },
+                }
+              : {})}
+            {...(!paperMode && source.type === "pdf" && source.quoteHighlight
+              ? { quoteHighlight: source.quoteHighlight }
+              : {})}
+          />
+        </div>
+      </div>
+    );
   }
 
+  if (source.type === "file" && dwgPreviewKind) {
+    return (
+      <PreviewPaneDwgContent
+        error={error}
+        loading={loadingOfficePreview}
+        preview={officePreview}
+        sourcePath={source.path}
+        chatQuote={
+          workspacePath
+            ? {
+                workspacePath,
+                ...(workspaceIdentity ? { workspaceIdentity } : {}),
+                scopeId: V4_DRAFT_SCOPE_ROOT,
+                sessionId: composerSessionId ?? null,
+              }
+            : null
+        }
+      />
+    );
+  }
   if (source.type === "file" && officePreviewKind) {
     return (
       <PreviewPaneOfficeContent
@@ -330,6 +411,8 @@ export function PreviewPaneContent({
         loading={loadingOfficePreview}
         onOpenBrowserUrl={onOpenBrowserUrl}
         preview={officePreview}
+        // 审查定位：原件（docx）渲染完成后在它的 DOM 里标出这句原文。
+        {...(source.quoteHighlight ? { quoteHighlight: source.quoteHighlight } : {})}
         resolvedTheme={resolvedTheme}
         sourcePath={source.path}
       />
@@ -446,6 +529,58 @@ export function PreviewPaneContent({
         fileReference={imageFileReference}
         sourcePath={source.path}
         loadDownloadSource={loadImageDownloadSource}
+      />
+    );
+  }
+
+  // 审查正文快照是**提取出来的 markdown**（docx/xlsx/pdf 经解析工具无损转出）：默认渲染成正文
+  // 并按命中的原文片段画高亮 —— 用户要看的是「说明书第 3 章那句写错了」，不是源码里的 `|` 与 `#`。
+  // 判据是锚点声明的 `textFormat`，不是扩展名：历史快照是 `.txt`，内容同样是提取正文。
+  // 源码视图仍可切到下面的字符偏移自渲染。
+  if (
+    source.type === "code-review" &&
+    source.review.textFormat === "markdown" &&
+    markdownViewMode === "preview"
+  ) {
+    return (
+      <MarkdownPreviewContent
+        selectionTarget={markdownSelectionTarget}
+        sourceKey={source.path ?? source.title}
+        sourceTitle={source.path ?? source.title}
+        sourcePath={source.path}
+        content={filePreview.content}
+        workspacePath={workspacePath}
+        onOpenBrowserUrl={onOpenBrowserUrl}
+        {...(source.review.quote
+          ? {
+              quoteHighlight: {
+                quote: source.review.quote,
+                occurrence: source.review.occurrence ?? null,
+                focusRequestId: source.review.requestId,
+                ...(source.review.note ? { note: source.review.note } : {}),
+              },
+            }
+          : {})}
+      />
+    );
+  }
+
+  // 带字符区间的审查定位走自渲染：提取正文不需要语法高亮/diff，而 @pierre/diffs 没有
+  // 字符级装饰钩子（见 reviewTextModel.ts 头注）。行级锚点（只有行号）仍走下面的代码预览器。
+  if (
+    source.type === "code-review" &&
+    typeof source.review.startOffset === "number" &&
+    typeof source.review.endOffset === "number"
+  ) {
+    return (
+      <ReviewTextContent
+        text={filePreview.content}
+        startOffset={source.review.startOffset}
+        endOffset={source.review.endOffset}
+        quote={source.review.quote}
+        comment={source.review.body}
+        severity={source.review.severity}
+        focusRequestId={source.review.requestId}
       />
     );
   }

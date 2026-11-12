@@ -1,3 +1,4 @@
+import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 interface TaskActionMenuItemProps {
   children: React.ReactNode;
   "data-testid"?: string;
@@ -82,6 +83,12 @@ export function TaskActionMenuContent({
   onOpenProviderConfig: () => void;
 }) {
   const taskTargetActionsDisabled = disableTaskActions || disableTaskTargetActions;
+  // Web 浏览器沙箱无法打开系统文件管理器/资源管理器；置灰 + 悬停说明，
+  // 避免点击后只在控制台记一条 warn 的静默失败。桌面端与手机远控宿主不实现
+  // unavailableReason，返回 null，行为完全不变。
+  const fileManagerUnavailableReason = usePlatformUnavailable("openInFileManager");
+  const fileManagerDisabled =
+    taskTargetActionsDisabled || Boolean(fileManagerUnavailableReason);
 
   return (
     <>
@@ -143,10 +150,14 @@ export function TaskActionMenuContent({
       <Separator />
       {!hideMobileUnsupportedActions ? (
         <Item
-          disabled={disableTaskActions}
-          title={disableTaskActions ? disabledReason : undefined}
+          disabled={fileManagerDisabled}
+          aria-disabled={fileManagerDisabled || undefined}
+          title={
+            fileManagerUnavailableReason ??
+            (disableTaskActions ? disabledReason : undefined)
+          }
           onSelect={() => {
-            if (!disableTaskActions) {
+            if (!fileManagerDisabled) {
               onOpenTaskPathInFileManager();
             }
           }}
@@ -210,7 +221,7 @@ export function TaskActionMenuContent({
       {onViewModelTrajectory ? (
         <>
           <Separator />
-          {/* 调用轨迹查看：从 ~/.zcode/cli 的 model-io 还原该 task 的模型请求/响应/工具调用，
+          {/* 调用轨迹查看：从用户数据目录的 cli 子目录（model-io）还原该 task 的模型请求/响应/工具调用，
               在右侧边栏可视化。只依赖 taskId（即 sessionId），不依赖快照文件是否落盘。 */}
           <Item
             disabled={taskTargetActionsDisabled || !activeSessionId}

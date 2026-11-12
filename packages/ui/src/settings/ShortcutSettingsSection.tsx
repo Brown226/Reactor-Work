@@ -60,8 +60,6 @@ export function ShortcutSettingsSection({ isDesktop = false }: { isDesktop?: boo
     // 取局部变量：some 回调闭包里 TS 无法保持 keySearch.binding 的非空收窄
     const keyBinding = keySearch.binding;
     return SHORTCUT_COMMANDS.filter((entry) => {
-      // 这些快捷键保留注册和冲突检测，但不在用户可见列表中展示。
-      if (entry.id === "openOnboarding" || entry.id === "toggleInterfaceMode") return false;
       // 完整视图只在桌面端提供，Web 没有处理器，不展示无效的改键入口。
       if (entry.id === "toggleSidePaneFullView" && !isDesktop) return false;
       const matchesText =

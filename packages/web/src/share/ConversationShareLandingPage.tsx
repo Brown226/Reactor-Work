@@ -103,7 +103,7 @@ const ZCODE_DOWNLOAD_URL = "https://zcode.z.ai";
 
 const COPY: Record<ConversationShareLandingLocale, Copy> = {
   "zh-CN": {
-    brand: "ZCode 会话分享",
+    brand: "Reactor 会话分享",
     loading: "正在加载分享内容",
     loadingDescription: "请稍候，我们正在验证分享链接。",
     loginTitle: "登录后查看分享",
@@ -129,24 +129,24 @@ const COPY: Record<ConversationShareLandingLocale, Copy> = {
     errorCode: "错误码",
     networkTitle: "暂时无法加载分享",
     networkDescription: "请检查网络后重试。",
-    invalidTitle: "无法读取分享内容",
-    invalidDescription: "分享服务返回了无法识别的数据，请提供错误详情。",
-    outdatedTitle: "需要更新 ZCode",
-    outdatedDescription: "这个分享由更新版本的 ZCode 创建，请升级后再查看。",
+    invalidTitle: "分享格式无效",
+    invalidDescription: "服务返回的分享内容无法通过安全校验。",
+    outdatedTitle: "需要更新 Reactor",
+    outdatedDescription: "这个分享由更新版本的 Reactor 创建，请升级后再查看。",
     unavailableTitle: "分享不可访问",
     unavailableDescription: "当前账号没有权限，或者分享内容已不存在。",
     retry: "重试",
-    continueInZCode: "去 ZCode 继续",
+    continueInZCode: "去 Reactor 继续",
     switchToDarkTheme: "切换到深色主题",
     switchToLightTheme: "切换到浅色主题",
-    continueHelp: "如果没有自动打开 ZCode，请先下载客户端，或再次尝试打开。",
-    downloadZCode: "下载 ZCode",
+    continueHelp: "如果没有自动打开 Reactor，请先下载客户端，或再次尝试打开。",
+    downloadZCode: "下载 Reactor",
     artifactCountOne: "{count} 个结果物",
     artifactCountOther: "{count} 个结果物",
     retryOpen: "再次打开",
   },
   "en-US": {
-    brand: "ZCode Conversation Share",
+    brand: "Reactor Conversation Share",
     loading: "Loading shared conversation",
     loadingDescription: "Please wait while we verify this share link.",
     loginTitle: "Sign in to view this share",
@@ -174,21 +174,20 @@ const COPY: Record<ConversationShareLandingLocale, Copy> = {
     errorCode: "Error code",
     networkTitle: "Unable to load share",
     networkDescription: "Check your network connection and try again.",
-    invalidTitle: "Unable to read shared content",
-    invalidDescription:
-      "The sharing service returned unrecognized data. Provide the error details.",
-    outdatedTitle: "Update ZCode to continue",
+    invalidTitle: "Invalid share content",
+    invalidDescription: "The shared content failed the public safety contract.",
+    outdatedTitle: "Update Reactor to continue",
     outdatedDescription:
-      "This share was created by a newer version of ZCode. Please update to view it.",
+      "This share was created by a newer version of Reactor. Please update to view it.",
     unavailableTitle: "Share unavailable",
     unavailableDescription:
       "This account is not allowed to view the share, or it no longer exists.",
     retry: "Try again",
-    continueInZCode: "Continue in ZCode",
+    continueInZCode: "Continue in Reactor",
     switchToDarkTheme: "Switch to dark theme",
     switchToLightTheme: "Switch to light theme",
-    continueHelp: "If ZCode did not open, download the app or try opening it again.",
-    downloadZCode: "Download ZCode",
+    continueHelp: "If Reactor did not open, download the app or try opening it again.",
+    downloadZCode: "Download Reactor",
     artifactCountOne: "{count} artifact",
     artifactCountOther: "{count} artifacts",
     retryOpen: "Try again",
@@ -481,10 +480,10 @@ export function ConversationShareLandingPage({
                 <div
                   ref={brandRef}
                   data-share-brand="true"
-                  className="flex shrink-0 items-center gap-2 text-foreground"
-                  aria-label="ZCode"
+                  className="shrink-0 text-ui-lg font-semibold text-foreground"
+                  aria-label="Reactor"
                 >
-                  <ShareBrandMark />
+                  Reactor
                 </div>
                 <h1
                   ref={titleRef}

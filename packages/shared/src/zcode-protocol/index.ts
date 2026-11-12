@@ -1871,6 +1871,9 @@ export const zcodePermissionResolvedEventPayloadSchema = z
     inputSummary: z.unknown().optional(),
     childSessionId: nonEmptyString.optional(),
     background: z.boolean().optional(),
+    // PermissionDenied 复用本事件（decision=deny）：规则拒绝时携带 ruleId，
+    // 供审计链路区分「组织策略拦截」与「普通规则拒绝」（洞②）。strict schema 不放行会整事件被拒。
+    ruleId: nonEmptyString.optional(),
   })
   .strict();
 export const zcodeUserInputRequestedEventPayloadSchema = z
@@ -3322,7 +3325,7 @@ export const zcodeSavedWorkflowMetaSchema = z
   })
   .strict();
 export type ZCodeSavedWorkflowMeta = z.infer<typeof zcodeSavedWorkflowMetaSchema>;
-// 作用域两档：项目档落 `<cwd>/.zcode/workflows/`、全局档落 agent 机器的 `~/.zcode/workflows/`。作用域由文件所在目录推得，frontmatter 不存 scope。
+// 作用域两档：项目档落 `<cwd>/.zcode/workflows/`、全局档落 agent 机器的 `~/{USER_DATA_DIR_NAME}/workflows/`。作用域由文件所在目录推得，frontmatter 不存 scope。
 export const zcodeSavedWorkflowScopeSchema = z.enum(["project", "global"]);
 export type ZCodeSavedWorkflowScope = z.infer<typeof zcodeSavedWorkflowScopeSchema>;
 export const zcodeSavedWorkflowEntrySchema = z
@@ -3359,7 +3362,7 @@ const zcodeSavedWorkflowFailureSchema = z
 export const zcodeWorkflowsListParamsSchema = z
   .object({
     workspace: zcodeWorkspaceRefSchema,
-    // 缺省即 `project`（本项目档）。给 `global` 时改扫本机 `~/.zcode/workflows/`；此时 `workspace`
+    // 缺省即 `project`（本项目档）。给 `global` 时改扫本机 `~/{USER_DATA_DIR_NAME}/workflows/`；此时 `workspace`
     // 仍必填，但只是**载体运行时**——协议处理器对全局档不读它的路径。
     scope: zcodeSavedWorkflowScopeSchema.optional(),
   })

@@ -20,10 +20,10 @@ import { useWorkspaceProviderConfigFile } from "@/hooks/useWorkspaceProviderConf
 import { useWorkspaceActiveTaskState } from "@/hooks/useWorkspaceActiveTaskState.js";
 import { useEnsureWorkspaceMcpLoaded } from "@/hooks/useEnsureWorkspaceMcpLoaded.js";
 import { useTabStore, useTabStoreApi } from "@/store/TabStoreProvider.js";
-import { isWorkspaceReadOnly, isWorkspaceTab } from "@/store/tabStore.js";
+import { isSettingsTab, isWorkspaceReadOnly, isWorkspaceTab } from "@/store/tabStore.js";
 import type { TaskChatMessage as TestChatMessage } from "@/lib/taskChatMessageTypes.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
-import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
 import { getPathLeaf } from "@/lib/path.js";
 import {
   addPluginStoreOpenListener,
@@ -58,8 +58,10 @@ import {
   type SettingsSectionId,
 } from "@/lib/settingsNavigation.js";
 import { runWorkspaceVisibleCommand } from "@/lib/workspaceVisibleCommand.js";
-import { ZCODE_PRODUCT_DOCS_URL } from "@/lib/productDocs.js";
-import appLogoUrl from "@/assets/provider-icons/logo-zai.svg";
+import { toast } from "@/components/ui/toast.js";
+// 左上角应用标记：Z.ai 的 logo 已随品牌替换移除，这里改用 Reactor 立方标记，
+// 与登录页/启动页保持同一视觉（vite 资源导入，路径别名同 ReactorLogo）。
+import appLogoUrl from "@/assets/reactor-mark.png";
 import { resolveTheme } from "@/useTheme.js";
 import { WorkspaceShellLayout } from "@/app-shell/WorkspaceShellLayout.js";
 import { useAppChromeState } from "@/app-shell/useAppChromeState.js";
@@ -77,7 +79,8 @@ import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js"
 import { useWorkspaceTerminalTaskNotifications } from "@/hooks/useTaskNotifications.js";
 import { useMarketingTaskCompletionRefresh } from "@/components/marketing-touch/useMarketingTaskCompletionRefresh.js";
 import { useOffPeakTaskNotifications } from "@/hooks/useOffPeakTaskNotifications.js";
-import type { AppProps, WorkspaceMainView } from "@/app-shell/types.js";
+import { useProductDocsUrl } from "@/hooks/useProductDocsUrl.js";
+import type { AppProps, MarketIntent, WorkspaceMainView } from "@/app-shell/types.js";
 import type {
   ChatSearchResultHighlightRequest,
   ChatViewSummaryPanelVariant,
@@ -144,6 +147,7 @@ export function App({
   isMacDesktop,
   isWindowsDesktop,
   supportsEmbeddedBrowser: explicitSupportsEmbeddedBrowser,
+  mySpaceEnabled = false,
 }: AppProps) {
   // 展示 label 统一从快捷键生效表取（用户改键后 tooltip 同步更新），不再硬编码键位。
   const toggleSidebarShortcutLabel = useShortcutCommandLabel("toggleSidebar");
@@ -157,7 +161,7 @@ export function App({
   const isLinuxDesktop = Boolean(isDesktop && !isMacDesktop && !isWindowsDesktop);
   const supportsEmbeddedBrowser = explicitSupportsEmbeddedBrowser ?? Boolean(isDesktop);
   const { intl, locale, setLocale } = useZCodeIntl();
-  const isOfficeMode = useIsOfficeMode();
+  const isFocusedMode = useIsFocusedMode();
   const platform = usePlatform();
   // 命令中心「重新加载扩展」：只有桌面本机 Host 提供扩展门面时才出现。
   const reloadExtensions = useReloadExtensions();
@@ -248,6 +252,8 @@ export function App({
     handleOpenBrowserPermissionSettings,
     handleToggleGit,
     handleOpenGit,
+    handleOpenWorkspaceFiles,
+    handleOpenTreemapping,
     handleOpenWhiteboard,
     handleOpenDeveloperTools,
     handleOpenExtensionView,
@@ -377,7 +383,6 @@ export function App({
     useState<ChatSearchResultHighlightRequest | null>(null);
   const [fileChangeFindState, setFileChangeFindState] = useState(createTaskFindNavigationState);
   const [fileChangeFindMatchCount, setFileChangeFindMatchCount] = useState(0);
-  const [canOpenCommunityFromQuickPick, setCanOpenCommunityFromQuickPick] = useState(false);
   const [gitSelectedSourceId, setGitSelectedSourceId] = useState<GitChangeSourceId>("unstaged");
   const [gitRefreshVersion, setGitRefreshVersion] = useState(0);
   const { browserRestoreUrls, handleBrowserUrlChange } = useTaskSidePaneMemoryBridge({
@@ -456,6 +461,7 @@ export function App({
     setGitRefreshVersion((value) => value + 1);
   }, []);
   const openSettingsTab = useTabStore((state) => state.openSettingsTab);
+  const closeTab = useTabStore((state) => state.closeTab);
   // worktree 任务的 cwd 不是 workspace 目录；Git 状态必须读任务自己的 cwd（docs/git/worktree.md §3.7）。
   const activeTaskCwd =
     (resolvedActiveTaskMeta?.taskId === activeTaskId ? resolvedActiveTaskMeta?.cwd : undefined) ??
@@ -766,10 +772,15 @@ export function App({
       disposeTicketsPanel?.();
     };
   }, [openFeedbackSubmit, openFeedbackTickets, platform]);
-  const handleOpenCommunity = useCallback(() => platform.openCommunity(), [platform]);
+  const productDocsUrl = useProductDocsUrl();
   const handleOpenProductDocs = useCallback(() => {
-    platform.openExternal(ZCODE_PRODUCT_DOCS_URL);
-  }, [platform]);
+    // 与帮助菜单同一收口：地址来自服务端策略，未配置则提示，不跳官方站。
+    if (!productDocsUrl) {
+      toast(intl.formatMessage({ id: "help.productDocs.notConfigured" }));
+      return;
+    }
+    platform.openExternal(productDocsUrl);
+  }, [platform, productDocsUrl]);
   const themeTarget = resolveTheme(theme) === "dark" ? "light" : "dark";
   const handleSwitchTheme = useCallback(() => {
     setTheme(themeTarget);
@@ -923,6 +934,7 @@ export function App({
     AutomationsNavigationTarget["automationTab"]
   > | null>(null);
   const [pluginStoreOpenVersion, setPluginStoreOpenVersion] = useState(0);
+  const [marketIntent, setMarketIntent] = useState<MarketIntent | null>(null);
   const handleNavigateToTaskMain = useCallback(() => {
     setWorkspaceMainView("chat");
   }, []);
@@ -955,6 +967,20 @@ export function App({
     preserveNextSettingsExit();
     setWorkspaceMainView("plugin-store");
   }, [preserveNextSettingsExit]);
+  const handleOpenMarket = useCallback(() => {
+    // 侧栏入口回落默认视图：清掉命令面板可能留下的意图（MarketPage 重挂载即默认专家/市场）。
+    setMarketIntent(null);
+    setWorkspaceMainView("market");
+  }, []);
+  // 我的空间是 Web 专属主视图：桌面端 mySpaceEnabled=false，入口与视图都不存在。
+  const handleOpenMySpace = useCallback(() => {
+    setWorkspaceMainView("my-space");
+  }, []);
+  const handleManageModelsFromMarket = useCallback(() => {
+    // 子智能体表单「管理模型」→ 设置·模型分区；该分区被治理隐藏时由 settingsNavigation 回落。
+    setPendingSettingsSection("modelProvider");
+    openSettingsTab();
+  }, [openSettingsTab]);
   const handleOpenAutomationConsumed = useCallback(() => {
     setOpenAutomationId(null);
     setOpenAutomationTab(null);
@@ -1093,34 +1119,12 @@ export function App({
       : null,
   });
 
-  useEffect(() => {
-    let disposed = false;
-
-    void platform.canOpenCommunity(locale).then(
-      (visible) => {
-        if (!disposed) {
-          setCanOpenCommunityFromQuickPick(visible);
-        }
-      },
-      () => {
-        if (!disposed) {
-          setCanOpenCommunityFromQuickPick(false);
-        }
-      },
-    );
-
-    return () => {
-      disposed = true;
-    };
-  }, [locale, platform]);
-
   const quickPickCommands = useMemo(
     () =>
       createQuickPickCommands({
-        supportsTerminal: !isOfficeMode,
-        supportsReview: !isOfficeMode,
+        supportsTerminal: !isFocusedMode,
+        supportsChanges: !isFocusedMode,
         allowOpenWorkspace,
-        canOpenCommunity: canOpenCommunityFromQuickPick,
         isSidebarVisible,
         supportsEmbeddedBrowser,
         // quick pick 命令只关心登录态布尔值。
@@ -1138,8 +1142,13 @@ export function App({
           openWorkspace: () => runVisibleWorkspaceCommand(onOpenWorkspace),
           openSettings: openSettingsTab,
           openSkillsSettings: () => {
-            setPendingSettingsPluginIntent("skills");
-            openSettingsTab();
+            // 技能管理已迁入「专家·技能」市场（方案 §5.1）：退出设置时抑制回落 chat，
+            // 关掉设置 tab 后直接落到市场的「我的·技能」管理视图。
+            preserveNextSettingsExit();
+            const settingsTab = tabs.find(isSettingsTab);
+            if (settingsTab) closeTab(settingsTab.id);
+            setMarketIntent({ view: "skill", mode: "mine", version: Date.now() });
+            setWorkspaceMainView("market");
           },
           openMcpSettings: () => {
             setPendingSettingsPluginIntent("mcps");
@@ -1147,7 +1156,6 @@ export function App({
           },
           switchTheme: handleSwitchTheme,
           openFeedback: handleOpenFeedback,
-          openCommunity: handleOpenCommunity,
           openProductDocs: handleOpenProductDocs,
           login: onLogin,
           logout: onLogout,
@@ -1170,9 +1178,7 @@ export function App({
       reloadExtensions,
       handleOpenExtensionLogs,
       allowOpenWorkspace,
-      isOfficeMode,
-      canOpenCommunityFromQuickPick,
-      handleOpenCommunity,
+      isFocusedMode,
       handleOpenFeedback,
       handleOpenProductDocs,
       handleOpenSettingsSection,
@@ -1196,6 +1202,9 @@ export function App({
       supportsEmbeddedBrowser,
       toggleSidebarShortcutLabel,
       toggleTerminalShortcutLabel,
+      closeTab,
+      preserveNextSettingsExit,
+      tabs,
       themeTarget,
     ],
   );
@@ -1425,6 +1434,11 @@ export function App({
             setGitSelectedSourceId={setGitSelectedSourceId}
             // taskFindDialogProps 是对象 prop，内联创建会让 shell 在流式刷新中每轮都看到新引用。
             taskFindDialogProps={taskFindDialogProps}
+            onOpenMarket={handleOpenMarket}
+            marketIntent={marketIntent}
+            onOpenMySpace={mySpaceEnabled ? handleOpenMySpace : undefined}
+            onOpenModelProviderSettings={handleManageModelsFromMarket}
+            handleOpenWorkspaceFiles={handleOpenWorkspaceFiles}
           />
         </ExtensionViewsProvider>
       </PluginUiWorkspaceProvider>
