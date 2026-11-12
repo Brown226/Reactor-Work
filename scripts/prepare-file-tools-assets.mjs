@@ -1,0 +1,358 @@
+#!/usr/bin/env node
+/**
+ * 文件能力三件套的资产 staging（docs/未完成-file-tools拆三插件方案.md）：文件能力按插件
+ * 分开成树，供 electron-builder 打进安装包（bundled-tools/<platformKey>，见
+ * packages/desktop/electron-builder.config.js 的 extraResources），并同步一份到各插件包的
+ * assets/<platformKey>，供开发态/seed 缓存里的 MCP 子进程解析：
+ * - file-tools：anydoc（napi）→ bundled-tools/<platformKey>/file-tools；
+ * - dwg-tools：ACadSharp sidecar（自包含 .NET）→ bundled-tools/<platformKey>/dwg-tools。
+ * dwg 侧必须落进插件包 assets/：dwg-tools 的 definition 声明 runtimeTopLevelPaths: ["assets"]，
+ * seed 校验要求该树至少收上一个文件（bundled-plugins.hasDeclaredAssetsButNoFiles），
+ * 否则整个插件被拒绝 seed，dwg_modify / dwg_graph 在任何安装形态下都不可达。
+ *
+ * 固定策略（对齐 scripts/native-search-tools-config.mjs）：
+ * - npm 依赖（anydoc / @napi-rs/canvas）从**本工作区 node_modules** 拷贝，
+ *   版本即 lockfile 锁定的版本。
+ *
+ * 用法：node scripts/prepare-file-tools-assets.mjs [--platform win32-x64] [--from-workspace <path>]
+ */
+import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { downloadFile } from "./lib/download-asset.mjs";
+
+const repoRoot = resolve(import.meta.dirname, "..");
+const platformKey = readArg("--platform") ?? `${process.platform}-${process.arch}`;
+const workspaceRoot = readArg("--from-workspace") ?? repoRoot;
+const pluginRoot = join(repoRoot, "apps", "zcode-cli", "packages", "file-tools-plugin");
+const bundledRoot = join(repoRoot, "packages", "desktop", "bundled-tools", platformKey, "file-tools");
+const devAssetsRoot = join(pluginRoot, "assets", platformKey);
+
+function readArg(name) {
+  const index = process.argv.indexOf(name);
+  if (index === -1) return null;
+  return process.argv[index + 1] ?? null;
+}
+
+/** PP-OCRv5 mobile 模型（repo：x3zvawq/paddleocr-js-onnx，Apache-2.0；字典不得 trimEnd，见 ocr-engine.ts）。 */
+const OCR_MODEL_REPO = "https://hf-mirror.com/x3zvawq/paddleocr-js-onnx/resolve/main";
+const OCR_MODEL_FILES = [
+  {
+    path: "ppocr_v5_mobile/PP-OCRv5_mobile_det_infer.onnx",
+    sha256: "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae",
+  },
+  {
+    path: "ppocr_v5_mobile/PP-OCRv5_mobile_rec_infer.onnx",
+    sha256: "86b1f8bffa31748e0d6364a98af983bbd33b92523141d4a02fa587b4b66b54af",
+  },
+  {
+    path: "ppocr_v5_mobile/ppocrv5_dict.txt",
+    sha256: "7680a8a77c6617aba27bc9c52d320f451ae7871613a43b5358ac4a68c88d87c0",
+  },
+];
+
+/** 运行时 platformKey → npm/napi 平台包后缀。 */
+const NPM_PLATFORM_SUFFIX = {
+  "win32-x64": "win32-x64-msvc",
+  "darwin-x64": "darwin-x64",
+  "darwin-arm64": "darwin-arm64",
+  "linux-x64": "linux-x64-gnu",
+  "linux-arm64": "linux-arm64-gnu",
+};
+
+/** file-tools 资产树的第三方清单（DWG/OCR 引擎已按「一引擎一 owner」拆走，见方案文档）。
+ * 布局：<assets>/<name>/node_modules/<scope>/<pkg>（Node require 目录解析）。 */
+const FILE_TOOLS_LICENSES = [
+  { component: "@firecrawl/anydoc", license: "MIT", source: "npm @firecrawl/anydoc" },
+  { component: "@napi-rs/canvas", license: "MIT", source: "npm @napi-rs/canvas" },
+];
+
+/** dwg-tools 资产树的第三方清单：sidecar 自带 ACadSharp 与自包含 .NET runtime。 */
+const DWG_TOOLS_LICENSES = [
+  {
+    component: "ACadSharp",
+    license: "MIT",
+    source: "nuget ACadSharp（DWG 读写引擎；npm/nuget lockfile 固定版本）",
+  },
+  {
+    component: "Microsoft .NET runtime（sidecar 自包含运行时）",
+    license: "MIT",
+    source: "https://github.com/dotnet/runtime（随自包含发布附带）",
+  },
+];
+
+function copyDirectory(source, target) {
+  mkdirSync(target, { recursive: true });
+  for (const entry of readdirSync(source, { withFileTypes: true })) {
+    const sourcePath = join(source, entry.name);
+    const targetPath = join(target, entry.name);
+    if (entry.isDirectory()) {
+      copyDirectory(sourcePath, targetPath);
+    } else if (entry.isFile()) {
+      writeFileSync(targetPath, readFileSync(sourcePath));
+      // 保留可执行位：dwg-sidecar 是直接 spawn 的二进制，且 plugins seed 会以源文件
+      // mode 落盘缓存文件（bundled-plugins.modeForSeedFile）；writeFileSync 新建文件默认
+      // 0644，darwin/linux 上会让 sidecar 在缓存副本里 EACCES 起不来。
+      chmodSync(targetPath, statSync(sourcePath).mode & 0o777);
+    }
+  }
+}
+
+function sha256OfFile(path) {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
+}
+
+function resolveWorkspacePackage(name) {
+  const base = join(workspaceRoot, "node_modules");
+  const direct = join(base, ...name.split("/"));
+  if (existsSync(direct)) return direct;
+  // pnpm 布局：node_modules/.pnpm/<name>@<ver>/node_modules/<name>
+  const pnpmDir = join(base, ".pnpm");
+  if (!existsSync(pnpmDir)) return null;
+  const prefix = `${name.replace("/", "+")}@`;
+  const hit = readdirSync(pnpmDir).find((entry) => entry.startsWith(prefix));
+  if (!hit) return null;
+  const candidate = join(pnpmDir, hit, "node_modules", ...name.split("/"));
+  return existsSync(candidate) ? candidate : null;
+}
+
+function stageNpmPackage(packageName, assetsPackagePath) {
+  const source = resolveWorkspacePackage(packageName);
+  if (!source) throw new Error(`workspace node_modules 里找不到 ${packageName}`);
+  const target = join(assetsPackagePath, ...packageName.split("/"));
+  copyDirectory(source, target);
+  return target;
+}
+
+/**
+ * onnxruntime-node 的 bin/napi-v6/<os>/<arch>/：只保留本平台组合。
+ * 原包带全平台全架构，白占 ~200MB。
+ */
+function pruneOnnxruntimePlatforms(packageDir, runtimePlatformKey) {
+  const [os, arch] = runtimePlatformKey.split("-");
+  const napiDir = join(packageDir, "bin", "napi-v6");
+  if (!existsSync(napiDir)) return;
+  for (const osEntry of readdirSync(napiDir)) {
+    const osDir = join(napiDir, osEntry);
+    if (!statSync(osDir).isDirectory()) continue;
+    if (osEntry !== os) {
+      rmSync(osDir, { recursive: true, force: true });
+      continue;
+    }
+    for (const archEntry of readdirSync(osDir)) {
+      const archDir = join(osDir, archEntry);
+      if (!statSync(archDir).isDirectory()) continue;
+      if (archEntry !== arch) rmSync(archDir, { recursive: true, force: true });
+    }
+  }
+}
+
+async function downloadOcrModels(targetDir, cacheDir = null) {
+  mkdirSync(targetDir, { recursive: true });
+  const results = [];
+  for (const model of OCR_MODEL_FILES) {
+    const fileName = model.path.split("/").pop();
+    const target = join(targetDir, fileName);
+    if (existsSync(target) && sha256OfFile(target) === model.sha256) {
+      results.push({ file: fileName, sha256: model.sha256, cached: true });
+      continue;
+    }
+    // dev 缓存复用：重复构建（或换目标平台重跑）不重复下载 21MB 模型。
+    const cachedCopy = cacheDir ? join(cacheDir, fileName) : null;
+    if (cachedCopy && existsSync(cachedCopy) && sha256OfFile(cachedCopy) === model.sha256) {
+      writeFileSync(target, readFileSync(cachedCopy));
+      results.push({ file: fileName, sha256: model.sha256, cached: true });
+      continue;
+    }
+    const url = `${OCR_MODEL_REPO}/${model.path}`;
+    process.stdout.write(`[file-tools] download ${fileName}\n`);
+    // 下载+sha256 校验收口到共享模块（审计 #8）；哈希不符时 downloadFile 抛错
+    await downloadFile([url], target, { sha256: model.sha256 });
+    results.push({ file: fileName, sha256: model.sha256, cached: false });
+  }
+  return results;
+}
+
+function writeStagingMeta(outRoot, meta, licenses) {
+  writeFileSync(
+    join(outRoot, ".bundle-meta.json"),
+    `${JSON.stringify({ ...meta, platform: platformKey }, null, 2)}\n`,
+  );
+  writeFileSync(
+    join(outRoot, "SOURCES.json"),
+    `${JSON.stringify(
+      {
+        platform: platformKey,
+        components: licenses.map((item) => ({ ...item, sha256: meta.sha256[item.component] ?? null })),
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  const notices = [
+    `THIRD-PARTY NOTICES — ${meta.tree} bundled assets`,
+    "",
+    ...licenses.flatMap((item) => [
+      `* ${item.component} — ${item.license}`,
+      `  Source: ${item.source}`,
+      ...(item.license.toUpperCase().startsWith("GPL")
+        ? [
+            "  This package contains GPL-licensed components. The complete corresponding source code",
+            "  is available from the source listed above; written offers for the source are also",
+            "  honored via the product maintainer.",
+          ]
+        : []),
+    ]),
+    "",
+  ].join("\n");
+  writeFileSync(join(outRoot, "THIRD-PARTY-NOTICES.txt"), notices);
+}
+
+
+/** platformKey（运行时）→ .NET RID（sidecar 自包含发布）。 */
+const DOTNET_RID = {
+  "win32-x64": "win-x64",
+  "win32-arm64": "win-arm64",
+  "darwin-x64": "osx-x64",
+  "darwin-arm64": "osx-arm64",
+  "linux-x64": "linux-x64",
+  "linux-arm64": "linux-arm64",
+};
+
+/**
+ * 发布 DWG sidecar 进资产树：dwg-sidecar/<rid>/dwg-sidecar[.exe]。
+ * 复用插件包 scripts/publish-sidecar.mjs（dotnet publish 封装，--required 强制 SDK）。
+ * 跨平台目标（如在 Windows 上给 osx-arm64 出包）不可行，脚本明确报错。
+ */
+function stageSidecar(targetRoot, runtimePlatformKey) {
+  const rid = DOTNET_RID[runtimePlatformKey];
+  if (!rid) throw new Error(`不支持的平台：${runtimePlatformKey}`);
+  const outDir = join(targetRoot, "dwg-sidecar", rid);
+  mkdirSync(outDir, { recursive: true });
+  const dwgPluginRoot = join(repoRoot, "apps", "zcode-cli", "packages", "dwg-tools-plugin");
+  const publishScript = join(dwgPluginRoot, "scripts", "publish-sidecar.mjs");
+  if (!existsSync(publishScript)) {
+    throw new Error(`sidecar 发布脚本缺失：${publishScript}`);
+  }
+  const result = spawnSync(
+    process.execPath,
+    [publishScript, "--rid", rid, "--out", outDir, "--required"],
+    { stdio: "inherit", cwd: dwgPluginRoot },
+  );
+  const exeName = runtimePlatformKey.startsWith("win32") ? "dwg-sidecar.exe" : "dwg-sidecar";
+  if (result.status !== 0) {
+    // NuGet 在部分环境（含中文路径 / 损坏的全局包缓存）会 restore 失败，与工程无关。
+    // 此时允许复用历史 dotnet publish 产物，避免整条 staging 因还原问题挂掉。
+    // 候选只列 dwg-tools 自己（拆分后 file-tools 不再持有 DWG 引擎与 sidecar 源码）。
+    const legacyCandidates = [
+      // 自包含单文件发布（~35MB）优先
+      join(dwgPluginRoot, "dist", "dwg-sidecar", rid, exeName),
+      join(dwgPluginRoot, "tools", "dwg-sidecar", "bin", "Release", "net9.0", rid, exeName),
+      join(dwgPluginRoot, "tools", "dwg-sidecar", "bin", "Release", "net9.0", exeName),
+    ];
+    const fallback = legacyCandidates.find((p) => existsSync(p) && statSync(p).size > 1024 * 1024);
+    if (!fallback) {
+      throw new Error(`DWG sidecar 发布失败（${rid}）：exit=${result.status}`);
+    }
+    copyFileSync(fallback, join(outDir, exeName));
+    console.log(`  ⚠ sidecar publish 失败，复用历史产物：${fallback}`);
+  }
+  if (!existsSync(join(outDir, exeName))) {
+    throw new Error(`sidecar 产物缺失：${join(outDir, exeName)}`);
+  }
+}
+
+function stageAssets(targetRoot) {
+  rmSync(targetRoot, { recursive: true, force: true });
+  mkdirSync(targetRoot, { recursive: true });
+  const sha256 = {};
+
+  // 1) anydoc（napi + 平台包）
+  const anydocRoot = join(targetRoot, "anydoc");
+  stageNpmPackage("@firecrawl/anydoc", join(anydocRoot, "node_modules"));
+  // @firecrawl/anydoc 的 JS wrapper require 平台包名；把本平台包一起放进同一 node_modules。
+  const platformSuffix = NPM_PLATFORM_SUFFIX[platformKey];
+  if (!platformSuffix) throw new Error(`不支持的平台：${platformKey}`);
+  const platformPackage = `@firecrawl/anydoc-${platformSuffix}`;
+  const platformSource = resolveWorkspacePackage(platformPackage);
+  if (!platformSource) throw new Error(`workspace node_modules 里找不到 ${platformPackage}`);
+  copyDirectory(platformSource, join(anydocRoot, "node_modules", platformPackage));
+  sha256["@firecrawl/anydoc"] = null; // 版本即 lockfile；平台包逐文件哈希见 staging 日志
+
+  // 2) onnxruntime-node + ocr-models 已退役：OCR 推理迁到 office-engines Python
+  //    （scripts/office_skill_lib/ocr.py + onnxruntime/numpy wheel + ocr-models）。
+  //    见 docs/已完成/已完成-OCR栈轻量化方案.md。此处不再 stage，避免 ~80MB 双栈。
+
+  // 3) @napi-rs/canvas + 本平台 skia 绑定（linux 同时带 musl 变体，js-binding 按 libc 选择）。
+  //    仍保留：pdf_structure / pdf_citations 等 pdf-research 工具用 pdfjs + canvas 栅格。
+  const canvasRoot = join(targetRoot, "canvas");
+  stageNpmPackage("@napi-rs/canvas", join(canvasRoot, "node_modules"));
+  const canvasVariants = platformKey.startsWith("linux-")
+    ? [`${platformSuffix}`, platformSuffix.replace("-gnu", "-musl")]
+    : [platformSuffix];
+  for (const variant of canvasVariants) {
+    const packageName = `@napi-rs/canvas-${variant}`;
+    stageNpmPackage(packageName, join(canvasRoot, "node_modules"));
+  }
+
+  // 4) DWG sidecar 发布进**独立** dwg-tools 资产树（docs/未完成-file-tools拆三插件方案.md）。
+  const dwgRoot = join(repoRoot, "packages", "desktop", "bundled-tools", platformKey, "dwg-tools");
+  rmSync(dwgRoot, { recursive: true, force: true });
+  mkdirSync(dwgRoot, { recursive: true });
+  stageSidecar(dwgRoot, platformKey);
+  writeStagingMeta(dwgRoot, { sha256: {}, tree: "dwg-tools" }, DWG_TOOLS_LICENSES);
+
+  writeStagingMeta(targetRoot, { sha256, modelFiles: "office-engines", tree: "file-tools" }, FILE_TOOLS_LICENSES);
+  return {};
+}
+
+/** 插件 dev 副本：seed / 开发态 MCP 子进程从插件包 assets/<platformKey> 解析资产。 */
+function stageDevCopy(fromRoot, toRoot) {
+  rmSync(toRoot, { recursive: true, force: true });
+  copyDirectory(fromRoot, toRoot);
+}
+
+async function main() {
+  process.stdout.write(`[file-tools] staging platform: ${platformKey}\n`);
+  // OCR 模型不再在本脚本 stage（迁 office-engines）；仅保留旧缓存供 office-engines 复用。
+  stageAssets(bundledRoot);
+
+  // dev 副本（随插件 seed 覆盖开发态资产解析）。dwg 侧缺这份副本会让 dwg-tools 的
+  // runtimeTopLevelPaths: ["assets"] 收不到任何资产文件，seed 直接拒绝整个插件。
+  const dwgBundledRoot = join(repoRoot, "packages", "desktop", "bundled-tools", platformKey, "dwg-tools");
+  const dwgDevAssetsRoot = join(
+    repoRoot,
+    "apps",
+    "zcode-cli",
+    "packages",
+    "dwg-tools-plugin",
+    "assets",
+    platformKey,
+  );
+  stageDevCopy(bundledRoot, devAssetsRoot);
+  stageDevCopy(dwgBundledRoot, dwgDevAssetsRoot);
+
+  const total = sumDirectorySize(bundledRoot);
+  const dwgTotal = sumDirectorySize(dwgBundledRoot);
+  process.stdout.write(
+    `[file-tools] staged → ${bundledRoot}（dev copy → ${devAssetsRoot}）\n` +
+      `[dwg-tools] staged → ${dwgBundledRoot}（dev copy → ${dwgDevAssetsRoot}）\n` +
+      `[file-tools] OCR 在 office-engines；file-tools ${(total / 1024 / 1024).toFixed(1)} MiB + dwg-tools ${(dwgTotal / 1024 / 1024).toFixed(1)} MiB\n`,
+  );
+}
+
+function sumDirectorySize(root) {
+  let total = 0;
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.isFile()) total += statSync(full).size;
+    }
+  };
+  walk(root);
+  return total;
+}
+
+await main();

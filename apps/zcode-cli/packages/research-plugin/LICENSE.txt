@@ -1,0 +1,11 @@
+# research 插件许可说明
+
+本插件的技能内容来自 mimocode 内置技能包（`builtin_skills/desktop-1579e7d`）：
+
+- `skills/super-research/`：上游作者已于 2026-10-09 给予**书面复制许可**，许可件由
+  项目所有者持有；上游未随包提供 LICENSE 文件。
+- `skills/arxiv/`：其 SKILL.md frontmatter 自带 MIT 声明（version 2.0.0），原样保留。
+
+两个技能均为原样复制，未做格式化或改写；`skills/*/scripts/` 下的 Python 脚本仅依赖
+标准库与免费学术 API（arXiv / Semantic Scholar / OpenAlex / Crossref），运行时不收集
+或上传用户数据以外的内容。许可登记见 `third-party/copied-components.json`。

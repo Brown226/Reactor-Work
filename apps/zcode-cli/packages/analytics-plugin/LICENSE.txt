@@ -1,0 +1,13 @@
+# analytics 插件许可说明
+
+本插件的技能内容来自 mimocode 内置技能包（`builtin_skills/desktop-1579e7d` 的
+`data-analytics` 技能，仅取四个 workflow）：
+
+- `skills/analyze-data-quality/`、`skills/design-kpis/`、`skills/metric-diagnostics/`、
+  `skills/build-dashboard/`（含 specifications/）：上游作者已于 2026-10-09 给予
+  **书面复制许可**，许可件由项目所有者持有；上游未随包提供 LICENSE 文件。
+
+四个 SKILL.md 在 frontmatter 后带有 `Modified by ZCode:` 边界说明（上游兄弟
+workflow 未随包分发，引用已收口），依据 Apache-2.0 4(b) 的文件内修改声明惯例标注；
+其余文件为原样复制。上游 workflow 自带的 `agents/openai.yaml` 未复制（本仓技能
+加载器无 skill 级 agent 概念）。许可登记见 `third-party/copied-components.json`。

@@ -1,0 +1,739 @@
+/**
+ * 反馈 / 需求 HTTP 路由（FBK）：管理面 `/admin/feedback/*` + 客户端提交面 `/api/v1/feedback/*`。
+ *
+ * 为什么分两个工厂、挂在两处（改错一处不是 401 就是没人能受理）：
+ *  - `createFeedbackAdminRoutes` 由 identity/server.ts 挂在 authed 组**之后**，复用 Bearer 中间件，
+ *    这里只再校验 platform_admin；
+ *  - `createFeedbackPublicRoutes` 必须挂在 authed 组**之前**（identity/routes.ts 的「公开」段）：
+ *    Reactor 用户只有企业账号、**没有官方 zcodejwttoken**，客户端 `getAuthHeaders()` 拿不到可用
+ *    令牌。放鉴权段会让本产品自己的用户全部 401 —— 上报根本进不来。所以这段**不强制 Bearer**：
+ *    带了且能验过就用它填报告人展示名，验不过按匿名 + X-Device-Mid 记录。
+ *
+ * 客户端契约不是自定义的：wire 格式以 `packages/services/src/feedback/feedbackHttpClient.ts` 为准
+ * （ticket_id / content / environment / messages 那套），它还要求 `X-Device-Mid` 头存在，
+ * 且错误响应体带 `msg`（readResponseError 会把它当作用户可见消息）。
+ *
+ * 一期**不支持附件**：客户端上传附件走「OSS 直传凭证」（返回阿里云 policy/签名，字节直传 OSS），
+ * 自建服务端没有这套对象存储。这里回 400 + `attachments_unsupported` 标记，
+ * 客户端据此把"日志没传上去"降级成评论里的一条系统提示，而不是把已建好的工单报成提交失败。
+ */
+import { createHash, randomUUID } from "node:crypto";
+import { createReadStream, createWriteStream, existsSync, mkdirSync } from "node:fs";
+import { rename } from "node:fs/promises";
+import { extname, join } from "node:path";
+import { Readable, Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
+
+import { Hono } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
+
+import { markAdminAudited } from "../audit/adminAudit.js";
+import { recordAdminAction, resolveActorForClaims } from "../audit/repo.js";
+import type { TokenClaims } from "../identity/auth.js";
+import type { IdentityDb } from "../identity/db.js";
+import { findDeptById } from "../identity/depts.js";
+import {
+  appendFeedbackEvent,
+  appendFeedbackMessage,
+  createFeedbackAttachment,
+  createFeedbackTicket,
+  getFeedbackAttachment,
+  getFeedbackTicket,
+  listFeedbackAttachments,
+  listFeedbackComments,
+  listFeedbackEvents,
+  listFeedbackTickets,
+  patchFeedbackTicket,
+  setFeedbackTicketUnread,
+  type FeedbackAttachmentRow,
+  type FeedbackCommentRow,
+  type FeedbackEventRow,
+  type FeedbackTicketRow,
+} from "./repo.js";
+
+type AppEnv = { Variables: { claims: TokenClaims } };
+type Ctx = Context<AppEnv>;
+
+const err = (c: Ctx, status: 400 | 403 | 404 | 409, message: string): Response =>
+  c.json({ error: { code: String(status), message }, msg: message }, status);
+
+/** 与 packages/shared/src/feedback.ts 的 FeedbackTicketStatus 一一对应，改那边先改这里。 */
+export const FEEDBACK_STATUSES = [
+  "已提交",
+  "信息不足",
+  "已采纳",
+  "答复关闭",
+  "已归档",
+  "已拒绝",
+  "开发中",
+  "已解决",
+  "已上线",
+] as const;
+
+/** 与 FeedbackTicketType 一一对应（客户端 content.category）。 */
+export const FEEDBACK_TYPES = ["bug", "usage", "feature", "performance"] as const;
+
+/** 与 FeedbackTicketSeverity 一一对应（客户端 content.severity）。 */
+export const FEEDBACK_SEVERITIES = ["P1-高", "P2-中", "P3-低"] as const;
+
+const iso = (value: Date | null | undefined): string | undefined =>
+  value ? value.toISOString() : undefined;
+
+function readPositiveInt(raw: unknown, fallback: number, max: number): number {
+  const parsed = typeof raw === "number" ? Number.parseInt(String(raw), 10) : Number.parseInt(String(raw ?? ""), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.min(parsed, max);
+}
+
+// ============================================================================
+// 附件（截图 / 诊断日志）：字节直传 —— 客户端 PUT 原始字节 → 落盘 + sha256 → 入库
+//
+// 为什么不用对象存储：客户端原生走的是「OSS 直传凭证」协议，自建端没有那套 OSS；
+// 改成字节直传后复用 updates 模块的成熟做法（原始流 + .part 中转 + 校验和），
+// 内存占用与包体无关，也不引入对象存储的运维与凭证。
+// ============================================================================
+
+/** 附件落盘目录：与更新包同思路走 env + 容器数据卷；不进 PG（日志包可到 GB 级）。 */
+const FEEDBACK_FILE_DIR =
+  process.env["REACTOR_FEEDBACK_FILE_DIR"]?.trim() || join(process.cwd(), "data", "feedback");
+
+const FEEDBACK_ATTACHMENT_KINDS = ["log", "image", "other"] as const;
+type FeedbackAttachmentKindValue = (typeof FEEDBACK_ATTACHMENT_KINDS)[number];
+
+/** 后缀白名单：不是洁癖 —— 任意可执行文件被放进管理台下载目录就是个投递口。 */
+const FEEDBACK_ATTACHMENT_SUFFIXES = [
+  ".zip",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".gif",
+  ".txt",
+  ".log",
+  ".json",
+  ".md",
+  ".pdf",
+  ".csv",
+] as const;
+
+const DEFAULT_MAX_ATTACHMENT_BYTES = 1024 * 1024 * 1024; // 1GB，与客户端日志包上限一致
+
+function readMaxAttachmentBytes(): number {
+  const raw = process.env["REACTOR_FEEDBACK_MAX_BYTES"]?.trim();
+  const parsed = raw ? Number(raw) : Number.NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MAX_ATTACHMENT_BYTES;
+}
+
+function ensureFeedbackDir(): void {
+  if (!existsSync(FEEDBACK_FILE_DIR)) mkdirSync(FEEDBACK_FILE_DIR, { recursive: true });
+}
+
+/** 只留 basename + 白名单后缀：原始名可能带中文、空格甚至路径分隔符，落盘必须先消毒。 */
+function sanitizeAttachmentFileName(raw: string | undefined): string | null {
+  // 客户端把文件名 percent-encode 后放进 `x-file-name`（HTTP 头是 latin1，中文直传会乱码）；
+  // 先还原再取 basename，解不动就按原样处理（兼容不编码的调用方）。
+  let decoded = raw;
+  if (raw) {
+    try {
+      decoded = decodeURIComponent(raw);
+    } catch {
+      decoded = raw;
+    }
+  }
+  const base = (decoded ?? "")
+    .replaceAll("\\", "/")
+    .split("/")
+    .pop()
+    ?.trim();
+  if (!base || base === "." || base === "..") return null;
+  const ext = extname(base).toLowerCase();
+  return (FEEDBACK_ATTACHMENT_SUFFIXES as readonly string[]).includes(ext) ? base : null;
+}
+
+const publicAttachmentUrl = (ticketId: string, attachmentId: number): string =>
+  `${FEEDBACK_TICKET_PATH}/${encodeURIComponent(ticketId)}/attachments/${attachmentId}`;
+
+const adminAttachmentUrl = (ticketId: string, attachmentId: number): string =>
+  `/admin/feedback/tickets/${encodeURIComponent(ticketId)}/attachments/${attachmentId}/download`;
+
+/**
+ * 附件行 → 客户端/管理台 wire 形状。
+ * 字段名对齐客户端 `FeedbackAttachmentResponse`（attachment_id / file_name / size / download_url），
+ * 客户端 `mapAttachment` 才能直接吃。
+ */
+function serializeAttachment(row: FeedbackAttachmentRow, downloadUrl: string) {
+  return {
+    attachment_id: row.id,
+    file_name: row.fileName,
+    // log / image / other：管理台据此区分"诊断日志"与"截图"，客户端按 kind 推断图标
+    kind: row.kind,
+    size: row.sizeBytes,
+    content_type: row.contentType ?? undefined,
+    download_url: downloadUrl,
+    created_at: iso(row.createdAt),
+  };
+}
+
+/** 附件下载：查行 → 校验磁盘存在 → 流式返回（Content-Disposition 走 RFC 5987，中文名不乱码）。 */
+async function sendAttachmentFile(c: Ctx, row: FeedbackAttachmentRow): Promise<Response> {
+  const filePath = join(FEEDBACK_FILE_DIR, row.storedName);
+  if (!existsSync(filePath)) return err(c, 404, "附件文件已不存在");
+  const stream = createReadStream(filePath);
+  return c.body(Readable.toWeb(stream) as unknown as ReadableStream, 200, {
+    "content-type": row.contentType ?? "application/octet-stream",
+    "content-length": String(row.sizeBytes),
+    "x-checksum-sha256": row.sha256,
+    "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(row.fileName)}`,
+  });
+}
+
+/** 客户端 content 块（wire 格式）。 */
+function serializeContent(ticket: FeedbackTicketRow) {
+  return {
+    description: ticket.description,
+    category: ticket.type,
+    function: ticket.module ?? undefined,
+    severity: ticket.severity ?? undefined,
+  };
+}
+
+/** 客户端详情响应：messages 是双向的，用 sender_type 区分谁说的。 */
+function serializeMessages(messages: FeedbackCommentRow[]) {
+  return messages.map((message) => ({
+    message_id: message.messageId,
+    ticket_id: message.ticketId,
+    sender_type: message.senderType,
+    author_display_name: message.authorDisplayName ?? undefined,
+    content: { text: message.body },
+    attachments: [],
+    created_at: iso(message.createdAt),
+  }));
+}
+
+function serializeTicketSummary(ticket: FeedbackTicketRow) {
+  return {
+    ticket_id: ticket.id,
+    device_mid: ticket.deviceMid ?? undefined,
+    title: ticket.title,
+    status: ticket.status,
+    created_at: iso(ticket.createdAt),
+    updated_at: iso(ticket.updatedAt),
+    // 列表项也带 content：客户端 mapTicketSummary 要靠 content.category/severity 还原类型与严重度，
+    // 否则所有工单在用户侧都显示成 bug/无严重度。
+    content: serializeContent(ticket),
+  };
+}
+
+async function serializeTicketDetail(db: IdentityDb, ticket: FeedbackTicketRow) {
+  const [messages, attachments] = await Promise.all([
+    listFeedbackComments(db, ticket.id),
+    listFeedbackAttachments(db, ticket.id),
+  ]);
+  return {
+    ...serializeTicketSummary(ticket),
+    environment: ticket.environment ?? undefined,
+    reporter_display: ticket.reporterDisplay ?? undefined,
+    messages: serializeMessages(messages),
+    attachments: attachments.map((row) =>
+      serializeAttachment(row, publicAttachmentUrl(ticket.id, row.id)),
+    ),
+  };
+}
+
+// ============================================================================
+// 客户端提交面（公开段，Bearer 可选）
+// ============================================================================
+
+/**
+ * 客户端面路径**必须带 `/api/v1` 前缀**：客户端把基址设成 `<origin>/api/v1` 再拼 `/feedback/...`，
+ * 而 identity 这个 Hono 应用没有全局前缀（对比 updates 的 ELECTRON_MANIFEST_PATH 也是全路径）。
+ * 少写前缀的后果不是 404 而是 **401**：路径不匹配任何公开路由，请求就落进后面 `authed.use("*")`
+ * （实测踩过一次；冒烟也改成打这两个常量，避免再漏）。
+ */
+export const FEEDBACK_TICKET_PATH = "/api/v1/feedback/ticket";
+export const FEEDBACK_ATTACHMENT_CREDENTIAL_PATH = "/api/v1/feedback/attachment/upload-credential";
+
+export interface FeedbackPublicRouteDeps {
+  /** 可选身份：带官方/企业令牌时验一下，验不过按匿名处理，不影响提交。 */
+  verifyOptionalToken?: (token: string) => Promise<TokenClaims | null>;
+}
+
+export function createFeedbackPublicRoutes(
+  db: IdentityDb,
+  deps: FeedbackPublicRouteDeps = {},
+): Hono<AppEnv> {
+  const app = new Hono<AppEnv>();
+
+  /** 报告人：能验过令牌就用 claims，否则回退 body.reporter / 空。 */
+  const resolveReporter = async (c: Ctx): Promise<TokenClaims | null> => {
+    const header = c.req.header("authorization");
+    const token = header?.startsWith("Bearer ") ? header.slice(7) : undefined;
+    if (!token || !deps.verifyOptionalToken) return null;
+    try {
+      return await deps.verifyOptionalToken(token);
+    } catch {
+      return null;
+    }
+  };
+
+  app.post(FEEDBACK_TICKET_PATH, async (c) => {
+    const body = (await c.req.json().catch(() => null)) as {
+      title?: string;
+      device_mid?: string;
+      content?: { description?: string; category?: string; function?: string; severity?: string };
+      contact?: string;
+      environment?: Record<string, unknown>;
+    } | null;
+    if (!body) return err(c, 400, "请求体非法");
+
+    const title = body.title?.trim();
+    const description = body.content?.description?.trim();
+    const type = body.content?.category;
+    if (!title) return err(c, 400, "请填写标题");
+    if (!description) return err(c, 400, "请填写问题描述");
+    if (!type || !FEEDBACK_TYPES.includes(type as (typeof FEEDBACK_TYPES)[number])) {
+      return err(c, 400, `type 需为 ${FEEDBACK_TYPES.join(" / ")} 之一`);
+    }
+    const severity = body.content?.severity?.trim();
+    if (severity && !FEEDBACK_SEVERITIES.includes(severity as (typeof FEEDBACK_SEVERITIES)[number])) {
+      return err(c, 400, `severity 需为 ${FEEDBACK_SEVERITIES.join(" / ")} 之一`);
+    }
+
+    const claims = await resolveReporter(c);
+    // 身份只信令牌：客户端自报的姓名/部门一律不采信（否则谁都能冒充田科达提单）。
+    // deptId → departments.path，拿不到（匿名提交或部门已被删）就留空。
+    const dept = claims?.deptId != null ? await findDeptById(db, claims.deptId) : null;
+    // 客户端要求请求头带 X-Device-Mid，但 body.device_mid 才是提交时的权威值（两者同源）。
+    const deviceMid = body.device_mid?.trim() || c.req.header("x-device-mid")?.trim() || null;
+
+    const ticket = await createFeedbackTicket(db, {
+      title,
+      description,
+      type,
+      severity: severity ?? null,
+      module: body.content?.function?.trim() || null,
+      contact: body.contact?.trim() || null,
+      environment: body.environment ?? null,
+      reporterDisplay: claims?.name ?? claims?.sub ?? null,
+      reporterUid: claims?.sub ?? null,
+      reporterDept: dept?.path ?? null,
+      deviceMid,
+      locale: c.req.header("accept-language") ?? null,
+      source: typeof body.environment?.["source"] === "string"
+        ? (body.environment["source"] as string)
+        : null,
+    });
+
+    return c.json(await serializeTicketDetail(db, ticket), 201);
+  });
+
+  app.get(FEEDBACK_TICKET_PATH, async (c) => {
+    const limit = readPositiveInt(c.req.query("limit"), 50, 200);
+    const offset = readPositiveInt(c.req.query("offset"), 1, 100_000) - 1;
+    // mine 只能按设备身份过滤：Reactor 没有"官方账号-工单"归属（见 docs/已完成/已完成-feedback-module.md §6）。
+    const mine = c.req.query("mine");
+    const deviceMid = mine === "1" || mine === "true" ? c.req.header("x-device-mid")?.trim() : undefined;
+    const { tickets } = await listFeedbackTickets(db, {
+      limit,
+      offset,
+      status: c.req.query("status") || undefined,
+      type: c.req.query("type") || undefined,
+      deviceMid: deviceMid || undefined,
+    });
+    return c.json({ items: tickets.map(serializeTicketSummary) });
+  });
+
+  app.get(`${FEEDBACK_TICKET_PATH}/:id`, async (c) => {
+    const ticket = await getFeedbackTicket(db, c.req.param("id"));
+    if (!ticket) return err(c, 404, "工单不存在");
+    return c.json(await serializeTicketDetail(db, ticket));
+  });
+
+  app.post(`${FEEDBACK_TICKET_PATH}/:id/message`, async (c) => {
+    const ticketId = c.req.param("id");
+    const ticket = await getFeedbackTicket(db, ticketId);
+    if (!ticket) return err(c, 404, "工单不存在");
+    const body = (await c.req.json().catch(() => null)) as {
+      content?: { text?: string };
+    } | null;
+    const text = body?.content?.text?.trim();
+    if (!text) return err(c, 400, "消息内容不能为空");
+
+    const claims = await resolveReporter(c);
+    const message = await appendFeedbackMessage(db, {
+      ticketId,
+      body: text,
+      senderType: "user",
+      authorUserId: claims?.sub ?? null,
+      authorDisplayName: claims?.name ?? claims?.sub ?? null,
+    });
+    // 用户补充即"有新动作"：管理台列表靠 unread 标红点。
+    await setFeedbackTicketUnread(db, ticketId, true, { touchActivity: true });
+    await appendFeedbackEvent(db, ticketId, {
+      type: "user_replied",
+      summary: "用户补充了反馈",
+      actorDisplayName: claims?.name ?? claims?.sub ?? null,
+      payload: { message_id: message.messageId },
+    });
+
+    return c.json({
+      message_id: message.messageId,
+      ticket_id: ticketId,
+      sender_type: message.senderType,
+      content: { text: message.body },
+      attachments: [],
+      created_at: iso(message.createdAt),
+    });
+  });
+
+  /**
+   * 附件上传凭证：一期不支持。回 400 + `msg`（客户端 readResponseError 会把它原样当错误文案），
+   * 并带上 `attachments_unsupported` 标记，客户端据此把"日志没传上"降级成评论里的系统提示。
+   */
+  /**
+   * 附件字节直传。文件名走自定义头 `x-file-name`（不用 multipart，省掉整包缓冲），
+   * 边写边算 sha256，`.part` 中转保证"传一半断线"不会留下看起来可用的附件。
+   *
+   * 走这条路径的客户端**已经判定当前是自建服务端**（见 feedbackHttpClient.uploadFile），
+   * 所以下面的 upload-credential 不再是它的必经之路。
+   */
+  app.put(`${FEEDBACK_TICKET_PATH}/:id/attachment`, async (c) => {
+    const ticketId = c.req.param("id");
+    const ticket = await getFeedbackTicket(db, ticketId);
+    if (!ticket) return err(c, 404, "工单不存在");
+
+    const kindRaw = c.req.query("kind")?.trim() || "other";
+    if (!(FEEDBACK_ATTACHMENT_KINDS as readonly string[]).includes(kindRaw)) {
+      return err(c, 400, `kind 需为 ${FEEDBACK_ATTACHMENT_KINDS.join(" / ")} 之一`);
+    }
+    const messageId = c.req.query("message_id")?.trim() || null;
+    if (messageId) {
+      const messageIds = new Set((await listFeedbackComments(db, ticketId)).map((m) => m.messageId));
+      if (!messageIds.has(messageId)) return err(c, 404, "消息不存在，附件无处挂靠");
+    }
+    const fileName = sanitizeAttachmentFileName(c.req.header("x-file-name"));
+    if (!fileName) return err(c, 400, `附件后缀需为 ${FEEDBACK_ATTACHMENT_SUFFIXES.join(" ")}`);
+    const body = c.req.raw.body;
+    if (!body) return err(c, 400, "缺少文件内容");
+
+    ensureFeedbackDir();
+    const storedName = `${randomUUID()}${extname(fileName).toLowerCase()}`;
+    const finalPath = join(FEEDBACK_FILE_DIR, storedName);
+    const partPath = `${finalPath}.part`;
+
+    const hash = createHash("sha256");
+    const maxBytes = readMaxAttachmentBytes();
+    let size = 0;
+    const guard = new Transform({
+      transform(chunk, _encoding, callback) {
+        size += chunk.length;
+        if (size > maxBytes) {
+          callback(new Error(`附件超过上限 ${maxBytes} 字节（REACTOR_FEEDBACK_MAX_BYTES）`));
+          return;
+        }
+        hash.update(chunk);
+        callback(null, chunk);
+      },
+    });
+
+    try {
+      await pipeline(Readable.fromWeb(body), guard, createWriteStream(partPath));
+    } catch (error) {
+      await rename(partPath, `${partPath}.failed`).catch(() => undefined);
+      return err(c, 400, error instanceof Error ? error.message : "附件写入失败");
+    }
+    await rename(partPath, finalPath);
+
+    const attachment = await createFeedbackAttachment(db, {
+      ticketId,
+      messageId,
+      kind: kindRaw as FeedbackAttachmentKindValue,
+      fileName,
+      storedName,
+      sizeBytes: size,
+      sha256: hash.digest("hex"),
+      contentType: c.req.header("content-type") || null,
+    });
+    // 传附件也算"用户的新动作"：红点点亮、活动时间刷新，受理人能立刻看到。
+    await setFeedbackTicketUnread(db, ticketId, true, { touchActivity: true });
+    await appendFeedbackEvent(db, ticketId, {
+      type: "user_replied",
+      summary: `用户上传了附件（${kindRaw}）：${fileName}`,
+      payload: { attachment_id: attachment.id, kind: kindRaw, size: size },
+    });
+
+    return c.json(
+      {
+        attachment_id: attachment.id,
+        ticket_id: ticketId,
+        file_name: attachment.fileName,
+        size: attachment.sizeBytes,
+        sha256: attachment.sha256,
+        created_at: iso(attachment.createdAt),
+      },
+      201,
+    );
+  });
+
+  /** 用户侧回看附件：ticket id + attachment id 都是 UUID/长整型，不可枚举。 */
+  app.get(`${FEEDBACK_TICKET_PATH}/:id/attachments/:aid`, async (c) => {
+    const aid = Number.parseInt(c.req.param("aid"), 10);
+    if (!Number.isFinite(aid)) return err(c, 400, "附件 id 非法");
+    const row = await getFeedbackAttachment(db, c.req.param("id"), aid);
+    if (!row) return err(c, 404, "附件不存在");
+    return sendAttachmentFile(c, row);
+  });
+
+  app.post(FEEDBACK_ATTACHMENT_CREDENTIAL_PATH, (c) => {
+    const message =
+      "attachments_unsupported：OSS 直传凭证仅官方后端提供；自建服务端改走 PUT 字节直传（/api/v1/feedback/ticket/:id/attachment）。";
+    return c.json({ code: 4000, msg: message, detail: message }, 400);
+  });
+
+  return app;
+}
+
+// ============================================================================
+// 管理面（authed 组内，仅 platform_admin）
+// ============================================================================
+
+export function createFeedbackAdminRoutes(db: IdentityDb): Hono<AppEnv> {
+  const app = new Hono<AppEnv>();
+
+  const requireAdmin: MiddlewareHandler<AppEnv> = async (c, next) => {
+    if (c.get("claims")?.role !== "platform_admin") return err(c, 403, "仅平台管理员可操作");
+    await next();
+  };
+  app.use("/admin/feedback", requireAdmin);
+  app.use("/admin/feedback/*", requireAdmin);
+
+  const audit = async (c: Ctx, entry: Parameters<typeof recordAdminAction>[2]): Promise<void> => {
+    // 洞①：先打标再落库——兜底中间件见标即跳过，一个请求只落一条 admin_action。
+    markAdminAudited(c);
+    const claims = c.get("claims");
+    if (!claims?.sub) return;
+    await recordAdminAction(db, await resolveActorForClaims(db, claims), entry);
+  };
+
+  const actorName = (c: Ctx): string | null => {
+    const claims = c.get("claims");
+    return claims?.name ?? claims?.sub ?? null;
+  };
+
+  const serializeAdminSummary = (ticket: FeedbackTicketRow) => ({
+    id: ticket.id,
+    title: ticket.title,
+    type: ticket.type,
+    severity: ticket.severity,
+    module: ticket.module,
+    status: ticket.status,
+    unread: ticket.unread,
+    reporter_display: ticket.reporterDisplay,
+    reporter_uid: ticket.reporterUid,
+    reporter_dept: ticket.reporterDept,
+    device_mid: ticket.deviceMid,
+    assignee_id: ticket.assigneeId,
+    assignee_display: ticket.assigneeDisplay,
+    last_user_activity_at: iso(ticket.lastUserActivityAt),
+    created_at: iso(ticket.createdAt),
+    updated_at: iso(ticket.updatedAt),
+  });
+
+  const serializeAdminMessage = (message: FeedbackCommentRow) => ({
+    id: message.id,
+    message_id: message.messageId,
+    sender_type: message.senderType,
+    author_user_id: message.authorUserId,
+    author_display_name: message.authorDisplayName,
+    body: message.body,
+    is_staff: message.senderType === "staff" || message.senderType === "admin",
+    created_at: iso(message.createdAt),
+  });
+
+  const serializeAdminEvent = (event: FeedbackEventRow) => ({
+    id: event.id,
+    type: event.type,
+    summary: event.summary,
+    actor_display_name: event.actorDisplayName,
+    payload: event.payload,
+    created_at: iso(event.createdAt),
+  });
+
+  app.get("/admin/feedback/tickets", async (c) => {
+    const limit = readPositiveInt(c.req.query("limit"), 50, 200);
+    const offset = readPositiveInt(c.req.query("offset"), 1, 100_000) - 1;
+    const { tickets, total } = await listFeedbackTickets(db, {
+      limit,
+      offset,
+      status: c.req.query("status")?.trim() || undefined,
+      type: c.req.query("type")?.trim() || undefined,
+      severity: c.req.query("severity")?.trim() || undefined,
+      q: c.req.query("q")?.trim() || undefined,
+      unreadOnly: c.req.query("unread") === "1",
+    });
+    return c.json({
+      tickets: tickets.map(serializeAdminSummary),
+      total,
+      limit,
+      offset,
+      // 前端下拉的可选项直接由服务端下发，避免两端各维护一份枚举。
+      statuses: [...FEEDBACK_STATUSES],
+      types: [...FEEDBACK_TYPES],
+    });
+  });
+
+  app.get("/admin/feedback/tickets/:id", async (c) => {
+    const ticket = await getFeedbackTicket(db, c.req.param("id"));
+    if (!ticket) return err(c, 404, "工单不存在");
+    const [messages, events, attachments] = await Promise.all([
+      listFeedbackComments(db, ticket.id),
+      listFeedbackEvents(db, ticket.id),
+      listFeedbackAttachments(db, ticket.id),
+    ]);
+    // 打开详情即视为已读；红点不熄会让受理人反复回来看同一张单。
+    await setFeedbackTicketUnread(db, ticket.id, false);
+    return c.json({
+      ticket: {
+        ...serializeAdminSummary(ticket),
+        unread: false,
+        description: ticket.description,
+        contact: ticket.contact,
+        environment: ticket.environment,
+        locale: ticket.locale,
+        source: ticket.source,
+        messages: messages.map(serializeAdminMessage),
+        events: events.map(serializeAdminEvent),
+        attachments: attachments.map((row) =>
+          serializeAttachment(row, adminAttachmentUrl(ticket.id, row.id)),
+        ),
+      },
+    });
+  });
+
+  app.patch("/admin/feedback/tickets/:id", async (c) => {
+    const ticketId = c.req.param("id");
+    const existing = await getFeedbackTicket(db, ticketId);
+    if (!existing) return err(c, 404, "工单不存在");
+
+    const body = (await c.req.json().catch(() => null)) as {
+      status?: string;
+      severity?: string | null;
+      assignee_id?: string | null;
+      assignee_display?: string | null;
+    } | null;
+    if (!body) return err(c, 400, "请求体非法");
+    if (
+      body.status !== undefined &&
+      !FEEDBACK_STATUSES.includes(body.status as (typeof FEEDBACK_STATUSES)[number])
+    ) {
+      return err(c, 400, `status 需为：${FEEDBACK_STATUSES.join(" / ")}`);
+    }
+    if (
+      body.severity !== undefined &&
+      body.severity !== null &&
+      !FEEDBACK_SEVERITIES.includes(body.severity as (typeof FEEDBACK_SEVERITIES)[number])
+    ) {
+      return err(c, 400, `severity 需为：${FEEDBACK_SEVERITIES.join(" / ")}`);
+    }
+    if (body.status === undefined && body.severity === undefined && body.assignee_id === undefined) {
+      return err(c, 400, "没有需要更新的字段");
+    }
+
+    const name = actorName(c);
+    const { before, after } = await patchFeedbackTicket(db, ticketId, {
+      status: body.status,
+      severity: body.severity,
+      assigneeId: body.assignee_id,
+      assigneeDisplay: body.assignee_display,
+    });
+    if (!after) return err(c, 404, "工单不存在");
+
+    // 事件逐字段写，时间线上才看得出"改了什么"；只写一条笼统的 updated 没有信息量。
+    if (body.status !== undefined && before!.status !== after.status) {
+      await appendFeedbackEvent(db, ticketId, {
+        type: "status_changed",
+        summary: `状态：${before!.status} → ${after.status}`,
+        actorDisplayName: name,
+        payload: { from: before!.status, to: after.status },
+      });
+    }
+    if (
+      body.assignee_id !== undefined &&
+      (before!.assigneeId !== after.assigneeId || before!.assigneeDisplay !== after.assigneeDisplay)
+    ) {
+      await appendFeedbackEvent(db, ticketId, {
+        type: "assignee_changed",
+        summary: `负责人：${before!.assigneeDisplay ?? "未指派"} → ${after.assigneeDisplay ?? "未指派"}`,
+        actorDisplayName: name,
+        payload: { from: before!.assigneeDisplay, to: after.assigneeDisplay },
+      });
+    }
+    if (body.severity !== undefined && before!.severity !== after.severity) {
+      await appendFeedbackEvent(db, ticketId, {
+        type: "status_changed",
+        summary: `严重度：${before!.severity ?? "未定"} → ${after.severity ?? "未定"}`,
+        actorDisplayName: name,
+        payload: { field: "severity", from: before!.severity, to: after.severity },
+      });
+    }
+
+    await audit(c, {
+      op: "feedback.ticket.update",
+      target: `feedback:${ticketId}`,
+      summary: `更新工单「${after.title}」：${[body.status ? `状态=${body.status}` : null, body.severity ? `严重度=${body.severity}` : null, body.assignee_id !== undefined ? `负责人=${after.assigneeDisplay ?? "未指派"}` : null].filter(Boolean).join("、")}`,
+    });
+
+    return c.json({ ticket: serializeAdminSummary(after) });
+  });
+
+  app.post("/admin/feedback/tickets/:id/messages", async (c) => {
+    const ticketId = c.req.param("id");
+    const ticket = await getFeedbackTicket(db, ticketId);
+    if (!ticket) return err(c, 404, "工单不存在");
+    const body = (await c.req.json().catch(() => null)) as { body?: string } | null;
+    const text = body?.body?.trim();
+    if (!text) return err(c, 400, "回复内容不能为空");
+
+    const claims = c.get("claims");
+    const name = actorName(c);
+    const message = await appendFeedbackMessage(db, {
+      ticketId,
+      body: text,
+      senderType: "staff",
+      authorUserId: claims?.sub ?? null,
+      authorDisplayName: name,
+    });
+    await appendFeedbackEvent(db, ticketId, {
+      type: "staff_replied",
+      summary: "客服已回复",
+      actorDisplayName: name,
+      payload: { message_id: message.messageId },
+    });
+    // 管理员回复不是"用户的新动作"，红点保持熄灭；只推进 updated_at。
+    await setFeedbackTicketUnread(db, ticketId, false);
+
+    await audit(c, {
+      op: "feedback.ticket.reply",
+      target: `feedback:${ticketId}`,
+      summary: `回复工单「${ticket.title}」（${text.length} 字）`,
+    });
+
+    return c.json({ message: serializeAdminMessage(message) });
+  });
+
+  /** 管理台下载附件（管理面在鉴权段内，下载也必须带 Bearer）。 */
+  app.get("/admin/feedback/tickets/:id/attachments/:aid/download", async (c) => {
+    const aid = Number.parseInt(c.req.param("aid"), 10);
+    if (!Number.isFinite(aid)) return err(c, 400, "附件 id 非法");
+    const row = await getFeedbackAttachment(db, c.req.param("id"), aid);
+    if (!row) return err(c, 404, "附件不存在");
+    await audit(c, {
+      op: "feedback.attachment.download",
+      target: `feedback:${c.req.param("id")}/${aid}`,
+      summary: `下载附件「${row.fileName}」`,
+    });
+    return sendAttachmentFile(c, row);
+  });
+
+  return app;
+}

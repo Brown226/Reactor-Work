@@ -1,0 +1,378 @@
+// @ts-nocheck —— 中间态：取数层/零碎件走 kb-shims（@buildingai/stores, @/components/image-preview）。
+// 真取数层接线见 docs/实施计划/知识库前端-移植清单-v1.md §8 第 3 步（KB）与
+// docs/实施计划/管理端BuildingAI移植-台账-v1.md（其余页面）；替换后删掉本行。
+/**
+ * 移植自 BuildingAI-26.1.2：packages/@buildingai/web/ui/src/../../../../client/src/components/ask-assistant-ui/chat.tsx
+ * 许可：Apache-2.0（保留出处；改动逐处见 docs/实施计划/知识库前端-移植清单-v1.md）
+ * 机械变换：`@/x` 与 `@buildingai/ui/x` → 相对路径；上游取数层/零碎件 → `kb-shims/`（见文件头 @ts-nocheck 注）；其余原文不改。
+ */
+import { useAuthStore, useConfigStore } from "../../kb-shims/ui";
+import type { PromptInputMessage } from "../ui/components/ai-elements/prompt-input";
+import { EditorContentRenderer } from "../../kb-shims/ui";
+import {
+  InfiniteScrollTop,
+  InfiniteScrollTopScrollButton,
+  useInfiniteScrollTopContext,
+} from "../ui/components/infinite-scroll-top";
+import { Avatar, AvatarImage } from "../ui/components/ui/avatar";
+import { Button } from "../ui/components/ui/button";
+import { SidebarTrigger } from "../ui/components/ui/sidebar";
+import { cn } from "../ui/lib/utils";
+import { ShareIcon } from "lucide-react";
+import type { FormEvent } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
+
+import { useImagePreview } from "../../kb-shims/ui";
+
+import { PromptInput } from "./components/input/prompt-input";
+import { Suggestions } from "./components/input/suggestions";
+import { MessageItem } from "./components/message/message-item";
+import { ModelSelector } from "./components/model-selector";
+import { useAssistantContext } from "./context";
+
+export interface ChatProps {
+  title?: string;
+  onShare?: () => void;
+  /** 欢迎标题（纯文本） */
+  welcomeTitle?: string;
+  /** 欢迎描述（富文本 JSON 字符串，由 EditorContentRenderer 渲染） */
+  welcomeDescription?: string;
+  /** 页脚文案 */
+  footerText?: string;
+}
+
+const ChatHeader = memo(function ChatHeader({
+  title,
+  models,
+  selectedModelId,
+  onSelectModel,
+  onShare,
+}: {
+  title?: string;
+  models: { id: string; name: string; chef: string; chefSlug: string; providers: string[] }[];
+  selectedModelId: string;
+  onSelectModel: (id: string) => void;
+  onShare?: () => void;
+}) {
+  const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
+
+  return (
+    <header className="bg-background relative flex flex-row-reverse items-center justify-between px-4 py-2 md:flex-row">
+      <div className="flex shrink-0 items-center gap-2">
+        <ModelSelector
+          models={models}
+          onModelChange={onSelectModel}
+          onOpenChange={setModelSelectorOpen}
+          open={modelSelectorOpen}
+          selectedModelId={selectedModelId}
+        />
+      </div>
+
+      {title && (
+        <div className="flex items-center gap-2">
+          <SidebarTrigger className="md:hidden" />
+          <div className="line-clamp-1 md:absolute md:left-1/2 md:-translate-x-1/2">
+            <h1 className="text-base leading-none font-semibold">{title}</h1>
+          </div>
+        </div>
+      )}
+
+      {onShare && (
+        <Button onClick={onShare} size="icon-sm" variant="ghost">
+          <ShareIcon className="size-4" />
+          <span className="sr-only">分享</span>
+        </Button>
+      )}
+    </header>
+  );
+});
+
+/**
+ * 解析欢迎描述为 Plate 富文本或纯文本
+ * 兼容 JSON 节点数组与纯文本
+ */
+function parseWelcomeDescription(
+  raw?: string,
+): { type: "rich"; value: unknown[] } | { type: "text"; value: string } | null {
+  if (!raw || !raw.trim()) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) return { type: "rich", value: parsed };
+  } catch {
+    /* 非 JSON，按纯文本处理 */
+  }
+  return { type: "text", value: raw };
+}
+
+const WelcomeMessage = memo(function WelcomeMessage({
+  welcomeTitle,
+  welcomeDescription,
+}: {
+  welcomeTitle?: string;
+  welcomeDescription?: string;
+}) {
+  const descContent = useMemo(
+    () => parseWelcomeDescription(welcomeDescription),
+    [welcomeDescription],
+  );
+
+  return (
+    <div className="flex flex-1 items-center justify-center py-4">
+      <div className="text-center">
+        <h2 className="text-2xl font-semibold">{welcomeTitle || "欢迎使用 AI 助手"}</h2>
+        {descContent?.type === "rich" ? (
+          <div className="mt-2">
+            <EditorContentRenderer
+              value={descContent.value as Parameters<typeof EditorContentRenderer>[0]["value"]}
+            />
+          </div>
+        ) : descContent?.type === "text" ? (
+          <p className="text-muted-foreground mt-2">{descContent.value}</p>
+        ) : (
+          <p className="text-muted-foreground mt-2">开始对话，或者选择一个推荐问题</p>
+        )}
+      </div>
+    </div>
+  );
+});
+
+const LoadingIndicator = memo(function LoadingIndicator() {
+  return (
+    <div className="flex flex-1 items-center justify-center py-4">
+      <div className="text-center">
+        <p className="text-muted-foreground">加载中...</p>
+      </div>
+    </div>
+  );
+});
+
+const MessageList = memo(function MessageList() {
+  useImagePreview();
+
+  const {
+    displayMessages,
+    streamingMessageId,
+    liked,
+    disliked,
+    onLike,
+    onDislike,
+    onRegenerate,
+    onEditMessage,
+    onSwitchBranch,
+    addToolApprovalResponse,
+  } = useAssistantContext();
+
+  return (
+    <>
+      {displayMessages.map((displayMsg) => (
+        <MessageItem
+          key={displayMsg.id}
+          displayMessage={displayMsg}
+          isStreaming={streamingMessageId === displayMsg.id}
+          liked={liked[displayMsg.id]}
+          disliked={disliked[displayMsg.id]}
+          onLike={onLike}
+          onDislike={onDislike}
+          onRegenerate={onRegenerate}
+          onEditMessage={onEditMessage}
+          onSwitchBranch={onSwitchBranch}
+          addToolApprovalResponse={addToolApprovalResponse}
+        />
+      ))}
+    </>
+  );
+});
+
+const InputArea = memo(function InputArea({
+  hasMessages,
+  footerText,
+}: {
+  hasMessages: boolean;
+  footerText?: string;
+}) {
+  const { websiteConfig } = useConfigStore((state) => state.config);
+  const { suggestions, status, textareaRef, isLoading, onSend, onStop, selectedModelId } =
+    useAssistantContext();
+  const { id } = useParams<{ id: string }>();
+  const { isLogin } = useAuthStore((state) => state.authActions);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { isAtBottom, scrollToBottom } = useInfiniteScrollTopContext();
+
+  const handleSubmit = useCallback(
+    async (message: PromptInputMessage, _event: FormEvent<HTMLFormElement>) => {
+      if (!selectedModelId) {
+        toast.warning("请先选择模型");
+        throw new Error("No model selected");
+      }
+      const text = message.text?.trim();
+      if (text || (message.files && message.files.length > 0)) {
+        onSend(text || "", message.files);
+        if (!isAtBottom) {
+          void scrollToBottom();
+        }
+      }
+    },
+    [isAtBottom, onSend, scrollToBottom, selectedModelId],
+  );
+
+  const handleSuggestionClick = useCallback(
+    (suggestion: { id: string; text: string }) => {
+      onSend(suggestion.text);
+      if (!isAtBottom) {
+        void scrollToBottom();
+      }
+    },
+    [isAtBottom, onSend, scrollToBottom],
+  );
+
+  const handleInputFocus = useCallback(() => {
+    if (isLogin()) {
+      return;
+    }
+    const redirect = encodeURIComponent(location.pathname + location.search);
+    navigate(`/login?redirect=${redirect}`, {
+      replace: true,
+      state: { redirect: location.pathname },
+    });
+  }, [isLogin, location.pathname, location.search, navigate]);
+
+  return (
+    <div className={cn("sticky z-10", id ? "bottom-13" : "bottom-0")}>
+      <InfiniteScrollTopScrollButton className="-top-12 z-20" />
+      <div className="bg-background mx-auto w-full max-w-3xl rounded-t-lg">
+        {!hasMessages && suggestions.length > 0 && !isLoading && (
+          <Suggestions suggestions={suggestions} onSuggestionClick={handleSuggestionClick} />
+        )}
+        <PromptInput
+          textareaRef={textareaRef}
+          status={status}
+          onSubmit={handleSubmit}
+          onStop={onStop}
+          onTextareaFocus={handleInputFocus}
+          globalDrop
+          multiple
+        />
+      </div>
+      <div className="text-muted-foreground bg-background py-1.5 text-center text-xs">
+        <span>{footerText || "内容由 AI 生成，请仔细甄别"}</span>
+        <div className="flex items-center justify-center gap-1">
+          <a
+            href={websiteConfig?.copyright.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary flex items-center justify-center gap-1 transition-colors"
+          >
+            {websiteConfig?.copyright.iconUrl && (
+              <Avatar className="size-4">
+                <AvatarImage
+                  src={websiteConfig?.copyright.iconUrl}
+                  alt={websiteConfig?.copyright.displayName}
+                />
+              </Avatar>
+            )}
+            <span>{websiteConfig?.copyright.displayName}</span>
+          </a>
+          {(websiteConfig?.copyright.displayName || websiteConfig?.copyright.iconUrl) &&
+            (websiteConfig?.copyright.copyrightText || websiteConfig?.copyright.copyrightBrand) && (
+              <span>|</span>
+            )}
+          <span className="space-x-1">
+            <span>{websiteConfig?.copyright.copyrightText}</span>
+            <a
+              className="text-primary font-bold"
+              href={websiteConfig?.copyright.copyrightUrl}
+              target="_blank"
+            >
+              {websiteConfig?.copyright.copyrightBrand}
+            </a>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+export const Chat = memo(function Chat({
+  title,
+  onShare,
+  welcomeTitle,
+  welcomeDescription,
+  footerText,
+}: ChatProps) {
+  const {
+    displayMessages,
+    models,
+    selectedModelId,
+    isLoading,
+    status: chatStatus,
+    onSelectModel,
+    isLoadingMoreMessages,
+    hasMoreMessages,
+    onLoadMoreMessages,
+  } = useAssistantContext();
+  const { id } = useParams<{ id: string }>();
+
+  const [smooth, setSmooth] = useState(false);
+  const hasMessages = displayMessages.length > 0;
+
+  useEffect(() => {
+    if ((hasMessages && !isLoading) || !id) {
+      const timer = setTimeout(() => setSmooth(true), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, hasMessages, id]);
+
+  const renderContent = () => {
+    if (id && !hasMessages && isLoading) {
+      return <LoadingIndicator />;
+    }
+
+    if (hasMessages) {
+      return <MessageList />;
+    }
+
+    if (!id) {
+      return <WelcomeMessage welcomeTitle={welcomeTitle} welcomeDescription={welcomeDescription} />;
+    }
+
+    return null;
+  };
+
+  return (
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <ChatHeader
+        title={title}
+        models={models}
+        selectedModelId={selectedModelId}
+        onSelectModel={onSelectModel}
+        onShare={onShare}
+      />
+
+      <InfiniteScrollTop
+        className={cn("chat-scroll flex-1", "contain-[layout_style_paint]")}
+        prependKey={displayMessages[0]?.id ?? null}
+        hasMore={hasMoreMessages}
+        isLoadingMore={isLoadingMoreMessages}
+        onLoadMore={id ? onLoadMoreMessages : undefined}
+        hideScrollToBottomButton
+        forceFullHeight={!id && !hasMessages}
+        initial={chatStatus === "streaming" ? "smooth" : "instant"}
+        resize={chatStatus === "streaming" ? "smooth" : "instant"}
+      >
+        <div
+          className={cn(
+            "mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 pb-10",
+            "transition-opacity duration-200 ease-out",
+            smooth ? "opacity-100" : "opacity-0",
+          )}
+        >
+          {renderContent()}
+        </div>
+        <InputArea hasMessages={hasMessages} footerText={footerText} />
+      </InfiniteScrollTop>
+    </div>
+  );
+});

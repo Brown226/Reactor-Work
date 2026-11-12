@@ -1,0 +1,15 @@
+{
+  "name": "file-tools",
+  "version": "0.1.0",
+  "description": "Desktop local document parsing and PDF research for the Agent: parse_document (Office/PDF to Markdown), docx_patch (surgical text fixes inside an existing .docx, formatting preserved), pdf_structure / pdf_citations / pdf_page_text / pdf_region_text / pdf_formula_candidates (PDF structure, references, page and region text, formula candidates). OCR lives in ocr-tools, DWG in dwg-tools. All engines ship inside the installer and work offline.",
+  "author": { "name": "Z.ai" },
+  "license": "MIT",
+  "mcpServers": {
+    "file-tools": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["dist/mcp/server.js"],
+      "timeoutMs": 600000
+    }
+  }
+}

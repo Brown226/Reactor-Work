@@ -1,0 +1,43 @@
+/**
+ * 移植自 BuildingAI-26.1.2：packages/@buildingai/web/ui/src/styles/theme.css
+ * 许可：Apache-2.0（保留出处；改动逐处见 docs/实施计划/知识库前端-移植清单-v1.md）
+ * 机械变换：`@/x` 与 `@buildingai/ui/x` → 相对路径；上游取数层/零碎件 → `kb-shims/`（见文件头 @ts-nocheck 注）；其余原文不改。
+ */
+/* 机械变换：把上游 theme.css 的**取值**映射到本仓 admin 的变量名（详见移植清单 §2）。
+ * 不经上游映射层 shadcn/tailwind.css —— 那会与本仓 admin 自己的 @theme 冲突（@theme 是全局的、不能作用域）。 */
+/* 选择器写成 `.reactor-kb-scope.reactor-kb-scope`（重复类名）是为了**提特异性**：
+ * 本仓 :root / [data-theme="dark"] 同为 (0,1,0)，只靠加载顺序不可靠。 */
+
+.reactor-kb-scope.reactor-kb-scope {
+  --canvas: oklch(1 0 0);
+  --surface: oklch(1 0 0);
+  --surface-2: oklch(0.97 0 0);
+  --surface-hover: oklch(0.97 0 0);
+  --ink: oklch(0.145 0 0);
+  --ink-2: oklch(0.556 0 0);
+  --hairline: oklch(0.922 0 0);
+  --hairline-strong: oklch(0.922 0 0);
+  --accent: oklch(0.205 0 0);
+  --accent-ink: oklch(0.985 0 0);
+  --accent-soft: oklch(0.97 0 0);
+  --danger: oklch(0.58 0.22 27);
+  --r-lg: 0.625rem;
+  --r-sm: calc(0.625rem - 2px);
+}
+
+[data-theme="dark"] .reactor-kb-scope.reactor-kb-scope {
+  --canvas: oklch(0.145 0 0);
+  --surface: oklch(0.205 0 0);
+  --surface-2: oklch(0.269 0 0);
+  --surface-hover: oklch(0.269 0 0);
+  --ink: oklch(0.985 0 0);
+  --ink-2: oklch(0.708 0 0);
+  --hairline: oklch(1 0 0 / 10%);
+  --hairline-strong: oklch(1 0 0 / 15%);
+  --accent: oklch(0.87 0 0);
+  --accent-ink: oklch(0.205 0 0);
+  --accent-soft: oklch(0.371 0 0);
+  --danger: oklch(0.704 0.191 22.216);
+  --r-lg: 0.5rem;
+  --r-sm: calc(0.5rem - 2px);
+}

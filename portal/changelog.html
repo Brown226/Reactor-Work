@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>更新日志 · Reactor（数智堆脑）</title>
+<meta name="description" content="Reactor（数智堆脑）更新日志：版本变更、能力合入与行为调整，依据本仓源码与 package.json 维护。" />
+<link rel="icon" type="image/png" href="assets/icon.png" />
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" href="index.html"><img class="brand-logo" src="assets/reactor-logo-white.png" alt="Reactor 数智堆脑" /></a>
+    <nav class="topbar-nav">
+      <a href="index.html#features">核心能力</a>
+      <a href="index.html#native">本仓特有</a>
+      <a href="changelog.html" aria-current="page">更新日志</a>
+      <a class="nav-cta" href="manual/index.html">产品说明书</a>
+    </nav>
+  </div>
+</header>
+
+<main class="log-wrap">
+  <div class="log-head">
+    <h1>更新日志</h1>
+    <p>记录版本变更、能力合入与行为调整。本页自 <b>v1.0.0</b> 起维护，更早版本未记录；行为口径以当前检出的源码为准。</p>
+    <p><b>v1.0.0 基线之后，本页由内网服务端下发同步</b>：管理员在「系统 → 软件更新」发版时填写的更新说明，会随发布清单同步到这里，桌面端「帮助 → 检查更新」里看到的发布说明与之一致。完整链路见<a href="manual/software-update.html">软件包分发与自动更新</a>。</p>
+  </div>
+
+  <div class="log-rule"></div>
+
+  <!-- 服务端已发布版本：由下方脚本拉取 /api/v1/releases/changelog 动态注入。
+       脚本不可用（离线打开/反代未配置）时此容器为空，页面仍显示 v1.0.0 基线，不破坏可用性。 -->
+  <div id="log-from-server"></div>
+
+  <section class="log-entry" id="log-baseline">
+    <div class="log-ver-row">
+      <span class="log-ver">v1.0.0</span>
+      <span class="log-latest">基线版本</span>
+      <span class="log-when">版本号取自仓库根 package.json · 基线条目</span>
+    </div>
+    <h2>当前版本基线</h2>
+    <ul>
+      <li><b>本仓特有能力</b>：界面模式（编程 / 办公 / 审查）、文件审查板块、内网办公四件套、模型治理与开发者模式、内网服务端（身份底座 + 模型网关 + 管理台 API）。</li>
+      <li><b>多端同一运行时</b>：桌面端、Web 端与终端共用同一套会话运行时。</li>
+      <li><b>任务体系</b>：目标模式（目标管理 / 完成校验 / 状态恢复）、定时任务、闲时任务、编辑历史对话、会话分叉、辅助对话。</li>
+      <li><b>扩展体系</b>：插件、技能、MCP、命令、Hooks。</li>
+      <li><b>内网分发</b>：<code>dist/zcode</code> 发行包（TUI + Web + Agent）与 <code>install.sh</code>，须托管到内网可访问地址安装。</li>
+      <li>各能力的详细行为见<a href="manual/index.html">产品说明书</a>对应页面。</li>
+    </ul>
+  </section>
+
+  <p class="log-empty-note">更早版本未在此记录。发版时在管理台「软件更新」登记并上线版本、填写更新说明，本页会自动同步；维护规则见本目录 <code>README.md</code>。</p>
+</main>
+
+<script>
+  // 从服务端拉已发布版本，追加到 v1.0.0 基线之上。
+  // 纯渐进增强：拿不到（门户未反代 / 服务端离线 / 库内暂无记录）就静默保留基线，不报错、不留占位。
+  (function () {
+    var host = document.getElementById("log-from-server");
+    if (!host) return;
+
+    function fmtDate(iso) {
+      if (!iso) return "";
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return "";
+      var p = function (n) { return String(n).padStart(2, "0"); };
+      return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+    }
+
+    // 更新说明按 Markdown 写（与桌面端发布说明同源），这里做**零依赖**的子集渲染：
+    // 标题 / 有序与无序列表 / 粗体 / 斜体 / 行内代码 / 代码块 / 链接 / 引用 / 分割线。
+    //
+    // 反例（上一版）：逐行把非空行都塞进 <li>、只剥掉 "- " 前缀 ——
+    // "## 标题" 和 "**粗体**" 会原样显示，看起来就是"没做转换"。
+    //
+    // 安全：全部用 createElement + textContent 构建，不拼 HTML、不用 innerHTML；
+    // 链接只认 http(s)，其他协议在正则层面就不匹配，会降级成纯文本。
+    var INLINE_MD = /\[([^\]]+)\]\((https?:[^\s)]+)\)|\*\*([^*]+)\*\*|`([^`]+)`|\*([^*]+)\*/g;
+
+    function inlineMd(text) {
+      var frag = document.createDocumentFragment();
+      var last = 0;
+      var m;
+      INLINE_MD.lastIndex = 0;
+      while ((m = INLINE_MD.exec(text)) !== null) {
+        if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        if (m[1] !== undefined) {
+          var a = document.createElement("a");
+          a.textContent = m[1];
+          a.href = m[2];
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          frag.appendChild(a);
+        } else if (m[3] !== undefined) {
+          var strong = document.createElement("strong");
+          strong.textContent = m[3];
+          frag.appendChild(strong);
+        } else if (m[4] !== undefined) {
+          var code = document.createElement("code");
+          code.textContent = m[4];
+          frag.appendChild(code);
+        } else {
+          var em = document.createElement("em");
+          em.textContent = m[5];
+          frag.appendChild(em);
+        }
+        last = INLINE_MD.lastIndex;
+      }
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      return frag;
+    }
+
+    function renderNotes(md) {
+      var box = document.createElement("div");
+      box.className = "log-notes";
+      var lines = String(md || "").split(/\r?\n/);
+      var para = [];
+      var list = null;
+      var listTag = "";
+      var inCode = false;
+      var codeLines = [];
+
+      function flushPara() {
+        if (para.length === 0) return;
+        var p = document.createElement("p");
+        p.appendChild(inlineMd(para.join(" ")));
+        box.appendChild(p);
+        para = [];
+      }
+      function flushList() {
+        if (list === null) return;
+        box.appendChild(list);
+        list = null;
+        listTag = "";
+      }
+
+      for (var i = 0; i < lines.length; i += 1) {
+        var raw = lines[i];
+        var line = raw.trim();
+
+        if (inCode) {
+          if (line.indexOf("```") === 0) {
+            var pre = document.createElement("pre");
+            var codeEl = document.createElement("code");
+            codeEl.textContent = codeLines.join("\n");
+            pre.appendChild(codeEl);
+            box.appendChild(pre);
+            inCode = false;
+            codeLines = [];
+          } else {
+            codeLines.push(raw);
+          }
+          continue;
+        }
+        if (line.indexOf("```") === 0) {
+          flushPara();
+          flushList();
+          inCode = true;
+          continue;
+        }
+        if (!line) {
+          flushPara();
+          flushList();
+          continue;
+        }
+
+        var heading = /^(#{1,6})\s+(.*)$/.exec(line);
+        if (heading) {
+          flushPara();
+          flushList();
+          // 页面自己的标题是 h1「更新日志」，条目内从 h2 起步，不出现第二个 h1。
+          var level = Math.min(6, heading[1].length + 1);
+          var h = document.createElement("h" + level);
+          h.appendChild(inlineMd(heading[2]));
+          box.appendChild(h);
+          continue;
+        }
+
+        if (/^(-{3,}|\*{3,}|_{3,})$/.test(line)) {
+          flushPara();
+          flushList();
+          box.appendChild(document.createElement("hr"));
+          continue;
+        }
+
+        var quote = /^>\s?(.*)$/.exec(line);
+        if (quote) {
+          flushPara();
+          flushList();
+          var bq = document.createElement("blockquote");
+          bq.appendChild(inlineMd(quote[1]));
+          box.appendChild(bq);
+          continue;
+        }
+
+        var ul = /^[-*+]\s+(.*)$/.exec(line);
+        var ol = /^(\d+)[.)]\s+(.*)$/.exec(line);
+        if (ul || ol) {
+          flushPara();
+          var tag = ul ? "ul" : "ol";
+          if (listTag !== tag) {
+            flushList();
+            listTag = tag;
+            list = document.createElement(tag);
+          }
+          var li = document.createElement("li");
+          li.appendChild(inlineMd(ul ? ul[1] : ol[2]));
+          list.appendChild(li);
+          continue;
+        }
+
+        flushList();
+        para.push(line);
+      }
+
+      if (inCode && codeLines.length > 0) {
+        // 未闭合的代码块也要把内容显示出来，不能吞掉。
+        var preTail = document.createElement("pre");
+        var codeTail = document.createElement("code");
+        codeTail.textContent = codeLines.join("\n");
+        preTail.appendChild(codeTail);
+        box.appendChild(preTail);
+      }
+      flushPara();
+      flushList();
+      return box;
+    }
+
+    fetch("/api/v1/releases/changelog", { headers: { accept: "application/json" } })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (data) {
+        var rows = data && data.releases ? data.releases : [];
+        // 基线条目已静态展示 v1.0.0，这里跳过它，避免重复。
+        rows = rows.filter(function (r) { return r.version !== "1.0.0"; });
+        if (rows.length === 0) return;
+
+        rows.forEach(function (row) {
+          var sec = document.createElement("section");
+          sec.className = "log-entry";
+
+          var vrow = document.createElement("div");
+          vrow.className = "log-ver-row";
+          var ver = document.createElement("span");
+          ver.className = "log-ver";
+          ver.textContent = "v" + row.version;
+          vrow.appendChild(ver);
+          if (row.channel === "preview") {
+            // 用灰色小字而非绿色胶囊：.log-latest 是"当前版本"专用标记，
+            // 拿它标预览版会让读者误以为该版本是当前推荐版本。
+            var pre = document.createElement("span");
+            pre.className = "log-when";
+            pre.textContent = "预览通道";
+            vrow.appendChild(pre);
+          }
+          if (row.publishedAt) {
+            var when = document.createElement("span");
+            when.className = "log-when";
+            when.textContent = "上线 " + fmtDate(row.publishedAt);
+            vrow.appendChild(when);
+          }
+          sec.appendChild(vrow);
+
+          var h2 = document.createElement("h2");
+          h2.textContent = row.releaseName || "Reactor " + row.version;
+          sec.appendChild(h2);
+          sec.appendChild(renderNotes(row.releaseNotesZh || row.releaseNotesEn || ""));
+          host.appendChild(sec);
+        });
+      })
+      .catch(function () { /* 渐进增强失败：静默保留静态基线 */ });
+  })();
+</script>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span class="brand"><img class="brand-logo" src="assets/reactor-logo-white.png" alt="Reactor 数智堆脑" /></span>
+    <span>依据当前检出的源码整理</span>
+    <div class="footer-links">
+      <a href="index.html">官网首页</a>
+      <a href="changelog.html">更新日志</a>
+      <a href="manual/index.html">产品说明书</a>
+      <a href="manual/feedback.html">反馈与支持</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

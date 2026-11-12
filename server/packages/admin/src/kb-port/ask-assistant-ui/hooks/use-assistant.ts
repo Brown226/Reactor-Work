@@ -1,0 +1,309 @@
+// @ts-nocheck —— 中间态：取数层/零碎件走 kb-shims（@buildingai/services/web, @buildingai/stores）。
+// 真取数层接线见 docs/实施计划/知识库前端-移植清单-v1.md §8 第 3 步（KB）与
+// docs/实施计划/管理端BuildingAI移植-台账-v1.md（其余页面）；替换后删掉本行。
+/**
+ * 移植自 BuildingAI-26.1.2：packages/@buildingai/web/ui/src/../../../../client/src/components/ask-assistant-ui/hooks/use-assistant.ts
+ * 许可：Apache-2.0（保留出处；改动逐处见 docs/实施计划/知识库前端-移植清单-v1.md）
+ * 机械变换：`@/x` 与 `@buildingai/ui/x` → 相对路径；上游取数层/零碎件 → `kb-shims/`（见文件头 @ts-nocheck 注）；其余原文不改。
+ */
+import type { AiProvider } from "../../../kb-shims/console-services";
+import {
+  getLocalStorage,
+  safeJsonParse,
+  safeJsonStringify,
+  useAssistantStore,
+} from "../../../kb-shims/ui";
+import type { UIMessage } from "ai";
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import type { RawMessageRecord } from "../libs/message-repository";
+import { convertProvidersToModels } from "../libs/provider-converter";
+import type { AssistantContextValue, DisplayMessage, Suggestion } from "../types";
+import { useChatStream } from "./use-chat-stream";
+import { useFeatureFlags } from "./use-feature-flags";
+import { useFeedback } from "./use-feedback";
+import { useMessageRepository } from "./use-message-repository";
+import { useMessagesPaging } from "./use-messages-paging";
+
+export interface UseAssistantOptions {
+  providers: AiProvider[];
+  suggestions?: Suggestion[];
+  enableThinking?: boolean;
+}
+
+function buildMessageRecords(
+  messages: UIMessage[],
+  existingParentMap?: Map<string, string | null>,
+): RawMessageRecord[] {
+  const records: RawMessageRecord[] = [];
+  let lastAssistantId: string | null = null;
+  let lastUserId: string | null = null;
+
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i];
+    const metadataParentId = (msg.metadata as { parentId?: string } | undefined)?.parentId;
+    const metadataSequence = (msg.metadata as { sequence?: number } | undefined)?.sequence;
+    const sequence = typeof metadataSequence === "number" ? metadataSequence : i;
+
+    if (metadataParentId !== undefined) {
+      records.push({ id: msg.id, parentId: metadataParentId || null, sequence, message: msg });
+      if (msg.role === "user") lastUserId = msg.id;
+      else if (msg.role === "assistant") lastAssistantId = msg.id;
+      continue;
+    }
+
+    if (existingParentMap?.has(msg.id)) {
+      records.push({
+        id: msg.id,
+        parentId: existingParentMap.get(msg.id),
+        sequence,
+        message: msg,
+      });
+      if (msg.role === "user") lastUserId = msg.id;
+      else if (msg.role === "assistant") lastAssistantId = msg.id;
+      continue;
+    }
+
+    let parentId: string | null = null;
+    if (msg.role === "user") {
+      parentId = lastAssistantId;
+      lastUserId = msg.id;
+    } else if (msg.role === "assistant") {
+      parentId = lastUserId;
+      lastAssistantId = msg.id;
+    }
+
+    records.push({ id: msg.id, parentId, sequence, message: msg });
+  }
+
+  return records;
+}
+
+function sliceMessagesUntil(messages: UIMessage[], parentId: string | null): UIMessage[] {
+  if (parentId === null) return [];
+  const idx = messages.findIndex((m) => m.id === parentId);
+  return idx === -1 ? messages : messages.slice(0, idx + 1);
+}
+
+export function useAssistant(options: UseAssistantOptions): AssistantContextValue {
+  const { providers, suggestions = [], enableThinking: initialEnableThinking } = options;
+
+  const models = useMemo(() => {
+    return convertProvidersToModels(providers);
+  }, [providers]);
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const MCP_SERVERS_STORAGE_KEY = "__selected_mcp_server_ids__";
+
+  const selectedModelId = useAssistantStore((s) => s.selectedModelId);
+  const setSelectedModelId = useAssistantStore((s) => s.setSelectedModelId);
+
+  const storage = typeof window !== "undefined" ? getLocalStorage() : null;
+  const [selectedMcpServerIds, setSelectedMcpServerIds] = useState<string[]>(() => {
+    if (!storage) return [];
+    const cached = safeJsonParse<string[]>(storage.getItem(MCP_SERVERS_STORAGE_KEY));
+    return Array.isArray(cached) ? cached : [];
+  });
+
+  const { feature, setFeatureFlag, resetFeatureFlags } = useFeatureFlags(initialEnableThinking);
+
+  useEffect(() => {
+    if (models.length === 0) return;
+
+    const isValidModel = models.some((model) => model.id === selectedModelId);
+    const modelId = isValidModel ? selectedModelId : models[0].id;
+
+    if (modelId !== selectedModelId || !selectedModelId) {
+      setSelectedModelId(modelId);
+    }
+  }, [models, selectedModelId, setSelectedModelId]);
+
+  const handleSelectModel = useCallback(
+    (modelId: string) => {
+      setSelectedModelId(modelId);
+      resetFeatureFlags();
+    },
+    [setSelectedModelId, resetFeatureFlags],
+  );
+
+  const handleSelectMcpServers = useCallback(
+    (ids: string[]) => {
+      setSelectedMcpServerIds(ids);
+      storage?.setItem(MCP_SERVERS_STORAGE_KEY, safeJsonStringify(ids));
+    },
+    [storage],
+  );
+
+  const {
+    messages: repositoryMessages,
+    displayMessages,
+    importIncremental,
+    importMessages,
+    resetLastSeenIds,
+    switchToBranch,
+    clear: clearRepository,
+    getParentId,
+  } = useMessageRepository();
+
+  const parentMapRef = useRef<Map<string, string | null>>(new Map());
+  const isFirstLoadRef = useRef(true);
+  const editInProgressRef = useRef(false);
+
+  const lastMessageDbIdRef = useRef<string | null>(null);
+  const pendingParentIdRef = useRef<string | null>(null);
+  const conversationIdRef = useRef<string | undefined>(undefined);
+  const prevThreadIdRef = useRef<string | undefined>(undefined);
+
+  const {
+    currentThreadId,
+    messages: streamMessages,
+    setMessages,
+    status,
+    streamingMessageId,
+    send,
+    stop,
+    regenerate,
+    addToolApprovalResponse,
+    getDbMessageId,
+  } = useChatStream({
+    modelId: selectedModelId,
+    mcpServerIds: selectedMcpServerIds,
+    feature: Object.fromEntries(
+      Object.entries(feature).filter(([_, value]) => value !== undefined),
+    ) as Record<string, boolean>,
+    lastMessageDbIdRef,
+    pendingParentIdRef,
+    conversationIdRef,
+    prevThreadIdRef,
+  });
+  const streamMessagesRef = useRef<UIMessage[]>([]);
+  streamMessagesRef.current = streamMessages;
+
+  const { liked, disliked, onLike, onDislike } = useFeedback(streamMessages, currentThreadId);
+
+  const { isLoadingMessages, isLoadingMoreMessages, hasMoreMessages, loadMoreMessages } =
+    useMessagesPaging({
+      setMessages,
+      lastMessageDbIdRef,
+      getDbMessageId,
+    });
+
+  useEffect(() => {
+    if (streamMessages.length === 0) {
+      if (!editInProgressRef.current) {
+        clearRepository();
+        parentMapRef.current.clear();
+        isFirstLoadRef.current = true;
+      }
+      return;
+    }
+
+    const isEditing = editInProgressRef.current;
+    if (isEditing) editInProgressRef.current = false;
+
+    const records = buildMessageRecords(streamMessages, parentMapRef.current);
+    for (const record of records) {
+      parentMapRef.current.set(record.id, record.parentId ?? null);
+    }
+
+    startTransition(() => {
+      if (isFirstLoadRef.current && !isEditing) {
+        importMessages(records, true);
+        isFirstLoadRef.current = false;
+      } else {
+        importIncremental(records, true);
+      }
+    });
+  }, [streamMessages, importMessages, importIncremental, clearRepository]);
+
+  useEffect(() => {
+    const prevThreadId = prevThreadIdRef.current;
+    const isSwitchingConversation =
+      prevThreadId && currentThreadId && prevThreadId !== currentThreadId;
+    const isNavigatingToHome = prevThreadId && !currentThreadId;
+
+    if (isSwitchingConversation || isNavigatingToHome) {
+      clearRepository();
+    }
+
+    parentMapRef.current.clear();
+    isFirstLoadRef.current = true;
+    editInProgressRef.current = false;
+    prevThreadIdRef.current = currentThreadId;
+  }, [currentThreadId, clearRepository]);
+
+  const onSend = useCallback(
+    (
+      content: string,
+      files?: Array<{ type: "file"; url: string; mediaType?: string; filename?: string }>,
+    ) => {
+      const lastMessage = repositoryMessages[repositoryMessages.length - 1];
+      const parentId = lastMessage?.id ?? null;
+      queueMicrotask(() => send(content, parentId, files));
+    },
+    [repositoryMessages, send],
+  );
+
+  const onSwitchBranch = useCallback(
+    (messageId: string) => switchToBranch(messageId),
+    [switchToBranch],
+  );
+
+  const onRegenerate = useCallback(
+    (messageId: string) => {
+      const parentId = getParentId(messageId);
+      if (parentId === undefined) return;
+
+      setMessages(sliceMessagesUntil(streamMessages, parentId));
+      regenerate(parentId ?? messageId);
+    },
+    [getParentId, streamMessages, setMessages, regenerate],
+  );
+
+  const onEditMessage = useCallback(
+    (
+      messageId: string,
+      newContent: string,
+      files?: Array<{ type: "file"; url: string; mediaType?: string; filename?: string }>,
+    ) => {
+      const parentId = getParentId(messageId);
+      if (parentId === undefined) return;
+
+      const sliced = sliceMessagesUntil(streamMessagesRef.current, parentId);
+      resetLastSeenIds(sliced.map((m) => m.id));
+      editInProgressRef.current = true;
+      send(newContent, parentId, files, { baseMessages: sliced });
+    },
+    [getParentId, send, resetLastSeenIds],
+  );
+
+  return {
+    messages: [...repositoryMessages],
+    displayMessages: displayMessages as DisplayMessage[],
+    currentThreadId,
+    status,
+    streamingMessageId,
+    isLoading: isLoadingMessages,
+    isLoadingMoreMessages,
+    hasMoreMessages,
+    models,
+    selectedModelId,
+    selectedMcpServerIds,
+    suggestions,
+    liked,
+    disliked,
+    textareaRef,
+    onSend,
+    onLoadMoreMessages: loadMoreMessages,
+    onStop: stop,
+    onRegenerate,
+    onEditMessage,
+    onSwitchBranch,
+    onSelectModel: handleSelectModel,
+    onSelectMcpServers: handleSelectMcpServers,
+    onSetFeature: setFeatureFlag,
+    onLike,
+    onDislike,
+    addToolApprovalResponse,
+  };
+}

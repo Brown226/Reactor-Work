@@ -1,0 +1,77 @@
+/* ============================================================
+   Reactor 管理台 · Tailwind 4 入口（T1-1a）
+   来源：BuildingAI web/ui styles（Apache-2.0）的 shadcn 形态，
+   语义色不引入新调色板，全部映射到视觉规范 v1 令牌（tokens.css），
+   深色跟随既有 [data-theme="dark"] 切换。
+   注意：本文件必须先于 tokens.css / styles.css 引入（preflight 不覆盖设计系统）。
+   ============================================================ */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* 深色变体：对齐 Layout.tsx 的 data-theme 切换方式 */
+@custom-variant dark (&:is([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  /* shadcn 语义色 → Reactor 视觉规范 v1 令牌 */
+  --color-background: var(--canvas);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-ink);
+  --color-secondary: var(--surface-2);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--surface-hover);
+  --color-muted-foreground: var(--ink-2);
+  --color-accent: var(--surface-hover);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: #ffffff;
+  --color-success: var(--success);
+  --color-warning: var(--warn);
+  --color-info: var(--info);
+  --color-border: var(--hairline);
+  --color-input: var(--hairline-strong);
+  --color-ring: var(--accent);
+
+  /* 侧栏（shadcn sidebar 组件用） */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--ink);
+  --color-sidebar-primary: var(--accent);
+  --color-sidebar-primary-foreground: var(--accent-ink);
+  --color-sidebar-accent: var(--surface-hover);
+  --color-sidebar-accent-foreground: var(--ink);
+  --color-sidebar-border: var(--hairline);
+  --color-sidebar-ring: var(--accent);
+
+  /* 图表五色：语义色推导 */
+  --color-chart-1: var(--info);
+  --color-chart-2: var(--accent);
+  --color-chart-3: var(--success);
+  --color-chart-4: var(--warn);
+  --color-chart-5: var(--danger);
+
+  /* 圆角：对齐规范 §2（容器 8 / 控件 6） */
+  --radius-sm: calc(var(--r-sm) - 2px);
+  --radius-md: var(--r-sm);
+  --radius-lg: var(--r-lg);
+  --radius-xl: calc(var(--r-lg) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+:root {
+  /* shadcn sidebar 宽度：对齐视觉规范 §2（侧栏 232px） */
+  --sidebar-width: 232px;
+}

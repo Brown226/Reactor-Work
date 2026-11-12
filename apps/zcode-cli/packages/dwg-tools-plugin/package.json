@@ -1,0 +1,29 @@
+{
+  "name": "@zcode/dwg-tools-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DWG 图纸解析/修改（MCP server，ACadSharp sidecar）。",
+  "author": {
+    "name": "Z.ai"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/mcp/server.js",
+  "scripts": {
+    "build": "tsc && node scripts/build.mjs && node scripts/publish-sidecar.mjs",
+    "clean": "node ../../scripts/clean-dist.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint src --no-ignore"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "@zcode/plugin-guard": "workspace:*",
+    "@zcode/shared": "workspace:*",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0"
+  }
+}
