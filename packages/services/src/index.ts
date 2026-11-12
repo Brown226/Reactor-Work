@@ -119,7 +119,21 @@ export type {
   ZCodeTaskListWorkspaceScope,
   ZCodeTaskReadyOutcome,
 } from "./session/zcodeTaskService.js";
-export type { ZCodeTaskListItem } from "./session/zcodeTaskListTypes.js";
+export type {
+  ZCodeTaskListItem,
+  // [本地定制] 任务分组视图类型（上游未开源，见文件内说明）
+  ZCodeGroupedTaskRef,
+  ZCodeGroupedTaskView,
+  ZCodeGroupedTaskViewNode,
+  ZCodeGroupedTaskViewOrderInput,
+  ZCodeGroupedTaskViewQuery,
+  ZCodeGroupedTaskViewStructure,
+  ZCodeGroupedTaskViewStructureMember,
+  ZCodeGroupedTaskViewStructureTopOrder,
+  ZCodeGroupedTaskViewTopLevelNodeRef,
+  ZCodeTaskGroup,
+  ZCodeTaskGroupColor,
+} from "./session/zcodeTaskListTypes.js";
 
 export { IWindowControllerService } from "./window-controller/windowController.js";
 export {
@@ -421,3 +435,13 @@ export type {
   GroupNode,
   MoveGroupNode,
 } from "#src/task-groups/contract.js";
+
+// ============================================================
+// [本地定制] 企业服务端（Reactor Server）与服务端下发同步的契约
+//
+// 上游 v3.18.0 无这些模块；整包同步会用上游 index.ts 覆盖本文件，勿删。
+// ============================================================
+export * from "./reactor-server/reactorServer.js";
+export * from "./reactor-server/reactorServerClient.js";
+export * from "./server-agents/serverAgentSync.js";
+export * from "./server-skills/serverSkillSync.js";

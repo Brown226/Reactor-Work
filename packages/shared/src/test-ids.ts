@@ -933,3 +933,71 @@ export const TID_EXTENSION_PERMISSIONS_NOTIFICATIONS = "extension-permissions-no
 export const TID_EXTENSION_PERMISSIONS_ACTION = "extension-permissions-action";
 /** 左侧主导航的 nav.primary 插槽条目（docs/plugins/extension-host.md §16.4）；`data-extension-item` 是条目全局 id。 */
 export const TID_NAV_PRIMARY_ITEM = "nav-primary-slot-item";
+
+// ============================================================
+// [本地定制] Reactor 企业服务端 / 账号分区 / 模型目录的测试 id
+//
+// 上游 v3.18.0 没有这些模块；整包同步会整段覆盖 test-ids.ts，
+// 导致 9 个 UI 定制文件报 has no exported member。勿删。
+// ============================================================
+
+/** 账号分区·组织页：可用能力计数（模型 / 技能 / 专家） */
+export const TID_ACCOUNT_CAPABILITY = "account-capability";
+/** 账号分区·组织页：可用权限清单 */
+export const TID_ACCOUNT_PERMISSIONS = "account-permissions";
+/** 账号分区·组织页：可用额度（用量 / 上限 / 进度） */
+export const TID_ACCOUNT_QUOTA = "account-quota";
+/** 账号分区根节点（已登录态） */
+export const TID_ACCOUNT_SECTION = "account-section";
+/** 账号分区：页内「账号 / 组织」分段切换 */
+export const TID_ACCOUNT_TAB = "account-tab";
+/** 对话分区新建任务按钮 */
+export const TID_CONVERSATION_NEW_TASK = "conversation-new-task";
+/** 一键拉取模型弹窗「添加所选」确认按钮 */
+export const TID_MODEL_PROVIDER_CATALOG_CONFIRM_BUTTON = "model-provider-catalog-confirm-button";
+/** 一键拉取模型弹窗根节点 */
+export const TID_MODEL_PROVIDER_CATALOG_DIALOG = "model-provider-catalog-dialog";
+/** 模型供应商「一键拉取模型」按钮（拉取上游模型目录后批量添加） */
+export const TID_MODEL_PROVIDER_PULL_MODELS_BUTTON = "model-provider-pull-models-button";
+/** 项目分区添加菜单按钮 */
+export const TID_PROJECT_ADD = "project-add";
+/** 企业服务端登录表单：登录按钮 */
+export const TID_REACTOR_SERVER_LOGIN = "reactor-server-login";
+/** 账号分区：退出登录按钮 */
+export const TID_REACTOR_SERVER_LOGOUT = "reactor-server-logout";
+/** 企业服务端登录表单：密码 */
+export const TID_REACTOR_SERVER_PASSWORD_INPUT = "reactor-server-password-input";
+/** 账号分区：组织策略摘要（模式天花板 / 命令黑名单 / 出网白名单） */
+export const TID_REACTOR_SERVER_POLICY = "reactor-server-policy";
+/** 账号分区：手动刷新用量简报按钮 */
+export const TID_REACTOR_SERVER_REFRESH_USAGE = "reactor-server-refresh-usage";
+/** 账号分区：登录态/错误提示（loading 与 error 态才出现） */
+export const TID_REACTOR_SERVER_STATUS = "reactor-server-status";
+/** 账号分区：刷新模型清单按钮 */
+export const TID_REACTOR_SERVER_SYNC_MODELS = "reactor-server-sync-models";
+/** 企业服务端登录表单（设置页分区与首启登录页共用同一份实现）：服务端地址输入框 */
+export const TID_REACTOR_SERVER_URL_INPUT = "reactor-server-url-input";
+/** 企业服务端登录表单：企业账号 */
+export const TID_REACTOR_SERVER_USERNAME_INPUT = "reactor-server-username-input";
+/** 设置弹窗右下角「完成」按钮 */
+export const TID_SETTINGS_DONE_BUTTON = "settings-done-button";
+/** 侧边栏头像菜单剩余额度子菜单入口 */
+export const TID_SIDEBAR_USAGE_REMAINING_TRIGGER = "sidebar-usage-remaining-trigger";
+/** v4 草稿首页的界面模式（编程/办公）分段切换 */
+export const TID_V4_DRAFT_INTERFACE_MODE_TOGGLE = "v4-draft-interface-mode-toggle";
+/** 侧栏会话项上下文菜单「在分屏打开」（仅桌面 shell，收尾） */
+export const TID_V4_TASK_OPEN_IN_SPLIT = "v4-task-open-in-split";
+/** v4 时间线空态占位 */
+export const TID_V4_TIMELINE_EMPTY = "v4-timeline-empty";
+/** v4 工作区 Hook 待审核提示条容器 */
+export const TID_V4_WORKSPACE_HOOK_PENDING_BANNER = "v4-workspace-hook-pending-banner";
+/** 侧边栏关闭工作区按钮（动态后缀为 workspacePath） */
+export const TID_WORKSPACE_CLOSE = "workspace-close";
+/** 侧边栏打开工作区文件树按钮（动态后缀为 workspacePath） */
+export const TID_WORKSPACE_FILE_TREE_BUTTON = "workspace-file-tree-button";
+/** 侧边栏工作区条目（动态后缀为 workspacePath） */
+export const TID_WORKSPACE_ITEM = "workspace-item";
+/** 侧边栏工作区列表 */
+export const TID_WORKSPACE_LIST = "workspace-list";
+/** 侧边栏打开工作区按钮 */
+export const TID_WORKSPACE_OPEN_BUTTON = "workspace-open-button";
