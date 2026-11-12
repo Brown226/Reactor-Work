@@ -45,6 +45,15 @@ import {
   type InterfaceMode,
 } from "@/lib/interfaceMode.js";
 import { logger } from "@/logger.js";
+import {
+  createBackgroundThemeStoreActions,
+  type BackgroundImageRuntime,
+} from "@/store/backgroundThemeState.js";
+import {
+  createAccentColorStoreActions,
+  type AccentColorStoreState,
+} from "@/store/accentColorState.js";
+import type { BackgroundThemeSettings } from "@/lib/backgroundTheme.js";
 
 export type LoginEntryPurpose = "app-login";
 
@@ -235,6 +244,20 @@ export interface ZCodeState {
   onboardingDialogRequested: boolean;
   requestOnboardingDialog: () => void;
   clearOnboardingDialogRequest: () => void;
+
+  // ===== [本地定制] 背景壁纸主题 =====
+  // 上游无此功能：工作区整窗背景图 + 模糊/覆盖色 + 预设壁纸切换。
+  // slice 实现在 store/backgroundThemeState.ts，由 createBackgroundThemeStoreActions 装配。
+  backgroundTheme: BackgroundThemeSettings;
+  setBackgroundTheme: (patch: Partial<BackgroundThemeSettings>) => void;
+  backgroundImage: BackgroundImageRuntime;
+  setBackgroundImage: (patch: Partial<BackgroundImageRuntime>) => void;
+  applyCurrentBackgroundTheme: (imageUrl: string | null) => void;
+  refreshWallpaperPalette: () => void;
+
+  // ===== [本地定制] 强调色档位（与壁纸配色联动）=====
+  accentColor: AccentColorStoreState["accentColor"];
+  setAccentColor: AccentColorStoreState["setAccentColor"];
 }
 
 // ============================================================================
@@ -285,6 +308,20 @@ export function createZCodeStore(
   let syncSystemThemeListener = (_theme: Theme) => {};
 
   const useStore = create<ZCodeState>()((set, get) => ({
+    // [本地定制] 背景壁纸主题切片（上游无此功能）
+    // [本地定制] 强调色切片（壁纸配色的让位判定依赖它，必须先于 backgroundTheme 装配）
+    ...createAccentColorStoreActions({
+      read: () => ({ accentColor: get().accentColor }),
+      write: (patch) => set(patch),
+    }),
+    ...createBackgroundThemeStoreActions({
+      read: () => ({
+        backgroundTheme: get().backgroundTheme,
+        backgroundImage: get().backgroundImage,
+        accentColor: get().accentColor,
+      }),
+      write: (patch) => set(patch),
+    }),
     interfaceMode: normalizeInterfaceMode(readSafeLocalStorage(INTERFACE_MODE_STORAGE_KEY)),
     setInterfaceMode: (mode) => {
       const interfaceMode = normalizeInterfaceMode(mode);
