@@ -292,6 +292,8 @@ export type {
   WSLDistro,
   WindowControlsOverlayReadyPayload,
   ZCodeStdioTapDevState,
+  MarkdownExportRequest,
+  MarkdownExportResult,
 } from "./platform.js";
 export type {
   CuaAccessibilitySettingsResult,

@@ -89,6 +89,9 @@ import type {
   UpdateStatePayload,
   DesktopZoomState,
   DesktopWindowChromeState,
+  DevModeUnlockState,
+  MarkdownExportRequest,
+  MarkdownExportResult,
   WindowControlsOverlayMetrics,
   WindowControlsOverlayReadyPayload,
 } from "./platform.js";
@@ -258,6 +261,14 @@ export const PlatformChannels = {
   SaveFile: "zcode:save-file",
   /** Renderer → Main：用 Chromium 打印引擎把当前页面 print 媒体版面导出为 PDF */
   PrintToPdf: "zcode:print-to-pdf",
+  /** Renderer → Main：把自包含 HTML 离屏渲染为 PNG 长图 / PDF（Markdown 导出） */
+  MarkdownExport: "zcode:markdown-export",
+  /** About 窗口 → Main：About 版本号被点了一次（计数与判定期在 main） */
+  AboutVersionTap: "zcode:about-version-tap",
+  /** Main → Renderer / About 窗口：开发者模式解锁态变化（About 版本号连点触发） */
+  DevModeUnlockChanged: "zcode:dev-mode-unlock-changed",
+  /** Renderer → Main：上报当前开发者模式解锁态（main 据此取反，不回播） */
+  DevModeUnlockReported: "zcode:dev-mode-unlock-reported",
   /** Renderer → Main：检查并按需请求系统麦克风权限 */
   MicrophoneAccess: "zcode:microphone-access",
   /** Renderer → Main：打开系统麦克风权限 / 声音输入设置页 */
@@ -890,6 +901,10 @@ export interface PlatformChannelMap {
     request: void;
     response: PrintPageToPdfResult;
   };
+  [PlatformChannels.MarkdownExport]: {
+    request: MarkdownExportRequest;
+    response: MarkdownExportResult;
+  };
   [PlatformChannels.MicrophoneAccess]: {
     request: void;
     response: MicrophoneAccessResult;
@@ -1411,6 +1426,18 @@ export interface PlatformChannelMap {
   };
   [PlatformChannels.DesktopZoomLevelChanged]: {
     request: DesktopZoomState;
+    response: void;
+  };
+  [PlatformChannels.AboutVersionTap]: {
+    request: void;
+    response: void;
+  };
+  [PlatformChannels.DevModeUnlockChanged]: {
+    request: DevModeUnlockState;
+    response: void;
+  };
+  [PlatformChannels.DevModeUnlockReported]: {
+    request: DevModeUnlockState;
     response: void;
   };
   [PlatformChannels.PostUpdateReleaseNotes]: {

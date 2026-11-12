@@ -41,6 +41,7 @@ import type {
   PlatformFeatureId,
   RemoteTarget,
   ServerRemoteInfo,
+  WebRemoteControlStatus,
 } from "@zcode/shared";
 import { DesktopCommandIds, PLATFORM_UNAVAILABLE_REASON } from "@zcode/shared";
 import { WEB_DEFAULT_THEME, resolveWebInitialTheme } from "./webThemeSeed.js";
@@ -246,6 +247,11 @@ function createWebPlatform(): IPlatformService {
       });
     },
     cancelPendingRemoteConnection: (_requestId?: string) => Promise.resolve(),
+    // Web 端不作为 Web 远程控制的发起端（只能被桌面端 attach），保留空实现兼容统一接口。
+    startWebRemoteControl: () =>
+      Promise.reject(new Error("Web remote control can only be started from desktop")),
+    stopWebRemoteControl: () => Promise.resolve(),
+    getWebRemoteControlStatus: () => Promise.resolve({ status: "idle" }),
     disposeRemoteSession: () => Promise.resolve(),
     isDockerAvailable: () => Promise.resolve(false),
     listWSLDistros: () => Promise.resolve([]),

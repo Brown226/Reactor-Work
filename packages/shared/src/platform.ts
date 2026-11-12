@@ -558,6 +558,11 @@ export interface DesktopCloseToTrayCapability {
   gnomeLikeWithoutTray: boolean;
 }
 
+/** 开发者模式解锁态（About 版本号连点解锁；main 侧持久化）。 */
+export interface DevModeUnlockState {
+  unlocked: boolean;
+}
+
 export interface DesktopWindowChromeState {
   isMaximized: boolean;
   /** 本机 macOS 主版本；非 macOS 或无法解析时为 null。 */
@@ -1235,7 +1240,7 @@ export interface IPlatformService {
   reportDevModeUnlock?(unlocked: boolean): void;
 
   /** 订阅开发者模式解锁态变化（main → renderer 广播），返回 disposer */
-  onDevModeUnlockChanged?(handler: (state: { unlocked: boolean }) => void): () => void;
+  onDevModeUnlockChanged?(handler: (state: DevModeUnlockState) => void): () => void;
 
   /** 读取当前桌面窗口最大化状态与系统原生圆角能力 */
   getDesktopWindowChromeState?(): Promise<DesktopWindowChromeState>;
