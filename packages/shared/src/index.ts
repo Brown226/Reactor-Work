@@ -438,3 +438,5 @@ export * from "./endpointHostname.js";
 export * from "./server-agents-types.js";
 export * from "./server-skills-market-types.js";
 export * from "./genUi/index.js";
+export { PLATFORM_UNAVAILABLE_REASON } from "./platform.js";
+export type { PlatformFeatureId } from "./platform.js";

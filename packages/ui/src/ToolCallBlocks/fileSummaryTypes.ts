@@ -210,8 +210,26 @@ export interface WorkflowDraftPosition {
 export interface ToolCallBlockRenderContext {
   nestedToolRenderer: ComponentType<Parameters<typeof ToolCallBlock>[0]>;
   isOfficeMode?: boolean;
+  /**
+   * [本地定制] 收敛判据：办公档或审查档。
+   *
+   * 本地 useIsFocusedMode() = office || review；上游 isOfficeMode 只判 office。
+   * 审查档同样要收纳编程向 UI（终端、git 面板、代码 diff），
+   * 用上游字段会让审查档漏掉每一处隐藏逻辑。见 lib/interfaceMode.ts。
+   */
+  isFocusedMode?: boolean;
   toolCallNode: TaskChatToolCallTreeNode;
   workspacePath: string;
+  /**
+   * [本地定制] workspace 身份 key（AGENTS.md：远程链路不能只按路径匹配）。
+   * GenUI 动作回传要按它写 composer 插入请求；缺席时退化为路径键。
+   */
+  workspaceIdentity?: string;
+  /**
+   * [本地定制] 本工具卡所属会话：GenUI 按钮/表单回传用它把文本送进该会话输入框。
+   * 缺席（如权限弹窗里的工具卡）或为空时退回新建任务草稿槽。
+   */
+  sessionId?: string | null;
   /**
    * 插件 UI：scope 是沙箱登记需要的 session 范围，onOpenSidePane 是"在侧栏打开"回调；
    * 由 PluginUiSessionProvider 在边界注入。缺省表示宿主不提供，带 ui:// 资源的工具回退普通 MCP 卡片。

@@ -40,6 +40,8 @@ interface ToolLayoutProps {
   expandedPrimaryText?: ReactNode;
   secondaryText?: ReactNode;
   expandedSecondaryText?: ReactNode;
+  /** [本地定制] 摘要与内容之间的分隔元素（如执行组的统计行）。上游无此字段。 */
+  summaryContentSeparator?: ReactNode;
   animateSummaryContent?: boolean;
   disableSummaryContentAnimation?: boolean;
   summaryContentKey?: string;

@@ -52,6 +52,8 @@ interface ToolSummaryRowProps {
   primaryText: ReactNode;
   prioritizePrimaryText?: boolean;
   secondaryText?: ReactNode;
+  /** [本地定制] 摘要与内容之间的分隔元素（如执行组统计行）。上游无此字段。 */
+  separator?: ReactNode;
   showIcon: boolean;
   sourceLabel?: ReactNode;
   statusNode?: ReactNode;
@@ -128,6 +130,7 @@ function SummaryContent({
   primaryText,
   prioritizePrimaryText,
   secondaryText,
+  separator,
   statusNode,
 }: Pick<
   ToolSummaryRowProps,
@@ -140,9 +143,10 @@ function SummaryContent({
   | "primaryText"
   | "prioritizePrimaryText"
   | "secondaryText"
+  | "separator"
   | "statusNode"
 >) {
-  const hasSummaryContent = [primaryText, secondaryText, diffCount, statusNode].some(
+  const hasSummaryContent = [primaryText, secondaryText, diffCount, statusNode, separator].some(
     (node) => node != null && node !== false && node !== "",
   );
 
@@ -169,6 +173,7 @@ function SummaryContent({
         enabled={animateContent && !isExpanded}
         disableAnimation={disableContentAnimation}
       />
+      {separator}
       {statusNode}
     </div>
   );

@@ -1400,3 +1400,28 @@ export interface IPlatformService {
    */
   getDeviceId(): string;
 }
+
+// ============================================================
+// [本地定制] 平台能力置灰提示
+//
+// 上游 v3.18.0 无这两个导出；整包同步会用上游 platform.ts 覆盖本文件，勿删。
+// 消费方：ui/hooks/usePlatformUnavailable.ts + settings/BackgroundThemeSection。
+// ============================================================
+
+/**
+ * 桌面端可用、Web 端因浏览器沙箱无法提供的能力清单。
+ * UI 用它做「置灰 + 悬停说明」，而不是让用户点了才看到失败。
+ */
+export type PlatformFeatureId =
+  | "openInEditor"
+  | "openInFileManager"
+  | "embeddedBrowser"
+  | "computerUse"
+  | "chromeImport"
+  | "mcpLocalDirectory"
+  | "exportLogs"
+  | "windowScreenshot"
+  | "localWallpaper";
+
+/** Web 端不可用能力的统一说明文案；置灰悬停时展示。 */
+export const PLATFORM_UNAVAILABLE_REASON = "该功能仅支持客户端使用";
