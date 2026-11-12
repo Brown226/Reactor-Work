@@ -475,6 +475,7 @@ export interface IZCodeTaskService {
    */
   listTaskList(params: ZCodeTaskListQuery): Promise<ZCodeTaskListResult>;
 
+
   /** 列出 workspace 下所有已归档 task */
   listArchivedTasks(params: {
     workspacePath: string;

@@ -119,21 +119,8 @@ export type {
   ZCodeTaskListWorkspaceScope,
   ZCodeTaskReadyOutcome,
 } from "./session/zcodeTaskService.js";
-export type {
-  ZCodeTaskListItem,
-  // [本地定制] 任务分组视图类型（上游未开源，见文件内说明）
-  ZCodeGroupedTaskRef,
-  ZCodeGroupedTaskView,
-  ZCodeGroupedTaskViewNode,
-  ZCodeGroupedTaskViewOrderInput,
-  ZCodeGroupedTaskViewQuery,
-  ZCodeGroupedTaskViewStructure,
-  ZCodeGroupedTaskViewStructureMember,
-  ZCodeGroupedTaskViewStructureTopOrder,
-  ZCodeGroupedTaskViewTopLevelNodeRef,
-  ZCodeTaskGroup,
-  ZCodeTaskGroupColor,
-} from "./session/zcodeTaskListTypes.js";
+export type { ZCodeTaskListItem } from "./session/zcodeTaskListTypes.js";
+
 
 export { IWindowControllerService } from "./window-controller/windowController.js";
 export {
