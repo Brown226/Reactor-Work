@@ -37,26 +37,32 @@ function loadAccentColorSettings(): AccentColorSettings {
  * `read`/`write` 由调用方注入，避免本模块反向依赖 store。
  */
 export function createAccentColorStoreActions(options: {
-  read: () => { accentColor: AccentColorSettings; refreshWallpaperPalette?: () => void };
+  read: () =>
+    | { accentColor?: AccentColorSettings; refreshWallpaperPalette?: () => void }
+    | undefined;
   write: (patch: { accentColor?: AccentColorSettings }) => void;
 }): AccentColorStoreState {
   const initial = loadAccentColorSettings();
   applyAccentColor(initial);
   // 本函数在背景主题之后装配，此时壁纸调色板已按"accent 可能尚未初始化"跑过一遍；
   // 这里补一次，把真实的 accent 档位交给它，避免壁纸配色错误地压住用户已选的 accent。
+  // 装配期 store 尚未建好：zustand 的 get() 此时可能返回 undefined，
+  // 直接解引用会抛 "Cannot read properties of undefined (reading 'accentColor')" 白屏。
   options.read()?.refreshWallpaperPalette?.();
 
   return {
     accentColor: initial,
     setAccentColor: (patch) => {
+      // `get()` 在 store 首次装配阶段可能还没返回完整状态，与 backgroundThemeState
+      // 同口径做可选链兜底：拿不到当前值就按"首次装配"处理，用默认值起算。
       const state = options.read();
-      const current = state.accentColor;
+      const current = state?.accentColor ?? DEFAULT_ACCENT_COLOR_SETTINGS;
       const next = normalizeAccentColorSettings({ ...current, ...patch }, current);
       writeSafeLocalStorage(ACCENT_COLOR_STORAGE_KEY, JSON.stringify(next));
       applyAccentColor(next);
       options.write({ accentColor: next });
       // accent 优先级高于壁纸配色：切换后让壁纸重新判定要不要让位。
-      state.refreshWallpaperPalette?.();
+      state?.refreshWallpaperPalette?.();
     },
   };
 }

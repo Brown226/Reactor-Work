@@ -17,6 +17,8 @@ export const ModelApiOperation = {
   GoalVerification: "goal_completion_verification",
   GitCommitMessage: "workspace_git_commit_message",
   ProjectMemoryExtract: "project_memory_extract",
+  ReadSessionContextExtract: "read_session_context_extract",
+  ReadSessionContextSynthesize: "read_session_context_synthesize",
   ProjectMemoryDream: "project_memory_dream",
   ProjectMemoryRecall: "project_memory_recall",
   SessionTitle: "session_title_generation",

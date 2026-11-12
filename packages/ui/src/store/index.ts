@@ -321,16 +321,32 @@ export function createZCodeStore(
   const useStore = create<ZCodeState>()((set, get) => ({
     // [本地定制] 背景壁纸主题切片（上游无此功能）
     // [本地定制] 强调色切片（壁纸配色的让位判定依赖它，必须先于 backgroundTheme 装配）
+    // 装配期 `get()` 返回的可能是残缺状态（本切片还没并进去），全部走可选链，
+    // 否则 `get().accentColor` 会在 store 首次构造时抛 undefined 解引用并白屏。
     ...createAccentColorStoreActions({
-      read: () => ({ accentColor: get().accentColor }),
+      read: () => {
+        const state = get() as Partial<ZCodeState> | undefined;
+        return {
+          accentColor: state?.accentColor,
+          refreshWallpaperPalette: (
+            state as { refreshWallpaperPalette?: () => void } | undefined
+          )?.refreshWallpaperPalette?.bind(state),
+        };
+      },
       write: (patch) => set(patch),
     }),
     ...createBackgroundThemeStoreActions({
-      read: () => ({
-        backgroundTheme: get().backgroundTheme,
-        backgroundImage: get().backgroundImage,
-        accentColor: get().accentColor,
-      }),
+      read: () => {
+        const state = get() as Partial<ZCodeState> | undefined;
+        return {
+          backgroundTheme: state?.backgroundTheme,
+          backgroundImage: state?.backgroundImage,
+          accentColor: state?.accentColor,
+          refreshWallpaperPalette: (
+            state as { refreshWallpaperPalette?: () => void } | undefined
+          )?.refreshWallpaperPalette?.bind(state),
+        };
+      },
       write: (patch) => set(patch),
     }),
     interfaceMode: normalizeInterfaceMode(readSafeLocalStorage(INTERFACE_MODE_STORAGE_KEY)),

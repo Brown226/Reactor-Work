@@ -51,7 +51,9 @@ export function useReactorServer(): UseReactorServerResult {
   // 该 hook 只在「接入企业服务端的 host」上挂载（设置页账号分区 / 登录页），
   // 这些 host 必定提供 reactorServerService。Web 前端不挂载本 hook。
   const { reactorServerService } = useServices();
-  const reactorServer = reactorServerService!;
+  // accessor 里这是可选服务：Web host 不提供企业身份服务，此时 hook 仍要能安全渲染
+  // （设置页「账号」分区在 Web 上同样可达），否则会在 `getStatus()` 处抛 undefined 解引用。
+  const reactorServer = reactorServerService;
   const platform = useOptionalPlatform();
   // 登录/登出会改写本机数据命名空间（企业用户隔离），成功后必须重启应用才生效。
   const restartForDataScopeSwitch = useRestartForDataScopeSwitch();
@@ -64,6 +66,14 @@ export function useReactorServer(): UseReactorServerResult {
   const requestIdRef = useRef(0);
 
   const refresh = useCallback(async (): Promise<void> => {
+    if (!reactorServer) {
+      // 没有企业服务端的宿主：直接把状态置为「未接入」，不发起任何请求。
+      setStatus(null);
+      setOverview(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
     try {
@@ -116,8 +126,10 @@ export function useReactorServer(): UseReactorServerResult {
           await restartForDataScopeSwitch();
         }
         if (requestIdRef.current !== requestId) return true;
-        setStatus(await reactorServer.getStatus());
-        setOverview(await reactorServer.getUsageOverview());
+        if (reactorServer) {
+          setStatus(await reactorServer.getStatus());
+          setOverview(await reactorServer.getUsageOverview());
+        }
         return true;
       } catch (cause) {
         if (requestIdRef.current === requestId) setError(getErrorMessage(cause));
@@ -129,31 +141,40 @@ export function useReactorServer(): UseReactorServerResult {
     [platform, reactorServer, restartForDataScopeSwitch],
   );
 
+  // 下列动作在没有企业服务端的宿主上（Web）不可用：提前返回 false，
+  // 由调用方按「操作未生效」处理，而不是让 `undefined.login()` 抛 TypeError。
   const login = useCallback(
-    (input: ReactorServerLoginInput) => runAction("login", () => reactorServer.login(input)),
-    [reactorServerService, runAction],
+    (input: ReactorServerLoginInput) =>
+      reactorServer ? runAction("login", () => reactorServer.login(input)) : Promise.resolve(false),
+    [reactorServer, runAction],
   );
   const logout = useCallback(
-    () => runAction("logout", () => reactorServer.logout()),
-    [reactorServerService, runAction],
+    () => (reactorServer ? runAction("logout", () => reactorServer.logout()) : Promise.resolve(false)),
+    [reactorServer, runAction],
   );
   const syncModels = useCallback(
-    () => runAction("syncModels", () => reactorServer.syncModels()),
-    [reactorServerService, runAction],
+    () =>
+      reactorServer ? runAction("syncModels", () => reactorServer.syncModels()) : Promise.resolve(false),
+    [reactorServer, runAction],
   );
   // 改密码不是身份切换：不触发数据命名空间重启（runAction 只对 login/logout 重启），
   // 否则用户改完密码会被强行重启一次，且改密弹窗的状态全丢。
   const changePassword = useCallback(
     (oldPassword: string, newPassword: string) =>
-      runAction("changePassword", () =>
-        reactorServer.changePassword(oldPassword, newPassword),
-      ),
-    [reactorServerService, runAction],
+      reactorServer
+        ? runAction("changePassword", () =>
+            reactorServer.changePassword(oldPassword, newPassword),
+          )
+        : Promise.resolve(false),
+    [reactorServer, runAction],
   );
   // 手动刷新简报：补传一次积压 + 重新拉服务端月度累计（策略不在此列，走 refreshPolicy 的既有触发点）。
   const refreshUsage = useCallback(
-    () => runAction("refreshUsage", () => reactorServer.flushUsageReports()),
-    [reactorServerService, runAction],
+    () =>
+      reactorServer
+        ? runAction("refreshUsage", () => reactorServer.flushUsageReports())
+        : Promise.resolve(false),
+    [reactorServer, runAction],
   );
 
   return {

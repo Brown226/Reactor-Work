@@ -57,6 +57,13 @@ export * from "./resolve-workflow-question.js";
 export * from "./fill-workflow-hole.js";
 export * from "./workflow-observation-display.js";
 export * from "./tool-result-metadata.js";
+
+// [本地定制] 审查板块 / 知识检查 / GenUI 树 / 会话上下文工具契约
+export * from "./knowledge-check.js";
+export * from "./report-review-issues.js";
+export * from "./export-review-report.js";
+export * from "./read-session-context.js";
+export * from "./emit-ui-tree.js";
 export * from "./performance.js";
 
 // Shared types (only once to avoid duplicates)

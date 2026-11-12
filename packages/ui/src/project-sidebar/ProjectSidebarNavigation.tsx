@@ -25,7 +25,6 @@ export const ProjectSidebarNavigation = memo(function ProjectSidebarNavigation({
     | "marketActive"
     | "onOpenMySpace"
     | "mySpaceActive"
-    | "onOpenWorkspaceFiles"
     | "webRemoteControlWorkspaceSwitcher"
     | "navPrimarySlot"
     | "workspacePath"
@@ -72,19 +71,8 @@ export const ProjectSidebarNavigation = memo(function ProjectSidebarNavigation({
           {intl.formatMessage({ id: "workspace.openPluginsSettings" })}
         </Button>
       ) : null}
-      {/* Reactor 定制入口：插件市场 / 我的空间 / 工作区文件树。上游侧栏没有这三项。 */}
-      {props.onOpenWorkspaceFiles ? (
-        <Button
-          variant="ghost"
-          size="lg"
-          className={`w-full justify-start gap-2 ${false ? "bg-selected text-foreground" : ""}`}
-          onClick={() => props.onOpenWorkspaceFiles?.()}
-          data-icon="inline-start"
-        >
-          <FolderOpen className="size-4" />
-          {intl.formatMessage({ id: "sidePane.files" })}
-        </Button>
-      ) : null}
+      {/* Reactor 定制入口：插件市场 / 我的空间。上游侧栏没有这两项。
+          「工作区文件」入口按用户要求下线（文件树仍可从侧边面板打开），见 2026-11-13 反馈。 */}
       {props.onOpenMarket ? (
         <Button
           variant="ghost"
