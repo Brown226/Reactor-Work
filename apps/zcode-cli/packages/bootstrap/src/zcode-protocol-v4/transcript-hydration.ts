@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- 保持既有 transcript → event 恢复 owner；本次只透传输入快照，不拆分恢复状态机。 */
 // Transcript → SessionEvent 合成（「reduce(transcript) ≡ reduce(events)」）。
 //
 // 动机：v4 投影是事件溯源，但部分历史突变（纯对话 fork 复制 message 不复制 event、
@@ -19,6 +20,8 @@ import type {
   TurnFileChangeSummary,
   TurnInputIntentMetadata,
 } from "@zcode/contracts";
+import { INTERRUPT_MARKER_SOURCE, joinTaskNotificationBatch } from "@zcode/core";
+import { isHighspeedProviderId } from "@zcode/shared";
 import type { EventId, SessionEvent, SessionId, TraceId, TurnId } from "@zcode/contracts";
 import {
   CompactTimelineStatus,
@@ -33,17 +36,21 @@ import {
 import {
   getConversationModelOnlyTurnTriggerSource,
   getConversationMessageProjectionPolicy,
+  highspeedMessageMetaSchema,
   isConversationRealUserTurnStarter,
 } from "@zcode/shared";
 import {
   conversationInputIntentSchema,
   errorAttributionSchema,
+  subagentResultMetaSchema,
+  workflowBlockedMetaSchema,
   workflowLaunchMetaSchema,
   workflowNotificationMetaSchema,
   type ErrorAttribution,
   type WorkflowLaunchMeta,
 } from "@zcode/shared/zcode-protocol-v4";
 import { shouldHideInvalidToolCallFromProduct } from "../tool-call-product-visibility.js";
+import { ProductProjection } from "./product-projection.js";
 import { HYDRATION_TRACE_ID } from "./projection-state.js";
 
 const SUBAGENT_TOOL_NAMES = new Set(["Agent", "Task", "subagent"]);
@@ -68,6 +75,21 @@ type TurnResultForHydration = "success" | "cancelled" | "error_during_execution"
 interface AssistantSynthesisState {
   toolCallCount: number;
   resultType: TurnResultForHydration;
+}
+
+interface TranscriptFootprint {
+  userTurnCount: number;
+  assistantTexts: string[];
+  reasoningTexts: string[];
+  toolCallIds: string[];
+  compactMarkerCount: number;
+  subagentCount: number;
+  forkTimelineCount: number;
+  // 16-timeline-authority-plan P1：守恒判据曾对 goal verify / model change 全盲
+  //（footprint 不计数 → 缺这两类 marker 的事件日志被误判为已覆盖）。
+  goalVerificationCount: number;
+  modelChangeCount: number;
+  worktreeCreatedCount: number;
 }
 
 interface ParsedSubagentOutput {
@@ -125,6 +147,12 @@ function workflowLaunchOfMessage(message: MessageWithParts): WorkflowLaunchMeta 
   return parsed.success ? parsed.data : null;
 }
 
+/** core 停止本轮时写的隐藏提醒记录（`interrupt-marker.ts`）。 */
+function isInterruptMarkerMessage(message: MessageWithParts): boolean {
+  const semantics = message.info.semantics;
+  return semantics?.kind === "system_reminder" && semantics.source === INTERRUPT_MARKER_SOURCE;
+}
+
 function isProviderContextOnlyAssistant(message: MessageWithParts): boolean {
   return (
     message.info.role === "assistant" &&
@@ -132,14 +160,23 @@ function isProviderContextOnlyAssistant(message: MessageWithParts): boolean {
   );
 }
 
-function textOfMessage(parts: readonly MessagePart[]): string {
+function textPartsOfMessage(parts: readonly MessagePart[]): string[] {
   return parts
     .filter(
       (part): part is Extract<MessagePart, { type: "text" }> =>
         part.type === "text" && part.ignored !== true,
     )
-    .map((part) => part.text)
-    .join("");
+    .map((part) => part.text);
+}
+
+function textOfMessage(parts: readonly MessagePart[]): string {
+  return textPartsOfMessage(parts).join("");
+}
+
+// 修复原因：空闲整批的每条通知存为一个文本 part，按 "" 连接时相邻通知粘在一起，
+// 与 live 的轮输入不同。与 live 用同一个连接函数；旧版本只有一个 part，结果不变。
+function backgroundWakeInputOfMessage(parts: readonly MessagePart[]): string {
+  return joinTaskNotificationBatch(textPartsOfMessage(parts));
 }
 
 function finiteTimeMs(value: unknown): number | undefined {
@@ -381,6 +418,7 @@ function stringField(
 }
 
 function inputIntentOfMessage(message: MessageWithParts): TurnInputIntentMetadata | undefined {
+  const persistedHighspeed = highspeedMessageMetaSchema.safeParse(message.info.metadata?.highspeed);
   const fullIntent = conversationInputIntentSchema.safeParse(
     message.info.metadata?.conversationInputIntent,
   );
@@ -394,6 +432,7 @@ function inputIntentOfMessage(message: MessageWithParts): TurnInputIntentMetadat
       // 可见 text 是展示事实；goal 的 canonical objective 只能读取持久 intent.text，
       // 禁止从 `/goal replace ...` 文案再做大小写/关键字解析。
       text: value.text,
+      genUiContext: value.genUiContext,
       ...(value.modelSelection ? { modelSelection: value.modelSelection } : {}),
       ...(value.mode ? { mode: value.mode } : {}),
       ...(value.planEnabled !== undefined ? { planEnabled: value.planEnabled } : {}),
@@ -408,7 +447,16 @@ function inputIntentOfMessage(message: MessageWithParts): TurnInputIntentMetadat
         ? { fallbackReasonCode: value.delivery.fallbackReasonCode }
         : {}),
       ...(value.attachments.length > 0 ? { attachmentRefs: value.attachments } : {}),
+      ...(value.highspeed
+        ? { highspeed: value.highspeed }
+        : persistedHighspeed.success
+          ? { highspeed: persistedHighspeed.data }
+          : {}),
+      ...(value.inputOrigin ? { inputOrigin: value.inputOrigin } : {}),
+      ...(value.conversationQuotes ? { conversationQuotes: value.conversationQuotes } : {}),
+      ...(value.botGroupSource ? { botGroupSource: value.botGroupSource } : {}),
       ...(value.provenance ? { provenance: value.provenance } : {}),
+      ...(value.source ? { source: value.source } : {}),
     };
   }
 
@@ -433,7 +481,10 @@ function inputIntentOfMessage(message: MessageWithParts): TurnInputIntentMetadat
   ) {
     return undefined;
   }
-  return value as TurnInputIntentMetadata;
+  return {
+    ...(value as unknown as TurnInputIntentMetadata),
+    ...(persistedHighspeed.success ? { highspeed: persistedHighspeed.data } : {}),
+  };
 }
 
 function executionKindOfMessage(message: MessageWithParts): "agent" | "controlOnly" | undefined {
@@ -482,6 +533,8 @@ function subagentInfoFromToolPart(
     agentType:
       stringField(output, "agentType") ??
       stringField(metadata, "agentType") ??
+      // 历史 Agent 输入使用 subagent_type；漏读会让通用回退覆盖 App 中的真实名称。
+      stringField(input, "subagent_type") ??
       stringField(input, "agent") ??
       stringField(input, "agentType") ??
       "subagent",
@@ -601,6 +654,82 @@ function forkContextFromMetadata(metadata: Record<string, unknown> | undefined):
       ? { targetMessageId: context.targetMessageId }
       : {}),
   };
+}
+
+// ── 冷恢复合并的事件词汇表（cold-event-merge 按它决定每类事件的权威来源）──
+// 新增 SessionEventType 时在这里归类；未归类的事件仍被兜底保留，但每次冷恢复会记一条
+// unclassified 诊断。
+export const LIVE_ONLY_EVENT_TYPES = new Set<string>([
+  SessionEventType.PluginUiResourceUpdated,
+  SessionEventType.PluginUiResourceListChanged,
+  SessionEventType.PluginUiAppToolCallRequested,
+  SessionEventType.PluginUiInstanceClosed,
+]);
+
+export const MEMORY_ONLY_EVENT_TYPES = new Set<string>([
+  SessionEventType.SessionResumed,
+  SessionEventType.SessionTitleUpdated,
+  SessionEventType.SessionModeChanged,
+  SessionEventType.PermissionRequested,
+  SessionEventType.PermissionResolved,
+  SessionEventType.PermissionDenied,
+  SessionEventType.UserInputAutoResolutionUpdated,
+  SessionEventType.BackgroundTaskStarted,
+  SessionEventType.BackgroundTaskUpdated,
+  SessionEventType.BackgroundTaskCompleted,
+  // workflow run 进度：权威事实在 dwf_event journal 与内存事件里，durable transcript（message/part）
+  // 从不合成它，所以它与 BackgroundTask* 同类——memory-only 权威。不分类的后果不是丢事件
+  // （兜底分支同样保留），而是每次冷恢复刷一条 unclassified 诊断，把"真的漏了词汇表"这个
+  // 信号淹掉。
+  SessionEventType.DynamicWorkflowRunProgress,
+  SessionEventType.TargetChanged,
+  SessionEventType.RewindTriggered,
+  SessionEventType.TurnExecutionModelFallback,
+]);
+
+export const TRANSCRIPT_DERIVED_EVENT_TYPES = new Set<string>([
+  SessionEventType.SessionCreated,
+  // 受管 worktree 创建结果：权威事实是 transcript 中的 worktree_creation timeline part。
+  SessionEventType.WorktreeCreated,
+  SessionEventType.TurnStarted,
+  SessionEventType.ModelSelected,
+  SessionEventType.ModelStreaming,
+  SessionEventType.ModelComplete,
+  SessionEventType.ToolCallScheduled,
+  SessionEventType.ToolCallStarted,
+  SessionEventType.ToolCallResult,
+  SessionEventType.ToolCallError,
+  SessionEventType.TurnComplete,
+  SessionEventType.TurnError,
+  SessionEventType.CompactStarted,
+  SessionEventType.CompactCompleted,
+  SessionEventType.CompactFailed,
+  SessionEventType.TargetCompletionVerification,
+  SessionEventType.SessionForked,
+  SessionEventType.SubagentSpawned,
+  SessionEventType.SubagentMessage,
+  SessionEventType.SubagentStopped,
+]);
+
+export const HOOK_LIFECYCLE_EVENT_TYPES = new Set<string>([
+  SessionEventType.HookRunStarted,
+  SessionEventType.HookRunProgress,
+  SessionEventType.HookRunCompleted,
+  SessionEventType.HookRunFailed,
+  SessionEventType.HookRunBlocked,
+]);
+
+/** 受管 worktree 的创建结果（docs/git/worktree.md §6.6.4）；新建会话首轮前或 fork 分隔标记后。 */
+function worktreeCreationOfMessage(
+  message: MessageWithParts,
+): Extract<MessagePart, { type: "timeline"; timelineType: "worktree_creation" }>["worktreeCreation"] | undefined {
+  if (getConversationMessageProjectionPolicy(message) !== "timelineOnly") return undefined;
+  for (const part of message.parts) {
+    if (part.type === "timeline" && part.timelineType === "worktree_creation") {
+      return part.worktreeCreation;
+    }
+  }
+  return undefined;
 }
 
 function isForkTimelineMessage(message: MessageWithParts): boolean {
@@ -770,6 +899,9 @@ function synthesizeToolPart(
       turnId,
     );
   }
+
+  // （2026-09-12）：历史 transcript 里残留的 metadata.widgetState 不再合成事件，
+  // 冷恢复直接忽略（widgetState 只留 renderer 内存）。
 
   const subagentInfo = subagentInfoFromToolPart(part);
   if (subagentInfo && started) {
@@ -1075,22 +1207,32 @@ function hydratedModelKey(modelSelection: ModelSelection): string {
   return `${modelSelection.providerId}\u0000${modelSelection.modelId}\u0000${modelSelection.options?.reasoningLevel ?? ""}`;
 }
 
+function sessionModelSelectionOfHydratedMessage(
+  modelSelection: ModelSelection,
+): ModelSelection | null {
+  // Bug 原因：加速卡是单轮执行 Selection（selectionScope=execution），消息保留它用于记录
+  // 真实执行模型；但冷恢复曾把该字段误当成会话选型，重启后因此生成「加速 → 原模型」的
+  // 虚假切换提示。live 路径的 execution 作用域本就不发 ModelSelected，cold 必须同语义。
+  return isHighspeedProviderId(modelSelection.providerId) ? null : modelSelection;
+}
+
 function turnModelSelectionOfUserMessage(message: MessageWithParts): ModelSelection | null {
   if (message.info.role !== "user") return null;
-  return message.info.modelSelection ?? null;
+  const modelSelection = message.info.modelSelection;
+  return modelSelection ? sessionModelSelectionOfHydratedMessage(modelSelection) : null;
 }
 
 function assistantModelSelectionOf(message: MessageWithParts): ModelSelection | null {
   if (message.info.role !== "assistant") return null;
   if (message.info.semantics?.kind === "timeline_event") return null;
   if (!message.info.providerId || !message.info.modelId) return null;
-  return {
+  return sessionModelSelectionOfHydratedMessage({
     providerId: String(message.info.providerId),
     modelId: String(message.info.modelId),
     ...(message.info.reasoningLevel
       ? { options: { reasoningLevel: message.info.reasoningLevel } }
       : {}),
-  };
+  });
 }
 
 function modelChangeToModelOf(message: MessageWithParts): HydratedTimelineModel | null {
@@ -1114,6 +1256,18 @@ function modelChangeToModelOf(message: MessageWithParts): HydratedTimelineModel 
     };
   }
   return null;
+}
+
+function modelChangeKeyOfPart(
+  part: Extract<MessagePart, { type: "timeline" }> & { timelineType: "model_change" },
+): string {
+  const from = part.fromModel
+    ? `${part.fromModel.providerId}/${part.fromModel.modelId}/${part.fromModel.options?.reasoningLevel ?? ""}`
+    : "<unknown>";
+  const to = part.toModel
+    ? `${part.toModel.providerId}/${part.toModel.modelId}/${part.toModel.options?.reasoningLevel ?? ""}`
+    : "<unknown>";
+  return `${String(part.anchorMessageId ?? part.messageID)}\u0000${from}\u0000${to}`;
 }
 
 // preface 轮开轮门槛：只含 model_change/session_fork 宿主等不可渲染内容的 assistant
@@ -1175,7 +1329,7 @@ function synthesizeAssistantParts(
           ? "success"
           : "error_during_execution"
       : message.info.role === "assistant" && message.info.time.completed === undefined
-        ? // 进程退出可能只持久化 step-start/partial，却没有 assistant error；
+        ? // Bug 根因：进程退出可能只持久化 step-start/partial，却没有 assistant error；
           // 旧 cold hydration 默认 success，伪造正常 TurnComplete 并让异常 Worked 被收起。
           "cancelled"
         : "success";
@@ -1301,11 +1455,17 @@ function backgroundResultOriginMetaOfMessage(
   // 载荷就丢了——manifest 条目退回裸标题行。用 shared 的 zod schema 校验，畸形就**只丢载荷**
   // 保基字段，绝不抛：这是投影重建路径，一个坏载荷不该打挂整条冷恢复。
   const workflowNotification = parseWorkflowNotificationMeta(record.workflowNotification);
+  // 空闲提醒的载荷在它自己的键上（contracts 的 WorkflowBlockedMeta），同样畸形只丢载荷。
+  const workflowBlocked = workflowBlockedMetaSchema.safeParse(record.workflowBlocked);
+  // 后台 Agent 的结构化终态也要过冷恢复，否则恢复后失败详情退回整句 summary。
+  const subagentResult = subagentResultMetaSchema.safeParse(record.subagentResult);
   return {
     backgroundSource,
     title,
     workId,
     ...(workflowNotification ? { workflowNotification } : {}),
+    ...(workflowBlocked.success ? { workflowBlocked: workflowBlocked.data } : {}),
+    ...(subagentResult.success ? { subagentResult: subagentResult.data } : {}),
   };
 }
 
@@ -1398,6 +1558,14 @@ function collectTurnOutput(options: {
           turnId,
         );
       }
+      const worktreeCreation = worktreeCreationOfMessage(message);
+      if (worktreeCreation) push(SessionEventType.WorktreeCreated, { ...worktreeCreation }, turnId);
+      index += 1;
+      continue;
+    }
+    const innerWorktreeCreation = worktreeCreationOfMessage(message);
+    if (innerWorktreeCreation) {
+      push(SessionEventType.WorktreeCreated, { ...innerWorktreeCreation }, turnId);
       index += 1;
       continue;
     }
@@ -1433,6 +1601,12 @@ function collectTurnOutput(options: {
       continue;
     }
     if (message.info.role !== "assistant") {
+      // 修复原因：最终文本已完整输出后再停止时，assistant 是 finish=stop、没有 error，
+      // live 记为 cancelled，冷恢复却按 success 收口。中断标记是停止的持久化事实，以它为准；
+      // 已有持久化错误时 finishTurn 仍优先显示错误（宿主故障也写标记）。
+      if (isInterruptMarkerMessage(message)) {
+        resultType = normalizeTurnResult(resultType, "cancelled");
+      }
       index += 1;
       continue;
     }
@@ -1468,6 +1642,14 @@ function collectTurnOutput(options: {
     if (messageEnd !== undefined) {
       turnEndedAtMs = Math.max(turnEndedAtMs, messageEnd);
     }
+    // live 每次模型请求都有 start 流事件；cold 为每条 assistant 消息合成同一个事件。
+    // 修复原因：没有可见内容的 assistant 不产生任何事件，投影看不到两次 guide 取出之间的
+    // 模型 step，会把后一次取出的 guide 并进前一段工作段。
+    push(
+      SessionEventType.ModelStreaming,
+      { kind: "start", delta: "", done: false, assistantMessageId: String(message.info.id) },
+      turnId,
+    );
     const synthesized = synthesizeAssistantParts(
       message,
       options.emittedCompactOperations,
@@ -1715,6 +1897,15 @@ export function synthesizeEventsFromMessages(
           targetMessageId: forkContext.targetMessageId,
         });
       }
+      const worktreeCreation = worktreeCreationOfMessage(message);
+      if (worktreeCreation) push(SessionEventType.WorktreeCreated, { ...worktreeCreation });
+      index += 1;
+      continue;
+    }
+    const worktreeCreation = worktreeCreationOfMessage(message);
+    if (worktreeCreation) {
+      // 新建 worktree 会话：首轮之前的宿主消息；投影暂存到首个 TurnStarted 落在轮顶。
+      push(SessionEventType.WorktreeCreated, { ...worktreeCreation });
       index += 1;
       continue;
     }
@@ -1799,7 +1990,8 @@ export function synthesizeEventsFromMessages(
             // cold hydration 曾把 model-only background wake 的原文清空，
             // 导致 ProductProjection 即使能消费 task-notification，恢复时也拿不到
             // tool-use-id 与失败详情。输入仍是 model-only，不会生成用户气泡。
-            input: wakeSource === "background_task" ? textOfMessage(message.parts) : "",
+            input:
+              wakeSource === "background_task" ? backgroundWakeInputOfMessage(message.parts) : "",
             inputVisibility: "model-only",
             inputSource: wakeSource,
             ...(wakeSource === "background_task"
@@ -1950,4 +2142,197 @@ export function synthesizeEventsFromMessages(
   }
 
   return events;
+}
+
+function transcriptFootprint(
+  messages: readonly MessageWithParts[],
+  goalVerificationEntries: readonly HydratedGoalVerificationEntry[] = [],
+): TranscriptFootprint {
+  const compactOperations = new Set<string>();
+  const goalVerificationKeys = new Set<string>();
+  const modelChangeKeys = new Set<string>();
+  for (const fact of mergeGoalVerificationEntryFacts(goalVerificationEntries)) {
+    goalVerificationKeys.add(fact.key);
+  }
+  const footprint: TranscriptFootprint = {
+    userTurnCount: 0,
+    assistantTexts: [],
+    reasoningTexts: [],
+    toolCallIds: [],
+    compactMarkerCount: 0,
+    subagentCount: 0,
+    forkTimelineCount: 0,
+    goalVerificationCount: 0,
+    modelChangeCount: 0,
+    worktreeCreatedCount: 0,
+  };
+  // 模型切换 footprint = 相邻真实 user 轮持久化选型快照的变化次数（与投影 marker 的
+  // 生成条件同源：本轮实际选型 ≠ 上一轮）。
+  let lastModelKey: string | null = null;
+
+  for (const message of messages) {
+    if (isForkTimelineMessage(message)) {
+      footprint.forkTimelineCount += 1;
+    }
+    if (isRealUserTurnStarter(message)) {
+      footprint.userTurnCount += 1;
+      const model = turnModelSelectionOfUserMessage(message);
+      if (model) {
+        const key = hydratedModelKey(model);
+        if (lastModelKey !== null && key !== lastModelKey) {
+          footprint.modelChangeCount += 1;
+        }
+        lastModelKey = key;
+      }
+    }
+    if (message.info.role !== "assistant" || isProviderContextOnlyAssistant(message)) {
+      continue;
+    }
+    for (const part of message.parts) {
+      if (part.type === "text" && part.ignored !== true && part.text.length > 0) {
+        footprint.assistantTexts.push(part.text);
+        continue;
+      }
+      if (part.type === "reasoning" && part.text.length > 0) {
+        footprint.reasoningTexts.push(part.text);
+        continue;
+      }
+      if (part.type === "tool") {
+        if (shouldHideInvalidToolCallFromProduct(part.tool, part.metadata)) continue;
+        footprint.toolCallIds.push(part.callID);
+        const subagentInfo = subagentInfoFromToolPart(part);
+        if (subagentInfo && part.state.status !== "pending") {
+          footprint.subagentCount += 1;
+        }
+        continue;
+      }
+      if (part.type === "subtask") {
+        footprint.subagentCount += 1;
+        continue;
+      }
+      if (part.type === "timeline" && part.timelineType === "goal_verification") {
+        goalVerificationKeys.add(goalVerificationKeyOfPart(part));
+        continue;
+      }
+      if (part.type === "timeline" && part.timelineType === "model_change") {
+        modelChangeKeys.add(modelChangeKeyOfPart(part));
+        continue;
+      }
+      if (part.type === "timeline" && part.timelineType === "worktree_creation") {
+        footprint.worktreeCreatedCount += 1;
+        continue;
+      }
+      const compact =
+        part.type === "timeline"
+          ? compactPayloadFromTimelinePart(part)
+          : part.type === "compaction"
+            ? compactPayloadFromLegacyCompactionPart(part)
+            : null;
+      if (compact) {
+        compactOperations.add(String(compact.payload.operationId));
+      }
+    }
+  }
+  footprint.compactMarkerCount = compactOperations.size;
+  footprint.goalVerificationCount = goalVerificationKeys.size;
+  // 新数据的 timeline part 是显式 boundary authority；旧数据无 part 时才依赖
+  // 相邻轮 model 快照变化数。两者表达同一批边界，取 max 避免重复计数。
+  footprint.modelChangeCount = Math.max(footprint.modelChangeCount, modelChangeKeys.size);
+  return footprint;
+}
+
+function projectionFootprint(
+  events: readonly SessionEvent[],
+  sessionId: string,
+): TranscriptFootprint {
+  const projection = new ProductProjection(sessionId, "hydrate-footprint");
+  for (const event of events) {
+    projection.applyEvent(event);
+  }
+  const rows = projection.getSnapshot().rows.window;
+  return {
+    userTurnCount: rows.filter((row) => row.kind === "userInput").length,
+    assistantTexts: rows
+      .filter((row) => row.kind === "assistantText")
+      .map((row) => (row.kind === "assistantText" ? row.text : "")),
+    reasoningTexts: rows
+      .filter((row) => row.kind === "reasoning")
+      .map((row) => (row.kind === "reasoning" ? row.text : "")),
+    toolCallIds: rows
+      .filter((row) => row.kind === "toolCall")
+      .map((row) => (row.kind === "toolCall" ? row.toolCallId : "")),
+    compactMarkerCount: rows.filter(
+      (row) => row.kind === "timelineMarker" && row.marker.type === "compact",
+    ).length,
+    subagentCount: rows.filter((row) => row.kind === "subagent").length,
+    forkTimelineCount: rows.filter(
+      (row) =>
+        row.kind === "timelineMarker" &&
+        (row.marker.type === "forkNotice" || row.marker.type === "forkCreated"),
+    ).length,
+    goalVerificationCount: rows.filter(
+      (row) => row.kind === "timelineMarker" && row.marker.type === "goalVerify",
+    ).length,
+    modelChangeCount: rows.filter(
+      (row) => row.kind === "timelineMarker" && row.marker.type === "modelChange",
+    ).length,
+    worktreeCreatedCount: rows.filter(
+      (row) => row.kind === "timelineMarker" && row.marker.type === "worktreeCreated",
+    ).length,
+  };
+}
+
+function valuesCover(expected: readonly string[], actual: readonly string[]): boolean {
+  const remaining = [...actual];
+  for (const value of expected) {
+    const index = remaining.indexOf(value);
+    if (index < 0) return false;
+    remaining.splice(index, 1);
+  }
+  return true;
+}
+
+function footprintCovered(expected: TranscriptFootprint, actual: TranscriptFootprint): boolean {
+  return (
+    actual.userTurnCount >= expected.userTurnCount &&
+    actual.compactMarkerCount >= expected.compactMarkerCount &&
+    actual.subagentCount >= expected.subagentCount &&
+    actual.forkTimelineCount >= expected.forkTimelineCount &&
+    actual.goalVerificationCount >= expected.goalVerificationCount &&
+    actual.modelChangeCount >= expected.modelChangeCount &&
+    actual.worktreeCreatedCount >= expected.worktreeCreatedCount &&
+    valuesCover(expected.assistantTexts, actual.assistantTexts) &&
+    valuesCover(expected.reasoningTexts, actual.reasoningTexts) &&
+    valuesCover(expected.toolCallIds, actual.toolCallIds)
+  );
+}
+
+/**
+ * 判断事件日志是否足以覆盖 transcript 的可见产品态。
+ * 修复原因：旧判据只数 user turn，事件日志即使缺 tool/reasoning/compact/subagent
+ * 也会被误判为完整，导致冷恢复 snapshot 没有对应 rows。
+ */
+export function eventsCoverTranscript(
+  events: readonly SessionEvent[],
+  messages: readonly MessageWithParts[],
+  options: {
+    goalVerificationEntries?: readonly HydratedGoalVerificationEntry[];
+  } = {},
+): boolean {
+  const expected = transcriptFootprint(messages, options.goalVerificationEntries ?? []);
+  if (
+    expected.userTurnCount === 0 &&
+    expected.assistantTexts.length === 0 &&
+    expected.reasoningTexts.length === 0 &&
+    expected.toolCallIds.length === 0 &&
+    expected.compactMarkerCount === 0 &&
+    expected.subagentCount === 0 &&
+    expected.forkTimelineCount === 0 &&
+    expected.goalVerificationCount === 0 &&
+    expected.modelChangeCount === 0
+  ) {
+    return true;
+  }
+  const sessionId = String(messages[0]?.info.sessionID ?? events[0]?.sessionId ?? "unknown");
+  return footprintCovered(expected, projectionFootprint(events, sessionId));
 }

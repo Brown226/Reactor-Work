@@ -42,16 +42,14 @@ mv "$TARGET.new/${packageDirName}" "$TARGET"
 rm -rf "$TARGET.new"
 ln -sfn "$TARGET" "$INSTALL_DIR/current"
 
-for name in reactor zcode; do
-  cat > "$BIN_DIR/$name" <<SH
+cat > "$BIN_DIR/zcode" <<SH
 #!/usr/bin/env sh
 exec node "$INSTALL_DIR/current/bin/zcode.mjs" "\\$@"
 SH
-  chmod +x "$BIN_DIR/$name"
-done
+chmod +x "$BIN_DIR/zcode"
 
-echo "Reactor $VERSION installed."
-echo "Run: reactor (TUI) or reactor --web (Web)"
+echo "ZCode $VERSION installed."
+echo "Run: zcode (TUI) or zcode --web (Web)"
 case ":$PATH:" in
   *":$BIN_DIR:"*) ;;
   *) echo "Note: $BIN_DIR is not in PATH." ;;

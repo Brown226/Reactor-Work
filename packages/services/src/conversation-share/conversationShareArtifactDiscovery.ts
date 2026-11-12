@@ -1,5 +1,6 @@
 /* oxlint-disable eslint(max-lines) -- input attachment staging and preview artifact discovery share one immutable snapshot boundary. */
 import { createHash } from "node:crypto";
+import { isWorkflowShareFallbackRow } from "#src/conversation-share/conversationShareWorkflowSnapshot.js";
 
 import {
   buildConversationPreviewArtifactCandidates,
@@ -12,7 +13,7 @@ import {
 import type {
   ArtifactRow,
   ConversationArtifactType,
-  ConversationRow,
+  WireConversationRow,
   TurnHeaderRow,
 } from "@zcode/shared/zcode-protocol-v4";
 import {
@@ -40,8 +41,8 @@ interface DiscoveredShareArtifact extends MaterializedShareArtifact {
   row: ArtifactRow;
 }
 
-interface ConversationShareArtifactSnapshot {
-  rows: ConversationRow[];
+export interface ConversationShareArtifactSnapshot {
+  rows: WireConversationRow[];
   bytesBySourceRef: Map<string, Uint8Array>;
   additionalArtifacts: ConversationSharePublicArtifact[];
   issues: ConversationShareFailureIssue[];
@@ -115,15 +116,19 @@ async function materializeRegisteredArtifacts(options: {
   workspacePath: string;
   maxArtifactBytes: number;
   artifacts: ConversationSharePublicArtifact[];
+  inlineBytesBySourceRef?: ReadonlyMap<string, Uint8Array>;
   artifactSource: ConversationShareArtifactSource;
 }): Promise<MaterializedShareArtifact[]> {
   const materialized: MaterializedShareArtifact[] = [];
   for (const artifact of options.artifacts) {
-    const { bytes, canonicalPath } = await options.artifactSource.read({
-      workspacePath: options.workspacePath,
-      ref: artifact.sourceRef,
-      maxBytes: options.maxArtifactBytes,
-    });
+    const inlineBytes = options.inlineBytesBySourceRef?.get(artifact.sourceRef);
+    const { bytes, canonicalPath } = inlineBytes
+      ? { bytes: inlineBytes, canonicalPath: artifact.sourceRef }
+      : await options.artifactSource.read({
+          workspacePath: options.workspacePath,
+          ref: artifact.sourceRef,
+          maxBytes: options.maxArtifactBytes,
+        });
     const sha256 = createHash("sha256").update(bytes).digest("hex");
     // Row 在工具完成时记录，用户可能在发布前修改同一路径；必须复验当前字节，
     // 否则 projection/manifest 描述的是旧文件而 multipart 上传的是新文件。
@@ -145,7 +150,7 @@ async function discoverPreviewArtifacts(options: {
   >;
   artifactSource: ConversationShareArtifactSource;
   input: PublishTextConversationInput;
-  selectedRows: ConversationRow[];
+  selectedRows: WireConversationRow[];
   capabilities: ConversationShareCapabilities;
   revision: number;
   logEpoch: string;
@@ -179,7 +184,8 @@ async function discoverPreviewArtifacts(options: {
   }
   const assistantTextByProductTurnId = new Map<string, string[]>();
   for (const row of options.selectedRows) {
-    if (row.kind !== "assistantText" || !row.productTurnId) continue;
+    if (row.kind !== "assistantText" || !row.productTurnId || isWorkflowShareFallbackRow(row))
+      continue;
     const texts = assistantTextByProductTurnId.get(row.productTurnId) ?? [];
     texts.push(row.text);
     assistantTextByProductTurnId.set(row.productTurnId, texts);
@@ -400,7 +406,7 @@ async function discoverPreviewArtifacts(options: {
 async function readInputAttachment(options: {
   zcodeAgentService: Pick<IZCodeAgentService, "conversationAttachmentReadV4">;
   input: PublishTextConversationInput;
-  row: Extract<ConversationRow, { kind: "userInput" }>;
+  row: Extract<WireConversationRow, { kind: "userInput" }>;
   attachmentIndex: number;
   maxBytes: number;
 }): Promise<{ bytes: Uint8Array; mediaType: string }> {
@@ -475,12 +481,12 @@ async function readInputAttachment(options: {
 async function discoverInputAttachments(options: {
   zcodeAgentService: Pick<IZCodeAgentService, "conversationAttachmentReadV4">;
   input: PublishTextConversationInput;
-  selectedRows: ConversationRow[];
+  selectedRows: WireConversationRow[];
   capabilities: ConversationShareCapabilities;
   warnings: ConversationShareFailureIssue[];
   turnOrdinalByProductTurnId?: ReadonlyMap<string, number>;
 }): Promise<{
-  rows: ConversationRow[];
+  rows: WireConversationRow[];
   artifacts: ConversationSharePublicArtifact[];
   bytesBySourceRef: Map<string, Uint8Array>;
 }> {
@@ -631,9 +637,9 @@ async function discoverInputAttachments(options: {
 }
 
 function insertDiscoveredArtifacts(
-  selectedRows: ConversationRow[],
+  selectedRows: WireConversationRow[],
   artifacts: DiscoveredShareArtifact[],
-): ConversationRow[] {
+): WireConversationRow[] {
   if (artifacts.length === 0) return selectedRows;
   const artifactsByProductTurnId = new Map<string, ArtifactRow[]>();
   for (const artifact of artifacts) {
@@ -661,8 +667,9 @@ export async function buildConversationShareArtifactSnapshot(options: {
   >;
   artifactSource: ConversationShareArtifactSource;
   input: PublishTextConversationInput;
-  selectedRows: ConversationRow[];
+  selectedRows: WireConversationRow[];
   registeredArtifacts: ConversationSharePublicArtifact[];
+  inlineBytesBySourceRef?: ReadonlyMap<string, Uint8Array>;
   capabilities: ConversationShareCapabilities;
   revision: number;
   logEpoch: string;
@@ -685,6 +692,7 @@ export async function buildConversationShareArtifactSnapshot(options: {
     workspacePath: options.input.workspacePath,
     maxArtifactBytes: options.capabilities.max_artifact_bytes,
     artifacts: options.registeredArtifacts,
+    inlineBytesBySourceRef: options.inlineBytesBySourceRef,
     artifactSource: options.artifactSource,
   });
   const discovered = await discoverPreviewArtifacts({

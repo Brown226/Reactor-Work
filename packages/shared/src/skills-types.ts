@@ -1,5 +1,4 @@
-/** server = 企业服务端下发（`server-skills/`），只卸载不本地删除用户自建。 */
-export type SkillScope = "workspace" | "user" | "plugin" | "server";
+export type SkillScope = "workspace" | "user" | "plugin";
 
 export interface SkillMetadata {
   slug?: string;

@@ -19,11 +19,12 @@ import { recordSlashCommandInHistory } from "./history.js";
 import { attachCurrentSessionMetadata, normalizeTuiPromptInput } from "./metadata.js";
 import { buildCheckpointSelection, buildSessionSelection } from "./selections.js";
 import {
-  AVAILABLE_COMMANDS,
   buildManualSkillPrompt,
   formatSlashCommandHelp,
+  listAvailableCommandNames,
   parseSlashCommand,
 } from "./slash-commands.js";
+import { isWorkflowModeEnabled, WORKFLOW_DISABLED_NOTICE } from "../workflow-mode.js";
 import {
   buildLoginSelection,
   emitLoginAuthorizeMessage,
@@ -69,7 +70,7 @@ export function createCommandCenter(deps: CommandCenterDeps): TuiSubmitPrompt {
       const customCommands = await listCustomCommandsForHelp(deps);
       return {
         mode: deps.getMode?.(),
-        response: `Unknown command: /${command.rawName}. Available commands: ${formatAvailableCommandNames(AVAILABLE_COMMANDS, customCommands)}.`,
+        response: `Unknown command: /${command.rawName}. Available commands: ${formatAvailableCommandNames(listAvailableCommandNames(deps), customCommands)}.`,
       };
     }
 
@@ -78,7 +79,7 @@ export function createCommandCenter(deps: CommandCenterDeps): TuiSubmitPrompt {
         const customCommands = await listCustomCommandsForHelp(deps);
         return {
           mode: deps.getMode?.(),
-          response: formatSlashCommandHelp(command.args, customCommands),
+          response: formatSlashCommandHelp(command.args, customCommands, deps),
         };
       }
 
@@ -211,6 +212,19 @@ export function createCommandCenter(deps: CommandCenterDeps): TuiSubmitPrompt {
         // TUI 已知 slash command 若没有显式分支，会落到文件末尾的
         // resume 兜底。/init 是普通 prompt command，必须交给 app.submitPrompt
         // 进入 bootstrap resolver，才能和 app --stdio 复用同一套展开逻辑。
+        return attachCurrentSessionMetadata(await app.submitPrompt(prompt, options), deps, app);
+      }
+
+      if (command.name === "workflow") {
+        // disabled 下 builtin resolver 不展开 `/workflow`，照常提交会把原文当普通文本发给模型；
+        // 在本地拦下，不建 app、不发模型（launch.md「The standalone CLI: `--workflow-mode`」）。
+        if (!isWorkflowModeEnabled(deps.workflowMode)) {
+          return { mode: deps.getMode?.(), response: WORKFLOW_DISABLED_NOTICE };
+        }
+        const app = await deps.getApp();
+        const prompt = command.args ? `/workflow ${command.args}` : "/workflow";
+        // 与 /init 同款：原文交给 app.submitPrompt，由 bootstrap 的 builtin resolver 展开成
+        // 「先加载 dynamic-workflows 技能，再写脚本调 CreateWorkflow」的提示词。
         return attachCurrentSessionMetadata(await app.submitPrompt(prompt, options), deps, app);
       }
 

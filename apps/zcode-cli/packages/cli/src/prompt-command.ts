@@ -1,3 +1,5 @@
+import type { ToolSearchMode } from "@zcode/contracts";
+import { createCliProviderRefreshReporter } from "./provider-runtime-env.js";
 import { extname } from "node:path";
 import { formatJson, type PresentationSurface } from "@zcode/core";
 import type { RunContext, GlobalOptions } from "@zcode/shared-types";
@@ -25,6 +27,13 @@ import {
   runCliCleanupWithTimeout,
 } from "./shutdown.js";
 import { runSkillsCommand } from "./skills-command.js";
+import {
+  DEFAULT_CLI_WORKFLOW_MODE,
+  isWorkflowModeEnabled,
+  resolveWorkflowModeRuntimeConfig,
+  WORKFLOW_DISABLED_NOTICE,
+} from "./workflow-mode.js";
+import type { DynamicWorkflowMode } from "@zcode/shared";
 import type { CommandCenterApp, SlashCommand } from "./command-center.js";
 import type {
   CliPermissionMode,
@@ -32,6 +41,7 @@ import type {
   ModeCapableApp,
   RunDependencies,
 } from "./cli-types.js";
+import { workspaceTrustCommandArgument } from "./hooks-trust-command.js";
 
 /**
  * Does this run print a JSON summary at the end?
@@ -69,7 +79,9 @@ export const runPrompt = async (
   resumeRequest: CliResumeRequest = { continueSession: false },
   toolDisallowlist?: readonly string[],
   forceMcs = false,
+  toolsearchMode: ToolSearchMode = "off",
   presentationSurface: PresentationSurface = "terminal",
+  workflowMode: DynamicWorkflowMode = DEFAULT_CLI_WORKFLOW_MODE,
 ): Promise<number> => {
   if (prompt.trim().length === 0) {
     ctx.stderr.write(`${EMPTY_PROMPT_ERROR}\n`);
@@ -79,9 +91,21 @@ export const runPrompt = async (
   const slashCommand = parseSlashCommand(prompt);
   if (slashCommand?.type === "known" && slashCommand.name === "help") {
     ctx.stdout.write(
-      `${formatSlashCommandHelp(slashCommand.args, await listCustomCommandsForPrompt(deps))}\n`,
+      `${formatSlashCommandHelp(slashCommand.args, await listCustomCommandsForPrompt(deps), {
+        workflowMode,
+      })}\n`,
     );
     return 0;
+  }
+  // disabled 下 `/workflow` 不展开（builtin resolver 同判）；若照常建 app 提交，原文会作为普通文本
+  // 发给模型并「成功」退出，脚本察觉不到。建 app 之前就报错退出，与 TUI 的本地提示同一句。
+  if (
+    slashCommand?.type === "known" &&
+    slashCommand.name === "workflow" &&
+    !isWorkflowModeEnabled(workflowMode)
+  ) {
+    ctx.stderr.write(`Error: ${WORKFLOW_DISABLED_NOTICE}\n`);
+    return 1;
   }
   if (slashCommand?.type === "known" && slashCommand.name === "skill" && !slashCommand.skillName) {
     return await runSkillsCommand(ctx, options, deps, []);
@@ -208,8 +232,18 @@ export const runPrompt = async (
             },
           },
     );
+    const createProviderEndpointRoutingPort =
+      deps.createProviderEndpointRoutingPort ??
+      bootstrapModule?.createDefaultProviderEndpointRoutingPort;
+    const providerEndpointRoutingPort = createProviderEndpointRoutingPort?.({
+      appVersion: version,
+      env,
+      workingDirectory,
+    });
     browserRuntime = createCliHeadlessBrowserRuntime(options, deps);
     app = await createApp({
+      modelSelectionMode: "cli-default",
+      standaloneSessionControl: true,
       browserControlPort: browserRuntime?.browserControlPort,
       env: appEnv,
       // headless 没有交互审批面，core 因此退到 deny broker，于是 CreateWorkflow 的
@@ -217,6 +251,7 @@ export const runPrompt = async (
       // 这个最小 broker 只按工具名放行 CreateWorkflow，其余工具委托回同一个 deny
       // broker，语义逐字不变。详见 headless-workflow.ts 的注释。
       permissionBroker: createHeadlessPermissionBroker(),
+      ...(providerEndpointRoutingPort ? { providerEndpointRoutingPort } : {}),
       providerRegistry: providerRegistryRuntime.runtime.registryService,
       configuredDefaultModelSelection: providerRegistryRuntime.configuredDefaultModelSelection,
       ...(providerRegistryRuntime.providerRuntimeHeadersPort
@@ -228,7 +263,9 @@ export const runPrompt = async (
       runtimeConfig: {
         ...(mode ? { mode } : {}),
         ...(toolDisallowlist ? { toolDisallowlist } : {}),
+        toolSearch: { mode: toolsearchMode },
         ...(forceMcs ? { midConversationSystem: { mode: "force" as const } } : {}),
+        ...resolveWorkflowModeRuntimeConfig(workflowMode),
         memory: { extractionEnabled: options.memoryBench === true },
         modelStreaming: "on",
         presentationSurface,
@@ -259,7 +296,8 @@ export const runPrompt = async (
     // 的三件机制全被跳过——dwf 结算等待、常驻事件订阅的单一写者、`response` 取最后一个
     // 回合。结果是 `zcode -p "/workflow ..."` 在第一个回合后就退出，把在飞的 run 孤儿化
     // 成 Interrupted。能解析成真实自定义命令的必须落到普通 prompt 路径，提交**原文**即可：
-    // facade 的 customCommandPromptResolver 会在服务端展开（$ARGUMENTS、skills: 前言、`!`）。
+    // facade 的 customCommandPromptResolver 会在服务端展开（$ARGUMENTS、skills: 前言、把 `!`
+    // 块改写成交给模型的 Bash 指令）。
     // 解析不出来的名字继续留在 command-center，拿它的 "Unknown command" 文案；保留名
     // （`/compress` 是唯一一个 CLI 解析成 unknown 而 facade 又拒绝展开的）同样留在那边，
     // 判据与 facade 的 gate 共用一个来源，见 isResolvableCustomCommand。
@@ -274,6 +312,7 @@ export const runPrompt = async (
         traceId,
         abortController.signal,
         deps,
+        workflowMode,
       );
     }
 
@@ -456,14 +495,12 @@ async function routesToPromptCommandCenter(
 }
 
 async function isResolvableCustomCommand(deps: RunDependencies, name: string): Promise<boolean> {
-  // 保留名先问，再尝试加载——与 facade 那道 gate 的顺序逐字一致
-  // （`bootstrap/src/custom-command-prompt.ts:31`）。判据必须是同一个：facade 对保留名
+  // 保留名先问，再尝试加载——与 facade 那道 gate 的顺序逐字一致（`bootstrap/src/
+  // custom-command-prompt.ts` 的 resolveZCodeCustomCommandPrompt 开头）。判据必须是同一个：facade 对保留名
   // 直接返回 undefined、不做展开，所以这里若把一个保留名判成"可解析"，它就会以字面文本
   // `/compress …` 被当成普通 prompt 提交给模型——静默走错路，没有任何报错。
   //
-  // 探测刻意用「保留名检查 + load」这一对，而不是直接调 resolveZCodeCustomCommandPrompt：
-  // 后者会执行 `!` shell expansion，拿它探测等于把用户的 shell 片段跑两遍。
-  // 这一对是它的无副作用等价物（load 只读文件）。
+  // 探测只用「保留名检查 + load」这一对（load 只读文件），完整展开留给 facade 做一次。
   if (await isReservedSlashCommandName(deps, name)) return false;
   try {
     await loadCustomCommandForPrompt(deps, name);
@@ -494,6 +531,7 @@ async function runPromptCommandCenterCommand(
   traceId: string | undefined,
   abortSignal: AbortSignal,
   deps: RunDependencies,
+  workflowMode: DynamicWorkflowMode,
 ): Promise<number> {
   const commandCenter = createCommandCenter({
     getApp: async () => app as unknown as CommandCenterApp,
@@ -504,6 +542,7 @@ async function runPromptCommandCenterCommand(
       await app.recordInputHistory?.(input, kind);
     },
     resumeApp: async () => app as unknown as CommandCenterApp,
+    workflowMode,
     setLocale: async (locale) => {
       if (!app.setLocale) {
         throw new Error("Locale switching is not available in this client.");
@@ -633,8 +672,7 @@ function writeHeadlessWorkspaceHookTrustDiagnostic(
       ...status.items
         .filter((item) => item.configuredEnabled && item.trustState !== "trusted_persistent")
         .map((item) => `pending digest: ${item.hookDeclarationDigest}`),
-      `Review with: zcode hooks trust review --workspace ${JSON.stringify(status.workspaceIdentity)}`,
+      `Review with: zcode hooks trust review --workspace ${JSON.stringify(workspaceTrustCommandArgument(status))}`,
     ].join("\n") + "\n",
   );
 }
-import { createCliProviderRefreshReporter } from "./provider-runtime-env.js";

@@ -16,6 +16,7 @@ import type {
   SubmitVerdict as ContractsSubmitVerdict,
   ToolArtifactStorePort,
   WorkflowEscalatePort,
+  WorkflowWebSearchBudgetPort,
   WorkflowSubmitPort,
 } from "@zcode/contracts";
 import type { AgentRuntime } from "@zcode/core";
@@ -32,7 +33,9 @@ import type {
 import type { ActorTranscriptStore } from "./workflow-actor-transcript.js";
 import type { WorkflowConcurrencyPort } from "./workflow-concurrency-governor.js";
 import type { ActorModelActivity, WorkflowClock } from "./workflow-driver-concurrency.js";
+import type { ActorSessionQuiescence } from "./workflow-driver-quiescence.js";
 import type { WorkflowEscalationRegistry } from "./workflow-escalation-registry.js";
+import type { WorkflowRunSeatGate } from "./workflow-seat-gate.js";
 
 /** 一个可外部结算的 promise。 */
 export interface Deferred<T> {
@@ -71,6 +74,11 @@ export type ActorRuntimeFactory = (input: {
    * opt-in**——最可能撞上未预见之墙的 actor 恰是作者没标记的那一个。
    */
   escalatePort: WorkflowEscalatePort;
+  /**
+   * 每个 ask 的 WebSearch 预算端口：计数在 driver 的会话状态里（startAsk 归零），上限取
+   * persona 的 `budget.webSearch`，缺席用默认值。恒注入，与升级端口同路下传到 runtime deps。
+   */
+  webSearchBudgetPort: WorkflowWebSearchBudgetPort;
   /**
    * amend-resume 的会话种子，仅当本 actor 消费了 ≥1 条导入 ask 条目时在场。
    *
@@ -134,11 +142,6 @@ export interface AgentRuntimeWorkflowDriverDeps {
    */
   parentSessionId?: SessionId;
   /**
-   * world.run 的已批准命令集（编译期字面量收集）。
-   * 结构性地落进 {@link WorldReadDeps}：缺席即 world.run 全拒绝（fail-closed）。
-   */
-  declaredRunCommands?: ReadonlySet<string>;
-  /**
    * 每个 actor 站点的 submit profile，编译期由 `deriveActorSubmitProfiles` 算出（run 提交路径的
    * compileOnce）。可选：缺席 = 每个 actor 都 generic（历史行为），不算 profile 的装配
    * （snippet、fake driver、既有测试）因此一字不改。
@@ -153,6 +156,17 @@ export interface AgentRuntimeWorkflowDriverDeps {
    * （v1 的 `acquireSlot` 已删）。
    */
   concurrency?: WorkflowConcurrencyPort;
+  /**
+   * 本 run 的座位闸门（docs/dynamic-workflow/concurrency.md「Retuning a live run」）：本 run
+   * **自己**的并发上界中途被改低时，超出的子代理在下一个 turn step 前停住。在场时 driver 做两件
+   * 事——把每个 actor 的准入端口包进闸门，以及把 ask 的起止喂给它（startAsk 与引擎的
+   * `node-settled`，见 workflow-driver.ts）。
+   *
+   * 可选：缺席即这个 run 的上界从不中途变动（snippet、fake driver、既有测试装配），准入端口与
+   * 从前逐字相同。**在场也不改变从未被改低过的 run 的行为**：上界之上的请求原地通过，闸门不发
+   * 任何事件、不持任何票。
+   */
+  seatGate?: WorkflowRunSeatGate;
   /**
    * actor 会话的转录存取面（生产是 session store 本身）。两个用途共用它，且**必须**是同一个：
    * ask 边界记账的计数，与种子截断的复制（见 workflow-actor-transcript.ts 的模块说明）。
@@ -171,15 +185,29 @@ export interface AgentRuntimeWorkflowDriverDeps {
    */
   runId?: string;
   /**
-   * 时钟与定时器：run 级 stall 时钟与瞬态失败的退避
-   * 重驱都用它。可注入只为测试假时间；`stallAfterMs` 缺省 20 分钟；`random` 供退避抖动。
+   * 时钟与定时器（apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md）：run 级 stall 时钟、瞬态失败的退避
+   * 重驱与会话静默的有界等待都用它。可注入只为测试假时间；`stallAfterMs` 缺省 20 分钟；
+   * `quiesceMs` 缺省 {@link AMEND_TRANSCRIPT_QUIESCE_MS}；`random` 供退避抖动。
    */
-  clock?: WorkflowClock & { stallAfterMs?: number; random?: () => number };
+  clock?: WorkflowClock & {
+    stallAfterMs?: number;
+    quiesceMs?: number;
+    random?: () => number;
+  };
+  /**
+   * 交出本 driver 的**会话静默探针**（workflow-driver-quiescence.ts）。构造时恰好调一次，
+   * 调用方把探针挂到自己那条 run 的注册表条目上——amend 接续在飞 ask 之前要问它。
+   *
+   * 走回调而不是让 `createAgentRuntimeWorkflowDriver` 返回一个二元组：driver 实例由**引擎**
+   * 在 `makeDriver(sink)` 时才造出来，装配方拿不到那个返回值。缺席即调用方不关心静默
+   * （测试装配、直接用 harness 的路径）。
+   */
+  onQuiescenceProbe?: (probe: ActorSessionQuiescence) => void;
 }
 
 /**
  * 每个 actor 会话的运行态。per-actor FIFO（引擎保证）→ 每会话至多一个在飞 ask，因此
- * currentInstance / pendingSubmit / accepted / cancelled 都是「单前实例」语义，无需按 instance 细分。
+ * currentInstance / pendingSubmit / accepted / cancelled 都是「当前实例」语义，无需按 instance 细分。
  */
 export interface SessionState {
   readonly ref: SessionRef;
@@ -208,6 +236,13 @@ export interface SessionState {
    * per-ask 计数，startAsk 归零；nudge 轮**不归零**（nudge 仍在同一个 ask 里）。
    */
   escalationsUsed: number;
+  /**
+   * 本次 ask 已发起的 WebSearch 次数（被预算拒掉的不计）。与 escalationsUsed 同族：per-ask，
+   * startAsk 归零，nudge / repair 轮不归零。
+   */
+  webSearchesUsed: number;
+  /** 本子代理每个 ask 的 WebSearch 上限：persona 的 `budget.webSearch` 或默认值，建会话时定下。 */
+  readonly webSearchLimit: number;
   /** 当前 ask 的 turn 取消控制器；startAsk 每 ask 重建。 */
   abortController?: AbortController;
   /** 当前 ask 已被引擎 accept：其 turn resolve 时不再上报 askTurnEnded（已由引擎结算）。 */

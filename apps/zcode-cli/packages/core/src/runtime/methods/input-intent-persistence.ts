@@ -1,3 +1,4 @@
+import type { SessionStorePort, SessionId } from "@zcode/contracts";
 import type { TurnInputIntentMetadata } from "../deps.js";
 
 /**
@@ -21,6 +22,9 @@ export function buildPersistedConversationInputIntent(
       : { state: "notRequested" };
 
   return {
+    ...(intent.inputOrigin ? { inputOrigin: intent.inputOrigin } : {}),
+    ...(intent.conversationQuotes ? { conversationQuotes: intent.conversationQuotes } : {}),
+    ...(intent.botGroupSource ? { botGroupSource: intent.botGroupSource } : {}),
     sourceCommandId: intent.sourceCommandId,
     queueItemId: intent.queueItemId,
     clientId: intent.clientId,
@@ -32,6 +36,7 @@ export function buildPersistedConversationInputIntent(
     ...(intent.modelSelection ? { modelSelection: intent.modelSelection } : {}),
     ...(intent.mode ? { mode: intent.mode } : {}),
     ...(intent.planEnabled !== undefined ? { planEnabled: intent.planEnabled } : {}),
+    ...(intent.genUiContext !== undefined ? { genUiContext: intent.genUiContext } : {}),
     ...(intent.sharedContextRefs ? { sharedContextRefs: intent.sharedContextRefs } : {}),
     delivery: {
       requested: intent.requestedDelivery,
@@ -45,6 +50,51 @@ export function buildPersistedConversationInputIntent(
     steer,
     dispatch: { state: dispatchState },
     admittedAt: intent.admittedAt,
+    ...(intent.highspeed ? { highspeed: intent.highspeed } : {}),
     ...(intent.provenance ? { provenance: intent.provenance } : {}),
+    ...(intent.source ? { source: intent.source } : {}),
+  };
+}
+
+/** 在工具执行前收紧群任务授权；普通正文不能改变这个可信 metadata 标记。 */
+export async function ensureGroupTaskPermissionScope(
+  store: SessionStorePort | undefined,
+  sessionId: SessionId,
+  intent: TurnInputIntentMetadata | undefined,
+): Promise<void> {
+  if (!intent?.botGroupSource) return;
+  if (!store) throw new Error("Group task permission scope requires persistence");
+  const session = await store.getSession(sessionId);
+  if (!session) throw new Error("Group task permission scope requires a persisted session");
+  if (session.permission?.scope === "session") return;
+  await store.updateSession({
+    id: sessionId,
+    permission: { version: 1, scope: "session", mode: "build" },
+  });
+}
+
+/** 仅沿当前执行的因果 trace 传播，不从 session 最后使用端推断。 */
+export const TELEMETRY_INPUT_ORIGIN_ATTRIBUTE = "telemetry.inputOrigin";
+export function telemetryInputOrigin(
+  intent: TurnInputIntentMetadata | undefined,
+  attributes?: Record<string, string | number | boolean>,
+): "desktop" | "mobile" | undefined {
+  const value = intent?.inputOrigin ?? attributes?.[TELEMETRY_INPUT_ORIGIN_ATTRIBUTE];
+  return value === "desktop" || value === "mobile" ? value : undefined;
+}
+export function backgroundBatchTelemetryAttributes(
+  traces: readonly { attributes?: Record<string, string | number | boolean> }[],
+): Record<string, string | number | boolean> {
+  const origins = traces.map((trace) => telemetryInputOrigin(undefined, trace.attributes));
+  const origin = origins[0];
+  return {
+    ...traces[0]?.attributes,
+    [TELEMETRY_INPUT_ORIGIN_ATTRIBUTE]:
+      // 同批只生成一个后台轮；只要包含手机触发就保留 mobile，避免合批吞掉远控统计。
+      origins.includes("mobile")
+        ? "mobile"
+        : origin && origins.every((value) => value === origin)
+          ? origin
+          : "unknown",
   };
 }

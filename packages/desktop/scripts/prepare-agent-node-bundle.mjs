@@ -9,14 +9,21 @@
 // - 单平台体积从 ~180MB 降到 ~16MB，且同一份 JS 跨平台通用；
 // - app-server 命令路径不会加载 @zcode/tui，所以这里天然不打包 TUI。
 //
-// 远端（SSH/WSL/Docker）没有 Electron，仍走 prepare:remote-assets 的原生二进制，互不影响。
+// 远端（SSH/WSL/Docker）没有 Electron，由 Source Server archive 自带目标 Node，互不影响。
 
-import { cpSync, existsSync, mkdirSync } from "node:fs";
-import { basename, dirname, relative, resolve } from "node:path";
+// 修复原因：bootstrap 清理旧插件 dist 时使用 rmSync，漏导入会在构建前抛出 ReferenceError。
+import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { basename, dirname, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { runCommand } from "../../../scripts/spawn-command.mjs";
 import { stageAgentBundle } from "./stage-agent-bundle.mjs";
+import {
+  isSharpRequiredByComputerUse,
+  stageSharpIntoBundledAgents,
+} from "./sharp-package-assets.mjs";
+import { stageKoffiIntoBundledAgents } from "./koffi-package-assets.mjs";
+import { BUNDLED_NPM_VERSION, stageBundledNpm } from "./bundled-npm-assets.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const desktopRoot = resolve(scriptDir, "..");
@@ -30,6 +37,8 @@ const pnpmRunEnv = {
   PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false",
 };
 const BROWSER_USE_PLUGIN_PACKAGE_NAME = "@zcode/browser-use-plugin";
+const NODE_REPL_HOST_PACKAGE_NAME = "@zcode/node-repl-host";
+const CUA_PLUGIN_PACKAGE_NAME = "@zcode/zcode-cua-plugin";
 
 // 平台目录命名：darwin/win32/linux + x64/arm64，
 // 支持 ZCODE_TARGET_OS / ZCODE_TARGET_ARCH 覆盖（交叉打包时由 CI 注入）。
@@ -88,18 +97,110 @@ const browserUseRequiredRuntimePaths = [
   "skills/control-browser/SKILL.md",
   "skills/web-gui-tester/SKILL.md",
 ];
-/**
- * 内容型官方插件（无 runtime 构建）与运行时型插件的清单来自**单一数据源**
- * `scripts/official-plugin-seeds.mjs`——这份清单过去在桌面打包、远端预构建、服务端
- * 远端合同三处各写一遍，漂移导致「dev 有、安装包没有」静默存在很久
- * （见 44b25ed46c 与该模块注释）。新增随包插件只改那一处。
- */
-import {
-  CONTENT_PLUGIN_SEED_ENTRIES,
-  RUNTIME_PLUGIN_PACKAGES,
-} from "../../../scripts/official-plugin-seeds.mjs";
-
+// 文档插件（documents / pdf / presentations / spreadsheets）的查看面板由共享包
+// @zcode/office-runtime 构建进各插件 dist/；插件包自身没有 TypeScript 源码。
+const officeViewerRuntimePaths = ["dist/server.mjs", "dist/ui/assets.json", "dist/ui/panel.html"];
 const officialPluginPackages = [
+  {
+    packageName: "@zcode/android-emulator-plugin",
+    relativePath: "apps/zcode-cli/packages/android-emulator-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: ["dist/mcp/server.js"],
+    runtimeBuildScript: "scripts/build-mcp.mjs",
+    stagedPath: "packages/android-emulator-plugin",
+  },
+  {
+    packageName: "@zcode/documents-plugin",
+    relativePath: "apps/zcode-cli/packages/documents-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: officeViewerRuntimePaths,
+    requiredSeedPaths: [
+      "agents/visual-judge.md",
+      "skills/docx/SKILL.md",
+      "skills/docx-viewer/SKILL.md",
+    ],
+    runtimeBuildScript: "../office-runtime/scripts/build.mjs",
+    stagedPath: "packages/documents-plugin",
+  },
+  {
+    packageName: "@zcode/image-search-plugin",
+    relativePath: "apps/zcode-cli/packages/image-search-plugin",
+    requiresRuntime: false,
+    requiredSeedPaths: [".mcp.json"],
+    stagedPath: "packages/image-search-plugin",
+  },
+  {
+    packageName: "@zcode/pdf-plugin",
+    relativePath: "apps/zcode-cli/packages/pdf-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: officeViewerRuntimePaths,
+    requiredSeedPaths: [
+      "agents/visual-judge.md",
+      "skills/pdf/SKILL.md",
+      "skills/pdf-viewer/SKILL.md",
+    ],
+    runtimeBuildScript: "../office-runtime/scripts/build.mjs",
+    stagedPath: "packages/pdf-plugin",
+  },
+  {
+    packageName: "@zcode/presentations-plugin",
+    relativePath: "apps/zcode-cli/packages/presentations-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: officeViewerRuntimePaths,
+    requiredSeedPaths: [
+      "agents/visual-judge.md",
+      "skills/pptx/SKILL.md",
+      "skills/pptx-viewer/SKILL.md",
+    ],
+    runtimeBuildScript: "../office-runtime/scripts/build.mjs",
+    stagedPath: "packages/presentations-plugin",
+  },
+  {
+    packageName: "@zcode/spreadsheets-plugin",
+    relativePath: "apps/zcode-cli/packages/spreadsheets-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: officeViewerRuntimePaths,
+    requiredSeedPaths: [
+      "agents/visual-judge.md",
+      "skills/xlsx/SKILL.md",
+      "skills/xlsx-viewer/SKILL.md",
+    ],
+    runtimeBuildScript: "../office-runtime/scripts/build.mjs",
+    stagedPath: "packages/spreadsheets-plugin",
+  },
+  {
+    packageName: "@zcode/visualize-plugin",
+    relativePath: "apps/zcode-cli/packages/visualize-plugin",
+    requiresRuntime: false,
+    requiredSeedPaths: [
+      "skills/visualize/SKILL.md",
+      "skills/visualize/references/api.md",
+      "skills/visualize/references/styles.md",
+      "skills/visualize/tweak.md",
+      "skills/visualize/LICENSE.md",
+      "skills/visualize/scripts/render.py",
+      "skills/visualize/assets/visualize.css",
+      "skills/visualize/assets/visualize.html",
+      "skills/visualize/assets/calendar.js",
+      "skills/visualize/assets/runtime-manifest.json",
+      "skills/visualize/scripts/vendor.py",
+      "skills/visualize/assets/vendor/manifest.json",
+      "skills/visualize/assets/vendor/floating-ui-core-1.7.3.min.js",
+      "skills/visualize/assets/vendor/floating-ui-core-1.7.3.min.js.LICENSE",
+      "skills/visualize/assets/vendor/floating-ui-dom-1.7.4.min.js",
+      "skills/visualize/assets/vendor/floating-ui-dom-1.7.4.min.js.LICENSE",
+      "skills/visualize/assets/vendor/lucide-1.17.0.js",
+      "skills/visualize/assets/vendor/lucide-1.17.0.js.LICENSE",
+      "skills/visualize/assets/vendor/d3-7.9.0.min.js",
+      "skills/visualize/assets/vendor/d3-7.9.0.min.js.LICENSE",
+      "skills/visualize/widgets/calendar.md",
+      "skills/visualize/examples/calendar.html",
+      "skills/visualize/assets/standalone-host-bridge.js",
+      "skills/visualize/assets/standalone-shell.js",
+    ],
+    requiredRuntimePaths: [],
+    stagedPath: "packages/visualize-plugin",
+  },
   {
     // browser-use 只携带自己的 client script 与 skill/docs；node_repl MCP runtime 归
     // @zcode/node-repl-host（见上方常量注释）。
@@ -110,7 +211,53 @@ const officialPluginPackages = [
     runtimeBuildScript: "scripts/build.mjs",
     stagedPath: "packages/browser-use-plugin",
   },
-
+  {
+    packageName: "@zcode/ios-simulator-plugin",
+    relativePath: "apps/zcode-cli/packages/ios-simulator-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: ["dist/mcp/server.js"],
+    runtimeBuildScript: "scripts/build-mcp.mjs",
+    stagedPath: "packages/ios-simulator-plugin",
+  },
+  {
+    // 修复原因：restore-legacy-sessions 已注册为官方插件，但 Electron 生产包只会拷贝
+    // 这里列出的资源。漏掉它会导致用户生产包首次启动后 plugins list 里看不到该插件。
+    packageName: "@zcode/restore-legacy-sessions-plugin",
+    relativePath: "apps/zcode-cli/packages/restore-legacy-sessions-plugin",
+    requiresRuntime: false,
+    stagedPath: "packages/restore-legacy-sessions-plugin",
+  },
+  {
+    packageName: "@zcode/skill-creator-plugin",
+    relativePath: "apps/zcode-cli/packages/skill-creator-plugin",
+    requiresRuntime: false,
+    stagedPath: "packages/skill-creator-plugin",
+  },
+  {
+    packageName: "@zcode/plugin-creator-plugin",
+    relativePath: "apps/zcode-cli/packages/plugin-creator-plugin",
+    requiresRuntime: false,
+    stagedPath: "packages/plugin-creator-plugin",
+  },
+  {
+    // 修复原因：zcode-guide 已注册为官方默认启用内容型插件（见 official-plugin-definitions.ts）。
+    // Electron 生产包不是 SEA 路径，官方插件 seed 依赖这里 stage 的 resources/glm/packages/*-plugin；
+    // 漏掉它会导致生产桌面包首启 seed 不到该插件，用户拿不到默认启用的配置指南技能。
+    packageName: "@zcode/zcode-guide-plugin",
+    relativePath: "apps/zcode-cli/packages/zcode-guide-plugin",
+    requiresRuntime: false,
+    stagedPath: "packages/zcode-guide-plugin",
+  },
+  {
+    // ZCode Sites（默认开启）。漏 stage 会让生产桌面包里找不到它；Sites 面板的 MCP server 与页面由插件自己的
+    // build 脚本构建进 dist/。
+    packageName: "@zcode/zcode-site-plugin",
+    relativePath: "apps/zcode-cli/packages/zcode-site-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: ["dist/server.mjs", "dist/ui/panel.html"],
+    runtimeBuildScript: "scripts/build.mjs",
+    stagedPath: "packages/zcode-site-plugin",
+  },
   {
     // node_repl 宿主：Browser Use 与 Computer Use 共用的 MCP runtime，本轮抽成独立包。
     // 它没有 listing（不进插件市场展示面），但生产包首启 seed 必须拿到它的 dist runtime，
@@ -122,33 +269,60 @@ const officialPluginPackages = [
     runtimeBuildScript: "scripts/build.mjs",
     stagedPath: "packages/node-repl-host",
   },
-
   {
-    // 审查技能（5 个）：纯内容型插件，没有 runtime 构建步骤，只需把 skills/ 与清单拷进
-    // glm/packages。此前这些技能只存在于企业服务端技能库，安装包不带、也没人发现，
-    // 结果是「不登录企业端就没有审查能力」；内置后由 definition 的 defaultEnabled 直接可用。
-    packageName: "@zcode/review-skills-plugin",
-    relativePath: "apps/zcode-cli/packages/review-skills-plugin",
+    // CUA 插件只携带 SDK/skill/docs；node_repl MCP runtime 归 @zcode/node-repl-host。
+    packageName: "@zcode/zcode-cua-plugin",
+    relativePath: "apps/zcode-cli/packages/zcode-cua-plugin",
     requiresRuntime: false,
-    stagedPath: "packages/review-skills-plugin",
+    stagedPath: "packages/zcode-cua-plugin",
   },
-
-  ...RUNTIME_PLUGIN_PACKAGES,
-  ...CONTENT_PLUGIN_SEED_ENTRIES,
+  {
+    // design（默认启用内容型插件）：Electron 生产包靠这里 stage 的目录做首启 seed，漏掉它
+    // 生产桌面包就没有设计技能。必需文件与 official-plugin-definitions.ts 的 requiredSeedPaths 一致。
+    packageName: "@zcode/design-plugin",
+    relativePath: "apps/zcode-cli/packages/design-plugin",
+    requiresRuntime: false,
+    requiredSeedPaths: [
+      "skills/design/SKILL.md",
+      "skills/design/references/catalog.md",
+      "skills/design/references/check.md",
+      "skills/design/references/create.md",
+      "skills/design/references/design-system.md",
+      "skills/design/references/interact.md",
+      "skills/design/references/output.md",
+      "skills/design/references/redesign.md",
+      "skills/design/scripts/adapt-canvas.mjs",
+      "skills/design/scripts/design-lint.mjs",
+      "skills/design/scripts/design-tokens.mjs",
+      "skills/design/scripts/import-design-system.mjs",
+      "hooks/hooks.json",
+      "hooks/run-hook.cmd",
+      "hooks/design-rules",
+    ],
+    requiredRuntimePaths: [],
+    stagedPath: "packages/design-plugin",
+  },
+  // superpowers 已从内置插件下线，改走 UI 推荐区按需安装；这里不再 stage 它的资源。
 ];
+// 随 CLI 内置的技能包（不是插件）：bootstrap 的 resolveBundledSkillRoots 沿官方插件同款候选目录
+// 在 zcode.cjs 旁找 packages/bundled-skills 并原地读取。漏 stage 它，桌面包的 /workflow 会展开成
+// 「先加载 dynamic-workflows 技能」而技能不存在——这正是把它从可卸载的 zcode-guide 插件搬出来要修的事故形态。
+const bundledSkillPack = {
+  relativePath: "apps/zcode-cli/packages/bundled-skills",
+  requiredPaths: [
+    "skills/dynamic-workflows/SKILL.md",
+    "skills/dynamic-workflows/patterns.md",
+    "skills/dynamic-workflows/examples.md",
+  ],
+  stagedPath: "packages/bundled-skills",
+  topLevelPaths: ["README.md", "skills"],
+};
 const includedOfficialPluginTopLevelPaths = new Set([
   ".mcp.json",
   ".zcode-plugin",
   "README.md",
   // Electron 生产资源复制有独立白名单，遗漏 agents 会让首启 filesystem seed 永久缺少子代理。
   "agents",
-  // file-tools / dwg-tools 的引擎资产树（anydoc/canvas/dwg-sidecar）。
-  // 打包态运行时优先从 resources/tools/<插件> 解析（见 dwg-tools src/assets.ts 的候选链），
-  // 但 seed 侧必须非空 —— bundled-plugins.hasDeclaredAssetsButNoFiles 会把
-  // 「声明了 runtimeTopLevelPaths: ["assets"] 却收不到文件」的插件整体拒绝 seed，
-  // 症状是文档解析/图纸解析在安装包里直接消失。故此处随包拷贝（definitions 注释
-  // 称之为「seed 副本兜底」）。
-  "assets",
   "commands",
   "dist",
   "docs",
@@ -166,23 +340,7 @@ const excludedOfficialPluginAssetNames = new Set([
   "node_modules",
 ]);
 
-/**
- * dwg-sidecar 的 .NET 自包含产物不进 staged 插件树。
- *
- * dwg-tools 的资产树有两份实体：源码 assets/win32-x64/dwg-sidecar/（assets.ts 运行时读它）
- * 与 publish-sidecar.mjs 的发布产物 dist/dwg-sidecar/<rid>/（插件自带端到端单测读它）。
- * 运行时候选链（dwg-tools/src/assets.ts）只认 env / resources/tools/dwg-tools / 插件根
- * assets/<platformKey>，从不解析 dist/；而 requiredRuntimePaths 也只校验 dist/mcp/server.js。
- * 故 staged 树里这份 35.31MB 二进制纯死重：安装包里同一 sidecar 会落三份
- * （dist 一份 + assets 一份 + resources/tools/dwg-tools 一份），远端 4 个平台组件各翻一倍。
- */
-const EXCLUDED_PLUGIN_RELATIVE_TREES = ["dist/dwg-sidecar"];
-
-function shouldCopyOfficialPluginAsset(sourcePath, sourceRoot) {
-  const relativePath = relative(sourceRoot, sourcePath).replaceAll("\\", "/");
-  if (EXCLUDED_PLUGIN_RELATIVE_TREES.some((tree) => relativePath === tree || relativePath.startsWith(`${tree}/`))) {
-    return false;
-  }
+function shouldCopyOfficialPluginAsset(sourcePath) {
   const name = basename(sourcePath);
   return !excludedOfficialPluginAssetNames.has(name) && !name.endsWith(".pyc");
 }
@@ -226,25 +384,20 @@ function buildOfficialPluginRuntimes() {
 
 function buildOfficialPluginRuntimeForBootstrap(plugin) {
   const pluginRoot = resolve(repoRoot, plugin.relativePath);
-  const hasCompleteRuntime = plugin.requiredRuntimePaths.every((relativePath) =>
-    existsSync(resolve(pluginRoot, ...relativePath.split("/"))),
-  );
-  if (plugin.packageName !== BROWSER_USE_PLUGIN_PACKAGE_NAME && hasCompleteRuntime) {
-    console.log(
-      `[prepare:agent-bundle] reuse existing official plugin runtime: ${plugin.packageName}`,
-    );
-    return;
-  }
-
-  // bootstrap:with-remote 会连续构建 remote assets 和桌面 agent bundle。
+  // Bugfix: bootstrap:with-remote 会连续构建 remote assets 和桌面 agent bundle。
   // 通过 pnpm/filter 进入插件 build 时，tsc shim 在本地低内存环境中容易被 SIGKILL；
   // 这里仅在 bootstrap 开关下用当前 Node 直接执行等价 tsc + build-mcp，不改变插件自身 build 脚本。
-  // browser-use 的 server 与 browser-client 是同一发布对；即使旧 server.js 存在也必须重建，
-  // 否则会把旧 server 与当前 client（或缺失 client）一起 stage 到桌面安装包。
-  runCommand(process.execPath, ["../../node_modules/typescript/bin/tsc"], {
-    cwd: pluginRoot,
-    env: process.env,
-  });
+  // Bug 原因：过去除 browser-use 外只要 dist 文件齐全就复用，源码变化后 bootstrap 仍会
+  // 打包上一代插件 runtime；所有代码型官方插件都必须在本轮重建。
+  rmSync(resolve(pluginRoot, "dist"), { recursive: true, force: true });
+  // 文档插件没有自己的 tsconfig（源码在 office-runtime），直接跑 tsc 会因找不到工程配置失败；
+  // 只有带 tsconfig 的插件才需要这一步。
+  if (existsSync(resolve(pluginRoot, "tsconfig.json"))) {
+    runCommand(process.execPath, ["../../node_modules/typescript/bin/tsc"], {
+      cwd: pluginRoot,
+      env: process.env,
+    });
+  }
   runCommand(process.execPath, [plugin.runtimeBuildScript], {
     cwd: pluginRoot,
     env: process.env,
@@ -261,10 +414,10 @@ function assertOfficialPluginRuntime(plugin) {
   }
 }
 
-function stageBundle() {
+async function stageBundle() {
   // 实现已抽到 stage-agent-bundle.mjs：dev 链（scripts/build-desktop-agent-cli.mjs）
   // 必须用同一份，否则 dev 会继续跑上一次打包留下的陈旧 agent。
-  stageAgentBundle({ repoRoot, platformKey });
+  await stageAgentBundle({ repoRoot, platformKey });
 }
 
 function stageOfficialPlugins() {
@@ -280,10 +433,10 @@ function stageOfficialPlugins() {
     for (const entryName of includedOfficialPluginTopLevelPaths) {
       const sourcePath = resolve(sourceRoot, entryName);
       if (!existsSync(sourcePath)) continue;
-    cpSync(sourcePath, resolve(targetRoot, entryName), {
-      recursive: true,
-      filter: (candidatePath) => shouldCopyOfficialPluginAsset(candidatePath, sourceRoot),
-    });
+      cpSync(sourcePath, resolve(targetRoot, entryName), {
+        recursive: true,
+        filter: shouldCopyOfficialPluginAsset,
+      });
     }
     for (const relativePath of plugin.requiredSeedPaths ?? []) {
       const stagedAssetPath = resolve(targetRoot, ...relativePath.split("/"));
@@ -297,7 +450,90 @@ function stageOfficialPlugins() {
   }
 }
 
-// Electron 生产包只带 resources/glm/zcode.cjs 时，app-server 进程的
+function stageBundledSkillPack() {
+  const sourceRoot = resolve(repoRoot, bundledSkillPack.relativePath);
+  const targetRoot = resolve(glmDir, bundledSkillPack.stagedPath);
+  mkdirSync(targetRoot, { recursive: true });
+  for (const entryName of bundledSkillPack.topLevelPaths) {
+    const sourcePath = resolve(sourceRoot, entryName);
+    if (!existsSync(sourcePath)) continue;
+    cpSync(sourcePath, resolve(targetRoot, entryName), {
+      recursive: true,
+      filter: shouldCopyOfficialPluginAsset,
+    });
+  }
+  for (const relativePath of bundledSkillPack.requiredPaths) {
+    const stagedAssetPath = resolve(targetRoot, ...relativePath.split("/"));
+    if (!existsSync(stagedAssetPath)) {
+      throw new Error(
+        `[prepare:agent-bundle] missing staged bundled skill asset: ${stagedAssetPath}`,
+      );
+    }
+  }
+  console.log(`[prepare:agent-bundle] staged bundled skill pack ${bundledSkillPack.stagedPath}`);
+}
+
+// stdio MCP 的 npm/npx 回退（用户没装 Node 时由 Electron Node 运行随包 npm）。
+// tarball 按 sha512 缓存在 node_modules/.cache，重复打包不再下载。
+async function stageBundledNpmRuntime() {
+  const stagedRoot = await stageBundledNpm({
+    cacheDir: resolve(repoRoot, "node_modules", ".cache", "zcode-bundled-npm"),
+    glmDir,
+  });
+  console.log(`[prepare:agent-bundle] staged npm@${BUNDLED_NPM_VERSION} into ${stagedRoot}`);
+}
+
+function stageSharpForNodeReplPlugin() {
+  if (!isSharpRequiredByComputerUse({ desktopPackageRoot: desktopRoot })) {
+    console.log(
+      "[prepare:agent-bundle] Computer Use package does not declare sharp, skip sharp staging",
+    );
+    return;
+  }
+  // `sharp` 仍然外部化——它包含无法内联的 native .node，运行时从**所在包**的 node_modules
+  // 解析。2026-09-11 起 node_repl 宿主的 bundle 归 @zcode/node-repl-host，所以 sharp 必须
+  // stage 到宿主目录，否则宿主里的 `import sharp` 在打包后的 app 里解析不到。
+  // CUA screenshot / get_app_state 的 native 依赖仍要放进 CUA plugin 自己的 node_modules；
+  // Browser Use 目录保留一份兼容 staging。三份 staging 都位于 plugin 子目录下，避免
+  // electron-builder 过滤 extraResources 根目录的 node_modules。
+  const pluginStagedDirs = [
+    [NODE_REPL_HOST_PACKAGE_NAME, resolve(glmDir, "packages", "node-repl-host")],
+    [BROWSER_USE_PLUGIN_PACKAGE_NAME, resolve(glmDir, "packages", "browser-use-plugin")],
+    [CUA_PLUGIN_PACKAGE_NAME, resolve(glmDir, "packages", "zcode-cua-plugin")],
+  ];
+  for (const [packageName, pluginStagedDir] of pluginStagedDirs) {
+    if (!existsSync(resolve(pluginStagedDir, ".zcode-plugin", "plugin.json"))) {
+      console.log(`[prepare:agent-bundle] ${packageName} not staged, skip sharp staging`);
+      continue;
+    }
+    stageSharpIntoBundledAgents({
+      desktopPackageRoot: desktopRoot,
+      glmDir: pluginStagedDir,
+      targetPlatform: { os: platform, arch },
+    });
+    console.log(
+      `[prepare:agent-bundle] staged sharp into ${resolve(pluginStagedDir, "node_modules")} (${platform}-${arch})`,
+    );
+  }
+}
+
+function stageKoffiForCuaPlugin() {
+  const cuaPluginStagedDir = resolve(glmDir, "packages", "zcode-cua-plugin");
+  if (!existsSync(resolve(cuaPluginStagedDir, ".zcode-plugin", "plugin.json"))) {
+    console.log("[prepare:agent-bundle] zcode-cua-plugin not staged, skip koffi staging");
+    return;
+  }
+  stageKoffiIntoBundledAgents({
+    koffiPackageRoot: adaptersRoot,
+    glmDir: cuaPluginStagedDir,
+    targetPlatform: { os: platform, arch },
+  });
+  console.log(
+    `[prepare:agent-bundle] staged koffi into ${resolve(cuaPluginStagedDir, "node_modules")} (${platform}-${arch})`,
+  );
+}
+
+// 修复原因：Electron 生产包只带 resources/glm/zcode.cjs 时，app-server 进程的
 // __dirname 附近没有官方插件目录，启动时 seed 找不到 source，用户侧不会自动得到内置插件。
 // 这里把官方插件按 bootstrap 的 rootCandidates 期望放到 glm/packages/*-plugin，
 // 让 Electron Node 运行 zcode.cjs 时复用同一套 filesystem seed 逻辑。
@@ -305,5 +541,9 @@ function stageOfficialPlugins() {
 // 必须先构建 CLI 依赖，再构建官方插件；开发机残留的 dist 曾掩盖这个顺序问题。
 buildCliBundle();
 buildOfficialPluginRuntimes();
-stageBundle();
+await stageBundle();
 stageOfficialPlugins();
+stageBundledSkillPack();
+await stageBundledNpmRuntime();
+stageKoffiForCuaPlugin();
+stageSharpForNodeReplPlugin();

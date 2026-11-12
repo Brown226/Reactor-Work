@@ -9,13 +9,32 @@ import {
   SkillOutputJsonSchema,
   SkillOutputSchema,
   createCoreError,
+  DYNAMIC_WORKFLOW_SKILL_NAME,
   type SkillRuntimeInput,
 } from "@zcode/contracts";
 import type { ToolEntry, ToolHandler } from "../types.js";
 
-const MAX_SKILL_BYTES = 100_000;
+/** 技能正文的默认字节上限；超出部分由 adapter 从尾部截掉。 */
+export const MAX_SKILL_BYTES = 100_000;
 
-const skillHandler: ToolHandler = async (input, context) => {
+/**
+ * `dynamic-workflows` 技能的字节上限（docs/dynamic-workflow/authoring.md「The skill」）。
+ * 2026-09-30 放宽：这份技能从 09-22 起一直贴在 100 000 上，每加一个功能都得先删掉已有的指导。
+ * 判据是请求里的名字，与技能门认的是同一个（workflow-skill-gate.ts）。
+ */
+export const WORKFLOW_SKILL_MAX_BYTES = 200_000;
+
+/** 结果外壳（`<skill_content>` 标签、标题、Base directory 行）的余量；工具级预算要装得下它。 */
+export const SKILL_RESULT_WRAPPER_BYTES = 4_096;
+
+/** 工具级结果预算是静态的，所以取最大的正文上限再加外壳。 */
+const MAX_SKILL_RESULT_BYTES = WORKFLOW_SKILL_MAX_BYTES + SKILL_RESULT_WRAPPER_BYTES;
+
+function skillMaxBytes(skill: string): number {
+  return skill === DYNAMIC_WORKFLOW_SKILL_NAME ? WORKFLOW_SKILL_MAX_BYTES : MAX_SKILL_BYTES;
+}
+
+export const skillHandler: ToolHandler = async (input, context) => {
   const { skill } = SkillInputSchema.parse(input) as SkillRuntimeInput;
   const skillPort = context.skillPort;
 
@@ -37,7 +56,7 @@ const skillHandler: ToolHandler = async (input, context) => {
     {
       name: skill,
       workingDirectory: context.workingDirectory,
-      maxBytes: MAX_SKILL_BYTES,
+      maxBytes: skillMaxBytes(skill),
       trace: {
         traceId: context.traceId,
         spanId: context.spanId,
@@ -50,6 +69,7 @@ const skillHandler: ToolHandler = async (input, context) => {
   );
 
   context.recordSkillTelemetryMetadata?.({
+    name: loaded.metadata.name,
     ...(loaded.metadata.qualifiedName ? { qualifiedName: loaded.metadata.qualifiedName } : {}),
     ...(loaded.metadata.pluginId ? { pluginId: loaded.metadata.pluginId } : {}),
     source: loaded.metadata.source,
@@ -79,30 +99,21 @@ export const skillToolEntry: ToolEntry = {
   capability: "Load local skill instructions into the current session context",
   metadata: {
     name: "Skill",
-    description: `Execute a skill within the main conversation
+    // 描述只写已支持的能力：不含 fork/后台 skill、目录作用域 skill 名。
+    description: `Invoke a skill.
 
-When users ask you to perform tasks, check if any of the available skills match. Skills provide specialized capabilities and domain knowledge.
+A skill is a packaged set of instructions the user or project has set up for a particular kind of task (deploy steps, a review checklist, a repo-specific workflow). Available skills appear in a system-reminder listing with one-line descriptions. When the task at hand is one a listed skill covers, call this tool first — the skill's instructions load into the turn for you to follow in place of your default approach. Users may also ask for one by name (\`/<name>\`, or "slash command"); that's a request to invoke it.
 
-When users reference a "slash command" or "/<something>", they are referring to a skill. Use this tool to invoke it.
+- \`skill\`: exact name from the listing, no leading slash. Plugin skills use \`plugin:skill\`.
+- \`args\`: optional arguments to pass through.
 
-How to invoke:
-- Set \`skill\` to the exact name of an available skill (no leading slash). For plugin-namespaced skills use the fully qualified \`plugin:skill\` form.
-- Set \`args\` to pass optional arguments.
-
-Important:
-- Available skills are listed in system-reminder messages in the conversation
-- Only invoke a skill that appears in that list, or one the user explicitly typed as \`/<name>\` in their message. Never guess or invent a skill name from training data; otherwise do not call this tool
-- When a skill matches the user's request, this is a BLOCKING REQUIREMENT: invoke the relevant Skill tool BEFORE generating any other response about the task
-- NEVER mention a skill without actually calling this tool
-- Do not invoke a skill that is already running
-- Do not use this tool for built-in CLI commands (like /help, /clear, etc.)
-- If you see a <command-name> tag in the current conversation turn, the skill has ALREADY been loaded - follow the instructions directly instead of calling this tool again
+Only names from the listing (or that the user typed explicitly) are valid. Built-in CLI commands (\`/help\`, \`/clear\`, …) aren't skills. If a \`<command-name>\` block is already present this turn, the skill is loaded — follow it directly rather than calling again.
 `,
     readOnly: true,
     destructive: false,
     concurrentSafe: true,
     timeoutMs: 30000,
-    maxOutputBytes: MAX_SKILL_BYTES,
+    maxOutputBytes: MAX_SKILL_RESULT_BYTES,
     sideEffectScope: "session",
     riskLevel: "low",
     needsApproval: false,
@@ -123,11 +134,11 @@ Important:
     denyPriority: "beforeAsk",
   },
   resultBudget: {
-    maxInlineBytes: MAX_SKILL_BYTES,
-    maxModelBytes: MAX_SKILL_BYTES,
+    maxInlineBytes: MAX_SKILL_RESULT_BYTES,
+    maxModelBytes: MAX_SKILL_RESULT_BYTES,
     strategy: "truncate",
     preview: {
-      maxBytes: MAX_SKILL_BYTES,
+      maxBytes: MAX_SKILL_RESULT_BYTES,
       direction: "head",
     },
   },

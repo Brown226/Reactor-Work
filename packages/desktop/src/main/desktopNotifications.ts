@@ -1,6 +1,11 @@
 import { app, BrowserWindow, Notification } from "electron";
 import type { IpcMainEvent, IpcMainInvokeEvent } from "electron";
 import type { TaskNotificationPayload } from "@zcode/shared";
+import {
+  extensionNotificationPayloadSchema,
+  type ExtensionNotificationClick,
+  type NotificationsShowResult,
+} from "@zcode/shared/extension-host";
 import { formatZodError, PlatformChannels, taskNotificationPayloadSchema } from "@zcode/shared";
 
 const TASK_NOTIFICATION_DEDUPE_WINDOW_MS = 3000;
@@ -60,64 +65,16 @@ function releaseTaskNotification(notification: Notification) {
   activeTaskNotifications.delete(notification);
 }
 
-/**
- * 传入窗口的"待停止强调"状态。
- *
- * 参考 Namiwork `src/notify/notification-presenter.js`：Windows 用
- * `win.flashFrame(true)` 闪烁任务栏，macOS 用 `app.dock.bounce("informational")`
- * 弹跳 Dock；窗口获得焦点后停止。这里同一时刻只保留一个待停止项——
- * 通知本来就只在"任何窗口都没聚焦"时发出，语义一致。
- */
-let pendingWindowAttention: { stop: () => void } | null = null;
-
-function clearPendingWindowAttention() {
-  if (!pendingWindowAttention) {
-    return;
-  }
-  pendingWindowAttention.stop();
-  pendingWindowAttention = null;
+export function getActiveTaskNotificationCountForTest() {
+  return activeTaskNotifications.size;
 }
 
-function startWindowAttention(win: BrowserWindow) {
-  // 前一次强调未被聚焦消费（如再次后台任务完成）时先停掉旧的，避免闪烁/弹跳叠加。
-  clearPendingWindowAttention();
-
-  const onFocus = () => clearPendingWindowAttention();
-  win.once("focus", onFocus);
-
-  let bounceId = -1;
-  if (process.platform === "win32") {
-    if (typeof win.flashFrame === "function") {
-      try {
-        win.flashFrame(true);
-      } catch {
-        /* 闪烁失败不影响通知本身 */
-      }
-    }
-  } else if (process.platform === "darwin") {
-    const id = app.dock?.bounce("informational");
-    bounceId = typeof id === "number" ? id : -1;
-  }
-
-  pendingWindowAttention = {
-    stop: () => {
-      win.removeListener("focus", onFocus);
-      if (process.platform === "win32") {
-        if (!win.isDestroyed() && typeof win.flashFrame === "function") {
-          try {
-            win.flashFrame(false);
-          } catch {
-            /* 停止闪烁失败可忽略 */
-          }
-        }
-      } else if (process.platform === "darwin" && bounceId >= 0) {
-        app.dock?.cancelBounce(bounceId);
-      }
-    },
-  };
+export function resetActiveTaskNotificationsForTest() {
+  activeTaskNotifications.clear();
+  recentTaskNotificationTimestamps.clear();
 }
 
-function focusTaskNotificationWindow(senderWindow: BrowserWindow) {
+export function focusTaskNotificationWindow(senderWindow: BrowserWindow) {
   if (senderWindow.isMinimized()) {
     senderWindow.restore();
   }
@@ -210,10 +167,64 @@ export function dispatchTaskNotification(options: {
   });
 
   notification.show();
-  // 系统通知可能被忽略；同时闪烁任务栏（Windows）/弹跳 Dock（macOS），窗口获焦后停止。
-  if (senderWindow && !senderWindow.isDestroyed()) {
-    startWindowAttention(senderWindow);
-  }
   options.event.sender.send(PlatformChannels.TaskNotificationSound);
   return true;
+}
+
+/**
+ * 扩展的系统通知（docs/plugins/extension-host.md §18.1 H8）。Window Host 已查过档位、详情页开关与限额，
+ * Renderer 已查过设置页的系统通知开关并给标题加了插件名前缀。这里只做 Main 才知道的判断：
+ * 任何窗口有焦点时不弹（focused），平台不支持时不弹（unsupported）。不允许插件自定义图标、声音或按钮：
+ * 用默认图标、silent，也不发任务通知的提示音。点击时恢复并聚焦发出请求的窗口，把视图发回给它打开。
+ * 日志只记插件 id 与结果，不记标题与正文。
+ */
+export function dispatchExtensionNotification(options: {
+  event: IpcMainInvokeEvent;
+  payload: unknown;
+  logger: { info: (...args: unknown[]) => void; warn: (...args: unknown[]) => void };
+}): NotificationsShowResult {
+  const parsed = extensionNotificationPayloadSchema.safeParse(options.payload);
+  if (!parsed.success) {
+    options.logger.warn(
+      "[show-extension-notification] invalid payload:",
+      formatZodError(parsed.error),
+    );
+    return { shown: false, reason: "unsupported" };
+  }
+  const { pluginId, title, body, viewId } = parsed.data;
+  if (!Notification.isSupported()) {
+    options.logger.info("[show-extension-notification] skipped", {
+      pluginId,
+      reason: "unsupported",
+    });
+    return { shown: false, reason: "unsupported" };
+  }
+  if (isAnyAppWindowFocused()) {
+    options.logger.info("[show-extension-notification] skipped", { pluginId, reason: "focused" });
+    return { shown: false, reason: "focused" };
+  }
+  const senderWindow = BrowserWindow.fromWebContents(options.event.sender);
+  const notification = new Notification({ title, body, silent: true });
+  // 与任务通知相同：显式持有对象，避免用户点击前被回收、click 监听丢失。
+  retainTaskNotification(notification);
+  notification.once("click", () => {
+    releaseTaskNotification(notification);
+    if (!senderWindow || senderWindow.isDestroyed()) {
+      options.logger.warn("[show-extension-notification] click ignored: window is gone", {
+        pluginId,
+      });
+      return;
+    }
+    focusTaskNotificationWindow(senderWindow);
+    const click: ExtensionNotificationClick = { pluginId, ...(viewId ? { viewId } : {}) };
+    senderWindow.webContents.send(PlatformChannels.ExtensionNotificationClick, click);
+    options.logger.info("[show-extension-notification] click handled", {
+      pluginId,
+      view: Boolean(viewId),
+    });
+  });
+  notification.once("close", () => releaseTaskNotification(notification));
+  notification.show();
+  options.logger.info("[show-extension-notification] shown", { pluginId, view: Boolean(viewId) });
+  return { shown: true };
 }

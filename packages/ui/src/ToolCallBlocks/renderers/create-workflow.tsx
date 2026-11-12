@@ -9,13 +9,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible.js";
 import { cn } from "@/components/lib/utils.js";
-import { draftTimeline, scanWorkflowDraft } from "@/components/workflow-timeline/draft-scan.js";
 import { WorkflowArtifactStrip } from "@/components/workflow-timeline/WorkflowArtifactStrip.js";
-import {
-  buildWorkflowTimeline,
-  type TimelinePill,
-  type TimelineStation,
-  type WorkflowTimelineModel,
+import type {
+  TimelinePill,
+  TimelineStation,
 } from "@/components/workflow-timeline/timeline-model.js";
 import { workflowCardDetail } from "@/components/workflow-timeline/timeline-summary.js";
 import {
@@ -29,12 +26,18 @@ import {
 import { WorkflowTimeline } from "@/components/workflow-timeline/WorkflowTimeline.js";
 import { isAmendWorkflowToolCall } from "@/lib/workflowToolNames.js";
 import {
+  useWorkflowCardModel,
+  useWorkflowHoleRow,
+  useWorkflowRowPrimaryText,
+} from "@/ToolCallBlocks/renderers/workflow-fill-row.js";
+import {
   isPlainRecord,
   readWorkflowAmendTarget,
   readWorkflowCardKeptScript,
   readWorkflowKindMessageId,
   readWorkflowName,
   readWorkflowPrelaunchKindMessageId,
+  readWorkflowRetuneCall,
   readWorkflowSaved,
   readWorkflowScript,
 } from "@/ToolCallBlocks/renderers/createWorkflowInput.js";
@@ -66,7 +69,7 @@ const workflowCardOpenState = new Map<string, boolean>();
  * 聊天区的 CreateWorkflow / AmendWorkflow 工具卡。
  *
  * 编写中使用不可展开的 ToolLayout，行下常驻草稿阶段线（站随脚本流式写出）；待确认使用可展开脚本的 ToolLayout；编不过是编译反馈行
- * （「工作流草稿 · 第 n 稿 · n 处待修正 · 未运行」）——不是失败，什么都没跑。
+ * （「工作流草稿 · 第 n 稿 · n 处待修正 未运行」，状态两词以 gap 分隔）——不是失败，什么都没跑。
  * v4 已关联 run 的上方行由 WorkflowToolSummary 承载。本组件保留旧宿主的运行卡渲染。
  *
  * AmendWorkflow 行走**同一个**渲染器（display kind 同为 `create_workflow`，图、草稿笔与诊断卡只有一份
@@ -77,14 +80,22 @@ export function CreateWorkflowToolCallBlock(context: ToolCallBlockRenderContext)
   const { toolCall } = context.toolCallNode;
   const amend = isAmendWorkflowToolCall(toolCall);
   const amendTarget = amend ? readWorkflowAmendTarget(toolCall.input) : undefined;
+  // 留白补全行（docs/dynamic-workflow/presentation.md「The fill row」）：同一个渲染器换留白词汇（workflow-fill-row.tsx）。
+  const { fill, holeTarget, vocabulary } = useWorkflowHoleRow(toolCall, amend);
 
   const display = useMemo(() => readWorkflowDisplay(toolCall.raw), [toolCall.raw]);
+  // 在途的词（docs/dynamic-workflow/concurrency.md）：只改并发上限的调用不写脚本、也不编译，
+  // 「正在校验工作流」对它不成立。整行退成设置行是**结算之后**的事，由接线层按同一个入参形状裁
+  // （ConversationRowView），这里只管在途这几个词。
+  const retuning = amend && readWorkflowRetuneCall(toolCall.input) !== undefined;
   const scriptText = useMemo(() => readWorkflowScript(toolCall.input), [toolCall.input]);
   const workflowName = readWorkflowName(toolCall.input);
   const saved = useMemo(() => readWorkflowSaved(toolCall.input), [toolCall.input]);
   const fallbackOutputText = display ? null : readFallbackOutputText(toolCall.output);
   const fallbackName = intl.formatMessage({ id: "chat.toolCall.workflow.fallbackName" });
-  const name = workflowName ?? fallbackName;
+  const name = fill
+    ? (holeTarget?.name ?? holeTarget?.holeId ?? fallbackName)
+    : (workflowName ?? fallbackName);
 
   const workflowRun = context.workflowRun;
   const run = workflowRun?.run;
@@ -114,12 +125,8 @@ export function CreateWorkflowToolCallBlock(context: ToolCallBlockRenderContext)
     saved: saved !== undefined,
   });
 
-  const model = useMemo<WorkflowTimelineModel | undefined>(() => {
-    if (graph !== undefined) return buildWorkflowTimeline(graph, run);
-    // 流式草稿：display 还没到，站先从半截脚本里扫出来；display 一到整个模型被替换。
-    if (writing && scriptText !== undefined) return draftTimeline(scanWorkflowDraft(scriptText));
-    return undefined;
-  }, [graph, run, scriptText, writing]);
+  // 有图按图（补全行收窄到补全那一截），流式中按草稿扫描；display 一到整个模型被替换。
+  const model = useWorkflowCardModel({ graph, holeTarget, run, scriptText, writing });
 
   const [isOpen, setIsOpen] = useState(() => workflowCardOpenState.get(toolCall.toolId) ?? true);
   const forceOpen = context.forceOpen ?? false;
@@ -185,10 +192,7 @@ export function CreateWorkflowToolCallBlock(context: ToolCallBlockRenderContext)
   );
 
   // ToolLayout 是 memo 组件：交给它的节点与回调必须引用稳定（reactStableReferences 守卫）。
-  const diagnosticsPrimaryText = useMemo(
-    () => <span className="truncate text-foreground-subtlest">{name}</span>,
-    [name],
-  );
+  const diagnosticsPrimaryText = useWorkflowRowPrimaryText(fill, name);
   const renderDiagnosticsContent = useCallback(
     () => (
       <WorkflowFeedbackContent
@@ -244,7 +248,7 @@ export function CreateWorkflowToolCallBlock(context: ToolCallBlockRenderContext)
                   writing,
                   revising: (draft?.ordinal ?? 1) >= 2,
                 },
-                amend,
+                vocabulary,
               ),
             })
           }
@@ -271,7 +275,7 @@ export function CreateWorkflowToolCallBlock(context: ToolCallBlockRenderContext)
   const kindId =
     workflowRun !== undefined
       ? workflowRunKindMessageId(workflowRun)
-      : readWorkflowKindMessageId(toolCall.raw, context.isRunning, amend);
+      : readWorkflowKindMessageId(toolCall.raw, context.isRunning, vocabulary, retuning);
   const kindText = context.kindLabelOverride ?? intl.formatMessage({ id: kindId });
   // 种类词按文案换（编写中 → 待确认 → 运行中）：换词动画由表头自己包，见 WorkflowCardHeader。
   const live = workflowRun !== undefined ? workflowRun.status === "running" : context.isRunning;
@@ -368,7 +372,7 @@ export function CreateWorkflowToolCallBlock(context: ToolCallBlockRenderContext)
               />
             )}
 
-            {/* 产物条：run 交付了什么，≤ 3 枚 + N，全量在详情侧板。 */}
+            {/* 产物条（追记「产物药丸」）：run 交付了什么，≤ 3 枚 + N，全量在详情侧板。 */}
             {run?.artifacts !== undefined && run.artifacts.length > 0 ? (
               <WorkflowArtifactStrip
                 artifacts={run.artifacts}
@@ -446,7 +450,7 @@ export function CreateWorkflowToolCallBlock(context: ToolCallBlockRenderContext)
         ) : null}
 
         {/* 页脚：展开时恒在；折叠时只有终态（失败 / 取消）留下——Resume 必须仍然够得着。 */}
-        {/* 页脚曾是摘要行（子代理 · 步数 · token · 轮次 · 产物）；卡上只说阶段与
+        {/* 页脚曾是摘要行（子代理 · 步数 · token · 轮次 · 产物）；2026-09-09 起卡上只说阶段与
             子代理，都在表头——页脚只剩 Resume 的落点，没有 Resume 就没有页脚。 */}
         {resume !== undefined && run !== undefined && (expanded || terminal) ? (
           <WorkflowCardFooter status={run.status} trailing={resume} />

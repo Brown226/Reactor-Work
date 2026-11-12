@@ -1,5 +1,5 @@
-export const CLI_COMMAND_NAME = "reactor";
-export const CLI_PROCESS_NAME = "reactor-cli";
+export const CLI_COMMAND_NAME = "zcode";
+export const CLI_PROCESS_NAME = "zcode-cli";
 
 interface ProcessTitleTarget {
   title: string;

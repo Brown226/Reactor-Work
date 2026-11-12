@@ -41,7 +41,7 @@ export class OfficialMcpAuthError extends Error {
 const REQUEST_ID_HEADER = "x-request-id";
 const TRACE_ID_HEADER = "x-trace-id";
 
-interface CreateOfficialMcpAuthFetchInput {
+export interface CreateOfficialMcpAuthFetchInput {
   authHeadersPort?: OfficialMcpAuthHeadersPort;
   baseFetch: typeof globalThis.fetch;
   logger?: Logger;
@@ -66,6 +66,7 @@ interface CreateOfficialMcpAuthFetchInput {
   url: string;
   workspaceIdentity?: string;
   workspacePath?: string;
+  workspaceKey?: string;
 }
 
 /** 一次官方 MCP 响应中可用于关联的非敏感事实。不含 body、不含任何 header 值。 */
@@ -162,6 +163,7 @@ export function createOfficialMcpAuthFetch(
           targetOrigin: origin,
           ...(input.workspaceIdentity ? { workspaceIdentity: input.workspaceIdentity } : {}),
           ...(input.workspacePath ? { workspacePath: input.workspacePath } : {}),
+          ...(input.workspaceKey ? { workspaceKey: input.workspaceKey } : {}),
           ...(init?.signal ? { signal: init.signal } : {}),
         });
         resolveDurationMs = Date.now() - resolveStartedAt;
@@ -407,7 +409,7 @@ async function readBoundedResponseText(
  * ——parse 期已拦截静态保留头，这里是合并点的二次强制。
  * 不触碰 mcp-session-id / mcp-protocol-version / accept / content-type。
  */
-function mergeOfficialAuthHeaders(
+export function mergeOfficialAuthHeaders(
   incoming: HeadersInit | undefined,
   authHeaders: Record<string, string>,
 ): Headers {

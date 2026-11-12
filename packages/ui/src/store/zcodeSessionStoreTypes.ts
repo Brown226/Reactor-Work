@@ -1,3 +1,4 @@
+import type { DraftPluginUiOpenRequest } from "@/plugin-ui/contract.js";
 /* oxlint-disable eslint(max-lines) -- ZCode Agent store 类型和默认状态集中导出，避免切片间重复定义共享结构。 */
 /**
  * ZCode Session Store 类型定义、接口、常量与默认值工厂
@@ -24,7 +25,9 @@ import {
   type ZCodeContextUsageBreakdownItem,
   type InputId,
   type SessionCreateSource,
+  type ManagedWorktreeCreation,
 } from "@zcode/shared";
+import type { SessionConfigState, SubmissionMode } from "@zcode/shared/zcode-protocol-v4";
 import type { ZCodeUiError } from "@/lib/zcodeUiError.js";
 import type {
   AutomationsNavigationTab,
@@ -41,16 +44,6 @@ export interface WorkspaceInitState {
   status: ZCodeWorkspaceInitStatus;
   error: string | null;
   attempts: number;
-}
-
-export type GroupedDraftTaskPlacement = { type: "top" } | { type: "group"; groupId: string };
-
-export interface GroupedDraftTaskState {
-  draftId: string;
-  workspacePath: string;
-  workspaceIdentity?: string;
-  placement: GroupedDraftTaskPlacement;
-  createdAt: number;
 }
 
 export interface TaskRuntimeState {
@@ -133,27 +126,11 @@ export interface ComposerMentionPrefill {
   data?: MentionItemData;
 }
 
-/**
- * 文本插入语义：
- * - `replace`（缺省）：整体替换输入框正文；调用方需自行保证不会吞掉用户已输入内容。
- * - `prepend-if-missing`：只在编辑器里缺该 mention 时前置节点。
- * - `append`：把文本追加到现有正文之后（PDF 引用 / GenUI 动作回传用，不覆盖用户草稿）。
- */
-export type ComposerTextInsertMode = "replace" | "prepend-if-missing" | "append";
-
 export interface ComposerTextInsertRequest {
   requestId: number;
   text: string;
   mention?: ComposerMentionPrefill;
-  mode?: ComposerTextInsertMode;
-  /**
-   * 目标会话标识；缺省/null 表示「新建任务草稿槽」（composer scope = `__draft__`）。
-   *
-   * 请求存放在 workspace 级状态里（composerTextInsertRequest），同一个 workspace 下
-   * 草稿 pane 与多个会话 pane 会同时读到它。带目标会话的请求只允许该会话的 composer
-   * 消费，否则 PDF 引用 / GenUI 动作回传会串到别的会话输入框。
-   */
-  sessionId?: string | null;
+  mode?: "replace" | "prepend-if-missing";
 }
 
 export interface TimelineBottomRequest {
@@ -161,7 +138,18 @@ export interface TimelineBottomRequest {
   taskId: string;
 }
 
+export type ComposerInitialConfig = Pick<
+  Partial<SessionConfigState>,
+  "planEnabled" | "modelSelection"
+> & { mode?: SubmissionMode };
+export interface ComposerInitialization {
+  taskId: string;
+  config: ComposerInitialConfig;
+}
+
 export interface WorkspaceZCodeUIState {
+  /** 首次分享导入的导航参数；接收、换任务或新建后结束，不持久化。 */
+  composerInitialization?: ComposerInitialization;
   /** 当前 workspace 激活中的 task */
   activeTaskId: string | null;
   /**
@@ -174,13 +162,31 @@ export interface WorkspaceZCodeUIState {
   workspaceInit: WorkspaceInitState;
   /** 草稿态尚未创建 taskId 前的短期运行状态；已有 task 的状态从 taskRuntimeByTaskId 派生。 */
   draftRuntime: DraftRuntimeState;
-  /** 未发送草稿对应的 agent draft session；不进入 task 列表，首发时提升为真实 task。 */
-  draftSessionId: string | null;
+  /** 未提交草稿的项目选择；已提交归属只在 Host。 */
+  draftProjectId?: string | null;
+  /** 未提交任务的分组意图；无文字时仅保留在当前 Renderer 内存。 */
+  draftTaskGroupId?: string | null;
+  /**
+   * 草稿开启了"在新 worktree 中运行"（docs/git/worktree.md §3.2）；ref 为 null 表示当前 HEAD。
+   * 每次 startDraft 重置为关闭，不记住上次的选择。
+   */
+  draftWorktree?: { ref: string | null } | null;
+  /** 当前 workspace 主区展示的 worktree 创建记录；记录本身只在 Host（§6.2）。 */
+  draftWorktreeCreationId?: string | null;
+  /**
+   * worktree 创建成功后、会话首个快照到达前的交接（§3.3）：Host 已删除创建记录，这里保留最后一份
+   * 用于在会话上方继续显示创建视图。会话时间线出现内容或订阅出错时由 SessionPane 清除。
+   */
+  worktreeHandoff?: { sessionId: string; creation: ManagedWorktreeCreation } | null;
   /**
    * 草稿运行时能力失效版本；插件、Skill 等能力变化时递增。
-   * legacy 草稿通过 draftSessionId 关闭，protocol-v4 草稿用该版本重建 pane 内预热会话。
+   * V4 pane 独占预热会话，配置界面只发布失效版本。
    */
   draftRuntimeInvalidationVersion: number;
+  pluginUiOpenVersion: number;
+  pluginUiOpenRequest:
+    | (DraftPluginUiOpenRequest & { requestId: number; invalidationVersion: number })
+    | null;
   composerTextInsertVersion: number;
   composerTextInsertRequest: ComposerTextInsertRequest | null;
   timelineBottomRequestVersion: number;
@@ -203,12 +209,7 @@ export interface WorkspaceZCodeUIState {
   taskUnreadByTaskId: Record<string, boolean>;
   /** 任务列表的乐观元数据，解决新 task 落盘前左侧列表显示慢半拍的问题 */
   optimisticTaskListByTaskId: Record<string, ZCodeTaskMeta>;
-  /** grouped mode 下点击 New task 后的 UI-only 草稿锚点，不进入真实 task index。 */
-  groupedDraftTask: GroupedDraftTaskState | null;
-  /** 用户发起当前草稿的入口；预热不改变来源。 */
   draftCreateSource: SessionCreateSource;
-  /** 首发创建后、grouped sqlite order 落地前，真实 task 继承草稿锚点的本地定位。 */
-  promotedGroupedDraftTaskByTaskId: Record<string, GroupedDraftTaskState>;
   /** 当前 workspace 选中的 ZCode Agent provider */
   selectedProvider: ZCodeProvider;
   /** 当前模型供应商选中键（native/custom/ghost） */
@@ -236,31 +237,30 @@ export interface ZCodeSessionStoreState {
   workspaces: Record<string, WorkspaceZCodeUIState>;
   getWorkspaceState: (workspacePath: string, workspaceIdentity?: string) => WorkspaceZCodeUIState;
 
-  setActiveTaskId: (workspacePath: string, id: string | null, workspaceIdentity?: string) => void;
-  promoteGroupedDraftTask: (
+  setActiveTaskId: (
     workspacePath: string,
-    taskId: string,
-    draft: GroupedDraftTaskState,
+    id: string | null,
     workspaceIdentity?: string,
+    composerConfig?: ComposerInitialConfig,
   ) => void;
-  clearPromotedGroupedDraftTask: (
+  consumeComposerInitialization: (
     workspacePath: string,
-    taskId: string,
-    workspaceIdentity?: string,
-  ) => void;
-  setDraftSessionId: (
-    workspacePath: string,
-    sessionId: string | null,
+    initialization: ComposerInitialization,
     workspaceIdentity?: string,
   ) => void;
   invalidateDraftRuntime: (workspacePath: string, workspaceIdentity?: string) => void;
+  requestPluginUiOpen: (request: DraftPluginUiOpenRequest) => void;
+  clearPluginUiOpenRequest: (
+    workspacePath: string,
+    requestId: number,
+    workspaceIdentity?: string,
+  ) => void;
   requestComposerTextInsert: (
     workspacePath: string,
     text: string,
     workspaceIdentity?: string,
     mention?: ComposerMentionPrefill,
-    mode?: ComposerTextInsertMode,
-    sessionId?: string | null,
+    mode?: "replace" | "prepend-if-missing",
   ) => number;
   clearComposerTextInsertRequest: (
     workspacePath: string,
@@ -277,16 +277,40 @@ export interface ZCodeSessionStoreState {
     requestId: number,
     workspaceIdentity?: string,
   ) => void;
+  clearDraftTaskGroup: (workspacePath: string, workspaceIdentity?: string) => void;
+  setDraftWorktree: (
+    workspacePath: string,
+    worktree: { ref: string | null } | null,
+    workspaceIdentity?: string,
+  ) => void;
+  /** 记录 worktree 创建成功后的交接（§3.3）。 */
+  beginWorktreeHandoff: (
+    workspacePath: string,
+    handoff: { sessionId: string; creation: ManagedWorktreeCreation },
+    workspaceIdentity?: string,
+  ) => void;
+  /** 会话时间线已出现内容（或订阅出错）时结束交接；只清除属于该会话的交接。 */
+  finishWorktreeHandoff: (
+    workspacePath: string,
+    sessionId: string,
+    workspaceIdentity?: string,
+  ) => void;
+  /** 主区切到某条 worktree 创建记录（进入草稿态后再设置，草稿开关同时关闭）。 */
+  viewWorktreeCreation: (
+    workspacePath: string,
+    creationId: string | null,
+    workspaceIdentity?: string,
+  ) => void;
   startDraft: (
     workspacePath: string,
     provider?: ZCodeProvider,
     workspaceIdentity?: string,
     options?: {
-      groupedDraftPlacement?: GroupedDraftTaskPlacement;
+      projectId?: string | null;
+      taskGroupId?: string | null;
       createSource?: SessionCreateSource;
     },
   ) => void;
-  clearGroupedDraftTask: (workspacePath: string, workspaceIdentity?: string) => void;
   bindRuntimeProvider: (
     workspacePath: string,
     provider: ZCodeProvider,
@@ -499,7 +523,7 @@ export const DEFAULT_WORKSPACE_INIT_STATE: WorkspaceInitState = {
   attempts: 0,
 };
 
-const FALLBACK_PROVIDER: ZCodeProvider = ZCODE_AGENT_PROVIDER;
+export const FALLBACK_PROVIDER: ZCodeProvider = ZCODE_AGENT_PROVIDER;
 
 export const DEFAULT_TASK_UI_STATE: TaskUiState = {
   permissionRequest: null,
@@ -534,8 +558,9 @@ export function createDefaultWorkspaceState(
     activeTaskId: null,
     workspaceInit: { ...DEFAULT_WORKSPACE_INIT_STATE },
     draftRuntime: { status: "idle", error: null },
-    draftSessionId: null,
     draftRuntimeInvalidationVersion: 0,
+    pluginUiOpenVersion: 0,
+    pluginUiOpenRequest: null,
     composerTextInsertVersion: 0,
     composerTextInsertRequest: null,
     timelineBottomRequestVersion: 0,
@@ -550,9 +575,7 @@ export function createDefaultWorkspaceState(
     taskConfigOptionsStatusByTaskId: {},
     taskUnreadByTaskId: {},
     optimisticTaskListByTaskId: {},
-    groupedDraftTask: null,
     draftCreateSource: "session",
-    promotedGroupedDraftTaskByTaskId: {},
     selectedProvider,
     selectedSupplierKey: buildNativeSupplierKey(selectedProvider),
     isGhostSupplier: false,

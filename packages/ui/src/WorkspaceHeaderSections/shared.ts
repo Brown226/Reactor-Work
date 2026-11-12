@@ -42,6 +42,9 @@ export interface WorkspaceHeaderTitleSectionProps {
   nativeSessionLogPath: string | null;
   nativeSessionLogExists: boolean;
   nativeSessionLogLoading: boolean;
+  providerWorkspaceConfigPath: string | null;
+  providerWorkspaceConfigExists: boolean;
+  providerWorkspaceConfigLoading: boolean;
   onReloadSession?: (options?: WorkspaceHeaderReloadSessionOptions) => void | Promise<void>;
   reloadSessionDisabled?: boolean;
   reloadSessionPending?: boolean;
@@ -50,6 +53,7 @@ export interface WorkspaceHeaderTitleSectionProps {
   isMacDesktop?: boolean;
   isMacFullscreen?: boolean;
   isWindowsDesktop?: boolean;
+  isWebRemoteControl?: boolean;
   simplifyForNarrowRemote?: boolean;
   selectedEditor: EditorInfo | null;
   compact?: boolean;
@@ -64,6 +68,7 @@ export interface WorkspaceHeaderActionSectionProps {
   workspaceIdentity?: string;
   remoteSessionId?: string;
   remoteTarget?: RemoteTarget;
+  isWebRemoteControl?: boolean;
   isDesktop?: boolean;
   isTerminalOpen: boolean;
   isSidePaneOpen: boolean;
@@ -73,11 +78,6 @@ export interface WorkspaceHeaderActionSectionProps {
   onSelectedEditorChange?: (editor: EditorInfo | null) => void;
   simplifyForNarrowRemote?: boolean;
   hideHelpMenu?: boolean;
-  /**
-   * 打开「我的空间」（每用户 1GB 空间的资产管理）。
-   * 只有 Web 宿主会传；桌面端不传 → 头部不渲染该入口，视觉与行为零变化。
-   */
-  onOpenMySpace?: () => void;
   showWindowControls?: boolean;
   useWindowsCaptionSpacing?: boolean;
 }

@@ -16,6 +16,12 @@ function canonicalPluginName(value: string): string {
   return value.trim().toLocaleLowerCase();
 }
 
+export function needsMcpAttention(resource: {
+  authorization?: { authorizationUrl?: string };
+}): boolean {
+  return Boolean(resource.authorization?.authorizationUrl);
+}
+
 export function selectBuiltInPlugins(
   plugins: readonly ZCodePluginInfo[],
   installedPlugins: readonly ZCodeInstalledPluginSummary[],
@@ -24,7 +30,7 @@ export function selectBuiltInPlugins(
   return plugins.filter((plugin) => plugin.source === "official" && !installedIds.has(plugin.id));
 }
 
-interface PluginSettingsGroups {
+export interface PluginSettingsGroups {
   installed: ZCodePluginInfo[];
   builtIn: ZCodePluginInfo[];
 }
@@ -95,9 +101,6 @@ export function selectSkillsForScope(
   }
   return skills.filter((skill) => {
     if (skill.scope !== "plugin") {
-      // server scope 是企业服务端下发的用户级资源（~/.reactor/server-skills/），
-      // 跟随「用户」标签展示，来源徽标区分——见 docs/已完成/已完成-server-skill-sync.md §6。
-      if (skill.scope === "server") return scope === "user";
       return skill.scope === scope;
     }
     if (skill.pluginId) return scopedPluginIds.has(skill.pluginId);
@@ -134,7 +137,7 @@ export function selectCommandsForScope(
   });
 }
 
-interface SkillSourceGroup {
+export interface SkillSourceGroup {
   id: string;
   label: string;
   pluginId?: string;

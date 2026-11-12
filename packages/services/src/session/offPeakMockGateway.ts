@@ -2,27 +2,27 @@
 /* off-peak 进程内 mock 网关。
    本地起 127.0.0.1 http 服务完整模拟 额度快照/取号/批量状态/结算/messages，
    真实 HTTP client 与 idle plan provider 的 baseURL 只需指到本网关 origin——生产代码路径
-   与联调完全一致，联调时删掉 ZCODE_OFFPEAK_MOCK 开关即可。
+   与联调完全一致，联调时删掉 ZCODE_OFFPEAK_MOCK 开关即可（tech-design §10 工序 3）。
 
    ⚠ messages 端点在准入后把请求原样代理到 resolveUpstream() 指定的真实模型端点
    （通常是用户 coding plan 的 anthropic 兼容端点）——mock 模式下跑的是真模型、
-   计费走用户自己的 key，仅用于开发/演示。
+   计费走用户自己的 key，仅用于开发/演示，文档已注明。
 
-   状态机（对齐两轴的服务端轴）：
+   状态机（对齐 D26 两轴的服务端轴）：
    take → queued（FIFO position）；status 轮询触发晋级（轮询即 Promote）：
    取号超过 readyDelayMs → ready（readyDeadline = +readyTtlMs）；ready 超时未发首个
    message → expired；首个 message 准入 → active（activeDeadline = +activeMs）；
-   active 到期 → expired，messages 返回 400/3102；settle → settled（幂等）。
-   messages 准入前可注入 N 次 429/3105 + Retry-After（模拟资源满载细阀）。 */
+   active 到期 → expired，messages 返回 400/3106；settle → settled（幂等）。
+   messages 准入前可注入 N 次 429/3105 + Retry-After（模拟资源满载细阀，D24）。 */
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { ServiceLogger } from "../logger/serviceLogger.js";
 
-interface OffPeakMockGatewayOptions {
+export interface OffPeakMockGatewayOptions {
   /** queued→ready 的晋级延迟；默认 15s（演示低峰等待）。 */
   readyDelayMs?: number;
   /** ready 后须发首个 message 的窗口；默认 5min。 */
   readyTtlMs?: number;
-  /** active 硬顶；默认 3h（调小可演示 400/3102 自动续跑）。 */
+  /** active 硬顶；默认 3h（调小可演示 400/3106 到期收口）。 */
   activeMs?: number;
   /** 每张票准入前先回多少次 429/3105；默认 0。 */
   queue429Count?: number;
@@ -38,7 +38,7 @@ interface OffPeakMockGatewayOptions {
   scenario?: "foreground-subagents" | "capture" | "invalid-ticket";
 }
 
-interface OffPeakMockGatewayDeps {
+export interface OffPeakMockGatewayDeps {
   logger: ServiceLogger;
   /**
    * 准入后 messages 的转发目标：完整 messages URL + 出站头（含上游鉴权）。
@@ -127,7 +127,7 @@ interface OffPeakMockCapturedRequest {
   project?: string;
 }
 
-interface OffPeakMockGatewayHandle {
+export interface OffPeakMockGatewayHandle {
   origin: string;
   port: number;
   /** true = 端口已被另一个 host 的网关占用，本 handle 只是指向它（close 为 no-op）。 */
@@ -161,6 +161,11 @@ export async function startOffPeakMockGateway(
   const latestByTask = new Map<string, string>();
   const capturedRequests: OffPeakMockCapturedRequest[] = [];
   let invalidTicketRequests = 0;
+  let expireNextWake = false;
+  let releaseBackground!: () => void;
+  const backgroundBarrier = new Promise<void>((resolve) => {
+    releaseBackground = resolve;
+  });
   let seqCounter = 0;
 
   /** 懒惰推进时间驱动的状态（轮询/messages 时评估，无后台计时器）。 */
@@ -320,25 +325,25 @@ export async function startOffPeakMockGateway(
     const ticket = tickets.get(ticketId);
     const now = Date.now();
     if (ticket) advance(ticket, now);
-    if (!ticket || ticket.state === "expired" || ticket.state === "settled") {
-      json(res, 400, { code: 3102, msg: "wrong off-peak ticket" });
+    if (!ticket || ticket.state === "settled" || ticket.state === "queued") {
+      json(res, 400, { code: 3104, msg: "invalid off-peak ticket" });
+      return;
+    }
+    if (ticket.state === "expired") {
+      // 已激活与未激活的过期票必须按服务端新契约分码，不能让 mock 掩盖客户端遗漏 3106。
+      json(res, 400, {
+        code: ticket.activeDeadline === undefined ? 3102 : 3106,
+        msg:
+          ticket.activeDeadline === undefined
+            ? "off-peak ready window expired"
+            : "off-peak active window expired",
+      });
       return;
     }
     if (config.scenario === "invalid-ticket") {
-      // 让 E2E 走真实的 3102 终态路径：客户端必须重取票/保留原任务身份，
-      // 且不能把失败的闲时请求偷偷改发到普通 Chat provider。
+      // 故障注入运行超时；真实 Host/CLI 必须结束任务，不能补号或切换普通套餐。
       invalidTicketRequests += 1;
-      json(res, 400, { code: 3102, msg: "wrong off-peak ticket" });
-      return;
-    }
-    if (ticket.state === "queued") {
-      // 粗阀未开就来了 message：按细阀排队应答（客户端不应走到这，防御分支）。
-      json(
-        res,
-        429,
-        { code: 3105, msg: "not ready" },
-        { "retry-after": String(config.retryAfterS) },
-      );
+      json(res, 400, { code: 3106, msg: "off-peak active window expired" });
       return;
     }
     if (ticket.queue429Remaining > 0) {
@@ -386,11 +391,23 @@ export async function startOffPeakMockGateway(
           ? { project: req.headers["bigmodel-project"] }
           : {}),
       });
+      if (expireNextWake && stage === "parent-wakeup") {
+        expireNextWake = false;
+        ticket.state = "expired";
+        invalidTicketRequests++;
+        capturedRequests[capturedRequests.length - 1]!.stage = "parent-wakeup-expired";
+        json(res, 400, { code: 3106, msg: "off-peak active window expired" });
+        return;
+      }
       const scripted =
         config.scenario === "foreground-subagents"
-          ? buildForegroundSubagentScenarioResponse(stage)
+          ? buildForegroundSubagentScenarioResponse(
+              stage,
+              (server.address() as { port: number }).port,
+            )
           : null;
       if (scripted) {
+        if (stage.startsWith("background-")) await backgroundBarrier;
         respondWithAnthropicMock(res, scripted, readRequestBoolean(requestJson, "stream"));
         return;
       }
@@ -460,6 +477,35 @@ export async function startOffPeakMockGateway(
     void (async () => {
       if (
         req.method === "GET" &&
+        url === "/__e2e/off-peak/background-bash" &&
+        config.scenario === "foreground-subagents"
+      ) {
+        capturedRequests.push({
+          stage: "bash-started",
+          requestJson: {},
+          ticketId: "",
+          hasApiKey: false,
+          hasAuthorization: false,
+          hasCodingPlanApiKey: false,
+        });
+        await backgroundBarrier;
+        res.writeHead(200, { "content-type": "text/plain" });
+        res.end("E2E_OFFPEAK_BACKGROUND_BASH_OK");
+        return;
+      }
+      if (
+        req.method === "POST" &&
+        url === "/__e2e/off-peak/release-background" &&
+        config.scenario === "foreground-subagents"
+      ) {
+        const input = (await readBody(req)) as { expireOnWake?: boolean };
+        expireNextWake = input.expireOnWake === true;
+        releaseBackground();
+        json(res, 200, { released: true });
+        return;
+      }
+      if (
+        req.method === "GET" &&
         url === "/__e2e/off-peak/requests" &&
         (config.scenario === "foreground-subagents" ||
           config.scenario === "capture" ||
@@ -467,6 +513,7 @@ export async function startOffPeakMockGateway(
       ) {
         json(res, 200, {
           invalidTicketRequests,
+          issuedTicketCount: tickets.size,
           requests: capturedRequests,
         });
         return;
@@ -552,8 +599,6 @@ export async function startOffPeakMockGateway(
 const FOREGROUND_SUBAGENT_SCENARIO = {
   parentMarker: "E2E_OFFPEAK_SUBAGENTS_PARENT",
   parentFinal: "E2E_OFFPEAK_SUBAGENTS_PARENT_OK",
-  backgroundError:
-    "Idle-time tasks do not support background agents. Run this agent in the foreground.",
   children: [
     {
       stage: "child-explore",
@@ -606,25 +651,23 @@ const FOREGROUND_SUBAGENT_SCENARIO = {
   ],
   backgrounds: [
     {
-      stage: "unexpected-background-explicit",
+      stage: "background-explicit",
       marker: "E2E_OFFPEAK_SUBAGENT_BACKGROUND_EXPLICIT",
       toolId: "toolu_e2e_offpeak_background_explicit",
       input: {
-        description: "Verify explicit background rejection",
-        prompt:
-          "E2E_OFFPEAK_SUBAGENT_BACKGROUND_EXPLICIT: this child must never reach the provider.",
+        description: "Verify explicit background inheritance",
+        prompt: "E2E_OFFPEAK_SUBAGENT_BACKGROUND_EXPLICIT: reply when released.",
         run_in_background: true,
         subagent_type: "general-purpose",
       },
     },
     {
-      stage: "unexpected-background-profile",
+      stage: "background-profile",
       marker: "E2E_OFFPEAK_SUBAGENT_BACKGROUND_PROFILE",
       toolId: "toolu_e2e_offpeak_background_profile",
       input: {
-        description: "Verify profile background rejection",
-        prompt:
-          "E2E_OFFPEAK_SUBAGENT_BACKGROUND_PROFILE: this child must never reach the provider.",
+        description: "Verify profile background inheritance",
+        prompt: "E2E_OFFPEAK_SUBAGENT_BACKGROUND_PROFILE: reply when released.",
         subagent_type: "E2E OffPeak Background Reviewer",
       },
     },
@@ -658,11 +701,14 @@ function readRequestBoolean(value: unknown, key: string): boolean {
 
 function classifyForegroundSubagentScenarioRequest(requestJson: unknown): string {
   const serialized = JSON.stringify(requestJson);
-  if (
-    FOREGROUND_SUBAGENT_SCENARIO.children.every((child) => serialized.includes(child.reply)) &&
-    serialized.includes(FOREGROUND_SUBAGENT_SCENARIO.backgroundError)
-  ) {
-    return "parent-continuation";
+  // 标题包含相同用户素材，必须先按 system 任务区分，否则会误触发整套 Agent 脚本。
+  if (serialized.includes("Generate a concise title for this coding session."))
+    return "session-title";
+  if (serialized.includes(FOREGROUND_SUBAGENT_SCENARIO.parentMarker)) {
+    if (serialized.includes(FOREGROUND_SUBAGENT_SCENARIO.parentFinal)) return "parent-wakeup";
+    if (serialized.includes(FOREGROUND_SUBAGENT_SCENARIO.children[0].toolId))
+      return "parent-continuation";
+    return "parent-initial";
   }
   for (const child of FOREGROUND_SUBAGENT_SCENARIO.children) {
     if (serialized.includes(child.marker)) return child.stage;
@@ -676,10 +722,28 @@ function classifyForegroundSubagentScenarioRequest(requestJson: unknown): string
   return "unknown";
 }
 
-function buildForegroundSubagentScenarioResponse(stage: string): AnthropicMockResponse | undefined {
+function buildForegroundSubagentScenarioResponse(
+  stage: string,
+  port: number,
+): AnthropicMockResponse | undefined {
+  if (stage === "session-title") {
+    return anthropicMockResponse({
+      content: [{ type: "text", text: '{"title":"E2E 闲时后台验证"}' }],
+      stopReason: "end_turn",
+    });
+  }
   if (stage === "parent-initial") {
     return anthropicMockResponse({
       content: [
+        {
+          type: "tool_use",
+          id: "toolu_e2e_offpeak_bash",
+          name: "Bash",
+          input: {
+            run_in_background: true,
+            command: `node -e 'fetch("http://127.0.0.1:${port}/__e2e/off-peak/background-bash").then(r=>r.text()).then(console.log)'`,
+          },
+        },
         ...FOREGROUND_SUBAGENT_SCENARIO.children.map((child) => ({
           type: "tool_use" as const,
           id: child.toolId,
@@ -710,11 +774,11 @@ function buildForegroundSubagentScenarioResponse(stage: string): AnthropicMockRe
   );
   if (background) {
     return anthropicMockResponse({
-      content: [{ type: "text", text: `${background.marker}_UNEXPECTED` }],
+      content: [{ type: "text", text: `${background.marker}_OK` }],
       stopReason: "end_turn",
     });
   }
-  if (stage === "parent-continuation") {
+  if (stage === "parent-continuation" || stage === "parent-wakeup") {
     return anthropicMockResponse({
       content: [{ type: "text", text: FOREGROUND_SUBAGENT_SCENARIO.parentFinal }],
       stopReason: "end_turn",

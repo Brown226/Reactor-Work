@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { sanitizeTelemetrySkillName } from "../telemetry.js";
 import { zcodeSyntheticUserMessageSourceSchema } from "../zcode-protocol-legacy-types.js";
 import { timestampSchema } from "./core.js";
 
@@ -63,6 +64,9 @@ const turnStartedFactSchema = z
   .object({
     ...factBaseFields,
     kind: z.literal("turn.started"),
+    inputOrigin: z.enum(["desktop", "mobile"]).optional(),
+    modelName: z.string().optional(),
+    modelProvider: z.string().optional(),
     executionKind: z.enum(["agent", "controlOnly"]).optional(),
     inputSource: zcodeSyntheticUserMessageSourceSchema.optional(),
     // `workflow`：dynamic-workflow run 的完成 / 提问通知唤起的独立轮。
@@ -133,17 +137,27 @@ const toolLifecycleFactSchema = z
     parentToolCallId: z.string().min(1).optional(),
     childToolCallId: z.string().min(1).optional(),
     /**
-     * 本次调用是否只读（CLI 按工具元数据 + 入参解析后的结论，如 Bash 只读命令）。
-     * 洞②（审计补全）引入：终态事实据此决定是否上报 `tool_call`——Host 不做工具名猜测，
-     * 未携带（旧 CLI / started 未到）按"不报"处理，避免把只读调用刷进审计。
+     * [本地定制] 本次调用是否只读（CLI 按工具元数据 + 入参解析后的结论，如 Bash 只读命令）。
+     * 审计补全引入：终态事实据此决定是否上报 `tool_call` —— Host 不做工具名猜测，
+     * 未携带（旧 CLI / started 未到）按「不报」处理，避免把只读调用刷进审计。
+     * 上游 v3.18.0 无此字段，整包同步会抹掉。
      */
     sideEffect: z.boolean().optional(),
     agentId: z.string().min(1).optional(),
     agentType: z.string().optional(),
     childSessionId: z.string().min(1).optional(),
     background: z.boolean().optional(),
+    skillName: z
+      .string()
+      .refine(
+        (value) => sanitizeTelemetrySkillName(value) === value,
+        "skillName must be a bounded, safe resolved Skill identifier",
+      )
+      .optional(),
     skillQualifiedName: z.string().min(1).optional(),
     skillPluginId: z.string().min(1).optional(),
+    pluginId: z.string().min(1).max(256).optional(),
+    pluginComponent: z.enum(["skill", "mcp"]).optional(),
     skillSource: z.enum(["agents", "zcode", "bundled", "plugin", "remote"]).optional(),
     performance: toolPerformanceFactSchema.optional(),
     automationId: z.string().min(1).optional(),
@@ -162,9 +176,10 @@ const permissionLifecycleFactSchema = z
     background: z.boolean().optional(),
     decision: z.enum(["allow", "deny", "escalate", "modify"]).optional(),
     /**
-     * 规则拒绝时的 ruleId（如 `policy.commandBlacklist`）。洞②（审计补全）引入：
-     * Host 据此把组织策略拦截记成 `policy_block`、普通规则拒绝记成 `approval/forbidden`，
-     * 不依赖中文 reason 文本匹配。只有 phase=denied 携带。
+     * [本地定制] 规则拒绝时的 ruleId（如 `policy.commandBlacklist`）。
+     * 审计补全引入：Host 据此把组织策略拦截记成 `policy_block`、
+     * 普通规则拒绝记成 `approval/forbidden`，不依赖中文 reason 文本匹配。
+     * 只有 phase=denied 携带。上游 v3.18.0 无此字段，整包同步会抹掉。
      */
     ruleId: z.string().optional(),
   })
@@ -333,3 +348,34 @@ export type ConversationTelemetryFact =
 export const conversationTelemetryFactSchema = conversationTelemetryFactRuntimeSchema.transform(
   (fact): ConversationTelemetryFact => fact as ConversationTelemetryFact,
 );
+
+/**
+ * 模型请求指标：一次成功完成的模型请求的耗时与服务商 usage，供扩展进程算生成速率。
+ * 规格：docs/monitoring/conversation-telemetry-v4.md「模型请求指标」。
+ *
+ * 兼容性：不进 `ConversationTelemetryFact` union，也不加到 `model.request.status`。
+ * 上面每个分支都是 strict，旧 App 解析到未知字段会丢掉整条事实；它走独立通知
+ * `V4_NOTIFICATIONS.modelRequestMetrics`，旧 App 对未知通知方法不做处理。
+ * 只带 id、模型身份、耗时与 token 数，不带正文、header、URL 或 finish reason。
+ */
+export const modelRequestMetricsFactSchema = z
+  .object({
+    ...factBaseFields,
+    kind: z.literal("model.request.metrics"),
+    requestId: z.string().min(1),
+    providerId: z.string(),
+    modelId: z.string(),
+    // 请求用途：main_turn / session_title / compact / subagent …，来自请求 trace 属性。
+    querySource: z.string().optional(),
+    queryId: z.string().min(1).optional(),
+    durationMs: z.number().nonnegative(),
+    timeToFirstContentMs: z.number().nonnegative().optional(),
+    inputTokens: z.number().nonnegative().optional(),
+    outputTokens: z.number().nonnegative().optional(),
+    reasoningTokens: z.number().nonnegative().optional(),
+    cacheReadTokens: z.number().nonnegative().optional(),
+    cacheWriteTokens: z.number().nonnegative().optional(),
+    totalTokens: z.number().nonnegative().optional(),
+  })
+  .strict();
+export type ModelRequestMetricsFact = z.infer<typeof modelRequestMetricsFactSchema>;

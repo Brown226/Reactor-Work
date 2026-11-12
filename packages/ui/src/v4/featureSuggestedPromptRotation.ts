@@ -1,8 +1,7 @@
 import type { DraftSuggestedPromptItem } from "@/v4/draftSuggestedPromptItems.js";
 import { getRecommendedPromptPool } from "@/v4/featureSuggestedPrompts.js";
 
-export type RecommendedPromptMode = "office" | "coding" | "review";
-type Mode = RecommendedPromptMode;
+type Mode = "office" | "coding";
 type Pane = { mode: Mode; cursor: number; items: DraftSuggestedPromptItem[] };
 
 const panes = new Map<string, Pane>();
@@ -30,7 +29,7 @@ export function registerRecommendedPromptPane(id: string, mode: Mode) {
   const pane: Pane = { mode, cursor, items: [] };
   panes.set(id, pane);
   pane.items = selectForPane(
-    getRecommendedPromptPool(mode),
+    getRecommendedPromptPool(mode === "office"),
     cursor,
     ...usedByOtherPanes(id, mode),
   );
@@ -47,7 +46,7 @@ export function advanceRecommendedPromptPane(id: string) {
   // 每个候选都要有机会成为本批首项；固定跳三格会让避重时跳过的候选永远不可达。
   pane.cursor += 1;
   pane.items = selectForPane(
-    getRecommendedPromptPool(pane.mode),
+    getRecommendedPromptPool(pane.mode === "office"),
     pane.cursor,
     ...usedByOtherPanes(id, pane.mode),
     new Set(pane.items.map((item) => item.id)),
@@ -141,7 +140,7 @@ export function getRecommendedPromptsForPane(id: string, mode: Mode): DraftSugge
   const pane = panes.get(id);
   if (pane?.mode === mode) return pane.items;
   return selectForPane(
-    getRecommendedPromptPool(mode),
+    getRecommendedPromptPool(mode === "office"),
     0,
     ...usedByOtherPanes(id, mode),
   );

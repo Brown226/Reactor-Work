@@ -1,3 +1,9 @@
+import {
+  ProviderBuiltinToolStreamRewriter,
+  rewriteProviderBuiltinToolContent,
+  type SseFrame,
+} from "./provider-builtin-tool-compat/contract.js";
+
 type ProviderFetch = typeof globalThis.fetch;
 
 const SSE_FRAME_SEPARATOR_PATTERN = /\r\n\r\n|\n\n|\r\r/;
@@ -9,6 +15,8 @@ export function createAnthropicCompatFetch(baseFetch: ProviderFetch): ProviderFe
   };
 }
 
+export const createAnthropicStreamCompatFetch = createAnthropicCompatFetch;
+
 function applyAnthropicRequestBodyCompatibility(
   init: RequestInit | undefined,
 ): RequestInit | undefined {
@@ -16,12 +24,41 @@ function applyAnthropicRequestBodyCompatibility(
 
   const body = safeParseRecord(init.body);
   if (!body) return init;
-  const restoredSystemBody = restoreMidConversationSystemStringContent(body);
+  const restoredSelectorBody = restoreMemorySelectorMessageBoundaries(body);
+  const restoredSystemBody = restoreMidConversationSystemStringContent(restoredSelectorBody);
   if (restoredSystemBody === body) return init;
 
   return {
     ...init,
     body: JSON.stringify(restoredSystemBody),
+  };
+}
+
+function restoreMemorySelectorMessageBoundaries(
+  body: Record<string, unknown>,
+): Record<string, unknown> {
+  const messages = Array.isArray(body?.messages) ? body.messages : undefined;
+  const firstMessage = safeRecord(messages?.[0]);
+  const content = Array.isArray(firstMessage?.content) ? firstMessage.content : undefined;
+  if (
+    !isMemorySelectorOutput(body?.output_config) ||
+    firstMessage?.role !== "user" ||
+    content?.length !== 2 ||
+    !hasTextPrefix(content[0], "Available memories:\n") ||
+    !hasTextPrefix(content[1], "Select memories relevant to:\n")
+  ) {
+    return body;
+  }
+
+  // 修复原因：AI SDK 会在发请求前合并连续的 user message；Memory selector 的
+  // provider-visible 基线要求 manifest 与当前 query 保持为两个独立 message。
+  return {
+    ...body,
+    messages: [
+      { ...firstMessage, content: [content[0]] },
+      { role: "user", content: [content[1]] },
+      ...messages!.slice(1),
+    ],
   };
 }
 
@@ -53,6 +90,19 @@ function singlePlainTextBlock(value: unknown): string | undefined {
   if (block?.type !== "text" || typeof block.text !== "string") return undefined;
   if (Object.keys(block).some((key) => key !== "type" && key !== "text")) return undefined;
   return block.text;
+}
+
+function isMemorySelectorOutput(value: unknown): boolean {
+  const outputConfig = safeRecord(value);
+  const format = safeRecord(outputConfig?.format);
+  const schema = safeRecord(format?.schema);
+  const required = Array.isArray(schema?.required) ? schema.required : [];
+  return format?.type === "json_schema" && required.includes("selected_memories");
+}
+
+function hasTextPrefix(value: unknown, prefix: string): boolean {
+  const block = safeRecord(value);
+  return block?.type === "text" && typeof block.text === "string" && block.text.startsWith(prefix);
 }
 
 function shouldFilterAnthropicStream(response: Response): boolean {
@@ -124,8 +174,9 @@ function sanitizeJsonThinkingBlocks(value: Record<string, unknown>): {
     return { changed: false, value };
   }
 
-  const content = value.content.filter((block) => !isUnsignedThinkingBlock(block));
-  if (content.length === value.content.length) {
+  const providerTools = rewriteProviderBuiltinToolContent(value.content);
+  const content = providerTools.content.filter((block) => !isUnsignedThinkingBlock(block));
+  if (!providerTools.changed && content.length === value.content.length) {
     return { changed: false, value };
   }
 
@@ -153,6 +204,7 @@ function isUnsignedThinkingBlock(value: unknown): boolean {
 interface AnthropicStreamCompatState {
   pendingThinkingSignatures: Map<number, string>;
   suppressedIndexes: Set<number>;
+  providerTools: ProviderBuiltinToolStreamRewriter;
 }
 
 function createAnthropicStreamCompatTransform(): TransformStream<Uint8Array, Uint8Array> {
@@ -161,6 +213,7 @@ function createAnthropicStreamCompatTransform(): TransformStream<Uint8Array, Uin
   const state: AnthropicStreamCompatState = {
     pendingThinkingSignatures: new Map(),
     suppressedIndexes: new Set(),
+    providerTools: new ProviderBuiltinToolStreamRewriter(),
   };
   let pending = "";
 
@@ -173,7 +226,10 @@ function createAnthropicStreamCompatTransform(): TransformStream<Uint8Array, Uin
       pending += decoder.decode();
       pending = emitCompleteFrames(pending, controller, encoder, state);
       if (pending.length > 0) {
-        emitFrame(pending, "", controller, encoder, state);
+        rewriteAndEmitFrame({ frame: pending, separator: "" }, controller, encoder, state);
+      }
+      for (const held of state.providerTools.finish()) {
+        emitFrame(held.frame, held.separator, controller, encoder, state);
       }
     },
   });
@@ -195,7 +251,20 @@ function emitCompleteFrames(
     const separator = match[0] ?? "";
     const frame = pending.slice(0, match.index);
     pending = pending.slice(match.index + separator.length);
-    emitFrame(frame, separator, controller, encoder, state);
+    rewriteAndEmitFrame({ frame, separator }, controller, encoder, state);
+  }
+}
+
+function rewriteAndEmitFrame(
+  input: SseFrame,
+  controller: TransformStreamDefaultController<Uint8Array>,
+  encoder: TextEncoder,
+  state: AnthropicStreamCompatState,
+): void {
+  const data = readSseData(input.frame);
+  const parsed = data === undefined || data === "[DONE]" ? undefined : safeParseRecord(data);
+  for (const output of state.providerTools.push(input, parsed)) {
+    emitFrame(output.frame, output.separator, controller, encoder, state);
   }
 }
 

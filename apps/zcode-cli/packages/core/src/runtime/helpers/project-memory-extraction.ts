@@ -9,9 +9,10 @@ import { runMemoryAgentLoop } from "../../memory/memory-agent-loop.js";
 import { scanMemoryManifest } from "../../memory/recall/index.js";
 import type { AgentRuntimeInternal } from "../internal.js";
 import {
-  buildProjectMemoryAgentProviderMessages,
   captureProjectMemoryAgentContext,
-  createProjectMemoryAgentToolExecutor,
+  createProjectMemoryAgentToolRunner,
+  projectMemoryAgentEntries,
+  renderProjectMemoryAgentRequest,
   type ProjectMemoryAgentContext,
 } from "./project-memory-agent.js";
 import { resolveEnabledProjectMemoryRoot } from "./project-memory.js";
@@ -39,7 +40,8 @@ export function scheduleProjectMemoryExtraction(
   // Bash cd 只改变执行 cwd，project Memory 身份必须继续使用会话 workspace root。
   const memoryRoot = resolveEnabledProjectMemoryRoot(runtime.config, runtime.workspaceRoot);
   if (!memoryRoot) return;
-  if (runtime.isRemoteWorkspace()) return;
+  // 原因：这里曾按 remote workspace 跳过提取，把“本进程只是瘦客户端”和“工作区在远端”混为一谈。
+  // remote CLI 运行在远端机器上，本身就是执行 agent loop 的一侧，所以和本地一样提取。
   if (!runtime.sessionStore || !runtime.fileSystemPort) return;
 
   const snapshotBase = captureProjectMemoryAgentContext(runtime, {
@@ -76,6 +78,7 @@ export function scheduleProjectMemoryExtraction(
 
   runtime.memoryExtractionScheduler ??= createMemoryExtractionScheduler((extraction) =>
     executeProjectMemoryExtraction(runtime, extraction),
+    () => { for (const notify of runtime.workChanged) notify(); },
   );
   runtime.memoryExtractionScheduler.schedule(snapshot);
 }
@@ -86,7 +89,7 @@ export async function drainMemoryExtractions(
 ): Promise<void> {
   const scheduler = this.memoryExtractionScheduler;
   if (!scheduler) return;
-  // benchmark 显式等待自然结束；普通 session close 仍保留原有有界取消清理。
+  // Runtime 关闭与 benchmark 等待真实收尾；对外关闭期限由 App 管理，不在这里提前放行。
   if (timeoutMs === null) {
     await scheduler.drain();
     return;
@@ -96,8 +99,12 @@ export async function drainMemoryExtractions(
   try {
     await Promise.race([
       scheduler.drain(),
-      new Promise<void>((resolve) => {
-        timeout = setTimeout(resolve, timeoutMs);
+      new Promise<void>((_resolve, reject) => {
+        // 到期只是停止等待；不能向 session 生命周期谎报资源已经释放。
+        timeout = setTimeout(
+          () => reject(new Error("Memory extraction drain timed out")),
+          timeoutMs,
+        );
         timeout.unref?.();
       }),
     ]);
@@ -138,25 +145,15 @@ async function executeProjectMemoryExtraction(
         manifest,
         messageCount: input.messageCount,
       });
-      const providerMessages = buildProjectMemoryAgentProviderMessages(
-        runtime,
-        input.snapshot,
-        prompt,
-      );
-      const executor = createProjectMemoryAgentToolExecutor(runtime, input.snapshot);
-
       await runMemoryAgentLoop({
         abortSignal: input.abortSignal,
-        executeTool: (toolCall, options) =>
-          executor.execute(toolCall, {
-            signal: options.abortSignal,
-            traceContext: input.snapshot.traceContext,
-          }),
+        entries: projectMemoryAgentEntries(input.snapshot, prompt),
+        executeToolCalls: createProjectMemoryAgentToolRunner(runtime, input.snapshot),
         maxTurns: EXTRACTION_MAX_TURNS,
-        messages: providerMessages,
+        registry: runtime.registry,
+        renderRequest: (entries) => renderProjectMemoryAgentRequest(input.snapshot, entries),
         model: input.snapshot.model,
         rootDir: input.snapshot.memoryRoot,
-        tools: input.snapshot.tools,
         workingDirectory: input.snapshot.workingDirectory,
         workspaceRoot: input.snapshot.workspaceRoot,
       });

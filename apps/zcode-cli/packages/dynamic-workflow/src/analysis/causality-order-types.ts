@@ -1,7 +1,7 @@
 import type ts from "typescript";
 import type { ScriptLoc } from "../compiler/compile.js";
 import type { TaintOcc } from "./domain.js";
-import type { ApplicationVia } from "./state.js";
+import type { ApplicationVia, ArgBinding, ThroughParam } from "./state.js";
 import type { JumpKind, TraceRegionKind } from "./constants.js";
 
 // causality-order.ts 顶到 oxlint max-lines 上限（400 行），把追踪产物的类型
@@ -26,6 +26,14 @@ export interface OrderOracle {
    * these bodies at exactly these sites.
    */
   applications: ReadonlyMap<ts.Node, ReadonlyMap<ts.Node, ApplicationVia>>;
+  /**
+   * Provenance for `applications`: at a site, which parameter of which enclosing function the
+   * applied functions came through, and the functions the merged record owes to it
+   * (`TaintState.throughParams`). The walk resolves it against the activation it is inlining.
+   */
+  throughParams: ReadonlyMap<ts.Node, ReadonlyMap<string, ThroughParam & { via: ApplicationVia }>>;
+  /** Per callee application, what each argument bound to the callee's parameters (`TaintState.bindings`). */
+  bindings: ReadonlyMap<ts.Node, ReadonlyMap<ts.Node, readonly ArgBinding[]>>;
 }
 
 export interface OrderRegion {
@@ -74,6 +82,12 @@ export interface PhaseInfo {
   name: string;
   /** The first marker that minted this phase; later same-name markers do not move it. */
   loc: ScriptLoc;
+  /**
+   * The filled hole whose body wrote this phase (docs/analysis.md「Sites」): a marker or a hole
+   * (open or filled) inside a body carries the innermost enclosing filled hole's id. Absent
+   * outside every fill — a top-level hole's own phase has none.
+   */
+  fill?: string;
 }
 
 /** A step's request was sent (the facade call expression was evaluated). */
@@ -117,6 +131,14 @@ export interface SettleEvent {
    * nothing. Absent when the barrier joins no strand.
    */
   joins?: string[];
+  /**
+   * The subset of {@link joins} this barrier LIFTED on a may-claim: the promise reached
+   * the await through a container or a helper, so all that is known is that something the
+   * strand issued has settled. Absent when every join is certain. The control-flow
+   * projection keeps the spawner's control standing for these (docs/analysis.md, "The
+   * control-flow graph").
+   */
+  maybeJoins?: string[];
 }
 
 /** An `agent()` call was evaluated — the lane's creation point, for family depth. */
@@ -124,6 +146,12 @@ export interface ActorEvent {
   at: "actor";
   actor: string;
   regions: readonly string[];
+  /**
+   * The phase current where the call was evaluated, as on {@link IssueEvent}: a lane's birth
+   * phase for the engine's lexical stamp (`collectSitePhases`). Not rendered in the core's
+   * text form — the `spawn` line predates it and the site-phase table has its own tests.
+   */
+  phase: string;
 }
 
 /** A `phase("…")` marker statement was evaluated: the current phase switched to `phase`. */

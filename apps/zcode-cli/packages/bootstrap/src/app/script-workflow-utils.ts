@@ -7,7 +7,6 @@ import type {
 } from "@zcode/contracts";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative } from "node:path";
-import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 const STRUCTURED_OUTPUT_PROMPT =
   "Return only JSON that conforms to the provided JSON Schema. Do not wrap it in Markdown.";
@@ -172,7 +171,7 @@ export function inferScriptWorkflowScope(
   workingDirectory: string,
 ): "explicit" | "project" | "user" {
   if (isWithin(scriptPath, join(workingDirectory, ".zcode", "workflows"))) return "project";
-  if (isWithin(scriptPath, join(homedir(), USER_DATA_DIR_NAME, "workflows"))) return "user";
+  if (isWithin(scriptPath, join(homedir(), ".zcode", "workflows"))) return "user";
   return "explicit";
 }
 

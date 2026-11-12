@@ -1,6 +1,6 @@
 import {
   Download,
-  Loader2,
+  LoaderCircle,
   MoreHorizontal,
   Plus,
   RefreshCcw,
@@ -30,8 +30,6 @@ interface SettingsResourceHeaderActionsProps {
   newTestId?: string;
   refreshLabel?: string;
   newLabel?: string;
-  /** 平台不可用原因（Web 端）：newDisabled 时作为原生 title 悬停说明。 */
-  newDisabledReason?: string | null;
   importActionId?: string;
   exportActionId?: string;
   newActionId?: string;
@@ -51,7 +49,6 @@ export function SettingsResourceHeaderActions({
   newTestId,
   refreshLabel,
   newLabel: customNewLabel,
-  newDisabledReason,
   importActionId,
   exportActionId,
   newActionId,
@@ -71,7 +68,8 @@ export function SettingsResourceHeaderActions({
   const hasOverflowActions = Boolean(onImport || onExport);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    // 手机窄屏下描述文字会把操作组挤到换行错位；compact-web 下操作组保持一行且不被压缩。
+    <div className="flex flex-wrap items-center gap-2 compact-web:shrink-0 compact-web:flex-nowrap">
       {hasOverflowActions ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -115,7 +113,7 @@ export function SettingsResourceHeaderActions({
             onClick={onRefresh}
           >
             {refreshing ? (
-              <Loader2 className="animate-spin" aria-hidden="true" />
+              <LoaderCircle className="animate-spin" aria-hidden="true" />
             ) : (
               <RefreshCcw aria-hidden="true" />
             )}
@@ -132,8 +130,6 @@ export function SettingsResourceHeaderActions({
           aria-label={newLabel}
           data-testid={newTestId}
           disabled={newDisabled}
-          aria-disabled={newDisabledReason ? true : undefined}
-          title={newDisabledReason ?? undefined}
           onClick={onNew}
         >
           <Plus data-icon="inline-start" aria-hidden="true" />

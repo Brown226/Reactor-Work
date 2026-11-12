@@ -1,10 +1,7 @@
 import { mkdir, open, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
-import {
-  USER_DATA_DIR_NAME,
-  createUuid,
-} from "@zcode/shared";
+import { createUuid } from "@zcode/shared";
 
 const LOCK_RETRY_DELAY_MS = 10;
 const LOCK_RETRY_COUNT = 200;
@@ -21,7 +18,7 @@ interface TelemetryLockOwner {
   pid: number;
 }
 
-interface EnsureCliDeviceMidOptions {
+export interface EnsureCliDeviceMidOptions {
   baseDir?: string;
   createId?: () => string;
   env?: Record<string, string | undefined>;
@@ -60,7 +57,7 @@ function resolveCliTelemetryStateFile(options: EnsureCliDeviceMidOptions): strin
   const configuredBaseDir =
     options.baseDir ?? env[ZCODE_DATA_BASE_DIR_ENV_KEY]?.trim() ?? homedir();
   const baseDir = configuredBaseDir.length > 0 ? configuredBaseDir : homedir();
-  return join(resolveUserPath(baseDir), USER_DATA_DIR_NAME, "v2", "telemetry-state.json");
+  return join(resolveUserPath(baseDir), ".zcode", "v2", "telemetry-state.json");
 }
 
 async function ensurePersistedDeviceMid(input: {

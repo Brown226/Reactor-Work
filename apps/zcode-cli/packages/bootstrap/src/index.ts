@@ -30,6 +30,14 @@ export type {
 } from "./custom-commands.js";
 export { createModelAdapter } from "./model-factory.js";
 export type { CreateModelAdapterOptions } from "./model-factory.js";
+export {
+  createDefaultProviderEndpointRoutingPort,
+  resolveProcessProviderEndpointRoutingPort,
+} from "./provider-endpoint-routing.js";
+export type {
+  CreateDefaultProviderEndpointRoutingPortOptions,
+  ResolveProcessProviderEndpointRoutingPortOptions,
+} from "./provider-endpoint-routing.js";
 export { startProcessProviderRegistryRuntime } from "./app/process-provider-registry-runtime.js";
 export type { ProcessProviderRegistryRuntimeOptions } from "./app/process-provider-registry-runtime.js";
 export {
@@ -93,3 +101,10 @@ export type {
   WorkspaceHookTrustCliStatus,
   WorkspaceHookTrustCliTarget,
 } from "./workspace-hook-trust-cli.js";
+
+export {
+  createOfficialPluginPreparation,
+  type OfficialPluginPreparation,
+} from "./app/bundled-plugins.js";
+// 嵌入式调用复用产品请求装配，避免来源头与网络配置漂移。
+export { createRuntimeAiSdkModelExecutionConfig } from "./model-config.js";

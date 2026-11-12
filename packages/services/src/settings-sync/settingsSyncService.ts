@@ -21,27 +21,17 @@ import type {
   SettingsSyncSourceRootSummary,
   SettingsSyncTaskImportResult,
 } from "@zcode/shared";
-import {
-  copyFile,
-  cp,
-  link,
-  lstat,
-  mkdir,
-  readFile,
-  readdir,
-  symlink,
-  writeFile,
-} from "node:fs/promises";
+import { copyFile, cp, link, lstat, mkdir, readFile, readdir, rm, symlink } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { parse as parseToml } from "smol-toml";
 import { CommandFileParser } from "../commands/commandFileParser.js";
+import { updateJsonObjectFile } from "#src/fs/atomicFileUtils.js";
 import type { ISettingService } from "../setting/setting.js";
 import { createServiceLogger } from "../logger/serviceLogger.js";
 import { walkSkillMarkdownPaths } from "../skills/skillDiscoveryWalk.js";
 import type { ISettingsSyncService } from "./settingsSync.js";
-import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 const log = createServiceLogger("settings-sync");
 
@@ -427,7 +417,7 @@ function getWorkspaceZcodeSkillRoot(workspacePath: string): string {
 }
 
 function getUserZcodeSkillRoot(): string {
-  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "skills");
+  return join(resolveUserHomeDir(), ".zcode", "skills");
 }
 
 function getWorkspaceZcodeCommandRoot(workspacePath: string): string {
@@ -435,7 +425,7 @@ function getWorkspaceZcodeCommandRoot(workspacePath: string): string {
 }
 
 function getUserZcodeCommandRoot(): string {
-  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "commands");
+  return join(resolveUserHomeDir(), ".zcode", "commands");
 }
 
 function getWorkspaceZcodePluginRoot(workspacePath: string): string {
@@ -443,11 +433,11 @@ function getWorkspaceZcodePluginRoot(workspacePath: string): string {
 }
 
 function getUserZcodePluginRoot(): string {
-  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "plugins");
+  return join(resolveUserHomeDir(), ".zcode", "plugins");
 }
 
 function getUserZcodeCliConfigPath(): string {
-  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "cli", "config.json");
+  return join(resolveUserHomeDir(), ".zcode", "cli", "config.json");
 }
 
 function getWorkspaceZcodeConfigPath(workspacePath: string): string {
@@ -459,7 +449,7 @@ function getClaudeUserAgentsFileSourcePath(): string {
 }
 
 function getUserZcodeAgentsFilePath(): string {
-  return join(resolveUserHomeDir(), USER_DATA_DIR_NAME, "AGENTS.md");
+  return join(resolveUserHomeDir(), ".zcode", "AGENTS.md");
 }
 
 function resolveTargetRootForScope(
@@ -561,13 +551,13 @@ async function importSkillDirectory(
   });
 }
 
-function getSkillDirectorySymlinkType(
+export function getSkillDirectorySymlinkType(
   platform: NodeJS.Platform | string = process.platform,
 ): "dir" | "junction" {
   return platform === "win32" ? "junction" : "dir";
 }
 
-function getCommandFileSymlinkType(): "file" {
+export function getCommandFileSymlinkType(): "file" {
   return "file";
 }
 
@@ -1105,24 +1095,28 @@ async function collectExistingMcpServerNameKeys(
   return nameKeys;
 }
 
+/**
+ * 迁移导入写 config.json（MCP 的 mcp.servers、插件的 plugins.dirs）。
+ * 根因：旧实现写入前用 readJsonFileOrEmpty 读取，读失败或 JSON 损坏时返回空对象，再用 writeFile
+ * 整文件写回，config.json 里的命令、技能、钩子等其他配置会被冲掉；writeFile 也不是原子写。
+ * 修法：改用 updateJsonObjectFile——文件损坏时报错不写，写前重读，只改自己的字段，原子替换。
+ * 错误交给 importXxxForAgent 的 catch，按现有方式把该项标为 failed 显示在迁移结果里。
+ */
 async function addMcpServerToZcodeConfig(
   filePath: string,
   name: string,
   config: McpServerConfig,
 ): Promise<void> {
-  const parsed = await readJsonFileOrEmpty(filePath);
-  const currentMcp = isRecord(parsed.mcp) ? parsed.mcp : {};
-  const servers = readZcodeMcpServers(parsed);
-  await writeJsonFile(filePath, {
-    ...parsed,
+  await updateJsonObjectFile(filePath, (current) => ({
+    ...current,
     mcp: {
-      ...currentMcp,
+      ...(isRecord(current.mcp) ? current.mcp : {}),
       servers: {
-        ...servers,
+        ...readZcodeMcpServers(current),
         [name]: config,
       },
     },
-  });
+  }));
 }
 
 function readStringArray(value: unknown): string[] {
@@ -1131,25 +1125,21 @@ function readStringArray(value: unknown): string[] {
     : [];
 }
 
-async function writeJsonFile(filePath: string, value: Record<string, unknown>): Promise<void> {
-  await mkdir(dirname(filePath), { recursive: true });
-  await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf-8");
-}
-
 async function addPluginDirToConfig(filePath: string, pluginPath: string): Promise<void> {
-  const parsed = await readJsonFileOrEmpty(filePath);
-  const plugins = isRecord(parsed.plugins) ? parsed.plugins : {};
-  const dirs = readStringArray(plugins.dirs);
   const resolvedPluginPath = resolve(pluginPath);
-  if (dirs.map((item) => resolve(item)).includes(resolvedPluginPath)) {
-    return;
-  }
-  await writeJsonFile(filePath, {
-    ...parsed,
-    plugins: {
-      ...plugins,
-      dirs: [...dirs, resolvedPluginPath],
-    },
+  await updateJsonObjectFile(filePath, (current) => {
+    const plugins = isRecord(current.plugins) ? current.plugins : {};
+    const dirs = readStringArray(plugins.dirs);
+    if (dirs.map((item) => resolve(item)).includes(resolvedPluginPath)) {
+      return current;
+    }
+    return {
+      ...current,
+      plugins: {
+        ...plugins,
+        dirs: [...dirs, resolvedPluginPath],
+      },
+    };
   });
 }
 
@@ -2053,7 +2043,14 @@ async function importPluginsForAgent(
     try {
       await mkdir(dirname(targetCandidate.targetPath), { recursive: true });
       await importPluginDirectory(candidate.sourcePath, targetCandidate.targetPath, importMode);
-      await addPluginDirToConfig(selectedConfigPath, targetCandidate.targetPath);
+      try {
+        await addPluginDirToConfig(selectedConfigPath, targetCandidate.targetPath);
+      } catch (error) {
+        // config.json 损坏时登记失败，但插件目录已经放好。目录残留会让用户修好配置后重试时
+        // 被判成 targetExists 而永远无法登记；导入前已确认目标不存在，所以这里只删本次放入的目录或软链。
+        await rm(targetCandidate.targetPath, { recursive: true, force: true });
+        throw error;
+      }
       importedCount += 1;
       const existingPluginIds = existingPluginIdsByConfigPath.get(selectedConfigPath);
       if (existingPluginIds) {
@@ -2066,7 +2063,12 @@ async function importPluginsForAgent(
         status: "imported",
         ...(candidate.version ? { version: candidate.version } : {}),
       });
-    } catch {
+    } catch (error) {
+      log.warn(undefined, "[importPlugins] 插件导入失败", {
+        sourcePath: candidate.sourcePath,
+        configPath: selectedConfigPath,
+        errorMessage: (error as Error)?.message,
+      });
       failedCount += 1;
       pluginResults.push({
         name: candidate.name,
@@ -2153,7 +2155,12 @@ async function importMcpServersForAgent(
         sourceScope: candidate.sourceRootScope,
         status: "imported",
       });
-    } catch {
+    } catch (error) {
+      log.warn(undefined, "[importMcpServers] MCP 导入失败", {
+        name: candidate.name,
+        configPath: selectedConfigPath,
+        errorMessage: (error as Error)?.message,
+      });
       failedCount += 1;
       mcpServerResults.push({
         name: candidate.name,
@@ -2383,6 +2390,21 @@ export function createSettingsSyncService(
         failedCount: taskResults.reduce((sum, result) => sum + result.failedCount, 0),
         taskResults,
       };
+    },
+
+    async getFirstRunPromptState() {
+      const settings = await dependencies.settingService.get();
+      return {
+        handled: settings.settingsSyncFirstRunPromptHandled === true,
+      };
+    },
+
+    async markFirstRunPromptHandled(): Promise<void> {
+      await dependencies.settingService.update({
+        // 这里记录的是“首启导入提示是否已经被消费”，不是“导入是否成功”。
+        // 如果把“用户点击跳过”遗漏掉，下次启动还会重复弹窗，造成首启流程打扰感。
+        settingsSyncFirstRunPromptHandled: true,
+      });
     },
   };
 }

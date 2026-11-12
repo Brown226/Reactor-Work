@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
-import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 const HOME_PREFIX = "~/";
 
@@ -21,8 +20,9 @@ export async function resolveUserSubagentRoot(options?: SubagentStorageOptions):
   return join(await resolveZCodeStorageRoot(options), "agents");
 }
 
+
 /**
- * 服务端下发目录（P3）：与 `agents/` 同一存储根下的兄弟目录，物理隔离。
+ * [本地定制] 服务端下发目录（P3）：与 `agents/` 同一存储根下的兄弟目录，物理隔离。
  * 唯一写者是 `IServerAgentSyncService`；发现层（GUI/CLI）只读；
  * 解析必须与 `resolveUserSubagentRoot` 同口径，否则「同步下来没人发现」。
  */
@@ -44,7 +44,7 @@ export async function resolveZCodeStorageRoot(options?: SubagentStorageOptions):
   const storageDir =
     typeof storage.dir === "string" && storage.dir.trim().length > 0
       ? storage.dir.trim()
-      : `~/${USER_DATA_DIR_NAME}`;
+      : "~/.zcode";
   return resolveConfigPath(storageDir, options);
 }
 
@@ -60,7 +60,7 @@ async function readUserCliConfig(
 ): Promise<Record<string, unknown>> {
   try {
     const raw = await readFile(
-      join(resolveUserHomeDir(options), USER_DATA_DIR_NAME, "cli", "config.json"),
+      join(resolveUserHomeDir(options), ".zcode", "cli", "config.json"),
       "utf8",
     );
     const parsed = JSON.parse(raw) as unknown;

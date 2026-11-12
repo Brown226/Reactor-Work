@@ -1,6 +1,58 @@
+import {
+  createRemoteProjectService,
+  IRemoteProjectService,
+  projectWorkspaceSettings,
+  readRemoteProjectDirectory,
+} from "#src/remote-projects/index.js";
+export {
+  createRemoteProjectConnectionAdmission,
+  releaseRemoteProjectProfileHost,
+  findRemoteProjectHostIdForProfile,
+  remoteProjectHostIdForProfile,
+  remoteProjectHostIdForTarget,
+  prepareRemoteServerConnection,
+} from "#src/remote-projects/index.js";
+import {
+  createProjectDataPort,
+  createProjectService,
+  createTaskAutoArchiveScheduler,
+  IProjectService,
+  shouldRescanTaskAutoArchive,
+} from "#src/project/index.js";
+import {
+  createManagedWorktreeService,
+  createWorktreeRemovalGate,
+  IManagedWorktreeService,
+} from "#src/managed-worktree-tasks/index.js";
+export { createLegacySingleRootProjectService } from "#src/project/index.js";
+import { createAppControlService } from "#src/app-control/index.js";
+import {
+  createAppControlDiscoveryDirectory,
+  type AppControlDiscoveryConnection,
+} from "#src/app-control/discovery-directory.js";
+import type {
+  AppControlNavigationPort,
+  AppControlService,
+  AppControlServiceHandle,
+} from "#src/app-control/contract.js";
+export type {
+  AppControlNavigationPort,
+  AppControlBinding,
+  AppControlServiceHandle,
+} from "#src/app-control/contract.js";
+export { createRemoteProjectService } from "#src/remote-projects/index.js";
+import { getZCodeDataRootDir as projectDataRoot } from "#src/paths.js";
+import { getDataBaseDir } from "#src/paths.js";
+import { createGitWorktreeRepo } from "#src/git/managed-worktree/index.js";
+import { createGitCommandProvider } from "#src/git/providers/gitCommandProvider.js";
+import { HOST_WORKTREE_COMMAND } from "#src/zcode-agent/zcodeAgent.js";
+import { createTaskGroupService, ITaskGroupService, groupTaskKey } from "#src/task-groups/index.js";
+import { IGenUiService } from "./gen-ui/contract.js";
+import { createGenUiService } from "./gen-ui/node.js";
+// import { channelReplyHostRequestSchema, channelReplyResultSchema } from "@zcode/shared";
 /* eslint-disable max-lines -- host process 服务注册和启动装配需要集中维护，拆散后会更难追踪依赖注入顺序 */
 // Node.js service implementations — NOT safe to import in browser code
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -11,16 +63,48 @@ import {
 } from "@zcode/provider-node";
 import { getAppConfigDir as resolveAppConfigDir } from "./paths.js";
 import {
+  createSystemCredentialCipher,
+  createServerCredentialCipher,
+  type CredentialCipher,
+} from "@zcode/shared/credential-security";
+import {
+  createHasExistingLocalTask,
+  hasAnyAgentSessionRow,
+  resolveAgentSessionDbPath,
+} from "./onboarding/localUsageEvidence.js";
+import {
   buildLocalMediaPreviewUrl,
-  isProviderProvisioningAccountCredentialKey,
-  USER_DATA_DIR_NAME,
-  type ProviderProvisioningTrigger,
+  OAUTH_LINKED_BIGMODEL_KEY,
+  OAUTH_SESSION_REVISION_KEY,
+  type DynamicWorkflowMode,
+  type ProviderProvisioningSourceTrigger,
+  toBearerAuthorization,
+  ZCODE_CLIENT_LANGUAGE_ENV,
 } from "@zcode/shared";
 
 export {
   materializeZCodeBuiltinProviderConfig,
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
 } from "@zcode/provider-node";
+import { randomUUID } from "node:crypto";
+import { getAppConfigDir as getContentAppConfigDir } from "#src/paths.js";
+import { ICloudContentService } from "#src/cloud-content/cloudContent.js";
+import { createCloudContentService } from "#src/cloud-content/cloudContentService.js";
+import { IMarketingTouchService } from "#src/marketing-touch/marketingTouch.js";
+import { createMarketingTouchService } from "#src/marketing-touch/marketingTouchService.js";
+import { IVoiceInputService } from "#src/voice-input/contract.js";
+import { createVoiceInputService } from "#src/voice-input/voiceInputService.js";
+import { createMarketingAssetRegistry } from "#src/marketing-touch/marketingAssetRegistry.js";
+import type { IChannel } from "@zcode/rpc";
+import {
+  readTopicResourceFromRelay,
+  validateTopicResourceFromRelay,
+} from "./zcode-agent/topicResourceRelayClient.js";
+export {
+  createTopicResourcePeers,
+  type TopicResourcePeers,
+} from "./zcode-agent/topicResourcePeers.js";
+export { createTopicResourceRelayChannel } from "./zcode-agent/topicResourceRelayChannel.js";
 
 export { createFileService } from "./file/fileService.js";
 export {
@@ -32,6 +116,8 @@ export {
   type ProcessResourceSampler,
 } from "./process/processResourceSampler.js";
 export { createMediaPreviewService } from "./media-preview/mediaPreview.js";
+export { createContentBundleCache } from "#src/cloud-content/contentBundleCache.js";
+export type { ContentBundle } from "#src/cloud-content/contentBundleCache.js";
 export type { CreateFileServiceOptions } from "./file/fileService.js";
 export {
   defaultWorkspaceFileSearchFilter,
@@ -57,6 +143,12 @@ export type {
   FsFaultRuleConfig,
   InjectedFsFaultError,
 } from "./fs/fsFaultInjection.js";
+// config.json 多写入方共用的「严格读取 + 写前重读 + 原子替换（0600）」（主进程 MCP 设置页也用）。
+export {
+  JsonObjectFileUnreadableError,
+  readJsonObjectFileForUpdate,
+  updateJsonObjectFile,
+} from "./fs/atomicFileUtils.js";
 export {
   setDataBaseDir,
   getDataBaseDir,
@@ -84,12 +176,13 @@ export {
   createSettingServiceWithMigrations,
 } from "./setting/settingService.js";
 export { createCredentialService } from "./credential/credentialService.js";
-export type {
-  CredentialCipherProvider,
-  CredentialSafeStorageAdapter,
-} from "./credential/providers/credentialCipherProvider.js";
 export { createBroadcastService } from "./broadcast/broadcastService.js";
 export { createZCodeAgentService } from "./zcode-agent/zcodeAgentService.js";
+export type {
+  PluginUserOptionsReader,
+  ZCodeAgentPluginUserOptionsResult,
+  ZCodeAgentReadPluginUserOptionsParams,
+} from "./zcode-agent/pluginHostQueriesClient.js";
 export { createZCodeTaskServiceAdapter } from "./zcode-agent/zcodeTaskServiceAdapter.js";
 export { createZCodeSessionService } from "./zcode-session/zcodeSessionService.js";
 export {
@@ -126,19 +219,12 @@ export type {
   CuaHelperInstaller,
   CuaHelperInstallerOptions,
 } from "./cua-permission-broker/index.js";
+export { createProjectWorkspaceNavigation } from "#src/project-workspace-navigation/index.js";
+export { createBotsService } from "./bots/botsService.js";
 export { createFileWatcherService } from "./fileWatcher/fileWatcherService.js";
-export {
-  getWebDataRoot,
-  getWebHomesRoot,
-  getWebUsersRoot,
-  prepareWebUserSandbox,
-  type WebUserSandbox,
-} from "./zcode-agent/webUserSandbox.js";
 export { createOAuthService } from "./oauth/oauthService.js";
 export { createOAuthProviderLogoutHandler } from "./oauth/oauthProviderLogout.js";
 export { OAuthCredentialRepo } from "./oauth/repo/oauthCredentialRepo.js";
-export { ensureDeviceMid } from "./device/deviceMid.js";
-export type { EnsureDeviceMidOptions } from "./device/deviceMid.js";
 export { createTelemetryCore, ensureTelemetryDeviceMid } from "./telemetry/telemetryCore.js";
 export type { EnsureTelemetryDeviceMidOptions } from "./telemetry/telemetryCore.js";
 export type { AccountRequestAuthResolver } from "./model-provider/accountProviderRequestAuthService.js";
@@ -198,11 +284,31 @@ export {
 export { createAccountRequestAuthService } from "./model-provider/accountRequestAuthService.js";
 export type { IAccountRequestAuthService } from "./model-provider/accountRequestAuthService.js";
 export { createAccountProviderRequestAuthService } from "./model-provider/accountProviderRequestAuthService.js";
-export { resolveAccountTeamPlanRuntimeApiKey } from "./model-provider/accountProviderTeamPlanRequestKey.js";
+export {
+  resolveAccountTeamPlanRuntimeApiKey,
+  resolveAccountTeamPlanRuntimeMaterial,
+} from "./model-provider/accountProviderTeamPlanRequestKey.js";
+export { createAccountProjectTokenClient } from "./model-provider/accountProjectTokenClient.js";
 export { createAccountProviderCredentialService } from "./model-provider/accountProviderCredentialService.js";
+export { createSourceServerWorkspaceService } from "./source-server-workspace/sourceServerWorkspaceService.js";
+export {
+  SourceServerWorkspaceIdentityChannelServer,
+  SourceServerWorkspaceIdentityMapper,
+} from "./source-server-workspace/sourceServerWorkspaceIdentityChannelServer.js";
+export {
+  SourceServerWorkspaceAliasRepo,
+  SourceServerWorkspaceIdentityConflictError,
+} from "./session/sourceServerWorkspaceAliasRepo.js";
+export { migrateControllerRemoteWorkspaceIdentity } from "./session/controllerRemoteIdentityMigration.js";
+export type {
+  ControllerRemoteIdentityMigrationOptions,
+  ControllerRemoteIdentityMigrationReport,
+} from "./session/controllerRemoteIdentityMigration.js";
 export { createUsageStatsService } from "./usage-stats/usageStatsService.js";
 // Storage：service 与 adapters 工厂；desktop host 负责组装（Worker runner 在 desktop 包内）
 export { createStorageService } from "./storage/app/storageService.js";
+// 组装方与工厂在同一入口取类型，避免 desktop main 为服务接口再引 browser 入口。
+export type { IStorageService } from "./storage/contract.js";
 export type {
   FsCleanerPort as StorageFsCleanerPort,
   RootsResolverPort as StorageRootsResolverPort,
@@ -222,6 +328,9 @@ export { createClientConfigService } from "./client-config/clientConfigService.j
 export { createClientScenesService } from "./client-scenes/clientScenesService.js";
 export { createSkillsService } from "./skills/skillsService.js";
 export { createSkillSyncService } from "./skill-sync/skillSyncService.js";
+export { createDeviceSyncStateService, createUserConfigSyncService } from "./data-sync/node.js";
+export { createHostProviderProvisioningStatus } from "./provider-provisioning-status/node.js";
+export { createWindowHostExtensions, type WindowHostExtensions } from "./extensions/node.js";
 export { createMcpSyncService } from "./mcp-sync/mcpSyncService.js";
 export { createPluginSyncService } from "./plugin-sync/pluginSyncService.js";
 export { createPluginsService } from "./plugins/pluginsService.js";
@@ -230,11 +339,8 @@ export { createSubagentsService } from "./subagents/subagentsService.js";
 export { createCommandsService } from "./commands/commandsService.js";
 export { createHooksService } from "./hooks/hooksService.js";
 export { createMemoryService } from "./memory/memoryService.js";
+export { createOutputStyleService } from "./output-style/outputStyleService.js";
 export { createSettingsSyncService } from "./settings-sync/settingsSyncService.js";
-export { createServerSkillSyncService } from "./server-skills/serverSkillSyncService.js";
-export { createServerAgentSyncService } from "./server-agents/serverAgentSyncService.js";
-// 知识缓存同步（文件审查的依据）：只读登录态与凭据，把标准清单/术语白名单/规范库拉到用户数据目录。
-export { createKnowledgeSyncService } from "./knowledge/knowledgeSyncService.js";
 export { createFeedbackDiagnosticArchive } from "./feedback/feedbackLogArchive.js";
 export { createFeedbackService } from "./feedback/feedbackService.js";
 export type { CreateFeedbackServiceOptions } from "./feedback/feedbackService.js";
@@ -271,6 +377,7 @@ export { OffPeakTaskRepo, OFF_PEAK_CLAIM_STALE_MS } from "./session/offPeakTaskR
 export { buildTaskChangeSummary } from "./session/taskChangeSummary.js";
 export { OffPeakTaskService } from "./session/offPeakTaskService.js";
 export { IOffPeakTaskService } from "./session/offPeakTask.js";
+export { IHighspeedCardService } from "./highspeed/highspeedCard.js";
 export { createOffPeakServerClient, OffPeakServerError } from "./session/offPeakServerClient.js";
 export { isOffPeakMockEnabled, startOffPeakMockGateway } from "./session/offPeakMockGateway.js";
 export {
@@ -298,6 +405,13 @@ export {
   isValidCronExpr,
 } from "./session/automationCron.js";
 
+import {
+  buildServerRemoteWorkspaceIdentity,
+  DEFAULT_APP_TOOL_SEARCH_MODE,
+  remoteHostIdFromWorkspaceIdentity,
+} from "@zcode/shared";
+import { SourceServerWorkspaceAliasRepo } from "./session/sourceServerWorkspaceAliasRepo.js";
+import { SourceServerWorkspaceIdentityMapper } from "./source-server-workspace/sourceServerWorkspaceIdentityChannelServer.js";
 import { ServiceCollection } from "./collection.js";
 import { IFileService } from "./file/file.js";
 import { IMediaPreviewService } from "./media-preview/mediaPreview.js";
@@ -306,6 +420,7 @@ import { IGitCheckpointService } from "./git/gitCheckpoint.js";
 import { ISystemService } from "./system/system.js";
 import { ITerminalService } from "./terminal/terminal.js";
 import { ISettingService } from "./setting/setting.js";
+import { IOnboardingRecordService } from "./onboarding/onboardingRecord.js";
 import { ICredentialService } from "./credential/credential.js";
 import { IBroadcastService } from "./broadcast/broadcast.js";
 import { IZCodeTaskService } from "./session/zcodeTaskService.js";
@@ -323,8 +438,10 @@ import {
 } from "./conversation-share/conversationShareService.js";
 import { createLocalConversationShareArtifactSource } from "./conversation-share/conversationShareArtifactSource.js";
 import { ConversationShareHttpClient } from "./conversation-share/conversationShareHttpClient.js";
+import { IBotsService } from "./bots/bots.js";
 import { IFileWatcherService } from "./fileWatcher/fileWatcher.js";
 import { IOAuthService } from "./oauth/oauth.js";
+import { ISourceServerWorkspaceService } from "./source-server-workspace/sourceServerWorkspace.js";
 import { IUsageStatsService } from "./usage-stats/usageStats.js";
 import { ICodingPlanSubscriptionService } from "./coding-plan-subscription/codingPlanSubscription.js";
 import { IClientScenesService } from "./client-scenes/clientScenes.js";
@@ -332,12 +449,15 @@ import { ISkillsService } from "./skills/skills.js";
 import { ISkillSyncService } from "./skill-sync/skillSync.js";
 import { IMcpSyncService } from "./mcp-sync/mcpSync.js";
 import { IPluginSyncService } from "./plugin-sync/pluginSync.js";
+import { IUserConfigSyncService } from "./data-sync/contract.js";
+import { createUserConfigSyncService } from "./data-sync/userConfigSyncService.js";
 import { IPluginsService } from "./plugins/plugins.js";
 import { IPluginManagementService } from "./plugins/pluginManagement.js";
 import { ISubagentsService } from "./subagents/subagents.js";
 import { ICommandsService } from "./commands/commands.js";
 import { IHooksService } from "./hooks/hooks.js";
 import { IMemoryService } from "./memory/memory.js";
+import { IOutputStyleService } from "./output-style/outputStyle.js";
 import { ISettingsSyncService } from "./settings-sync/settingsSync.js";
 import { IFeedbackService } from "./feedback/feedback.js";
 import { IPromptAttachmentTransferService } from "./prompt-attachment-transfer/promptAttachmentTransfer.js";
@@ -347,16 +467,23 @@ import type { WorkspaceFileSearchFilter } from "./file/workspaceFileMentionFilte
 import { createGitService } from "./git/gitService.js";
 import { GitCommitMessageGenerator } from "./git/gitCommitMessageGenerator.js";
 import { createGitCheckpointService } from "./git/gitCheckpointService.js";
+import { getWorkspaceCheckpointDirectory } from "./git/repo/gitCheckpointStore.js";
 import { createSystemService } from "./system/systemService.js";
 import { createTerminalService } from "./terminal/terminalService.js";
-import { createSettingServiceWithMigrations } from "./setting/settingService.js";
+import {
+  createSettingService,
+  createSettingServiceWithMigrations,
+} from "./setting/settingService.js";
+import { createOnboardingRecordService } from "./onboarding/onboardingRecordService.js";
 import { createLegacyTeamOrganizationResolver } from "./model-provider/legacyTeamOrganizationResolver.js";
 import { createObservableSettingService } from "./setting/observableSettingService.js";
 import { createCredentialService } from "./credential/credentialService.js";
-import type { CredentialSafeStorageAdapter } from "./credential/providers/credentialCipherProvider.js";
-import { createCredentialCipherProvider } from "./credential/providers/credentialCipherProvider.js";
 import { createBroadcastService } from "./broadcast/broadcastService.js";
-import { createZCodeAgentService } from "./zcode-agent/zcodeAgentService.js";
+import {
+  createZCodeAgentService,
+  getInProcessPluginUserOptionsReader,
+} from "./zcode-agent/zcodeAgentService.js";
+import type { PluginUserOptionsReader } from "./zcode-agent/pluginHostQueriesClient.js";
 import type { ZCodeAgentCommandResolver } from "./zcode-agent/zcodeAgentProcessManager.js";
 import { buildAgentTelemetrySpawnEnv } from "./zcode-agent/agentTelemetryEnv.js";
 import { resolveZCodeAgentPresentationSurface } from "./zcode-agent/zcodeAgentPresentationSurface.js";
@@ -364,14 +491,28 @@ import { createZCodeTaskServiceAdapter } from "./zcode-agent/zcodeTaskServiceAda
 import { createZCodeSessionService } from "./zcode-session/zcodeSessionService.js";
 import { createZCodeTaskIndexSyncer } from "./zcode-agent/zcodeTaskIndexSyncer.js";
 import { TaskIndexRepo } from "./session/taskIndexRepo.js";
+import { AutomationRepo } from "#src/session/automationRepo.js";
+import type { AppSettings } from "@zcode/shared";
+import { createBotsService } from "./bots/botsService.js";
+import { BotsRepo } from "#src/bots/repo.js";
+import {
+  createBotProjectRuntime,
+  type BotProjectConnection,
+} from "#src/bot-project-runtime/index.js";
+export type { BotProjectConnection } from "#src/bot-project-runtime/contract.js";
 import type { SessionMessageSendRequested } from "#src/session/sessionMailbox.js";
 import { createFileWatcherService } from "./fileWatcher/fileWatcherService.js";
 import { createOAuthService } from "./oauth/oauthService.js";
-import { isCurrentOAuthCredentialRequest } from "#src/oauth/oauthUnauthorizedRequest.js";
+import {
+  isOAuthBusinessRequest,
+  resolveOAuthBusinessCredentialValidationRequest,
+  isCurrentOAuthCredentialRequest,
+  resolveAssociatedOAuthCredentialRequest,
+} from "#src/oauth/oauthUnauthorizedRequest.js";
 import { createOAuthProviderLogoutHandler } from "./oauth/oauthProviderLogout.js";
 import { OAuthCredentialRepo } from "./oauth/repo/oauthCredentialRepo.js";
 import { readLegacyZCodeConfigProviders } from "./model-provider/legacyZCodeConfigProviderReader.js";
-import { resolveAccountTeamPlanRuntimeApiKey } from "./model-provider/accountProviderTeamPlanRequestKey.js";
+import { resolveAccountTeamPlanRuntimeMaterial } from "./model-provider/accountProviderTeamPlanRequestKey.js";
 import { createAccountProviderCredentialStore } from "./model-provider/accountProviderCredentialStore.js";
 import { createAccountProviderCredentialService } from "./model-provider/accountProviderCredentialService.js";
 import { createAccountProviderRequestAuthService } from "./model-provider/accountProviderRequestAuthService.js";
@@ -382,6 +523,7 @@ import {
 } from "./model-provider/accountProviderConnectionResolver.js";
 import { bindAccountProviderInvalidation } from "./model-provider/accountProviderInvalidation.js";
 import { AccountProviderApiClient } from "./model-provider/accountProviderApiClient.js";
+import { createAccountProjectTokenClient } from "./model-provider/accountProjectTokenClient.js";
 import { AccountProviderApiKeyResolver } from "./model-provider/accountProviderApiKeyResolver.js";
 import { createProviderConfigRuntime } from "./model-provider/providerConfigRuntime.js";
 import { fetchZCodeBuiltinRemoteRelease } from "./model-provider/zcodeBuiltinRemoteConfig.js";
@@ -409,19 +551,7 @@ import {
   createAccountRequestAuthService,
   type IAccountRequestAuthService,
 } from "./model-provider/accountRequestAuthService.js";
-// 企业服务端接入（Reactor Server）：工厂从实现文件直接导入（根 index 只导出 descriptor/类型，
-// 原因是根 index 会被 renderer 拉进浏览器包，见 services/index.ts 的注释）。
-import { createReactorServerService } from "./reactor-server/reactorServerService.js";
-import { IReactorServerService } from "./reactor-server/reactorServer.js";
-// 企业服务端技能同步：工厂从实现文件直接导入（根 index 只导出 descriptor/类型，同上）。
-import { createServerSkillSyncService } from "./server-skills/serverSkillSyncService.js";
-import { IServerSkillSyncService } from "./server-skills/serverSkillSync.js";
-// 企业服务端 Agent 同步：工厂同上（根 index 只导出 descriptor/类型）。
-import { createServerAgentSyncService } from "./server-agents/serverAgentSyncService.js";
-import { IServerAgentSyncService } from "./server-agents/serverAgentSync.js";
-// 知识缓存同步：工厂同上（根 index 只导出 descriptor/类型，避免 renderer 包拉进 node:fs）。
-import { createKnowledgeSyncService } from "./knowledge/knowledgeSyncService.js";
-import type { IKnowledgeSyncService } from "./knowledge/knowledgeSyncService.js";
+import { createSourceServerWorkspaceService } from "./source-server-workspace/sourceServerWorkspaceService.js";
 import { createUsageStatsService } from "./usage-stats/usageStatsService.js";
 import { createCodingPlanSubscriptionService } from "./coding-plan-subscription/codingPlanSubscriptionService.js";
 import { createClientConfigService } from "./client-config/clientConfigService.js";
@@ -430,6 +560,15 @@ import { createClientScenesService } from "./client-scenes/clientScenesService.j
 import { createSkillsService } from "./skills/skillsService.js";
 import { createSkillSyncService } from "./skill-sync/skillSyncService.js";
 import { createMcpSyncService } from "./mcp-sync/mcpSyncService.js";
+import {
+  IPluginUiAppToolsService,
+  IPluginUiSamplingService,
+  createPluginUiSamplingService,
+  IPluginUiBridgeService,
+  createPluginUiAppToolsService,
+  createPluginUiBridgeService,
+} from "./plugin-ui-bridge/index.js";
+import type { PluginSandboxHandle, PluginSandboxRegisterInput } from "@zcode/shared/mcp-apps";
 import { createPluginSyncService } from "./plugin-sync/pluginSyncService.js";
 import { createPluginsService } from "./plugins/pluginsService.js";
 import { createPluginManagementService } from "./plugins/pluginManagementService.js";
@@ -437,6 +576,7 @@ import { createSubagentsService } from "./subagents/subagentsService.js";
 import { createCommandsService } from "./commands/commandsService.js";
 import { createHooksService } from "./hooks/hooksService.js";
 import { createMemoryService } from "./memory/memoryService.js";
+import { createOutputStyleService } from "./output-style/outputStyleService.js";
 import { createSettingsSyncService } from "./settings-sync/settingsSyncService.js";
 import {
   createFeedbackService,
@@ -460,7 +600,16 @@ import {
 import { ensureAppCaCert } from "./runtime-tools/appCaCert.js";
 import { buildHelperOpenArgs, isCuaLocalDevelopmentRuntime } from "@zcode/zcode-cua/broker/server";
 import { createServiceLogger, type ServiceLogger } from "#src/logger/serviceLogger.js";
+import { ensureTelemetryDeviceMid } from "#src/telemetry/telemetryCore.js";
 import { IOffPeakTaskService } from "./session/offPeakTask.js";
+import type { HighspeedMockScenario } from "@zcode/shared";
+import { IHighspeedCardService } from "./highspeed/highspeedCard.js";
+import {
+  buildHighspeedCodingPlanAuthHeaders,
+  HighspeedCardService,
+  createHighspeedHttpTransport,
+} from "./highspeed/highspeedCardService.js";
+import { createHighspeedMockTransport } from "./highspeed/highspeedMockTransport.js";
 import { OffPeakTaskService } from "./session/offPeakTaskService.js";
 import { OffPeakTaskRepo } from "./session/offPeakTaskRepo.js";
 import { createOffPeakServerClient } from "./session/offPeakServerClient.js";
@@ -482,25 +631,19 @@ import {
 import {
   BROKER_SOCKET_ENV,
   BROKER_UNAVAILABLE_ENV,
-  clearCuaProductHelperAgentEnvUnavailable,
   createCuaPipSessionService,
   createCuaProductMcpServerResolver,
   createProductCuaHelperHost,
   CuaHelperLifecycleManager,
-  CuaProductHelperWorkspaceRegistry,
-  hasCuaProductHelperAgentEnvUnavailable,
   ICuaPermissionService,
   ICuaPipSessionService,
-  isCuaHelperError,
   isOfficialCuaPluginEnabledForWorkspace,
   isPotentialZCodeCuaAgentMcpServer,
   isScreenCaptureProbeSuccess,
-  markCuaProductHelperAgentEnvUnavailable,
   reapOrphanedHelpers,
+  resolveStandaloneStatusLaunchAppPath,
   shouldRunCuaScreenCaptureProbe,
-  waitForCuaHelperStartup,
   type CuaHelperHost,
-  type CuaHelperTransportHandle,
   type CuaHelperTransportRestartOptions,
   type CuaHelperTransportRestartResult,
   type ManagedCuaProductHelperHost,
@@ -519,20 +662,26 @@ import {
 } from "#src/cua-permission-broker/windowsCuaDevRuntime.js";
 import { createCanonicalCuaHelperInstaller } from "./cua-permission-broker/cuaHelperInstaller.js";
 import { WindowsCuaHelperHost } from "#src/cua-permission-broker/windowsCuaDevHelperHost.js";
-import { DEV_HELPER_APP_NAME, HELPER_APP_NAME } from "@zcode/zcode-cua/broker/helperConstants";
+import {
+  getStableCuaPipeName,
+  resolveStableCuaWinRecipe,
+} from "#src/cua-permission-broker/stableCuaTransport.js";
+import { HELPER_APP_NAME } from "@zcode/zcode-cua/broker/helperConstants";
 import { resolveBrokerSocketPath } from "@zcode/zcode-cua/broker/socketPath";
 import {
   DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
-  resolveSafeEndpointHostname,
   ZCODE_JWT_INVALID_BROADCAST_CHANNEL,
   formatLogPrefix,
   isCredentialDecryptError,
+  isBuiltinOAuthProvider,
   isStartPlanModelProviderId,
   OFF_PEAK_PROVIDER_IDS,
   BIGMODEL_PROVIDER_ID,
   type ProviderFamilyDomain,
+  type OAuthAccountAvailability,
   type ServiceAuthorityMode,
   resolveRuntimeZCodeEndpointOrigin,
+  resolveSafeTelemetryHostname,
   type BrowserBackendDescriptor,
   type BrowserClientMode,
   type BrowserCommand,
@@ -560,6 +709,7 @@ export {
   conversationShareConnectionScopeFactory,
 };
 
+import { createPluginUiAccountBindings } from "./plugin-ui-bridge/instanceAccounts.js";
 interface ServiceWithDisposeAll {
   disposeAll: () => void;
 }
@@ -568,17 +718,10 @@ interface ServiceWithDisposeAllAndWait {
   disposeAllAndWait: () => Promise<void>;
 }
 
-const CUA_PRODUCT_HELPER_AGENT_ENV_RETRY_MS = 30_000;
-// Cold-start budget: the Helper's first cold launch (large Node SEA + first-time Gatekeeper/notarization
+// Bug A: the Helper's first cold launch (large Node SEA + first-time Gatekeeper/notarization
 // assessment) routinely exceeds the old 5s health budget; warm it is <1s. Give the cold path
-// plenty of headroom. Runs off the agent-spawn critical path (see buildCuaProductHelperAgentEnv).
+// plenty of headroom.
 const CUA_HELPER_HEALTH_TIMEOUT_MS = 30_000;
-// 有界 spawn grace：给正常的签名 Helper 冷启动一个短暂但现实的就绪窗口。实机上
-// Gatekeeper + SEA 启动通常需要 300–500ms，旧 250ms 会把健康首启误判为 BROKER_UNAVAILABLE。
-// 1s 后仍未就绪才 fail-closed，后台 startup 继续收敛；不会等待完整的 30s health budget。
-// helper 随后 ready 时由 reconcileRecoveredHelper 只清理后续 spawn admission marker，绝不触碰
-// 已有 Agent。绝不照搬 feat 的 10s caller wait。
-const CUA_PRODUCT_HELPER_SPAWN_READY_DEADLINE_MS = 1_000;
 
 type DefaultCuaProductHelper = {
   host: ManagedCuaProductHelperHost;
@@ -590,54 +733,6 @@ type ManagedDefaultCuaProductHelper = {
   helper: DefaultCuaProductHelper;
   seedContext?: CuaProductMcpServerResolverContext;
 };
-
-const cuaProductHelperAgentEnvRetryAt = new WeakMap<Pick<CuaHelperHost, "start">, number>();
-const cuaProductHelperTrackedStart = new WeakMap<Pick<CuaHelperHost, "start">, Promise<unknown>>();
-/**
- * 本次 startup 期间有 agent 消费过 reservation（拿了 Helper 尚未就绪时预留的 tuple）。
- *
- * 撤销路径不可省：那些 spawn 是**成功返回**的，从未进过 catch，所以 startup 最终失败时
- * 没有任何既有机制会把它们标记为需要重新 spawn。这里补上 mark，让后续 spawn 在 Helper
- * 不可用时继续 fail-closed；Helper ready 后只清理 marker，不回收已有 Agent。
- */
-const cuaProductHelperReservedSpawns = new WeakSet<Pick<CuaHelperHost, "start">>();
-/** Agent 已消费 Windows transport_ready tuple；full startup 后续失败时仍保留既有 Agent。 */
-const cuaProductHelperTransportSpawns = new WeakSet<Pick<CuaHelperHost, "start">>();
-
-function trackCuaProductHelperStartup(
-  host: Pick<CuaHelperHost, "start">,
-  startup: Promise<unknown>,
-): void {
-  if (cuaProductHelperTrackedStart.get(host) === startup) return;
-  cuaProductHelperTrackedStart.set(host, startup);
-  void startup.then(
-    () => {
-      cuaProductHelperAgentEnvRetryAt.delete(host);
-      cuaProductHelperReservedSpawns.delete(host);
-      cuaProductHelperTransportSpawns.delete(host);
-      if (cuaProductHelperTrackedStart.get(host) === startup) {
-        cuaProductHelperTrackedStart.delete(host);
-      }
-    },
-    () => {
-      // The caller may already have timed out while the shared 30s startup continued. Its eventual
-      // failure must still establish backoff; otherwise every new task immediately repeats install/
-      // launch/health work during a persistent failure.
-      cuaProductHelperAgentEnvRetryAt.set(host, Date.now() + CUA_PRODUCT_HELPER_AGENT_ENV_RETRY_MS);
-      if (cuaProductHelperReservedSpawns.delete(host)) {
-        // 有 Agent 拿着预留 tuple 而 Helper 最终没起来 → 仅标记后续 spawn fail-closed，
-        // 不反向销毁已有 Agent。
-        markCuaProductHelperAgentEnvUnavailable(host);
-      }
-      if (cuaProductHelperTransportSpawns.delete(host)) {
-        markCuaProductHelperAgentEnvUnavailable(host);
-      }
-      if (cuaProductHelperTrackedStart.get(host) === startup) {
-        cuaProductHelperTrackedStart.delete(host);
-      }
-    },
-  );
-}
 
 function hasDisposeAll(instance: unknown): instance is ServiceWithDisposeAll {
   return (
@@ -671,6 +766,8 @@ const providerProvisioningTriggerDisposers = new WeakMap<
   ServiceCollection,
   readonly (() => void)[]
 >();
+// 自动归档定时扫描器不是 IPC 服务，随 services 释放时停掉定时器与设置监听。
+const taskAutoArchiveDisposers = new WeakMap<ServiceCollection, () => void>();
 // TaskIndexRepo / OffPeakTaskRepo 等各自持有 tasks-index.sqlite 的连接句柄；
 // dispose 链必须统一关闭：Windows 上句柄悬着会让宿主回收后临时目录 rm 撞 EBUSY
 // （stdioDesktopPresentationSurface 单测稳定复现），Linux 的 unlink-while-open 语义掩盖了泄漏。
@@ -679,7 +776,7 @@ const sharedSqliteRepos = new WeakMap<ServiceCollection, ReadonlyArray<{ close()
 const accountRequestAuthServices = new WeakMap<ServiceCollection, IAccountRequestAuthService>();
 export type OffPeakRequestAuthBuilder = (
   ticketId: string,
-) => Promise<{ apiKey: string; headers: Record<string, string> }>;
+) => Promise<{ apiKey: string; headers: Record<string, string>; accountScope?: string }>;
 const offPeakRequestAuthBuilders = new WeakMap<ServiceCollection, OffPeakRequestAuthBuilder>();
 
 /** Local Host 进程内能力；不会随 ServiceCollection 暴露到通用 RPC Channel。 */
@@ -701,6 +798,20 @@ export function getOffPeakRequestAuthBuilder(
   services: ServiceCollection,
 ): OffPeakRequestAuthBuilder | undefined {
   return offPeakRequestAuthBuilders.get(services);
+}
+
+const pluginUserOptionsReaders = new WeakMap<ServiceCollection, PluginUserOptionsReader>();
+
+/**
+ * Local Host 进程内：扩展 settings 能力读本插件 user 层有效值（含敏感值，docs/plugins/extension-host.md
+ * §16.7）。不登记为服务、不挂在任何服务对象上，所以不会随 ServiceCollection 暴露到任何 RPC 频道
+ * （桌面 Renderer、手机远控、远程 workspace）。Window Host 把它作为依赖交给扩展网关，网关只给调用方
+ * 自己的插件。只有 createLocalServices 的集合有值；其他集合返回 undefined（调用方按「不支持」处理）。
+ */
+export function getPluginUserOptionsReader(
+  services: ServiceCollection,
+): PluginUserOptionsReader | undefined {
+  return pluginUserOptionsReaders.get(services);
 }
 const managedHostApiNetworkTransports = new WeakMap<ServiceCollection, HostApiNetworkTransport>();
 
@@ -757,7 +868,8 @@ export function shouldUseCuaPermissionService(opts: {
   platform?: NodeJS.Platform;
   cuaEnabled: boolean;
 }): boolean {
-  return (opts.platform ?? process.platform) === "darwin" && opts.cuaEnabled;
+  const platform = opts.platform ?? process.platform;
+  return (platform === "darwin" || platform === "win32") && opts.cuaEnabled;
 }
 
 export function shouldRetainDefaultCuaProductHelper(): boolean {
@@ -1065,6 +1177,7 @@ export function createDefaultCuaProductHelper(
           new WindowsCuaHelperHost({
             runtime,
             logger,
+            mintSocketPath: () => getStableCuaPipeName(),
           })),
       logger,
     });
@@ -1098,7 +1211,7 @@ export { isOfficialCuaPluginEnabledForWorkspace };
 
 export function hasGlobalCliZCodeCuaServer(env: NodeJS.ProcessEnv = process.env): boolean {
   const home = env.HOME?.trim() || homedir();
-  const configPath = join(home, USER_DATA_DIR_NAME, "cli", "config.json");
+  const configPath = join(home, ".zcode", "cli", "config.json");
   let parsed: unknown;
   try {
     parsed = JSON.parse(readFileSync(configPath, "utf8"));
@@ -1134,173 +1247,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export async function buildCuaProductHelperAgentEnv(
-  host:
-    | (Pick<CuaHelperHost, "start"> &
-        Partial<
-          Pick<CuaHelperHost, "running" | "checkHealth" | "reservedTransport"> & {
-            waitForTransport(timeoutMs?: number): Promise<CuaHelperTransportHandle>;
-          }
-        >)
-    | undefined,
-  logger = createServiceLogger("cua-product-helper"),
-): Promise<Record<string, string>> {
-  if (!host) return {};
-  if (hasCuaProductHelperAgentEnvUnavailable(host)) {
-    // marker 可能已过时：权限授予或后台冷启动完成后，Helper 已恢复，但内置插件尚未加载，
-    // 没有新的 resolver 调用来清理 marker。历史上这会让第二次打开应用仍显示 0 tools。
-    // 只做一次有界短探针：健康时清 marker 并下发当前 live tuple，否则立即 fail-closed。
-    // 此处和 reconcileRecoveredHelper 都只收敛后续 spawn 的 admission，不回收已有 Agent。
-    if (host.running && host.checkHealth) {
-      try {
-        await host.checkHealth(CUA_PRODUCT_HELPER_SPAWN_READY_DEADLINE_MS);
-        clearCuaProductHelperAgentEnvUnavailable(host);
-      } catch {
-        // helper 仍在恢复（冷启动 / 轮换在途）——不阻塞，交给下一次 demand boundary。
-      }
-    }
-    if (hasCuaProductHelperAgentEnvUnavailable(host)) {
-      return {
-        [BROKER_UNAVAILABLE_ENV]:
-          "broker_unavailable: recovered Helper credentials are waiting for a future spawn",
-      };
-    }
-  }
-  const retryAt = cuaProductHelperAgentEnvRetryAt.get(host);
-  // 非阻塞设计（用户硬约束）：spawn 绝不卡在冷启动上。warm helper（host.running）走快速
-  // checkHealth（1s 上限，健康 helper 毫秒级返回；只有病态 helper 才吃满，可接受）；cold helper
-  // 已有安全预留时立即返回，否则走有界 1s deadline race，超时且无预留才 fail-closed 到
-  // BROKER_UNAVAILABLE，后台共享 startup 继续收敛。resolver 会在后续 request boundary
-  // 只收敛后续 spawn admission，再开放 broker tuple；
-  // 绝不从后台 completion 异步打断首个 session，也绝不让 spawn 等 10s。
-  //
-  // fail-closed 理由：CLI 全局配置里存在 zcode-cua 时，返回空 env 会让 agent 按原始
-  // 无 broker 凭据启动 MCP 子进程会绕过已获授权的 Helper broker，让 Python
-  // MCP 成为实际 TCC 执行主体。broker 未就绪时必须返回 BROKER_UNAVAILABLE，绝不返回空 env。
-  try {
-    if (host.running && host.checkHealth) {
-      // start() intentionally returns an existing handle without probing. Never spawn a new agent
-      // with a dead Helper's stale tuple; the session resolver owns on-demand Helper restart,
-      // while this lower-level spawn path fails closed until that recovery completes.
-      await host.checkHealth(1000);
-      // A successful resolver rotation may have recovered the same host while an earlier spawn
-      // failure left a retry marker. Healthy live credentials always supersede stale backoff.
-      cuaProductHelperAgentEnvRetryAt.delete(host);
-      if (hasCuaProductHelperAgentEnvUnavailable(host)) {
-        return {
-          [BROKER_UNAVAILABLE_ENV]:
-            "broker_unavailable: recovered Helper credentials are waiting for a future spawn",
-        };
-      }
-    } else if (retryAt && Date.now() < retryAt) {
-      return {
-        [BROKER_UNAVAILABLE_ENV]: "broker_unavailable: helper startup retry is deferred",
-      };
-    }
-    const startup = host.start();
-    trackCuaProductHelperStartup(host, startup);
-    if (host.waitForTransport) {
-      // Windows named pipes cannot reserve/rename a final socket. The Helper sends
-      // transport_ready once the pipe is bound; use that tuple while full health
-      // (native/UIA initialization) continues in the shared startup promise.
-      const transport = await waitForCuaHelperStartup(
-        host.waitForTransport(CUA_PRODUCT_HELPER_SPAWN_READY_DEADLINE_MS),
-        CUA_PRODUCT_HELPER_SPAWN_READY_DEADLINE_MS,
-      );
-      if (hasCuaProductHelperAgentEnvUnavailable(host)) {
-        return {
-          [BROKER_UNAVAILABLE_ENV]:
-            "broker_unavailable: recovered Helper credentials are waiting for a future spawn",
-        };
-      }
-      cuaProductHelperTransportSpawns.add(host);
-      cuaProductHelperAgentEnvRetryAt.delete(host);
-      return {
-        [BROKER_SOCKET_ENV]: transport.socketPath,
-        [ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]: transport.pluginAuthority,
-      };
-    }
-    // 原来只在 1s 超时后读取预留 tuple，Host 已安全占住 socket 时也会白等。
-    // 复用原准入条件提前返回；完整 startup 的失败仍由上面的 tracker 收敛。
-    const reserved = host.reservedTransport;
-    if (reserved && !hasCuaProductHelperAgentEnvUnavailable(host)) {
-      cuaProductHelperReservedSpawns.add(host);
-      cuaProductHelperAgentEnvRetryAt.delete(host);
-      // 这条 reserved 分支不再下发 BROKER_TOKEN_ENV：broker
-      // token 鉴权已整体删除（连接门是代码签名身份）。凭据只剩 socket + authority。
-      return {
-        [BROKER_SOCKET_ENV]: reserved.socketPath,
-        [ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]: reserved.pluginAuthority,
-      };
-    }
-    // 有界 deadline race：cold launch 没在 1s 内 ready 且无预留才 fail-closed。waitForCuaHelperStartup
-    // 超时抛 caller_timeout（被下面 catch 当作"后台仍在跑"，不额外设 retryAt）。
-    const handle = await waitForCuaHelperStartup(
-      startup,
-      CUA_PRODUCT_HELPER_SPAWN_READY_DEADLINE_MS,
-    );
-    // Another concurrent spawn may have timed out while this caller was waiting on the shared
-    // startup. Never expose the recovered tuple while the resolver still has a pending admission marker.
-    if (hasCuaProductHelperAgentEnvUnavailable(host)) {
-      return {
-        [BROKER_UNAVAILABLE_ENV]:
-          "broker_unavailable: recovered Helper credentials are waiting for a future spawn",
-      };
-    }
-    cuaProductHelperAgentEnvRetryAt.delete(host);
-    return {
-      [BROKER_SOCKET_ENV]: handle.socketPath,
-      [ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]: handle.pluginAuthority,
-    };
-  } catch (error) {
-    // caller_timeout 仅表示共享的 30s startup 仍在后台运行；trackCuaProductHelperStartup 会在其
-    // 真正失败时建立 backoff。这里提前退避会让已经 ready 的 Helper 仍被后续 Agent 错误禁用。
-    const isCallerTimeout = isCuaHelperError(error) && error.code === "caller_timeout";
-    if (isCallerTimeout) {
-      // 冷启动 rendezvous：Helper 还在起，但 host 已经占住 final socket 并预留了 tuple。
-      // 此时下发的凭据是**可用**的——final 上是 host 占位，未验签的 Helper 绑在 .pending
-      // 上够不到它；client 连上占位会被立刻 destroy 并按 broker_unavailable 退避重试，
-      // Helper 验证通过后 host 原子 rename 让渡，重试自然落到真 Helper 上。
-      //
-      // 这条分支存在的意义：Helper 未 ready 时只拒绝本次 Agent 的 CUA MCP admission；
-      // Helper ready 后仍只影响后续 Agent spawn，不能通过 lifecycle 操作连带冲掉已有会话。
-      const reserved = host.reservedTransport;
-      if (reserved && !hasCuaProductHelperAgentEnvUnavailable(host)) {
-        // 上面的 unavailable marker 检查优先：未完成 admission 收敛时不放出 tuple。
-        cuaProductHelperReservedSpawns.add(host);
-        cuaProductHelperAgentEnvRetryAt.delete(host);
-        return {
-          [BROKER_SOCKET_ENV]: reserved.socketPath,
-          [ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]: reserved.pluginAuthority,
-        };
-      }
-    }
-    markCuaProductHelperAgentEnvUnavailable(host);
-    if (!isCallerTimeout) {
-      cuaProductHelperAgentEnvRetryAt.set(host, Date.now() + CUA_PRODUCT_HELPER_AGENT_ENV_RETRY_MS);
-    }
-    logger.warn(
-      undefined,
-      `Computer Use Helper broker_unavailable; disabling workspace zcode-cua MCP server for this agent spawn (${cuaHelperStartErrorDetail(error)})`,
-    );
-    return {
-      [BROKER_UNAVAILABLE_ENV]: isCallerTimeout
-        ? // 冷启动仍在后台跑——"warming up"，reconcileRecoveredHelper 会在 helper ready 后
-          // 只清理后续 spawn marker。
-          "broker_unavailable: helper broker warming up"
-        : `broker_unavailable: ${cuaHelperStartErrorDetail(error)}`,
-    };
-  }
-}
-
-function cuaHelperStartErrorDetail(error: unknown): string {
-  return isCuaHelperError(error)
-    ? `${error.code}: ${error.message}`
-    : error instanceof Error
-      ? error.message
-      : String(error);
-}
-
 /**
  * 创建包含所有本地服务的 ServiceCollection
  *
@@ -1308,22 +1254,57 @@ function cuaHelperStartErrorDetail(error: unknown): string {
  *        用于 BroadcastService 跨窗口中转。传 null 则广播为空操作。
  */
 export function createLocalServices(options: {
+  /** Desktop 注入 Main 的私有加解密桥；系统主密钥不进入 Host/CLI。 */
+  credentialCipherProvider?: CredentialCipher;
+  /** 已鉴权 Desktop stdio 连接提供的私有回查频道；不作为公共 service 暴露。 */
+  topicResourceRelayChannel?: (request: unknown) => IChannel;
   parentPort?: Parameters<typeof createBroadcastService>[0];
+  /** Desktop Window Host 提供当前 Source 身份和线路，其他宿主不推断 Desktop 状态。 */
+  resolveBotRemoteWorkspace?: (target: {
+    workspacePath: string;
+    workspaceIdentity: string;
+  }) => Promise<{ workspacePath: string; workspaceIdentity: string } | null>;
   /** Host 装配层注入的设置权威；与网络 transport 必须来自同一 Window Host 生命周期。 */
   settingService?: ISettingService;
+  setWorkspaceProjection?: ReturnType<
+    typeof createSettingServiceWithMigrations
+  >["setWorkspaceProjection"];
   /** 与注入的本地 Setting 共用写队列；外部远端 Setting 不传，由其权威 Host 完成迁移。 */
   prepareLegacyAccountConnections?: ReturnType<
     typeof createSettingServiceWithMigrations
   >["prepareLegacyAccountConnections"];
   /** 注入后由 ServiceCollection 接管释放，并供 Host 其它 app-managed 下载复用。 */
   hostApiNetworkTransport?: HostApiNetworkTransport;
+  /** Desktop Host 注入 Main 推送的实时界面语言，供 ZCode endpoint 的 X-Client-Language；远端 server 不注入。 */
+  resolveClientLanguage?: () => string | undefined;
   /** Desktop Host 请求 Main 登记 Agent 已授权的精确本地视频路径。 */
   authorizeLocalMediaPreviewPath?: (path: string) => Promise<string>;
+  /**
+   * 动态工作流用户选择变化后的转发口（docs/dynamic-workflow/launch.md「The user's choice」）：
+   * Desktop Host 把本机设置里的选择推给本窗口所有在线的 desktop-attached remote Host。
+   */
+  forwardDynamicWorkflowUserMode?: (mode: DynamicWorkflowMode | undefined) => void;
+  /** Desktop Host 请求 Main 登记已校验的插件 UI HTML，换取沙箱句柄。 */
+  registerPluginSandbox?: (input: PluginSandboxRegisterInput) => Promise<PluginSandboxHandle>;
   feedback?: Partial<
     Omit<CreateFeedbackServiceOptions, "apiClient" | "credentialService" | "oauthService">
   >;
+  reportPluginTelemetryEvent?: (
+    event: import("@zcode/shared").RendererTelemetryEventPayload,
+  ) => void | Promise<void>;
+  /**
+   * 插件管理变更成功返回（Window Host 侧信号），桌面 Host 用它重推扩展进程的插件清单，
+   * 配置与重置还通知该插件的扩展设置订阅者（docs/plugins/extension-host.md §16.7）。
+   */
+  onPluginManagementMutated?: (
+    event: import("./plugins/pluginManagementService.js").PluginMutationSucceededEvent,
+  ) => void;
   processLifecycleReporter?: RuntimeProcessLifecycleReporter;
   taskRuntimeReporter?: RuntimeTaskReporter;
+  /** 阻止退出的事项变化（docs/git/worktree.md §6.4）；桌面 Host 转发给 main 汇总确认。 */
+  quitBlockerReporter?: {
+    onQuitBlockersChanged(blockers: import("@zcode/shared").HostQuitBlocker[]): void;
+  };
   /** workspace 文件搜索默认使用内置过滤器；后续规则来源只需在 Host 装配时注入最终实现。 */
   workspaceFileSearchFilter?: WorkspaceFileSearchFilter;
   forwardSessionMessageSendRequested?: (
@@ -1341,12 +1322,6 @@ export function createLocalServices(options: {
   zcodeAgentCommandResolver?: ZCodeAgentCommandResolver;
   /** Desktop Main 提前异步采集的本机 runtime 环境；Local Host 注入后不再同步启动 login shell。 */
   runtimeProcessEnvPatch?: Record<string, string>;
-  /**
-   * 桌面宿主注入的 safeStorage（OS 钥匙串）能力。main 进程直传 electron.safeStorage，
-   * utility process host 传经 main 代理的异步实现（Electron 的 utility process 拿不到
-   * safeStorage 模块）。缺省（纯 CLI / web / server）不注入，凭据保持 v1 推导钥行为。
-   */
-  credentialSafeStorage?: CredentialSafeStorageAdapter;
   /** 本地桌面上次 workspace 缺失时，仅用于 Agent 子进程 spawn.cwd 兜底。 */
   zcodeAgentSpawnFallbackCwd?: string;
   /** desktop-attached remote server 从 Desktop Host 收到的一次性 Agent 网络配置。 */
@@ -1359,15 +1334,32 @@ export function createLocalServices(options: {
   /** HTTP Server 只有在调用方明确配置认证时才暴露跨 Environment Provisioning target。 */
   providerProvisioningTargetEnabled?: boolean;
   /** Desktop Host 私有通知；只在 Source 成功持久化后请求 Main 调度远端镜像。 */
-  onProviderProvisioningSourceChanged?: (
-    trigger: Exclude<ProviderProvisioningTrigger, "environment-online">,
-  ) => void;
+  onProviderProvisioningSourceChanged?: (trigger: ProviderProvisioningSourceTrigger) => void;
   serviceAuthorityMode?: ServiceAuthorityMode;
+  /** 可信 Server Core 注入，区分物理持库 Host 与历史 workspace canonical route。 */
+  projectStorageHostId?: string;
+  sourceServerWorkspaceService?: ISourceServerWorkspaceService;
+  resolveProjectHostService?: (hostId: string) => Promise<IProjectService>;
+  /** 只取已在线来源的原始项目快照，不触发 identity 迁移、连接或 Agent 启动。 */
+  resolveAppControlDiscoverySource?: (hostId: string) => Promise<AppControlDiscoveryConnection>;
+  /** Bot 复用窗口已有 Source 连接；不经 main 创建 workspace attachment。 */
+  resolveBotProjectConnection?: (hostId: string) => BotProjectConnection | undefined;
+  remoteProjectConnection?: Pick<
+    Parameters<typeof createRemoteProjectService>[0],
+    "connectHost" | "readConnectionStates"
+  >;
   cuaProductMcpServerResolver?: CuaProductMcpServerResolver;
-  agentRuntimeContext?: {
+  agentTelemetry?: {
     getDeviceMid?: () => string | undefined;
     runtimeSurface?: "desktop_local_host" | "remote_workspace_host";
   };
+  /** 窄 App 导航端口，由实际窗口/手机导航 owner 注入；缺席返回 unavailable。 */
+  appControlNavigation?: AppControlNavigationPort;
+  /**
+   * 把本 Host 的 AppControlService 交给进程内的可信组件（扩展网关的会话能力，
+   * docs/plugins/extension-host.md §17.2）。它不注册进 ServiceCollection，也不在任何 RPC 频道上。
+   */
+  onAppControlServiceCreated?: (handle: AppControlServiceHandle) => void;
   /** browser-use 执行桥（host→main WebContentsView+CDP）；desktop host 注入，缺省则 browser 不可用。 */
   browserControlExecutor?: {
     list(input: {
@@ -1432,16 +1424,27 @@ export function createLocalServices(options: {
     resolveRuntimeZCodeEndpointOrigin(process.env, {
       overrideOrigin: (await settingService.get()).zcodeEndpointOrigin,
     });
+  let invalidateProjectTokens = () => {};
+  let invalidatePluginUiAccounts: (() => void) | undefined;
   const provisioningOAuthKeys = new Set<string>(PROVIDER_PROVISIONING_OAUTH_CREDENTIAL_KEYS);
-  // 同一进程内凭据加解密必须共用同一个 cipher：credentialService 写入 v2（safeStorage）
-  // 后，Provisioning Source 用无 safeStorage 的默认推导钥 provider 读取会直接解密失败。
-  const credentialCipherProvider = createCredentialCipherProvider({
-    safeStorage: options.credentialSafeStorage,
-  });
+  const credentialCipherProvider =
+    options.credentialCipherProvider ??
+    createSystemCredentialCipher({ filePath: join(resolveAppConfigDir(), "credentials.json") });
   const credentialService = createCredentialService({
     cipherProvider: credentialCipherProvider,
-    onDidMutate: ({ key }) => {
-      if (provisioningOAuthKeys.has(key) || isProviderProvisioningAccountCredentialKey(key)) {
+    onDidMutate: ({ keys, operation }) => {
+      if (operation === "recover") {
+        invalidatePluginUiAccounts?.();
+        invalidateProjectTokens();
+        options.onProviderProvisioningSourceChanged?.("credential");
+        return;
+      }
+      if (
+        keys.some((key) => key === "oauth:active_provider" || /^oauth:[^:]+:user_info$/.test(key))
+      )
+        invalidatePluginUiAccounts?.();
+      if (keys.some((key) => provisioningOAuthKeys.has(key))) invalidateProjectTokens();
+      if (keys.some((key) => provisioningOAuthKeys.has(key))) {
         options.onProviderProvisioningSourceChanged?.("credential");
       }
     },
@@ -1464,44 +1467,133 @@ export function createLocalServices(options: {
   const zcodeJwtLogoutHandlerRef: {
     current: ((input: string | URL, headers: Headers) => void) | null;
   } = { current: null };
+  const associatedProfileRefreshRef: {
+    current:
+      | ((
+          expected: Pick<OAuthAccountAvailability, "loginProvider" | "userId" | "sessionRevision">,
+        ) => Promise<void>)
+      | null;
+  } = { current: null };
   const apiClient = createNodeApiClient({
     fetchImpl: hostApiNetworkTransport.fetch,
+    resolveAssociatedCredentialRefresh: async (input, headers) => {
+      const material = await resolveAssociatedOAuthCredentialRequest({
+        input,
+        headers,
+        loadMaterial: () => oauthCredentialRepo.loadFamilyMaterial("bigmodel"),
+      });
+      if (!material) return null;
+      return async () => {
+        await associatedProfileRefreshRef.current?.({
+          loginProvider: material.loginProvider,
+          userId: material.zcodeUserId,
+          sessionRevision: material.sessionRevision,
+        });
+      };
+    },
     onZcodeJwtInvalid: (input, headers) => zcodeJwtLogoutHandlerRef.current?.(input, headers),
     isZcodeJwtRequest: (input, headers) =>
       isCurrentOAuthCredentialRequest({ input, headers, credentialService }),
+    isBusinessUnauthorizedRequest: (input, _headers) =>
+      isOAuthBusinessRequest({ input, credentialService }),
+    resolveBusinessCredentialValidationRequest: (input, headers) =>
+      resolveOAuthBusinessCredentialValidationRequest({ input, headers, credentialService }),
     resolveZCodeEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
+    resolveClientLanguage: options?.resolveClientLanguage,
   });
   const systemService = createSystemService();
+  // onboarding 资格与任务列表共用同一份全局 tasks-index；repo 懒加载数据库，提前构造不会
+  // 增加启动 I/O，后续 session syncer 也继续复用这一实例。
+  const taskIndexRepo = new TaskIndexRepo(undefined, options?.projectStorageHostId);
+  // onboarding 完成记录：userId 由登录态补全（apikey/未登录为 null），见 docs/onboarding-record-spec.md。
+  const onboardingEvidenceLogger = createServiceLogger("onboardingRecordService");
+  const onboardingRecordService = createOnboardingRecordService({
+    loadUserId: async () => (await oauthCredentialRepo.loadActiveUserProfile())?.id ?? null,
+    // 老用户使用证据不能只查 tasks-index：索引是 session 同步器的衍生投影，同步器在
+    // agent/provider 就绪后才回填，而判定在登录完成、主界面挂载时执行，早于回填——
+    // 2026-10 线上误弹：索引重建后登录瞬间判定看到空索引，老用户被当成新用户弹出引导
+    // （取证：判定时刻全部历史任务行还在 WAL 未落库）。会话库与旧版快照目录是磁盘级
+    // 持久事实，与同步时序无关；includeDeleted 让清空过任务列表的存量用户也不失去
+    // 资格。会话证据必须查 cli/db/db.sqlite 的 session 表（评审 CR-01：cli/sessions
+    // 是工作流输出目录，且文件存在性不代表有会话）。
+    hasExistingLocalTask: createHasExistingLocalTask({
+      listIndexTasks: () => taskIndexRepo.listTaskMetas({ includeDeleted: true }),
+      // 解析结果 null（相对路径/project 覆盖等无法镜像的配置）→ 跳过会话证据源，
+      // 继续旧版快照检查；不得猜默认路径，否则自定义会话库的存量用户被漏判。
+      // 跳过/命中各留一条 debug（评审 SG-02）：判定每登录一次至多一条，线上复核
+      // "走了哪个证据源"有据可依；不记录完整路径，避免 home 路径进日志。
+      hasAgentSessionRow: async () => {
+        const sessionDbPath = await resolveAgentSessionDbPath();
+        if (sessionDbPath === null) {
+          onboardingEvidenceLogger.debug(
+            "onboarding 会话证据源跳过：会话库路径不可镜像（相对路径或 project 级覆盖）",
+          );
+          return false;
+        }
+        const hasRow = await hasAnyAgentSessionRow(sessionDbPath);
+        onboardingEvidenceLogger.debug("onboarding 会话证据源已查询", { hasRow });
+        return hasRow;
+      },
+      resolveLegacyTaskSessionsDir: () => join(resolveAppConfigDir(), "sessions"),
+    }),
+  });
   let handleOAuthProviderLogout: ReturnType<typeof createOAuthProviderLogoutHandler> | null = null;
   const oauthCredentialRepo = new OAuthCredentialRepo(credentialService, {
     onCorruptOAuthSessionCleared: async (providers) => {
       // telemetry 之外的后台路径可能先读到损坏 OAuth 凭据。
       // 这类恢复也必须等价于 logout，复用同一 handler 清理派生模型 provider key。
-      await Promise.all(
+      // 账号刷新 resolver 也可能读到损坏 token；等待下一轮刷新会让当前轮循环等待自身。
+      // OAuth 删除已经完成，派生刷新交回原 Account Source 队列，后台只观察失败。
+      void Promise.all(
         providers.map((provider) => handleOAuthProviderLogout?.(provider) ?? Promise.resolve()),
-      );
+      ).catch((error: unknown) => {
+        createServiceLogger("oauth-credential-recovery").warn(
+          "refresh derived providers after corrupt OAuth cleanup failed",
+          { error },
+        );
+      });
     },
   });
+  const loadOAuthAccountMaterial = (family: ProviderFamilyDomain) =>
+    oauthCredentialRepo.loadFamilyMaterial(family);
+  const loadOAuthFamilyTokenSet = async (providerId: string) => {
+    if (providerId !== ZAI_PROVIDER_ID && providerId !== BIGMODEL_PROVIDER_ID) return null;
+    const account = await loadOAuthAccountMaterial(providerId);
+    return account
+      ? {
+          accessToken: account.accessToken,
+          zcodeJwtToken: account.zcodeJwtToken,
+          sessionRevision: account.sessionRevision,
+          accountIdentity: account.accountIdentity,
+          zcodeUserId: account.zcodeUserId,
+        }
+      : null;
+  };
+  const projectTokenClient = createAccountProjectTokenClient(apiClient, credentialService);
+  invalidateProjectTokens = () => projectTokenClient.clear();
   const accountProviderApiKeyRemoteClient = new AccountProviderApiClient(apiClient);
   const accountProviderApiKeyResolver = new AccountProviderApiKeyResolver(
     accountProviderApiKeyRemoteClient.fetchRemoteData.bind(accountProviderApiKeyRemoteClient),
+    projectTokenClient,
   );
   const accountProviderCredentialService = createAccountProviderCredentialService({
-    credentialStore: accountProviderCredentialStore,
-    async loadOAuthAccessToken(family) {
-      const oauthProviderId = family === "zai" ? ZAI_PROVIDER_ID : BIGMODEL_PROVIDER_ID;
-      return (await oauthCredentialRepo.loadTokenSet(oauthProviderId))?.accessToken ?? null;
-    },
-    resolveProviderApiKey: (family, accessToken) =>
-      accountProviderApiKeyResolver.resolveProviderApiKey(
+    loadOAuthAccountMaterial,
+    resolveProviderMaterial: (
+      family,
+      accessToken,
+      accountIdentity,
+      rejectedProjectTokenFingerprint,
+    ) =>
+      accountProviderApiKeyResolver.resolveProviderMaterial(
         family === "zai" ? ZAI_PROVIDER_ID : BIGMODEL_PROVIDER_ID,
         accessToken,
+        accountIdentity,
+        rejectedProjectTokenFingerprint,
       ),
   });
   const resolveLegacyTeamOrganization = createLegacyTeamOrganizationResolver({
     apiClient,
-    loadOAuthTokenSet: (family) =>
-      oauthCredentialRepo.loadTokenSet(family === "zai" ? ZAI_PROVIDER_ID : BIGMODEL_PROVIDER_ID),
+    loadOAuthTokenSet: loadOAuthFamilyTokenSet,
   });
   const readAccountProviderSettings = async () => {
     // 迁移只在账号事实入口协调。ApiClient 的代理/端点仍读普通 Setting，不递归等待迁移。
@@ -1516,10 +1608,8 @@ export function createLocalServices(options: {
       unresolvedFamilies,
     };
   };
-  const loadAccountIdentity = async (family: ProviderFamilyDomain) => {
-    const oauthProviderId = family === "zai" ? ZAI_PROVIDER_ID : BIGMODEL_PROVIDER_ID;
-    return (await oauthCredentialRepo.loadUserProfile(oauthProviderId))?.id ?? null;
-  };
+  const loadAccountIdentity = async (family: ProviderFamilyDomain) =>
+    (await loadOAuthAccountMaterial(family))?.accountIdentity ?? null;
   const accountRequestAuthService = createAccountRequestAuthService(
     createAccountProviderRequestAuthService({
       resolveCurrentAccountAccess: (access) =>
@@ -1528,19 +1618,29 @@ export function createLocalServices(options: {
           readSettings: readAccountProviderSettings,
           loadAccountIdentity,
         }),
-      loadOAuthTokenSet: (providerId) => oauthCredentialRepo.loadTokenSet(providerId),
-      async loadIndividualPlanApiKey(providerId, family) {
-        const oauthProviderId = family === "zai" ? ZAI_PROVIDER_ID : BIGMODEL_PROVIDER_ID;
-        const accountIdentity = (await oauthCredentialRepo.loadUserProfile(oauthProviderId))?.id;
+      loadOAuthTokenSet: loadOAuthFamilyTokenSet,
+      async loadIndividualPlanMaterial(providerId, family, rejectedProjectTokenFingerprint) {
+        const accountIdentity = (await loadOAuthAccountMaterial(family))?.accountIdentity;
         if (!accountIdentity) return null;
-        return accountProviderCredentialService.loadCodingPlanApiKey({
+        return accountProviderCredentialService.loadCodingPlanMaterial({
           providerId,
           family,
           accountIdentity,
+          rejectedProjectTokenFingerprint,
         });
       },
-      resolveTeamPlanApiKey: (access) =>
-        resolveAccountTeamPlanRuntimeApiKey({ apiClient, credentialService, access }),
+      resolveTeamPlanMaterial: async (access, rejectedProjectTokenFingerprint) => {
+        const accountIdentity = await loadAccountIdentity(access.family);
+        if (!accountIdentity) return null;
+        return resolveAccountTeamPlanRuntimeMaterial({
+          apiClient,
+          loadOAuthAccountMaterial,
+          access,
+          accountIdentity,
+          tokenClient: projectTokenClient,
+          rejectedProjectTokenFingerprint,
+        });
+      },
     }),
   );
   const providerConfigLog = createServiceLogger("provider-config");
@@ -1560,6 +1660,7 @@ export function createLocalServices(options: {
       fetchRelease: (endpointOrigin, signal) =>
         fetchZCodeBuiltinRemoteRelease({
           apiClient,
+          resolveZcodeJwtToken: () => credentialService.load("zcodejwttoken"),
           endpointOrigin,
           signal,
           appVersion: ZCODE_VERSION,
@@ -1589,6 +1690,8 @@ export function createLocalServices(options: {
     readLegacyProviders: () => readLegacyZCodeConfigProviders(),
   });
   const accountProviderConfigSource = createAccountProviderConfigSource({
+    loadSessionRevision: async () =>
+      (await oauthCredentialRepo.loadSessionSnapshot())[OAUTH_SESSION_REVISION_KEY] ?? null,
     configSource: providerConfigRuntime.configService,
     readSettings: readAccountProviderSettings,
     async loadCodingPlanApiKey(providerId, family, accountIdentity, forceRefresh) {
@@ -1604,6 +1707,7 @@ export function createLocalServices(options: {
     resolveFamilyAvailability: createCodingPlanFamilyAvailabilityResolver({
       apiClient,
       credentialService,
+      loadOAuthAccountMaterial,
     }),
   });
   const accountProviderRuntimeLog = createServiceLogger("account-provider-runtime");
@@ -1611,12 +1715,11 @@ export function createLocalServices(options: {
     personalRepository: providerConfigRuntime.personalRepository,
   });
   const providerProvisioningSource = createProviderProvisioningSource({
+    cipherProvider: credentialCipherProvider,
     personalRepository: providerConfigRuntime.personalRepository,
     settingService,
     credentialFilePath: resolveCredentialFilePath(resolveAppConfigDir()),
     personalConfigFilePath: join(resolveAppConfigDir(), PERSONAL_PROVIDER_CONFIG_FILE_NAME),
-    // 与 credentialService 共用同一 cipher：allowlist 内的 OAuth 凭据可能是 v2 密文。
-    cipherProvider: credentialCipherProvider,
   });
   const providerProvisioningDisposers = [
     providerConfigRuntime.configService.onDidChange((reason) => {
@@ -1674,6 +1777,8 @@ export function createLocalServices(options: {
     accountProviderCredentialStore,
     refreshAccountProviders: (reason: string) => accountProviderConfigSource.refresh(reason),
   });
+  const sourceServerWorkspaceService =
+    options.sourceServerWorkspaceService ?? createSourceServerWorkspaceService();
   // 官方 Server MCP 的凭证解析源。MCP 调用的身份头与 MCP 额度查询（/api/v1/mcp/usage）
   // 必须共用这一份实现，否则两处对"当前选中的 Coding Plan 连接"的判定会分叉。
   // 额度侧注入的是凭证解析而非 resolveHeaders：归属校验需要 providerFamily，
@@ -1682,7 +1787,10 @@ export function createLocalServices(options: {
     resolve: () =>
       resolveOfficialMcpCredentials({
         accountRequestAuthService,
-        credentialService,
+        getRegistryRevision: () =>
+          providerRuntime.registryService.getSnapshot()?.registry.revision ?? null,
+        loadOAuthIdentityMaterial: () => oauthCredentialRepo.loadIdentityMaterial(),
+        loadOAuthAccountMaterial,
         modelSelectionService: providerRuntime.modelSelection,
       }),
   };
@@ -1691,8 +1799,49 @@ export function createLocalServices(options: {
   const mcpSyncService = createMcpSyncService({
     // mcp/list 的 host 消费点收拢到 mcpSync 服务；真实状态检查仍在 agent 进程。
     listMcpServerStatuses: (params) => zcodeAgentService.listMcpServerStatuses(params),
+    setWorkspaceMcpTrust: (params) => zcodeAgentService.setWorkspaceMcpTrust(params),
   });
   const pluginSyncService = createPluginSyncService();
+  const pluginUiAccounts = createPluginUiAccountBindings({
+    async readAccount() {
+      const provider = await oauthCredentialRepo.loadActiveProvider();
+      const profile = provider ? await oauthCredentialRepo.loadUserProfile(provider) : null;
+      return [provider, profile?.id ?? null];
+    },
+    open: (params) => zcodeAgentService.openMcpUiInstance(params),
+    close: (params) => zcodeAgentService.closeMcpUiInstance(params),
+  });
+  invalidatePluginUiAccounts = () => pluginUiAccounts.invalidate();
+  const pluginUiBridgeService = createPluginUiBridgeService({
+    reportTelemetryEvent: options?.reportPluginTelemetryEvent,
+    openInstance: (params) => pluginUiAccounts.open(params),
+    closeInstance: (params) => pluginUiAccounts.close(params),
+    validateInstance: (params) => zcodeAgentService.validateMcpUiInstance(params),
+    recycleInstance: (params) => zcodeAgentService.recycleMcpUiInstance(params),
+    // 插件 UI：资源读取与 UI 工具调用都发生在 session 所在的 agent 进程；host 只做校验与登记。
+    readMcpResource: (params) => zcodeAgentService.readMcpResource(params),
+    callMcpToolForUi: (params) => zcodeAgentService.callMcpToolForUi(params),
+    cancelMcpToolCallForUi: (params) => zcodeAgentService.cancelMcpToolCallForUi(params),
+    readMcpResourceForUi: (params) => zcodeAgentService.readMcpResourceForUi(params),
+    listMcpResourcesForUi: (params) => zcodeAgentService.listMcpResourcesForUi(params),
+    listMcpResourceTemplatesForUi: (params) =>
+      zcodeAgentService.listMcpResourceTemplatesForUi(params),
+    subscribeMcpResourceForUi: (params) => zcodeAgentService.subscribeMcpResourceForUi(params),
+    unsubscribeMcpResourceForUi: (params) => zcodeAgentService.unsubscribeMcpResourceForUi(params),
+    listPluginUiSurfaces: (params) => zcodeAgentService.listPluginUiSurfaces(params),
+    registerSandbox: options?.registerPluginSandbox,
+  });
+  // App-Provided Tools：页面工具登记与模型调用的认领 / 回传都发生在 session 所在的 agent 进程。
+  const pluginUiSamplingService = createPluginUiSamplingService({
+    sample: (params) => zcodeAgentService.sampleMcpApp(params),
+    cancelSampling: (params) => zcodeAgentService.cancelMcpAppSampling(params),
+  });
+  const pluginUiAppToolsService = createPluginUiAppToolsService({
+    registerAppToolsForUi: (params) => zcodeAgentService.registerAppToolsForUi(params),
+    unregisterAppToolsForUi: (params) => zcodeAgentService.unregisterAppToolsForUi(params),
+    claimAppToolCallForUi: (params) => zcodeAgentService.claimAppToolCallForUi(params),
+    resolveAppToolCallForUi: (params) => zcodeAgentService.resolveAppToolCallForUi(params),
+  });
   const subagentsService = createSubagentsService({
     isDesktopRuntime: true,
   });
@@ -1706,15 +1855,10 @@ export function createLocalServices(options: {
   const modelSelectionReadinessSource = providerRuntime.modelSelection;
   const agentAccountProviderConfigSource = accountProviderConfigSource;
   // ===== Computer Use Helper lifecycle 层（port 自 feat）=====
-  // 根因修复：app 启动时预 spawn 的 agent 早于 broker ready → buildCuaProductHelperAgentEnv 在
-  // 1s grace 内拿不到 ready helper → 返回 BROKER_UNAVAILABLE → 那些 agent 的 computer-use MCP
-  // server fail-closed。之后开对话复用这些 Agent 时，Helper lifecycle 不得触发 Agent 重建。
-  // 约束：① 有界 spawn grace（1s 后 fail-closed，不等待完整 health budget）；② lifecycle coordinator 懒获取 +
-  // 代际 fence（dispose 仅来自显式 workspace 生命周期）；③ 不创建定时健康探测，checkHealth 只在
-  // CUA spawn/resolve 等按需边界执行；④ Helper restart 尽可能复用 host transport，既有 Agent
-  // 的 session、进程与 MCP stream 保持不变。
-  const cuaProductHelperWorkspaceRegistry = new CuaProductHelperWorkspaceRegistry();
-  // createDefaultCuaProductHelper() 在 zcodeAgentService 存在之前就要组装 resolver，
+  // 约束：lifecycle coordinator 懒获取 + 代际 fence（dispose 仅来自显式 workspace 生命周期）；
+  // 不创建定时健康探测；Helper restart 尽可能复用 host transport，既有 Agent 的 session、
+  // 进程与 MCP stream 保持不变。
+  // P1-a mitigation：createDefaultCuaProductHelper() 在 zcodeAgentService 存在之前就要组装 resolver，
   // 但"是否有活跃 turn"这个信号只有 zcodeAgentService 建好之后才能查询。用前向引用占位——resolver 真正
   // 调用 hasActiveTurn() 发生在后续某次 resolveMcpServers（异步），那时 hasActiveTurnRef 早已被赋值。
   // 先用前向引用连接 agent service 的 CUA turn tracker，避免在活跃 CUA 请求中途重启 Helper；
@@ -1773,7 +1917,8 @@ export function createLocalServices(options: {
   // 自启动（SDK 首调拉起）的 Helper。只 ping，绝不拉起；300ms 预算。probe 结果仅用于
   // 状态展示 / PiP 凭据发现；权限详情与 onboarding 仍走显式 host 流。
   const probeStableCuaHelperSocket = async (): Promise<string | null> => {
-    const socketPath = resolveBrokerSocketPath();
+    const socketPath =
+      process.platform === "win32" ? getStableCuaPipeName() : resolveBrokerSocketPath();
     try {
       const { createConnection } = await import("node:net");
       return await new Promise<string | null>((resolve) => {
@@ -1828,36 +1973,45 @@ export function createLocalServices(options: {
   // 哪天 host bundle 也补上 __ZCODE_LOCAL_DEVELOPMENT_RUNTIME__ define（Helper 侧已经有），
   // 编译期门自动生效，不需要再回来改这里。
 
+  const cuaStatusLaunchLog = createServiceLogger("cua-status-launch");
   const launchStandaloneCuaHelperForStatus = async (): Promise<string | null> => {
     if (process.platform !== "darwin") return null;
     const { existsSync } = await import("node:fs");
     const { execFile } = await import("node:child_process");
     const { promisify } = await import("node:util");
     const socketPath = resolveBrokerSocketPath();
-    // standaloneHelperCandidatePaths 未在上游 exports 白名单——此处按同一规则枚举安装候选
-    //（dev-desktop → dev/ 前缀；app 名一律取 helperConstants，不写字面量）。
-    const home = process.env.ZCODE_HOME?.trim() || join(homedir(), USER_DATA_DIR_NAME);
-    const baseRoot = join(home, "computer-use");
-    // 安装布局见上游 helperLauncher.resolveCuaHelperInstallRoot：dev 是独立子根 `dev/` 且 app
-    // 名换成 DEV_HELPER_APP_NAME；preview 是独立子根 `preview/` 但**沿用**稳定 app 名
-    //（分根的理由是 build id 不同、共享根会互相覆盖安装，不是改名）。
-    // 只枚举 HELPER_APP_NAME 导致 dev 下永远找不到候选，设置页拉起静默失败、
-    // 权限显示未知。dev 的两种名字都留着：一键 dev bundle 也可能装成稳定名。
-    const candidates = [
-      join(baseRoot, "dev", DEV_HELPER_APP_NAME),
-      join(baseRoot, "dev", HELPER_APP_NAME),
-      join(baseRoot, HELPER_APP_NAME),
-      join(baseRoot, "preview", HELPER_APP_NAME),
-    ];
-    const appPath = candidates.find((candidate) => existsSync(candidate));
+    let appPath: string | null;
+    try {
+      appPath = await resolveStandaloneStatusLaunchAppPath({
+        env: process.env,
+        bundledAppPath: resolveBundledCuaHelperAppPath(),
+        exists: existsSync,
+        ensureInstalled: (bundledAppPath) =>
+          createCanonicalCuaHelperInstaller({
+            logger: cuaStatusLaunchLog,
+            env: process.env,
+            bundledAppPath,
+          }).ensureInstalled(),
+      });
+    } catch (error) {
+      cuaStatusLaunchLog.warn(undefined, "CUA Helper install before status launch failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
+    }
     if (!appPath) return null;
     // Helper 启动参数统一由 buildHelperOpenArgs 构造，避免多处手写导致漏传或漂移。
     // 设置页只读权限探测不承载 PiP，不传 --launcher-pid 和 --pip-mode；
     // exit-log 使用 .settings.exit.log。新增参数应定义在 HelperLaunchSpec 中供调用方共用。
+    // ghostCursorOverlay 必须传：overlay 是进程级开关，Helper 常驻，设置页先拉起后
+    // 真实 CUA 动作会复用同一进程 —— 漏传则整轮操作没有虚拟光标（2026-10-27 本机实测，
+    // 第 6 次 argv 漏传，见 docs/cua/producer/ghost-cursor-revival-and-polish.md §0）。
+    // PiP 不同：它依赖 --launcher-pid 的生命周期绑定，按原设计仍不传。
     const args = buildHelperOpenArgs({
       appPath,
       socketPath,
       exitLogPath: `${socketPath}.settings.exit.log`,
+      ghostCursorOverlay: true,
       ...(isCuaLocalDevelopmentRuntime(process.env)
         ? { allowUnsignedLauncherLocalDev: true, allowExternalBrokerClientLocalDev: true }
         : {}),
@@ -1867,6 +2021,19 @@ export function createLocalServices(options: {
     } catch {
       // LaunchServices 已接单也可能超时；继续等 ping。
     }
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      const ready = await probeStableCuaHelperSocket();
+      if (ready) return ready;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return null;
+  };
+
+  const launchWindowsCuaHelperForStatus = async (): Promise<string | null> => {
+    try {
+      const managed = await getOrCreateDefaultCuaProductHelper(undefined);
+      if (managed) void managed.host.start().catch(() => {});
+    } catch {}
     for (let attempt = 0; attempt < 50; attempt += 1) {
       const ready = await probeStableCuaHelperSocket();
       if (ready) return ready;
@@ -1914,10 +2081,10 @@ export function createLocalServices(options: {
       workspaceIdentity?: string,
       queryOptions?: CuaPermissionStatusQueryOptions,
     ): Promise<CuaPermissionStatusResult> {
-      if (process.platform !== "darwin") {
+      if (process.platform !== "darwin" && process.platform !== "win32") {
         return {
           available: false,
-          reason: "CUA permissions are only available on macOS.",
+          reason: "CUA permissions are only available on macOS and Windows.",
         };
       }
       const context = workspacePath ? { workspacePath, workspaceIdentity } : undefined;
@@ -1942,7 +2109,10 @@ export function createLocalServices(options: {
         // 无 launcher-pid → 300s 无访问自动休眠，不进托管体系）。拉起后经稳定 socket 查真值。
         let stable = await probeStableCuaHelperSocket();
         if (!stable) {
-          stable = await launchStandaloneCuaHelperForStatus();
+          stable =
+            process.platform === "darwin"
+              ? await launchStandaloneCuaHelperForStatus()
+              : await launchWindowsCuaHelperForStatus();
         }
         if (!stable) {
           return {
@@ -2094,9 +2264,17 @@ export function createLocalServices(options: {
       }
     },
   };
+  // 动态工作流的用户选择（docs/dynamic-workflow/launch.md「The user's choice」）：本机设置文件是唯一来源，
+  // 每次使用时读取。desktop-attached remote Host 读不到桌面的设置，选择由 desktop 推送
+  // （zcodeAgentService.syncDynamicWorkflowUserMode），这里不注入。读取失败按「跟随」处理。
+  const resolveDynamicWorkflowUserMode = isDesktopAttachedRemote
+    ? undefined
+    : async () => (await settingService.get()).dynamicWorkflowMode;
   const codingPlanSubscriptionService = createCodingPlanSubscriptionService({
     apiClient,
+    loadOAuthAccountMaterial,
     credentialService,
+    ...(resolveDynamicWorkflowUserMode ? { resolveDynamicWorkflowUserMode } : {}),
     resolveOffPeakModelSelectionView: async () => {
       await providerRuntime.start();
       return buildOffPeakModelSelectionView(providerRuntime.registryService.getView());
@@ -2113,120 +2291,154 @@ export function createLocalServices(options: {
           resolveOffPeakClientConfig: () => codingPlanSubscriptionService.getOffPeakClientConfig(),
           resolveOffPeakTaskService: () => offPeakTaskServiceForAgent,
         };
-  // 企业服务端（Reactor Server）接入：登录态与令牌的唯一所有者。
-  // 它同时是企业 provider 的唯一写入者（经 providerSettings overlay），因此必须先于 agent 服务创建。
-  // 登录/登出钩子晚绑定：同步器依赖 reactorServer 实例，钩子又引用同步器，用 holder 闭包回填，
-  // 避免构造顺序死锁（登录后台同步 / 登出清空 server-agents，见 P3 计划 §4.3）。
-  let serverAgentSyncHolder: IServerAgentSyncService | null = null;
-  // 知识缓存同步器的 late-bind holder：登录钩子在 reactorServer 构造时就绑定了，
-  // 而同步器依赖 reactorServer 实例，只能用闭包回填（与 serverAgentSyncHolder 同一个理由）。
-  let knowledgeSyncHolder: IKnowledgeSyncService | null = null;
-  // P4.1b 用量事件源的 late-bind holder：reactorServer 先建（它是登录态与企业 provider 的所有者），
-  // agent 服务后建，而订阅入口在 agent 服务上（`onDynamicUsageFact`），只能用闭包回填。
-  // 订阅只会在登录成功 / 启动补一次时安装，届时 agent 服务必然已经构造完成。
-  let usageFactSourceHolder: Pick<IZCodeAgentService, "onDynamicUsageFact"> | null = null;
-  // 行为审计事实源（洞②）：与用量源同一套 late-bind 理由与同一回填点。
-  let auditFactSourceHolder: Pick<IZCodeAgentService, "onDynamicAuditFact"> | null = null;
-  const reactorServerWiringLog = createServiceLogger("reactor-server-wiring");
-  const reactorServerService = createReactorServerService({
-    apiClient,
-    credentials: credentialService,
-    providerSettings: providerRuntime.providerSettings,
-    onLoginSuccess: () => {
-      void serverAgentSyncHolder?.sync();
-      // 登录后台补齐审查知识缓存：审查端（CLI 工具）只读本地缓存，这里不补就等于自检没有依据。
-      // fire-and-forget：钩子失败只记日志，绝不阻断登录。
-      void knowledgeSyncHolder?.sync();
+  const setWorkspaceProjection =
+    options?.setWorkspaceProjection ?? localSettings?.setWorkspaceProjection;
+  setWorkspaceProjection?.(async (settings) => {
+    const db = await taskIndexRepo.getOrganizationDatabase();
+    const repository = await taskIndexRepo.getProjectRepository();
+    db.exec("BEGIN");
+    try {
+      const directory =
+        !options?.projectStorageHostId || options.projectStorageHostId === "local"
+          ? readRemoteProjectDirectory(db)
+          : { hosts: [], entries: [] };
+      const projection = projectWorkspaceSettings(
+        repository.readTree({ includeTasks: false }).projects,
+        directory,
+        settings,
+      );
+      db.exec("COMMIT");
+      return projection;
+    } catch (error) {
+      if (db.isTransaction) db.exec("ROLLBACK");
+      throw error;
+    }
+  });
+  const publishProjectChange = async () => {
+    // SQLite 已提交；旧字段只能在设置 owner 的锁内从最新目录派生。
+    if (setWorkspaceProjection) await settingService.update({});
+    await broadcastService.send({ channel: "state:projects", payload: {} });
+  };
+  const remoteProjectService = createRemoteProjectService({
+    ...options?.remoteProjectConnection,
+    controller: !options?.projectStorageHostId || options.projectStorageHostId === "local",
+    database: () => taskIndexRepo.getOrganizationDatabase(),
+    afterChange: publishProjectChange,
+  });
+  const projectService = createProjectService({
+    directories: {
+      home: async () => (await systemService.info()).homedir,
+      read: (params) => fileService.readdir(params),
     },
-    onLogout: () => serverAgentSyncHolder?.clearLocal(),
-    // 用量事实源：CLI 的 `usage.delta`（含 providerId/modelId/token 分项）。只做字段搬运，
-    // 是否入库（登录态 / 企业 provider / 有有效 token）由 Reporter 与 service 判定。
-    subscribeUsageDelta: (listener) => {
-      const source = usageFactSourceHolder;
-      if (!source) {
-        // 只会出现在"agent 服务尚未构造"的异常装配顺序下：宁可漏订阅也不抛进会话热路径。
-        reactorServerWiringLog.warn(undefined, "用量上报未接线：agent 服务尚未构造，订阅被跳过");
-        return () => undefined;
-      }
-      const disposable = source.onDynamicUsageFact()((fact) => {
-        listener({
-          // 幂等键 = 会话 id + 事件 id：eventId 只在会话内唯一，跨会话可能撞号。
-          eventId: `${fact.sessionId}:${fact.eventId}`,
-          ts: new Date(fact.occurredAt).toISOString(),
-          sessionId: fact.sessionId,
-          providerId: fact.providerId ?? "",
-          modelId: fact.modelId ?? "",
-          usage: {
-            inputTokens: fact.inputTokens,
-            outputTokens: fact.outputTokens,
-            totalTokens: fact.totalTokens,
-            cachedInputTokens: fact.cacheReadTokens,
-            cachedWriteInputTokens: fact.cacheWriteTokens,
+    ownerHostId: options?.projectStorageHostId,
+    resolveHost: options?.resolveProjectHostService,
+    repository: () => taskIndexRepo.getProjectRepository(),
+    workspaceDirectory: join(projectDataRoot(), "workspace"),
+    afterChange: publishProjectChange,
+    // zcodeAgentService 在下方创建；端口只在命令执行时取用它。
+    data: {
+      repository: () => taskIndexRepo.getProjectDataRepository(),
+      port: createProjectDataPort({
+        agent: {
+          measure: (params) => {
+            if (!zcodeAgentService.measureSessionData) throw new Error("project.data-unavailable");
+            return zcodeAgentService.measureSessionData(params);
           },
-        });
-      });
-      return () => disposable.dispose();
-    },
-    // 行为审计事实源（洞②）：透传原始 fact，过滤与映射在上报桥（buildBehaviorAuditEvent）做，
-    // 与用量链路「Host 只搬运、门禁在 Reporter」的分工一致。
-    subscribeAuditFacts: (listener) => {
-      const source = auditFactSourceHolder;
-      if (!source) {
-        reactorServerWiringLog.warn(
-          undefined,
-          "行为审计上报未接线：agent 服务尚未构造，订阅被跳过",
-        );
-        return () => undefined;
-      }
-      const disposable = source.onDynamicAuditFact()((fact) => listener(fact));
-      return () => disposable.dispose();
+          purge: (params) => {
+            if (!zcodeAgentService.purgeSessionData) throw new Error("project.data-unavailable");
+            return zcodeAgentService.purgeSessionData(params);
+          },
+        },
+        checkpointDirectory: (workspacePath) => getWorkspaceCheckpointDirectory(workspacePath),
+      }),
     },
   });
-
-  // 企业服务端技能同步：server-skills 目录的唯一写者。只读登录态与凭据库里的
-  // reactor:* 令牌，不碰 provider；HTTP 复用 reactorServerClient（见 docs/已完成/已完成-server-skill-sync.md §5）。
-  const serverSkillSyncService = createServerSkillSyncService({
-    apiClient,
-    credentials: credentialService,
-    reactorServer: reactorServerService,
+  const taskGroupService = createTaskGroupService({
+    database: () => taskIndexRepo.getOrganizationDatabase(),
+    resolveTasks: async (refs) => {
+      // 只读所属 Host 的权威目录；项目路由不会为分组建立连接或启动 Agent。
+      const hostIds = [...new Set(refs.map((task) => task.hostId))];
+      const results = await Promise.all(
+        hostIds.map(async (hostId) => {
+          const tree = await projectService.readTree({ hostId, includeDeletedTasks: true });
+          const facts = new Map(
+            [
+              ...tree.tasks,
+              ...(tree.deletedTasks ?? []).map((task) => ({ ...task, deleted: true })),
+            ].map((task) => [groupTaskKey(task), task]),
+          );
+          return refs
+            .filter((ref) => ref.hostId === hostId)
+            .flatMap((ref) => {
+              const fact = facts.get(groupTaskKey(ref));
+              return fact && fact.hostId === ref.hostId && fact.workspacePath === ref.workspacePath
+                ? [{ ...fact, ...ref }]
+                : [];
+            });
+        }),
+      );
+      return results.flat();
+    },
+    afterChange: () => broadcastService.send({ channel: "state:task-groups", payload: {} }),
   });
-
-  // 企业服务端 Agent 同步：server-agents 目录的唯一写者（docs/已完成/已完成-服务端接线-P3-Agent下发.md）。
-  // 只物化 installed && installEnabled；发现层（GUI/CLI）只读，启停不落本地第二套状态。
-  const serverAgentSyncService = createServerAgentSyncService({
-    apiClient,
-    credentials: credentialService,
-    reactorServer: reactorServerService,
+  const prepareProjectExecution = async (projectId: string) => ({
+    ...(await projectService.prepareSession({ projectId })),
+    hostId: options?.projectStorageHostId ?? "local",
+    workspaceIdentity: undefined,
   });
-  serverAgentSyncHolder = serverAgentSyncService;
-
-  // 知识缓存同步（文件审查）：标准清单 / 术语白名单 / 规范库 → 用户数据目录 knowledge/。
-  // 只读 reactor:* 凭据，不碰 provider；消费面只要求登录态，不校验角色（见方案 §4.4.3）。
-  const knowledgeSyncService = createKnowledgeSyncService({
-    apiClient,
-    credentials: credentialService,
-    reactorServer: reactorServerService,
-  });
-  knowledgeSyncHolder = knowledgeSyncService;
-  // 启动补一次：已登录则后台同步（与 server-agents 同口径，失败保留上一份可用缓存）。
-  void reactorServerService
-    .getStatus()
-    .then((status) => (status.loggedIn ? knowledgeSyncService.sync() : undefined))
-    .catch(() => undefined);
-
-  // 启动补一次：已登录则后台对齐服务端目录（失败静默，登录/安装/手动触发会再收敛）。
-  void reactorServerService
-    .getStatus()
-    .then((status) => (status.loggedIn ? serverAgentSyncService.sync() : undefined))
-    .catch(() => undefined);
-
+  let appControlService: AppControlService | undefined;
+  // 受管 worktree 的删除租约：worktree 服务取得，Agent 服务与终端服务据此拒绝新操作（§8.3）。
+  // 租约只在本 Host 内生效，前提是一台机器只有一个本地 Host：应用持有单实例锁，主窗口只经
+  // primaryWindowCoordinator 创建并复用已有窗口，renderer 刷新复用原 Host。以后支持多个主窗口时，
+  // 删除需要改由 main 跨 Host 协调（docs/git/worktree.md §8.3）。
+  const worktreeRemovalGate = createWorktreeRemovalGate();
   const zcodeAgentService = createZCodeAgentService({
+    credentialCipherProvider,
+    runSessionOperation: (target, operation) =>
+      worktreeRemovalGate.runSessionOperation(
+        target.sessionId,
+        async () => {
+          // 只有本地任务可能运行在受管 worktree 中；cwd 只经 tasks-index 同一行得到（§2.1）。
+          // 没有任务行时返回 null（未知），由闸门在删除期间拒绝，不回退为 workspace 目录。
+          if (target.workspaceIdentity?.trim()) return target.workspacePath;
+          return (await taskIndexRepo.getProjectRepository()).readTaskCwd({
+            workspacePath: target.workspacePath,
+            taskId: target.sessionId,
+          });
+        },
+        operation,
+      ),
+    resolveAppControlService: () => appControlService,
+    appControlSourceServerId: options?.projectStorageHostId ?? "local",
+    useSharedTaskRuntime: async (target) => {
+      if (options?.projectStorageHostId && options.projectStorageHostId !== "local") return false;
+      return !(await taskIndexRepo.getProjectRepository()).hasProjectWorkspace(target);
+    },
+    prepareProjectExecution,
+    prepareForkCreation: async (target) => {
+      (await taskIndexRepo.getProjectRepository()).reserveCreatedTask({
+        task: { ...target, taskId: target.sessionId },
+        parentTaskId: target.parentSessionId,
+      });
+    },
+    prepareSessionCreation: async (target) => {
+      const prepared = (await taskIndexRepo.getProjectRepository()).reserveCreatedTask({
+        task: { ...target, taskId: target.sessionId },
+        projectId: target.projectId,
+        creationCommand: target.creationCommand,
+        additionalDirectories: target.additionalDirectories,
+      });
+      return { sessionId: prepared.taskId, additionalDirectories: prepared.additionalDirectories };
+    },
+    resolveSessionDirectories: async (target) =>
+      (await projectService.resolveSessionDirectories({ ...target, taskId: target.sessionId }))
+        .additionalDirectories,
     ...(agentAccountProviderConfigSource
       ? { accountProviderConfigSource: agentAccountProviderConfigSource }
       : {}),
     accountRequestAuthService,
-    // 企业服务端 provider 的鉴权材料由这里现场解析（见 docs/未完成-服务端接线-方案-v1.md §4.2）。
-    reactorServerAuth: reactorServerService,
+    readRequestVerificationConfig: () =>
+      codingPlanSubscriptionService.getRequestVerificationConfig(),
     ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
     authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
     ...offPeakToolWiring,
@@ -2235,9 +2447,11 @@ export function createLocalServices(options: {
     // 是它自己那些 workspace 的唯一裁决者，灰度开启时远程 workspace 同样提供工作流。
     resolveDynamicWorkflowClientConfig: () =>
       codingPlanSubscriptionService.getDynamicWorkflowClientConfig(),
+    ...(resolveDynamicWorkflowUserMode ? { resolveDynamicWorkflowUserMode } : {}),
+    forwardDynamicWorkflowUserMode: options?.forwardDynamicWorkflowUserMode,
     commandResolver: options?.zcodeAgentCommandResolver,
     presentationSurface: resolveZCodeAgentPresentationSurface({
-      runtimeSurface: options?.agentRuntimeContext?.runtimeSurface,
+      runtimeSurface: options?.agentTelemetry?.runtimeSurface,
       serviceAuthorityMode: options?.serviceAuthorityMode,
       desktopContextPromptEnabled,
     }),
@@ -2249,11 +2463,61 @@ export function createLocalServices(options: {
     spawnFallbackCwd: options?.zcodeAgentSpawnFallbackCwd,
     // browser-use：host→main 执行桥透传给 agent service 的 onRequest browserExecute 路由。
     browserControlExecutor: options?.browserControlExecutor,
+    // 机器人凭据只归属于授权 Host；远端独立服务不能借用本机配置扩大读取范围。
+    // 渠道工具等待插件入口接入，仅停用默认发送接线，保留完整实现。
+    // channelReplyExecutor: async (value) => {
+    //   const request = channelReplyHostRequestSchema.parse(value);
+    //   if (
+    //     options?.topicResourceRelayChannel &&
+    //     (isDesktopAttachedRemote || request.remoteSessionId)
+    //   )
+    //     return channelReplyResultSchema.parse(
+    //       await options.topicResourceRelayChannel(request).call("reply", request),
+    //     );
+    //   if (isDesktopAttachedRemote) throw new Error("Desktop channel reply peer unavailable");
+    //   const bots = services.getOptional(IBotsService);
+    //   if (!bots?.replyToChannel) throw new Error("Bot channel reply unavailable");
+    //   return bots.replyToChannel(request);
+    // },
+    topicResourceExecutor: async (request, signal) => {
+      if (
+        options?.topicResourceRelayChannel &&
+        (isDesktopAttachedRemote || request.remoteSessionId)
+      )
+        return readTopicResourceFromRelay(
+          options.topicResourceRelayChannel(request),
+          request,
+          signal,
+        );
+      if (isDesktopAttachedRemote) throw new Error("Desktop topic resource peer unavailable");
+      const bots = services.getOptional(IBotsService);
+      if (!bots?.readTopicResource) throw new Error("Topic resource service is unavailable");
+      return bots.readTopicResource({ ...request, signal });
+    },
+    topicResourceValidator: async (request, signal) => {
+      if (
+        options?.topicResourceRelayChannel &&
+        (isDesktopAttachedRemote || request.remoteSessionId)
+      )
+        return validateTopicResourceFromRelay(
+          options.topicResourceRelayChannel(request),
+          request,
+          signal,
+        );
+      if (isDesktopAttachedRemote) throw new Error("Desktop topic resource peer unavailable");
+      const bots = services.getOptional(IBotsService);
+      if (!bots?.validateTopicResource)
+        throw new Error("Topic resource authorization is unavailable");
+      return bots.validateTopicResource({ ...request, signal });
+    },
     // 官方 Server MCP 身份头：host 是唯一身份权威，Agent 经反向请求索取。
     // Provider 存在性读取正式 Model Selection View；不恢复旧 Provider Snapshot。
     officialMcpAuthHeadersResolver: createOfficialMcpAuthHeadersResolver({
       accountRequestAuthService,
-      credentialService,
+      getRegistryRevision: () =>
+        providerRuntime.registryService.getSnapshot()?.registry.revision ?? null,
+      loadOAuthIdentityMaterial: () => oauthCredentialRepo.loadIdentityMaterial(),
+      loadOAuthAccountMaterial,
       modelSelectionService: providerRuntime.modelSelection,
     }),
     // host 是身份权威边界：provenance/origin 必须在这里再校验一次，不能只依赖 agent
@@ -2283,8 +2547,6 @@ export function createLocalServices(options: {
     // 覆盖模型 API / MCP / Bash 出口流量并信任用户显式配置的证书；改动后下次启动 agent 生效。
     resolveSpawnEnv: async (context) => {
       const [settings] = await Promise.all([settingService.get(), providerRuntime.start()]);
-      // 内置 Subagent 的旧覆盖必须在 CLI 独立读取之前导入，不能等待设置页操作。
-      await subagentsService.prepareRuntimeState();
       const agentNetwork =
         isDesktopAttachedRemote && options?.remoteAgentNetwork
           ? options.remoteAgentNetwork
@@ -2292,58 +2554,29 @@ export function createLocalServices(options: {
               httpProxy: settings.httpProxy,
               noProxy: settings.httpProxyNoProxy,
             };
-      // 与 helper 创建同一个门控（isCuaEnabledForContext：dev/internal 特性 OR 官方插件 enablement），
-      // 避免 dev mode 下 helper 建了但 resolveSpawnEnv 漏注入 broker env 的割裂。
       const cuaPluginEnabled = isCuaEnabledForContext(context);
-      // 懒启动：darwin 上 spawn 绝不 acquire 拉起 Helper——已有 host（peek，比如刚走过
-      // 授权流）则复用其 tuple；否则只注入稳定 socket，SDK 首次 CUA 调用自行拉起
-      // （宿主启动/spawn 均不使 Helper 常驻）。win32 保留 acquire（token 模式）。
-      const peekedHelper = defaultCuaProductHelperLifecycle.peek()?.helper;
-      const helper = !cuaPluginEnabled
-        ? undefined
-        : peekedHelper && isDefaultCuaProductHelperCurrent(peekedHelper)
-          ? peekedHelper
-          : process.platform === "darwin"
-            ? undefined
-            : await getOrCreateDefaultCuaProductHelper(context);
-      // setting.get / 生命周期队列都可能跨过 host dispose。仅凭调用前的 enabled 会让延迟恢复的
-      // resolveSpawnEnv 在 terminal fence 后重新启动 Helper；必须在真正构造 env 前校验代际。
-      const cuaProductHelperHost =
-        helper && isDefaultCuaProductHelperCurrent(helper) ? helper.host : undefined;
-      // 等待 Helper 启动前登记。Registry 只记录尝试过 admission 的 workspace，
-      // 供后续配置/生命周期 bookkeeping 使用；recovery 只清理 marker，不回收已有 Agent。
-      cuaProductHelperWorkspaceRegistry.setEnabled(context, Boolean(cuaProductHelperHost));
       let cuaProductHelperEnv: Record<string, string> = {};
-      if (!helper && cuaPluginEnabled && process.platform === "darwin") {
-        // 懒启动：无托管 host 时注入稳定 socket；无 token（身份模式）、无 pluginAuthority
-        // （其校验方就是 host，host 缺席时无意义）。SDK ensureBrokerAvailable 负责拉起。
-        // pluginAuthority 是 agent 进程内的 config-provenance 随机数（bootstrap 捕获后写进
-        // node_repl 配置 env，core 比对两者证明该配置出自本 bootstrap 而非用户配置文件）；
-        // 它不需要 host——托管态由 host 铸造，懒启动态在此按 spawn 铸造，语义与校验完全一致。
+      if (cuaPluginEnabled && (process.platform === "darwin" || process.platform === "win32")) {
+        const brokerSocket =
+          process.platform === "win32" ? getStableCuaPipeName() : resolveBrokerSocketPath();
         cuaProductHelperEnv = {
-          [BROKER_SOCKET_ENV]: resolveBrokerSocketPath(),
+          [BROKER_SOCKET_ENV]: brokerSocket,
           [ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]: randomBytes(16).toString("hex"),
         };
-        cuaProductHelperWorkspaceRegistry.setEnabled(context, false);
-      } else if (cuaProductHelperHost && helper) {
-        const candidateEnv = await buildCuaProductHelperAgentEnv(
-          cuaProductHelperHost,
-          createServiceLogger("cua-product-helper"),
-        );
-        // host.start/checkHealth 也会 await；dispose 可能在这段等待中同步落 terminal fence。
-        // 返回 spawn env 前二次核对代际，失效时显式标成 unavailable，绝不把已回收 tuple 交给晚到 Agent。
-        if (isDefaultCuaProductHelperCurrent(helper)) {
-          cuaProductHelperEnv = candidateEnv;
-        } else {
-          cuaProductHelperWorkspaceRegistry.setEnabled(context, false);
-          cuaProductHelperEnv = {
-            [BROKER_UNAVAILABLE_ENV]: "broker_unavailable: helper lifecycle is disposed",
-          };
+        if (process.platform === "win32") {
+          const recipe = await resolveStableCuaWinRecipe();
+          if (recipe) {
+            cuaProductHelperEnv["ZCODE_CUA_WIN_HELPER_RECIPE"] = JSON.stringify({
+              ...recipe,
+              hostPid: process.pid,
+            });
+          } else {
+            cuaProductHelperEnv = {
+              [BROKER_UNAVAILABLE_ENV]:
+                "broker_unavailable: windows helper recipe could not be resolved",
+            };
+          }
         }
-      } else if (cuaPluginEnabled && defaultCuaProductHelperLifecycle.disposed) {
-        cuaProductHelperEnv = {
-          [BROKER_UNAVAILABLE_ENV]: "broker_unavailable: helper lifecycle is disposed",
-        };
       }
       const telemetryEnv = getCapturedZCodeAgentTelemetryEnv();
       const telemetryConfigured = Boolean(
@@ -2353,7 +2586,7 @@ export function createLocalServices(options: {
         ? await oauthCredentialRepo.loadActiveUserProfile().catch(() => null)
         : null;
       const telemetryDeviceMid = telemetryConfigured
-        ? options?.agentRuntimeContext?.getDeviceMid?.()?.trim()
+        ? options?.agentTelemetry?.getDeviceMid?.()?.trim()
         : undefined;
       // Host 是旧配置迁移的唯一写入者。Agent spawn 前等待初始化完成，避免 Worker
       // 先拿到尚不存在的 provider_config.json 并发布短暂空 Registry。
@@ -2367,14 +2600,16 @@ export function createLocalServices(options: {
         // 把 host 解析出的权威 origin（含 settings 覆盖）下发给 agent，否则 agent 侧只按
         // env 推导，test env + 自定义端点时两侧信任判定的输入分叉、官方 MCP 整体 fail closed。
         ...buildAgentEndpointOriginEnv(await resolveCurrentZCodeEndpointOrigin()),
+        // Agent 模型请求的 X-Client-Language 默认取 Agent 进程 Intl（Dock 启动无 LANG 时回退 en-US），
+        // 跟界面语言无关；这里把 Host 的实时界面语言按 spawn 时下发，切换语言后下一次启动 Agent 生效。
+        // 远端 Host 不注入 resolveClientLanguage，保持远端 Intl 行为。
+        ...buildAgentClientLanguageEnv(options?.resolveClientLanguage?.()),
         // broker 凭据（socket/token）注入 agent spawn env，让内置 zcode-cua plugin 的
         // computer-use MCP server 经 __zcode-plugin-host 恢复 token 后连上 broker。
-        // 上面 cuaProductHelperEnv 已完成代际校验与 unavailable 兜底，取代 staging 侧
-        // 直接调用 buildCuaProductHelperAgentEnv 的旧路径。
         ...cuaProductHelperEnv,
         ...buildAgentTelemetrySpawnEnv({
           deviceMid: telemetryDeviceMid,
-          runtimeSurface: options?.agentRuntimeContext?.runtimeSurface ?? "remote_workspace_host",
+          runtimeSurface: options?.agentTelemetry?.runtimeSurface ?? "remote_workspace_host",
           telemetryEnv,
           userId: telemetryProfile?.id,
         }),
@@ -2386,6 +2621,12 @@ export function createLocalServices(options: {
         }),
       };
     },
+    ...(!isDesktopAttachedRemote
+      ? {
+          prepareRuntimeWorkspace: subagentsService.prepareRuntimeState,
+          readSubagentRuntimeConfig: subagentsService.readRuntimeConfig,
+        }
+      : {}),
     ...(isDesktopAttachedRemote
       ? { sessionRuntimePreferencesAuthority: "external" as const }
       : {
@@ -2398,6 +2639,7 @@ export function createLocalServices(options: {
               askUserQuestionAutoResolutionEnabled:
                 settings.askUserQuestionAutoResolutionEnabled !== false,
               nativeSearchEnhancementsEnabled: settings.nativeSearchEnhancementsEnabled !== false,
+              toolSearchMode: settings.toolSearchMode ?? DEFAULT_APP_TOOL_SEARCH_MODE,
               memoryEnabled: settings.memoryEnabled === true,
               modelContextBudgetStrategy,
               // user-execution 只消费 Shell；共享默认策略是统一 result schema 的兼容占位，
@@ -2410,11 +2652,6 @@ export function createLocalServices(options: {
         }),
   });
   providerConnectivityAgentService = zcodeAgentService;
-  // 回填用量事实源（P4.1b）：reactorServer 的订阅钩子此刻起可用；
-  // 登录成功 / 启动补一次时才会真正安装订阅。
-  usageFactSourceHolder = zcodeAgentService;
-  // 行为审计事实源（洞②）同点回填。
-  auditFactSourceHolder = zcodeAgentService;
   // Helper health probe 短暂超时不应在 Computer Use turn 中途回收 Agent。resolver 会把 restart
   // 推迟到下一个 request/turn 边界；若 broker 确实已失效，当前 turn 会自然失败并由下一次请求恢复。
   hasActiveTurnRef = () => zcodeAgentService.hasActiveCuaOperationTurn();
@@ -2422,10 +2659,31 @@ export function createLocalServices(options: {
   // mapServiceEvent 路径，导致 task_complete 永远不会写回 sqlite，侧边栏 spinner 不停。
   // 在 services 层装配一个共享的 taskIndexRepo + syncer，session 任意入口都会唤醒
   // shadow 订阅，把 runtime 终态收敛进 sqlite。
-  const taskIndexRepo = new TaskIndexRepo();
   const zcodeTaskIndexSyncer = createZCodeTaskIndexSyncer({
     agentService: zcodeAgentService,
     taskIndexRepo,
+  });
+  // 自动归档只由这里的定时扫描触发（启动首轮 + 每小时 + 设置变更补扫）；readTree 与任务点击
+  // 都不再执行 archiveInactive。判据仍排除 syncer 观察到的非终态会话，不为扫描启动 CLI。
+  const taskAutoArchiveScheduler = createTaskAutoArchiveScheduler({
+    readPolicy: async () => {
+      const settings = await settingService.get();
+      if (!settings.taskAutoArchiveEnabled) return null;
+      const days = Math.max(1, Math.floor(settings.taskAutoArchiveOlderThanDays ?? 30));
+      return {
+        cutoff: Date.now() - days * 86_400_000,
+        activeTasks: zcodeTaskIndexSyncer.activeTaskRefs(),
+      };
+    },
+    repository: () => taskIndexRepo.getProjectRepository(),
+    afterChange: async (archived) => {
+      // Bug 根因：自动归档直接改 sqlite，只广播项目变更，不发 task_archived；
+      // Controller 依赖任务事实流关闭已归档任务的 tab，缺事件会让出声的 Browser guest 留在后台。
+      for (const task of archived) {
+        zcodeTaskIndexSyncer.emitWorkspaceTaskListChanged(task, undefined, "task_archived");
+      }
+      await publishProjectChange();
+    },
   });
   // The plugin can be toggled at runtime. Do not let a previously created resolver continue
   // health-checking/restarting Helper after disable, and create it lazily after enable.
@@ -2473,6 +2731,47 @@ export function createLocalServices(options: {
   const gitService = createGitService({
     commitMessageGenerator: gitCommitMessageGenerator,
   });
+  // 终端实例需要同时注册给 renderer 与供 worktree 删除前的占用检查使用，必须是同一个实例。
+  const terminalService = createTerminalService({
+    settingService,
+    isCwdBlocked: (cwd) => worktreeRemovalGate.isRemoving(cwd),
+  });
+  const isLocalProjectHost =
+    !options?.projectStorageHostId || options.projectStorageHostId === "local";
+  const managedWorktreeService = createManagedWorktreeService({
+    isLocalHost: isLocalProjectHost,
+    repository: () => taskIndexRepo.getProjectRepository(),
+    git: createGitWorktreeRepo({
+      commandProvider: createGitCommandProvider(),
+      dataBaseDir: getDataBaseDir,
+    }),
+    removalGate: worktreeRemovalGate,
+    runtime: {
+      hasTerminalsUnder: async (path) =>
+        (await terminalService.listTerminalIdsUnderPath({ path })).length > 0,
+      releaseSessionsUnder: async (target) => {
+        if (!zcodeAgentService.releaseSessionsUnderDirectory)
+          throw new Error("worktree.release-unsupported");
+        return await zcodeAgentService.releaseSessionsUnderDirectory(target);
+      },
+    },
+    agent: {
+      supportsWorktreeCwd: async (target) =>
+        (await zcodeAgentService.supportsWorktreeCwd?.(target)) ?? false,
+      // HOST_WORKTREE_COMMAND 只有本服务能设置，渲染进程经 RPC 无法携带（§5.1）。
+      sendCommand: (command) =>
+        zcodeAgentService.sendConversationCommandV4({ ...command, [HOST_WORKTREE_COMMAND]: true }),
+      queryCommandResult: async (target) => {
+        if (!zcodeAgentService.queryCommandResult) throw new Error("worktree.query-unsupported");
+        return await zcodeAgentService.queryCommandResult(target);
+      },
+    },
+    reportCreatingCount: (count) =>
+      options?.quitBlockerReporter?.onQuitBlockersChanged(
+        count > 0 ? [{ kind: "worktree-creating", count }] : [],
+      ),
+    afterChange: publishProjectChange,
+  });
   // task wrapper 由 ZCode task service adapter 提供；核心 session 状态由 ZCode agent server 维护。
   const zcodeTaskService = createZCodeTaskServiceAdapter({
     zcodeAgentService,
@@ -2481,10 +2780,85 @@ export function createLocalServices(options: {
     settingService,
     cuaProductMcpServerResolver,
   });
+  appControlService = createAppControlService({
+    sourceServerId: options?.projectStorageHostId ?? "local",
+    projects: projectService,
+    discovery: createAppControlDiscoveryDirectory({
+      sourceServerId: options?.projectStorageHostId ?? "local",
+      projects: projectService,
+      ...(!options?.projectStorageHostId || options.projectStorageHostId === "local"
+        ? { remoteProjects: remoteProjectService }
+        : {}),
+      resolveSource: options?.resolveAppControlDiscoverySource,
+    }),
+    resolveWorkspaceIdentity:
+      options?.projectStorageHostId && options.projectStorageHostId !== "local"
+        ? async (workspacePath) =>
+            (await sourceServerWorkspaceService.resolveWorkspace({ workspacePath }))
+              .canonicalWorkspaceKey
+        : undefined,
+    tasks: zcodeTaskService,
+    agent: zcodeAgentService,
+    models: providerRuntime.modelSelection,
+    navigation: options?.appControlNavigation,
+    prepareCreation: ({ projectId }) => projectService.prepareSession({ projectId }),
+    findCreationReceipts: async (creationCommand) =>
+      (await taskIndexRepo.getProjectRepository()).findCreationReceipts({ creationCommand }),
+    reserveFork: async (target) => {
+      // 分叉正文由 CLI 创建；产品归属仍经 Host 的既有原子预留 owner。
+      (await taskIndexRepo.getProjectRepository()).reserveCreatedTask({
+        task: target,
+        projectId: target.projectId,
+        forkedFromTaskId: target.forkedFromTaskId,
+      });
+    },
+  });
+  options?.onAppControlServiceCreated?.({
+    service: appControlService,
+    sourceServerId: options?.projectStorageHostId ?? "local",
+  });
+  const botsRepo = new BotsRepo();
+  const botLog = createServiceLogger("bots");
+  const botRemoteWorkspaceService = options.resolveBotProjectConnection
+    ? createBotProjectRuntime({
+        remoteProjectService,
+        resolveOnline: options.resolveBotProjectConnection,
+        onConnectionsChanged: (listener) =>
+          broadcastService.onMessage((event) => {
+            if (event.channel === "state:projects") listener();
+          }),
+        readBoundTargets: async () =>
+          Object.values((await botsRepo.readState()).bots).flatMap((context) =>
+            context.workspaceIdentity
+              ? [
+                  {
+                    workspacePath: context.workspacePath,
+                    workspaceIdentity: context.workspaceIdentity,
+                    hostId: context.hostId,
+                  },
+                ]
+              : [],
+          ),
+        readRuntimePreferences: async () => {
+          const settings = await settingService.get();
+          return {
+            askUserQuestionAutoResolutionEnabled:
+              settings.askUserQuestionAutoResolutionEnabled !== false,
+            modelIoFullRetentionEnabled: settings.modelIoFullRetentionEnabled === true,
+            pluginAutoRecommendationEnabled: settings.pluginAutoRecommendationEnabled === true,
+          };
+        },
+        warn: (message) => botLog.warn(message),
+      })
+    : undefined;
   const oauthService = createOAuthService(credentialService, {
+    captureCredentialGuard: () => credentialService.captureRecoveryGuard(),
     apiClient,
     onProviderLogout: handleOAuthProviderLogout,
   });
+  associatedProfileRefreshRef.current = async (expected) => {
+    await oauthService.refreshAccountProfile(expected);
+  };
   const zcodeJwtLogoutLogger = createServiceLogger("zcode-jwt-logout");
   zcodeJwtLogoutHandlerRef.current = (input, headers) => {
     // 条件退出本身已串行去重；不能丢弃等待旧候选期间到来的新凭据 401。
@@ -2507,7 +2881,9 @@ export function createLocalServices(options: {
   // Registry 的 entitlement/executable 事实，也在多个套餐同时可见时无法唯一选择。
   // 闲时服务与 Host 派发必须共享同一个 Registry-backed 凭据解析闭包。
   const offPeakCredentialResolverDeps = {
-    credentialService,
+    loadOAuthAccountMaterial,
+    getRegistryRevision: () =>
+      providerRuntime.registryService.getSnapshot()?.registry.revision ?? null,
     accountRequestAuthService,
     resolveAccountProvider: async () => {
       await providerRuntime.start();
@@ -2572,30 +2948,103 @@ export function createLocalServices(options: {
   // 注册链上的懒工厂（如 OffPeak）会各自创建 tasks-index sqlite repo；先收集到本数组，
   // services 集合建好后在 return 前统一登记进 sharedSqliteRepos 侧表
   const sqliteReposToClose: Array<{ close(): void }> = [];
+  const marketingAssets = createMarketingAssetRegistry({
+    allowLoopback: ZCODE_ENV === "test" || process.env.NODE_ENV === "development",
+  });
   const services = new ServiceCollection()
+    .register(
+      IMarketingTouchService,
+      createMarketingTouchService({
+        apiClient,
+        getToken: () => credentialService.load("zcodejwttoken"),
+        getDeviceMid: () => options?.agentTelemetry?.getDeviceMid?.(),
+        baseUrl: buildRuntimeZCodeApiUrl(process.env, "/"),
+        appVersion: ZCODE_VERSION,
+        onSnapshot: (snapshot) => marketingAssets.accept(snapshot),
+      }),
+    )
+    .register(
+      IVoiceInputService,
+      createVoiceInputService({
+        apiClient,
+        getToken: () => credentialService.load("zcodejwttoken"),
+        resolveOrigin: resolveCurrentZCodeEndpointOrigin,
+        createSocket: (url) => hostApiNetworkTransport.createWebSocket(url),
+      }),
+    )
     .register(IFileService, fileService)
     .register(IMediaPreviewService, mediaPreviewService)
+    .register(
+      ICloudContentService,
+      createCloudContentService({
+        publishedAssets: marketingAssets,
+        cacheRoot: join(getContentAppConfigDir(), "cache", "content-bundles", randomUUID()),
+      }),
+    )
     .register(IGitService, gitService)
+    .register(IManagedWorktreeService, managedWorktreeService)
     .register(IGitCheckpointService, gitCheckpointService)
     .register(ISystemService, systemService)
-    .register(ITerminalService, createTerminalService({ settingService }))
+    .register(ITerminalService, terminalService)
     .register(ISettingService, settingService)
-    .register(ICredentialService, credentialService)
+    .register(IOnboardingRecordService, onboardingRecordService)
+    // RPC 根据运行时方法名分发，不能把 Host 私有批量凭据端口直接注册给 Renderer。
+    .register(ICredentialService, {
+      // 整库检查/恢复不按键读写；是否对当前连接开放由 exposeOnChannelServer 的恢复策略决定。
+      inspectStore: () => credentialService.inspectStore(),
+      recoverStore: (fingerprint) => credentialService.recoverStore(fingerprint),
+      load: (key) => {
+        if (key === OAUTH_LINKED_BIGMODEL_KEY) throw new Error("Host private credential");
+        return credentialService.load(key);
+      },
+      save: (key, value) => {
+        if (key === OAUTH_LINKED_BIGMODEL_KEY) throw new Error("Host private credential");
+        return credentialService.save(key, value);
+      },
+      delete: (key) => {
+        if (key === OAUTH_LINKED_BIGMODEL_KEY) throw new Error("Host private credential");
+        return credentialService.delete(key);
+      },
+    })
     .register(IBroadcastService, broadcastService)
     .register(IZCodeTaskService, zcodeTaskService)
     .register(IZCodeAgentService, zcodeAgentService)
     .register(IZCodeSessionService, zcodeSessionService)
+    .register(IProjectService, projectService)
+    .register(ITaskGroupService, taskGroupService)
+    .register(IRemoteProjectService, remoteProjectService)
     .register(ICuaPermissionService, cuaPermissionService)
     .register(ICuaPipSessionService, cuaPipSessionService)
     .register(IConversationShareService, conversationShareService)
+    .register(
+      IBotsService,
+      createBotsService({
+        repo: botsRepo,
+        projectService,
+        remoteProjectService,
+        ownerHostId: options?.projectStorageHostId ?? "local",
+        credentialService,
+        zcodeTaskService,
+        broadcastService,
+        settingService,
+        modelSelectionService: providerRuntime.modelSelection,
+        remoteWorkspaceService: botRemoteWorkspaceService
+          ? { ...botRemoteWorkspaceService, resolveWorkspace: options?.resolveBotRemoteWorkspace }
+          : undefined,
+        // 远端与本地 Bot 都读取所属 Environment 的 Model Selection View。
+        // 远端启动期不再轮询旧 Preset，避免重新制造一套模型候选事实。
+        runStartupBackgroundTasks: !isDesktopAttachedRemote,
+      }),
+    )
     .register(IFileWatcherService, createFileWatcherService())
     .register(IOAuthService, oauthService)
+    .register(ISourceServerWorkspaceService, sourceServerWorkspaceService)
     .register(
       IUsageStatsService,
       createUsageStatsService({
         apiClient,
+        loadOAuthAccountMaterial,
         accountRequestAuthService,
-        credentialService,
         zcodeAgentService,
         officialMcpCredentialSource,
       }),
@@ -2605,6 +3054,7 @@ export function createLocalServices(options: {
       IClientConfigService,
       createClientConfigService({
         apiClient,
+        resolveZcodeJwtToken: () => credentialService.load("zcodejwttoken"),
         resolveRequestContext: async () => ({
           endpointOrigin: await resolveCurrentZCodeEndpointOrigin(),
           appVersion: ZCODE_VERSION,
@@ -2629,16 +3079,18 @@ export function createLocalServices(options: {
         // （工厂在注册链求值期执行，此时 services 常量尚未初始化，不能直接引用）
         sqliteReposToClose.push(offPeakTaskRepo);
         const offPeakTaskService = new OffPeakTaskService({
+          prepareProjectExecution,
           repo: offPeakTaskRepo,
           client: createOffPeakServerClient({
             resolveOrigin: originResolver.resolveOrigin,
             resolveCredentials,
             logger: offPeakLogger,
+            resolveClientLanguage: options?.resolveClientLanguage,
           }),
           resolveCodingPlanSupport: () =>
             resolveOffPeakCodingPlanSupport(offPeakCredentialResolverDeps),
           resolveTelemetryProviderName: async () =>
-            resolveSafeEndpointHostname(await originResolver.resolveOrigin()),
+            resolveSafeTelemetryHostname(await originResolver.resolveOrigin()),
           resolveModelSelection: async (input) => {
             await providerRuntime.start();
             const support = await resolveOffPeakCodingPlanSupport(offPeakCredentialResolverDeps);
@@ -2694,15 +3146,134 @@ export function createLocalServices(options: {
         return offPeakTaskService;
       })(),
     )
+    .register(
+      IHighspeedCardService,
+      (() => {
+        const origin = resolveRuntimeZCodeEndpointOrigin(process.env);
+        const rawMockScenario = process.env.ZCODE_HIGHSPEED_MOCK_SCENARIO;
+        const mockScenarios = new Set<HighspeedMockScenario>([
+          "hit-fast",
+          "miss",
+          "hit-after-timeout",
+          "hit-invalid-model",
+          "hit-queue-edit",
+          "existing-foreign-task-card",
+          "expired-card",
+        ]);
+        const mockScenario = mockScenarios.has(rawMockScenario as HighspeedMockScenario)
+          ? (rawMockScenario as HighspeedMockScenario)
+          : null;
+        const ownerKeyForUser = (userId: string) =>
+          `v1:${createHash("sha256").update(userId).digest("hex")}`;
+        const resolveHealthyIdentity = async () => {
+          const identity = await oauthCredentialRepo.loadIdentityMaterial();
+          return identity
+            ? {
+                ownerKey: ownerKeyForUser(identity.zcodeUserId),
+                sessionScope: JSON.stringify(identity),
+                zcodeJwt: identity.zcodeJwtToken,
+              }
+            : null;
+        };
+        const transport = mockScenario
+          ? createHighspeedMockTransport({ scenario: mockScenario })
+          : createHighspeedHttpTransport({
+              drawUrl: `${origin}/api/v1/highspeed/draw`,
+              healthyBaseUrl: `${origin}/api/v1/highspeed/`,
+              logger: createServiceLogger("highspeed"),
+              drawHeaders: async () => {
+                const credentials = await resolveOffPeakCredentials(offPeakCredentialResolverDeps, {
+                  allowMockCredentials: false,
+                });
+                return buildHighspeedCodingPlanAuthHeaders({
+                  zcodeJwt: credentials.jwt,
+                  codingPlanAuthorization: credentials.codingPlanAuthorization,
+                  targetType:
+                    credentials.organizationId && credentials.projectId ? "TEAM" : "PERSONAL",
+                  ...(credentials.organizationId
+                    ? { organizationId: credentials.organizationId }
+                    : {}),
+                  ...(credentials.projectId ? { projectId: credentials.projectId } : {}),
+                });
+              },
+              healthyHeaders: async () => {
+                throw new Error("highspeed healthy requires captured identity");
+              },
+            });
+        return new HighspeedCardService({
+          transport,
+          resolveHealthyIdentity,
+          // 普通 mock 只验证抽卡 UI，不依赖隐藏执行 Provider；目录外模型与队列编辑场景
+          // 必须走真实 Highspeed execution Selection，才能覆盖创建期退回和队列模型隔离。
+          inferenceMode:
+            mockScenario &&
+            mockScenario !== "hit-invalid-model" &&
+            mockScenario !== "hit-queue-edit"
+              ? "session-default"
+              : "highspeed",
+          // 规则 11：draw 只对 Coding Plan 用户开放；mock 场景放行以便本地验证。
+          resolveCodingPlanSupported: mockScenario
+            ? async () => true
+            : async () =>
+                (await resolveOffPeakCodingPlanSupport(offPeakCredentialResolverDeps)).supported,
+          // 规则 14：会话模型必须属于所选 Coding Plan Provider 的模型目录（Built-in Provider
+          // Config 投影）才发起新 draw；mock 场景放行以便本地验证。
+          resolveModelCovered: mockScenario
+            ? async () => true
+            : async (providerId, modelId) => {
+                const view = await providerRuntime.modelSelection.getView();
+                const provider = view.providers.find((item) => item.providerId === providerId);
+                return provider?.models.some((model) => model.modelId === modelId) ?? false;
+              },
+          // 加速推理与 draw 走同一 highspeed 网关、同一 Coding Plan 双 JWT 契约：必须携带
+          // zcode JWT + Coding Plan 业务 JWT + Team 身份头。此前只发 zcode JWT + 卡 ID，网关
+          // 无法校验 Coding Plan 权益，返回 401 auth_failed。与 draw 头复用同一次 selected
+          // connection 解析，避免把 ZAI 身份的卡打到 BigModel 加速 Provider。
+          resolveInferenceAuth: async () => {
+            const credentials = await resolveOffPeakCredentials(offPeakCredentialResolverDeps, {
+              allowMockCredentials: false,
+            });
+            return {
+              zcodeJwt: credentials.jwt,
+              family: credentials.providerFamily,
+              accountScope: credentials.accountScope,
+              ...(credentials.zcodeUserId
+                ? { ownerKey: ownerKeyForUser(credentials.zcodeUserId) }
+                : {}),
+              codingPlanAuthorization: credentials.codingPlanAuthorization,
+              targetType: credentials.organizationId && credentials.projectId ? "TEAM" : "PERSONAL",
+              ...(credentials.organizationId ? { organizationId: credentials.organizationId } : {}),
+              ...(credentials.projectId ? { projectId: credentials.projectId } : {}),
+            };
+          },
+        });
+      })(),
+    )
     .register(ISkillsService, skillsService)
     .register(ISkillSyncService, createSkillSyncService())
     .register(IMcpSyncService, mcpSyncService)
+    .register(
+      IGenUiService,
+      createGenUiService({ registerSandbox: options?.registerPluginSandbox }),
+    )
+    .register(IPluginUiBridgeService, pluginUiBridgeService)
+    .register(IPluginUiSamplingService, pluginUiSamplingService)
+    .register(IPluginUiAppToolsService, pluginUiAppToolsService)
     // 合并 MCP/Plugin Management 服务装配时误删了 plugin-sync 注册，
     // RemoteServiceAccess 仍会请求该频道，导致本地候选枚举超时、远端同步无法开始。
     .register(IPluginSyncService, pluginSyncService)
+    // 数据同步：子智能体 / 命令 / 钩子共用的用户配置同步通道，本机与远端 Host 都经此注册。
+    .register(IUserConfigSyncService, createUserConfigSyncService())
     .register(IPluginsService, createPluginsService({ isDesktopRuntime: true }))
     // 设置页插件管理薄服务——plugins/* 旧协议词的 host 侧唯一消费点。
-    .register(IPluginManagementService, createPluginManagementService({ zcodeAgentService }))
+    .register(
+      IPluginManagementService,
+      createPluginManagementService({
+        zcodeAgentService,
+        reportTelemetryEvent: options?.reportPluginTelemetryEvent,
+        onMutationSucceeded: options?.onPluginManagementMutated,
+      }),
+    )
     .register(ISubagentsService, subagentsService)
     .register(ICommandsService, createCommandsService({ isDesktopRuntime: true }))
     .register(
@@ -2712,6 +3283,7 @@ export function createLocalServices(options: {
       }),
     )
     .register(IMemoryService, createMemoryService())
+    .register(IOutputStyleService, createOutputStyleService())
     .register(ISettingsSyncService, createSettingsSyncService({ settingService }))
     .register(
       IFeedbackService,
@@ -2720,14 +3292,6 @@ export function createLocalServices(options: {
         apiClient,
         credentialService,
         oauthService,
-        // 企业版：反馈跟着企业服务端走，管理台才能受理（docs/已完成/已完成-feedback-module.md §2）。
-        // 用 getStatus() 而不是装配时读一次 —— 服务端地址是登录时才填的、还可能换。
-        // 未配置企业服务端时返回 undefined，回落官方后端，开源用法不受影响。
-        getApiBaseUrl: async () => {
-          const status = await reactorServerService.getStatus();
-          if (!status.serverUrl) return undefined;
-          return `${status.serverUrl.replace(/\/+$/, "")}/api/v1`;
-        },
       }),
     )
     .register(IPromptAttachmentTransferService, createLocalPromptAttachmentTransferService());
@@ -2747,19 +3311,28 @@ export function createLocalServices(options: {
 
   accountRequestAuthServices.set(services, accountRequestAuthService);
   offPeakRequestAuthBuilders.set(services, buildOffPeakRequestAuthForTicket);
+  const pluginUserOptionsReader = getInProcessPluginUserOptionsReader(zcodeAgentService);
+  if (pluginUserOptionsReader) pluginUserOptionsReaders.set(services, pluginUserOptionsReader);
 
   providerRuntimes.set(services, providerRuntime);
   providerProvisioningSources.set(services, providerProvisioningSource);
   providerProvisioningTriggerDisposers.set(services, providerProvisioningDisposers);
+  // desktop-attached-remote 的组织态在远端 Host 库里，由远端自己的扫描器归档；本机不扫。
+  if (!isDesktopAttachedRemote) {
+    const stopSettingsRescan = settingService.onDidUpdate((event) => {
+      if (shouldRescanTaskAutoArchive(event.keys)) {
+        void taskAutoArchiveScheduler.scan().catch(() => {});
+      }
+    });
+    taskAutoArchiveScheduler.start();
+    taskAutoArchiveDisposers.set(services, () => {
+      stopSettingsRescan();
+      taskAutoArchiveScheduler.dispose();
+    });
+  }
   services
     .register(IProviderSettingsService, providerRuntime.providerSettings)
-    .register(IModelSelectionService, providerRuntime.modelSelection)
-    // 企业服务端接入：UI 经此登录/登出/读状态；模型请求的鉴权注入走 agent 服务的 runtime header 分支。
-    .register(IReactorServerService, reactorServerService)
-    // 企业服务端技能同步：server-skills 目录唯一写者；UI 经此手动同步/更新/卸载。
-    .register(IServerSkillSyncService, serverSkillSyncService)
-    // 企业服务端 Agent 同步：server-agents 目录唯一写者；UI 经此安装/启停/卸载/手动同步。
-    .register(IServerAgentSyncService, serverAgentSyncService);
+    .register(IModelSelectionService, providerRuntime.modelSelection);
   if (isDesktopAttachedRemote || options.providerProvisioningTargetEnabled === true) {
     services.register(
       IProviderProvisioningTargetService,
@@ -2830,18 +3403,19 @@ export function createTelemetryAuthorizationLoader(
     if (!userId) return null;
     try {
       const provider = (await credentialService.load("oauth:active_provider"))?.trim();
-      if (provider !== "zai" && provider !== "bigmodel") return null;
+      // 中国区同样持有 ZCode 主 JWT；不能用旧的两渠道白名单阻断远控和上报。
+      if (!provider || !isBuiltinOAuthProvider(provider)) return null;
       const readUserId = async () =>
         readTelemetryOAuthUserId(await credentialService.load(`oauth:${provider}:user_info`));
       if ((await readUserId()) !== userId) return null;
-      const jwt = (await credentialService.load("zcodejwttoken"))?.trim();
+      const jwt = await credentialService.load("zcodejwttoken");
       // 退出/切账号可能发生在异步读取期间；禁止将旧身份的 token 附到其他账号事件上。
       if (
         (await credentialService.load("oauth:active_provider"))?.trim() !== provider ||
         (await readUserId()) !== userId
       )
         return null;
-      return jwt && /^[\x21-\x7e]+$/.test(jwt) ? `Bearer ${jwt}` : null;
+      return toBearerAuthorization(jwt);
     } catch {
       return null;
     }
@@ -2875,7 +3449,12 @@ function readTelemetryOAuthUserId(rawUserInfo: string | null): string {
 }
 
 export function disposeServiceResources(services: ServiceCollection): void {
-  // host process 退出前以前没有统一遍历本地服务做资源回收，
+  const content = services.getOptional(ICloudContentService);
+  if (content && hasDisposeAllAndWait(content)) void content.disposeAllAndWait().catch(() => {});
+  (
+    services.getOptional(IGenUiService) as (IGenUiService & { dispose?(): void }) | undefined
+  )?.dispose?.();
+  // Bugfix: host process 退出前以前没有统一遍历本地服务做资源回收，
   // terminal/task wrapper 这类会拉起子进程的服务只能等宿主进程自己结束，时序上可能留下短暂残留。
   // 这里集中调用各服务的本地 disposeAll 钩子，把“退出 app = 回收所有托管资源”落成机械动作。
   const disposableServices = [
@@ -2883,7 +3462,9 @@ export function disposeServiceResources(services: ServiceCollection): void {
     services.getOptional(IZCodeTaskService),
     services.getOptional(IZCodeAgentService),
     services.getOptional(IZCodeSessionService),
+    services.getOptional(IBotsService),
     services.getOptional(IFileWatcherService),
+    services.getOptional(ISubagentsService),
     services.getOptional(IOffPeakTaskService),
   ].filter((service) => service !== undefined);
 
@@ -2905,18 +3486,27 @@ export function disposeServiceResources(services: ServiceCollection): void {
   for (const dispose of providerProvisioningTriggerDisposers.get(services) ?? []) dispose();
   providerProvisioningTriggerDisposers.delete(services);
   providerProvisioningSources.delete(services);
+  taskAutoArchiveDisposers.get(services)?.();
+  taskAutoArchiveDisposers.delete(services);
   managedHostApiNetworkTransports.get(services)?.dispose();
 }
 
 export async function disposeServiceResourcesAndWait(services: ServiceCollection): Promise<void> {
+  (
+    services.getOptional(IGenUiService) as (IGenUiService & { dispose?(): void }) | undefined
+  )?.dispose?.();
   // app 关闭时 host 需要等 agent 进程树完成 graceful + force 清理。
   // 旧的同步 dispose 会在 host 退出时丢掉强杀 timer，导致 zcode-cli/app-server 变成孤儿进程。
+  // CLI 的 EOF 宽限不能被云内容或终端清理消耗；先关闭 Agent admission 并完成进程回收。
   const disposableServices = [
+    services.getOptional(IZCodeAgentService),
+    services.getOptional(ICloudContentService),
     services.getOptional(ITerminalService),
     services.getOptional(IZCodeTaskService),
-    services.getOptional(IZCodeAgentService),
     services.getOptional(IZCodeSessionService),
+    services.getOptional(IBotsService),
     services.getOptional(IFileWatcherService),
+    services.getOptional(ISubagentsService),
     services.getOptional(IOffPeakTaskService),
   ].filter((service) => service !== undefined);
 
@@ -2941,8 +3531,111 @@ export async function disposeServiceResourcesAndWait(services: ServiceCollection
   for (const dispose of providerProvisioningTriggerDisposers.get(services) ?? []) dispose();
   providerProvisioningTriggerDisposers.delete(services);
   providerProvisioningSources.delete(services);
+  taskAutoArchiveDisposers.get(services)?.();
+  taskAutoArchiveDisposers.delete(services);
   await managedHostApiNetworkTransports
     .get(services)
     ?.disposeAndWait()
     .catch(() => {});
+}
+
+/** 所有应用入口在开放 RPC / 调度器前等待；失败不启动业务写者。 */
+export async function migrateApplicationStorage(
+  settings?: Pick<AppSettings, "lastWorkspaceSession" | "recentProjects">,
+  hostId?: string,
+): Promise<{ backupSkipped: boolean }> {
+  const automations = new AutomationRepo();
+  const offPeak = new OffPeakTaskRepo();
+  const tasks = new TaskIndexRepo(settings, hostId);
+  try {
+    await automations.ensureReady();
+    await offPeak.ensureReady();
+    await tasks.ensureReady();
+    return {
+      backupSkipped:
+        tasks.migrationBackupSkipped ||
+        automations.migrationBackupSkipped ||
+        offPeak.migrationBackupSkipped,
+    };
+  } finally {
+    tasks.close();
+    offPeak.close();
+    automations.close();
+  }
+}
+
+export {
+  bindRemoteProjectIdentities,
+  createRemoteIdentityRegistrationCache,
+} from "#src/project/index.js";
+
+export { startupStorage } from "#src/startup-storage/index.js";
+
+/** 独立 Server 共用迁移屏障与身份装配；入口不得以 local owner 开放远端项目 RPC。 */
+export async function createServerHostServices(options: {
+  topicResourceRelayChannel?: NonNullable<
+    Parameters<typeof createLocalServices>[0]
+  >["topicResourceRelayChannel"];
+  sourceServerId: string;
+  zcodeBuiltinProviderConfigFilePath: string;
+  providerProvisioningTargetEnabled?: boolean;
+  credentialCipherProvider?: CredentialCipher;
+}) {
+  // 无桌面环境不能等到首次登录或 Provisioning 才发现系统库缺失。
+  const credentialCipherProvider =
+    options.credentialCipherProvider ??
+    (await createServerCredentialCipher({
+      filePath: join(resolveAppConfigDir(), "credentials.json"),
+    }));
+  const projectStorageHostId = remoteHostIdFromWorkspaceIdentity(
+    buildServerRemoteWorkspaceIdentity({ serverId: options.sourceServerId, workspacePath: "/" }),
+  );
+  if (!projectStorageHostId) throw new Error("Invalid Source Server storage identity");
+  // Bug 原因：billing/balance 把 X-Device-Mid 当必填，而独立 Server 主机没有 Desktop main 写设备身份，
+  // buildZCodeSourceHeaders() 又只读不生成。原修复只放在旧 stdio entry，SSH/WSL/Docker 的 Core 与
+  // Lite HTTP 入口共用本装配却没有确保，首次 Start Plan 权益查询返回 400，Start 模型被判为不可用。
+  // 收口到本装配，所有独立 Server 入口在创建 services 前得到本机自己的 deviceMid；失败只告警、不阻断启动、不伪造 ID。
+  await ensureTelemetryDeviceMid().catch((error: unknown) => {
+    createServiceLogger("server-host").warn(
+      undefined,
+      "deviceMid 初始化失败，ZCode endpoint 请求将不带 X-Device-Mid:",
+      error instanceof Error ? error.message : String(error),
+    );
+  });
+  await migrateApplicationStorage(await createSettingService().get(), projectStorageHostId);
+  const workspaceAliasRepo = new SourceServerWorkspaceAliasRepo();
+  const workspaceIdentityMapper = new SourceServerWorkspaceIdentityMapper();
+  const sourceServerWorkspaceService = createSourceServerWorkspaceService(workspaceAliasRepo, {
+    defaultWorkspaceIdentity: (workspacePath) =>
+      buildServerRemoteWorkspaceIdentity({ serverId: options.sourceServerId, workspacePath }),
+    onResolved: ({ workspacePath, canonicalWorkspaceKey }) => {
+      workspaceIdentityMapper.register({
+        stableIdentity: buildServerRemoteWorkspaceIdentity({
+          serverId: options.sourceServerId,
+          workspacePath,
+        }),
+        canonicalIdentity: canonicalWorkspaceKey,
+      });
+    },
+  });
+  const migrationFailedPathCount = await workspaceAliasRepo.getFailedPathCount();
+  const services = createLocalServices({
+    credentialCipherProvider,
+    zcodeBuiltinProviderConfigFilePath: options.zcodeBuiltinProviderConfigFilePath,
+    providerProvisioningTargetEnabled: options.providerProvisioningTargetEnabled,
+    serviceAuthorityMode: "standalone-server",
+    topicResourceRelayChannel: options.topicResourceRelayChannel,
+    projectStorageHostId,
+    sourceServerWorkspaceService,
+  });
+  return { services, workspaceIdentityMapper, migrationFailedPathCount };
+}
+
+export { scopeConversationShareServiceForAttachment } from "./conversation-share/conversationShareConnectionScope.js";
+export { localRuntimeNetworkCapture } from "./zcode-agent/localRuntimeNetworkCapture.js";
+
+/** 只下发可打印 ASCII 的界面语言；缺失时不写该键，Agent 回落自身 Intl。 */
+function buildAgentClientLanguageEnv(locale: string | undefined): Record<string, string> {
+  const value = locale?.trim();
+  return value && /^[\x20-\x7e]+$/.test(value) ? { [ZCODE_CLIENT_LANGUAGE_ENV]: value } : {};
 }

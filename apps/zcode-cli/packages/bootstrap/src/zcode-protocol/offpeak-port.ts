@@ -10,11 +10,11 @@ import type {
   ZCodeProtocolSessionRecord,
 } from "./server-types.js";
 
-const OFF_PEAK_CREATE_FROM_OFF_PEAK_RUN_ERROR =
+export const OFF_PEAK_CREATE_FROM_OFF_PEAK_RUN_ERROR =
   "Cannot create an idle-time task while running an idle-time task.";
-const OFF_PEAK_CREATE_IN_BOUND_SESSION_ERROR =
+export const OFF_PEAK_CREATE_IN_BOUND_SESSION_ERROR =
   "This session already has a pending idle-time task. Wait for it to finish (or cancel it in Automations) before creating another one here.";
-const OFF_PEAK_CREATE_BOUND_SESSION_CHECK_ERROR =
+export const OFF_PEAK_CREATE_BOUND_SESSION_CHECK_ERROR =
   "Cannot verify whether this session already has a pending idle-time task; try again later.";
 
 const OFF_PEAK_TERMINAL_STATUSES = new Set(["completed", "failed", "cancelled"]);
@@ -35,6 +35,14 @@ export function createProtocolOffPeakPort(
   context: ZCodeProtocolAgentServerContext,
   resolveOwnSession?: () => ZCodeProtocolSessionRecord | undefined,
 ): OffPeakPort {
+  // 共享连接不能借用首个工作区；包括只有 automationId 或空参数的列表请求。
+  const requestClient: typeof context.requestClient = (...args) => {
+    if (!context.sessionWorkspaceRoutingEnabled) return context.requestClient(...args);
+    const workspace = resolveOwnSession?.()?.workspace;
+    if (!workspace) throw new Error("Session workspace is unavailable");
+    const [method, params, schema, ...options] = args;
+    return context.requestClient(method, { ...(params as object), workspace }, schema, ...options);
+  };
   return {
     async create(input, createContext) {
       const activeSession =
@@ -49,7 +57,7 @@ export function createProtocolOffPeakPort(
       if (boundSessionId) {
         let bound: boolean;
         try {
-          const listed = await context.requestClient(
+          const listed = await requestClient(
             zcodeProtocolMethods.offPeakList,
             {},
             zcodeOffPeakListResultSchema,
@@ -69,7 +77,7 @@ export function createProtocolOffPeakPort(
         }
         if (bound) throw new Error(OFF_PEAK_CREATE_IN_BOUND_SESSION_ERROR);
       }
-      const result = await context.requestClient(
+      const result = await requestClient(
         zcodeProtocolMethods.offPeakCreate,
         {
           title: input.title,
@@ -94,7 +102,7 @@ export function createProtocolOffPeakPort(
       return { ok: true, task: toOffPeakTaskSummary(result.task) };
     },
     async list() {
-      const result = await context.requestClient(
+      const result = await requestClient(
         zcodeProtocolMethods.offPeakList,
         {},
         zcodeOffPeakListResultSchema,

@@ -11,15 +11,11 @@ export const ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY = "ZCODE_TOOL_ENV_PASSTHROUGH_JS
 /** Desktop Main 将服务端裁决的单功能灰度结果传给 Local/Remote Host。 */
 export const ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV = "ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED";
 export const ZCODE_CUA_PRODUCT_HELPER_ENV_KEY = "ZCODE_CUA_PRODUCT_HELPER";
-/**
- * 官方插件市场的 CDN 分片开关（内网 fork 默认关闭）：
- * - 默认（未设置）：CDN 分片禁用——商店只显示随安装包内置的官方插件，不访问 cdn-zcode.z.ai；
- * - 显式 `ZCODE_OFFICIAL_PLUGIN_MARKETPLACE=on/1/cdn`：恢复 CDN 目录（公网开发/联调用）。
- * 内置插件的加载不经过 CDN（SEA/filesystem seed → 本地分片），与本开关无关。
- * 见 docs/已完成/已完成-内网办公四件套-fork-spec.md。
- */
-export const ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ENV_KEY = "ZCODE_OFFICIAL_PLUGIN_MARKETPLACE";
 export const ZCODE_CUA_BROKER_SOCKET_ENV_KEY = "ZCODE_CUA_PERMISSION_BROKER_SOCKET";
+// 官方命令端点（agent 侧代理，技术方案 5.8）：地址与 session token 只由 agent 按 session 注入
+// Bash/tool 子进程，不随 agent 全局 env 继承。
+export const ZCODE_OFFICIAL_ENDPOINT_ENV_KEY = "ZCODE_OFFICIAL_ENDPOINT";
+export const ZCODE_OFFICIAL_ENDPOINT_TOKEN_ENV_KEY = "ZCODE_OFFICIAL_ENDPOINT_TOKEN";
 /** Shared node_repl host marker; unlike the broker bearer values it is not a secret. */
 export const ZCODE_CUA_NODE_REPL_HOST_ENV_KEY = "ZCODE_CUA_NODE_REPL_HOST";
 // One-knob local-development bundle. Setting ZCODE_CUA_DEV_MODE implies the internal feature
@@ -46,11 +42,6 @@ export function isZCodeCuaInternalFeatureEnabled(env: EnvRecord = process.env): 
   const explicit = env[ZCODE_CUA_PRODUCT_HELPER_ENV_KEY]?.trim().toLowerCase();
   if (explicit === "0" || explicit === "false" || explicit === "off") return false;
   return true;
-}
-
-export function isOfficialPluginMarketplaceDisabled(env: EnvRecord = process.env): boolean {
-  const explicit = env[ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ENV_KEY]?.trim().toLowerCase();
-  return !(explicit === "1" || explicit === "true" || explicit === "on" || explicit === "cdn");
 }
 
 const SANITIZED_RUNTIME_ENV_KEYS = [
@@ -83,6 +74,10 @@ const SANITIZED_RUNTIME_ENV_KEYS = [
   "ZCODE_CUA_PERMISSION_BROKER_TOKEN",
   "ZCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER",
   "ZCODE_CUA_PLUGIN_AUTHORITY",
+  // 官方命令端点的地址与 token 属于某一个 session，由 agent 定向注入；从父进程继承来的
+  // 值（例如嵌套运行的 agent）一律剔除，避免一个 session 拿着另一个 session 的 token。
+  ZCODE_OFFICIAL_ENDPOINT_ENV_KEY,
+  ZCODE_OFFICIAL_ENDPOINT_TOKEN_ENV_KEY,
   // Agent OTLP Endpoint/Auth/Identity 只属于 CLI telemetry bootstrap，不能继续泄漏给
   // Bash、MCP 或模型工具子进程。sanitize 前会捕获到本进程私有 Map，供 Agent 启动边界读取。
   "OTEL_EXPORTER_OTLP_ENDPOINT",
@@ -114,6 +109,8 @@ const NON_TOOL_PASSTHROUGH_RUNTIME_ENV_KEYS = [
   ZCODE_CUA_BROKER_SOCKET_ENV_KEY,
   "ZCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER",
   "ZCODE_CUA_PLUGIN_AUTHORITY",
+  ZCODE_OFFICIAL_ENDPOINT_ENV_KEY,
+  ZCODE_OFFICIAL_ENDPOINT_TOKEN_ENV_KEY,
   ZCODE_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY,
   ZCODE_REMOTE_HTTP_PROXY_ENV_KEY,
   ZCODE_REMOTE_NO_PROXY_ENV_KEY,

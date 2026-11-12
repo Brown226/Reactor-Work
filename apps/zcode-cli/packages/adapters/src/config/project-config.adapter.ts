@@ -10,13 +10,9 @@ import { loadFileConfig, type LoadedConfig } from "./file-config.adapter.js";
 
 const CURRENT_DIRECTORY = ".";
 
-export interface ProjectConfigFile {
+export interface ProjectConfigFile extends LoadedConfig {
   baseDir: string;
-  config: RuntimeConfigPatch;
-  diagnostics: LoadedConfig["diagnostics"];
   hookCandidate?: WorkspaceHookSourceInput;
-  loaded: boolean;
-  path: string;
 }
 
 export interface ProjectConfigDiscovery {
@@ -55,7 +51,7 @@ export function loadProjectConfigFile(
     workingDirectory?: string;
   } = {},
 ): ProjectConfigFile {
-  const result = loadFileConfig(path);
+  const result = loadFileConfig(path, { scope: "project" });
   const baseDir = getProjectConfigBaseDir(result.path);
   const diagnostics = [...result.diagnostics];
   const hooks = result.loaded ? result.config.hooks : undefined;
@@ -91,6 +87,7 @@ export function loadProjectConfigFile(
       : {}),
     loaded: result.loaded,
     path: result.path,
+    ...(result.pendingVisualizeMigration ? { pendingVisualizeMigration: true } : {}),
   };
 }
 
@@ -128,6 +125,12 @@ function normalizeProjectConfig(config: RuntimeConfigPatch, baseDir: string): Ru
         return safeConfig;
       })()
     : { ...config };
+
+  if (normalized.plugins?.dirs) {
+    // 工作区目录插件曾绕过用户安装直接注册 Hook/MCP；项目配置不能引入插件根目录。
+    const { dirs: _dirs, ...plugins } = normalized.plugins;
+    normalized.plugins = plugins;
+  }
 
   if (!normalized.mcp?.servers) return normalized;
 

@@ -3,8 +3,10 @@ import {
   type FeedbackTicketModule,
   type FeedbackTicketSeverity,
   type FeedbackTicketType,
+  type Locale,
 } from "@zcode/shared";
 import type { IFeedbackService } from "@zcode/services";
+import { persistFeedbackContactPreference } from "@/feedback/feedbackContactPreference.js";
 import type { FeedbackSubmitDraft } from "@/feedback/feedbackStore.js";
 import type { ScreenshotAttachmentDraft } from "@/feedback/FeedbackScreenshotPicker.js";
 import {
@@ -18,7 +20,7 @@ import {
   type FeedbackSubmissionJob,
 } from "@/feedback/feedbackSubmissionJob.js";
 
-const FEEDBACK_ZCODE_AGENT_LABEL = "Reactor Agent";
+const FEEDBACK_ZCODE_AGENT_LABEL = "ZCode Agent";
 
 export const DEFAULT_FEEDBACK_TYPE: FeedbackTicketType = "bug";
 export const DEFAULT_FEEDBACK_SEVERITY: FeedbackTicketSeverity = "P2-中";
@@ -28,6 +30,7 @@ export async function startSimplifiedFeedbackSubmission({
   feedbackService,
   title,
   description,
+  contact,
   screenshots,
   includeLogs,
   ticketType,
@@ -44,13 +47,14 @@ export async function startSimplifiedFeedbackSubmission({
   feedbackService: IFeedbackService;
   title?: string;
   description: string;
+  contact: string;
   screenshots: ScreenshotAttachmentDraft[];
   includeLogs: boolean;
   ticketType: FeedbackTicketType;
   ticketSeverity: FeedbackTicketSeverity;
   ticketModule: FeedbackTicketModule;
   modelContext: FeedbackAgentModelContext;
-  locale: "zh-CN" | "en-US";
+  locale: Locale;
   copy: FeedbackSubmissionCopy;
   formatMessage: (descriptor: { id: string }, values?: Record<string, string>) => string;
   onTicketCreated?: (ticketId: string) => void;
@@ -60,10 +64,13 @@ export async function startSimplifiedFeedbackSubmission({
   const device = await feedbackService.getDeviceSnapshot();
   const framework = DEFAULT_FEEDBACK_TICKET_FRAMEWORK;
   const normalizedDescription = description.trim();
+  const trimmedContact = contact.trim();
+  persistFeedbackContactPreference(trimmedContact);
   const attachmentDrafts = screenshots.map(({ id: _id, ...screenshot }) => ({ ...screenshot }));
   const formDraft: FeedbackSubmitDraft = {
     ...(title !== undefined ? { title } : {}),
     description,
+    contact,
     screenshots: attachmentDrafts,
     includeLogs,
     type: ticketType,
@@ -94,6 +101,7 @@ export async function startSimplifiedFeedbackSubmission({
         ...(modelContext.display ? { agentModelDisplay: modelContext.display } : {}),
       },
       source: "desktop-app",
+      contact: trimmedContact || undefined,
       locale,
     },
     screenshots: attachmentDrafts,

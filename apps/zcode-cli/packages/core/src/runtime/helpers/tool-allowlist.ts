@@ -1,10 +1,14 @@
 import {
   AMEND_WORKFLOW_TOOL_NAME,
   CREATE_WORKFLOW_TOOL_NAME,
+  FILL_WORKFLOW_HOLE_TOOL_NAME,
+  GET_WORKFLOW_RUN_TOOL_NAME,
+  LIST_WORKFLOW_RUNS_TOOL_NAME,
   RESOLVE_WORKFLOW_QUESTION_TOOL_NAME,
   RESPOND_TO_COORDINATOR_TOOL_NAME,
   RESUME_WORKFLOW_RUN_TOOL_NAME,
   SAVE_WORKFLOW_TOOL_NAME,
+  type SessionTaskType,
 } from "@zcode/contracts";
 import { EXPLORE_AGENT_ALLOWED_TOOLS } from "../../subagent/explore-tools.js";
 import type { AgentRuntimeConfig } from "../types.js";
@@ -29,7 +33,7 @@ const WORKFLOW_CHILD_DISALLOWED_TOOLS = [
   AMEND_WORKFLOW_TOOL_NAME,
   // SaveWorkflow 因**同一个**根因入列：它也声明了 alwaysAsk，所以在 child 里同样会发出一个
   // 父界面看不到的确认请求并挂到超时。ListSavedWorkflows 不在列——那条禁令的理由是无窗可弹，
-  // 只读查询不适用（与两个 run 内省工具同理）。
+  // 只读查询不适用（两个 run 内省工具另有根因，见下面的 RUN_INTROSPECTION_TOOLS）。
   SAVE_WORKFLOW_TOOL_NAME,
   // **结构性禁用**——child 内不得再编排。恢复 = 重新执行整块脚本（完结节点 replay、未完结
   // 重派发），与 CreateWorkflow 新启是同一能力档；纵使免确认后「无窗可弹」的技术问题消失，
@@ -44,7 +48,28 @@ const WORKFLOW_CHILD_DISALLOWED_TOOLS = [
   // 先例）：那一份是 driver 侧 persona 工具面的减法；这一份按 taskType 覆盖全部 workflow
   // child，不依赖 driver 记得写。
   RESOLVE_WORKFLOW_QUESTION_TOOL_NAME,
+  // FillWorkflowHole 与 AmendWorkflow 同一个根因（alwaysAsk 在 child 里无窗可弹）加同一条不变式
+  // （留白是脚本向**主代理**要代码，子代理不得替它写）：一并进列。
+  FILL_WORKFLOW_HOLE_TOOL_NAME,
 ] as const;
+
+/**
+ * 子 runtime 不注册的 run 内省工具。
+ *
+ * 根因与上面那份名单不同：它们只读、无 gate，但要经 dwf run 端口读取，而端口只在 app 顶层
+ * runtime——子 runtime 按不变式不得持有（`bootstrap/src/app/dynamic-workflow-run-progress-sink.ts`：
+ * 持有了，子会话发起的 run 会把事件投进父会话的 transcript）。所以它们在子 runtime 里只会报
+ * `workflow_introspection_unavailable`（线上 2026-10-20：workflow child 调用 155 次，全部失败）。
+ * 不注册，模型就不会去调一个必然失败的工具。
+ */
+const RUN_INTROSPECTION_TOOLS = [LIST_WORKFLOW_RUNS_TOOL_NAME, GET_WORKFLOW_RUN_TOOL_NAME] as const;
+
+/** 不持有 dwf run 端口的子 runtime（docs/dynamic-workflow/launch.md「workflow child sessions」）。 */
+const CHILD_TASK_TYPES_WITHOUT_RUN_PORT: ReadonlySet<SessionTaskType> = new Set<SessionTaskType>([
+  "subagent_child",
+  "workflow_child",
+  "nested_workflow_child",
+]);
 
 /**
  * 运行时最终的工具禁用名单：turn 级 `toolDisallowlist` 叠加按 taskType 推导出的结构性禁用。
@@ -54,26 +79,36 @@ const WORKFLOW_CHILD_DISALLOWED_TOOLS = [
 export function resolveRuntimeDisallowedTools(
   config: AgentRuntimeConfig,
 ): readonly string[] | undefined {
-  if (config.taskType !== "workflow_child") return config.toolDisallowlist;
+  const structural = [
+    ...(config.taskType === "workflow_child" ? WORKFLOW_CHILD_DISALLOWED_TOOLS : []),
+    ...(config.taskType !== undefined && CHILD_TASK_TYPES_WITHOUT_RUN_PORT.has(config.taskType)
+      ? RUN_INTROSPECTION_TOOLS
+      : []),
+  ];
+  if (structural.length === 0) return config.toolDisallowlist;
 
   const disallowed = new Set(config.toolDisallowlist ?? []);
-  for (const toolName of WORKFLOW_CHILD_DISALLOWED_TOOLS) disallowed.add(toolName);
+  for (const toolName of structural) disallowed.add(toolName);
   return [...disallowed];
 }
 
 /**
- * 动态工作流灰度门在 registerBuiltInTools 上的取值。
- * **缺席即开启**：TUI、headless `-p` 和 workflow_child 都不写这个字段，它们必须保留完整工具面；
- * 只有受信 Host 创建的 protocol session 会显式写 false。fail-closed 的缺省值在协议服务端的
- * appRuntimePreferences，不在这一层。
+ * 动态工作流灰度门在 registerBuiltInTools 上的取值（docs/dynamic-workflow/launch.md「Gray release」）。
+ * **缺席即开启**：独立 CLI 的 TUI 与 headless 根据 --workflow-mode 显式写 true/false，
+ * protocol session 由受信 Host 控制，workflow_child 继承父配置。fail-closed 的缺省值在
+ * 独立 CLI 入口和协议服务端的 appRuntimePreferences，不在这一层。
  *
  * 之所以和 resolveRuntimeDisallowedTools 一样收在这里而不是写在调用点：注册面有**两个**入口
  * （helpers/runtime-tools.ts 的首次装配、methods/embedded-search-branch.ts 的分支刷新），
- * 两份各写一遍必然漂移。就漂过一次——刷新那份漏掉了这个字段，于是
- * 「缺席即开启」把十个工具原样加回注册表，灰度关闭的会话里模型仍然调到了 ListSavedWorkflows。
+ * 两个入口必须使用同一规则，否则刷新工具列表时可能重新注册已关闭的工作流工具。
  */
-export function resolveRuntimeDynamicWorkflowToolsIncluded(config: AgentRuntimeConfig): boolean {
-  return config.dynamicWorkflowEnabled !== false;
+export function resolveRuntimeDynamicWorkflowToolsIncluded(runtime: {
+  config: AgentRuntimeConfig;
+  dynamicWorkflowToolsActivated: boolean;
+}): boolean {
+  // enabled ∧ (¬onDemand ∨ activated)：激活态归 runtime（launch.md「On demand: activation」），
+  // 非 onDemand 会话出生即 activated，所以这里对 alwaysOn / TUI / headless 仍只看 enabled。
+  return runtime.config.dynamicWorkflowEnabled !== false && runtime.dynamicWorkflowToolsActivated;
 }
 
 export function resolveBuiltInToolAllowlist(

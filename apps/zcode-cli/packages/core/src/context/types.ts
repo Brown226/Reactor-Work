@@ -32,7 +32,8 @@ export type ContextSource =
   | "cli_prefix" // CLI / 产品身份前缀
   | "identity" // Agent 基础描述
   | "env_info" // 环境信息 (cwd, platform, git repo boolean)
-  | "system_context" // git snapshot context
+  | "session_context" // git snapshot context
+  | "model" // 当前执行模型身份
   | "skills" // 可用 skills
   | "tools" // 工具定义
   | "request_user_context" // request-level user context provider-visible 组合块
@@ -42,12 +43,11 @@ export type ContextSource =
   | "workflow_actor_identity" // 动态工作流子代理身份：契约 + persona 叠加
   | "subagent_agent_prompt" // 子 agent 专属身份/任务 prompt
   | "subagent_notes" // 子 agent 通用操作提醒
-  | "subagent_environment" // 子 agent 环境和模型上下文
   | "dynamic_behavior" // 动态行为边界
   | "session_guidance" // 当前可用内置能力指导
-  | "output_style" // 输出风格
   | "context_management" // 长上下文管理提示
-  | "desktop_context"; // Reactor Desktop 渲染与交互协议
+  | "total_tokens" // 固定的 token 预算行
+  | "desktop_context"; // ZCode Desktop 渲染与交互协议
 
 export type ContextInjectionTarget = "system" | "meta_user";
 
@@ -68,13 +68,41 @@ export interface ContextSection {
   tokens: number; // 估算 token 数
   content: string; // 完整内容
   preview: string; // 前 100 字符预览
+  /** request_user_context 的逐文件块；指令变化公告按它比较。 */
+  instructionFiles?: InstructionFile[];
 }
 
-export type ContextMetaUserAttachmentSource = "skills_listing" | "context_prefix";
+/** 指令公告里的一个文件块：`Contents of <path> (<type>):`、空行、正文（已 trim）。 */
+export interface InstructionFile {
+  path: string;
+  type: string;
+  body: string;
+  /** body 的 sha256；构建文件时算一次（createInstructionFile），请求前的比较直接用它。 */
+  hash: string;
+}
+
+export type InstructionRefreshReason = "session_start" | "compaction";
+
+/**
+ * context_prefix 记录在 runtime metadata 里保存的已公告文件（不发给 provider）。
+ * 没有 reason 的是完整公告；有 reason 的是增量，files 只含变化或新增的文件。
+ */
+export interface InstructionAnnouncement {
+  files: { path: string; type: string; hash: string }[];
+  removed?: string[];
+  reason?: InstructionRefreshReason;
+}
+
+export type ContextMetaUserAttachmentSource =
+  | "skills_listing"
+  | "context_prefix"
+  | "session_context";
 
 export interface ContextMetaUserAttachment {
   source: ContextMetaUserAttachmentSource;
   content: string;
+  /** 只有 context_prefix 有：组成 content 的指令文件。 */
+  files?: InstructionFile[];
 }
 
 // -----------------------------------------------
@@ -101,10 +129,14 @@ export interface OutputStylePromptConfig {
 
 export interface ContextBuilderConfig {
   workingDirectory: string;
+  additionalDirectories?: readonly string[];
   envInfo: EnvInfo;
   /** 当前步骤的执行对象，不进入 Context Source 或持久化环境快照。 */
   model?: Model;
+  /** 执行模型是否走 MCS；false 时 Harness 改述 `<system-reminder>` 通道。缺省按 MCS。 */
+  midConversationSystem?: boolean;
   presentationSurface?: PresentationSurface;
+  genUiOutputDirectory?: string;
   currentDate?: string;
   userInstructions?: ResolvedUserInstructions;
   projectContext?: ProjectContext;

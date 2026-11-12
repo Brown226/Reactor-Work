@@ -1,6 +1,5 @@
 import { realpath } from "node:fs/promises";
 import { homedir } from "node:os";
-import { USER_DATA_DIR_NAME } from "@zcode/shared";
 import { basename, dirname, isAbsolute, join, normalize, relative, resolve, sep } from "node:path";
 
 export interface ServerLayout {
@@ -10,20 +9,25 @@ export interface ServerLayout {
   readonly runDir: string;
   readonly currentFile: string;
   readonly pendingFile: string;
+  readonly downgradeMarkerFile: string;
   readonly installFile: string;
   readonly componentsCacheDir: string;
   readonly stableBinDir: string;
   readonly statusFile: string;
+  readonly ingressTokenFile: string;
   readonly lockFile: string;
   readonly controlEndpoint: string;
   readonly serviceDir: string;
   readonly uninstalledFile: string;
   readonly updateTransactionFile: string;
+  readonly updateLockFile: string;
+  /** Supervisor 写出第一份状态前失败时的诊断摘要；不参与任何状态判断（R2 §7.1）。 */
+  readonly supervisorStartupFailureFile: string;
 }
 
-function getDefaultServerDataRoot(): string {
+export function getDefaultServerDataRoot(): string {
   const configured = process.env.ZCODE_DATA_BASE_DIR?.trim();
-  return join(configured || homedir(), USER_DATA_DIR_NAME, "server");
+  return join(configured || homedir(), ".zcode", "server");
 }
 
 export function resolveServerLayout(serverRoot = getDefaultServerDataRoot()): ServerLayout {
@@ -36,10 +40,12 @@ export function resolveServerLayout(serverRoot = getDefaultServerDataRoot()): Se
     runDir,
     currentFile: join(root, "current.json"),
     pendingFile: join(root, "pending.json"),
+    downgradeMarkerFile: join(root, "downgrade.json"),
     installFile: join(root, "install.json"),
     componentsCacheDir: join(root, "cache", "components"),
     stableBinDir: join(root, "bin"),
     statusFile: join(runDir, "status.json"),
+    ingressTokenFile: join(runDir, "ingress-token"),
     lockFile: join(runDir, "server.lock"),
     controlEndpoint:
       process.platform === "win32"
@@ -48,6 +54,8 @@ export function resolveServerLayout(serverRoot = getDefaultServerDataRoot()): Se
     serviceDir: join(root, "service"),
     uninstalledFile: join(root, "uninstalled.json"),
     updateTransactionFile: join(root, "update-transaction.json"),
+    updateLockFile: join(runDir, "update.lock"),
+    supervisorStartupFailureFile: join(runDir, "supervisor-startup-failure.json"),
   };
 }
 
@@ -80,7 +88,7 @@ export async function resolveCanonicalServerLayout(
 
 function inferDataBaseDir(serverRoot: string): string {
   const parent = dirname(serverRoot);
-  if (basename(serverRoot) === "server" && basename(parent) === USER_DATA_DIR_NAME) {
+  if (basename(serverRoot) === "server" && basename(parent) === ".zcode") {
     return dirname(parent);
   }
   // 非标准的显式 server root 仍保持隔离，不向其父目录扩散 Agent/SQLite 数据。
@@ -105,7 +113,7 @@ export function isPathWithin(rootPath: string, candidatePath: string): boolean {
   return diff === "" || (!diff.startsWith("..") && !diff.split(sep).includes(".."));
 }
 
-interface UninstallTargetValidation {
+export interface UninstallTargetValidation {
   ok: boolean;
   reason?: "outside-server-root" | "home-directory" | "non-absolute";
   canonicalPath?: string;
@@ -129,10 +137,18 @@ export function validateUninstallTarget(
   return { ok: true, canonicalPath };
 }
 
-function assertServerDataRoot(serverRoot: string): string {
+export async function canonicalExistingPath(pathValue: string): Promise<string> {
+  return await realpath(pathValue);
+}
+
+export function assertServerDataRoot(serverRoot: string): string {
   const resolved = resolve(serverRoot);
   if (!isAbsolute(resolved) || resolved === dirname(resolved)) {
     throw new Error("Invalid server data root");
   }
   return resolved;
+}
+
+export function serverDataRootFromBase(baseDir: string): string {
+  return join(resolve(baseDir), ".zcode", "server");
 }

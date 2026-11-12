@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, type Locale } from "./protocol.js";
+import type { Locale } from "./protocol.js";
 
 export const desktopMenuMessageIds = {
   file: "titleBar.menu.file",
@@ -58,7 +58,12 @@ export type DesktopMenuMessageId =
 
 type DesktopMenuLocaleMessages = Record<DesktopMenuMessageId, string>;
 
-export const desktopMenuMessages: Record<Locale, DesktopMenuLocaleMessages> = {
+/**
+ * 原生菜单只内置中英两套；ja-JP/ru-RU/ko-KR 等其它语言可按需补到这里，缺失时回退英文。
+ * 以前缺失回退 DEFAULT_LOCALE（中文），日/俄/韩用户会看到中文菜单。
+ */
+export const desktopMenuMessages: Record<"zh-CN" | "en-US", DesktopMenuLocaleMessages> &
+  Partial<Record<Locale, DesktopMenuLocaleMessages>> = {
   "zh-CN": {
     "titleBar.menu.file": "文件",
     "titleBar.menu.edit": "编辑",
@@ -87,7 +92,7 @@ export const desktopMenuMessages: Record<Locale, DesktopMenuLocaleMessages> = {
     "titleBar.menu.app.hideOthers": "隐藏其他",
     "titleBar.menu.app.showAll": "全部显示",
     "titleBar.menu.app.quit": "退出 {appName}",
-    "titleBar.menu.help.about": "关于 Reactor",
+    "titleBar.menu.help.about": "关于 ZCode",
     "titleBar.menu.help.whatsNew": "更新日志",
     "titleBar.menu.help.checkForUpdates": "检查更新",
     "titleBar.menu.help.toggleDevTools": "切换开发者工具",
@@ -107,8 +112,8 @@ export const desktopMenuMessages: Record<Locale, DesktopMenuLocaleMessages> = {
     "desktopMenu.help.downloadingUpdateProgress": "正在下载更新... {progress}",
     "desktopMenu.help.restartToUpdate": "重启以更新（{version}）",
     "dock.menu.showCurrentWindow": "显示当前窗口",
-    "tray.tooltip": "Reactor",
-    "tray.menu.openZCode": "打开 Reactor",
+    "tray.tooltip": "ZCode",
+    "tray.menu.openZCode": "打开 ZCode",
     "tray.menu.quit": "退出",
   },
   "en-US": {
@@ -139,7 +144,7 @@ export const desktopMenuMessages: Record<Locale, DesktopMenuLocaleMessages> = {
     "titleBar.menu.app.hideOthers": "Hide others",
     "titleBar.menu.app.showAll": "Show all",
     "titleBar.menu.app.quit": "Quit {appName}",
-    "titleBar.menu.help.about": "About Reactor",
+    "titleBar.menu.help.about": "About ZCode",
     "titleBar.menu.help.whatsNew": "What's new",
     "titleBar.menu.help.checkForUpdates": "Check for updates",
     "titleBar.menu.help.toggleDevTools": "Toggle developer tools",
@@ -159,15 +164,14 @@ export const desktopMenuMessages: Record<Locale, DesktopMenuLocaleMessages> = {
     "desktopMenu.help.downloadingUpdateProgress": "Downloading update... {progress}",
     "desktopMenu.help.restartToUpdate": "Restart to update ({version})",
     "dock.menu.showCurrentWindow": "Show current window",
-    "tray.tooltip": "Reactor",
-    "tray.menu.openZCode": "Open Reactor",
+    "tray.tooltip": "ZCode",
+    "tray.menu.openZCode": "Open ZCode",
     "tray.menu.quit": "Quit",
   },
 };
 
 export function getDesktopMenuMessage(locale: Locale, id: DesktopMenuMessageId): string {
-  const messages = desktopMenuMessages[locale] ?? desktopMenuMessages[DEFAULT_LOCALE];
-  return messages[id];
+  return desktopMenuMessages[locale]?.[id] ?? desktopMenuMessages["en-US"][id];
 }
 
 export function formatDesktopMenuMessage(

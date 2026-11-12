@@ -1,18 +1,17 @@
 /* eslint-disable max-lines -- 推荐语料按表格逐条维护，集中放置便于对照审核。 */
-import finderIcon from "@/assets/feature-prompt-icons/finder.png";
-import terminalIcon from "@/assets/feature-prompt-icons/terminal.png";
-import feishuIcon from "@/assets/feature-prompt-icons/feishu.png";
+import finderIcon from "@/onboarding/assets/finder.png";
+import terminalIcon from "@/onboarding/assets/terminal.png";
+import feishuIcon from "@/onboarding/assets/feishu.png";
 import documentsIcon from "@/assets/plugin-icons/documents.png";
 import pdfIcon from "@/assets/plugin-icons/pdf.png";
 import presentationsIcon from "@/assets/plugin-icons/presentations.png";
 import spreadsheetsIcon from "@/assets/plugin-icons/spreadsheets.png";
 import type { DraftSuggestedPromptItem } from "@/v4/draftSuggestedPromptItems.js";
-import { reviewQuickActionPrompts } from "@/v4/reviewQuickActionPrompts.js";
 
 const ASSETS = "https://cdn-zcode.z.ai/zcode/official-plugin/assets";
 
 type FeatureRecommendedPrompt = DraftSuggestedPromptItem & {
-  mode: "office" | "coding" | "review";
+  mode: "office" | "coding";
 };
 
 // 本期推荐按模式硬分池；展示文案和填入正文分别维护。
@@ -58,7 +57,7 @@ export const featureSuggestedPrompts: FeatureRecommendedPrompt[] = [
       en: "Find three business stories worth reading today",
     },
     prompt: {
-      cn: "请使用 [@浏览器操作](plugin://browser-use@zcode-plugins-official) 浏览界面新闻等国内公开商业资讯网站，打开文章正文，选出今天最值得职场人阅读的三篇商业文章。每篇告诉我核心信息、推荐理由、发布时间和原文链接。跳过重复报道、付费文章和需要登录的页面；如果合适的不足三篇，就按实际数量推荐。",
+      cn: "请使用 [@浏览器操作](plugin://browser-use@zcode-plugins-official) 浏览界面新闻等中国公开商业资讯网站，打开文章正文，选出今天最值得职场人阅读的三篇商业文章。每篇告诉我核心信息、推荐理由、发布时间和原文链接。跳过重复报道、付费文章和需要登录的页面；如果合适的不足三篇，就按实际数量推荐。",
       en: "Use [@Browser Use](plugin://browser-use@zcode-plugins-official) to browse publicly accessible business coverage from The Guardian and other international news sites. Open the full articles and pick three worth reading today. For each, give me the key information, why it is worth my time, the publication time, and the original link. Skip duplicate coverage, paywalled articles, and pages requiring sign-in. Recommend fewer than three if necessary.",
     },
     plugin: {
@@ -561,15 +560,9 @@ export const featureSuggestedPrompts: FeatureRecommendedPrompt[] = [
       en: "Set up an idle-time task for the open local repository. Trace how timeouts, disconnections, rate limits, and errors from external APIs, databases, and third-party services affect important user flows. Follow each path to the caller and user-visible result, reproduce high-risk gaps where feasible, and deliver a severity-ranked report with code locations, runtime evidence, and fixes. Do not present unverified risks as incidents or make broad code changes. Ask me to select a local repository if none is open.",
     },
   },
-  // ── 审查档（review）的审查类型卡片 ────────────────────────────────────────────
-  // 与办公/编程推荐池同源同机制：点击即预填提示词，不自动发送。
-  // 卡片定义在 reviewQuickActionPrompts.ts：每张卡片硬绑定内置插件 `review-skills` 的一个技能，
-  // 正文以 `$<skill-name>` 开头（见该文件注释与 docs/未完成-审查板块-方案-v1.md §2）。
-  ...reviewQuickActionPrompts,
 ];
 
-export function getRecommendedPromptPool(
-  mode: FeatureRecommendedPrompt["mode"],
-): DraftSuggestedPromptItem[] {
+export function getRecommendedPromptPool(isOfficeMode: boolean): DraftSuggestedPromptItem[] {
+  const mode = isOfficeMode ? "office" : "coding";
   return featureSuggestedPrompts.filter((item) => item.mode === mode);
 }

@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { createConfig } from "@zcode/adapters/config";
+import { createConfigWithPluginMigrations } from "@zcode/adapters/config";
 import { createNodeCustomCommandAdapter } from "@zcode/adapters/commands";
 import type {
   CustomCommandContent,
@@ -7,10 +7,14 @@ import type {
   CustomCommandLoadOutcome,
   Logger,
 } from "@zcode/contracts";
-import { resolveZCodePlugins } from "./plugins.js";
+import { resolveZCodePlugins, type ResolveZCodePluginsOptions } from "./plugins.js";
 import { collectDisabledPaths } from "./skill-command-overrides.js";
 
 export interface ListZCodeCustomCommandsOptions {
+  workspaceIdentity?: string;
+  remoteSessionId?: string;
+  pluginPreparation?: ResolveZCodePluginsOptions["pluginPreparation"];
+  pluginDiscovery?: ResolveZCodePluginsOptions["pluginDiscovery"];
   env?: NodeJS.ProcessEnv;
   homeDirectory?: string;
   logger?: Logger;
@@ -18,6 +22,7 @@ export interface ListZCodeCustomCommandsOptions {
   skipUserConfig?: boolean;
   userConfigPath?: string;
   workingDirectory?: string;
+  additionalDirectories?: readonly string[];
 }
 
 export interface InspectZCodeCustomCommandOptions extends ListZCodeCustomCommandsOptions {
@@ -32,7 +37,7 @@ export interface ZCodeCustomCommandInspection {
 export async function listZCodeCustomCommands(
   options: ListZCodeCustomCommandsOptions = {},
 ): Promise<CustomCommandLoadOutcome> {
-  const discovery = createCustomCommandDiscovery(options);
+  const discovery = await createCustomCommandDiscovery(options);
   return await discovery.adapter.discoverCommands({
     workingDirectory: discovery.workingDirectory,
   });
@@ -41,7 +46,7 @@ export async function listZCodeCustomCommands(
 export async function inspectZCodeCustomCommand(
   options: InspectZCodeCustomCommandOptions,
 ): Promise<ZCodeCustomCommandInspection> {
-  const discovery = createCustomCommandDiscovery(options);
+  const discovery = await createCustomCommandDiscovery(options);
   const workingDirectory = discovery.workingDirectory;
   const adapter = discovery.adapter;
   const outcome = await adapter.discoverCommands({ workingDirectory });
@@ -62,23 +67,27 @@ export async function inspectZCodeCustomCommand(
 export async function loadZCodeCustomCommand(
   options: InspectZCodeCustomCommandOptions,
 ): Promise<CustomCommandContent> {
-  const discovery = createCustomCommandDiscovery(options);
+  const discovery = await createCustomCommandDiscovery(options);
   return await discovery.adapter.loadCommand({
     name: normalizeCommandName(options.name),
     workingDirectory: discovery.workingDirectory,
   });
 }
 
-function createCustomCommandDiscovery(options: ListZCodeCustomCommandsOptions) {
+async function createCustomCommandDiscovery(options: ListZCodeCustomCommandsOptions) {
   const workingDirectory = resolve(options.workingDirectory ?? process.cwd());
-  const configResult = createConfig({
+  const configResult = await createConfigWithPluginMigrations({
     env: options.env,
     projectConfigPath: options.projectConfigPath,
     workingDirectory,
     skipUserConfig: options.skipUserConfig,
     userConfigPath: options.userConfigPath,
   });
-  const pluginOutcome = resolveZCodePlugins({
+  const pluginOutcome = await resolveZCodePlugins({
+    pluginPreparation: options.pluginPreparation,
+    pluginDiscovery: options.pluginDiscovery,
+    workspaceIdentity: options.workspaceIdentity,
+    remoteSessionId: options.remoteSessionId,
     configResult,
     env: options.env,
     logger: options.logger,
@@ -92,6 +101,7 @@ function createCustomCommandDiscovery(options: ListZCodeCustomCommandsOptions) {
       extraResolvedRoots: pluginOutcome.commandRoots,
       disabledPaths: collectDisabledPaths(configResult.config.commandOverrides),
       homeDirectory: options.homeDirectory,
+      additionalDirectories: options.additionalDirectories,
     }),
     workingDirectory,
   };

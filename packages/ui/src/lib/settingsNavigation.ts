@@ -1,19 +1,24 @@
 /* eslint-disable max-lines -- 设置导航意图集中管理 sessionStorage、事件桥接和解析校验，拆分会让一次性意图消费顺序更难保证。 */
 import { logger } from "@/logger.js";
-import { isDevModeUnlocked } from "@/lib/devMode.js";
 
 export type SettingsSectionId =
   | "general"
+  | "agentBehavior"
   | "appearance"
   | "migration"
   | "browser"
   | "modelProvider"
-  | "account"
+  | "remoteDevices"
+  | "dataSync"
+  | "personalization"
   | "memory"
   | "plugin"
   | "mcp"
   | "skill"
   | "plugins"
+  | "projects"
+  | "archives"
+  | "shares"
   | "usage"
   | "subagents"
   | "commands"
@@ -23,15 +28,17 @@ export type SettingsSectionId =
   | "automations"
   | "shortcuts";
 
-type SettingsUsageTabTarget = "app" | "codingPlan";
-type SettingsPluginTabTarget = "plugins" | "mcps" | "skills" | "commands";
-type SettingsPluginNavigationOrigin = "plugin-store";
+export type SettingsUsageTabTarget = "app" | "codingPlan";
+export type SettingsPluginTabTarget = "plugins" | "mcps" | "skills" | "commands";
+export type SettingsPluginNavigationOrigin = "plugin-store";
 
 const SETTINGS_SECTION_INTENT_KEY = "zcode-settings-section-intent",
   SETTINGS_USAGE_TAB_INTENT_KEY = "zcode-settings-usage-tab-intent",
   SETTINGS_PLUGIN_TAB_INTENT_KEY = "zcode-settings-plugin-tab-intent",
   SETTINGS_PLUGIN_ORIGIN_INTENT_KEY = "zcode-settings-plugin-origin-intent",
   SETTINGS_PLUGIN_SCOPE_KEY_INTENT_KEY = "zcode-settings-plugin-scope-key-intent";
+const SETTINGS_SOURCE_SERVER_ID_INTENT_KEY = "zcode-settings-source-server-id-intent";
+const SETTINGS_SOURCE_SERVER_DETAILS_INTENT_KEY = "zcode-settings-source-server-details-intent";
 const SETTINGS_MODEL_PROVIDER_ID_INTENT_KEY = "zcode-settings-model-provider-id-intent";
 const SETTINGS_SECTION_INTENT_EVENT = "zcode:settings-section-intent",
   SETTINGS_LAST_SECTION_STORAGE_KEY = "zcode-settings-last-section";
@@ -41,23 +48,20 @@ const HIDDEN_SETTINGS_SECTIONS = new Set<SettingsSectionId>([
   "automations",
   // 旧插件市场已迁出设置页；保留 id 只用于迁移历史偏好和旧调用。
   "plugins",
-  // 技能管理已迁入「专家·技能」市场（我的视图）；保留 id 只用于迁移历史偏好和旧调用。
-  "skill",
-  // 子智能体管理已同迁「专家·技能」市场（我的·专家视图）；保留 id 同上。
-  "subagents",
   // 工作区搜索（.zcodeignore）设置入口先隐藏：规则文件仍生效并可手动编辑，
   // 编辑页代码保留，放开时从这里移除即可。
   "workspaceFileSearch",
-  "computerUse",
 ]);
 
-interface SettingsSectionIntentEventDetail {
+export interface SettingsSectionIntentEventDetail {
   section: SettingsSectionId;
   pluginTab?: SettingsPluginTabTarget;
   pluginOrigin?: SettingsPluginNavigationOrigin;
   pluginScopeKey?: string;
   usageTab?: SettingsUsageTabTarget;
   modelProviderId?: string;
+  sourceServerId?: string;
+  sourceServerDetails?: boolean;
 }
 
 export interface SettingsModelProviderTarget {
@@ -67,16 +71,22 @@ export interface SettingsModelProviderTarget {
 function isSettingsSectionId(value: string): value is SettingsSectionId {
   return (
     value === "general" ||
+    value === "agentBehavior" ||
     value === "appearance" ||
     value === "migration" ||
     value === "browser" ||
     value === "modelProvider" ||
-    value === "account" ||
+    value === "remoteDevices" ||
+    value === "dataSync" ||
+    value === "personalization" ||
     value === "memory" ||
     value === "plugin" ||
     value === "mcp" ||
     value === "skill" ||
     value === "plugins" ||
+    value === "projects" ||
+    value === "archives" ||
+    value === "shares" ||
     value === "usage" ||
     value === "subagents" ||
     value === "commands" ||
@@ -89,12 +99,7 @@ function isSettingsSectionId(value: string): value is SettingsSectionId {
 }
 
 export function isSettingsSectionEnabled(section: SettingsSectionId): boolean {
-  if (HIDDEN_SETTINGS_SECTIONS.has(section)) return false;
-  // 「模型设置」是本地模型配置界面：企业会话下它是一条绕过目录治理的旁路，因此默认隐藏，
-  // 连点版本号 7 下解锁开发者模式后才出现（含解锁/反锁的收尾规则，见
-  // docs/已完成/已完成-model-governance-and-dev-mode.md）。隐藏策略与手势的单一事实源在 lib/devMode.ts。
-  if (section === "modelProvider") return isDevModeUnlocked();
-  return true;
+  return !HIDDEN_SETTINGS_SECTIONS.has(section);
 }
 
 export function resolveSettingsSection(
@@ -121,7 +126,7 @@ function getLocalStorage(): Storage | null {
   }
 }
 
-function readLastSettingsSectionPreference(
+export function readLastSettingsSectionPreference(
   fallbackSection: SettingsSectionId = "general",
 ): SettingsSectionId {
   const storage = getLocalStorage();
@@ -145,11 +150,6 @@ function readLastSettingsSectionPreference(
     if (raw === "codePreview") {
       storage.setItem(SETTINGS_LAST_SECTION_STORAGE_KEY, "appearance");
       return "appearance";
-    }
-    // 旧版「企业服务端」分区已改名为「账号」：不清迁移，用户升级后仍停在同一页。
-    if (raw === "reactorServer") {
-      storage.setItem(SETTINGS_LAST_SECTION_STORAGE_KEY, "account");
-      return "account";
     }
     if (raw && isSettingsSectionId(raw)) {
       return resolveSettingsSection(raw, fallbackSection);
@@ -236,6 +236,8 @@ export function setPendingSettingsSectionIntent(
     pluginOrigin?: SettingsPluginNavigationOrigin;
     pluginScopeKey?: string;
     modelProviderId?: string;
+    sourceServerId?: string;
+    sourceServerDetails?: boolean;
     usageTab?: SettingsUsageTabTarget;
   } = {},
 ): void {
@@ -264,6 +266,23 @@ export function setPendingSettingsSectionIntent(
     if (options.usageTab) {
       window.sessionStorage.setItem(SETTINGS_USAGE_TAB_INTENT_KEY, options.usageTab);
     }
+    if (section === "remoteDevices" && options.sourceServerId?.trim()) {
+      window.sessionStorage.setItem(
+        SETTINGS_SOURCE_SERVER_ID_INTENT_KEY,
+        options.sourceServerId.trim(),
+      );
+    } else {
+      window.sessionStorage.removeItem(SETTINGS_SOURCE_SERVER_ID_INTENT_KEY);
+    }
+    if (
+      section === "remoteDevices" &&
+      options.sourceServerId?.trim() &&
+      options.sourceServerDetails
+    ) {
+      window.sessionStorage.setItem(SETTINGS_SOURCE_SERVER_DETAILS_INTENT_KEY, "true");
+    } else {
+      window.sessionStorage.removeItem(SETTINGS_SOURCE_SERVER_DETAILS_INTENT_KEY);
+    }
     if (options.modelProviderId) {
       window.sessionStorage.setItem(SETTINGS_MODEL_PROVIDER_ID_INTENT_KEY, options.modelProviderId);
     } else {
@@ -284,6 +303,12 @@ export function setPendingSettingsSectionIntent(
         pluginScopeKey: options.pluginScopeKey?.trim() || undefined,
         usageTab: options.usageTab,
         modelProviderId: options.modelProviderId,
+        ...(section === "remoteDevices" && options.sourceServerId?.trim()
+          ? {
+              sourceServerId: options.sourceServerId.trim(),
+              ...(options.sourceServerDetails ? { sourceServerDetails: true } : {}),
+            }
+          : {}),
       },
     }),
   );
@@ -296,6 +321,8 @@ function clearPendingSettingsSectionIntent(): void {
 
   try {
     window.sessionStorage.removeItem(SETTINGS_SECTION_INTENT_KEY);
+    window.sessionStorage.removeItem(SETTINGS_SOURCE_SERVER_ID_INTENT_KEY);
+    window.sessionStorage.removeItem(SETTINGS_SOURCE_SERVER_DETAILS_INTENT_KEY);
     window.sessionStorage.removeItem(SETTINGS_USAGE_TAB_INTENT_KEY);
     window.sessionStorage.removeItem(SETTINGS_MODEL_PROVIDER_ID_INTENT_KEY);
     window.sessionStorage.removeItem(SETTINGS_PLUGIN_TAB_INTENT_KEY);
@@ -306,7 +333,7 @@ function clearPendingSettingsSectionIntent(): void {
   }
 }
 
-function consumePendingSettingsSection(
+export function consumePendingSettingsSection(
   fallbackSection: SettingsSectionId = "general",
 ): SettingsSectionId {
   if (typeof window === "undefined") {
@@ -322,10 +349,6 @@ function consumePendingSettingsSection(
     if (raw === "skills") {
       // 旧 Skills 使用复数 id；迁移到当前独立 skill 分区。
       return "skill";
-    }
-    if (raw === "reactorServer") {
-      // 旧「企业服务端」分区 id；一次性跳转意图同样迁移到「账号」。
-      return "account";
     }
     if (raw && isSettingsSectionId(raw)) {
       return resolveSettingsSection(raw, fallbackSection);
@@ -477,4 +500,27 @@ export function addPendingSettingsSectionListener(
   return () => {
     window.removeEventListener(SETTINGS_SECTION_INTENT_EVENT, handleIntent);
   };
+}
+
+/** 设置页先消费分区，再消费卡片目标；已挂载页面由同一导航事件直接接收。 */
+export function consumePendingSettingsSourceServerId(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const id = window.sessionStorage.getItem(SETTINGS_SOURCE_SERVER_ID_INTENT_KEY);
+    window.sessionStorage.removeItem(SETTINGS_SOURCE_SERVER_ID_INTENT_KEY);
+    return id?.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function consumePendingSettingsSourceServerDetails(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const details = window.sessionStorage.getItem(SETTINGS_SOURCE_SERVER_DETAILS_INTENT_KEY);
+    window.sessionStorage.removeItem(SETTINGS_SOURCE_SERVER_DETAILS_INTENT_KEY);
+    return details === "true";
+  } catch {
+    return false;
+  }
 }

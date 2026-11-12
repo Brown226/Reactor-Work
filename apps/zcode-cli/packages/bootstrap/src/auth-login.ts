@@ -1,3 +1,27 @@
+export { ZCodeCliLoginError } from "./auth-login-contract.js";
+export type {
+  CodingPlanProviderId,
+  LoginZCodeCliOptions,
+  LoginZCodeCliResult,
+  LoginBigmodelCodingPlanOptions,
+  LoginBigmodelCodingPlanResult,
+  ConfigureCodingPlanApiKeyOptions,
+  ConfigureCodingPlanApiKeyResult,
+  LogoutZCodeCliOptions,
+  LogoutZCodeCliResult,
+} from "./auth-login-contract.js";
+import {
+  ZCodeCliLoginError,
+  type CodingPlanProviderId,
+  type LoginZCodeCliOptions,
+  type LoginZCodeCliResult,
+  type LoginBigmodelCodingPlanOptions,
+  type LoginBigmodelCodingPlanResult,
+  type ConfigureCodingPlanApiKeyOptions,
+  type ConfigureCodingPlanApiKeyResult,
+  type LogoutZCodeCliOptions,
+  type LogoutZCodeCliResult,
+} from "./auth-login-contract.js";
 import {
   createCodingPlanApiKeyResolver,
   createSharedZCodeCredentialStore,
@@ -5,125 +29,41 @@ import {
   createCliOAuthPollToken,
   openUrlInBrowser,
   SHARED_ZCODE_CREDENTIAL_KEYS,
-  type BrowserOpenResult,
-  type SharedZCodeCredentialStore,
   type CliOAuthClient,
-  type CliOAuthInitData,
-  type CliOAuthPollData,
-  type CliOAuthUser,
+  type SharedZCodeCredentialStore,
 } from "@zcode/adapters";
 import { createConfig } from "@zcode/adapters/config";
 import { createNodeHttpClientAdapter } from "@zcode/adapters/http";
 import type { EnvRecord } from "@zcode/adapters/model";
 import { buildZCodeEndpointUrls, resolveRuntimeZCodeEndpointOrigin } from "@zcode/shared";
-import {
-  NodeModelSelectionConfigRepository,
-  NodePersonalProviderConfigRepository,
-  PERSONAL_PROVIDER_CONFIG_FILE_NAME,
-  ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
-} from "@zcode/provider-node";
-import { readLegacyCliPersonalProviderConfig } from "./app/legacy-cli-personal-provider-config-importer.js";
-import { dirname, join } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import {
   createStandaloneAccountIdentityFromSecret,
   hasStandaloneCodingPlanAccess,
   readStandaloneCodingPlanProviders,
   resolveStandaloneCodingPlanProvider,
   standaloneAccountIdentityCredentialKey,
+  standaloneAccountAuthSourceCredentialKey,
   standaloneAccountProviderCredentialKey,
 } from "./app/standalone-account-provider-runtime.js";
+import {
+  NodeModelSelectionConfigRepository,
+  NodePersonalProviderConfigRepository,
+  PERSONAL_PROVIDER_CONFIG_FILE_NAME,
+  ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
+} from "@zcode/provider-node";
+import { dirname, join } from "node:path";
+import { readLegacyCliPersonalProviderConfig } from "./app/legacy-cli-personal-provider-config-importer.js";
 import { throwIfAborted, waitWithAbort } from "./auth-login-abort.js";
-import { setTimeout as delay } from "node:timers/promises";
 import { pollUntilReady } from "./auth-login-polling.js";
 
 const DEFAULT_LOGIN_TIMEOUT_MS = 5 * 60 * 1_000;
 
-export type CodingPlanProviderId = "bigmodel" | "zai";
-
-export interface LoginZCodeCliOptions {
-  providerId?: CodingPlanProviderId;
-  abortSignal?: AbortSignal;
-  apiKeyResolver?: ReturnType<typeof createCodingPlanApiKeyResolver>;
-  baseUrl?: string;
-  credentialStore?: SharedZCodeCredentialStore;
-  env?: EnvRecord;
-  httpClient?: Parameters<typeof createCliOAuthClient>[0]["httpClient"];
-  noBrowser?: boolean;
-  now?: () => number;
-  onAuthorizeUrl?: (data: CliOAuthInitData) => void | Promise<void>;
-  onBrowserOpen?: (result: BrowserOpenResult) => void | Promise<void>;
-  onPollStatus?: (data: CliOAuthPollData) => void | Promise<void>;
-  openBrowser?: (url: string) => Promise<BrowserOpenResult>;
-  pollToken?: string;
-  sleep?: (ms: number) => Promise<void>;
-  timeoutMs?: number;
-  personalProviderConfigPath?: string;
-}
-
-export interface LoginZCodeCliResult {
-  browser?: BrowserOpenResult;
-  configPath: string;
-  credentialsPath: string;
-  model: string;
-  providerId: CodingPlanProviderId;
-  user: CliOAuthUser;
-}
-
-export type LoginBigmodelCodingPlanOptions = Omit<LoginZCodeCliOptions, "providerId">;
-export type LoginBigmodelCodingPlanResult = LoginZCodeCliResult & { providerId: "bigmodel" };
-
-export interface ConfigureCodingPlanApiKeyOptions {
-  apiKey: string;
-  credentialStore?: SharedZCodeCredentialStore;
-  env?: EnvRecord;
-  personalProviderConfigPath?: string;
-  providerId: CodingPlanProviderId;
-}
-
-export interface ConfigureCodingPlanApiKeyResult {
-  configPath: string;
-  model: string;
-  providerId: CodingPlanProviderId;
-}
-
-export interface LogoutZCodeCliOptions {
-  credentialStore?: SharedZCodeCredentialStore;
-  env?: EnvRecord;
-}
-
-export interface LogoutZCodeCliResult {
-  credentialsPath: string;
-}
-
-export async function hasConfiguredStandaloneCodingPlan(
-  options: {
-    credentialStore?: SharedZCodeCredentialStore;
-    env?: EnvRecord;
-  } = {},
-): Promise<boolean> {
-  const credentialStore =
-    options.credentialStore ?? createSharedZCodeCredentialStore({ env: options.env });
-  return hasStandaloneCodingPlanAccess(credentialStore, options.env ?? process.env);
-}
-
-export class ZCodeCliLoginError extends Error {
-  readonly code:
-    | "auth_failed"
-    | "auth_timeout"
-    | "config_update_failed"
-    | "credential_write_failed";
-
-  constructor(
-    code: ZCodeCliLoginError["code"],
-    message: string,
-    options: { cause?: unknown } = {},
-  ) {
-    super(message, options);
-    this.name = "ZCodeCliLoginError";
-    this.code = code;
-  }
-}
-
+/**
+ * Z.ai 与 BigModel 共用服务端轮询登录：init 拿授权地址，浏览器授权后轮询到 ready，
+ * 再解析项目访问材料并写入凭据与默认模型。OAuth 登录不落盘派生 API Key，
+ * 运行时按 `authSource: "oauth"` 用访问令牌换取请求凭据。
+ */
 export async function loginZCodeCli(
   options: LoginZCodeCliOptions = {},
 ): Promise<LoginZCodeCliResult> {
@@ -143,6 +83,12 @@ export async function loginZCodeCli(
     throwIfAborted(signal);
     const pollToken = options.pollToken ?? createCliOAuthPollToken();
     const credentialStore = options.credentialStore ?? createSharedZCodeCredentialStore({ env });
+    // CLI 也可能与 Desktop 恢复并发：在 init 前保留代次，迟到结果不得重新填充新空库。
+    const credentialGuard = await credentialStore.captureRecoveryGuard();
+    const expectedSession = await credentialStore.loadOAuthSessionSnapshot();
+    // Bug 原因：空库快照不访问系统库，库不可用要等用户完成授权、写入凭据时才暴露。
+    // 授权前先确认写入能力，原始安全存储错误直接上抛，与已有会话时快照解密失败一致。
+    await waitWithAbort(credentialStore.assertWritable(), signal);
     const oauthClient = createOAuthClient(options, env);
     const initData = await waitWithAbort(oauthClient.init({ pollToken }, { signal }), signal);
     const remainingMs = Math.min(deadlineMs, initData.expires_at * 1_000) - now();
@@ -172,8 +118,8 @@ export async function loginZCodeCli(
           ? timeoutError()
           : new ZCodeCliLoginError(code, "Authorization failed. Please retry login."),
     });
-    const apiKey = await waitWithAbort(
-      resolveCodingPlanApiKey({
+    const material = await waitWithAbort(
+      resolveCodingPlanMaterial({
         accessToken: readyData.accessToken,
         env,
         httpClient: options.httpClient,
@@ -183,31 +129,53 @@ export async function loginZCodeCli(
       }),
       signal,
     );
-    // A cancelled/expired attempt must not persist a late ready response or API key.
+    // 已取消或已超时的登录不能把迟到的 ready 响应写入凭据。
     throwIfAborted(signal);
+    // Z.ai 以账号用户 ID 作为连接身份；BigModel 的项目令牌按组织与项目签发，
+    // 连接身份沿用组织与项目的稳定摘要，与运行时的令牌缓存范围一致。
+    const accountIdentity =
+      providerId === "zai"
+        ? readyData.user.user_id
+        : createStandaloneAccountIdentityFromSecret(
+            JSON.stringify([material.organizationId, material.projectId]),
+          );
     try {
-      if (providerId === "zai") {
-        await credentialStore.saveZaiLoginCredentials({
-          accessToken: readyData.accessToken,
-          jwtToken: readyData.token,
-          user: readyData.user,
-        });
-      } else {
-        await credentialStore.saveMany({
-          [SHARED_ZCODE_CREDENTIAL_KEYS.activeProvider]: providerId,
-          [SHARED_ZCODE_CREDENTIAL_KEYS.zcodeJwtToken]: readyData.token,
-          [SHARED_ZCODE_CREDENTIAL_KEYS.bigmodelAccessToken]: readyData.accessToken,
-          ...(readyData.refreshToken
-            ? { [SHARED_ZCODE_CREDENTIAL_KEYS.bigmodelRefreshToken]: readyData.refreshToken }
-            : {}),
-          [SHARED_ZCODE_CREDENTIAL_KEYS.bigmodelUserInfo]: JSON.stringify({
-            id: readyData.user.user_id,
-            username: readyData.user.name || readyData.user.email || readyData.user.user_id,
-            displayName: readyData.user.name || readyData.user.email || readyData.user.user_id,
-            rawProfile: readyData.user,
-          }),
-        });
-      }
+      await credentialGuard.run(async () => {
+        if (providerId === "zai") {
+          await credentialStore.saveZaiLoginCredentials(
+            {
+              accessToken: readyData.accessToken,
+              jwtToken: readyData.token,
+              user: readyData.user,
+            },
+            expectedSession,
+            () => throwIfAborted(signal),
+          );
+        } else {
+          const displayName = readyData.user.name || readyData.user.email || readyData.user.user_id;
+          const committed = await credentialStore.updateMany(
+            {
+              ...Object.fromEntries(
+                Object.values(SHARED_ZCODE_CREDENTIAL_KEYS).map((key) => [key, null]),
+              ),
+              [SHARED_ZCODE_CREDENTIAL_KEYS.activeProvider]: providerId,
+              [SHARED_ZCODE_CREDENTIAL_KEYS.zcodeJwtToken]: readyData.token,
+              [SHARED_ZCODE_CREDENTIAL_KEYS.bigmodelAccessToken]: readyData.accessToken,
+              ...(readyData.refreshToken
+                ? { [SHARED_ZCODE_CREDENTIAL_KEYS.bigmodelRefreshToken]: readyData.refreshToken }
+                : {}),
+              [SHARED_ZCODE_CREDENTIAL_KEYS.bigmodelUserInfo]: JSON.stringify({
+                id: accountIdentity,
+                username: displayName,
+                displayName,
+                rawProfile: readyData.user,
+              }),
+            },
+            { expected: expectedSession, assertCurrent: () => throwIfAborted(signal) },
+          );
+          if (!committed) throw new Error("OAuth session changed before login commit");
+        }
+      });
     } catch (error) {
       throw new ZCodeCliLoginError(
         "credential_write_failed",
@@ -218,14 +186,17 @@ export async function loginZCodeCli(
     throwIfAborted(signal);
     let configPatch: StandaloneCodingPlanPersistenceResult;
     try {
-      configPatch = await persistStandaloneCodingPlanConnection({
-        accountIdentity: readyData.user.user_id,
-        apiKey,
-        credentialStore,
-        env,
-        personalProviderConfigPath: options.personalProviderConfigPath,
-        providerId,
-      });
+      configPatch = await credentialGuard.run(() =>
+        persistStandaloneCodingPlanConnection({
+          accountIdentity,
+          authSource: "oauth",
+          commitGuard: credentialGuard.commit,
+          credentialStore,
+          env,
+          personalProviderConfigPath: options.personalProviderConfigPath,
+          providerId,
+        }),
+      );
     } catch (error) {
       throw new ZCodeCliLoginError(
         "config_update_failed",
@@ -264,102 +235,23 @@ export async function configureCodingPlanApiKey(
   }
   const credentialStore =
     options.credentialStore ?? createSharedZCodeCredentialStore({ env: options.env });
-  const configPatch = await persistStandaloneCodingPlanConnection({
-    accountIdentity: createStandaloneAccountIdentityFromSecret(apiKey),
-    apiKey,
-    credentialStore,
-    env: options.env ?? process.env,
-    personalProviderConfigPath: options.personalProviderConfigPath,
-    providerId: options.providerId,
-  });
+  // 手填 Key 也可能等待配置锁；必须沿用入口代次，避免恢复后仍提交旧默认模型。
+  const credentialGuard = await credentialStore.captureRecoveryGuard();
+  const configPatch = await credentialGuard.run(() =>
+    persistStandaloneCodingPlanConnection({
+      accountIdentity: createStandaloneAccountIdentityFromSecret(apiKey),
+      apiKey,
+      commitGuard: credentialGuard.commit,
+      credentialStore,
+      env: options.env ?? process.env,
+      personalProviderConfigPath: options.personalProviderConfigPath,
+      providerId: options.providerId,
+    }),
+  );
   return {
     configPath: configPatch.path,
     model: configPatch.mainModel,
     providerId: options.providerId,
-  };
-}
-
-export async function logoutZCodeCli(
-  options: LogoutZCodeCliOptions = {},
-): Promise<LogoutZCodeCliResult> {
-  const credentialStore =
-    options.credentialStore ?? createSharedZCodeCredentialStore({ env: options.env });
-  const providerIds = (await readStandaloneCodingPlanProviders(options.env ?? process.env)).map(
-    ({ providerId }) => providerId,
-  );
-  const identityKeys = providerIds.map(standaloneAccountIdentityCredentialKey);
-  const identities = await credentialStore.loadMany(identityKeys);
-  const dynamicApiKeyKeys = providerIds.flatMap((providerId) => {
-    const identity = identities[standaloneAccountIdentityCredentialKey(providerId)]?.trim();
-    return identity
-      ? [
-          standaloneAccountProviderCredentialKey({
-            providerId,
-            accountIdentity: identity,
-          }),
-        ]
-      : [];
-  });
-  const keys = [
-    ...Object.values(SHARED_ZCODE_CREDENTIAL_KEYS),
-    ...identityKeys,
-    ...dynamicApiKeyKeys,
-  ];
-  const current = await credentialStore.loadMany(keys);
-  await credentialStore.deleteIfValues(
-    Object.fromEntries(
-      Object.entries(current).flatMap(([key, value]) => (value === null ? [] : [[key, value]])),
-    ),
-  );
-  return {
-    credentialsPath: credentialStore.filePath,
-  };
-}
-
-interface StandaloneCodingPlanPersistenceResult {
-  readonly mainModel: string;
-  readonly path: string;
-}
-
-async function persistStandaloneCodingPlanConnection(input: {
-  readonly accountIdentity: string;
-  readonly apiKey: string;
-  readonly credentialStore: SharedZCodeCredentialStore;
-  readonly env: EnvRecord;
-  readonly personalProviderConfigPath?: string;
-  readonly providerId: CodingPlanProviderId;
-}): Promise<StandaloneCodingPlanPersistenceResult> {
-  const configuredProvider = await resolveStandaloneCodingPlanProvider(input.providerId, input.env);
-  const providerId = configuredProvider.providerId;
-  const modelId = configuredProvider.modelId;
-  const credentialKey = standaloneAccountProviderCredentialKey({
-    providerId,
-    accountIdentity: input.accountIdentity,
-  });
-  await input.credentialStore.saveMany({
-    [standaloneAccountIdentityCredentialKey(providerId)]: input.accountIdentity,
-    [credentialKey]: input.apiKey,
-  });
-  const path =
-    input.personalProviderConfigPath ??
-    input.env[ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]?.trim() ??
-    join(dirname(input.credentialStore.filePath), PERSONAL_PROVIDER_CONFIG_FILE_NAME);
-  // 登录与运行时共享文件和事务；首次写入仍先保留旧用户 Provider，不能仅写默认值。
-  const personalRepository = new NodePersonalProviderConfigRepository({
-    filePath: path,
-    importLegacy: () => readLegacyCliPersonalProviderConfig({}),
-    pollingIntervalMs: false,
-  });
-  const repository = new NodeModelSelectionConfigRepository({ personalRepository });
-  try {
-    await repository.saveConfiguredDefault({ providerId, modelId });
-  } finally {
-    repository.dispose();
-    personalRepository.dispose();
-  }
-  return {
-    mainModel: `${providerId}/${modelId}`,
-    path,
   };
 }
 
@@ -387,24 +279,130 @@ function createDefaultHttpClient(env: EnvRecord) {
   });
 }
 
-async function resolveCodingPlanApiKey(input: {
+async function resolveCodingPlanMaterial(input: {
   accessToken: string;
   env: EnvRecord;
   httpClient?: Parameters<typeof createCodingPlanApiKeyResolver>[0]["httpClient"];
   family: CodingPlanProviderId;
-  resolver?: ReturnType<typeof createCodingPlanApiKeyResolver>;
   signal?: AbortSignal;
-}): Promise<string> {
+  resolver?: ReturnType<typeof createCodingPlanApiKeyResolver>;
+}) {
   const resolver =
     input.resolver ??
     createCodingPlanApiKeyResolver({
       httpClient: input.httpClient ?? createDefaultHttpClient(input.env),
     });
-  return resolver.resolve(
+  return resolver.resolveMaterial(
     {
       accessToken: input.accessToken,
       family: input.family,
     },
     { signal: input.signal },
   );
+}
+
+interface StandaloneCodingPlanPersistenceResult {
+  readonly mainModel: string;
+  readonly path: string;
+}
+
+async function persistStandaloneCodingPlanConnection(input: {
+  readonly accountIdentity: string;
+  readonly apiKey?: string;
+  readonly authSource?: "oauth";
+  readonly credentialStore: SharedZCodeCredentialStore;
+  readonly commitGuard?: (write: () => Promise<void>) => Promise<void>;
+  readonly env: EnvRecord;
+  readonly personalProviderConfigPath?: string;
+  readonly providerId: CodingPlanProviderId;
+}): Promise<StandaloneCodingPlanPersistenceResult> {
+  const configuredProvider = await resolveStandaloneCodingPlanProvider(input.providerId, input.env);
+  const providerId = configuredProvider.providerId;
+  const modelId = configuredProvider.modelId;
+  const credentialKey = standaloneAccountProviderCredentialKey({
+    providerId,
+    accountIdentity: input.accountIdentity,
+  });
+  await input.credentialStore.saveMany({
+    [standaloneAccountIdentityCredentialKey(providerId)]: input.accountIdentity,
+    [standaloneAccountAuthSourceCredentialKey(providerId)]: input.authSource ?? "manual",
+    ...(input.apiKey ? { [credentialKey]: input.apiKey } : {}),
+  });
+  const path =
+    input.personalProviderConfigPath ??
+    input.env[ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]?.trim() ??
+    join(dirname(input.credentialStore.filePath), PERSONAL_PROVIDER_CONFIG_FILE_NAME);
+  // 登录与运行时共享文件和事务；首次写入仍先保留旧用户 Provider，不能仅写默认值。
+  const personalRepository = new NodePersonalProviderConfigRepository({
+    filePath: path,
+    commitGuard: input.commitGuard,
+    importLegacy: () => readLegacyCliPersonalProviderConfig({}),
+    pollingIntervalMs: false,
+  });
+  const repository = new NodeModelSelectionConfigRepository({
+    personalRepository,
+  });
+  try {
+    await repository.saveConfiguredDefault({ providerId, modelId });
+  } finally {
+    repository.dispose();
+    personalRepository.dispose();
+  }
+  return {
+    mainModel: `${providerId}/${modelId}`,
+    path,
+  };
+}
+
+export async function hasConfiguredStandaloneCodingPlan(
+  options: {
+    credentialStore?: SharedZCodeCredentialStore;
+    env?: EnvRecord;
+  } = {},
+): Promise<boolean> {
+  const credentialStore =
+    options.credentialStore ?? createSharedZCodeCredentialStore({ env: options.env });
+  return hasStandaloneCodingPlanAccess(credentialStore, options.env ?? process.env);
+}
+
+export async function logoutZCodeCli(
+  options: LogoutZCodeCliOptions = {},
+): Promise<LogoutZCodeCliResult> {
+  const credentialStore =
+    options.credentialStore ?? createSharedZCodeCredentialStore({ env: options.env });
+  const providerIds = (await readStandaloneCodingPlanProviders(options.env ?? process.env)).map(
+    ({ providerId }) => providerId,
+  );
+  const identityKeys = providerIds.map(standaloneAccountIdentityCredentialKey);
+  const sourceKeys = providerIds.map(standaloneAccountAuthSourceCredentialKey);
+  const identities = await credentialStore.loadMany([...identityKeys, ...sourceKeys]);
+  const dynamicApiKeyKeys = providerIds.flatMap((providerId) => {
+    // OAuth 退出不能解密旧派生 Key；坏密文不应阻止清理当前登录态。
+    if (identities[standaloneAccountAuthSourceCredentialKey(providerId)] !== "manual") return [];
+    const identity = identities[standaloneAccountIdentityCredentialKey(providerId)]?.trim();
+    return identity
+      ? [
+          standaloneAccountProviderCredentialKey({
+            providerId,
+            accountIdentity: identity,
+          }),
+        ]
+      : [];
+  });
+  const keys = [
+    ...Object.values(SHARED_ZCODE_CREDENTIAL_KEYS),
+    ...identityKeys,
+    ...sourceKeys,
+    ...dynamicApiKeyKeys,
+  ];
+  const current = await credentialStore.loadMany(keys);
+  // 整组比较后整组删除；逐键比较会把新会话中内容相同的用户资料误删。
+  const committed = await credentialStore.updateMany(
+    Object.fromEntries(Object.keys(current).map((key) => [key, null])),
+    { expected: current },
+  );
+  if (!committed) throw new Error("OAuth session changed during logout; retry logout");
+  return {
+    credentialsPath: credentialStore.filePath,
+  };
 }

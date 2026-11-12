@@ -1,14 +1,8 @@
-import type {
-  AttachmentRef,
-  CommandAck,
-  ConversationRow,
-  ConversationRowTarget,
-} from "@zcode/shared/zcode-protocol-v4";
+import type { ConversationRow, ConversationRowTarget } from "@zcode/shared/zcode-protocol-v4";
 import type { AssistantPreviewCard } from "@/lib/assistantPreviewCards.js";
 import type { AssistantCodeCommentCard } from "@/lib/assistantCodeComment.js";
-import type { ReviewResultGathering } from "@/review/reviewResultGroups.js";
 import { extractPlanToolCallContent } from "@/lib/planToolCall.js";
-import { ConversationRowView } from "@/v4/ConversationRowView.js";
+import { ConversationRowView, type UserInputEditHandler } from "@/v4/ConversationRowView.js";
 import type {
   AssistantFeedbackHandler,
   EditWorkspaceRewindAvailability,
@@ -23,12 +17,7 @@ interface ConversationTurnRowProps {
   onFork?: (target: ConversationRowTarget) => void;
   onRetry?: (target: ConversationRowTarget) => void;
   onFeedbackChange?: AssistantFeedbackHandler;
-  onEdit?: (
-    target: ConversationRowTarget,
-    newText: string,
-    attachments?: readonly AttachmentRef[],
-    workspaceMode?: "preserve" | "rewind",
-  ) => Promise<CommandAck | boolean | void> | CommandAck | boolean | void;
+  onEdit?: UserInputEditHandler;
   editWorkspaceRewindAvailability?: EditWorkspaceRewindAvailability;
   hideAssistantActions?: boolean;
   deferAssistantActions?: boolean;
@@ -37,8 +26,6 @@ interface ConversationTurnRowProps {
   assistantPreviewCardsAutoOpenKey?: string;
   assistantCodeCommentCards?: AssistantCodeCommentCard[];
   assistantCodeCommentProjectionEnabled?: boolean;
-  /** 整轮审查结果聚合（一个统一面板），只挂轮尾正文 */
-  assistantReviewResults?: ReviewResultGathering;
   reasoningContentVariant?: "default" | "nested";
   userInputStatus?: string;
 }
@@ -58,7 +45,6 @@ export function ConversationTurnRow({
   assistantPreviewCardsAutoOpenKey,
   assistantCodeCommentCards,
   assistantCodeCommentProjectionEnabled,
-  assistantReviewResults,
   reasoningContentVariant,
   userInputStatus,
 }: ConversationTurnRowProps) {
@@ -78,7 +64,6 @@ export function ConversationTurnRow({
       assistantPreviewCardsAutoOpenKey={assistantPreviewCardsAutoOpenKey}
       assistantCodeCommentCards={assistantCodeCommentCards}
       assistantCodeCommentProjectionEnabled={assistantCodeCommentProjectionEnabled}
-      assistantReviewResults={assistantReviewResults}
       reasoningContentVariant={reasoningContentVariant}
       userInputStatus={userInputStatus}
     />

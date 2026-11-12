@@ -1,7 +1,7 @@
-# Reactor
+# ZCode
 
 <div align="center">
-  <img src="public/logo/icons/1024x1024.png" alt="Reactor" width="128" height="128" />
+  <img src="public/logo/icons/1024x1024.png" alt="ZCode" width="128" height="128" />
 </div>
 <p align="center">
   <a href="https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=47ag983c-8fcb-4d6d-814b-5395193a712c&amp;qr_code=true">飞书社群</a> ·
@@ -11,13 +11,19 @@
   简体中文 | <a href="README.en.md">English</a>
 </p>
 
-Reactor 是 AI 编程工作台，提供桌面应用、浏览器界面和终端 Agent。本仓库包含客户端、后端服务、共享 UI，以及 Agent CLI 与运行时源码。
+ZCode 是 AI 编程工作台，提供桌面应用、浏览器界面和终端 Agent。本仓库包含客户端、后端服务、共享 UI，以及 Agent CLI 与运行时源码。
 
-| 入口                   | 用途                                                                              | 开发命令                       |
-| ---------------------- | --------------------------------------------------------------------------------- | ------------------------------ |
-| Desktop                | Electron 桌面应用                                                                 | `pnpm dev:desktop`             |
-| Web / Reactor 命令行版 | 终端与浏览器工作台；将 TUI、Web、后端和 Agent 组装为独立运行包                    | `pnpm dev:web`                 |
-| Agent CLI              | 在终端中使用 `reactor`（兼容别名 `zcode`），也为 Desktop 和 Web 提供 Agent 运行时 | `pnpm --filter @zcode/cli dev` |
+## 更新
+
+- **2026-11-11**：更新至 ZCode v3.18.0 版本。
+- 2026-11-03：更新至 ZCode v3.17.2 版本。
+- 2026-10-30：更新至 ZCode v3.17.1 版本。
+- 2026-10-29：更新至 ZCode v3.17.0 版本。
+- 2026-10-19：更新至 ZCode v3.16.2 版本。
+- 2026-10-16：更新至 ZCode v3.16.1 版本。
+- 2026-10-16：更新至 ZCode v3.15.4 版本。
+- 2026-10-10：更新至 ZCode v3.15.1 版本。
+- 2026-9-23：更新至 ZCode v3.14.3 版本。
 
 ## 初始化
 
@@ -62,16 +68,6 @@ pnpm dev:desktop:test
 ZCODE_DATA_BASE_DIR="$HOME/.zcode-dev-home" pnpm dev:desktop:test
 ```
 
-#### 只改了渲染层/host 层时的快速重启
-
-Agent（`apps/zcode-cli` 及其依赖的根 workspace 源码）没变时，不需要每次都重建它：
-
-```bash
-pnpm dev:desktop:reuse      # 复用上一次的 agent 产物，且保留 out/ 让 tsup 增量
-```
-
-启动脚本会对 agent 相关源码做指纹比对（`.cache/desktop-agent-build-stamp.json`），**源码没变才复用**；有变化会自动回到全量重建，所以不会把「改动没生效」伪装成「代码没用」。想强制重建用 `pnpm dev:desktop` 或加 `--force-agent-build`。实测（Windows，热指纹）：全量约 4-5 分钟，reuse 约 95 秒。
-
 ### 远程功能（SSH/WSL）
 
 先执行 `pnpm bootstrap:with-remote` 准备远程资源（mock-cdn），再 `pnpm dev:desktop`；连接远程项目时资源选择「本地下载后上传」。开发态资源取自本地 `packages/desktop/mock-cdn` 和本地构建产物，经 SFTP 上传到远程，不访问 CDN。
@@ -89,9 +85,9 @@ ZCODE_SERVER_WORKSPACE=/path/to/project pnpm dev:web
 
 该命令同时启动 Web 开发服务器（默认 `http://localhost:5173`）和后端（默认 `http://localhost:3030`）；浏览器访问前者。`/ws` 和一般 `/api` 请求代理到本地后端，`/api/v1/oauth/token` 单独代理到当前配置的产品服务。
 
-Agent 源码修改后，执行 `pnpm --filter @zcode/cli... build` 并重启服务。需要验证完整发行包时，按下方“Reactor 命令行版”打包章节解压运行。
+Agent 源码修改后，执行 `pnpm --filter @zcode/cli... build` 并重启服务。需要验证完整发行包时，按下方“ZCode 命令行版”打包章节解压运行。
 
-### Reactor 命令行版
+### ZCode 命令行版
 
 命令行发行包包含 TUI、Web 和 Agent，统一使用 `zcode` 启动：无参数进入 TUI；第一个参数为 `--web` 时启动 Web；其他参数交给现有 Agent CLI 处理。两种模式都在本机运行，无需 Electron。
 
@@ -118,6 +114,8 @@ Web 模式默认工作目录为当前目录，监听 `127.0.0.1`，默认不启�
 
 ### CLI 源码开发
 
+CLI 的模型配置、非交互调用、工具与扩展、批量评测和轨迹记录见 [CLI 使用指南](apps/zcode-cli/docs/usage/README.md)。
+
 直接开发 TUI 或 Agent 时，运行源码入口：
 
 ```bash
@@ -131,13 +129,19 @@ node apps/zcode-cli/packages/cli/dist/zcode.cjs --help
 
 这个入口直接运行 Agent CLI，不经过发行包的 `--web` 分流。开发 Web 用 `pnpm dev:web`；验证统一的 `zcode` 命令，用下方解压后的 `bin/zcode.mjs`。
 
+### UI Plugin 开发
+
+参见 [UI Plugin：能力、API 与调试](UI_PLUGIN.md)，从 Excalidraw 的画布协作示例开始，了解插件安装更新、页面 API 和宿主联调入口。
+
+**向 `zcode-plugins` 提交插件 PR 时，必须在 PR 模板中声明是否为 UI Plugin，并填写插件名称。** 判断标准见[提交 PR 时声明插件类型](UI_PLUGIN.md#提交-pr-时声明插件类型)。
+
 ## 配置
 
 根目录 [.env.example](.env.example) 提供服务地址与构建配置示例，可按需复制到 `.env`，本地覆盖放入 `.env.local`。Desktop 的开发环境通过 `dev:desktop:test` / `dev:desktop:prod` 选择。
 
 | 配置                                 | 用途                                             |
 | ------------------------------------ | ------------------------------------------------ |
-| `ZCODE_DATA_BASE_DIR`                | 应用数据基目录，数据写入其下的 `.reactor/`       |
+| `ZCODE_DATA_BASE_DIR`                | 应用数据基目录，数据写入其下的 `.zcode/`         |
 | `ZCODE_SERVER_WORKSPACE`             | Web 后端的工作区路径                             |
 | `ZCODE_BUILTIN_PROVIDER_CONFIG_FILE` | 本地 Provider 配置文件路径；未设置时使用内置配置 |
 | `ZCODE_DIST_BASE_URL`                | 命令行安装脚本使用的下载根地址                   |
@@ -161,13 +165,13 @@ pnpm bundle:desktop -- --help
 
 默认目标为 macOS arm64，默认输出目录为 `packages/desktop/dist/`。`--os` 支持 `mac`、`win`、`linux`，`--arch` 支持 `x64`、`arm64`；实际打包与签名需要目标平台对应的工具和配置。
 
-安装：双击打开产物 DMG，将 Reactor 拖入"应用程序"。本地构建未签名，首次打开若被 macOS 拦截，执行：
+安装：双击打开产物 DMG，将 ZCode 拖入"应用程序"。本地构建未签名，首次打开若被 macOS 拦截，执行：
 
 ```bash
-sudo xattr -rd com.apple.quarantine /Applications/Reactor.app
+sudo xattr -rd com.apple.quarantine /Applications/ZCode.app
 ```
 
-### Reactor 命令行版
+### ZCode 命令行版
 
 构建入口为 `pnpm build:zcode`。脚本会依次构建 CLI/TUI、后端和 Web，收集 TUI 的原生库、worker 与运行时依赖，再组装发行包；运行发行包仍需要 Node.js，版本以 `mise.toml` 为准。
 

@@ -1,32 +1,63 @@
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
-
+import { dirname, join, resolve } from "node:path";
+import { isRealComputerUseProducerInstalled } from "../packages/desktop/scripts/computer-use-producer.mjs";
+import { resolveDevDesktopWindowsCuaEnv } from "./dev-desktop-cua-env.mjs";
 import { withPinnedNodePath } from "./mise-toolchain-env.mjs";
 import { quoteArgsForWindowsShell } from "./spawn-command.mjs";
-import {
-  computeAgentBuildStamp,
-  isAgentBuildUpToDate,
-  resolveAgentBuildStampFile,
-  writeAgentBuildStamp,
-} from "./agent-build-stamp.mjs";
 
 const requestedEnv = process.argv[2]?.trim().toLowerCase();
-const extraArgs = process.argv.slice(3);
-const agentBytecode = extraArgs.includes("--agent-bytecode");
-// --reuse/--fast：源码没变就复用上一次的 agent 产物，并且不清空 out/（tsup 增量）。
-// 默认（不带 flag）仍是全量重建，保证 CI 与"改了 agent 代码"的语义不被悄悄改变。
-const reuseAgentBuild = extraArgs.includes("--reuse") || extraArgs.includes("--fast");
-const forceAgentBuild = extraArgs.includes("--force-agent-build");
+const agentBytecode = process.argv.slice(3).includes("--agent-bytecode");
 if (requestedEnv !== "test" && requestedEnv !== "production") {
-  console.error(
-    "Usage: node scripts/dev-desktop-env.mjs <test|production> [--agent-bytecode] [--reuse] [--force-agent-build]",
-  );
+  console.error("Usage: node scripts/dev-desktop-env.mjs <test|production> [--agent-bytecode]");
   process.exit(1);
 }
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+// Computer Use Helper 只由真实 producer 提供；开源占位包下不构建 Helper、不注入 Helper 环境。
+// 见 docs/desktop/computer-use-producer-detection.md。
+const hasComputerUseProducer = isRealComputerUseProducerInstalled({
+  desktopPackageRoot: join(repoRoot, "packages", "desktop"),
+});
+const computerUseDevEnv = hasComputerUseProducer ? await resolveComputerUseDevEnv() : {};
+
+async function resolveComputerUseDevEnv() {
+  const { DEV_HELPER_APP_NAME } = await import("@zcode/zcode-cua/broker/helperConstants");
+  const sourceBuiltCuaHelperVersion = JSON.parse(
+    readFileSync(join(repoRoot, "package.json"), "utf8"),
+  ).version;
+  if (typeof sourceBuiltCuaHelperVersion !== "string" || !sourceBuiltCuaHelperVersion.trim()) {
+    throw new Error("Root package.json must define the Dev Computer Use Helper version");
+  }
+  const sourceBuiltCuaHelperApp = join(
+    repoRoot,
+    "packages",
+    "desktop",
+    "dist-cua-helper",
+    DEV_HELPER_APP_NAME,
+  );
+  return {
+    // Standard dev launch must test the Helper built from this checkout.
+    // Falling back to ~/.zcode can silently reuse a same-version stale
+    // Helper and make native changes appear verified when they never ran.
+    ZCODE_CUA_BUNDLED_HELPER_APP_PATH: sourceBuiltCuaHelperApp,
+    ZCODE_CUA_HELPER_VERSION: sourceBuiltCuaHelperVersion,
+    // Keep Dev Desktop separate from signed Stable/Preview and standalone MCP installs.
+    ZCODE_CUA_HELPER_INSTALL_VARIANT: "dev-desktop",
+    // 修复原因：仅传 bundled path 不会进入 unsigned-local 的同版本内容刷新分支，
+    // 导致标准 dev 启动继续复用 ~/.zcode 中 native ABI 已过期的 Helper。
+    ...(process.platform === "darwin" ? { ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL: "1" } : {}),
+    // Windows 侧对应物：缺省把 CUA runtime 绑到本 checkout 已安装的 producer，
+    // 否则 host 会去读 dev 下不存在的 resources/tools/cua-helper。见 dev-desktop-cua-env.mjs。
+    ...resolveDevDesktopWindowsCuaEnv({
+      platform: process.platform,
+      repoRoot,
+      env: process.env,
+    }),
+  };
+}
 
 function run(command, args) {
   return new Promise((resolveRun, rejectRun) => {
@@ -40,6 +71,7 @@ function run(command, args) {
           ...process.env,
           ZCODE_ENV: requestedEnv,
           ZCODE_DESKTOP_AGENT_BYTECODE: agentBytecode ? "1" : "0",
+          ...computerUseDevEnv,
         },
         process.execPath,
       ),
@@ -66,37 +98,21 @@ function run(command, args) {
 }
 
 try {
+  if (process.platform === "darwin" && hasComputerUseProducer) {
+    await run(process.execPath, [
+      resolve(repoRoot, "scripts/build-cua-helper-app.mjs"),
+      "--allow-unsigned-launcher-local-dev",
+    ]);
+  }
   // The public dev scripts delegate here instead of invoking the package's
   // `dev` lifecycle directly, so pnpm will not run `pre-dev` automatically.
   // Preserve its runtime-asset preparation and stale `out` cleanup explicitly
   // before rebuilding bundles or starting Electron.
-  // --reuse 时换成 pre-dev:reuse：仍准备运行时资产，但保留 out/，让 tsup watch 走增量。
-  await run(pnpmCommand, [
-    "--filter",
-    "@zcode/desktop",
-    reuseAgentBuild ? "pre-dev:reuse" : "pre-dev",
+  await run(pnpmCommand, ["--filter", "@zcode/desktop", "pre-dev"]);
+  // On Windows, use "node" (resolved via PATHEXT) to avoid "C:\Program Files\..." space issues
+  await run(process.platform === "win32" ? "node" : process.execPath, [
+    resolve(repoRoot, "scripts/build-desktop-agent-cli.mjs"),
   ]);
-  const stampFile = resolveAgentBuildStampFile(repoRoot);
-  const agentState = reuseAgentBuild
-    ? isAgentBuildUpToDate(repoRoot, stampFile)
-    : { upToDate: false, reason: "未启用 --reuse" };
-  if (agentState.upToDate) {
-    console.log(
-      `[dev] 复用上一次 agent 构建（${agentState.reason}）。改了 agent 代码却想强制重建：去掉 --reuse 或加 --force-agent-build。`,
-    );
-  } else {
-    if (reuseAgentBuild) {
-      console.log(`[dev] agent 需要重建：${agentState.reason}`);
-    }
-    // On Windows, use "node" (resolved via PATHEXT) to avoid "C:\Program Files\..." space issues
-    await run(process.platform === "win32" ? "node" : process.execPath, [
-      resolve(repoRoot, "scripts/build-desktop-agent-cli.mjs"),
-    ]);
-    if (reuseAgentBuild) {
-      // 只在构建成功后才写指纹：失败时旧指纹若已被覆盖，下一次会误判为"未变化"。
-      writeAgentBuildStamp(stampFile, computeAgentBuildStamp(repoRoot));
-    }
-  }
   if (agentBytecode) {
     await run(process.platform === "win32" ? "node" : process.execPath, [
       resolve(repoRoot, "scripts/build-desktop-agent-bytecode.mjs"),

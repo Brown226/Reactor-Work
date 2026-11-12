@@ -1,10 +1,10 @@
-import type { BrowserWindow, MessageBoxReturnValue } from "electron";
+import type { AboutPanelOptionsOptions, BrowserWindow, MessageBoxReturnValue } from "electron";
 import { existsSync, readFileSync } from "node:fs";
 import { arch, hostname, platform, release, type, version as osVersion } from "node:os";
 import { join } from "node:path";
 import {
   DEFAULT_LOCALE,
-  DEV_TAP_HINT_MS,
+  toZhOrEnLocale,
   type Locale,
   ZCODE_BUILD_TIME,
   ZCODE_COMMIT,
@@ -53,42 +53,35 @@ interface AboutSnapshotOptions {
   };
 }
 
-const ABOUT_APPLICATION_NAME = "Reactor Desktop App";
+const ABOUT_APPLICATION_NAME = "ZCode Desktop App";
 // 自定义 About 内容本体是 256x280；原生窗口如果同尺寸会让内容贴满透明窗口边界。
 // 这里给 BrowserWindow 额外留出背景呼吸空间，避免正式 About 看起来比 demo 更局促。
 const ABOUT_WINDOW_WIDTH = 256;
 const ABOUT_WINDOW_HEIGHT = 312;
+// 关于窗口只内置中英；其它界面语言用英文（以前回退 DEFAULT_LOCALE 会显示中文）。
 const ABOUT_MESSAGES: Record<
-  Locale,
+  "zh-CN" | "en-US",
   {
     aboutTitle: string;
     versionLabel: string;
     okButtonLabel: string;
     optimizedForAppleSilicon: string;
     copyright: (year: number) => string;
-    devModeUnlockedHint: string;
-    devModeLockedHint: string;
   }
 > = {
   "zh-CN": {
-    aboutTitle: "关于 Reactor",
+    aboutTitle: "关于 ZCode",
     versionLabel: "版本",
     okButtonLabel: "确定",
     optimizedForAppleSilicon: "已针对 Apple Silicon 优化。",
-    // 版权主体待替换为 Reactor 的法定实体名；上游版权归属由仓库根 LICENSE / NOTICE.md 保留。
-    copyright: (year) => `版权所有 © ${year} Reactor。`,
-    // 版本号连点的结果提示；完整语义见 docs/model-governance-and-dev-mode.md。
-    devModeUnlockedHint: "已进入开发者模式",
-    devModeLockedHint: "已退出开发者模式",
+    copyright: (year) => `版权所有 © ${year} ZCode。`,
   },
   "en-US": {
-    aboutTitle: "About Reactor",
+    aboutTitle: "About ZCode",
     versionLabel: "version",
     okButtonLabel: "OK",
     optimizedForAppleSilicon: "Optimized for Apple Silicon.",
-    copyright: (year) => `Copyright © ${year} Reactor.`,
-    devModeUnlockedHint: "Developer mode on",
-    devModeLockedHint: "Developer mode off",
+    copyright: (year) => `Copyright © ${year} ZCode.`,
   },
 };
 
@@ -106,8 +99,8 @@ function normalizePackageVersion(version: string | undefined): string {
   return normalized === "unknown" ? normalized : normalized.replace(/^[^\d]*/, "") || normalized;
 }
 
-function getAboutMessages(locale: Locale): (typeof ABOUT_MESSAGES)[Locale] {
-  return ABOUT_MESSAGES[locale] ?? ABOUT_MESSAGES[DEFAULT_LOCALE];
+function getAboutMessages(locale: Locale): (typeof ABOUT_MESSAGES)["en-US"] {
+  return ABOUT_MESSAGES[toZhOrEnLocale(locale)];
 }
 
 function readJsonFile<T>(filePath: string): T | null {
@@ -199,14 +192,14 @@ export function formatAboutDetail(snapshot: AboutSnapshot): string {
   ].join("\n");
 }
 
-function formatAboutCopyright(
+export function formatAboutCopyright(
   year = new Date().getFullYear(),
   locale: Locale = DEFAULT_LOCALE,
 ): string {
   return getAboutMessages(locale).copyright(year);
 }
 
-function formatAboutOptimizationLine(
+export function formatAboutOptimizationLine(
   snapshot: Pick<AboutSnapshot, "osPlatform" | "osArch">,
   locale: Locale = DEFAULT_LOCALE,
 ): string {
@@ -215,6 +208,23 @@ function formatAboutOptimizationLine(
   }
 
   return "";
+}
+
+export function createSystemAboutPanelOptions(
+  snapshot: AboutSnapshot,
+  year = new Date().getFullYear(),
+  locale: Locale = DEFAULT_LOCALE,
+): AboutPanelOptionsOptions {
+  const messages = getAboutMessages(locale);
+  const credits = formatAboutOptimizationLine(snapshot, locale);
+  return {
+    applicationName: ABOUT_APPLICATION_NAME,
+    applicationVersion: `${messages.versionLabel} ${snapshot.appVersion}`,
+    copyright: formatAboutCopyright(year, locale),
+    // 设计原因：macOS About Panel 的 credits 区最接近参考图里的硬件优化说明位置。
+    // 保持信息交给系统级面板渲染，避免自绘窗口和原生关于弹窗风格割裂。
+    ...(credits ? { credits } : {}),
+  };
 }
 
 function resolveAboutIconPath(isPackaged: boolean): string {
@@ -252,15 +262,11 @@ export async function showAboutDialog(
     title: aboutMessages.aboutTitle,
     icon: existsSync(iconPath) ? iconPath : undefined,
     webPreferences: {
-      preload: join(import.meta.dirname, "../preload/aboutWindow.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
     },
   });
-  // 版本号连点 → 开发者模式开关的中转；窗口关闭时 bridge 会随 "closed" 自行摘除。
-  const { getAboutDevModeTapBridge } = await import("./aboutDevModeTap.js");
-  getAboutDevModeTapBridge().attach(aboutWindow);
   aboutWindow.setMenuBarVisibility(false);
   aboutWindow.once("ready-to-show", () => {
     aboutWindow.show();
@@ -274,9 +280,6 @@ export async function showAboutDialog(
         optimizationLine: formatAboutOptimizationLine(snapshot, locale),
         versionLabel: aboutMessages.versionLabel,
         okButtonLabel: aboutMessages.okButtonLabel,
-        devModeUnlockedHint: aboutMessages.devModeUnlockedHint,
-        devModeLockedHint: aboutMessages.devModeLockedHint,
-        devModeHintMs: DEV_TAP_HINT_MS,
       }),
     )}`,
   );

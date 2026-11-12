@@ -1,4 +1,4 @@
-import { mkdir, readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { build } from "esbuild";
@@ -55,6 +55,7 @@ export const buildNodeReplHostBundle = async ({
     outfile,
     platform: "node",
     target: "node24",
+    external: ["sharp"],
   });
   // 构建期守卫：define 名一旦漂移（改名、被 createSharedDefines 之类重构吞掉），
   // 产物会静默退回空串，而症状只在正式包出现且表现为超时。这里立刻失败，别再让它溜到用户手上。
@@ -67,6 +68,13 @@ export const buildNodeReplHostBundle = async ({
       );
     }
   }
+  // 修复原因：官方插件 seed 按版本复用缓存，而 server.js 的 build id 每条流水线都变、版本号不变。
+  // 写出构建身份文件，供 bootstrap 的 buildIdentityPath 比较，桌面升级后才会重新 seed。
+  // 写在 outfile 所在 dist 根目录（默认 dist/build-identity.json），测试的临时输出不会改写真实 dist。
+  await writeFile(
+    resolve(dirname(outfile), "..", "build-identity.json"),
+    `${JSON.stringify({ cuaHelperBuildId })}\n`,
+  );
   return { outfile, cuaHelperBuildId };
 };
 

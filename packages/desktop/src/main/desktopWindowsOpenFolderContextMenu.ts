@@ -1,13 +1,14 @@
 import { spawn } from "node:child_process";
 import { resolve } from "node:path";
-import type { Locale } from "@zcode/shared";
+import { toZhOrEnLocale, type Locale } from "@zcode/shared";
 
 const MENU_KEY_NAME = "ZCode.OpenInZCode";
 const DIRECTORY_MENU_KEY = `HKCU\\Software\\Classes\\Directory\\shell\\${MENU_KEY_NAME}`;
 const DRIVE_MENU_KEY = `HKCU\\Software\\Classes\\Drive\\shell\\${MENU_KEY_NAME}`;
-const MENU_LABELS: Record<Locale, string> = {
-  "zh-CN": "在Reactor中打开",
-  "en-US": "Open in Reactor",
+// 系统右键菜单只内置中英；其它界面语言用英文。
+const MENU_LABELS: Record<"zh-CN" | "en-US", string> = {
+  "zh-CN": "在ZCode中打开",
+  "en-US": "Open in ZCode",
 };
 
 type Logger = {
@@ -15,19 +16,19 @@ type Logger = {
   warn: (...args: unknown[]) => void;
 };
 
-interface WindowsOpenFolderRegistryOperation {
+export interface WindowsOpenFolderRegistryOperation {
   args: string[];
 }
 
-function getWindowsOpenFolderMenuName(locale: Locale): string {
-  return MENU_LABELS[locale] ?? MENU_LABELS["en-US"];
+export function getWindowsOpenFolderMenuName(locale: Locale): string {
+  return MENU_LABELS[toZhOrEnLocale(locale)];
 }
 
 function quoteWindowsCommandArg(value: string): string {
   return `"${value.replace(/"/g, '\\"')}"`;
 }
 
-function buildWindowsOpenFolderCommand(
+export function buildWindowsOpenFolderCommand(
   executablePath: string,
   appArgs: readonly string[] = [],
 ): string {
@@ -39,7 +40,7 @@ function buildWindowsOpenFolderCommand(
   ].join(" ");
 }
 
-function buildWindowsOpenFolderRegistryOperations(options: {
+export function buildWindowsOpenFolderRegistryOperations(options: {
   executablePath: string;
   appArgs?: readonly string[];
   locale: Locale;

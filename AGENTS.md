@@ -11,19 +11,20 @@
 
 以下命令从仓库根目录执行：
 
-| 用途             | 命令                                      |
-| ---------------- | ----------------------------------------- |
-| 类型检查         | `pnpm typecheck`                          |
-| Lint             | `pnpm lint` / `pnpm lint:fix`             |
-| 格式检查         | `pnpm fmt:check`                          |
-| 桌面开发         | `pnpm dev:desktop`                        |
-| Web 开发         | `pnpm dev:web`                            |
-| 交付打包         | `node scripts/release/package-release.mjs <desktop\|web\|server\|portal\|all>` |
-| 提交前检查       | `pnpm verify:pre-push`（Lint 与架构检查） |
-| 架构检查         | `pnpm architecture:check --changed`       |
-| 模块阅读包       | `pnpm architecture:context <module-id>`   |
-| 未使用依赖与导出 | `pnpm knip`                               |
-| 导出引用查询     | `pnpm dep:refs --list-exports <file>`     |
+| 用途             | 命令                                                      |
+| ---------------- | --------------------------------------------------------- |
+| 类型检查         | `pnpm typecheck`                                          |
+| Lint             | `pnpm lint` / `pnpm lint:fix`                             |
+| 格式检查         | `pnpm fmt:check`                                          |
+| 桌面开发         | `pnpm dev:desktop`                                        |
+| Web 开发         | `pnpm dev:web`                                            |
+| 提交前检查       | `pnpm verify:pre-push`（工作区、Lint、schema 与架构检查） |
+| 架构检查         | `pnpm architecture:check --changed`                       |
+| 模块阅读包       | `pnpm architecture:context <module-id>`                   |
+| 未使用依赖与导出 | `pnpm knip`                                               |
+| 导出引用查询     | `pnpm dep:refs --list-exports <file>`                     |
+
+App 业务单测已退役，不新增或恢复 App 业务单测 test/spec 或 `contract.test.ts`；保留 CLI、CUA、E2E、浏览器验收和工程门禁测试。工程 Vitest 使用 `pnpm test:engineering <文件>`，push 自动运行 `pnpm test:engineering:affected --scope push`，CLI/CUA 使用各包独立入口，不默认全量。范围见 [测试规格](docs/testing/unit-test-quality.md)，推送合同见 [pre-push 说明](docs/testing/pre-push-hook.md)。
 
 测试入口以目标包当前的 `package.json` 和实际测试文件为准，不假定存在统一的单测或 E2E 命令。
 
@@ -33,8 +34,6 @@
 - `packages/services`：业务服务；`packages/rpc`：RPC 框架。
 - `packages/shared`：共享协议与类型；`packages/client`：Agent 客户端 SDK。
 - `apps/zcode-cli`：Agent CLI 与运行时。
-- `portal/`：产品门户（官网 + 说明书离线站点），独立 Docker 镜像部署到内网，不参与本仓构建门禁。
-- `docs/交付打包流程.md`：四端交付打包标准流程（桌面 win x64、Web / 服务端 / 门户镜像）与现场升级脚本注意事项；出包前必读，`scripts/release/` 是其可执行实现。
 - `CONTEXT.md`：插件商店领域词汇；修改相关 UI 前阅读。
 - `DESIGN.md`：UI 设计规范；修改 UI 前阅读。
 
@@ -42,26 +41,14 @@
 
 - 代码改动使用 `.agents/skills/architecture-governance/SKILL.md`，先运行架构检查，再读取目标模块的受控上下文。
 - 避免重复状态和多条写入路径。明确唯一所有者、接口、依赖方向、事件顺序与幂等边界，不能用超时掩盖同步问题。
-- 有行为改动时先补充对应测试；交互改动需要 E2E 场景。检查测试与实现是否一致，并实际执行可用的验证。未执行或环境受限时如实说明。
+- App 行为改动先更新 spec，确定 E2E、浏览器验收或可重复运行时场景；交互改动先维护 E2E 再改实现。工程工具、CLI/CUA 先补其回归测试。实际执行必要验证，未执行或环境受限时如实说明。
 - 修复 bug 时用中文注释说明原因和修复依据。发现设计缺陷时先与用户对齐，不不断增加兜底分支。
+- PR 描述须说明背景、设计意图与修改前后行为；包含 bugfix 时逐项说明触发场景、根因证据、修复机制及回归验证，并尽量关联已有工单链接。未确认的根因或引入提交如实标注，不根据模块或时间接近推断归因。
 - 涉及状态、时序、远端或异步同步的方案，用图展示所有者及事件顺序。
-- 必须执行 `pnpm typecheck` 和 `pnpm lint`，报告真实结果，不将已有失败写成通过。检查范围按时效分级（见下），但报告口径不变：跑了什么、没跑什么，如实写。
+- 必须执行 `pnpm typecheck` 和 `pnpm lint`，报告真实结果，不将已有失败写成通过。
+- 修改 React 组件或 hooks 后，必须运行 `pnpm lint`（Oxlint），检查 `react/exhaustive-deps` 和 `react/rules-of-hooks`。复核本次改动新增及相关的缺失、多余、不稳定依赖与调用位置诊断，不能因仅告警或退出码为 0 就忽略，也不机械补齐整个对象依赖或禁用规则。被根配置忽略的文件须按 [React Hooks 检查](docs/testing/react-hooks-lint.md) 补做专项扫描；渲染问题仍须运行时验证。
 - 使用异步文件和网络 IO；跨包导入使用公开入口，遵守现有路径别名。
 - 禁止 UI 直接调用 Repo、Service 引用 Runtime 具体实现、跨域导入实现细节及循环依赖。
-
-### 验证成本分级（避免重复全量门禁）
-
-全仓 `pnpm typecheck` 是 `tsc -b` 全链条 10 包构建，一次一两分钟，是最慢的门禁；每次小改动都全量跑属于重复耗时操作。按改动类型分级：
-
-| 改动类型 | 验证口径 |
-| --- | --- |
-| 文案、样式、注释、单文件小改 | 只对改动文件跑 `pnpm exec oxlint <files>`（毫秒级）+ 对受影响包链跑增量 `tsc -b`；交付时注明验证范围 |
-| 行为改动、跨包改动、协议/状态改动 | 全量 `pnpm typecheck` + `pnpm lint` + `pnpm architecture:check --changed` |
-| 提交、推送前 | 一次性补齐完整门禁（全量 typecheck + lint + arch + `oxfmt --check`） |
-
-- `pnpm lint`（oxlint）全仓仅约 1 秒，不是瓶颈，可随跑；慢的是 typecheck，别反复跑。
-- 确定性高的布局/文案改动不做静态复现或运行时验证；无法到达的链路（如需登录才能进入的界面）如实注明，不为此强行起 dev 进程。
-- `pnpm dev:desktop` 的 `pre-dev` 每次启动都删除 `out/` 全量重建 main/host/preload，启动慢是固有成本；不要为验证单点改动反复重启 dev 进程。
 
 ## UI 与平台边界
 

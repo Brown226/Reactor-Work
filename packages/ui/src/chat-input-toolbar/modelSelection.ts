@@ -1,6 +1,14 @@
 import type { ModelSelectGroup } from "@/ModelConfigSelect.js";
 import { decodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
 
+export function shouldShowManageModelsAction(
+  onManageModels?: () => void,
+  options: { isWebRemoteControl?: boolean } = {},
+): boolean {
+  if (options.isWebRemoteControl) return false;
+  return typeof onManageModels === "function";
+}
+
 function resolveModelValueDisplayLabel(value: string): string {
   const customSelection = decodeCustomModelValue(value);
   if (customSelection?.modelName?.trim()) {
@@ -19,6 +27,8 @@ function resolveModelValueDisplayLabel(value: string): string {
 export function resolveModelSelectTriggerDisplay(
   normalizedValue: string,
   modelGroups: readonly ModelSelectGroup[],
+  showManageModelsAction: boolean,
+  manageModelsLabel?: string,
   options?: {
     allowUnavailableCustomModelPlaceholder?: boolean;
     allowUnavailableModelPlaceholder?: boolean;
@@ -27,12 +37,19 @@ export function resolveModelSelectTriggerDisplay(
   if (normalizedValue.trim().toLocaleLowerCase() === "<synthetic>") {
     return { value: undefined, placeholder: undefined };
   }
-  if (modelGroups.some((group) => group.items.some((item) => item.value === normalizedValue))) {
+  if (
+    modelGroups.some((group) =>
+      group.items.some((item) => item.value === normalizedValue),
+    )
+  ) {
     return { value: normalizedValue, placeholder: undefined };
   }
 
   const customSelection = decodeCustomModelValue(normalizedValue);
-  if (options?.allowUnavailableCustomModelPlaceholder && customSelection?.modelName?.trim()) {
+  if (
+    options?.allowUnavailableCustomModelPlaceholder &&
+    customSelection?.modelName?.trim()
+  ) {
     return { value: undefined, placeholder: customSelection.modelName.trim() };
   }
   if (options?.allowUnavailableModelPlaceholder && normalizedValue.trim()) {
@@ -40,6 +57,9 @@ export function resolveModelSelectTriggerDisplay(
       value: undefined,
       placeholder: resolveModelValueDisplayLabel(normalizedValue),
     };
+  }
+  if (modelGroups.length === 0 && showManageModelsAction) {
+    return { value: undefined, placeholder: manageModelsLabel };
   }
   return { value: undefined, placeholder: undefined };
 }

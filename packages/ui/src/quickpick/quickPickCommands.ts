@@ -1,6 +1,7 @@
 export type QuickPickCommandIcon =
   | "book"
   | "browser"
+  | "community"
   | "diff"
   | "feedback"
   | "folder"
@@ -8,6 +9,8 @@ export type QuickPickCommandIcon =
   | "logout"
   | "message"
   | "mcp"
+  | "reload"
+  | "logs"
   | "settings"
   | "sidebarClose"
   | "sidebarOpen"
@@ -52,6 +55,7 @@ interface QuickPickCommandHandlers {
   openMcpSettings: () => void;
   switchTheme: () => void;
   openFeedback: () => void | Promise<void>;
+  openCommunity: () => void | Promise<void>;
   openProductDocs: () => void | Promise<void>;
   login?: () => void | Promise<void>;
   logout?: () => void | Promise<void>;
@@ -60,16 +64,21 @@ interface QuickPickCommandHandlers {
   togglePreview: () => void;
   openTerminalTab: () => void;
   openBrowserTab: () => void;
-  openChangesTab: () => void;
+  openReviewTab: () => void;
+  /** 只有桌面本机 Host 提供扩展门面时才有（docs/plugins/extension-host.md §12.1）。 */
+  reloadExtensions?: () => void;
+  /** 打开扩展日志标签（§16.8）：与 reloadExtensions 同一条件。 */
+  openExtensionLogs?: () => void;
 }
 
 interface CreateQuickPickCommandsOptions {
   allowOpenWorkspace: boolean;
+  canOpenCommunity: boolean;
   isSidebarVisible: boolean;
   isLoggedIn: boolean;
   supportsEmbeddedBrowser?: boolean;
   supportsTerminal?: boolean;
-  supportsChanges?: boolean;
+  supportsReview?: boolean;
   themeTarget: "dark" | "light";
   shortcuts: {
     newTask: string;
@@ -82,11 +91,12 @@ interface CreateQuickPickCommandsOptions {
 
 export function createQuickPickCommands({
   allowOpenWorkspace,
+  canOpenCommunity,
   isSidebarVisible,
   isLoggedIn,
   supportsEmbeddedBrowser = true,
   supportsTerminal = true,
-  supportsChanges = true,
+  supportsReview = true,
   themeTarget,
   shortcuts,
   handlers,
@@ -181,12 +191,12 @@ export function createQuickPickCommands({
         ]
       : []),
     {
-      id: "add-changes-tab",
+      id: "add-review-tab",
       sectionId: "panels",
-      titleId: "quickPick.command.addChangesTab",
+      titleId: "quickPick.command.addReviewTab",
       icon: "diff",
-      keywords: ["add", "review", "diff", "changes", "添加变更审查", "变更审查标签", "变更"],
-      run: handlers.openChangesTab,
+      keywords: ["add", "review", "diff", "changes", "添加审查", "审查标签", "变更"],
+      run: handlers.openReviewTab,
     },
     {
       id: "settings",
@@ -244,7 +254,39 @@ export function createQuickPickCommands({
     run: handlers.openFeedback,
   });
 
-  // 「用户社群」命令已移除：社群入口不再出现在命令面板，帮助菜单仍保留同一平台能力。
+  if (canOpenCommunity) {
+    commands.push({
+      id: "community",
+      sectionId: "app",
+      titleId: "quickPick.command.community",
+      icon: "community",
+      keywords: ["community", "users", "chat", "用户社群", "社群"],
+      run: handlers.openCommunity,
+    });
+  }
+
+  if (handlers.reloadExtensions) {
+    commands.push({
+      id: "reload-extensions",
+      sectionId: "app",
+      titleId: "quickPick.command.reloadExtensions",
+      icon: "reload",
+      keywords: ["extension", "extensions", "reload", "plugin", "扩展", "重新加载", "插件"],
+      run: handlers.reloadExtensions,
+    });
+  }
+
+  if (handlers.openExtensionLogs) {
+    commands.push({
+      id: "open-extension-logs",
+      sectionId: "app",
+      titleId: "quickPick.command.openExtensionLogs",
+      icon: "logs",
+      keywords: ["extension", "extensions", "logs", "console", "plugin", "扩展", "日志", "插件"],
+      run: handlers.openExtensionLogs,
+    });
+  }
+
   commands.push({
     id: "product-docs",
     sectionId: "app",
@@ -279,6 +321,6 @@ export function createQuickPickCommands({
     (command) =>
       (supportsTerminal ||
         (command.id !== "toggle-terminal" && command.id !== "add-terminal-tab")) &&
-      (supportsChanges || command.id !== "add-changes-tab"),
+      (supportsReview || command.id !== "add-review-tab"),
   );
 }

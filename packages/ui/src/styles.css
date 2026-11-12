@@ -4,26 +4,58 @@
 @import "shadcn/tailwind.css";
 @import "@xterm/xterm/css/xterm.css";
 @import "katex/dist/katex.min.css";
-@source "../../../node_modules/streamdown/dist/*.js"; /* 显式扫描 streamdown 的运行时类名 */
+@import "./highspeed/highspeed-activation.css";
+@import "./highspeed/highspeed-share.css";
+@import "./nativeMediaControls.css";
+@source "../../../node_modules/streamdown/dist/*.js"; /* 感觉这行也是不好使呢*/
 
 @plugin "@tailwindcss/typography";
+@plugin "../lucide-colors.mjs";
 
-/*  KaTeX 会同时输出 MathML 辅助层和 HTML 视觉层；缺少 katex CSS 时两层都会显示，
+/* Hero 可为任意图片/视频/iframe，不能用 App 主题推断关闭图标对比度。 */
+.cloud-content-dialog {
+  --media-close-surface: rgb(0 0 0 / 50%);
+  --media-close-surface-hover: rgb(0 0 0 / 65%);
+  --media-close-foreground: #fff;
+}
+.cloud-content-dialog [data-slot="dialog-close"] {
+  background-color: var(--media-close-surface);
+  color: var(--media-close-foreground);
+  border: 0;
+}
+.cloud-content-dialog [data-slot="dialog-close"]:hover {
+  background-color: var(--media-close-surface-hover);
+}
+
+/* Bugfix: KaTeX 会同时输出 MathML 辅助层和 HTML 视觉层；缺少 katex CSS 时两层都会显示，
  * 行内公式和块级公式就会看起来“渲染一遍又普通文本一遍”。 */
 
-/*  Linux desktop 的窗口标题栏由 renderer 自绘，部分 overlay 需要只在该平台避开标题栏点击区。 */
+/* Bugfix: Linux desktop 的窗口标题栏由 renderer 自绘，部分 overlay 需要只在该平台避开标题栏点击区。 */
 @custom-variant platform-linux-desktop (&:where(.platform-linux-desktop, .platform-linux-desktop *));
 @custom-variant platform-linux-window-maximized (&:where(.platform-linux-desktop.window-maximized, .platform-linux-desktop.window-maximized *));
 
-/*  macOS desktop 使用 hidden 原生标题栏，右上角浮层操作必须避开其原生命中区域。 */
+/* Bugfix: macOS desktop 使用 hidden 原生标题栏，右上角浮层操作必须避开其原生命中区域。 */
 @custom-variant platform-mac-desktop (&:where(.platform-mac-desktop, .platform-mac-desktop *));
 
-/*  Windows desktop 的原生 titleBarOverlay 占用右上角，图片 lightbox 等深层 overlay
+/* Bugfix: Windows desktop 的原生 titleBarOverlay 占用右上角，图片 lightbox 等深层 overlay
  * 通过独立平台 variant 使用真实 Window Controls Overlay 安全区；普通 Web 不继承该规则。 */
 @custom-variant platform-windows-desktop (&:where(.platform-windows-desktop, .platform-windows-desktop *));
 
+/* 手机等窄屏 Web（含手机远控）专用布局。桌面端最小窗口 480px，只用 max-sm 会误伤桌面窄窗口；
+ * 这里要求根节点没有任何 desktop 平台标记，保证桌面端与宽屏 Web 的布局完全不变。
+ * spec：docs/settings-narrow-layout.md */
+@custom-variant compact-web {
+  @media (width < 40rem) {
+    &:where(
+      :root:not(.platform-mac-desktop, .platform-windows-desktop, .platform-linux-desktop) *
+    ) {
+      @slot;
+    }
+  }
+}
+
 /*
- * 当前 UI 直接使用了 shadcn 的 radix-mira 风格组件源码，这些组件大量依赖
+ * 修复原因：当前 UI 直接使用了 shadcn 的 radix-mira 风格组件源码，这些组件大量依赖
  * data-active / data-horizontal / data-vertical 这类语义 variant。
  * 上游并不是靠单个组件手写 data-[state=active]，而是通过 shadcn/tailwind.css 里的
  * @custom-variant 把 Radix 的 data-state、data-orientation 统一映射过来。
@@ -34,7 +66,7 @@
  */
 
 /*
- * styles.css 是从 @zcode/ui 包里被 web/desktop 间接引入的，Tailwind v4 在这种工作区场景下
+ * 修复原因：styles.css 是从 @zcode/ui 包里被 web/desktop 间接引入的，Tailwind v4 在这种工作区场景下
  * 仅靠 source(".") 不能稳定把 UI 包里的 TSX 组件都加入扫描，像 Select 这类新组件用到的
  * bg-popover、shadow-md、overflow-x-hidden 等 utility 会直接缺席，页面就只剩下一部分“碰巧命中”的通用类。
  * 这里显式补一条 @source，让 Tailwind 始终扫描 UI 包源码，避免下拉框、菜单这类组件渲染成半残状态。
@@ -55,73 +87,24 @@ body,
 }
 
 :root {
+  --shadow-composer-soft: 0 0 #0000;
   --ui-font-size: 14px;
-}
-
-/* 独立主题色（accent）：只覆盖 --color-accent（弱强调面），不碰 --color-brand。
-   属性 + 两个变量由 applyAccentColor 写在文档根上；.dark 档保证深浅各自取值。
-   特异性（:root[attr] / .dark[attr]）高于主题块里既有的 --color-accent 定义，
-   因此仅在用户选了非默认档时生效，默认档无属性、不产生任何覆盖。 */
-:root[data-app-accent] {
-  --color-accent: var(--accent-color-light);
-}
-.dark[data-app-accent] {
-  --color-accent: var(--accent-color-dark);
-}
-
-/* 壁纸调色板：选中风景壁纸时，强调色跟随该图的主色调。
-   守卫 `:not([data-app-accent])` 保证"用户显式选的 accent"优先于壁纸配色——
-   用户既然明确选过强调色，壁纸不该悄悄覆盖它。
-   仍然只覆盖 --color-accent（弱强调面），不碰 --color-brand（DESIGN.md 品牌色约束）。 */
-:root[data-app-wallpaper-palette]:not([data-app-accent]) {
-  --color-accent: var(--accent-color-light);
-}
-.dark[data-app-wallpaper-palette]:not([data-app-accent]) {
-  --color-accent: var(--accent-color-dark);
-}
-
-/* 弹簧缓动：用于主题选择与壁纸卡片的轻微回弹。
-   近似 NewMax 的 ease-spring-gentle（其实现用 framer-motion 的 useSpring，
-   这里只用 CSS cubic-bezier 达到同等的"越过终点再回弹"手感，不引第三方依赖）。
-   数值 1.56 略大于 1，即控制点越过终点，产生轻微过冲。 */
-:root {
-  --ease-spring-gentle: cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* 主题选择与壁纸卡片的回弹过渡。尊重系统「减弱动效」。 */
-@media (prefers-reduced-motion: no-preference) {
-  [data-theme-card],
-  [data-wallpaper-card] {
-    transition:
-      transform 200ms var(--ease-spring-gentle),
-      box-shadow 200ms ease-out;
-  }
-  [data-theme-card]:hover,
-  [data-wallpaper-card]:hover {
-    transform: scale(1.02);
-  }
-  /* 选中勾选圆点：从无到有时轻微弹出，比直接出现更有"落下"的手感。 */
-  [data-wallpaper-card][data-selected="true"] [data-selected-dot] {
-    animation: accent-dot-pop 220ms var(--ease-spring-gentle);
-  }
-  @keyframes accent-dot-pop {
-    from {
-      transform: scale(0.4);
-      opacity: 0;
-    }
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
+  --color-remote-continuity-panel: #202124;
+  --color-remote-continuity-panel-surface: #2c2d30;
+  --color-remote-continuity-panel-foreground: #f8f8f8;
+  --color-remote-continuity-panel-subtle: #a7a7ad;
 }
 
 body {
   margin: 0;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* 中文模板描述按单字断行会拆开“简报”等词组，并把标点挤到下一行。
+/* 后台不全局禁用动画：none 会取消动画，回前台后重建，干扰组件生命周期。
+ * 动画由组件自身管理，见 docs/performance/hidden-document-motion-pause.md。 */
+
+/* Bugfix：中文模板描述按单字断行会拆开“简报”等词组，并把标点挤到下一行。
  * Chromium 支持时启用短语级换行；其它环境保留正常断行，避免 keep-all 在窄屏产生溢出。 */
 .text-wrap-phrase {
   overflow-wrap: break-word;
@@ -136,44 +119,18 @@ body {
   }
 }
 
-.side-pane-open-tab-shell {
-  container: side-pane-open-tab / inline-size;
-}
-
-@container side-pane-open-tab (min-width: 480px) {
-  .side-pane-open-tab-content {
-    max-width: 34rem;
-  }
-
-  .side-pane-open-tab-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  }
-
-  .side-pane-open-tab-button {
-    flex-direction: column;
-    gap: 0.375rem;
-    height: 5.5rem;
-    justify-content: center;
-  }
-
-  .side-pane-open-tab-button-label {
-    flex: 0 1 auto;
-    text-align: center;
-  }
-}
-
 #root {
-  /*  Windows 桌面窗口拉伸后，根节点如果只靠内容撑开，Chromium 偶发会把新尺寸区域留给宿主底层。
+  /* Bugfix: Windows 桌面窗口拉伸后，根节点如果只靠内容撑开，Chromium 偶发会把新尺寸区域留给宿主底层。
    * 这里把 React 挂载点固定成完整动态视口，让桌面/Web/手机端都从根节点开始明确铺满可视区。 */
   height: 100dvh;
   overflow: hidden;
 }
 
 /*
- *  部分浏览器 / Electron 运行环境会在 focus-visible 时叠加系统级高亮边框，
+ * Bugfix: 部分浏览器 / Electron 运行环境会在 focus-visible 时叠加系统级高亮边框，
  * 表现为和产品主题无关的黄色描边，看起来像“随机冒出来的无障碍样式”。
  * 这里在全局层同时清掉 outline 和 focus ring 对应的 box-shadow，避免系统高亮和组件局部 ring 混用。
+ * 曾按对话框、远程控件和设置导航强制恢复 outline，导致组合输入出现双框；保留组件原有焦点样式，不再全局叠加。
  */
 *:focus,
 *:focus-visible {
@@ -190,14 +147,38 @@ body {
   }
 }
 
+/*
+ * 中日韩汉字共用码位，字形由字体决定：--font-mono 为中文在 monospace 前写死了 SC 字体，
+ * 日文/韩文界面会因此显示中文字形（如「直」「骨」）。<html lang> 由 ZCodeIntlProvider 跟随界面语言写入，
+ * 这里按 lang 把对应语言的字体排到 SC 前面；无衬线正文走 system-ui，浏览器会按 lang 自动选日/韩字形。
+ */
+:root:lang(ja) {
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", "Noto Sans CJK JP",
+    "Noto Sans JP", "Microsoft YaHei UI", "PingFang SC", monospace;
+}
+
+:root:lang(ko) {
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR", "Noto Sans KR",
+    "Microsoft YaHei UI", "PingFang SC", monospace;
+}
+
 /* === 主题变量 === */
 
 @theme {
-  /* Windows 的 Consolas 不含中文字形，Tailwind 默认栈最终会让中文落到宋体。
+  /* 修复原因：Windows 的 Consolas 不含中文字形，Tailwind 默认栈最终会让中文落到宋体。
    * 保留各平台西文等宽字体，并在通用 monospace 前显式加入各平台 CJK 无衬线字体。 */
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", monospace;
+  /* 设置页直接恢复通用大字号会绕过 UI 字号体系；专用 token 保留默认 24px / 30px，并跟随界面字号缩放。 */
+  --text-ui-settings-title: calc(var(--ui-font-size) + 10px);
+  --text-ui-settings-title--line-height: calc(4 / 3);
+  --text-ui-settings-title-lg: calc(var(--ui-font-size) + 16px);
+  --text-ui-settings-title-lg--line-height: 1.2;
   --text-ui-xl: calc(var(--ui-font-size) + 4px);
   --text-ui-lg: calc(var(--ui-font-size) + 2px);
   --text-ui-base: var(--ui-font-size);
@@ -205,7 +186,7 @@ body {
   --text-ui-sm: calc(var(--ui-font-size) - 2px);
   --text-ui-xs: calc(var(--ui-font-size) - 4px);
   /* 例外刻度：仅限工作流图轴面（刻度标签、通道码、单位后缀），不得用于内容文本。
-   * 见 DESIGN.md「UI font tokens」。 */
+   * 见 DESIGN.md「UI font tokens」与 docs/dynamic-workflow/presentation.md。 */
   --text-ui-2xs: calc(var(--ui-font-size) - 5px);
   /* 大写等宽微标签（CAUSALITY GRAPH / TIMEBASE / KEY）在 9-10px 需要加宽字距。 */
   --tracking-wf-label: 0.09em;
@@ -216,17 +197,20 @@ body {
   --color-background: var(--color-neutral-50);
   --color-background-alt: color-mix(in oklab, var(--color-neutral-100) 60%, transparent);
   --color-background-win-alt: var(--color-neutral-200);
-  /* 背景主题用的主题底色字面值。必须与 --color-background 同源但不引用它：
-     主区域会把 --color-background 覆盖成半透明值，若这里再引用它就会形成自引用。 */
-  --app-background-base: var(--color-neutral-50);
   --color-brand: var(--color-sky-400);
+  --color-resize-handle: var(--color-sky-500);
+  /* Composer 语音输入录音胶囊：按设计稿取 sky 色系十六进制值（浅色底色 Sky 100、波形 Sky 600）。
+     不引用 var(--color-sky-*)：Tailwind 4 的 sky 色板是 oklch，渲染值与设计稿有偏差（如 sky-600 为 #0084d1）。 */
+  --color-voice-input-surface: #e0f2fe;
+  --color-voice-input-wave: #0284c7;
   --color-icon-blue: var(--color-terminal-bright-blue);
+  --color-icon-purple: var(--color-terminal-bright-magenta);
   --color-trajectory-user: #2563eb;
   --color-trajectory-assistant: #0f766e;
   --color-trajectory-reasoning: #7c3aed;
   --color-trajectory-tool-call: #d97706;
   --color-trajectory-tool-result: #0284c7;
-  /* 工作流因果图仪表化渲染：
+  /* 工作流因果图仪表化渲染（docs/dynamic-workflow/presentation.md）：
    * rule 比 --color-border 更弱——刻度与空闲轨道每图重复约 40 次，10% 会积成灰雾。 */
   --color-workflow-rule: color-mix(in oklab, var(--color-neutral-950) 5.5%, transparent);
   --color-workflow-trace: color-mix(in oklab, var(--color-neutral-950) 30%, transparent);
@@ -242,6 +226,7 @@ body {
   --color-panel: var(--color-neutral-100);
   --color-sidebar: var(--color-neutral-100);
   --color-surface: color-mix(in oklab, var(--color-neutral-950) 3%, transparent);
+  --color-user-message-bubble: color-mix(in oklab, var(--color-neutral-950) 5%, transparent);
   --color-surface-hover: color-mix(in oklab, var(--color-neutral-950) 5%, transparent);
   --color-markdown-inline-code: var(--color-tag);
   --color-card: var(--color-white);
@@ -294,7 +279,7 @@ body {
   --color-context-breakdown-5: var(--color-sky-200);
   --color-context-breakdown-6: var(--color-sky-100);
   --color-context-breakdown-7: color-mix(in oklab, var(--color-sky-100) 72%, var(--color-white));
-  /*  热力图之前复用 brand 色，Zai 主题下 brand 是黑/白，无法保持 sky 语义。 */
+  /* Bugfix: 热力图之前复用 brand 色，Zai 主题下 brand 是黑/白，无法保持 sky 语义。 */
   --color-usage-heatmap-0: color-mix(in oklab, var(--color-sky-500) 0%, var(--color-surface));
   --color-usage-heatmap-1: color-mix(in oklab, var(--color-sky-500) 18%, var(--color-surface));
   --color-usage-heatmap-2: color-mix(in oklab, var(--color-sky-500) 36%, var(--color-surface));
@@ -313,9 +298,15 @@ body {
   --color-interaction-ask-fill: color-mix(in oklab, var(--color-green-500) 20%, transparent);
   --color-interaction-confirmation-surface: var(--color-green-50);
   --color-interaction-confirmation-foreground: var(--color-green-700);
+  --color-success-surface: var(--color-green-50);
+  --color-success-surface-foreground: var(--color-green-700);
+  --color-progress-surface: var(--color-blue-50);
+  --color-progress-surface-foreground: var(--color-blue-700);
   --color-foreground: var(--color-neutral-700);
-  --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-700) 60%, transparent);
+  --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-700) 70%, transparent);
+  --color-remote-foreground-muted: #595959;
   --color-foreground-subtlest: color-mix(in oklab, var(--color-neutral-700) 40%, transparent);
+  --lucide-subtlest-opacity: 0.4;
   --color-foreground-inverse: var(--color-white);
   --color-success: var(--color-green-600);
   --color-success-foreground: var(--color-foreground-inverse);
@@ -326,6 +317,10 @@ body {
   --color-warning: var(--color-yellow-600);
   --color-feedback-privacy-hint: var(--color-yellow-600);
   --color-warning-foreground: var(--color-foreground-inverse);
+  --color-warning-surface: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  --color-warning-surface-foreground: var(--color-yellow-800);
+  --color-destructive-surface: color-mix(in srgb, var(--color-destructive) 10%, transparent);
+  --color-destructive-surface-foreground: var(--color-red-800);
   --color-diff-added: var(--color-green-600);
   --color-diff-added-foreground: var(--color-foreground-inverse);
   --color-diff-removed: var(--color-red-600);
@@ -344,6 +339,15 @@ body {
   --color-tooltip-tag: var(--color-neutral-200);
   --color-tooltip-tag-foreground: color-mix(in oklab, var(--color-neutral-950) 60%, transparent);
   --color-tag: var(--color-neutral-200);
+  --color-remote-ssh-surface: var(--color-sky-50);
+  --color-remote-ssh-foreground: var(--color-sky-700);
+  --color-remote-ssh-border: var(--color-sky-200);
+  --color-remote-wsl-surface: var(--color-green-50);
+  --color-remote-wsl-foreground: var(--color-green-700);
+  --color-remote-wsl-border: var(--color-green-200);
+  --color-remote-docker-surface: var(--color-violet-50);
+  --color-remote-docker-foreground: var(--color-violet-700);
+  --color-remote-docker-border: var(--color-violet-200);
   --color-file-node: color-mix(in oklab, var(--color-sky-600) 14%, transparent);
   --color-file-node-hover: color-mix(in oklab, var(--color-sky-600) 20%, transparent);
   --color-file-node-foreground: var(--color-sky-600);
@@ -372,8 +376,11 @@ body {
   --color-background: var(--color-neutral-900);
   --color-background-alt: color-mix(in oklab, var(--color-neutral-800) 60%, transparent);
   --color-background-win-alt: var(--color-neutral-800);
-  --app-background-base: var(--color-neutral-900);
   --color-brand: var(--color-sky-500);
+  --color-resize-handle: var(--color-sky-400);
+  /* 深色主题：设计稿底色 Sky 950、波形 Sky 300 */
+  --color-voice-input-surface: #082f49;
+  --color-voice-input-wave: #7dd3fc;
   --color-trajectory-user: #60a5fa;
   --color-trajectory-assistant: #2dd4bf;
   --color-trajectory-reasoning: #a78bfa;
@@ -393,6 +400,7 @@ body {
   --color-panel: var(--color-neutral-900);
   --color-sidebar: var(--color-neutral-950);
   --color-surface: color-mix(in oklab, var(--color-white) 5%, transparent);
+  --color-user-message-bubble: color-mix(in oklab, var(--color-white) 8%, transparent);
   --color-surface-hover: color-mix(in oklab, var(--color-white) 10%, transparent);
   --color-card: var(--color-neutral-800);
   --color-card-selected: var(--color-neutral-700);
@@ -467,9 +475,15 @@ body {
     transparent
   );
   --color-interaction-confirmation-foreground: var(--color-green-300);
+  --color-success-surface: color-mix(in oklab, var(--color-green-950) 45%, transparent);
+  --color-success-surface-foreground: var(--color-green-300);
+  --color-progress-surface: var(--color-blue-950);
+  --color-progress-surface-foreground: var(--color-blue-300);
   --color-foreground: var(--color-neutral-200);
   --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-200) 60%, transparent);
+  --color-remote-foreground-muted: #b3b3b3;
   --color-foreground-subtlest: color-mix(in oklab, var(--color-neutral-200) 30%, transparent);
+  --lucide-subtlest-opacity: 0.3;
   --color-foreground-inverse: var(--color-white);
   --color-success: var(--color-green-500);
   --color-success-foreground: var(--color-foreground-inverse);
@@ -480,6 +494,10 @@ body {
   --color-warning: var(--color-yellow-500);
   --color-feedback-privacy-hint: var(--color-yellow-300);
   --color-warning-foreground: var(--color-foreground-inverse);
+  --color-warning-surface: color-mix(in srgb, var(--color-warning) 16%, transparent);
+  --color-warning-surface-foreground: var(--color-yellow-400);
+  --color-destructive-surface: color-mix(in srgb, var(--color-destructive) 16%, transparent);
+  --color-destructive-surface-foreground: var(--color-red-300);
   --color-diff-added: var(--color-green-500);
   --color-diff-added-foreground: var(--color-foreground-inverse);
   --color-diff-removed: var(--color-red-500);
@@ -498,6 +516,15 @@ body {
   --color-tooltip-tag: var(--color-neutral-800);
   --color-tooltip-tag-foreground: color-mix(in oklab, var(--color-neutral-50) 60%, transparent);
   --color-tag: var(--color-neutral-700);
+  --color-remote-ssh-surface: color-mix(in oklab, var(--color-sky-500) 18%, transparent);
+  --color-remote-ssh-foreground: var(--color-sky-300);
+  --color-remote-ssh-border: var(--color-sky-700);
+  --color-remote-wsl-surface: color-mix(in oklab, var(--color-green-500) 18%, transparent);
+  --color-remote-wsl-foreground: var(--color-green-300);
+  --color-remote-wsl-border: var(--color-green-700);
+  --color-remote-docker-surface: color-mix(in oklab, var(--color-violet-500) 18%, transparent);
+  --color-remote-docker-foreground: var(--color-violet-300);
+  --color-remote-docker-border: var(--color-violet-700);
   --color-file-node: color-mix(in oklab, var(--color-sky-400) 18%, transparent);
   --color-file-node-hover: color-mix(in oklab, var(--color-sky-400) 24%, transparent);
   --color-file-node-foreground: var(--color-sky-300);
@@ -521,13 +548,13 @@ body {
 }
 
 .theme-zai-light {
+  --shadow-composer-soft: 0 1px 3px rgb(0 0 0 / 4%), 0 6px 18px rgb(0 0 0 / 4%);
   --animated-gradient-text-strong: rgba(13, 13, 13, 1);
   --animated-gradient-text-soft: rgba(13, 13, 13, 0.22);
   --color-background: #f8f8f8;
   --color-background-win-alt: #ececee;
-  --app-background-base: #f8f8f8;
   --color-background-alt: color-mix(in oklab, var(--color-background) 70%, transparent);
-  --color-brand: #0061af;
+  --color-brand: #000000;
   --color-trajectory-user: #2563eb;
   --color-trajectory-assistant: #0f766e;
   --color-trajectory-reasoning: #7c3aed;
@@ -536,7 +563,7 @@ body {
   --color-workflow-rule: rgba(13, 13, 13, 0.055);
   --color-workflow-trace: rgba(13, 13, 13, 0.3);
   --color-workflow-trace-strong: rgba(13, 13, 13, 0.55);
-  --color-accent: #e6f4fa;
+  --color-accent: #ebf4ff;
   --color-find-highlight: #fff4eb;
   --color-find-highlight-active: #ffb26b;
   --color-border: rgba(13, 13, 13, 0.1);
@@ -547,6 +574,7 @@ body {
   --color-panel: #ffffff;
   --color-sidebar: #f0f0f0;
   --color-surface: rgba(13, 13, 13, 0.03);
+  --color-user-message-bubble: rgba(13, 13, 13, 0.05);
   --color-surface-hover: rgba(13, 13, 13, 0.05);
   --color-card: #ffffff;
   --color-card-selected: var(--color-input);
@@ -605,7 +633,7 @@ body {
   --color-tab-border: var(--color-border);
   --color-menu: #ffffff;
   --color-menu-hover: #f0f0f0;
-  --color-primary: #0061af;
+  --color-primary: #000000;
   --color-primary-foreground: #ffffff;
   --color-secondary: #e6e6e6;
   --color-interaction-ask-surface: #ebf4ff;
@@ -613,9 +641,15 @@ body {
   --color-interaction-ask-fill: rgba(70, 191, 114, 0.2);
   --color-interaction-confirmation-surface: #eaf7ee;
   --color-interaction-confirmation-foreground: #166b32;
-  --color-foreground: var(--color-neutral-800);
-  --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-800) 60%, transparent);
-  --color-foreground-subtlest: color-mix(in oklab, var(--color-neutral-800) 40%, transparent);
+  --color-success-surface: #eaf7ee;
+  --color-success-surface-foreground: #166b32;
+  --color-progress-surface: var(--color-blue-50);
+  --color-progress-surface-foreground: var(--color-blue-700);
+  --color-foreground: var(--color-neutral-900);
+  --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-900) 70%, transparent);
+  --color-remote-foreground-muted: #595959;
+  --color-foreground-subtlest: color-mix(in oklab, var(--color-neutral-900) 40%, transparent);
+  --lucide-subtlest-opacity: 0.4;
   --color-foreground-inverse: #ffffff;
   --color-success: #1e8a3e;
   --color-success-foreground: #ffffff;
@@ -626,6 +660,10 @@ body {
   --color-warning: #e07b00;
   --color-feedback-privacy-hint: var(--color-yellow-600);
   --color-warning-foreground: #ffffff;
+  --color-warning-surface: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  --color-warning-surface-foreground: #914e00;
+  --color-destructive-surface: color-mix(in srgb, var(--color-destructive) 10%, transparent);
+  --color-destructive-surface-foreground: #b42020;
   --color-diff-added: #1e8a3e;
   --color-diff-added-foreground: #ffffff;
   --color-diff-removed: #e03131;
@@ -644,6 +682,15 @@ body {
   --color-tooltip-tag: #e6e6e6;
   --color-tooltip-tag-foreground: #5c5c5c;
   --color-tag: #e6e6e6;
+  --color-remote-ssh-surface: #ebf4ff;
+  --color-remote-ssh-foreground: #0867ce;
+  --color-remote-ssh-border: #bad9ff;
+  --color-remote-wsl-surface: #eaf7ee;
+  --color-remote-wsl-foreground: #166b32;
+  --color-remote-wsl-border: #b7e0c2;
+  --color-remote-docker-surface: #f2efff;
+  --color-remote-docker-foreground: #6047b4;
+  --color-remote-docker-border: #d4caff;
   --color-file-node: rgba(26, 112, 184, 0.1);
   --color-file-node-hover: rgba(26, 112, 184, 0.16);
   --color-file-node-foreground: #1a70b8;
@@ -671,9 +718,8 @@ body {
   --animated-gradient-text-soft: rgba(255, 255, 255, 0.22);
   --color-background: #161616;
   --color-background-win-alt: #2b2b2b;
-  --app-background-base: #161616;
   --color-background-alt: color-mix(in oklab, var(--color-background-win-alt) 60%, transparent);
-  --color-brand: #2fe0f9;
+  --color-brand: #ffffff;
   --color-trajectory-user: #60a5fa;
   --color-trajectory-assistant: #2dd4bf;
   --color-trajectory-reasoning: #a78bfa;
@@ -682,7 +728,7 @@ body {
   --color-workflow-rule: rgba(255, 255, 255, 0.065);
   --color-workflow-trace: rgba(255, 255, 255, 0.35);
   --color-workflow-trace-strong: rgba(255, 255, 255, 0.6);
-  --color-accent: #062a45;
+  --color-accent: #001d3d;
   --color-find-highlight: #542500;
   --color-find-highlight-active: #ff8a30;
   --color-border: rgba(255, 255, 255, 0.1);
@@ -693,6 +739,7 @@ body {
   --color-panel: #202020;
   --color-sidebar: #161616;
   --color-surface: rgba(255, 255, 255, 0.05);
+  --color-user-message-bubble: rgba(255, 255, 255, 0.08);
   --color-surface-hover: rgba(255, 255, 255, 0.1);
   --color-card: #2b2b2b;
   --color-card-selected: var(--color-input);
@@ -751,28 +798,38 @@ body {
   --color-tab-border: var(--color-border);
   --color-menu: #2b2b2b;
   --color-menu-hover: #363636;
-  --color-primary: #2fe0f9;
-  --color-primary-foreground: #082b45;
+  --color-primary: #ffffff;
+  --color-primary-foreground: #000000;
   --color-secondary: #363636;
   --color-interaction-ask-surface: #001d3d;
   --color-interaction-ask-foreground: #80beff;
   --color-interaction-ask-fill: rgba(70, 191, 114, 0.24);
   --color-interaction-confirmation-surface: rgba(70, 191, 114, 0.16);
   --color-interaction-confirmation-foreground: #87d9a4;
-  --color-foreground: var(--color-neutral-300);
+  --color-success-surface: rgba(70, 191, 114, 0.16);
+  --color-success-surface-foreground: #87d9a4;
+  --color-progress-surface: rgba(70, 130, 240, 0.16);
+  --color-progress-surface-foreground: var(--color-blue-300);
+  --color-foreground: var(--color-neutral-100);
   --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-300) 60%, transparent);
+  --color-remote-foreground-muted: #b3b3b3;
   --color-foreground-subtlest: color-mix(in oklab, var(--color-neutral-300) 30%, transparent);
+  --lucide-subtlest-opacity: 0.3;
   --color-foreground-inverse: #000000;
   --color-success: #46bf72;
   --color-success-foreground: #000000;
   --color-idle-task: #7b5ce5;
   --color-idle-task-surface: #160d38;
   --color-destructive: #ff5c5c;
-  /* Zai Dark 曾把 destructive 前景设为黑色，与红色危险按钮的固定白字设计冲突。 */
+  /* 修复原因：Zai Dark 曾把 destructive 前景设为黑色，与红色危险按钮的固定白字设计冲突。 */
   --color-destructive-foreground: #ffffff;
   --color-warning: #ff8a30;
   --color-feedback-privacy-hint: var(--color-yellow-300);
   --color-warning-foreground: #000000;
+  --color-warning-surface: color-mix(in srgb, var(--color-warning) 16%, transparent);
+  --color-warning-surface-foreground: #ffa159;
+  --color-destructive-surface: color-mix(in srgb, var(--color-destructive) 16%, transparent);
+  --color-destructive-surface-foreground: #ff8585;
   --color-diff-added: #46bf72;
   --color-diff-added-foreground: #000000;
   --color-diff-removed: #ff5c5c;
@@ -791,6 +848,15 @@ body {
   --color-tooltip-tag: #363636;
   --color-tooltip-tag-foreground: #adadad;
   --color-tag: #363636;
+  --color-remote-ssh-surface: rgba(64, 153, 255, 0.16);
+  --color-remote-ssh-foreground: #8fc0ff;
+  --color-remote-ssh-border: rgba(64, 153, 255, 0.42);
+  --color-remote-wsl-surface: rgba(70, 191, 114, 0.16);
+  --color-remote-wsl-foreground: #87d9a4;
+  --color-remote-wsl-border: rgba(70, 191, 114, 0.42);
+  --color-remote-docker-surface: rgba(159, 132, 255, 0.16);
+  --color-remote-docker-foreground: #bfaaff;
+  --color-remote-docker-border: rgba(159, 132, 255, 0.42);
   --color-file-node: rgba(112, 174, 224, 0.16);
   --color-file-node-hover: rgba(112, 174, 224, 0.22);
   --color-file-node-foreground: #8fc5ef;
@@ -814,7 +880,7 @@ body {
 }
 
 /*
- * 之前只有 task 列表单独定制了滚动条，其他面板、下拉列表、代码区仍然保留系统默认样式，
+ * 修复原因：之前只有 task 列表单独定制了滚动条，其他面板、下拉列表、代码区仍然保留系统默认样式，
  * 同一套界面里会出现粗细、圆角和轨道背景都不一致的问题。这里把这套透明轨道 + 圆角 thumb
  * 提升成全局原生滚动条样式，让 desktop/web、明暗主题下的视觉表现保持统一。
  */
@@ -846,7 +912,7 @@ body {
 }
 
 /*
- * xterm 自己的 viewport 会吃到全局滚动条样式，在终端右侧露出一条独立滚动条。
+ * 修复原因：xterm 自己的 viewport 会吃到全局滚动条样式，在终端右侧露出一条独立滚动条。
  * 终端滚动仍交给 xterm 内部处理，这里只隐藏原生滚动条，避免终端面板出现额外视觉噪音。
  */
 .terminal-xterm-shell .xterm-viewport {
@@ -860,7 +926,7 @@ body {
 }
 
 /*
- * pptx 幻灯片按固有尺寸渲染后用 transform 缩放展示，文本框等内部元素的轻微溢出
+ * 修复原因：pptx 幻灯片按固有尺寸渲染后用 transform 缩放展示，文本框等内部元素的轻微溢出
  * 会命中上面的全局滚动条样式，在幻灯片内部露出滚动条。幻灯片内容不存在用户滚动交互，
  * 这里整体隐藏渲染表面内部的原生滚动条。
  */
@@ -905,45 +971,18 @@ body {
     backface-visibility: hidden;
   }
 
+  .animated-gradient-text-foreground {
+    --animated-gradient-text-strong: var(--color-foreground);
+  }
+
   .animated-gradient-text-subtle {
     --animated-gradient-text-strong: var(--color-foreground-subtle);
   }
 
-  .cua-group-gradient-text {
-    display: inline-block;
-    background: linear-gradient(
-      90deg,
-      var(--animated-gradient-text-strong) 0%,
-      var(--animated-gradient-text-soft) 40%,
-      var(--animated-gradient-text-soft) 60%,
-      var(--animated-gradient-text-strong) 100%
-    );
-    background-size: 200% 100%;
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
-    animation: cua-group-gradient-flow 1s linear infinite;
-    animation-delay: 0.5s;
-    will-change: background-position;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-  }
-
-  @keyframes cua-group-gradient-flow {
-    0% {
-      background-position: 100% 0;
-    }
-
-    100% {
-      background-position: -100% 0;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .cua-group-gradient-text {
-      animation: none;
-    }
+  .highspeed-animated-gradient-text .animated-gradient-text {
+    /* Bug 根因：accelerated turn 只改了工时文案，内部思考和工具仍继承普通扫光色。 */
+    --animated-gradient-text-strong: var(--color-icon-purple);
+    --animated-gradient-text-soft: color-mix(in srgb, var(--color-icon-purple) 22%, transparent);
   }
 
   @keyframes gradient-flow {
@@ -958,6 +997,47 @@ body {
     100% {
       background-position: 0% 0;
     }
+  }
+}
+
+/* 工具摘要行细进度条的 indeterminate 扫光（ToolCallProgressIndicator，第三批 R7）。 */
+.tool-call-progress-indeterminate {
+  animation: tool-call-progress-indeterminate 1.2s ease-in-out infinite;
+}
+
+@keyframes tool-call-progress-indeterminate {
+  0% {
+    left: -33%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tool-call-progress-indeterminate {
+    animation: none;
+    left: 0;
+    width: 100%;
+  }
+}
+
+@keyframes zcode-turn-navigator-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .zcode-turn-navigator-enter {
+    animation: zcode-turn-navigator-enter 180ms ease-out;
   }
 }
 
@@ -1024,34 +1104,67 @@ body {
   }
 }
 
-@keyframes zcode-stream-marker-in {
-  0% {
-    color: transparent;
-  }
+/* 流式动效统一口径。DESIGN.md 的 Motion 要求 fast / low-drama，
+   逐词浮现尤其不能长：900ms 会让后面的词压着前面的还没淡完，叠成一片糊。
+   Bugfix：逐词最初和整块入场共用 180ms + cubic-bezier(0.16, 1, 0.3, 1)。这条曲线开头极陡，
+   词出现后第一帧（30ms）就到 69% 不透明，同时处在渐变中的词只有 1–2 帧，肉眼看就是直接出现。
+   逐词浮现要靠尾部好几帧的词处在不同透明度，形成渐隐的尾巴才看得出来，所以逐词单独用
+   300ms + ease-out（低于 90% 不透明的约 7 帧）；整块入场是一次性的，保留原来的急起曲线。 */
+:root {
+  --zcode-reveal-duration: 300ms;
+  --zcode-reveal-ease: ease-out;
+  --zcode-enter-duration: 260ms;
+  --zcode-enter-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-  100% {
-    color: var(--color-foreground-subtlest);
+/* 逐字 / 逐词浮现。只动 opacity：文本从第一帧起就占满最终位置，高度恒定，
+   不触发 ResizeObserver，也就不会撞进虚拟滚动测高和底部跟随。
+   刻意不加 will-change：每个单元一个 span，提升合成层反而拖垮长消息。
+   排期写在 --zcode-reveal-delay 上（跨帧的浮现时钟，见 message.tsx 的 planRevealSchedule）。
+   Bugfix：最初用 @keyframes 绑在新词上，但词在下一帧（30ms）就从 new 变成 settled，
+   选择器不再命中，动画被立即移除，淡入只播了一帧。transition 只要 transition-property
+   仍含 opacity 就会跑完，所以 settled 也保留同一条 transition；@starting-style 只作用于
+   元素首次挂载，new 只决定挂载时是否从透明开始。 */
+[data-zcode-reveal] {
+  transition: opacity var(--zcode-reveal-duration) var(--zcode-reveal-ease)
+    var(--zcode-reveal-delay, 0ms);
+}
+
+@starting-style {
+  [data-zcode-reveal="new"] {
+    opacity: 0;
+  }
+}
+
+/* 列表圆点 / 序号是 li::marker 伪元素，包不到 span；::marker 不支持 opacity，所以过渡 color。
+   Bugfix：2026-06 曾用 keyframes 做过圆点淡入，重写打字机时一起删掉，之后圆点一直随 li 挂载直接出现。
+   这里沿用正文同一套 transition + @starting-style：属性从 new 变成 settled 时过渡不被取消
+   （Electron 44.7 / Chrome 152 探针实测）。unlayered 的 @starting-style 能盖过 Tailwind 分层的
+   marker:text-foreground-subtlest，颜色从透明插值到它，中间不会先变黑。
+   延迟用单独的变量名：li 上的值不能被里面 settled 的字继承。时长与正文共用 --zcode-reveal-duration。 */
+[data-zcode-reveal-marker]::marker {
+  transition: color var(--zcode-reveal-duration) var(--zcode-reveal-ease)
+    var(--zcode-reveal-marker-delay, 0ms);
+}
+
+@starting-style {
+  [data-zcode-reveal-marker="new"]::marker {
+    color: transparent;
   }
 }
 
 [data-zcode-stream-animate="true"] {
-  animation: zcode-stream-text-in 900ms cubic-bezier(0.16, 1, 0.3, 1)
+  animation: zcode-stream-text-in var(--zcode-enter-duration) var(--zcode-enter-ease)
     var(--zcode-stream-animation-delay, 0ms) both;
   will-change: opacity;
 }
 
-[data-zcode-stream-marker-animate="true"]::marker {
-  animation: zcode-stream-marker-in 900ms cubic-bezier(0.16, 1, 0.3, 1)
-    var(--zcode-stream-animation-delay, 0ms) both;
-}
-
-[data-zcode-tool-stream-animate="true"],
 [data-zcode-chat-loading-animate="true"] {
-  animation: zcode-stream-text-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: zcode-stream-text-in var(--zcode-enter-duration) var(--zcode-enter-ease) both;
   will-change: opacity;
 }
 
-/*  Radix Collapsible 在测量 closed 高度时会写入 inline animation-name:none。
+/* Bugfix: Radix Collapsible 在测量 closed 高度时会写入 inline animation-name:none。
    assistant 历史区自动结束收起需要在延迟卸载期间继续播放高度动画，
    所以这里用 !important 覆盖 Radix 的 inline style，只作用于显式标记的收起窗口。 */
 [data-zcode-collapsible-animate-close="true"][data-state="closed"] {
@@ -1083,9 +1196,12 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  [data-zcode-reveal],
+  [data-zcode-reveal-marker]::marker {
+    transition: none;
+  }
+
   [data-zcode-stream-animate="true"],
-  [data-zcode-stream-marker-animate="true"]::marker,
-  [data-zcode-tool-stream-animate="true"],
   [data-zcode-chat-loading-animate="true"],
   [data-zcode-collapsible-animate-close="true"][data-state="closed"],
   [data-zcode-collapsible-animate-close="true"][data-state="closed"] > * {
@@ -1272,7 +1388,7 @@ body {
 }
 
 /*
- *  通用 animate-pulse 只让 14px 的 SVG 以 2 秒周期改变透明度，运行时虽然处于 running，
+ * Bugfix: 通用 animate-pulse 只让 14px 的 SVG 以 2 秒周期改变透明度，运行时虽然处于 running，
  * 但视觉上几乎像静止。把专用呼吸动画挂到图标外层，同时改变透明度和缩放，确保操作状态可感知。
  */
 @keyframes browser-use-operation-breathe {
@@ -1361,21 +1477,20 @@ body {
   border-radius: 0.5rem;
 }
 
-/* 走马灯文字从两侧进出时只保留右侧渐隐，左边缘会出现硬切。 */
+/* Bug 原因：走马灯文字从两侧进出时只保留右侧渐隐，左边缘会出现硬切。 */
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .task-title-marquee:hover .task-title-marquee-track {
     will-change: transform;
   }
 }
 
-/* 工作流图·行进边：控制流进入正在运行的站所走的
+/* 工作流图·行进边（docs/dynamic-workflow/presentation.md「Rails and arcs」）：控制流进入正在运行的站所走的
  * 那条边**亮着、不动**——它说的是过去（控制流走了这条边），动作属于正在运行的灯（下面的 wf-beat）。
  * 光是灯的颜色，在灯那一头最亮、朝控制流来的方向淡去，像灯照亮了自己来的路。之前是一条沿边滚动的
  * 警示色虚线，读起来像「还在从上一站往这一站赶路」。
  * 平轨道是一条 border，光叠在 ::after 上：1.5px、圆头，从远端的全透明到 80% 处的满色，右端越过轨道
  * 末端 4px 好贴到光晕上。SVG 里的边（弧、分叉与汇合曲线、脊线的曲线）由 WorkflowMarchLight.tsx 画一条
- * .wf-lit 路径，描边是沿路径首尾铺的渐变。全是静止的墨，reduced-motion 下无需改动。
- */
+ * .wf-lit 路径，描边是沿路径首尾铺的渐变。全是静止的墨，reduced-motion 下无需改动。 */
 .wf-rail-march::after {
   content: "";
   position: absolute;
@@ -1392,10 +1507,46 @@ body {
   stroke-linecap: round;
 }
 
-/* 侧栏脊线：行进段是两截 1.5px 的竖条，按
+/* 流轨（docs/dynamic-workflow/presentation.md「Stream rails」）：站头行上的流轨把 border 变透明，线改由
+ * ::before 画，正中留出 22px 的缺口给三枚 chevron（WorkflowStreamChevrons.tsx）。线本身不动、不亮；
+ * 正在流的 chevron 沿流向依次亮起（wf-stream-flow，每枚相隔 0.15s）——这是边上唯一允许的动作，因为
+ * 它说的正是「东西此刻正从上一站往下一站走」。reduced-motion 下停在满色。 */
+.wf-rail-stream {
+  border-top-color: transparent;
+}
+.wf-rail-stream::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 1px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    var(--color-foreground-subtlest) calc(50% - 11px),
+    transparent calc(50% - 11px) calc(50% + 11px),
+    var(--color-foreground-subtlest) calc(50% + 11px)
+  );
+}
+@keyframes wf-stream-flow {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wf-stream-flow {
+    animation: wf-stream-flow 1.2s var(--wf-ease, ease-in-out) infinite;
+  }
+}
+
+/* 侧栏脊线（docs/dynamic-workflow/presentation.md「The spine」）：行进段是两截 1.5px 的竖条，按
  * data-rail-position 选渐变——上一节的下半截从透明淡入到七成，运行那一节的上半截从七成涨到满、一直亮进
- * 灯里，整节穿过的 full 是平的七成。脊线的灯与卡上的灯同一个类（wf-lamp-running），一起搏动。
- */
+ * 灯里，整节穿过的 full 是平的七成。脊线的灯与卡上的灯同一个类（wf-lamp-running），一起搏动。 */
 .wf-spine-march[data-rail-position="below"] {
   background: linear-gradient(
     180deg,
@@ -1414,10 +1565,9 @@ body {
   background: color-mix(in oklab, var(--color-warning) 70%, transparent);
 }
 
-/* 工作流时间线·运动词汇：四个时长
+/* 工作流时间线·运动词汇（docs/dynamic-workflow/presentation.md「The pill」）：四个时长
  * 一条曲线，卡片、确认窗与侧栏清单共用。到场 / 弹入 / 展开 / 换词只动 opacity 与 transform，
- * 灯与墨迹只动颜色；从不动布局属性。reduced-motion 下全部归零，循环停在静止帧。
- */
+ * 灯与墨迹只动颜色；从不动布局属性。reduced-motion 下全部归零，循环停在静止帧。 */
 .wf-motion {
   --wf-t-fast: 120ms;
   --wf-t-base: 160ms;
@@ -1479,7 +1629,7 @@ body {
   transform: none;
   color: var(--color-foreground-subtle);
 }
-/* 产物药丸的方形瓦片：墨灰，悬停时抬到 hover 色、字形转前景色；不像头像那样
+/* 产物药丸的方形瓦片（追记「产物药丸」）：墨灰，悬停时抬到 hover 色、字形转前景色；不像头像那样
  * 放大——形状说「什么」，不抢颜色说「谁」的戏。 */
 .wf-pill-tile {
   transition:
@@ -1522,12 +1672,11 @@ body {
 .wf-meter-seg {
   transition: flex-grow var(--wf-t-ink) var(--wf-ease);
 }
-/* 完成卡的产物瓦片：悬停时预览框的边
+/* 完成卡的产物瓦片（docs/dynamic-workflow/transcript-and-notifications.md「Artifact tiles」）：悬停时预览框的边
  * 抬到 hover 色、说明行的 kind 瓦片与名字转前景、尾槽里 ↗ 顶替版本号——与药丸同一套语法，
  * 只是「抬起」落在预览框上而不是整块底色上。
- * 结构（见 WorkflowArtifactTile 文件头说明）：预览框是按钮的**兄弟**，按钮用 ::after 铺满整张瓦片
- * 接住点击；所以框的悬停态从瓦片容器上用 :has() 读按钮的状态，焦点环也画在容器上。
- */
+ * 结构（WorkflowArtifactTile 文件头的 Bug 原因）：预览框是按钮的**兄弟**，按钮用 ::after 铺满整张瓦片
+ * 接住点击；所以框的悬停态从瓦片容器上用 :has() 读按钮的状态，焦点环也画在容器上。 */
 .wf-tile-hit::after {
   content: "";
   position: absolute;
@@ -1567,11 +1716,10 @@ body {
 .wf-tile:has(.wf-tile-open:active) .wf-tile-frame {
   transform: scale(0.99);
 }
-/* 产物索引的行：交付物行之后的其余产物是一行行
+/* 产物索引的行（docs/dynamic-workflow/transcript-and-notifications.md「The index」）：交付物行之后的其余产物是一行行
  * 文字，不是框。悬停 / 聚焦时整行填 surface-hover（像侧栏行），kind 图标转前景，尾槽里 ↗ 顶替版本号——
  * 与药丸同一套语法，只是没有底色也没有描边：一行文字的抬起只需要一层填色。「还有 N 个」那一行是
- * 一扇门，↗ 不等悬停就在（wf-pill-go-rest）。
- */
+ * 一扇门，↗ 不等悬停就在（wf-pill-go-rest）。 */
 .wf-line {
   transition: background-color var(--wf-t-base) var(--wf-ease);
 }
@@ -1620,15 +1768,68 @@ body {
     border-color var(--wf-t-ink) var(--wf-ease),
     box-shadow var(--wf-t-base) var(--wf-ease);
 }
-/*
- * 正在运行的灯：常亮的 3px 光晕，加每 1.6s 一下心跳（wf-beat）——灯鼓到 1.12 倍
+/* 正在运行的灯（presentation.md「Lamps」）：常亮的 3px 光晕，加每 1.6s 一下心跳（wf-beat）——灯鼓到 1.12 倍
  * 再落回，同时从光晕边缘放出一圈环，涨到灯外 8px 时淡尽。环是第二层 box-shadow，静止时透明；灯是页面上
- * 唯一在走时钟的东西。reduced-motion 下只剩常亮的光晕。
- */
+ * 唯一在走时钟的东西。reduced-motion 下只剩常亮的光晕。 */
 .wf-lamp-running {
   box-shadow:
     0 0 0 3px color-mix(in oklab, var(--color-warning) 20%, transparent),
     0 0 0 3px transparent;
+}
+/* 留白（docs/dynamic-workflow/presentation.md「Holes on the timeline」）：等待中的虚线灯带 3px **常亮**的
+ * 警示色光晕——不搏动，那里没有东西在跑，run 在等主代理写代码。尾巴留白的残段向右淡出：脚本的结尾
+ * 还没写下。补全行草稿线上的邻站 40% 墨：它们只是上下文。 */
+.wf-lamp-hole-waiting {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-warning) 20%, transparent);
+}
+.wf-tail-stub {
+  -webkit-mask-image: linear-gradient(90deg, #000, transparent);
+  mask-image: linear-gradient(90deg, #000, transparent);
+}
+.wf-ghost {
+  opacity: 0.4;
+}
+/* 补全的框（docs/dynamic-workflow/presentation.md「Filled with phases」「The stroke」）：一根 1px、轨道同墨的线，
+ * 路径 pathLength = 1。静止时透明、虚线偏移 1；指针或键盘焦点落在头上（data-fill-on）时偏移 420ms 走到 0——
+ * 一笔从名字的右端画出、收在笔上；离开时整根线 160ms 淡出，淡完才把偏移、颜色与线宽拨回去（不倒着擦掉）。
+ * 新鲜的两秒是动画而不是过渡：框在那一帧刚挂载，已经是亮的，没有「之前」可过渡。 */
+.wf-fill-frame {
+  fill: none;
+  stroke: var(--color-workflow-trace);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  transition:
+    opacity 160ms var(--wf-ease),
+    stroke-dashoffset 0s linear 160ms,
+    stroke 0s linear 160ms,
+    stroke-width 0s linear 160ms;
+}
+.wf-fill-frame[data-fill-on="true"] {
+  opacity: 1;
+  stroke-dashoffset: 0;
+  transition:
+    stroke-dashoffset 420ms var(--wf-ease),
+    opacity 0s;
+}
+.wf-fill-frame-fresh {
+  stroke: var(--color-warning);
+  stroke-width: 1.5;
+  animation: wf-fill-stroke 420ms var(--wf-ease);
+}
+@keyframes wf-fill-stroke {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.wf-fill-head {
+  transition: color var(--wf-t-base) var(--wf-ease);
 }
 .wf-station-open:hover .wf-lamp[data-lamp="pending"] {
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-foreground) 10%, transparent);
@@ -1671,7 +1872,7 @@ body {
 .wf-caret {
   animation: wf-caret 1s step-end infinite;
 }
-/* 草稿的笔：轨道段从左伸出、灯落地，然后名字逐字写出。 */
+/* 草稿的笔（追记「书写效果」）：轨道段从左伸出、灯落地，然后名字逐字写出。 */
 .wf-rail-grow {
   transform-origin: left center;
   animation: wf-rail-grow var(--wf-t-base) var(--wf-ease);
@@ -1679,15 +1880,19 @@ body {
 .wf-land {
   animation: wf-land var(--wf-t-enter) var(--wf-ease);
 }
-/* 轮尾摘要：展开 / 收起时外框高度在两个值之间过渡；展开时药丸挂载、依次
+/* 补全的生长（docs/dynamic-workflow/presentation.md「Holes on the timeline」的「Growth」）：插入列右侧的站
+ * 从 −插入宽度（`--wf-slide`）滑到布局位置，320ms；播完即是布局位置，无需再提交。 */
+.wf-slide {
+  animation: wf-slide 320ms var(--wf-ease);
+}
+/* 轮尾摘要（追记「轮尾摘要」）：展开 / 收起时外框高度在两个值之间过渡；展开时药丸挂载、依次
  * 落地（wf-arrive + 30 ms 错位），收起时只收高度。 */
 .wf-digest-plot {
   transition: height var(--wf-t-ink) var(--wf-ease);
 }
-/* 边檐：时间线自由滚动，原生滚动条隐藏；
+/* 边檐（docs/dynamic-workflow/presentation.md「Overflow: the ledge」）：时间线自由滚动，原生滚动条隐藏；
  * 折到檐上的站在内容里淡出（160 ms 后 visibility 才切，淡出期间不可点也不可聚焦）；檐上的灯悬停
- * 放大 1.25；底部 2px 滚动条静止时隐形，指针在时间线上或正在滚 / 拖时露出，悬停轨道加粗到 4px。
- */
+ * 放大 1.25；底部 2px 滚动条静止时隐形，指针在时间线上或正在滚 / 拖时露出，悬停轨道加粗到 4px。 */
 .wf-scroller {
   scrollbar-width: none;
 }
@@ -1733,19 +1938,18 @@ body {
     animation: wf-beat var(--wf-beat, 1.6s) var(--wf-ease, ease-in-out) infinite;
   }
 }
-/* 工作区 transcript：
+/* 工作区 transcript（docs/dynamic-workflow/presentation.md「The pill」视觉修订）：
  * 条目依次到场（wf-arrive + 每张错 24 ms，封顶 360 ms）；章头的横线从左长出；命令输出的尾巴
  * 与展开面板从上方落下；落点那个条目到位后底色亮一下再退回（一次，不是常驻的焦点带）；
  * 运行中的动词扫光；状态词换值时旧词退场新词进场（wf-swap）。全部只动 opacity / transform /
- * background-color；reduced-motion 下到场、落点与扫光都归零。
- */
+ * background-color；reduced-motion 下到场、落点与扫光都归零。 */
 .wf-ws-entry {
   transition: background-color var(--wf-t-base) var(--wf-ease);
 }
 .wf-ws-landed {
   animation: wf-ws-land 1.4s var(--wf-ease) 1;
 }
-/* 详情页的落点：节头到位后底色持 400 ms 再用 800 ms 退回，一次。 */
+/* 详情页的落点（追记「五枚药丸与一扇门」）：节头到位后底色持 400 ms 再用 800 ms 退回，一次。 */
 .wf-landed {
   animation: wf-land 1.2s var(--wf-ease) 1;
 }
@@ -2032,6 +2236,11 @@ body {
     transform: scale(0.6);
   }
 }
+@keyframes wf-slide {
+  from {
+    transform: translateX(var(--wf-slide, 0px));
+  }
+}
 @keyframes wf-beat {
   0% {
     transform: scale(1);
@@ -2060,7 +2269,9 @@ body {
   .wf-draw,
   .wf-caret,
   .wf-rail-grow,
-  .wf-land {
+  .wf-land,
+  .wf-slide,
+  .wf-fill-frame-fresh {
     animation: none;
   }
   .wf-draw {
@@ -2083,7 +2294,13 @@ body {
   .wf-foldable,
   .wf-folded,
   .wf-ledge-lamp,
+  .wf-fill-frame,
+  .wf-fill-head,
   .wf-sb {
+    transition: none;
+  }
+  /* 框的亮态选择器更具体，得单独关掉：reduced-motion 下框整根出现、整根消失，不画笔。 */
+  .wf-fill-frame[data-fill-on="true"] {
     transition: none;
   }
   .wf-preview-doc {
@@ -2116,107 +2333,112 @@ body {
   border-radius: var(--radius-sm);
 }
 
-/* ── 背景主题 ───────────────────────────────────────────────────────────────
-   背景只铺在右侧主内容区（`[data-app-background-primary]`），对齐 NewMax 的作用域：
-   侧栏、side pane、设置页、弹窗都保持各自的不透明底色，不参与背景。
-   主内容区内的 `bg-background` 表面通过 `--color-background` 的半透明混色透出背景，
-   该变量只在主内容区子树里被改写，不会漏到侧栏。
-   变量由 packages/ui/src/lib/backgroundTheme.ts 写到文档根，
-   语义见 docs/未完成-背景主题作用域与设置分区调整-spec-v1.md。 */
-[data-app-background] [data-app-background-primary] {
-  position: relative;
-  /* 场景模糊基线：默认 0，只有场景选择器命中时才被覆盖。放在这里保证
-     ::before/::after 的 calc 始终有值，不会因为变量未定义让 filter 整条失效。 */
-  --app-background-scene-blur: 0px;
-  /* 宿主自带不透明底色；必须让它自己成为层叠上下文，
-     否则 ::before 的负 z-index 会落到该底色之后（被整块盖住）。 */
-  isolation: isolate;
-  /* 背景层用 scale(1.06) 防模糊露边，不裁剪会溢出到侧栏上。 */
-  overflow: hidden;
+/* 文件视图保留任务面板用于位移动效，延伸横线必须随原面板一起隐藏。 */
+[data-workspace-shell]:has([data-project-sidebar-panel="navigation"][aria-hidden="true"])
+  [data-sidebar-divider-extension] {
+  display: none;
 }
 
-[data-app-background] [data-app-background-primary]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-color: var(--app-background-base);
-  background-image: var(--app-background-image, none);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  /* 模糊只作用在这一层，内容不受影响；放大一点避免模糊后露出边缘。
-     场景模糊（阅读/专注）作为叠加增强，与基准模糊相加而非替换。 */
-  filter: blur(calc(var(--app-background-blur, 0px) + var(--app-background-scene-blur, 0px)));
-  transform: scale(1.06);
-}
-
-/* 交叉淡入：切图时把"旧图"画在这层上，240ms 内 opacity 1→0 淡出，露出下面的新 ::before。
-   依赖 [data-app-background-primary] 的 isolation 层叠上下文，z-index:-1 与 ::before 同层，
-   但 ::after 在 ::before 之后绘制，因此盖在新图之上。 */
-[data-app-background][data-app-background-fading] [data-app-background-primary]::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-color: var(--app-background-base);
-  background-image: var(--app-background-prev-image, none);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  filter: blur(calc(var(--app-background-blur, 0px) + var(--app-background-scene-blur, 0px)));
-  transform: scale(1.06);
-  animation: app-background-crossfade var(--app-background-crossfade, 240ms) ease-out forwards;
-}
-
-@keyframes app-background-crossfade {
-  from {
-    opacity: 1;
+/* 连续圆角下增大半径，保留不支持 corner-shape 的浏览器原有回退。 */
+@supports (corner-shape: squircle) {
+  [data-v4-user-input-bubble] {
+    corner-shape: squircle;
+    border-radius: 24px;
   }
-  to {
-    opacity: 0;
+
+  [data-composer-layout] {
+    corner-shape: squircle;
+    border-radius: 32px;
   }
 }
 
-/* 场景化模糊：内置浏览器沉浸预览（响应式浏览模式）激活时，背景额外叠加一档模糊，
-   让用户专注于浏览器内容。基线 blurPx 仍是用户设定值，这里是叠加增强而非替换。 */
-[data-app-background] [data-app-background-primary]:has([data-responsive-browser-mode="active"]) {
-  --app-background-scene-blur: 8px;
+[data-v4-user-input-bubble] {
+  border-width: 0;
+  border-top-right-radius: 12px;
+  background-color: var(--color-user-message-bubble);
 }
 
-/* 动态壁纸（Ken Burns）：开启时给背景层叠加极缓慢的缩放呼吸。
-   只用 transform（合成层，不触发重排/重绘），待机功耗可忽略；时长取 60s 级别，
-   慢到近乎察觉不到「在动」，只在长时间停留时提供一点生气。
-   尊重系统「减弱动效」设置：命中 prefers-reduced-motion 时停用。 */
-[data-app-background][data-app-background-motion] [data-app-background-primary]::before {
-  animation: app-background-motion 64s ease-in-out infinite alternate;
-  will-change: transform;
-}
-
-@keyframes app-background-motion {
-  from {
-    /* 基线缩放与静态背景一致（1.06），避免开启动效时出现一次跳变 */
-    transform: scale(1.06) translate3d(0, 0, 0);
-  }
-  to {
-    transform: scale(1.12) translate3d(-1.2%, -1%, 0);
+@supports (corner-shape: squircle) {
+  [data-v4-user-input-bubble] {
+    border-top-right-radius: 24px;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  [data-app-background][data-app-background-motion] [data-app-background-primary]::before {
-    animation: none;
+/* thumb 伪元素需继承容器颜色；每个真实子元素重置透明，隔离嵌套滚动区。 */
+@property --zcode-scrollbar-thumb {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+:is([data-project-sidebar-panel], [data-workspace-conversation-frame], [data-workspace-side-frame]),
+:is([data-project-sidebar-panel], [data-workspace-conversation-frame], [data-workspace-side-frame])
+  * {
+  --zcode-scrollbar-thumb: transparent;
+  scrollbar-color: auto;
+}
+:is(
+  [data-project-sidebar-panel],
+  [data-workspace-conversation-frame],
+  [data-workspace-side-frame]
+)::-webkit-scrollbar-thumb,
+:is([data-project-sidebar-panel], [data-workspace-conversation-frame], [data-workspace-side-frame])
+  *::-webkit-scrollbar-thumb {
+  background-color: var(--zcode-scrollbar-thumb);
+}
+[data-scrollbar-active] {
+  --zcode-scrollbar-thumb: var(--color-border);
+}
+
+/* 只在滑块本身悬停/拖动时增强反馈，不改变轨道与内容尺寸。 */
+:is(
+    [data-project-sidebar-panel],
+    [data-workspace-conversation-frame],
+    [data-workspace-side-frame]
+  )::-webkit-scrollbar-thumb:hover,
+:is([data-project-sidebar-panel], [data-workspace-conversation-frame], [data-workspace-side-frame])
+  *::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklab, var(--color-foreground) 30%, transparent);
+}
+:is(
+    [data-project-sidebar-panel],
+    [data-workspace-conversation-frame],
+    [data-workspace-side-frame]
+  )::-webkit-scrollbar-thumb:active,
+:is([data-project-sidebar-panel], [data-workspace-conversation-frame], [data-workspace-side-frame])
+  *::-webkit-scrollbar-thumb:active {
+  background-color: color-mix(in oklab, var(--color-foreground) 45%, transparent);
+}
+
+[data-scrollbar-hover]::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--color-foreground) 30%, transparent);
+}
+[data-scrollbar-dragging]::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--color-foreground) 45%, transparent);
+}
+
+[data-scrollbar-active][data-scrollbar-hover] {
+  --zcode-scrollbar-thumb: color-mix(in oklab, var(--color-foreground) 30%, transparent);
+}
+[data-scrollbar-active][data-scrollbar-dragging] {
+  --zcode-scrollbar-thumb: color-mix(in oklab, var(--color-foreground) 45%, transparent);
+}
+/* 文字填充与图标分别控制，避免箭头和身份头像随摘要文字变色；扫光保留自身透明填充。 */
+@media (hover: hover) {
+  .summary-hover-text:hover {
+    -webkit-text-fill-color: var(--color-foreground);
+  }
+  .summary-hover-text:hover [data-summary-preserve-color] {
+    -webkit-text-fill-color: currentColor;
   }
 }
 
-/* 主内容区内的表面透出背景：把 --color-background 换成"主题底色 × scrim"的半透明混色。
-   只在主内容区子树里生效，侧栏与设置页的 bg-background 不受影响。 */
-[data-app-background] [data-app-background-primary] {
-  --color-background: color-mix(
-    in oklab,
-    var(--app-background-base) var(--app-background-scrim, 100%),
-    transparent
-  );
+/* 外层分组、工具和思考统一补足到 16px；只有明确标记的组内列表保持 4px。 */
+[data-conversation-work-items] > * + * {
+  padding-top: 12px;
+}
+
+[data-conversation-work-items="group"]
+  > :is(.summary-hover-text, :has(.summary-hover-text)):not([data-consecutive-summary-group])
+  + :is(.summary-hover-text, :has(.summary-hover-text)):not([data-consecutive-summary-group]) {
+  padding-top: 0;
 }

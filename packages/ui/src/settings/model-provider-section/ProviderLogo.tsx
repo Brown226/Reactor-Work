@@ -19,6 +19,10 @@ import openrouterLight from "@/assets/provider-icons/model-provider-openrouter-l
 import openrouterDark from "@/assets/provider-icons/model-provider-openrouter-dark.svg";
 import opencodeLight from "@/assets/provider-icons/model-provider-opencode-light.svg";
 import opencodeDark from "@/assets/provider-icons/model-provider-opencode-dark.svg";
+import volcengineLogo from "@/assets/provider-icons/model-provider-volcengine.png";
+import stepfunLogo from "@/assets/provider-icons/model-provider-stepfun.png";
+import siliconflowLogo from "@/assets/provider-icons/model-provider-siliconflow.png";
+import tencentCloudLogo from "@/assets/provider-icons/model-provider-tencent-cloud.png";
 
 type ProviderLogoRef = NonNullable<ProviderConfigObject["logo"]>;
 
@@ -29,7 +33,7 @@ interface BuiltinProviderLogoAsset {
 
 // 这里只负责把 Config 中的资源 key 解析为打包素材；禁止加入 Provider ID、名称或排序逻辑。
 const BUILTIN_PROVIDER_LOGO_ASSETS: Readonly<Record<string, BuiltinProviderLogoAsset>> = {
-  // Z.AI 账号位展示 Reactor 品牌立方体。2026-10-12 起不再复用 ZCode 应用图标；同名旧 SVG 带灰色描边，不能当作同一素材复用。
+  // 用户指定 Dock 应用图标；同名旧 SVG 带灰色描边，不能当作同一素材复用。
   zai: { light: zaiLogo },
   bigmodel: { light: bigModelLogo },
   "start-plan": { light: startPlanLogo },
@@ -43,9 +47,13 @@ const BUILTIN_PROVIDER_LOGO_ASSETS: Readonly<Record<string, BuiltinProviderLogoA
   xai: { light: xAiLogo },
   openrouter: { light: openrouterLight, dark: openrouterDark },
   opencode: { light: opencodeLight, dark: opencodeDark },
+  "tencent-cloud": { light: tencentCloudLogo },
+  volcengine: { light: volcengineLogo },
+  stepfun: { light: stepfunLogo },
+  siliconflow: { light: siliconflowLogo },
 };
 
-function resolveBuiltinProviderLogoAsset(
+export function resolveBuiltinProviderLogoAsset(
   logo: ProviderLogoRef | null | undefined,
   theme: ResolvedTheme,
 ): string | null {

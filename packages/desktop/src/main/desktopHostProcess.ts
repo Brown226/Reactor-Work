@@ -1,17 +1,13 @@
+import type { HostQuitBlocker, HostRemoteConversationTelemetryResponse } from "@zcode/shared";
+import {
+  createSystemCredentialCipher,
+  executeCredentialCipherRequest,
+} from "@zcode/shared/credential-security";
+import { getAppConfigDir } from "@zcode/services/node";
 import { ingestToolExecResource } from "./desktopResourceTelemetry.js";
+import { bindAppControlNavigationHost } from "#src/app-control-navigation/main.js";
 import { ingestMcpResourceSamples } from "./processResourceMcpTelemetrySource.js";
 /* eslint-disable max-lines -- host process 统一处理 main↔host 生命周期、日志、ZCode Agent，拆分前先保持跨进程消息收口。 */
-import { bindDatabaseStartupRelay } from "./databaseStartupRelay.js";
-import { randomUUID } from "node:crypto";
-import { join } from "node:path";
-import {
-  app,
-  BrowserWindow,
-  MessageChannelMain,
-  safeStorage,
-  utilityProcess as electronUtilityProcess,
-} from "electron";
-import type { MessagePortMain, UtilityProcess as ElectronUtilityProcess } from "electron";
 import {
   type HostAgentProcessErrorResponse,
   type HostAgentProcessExceptionResponse,
@@ -20,43 +16,60 @@ import {
   type HostAgentProcessSpawnedResponse,
   type HostCuaOperationStateResponse,
   type HostMcpTelemetryResponse,
-  type HostSafeStorageOperationRequestResponse,
   type HostSessionCreateTelemetryResponse,
+  type HostPluginTelemetryResponse,
+  type ProviderProvisioningLaneStatus,
+  type RemoteTarget,
   type TaskRealtimeHostDeliveryKind,
+  type WorkspacePurpose,
   formatZCodeHostProcessName,
   HostMessageTypes,
-  HostResponseTypes,
   hostResponseMessageSchema,
+  HostResponseTypes,
   InternalChannels,
   LAUNCH_MARKS_QUERY_KEY,
   RUNTIME_ZCODE_DEBUG,
   serializeLaunchMarks,
-  type RemoteTarget,
-  type WorkspacePurpose,
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
 } from "@zcode/shared";
-import { getMainLaunchPartialMarks } from "./desktopLaunchMarks.js";
+import type {
+  PluginSandboxHandle,
+  PluginSandboxRegisterRequestPayload,
+  PluginSandboxRegisterResultPayload,
+} from "@zcode/shared/mcp-apps";
+import type { UtilityProcess as ElectronUtilityProcess, MessagePortMain } from "electron";
+import {
+  app,
+  BrowserWindow,
+  utilityProcess as electronUtilityProcess,
+  MessageChannelMain,
+} from "electron";
+import { randomUUID } from "node:crypto";
+import { join } from "node:path";
 import { BroadcastHub } from "./broadcastHub.js";
-import type { TaskRealtimeBus } from "./taskRealtimeBus.js";
+import { bindDatabaseStartupRelay } from "./databaseStartupRelay.js";
+import { getMainLaunchPartialMarks } from "./desktopLaunchMarks.js";
+import { ingestHostNetworkObservations } from "./desktopNetworkTelemetry.js";
+import {
+  buildHostProcessEnv,
+  hostModulePath,
+  resolveBundledGlmBinaryPath,
+} from "./desktopRuntimeEnv.js";
+import { ingestHostNetworkCapture } from "./resourceManagerNetwork.js";
+import { buildHostE2ECoverageEnv } from "./e2eCoverage.js";
+import { createFeedbackLogArchiveFromExportLogs } from "./exportLogs.js";
 import { createHostLogRelay } from "./hostLogRelay.js";
+import { ingestCliResourceSample } from "./processResourceCliSource.js";
+import { ingestHostSelfResourceSample } from "./processResourceSelfHeapSource.js";
+import { resolveHostResourceUsageResult } from "./resourceManagerHostSampling.js";
 import {
   registerHostAgentProcess,
   registerHostProcess,
   unregisterHostAgentProcess,
   unregisterHostProcess,
 } from "./resourceManagerWindow.js";
-import { resolveHostResourceUsageResult } from "./resourceManagerHostSampling.js";
-import {
-  buildHostProcessEnv,
-  hostModulePath,
-  resolveBundledGlmBinaryPath,
-} from "./desktopRuntimeEnv.js";
-import { ingestHostNetworkObservations } from "./desktopNetworkTelemetry.js";
-import { ingestCliResourceSample } from "./processResourceCliSource.js";
-import { ingestHostSelfResourceSample } from "./processResourceSelfHeapSource.js";
-import { createFeedbackLogArchiveFromExportLogs } from "./exportLogs.js";
-import { buildHostE2ECoverageEnv } from "./e2eCoverage.js";
-import { buildDataScopeEnv } from "./desktopDataScope.js";
+import type { RemoteAssetDirs } from "./desktopRuntimeEnv.js";
+import type { TaskRealtimeBus } from "./taskRealtimeBus.js";
 
 export interface WindowBootstrapOptions {
   restoreSession?: boolean;
@@ -69,6 +82,7 @@ export interface WindowBootstrapOptions {
 }
 
 export interface HostInitMessage {
+  browserBackendIdentity?: { id: string; generation: number };
   type: typeof HostMessageTypes.InitLocal;
   hostId?: string;
   databaseStartupId?: string;
@@ -82,13 +96,14 @@ export interface HostInitMessage {
     workspaceIdentity?: string;
   }>;
   agentSpawnFallbackCwd?: string;
+  remoteAssets?: RemoteAssetDirs;
   /** Main 解析后的 ZCode Built-in Provider Config 路径；Host/Services 不感知 Electron 安装布局。 */
   zcodeBuiltinProviderConfigFilePath: string;
   /** Main 提前异步采集并过滤的本机 runtime 环境；只允许传给 InitLocal。 */
   runtimeProcessEnvPatch?: Record<string, string>;
 }
 
-interface SpawnHostProcessOptions {
+export interface SpawnHostProcessOptions {
   internalChannel?: typeof InternalChannels.ServicePort | typeof InternalChannels.ScopedServicePort;
   internalPayload?: unknown;
   registerBroadcast?: boolean;
@@ -162,12 +177,13 @@ export function spawnHostProcess(
     logger: {
       info: (...args: unknown[]) => void;
       warn: (...args: unknown[]) => void;
-      error: (...args: unknown[]) => void;
     };
     broadcastHub: BroadcastHub;
     taskRealtimeBus?: TaskRealtimeBus;
     windowHostProcessMap: Map<number, ElectronUtilityProcess>;
     hostRunningTaskCountMap: Map<ElectronUtilityProcess, number>;
+    /** 每个 Host 当前阻止退出的事项（docs/git/worktree.md §6.4）；空集合时删除条目。 */
+    hostQuitBlockersMap: Map<ElectronUtilityProcess, HostQuitBlocker[]>;
     onWorkspaceRunningTaskCountChanged?: (
       child: ElectronUtilityProcess,
       event: {
@@ -182,6 +198,8 @@ export function spawnHostProcess(
     onAgentProcessReady?: (event: HostAgentProcessReadyResponse) => void;
     onAgentProcessSpawned?: (event: HostAgentProcessSpawnedResponse) => void;
     onMcpTelemetry?: (event: HostMcpTelemetryResponse) => void;
+    onPluginTelemetry?: (event: HostPluginTelemetryResponse) => void;
+    onRemoteConversationTelemetry?: (event: HostRemoteConversationTelemetryResponse) => void;
     onSessionCreateTelemetry?: (event: HostSessionCreateTelemetryResponse) => void;
     onCuaOperationStateChanged?: (
       source: ElectronUtilityProcess,
@@ -201,6 +219,7 @@ export function spawnHostProcess(
     onOffPeakRunResult?: (result: {
       offPeakTaskId: string;
       ok: boolean;
+      lifecycleManaged?: true;
       conversationId?: string;
       sessionId?: string;
       error?: string;
@@ -216,6 +235,7 @@ export function spawnHostProcess(
       requestId: string;
       browserId?: string;
       browserGeneration?: number;
+      controlScopeId?: string;
       sessionId: string;
       turnId?: string;
       workspaceKey?: string;
@@ -228,10 +248,26 @@ export function spawnHostProcess(
     }) => Promise<{ ok: boolean; [k: string]: unknown }>;
     /** Host 已完成附件授权后，由 Main 将本地视频 realpath 加入精确协议授权集合。 */
     authorizeLocalMediaPreviewPath?: (path: string) => Promise<string>;
+    /** Host 校验完插件 UI HTML 后交给 Main 沙箱注册表登记，返回句柄。 */
+    registerPluginSandbox?: (
+      input: PluginSandboxRegisterRequestPayload,
+    ) => PluginSandboxHandle | Promise<PluginSandboxHandle>;
+    /** 数据同步页经本机 Host 读取 / 重试 Main 协调器的 Provisioning lane（按 sourceServerId）。 */
+    providerProvisioningLanes?: {
+      getStatus(
+        sourceServerId: string,
+        options: { waitForIdle: boolean },
+      ): Promise<ProviderProvisioningLaneStatus>;
+      retry(sourceServerId: string): Promise<ProviderProvisioningLaneStatus>;
+    };
   },
   options?: SpawnHostProcessOptions,
 ): ElectronUtilityProcess {
   const hostId = randomUUID();
+  // 系统库只由 Main 访问；路径在 fork 时绑定，Host 不能指定其他凭据目录。
+  const credentialCipher = createSystemCredentialCipher({
+    filePath: join(getAppConfigDir(), "credentials.json"),
+  });
   const glmBinaryPath = resolveBundledGlmBinaryPath();
   const execArgv = [
     ...(RUNTIME_ZCODE_DEBUG ? [`--inspect-brk=${RUNTIME_ZCODE_DEBUG}`] : []),
@@ -242,7 +278,6 @@ export function spawnHostProcess(
     execArgv,
     env: {
       ...buildHostProcessEnv(dependencies.hostProcessLocalEnv),
-      ...buildDataScopeEnv(),
       ...buildHostE2ECoverageEnv(),
       ZCODE_PROCESS_LABEL: label,
       // macOS-only: the Computer Use Helper launcher runs inside this forked host utilityProcess, whose
@@ -286,56 +321,26 @@ export function spawnHostProcess(
   });
 
   const databaseStartupRelay = bindDatabaseStartupRelay(win, child, hostId);
-
-  // main 侧 safeStorage 代持操作。utility process 拿不到 safeStorage 模块（Electron 41
-  // 的 utility process 仅暴露 net / systemPreferences），凭据 v2（OS 钥匙串）加解密按
-  // requestId 委托 main；明文只走 parentPort 进程内通道，不落盘不落网络。
-  // decryptString 失败（换机器 / 钥匙串条目丢失）原样抛错，由凭据层转成「请重新登录」
-  // 的可读错误；isEncryptionAvailable 在 app ready 前按平台语义返回 false，host 据此
-  // 保持 v1 行为。
-  const resolveSafeStorageOperation = async (
-    request: HostSafeStorageOperationRequestResponse,
-  ): Promise<{ available?: boolean; payload?: string }> => {
-    switch (request.operation) {
-      case "is-available":
-        return { available: safeStorage.isEncryptionAvailable() };
-      case "encrypt":
-        return {
-          payload: (await safeStorage.encryptString(request.plainText ?? "")).toString(
-            "base64url",
-          ),
-        };
-      case "decrypt":
-        return {
-          payload: safeStorage.decryptString(Buffer.from(request.cipherText ?? "", "base64url")),
-        };
-    }
-  };
-
+  const unbindAppNavigation = bindAppControlNavigationHost(win, child, (id) =>
+    BrowserWindow.fromId(id),
+  );
+  child.once("exit", unbindAppNavigation);
   child.on("message", (message: unknown) => {
     const result = hostResponseMessageSchema.safeParse(message);
     if (!result.success) {
       return;
     }
 
-    if (result.data.type === HostResponseTypes.SafeStorageOperationRequest) {
-      const request = result.data;
-      void resolveSafeStorageOperation(request)
-        .then((payload) => {
-          child.postMessage({
-            type: HostMessageTypes.SafeStorageOperationResult,
-            requestId: request.requestId,
-            ok: true,
-            ...payload,
-          });
+    if (result.data.type === HostResponseTypes.CredentialCipherRequest) {
+      const { type: _type, ...request } = result.data;
+      void executeCredentialCipherRequest(credentialCipher, request)
+        .then((reply) => {
+          if (!exitedHostProcesses.has(child)) {
+            child.postMessage({ type: HostMessageTypes.CredentialCipherResult, ...reply });
+          }
         })
-        .catch((error: unknown) => {
-          child.postMessage({
-            type: HostMessageTypes.SafeStorageOperationResult,
-            requestId: request.requestId,
-            ok: false,
-            error: error instanceof Error ? error.message : String(error),
-          });
+        .catch(() => {
+          // Host 已退出时只能放弃回包；任何凭据输入/结果都不得进入日志。
         });
       return;
     }
@@ -354,7 +359,10 @@ export function spawnHostProcess(
       ingestHostNetworkObservations(result.data.observations);
       return;
     }
-
+    if (result.data.type === HostResponseTypes.NetworkCaptureBatch) {
+      ingestHostNetworkCapture(result.data.batch, child.pid ?? 0);
+      return;
+    }
     // CLI 自采的 60 秒样本：按 services 打的 lane 归入 cli_chat / cli_aux 角色。
     if (result.data.type === HostResponseTypes.AgentResourceSample) {
       ingestCliResourceSample(
@@ -395,6 +403,15 @@ export function spawnHostProcess(
       return;
     }
 
+    if (result.data.type === HostResponseTypes.PluginTelemetry) {
+      dependencies.onPluginTelemetry?.(result.data);
+      return;
+    }
+
+    if (result.data.type === HostResponseTypes.RemoteConversationTelemetry) {
+      dependencies.onRemoteConversationTelemetry?.(result.data);
+      return;
+    }
     if (result.data.type === HostResponseTypes.SessionCreateTelemetry) {
       dependencies.onSessionCreateTelemetry?.(result.data);
       return;
@@ -432,9 +449,66 @@ export function spawnHostProcess(
       return;
     }
 
+    if (result.data.type === HostResponseTypes.PluginSandboxRegisterRequest) {
+      const request = result.data;
+      const register = dependencies.registerPluginSandbox;
+      const reply = (payload: PluginSandboxRegisterResultPayload) =>
+        child.postMessage({ type: HostMessageTypes.PluginSandboxRegisterResult, ...payload });
+      if (!register || win.isDestroyed() || request.ownerWebContentsId !== win.webContents.id) {
+        reply({
+          requestId: request.requestId,
+          ok: false,
+          error: "Plugin UI sandbox is unavailable.",
+        });
+        return;
+      }
+      void Promise.resolve()
+        // schema 的 refine 已按 contentKind 校验归属（扩展视图无会话，其他类型必须有会话）；
+        // zod 的推导类型表达不出这层判别，这里收窄成契约的判别联合。
+        .then(() => register(request as PluginSandboxRegisterRequestPayload))
+        .then((handle) => reply({ requestId: request.requestId, ok: true, ...handle }))
+        .catch((error: unknown) =>
+          reply({
+            requestId: request.requestId,
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        );
+      return;
+    }
+
     if (result.data.type === HostResponseTypes.CuaOperationState) {
       // Main 只投影 Host 已经判定的 turn 状态，不在这里重复解析 session/tool 业务事件。
       dependencies.onCuaOperationStateChanged?.(child, result.data);
+      return;
+    }
+
+    if (result.data.type === HostResponseTypes.ProviderProvisioningLaneRequest) {
+      const request = result.data;
+      const lanes = dependencies.providerProvisioningLanes;
+      const reply = (status: ProviderProvisioningLaneStatus) =>
+        child.postMessage({
+          type: HostMessageTypes.ProviderProvisioningLaneResult,
+          requestId: request.requestId,
+          status,
+        });
+      // 没有协调器（例如未接线的测试宿主）时回「无 lane」：Host 请求总有应答，不靠超时收尾。
+      if (!lanes) {
+        reply({ lane: "none" });
+        return;
+      }
+      void (
+        request.action === "retry"
+          ? lanes.retry(request.sourceServerId)
+          : lanes.getStatus(request.sourceServerId, { waitForIdle: request.action === "wait" })
+      ).then(reply, (error: unknown) => {
+        // 协调器的查询与重试不会抛出；万一抛出也要应答，避免 Renderer 一直停在「同步中」。
+        dependencies.logger.warn("[provider-provisioning] lane request failed", {
+          action: request.action,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        reply({ lane: "none" });
+      });
       return;
     }
 
@@ -479,6 +553,7 @@ export function spawnHostProcess(
           ? handler({
               win,
               requestId,
+              controlScopeId: result.data.controlScopeId,
               browserId: result.data.browserId,
               browserGeneration: result.data.browserGeneration,
               sessionId: result.data.sessionId,
@@ -559,6 +634,7 @@ export function spawnHostProcess(
       dependencies.onOffPeakRunResult?.({
         offPeakTaskId: result.data.offPeakTaskId,
         ok: result.data.ok,
+        lifecycleManaged: result.data.lifecycleManaged,
         conversationId: result.data.conversationId,
         sessionId: result.data.sessionId,
         error: result.data.error,
@@ -574,6 +650,15 @@ export function spawnHostProcess(
 
     if (result.data.type === HostResponseTypes.OffPeakSchedulerWakeRequest) {
       dependencies.onOffPeakSchedulerWakeRequested?.(result.data.offPeakTaskId);
+      return;
+    }
+
+    if (result.data.type === HostResponseTypes.QuitBlockersChanged) {
+      if (result.data.blockers.length > 0) {
+        dependencies.hostQuitBlockersMap.set(child, result.data.blockers);
+      } else {
+        dependencies.hostQuitBlockersMap.delete(child);
+      }
       return;
     }
 
@@ -654,6 +739,7 @@ export function spawnHostProcess(
     hostLogRelay.flushRawLogs();
     dependencies.logger.info(`[spawnHostProcess] host process (${label}) exited with code ${code}`);
     dependencies.hostRunningTaskCountMap.delete(child);
+    dependencies.hostQuitBlockersMap.delete(child);
     if (shouldRegisterBroadcast) {
       dependencies.broadcastHub.unregister(windowId);
     }
@@ -664,14 +750,6 @@ export function spawnHostProcess(
         break;
       }
     }
-    recoverRendererAfterAbnormalHostExit({
-      win,
-      windowId,
-      label,
-      code,
-      child,
-      logger: dependencies.logger,
-    });
   });
 
   return child;
@@ -777,62 +855,4 @@ export function disposeHostProcessAndWait(
 
     disposeHostProcess(child, label, disposingHostProcessTimers, logger, options.forceKillDelayMs);
   });
-}
-
-/**
- * host 异常退出（非应用退出/窗口关闭的主动 dispose）后恢复 renderer。
- *
- * 恢复路径复用 dom-ready 的既有 respawn 分支（desktopWindowLifecycle.ts）：
- * 调用点已把 host 从 windowHostProcessMap 删除，renderer reload 后 main 会
- * spawn 新 host 并重新投递 ServicePort，整套启动流程重走。
- * 明确不做 renderer 侧 services 热替换——services 是 React 根 props，
- * 替换等于全树重挂载，收益与 reload 等价而复杂度高一个量级。
- *
- * 防风暴：host 若起来就退（环境损坏等），无限 reload 会形成重启循环；
- * 单窗口时间窗内达到上限后抑制自动恢复，保留现场日志等用户手动重启。
- */
-const HOST_RECOVERY_RELOAD_WINDOW_MS = 60_000;
-const HOST_RECOVERY_RELOAD_LIMIT = 2;
-const hostRecoveryReloadHistory = new Map<number, number[]>();
-
-function recoverRendererAfterAbnormalHostExit(params: {
-  win: BrowserWindow;
-  windowId: number;
-  label: string;
-  code: number;
-  child: ElectronUtilityProcess;
-  logger: {
-    info: (...args: unknown[]) => void;
-    warn: (...args: unknown[]) => void;
-    error: (...args: unknown[]) => void;
-  };
-}): void {
-  const { win, windowId, label, code, child, logger } = params;
-  // 应用退出/窗口关闭走 disposeHostProcess，会把 child 写入 disposingHostProcesses；
-  // 这不是故障，不触发恢复。
-  if (disposingHostProcesses.has(child)) {
-    return;
-  }
-  if (win.isDestroyed()) {
-    return;
-  }
-
-  const now = Date.now();
-  const history = (hostRecoveryReloadHistory.get(windowId) ?? []).filter(
-    (at) => now - at < HOST_RECOVERY_RELOAD_WINDOW_MS,
-  );
-  if (history.length >= HOST_RECOVERY_RELOAD_LIMIT) {
-    hostRecoveryReloadHistory.set(windowId, history);
-    logger.error(
-      `[host-recovery] host (${label}) 异常退出（code=${code}），${HOST_RECOVERY_RELOAD_WINDOW_MS}ms 内已自动恢复 ${history.length} 次，抑制自动 reload（窗口 ${windowId}）`,
-    );
-    return;
-  }
-
-  history.push(now);
-  hostRecoveryReloadHistory.set(windowId, history);
-  logger.warn(
-    `[host-recovery] host (${label}) 异常退出（code=${code}），reload renderer 触发 host 重建（窗口 ${windowId}，窗口内第 ${history.length} 次）`,
-  );
-  win.webContents.reload();
 }

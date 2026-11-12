@@ -1,5 +1,5 @@
 import type { BackgroundBashOutputResult } from "@zcode/shared";
-import type { RuntimeInputPresentation } from "@zcode/contracts";
+import type { ModelToolContract, RuntimeInputPresentation } from "@zcode/contracts";
 import type {
   CompactPhase,
   CompactReason,
@@ -214,7 +214,9 @@ export interface AgentRuntimeTurnMethods {
       sourceCommandId?: string;
       trigger?: CompactTrigger;
       model?: Model;
+      agentListingTools?: readonly { name: string }[];
       activeEntries?: readonly RuntimeMessageEntry[];
+      getContinuationTools?: () => readonly ModelToolContract[];
     },
   ): Promise<{
     displayText: string;
@@ -300,10 +302,11 @@ export interface AgentRuntimeTurnMethods {
     traceContext: TraceContext,
     events: SessionEvent[],
     options?: {
+      persist?: boolean;
       onStatus?: (event: ModelNetworkStatusEvent) => void;
       streamRecovery?: ModelStreamRecoveryStatus;
     },
-  ): ModelStatusSink;
+  ): ModelStatusSink & Disposable;
   logModelNetworkStatus(statusEvent: ModelNetworkStatusEvent, traceContext: TraceContext): void;
   buildBackgroundTaskPayload(
     taskId: string,
@@ -362,6 +365,7 @@ export interface AgentRuntimeTurnMethods {
     options?: {
       model?: Model;
       operationId?: string;
+      leadingReminderEntries?: readonly RuntimeMessageEntry[];
       postCompactReminderEntries?: readonly RuntimeMessageEntry[];
     },
   ): Promise<void>;
@@ -388,6 +392,8 @@ export interface AgentRuntimeTurnMethods {
     toModelLabel: string;
   }): void;
   persistPendingModelChangeTimeline(traceContext: TraceContext): Promise<void>;
+  recordPendingWorktreeCreation(fact: import("@zcode/contracts").WorktreeCreationFact): void;
+  persistPendingWorktreeCreationTimeline(traceContext: TraceContext): Promise<void>;
   persistSyntheticUserNotice(
     messageID: MessageId,
     text: string,
@@ -397,7 +403,7 @@ export interface AgentRuntimeTurnMethods {
     messageID: MessageId;
     sessionId: SessionId;
     source: SyntheticUserMessageSource;
-    text: string;
+    text: string | readonly string[];
     traceContext: TraceContext;
     metadata?: Record<string, unknown>;
     visibility?: MessageVisibility;
@@ -423,6 +429,7 @@ export interface AgentRuntimeTurnMethods {
           error?: { name: string; data?: Record<string, unknown> };
           finish?: string;
           tokens?: unknown;
+          signedReasoningReset?: boolean;
         }
       | undefined,
     traceContext: TraceContext,

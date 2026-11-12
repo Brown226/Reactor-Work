@@ -43,11 +43,21 @@ export function defer<T>(): Deferred<T> {
 /** 引擎注入给调度器的依赖面。 */
 export interface SchedulerHost {
   readonly runId: string;
+  /**
+   * 本 run 的并发上界。**每次派发前现读**，不是构造时抄下的一份：`setMaxConcurrency` 会整份
+   * 换掉引擎持有的 caps（docs/dynamic-workflow/concurrency.md「Two bounds on a run」），
+   * 而调度器的派发判据必须看见新值。引擎侧因此以 getter 实现这个属性。
+   */
   readonly caps: Caps;
   readonly driver: WorkflowDriver;
   readonly validate: ValidateFn;
   /** 分配某站点的下一个执行序号（与 world-read/actor 共用一套计数器）。 */
   nextOrdinal(siteId: string): number;
+  /**
+   * 受 replay 结算次序约束地释放一次命中（docs/execution-engine.md「Replaying the settle order」）。
+   * 非 resume、或次序表里没有这个实例时立即执行 `release`。
+   */
+  holdForReplay(instance: InstanceRef, release: () => void): void;
   /** 事件既落 journal 又扇出（Boundary C）。 */
   record(event: RunEvent): void;
   isRunSettled(): boolean;
@@ -63,6 +73,11 @@ export interface SchedulerHost {
   importCacheClosed(): boolean;
   /** 该记录行在崩溃前是否 live 跑过（resume 时引擎从事件恢复；非 resume 恒 false）。 */
   wasLiveBeforeResume(instance: InstanceRef): boolean;
+  /**
+   * 该记录行的准入是否发生在导入缓存关闭**之前**（按事件次序恢复，见 engine-world.ts 的
+   * recoverImportClosure）。续跑前驱在飞 ask 的判定要它才能在 resume 时精确复原；非 resume 恒 false。
+   */
+  wasQueuedBeforeImportClose(instance: InstanceRef): boolean;
 }
 
 /** 一个 live（需真正派发执行）的 ask 节点。 */
@@ -79,6 +94,12 @@ export interface AskNode {
   settled: boolean;
   dispatched: boolean;
   lastStats?: AskStats;
+  /**
+   * 准入时算好的指令开头（{@link AskNode.instructions} 的前 N 字符）。存在节点上而不是两处
+   * 各算一次：`node-queued` 与 `node-dispatched` 必须带**同一个**串（派发重复出生事实，
+   * 见 types.ts 的 `node-dispatched`），存下来这件事就由构造保证，不靠两处调用保持同步。
+   */
+  instructionsHead?: string;
 }
 
 /** 调度器维护的 actor 运行态。 */

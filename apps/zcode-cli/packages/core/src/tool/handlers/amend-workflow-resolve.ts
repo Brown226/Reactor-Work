@@ -10,8 +10,6 @@
 import {
   AmendWorkflowInputSchema,
   type AmendWorkflowInput,
-  type AmendWorkflowPredecessor,
-  type DynamicWorkflowRunSnapshot,
   type ModelCatalogPort,
 } from "@zcode/contracts";
 import type {
@@ -19,23 +17,28 @@ import type {
   ToolInputResolutionContext,
   ToolInputResolutionResult,
 } from "../types.js";
-import {
-  SUBAGENT_MODEL_UNAVAILABLE,
-  clampWorkflowMaxConcurrency,
-} from "./create-workflow-source.js";
+import { SUBAGENT_MODEL_UNAVAILABLE } from "./create-workflow-source.js";
+import { resolveConcurrencyRetuneRoute } from "./amend-workflow-retune.js";
 import {
   AMEND_WORKFLOW_ERROR_CODE,
+  describePredecessor,
   refuseUnchangedScript,
+  resolveAmendMaxConcurrency,
   resolveAmendScript,
 } from "./amend-workflow-source.js";
 import { resolveModelReference } from "./model-reference.js";
+import { withScriptModelBindings } from "./workflow-script-models.js";
 import { workflowRunNotFoundFailure } from "./workflow-run-introspection.js";
 
 export {
   AMEND_WORKFLOW_ERROR_CODE,
+  resolveAmendMaxConcurrency,
   scriptUnavailableFailure,
   validateAmendWorkflowSource,
 } from "./amend-workflow-source.js";
+
+/** 规范串里 provider 与模型之间的分隔符（`providerId/modelId[$level]`）。 */
+const CANONICAL_PROVIDER_SEPARATOR = "/";
 
 /** 前驱不存在：复用内省工具的 `run_not_found`，只补一句点名 `run_id`。 */
 export function predecessorNotFoundFailure(runId: string): ToolHandlerFailure {
@@ -43,6 +46,15 @@ export function predecessorNotFoundFailure(runId: string): ToolHandlerFailure {
   return {
     ...base,
     message: `${base.message} Nothing was stopped or created: \`run_id\` pointed at a run that does not exist — pass an existing run's ID (see ListWorkflowRuns), or start a fresh run with CreateWorkflow.`,
+  };
+}
+
+/** 前驱在别的进程里跑：本进程停不了它，修订无从开始。终态之后才能从这里修订。 */
+function heldElsewhereFailure(runId: string): ToolHandlerFailure {
+  return {
+    result: false,
+    errorCode: AMEND_WORKFLOW_ERROR_CODE.HELD_ELSEWHERE,
+    message: `workflow_run_held_elsewhere: run ${runId} is running in another session's process, so this session cannot stop it to start a revision. Nothing was stopped or created. Amend it from the session that started it, or amend it from here once it has ended.`,
   };
 }
 
@@ -80,7 +92,7 @@ export async function resolveAmendWorkflowInput(
     void _forged;
     void _model;
     void _offset;
-    // 没有端口就既没有前驱也没有天花板：`null`（解除）与「沿用」都塌成缺席，数原样过。
+    // 没有端口就既没有前驱也没有默认并发：`null`（解除）与「沿用」都塌成缺席，数原样过。
     // 归一化后的入参此后永远只有「一个数或没有」这一种形状。
     const subagentModel = resolveAmendSubagentModel(
       parsed.data.subagent_model,
@@ -97,16 +109,35 @@ export async function resolveAmendWorkflowInput(
     if (!script.result) return script;
     return {
       result: true,
-      input: {
-        ...rest,
-        ...script.fields,
-        ...(typeof requested === "number" ? { max_concurrency: requested } : {}),
-        ...subagentModel.field,
-      },
+      // 没有端口就没有前驱可沿用：脚本点名的模型一律对着目录重新解析。
+      input: withScriptModelBindings(
+        {
+          ...rest,
+          ...script.fields,
+          ...(typeof requested === "number" ? { max_concurrency: requested } : {}),
+          ...subagentModel.field,
+        },
+        context.modelCatalogPort,
+      ),
     };
   }
   const snapshot = await port.getTask(parsed.data.run_id);
   if (snapshot === undefined) return predecessorNotFoundFailure(parsed.data.run_id);
+  const predecessor = describePredecessor(snapshot, context.sessionId);
+  // 路由在这里分岔，而且只能在这里：刚读完前驱（于是知道它还活不活），入参形状又摆在眼前
+  // （于是知道除并发外有没有别的要变）。命中即就地调并发——不读脚本、不继承、不编译，
+  // 归一化后的入参因此**没有 script**，那也是 handler 与 prepareApproval 认出这条路的凭据。
+  const retune = resolveConcurrencyRetuneRoute({
+    model: parsed.data,
+    port,
+    predecessor,
+    inherited: snapshot.maxConcurrency,
+  });
+  if (retune !== undefined) return retune;
+  // 这里曾放行：用户批准后，服务停不了别的进程的 run，导入缓存又要求前驱已结算，只能抛宿主故障。
+  if (snapshot.status === "running" && snapshot.liveInThisProcess === false) {
+    return heldElsewhereFailure(parsed.data.run_id);
+  }
   const subagentModel = resolveAmendSubagentModel(
     parsed.data.subagent_model,
     snapshot.subagentModel,
@@ -141,18 +172,72 @@ export async function resolveAmendWorkflowInput(
   const resolved: AmendWorkflowInput = {
     ...rest,
     ...script.fields,
-    ...resolveAmendMaxConcurrency(
-      parsed.data.max_concurrency,
-      snapshot.maxConcurrency,
-      port.concurrencyCeiling?.(),
-    ),
+    ...resolveAmendMaxConcurrency(parsed.data.max_concurrency, snapshot.maxConcurrency),
     ...subagentModel.field,
     predecessor: {
-      ...describePredecessor(snapshot, context.sessionId),
+      ...predecessor,
       ...(script.inherited ? { script_inherited: true as const } : {}),
     },
   };
-  return { result: true, input: resolved };
+  // 脚本点名的模型：同名沿用前驱 run-launched 上的绑定（用户在前驱确认窗里换过的模型因此留得住），
+  // 新名字对着目录解析（docs/dynamic-workflow/launch.md「The `AmendWorkflow` tool」）。
+  const bound = withScriptModelBindings(resolved, context.modelCatalogPort, snapshot.modelBindings);
+  // 最后一步、在绑定表落定之后：新 provider 只能从归一化后的模型里读，读模型给的原文会漏掉脚本绑定。
+  const introduced = introducedProviders(bound, snapshot, context.modelCatalogPort);
+  return {
+    result: true,
+    input:
+      introduced.length === 0
+        ? bound
+        : {
+            ...bound,
+            predecessor: { ...resolved.predecessor, introduces_providers: introduced },
+          },
+  };
+}
+
+/**
+ * 这次修订将让子代理用上、而会话与前驱都没用过的 provider（去重、字母序）——
+ * `predecessor.introduces_providers` 的唯一来源（docs/dynamic-workflow/launch.md「Amending this
+ * session's runs」）。
+ *
+ *   - 用过：会话当前模型的 provider，以及前驱 `run-launched` 上的子代理模型与脚本绑定的 provider。
+ *     前驱的选择在它自己那次确认窗里被用户批过，沿用或在同一 provider 下换名字都不是新的选择。
+ *   - 将用：归一化后的 `subagent_model`（缺席即会话模型，不会是新的）与 `model_bindings` 的值。
+ *
+ * 目录缺席时读不到会话的 provider，只与前驱比：那时模型给的模型名本来就解析不了（整次调用失败），
+ * 能走到这里的只有沿用来的，而沿用来的都在「用过」里。
+ */
+function introducedProviders(
+  input: Record<string, unknown>,
+  snapshot: { subagentModel?: string; modelBindings?: Record<string, string> },
+  catalog: ModelCatalogPort | undefined,
+): string[] {
+  const used = new Set<string>();
+  const sessionProvider = catalog?.listModels().find((entry) => entry.current)?.providerId;
+  if (sessionProvider !== undefined) used.add(sessionProvider);
+  for (const model of [snapshot.subagentModel, ...Object.values(snapshot.modelBindings ?? {})]) {
+    const provider = providerOfCanonical(model);
+    if (provider !== undefined) used.add(provider);
+  }
+  const bindings = input.model_bindings;
+  const next = [
+    input.subagent_model,
+    ...(typeof bindings === "object" && bindings !== null ? Object.values(bindings) : []),
+  ];
+  const introduced = new Set<string>();
+  for (const model of next) {
+    const provider = providerOfCanonical(model);
+    if (provider !== undefined && !used.has(provider)) introduced.add(provider);
+  }
+  return [...introduced].sort();
+}
+
+/** 规范串 `providerId/modelId[$level]` 的 provider 段；不是规范串即缺席。 */
+function providerOfCanonical(model: unknown): string | undefined {
+  if (typeof model !== "string") return undefined;
+  const separator = model.indexOf(CANONICAL_PROVIDER_SEPARATOR);
+  return separator > 0 ? model.slice(0, separator) : undefined;
 }
 
 /**
@@ -224,45 +309,5 @@ function subagentModelFailure(message: string): ToolHandlerFailure {
     result: false,
     errorCode: AMEND_WORKFLOW_ERROR_CODE.SUBAGENT_MODEL,
     message: `workflow_subagent_model_unresolved: ${message} Nothing was stopped or created.`,
-  };
-}
-
-/**
- * 并发上界的三态归一：
- *
- *   - 数 → 钳到 `[1, 天花板]`；
- *   - `null` → 解除，键整个消失（新 run 跑在天花板上）；
- *   - 省略 → 沿用前驱的上界。快照**只在低于天花板时**带 `maxConcurrency`，所以「前驱没设过」
- *     与「前驱跑在天花板上」在这里是同一件事：也是键消失。沿用的值同样再钳一次——前驱可能
- *     是在另一台机器（另一个天花板）上起的。
- *
- * 三态只活到这里：确认窗与 handler 之后面对的只有「一个数或没有」。
- */
-export function resolveAmendMaxConcurrency(
-  requested: number | null | undefined,
-  inherited: number | undefined,
-  ceiling: number | undefined,
-): { max_concurrency?: number } {
-  if (requested === null) return {};
-  const resolved = requested ?? inherited;
-  if (resolved === undefined) return {};
-  return { max_concurrency: clampWorkflowMaxConcurrency(resolved, ceiling) };
-}
-
-function describePredecessor(
-  snapshot: DynamicWorkflowRunSnapshot,
-  sessionId: string | undefined,
-): AmendWorkflowPredecessor {
-  // 快照的 `status` 是追踪器的通用词（stopped 折成 cancelled …）；真实词在 `runStatus`，只在
-  // 终态在场——非终态一律读作 running（pending 在这里与 running 无分别：都会被 amend 停下）。
-  const status = snapshot.runStatus ?? "running";
-  return {
-    ...(snapshot.name === undefined ? {} : { name: snapshot.name }),
-    status,
-    ...(snapshot.stopReason === undefined ? {} : { stop_reason: snapshot.stopReason }),
-    owned_by_this_session:
-      sessionId !== undefined &&
-      snapshot.parentSessionId !== undefined &&
-      snapshot.parentSessionId === sessionId,
   };
 }

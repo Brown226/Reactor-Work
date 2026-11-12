@@ -15,9 +15,9 @@ import type { V4CommandCoreHost } from "../types.js";
 import { applyRequestedSessionConfig } from "./model-config.js";
 import {
   hasPromptInput,
-  V4InputAdmissionRejectedError,
   resolveSubmittedExecutionState,
-} from "./session-flow.js";
+  V4InputAdmissionRejectedError,
+} from "../input-admission.js";
 
 /**
  * createSession：回落面最后一项的原生化。
@@ -40,6 +40,10 @@ async function createSession(
   if (!host.createSessionRecord) {
     throw new Error("v4 createSession requires host.createSessionRecord capability");
   }
+  // "已创建 worktree" 只描述 cwd 指向的 worktree；缺 cwd 时没有可绑定的目录。
+  if (payload.worktreeCreation && !payload.cwd) {
+    throw new V4InputAdmissionRejectedError("proto.invalidPayload", "worktreeCreation requires cwd");
+  }
   // 完全空的 firstInput 必须在创建 record 前拒绝，避免失败请求遗留无效 deferred session。
   if (
     payload.firstInput &&
@@ -48,20 +52,41 @@ async function createSession(
     throw new V4InputAdmissionRejectedError("proto.invalidPayload", "input must not be empty");
   }
   const { sessionId } = await host.createSessionRecord({
+    ...(payload.sessionId ? { sessionId: payload.sessionId } : {}),
+    ...(payload.additionalDirectories
+      ? { additionalDirectories: payload.additionalDirectories }
+      : {}),
     workspaceId: payload.workspaceId,
+    ...(payload.cwd ? { cwd: payload.cwd } : {}),
+    ...(payload.permissionScope ? { permissionScope: payload.permissionScope } : {}),
     mcpServers: payload.mcpServers,
     offPeakToolEnabled: payload.offPeakToolEnabled,
     dynamicWorkflowEnabled: payload.dynamicWorkflowEnabled,
+    dynamicWorkflowMode: payload.dynamicWorkflowMode,
   });
+  if (payload.worktreeCreation) {
+    // 首轮持久化会话后、TurnStarted 之前落盘并投影（docs/git/worktree.md §6.6.4）。
+    requireRecord(host, sessionId).app.runtime.recordPendingWorktreeCreation(
+      payload.worktreeCreation,
+    );
+  }
   // createSession.config 消费——草稿态 UI 的先行选择（模型/思考深度/
   // 模式）在首发之前应用并补发事件，首条 turn 即用所选配置。必须在 firstInput 之前。
-  // 应用失败不连坐会话创建（record 已建成，failed ACK 只会泄漏会话）：降级 warn，
-  // 会话保持 runtime 缺省。
+  // 普通配置保留既有 warn 降级；Guarded 是明确的授权选择，失败不得用缺省模式执行。
   if (payload.config) {
     const record = requireRecord(host, sessionId);
     try {
       await applyRequestedSessionConfig(host, record, payload.config);
     } catch (error) {
+      if (payload.config.mode === "guarded" || payload.firstInput?.mode === "guarded") {
+        // 根因：旧 catch 吞掉模式应用失败后仍提交首轮，Guarded 会静默退化。
+        try {
+          await host.deleteSession?.(sessionId);
+        } catch (closeError) {
+          host.logger?.warn?.("v4 guarded draft cleanup failed", { sessionId, closeError });
+        }
+        throw error;
+      }
       host.logger?.warn?.("v4 createSession config apply failed; session keeps runtime defaults", {
         error: error instanceof Error ? error.message : String(error),
         sessionId,
@@ -91,6 +116,8 @@ async function createSession(
         requestedDelivery: "startNow",
         attachmentRefs: payload.firstInput.attachments,
         ...resolveSubmittedExecutionState(record, payload.firstInput),
+        // 首条消息与 sendText 同一来源契约：扩展代建会话时由 Host 注入，随 intent 持久化并投影。
+        ...(payload.firstInput.source ? { source: payload.firstInput.source } : {}),
       });
       const started = await startPromptTurn(host, record, {
         content: payload.firstInput.text,
@@ -151,22 +178,17 @@ async function renameSession(
   return undefined;
 }
 
-/**
- * deleteSession：语义 = closeSession（关闭 + 清理运行时资源），非真删 record——
- * message 库无删除 API，与旧协议路径一致（旧协议的“删除”同样只是 close，历史仍在库里，
- * 只是不再出现在活跃注册表）。
- * 会话注册表仍归宿主，实际关闭走 host.closeSession 过渡钩子（归宿：v4 自持会话注册表，见 ../types.ts）。
- */
+/** CLI 先持久化软删除，再关闭运行实例；正文保留，后续冷种子不会复活该会话。 */
 async function deleteSession(
   host: V4CommandCoreHost,
   envelope: CommandEnvelope,
 ): Promise<CommandResult | undefined> {
   const record = requireRecord(host, envelope.sessionId);
-  if (!host.closeSession) {
+  if (!host.deleteSession) {
     // 关闭不能静默降级：钩子缺失说明 binder 接线不完整，直接失败（ACK failed）。
-    throw new Error("v4 deleteSession requires host.closeSession capability");
+    throw new Error("v4 deleteSession requires host.deleteSession capability");
   }
-  await host.closeSession(record.app.sessionId);
+  await host.deleteSession(record.app.sessionId);
   return undefined;
 }
 

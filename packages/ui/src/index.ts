@@ -3,12 +3,19 @@ export { AppErrorBoundary, ScopedErrorBoundary } from "./ErrorBoundary.js";
 export type { ScopedErrorBoundaryVariant } from "./ErrorBoundary.js";
 export { Button, buttonVariants } from "./components/ui/button.js";
 export { DesktopWindowFrame } from "./DesktopWindowFrame.js";
+export { WebRemoteControlDialog } from "@/web-remote-control/index.js";
+export {
+  WebRemoteControlFeatureProvider,
+  useWebRemoteControlFeatureEnabled,
+} from "./WebRemoteControlFeatureProvider.js";
 export {
   AssistantCodeCommentFeatureProvider,
   useAssistantCodeCommentFeatureEnabled,
 } from "./AssistantCodeCommentFeatureProvider.js";
 export { Root } from "./Root.js";
 export { UpdateStatusWindowRoot } from "./UpdateStatusWindowRoot.js";
+export type { WebRemoteControlTerminalTransportState } from "./root/types.js";
+export { setWebRemoteControlTerminalTransportState } from "./webRemoteControlTerminalTransportState.js";
 export { ConfirmDialogHost } from "./ConfirmDialog.js";
 export { Terminal } from "./Terminal.js";
 export { GitGraphPane } from "./git-graph/GitGraphPane.js";
@@ -42,6 +49,11 @@ export {
   REMOTE_WORKSPACE_DISCONNECTED_ERROR_CODE,
   createRemoteWorkspaceDisconnectedError,
 } from "./lib/remoteWorkspaceServiceError.js";
+export {
+  getSourceSettingsServices,
+  registerSourceSettingsServices,
+  useSourceSettingsServices,
+} from "./store/sourceSettingsServiceStore.js";
 
 // Hooks —— 统一的服务和平台操作访问层
 export {
@@ -104,4 +116,9 @@ export { recordArmsCustomEventForE2E } from "./lib/armsCustomEventObservability.
 export { generateMobileDeviceFingerprint, setStreamClientId } from "./lib/streamClientId.js";
 export { GlobalDatabaseStartupLoading } from "./root/GlobalDatabaseStartupLoading.js";
 
-export { LocalTtftObserver, setLocalTtftObserver } from "@/v4/telemetry/localTtftObserver.js";
+export { LocalTtftObserver, setLocalTtftObserver } from "@/v4/telemetry/local-ttft/contract.js";
+export {
+  ensurePendingTaskDraft,
+  readPendingTaskDraft,
+  readComposerWorkspaceScope,
+} from "@/v4/composer/composerDraftStore.js";

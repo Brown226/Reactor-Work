@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import type { PluginUiToolBinding } from "@/plugin-ui/contract.js";
+import type { ComponentType, ReactNode } from "react";
 import type { WorkflowRunState } from "@zcode/shared/zcode-protocol-v4";
 import type { MessageFileLinkTarget } from "@/components/ai-elements/message.js";
 import type { CodePreviewSettings } from "@/lib/codePreviewSettings.js";
@@ -8,6 +9,12 @@ import type { TaskChatToolCallTreeNode } from "@/lib/toolCallTree.js";
 import type { ToolDisplayModel } from "@/lib/toolDisplay.js";
 import type { Theme } from "@/useTheme.js";
 import type { OpenPlanDetailSideTabRequest } from "@/lib/workspaceSidePane.js";
+// Bugfix：这里曾写成类型位置的内联动态 import 写法（在 typeof 后跟圆括号包模块名）。
+// TS 编译期会擦除它，但 share 闭包守卫（shareBuildBoundary.test）的动态 import 正则
+// 不区分类型/值与注释，把它当成值导入后，整个 ToolCallBlocks.tsx 大桶（含 plugin-ui
+// 桶 → services/provider）被误判进 web-share 闭包。顶层 import type 同样不产生运行时
+// 边，且能被守卫正确跳过。注释里也不要出现该字面写法，正则同样会命中注释文本。
+import type { ToolCallBlock } from "@/ToolCallBlocks.js";
 
 export function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -160,11 +167,15 @@ export interface WorkflowRunCardSummary {
   status: WorkflowRunState["status"];
   /** `stopped` 的原因；投影带才带。 */
   stopReason?: WorkflowRunState["stopReason"];
-  /** 已结算（`phase === "settled"`）的节点数。 */
+  /** 已结算（`phase === "settled"`）的节点数，**含**撞界后没进表的那些。 */
   nodesSettled: number;
   /**
    * 已排程（observed）节点数，**不是**全程总数——动态工作流的节点数由脚本在运行时决定，
    * 静态总数不存在。所以进度读作「已排程的里结算了几个」，绝不冒充完成百分比。
+   *
+   * 两个数都出自 `workflowRunStepCounts`（@zcode/shared）：`nodes` 表内 + `usage.nodesUnlisted`
+   * 表外。撞过 1024 界的 run 在这里仍报真实步数，少的是**每一步的详情**，卡与详情页各有一句
+   * 「仅展示 n/m 步的详情」说这件事。
    */
   nodesTotal: number;
   /**
@@ -197,19 +208,15 @@ export interface WorkflowDraftPosition {
 }
 
 export interface ToolCallBlockRenderContext {
-  isFocusedMode?: boolean;
+  nestedToolRenderer: ComponentType<Parameters<typeof ToolCallBlock>[0]>;
+  isOfficeMode?: boolean;
   toolCallNode: TaskChatToolCallTreeNode;
   workspacePath: string;
   /**
-   * workspace 身份 key（AGENTS.md：远程链路不能只按路径匹配）。
-   * GenUI 动作回传要按它写 composer 插入请求；缺席时退化为路径键。
+   * 插件 UI：scope 是沙箱登记需要的 session 范围，onOpenSidePane 是"在侧栏打开"回调；
+   * 由 PluginUiSessionProvider 在边界注入。缺省表示宿主不提供，带 ui:// 资源的工具回退普通 MCP 卡片。
    */
-  workspaceIdentity?: string;
-  /**
-   * 本工具卡所属会话：GenUI 按钮/表单回传用它把文本送进该会话输入框。
-   * 缺席（如权限弹窗里的工具卡）或为空时退回新建任务草稿槽。
-   */
-  sessionId?: string | null;
+  pluginUi?: PluginUiToolBinding;
   /**
    * 应用主题（store 耦合剥离）：由构建 render context 的宿主
    * （ToolCallBlock / PermissionDialog 等）从上层状态传入，供
@@ -223,6 +230,8 @@ export interface ToolCallBlockRenderContext {
   viewerSource: CodeViewerSource | null;
   rawFileSummaries: RawToolCallFileSummary[];
   isRunning: boolean;
+  /** 权限预览尚未执行，不展示任何输出或空输出占位。 */
+  isPermissionPreview?: boolean;
   statusLabel: string;
   sourceLabel?: string;
   errorText?: string;
@@ -318,6 +327,9 @@ export interface EditKindSource {
 
 export type EditOperationKind = "write" | "edit" | "update" | "delete";
 export type EditKindLabelId =
+  | "chat.toolCall.edit.wrote"
+  | "chat.toolCall.edit.deleted"
+  | "chat.toolCall.edit.edited"
   | "chat.toolCall.edit.writing"
   | "chat.toolCall.edit.updating"
   | "chat.toolCall.edit.deleting"

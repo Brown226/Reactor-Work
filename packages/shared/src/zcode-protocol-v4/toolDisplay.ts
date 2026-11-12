@@ -6,6 +6,7 @@ import { bashOutputDisplaySchema } from "../bash-output-display.js";
 import { timestampSchema } from "./core.js";
 import { OFFICIAL_MCP_TOOL_ERROR_CODES } from "../official-mcp-tool-error.js";
 import { cuaRequestAccessStatusSchema } from "./cuaPermission.js";
+import { mcpToolDisplayUiSchema } from "../mcp-apps/schemas.js";
 import { toolCallCreateWorkflowDisplaySchema } from "./create-workflow-display.js";
 import {
   toolCallEvalWorkflowSnippetDisplaySchema,
@@ -20,52 +21,7 @@ import {
 // errorCode/suggestedAction/media(screenshot) 等结构化内容带到 renderer）。consume-main 之前
 // 缺这个 union + toolOutputSchema.display 字段——协议层 zod 校验会把 agent 下发的 display 整个
 // strip 掉，导致 UI 永远拿不到 display?.kind==="cua"，CUA 工具调用退化成 fallback 渲染。
-// 审查结果卡（标准引用自检 / 自述型审查问题清单）：与 contracts 侧
-// toolResultDisplayPayloadSchema 同步。缺成员 = 整块被 zod 剥掉，卡片退化成一行文本，
-// 而且两端都不报错——审查卡片最初就是这样「看不到卡」的。
-export const reviewIssuesDisplaySchema = z
-  .object({
-    kind: z.literal("review_issues"),
-    action: z.enum(["standards", "terminology", "rules", "issues"]),
-    stale: z.boolean(),
-    textPath: z.string().max(4_096).nullable(),
-    sourcePath: z.string().max(4_096).nullable(),
-    notice: z.string().max(1_000).nullable(),
-    summary: z.record(z.string(), z.number()).nullable(),
-    issues: z
-      .array(
-        z
-          .object({
-            code: z.string().min(1).max(64),
-            severity: z.enum(["error", "warning", "info", "none"]),
-            quoted: z.string().max(400),
-            message: z.string().max(600),
-            line: z.number().int().nonnegative(),
-            startOffset: z.number().int(),
-            endOffset: z.number().int(),
-            suggestion: z.string().max(600).nullable(),
-            normalized: z.string().max(300).optional(),
-            libraryNo: z.string().max(200).nullable().optional(),
-            libraryName: z.string().max(400).nullable().optional(),
-            libraryStatus: z
-              .enum(["current", "upcoming", "abolished", "unknown"])
-              .nullable()
-              .optional(),
-            occurrences: z.number().int().nonnegative().optional(),
-            matchedOccurrence: z.number().int().nonnegative().optional(),
-            matchKind: z.enum(["exact", "normalized", "not_found"]).optional(),
-            located: z.boolean().optional(),
-          })
-          .strict(),
-      )
-      .max(200),
-    droppedIssues: z.number().int().nonnegative(),
-    whitelisted: z.array(z.string().max(120)).max(200),
-    remaining: z.array(z.string().max(120)).max(200),
-  })
-  .strict();
-
-const toolResultDisplaySchema = z.discriminatedUnion("kind", [
+export const toolResultDisplaySchema = z.discriminatedUnion("kind", [
   bashOutputDisplaySchema,
   z.object({
     kind: z.literal("file_diff"),
@@ -178,6 +134,8 @@ const toolResultDisplaySchema = z.discriminatedUnion("kind", [
       .object({ code: z.enum(OFFICIAL_MCP_TOOL_ERROR_CODES) })
       .strict()
       .optional(),
+    // 插件 UI 元数据；与 CLI contracts 的 mcpToolResultDisplayPayloadSchema 同源复用，见 mcp-apps/schemas.ts。
+    ui: mcpToolDisplayUiSchema.optional(),
   }),
   // buildToolOutput 把 CLI 侧 ToolResultDisplayPayload 原样塞进 toolOutput.display，
   // 而这条 union 是 strict 的——create_workflow 不在成员里，CreateWorkflow 的 display 会被整段
@@ -192,14 +150,33 @@ const toolResultDisplaySchema = z.discriminatedUnion("kind", [
   toolCallSavedWorkflowListDisplaySchema,
   toolCallListModelsDisplaySchema,
   toolCallResumeWorkflowRunDisplaySchema,
-  reviewIssuesDisplaySchema,
 ]);
 export type ToolResultDisplay = z.infer<typeof toolResultDisplaySchema>;
 
-// toolCall。终态 output 全档统一 head+tail 截断，超出走 truncated.ref 按需拉。
+// §4.4.5 toolCall。终态 output 全档统一 head+tail 截断（R-10），超出走 truncated.ref 按需拉。
+//
+// ⚠ display 在信封层**不设门**（`.optional().catch(undefined)`）：解析不过就退化成「这张卡没有
+// 载荷」，而不是让整条 row、整帧、整条订阅失败。四个嵌入点共用这条规则——本文件的
+// toolOutputSchema、rows.ts 的 toolCallRow、snapshot.ts 的确认预览、workflow-row-meta.ts 的
+// 启动行图；spec 见 docs/v4-refactor/10-protocol-spec.md §4.4.5 与
+// docs/v4-refactor/04-sync-and-recovery.md 封闭规则 11。
+//
+// 根因（2026-09-21，sess_4142de31）：display 是装饰载荷，却长在 liveness 关键的信封里。CLI 给
+// `list_workflow_runs` 的 run 行加了两个 lineage 键，本侧镜像没跟上 → 整帧被
+// `proto.frameAssemblyInvalidPayload` 拒 → 恢复阶梯在同一份内容上重试 → 会话停在
+// `fault.subscription.recoveryFailed`；而每次快照都重放同一份存量载荷，会话永不自愈。同款事故
+// 2026-09-17 已经发生过一次（`get_workflow_run` 的 `providerStop`），当时只修了那一个字段。
+//
+// 严格性没有丢，只是回到该在的那一层：渲染侧 readToolResultDisplay
+// （packages/ui/src/ToolCallBlocks/toolResultDisplay.ts）本来就按 kind 逐个 strict 解析，失败即
+// 回 undefined、卡片退化成纯文本——这正是各 spec 一直承诺的行为。信封层那道门是重复的第二道
+// 门，唯一的独有效果是杀死会话。
+//
+// 成员 schema 仍然 `.strict()`：它们定义「本端认得的形状」，catch 只把「不认得」从致命降级为
+// 无卡。代价是 skew 变静默，补偿手段是构造侧与镜像侧的 parity 测试，而不是让线上订阅去发现。
 export const toolOutputSchema = z.object({
   text: z.string(),
-  display: toolResultDisplaySchema.optional(),
+  display: toolResultDisplaySchema.optional().catch(undefined),
   truncated: z
     .object({
       totalBytes: z.number(),
@@ -209,9 +186,14 @@ export const toolOutputSchema = z.object({
 });
 export type ToolOutput = z.infer<typeof toolOutputSchema>;
 
+// 工具运行中的进度（）：MCP `notifications/progress` 经 ToolCallProgress 事件投影到行上。
+// fraction 由 payload progress/total 推得（total 缺失时不填）；bytes / previewLine 保留给 shell 输出型进度。
 export const toolProgressSchema = z.object({
-  bytes: z.number(),
+  bytes: z.number().optional(),
   previewLine: z.string().optional(),
+  fraction: z.number().min(0).max(1).optional(),
+  total: z.number().optional(),
+  message: z.string().max(200).optional(),
   updatedAt: timestampSchema,
 });
 export type ToolProgress = z.infer<typeof toolProgressSchema>;
@@ -290,6 +272,7 @@ const toolCallMcpDisplaySchema = z
       .object({ code: z.enum(OFFICIAL_MCP_TOOL_ERROR_CODES) })
       .strict()
       .optional(),
+    ui: mcpToolDisplayUiSchema.optional(),
   })
   .strict();
 
@@ -305,6 +288,5 @@ export const toolCallDisplaySchema = z.discriminatedUnion("kind", [
   toolCallSavedWorkflowListDisplaySchema,
   toolCallListModelsDisplaySchema,
   toolCallResumeWorkflowRunDisplaySchema,
-  reviewIssuesDisplaySchema,
 ]);
 export type ToolCallDisplay = z.infer<typeof toolCallDisplaySchema>;

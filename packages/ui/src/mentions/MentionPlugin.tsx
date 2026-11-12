@@ -6,8 +6,6 @@ import { createPortal } from "react-dom";
 import { PaletteIcon, WandSparkles } from "lucide-react";
 import {
   $createTextNode,
-  $getSelection,
-  $isRangeSelection,
   BLUR_COMMAND,
   COMMAND_PRIORITY_CRITICAL,
   COMMAND_PRIORITY_LOW,
@@ -44,6 +42,10 @@ import {
   type MentionPanelGroupId,
 } from "./mentionPanelRouting.js";
 import { $createPromptMentionNode } from "./nodes/PromptMentionNode.js";
+import {
+  ExtensionMentionOptionContent,
+  useExtensionMentionGroups,
+} from "@/extension-slots/index.js";
 import { useFileMentionProvider } from "./providers/fileMentionProvider.js";
 import { usePluginsMentionProvider } from "./providers/pluginsMentionProvider.js";
 import { useSessionsMentionProvider } from "./providers/sessionsMentionProvider.js";
@@ -56,6 +58,7 @@ import {
   type ActivePromptInputTokenSnapshot,
 } from "./activePromptInputToken.js";
 import { getCurrentTextNodeSelection } from "./mentionHelpers.js";
+import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
 
 interface MentionPluginProps {
   container?: HTMLElement | null;
@@ -67,7 +70,11 @@ interface MentionPluginProps {
   onWhiteboardMentionSelected?: (boardId: string) => void | Promise<void>;
 }
 
-function getWrappedMentionIndex(currentIndex: number, delta: number, itemCount: number): number {
+export function getWrappedMentionIndex(
+  currentIndex: number,
+  delta: number,
+  itemCount: number,
+): number {
   if (itemCount <= 0) {
     return 0;
   }
@@ -81,7 +88,7 @@ function getWrappedMentionIndex(currentIndex: number, delta: number, itemCount: 
  * 在循环导航的基础上跳过禁选项（V1 同名 Plugin 冲突项）。
  * 全部禁选时保持原地不动，Enter/Tab 的选择守卫会拒绝插入。
  */
-function getNextEnabledMentionIndex(
+export function getNextEnabledMentionIndex(
   currentIndex: number,
   delta: number,
   items: ReadonlyArray<Pick<MentionItem, "disabled">>,
@@ -104,7 +111,7 @@ function getNextEnabledMentionIndex(
  * 根因：冲突 Plugin 保持可见后可能占据 flatItems[0]；若仍默认选中 0，
  * 第一次 Enter/Tab 会命中禁选项并回落编辑器默认行为，而不是继续键盘导航。
  */
-function coerceEnabledMentionIndex(
+export function coerceEnabledMentionIndex(
   currentIndex: number,
   items: ReadonlyArray<Pick<MentionItem, "disabled">>,
 ): number {
@@ -125,7 +132,10 @@ function coerceEnabledMentionIndex(
  * Android 例外：Chrome + Gboard 对拉丁词也走 composition（整词到空格才 compositionend），
  * 冻结会让手机 Web 的 @ 面板失去逐字过滤，因此 Android 保持实时重算。
  */
-function shouldFreezeMentionRecalcWhileComposing(isComposing: boolean, userAgent: string): boolean {
+export function shouldFreezeMentionRecalcWhileComposing(
+  isComposing: boolean,
+  userAgent: string,
+): boolean {
   return isComposing && !/Android/i.test(userAgent);
 }
 
@@ -140,6 +150,9 @@ export function MentionPlugin({
 }: MentionPluginProps & { provider: ZCodeProvider }) {
   const [editor] = useLexicalComposerContext();
   const { intl } = useZCodeIntl();
+  const draftProjectId = useZCodeSessionStore(
+    (state) => state.getWorkspaceState(workspacePath, workspaceIdentity).draftProjectId,
+  );
   const [activeTrigger, setActiveTrigger] = useState<ActivePromptInputTrigger | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const dismissedSignatureRef = useRef<string | null>(null);
@@ -188,6 +201,7 @@ export function MentionPlugin({
     intl.formatMessage({ id: "chat.mention.files.empty" }),
     intl.formatMessage({ id: "chat.mention.files.title" }),
     fileDefaultPreviewLimit,
+    { sessionId, projectId: draftProjectId },
   );
   const whiteboardResult = useWhiteboardMentionProvider(
     workspacePath,
@@ -206,6 +220,7 @@ export function MentionPlugin({
     getSessionMentionWorkspaceScope(activeTrigger?.trigger),
     intl.formatMessage({ id: "chat.mention.sessions.empty" }),
     intl.formatMessage({ id: "chat.mention.sessions.title" }),
+    intl.formatMessage({ id: "project.tasks" }),
   );
   // Plugins 分组：新建草稿（sessionId=null）读 workspace
   // 当前 catalog，已有 Session 读 session-owned 冻结 catalog；冲突项由 provider 标记禁选。
@@ -219,7 +234,29 @@ export function MentionPlugin({
     intl.formatMessage({ id: "chat.mention.plugins.title" }),
   );
 
+  // 插件 composer.mention 条目的分组（docs/plugins/extension-host.md §16.6）：只在 `@` 面板，
+  // 作用域与 Plugins 分组相同（草稿为预热会话）。没有扩展门面（Web、手机远控）时为空。
+  const extensionGroups = useExtensionMentionGroups({
+    workspacePath,
+    ...(workspaceIdentity ? { workspaceIdentity } : {}),
+    sessionId: sessionId ?? null,
+    // 用即时 query 而不是 deferred：插件按 query 远程查询，延后没有收益；面板刚打开时 deferred 值
+    // 还是上一次的空串，会多发一次查询，tool 条目还会因此多弹一次审批（运行时日志：同一次输入先查 "" 再查 "qx"）。
+    query: activeQuery,
+    enabled: isOpen && isContextTrigger,
+  });
+
   const panelGroups = useMemo<MentionResultGroup<MentionItem>[]>(() => {
+    if (activeTrigger?.trigger === "#" && sessionsResult.groups?.length) {
+      return buildVisibleMentionGroups(
+        sessionsResult.groups.map((group) => ({
+          ...group,
+          emptyText: sessionsResult.emptyText,
+          loading: sessionsResult.loading,
+          errorText: sessionsResult.error?.message ?? null,
+        })),
+      );
+    }
     const groupsById = {
       files: {
         id: "files",
@@ -263,12 +300,14 @@ export function MentionPlugin({
       },
     } satisfies Record<MentionPanelGroupId, MentionResultGroup<MentionItem>>;
 
-    // 产品约束：@ 固定为 Plugin → 文件 → 对话 → 画板；旧 # / $ 面板继续走
-    // 原单分组 provider。这里仅重排发现入口，候选自身的 canonical markdown 不变。
-    return buildVisibleMentionGroups(
-      getMentionPanelGroupOrder(activeTrigger?.trigger).map((groupId) => groupsById[groupId]),
-    );
+    // @ 的类别顺序与 $ 单分组保持原契约；# 的项目分组来自当前 Host 查询结果。
+    // 插件分组只在 @ 面板，排在内置分组之后。
+    return buildVisibleMentionGroups([
+      ...getMentionPanelGroupOrder(activeTrigger?.trigger).map((groupId) => groupsById[groupId]),
+      ...(activeTrigger?.trigger === "@" ? extensionGroups : []),
+    ]);
   }, [
+    extensionGroups,
     fileResult.emptyText,
     fileResult.error,
     fileResult.items,
@@ -283,6 +322,7 @@ export function MentionPlugin({
     sessionsResult.emptyText,
     sessionsResult.error,
     sessionsResult.items,
+    sessionsResult.groups,
     sessionsResult.loading,
     sessionsResult.title,
     whiteboardResult.emptyText,
@@ -304,6 +344,7 @@ export function MentionPlugin({
       panelGroups.map((group) => ({
         id: group.id,
         title: group.title,
+        showHeader: activeTrigger?.trigger === "#" || group.showHeader === true,
         options: group.items.map<MentionPanelOption>((item) => ({
           id: item.id,
           label: item.displayLabel ?? item.label,
@@ -318,7 +359,7 @@ export function MentionPlugin({
               <ContextMentionOptionContent item={item} workspacePath={workspacePath} />
             ) : item.category === "skills" ? (
               <span className="min-w-0 flex flex-1 items-center gap-2">
-                {/* skills 候选项需要和命令类项保持一致的主次信息密度，
+                {/* Bugfix: skills 候选项需要和命令类项保持一致的主次信息密度，
                     这里保留图标 + 名称主文案，再把描述压成右侧弱信息，而不是额外占第二行。 */}
                 <WandSparkles className="size-3.5 shrink-0 text-foreground" />
                 <span className="shrink-0 whitespace-nowrap text-ui-base font-medium text-foreground">
@@ -345,6 +386,8 @@ export function MentionPlugin({
               <ContextMentionOptionContent item={item} workspacePath={workspacePath} />
             ) : item.category === "plugins" ? (
               <PluginMentionOptionContent item={item} />
+            ) : item.category === "extensions" ? (
+              <ExtensionMentionOptionContent item={item} />
             ) : undefined,
         })),
         loading: group.loading,
@@ -352,9 +395,10 @@ export function MentionPlugin({
           id: "chat.mention.category.loading",
         }),
         errorText: group.errorText,
+        noticeText: group.noticeText ?? null,
         emptyText: group.emptyText,
       })),
-    [intl, panelGroups, workspacePath],
+    [intl, panelGroups, workspacePath, activeTrigger?.trigger],
   );
 
   useEffect(() => {

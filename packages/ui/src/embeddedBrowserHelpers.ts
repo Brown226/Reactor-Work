@@ -1,3 +1,5 @@
+import { BROWSER_LOCAL_PREVIEW_SCHEME, browserPreviewSourceUrl } from "@zcode/shared";
+
 export const DEFAULT_BROWSER_URL = "about:blank";
 
 const RECOVERABLE_BROWSER_GUEST_EXIT_REASONS = new Set([
@@ -27,7 +29,7 @@ const WEBVIEW_DETACHED_ERROR_FRAGMENTS = [
   "Render frame was disposed",
 ] as const;
 
-function isWebviewDetachedError(error: unknown): boolean {
+export function isWebviewDetachedError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : typeof error === "string" ? error : "";
   if (!message) {
     return false;
@@ -58,7 +60,14 @@ export function safeWebviewCall<T>(
   }
 }
 
-const ALLOWED_BROWSER_PROTOCOLS = new Set(["about:", "data:", "file:", "http:", "https:"]);
+const ALLOWED_BROWSER_PROTOCOLS = new Set([
+  "about:",
+  "data:",
+  "file:",
+  `${BROWSER_LOCAL_PREVIEW_SCHEME}:`,
+  "http:",
+  "https:",
+]);
 
 const URL_PROTOCOL_RE = /^[a-zA-Z][a-zA-Z\d+.-]*:/;
 const IPV4_RE = /^\d{1,3}(?:\.\d{1,3}){3}$/;
@@ -130,7 +139,7 @@ export function isAllowedBrowserUrl(url: string): boolean {
 /** 系统默认浏览器入口接受 Web URL 和 file URL，不能复用内置浏览器更宽的本地/内联协议白名单。 */
 export function isDefaultBrowserOpenableUrl(url: string): boolean {
   try {
-    const protocol = new URL(url).protocol;
+    const protocol = new URL(browserPreviewSourceUrl(url)).protocol;
     return protocol === "http:" || protocol === "https:" || protocol === "file:";
   } catch {
     return false;
@@ -217,7 +226,7 @@ function isLocalhostName(host: string): boolean {
   return host === "localhost" || host === "localhost.localdomain" || host.endsWith(".localhost");
 }
 
-function isLocalDevelopmentHost(host: string): boolean {
+export function isLocalDevelopmentHost(host: string): boolean {
   const normalizedHost = host.toLowerCase().replace(/^\[(.*)]$/, "$1");
   if (
     isLocalhostName(normalizedHost) ||
@@ -245,7 +254,7 @@ function isLocalDevelopmentHost(host: string): boolean {
   );
 }
 
-function isLocalDevelopmentBrowserUrl(url: string): boolean {
+export function isLocalDevelopmentBrowserUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
@@ -258,7 +267,7 @@ function isLocalDevelopmentBrowserUrl(url: string): boolean {
   }
 }
 
-type MessageLinkOpenTarget = "app-browser" | "external-browser";
+export type MessageLinkOpenTarget = "app-browser" | "external-browser";
 
 /**
  * 交互语义：右键菜单的两项是显式互补的目标选择，只有左键单击才走本机/私网启发式。
@@ -323,5 +332,5 @@ export function normalizeBrowserUrl(input: string): string | null {
 }
 
 export function displayBrowserUrl(url: string): string {
-  return url === DEFAULT_BROWSER_URL ? "" : url;
+  return url === DEFAULT_BROWSER_URL ? "" : browserPreviewSourceUrl(url);
 }

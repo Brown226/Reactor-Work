@@ -1,7 +1,11 @@
+import type {
+  V4SessionDeletionPreview,
+  V4SessionDeletionResult,
+} from "@zcode/shared/zcode-protocol-v4";
 /* eslint-disable max-lines -- ZCode task wrapper service 接口集中承载 app/runtime API，拆散会让替换阶段更难追踪。 */
 import type { Event } from "@zcode/rpc";
 import { ServiceChannels } from "@zcode/shared";
-import type { CommandPayloadMap } from "@zcode/shared/zcode-protocol-v4";
+import type { CommandAck, CommandPayloadMap } from "@zcode/shared/zcode-protocol-v4";
 import { createServiceDescriptor } from "#src/descriptors.js";
 import type {
   ZCodeImportSessionsResult,
@@ -9,6 +13,9 @@ import type {
   ZCodeSessionCompactResult,
   ZCodeSessionGoalAction,
   ZCodeSessionGoalResult,
+  ZCodeCodexConnectivityCheckResult,
+  ZCodeSwitchAgentResult,
+  ZCodeSyncTaskSessionBindingResult,
   ZCodeTaskCreateResult,
   ZCodeTaskMeta,
   ZCodeStreamEvent,
@@ -33,6 +40,7 @@ import type {
   ZCodePermissionResponse,
   ModelSelection,
   ZCodeBackgroundTurnAttribution,
+  ZCodeAutomationBotDeliveryTarget,
 } from "@zcode/shared";
 import type {
   SessionMessageDeliveryResult,
@@ -44,12 +52,6 @@ import type {
   ZCodeTaskListSortBy,
   ZCodeTaskListWorkspaceScope,
   ZCodeWorkspaceEventSubscriptionParams,
-  ZCodeGroupedTaskView,
-  ZCodeGroupedTaskViewOrderInput,
-  ZCodeGroupedTaskViewQuery,
-  ZCodeGroupedTaskViewStructure,
-  ZCodeTaskGroup,
-  ZCodeTaskGroupColor,
 } from "#src/session/zcodeTaskListTypes.js";
 
 export interface ZCodeTaskSnapshotWithEtagResult {
@@ -160,17 +162,6 @@ export type {
   ZCodeTaskListSortBy,
   ZCodeTaskListWorkspaceScope,
   ZCodeWorkspaceEventSubscriptionParams,
-  ZCodeGroupedTaskRef,
-  ZCodeGroupedTaskView,
-  ZCodeGroupedTaskViewNode,
-  ZCodeGroupedTaskViewOrderInput,
-  ZCodeGroupedTaskViewQuery,
-  ZCodeGroupedTaskViewStructure,
-  ZCodeGroupedTaskViewStructureMember,
-  ZCodeGroupedTaskViewStructureTopOrder,
-  ZCodeGroupedTaskViewTopLevelNodeRef,
-  ZCodeTaskGroup,
-  ZCodeTaskGroupColor,
 } from "#src/session/zcodeTaskListTypes.js";
 
 /** 一个 task 输入轮次的终态结果，供后台派发（定时任务）回写运行结果。 */
@@ -208,10 +199,15 @@ export interface IZCodeTaskService {
     provider?: ZCodeProvider;
   }): Promise<void>;
 
+  /** Codex 草稿态预热前的网络检查，用于提前提醒 chatgpt.com 不可达 */
+  checkCodexConnectivity(): Promise<ZCodeCodexConnectivityCheckResult>;
+
   // ---- Task/Session 管理 ----
 
   /** 创建 ZCode session 并同步 task 索引。 */
   createTask(params: {
+    projectId?: string | null;
+    additionalDirectories?: string[];
     workspacePath: string;
     workspaceIdentity?: string;
     provider?: ZCodeProvider;
@@ -222,7 +218,6 @@ export interface IZCodeTaskService {
     model?: string;
     /** @deprecated 仅供尚未迁移的旧调用边界读取。 */
     thoughtLevel?: string;
-    draftSessionId?: string;
     forkedFromTaskId?: string;
     mcpServers?: ZCodeAgentMcpServer[];
     /** 定时任务派发时标记所属 automation，落 tasks-index 的 cron_automation_id 并归入 cron 分组。 */
@@ -234,9 +229,73 @@ export interface IZCodeTaskService {
      * 让输入 admission 在写 session_input 外键账本前先统一持久化 session 主记录。
      */
     deferPersistenceUntilFirstPrompt?: boolean;
+    /** Bot/host 使用 v4 原生 createSession 建立 draft，再配置并发送。 */
+    v4Create?: boolean;
+    permissionScope?: "session";
   }): Promise<ZCodeTaskCreateResult>;
 
-  /** 发送 prompt 到指定 task */
+  readBotTopicSummaries?(params: {
+    taskId: string;
+    workspacePath: string;
+    workspaceIdentity?: string;
+    remoteSessionId?: string;
+  }): Promise<Array<{ checkpoint: string; text: string }>>;
+
+  invalidateBotTopicInputs?(params: {
+    taskId: string;
+    workspacePath: string;
+    workspaceIdentity?: string;
+    remoteSessionId?: string;
+  }): Promise<void>;
+  readBotTopicExecution?(params: {
+    taskId: string;
+    workspacePath: string;
+    workspaceIdentity?: string;
+    remoteSessionId?: string;
+  }): Promise<{ executionId: string; sourceCommandId?: string } | undefined>;
+  stopBotTopicExecution?(params: {
+    taskId: string;
+    workspacePath: string;
+    workspaceIdentity?: string;
+    remoteSessionId?: string;
+    executionId: string;
+  }): Promise<void>;
+
+  /** 从 CLI 权威快照读取群任务切换的阻塞原因；空闲时返回 null。 */
+  getBotGroupTaskBlockReason?(params: {
+    taskId: string;
+    remoteSessionId?: string;
+    workspacePath: string;
+    workspaceIdentity?: string;
+  }): Promise<"running" | "queued" | "interaction" | null>;
+  cancelBotGroupInput?(params: {
+    workspacePath?: string;
+    workspaceIdentity?: string;
+    taskId: string;
+    remoteSessionId?: string;
+    commandId: string;
+    sourceCommandId: string;
+    actorId: string;
+    ownerId: string;
+    botId: string;
+    chatId: string;
+  }): Promise<import("@zcode/shared/zcode-protocol-v4").CommandAck>;
+  submitBotGroupInput?(params: {
+    workspacePath?: string;
+    workspaceIdentity?: string;
+    taskId: string;
+    remoteSessionId?: string;
+    commandId: string;
+    content: string;
+    conversationQuotes?: import("@zcode/shared").ConversationSelectionText[];
+    attachments?: ZCodePromptAttachment[];
+    source: import("@zcode/shared").BotGroupInputSource;
+  }): Promise<import("@zcode/shared/zcode-protocol-v4").CommandAck>;
+
+  /**
+   * 发送 prompt 到指定 task。
+   * v4 文本路径返回 sendText ACK（含 duplicate）；附件旧路径与旧版远端不返回 ACK。
+   */
   sendPrompt(
     params: {
       taskId: string;
@@ -251,12 +310,15 @@ export interface IZCodeTaskService {
       clientMode?: ZCodeTaskClientMode;
       /** 当前 turn 额外隐藏的工具；与 session/automation 自带的工具隔离规则合并。 */
       toolDenylist?: string[];
+      /** Bot 来源 turn 的稳定回推地址；由 BotsService 注入，模型不可控。 */
+      botDeliveryTarget?: ZCodeAutomationBotDeliveryTarget;
       /** 标准模型选择；闲时任务同样经 Registry / ModelFactory 创建 Model。 */
       modelSelection?: CommandPayloadMap["sendText"]["modelSelection"];
+      modelSelectionBasis?: CommandPayloadMap["sendText"]["modelSelectionBasis"];
       /** 单次执行约束与动态鉴权；仅 idle start-now 接受，不进入普通队列。 */
       modelExecution?: CommandPayloadMap["sendText"]["modelExecution"];
     } & ZCodeBackgroundTurnAttribution,
-  ): Promise<void>;
+  ): Promise<CommandAck | void>;
 
   deliverSessionMessage(
     request: SessionMessageSendRequested,
@@ -306,6 +368,8 @@ export interface IZCodeTaskService {
     workspacePath?: string;
     workspaceIdentity?: string;
     runId?: TraceId;
+    /** CLI activeWorks 中观察到的执行身份，防止迟到停止误杀新轮。 */
+    expectedForegroundExecutionId?: string;
   }): Promise<void>;
 
   /** 执行 agent 内建 /compact 命令；手机 replayable 仍经 shared host 路由。 */
@@ -352,14 +416,12 @@ export interface IZCodeTaskService {
     clientMode?: ZCodeTaskClientMode;
   }): Promise<boolean>;
 
-  /** 关闭 task（优先 session/close；当 workspace 下最后一个 task 结束时再回收共享进程） */
-  closeTask(params: { taskId: string }): Promise<void>;
-
   /** 恢复已有 task（复用 workspace 级 agent 进程，如无则创建，再执行 session/load） */
   resumeTask(params: {
     taskId: string;
     workspacePath: string;
     workspaceIdentity?: string;
+    additionalDirectories?: string[];
     mode?: ZCodeTaskMode;
     model?: string;
     thoughtLevel?: string;
@@ -385,75 +447,36 @@ export interface IZCodeTaskService {
     workspaceIdentity?: string;
   }): Promise<ZCodeTaskMeta[]>;
 
-  /** 读取 workspace 下已删除 task id；用于 sessions-index 列表的持久负向 membership join */
+  /** 读取 workspace 下已删除 task id；供闲时绑定会话与 Bots tombstone 判断 session 是否已删除 */
   listDeletedTaskIds(params: {
     workspacePath: string;
     workspaceIdentity?: string;
   }): Promise<string[]>;
 
+  /** 永久删除的最小凭据；供新 attachment 清理离线期间遗留的客户端内容。 */
+  listPermanentlyDeletedTaskIds?(params: {
+    workspacePath: string;
+    workspaceIdentity?: string;
+  }): Promise<string[]>;
+
   /**
-   * 按当前打开的 workspace scopes 聚合查询任务列表，真相源为 tasks-index.sqlite。
-   * 消费面：全文搜索（searchable_text/snippets）与 remoteTimelineTaskStore 补充链路；
-   * 无搜索列表行走 listTasks/listPinnedTasks/listArchivedTasks，workspace 行由
-   * 客户端用各 endpoint 的 task 行 + session detail 构建（多端收敛）。
+   * 读取 workspace 下仍在运行（sessions-index phase 非终态）的 task id。
+   * tasks-index 只镜像 CLI 的 last_outcome，行上的 status 永远不会是 running，
+   * 运行中判断必须来自 syncer 的实时活动集合。
+   */
+  listActiveTaskIds(params: {
+    workspacePath: string;
+    workspaceIdentity?: string;
+  }): Promise<string[]>;
+
+  /**
+   * 按显式 workspace scopes 查询 tasks-index，供全局搜索与 Controller 查询使用。
+   * 项目侧栏的行集合来自 ProjectService；旧远端列表缓存及 Group/bootstrap 已退役。
    */
   listTaskList(params: ZCodeTaskListQuery): Promise<ZCodeTaskListResult>;
 
-  /** 创建最小 task group；完整 delete 后续由 group 管理功能补齐 */
-  createTaskGroup(params?: {
-    title?: string;
-    color?: ZCodeTaskGroupColor;
-  }): Promise<ZCodeTaskGroup>;
-
-  /** 重命名 task group；workspaceScopes 只用于通知当前可见 grouped 视图刷新 */
-  renameTaskGroup(params: {
-    groupId: string;
-    title: string;
-    workspaceScopes?: ZCodeTaskListWorkspaceScope[];
-  }): Promise<ZCodeTaskGroup>;
-
-  /** 更新 task group 颜色；workspaceScopes 只用于通知当前可见 grouped 视图刷新 */
-  updateTaskGroupColor(params: {
-    groupId: string;
-    color: ZCodeTaskGroupColor;
-    workspaceScopes?: ZCodeTaskListWorkspaceScope[];
-  }): Promise<ZCodeTaskGroup>;
-
-  /** 删除 task group；调用方应先把组内 task 移回顶层 root */
-  deleteTaskGroup(params: {
-    groupId: string;
-    workspaceScopes?: ZCodeTaskListWorkspaceScope[];
-  }): Promise<void>;
-
-  // 服务端 grouped 查询只回原始结构（不 join tasks 表），
-  // renderer 用 task 行分区 + session detail 统一投影。
-
-  /**
-   * 查询 Grouped 视图原始结构（group/member/顶层排序，不 join tasks 表）。
-   * 客户端以 task 行分区为左表 join 本结构，sessions-index 只补充实时 detail。
-   */
-  listGroupedTaskViewStructure(params: {
-    workspaceScopes: ZCodeTaskListWorkspaceScope[];
-  }): Promise<ZCodeGroupedTaskViewStructure>;
-
-  /** 一次性提交 grouped 视图最终排序和 membership，服务层用 sqlite transaction 落库 */
-  applyGroupedTaskViewOrder(params: ZCodeGroupedTaskViewOrderInput): Promise<ZCodeGroupedTaskView>;
-
   /** 列出 workspace 下所有已归档 task */
   listArchivedTasks(params: {
-    workspacePath: string;
-    workspaceIdentity?: string;
-  }): Promise<ZCodeTaskMeta[]>;
-
-  /** 批量归档超期旧任务；仅归档已完成、无未读、非 pinned 且当前未打开的 task */
-  archiveStaleTasks(params: {
-    workspacePath: string;
-    workspaceIdentity?: string;
-    olderThanDays: number;
-  }): Promise<ZCodeTaskMeta[]>;
-
-  /** 移除 workspace 时批量归档该 workspace 下所有未归档 task，包含 pinned task */
-  archiveWorkspaceTasks(params: {
     workspacePath: string;
     workspaceIdentity?: string;
   }): Promise<ZCodeTaskMeta[]>;
@@ -535,6 +558,29 @@ export interface IZCodeTaskService {
     feedback: ZCodeAssistantMessageFeedback | null;
   }): Promise<ZCodeSessionFile>;
 
+  /**
+   * 补齐 task 已存在的 provider session，使其覆盖当前 canonical task 的完整对话边界。
+   * 这里只负责补齐原生日志，不负责切换当前 active provider。
+   */
+  syncTaskSessionBinding(params: {
+    workspacePath: string;
+    workspaceIdentity?: string;
+    taskId: string;
+    provider: ZCodeProvider;
+    validate?: boolean;
+  }): Promise<ZCodeSyncTaskSessionBindingResult>;
+
+  /**
+   * 在同一个 task 内切换当前 active provider。
+   * 当前支持 `claude` / `codex` / `gemini` 作为切换目标。
+   */
+  switchAgent(params: {
+    workspacePath: string;
+    workspaceIdentity?: string;
+    taskId: string;
+    provider: ZCodeProvider;
+  }): Promise<ZCodeSwitchAgentResult>;
+
   /** 扫描可导入的 Claude 原生 session；可选按 workspace 过滤。 */
   scanImportableClaudeSessions(params: {
     workspacePath?: string;
@@ -577,7 +623,18 @@ export interface IZCodeTaskService {
     mode?: ZCodeTaskMode;
   }): Promise<ZCodeConfigOption[]>;
 
-  /** 获取 ZCode Agent 当前结构化日志文件路径。 */
+  /** 获取 workspace + provider 对应的主配置文件路径 */
+  getWorkspaceProviderConfigFile(params: {
+    workspacePath: string;
+    workspaceIdentity?: string;
+    provider?: ZCodeProvider;
+  }): Promise<{
+    provider: ZCodeProvider;
+    path: string;
+    exists: boolean;
+  }>;
+
+  /** 获取 task 对应的原生会话日志文件路径（如 Claude 的 session jsonl） */
   getTaskNativeSessionLogFile(params: {
     taskId: string;
     workspacePath: string;
@@ -627,6 +684,19 @@ export interface IZCodeTaskService {
     resumeTaskId?: string;
     bumpRuntimeEpoch?: boolean;
   }): Promise<void>;
+
+  previewArchivedTaskDeletion(params: {
+    taskId: string;
+    workspacePath: string;
+    workspaceIdentity?: string;
+  }): Promise<V4SessionDeletionPreview>;
+  permanentlyDeleteArchivedTask(params: {
+    taskId: string;
+    workspacePath: string;
+    workspaceIdentity?: string;
+    revision: string;
+    operationId: string;
+  }): Promise<V4SessionDeletionResult>;
 
   /** 将已持久化 task 标记为列表不可见；CLI session 内容继续保留 */
   deleteTask(params: {
@@ -720,7 +790,7 @@ export interface IZCodeTaskService {
     workspaceIdentity?: string;
     taskId: string;
     clientId?: string;
-    deliveryKind?: "continuous" | "replayable" | "mixed";
+    deliveryKind?: "continuous" | "bot-channel-continuous" | "replayable" | "mixed";
   }): Event<ZCodeStreamEvent>;
 
   /**

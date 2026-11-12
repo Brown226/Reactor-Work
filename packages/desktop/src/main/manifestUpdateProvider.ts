@@ -3,6 +3,7 @@ import type { CustomPublishOptions, PackageFileInfo } from "builder-util-runtime
 import {
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   normalizeZCodeEndpointOrigin,
+  toBearerAuthorization,
   type ElectronReleaseChannel,
 } from "@zcode/shared";
 import {
@@ -19,18 +20,19 @@ import {
 import type { ProviderRuntimeOptions } from "electron-updater/out/providers/Provider.js";
 import { parse as parseYaml } from "yaml";
 
-const ELECTRON_MANIFEST_API_PATH = "/api/v1/releases/electron/manifest";
+export const ELECTRON_MANIFEST_API_PATH = "/api/v1/releases/electron/manifest";
 
 const MANIFEST_ACCEPT_HEADER = "application/x-yaml,text/yaml,text/plain,*/*";
 
-interface ManifestUpdateProviderOptions extends CustomPublishOptions {
+export interface ManifestUpdateProviderOptions extends CustomPublishOptions {
   endpointOrigin?: string;
   manifestUrl?: string;
   deviceMid?: string;
   releasePlatform?: string;
   releaseChannel?: ElectronReleaseChannel;
-  resolveEndpointOrigin?: () => string | null | Promise<string | null>;
+  resolveEndpointOrigin?: () => string | Promise<string>;
   resolveReleaseChannel?: () => ElectronReleaseChannel | Promise<ElectronReleaseChannel>;
+  resolveZcodeJwtToken?: () => Promise<string | null | undefined>;
 }
 
 function normalizeReleaseChannel(channel: string | null | undefined): ElectronReleaseChannel {
@@ -74,7 +76,7 @@ export function getElectronReleasePlatform(
   return `${mapElectronReleasePlatform(platform)}-${mapElectronReleaseArch(arch)}`;
 }
 
-function buildElectronManifestUrl(options: {
+export function buildElectronManifestUrl(options: {
   endpointOrigin: string;
   manifestUrl?: string;
   platform: string;
@@ -182,6 +184,7 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
   private readonly options: ManifestUpdateProviderOptions;
   private readonly releasePlatform: string;
   private readonly linuxExtensions: readonly string[] | null;
+  private readonly logger: AppUpdater["logger"];
   private resolveBaseUrl = new URL(DEFAULT_ZCODE_ENDPOINT_ORIGIN);
 
   constructor(
@@ -191,6 +194,7 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
   ) {
     super(runtimeOptions);
     this.options = options;
+    this.logger = updater.logger;
     this.linuxExtensions = getLinuxUpdateExtensions(updater);
     this.releasePlatform = options.releasePlatform?.trim() || getElectronReleasePlatform();
     this.resolveBaseUrl = new URL(
@@ -204,10 +208,6 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
 
   override async getLatestVersion(): Promise<UpdateInfo> {
     const endpointOrigin = await this.resolveEndpointOrigin();
-    if (!endpointOrigin) {
-      // 正常路径已由 autoUpdater 前置跳过；这里是最后一道闸，确保绝不落到官方 manifest。
-      throw new Error("未配置企业服务端更新源，跳过更新检查");
-    }
     const releaseChannel = await this.resolveReleaseChannel();
     const manifestUrl = buildElectronManifestUrl({
       endpointOrigin,
@@ -218,11 +218,23 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
     });
     this.resolveBaseUrl = new URL("/", manifestUrl);
     const releaseChannelApiValue = mapReleaseChannelToApiValue(releaseChannel);
+    // 更新器独立于业务 API 客户端，原先漏传登录凭据；每次读取当前 Token，避免换号或退出后复用旧值。
+    // 只加到本次 manifest 请求，不设 updater 全局请求头，以免把登录凭据带到 CDN 下载。
+    let authorization: string | null = null;
+    try {
+      authorization = toBearerAuthorization(await this.options.resolveZcodeJwtToken?.());
+    } catch {
+      // 登录凭据是可选信息；读取失败不能阻断更新恢复通道，也不能把异常中的凭据写入日志。
+      this.logger?.warn(
+        "[auto-update] credential read failed; checking manifest without authorization",
+      );
+    }
 
     const raw = await this.httpRequest(manifestUrl, {
       accept: MANIFEST_ACCEPT_HEADER,
       "X-Platform": this.releasePlatform,
       "X-Release-Channel": releaseChannelApiValue,
+      ...(authorization ? { Authorization: authorization } : {}),
       ...(this.options.deviceMid?.trim() ? { "X-Device-Mid": this.options.deviceMid.trim() } : {}),
     });
     if (!raw) {
@@ -235,8 +247,8 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
     }
 
     return {
-      ...(parsed as UpdateInfo),
-      // preview/stable 切换时旧 manifest 请求可能晚于新请求返回。
+      ...(parsed as unknown as UpdateInfo),
+      // Bugfix: preview/stable 切换时旧 manifest 请求可能晚于新请求返回。
       // electron-updater 的 update-available 事件默认不带请求通道，main 进程无法识别过期结果；
       // 这里把本次请求通道随 UpdateInfo 带回去，避免旧通道覆盖更新弹窗内容。
       zcodeReleaseChannel: releaseChannel,
@@ -247,21 +259,12 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
     return resolveManifestFiles(updateInfo, this.resolveBaseUrl, this.linuxExtensions);
   }
 
-  private async resolveEndpointOrigin(): Promise<string | null> {
-    const resolved = this.options.resolveEndpointOrigin
-      ? await this.options.resolveEndpointOrigin()
-      : this.options.endpointOrigin;
-    // 注入了解析器却拿到空值 = 当前没有更新源，必须就此终止；
-    // 只有完全未注入解析器（非内网构建 / 测试）才允许退回默认端点。
-    if (resolved && resolved.trim()) {
-      return normalizeZCodeEndpointOrigin(resolved);
-    }
-    if (this.options.resolveEndpointOrigin) {
-      return null;
-    }
-    return normalizeZCodeEndpointOrigin(
-      this.options.endpointOrigin ?? DEFAULT_ZCODE_ENDPOINT_ORIGIN,
-    );
+  private async resolveEndpointOrigin(): Promise<string> {
+    const resolved =
+      (await this.options.resolveEndpointOrigin?.()) ??
+      this.options.endpointOrigin ??
+      DEFAULT_ZCODE_ENDPOINT_ORIGIN;
+    return normalizeZCodeEndpointOrigin(resolved);
   }
 
   private async resolveReleaseChannel(): Promise<ElectronReleaseChannel> {

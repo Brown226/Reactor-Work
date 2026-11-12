@@ -10,10 +10,13 @@ import {
   MoonIcon,
   PanelLeftClose,
   PanelLeftOpen,
+  RotateCwIcon,
+  ScrollTextIcon,
   ServerIcon,
   SettingsIcon,
   SquareTerminalIcon,
   SunIcon,
+  UsersIcon,
   WandSparkles,
 } from "lucide-react";
 import type { QuickPickCommandIcon } from "@/quickpick/quickPickCommands.js";
@@ -21,6 +24,7 @@ import type { QuickPickCommandIcon } from "@/quickpick/quickPickCommands.js";
 export const QUICK_PICK_ICON_BY_KIND = {
   book: BookOpenIcon,
   browser: GlobeIcon,
+  community: UsersIcon,
   diff: FileDiffIcon,
   feedback: MessageSquareIcon,
   folder: FolderOpenIcon,
@@ -28,6 +32,8 @@ export const QUICK_PICK_ICON_BY_KIND = {
   logout: LogOutIcon,
   message: MessageCirclePlus,
   mcp: ServerIcon,
+  reload: RotateCwIcon,
+  logs: ScrollTextIcon,
   settings: SettingsIcon,
   sidebarClose: PanelLeftClose,
   sidebarOpen: PanelLeftOpen,

@@ -16,6 +16,8 @@ import {
 } from "@zcode/shared";
 
 export { ZCODE_CUA_BROKER_SOCKET_ENV_KEY as ZCODE_CUA_BROKER_SOCKET_ENV } from "@zcode/shared";
+// 保留环境变量名供旧诊断脚本读取；迁移后的配置路径不会据此启动独立 CUA MCP。
+export const ZCODE_CUA_BROKER_UNAVAILABLE_ENV = "ZCODE_CUA_PERMISSION_BROKER_UNAVAILABLE";
 // CLI 入口会先清理 broker 凭据；shared node_repl 的可信配置随后从进程内捕获快照恢复它们。
 function resolveZCodeCuaBrokerSocket(): string | undefined {
   // captured 优先；运行时残留的 stale socket 不能覆盖可信快照。
@@ -74,8 +76,6 @@ export async function listMcpServerStatuses(
       transport: config.type,
       toolCount: 0,
       updatedAt,
-      error: getConfiguredServerError(name, config, untrustedServerNames),
-      ...(configuredStatus === "untrusted" ? { failureKind: "status_unavailable" as const } : {}),
     };
   }
 
@@ -105,7 +105,7 @@ export function omitMcpServers(
   );
 }
 
-function injectZCodeCuaBrokerMcpServers(
+export function injectZCodeCuaBrokerMcpServers(
   servers: Record<string, McpServerConfig>,
   socketPath: string | undefined,
   token: string | undefined = undefined,
@@ -200,13 +200,4 @@ function getConfiguredServerStatus(
 ): McpServerStatus["status"] {
   if (config.enabled === false) return "disabled";
   return untrustedServerNames.has(name) ? "untrusted" : "disconnected";
-}
-
-function getConfiguredServerError(
-  name: string,
-  config: McpServerConfig,
-  untrustedServerNames: ReadonlySet<string>,
-): string | undefined {
-  if (config.enabled === false || !untrustedServerNames.has(name)) return undefined;
-  return "Project MCP server requires explicit connection before use.";
 }

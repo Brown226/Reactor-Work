@@ -235,6 +235,11 @@ export const CronListInputSchema = z.object({}).strict();
 export type CronListInput = z.infer<typeof CronListInputSchema>;
 export const CronListInputJsonSchema = toToolJsonSchema(CronListInputSchema);
 
+// CronPauseSelf 没有任何模型可控输入：暂停目标只能是执行器注入的本轮 automationId。
+export const CronPauseSelfInputSchema = z.object({}).strict();
+export type CronPauseSelfInput = z.infer<typeof CronPauseSelfInputSchema>;
+export const CronPauseSelfInputJsonSchema = toToolJsonSchema(CronPauseSelfInputSchema);
+
 export const CronDeleteInputSchema = z
   .object({
     id: nonEmptyString.describe("Automation id returned by CronCreate or CronList"),
@@ -279,7 +284,7 @@ export const CronAutomationSchema = z
     recurring: z.boolean(),
     maxRuns: z.number().int().positive().optional(),
     modelSelection: cronModelSelectionSchema.optional(),
-    mode: z.enum(["build", "edit", "plan", "yolo"]).optional(),
+    mode: z.enum(["build", "edit", "plan", "yolo", "guarded"]).optional(),
     // 自定义重复规则；缺省时调度回退到解析 cronExpr。会话卡片必须读到本字段才能展示
     // cron 无法表达的真实间隔（如每50小时、每40天，兼容 cronExpr 只是 0 * * * *）。
     scheduleRule: CronAutomationScheduleRuleSchema.optional(),
@@ -322,3 +327,13 @@ export const CronDeleteOutputSchema = z
   .strict();
 export type CronDeleteOutput = z.infer<typeof CronDeleteOutputSchema>;
 export const CronDeleteOutputJsonSchema = toToolJsonSchema(CronDeleteOutputSchema);
+
+export const CronPauseSelfOutputSchema = z
+  .object({
+    paused: z.boolean(),
+    id: nonEmptyString,
+    message: nonEmptyString,
+  })
+  .strict();
+export type CronPauseSelfOutput = z.infer<typeof CronPauseSelfOutputSchema>;
+export const CronPauseSelfOutputJsonSchema = toToolJsonSchema(CronPauseSelfOutputSchema);

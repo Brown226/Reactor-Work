@@ -2,10 +2,6 @@ import { WorkspaceEditorButtonGroup } from "@/WorkspaceEditorButtonGroup.js";
 import { WorkspaceSidePaneToggleButton } from "@/WorkspaceSidePaneToggleButton.js";
 import { WorkspaceTerminalToggleButton } from "@/WorkspaceTerminalToggleButton.js";
 import { cn } from "@/components/lib/utils.js";
-import { Button } from "@/components/ui/button.js";
-import { ControlHintTooltip } from "@/ControlHintTooltip.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
-import { FolderOpen } from "lucide-react";
 import type { WorkspaceHeaderActionSectionProps } from "@/WorkspaceHeaderSections/shared.js";
 import { WorkspaceHelpMenuButton } from "@/WorkspaceHelpMenuButton.js";
 import { ConversationShareMenu } from "@/ConversationShareMenu.js";
@@ -21,6 +17,7 @@ export function WorkspaceHeaderActionSection({
   workspaceAbsPath,
   workspaceIdentity,
   remoteTarget,
+  isWebRemoteControl = false,
   isDesktop,
   isTerminalOpen,
   isSidePaneOpen,
@@ -30,12 +27,9 @@ export function WorkspaceHeaderActionSection({
   onSelectedEditorChange,
   simplifyForNarrowRemote = false,
   hideHelpMenu = false,
-  onOpenMySpace,
   showWindowControls = false,
   useWindowsCaptionSpacing = false,
 }: WorkspaceHeaderActionSectionProps) {
-  const { intl } = useZCodeIntl();
-  const myspaceLabel = intl.formatMessage({ id: "workspaceHeader.mySpace" });
   return (
     <div
       className={cn(
@@ -55,7 +49,11 @@ export function WorkspaceHeaderActionSection({
         />
       ) : null}
       {/* 分享发布接口依赖登录态；未登录时隐藏入口，避免用户打开后只能得到鉴权失败。 */}
-      {activeTaskId && user && isDesktop !== false ? (
+      {activeTaskId &&
+      user &&
+      isDesktop !== false &&
+      !isWebRemoteControl &&
+      remoteTarget?.kind !== "server" ? (
         <ConversationShareMenu
           taskId={activeTaskId}
           useWindowsCaptionSpacing={useWindowsCaptionSpacing}
@@ -63,24 +61,8 @@ export function WorkspaceHeaderActionSection({
       ) : null}
       {!simplifyForNarrowRemote ? (
         <>
-          {/* 我的空间：仅 Web 宿主传 onOpenMySpace 时出现（桌面端用本机文件管理器，不需要） */}
-          {onOpenMySpace ? (
-            <ControlHintTooltip title={myspaceLabel} side="bottom">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-md"
-                className="text-foreground hover:bg-hover hover:text-foreground"
-                aria-label={myspaceLabel}
-                data-testid="workspace-header-my-space"
-                onClick={onOpenMySpace}
-              >
-                <FolderOpen className="size-4" />
-              </Button>
-            </ControlHintTooltip>
-          ) : null}
           {!hideHelpMenu ? <WorkspaceHelpMenuButton isDesktop={Boolean(isDesktop)} /> : null}
-          {/* 远程控制移动端头部空间过窄，终端入口在这里会和核心操作争抢宽度。*/}
+          {/* Bugfix: 远程控制移动端头部空间过窄，终端入口在这里会和核心操作争抢宽度。 */}
           <WorkspaceTerminalToggleButton
             isTerminalOpen={isTerminalOpen}
             onToggleTerminal={onToggleTerminal}

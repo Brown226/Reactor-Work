@@ -18,8 +18,6 @@ import {
   ThemeSelect,
 } from "@/settings/SettingsPageParts.js";
 import { getCodePreviewTheme } from "@/lib/codePreviewPreferences.js";
-import { BackgroundThemeSection } from "@/settings/BackgroundThemeSection.js";
-import { DevModeVersionLabel } from "@/settings/DevModeVersionLabel.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import type { CodePreviewSettings } from "@/store/index.js";
 import { THEME_MODES } from "@/settings/settingsPageConfig.js";
@@ -114,6 +112,7 @@ export function AppearanceSectionContent({
         <Card className="border border-border bg-card py-0 shadow-none">
           <CardContent className="space-y-0 px-0">
             <SettingsRow
+              searchId="settings.themeMode"
               label={intl.formatMessage({ id: "settings.themeMode" })}
               description={intl.formatMessage({
                 id: "settings.themeModeDescription",
@@ -139,6 +138,7 @@ export function AppearanceSectionContent({
               }
             />
             <SettingsRow
+              searchId="settings.uiFontSize"
               label={intl.formatMessage({ id: "settings.uiFontSize" })}
               description={intl.formatMessage({
                 id: "settings.uiFontSizeDescription",
@@ -159,8 +159,6 @@ export function AppearanceSectionContent({
       </div>
 
       <div className="space-y-6">
-        <BackgroundThemeSection />
-
         <div className="min-w-0 space-y-3">
           <div>
             <h3 className="text-ui-lg font-semibold text-foreground">
@@ -175,6 +173,7 @@ export function AppearanceSectionContent({
           <Card className="border border-border bg-card py-0 shadow-none [&_[data-slot=select-trigger]]:w-full">
             <CardContent className="space-y-0 px-0">
               <SettingsRow
+                searchId="settings.lightTheme"
                 label={intl.formatMessage({ id: "settings.lightTheme" })}
                 description={intl.formatMessage({
                   id: "settings.lightThemeDescription",
@@ -187,6 +186,7 @@ export function AppearanceSectionContent({
                 }
               />
               <SettingsRow
+                searchId="settings.darkTheme"
                 label={intl.formatMessage({ id: "settings.darkTheme" })}
                 description={intl.formatMessage({
                   id: "settings.darkThemeDescription",
@@ -199,6 +199,7 @@ export function AppearanceSectionContent({
                 }
               />
               <SettingsRow
+                searchId="settings.showLineNumbers"
                 label={intl.formatMessage({ id: "settings.showLineNumbers" })}
                 description={intl.formatMessage({
                   id: "settings.showLineNumbersDescription",
@@ -213,6 +214,7 @@ export function AppearanceSectionContent({
                 }
               />
               <SettingsRow
+                searchId="settings.wrapLongLines"
                 label={intl.formatMessage({ id: "settings.wrapLongLines" })}
                 description={intl.formatMessage({
                   id: "settings.wrapLongLinesDescription",
@@ -227,6 +229,7 @@ export function AppearanceSectionContent({
                 }
               />
               <SettingsRow
+                searchId="settings.fontSize"
                 label={intl.formatMessage({ id: "settings.fontSize" })}
                 description={intl.formatMessage({
                   id: "settings.fontSizeDescription",
@@ -277,27 +280,6 @@ export function AppearanceSectionContent({
               fontSizePx={codePreviewSettings.fontSizePx}
             />
           </div>
-        </div>
-
-        {/* 应用信息放在最末：版本/构建时间属于「看一眼就走」的信息，排在所有可调项之后。 */}
-        <div className="min-w-0 space-y-3">
-          <div>
-            <h3 className="text-ui-base font-semibold text-foreground">
-              {intl.formatMessage({ id: "settings.appInfo.title" })}
-            </h3>
-            <p className="mt-1 text-ui-base leading-6 text-foreground-subtle">
-              {intl.formatMessage({ id: "settings.appInfo.description" })}
-            </p>
-          </div>
-          <Card className="border border-border bg-card py-0 shadow-none">
-            <CardContent className="space-y-0 px-0">
-              <SettingsRow
-                label={intl.formatMessage({ id: "settings.appInfo.version" })}
-                description={intl.formatMessage({ id: "settings.appInfo.buildTime" })}
-                control={<DevModeVersionLabel />}
-              />
-            </CardContent>
-          </Card>
         </div>
       </div>
     </>

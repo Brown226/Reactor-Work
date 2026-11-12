@@ -6,6 +6,7 @@ import type {
   DerivedTrajectoryManifest,
   JsonObject,
   OpenAiMessage,
+  TrajectoryDerivationOptions,
   TrajectoryJsonlEntry,
 } from "./types.js";
 
@@ -36,18 +37,20 @@ export interface DerivedTrajectoryResult {
   trajectories: DerivedTrajectory[];
 }
 
-async function deriveTrajectoriesFromJsonlFile(
+export async function deriveTrajectoriesFromJsonlFile(
   inputPath: string,
+  options: TrajectoryDerivationOptions = {},
 ): Promise<DerivedTrajectoryResult> {
-  return deriveTrajectoriesFromEntries(await readTrajectoryJsonl(inputPath));
+  return deriveTrajectoriesFromEntries(await readTrajectoryJsonl(inputPath), options);
 }
 
-export async function writeDerivedTrajectories(input: {
-  referenceRequestPath?: string;
-  inputPath: string;
-  outDir: string;
-}): Promise<DerivedTrajectoryResult> {
-  const result = await deriveTrajectoriesFromJsonlFile(input.inputPath);
+export async function writeDerivedTrajectories(
+  input: TrajectoryDerivationOptions & {
+    inputPath: string;
+    outDir: string;
+  },
+): Promise<DerivedTrajectoryResult> {
+  const result = await deriveTrajectoriesFromJsonlFile(input.inputPath, input);
   const trajectoriesDir = join(input.outDir, "trajectories");
   await mkdir(trajectoriesDir, { recursive: true });
 
@@ -70,21 +73,12 @@ export async function writeDerivedTrajectories(input: {
     "utf8",
   );
 
-  if (input.referenceRequestPath) {
-    const rawDir = join(input.outDir, "raw");
-    await mkdir(rawDir, { recursive: true });
-    const raw = await readFile(input.referenceRequestPath, "utf8");
-    await writeFile(
-      join(rawDir, "reference-request-body.raw.json"),
-      raw.endsWith("\n") ? raw : `${raw}\n`,
-    );
-  }
-
   return result;
 }
 
 export function deriveTrajectoriesFromEntries(
   entries: readonly TrajectoryJsonlEntry[],
+  options: TrajectoryDerivationOptions = {},
 ): DerivedTrajectoryResult {
   const snapshots = groupRequestSnapshots(entries);
   const mutableTrajectories: MutableTrajectory[] = [];
@@ -98,7 +92,7 @@ export function deriveTrajectoriesFromEntries(
       continue;
     }
 
-    if (isAppendOnly(current.messages, snapshot.messages)) {
+    if (isAppendOnly(current.messages, snapshot.messages, options)) {
       current.messages = cloneMessages(snapshot.messages);
       current.bodyWithoutMessages = cloneJsonObject(snapshot.bodyWithoutMessages);
       current.lastRequestIndex = snapshot.requestIndex;
@@ -126,6 +120,7 @@ export function deriveTrajectoriesFromEntries(
     manifest: {
       schemaVersion: 1,
       generatedAt: new Date().toISOString(),
+      ...(options.ignoreToolSearchChanges ? { ignoreToolSearchChanges: true as const } : {}),
       trajectories: trajectories.map((trajectory) => ({
         id: trajectory.id,
         lastRequestIndex: trajectory.lastRequestIndex,

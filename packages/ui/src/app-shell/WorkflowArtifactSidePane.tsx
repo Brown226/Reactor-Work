@@ -8,11 +8,18 @@ import {
   ArtifactKindIcon,
   artifactDisplayTitle,
   artifactKindMessageId,
+  artifactOpenAsFileName,
   canRevealArtifactInWorkspace,
   isArtifactPresetKind,
   isTextArtifactContentType,
 } from "@/app-shell/workflow-artifacts/artifactPresentation.js";
+import {
+  ArtifactOpenAsFileButton,
+  useCanOpenArtifactAsFile,
+  useCanSaveArtifactAsFile,
+} from "@/file-menu/index.js";
 import { WorkflowArtifactBody } from "@/app-shell/workflow-artifacts/WorkflowArtifactBody.js";
+import { artifactPresetFieldPaths } from "@/app-shell/workflow-artifacts/presets/spec.js";
 import { useWorkflowRunArtifactBytes } from "@/hooks/useWorkflowRunArtifactBytes.js";
 import { useWorkflowRunArtifactData } from "@/hooks/useWorkflowRunArtifactData.js";
 import {
@@ -171,12 +178,21 @@ function WorkflowArtifactView({
     version,
     enabled: !preset,
   });
+  // 看板只让 CLI 取 spec 点名的字段；spec 还没到或画不了时不取数——正文此时本来也画不出图。
+  const fields = useMemo(
+    () =>
+      isArtifactPresetKind(artifact.kind)
+        ? artifactPresetFieldPaths(artifact.kind, artifact.spec)
+        : undefined,
+    [artifact.kind, artifact.spec],
+  );
   const dataState = useWorkflowRunArtifactData({
     sessionId: tab.parentSessionId,
     runId: tab.runId,
     artifactId: artifact.id,
     itemCount: artifact.itemCount,
-    enabled: preset,
+    enabled: fields !== undefined,
+    ...(fields === undefined ? {} : { fields }),
   });
 
   // 「在工作区显示」与 html 的「在浏览器中打开」共用这一条路径：工作区相对的 `sourcePath`
@@ -190,6 +206,17 @@ function WorkflowArtifactView({
       ...(tab.remoteSessionId === undefined ? {} : { remoteSessionId: tab.remoteSessionId }),
     })
       ? joinFilePath(tab.workspacePath, sourcePath)
+      : undefined;
+
+  // 头部只留一个文件控件：能「作为文件打开」时「在工作区显示」收进它的菜单，否则独立成按钮。
+  const canOpenAsFile = useCanOpenArtifactAsFile();
+  const canSaveAsFile = useCanSaveArtifactAsFile();
+  const openAsFile = !preset && canSaveAsFile;
+  // Web 只有保存按钮，没有本机打开菜单，不能随保存能力一起隐藏原来的定位入口。
+  const revealInMenu = !preset && canOpenAsFile;
+  const reveal =
+    localSourcePath !== undefined && onRevealFileInTree !== undefined
+      ? () => onRevealFileInTree(localSourcePath)
       : undefined;
 
   const [copied, setCopied] = useState(false);
@@ -236,10 +263,21 @@ function WorkflowArtifactView({
             versionIndex={versionIndex}
           />
           <div className="ml-auto flex items-center gap-1">
-            {localSourcePath !== undefined && onRevealFileInTree !== undefined ? (
+            {openAsFile ? (
+              <ArtifactOpenAsFileButton
+                artifactId={artifact.id}
+                // 只交**属于这一版**的字节：换版本那一帧 bytes 还是旧版的，而副本只写一次。
+                bytes={bytesState.bytesVersion === version ? bytesState.bytes : null}
+                fileName={artifactOpenAsFileName(artifact, version)}
+                runId={tab.runId}
+                version={version}
+                {...(reveal === undefined ? {} : { onReveal: reveal })}
+              />
+            ) : null}
+            {!revealInMenu && reveal !== undefined ? (
               <Button
                 data-testid="workflow-artifact-reveal"
-                onClick={() => onRevealFileInTree(localSourcePath)}
+                onClick={reveal}
                 size="sm"
                 type="button"
                 variant="ghost"
@@ -288,9 +326,7 @@ function WorkflowArtifactView({
           version={version}
           {...(localSourcePath === undefined ? {} : { localSourcePath })}
           {...(onOpenBrowserUrl === undefined ? {} : { onOpenBrowserUrl })}
-          {...(localSourcePath !== undefined && onRevealFileInTree !== undefined
-            ? { onReveal: () => onRevealFileInTree(localSourcePath) }
-            : {})}
+          {...(reveal === undefined ? {} : { onReveal: reveal })}
         />
       </div>
     </>

@@ -53,7 +53,7 @@ export const CORE_USER_ACTION_FEATURES = {
 } as const;
 
 export const SETTINGS_USER_ACTION_FEATURES = {
-  "settings.navigation": ["open_section", "back_to_workspace"],
+  "settings.navigation": ["open_section", "back_to_workspace", "open_onboarding"],
   "settings.locale": ["change_locale"],
   "settings.appearance": [
     "change_theme",
@@ -69,7 +69,11 @@ export const SETTINGS_USER_ACTION_FEATURES = {
   "settings.network": ["save_http_proxy", "save_no_proxy", "save_ca_certificate"],
   "settings.desktop": ["toggle_hardware_acceleration", "toggle_close_to_tray", "toggle_keep_awake"],
   "settings.update": ["toggle_preview_updates", "toggle_auto_update"],
-  "settings.notification": ["toggle_notification", "toggle_notification_sound"],
+  "settings.notification": [
+    "toggle_notification",
+    "toggle_notification_sound",
+    "toggle_mobile_push",
+  ],
   "settings.conversation": [
     "change_interaction_behavior",
     "toggle_ask_user_auto_resolution",
@@ -77,17 +81,9 @@ export const SETTINGS_USER_ACTION_FEATURES = {
     "toggle_show_reasoning",
     "toggle_show_todos",
   ],
-  "settings.tool_grouping": [
-    "toggle_explore_grouping",
-    "toggle_terminal_grouping",
-    "toggle_changes_grouping",
-  ],
   "settings.task": ["toggle_auto_archive", "change_auto_archive_days"],
   "settings.storage": ["change_data_directory"],
   "settings.memory": ["toggle_memory", "refresh_memory", "change_memory_scope"],
-  // 账号（原「企业服务端」）登录动作只上报「做了哪个动作」，凭据由 IReactorServerService 独占，不进遥测。
-  // 登录表单在首启登录页与设置页共用，因此这一组动作同时覆盖两个入口（动作本身与入口无关）。
-  "settings.account": ["login", "logout", "refresh_models", "refresh_usage"],
   "settings.browser": [
     "toggle_browser_use",
     "import_browser_data",
@@ -102,14 +98,14 @@ export type SettingsUserActionFeatureId = keyof typeof SETTINGS_USER_ACTION_FEAT
 export type UserActionFeatureId = CoreUserActionFeatureId | SettingsUserActionFeatureId;
 
 type CatalogDefinition = Readonly<Record<string, readonly string[]>>;
-type UserActionOperationKind =
+export type UserActionOperationKind =
   | "navigation"
   | "preference"
   | "command"
   | "management"
   | "destructive";
 
-interface UserActionCatalogEntry {
+export interface UserActionCatalogEntry {
   featureId: UserActionFeatureId;
   action: string;
   group: Extract<RendererActionTraceGroup, "core" | "settings">;
@@ -132,7 +128,7 @@ function operationKindFor(featureId: string, action: string): UserActionOperatio
   }
   if (
     featureId.startsWith("settings.") &&
-    !["refresh_memory", "refresh_models", "import_browser_data", "clear_cache"].includes(action)
+    !["refresh_memory", "import_browser_data", "clear_cache"].includes(action)
   ) {
     return "preference";
   }

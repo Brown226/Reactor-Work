@@ -2,13 +2,13 @@
 import { access, lstat, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import {
-  USER_DATA_DIR_NAME,
   createAgentStateId,
   createPluginAgentStateId,
   parsePluginSubagentModelSelectionOverrides,
   DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS,
   ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID,
   modelSelectionSchema,
+  type SubagentRuntimeConfig,
   type AgentCreateParams,
   type AgentDeleteParams,
   type AgentDiagnostic,
@@ -28,7 +28,6 @@ import {
 import { normalizeSubagentModelSelection } from "./subagentModelSelection.js";
 import { serializeSubagentMarkdown, parseSubagentMarkdown } from "./subagentMarkdown.js";
 import {
-  resolveServerAgentsRoot,
   resolveSubagentStateFile,
   resolveUserHomeDir,
   resolveUserSubagentRoot,
@@ -44,6 +43,8 @@ import {
   scanOfficialPluginCacheRoots,
 } from "@zcode/shared/node";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
+
+import { createSubagentRuntimeConfigCache } from "./subagentRuntimeConfig.js";
 
 const subagentLogger = createServiceLogger("subagents");
 
@@ -158,9 +159,13 @@ async function exists(path: string): Promise<boolean> {
 }
 
 async function readAgentStateFile(options?: SubagentsServiceOptions): Promise<AgentsStateFile> {
-  await migrateSubagentStateFile(await resolveSubagentStateFile(options));
+  return readAgentStateAtPath(await resolveSubagentStateFile(options));
+}
+
+async function readAgentStateAtPath(stateFile: string): Promise<AgentsStateFile> {
+  await migrateSubagentStateFile(stateFile);
   try {
-    const raw = await readFile(await resolveSubagentStateFile(options), "utf-8");
+    const raw = await readFile(stateFile, "utf-8");
     const parsed = JSON.parse(raw) as {
       builtInModelSelectionOverrides?: unknown;
       pluginAgentModelSelectionOverrides?: unknown;
@@ -181,8 +186,11 @@ async function readAgentStateFile(options?: SubagentsServiceOptions): Promise<Ag
           )
         : [],
     };
-  } catch {
-    return emptyAgentsState();
+  } catch (error) {
+    // 文件缺失/损坏沿用既有空覆盖语义；IO 失败不能伪装为空配置并重新启用已禁用 agent。
+    if (error instanceof SyntaxError || (error as NodeJS.ErrnoException).code === "ENOENT")
+      return emptyAgentsState();
+    throw error;
   }
 }
 
@@ -208,12 +216,6 @@ async function discoverFileAgents(params: {
       scope: "user",
       rootPath: await resolveUserSubagentRoot(params.storageOptions),
     });
-    // 服务端下发目录与用户目录同族（用户级、同一能力门内）：两个 list 模式都包含，
-    // 企业专家不随设置页 tab 切换消失（P3 计划 §4.4）。
-    roots.push({
-      scope: "server",
-      rootPath: await resolveServerAgentsRoot(params.storageOptions),
-    });
   }
   if (params.includeWorkspaceAgents) {
     roots.push({
@@ -237,25 +239,8 @@ async function discoverFileAgents(params: {
           continue;
         }
         if (parsed.agent) {
-          // server 根护栏（U-P3-6）：parse 层把非 built-in 一律标成可写 source=user
-          // （subagentMarkdown.ts 的 source/readOnly 推导），这里覆盖为只读 source=server
-          // 并重算稳定 id——否则企业专家会进入用户 CRUD/删除路径，违反 R5。
-          const agent =
-            root.scope === "server"
-              ? {
-                  ...parsed.agent,
-                  id: createAgentStateId({
-                    name: parsed.agent.name,
-                    scope: "server",
-                    source: "server",
-                  }),
-                  source: "server" as const,
-                  readOnly: true,
-                  enabled: true,
-                }
-              : parsed.agent;
           agents.push({
-            ...agent,
+            ...parsed.agent,
             projectPath: root.scope === "workspace" ? params.workspacePath : undefined,
           });
         }
@@ -272,7 +257,10 @@ async function discoverFileAgents(params: {
   return agents;
 }
 
-async function collectAgentMarkdownPaths(rootPath: string): Promise<string[]> {
+export async function collectAgentMarkdownPaths(
+  rootPath: string,
+  recursive = false,
+): Promise<string[]> {
   if (!(await exists(rootPath))) {
     return [];
   }
@@ -287,7 +275,8 @@ async function collectAgentMarkdownPaths(rootPath: string): Promise<string[]> {
   for (const entry of entries) {
     const entryPath = join(rootPath, entry.name);
     if (entry.isDirectory()) {
-      result.push(...(await collectAgentMarkdownPaths(entryPath)));
+      // 自定义 profile 只支持第一层；插件保留已有递归发现规则。
+      if (recursive) result.push(...(await collectAgentMarkdownPaths(entryPath, true)));
       continue;
     }
     if (entry.isFile() && /\.(md|markdown)$/iu.test(entry.name)) {
@@ -421,7 +410,7 @@ async function discoverPluginAgents(params: {
 
 async function readPluginConfig(options?: SubagentStorageOptions): Promise<PluginConfigSummary> {
   try {
-    const configPath = join(resolveUserHomeDir(options), USER_DATA_DIR_NAME, "cli", "config.json");
+    const configPath = join(resolveUserHomeDir(options), ".zcode", "cli", "config.json");
     const raw = await readFile(configPath, "utf-8");
     const parsed = JSON.parse(raw) as unknown;
     if (!isRecord(parsed)) return { enabledPlugins: {}, suppressedBuiltins: [] };
@@ -499,7 +488,7 @@ function isInstalledPluginRecord(value: unknown): value is InstalledPluginRecord
 async function collectPluginAgentMarkdownPaths(rootPath: string): Promise<string[]> {
   const manifest = await readPluginManifest(rootPath);
   const roots = collectPluginAgentRoots(rootPath, manifest?.agents);
-  const paths = await Promise.all(roots.map((root) => collectAgentMarkdownPaths(root)));
+  const paths = await Promise.all(roots.map((root) => collectAgentMarkdownPaths(root, true)));
   return paths.flat().sort((left, right) => left.localeCompare(right));
 }
 
@@ -553,7 +542,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function normalizeBuiltInSelectionOverrides(
+/** 内置覆盖的正式读取规则：每项单独校验，非法项丢弃。数据同步按同一规则读取两端。 */
+export function normalizeBuiltInSelectionOverrides(
   structured: unknown,
 ): BuiltInSubagentModelSelectionOverrides {
   const result: BuiltInSubagentModelSelectionOverrides = {};
@@ -566,26 +556,58 @@ function normalizeBuiltInSelectionOverrides(
 }
 
 export function createSubagentsService(options?: SubagentsServiceOptions): ISubagentsService & {
-  /** Host 启动 Agent 前的一次性存储导入，不暴露为 Renderer RPC。 */
-  prepareRuntimeState(): Promise<void>;
+  /** Host 启动/重启 Agent 前准备配置，不暴露为 Renderer RPC。 */
+  prepareRuntimeState(workspace?: {
+    workspacePath: string;
+    workspaceIdentity?: string;
+  }): Promise<void>;
+  readRuntimeConfig(workspace: {
+    workspacePath: string;
+    workspaceIdentity?: string;
+  }): Promise<SubagentRuntimeConfig>;
+  disposeAll(): void;
 } {
   let writeQueue = Promise.resolve();
+  let disposed = false;
   const storageOptions: SubagentsServiceOptions = {
     homeDir: options?.homeDir,
   };
 
-  return {
-    async prepareRuntimeState() {
-      const markdownMigration = await migrateUserSubagentMarkdown(
-        await resolveUserSubagentRoot(storageOptions),
-      );
-      for (const failure of markdownMigration.failures)
-        subagentLogger.warn(undefined, "用户 Subagent Markdown 迁移失败，保留原文件", failure);
-      const runImport = async () =>
-        migrateSubagentStateFile(await resolveSubagentStateFile(storageOptions));
-      const queued = writeQueue.then(runImport, runImport);
-      writeQueue = queued.catch(() => {});
-      await queued;
+  const runtimeConfig = createSubagentRuntimeConfigCache({
+    readUserRoot: () => resolveUserSubagentRoot(storageOptions),
+    readStatePath: () => resolveSubagentStateFile(storageOptions),
+    readState: readAgentStateAtPath,
+  });
+  function enqueue<T>(run: () => Promise<T>): Promise<T> {
+    const queued = writeQueue.then(run, run);
+    writeQueue = queued.then(
+      () => {},
+      () => {},
+    );
+    return queued;
+  }
+  function mutate<T>(run: () => Promise<T>): Promise<T> {
+    return enqueue(async () => {
+      if (disposed) throw new Error("Subagents service is disposed");
+      return run();
+    });
+  }
+  const service = {
+    readRuntimeConfig: runtimeConfig.read,
+    disposeAll() {
+      disposed = true;
+      runtimeConfig.dispose();
+    },
+    async prepareRuntimeState(workspace?: { workspacePath: string; workspaceIdentity?: string }) {
+      return enqueue(async () => {
+        const markdownMigration = await migrateUserSubagentMarkdown(
+          await resolveUserSubagentRoot(storageOptions),
+        );
+        for (const failure of markdownMigration.failures)
+          subagentLogger.warn(undefined, "用户 Subagent Markdown 迁移失败，保留原文件", failure);
+        // state 的迁移由缓存读取入口统一执行，IO 失败同样发布回退，不能提前阻断 CLI 启动。
+        await runtimeConfig.prepare(workspace);
+      });
     },
 
     async list(params: {
@@ -623,9 +645,6 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
       const sortedWorkspaceAgents = fileAgents
         .filter((agent) => agent.scope === "workspace")
         .sort((left, right) => left.name.localeCompare(right.name));
-      const sortedServerAgents = fileAgents
-        .filter((agent) => agent.scope === "server")
-        .sort((left, right) => left.name.localeCompare(right.name));
       // 用户页不能读项目 profile，但仍需展示本地插件的只读覆盖入口；不能把两者一并剪掉。
       const pluginAgentDiscovery = await discoverPluginAgents({
         diagnostics,
@@ -634,21 +653,16 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
           ...builtInAgents.map((agent) => agent.name),
           ...sortedUserAgents.map((agent) => agent.name),
           ...sortedWorkspaceAgents.map((agent) => agent.name),
-          // server 名同样占用裸名：不让插件 agent 抢注与企业专家同名的别名（§4.4）。
-          ...sortedServerAgents.map((agent) => agent.name),
         ],
         storageOptions,
       });
       const discoveredAgents =
         mode === "settingsUserOnly"
-          ? [...builtInAgents, ...sortedUserAgents, ...sortedServerAgents]
+          ? [...builtInAgents, ...sortedUserAgents]
           : applyRuntimePrecedence([
               ...builtInAgents,
               ...sortedUserAgents,
               ...sortedWorkspaceAgents,
-              // server 排在 workspace 之后、plugin 之前：applyRuntimePrecedence 后写覆盖，
-              // 实际解析优先级 = plugin > server > workspace > user > built-in（§4.4 / U-P3-1）。
-              ...sortedServerAgents,
               ...pluginAgentDiscovery.runtimeAgents,
             ]);
       const agents = attachEnabledState(discoveredAgents, state);
@@ -675,9 +689,7 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
         await writeAgentStateFile(state, storageOptions);
       };
 
-      const queued = writeQueue.then(runUpdate, runUpdate);
-      writeQueue = queued.catch(() => {});
-      await queued;
+      await mutate(runUpdate);
     },
 
     async setBuiltInModelOverride(params: BuiltInSubagentModelOverrideParams): Promise<void> {
@@ -701,9 +713,7 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
         );
       };
 
-      const queued = writeQueue.then(runUpdate, runUpdate);
-      writeQueue = queued.catch(() => {});
-      await queued;
+      await mutate(runUpdate);
     },
 
     async setPluginAgentModelOverride(params: PluginSubagentModelOverrideParams): Promise<void> {
@@ -720,9 +730,7 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
           storageOptions,
         );
       };
-      const queued = writeQueue.then(runUpdate, runUpdate);
-      writeQueue = queued.catch(() => {});
-      await queued;
+      await mutate(runUpdate);
     },
 
     async getPrimaryUserAgentsDirectory(_params: { provider: ZCodeProvider }): Promise<{
@@ -758,10 +766,6 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
     async updateAgent(params: AgentUpdateParams): Promise<{ agent: AgentSummary }> {
       validateUserAgentConfig(params.config);
       assertNotBuiltInName(params.config.name);
-      // 改名会 rm oldFilePath；server 文件绝不允许经此路径被删（assertNotServerAgentPath）。
-      if (params.oldFilePath) {
-        await assertNotServerAgentPath(params.oldFilePath, storageOptions);
-      }
 
       const scope = params.scope ?? "user";
       const agentDir =
@@ -789,7 +793,6 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
     },
 
     async deleteAgent(params: AgentDeleteParams): Promise<void> {
-      await assertNotServerAgentPath(params.filePath, storageOptions);
       await rm(params.filePath, { force: true });
 
       const state = await readAgentStateFile(storageOptions);
@@ -798,6 +801,12 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
       state.disabledAgentIds = [...disabledSet].sort();
       await writeAgentStateFile(state, storageOptions);
     },
+  };
+  return {
+    ...service,
+    createAgent: (params: AgentCreateParams) => mutate(() => service.createAgent(params)),
+    updateAgent: (params: AgentUpdateParams) => mutate(() => service.updateAgent(params)),
+    deleteAgent: (params: AgentDeleteParams) => mutate(() => service.deleteAgent(params)),
   };
 }
 
@@ -841,7 +850,7 @@ async function migrateDisabledAgentId(
   }
   disabledSet.delete(previousAgentId);
   disabledSet.add(nextAgentId);
-  await writeAgentStateFile(
+  return writeAgentStateFile(
     {
       ...state,
       disabledAgentIds: [...disabledSet].sort(),
@@ -864,22 +873,6 @@ function requireWorkspacePath(workspacePath: string | undefined): string {
   const value = workspacePath?.trim();
   if (!value) throw new Error("Workspace path is required for workspace subagents");
   return value;
-}
-
-/**
- * server 下发文件禁止进入本地删除/改名路径（R5 / U-P3-6 护栏）：
- * 企业专家的解除安装只能走服务端 `DELETE .../install`，本地 rm 会被下次同步写回，
- * 也可能把「企业下发」误删成「用户自建消失」。UI 已隐藏入口，这里是代码路径的最后一道闸。
- */
-async function assertNotServerAgentPath(
-  filePath: string,
-  options?: SubagentStorageOptions,
-): Promise<void> {
-  const serverRoot = await resolveServerAgentsRoot(options);
-  const relativePath = relative(serverRoot, filePath);
-  if (relativePath === "" || (!relativePath.startsWith("..") && !isAbsolute(relativePath))) {
-    throw new Error("企业专家由服务端下发，不能本地删除或修改；请使用「卸载」");
-  }
 }
 
 function parseSavedAgent(

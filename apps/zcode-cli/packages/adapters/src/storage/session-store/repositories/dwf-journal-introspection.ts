@@ -11,6 +11,7 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { NodeRecord, NodeRecordStatus, RunStatus, StoredEvent } from "@zcode/dynamic-workflow";
 import type { DwfArtifactItem, DwfArtifactItemsQuery } from "./dwf-journal-artifacts.js";
+import type { DwfEventPageQuery } from "./dwf-journal-pages.js";
 import {
   decodeEvent,
   decodeNode,
@@ -65,6 +66,18 @@ export interface DwfNodeStatusCounts {
 }
 
 /**
+ * 一个 run 的**一世**（一次 `run-started` 到它最后一条事件）的起止，epoch 毫秒。
+ *
+ * 一世就是「引擎活着的一段」：崩溃或停止的那一世没有 `run-settled`，所以收尾只能由「这一世
+ * 记下的最后一条事件」界定——那正是它最后一次动的时刻。两个时刻同源于 `dwf_event.time_created`
+ * （事件日志里一切「多久以前」的唯一时钟），因此差值不会跨时钟。
+ */
+export interface DwfRunLifeSpan {
+  startedAt: number;
+  lastActivityAt: number;
+}
+
+/**
  * 宿主侧的 run 内省查询面（`ListWorkflowRuns` / `GetWorkflowRun` 两个只读工具的取数底座）。
  *
  * 刻意**不加宽**引擎的 `JournalStorePort`，与 {@link SqliteDwfJournalStore.listNonTerminalRuns}
@@ -82,12 +95,26 @@ export interface DwfRunIntrospectionQueries {
     runId: string,
     artifactId: string,
     query: DwfArtifactItemsQuery,
-  ): DwfArtifactItem[];
+  ): { items: DwfArtifactItem[]; hasMore: boolean };
+  /** 事件日志的一页：条数与字节两道界（dwf-journal-pages.ts），`hasMore` 由存储层判定。 */
+  listEventPage(
+    runId: string,
+    query: DwfEventPageQuery,
+  ): { events: StoredEvent[]; hasMore: boolean };
   listArtifactRows(runId: string): NodeRecord[];
+  /** 每个预置产物的标签 report 条数（`group by artifact_id`，不读行）。 */
+  countTaggedReports(runId: string): ReadonlyMap<string, number>;
   listRecentLogEvents(runId: string, limit: number): StoredEvent[];
   listRuns(query: DwfListRunsQuery): DwfRunListItem[];
   /**
-   * 本 run 的 world-read / world-run 行，按落库先后（`order by id`），带 journal 时间戳。**不取
+   * 本 run 每一世的活动区间，按时序（完成卡的「时间」格，见
+   * `docs/dynamic-workflow/transcript-and-notifications.md`「How long it took」）。一条 run 可以
+   * 有多世（每次 resume 一世），而每一世的墙钟只有事件日志知道。
+   */
+  listRunLifeSpans(runId: string): DwfRunLifeSpan[];
+  /**
+   * 本 run 的 world-read / world-run 行，按落库先后（`order by id`），带 journal 时间戳
+   * （docs/dynamic-workflow/transcript-and-notifications.md 的 `workflowRunWorkspace` 行）。**不取
    * `result_json`**：这条读面是清单（op / args / 状态 / 时间），正文另有按 (siteId, ordinal)
    * 的读面——一页 256 个节点把每个 256 KB 的 stdout 一起解出来，等于把整条 journal 读进内存。
    */
@@ -187,6 +214,56 @@ export function listRecentLogEvents(db: DatabaseSync, runId: string, limit: numb
     )
     .all(runId, limit) as unknown as DwfEventRow[];
   return rows.reverse().map(decodeEvent);
+}
+
+/**
+ * 本 run 每一世的活动区间（`run-started` 的时刻 → 那一世最后一条事件的时刻），按时序。
+ *
+ * 取数口径见 `docs/dynamic-workflow/transcript-and-notifications.md`「How long it took」：完成卡的
+ * 时长是 lineage 的**活动**时长之和，而一条 run 的每一世都要各算一段——世与世之间的空档
+ * （进程已死、还没 resume）什么都没在跑，不能计入。
+ *
+ * 一条 SQL 做完，且**不解一个 payload**：`lead()` 把每一世的起点与下一世的起点配成区间，
+ * 相关子查询在区间内取 sequence 最大的那条的时刻。两个谓词都落在 `unique(run_id, sequence)`
+ * 上；`type` 列就是为这类过滤存的冗余（payload_json 里也有一份）。一条 18k 事件的 run 因此
+ * 只读几行，而不是把 2.8 MB 的 payload 解进内存——后者正是这条读面刻意不用 `listEvents` 的理由。
+ *
+ * 子查询恒有解（区间至少含 `run-started` 自己），所以正常行不会回 null；仍防御性收窄——
+ * 这是个跨存储边界的读面，而一个 null 会静默变成 NaN 毫秒。
+ */
+export function listRunLifeSpans(db: DatabaseSync, runId: string): DwfRunLifeSpan[] {
+  const rows = db
+    .prepare(
+      `
+      with lives as (
+        select sequence, time_created,
+               lead(sequence) over (order by sequence) as next_sequence
+        from dwf_event
+        where run_id = ? and type = 'run-started'
+      )
+      select
+        l.time_created as started_at,
+        (
+          select e.time_created
+          from dwf_event e
+          where e.run_id = ?
+            and e.sequence >= l.sequence
+            and (l.next_sequence is null or e.sequence < l.next_sequence)
+          order by e.sequence desc
+          limit 1
+        ) as last_activity_at
+      from lives l
+      order by l.sequence
+      `,
+    )
+    .all(runId, runId) as unknown as { started_at: number; last_activity_at: number | null }[];
+  return rows.map((row) => ({
+    startedAt: Number(row.started_at),
+    lastActivityAt:
+      typeof row.last_activity_at === "number"
+        ? Number(row.last_activity_at)
+        : Number(row.started_at),
+  }));
 }
 
 /**

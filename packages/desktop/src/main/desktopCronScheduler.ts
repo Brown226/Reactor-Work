@@ -5,7 +5,6 @@ import { utilityProcess as electronUtilityProcess } from "electron";
 import type { UtilityProcess as ElectronUtilityProcess } from "electron";
 import { HostMessageTypes } from "@zcode/shared";
 import { buildHostProcessEnv, schedulerModulePath } from "./desktopRuntimeEnv.js";
-import { buildDataScopeEnv } from "./desktopDataScope.js";
 import { ingestSchedulerSelfResourceSample } from "./processResourceSelfHeapSource.js";
 import { registerSchedulerProcess, unregisterSchedulerProcess } from "./resourceManagerWindow.js";
 import type {
@@ -26,6 +25,7 @@ export interface CronRunResultPayload {
 export interface OffPeakRunResultPayload {
   offPeakTaskId: string;
   ok: boolean;
+  lifecycleManaged?: true;
   conversationId?: string;
   sessionId?: string;
   error?: string;
@@ -64,7 +64,6 @@ export function spawnCronScheduler(deps: CronSchedulerDeps): CronSchedulerHandle
     execArgv: ["--no-warnings"],
     env: {
       ...buildHostProcessEnv(deps.hostProcessLocalEnv),
-      ...buildDataScopeEnv(),
       ZCODE_PROCESS_LABEL: "scheduler",
     },
   });
@@ -141,6 +140,9 @@ export function spawnCronScheduler(deps: CronSchedulerDeps): CronSchedulerHandle
           mode: msg.mode,
           workspacePath: msg.workspacePath,
           workspaceIdentity: msg.workspaceIdentity,
+          projectId: msg.projectId,
+          hostId: msg.hostId,
+          additionalDirectories: msg.additionalDirectories,
         });
       } catch (error) {
         deps.logger.warn("[cron-scheduler] forward CronRun to host failed:", error);
@@ -180,6 +182,9 @@ export function spawnCronScheduler(deps: CronSchedulerDeps): CronSchedulerHandle
           serverTicketId: msg.serverTicketId,
           workspacePath: msg.workspacePath,
           workspaceIdentity: msg.workspaceIdentity,
+          projectId: msg.projectId,
+          hostId: msg.hostId,
+          additionalDirectories: msg.additionalDirectories,
         });
       } catch (error) {
         deps.logger.warn("[cron-scheduler] forward OffPeakRun to host failed:", error);

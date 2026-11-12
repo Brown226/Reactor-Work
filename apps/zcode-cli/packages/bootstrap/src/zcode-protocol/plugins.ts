@@ -18,7 +18,9 @@ import {
   type ZCodePluginComponentGroup,
   type ZCodePluginDiagnostic,
   type ZCodePluginInfo,
+  type ZCodePluginExtensionSummary,
   type ZCodePluginMarketplaceSummary,
+  type ZCodePluginStoreListing,
   type ZCodePluginsConfigureResult,
   type ZCodePluginsDescribeResult,
   type ZCodePluginsInstallResult,
@@ -29,15 +31,18 @@ import {
   type ZCodePluginsSetEnabledResult,
   type ZCodePluginsUninstallResult,
   type ZCodePluginsValidateResult,
+  isUserFacingPlugin,
 } from "@zcode/shared";
 import type { PluginDiagnostic, PluginMetadata } from "@zcode/contracts";
 import {
   addZCodePluginMarketplace,
   configureZCodePlugin,
   describeZCodePlugin,
+  enrichCachedClaudeMarketplaceIconsForOverview,
   getZCodePluginsOverview,
   installZCodeMarketplacePlugin,
   removeZCodePluginMarketplace,
+  resolveZCodePluginConfigWithSecrets,
   resolveZCodePlugins,
   resetZCodePluginConfig,
   restoreBuiltinPlugin as restoreBuiltinPluginCore,
@@ -49,13 +54,16 @@ import {
 import { listInstalledPluginRecords } from "@zcode/adapters/plugins";
 import { withPluginStorageLock } from "../lib/plugin-storage-lock.js";
 import { getCliStorageRoot, getPluginStorageRoot } from "../app/paths.js";
-import { resolveOfficialPluginHostMcpServerNames } from "../app/official-plugin-definitions.js";
-import { createConfig, resolvePath, type ConfigResult } from "@zcode/adapters/config";
+import {
+  createConfig,
+  createConfigWithPluginMigrations,
+  resolvePath,
+  type ConfigResult,
+} from "@zcode/adapters/config";
 import { parseParams, type ZCodeProtocolAgentServerContext } from "./server-types.js";
 
 // 把 CLI 的 PluginMetadata 投影成协议可序列化的 ZCodePluginInfo (只保留 UI 需要的字段)。
 function toPluginInfo(plugin: PluginMetadata, configResult?: ConfigResult): ZCodePluginInfo {
-  const hostMcpServerNames = resolveOfficialPluginHostMcpServerNames(plugin.id);
   const configuredOptions = Object.fromEntries(
     Object.entries(plugin.configuredOptions ?? {}).filter(
       ([key]) => plugin.userConfig?.[key]?.sensitive !== true,
@@ -91,10 +99,25 @@ function toPluginInfo(plugin: PluginMetadata, configResult?: ConfigResult): ZCod
       })),
     })),
     declaredMcpServerNames: plugin.declaredMcpServerNames,
+    ...(plugin.uiSurfaces?.length
+      ? {
+          uiSurfaces: plugin.uiSurfaces.map((surface) => ({
+            pluginId: plugin.id,
+            pluginName: plugin.name,
+            id: surface.id,
+            title: surface.title,
+            ...(surface.icon ? { icon: surface.icon } : {}),
+            server: surface.server,
+            resourceUri: surface.resourceUri,
+            availability: surface.availability,
+          })),
+        }
+      : {}),
     mcpServerNames: plugin.mcpServerNames,
-    ...(hostMcpServerNames.length > 0 ? { hostMcpServerNames } : {}),
     hookDetails: plugin.hookDetails,
     rootPath: plugin.rootPath,
+    // 插件的持久数据目录：App 交给扩展作 ctx.extension.dataPath（plugin-compat.md「Storage Layout」）。
+    dataPath: plugin.dataPath,
     ...(plugin.userConfig ? { userConfig: plugin.userConfig } : {}),
     ...(Object.keys(configuredOptions).length > 0 ? { configuredOptions } : {}),
     ...(rootSource ? { rootSource } : {}),
@@ -126,16 +149,16 @@ function resolveInlinePluginRootSource(
   return undefined;
 }
 
-function createPluginConfigView(
+async function createPluginConfigView(
   context: ZCodeProtocolAgentServerContext,
   workspacePath: string,
   configScope: "user" | "workspace" | undefined,
-): ConfigResult {
+): Promise<ConfigResult> {
   // Settings 的 User 与 Workspace 现在是同一批 Host Plugin 的两个配置视图。
   // User 视图若继续加载 project config，会把 Workspace override 投影成 User 当前值；
   // 不传 workingDirectory 可保留 User/default 层，同时仍由调用方的 workspacePath 决定
   // package storage 和相对执行上下文。
-  return createConfig({
+  return createConfigWithPluginMigrations({
     env: context.deps?.env,
     ...(configScope === "user" ? {} : { workingDirectory: workspacePath }),
   });
@@ -179,7 +202,7 @@ function createMissingConfiguredPluginInfos(
   });
 }
 
-function normalizePluginRootForComparison(
+export function normalizePluginRootForComparison(
   rootPath: string,
   platform: NodeJS.Platform = process.platform,
 ): string {
@@ -203,16 +226,28 @@ export async function listPlugins(
   rawParams: unknown,
 ): Promise<ZCodePluginsListResult> {
   const params = parseParams(zcodePluginsListParamsSchema, rawParams);
-  const configResult = createPluginConfigView(
-    context,
-    params.workspace.workspacePath,
-    params.configScope,
-  );
-  const outcome = resolveZCodePlugins({
+  context.deps?.pluginPreparation?.signal.throwIfAborted();
+  // optionSources 要包含已迁进私有文件的敏感键（值仍过滤），否则设置页的 scope 标记与
+  // 「清除」按钮会在迁移后消失；所以投影用叠加私有文件后的配置视图。
+  const configResult = await resolveZCodePluginConfigWithSecrets({
+    configResult: await createPluginConfigView(
+      context,
+      params.workspace.workspacePath,
+      params.configScope,
+    ),
+    workingDirectory: params.workspace.workspacePath,
+  });
+  const outcome = await resolveZCodePlugins({
+    pluginPreparation: context.deps?.pluginPreparation,
+    pluginDiscovery: context.deps?.pluginDiscovery,
+    workspaceIdentity: params.workspace.workspaceIdentity,
+    remoteSessionId: params.workspace.remoteSessionId,
     configResult,
     logger: context.logger,
     workingDirectory: params.workspace.workspacePath,
   });
+  // 启动 fallback 只表示能力暂不可用；管理查询不能把它投影成磁盘缺包。
+  context.deps?.pluginPreparation?.signal.throwIfAborted();
   const plugins = outcome.plugins.map((plugin) => toPluginInfo(plugin, configResult));
   return {
     plugins: [
@@ -221,7 +256,7 @@ export async function listPlugins(
         configResult,
         new Set(plugins.map((plugin) => plugin.id)),
       ),
-    ],
+    ].filter((plugin) => isUserFacingPlugin(plugin.id)),
     diagnostics: outcome.diagnostics.map(toPluginDiagnostic),
   };
 }
@@ -234,6 +269,11 @@ export async function setPluginEnabled(
   const params = parseParams(zcodePluginsSetEnabledParamsSchema, rawParams);
   abortSignal?.throwIfAborted();
   const result = await setZCodePluginEnabled({
+    abortSignal,
+    pluginPreparation: context.deps?.pluginPreparation,
+    pluginDiscovery: context.deps?.pluginDiscovery,
+    workspaceIdentity: params.workspace.workspaceIdentity,
+    remoteSessionId: params.workspace.remoteSessionId,
     enabled: params.enabled,
     logger: context.logger,
     plugin: params.pluginId,
@@ -256,8 +296,17 @@ export async function getPluginsOverview(
   rawParams: unknown,
 ): Promise<ZCodePluginsOverviewResult> {
   const params = parseParams(zcodePluginsOverviewParamsSchema, rawParams);
-  const overview = getZCodePluginsOverview({
-    configResult: createPluginConfigView(
+  context.deps?.pluginPreparation?.signal.throwIfAborted();
+  enrichCachedClaudeMarketplaceIconsForOverview({
+    logger: context.logger,
+    workingDirectory: params.workspace.workspacePath,
+  });
+  const overview = await getZCodePluginsOverview({
+    pluginPreparation: context.deps?.pluginPreparation,
+    pluginDiscovery: context.deps?.pluginDiscovery,
+    workspaceIdentity: params.workspace.workspaceIdentity,
+    remoteSessionId: params.workspace.remoteSessionId,
+    configResult: await createPluginConfigView(
       context,
       params.workspace.workspacePath,
       params.configScope,
@@ -265,11 +314,22 @@ export async function getPluginsOverview(
     logger: context.logger,
     workingDirectory: params.workspace.workspacePath,
   });
+  // 查询途中预算到期也走既有失败通道，避免用空发现结果覆盖已安装状态。
+  context.deps?.pluginPreparation?.signal.throwIfAborted();
+  // 扩展摘要只在被要求时放进 listing：listing 与结果都是 strict，比 CLI 旧的 services 解析到新键会让
+  // 整个商店打不开（docs/plugins/plugin-publishing.md §4.3）。能这样要的 services 已先读过能力位。
+  const withSummary = params.includeExtensionSummary === true;
   return {
     marketplaces: overview.marketplaces.map(toMarketplaceSummary),
-    availablePlugins: overview.availablePlugins.map(toAvailablePluginSummary),
-    installedPlugins: overview.installedPlugins.map(toInstalledPluginSummary),
-    restorableBuiltins: overview.restorableBuiltins.map(toAvailablePluginSummary),
+    availablePlugins: overview.availablePlugins
+      .filter((plugin) => isUserFacingPlugin(plugin.id))
+      .map((plugin) => toAvailablePluginSummary(withExtensionSummary(plugin, withSummary))),
+    installedPlugins: overview.installedPlugins
+      .filter((plugin) => isUserFacingPlugin(plugin.id))
+      .map((plugin) => toInstalledPluginSummary(withExtensionSummary(plugin, withSummary))),
+    restorableBuiltins: overview.restorableBuiltins
+      .filter((plugin) => isUserFacingPlugin(plugin.id))
+      .map(toAvailablePluginSummary),
     diagnostics: overview.diagnostics.map(toPluginDiagnostic),
     capability: { supported: true },
   };
@@ -281,16 +341,13 @@ export async function addPluginMarketplace(
   abortSignal?: AbortSignal,
 ): Promise<ZCodePluginsMarketplaceMutationResult> {
   const params = parseParams(zcodePluginsMarketplaceAddParamsSchema, rawParams);
-  const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
-  const marketplace = await withPluginStorageLock(pluginStorageRoot, async () =>
-    addZCodePluginMarketplace({
-      abortSignal,
-      dryRun: params.dryRun,
-      logger: context.logger,
-      source: params.source,
-      workingDirectory: params.workspace.workspacePath,
-    }),
-  );
+  const marketplace = await addZCodePluginMarketplace({
+    abortSignal,
+    dryRun: params.dryRun,
+    logger: context.logger,
+    source: params.source,
+    workingDirectory: params.workspace.workspacePath,
+  });
   return { marketplace: toMarketplaceSummary(marketplace), diagnostics: [] };
 }
 
@@ -299,14 +356,11 @@ export async function removePluginMarketplace(
   rawParams: unknown,
 ): Promise<ZCodePluginsMarketplaceMutationResult> {
   const params = parseParams(zcodePluginsMarketplaceRemoveParamsSchema, rawParams);
-  const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
-  await withPluginStorageLock(pluginStorageRoot, async () =>
-    removeZCodePluginMarketplace({
-      logger: context.logger,
-      marketplace: params.marketplace,
-      workingDirectory: params.workspace.workspacePath,
-    }),
-  );
+  await removeZCodePluginMarketplace({
+    logger: context.logger,
+    marketplace: params.marketplace,
+    workingDirectory: params.workspace.workspacePath,
+  });
   return { diagnostics: [] };
 }
 
@@ -316,15 +370,12 @@ export async function updatePluginMarketplace(
   abortSignal?: AbortSignal,
 ): Promise<ZCodePluginsMarketplaceMutationResult> {
   const params = parseParams(zcodePluginsMarketplaceUpdateParamsSchema, rawParams);
-  const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
-  const result = await withPluginStorageLock(pluginStorageRoot, async () =>
-    updateZCodePluginMarketplace({
-      abortSignal,
-      logger: context.logger,
-      marketplace: params.marketplace,
-      workingDirectory: params.workspace.workspacePath,
-    }),
-  );
+  const result = await updateZCodePluginMarketplace({
+    abortSignal,
+    logger: context.logger,
+    marketplace: params.marketplace,
+    workingDirectory: params.workspace.workspacePath,
+  });
   return {
     marketplaces: result.marketplaces.map(toMarketplaceSummary),
     diagnostics: result.diagnostics.map(toPluginDiagnostic),
@@ -337,18 +388,19 @@ export async function installPlugin(
   abortSignal?: AbortSignal,
 ): Promise<ZCodePluginsInstallResult> {
   const params = parseParams(zcodePluginsInstallParamsSchema, rawParams);
-  const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
-  const result = await withPluginStorageLock(pluginStorageRoot, async () =>
-    installZCodeMarketplacePlugin({
-      abortSignal,
-      dryRun: params.dryRun,
-      logger: context.logger,
-      marketplace: params.marketplace,
-      pluginName: params.pluginName,
-      scope: params.scope,
-      workingDirectory: params.workspace.workspacePath,
-    }),
-  );
+  const result = await installZCodeMarketplacePlugin({
+    pluginPreparation: context.deps?.pluginPreparation,
+    pluginDiscovery: context.deps?.pluginDiscovery,
+    workspaceIdentity: params.workspace.workspaceIdentity,
+    remoteSessionId: params.workspace.remoteSessionId,
+    abortSignal,
+    dryRun: params.dryRun,
+    logger: context.logger,
+    marketplace: params.marketplace,
+    pluginName: params.pluginName,
+    scope: params.scope,
+    workingDirectory: params.workspace.workspacePath,
+  });
   return {
     dependencyClosure: result.dependencyClosure,
     installedPlugins: result.installedPlugins.map(toInstalledPluginSummary),
@@ -362,6 +414,10 @@ export async function uninstallPlugin(
 ): Promise<ZCodePluginsUninstallResult> {
   const params = parseParams(zcodePluginsUninstallParamsSchema, rawParams);
   const removed = await uninstallZCodeMarketplacePlugin({
+    pluginPreparation: context.deps?.pluginPreparation,
+    pluginDiscovery: context.deps?.pluginDiscovery,
+    workspaceIdentity: params.workspace.workspaceIdentity,
+    remoteSessionId: params.workspace.remoteSessionId,
     logger: context.logger,
     marketplace: params.marketplace,
     pluginId: params.pluginId,
@@ -381,14 +437,13 @@ export async function updatePlugin(
 ): Promise<ZCodePluginsInstallResult> {
   const params = parseParams(zcodePluginsUpdateParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
-  const installed = listInstalledPluginRecords(pluginStorageRoot).filter((record) => {
-    if (params.pluginId) return record.id === params.pluginId;
-    if (params.marketplace) return record.marketplace === params.marketplace;
-    return true;
-  });
-  // 与 uninstall 一样把整个重装循环串行化到同一 storageRoot 的 in-process 锁里，
-  // 避免并发 update/install 交错读改写 installed_plugins.json / cache。
-  return withPluginStorageLock(pluginStorageRoot, async () => {
+  // 在同一把写锁内选择待更新记录，避免把等锁期间卸载的插件重新装回去。
+  return withPluginStorageLock(pluginStorageRoot, async (lock) => {
+    const installed = listInstalledPluginRecords(pluginStorageRoot).filter((record) => {
+      if (params.pluginId) return record.id === params.pluginId;
+      if (params.marketplace) return record.marketplace === params.marketplace;
+      return true;
+    });
     const installedPlugins: ZCodeInstalledPluginSummary[] = [];
     const dependencyClosure: string[] = [];
     // 聚合每条记录重装产生的诊断：installZCodeMarketplacePlugin 失败时不抛错，而是返回
@@ -398,6 +453,12 @@ export async function updatePlugin(
     const diagnostics: ZCodePluginDiagnostic[] = [];
     for (const record of installed) {
       const result = await installZCodeMarketplacePlugin({
+        pluginStorageRoot: lock.root,
+        pluginStorageLock: lock,
+        pluginPreparation: context.deps?.pluginPreparation,
+        pluginDiscovery: context.deps?.pluginDiscovery,
+        workspaceIdentity: params.workspace.workspaceIdentity,
+        remoteSessionId: params.workspace.remoteSessionId,
         logger: context.logger,
         marketplace: record.marketplace,
         pluginName: record.name,
@@ -420,6 +481,10 @@ export async function restoreBuiltinPlugin(
 ): Promise<ZCodePluginsRestoreBuiltinResult> {
   const params = parseParams(zcodePluginsRestoreBuiltinParamsSchema, rawParams);
   await restoreBuiltinPluginCore({
+    pluginPreparation: context.deps?.pluginPreparation,
+    pluginDiscovery: context.deps?.pluginDiscovery,
+    workspaceIdentity: params.workspace.workspaceIdentity,
+    remoteSessionId: params.workspace.remoteSessionId,
     logger: context.logger,
     pluginId: params.pluginId,
     workingDirectory: params.workspace.workspacePath,
@@ -433,6 +498,10 @@ export async function configurePlugin(
 ): Promise<ZCodePluginsConfigureResult> {
   const params = parseParams(zcodePluginsConfigureParamsSchema, rawParams);
   await configureZCodePlugin({
+    pluginPreparation: context.deps?.pluginPreparation,
+    pluginDiscovery: context.deps?.pluginDiscovery,
+    workspaceIdentity: params.workspace.workspaceIdentity,
+    remoteSessionId: params.workspace.remoteSessionId,
     clearOptionKeys: params.clearOptionKeys,
     dryRun: params.dryRun,
     logger: context.logger,
@@ -463,16 +532,13 @@ export async function validatePlugin(
   rawParams: unknown,
 ): Promise<ZCodePluginsValidateResult> {
   const params = parseParams(zcodePluginsValidateParamsSchema, rawParams);
-  const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
-  const diagnostics = await withPluginStorageLock(pluginStorageRoot, async () =>
-    validateZCodePlugin({
-      logger: context.logger,
-      marketplace: params.marketplace,
-      pluginName: params.pluginName,
-      source: params.source,
-      workingDirectory: params.workspace.workspacePath,
-    }),
-  );
+  const diagnostics = await validateZCodePlugin({
+    logger: context.logger,
+    marketplace: params.marketplace,
+    pluginName: params.pluginName,
+    source: params.source,
+    workingDirectory: params.workspace.workspacePath,
+  });
   return {
     ok: diagnostics.every((diagnostic) => diagnostic.severity !== "error"),
     diagnostics: diagnostics.map(toPluginDiagnostic),
@@ -489,15 +555,13 @@ export async function describePlugin(
   rawParams: unknown,
 ): Promise<ZCodePluginsDescribeResult> {
   const params = parseParams(zcodePluginsDescribeParamsSchema, rawParams);
-  const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
-  const result = await withPluginStorageLock(pluginStorageRoot, async () =>
-    describeZCodePlugin({
-      logger: context.logger,
-      marketplace: params.marketplace,
-      pluginName: params.pluginName,
-      workingDirectory: params.workspace.workspacePath,
-    }),
-  );
+  // 已安装目录、已缓存 manifest 与临时 source 解析都不持锁；只有懒加载 manifest 写入进锁。
+  const result = await describeZCodePlugin({
+    logger: context.logger,
+    marketplace: params.marketplace,
+    pluginName: params.pluginName,
+    workingDirectory: params.workspace.workspacePath,
+  });
   const components: ZCodePluginComponentGroup[] = result.components.map((group) => ({
     kind: group.kind,
     items: group.items.map((item) => ({
@@ -535,6 +599,14 @@ function toMarketplaceSummary(input: {
     ...(input.featured ? { featured: input.featured } : {}),
     ...(input.refreshFailure ? { refreshFailure: input.refreshFailure } : {}),
   };
+}
+
+/** 按请求把 CLI 内部的扩展摘要并进 listing；不要求时原样返回（摘要不进线）。 */
+function withExtensionSummary<
+  T extends { listing?: ZCodePluginStoreListing; extensionSummary?: ZCodePluginExtensionSummary },
+>(plugin: T, include: boolean): T {
+  if (!include || !plugin.extensionSummary) return plugin;
+  return { ...plugin, listing: { ...plugin.listing, extensionSummary: plugin.extensionSummary } };
 }
 
 function toAvailablePluginSummary(input: {

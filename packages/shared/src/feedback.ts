@@ -1,3 +1,4 @@
+import type { Locale } from "./protocol.js";
 export type FeedbackTicketType = "bug" | "usage" | "feature" | "performance";
 
 export type FeedbackTicketStatus =
@@ -39,18 +40,6 @@ export type FeedbackTicketFrameworkSelectValue =
   | typeof FEEDBACK_FRAMEWORK_NONE;
 
 export type FeedbackTicketSeverity = "P1-高" | "P2-中" | "P3-低";
-
-export const FEEDBACK_TICKET_STATUSES: FeedbackTicketStatus[] = [
-  "已提交",
-  "信息不足",
-  "已采纳",
-  "答复关闭",
-  "已归档",
-  "已拒绝",
-  "开发中",
-  "已解决",
-  "已上线",
-];
 
 export interface FeedbackReporter {
   user_id?: string;
@@ -95,12 +84,10 @@ export interface CreateFeedbackTicketInput {
   source?: string;
   reporter?: FeedbackReporter;
   device?: FeedbackDeviceInfo;
-  /**
-   * 联系方式字段已下线（产品决策：不再让用户填联系方式，身份改由登录态自带，见
-   * docs/已完成/已完成-feedback-module.md §6）。服务端 `feedback_ticket.contact` 列保留，只为展示历史数据。
-   */
+  /** 用户选填的联系方式（邮箱或其他社交账号），后端不强制要求。 */
+  contact?: string;
   /** 当前界面语言，仅用于请求头透传，不写入后端工单正文。 */
-  locale?: "zh-CN" | "en-US";
+  locale?: Locale;
 }
 
 export interface FeedbackTicketSummary {

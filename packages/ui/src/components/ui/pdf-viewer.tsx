@@ -4,7 +4,6 @@ import type { HTMLAttributes, KeyboardEvent as ReactKeyboardEvent } from "react"
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeftIcon, ChevronRightIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react";
 import { Document, Page, pdfjs } from "react-pdf";
-import type { PDFDocumentProxy, PDFPageProxy } from "pdfjs-dist";
 import "react-pdf/dist/Page/TextLayer.css";
 import pdfWorkerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
@@ -13,16 +12,8 @@ import { Button } from "@/components/ui/button.js";
 import * as pdfZoom from "@/components/ui/usePdfZoomOverlay.js";
 import { isAppleKeyboardPlatform } from "@/lib/keyboardShortcuts.js";
 import { createPdfJsDocumentOptions } from "@/lib/pdfJsAssets.js";
-import { scheduleReviewQuoteHighlight } from "@/lib/quoteHighlightDom.js";
-import { ReviewQuoteCallout } from "@/review/ReviewQuoteCallout.js";
-import { useReviewMarksStore } from "@/store/reviewMarksStore.js";
-import { createQuotePageScan, type QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 
-// Web 入口会在加载 UI 之前把 workerSrc 指到「带 Chromium 109 垫片的自定义 worker」；
-// 这里只在未设置时兜底，避免覆盖 Web 端的设置（桌面端仍用默认 worker）。
-if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-  pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
-}
+pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
 
 // 与 service 层 readFileRange 的默认分段大小对齐，一次 range 请求对应一次 RPC 调用。
 const RANGE_CHUNK_BYTES = 256 * 1024;
@@ -92,8 +83,6 @@ export interface PdfViewerLabels {
   pageInput: string;
   zoomIn: string;
   zoomOut: string;
-  /** 审查定位：片段在文本层里找不到时的提示（不许假装高亮） */
-  quoteNotFound: string;
 }
 
 const DEFAULT_LABELS: PdfViewerLabels = {
@@ -105,31 +94,12 @@ const DEFAULT_LABELS: PdfViewerLabels = {
   pageInput: "Page number",
   zoomIn: "Zoom in",
   zoomOut: "Zoom out",
-  quoteNotFound: "The passage was not found in the rendered text.",
 };
 
 export interface PdfViewerProps extends HTMLAttributes<HTMLDivElement> {
   source: PdfViewerSource;
   labels?: Partial<PdfViewerLabels>;
   onLoadError?: (error: Error) => void;
-  /** 论文模式：文档加载后回传 pdf.js outline 树（未解析 dest）。 */
-  onDocumentOutline?: (info: {
-    pageCount: number;
-    outline: Array<{ title?: string; dest?: unknown; items?: unknown }> | null;
-    pdfDocument: PDFDocumentProxy;
-  }) => void;
-  /** 页码变化（论文侧栏同步高亮）。 */
-  onPageNumberChange?: (page: number) => void;
-  /** 外部跳页请求：id 变化时跳到 page（论文侧栏点大纲）。 */
-  goToPageRequest?: { page: number; id: number };
-  /**
-   * 审查定位：把这段原文在 PDF 里标出来。
-   *
-   * PDF 一次只挂一页，所以分两步：先用 pdf.js 的文本抽取逐页找出这句话在第几页（跨页累计出现次数，
-   * 与工具给的序号同口径），跳过去，再在那一页的**文本层**上画高亮（canvas 没有文本节点）。
-   * 找不到就不画，只给一行提示 —— 标错位置比不标更误导复核者。
-   */
-  quoteHighlight?: QuoteHighlightTarget;
 }
 
 type PdfDocumentFile = string | Blob | { data: Uint8Array } | { range: PdfViewerRangeTransport };
@@ -149,17 +119,7 @@ function normalizePdfSource(
   return { data: new Uint8Array(source) };
 }
 
-export function PdfViewer({
-  source,
-  labels,
-  onLoadError,
-  onDocumentOutline,
-  onPageNumberChange,
-  goToPageRequest,
-  quoteHighlight,
-  className,
-  ...props
-}: PdfViewerProps) {
+export function PdfViewer({ source, labels, onLoadError, className, ...props }: PdfViewerProps) {
   const mergedLabels = { ...DEFAULT_LABELS, ...labels };
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -168,21 +128,6 @@ export function PdfViewer({
   // 缩放手势期间只更新 displayScale（CSS transform 预览），停顿后再提交给 renderScale。
   const [renderScale, setRenderScale] = useState(pdfZoom.DEFAULT_SCALE);
   const [displayScale, setDisplayScale] = useState(pdfZoom.DEFAULT_SCALE);
-  const [quotePage, setQuotePage] = useState<number | null>(null);
-  const [quoteMissing, setQuoteMissing] = useState(false);
-  const [quoteRange, setQuoteRange] = useState<Range | null>(null);
-  const pdfDocumentRef = useRef<PDFDocumentProxy | null>(null);
-  const calloutHostRef = useRef<HTMLDivElement | null>(null);
-  const quoteMark = quoteHighlight?.mark;
-  const quoteMarked = useReviewMarksStore((state) =>
-    quoteMark ? Boolean(state.marks[quoteMark.key]) : false,
-  );
-  const toggleQuoteMark = useReviewMarksStore((state) => state.toggle);
-  const onToggleQuoteMark = useCallback(() => {
-    if (!quoteMark) return;
-    toggleQuoteMark(quoteMark);
-  }, [quoteMark, toggleQuoteMark]);
-
   const [pageIntrinsicSize, setPageIntrinsicSize] = useState<pdfZoom.PdfPageSize | null>(null);
   const [rangeError, setRangeError] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -246,103 +191,10 @@ export function PdfViewer({
         pendingZoomAnchorRef.current = null;
         pendingScrollToTopRef.current = true;
         setPageNumber(clamped);
-        onPageNumberChange?.(clamped);
       }
     },
-    [clearZoomOverlay, numPages, onPageNumberChange, pageNumber],
+    [clearZoomOverlay, numPages, pageNumber],
   );
-
-  useEffect(() => {
-    if (!goToPageRequest) return;
-    goToPage(goToPageRequest.page);
-    // 只响应请求 id 变化，避免 page 数字依赖导致重复跳。
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [goToPageRequest?.id]);
-
-  // ── 审查定位：先找出这句话在第几页，再跳过去 ────────────────────────
-  // 逐页取 pdf.js 的文本内容，交给纯函数算页码（跨页累计序号，与工具给的序号同口径）。
-  // PDF 一次只挂一页，所以「第几页」必须先在文档层算出来，DOM 侧才有东西可高亮。
-  useEffect(() => {
-    const quote = quoteHighlight?.quote;
-    const pdfDocument = pdfDocumentRef.current;
-    if (!quote || numPages === null || !pdfDocument) {
-      setQuotePage(null);
-      setQuoteMissing(false);
-      return undefined;
-    }
-    let cancelled = false;
-    void (async () => {
-      const scan = createQuotePageScan(quote, quoteHighlight?.occurrence ?? null);
-      if (!scan) {
-        setQuotePage(null);
-        setQuoteMissing(true);
-        return;
-      }
-      try {
-        // 逐页抽取、命中即停：大文档（上百页）不必为了定位读完整本。
-        for (let page = 1; page <= numPages; page += 1) {
-          const content = await pdfDocument
-            .getPage(page)
-            .then((loaded: PDFPageProxy) => loaded.getTextContent());
-          if (cancelled) return;
-          const decided = scan.push(
-            content.items.map((item) => ("str" in item ? item.str : "")).join(""),
-          );
-          if (decided !== null) {
-            setQuotePage(decided);
-            setQuoteMissing(false);
-            return;
-          }
-        }
-      } catch {
-        if (!cancelled) {
-          setQuotePage(null);
-          setQuoteMissing(true);
-        }
-        return;
-      }
-      if (cancelled) return;
-      const fallback = scan.result();
-      setQuotePage(fallback);
-      setQuoteMissing(fallback === null);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [numPages, quoteHighlight?.focusRequestId, quoteHighlight?.occurrence, quoteHighlight?.quote]);
-
-  useEffect(() => {
-    if (quotePage === null) {
-      return;
-    }
-    goToPage(quotePage);
-  }, [goToPage, quotePage]);
-
-  // 跳到目标页后再画高亮：PDF 的可见文字在**文本层**（canvas 没有文本节点），且只有当前页挂载。
-  // 渲染是异步的，交给统一的带重试定位；找不到只提示，不假装标上。
-  useEffect(() => {
-    const quote = quoteHighlight?.quote;
-    if (!quote || quotePage === null || pageNumber !== quotePage) {
-      return undefined;
-    }
-    return scheduleReviewQuoteHighlight({
-      getRoot: () => pageViewportRef.current,
-      quote,
-      occurrence: quoteHighlight?.occurrence ?? null,
-      onSettled: (range) => {
-        setQuoteRange(range);
-        setQuoteMissing(range === null);
-      },
-    });
-    // pageIntrinsicSize 进依赖：文本层的位置要等页面渲染完成、拿到真实尺寸才定下来。
-  }, [
-    pageIntrinsicSize,
-    pageNumber,
-    quoteHighlight?.focusRequestId,
-    quoteHighlight?.occurrence,
-    quoteHighlight?.quote,
-    quotePage,
-  ]);
 
   const handlePageRenderSuccess = useCallback(
     (completedScale: number, originalWidth: number, originalHeight: number) => {
@@ -489,19 +341,13 @@ export function PdfViewer({
 
   return (
     <div
-      ref={calloutHostRef}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className={cn("relative flex h-full min-h-0 flex-col outline-none", className)}
+      className={cn("flex h-full min-h-0 flex-col outline-none", className)}
       {...props}
     >
       <div ref={scrollContainerRef} className="min-h-0 flex-1 overflow-auto">
         <div className="mx-auto w-max p-4">
-          {quoteMissing ? (
-            <div className="mb-3 rounded border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-ui-sm">
-              {mergedLabels.quoteNotFound}
-            </div>
-          ) : null}
           {rangeError ? (
             <div className="p-3 text-ui-base text-destructive">{mergedLabels.loadError}</div>
           ) : (
@@ -511,34 +357,10 @@ export function PdfViewer({
                   file={file}
                   options={rangeTransport ? RANGE_DOCUMENT_OPTIONS : DOCUMENT_OPTIONS}
                   onLoadSuccess={(document) => {
-                    // 审查定位要逐页取文本（先算出片段在第几页），所以留下文档代理。
-                    pdfDocumentRef.current = document;
                     setNumPages(document.numPages);
                     const clamped = Math.min(pageNumber, document.numPages);
                     setPageNumber(clamped);
                     setPageInput(String(clamped));
-                    if (onDocumentOutline) {
-                      void document
-                        .getOutline()
-                        .then((outline) => {
-                          onDocumentOutline({
-                            pageCount: document.numPages,
-                            outline: (outline as Array<{
-                              title?: string;
-                              dest?: unknown;
-                              items?: unknown;
-                            }>) ?? null,
-                            pdfDocument: document,
-                          });
-                        })
-                        .catch(() => {
-                          onDocumentOutline({
-                            pageCount: document.numPages,
-                            outline: null,
-                            pdfDocument: document,
-                          });
-                        });
-                    }
                   }}
                   onLoadError={onLoadError}
                   loading={
@@ -639,15 +461,6 @@ export function PdfViewer({
           <ZoomInIcon />
         </Button>
       </div>
-      {/* 定位卡挂在**不滚动**的外层：不跟着 PDF 滚动，也不吃页面缩放 */}
-      <ReviewQuoteCallout
-        range={quoteRange}
-        note={quoteHighlight?.note}
-        hostRef={calloutHostRef}
-        marked={quoteMarked}
-        {...(quoteMark ? { onToggleMarked: onToggleQuoteMark } : {})}
-        onDismiss={() => setQuoteRange(null)}
-      />
     </div>
   );
 }

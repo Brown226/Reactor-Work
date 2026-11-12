@@ -1,3 +1,6 @@
+import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
+import { useSettings } from "@/hooks/useSettingService.js";
+import { useOnboardingRecordService } from "@/hooks/useOnboardingRecordService.js";
 import {
   advanceRecommendedPromptPane,
   getRecommendedPromptsForPane,
@@ -6,9 +9,6 @@ import {
   subscribeRecommendedPrompts,
   unregisterRecommendedPromptPane,
 } from "@/v4/featureSuggestedPromptRotation.js";
-import { getRecommendedPromptPool } from "@/v4/featureSuggestedPrompts.js";
-import { useZCodeStoreWithDefault } from "@/store/StoreProvider.js";
-import { useSettings } from "@/hooks/useSettingService.js";
 /* oxlint-disable eslint(max-lines) -- 推荐 Prompt 同时收口 latest-wins、取消、可信解析、操作反馈和 Composer 收尾，拆分会打散这条状态机。 */
 import {
   useCallback,
@@ -42,6 +42,7 @@ import {
 } from "@/v4/draftSuggestedPromptItems.js";
 import {
   resolveDraftSuggestedPluginFlowStage,
+  resolveSuggestedPluginClientBoundary,
   type ConversationDraftSuggestedPromptsContainerProps,
   type DraftSuggestedPluginFlow,
   type DraftSuggestedPluginOperation,
@@ -86,24 +87,21 @@ export function ConversationDraftSuggestedPromptsContainer({
   remoteSessionId,
   onOpenAutomations,
   isDesktop = false,
+  isWebRemoteControl = false,
 }: Props) {
   const { intl, locale } = useZCodeIntl();
   const platform = usePlatform();
-
+  const isOfficeMode = useIsOfficeMode();
   const { update } = useSettings();
+  const onboardingRecordService = useOnboardingRecordService();
   const recommendationPaneId = useId();
-  // 推荐池按界面档位分池：审查档有独立的审查类型卡片池（见 featureSuggestedPrompts）。
-  const recommendationMode = useZCodeStoreWithDefault(
-    (state) => state.interfaceMode,
-    "coding" as const,
-  );
+  const recommendationMode = isOfficeMode ? "office" : "coding";
   const recommendationRevision = useSyncExternalStore(
     subscribeRecommendedPrompts,
     getRecommendedPromptsRevision,
   );
   useEffect(() => {
-    // 审查档用固定菜单，不注册轮换 pane（注册会被 selectForPane 截断成 3 条）。
-    if (!proactive || recommendationMode === "review") return;
+    if (!proactive) return;
     registerRecommendedPromptPane(recommendationPaneId, recommendationMode);
     return () => unregisterRecommendedPromptPane(recommendationPaneId);
   }, [proactive, recommendationMode, recommendationPaneId]);
@@ -115,8 +113,14 @@ export function ConversationDraftSuggestedPromptsContainer({
   const closeRecommendations = async () => {
     setClosing(true);
     try {
-      // 关闭按钮与设置页共用持久化设置，避免另一份本地开关重新显示推荐。
+      // 关闭按钮与引导、设置页共用持久化设置，避免另一份本地开关重新显示推荐。
       await update({ proactiveSuggestionsEnabled: false });
+      // 手动修改反向回写 record，换号同步时不会把已关闭的推荐复活；失败不阻塞关闭流程。
+      await onboardingRecordService
+        ?.updateRecordPreferences({ proactiveSuggestionsEnabled: false })
+        .catch((cause: unknown) => {
+          logger.warn("[v4-suggested-prompts] 回写引导记录失败", { error: String(cause) });
+        });
     } catch (error) {
       logger.warn("[v4-suggested-prompts] 关闭推荐失败", { error: String(error) });
       toast(intl.formatMessage({ id: "chat.officeSuggestions.closeError" }));
@@ -139,12 +143,9 @@ export function ConversationDraftSuggestedPromptsContainer({
     rpcReady: resolution.rpcReady,
     workspaceKey,
   });
-  // 审查档的审查类型卡片是固定菜单（全部类型都要能看到），不参与「换一批」轮换，
-  // 也不受办公档主动推荐开关约束；办公档与编程档继续走原有推荐/场景池。
-  const isReviewMode = recommendationMode === "review";
   const items = useMemo(
     () =>
-      (isReviewMode ? getRecommendedPromptPool("review") : proactive ? recommendedItems : allItems).filter(
+      (proactive ? recommendedItems : allItems).filter(
         (item) =>
           !item.actions?.some(
             (action) =>
@@ -152,7 +153,7 @@ export function ConversationDraftSuggestedPromptsContainer({
               action === DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS_OFFPEAK,
           ) || Boolean(onOpenAutomations),
       ),
-    [allItems, isReviewMode, onOpenAutomations, proactive, recommendedItems],
+    [allItems, onOpenAutomations, proactive, recommendedItems],
   );
   const {
     clearPluginActionPopover,
@@ -289,7 +290,6 @@ export function ConversationDraftSuggestedPromptsContainer({
   const revalidateAndPrependPlugin = useCallback(
     async (current: DraftSuggestedPluginFlow, requestVersion: number) => {
       await invalidateDeferredDraftSessionForSkillChange({
-        zcodeSessionService: resolution.services.zcodeSessionService,
         workspacePath,
         workspaceIdentity,
         reason: "suggested-prompt-plugin-change",
@@ -298,8 +298,7 @@ export function ConversationDraftSuggestedPromptsContainer({
       const resolved =
         await resolution.services.pluginManagementService.resolveSuggestedPluginReference({
           ...targetParams(),
-          clientMode: "desktop-continuous" as const,
-          deliveryKind: "desktop-continuous" as const,
+          ...resolveSuggestedPluginClientBoundary(isWebRemoteControl),
           stableId: current.plugin.stableId,
           operationId: current.operationId,
         });
@@ -308,9 +307,9 @@ export function ConversationDraftSuggestedPromptsContainer({
       return prependResolvedPlugin(current.plugin, requestVersion, resolved.icon);
     },
     [
+      isWebRemoteControl,
       prependResolvedPlugin,
       resolution.services.pluginManagementService,
-      resolution.services.zcodeSessionService,
       targetParams,
       workspaceIdentity,
       workspacePath,
@@ -428,6 +427,10 @@ export function ConversationDraftSuggestedPromptsContainer({
           let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
           const installRequest = resolution.services.pluginManagementService.installPlugin({
             ...targetParams(),
+            telemetry: {
+              entry: "recommended_prompt",
+              client_kind: isWebRemoteControl ? "mobile" : "desktop",
+            },
             pluginName: flow.result!.pluginName!,
             marketplace: flow.result!.marketplace!,
             scope: "user",
@@ -471,6 +474,10 @@ export function ConversationDraftSuggestedPromptsContainer({
             operation,
             resolution.services.pluginManagementService.setPluginEnabled({
               ...targetParams(),
+              telemetry: {
+                entry: "recommended_prompt",
+                client_kind: isWebRemoteControl ? "mobile" : "desktop",
+              },
               pluginId: flow.plugin.stableId,
               enabled: true,
               operationId: flow.operationId,
@@ -617,8 +624,7 @@ export function ConversationDraftSuggestedPromptsContainer({
           operation,
           resolution.services.pluginManagementService.resolveSuggestedPluginReference({
             ...targetParams(),
-            clientMode: "desktop-continuous" as const,
-            deliveryKind: "desktop-continuous" as const,
+            ...resolveSuggestedPluginClientBoundary(isWebRemoteControl),
             stableId: plugin.stableId,
             operationId: operation.operationId,
           }),
@@ -707,6 +713,8 @@ export function ConversationDraftSuggestedPromptsContainer({
     [
       cancelOperation,
       clearOperationFeedback,
+      isDesktop,
+      isWebRemoteControl,
       locale,
       onOpenAutomations,
       platform,
@@ -715,7 +723,6 @@ export function ConversationDraftSuggestedPromptsContainer({
       resolution.rpcReady,
       resolution.services.pluginManagementService,
       handleMutation,
-      isDesktop,
       showMutationConfirmation,
       showPluginActionPopover,
       targetParams,
@@ -734,12 +741,8 @@ export function ConversationDraftSuggestedPromptsContainer({
         items={items}
         layout={proactive ? "list" : "chips"}
         onSelect={handleSelect}
-        onRefresh={
-          proactive && !isReviewMode
-            ? () => advanceRecommendedPromptPane(recommendationPaneId)
-            : undefined
-        }
-        onClose={proactive && !isReviewMode ? closeRecommendations : undefined}
+        onRefresh={proactive ? () => advanceRecommendedPromptPane(recommendationPaneId) : undefined}
+        onClose={proactive ? closeRecommendations : undefined}
         disabled={cancelling || closing}
         refreshDisabled={Boolean(pluginActionPopover)}
         pluginActionPopover={pluginActionPopover}

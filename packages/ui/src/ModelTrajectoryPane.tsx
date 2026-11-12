@@ -13,7 +13,6 @@ import { cn } from "@/components/lib/utils.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useModelTrajectory } from "@/hooks/useModelTrajectory.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
-import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { getContainingDirectoryPath } from "@/lib/path.js";
 import { logger } from "@/logger.js";
 import {
@@ -52,8 +51,6 @@ export function ModelTrajectoryPane({
 }) {
   const { intl } = useZCodeIntl();
   const platform = usePlatform();
-  // Web 浏览器沙箱打不开系统文件管理器；置灰 + 悬停说明，避免点击后才 toast 失败。
-  const openSourceDirectoryUnavailableReason = usePlatformUnavailable("openInFileManager");
   const { loading, data, error, refresh } = useModelTrajectory(
     workspacePath,
     taskId,
@@ -229,15 +226,9 @@ export function ModelTrajectoryPane({
               type="button"
               variant="ghost"
               size="icon-sm"
-              // 平台不可用（Web 端）：置灰并改用原因文案做悬停说明，不再触发打开动作。
-              disabled={Boolean(openSourceDirectoryUnavailableReason)}
-              aria-disabled={openSourceDirectoryUnavailableReason ? true : undefined}
               onClick={() => void handleOpenSourceDirectory()}
               aria-label={intl.formatMessage({ id: "modelTrajectory.openSourceDirectory" })}
-              title={
-                openSourceDirectoryUnavailableReason ??
-                `${intl.formatMessage({ id: "modelTrajectory.openSourceDirectory" })}: ${sourceDirectory}`
-              }
+              title={`${intl.formatMessage({ id: "modelTrajectory.openSourceDirectory" })}: ${sourceDirectory}`}
             >
               <FolderOpenIcon className="size-4" />
             </Button>
@@ -346,7 +337,7 @@ export {
   resolveTrajectoryTimelineItems,
 } from "@/ModelTrajectoryTimeline.js";
 
-function getModelTrajectorySourceDirectory(
+export function getModelTrajectorySourceDirectory(
   sourceFiles: readonly string[] | undefined,
 ): string | null {
   const sourceFile = sourceFiles?.find((path) => path.trim().length > 0);

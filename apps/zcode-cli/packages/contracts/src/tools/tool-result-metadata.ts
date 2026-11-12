@@ -1,5 +1,14 @@
 import { z } from "zod";
+import { PersistedToolSearchContentSchema } from "./tool-search.js";
 import { OFFICIAL_MCP_TOOL_ERROR_CODES } from "@zcode/shared";
+import {
+  MCP_APPS_RESOURCE_URI_MAX_CHARS,
+  MCP_APPS_CONTENT_MAX_BYTES,
+  MCP_APPS_STRUCTURED_CONTENT_MAX_BYTES,
+  MCP_APPS_SURFACE_ID_MAX_CHARS,
+  MCP_APPS_SURFACE_ID_PATTERN,
+  MCP_APPS_WIDGET_META_MAX_BYTES,
+} from "@zcode/shared/mcp-apps";
 
 import {
   CREATE_WORKFLOW_DISPLAY_MAX_DIAGNOSTICS,
@@ -183,6 +192,45 @@ export const nodeReplImageToolResultDisplayPayloadSchema = z
   })
   .strict();
 
+/**
+ * 插件 UI 元数据。
+ * contracts 仍在 zod v3，无法直接复用 `@zcode/shared/mcp-apps` 的 zod v4 schema 对象，这里按同一常量
+ * 手写一份；字段集合与 `mcpToolDisplayUiSchema` 必须一致，由 core/tests/mcp-ui-display.test.ts 用同一
+ * fixture 双侧 parse 锁住。
+ */
+export const mcpToolDisplayUiPayloadSchema = z
+  .object({
+    pluginId: z.string().min(1).max(MCP_TOOL_DISPLAY_MAX_NAME_CHARS),
+    resourceUri: z.string().min(1).max(MCP_APPS_RESOURCE_URI_MAX_CHARS),
+    preferredDisplayMode: z.enum(["inline", "fullscreen", "pip"]).optional(),
+    prefersBorder: z.boolean().optional(),
+    csp: z
+      .object({
+        connectDomains: z.array(z.string().min(1).max(512)).optional(),
+        resourceDomains: z.array(z.string().min(1).max(512)).optional(),
+      })
+      .strict()
+      .optional(),
+    structuredContent: z.string().max(MCP_APPS_STRUCTURED_CONTENT_MAX_BYTES).optional(),
+    widgetMeta: z.string().max(MCP_APPS_WIDGET_META_MAX_BYTES).optional(),
+    // 原始 content 数组 JSON（≤ 32 KiB）与被省略字节数；与 shared mcpToolDisplayUiSchema 同步。
+    content: z.string().max(MCP_APPS_CONTENT_MAX_BYTES).optional(),
+    truncated: z.boolean().optional(),
+    truncatedBytes: z.number().int().nonnegative().optional(),
+    // MCP isError 结果（调用完成但工具报错），与 shared 同步。
+    isError: z.literal(true).optional(),
+    // 工具级强制常驻，与 shared 同步。
+    showInline: z.literal(true).optional(),
+    // 与 shared mcpToolDisplayUiSchema 同步；已删 widgetStateVisibility。
+    surface: z
+      .string()
+      .min(1)
+      .max(MCP_APPS_SURFACE_ID_MAX_CHARS)
+      .regex(MCP_APPS_SURFACE_ID_PATTERN)
+      .optional(),
+  })
+  .strict();
+
 export const mcpToolResultDisplayPayloadSchema = z
   .object({
     kind: z.literal("mcp_tool"),
@@ -198,6 +246,8 @@ export const mcpToolResultDisplayPayloadSchema = z
       .object({ code: z.enum(OFFICIAL_MCP_TOOL_ERROR_CODES) })
       .strict()
       .optional(),
+    // 与 `@zcode/shared` v4 toolDisplay 的 mcp_tool.ui 同步；两侧都是 strict，缺一处会被 zod 静默 strip。
+    ui: mcpToolDisplayUiPayloadSchema.optional(),
   })
   .strict();
 
@@ -231,69 +281,6 @@ const bashOutputDisplaySchema = z
   })
   .strict();
 
-/**
- * 审查结果卡的结构化载荷（KnowledgeCheck / ReportReviewIssues）。
- *
- * ## 为什么审查卡必须走 display
- *
- * 结构化结果到前端的**唯一**通道是这个 payload：工具输出经 resultBudget 后只留文本
- * （`state.output` 是格式化文案），`state.metadata` 里也只有 schemaVersion/serialization；
- * 前端能读到的结构只剩 `row.output.display`。没有 display 时卡片拿不到任何数据，
- * 渲染器只能退化成一行文本——这正是审查卡片最初「看不到卡片、全是文字」的原因。
- *
- * 字段与工具输出同名同义（`action` / `issues` / `summary` / `textPath` / `notice`），
- * 这样前端读取器对两个来源共用一套解析。
- */
-export const REVIEW_DISPLAY_MAX_ISSUES = 200;
-export const REVIEW_DISPLAY_MAX_QUOTED_CHARS = 400;
-export const REVIEW_DISPLAY_MAX_MESSAGE_CHARS = 600;
-export const REVIEW_DISPLAY_MAX_SUGGESTION_CHARS = 600;
-export const REVIEW_DISPLAY_MAX_NOTICE_CHARS = 1_000;
-export const REVIEW_DISPLAY_MAX_PATH_CHARS = 4_096;
-export const REVIEW_DISPLAY_MAX_TERM_CHARS = 120;
-export const REVIEW_DISPLAY_MAX_TERMS = 200;
-
-export const reviewIssueDisplayItemSchema = z
-  .object({
-    /** 标准自检是固定八类（abolished/no_year/…），自述型审查是规则码（TYPO-001/…）。 */
-    code: z.string().min(1).max(64),
-    severity: z.enum(["error", "warning", "info", "none"]),
-    quoted: z.string().max(REVIEW_DISPLAY_MAX_QUOTED_CHARS),
-    message: z.string().max(REVIEW_DISPLAY_MAX_MESSAGE_CHARS),
-    line: z.number().int().nonnegative(),
-    startOffset: z.number().int(),
-    endOffset: z.number().int(),
-    suggestion: z.string().max(REVIEW_DISPLAY_MAX_SUGGESTION_CHARS).nullable(),
-    // 标准自检独有
-    normalized: z.string().max(300).optional(),
-    libraryNo: z.string().max(200).nullable().optional(),
-    libraryName: z.string().max(400).nullable().optional(),
-    libraryStatus: z.enum(["current", "upcoming", "abolished", "unknown"]).nullable().optional(),
-    // 自述型审查独有：定位元数据
-    occurrences: z.number().int().nonnegative().optional(),
-    matchedOccurrence: z.number().int().nonnegative().optional(),
-    matchKind: z.enum(["exact", "normalized", "not_found"]).optional(),
-    located: z.boolean().optional(),
-  })
-  .strict();
-
-export const reviewIssuesToolResultDisplayPayloadSchema = z
-  .object({
-    kind: z.literal("review_issues"),
-    action: z.enum(["standards", "terminology", "rules", "issues"]),
-    stale: z.boolean(),
-    textPath: z.string().max(REVIEW_DISPLAY_MAX_PATH_CHARS).nullable(),
-    sourcePath: z.string().max(REVIEW_DISPLAY_MAX_PATH_CHARS).nullable(),
-    notice: z.string().max(REVIEW_DISPLAY_MAX_NOTICE_CHARS).nullable(),
-    summary: z.record(z.string(), z.number()).nullable(),
-    issues: z.array(reviewIssueDisplayItemSchema).max(REVIEW_DISPLAY_MAX_ISSUES),
-    /** 超过上限被丢弃的问题条数：>0 时卡片要写明「仅显示前 N 条」，不能假装完整。 */
-    droppedIssues: z.number().int().nonnegative(),
-    whitelisted: z.array(z.string().max(REVIEW_DISPLAY_MAX_TERM_CHARS)).max(REVIEW_DISPLAY_MAX_TERMS),
-    remaining: z.array(z.string().max(REVIEW_DISPLAY_MAX_TERM_CHARS)).max(REVIEW_DISPLAY_MAX_TERMS),
-  })
-  .strict();
-
 export const toolResultDisplayPayloadSchema = z.discriminatedUnion("kind", [
   bashOutputDisplaySchema,
   fileDiffToolResultDisplayPayloadSchema,
@@ -311,7 +298,6 @@ export const toolResultDisplayPayloadSchema = z.discriminatedUnion("kind", [
   savedWorkflowListToolResultDisplayPayloadSchema,
   listModelsToolResultDisplayPayloadSchema,
   resumeWorkflowRunToolResultDisplayPayloadSchema,
-  reviewIssuesToolResultDisplayPayloadSchema,
 ]);
 
 export type FileDiffToolResultDisplayPayload = z.infer<
@@ -358,6 +344,8 @@ export type ToolResultSerializationMetadata = z.infer<typeof toolResultSerializa
 
 export const completedToolPartMetadataSchema = z
   .object({
+    // 错误结果沿用字符串内容；仅接受数组会使 V4 冷恢复丢弃整份 metadata，包括 display。
+    modelContent: z.union([z.string(), PersistedToolSearchContentSchema]).optional(),
     schemaVersion: z.literal(COMPLETED_TOOL_PART_METADATA_SCHEMA_VERSION),
     display: toolResultDisplayPayloadSchema.optional(),
     serialization: toolResultSerializationMetadataSchema.optional(),

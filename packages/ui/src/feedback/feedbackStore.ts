@@ -17,6 +17,7 @@ export interface FeedbackAttachmentDraft {
 export interface FeedbackSubmitDraft {
   readonly title?: string;
   readonly description?: string;
+  readonly contact?: string;
   readonly type?: FeedbackTicketType;
   readonly module?: FeedbackTicketModule;
   readonly severity?: FeedbackTicketSeverity;

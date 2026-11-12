@@ -22,7 +22,7 @@ import type { ToolEntry, ToolHandler } from "../types.js";
 
 const MAX_TODO_MODEL_BYTES = 100_000;
 
-const todoReadHandler: ToolHandler = async (input, context) => {
+export const todoReadHandler: ToolHandler = async (input, context) => {
   TodoReadInputSchema.parse(input);
 
   if (!context.sessionStore) {
@@ -44,7 +44,7 @@ const todoReadHandler: ToolHandler = async (input, context) => {
   } satisfies TodoReadOutput;
 };
 
-const todoWriteHandler: ToolHandler = async (input, context) => {
+export const todoWriteHandler: ToolHandler = async (input, context) => {
   const { todos } = TodoWriteInputSchema.parse(input) as TodoWriteInput;
 
   if (!context.sessionStore) {
@@ -74,6 +74,7 @@ const todoWriteHandler: ToolHandler = async (input, context) => {
 export const todoReadToolEntry: ToolEntry = {
   capability: "Read the current session todo list without modifying external state",
   metadata: {
+    shouldDefer: true,
     name: "TodoRead",
     description: "Read the current session todo list",
     readOnly: true,
@@ -132,6 +133,7 @@ export const todoWriteToolEntry: ToolEntry = {
     "Replace the current session todo list to track multi-step task progress and resume state",
   metadata: {
     name: "TodoWrite",
+    searchHint: "manage the session task checklist",
     description: `Create and update a task list for the current session. The list is rendered to the user as your working plan.
 
 - Each todo has \`content\`, \`status\` ("pending" | "in_progress" | "completed"), and \`priority\` ("high" | "medium" | "low").

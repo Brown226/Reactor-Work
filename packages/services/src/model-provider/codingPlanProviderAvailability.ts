@@ -10,6 +10,7 @@ import {
   type ProviderFamilyDomain,
   type ProviderFamilyConnectionSelectionSettings,
 } from "@zcode/shared";
+import type { OAuthAccountMaterial } from "#src/oauth/repo/oauthCredentialRepo.js";
 import { type BigModelTeamPlanBizContext } from "#src/bigmodel/teamPlanApiKey.js";
 import {
   fetchPersonalCodingPlanEntitlement,
@@ -17,7 +18,6 @@ import {
 } from "#src/bigmodel/codingPlanEntitlement.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import { readApiJson } from "../providers/api/apiJson.js";
-import { normalizeApiKeyForHeader } from "../providers/api/index.js";
 import { resolveBigModelStartPlanZcodeJwt } from "./bigmodelStartPlanZcodeJwt.js";
 import {
   buildZaiStartPlanBalanceUrl,
@@ -54,6 +54,7 @@ interface CodingPlanAvailabilityCredentialService {
 
 interface CodingPlanAvailabilityContext {
   apiClient?: ApiClient;
+  accountMaterial?: OAuthAccountMaterial | null;
   credentialService?: CodingPlanAvailabilityCredentialService;
   providerFamilyConnectionSelections?: ProviderFamilyConnectionSelectionSettings;
 }
@@ -99,7 +100,7 @@ export interface CodingPlanAvailabilityProvider {
   readonly apiKey?: string | null;
 }
 
-async function validateCodingPlanProviderAvailability(
+export async function validateCodingPlanProviderAvailability(
   provider: CodingPlanAvailabilityProvider,
   context: CodingPlanAvailabilityContext,
 ): Promise<CodingPlanAvailabilityResult> {
@@ -233,13 +234,17 @@ async function validateSelectedTeamPlanAvailability(
   }
   const { projectId } = selectedTeamContext;
   const oauthProvider = family === "zai" ? ZAI_PROVIDER_ID : BIGMODEL_PROVIDER_ID;
-  const token = (
-    await context.credentialService?.load(`oauth:${oauthProvider}:access_token`)
-  )?.trim();
+  const token =
+    context.accountMaterial !== undefined
+      ? context.accountMaterial?.accessToken
+      : (await context.credentialService?.load(`oauth:${oauthProvider}:access_token`))?.trim();
   if (!token) {
     return { kind: "unavailable", reason: "coding_plan_not_connected" };
   }
-  const zcodeJwtToken = (await context.credentialService?.load(ZCODE_JWT_TOKEN_KEY))?.trim();
+  const zcodeJwtToken =
+    context.accountMaterial !== undefined
+      ? context.accountMaterial?.zcodeJwtToken
+      : (await context.credentialService?.load(ZCODE_JWT_TOKEN_KEY))?.trim();
   // BigModel 旧版本可能把 zcodejwttoken 误写进 oauth access token；
   // 但 Z.ai 的 business JWT 本身就是合法 Bearer token，不能套用这个 stale-token 防御。
   if (family === "bigmodel" && zcodeJwtToken && token === zcodeJwtToken) {
@@ -371,8 +376,12 @@ async function validateSubscriptionListAvailability(
   context: CodingPlanAvailabilityContext,
   url: string,
 ): Promise<CodingPlanAvailabilityResult> {
-  const authorization = normalizeApiKeyForHeader(provider.apiKey ?? "");
-  // Key 尚未准备好只能表示权益未知；不能用调用凭据的缺失证明未订阅。
+  // 账号凭据已是三段 PAT；旧手工 Key 归一化会按 id.secret 截掉签名。
+  const authorization = (provider.apiKey ?? "")
+    .trim()
+    .replace(/^Bearer\s+/i, "")
+    .trim();
+  // 请求期 Token 尚未准备好只能表示权益未知；不能用凭据缺失证明未订阅。
   if (!authorization) return { kind: "unknown" };
   try {
     const result = await fetchPersonalCodingPlanEntitlement({
@@ -441,6 +450,10 @@ async function resolveStartPlanAuthorization(
   provider: CodingPlanAvailabilityProvider,
   context: CodingPlanAvailabilityContext,
 ): Promise<StartPlanAuthorization> {
+  if (context.accountMaterial !== undefined) {
+    const jwt = context.accountMaterial?.zcodeJwtToken;
+    return { value: jwt ? `Bearer ${jwt}` : "", missingReason: "coding_plan_not_authenticated" };
+  }
   if (provider.family === "bigmodel") {
     const zcodeJwtToken = await resolveBigModelStartPlanZcodeJwt({
       credentialService: context.credentialService,
@@ -453,7 +466,10 @@ async function resolveStartPlanAuthorization(
   }
 
   const credentialJwt = await loadZaiProviderConnectionZcodeJwtToken(context);
-  const providerJwt = normalizeApiKeyForHeader(provider.apiKey ?? "");
+  const providerJwt = (provider.apiKey ?? "")
+    .trim()
+    .replace(/^Bearer\s+/i, "")
+    .trim();
   return {
     value: credentialJwt || providerJwt ? `Bearer ${credentialJwt || providerJwt}` : "",
     missingReason: "coding_plan_not_authenticated",

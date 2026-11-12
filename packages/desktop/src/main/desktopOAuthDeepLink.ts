@@ -144,16 +144,16 @@ export function resolveExternalWorkspaceOpenDialogCopy(
   if (locale === "zh-CN") {
     return {
       buttons: ["打开文件夹", "取消"],
-      title: "打开外部 Reactor 链接？",
-      message: "是否在 Reactor 中打开此文件夹？",
+      title: "打开外部 ZCode 链接？",
+      message: "是否在 ZCode 中打开此文件夹？",
       detail: (path) => `${path}\n\n只打开你信任来源的文件夹。项目设置可能影响 agent runtime。`,
     };
   }
 
   return {
     buttons: ["Open folder", "Cancel"],
-    title: "Open external Reactor link?",
-    message: "Open this folder in Reactor?",
+    title: "Open external ZCode link?",
+    message: "Open this folder in ZCode?",
     detail: (path) =>
       `${path}\n\nOnly open folders from sources you trust. Project settings may affect the agent runtime.`,
   };
@@ -404,9 +404,12 @@ export function registerDeepLinkProtocol(
 ) {
   const scheme = "zcode";
 
+  // 外部 URL 必须位于 -- 后；否则 Windows 引号拆分可把 URL 内容变成 Electron 启动参数。
+  // Inspector 早于应用 JS 和单实例锁启动，不能依赖后续 handleDeepLink 校验拦截。
   if (process.defaultApp && process.argv.length >= 2) {
     const entry = resolve(process.argv[1]!);
-    const ok = app.setAsDefaultProtocolClient(scheme, process.execPath, [entry]);
+    const args = process.platform === "win32" ? [entry, "--"] : [entry];
+    const ok = app.setAsDefaultProtocolClient(scheme, process.execPath, args);
     if (!ok) {
       logger.warn("[deep-link] 注册协议失败（defaultApp）", {
         scheme,
@@ -423,7 +426,10 @@ export function registerDeepLinkProtocol(
     return;
   }
 
-  const ok = app.setAsDefaultProtocolClient(scheme);
+  const ok =
+    process.platform === "win32"
+      ? app.setAsDefaultProtocolClient(scheme, process.execPath, ["--"])
+      : app.setAsDefaultProtocolClient(scheme);
   if (!ok) {
     logger.warn("[deep-link] 注册协议失败", { scheme });
   } else {

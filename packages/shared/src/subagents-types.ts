@@ -1,13 +1,9 @@
 import type { ZCodeProvider } from "./zcode-task-types-core.js";
 import { modelSelectionSchema, type ModelSelection } from "./model-selection.js";
 
-/**
- * `server` = 企业服务端下发（`server-agents/`，P3）：同步器唯一写入、只读、不可本地删除；
- * 启停由服务端 install 关系决定，端侧只物化/删除文件，不进 `disabledAgentIds`。
- */
-export type AgentScope = "built-in" | "workspace" | "user" | "server";
+export type AgentScope = "built-in" | "workspace" | "user";
 
-export type AgentSource = "built-in" | "user" | "plugin" | "server";
+export type AgentSource = "built-in" | "user" | "plugin";
 
 export type BuiltInSubagentName = "general-purpose" | "Explore";
 
@@ -30,7 +26,13 @@ export function parsePluginSubagentModelSelectionOverrides(
   );
 }
 
-export type AgentPermissionMode = "auto" | "plan";
+export type AgentPermissionMode =
+  | "acceptEdits"
+  | "auto"
+  | "bypassPermissions"
+  | "default"
+  | "dontAsk"
+  | "plan";
 
 export type AgentColor =
   | "red"

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button.js";
 import { Textarea } from "@/components/ui/textarea.js";
 import { toast } from "@/components/ui/toast.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
-import { usePlatformUnavailable } from "@/hooks/usePlatformUnavailable.js";
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { SettingsGroupCard } from "@/settings/SettingsPageParts.js";
@@ -181,8 +180,6 @@ function ActiveWorkspaceFileSearchEditor({
   // 远程 workspace 的规则文件在远端机器，本地文件管理器无法打开，按钮不展示。
   const isLocalWorkspace = !workspaceIdentity?.trim();
   const revealTargetReady = loaded?.source === "file";
-  // Web 浏览器沙箱打不开系统文件管理器：置灰 + 悬停说明，点击不再触发失败 toast。
-  const revealUnavailableReason = usePlatformUnavailable("openInFileManager");
   const handleReveal = useCallback(async () => {
     const result = await platform.openInFileManager(workspacePath);
     if (!result.success) {
@@ -258,13 +255,11 @@ function ActiveWorkspaceFileSearchEditor({
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!revealTargetReady || loading || saving || Boolean(revealUnavailableReason)}
-                aria-disabled={revealUnavailableReason ? true : undefined}
+                disabled={!revealTargetReady || loading || saving}
                 title={
-                  revealUnavailableReason ??
-                  (revealTargetReady
+                  revealTargetReady
                     ? undefined
-                    : intl.formatMessage({ id: "settings.workspaceFileSearch.revealHint" }))
+                    : intl.formatMessage({ id: "settings.workspaceFileSearch.revealHint" })
                 }
                 onClick={() => void handleReveal()}
                 data-testid="workspace-file-search-ignore-reveal"

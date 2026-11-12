@@ -15,6 +15,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import {
+  ToolCallProgressIndicator,
+  readToolCallProgress,
+} from "@/ToolCallBlocks/ToolCallProgressIndicator.js";
 import { ToolLayout } from "@/ToolCallBlocks/ToolLayout.js";
 import { ToolSnapshotFieldNotice } from "@/ToolCallBlocks/ToolSnapshotFieldNotice.js";
 import type { ToolCallBlockRenderContext } from "@/ToolCallBlocks/shared.js";
@@ -125,13 +129,13 @@ export function readMcpToolPresentation(
   return readLegacyMcpToolPresentation(context.toolCallNode.toolCall.toolName);
 }
 
-function formatMcpIdentifier(value: string): string {
+export function formatMcpIdentifier(value: string): string {
   const words = value.trim().replace(/[-_]+/gu, " ").replace(/\s+/gu, " ");
   if (!words) return value;
   return words[0]!.toLocaleUpperCase() + words.slice(1);
 }
 
-function formatMcpServerLabel(value: string): string {
+export function formatMcpServerLabel(value: string): string {
   const namespaceSegments = value
     .split(":")
     .map((segment) => segment.trim())
@@ -145,7 +149,7 @@ function formatMcpServerLabel(value: string): string {
   return formatMcpIdentifier(displayIdentifier);
 }
 
-function formatMcpToolLabel(toolName: string, serverLabel: string): string {
+export function formatMcpToolLabel(toolName: string, serverLabel: string): string {
   const formattedToolName = formatMcpIdentifier(toolName);
   const repeatedPrefix = `${serverLabel} `;
   // 不少 MCP 工具会再次用 server 名作为 tool 前缀；summary 同时展示 server
@@ -177,20 +181,16 @@ export function McpToolCallBlock(context: ToolCallBlockRenderContext) {
     toolCall.status === "failed" ? (toolCall.error ?? context.errorText) : undefined;
   const hasPrimaryResult = Boolean(resultText || visibleError);
   const isSummaryOnlyLifecycle = toolCall.status === "pending" || toolCall.status === "stopped";
+  // R7：运行中且 agent 投影了 MCP 进度时，摘要行显示细进度条 + message；终态由投影清除。
+  const progress = toolCall.status === "in_progress" ? readToolCallProgress(toolCall.raw) : null;
   const stoppedSummaryStatus =
     toolCall.status === "stopped" ? (
-      <span className="inline-flex items-center gap-2">
-        <span className="text-foreground-subtlest">·</span>
-        <span>{context.statusLabel}</span>
-      </span>
+      <span>{context.statusLabel}</span>
+    ) : progress ? (
+      <ToolCallProgressIndicator progress={progress} />
     ) : undefined;
   const failedSummaryStatus =
-    toolCall.status === "failed" ? (
-      <span className="inline-flex items-center gap-2">
-        <span className="text-foreground-subtlest">·</span>
-        <span>{context.statusLabel}</span>
-      </span>
-    ) : undefined;
+    toolCall.status === "failed" ? <span>{context.statusLabel}</span> : undefined;
   const handleLoadFullToolCallFields = context.onLoadFullToolCallFields;
   const renderContent = useCallback(
     () => (
@@ -341,9 +341,8 @@ export function McpToolCallBlock(context: ToolCallBlockRenderContext) {
         serverLabel ? <span className="text-foreground-subtle">{serverLabel}</span> : undefined
       }
       primaryText={toolLabel}
-      summaryContentSeparator="·"
       // Pending/Running/Completed 都是正常生命周期，不在摘要重复状态；Stopped 是异常终态，
-      // 用显式分隔节点避免非动画摘要的两个文本节点粘连。Failed 使用专用错误状态槽位。
+      // 状态作为独立节点交给公共 gap 分隔；Failed 使用专用错误状态槽位。
       secondaryText={stoppedSummaryStatus}
       statusLabel={failedSummaryStatus}
       statusTooltip={toolCall.status === "failed" ? context.errorText : undefined}

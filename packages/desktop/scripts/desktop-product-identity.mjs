@@ -7,19 +7,19 @@ export const ZCODE_PREVIEW_IDENTITY_ENV = "ZCODE_PREVIEW_IDENTITY";
 
 const PRODUCTION_IDENTITY = Object.freeze({
   flavor: "production",
-  appId: "com.cnpe.reactor",
-  productName: "Reactor",
-  linuxExecutableName: "reactor",
-  linuxPackageName: "reactor",
+  appId: "dev.zcode.app",
+  productName: "ZCode",
+  linuxExecutableName: "zcode",
+  linuxPackageName: "zcode",
   cuaHelperInstallVariant: null,
 });
 
 const PREVIEW_IDENTITY = Object.freeze({
   flavor: "preview",
-  appId: "com.cnpe.reactor.preview",
-  productName: "Reactor Preview",
-  linuxExecutableName: "reactor-preview",
-  linuxPackageName: "reactor-preview",
+  appId: "dev.zcode.app.preview",
+  productName: "ZCode Preview",
+  linuxExecutableName: "zcode-preview",
+  linuxPackageName: "zcode-preview",
   cuaHelperInstallVariant: "preview",
 });
 
@@ -84,7 +84,7 @@ export function resolveDesktopArtifactSuffix(env = process.env) {
  */
 export function resolveWindowsAppUserModelIdForFlavor(flavor, runtime = { isPackaged: true }) {
   if (runtime.isPackaged === false) {
-    return "com.cnpe.reactor.dev";
+    return "cn.aminer.zcode";
   }
   return desktopProductIdentities[flavor === "preview" ? "preview" : "production"].appId;
 }

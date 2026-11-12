@@ -19,7 +19,7 @@ import {
   resolve as resolvePath,
   sep,
 } from "node:path";
-import type { ExecutionPort, FileSystemPort } from "@zcode/contracts";
+import type { ExecutionOutputLimit, ExecutionPort, FileSystemPort } from "@zcode/contracts";
 import { WORLD_READ_CAPS, WorkflowError, type WorldReadOp } from "@zcode/dynamic-workflow";
 import {
   GIT_SHOW_PREFIX_ARGV,
@@ -43,12 +43,6 @@ export interface WorldReadDeps {
   readonly executionPort: ExecutionPort;
   /** 路径解析与相对化的基准目录（workspace 根）。 */
   readonly cwd: string;
-  /**
-   * world.run 的已批准命令集（编译期从字面量 cmd 收集、确认窗展示过的那一份）。**缺席即拒绝一切 world.run**（fail-closed）：
-   * 授权面的空集与「忘了接线」必须同样安全，而复验在这里只是纵深防御——真正的授权
-   * 发生在编译期字面量 + 提交确认。
-   */
-  readonly declaredRunCommands?: ReadonlySet<string>;
 }
 
 /**
@@ -297,34 +291,43 @@ interface WorldRunResult {
  *   1. **非零退出是值**。执行适配器把非零退出映射成 `status:"failed"` 且 `error` 缺席
  *      （node-execution-adapter-results.ts 的 statusFromExit/statusFailure），据此与
  *      spawn 失败 / 超时可靠区分。门控循环的常态路径不该走异常控制流。
- *   2. **cmd 复验**。授权发生在编译期字面量 + 提交确认；这里对 declaredRunCommands 的
- *      比对只防接线错误（lowering / 线协议把别的字符串送了进来），且 fail-closed——
- *      集合缺席与命令不在集合里同样拒绝。
+ *   2. **没有运行期命令白名单**。授权只在编译期：cmd 必须是字面量（9003），脚本能跑的命令
+ *      因此在提交前就全部可读、确认图逐条展示。这里曾经再拿一份 launch 时从种子脚本收集的
+ *      `declaredRunCommands` 复验一遍（"只防接线错误"）——但补全（FillWorkflowHole）编译的是
+ *      有效脚本，driver 手里的集合却还是种子那份，函数体里第一次出现的命令就被当"接线错误"
+ *      拒掉了。lowering 跑的就是脚本自己的文本，补全的 code 也是有效脚本自己的 lowering，
+ *      那份复验防不住任何真实情况，只多出一个要手工同步的第二数据源，故删除。
  *   3. **超时无上限**。缺省 300s，脚本可任意加大（为真正长跑的测试设计）；
  *      cancel 仍是最后的控制。
  *
- * stdout/stderr 各 256KB，cap+1 探测（`maxInlineBytes` 按两 cap 之大者 +1，随后逐流判定），
- * 超限拒绝不截断——message 给出可操作的下一步，与 grep/diff 同一 house policy。
+ * 输出按 `opts.output` 三种模式之一收集（{@link WorldRunOutput}）。**有界必须在调用点声明**：
+ * 结果原样进 `dwf_node.result_json`、resume 原样重放，脚本拿到的值与 journal 里的值必须逐字节
+ * 相同。driver 若自作主张截断，脚本与 journal 就是同一份残缺视图却没人知道它残缺；由脚本声明
+ * `"discard"` / `{ tail }`，有界的那份就是这次调用的完整结果，两份拷贝自然一致。
+ *
+ * - `full`（缺省）：stdout/stderr 各 16 MiB，cap+1 探测（`maxInlineBytes` 按两 cap 之大者 +1，
+ *   随后逐流判定），超限拒绝不截断——message 给出可操作的下一步，与 grep/diff 同一 house policy。
+ * - `discard` / `tail`：`maxInlineBytes: 0`，端口照常计数、照常读到退出（persistOutput 缺省
+ *   `"none"`，只有写盘上限才会让执行失败）。此时 `truncated` 恒为 true，但它**不是**上限违规：
+ *   脚本已声明不要全文，没有什么被藏起来。`tail` 的尾巴由端口的 `outputLimit.tailBytes` 按块保留，
+ *   不在这里缓冲整条流——那样仍会撞上 inline 上限，等于没有这个模式。
  */
 async function worldRun(deps: WorldReadDeps, args: unknown[]): Promise<WorldRunResult> {
-  const { argv, cmd, timeoutMs } = worldRunArgs(args);
-
-  const declared = deps.declaredRunCommands;
-  if (declared === undefined || !declared.has(cmd)) {
-    // fail-closed 的接线防御：能到这里的 cmd 理应经过编译期字面量收集与确认。
-    throw new WorkflowError(
-      "DriverError",
-      `world.run: command '${cmd}' is not in the declared set of commands (a wiring error).`,
-    );
-  }
+  const { argv, cmd, timeoutMs, output } = worldRunArgs(args);
 
   const stdoutCap = WORLD_READ_CAPS.runStdoutMaxBytes;
   const stderrCap = WORLD_READ_CAPS.runStderrMaxBytes;
+  const outputLimit: ExecutionOutputLimit =
+    output.mode === "full"
+      ? { maxInlineBytes: Math.max(stdoutCap, stderrCap) + 1 }
+      : output.mode === "discard"
+        ? { maxInlineBytes: 0 }
+        : { maxInlineBytes: 0, tailBytes: output.bytes };
   const result = await deps.executionPort.run({
     command: { mode: "argv", file: cmd, args: argv },
     cwd: deps.cwd,
     timeoutMs,
-    outputLimit: { maxInlineBytes: Math.max(stdoutCap, stderrCap) + 1 },
+    outputLimit,
   });
 
   if (result.status === "timed_out") {
@@ -341,39 +344,117 @@ async function worldRun(deps: WorldReadDeps, args: unknown[]): Promise<WorldRunR
       result.error === undefined &&
       typeof result.exitCode === "number");
   if (!ranToExit) {
-    const detail = result.error?.message ?? (firstLine(result.stderr.text) || result.status);
+    const detail =
+      result.error?.message ??
+      (firstLine(result.stderr.text || (result.stderr.tail ?? "")) || result.status);
     throw new WorkflowError(
       "DriverError",
       `world.run '${cmd}' did not run to completion (${result.status}): ${detail}`,
     );
   }
 
+  const exitCode = result.exitCode ?? 0;
+  if (output.mode === "discard") return { exitCode, stdout: "", stderr: "" };
+  if (output.mode === "tail") {
+    const { tail: stdoutTail } = result.stdout;
+    const { tail: stderrTail } = result.stderr;
+    // 端口契约：请求了 tailBytes 就必带 tail。缺席是接线错误（如换了个不支持的端口），
+    // 当成空串交出去会让门控脚本把"没拿到"误读成"没输出"。
+    if (stdoutTail === undefined || stderrTail === undefined) {
+      throw new WorkflowError(
+        "DriverError",
+        `world.run '${cmd}': the execution port returned no output tail for output: { tail: ${output.bytes} }.`,
+      );
+    }
+    return { exitCode, stdout: stdoutTail, stderr: stderrTail };
+  }
+
   if (result.stdout.bytes > stdoutCap || result.stdout.truncated) {
     throw capExceeded(
       `world.run '${cmd}': stdout is ${result.stdout.bytes} bytes, over the ${stdoutCap}-byte cap. ` +
-        `Quiet the output (e.g. --quiet), or write a file and files.read a summary.`,
+        `${RUN_OVER_CAP_HINT} Or quiet the output (e.g. --quiet), or write a file and files.read a summary.`,
     );
   }
   if (result.stderr.bytes > stderrCap || result.stderr.truncated) {
     throw capExceeded(
       `world.run '${cmd}': stderr is ${result.stderr.bytes} bytes, over the ${stderrCap}-byte cap. ` +
-        `Reduce the diagnostics, or write a file and files.read a summary.`,
+        `${RUN_OVER_CAP_HINT} Or reduce the diagnostics, or write a file and files.read a summary.`,
     );
   }
 
-  return {
-    exitCode: result.exitCode ?? 0,
-    stdout: result.stdout.text,
-    stderr: result.stderr.text,
-  };
+  return { exitCode, stdout: result.stdout.text, stderr: result.stderr.text };
+}
+
+/** full 模式超限时的首选下一步：在调用点声明有界输出。 */
+const RUN_OVER_CAP_HINT = `Pass opts.output: { tail: n } to keep the last n bytes, or "discard" if only the exit code matters.`;
+
+/**
+ * `world.run` 的输出模式（`opts.output` 校验后的形状）。一个模式同时作用于两路流（已定：不做逐流变体）。
+ * `tail.bytes` 的上限取 full 模式的 cap：尾巴同样原样进 journal，预算是同一笔。
+ */
+type WorldRunOutput =
+  | { readonly mode: "full" }
+  | { readonly mode: "discard" }
+  | { readonly mode: "tail"; readonly bytes: number };
+
+const WORLD_RUN_TAIL_MAX_BYTES = Math.min(
+  WORLD_READ_CAPS.runStdoutMaxBytes,
+  WORLD_READ_CAPS.runStderrMaxBytes,
+);
+
+/** `opts.output` 的唯一合法写法，拼进每条形状错误里，让脚本作者一眼看到怎么改。 */
+const WORLD_RUN_OUTPUT_SHAPES = `"full", "discard", or { tail: n } with n an integer from 1 to ${WORLD_RUN_TAIL_MAX_BYTES}`;
+
+/** 错误信息里的 `opts.output` 预览：值本身比类型名可操作（`{"tail":0}` 胜过 `object`）。 */
+const OUTPUT_ARG_PREVIEW_MAX_CHARS = 80;
+
+function describeOutputArg(raw: unknown): string {
+  let text: string | undefined;
+  try {
+    text = JSON.stringify(raw);
+  } catch {
+    text = undefined;
+  }
+  if (text === undefined) return describeArg(raw);
+  return text.length > OUTPUT_ARG_PREVIEW_MAX_CHARS
+    ? `${text.slice(0, OUTPUT_ARG_PREVIEW_MAX_CHARS)}…`
+    : text;
+}
+
+function worldRunOutputArg(raw: unknown): WorldRunOutput {
+  if (raw === undefined || raw === "full") return { mode: "full" };
+  if (raw === "discard") return { mode: "discard" };
+  const invalid = () =>
+    new WorkflowError(
+      "DriverError",
+      `world.run: opts.output must be ${WORLD_RUN_OUTPUT_SHAPES}; got ${describeOutputArg(raw)}.`,
+    );
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) throw invalid();
+  const keys = Object.keys(raw);
+  if (keys.length !== 1 || keys[0] !== "tail") throw invalid();
+  const bytes = (raw as { tail: unknown }).tail;
+  if (
+    typeof bytes !== "number" ||
+    !Number.isInteger(bytes) ||
+    bytes < 1 ||
+    bytes > WORLD_RUN_TAIL_MAX_BYTES
+  ) {
+    throw invalid();
+  }
+  return { mode: "tail", bytes };
 }
 
 /**
- * `world.run` 的实参形状：`[cmd: string, args?: string[], opts?: { timeoutMs?: number }]`。
+ * `world.run` 的实参形状：`[cmd: string, args?: string[], opts?: { timeoutMs?: number; output?: … }]`。
  * 与 {@link worldReadStringArgs} 同一纪律（大声失败、绝不强转），但形状（数组 + 选项袋）
  * 超出了 string 序列助手的表达面，所以单列。
  */
-function worldRunArgs(args: unknown[]): { cmd: string; argv: string[]; timeoutMs: number } {
+function worldRunArgs(args: unknown[]): {
+  cmd: string;
+  argv: string[];
+  timeoutMs: number;
+  output: WorldRunOutput;
+} {
   if (args.length < 1 || args.length > 3) {
     throw new WorkflowError(
       "DriverError",
@@ -404,6 +485,7 @@ function worldRunArgs(args: unknown[]): { cmd: string; argv: string[]; timeoutMs
 
   const rawOpts = args[2];
   let timeoutMs: number = WORLD_READ_CAPS.runDefaultTimeoutMs;
+  let output: WorldRunOutput = { mode: "full" };
   if (rawOpts !== undefined) {
     if (typeof rawOpts !== "object" || rawOpts === null || Array.isArray(rawOpts)) {
       throw new WorkflowError(
@@ -422,9 +504,10 @@ function worldRunArgs(args: unknown[]): { cmd: string; argv: string[]; timeoutMs
       // 刻意无上限钳制：为真正长跑的测试设计；cancel 是最后的控制。
       timeoutMs = rawTimeout;
     }
+    output = worldRunOutputArg((rawOpts as { output?: unknown }).output);
   }
 
-  return { argv, cmd, timeoutMs };
+  return { argv, cmd, timeoutMs, output };
 }
 
 // ——————————————————————————————— 纯辅助 ———————————————————————————————

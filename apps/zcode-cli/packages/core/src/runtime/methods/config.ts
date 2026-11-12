@@ -1,3 +1,4 @@
+import { resolveToolSearchMode } from "../../tool/search/exposure.js";
 import type {
   CollaborationMode,
   ExecutionShellSelection,
@@ -27,9 +28,11 @@ import type { AgentRuntimeInternal } from "../internal.js";
 import { cloneModelSelection } from "../model-selection.js";
 import { applyRuntimeExecutionState } from "../execution-state.js";
 
+import { mirrorSubagentInteractionEvent } from "../../subagent/tool-event-mirror.js";
 import { orderProviderVisibleToolContracts } from "../../tool/provider-visible-order.js";
 import { projectToolModelContract } from "../../tool/model-contract.js";
 import { rebuildContextPrefix } from "./context-refresh.js";
+import { supersedeContextComposition } from "../context-composition/state.js";
 import { filterEmbeddedSearchRuntimeVisibleTools } from "./embedded-search-branch.js";
 import {
   getSessionShellSelection as readSessionShellSelection,
@@ -105,7 +108,8 @@ export function setSessionModelSelection(
 
 export function getProjectId(this: AgentRuntimeInternal): ProjectId {
   // Bash cd 会改变执行 cwd，但 project identity 不能随工具内 cwd 漂移。
-  return projectIdFromDirectory(this.workspaceRoot);
+  // 受管 worktree 会话按映射回源仓库的路径派生，与项目共用权限记录（docs/git/worktree.md §6.6.3）。
+  return projectIdFromDirectory(this.config.projectDirectory ?? this.workspaceRoot);
 }
 
 export function setWorkingDirectory(this: AgentRuntimeInternal, cwd: string): void {
@@ -138,6 +142,12 @@ export function getTools(this: AgentRuntimeInternal, model?: Model): ModelToolCo
     this.cachedTools = filterRuntimeVisibleTools.call(this, this.registry.toContracts());
   }
   return this.cachedTools
+    .filter(
+      (tool) =>
+        (tool.name !== "ToolSearch" && tool.name !== "DeferredToolCall") ||
+        !model ||
+        resolveToolSearchMode(model, this.config.toolSearch?.mode) !== "off",
+    )
     .filter((tool) => tool.name !== "WebSearch" || shouldExposeWebSearch.call(this, model))
     .map((tool) =>
       projectToolModelContract(tool, this.registry.get(tool.name), {
@@ -148,6 +158,8 @@ export function getTools(this: AgentRuntimeInternal, model?: Model): ModelToolCo
 
 export function invalidateToolCache(this: AgentRuntimeInternal): void {
   this.cachedTools = null;
+  // 工具集合变了（MCP、页面工具、注册表改写）：下一个请求的组成随之变化。
+  supersedeContextComposition(this, "tools");
 }
 
 export function getToolRegistry(this: AgentRuntimeInternal): ToolRegistry {
@@ -190,14 +202,27 @@ export function getSessionEventStore(this: AgentRuntimeInternal): SessionEventSt
  */
 export async function notifyExternalChildSessionEvent(
   this: AgentRuntimeInternal,
-  input: { childSessionId: SessionId; event: SessionEvent; traceContext?: TraceContext },
+  input: {
+    childSessionId: SessionId;
+    event: SessionEvent;
+    traceContext?: TraceContext;
+    interactionOrigin?: ChildClientPortsContext;
+  },
 ): Promise<void> {
+  const traceContext = input.traceContext ?? this.rootTraceContext;
   // 只通知、绝不 append：子 runtime 已经按自己的 sessionId 把这条事件落库了，
   // 再走父 runtime 的 append 链路会造成同一事件在共享 store 里出现两份。
-  await this.notifyEventSinks(input.event, {
-    ...(input.traceContext ?? this.rootTraceContext),
-    sessionId: input.childSessionId,
+  await this.notifyEventSinks(input.event, { ...traceContext, sessionId: input.childSessionId });
+  if (input.interactionOrigin === undefined) return;
+  // Bug 根因（2026-09-23 实机）：guarded dwf actor 的权限请求经父 broker 到了桌面，但 V4 的
+  // 确认窗只从**父会话**实时投影的 PermissionRequested 生成；这条事件只在子会话里，窗不出现，
+  // actor 永久等待。与 core subagent 同款镜像（只镜像交互，父 timeline 不收工具活动），同样只通知不 append。
+  const mirrored = mirrorSubagentInteractionEvent(input.event, {
+    ...input.interactionOrigin,
+    parentSessionId: this.sessionId,
   });
+  if (mirrored === undefined) return;
+  await this.notifyEventSinks(mirrored, { ...traceContext, sessionId: this.sessionId });
 }
 
 /**

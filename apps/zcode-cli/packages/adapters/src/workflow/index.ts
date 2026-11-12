@@ -18,7 +18,6 @@ import {
   WorkflowGraphRecordSchema,
   WorkflowRunSnapshotSchema,
 } from "@zcode/contracts";
-import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 export interface NodeWorkflowStoreOptions {
   rootDir?: string;
@@ -33,7 +32,7 @@ interface WorkflowIndexFile {
   runs: WorkflowRunListItem[];
 }
 
-const DEFAULT_WORKFLOW_ROOT = join(homedir(), USER_DATA_DIR_NAME, "cli", "workflows");
+const DEFAULT_WORKFLOW_ROOT = join(homedir(), ".zcode", "cli", "workflows");
 const WORKFLOW_DEFINITION_FILE_EXTENSION = ".json";
 
 export class NodeWorkflowStore implements WorkflowStorePort {

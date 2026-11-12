@@ -42,21 +42,20 @@ function buildForceUpdatePromptMessages(locale: Locale) {
   if (locale === "zh-CN") {
     return {
       checkingTitle: "正在检查更新",
-      checkingMessage: "请保持此窗口打开，Reactor 正在查找可用更新。",
+      checkingMessage: "请保持此窗口打开，ZCode 正在查找可用更新。",
       downloadingTitle: "正在下载更新",
       downloadingVersionTitle: "正在下载更新 v{version}",
       downloadingMessage: "下载完成后会自动安装，请勿关闭应用。",
       readyTitle: "更新已下载",
-      readyMessage: "Reactor 正在准备重启并安装更新。",
+      readyMessage: "ZCode 正在准备重启并安装更新。",
       installingTitle: "正在安装更新",
-      installingMessage: "Reactor 即将重启完成安装。",
+      installingMessage: "ZCode 即将重启完成安装。",
       errorTitle: "自动升级失败",
       errorMessage: "你可以重试自动升级，或改用手动升级。",
       devSkippedTitle: "调试环境无法自动升级",
       devSkippedMessage: "自动升级仅在打包后的应用中可用，请使用手动升级或打包应用验证。",
       confirmCloseTitle: "自动升级正在进行",
-      confirmCloseMessage:
-        "关闭窗口会中断当前自动升级流程，旧版本仍然无法进入主界面。你可以继续等待，或确认关闭并退出。",
+      confirmCloseMessage: "关闭窗口会中断当前自动升级流程，旧版本仍然无法进入主界面。你可以继续等待，或确认关闭并退出。",
       confirmCloseButton: "确认关闭",
       continueUpdateButton: "继续更新",
       retryButton: "重试自动升级",
@@ -68,22 +67,20 @@ function buildForceUpdatePromptMessages(locale: Locale) {
 
   return {
     checkingTitle: "Checking for updates",
-    checkingMessage: "Keep this window open while Reactor checks for updates.",
+    checkingMessage: "Keep this window open while ZCode checks for updates.",
     downloadingTitle: "Downloading update",
     downloadingVersionTitle: "Downloading update v{version}",
-    downloadingMessage: "Reactor will install the update automatically after download.",
+    downloadingMessage: "ZCode will install the update automatically after download.",
     readyTitle: "Update downloaded",
-    readyMessage: "Reactor is preparing to restart and install the update.",
+    readyMessage: "ZCode is preparing to restart and install the update.",
     installingTitle: "Installing update",
-    installingMessage: "Reactor will restart to finish installing the update.",
+    installingMessage: "ZCode will restart to finish installing the update.",
     errorTitle: "Auto update failed",
     errorMessage: "You can retry auto update or use manual update.",
     devSkippedTitle: "Auto update unavailable in development",
-    devSkippedMessage:
-      "Auto update is only available in packaged apps. Use manual update or test a packaged build.",
+    devSkippedMessage: "Auto update is only available in packaged apps. Use manual update or test a packaged build.",
     confirmCloseTitle: "Auto update in progress",
-    confirmCloseMessage:
-      "Closing this window will stop the current auto update flow, and this old version still cannot open the main app. You can keep waiting or close and quit.",
+    confirmCloseMessage: "Closing this window will stop the current auto update flow, and this old version still cannot open the main app. You can keep waiting or close and quit.",
     confirmCloseButton: "Close anyway",
     continueUpdateButton: "Continue update",
     retryButton: "Retry auto update",
@@ -134,7 +131,7 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
       background: #f8f8f8;
       display: flex;
     }
-    /* 强更截图范围就是完整 BrowserWindow；外层留白加内层圆角会把宿主底色显示成黑框。*/
+    /* Bugfix: 强更截图范围就是完整 BrowserWindow；外层留白加内层圆角会把宿主底色显示成黑框。 */
     .panel {
       width: 100%;
       height: 100%;
@@ -163,13 +160,13 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
       width: 22px;
       height: 22px;
       border-radius: 6px;
-      background: #e6f4fa;
+      background: #ebf4ff;
       border: 1px solid rgba(13, 13, 13, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       flex: 0 0 auto;
-      color: #0061af;
+      color: #0b7fff;
       font-size: 12px;
       font-weight: 600;
     }
@@ -194,7 +191,7 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
       cursor: pointer;
       -webkit-app-region: no-drag;
     }
-    /* 字体字符 × 的字形基线会让视觉中心偏移，改用两条线保证和主窗口关闭按钮一致居中。*/
+    /* Bugfix: 字体字符 × 的字形基线会让视觉中心偏移，改用两条线保证和主窗口关闭按钮一致居中。 */
     .close::before,
     .close::after {
       content: "";
@@ -219,9 +216,9 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: color-mix(in oklab, #0061af 12%, transparent);
+      background: color-mix(in oklab, #0b7fff 12%, transparent);
       border: 1px solid rgba(13, 13, 13, 0.1);
-      color: #0061af;
+      color: #0b7fff;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -244,7 +241,7 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
     .progress { display: none; gap: 8px; flex-direction: column; }
     .progress.visible { display: flex; }
     .progress-track { height: 6px; border-radius: 999px; background: rgba(13, 13, 13, 0.08); overflow: hidden; }
-    .progress-bar { width: 0%; height: 100%; border-radius: inherit; background: #0061af; transition: width 160ms ease; }
+    .progress-bar { width: 0%; height: 100%; border-radius: inherit; background: #0b7fff; transition: width 160ms ease; }
     .progress-text { color: rgba(13, 13, 13, 0.62); font-size: 12px; }
     .actions {
       margin-top: auto;
@@ -277,14 +274,14 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
       .panel { background: #2b2b2b; border-color: transparent; }
       .titlebar { background: #202020; border-bottom-color: rgba(255, 255, 255, 0.1); }
       .brand-title, h1 { color: #f8f8f8; }
-      .brand-icon { background: #062a45; border-color: rgba(255, 255, 255, 0.1); color: #2fe0f9; }
+      .brand-icon { background: #001d3d; border-color: rgba(255, 255, 255, 0.1); color: #80beff; }
       .close { color: rgba(248, 248, 248, 0.64); }
       .close:hover { background: #363636; border-color: rgba(255, 255, 255, 0.15); color: #f8f8f8; }
       .message { color: rgba(248, 248, 248, 0.64); }
-      .status-icon { background: color-mix(in oklab, #4099ff 14%, transparent); border-color: rgba(255, 255, 255, 0.1); color: #2fe0f9; }
+      .status-icon { background: color-mix(in oklab, #4099ff 14%, transparent); border-color: rgba(255, 255, 255, 0.1); color: #80beff; }
       .version-card { border-color: rgba(255, 255, 255, 0.1); background: #202020; color: #f8f8f8; }
       .progress-track { background: rgba(255, 255, 255, 0.1); }
-      .progress-bar { background: #2fe0f9; }
+      .progress-bar { background: #80beff; }
       .progress-text { color: rgba(248, 248, 248, 0.64); }
       button { border-color: rgba(255, 255, 255, 0.1); background: #2b2b2b; color: #f8f8f8; }
       button:hover { background: #363636; border-color: rgba(255, 255, 255, 0.15); }
@@ -306,8 +303,8 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
     <main class="panel" role="dialog" aria-modal="true" aria-labelledby="title">
       <header class="titlebar">
         <div class="brand">
-          <div class="brand-icon">${icon ? `<img src="${icon}" alt="" />` : "R"}</div>
-          <div class="brand-title">Reactor</div>
+          <div class="brand-icon">${icon ? `<img src="${icon}" alt="" />` : "Z"}</div>
+          <div class="brand-title">ZCode</div>
         </div>
         <button class="close" type="button" data-action="quit" aria-label="${escapeHtml(text.quitButton)}">×</button>
       </header>
@@ -384,7 +381,7 @@ function renderForceUpdatePromptHtml(text: ForceUpdateDialogText, locale: Locale
       return kind === 'checking' || kind === 'downloading' || kind === 'ready' || kind === 'installing';
     }
     function showCloseConfirmation() {
-      // 自动升级会禁用主按钮，但关闭窗口仍应给用户二次确认，避免误关中断下载。
+      // Bugfix: 自动升级会禁用主按钮，但关闭窗口仍应给用户二次确认，避免误关中断下载。
       resizePromptHeight(${FORCE_UPDATE_PROMPT_HEIGHT});
       previousAutoState = isActiveAutoState(currentState.kind) ? currentState : previousAutoState;
       currentState = { kind: 'confirm-close' };
@@ -492,8 +489,7 @@ export async function showForceUpdatePrompt(
   options: ShowForceUpdatePromptOptions = {},
 ): Promise<ForceUpdatePromptAction> {
   const { BrowserWindow, nativeTheme } = await import("electron");
-  const parentWindow =
-    BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0] ?? undefined;
+  const parentWindow = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0] ?? undefined;
   return new Promise<ForceUpdatePromptAction>((resolvePrompt) => {
     let resolved = false;
     let shown = false;
@@ -570,8 +566,7 @@ export async function showForceUpdatePrompt(
       }
       logger.info("[force-update] 用户选择自动升级");
       updatePromptState({ kind: "checking" });
-      autoUpdateDispose =
-        options.startAutoUpdate?.((state) => updatePromptState(state)) ?? undefined;
+      autoUpdateDispose = options.startAutoUpdate?.((state) => updatePromptState(state)) ?? undefined;
     };
 
     const showPromptWindow = (source: string) => {
@@ -634,8 +629,6 @@ export async function showForceUpdatePrompt(
       showPromptWindow("did-fail-load");
     });
     fallbackTimer = setTimeout(() => showPromptWindow("timeout"), 1000);
-    win.loadURL(
-      `data:text/html;charset=utf-8,${encodeURIComponent(renderForceUpdatePromptHtml(text, locale))}`,
-    );
+    win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(renderForceUpdatePromptHtml(text, locale))}`);
   });
 }

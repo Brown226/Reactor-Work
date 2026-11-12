@@ -146,7 +146,18 @@ export interface ZCodeTaskGoalChangedPatch {
 }
 // ---- ZCode task 模式 ----
 
-export type ZCodeTaskMode = "yolo" | "plan" | "edit" | "auto" | "autoEdit" | "build";
+export type ZCodeTaskMode =
+  | "default"
+  | "yolo"
+  | "guarded"
+  | "plan"
+  | "edit"
+  | "acceptEdits"
+  | "auto"
+  | "dontAsk"
+  | "bypassPermissions"
+  | "autoEdit"
+  | "build";
 
 export type ZCodeOffPeakRunType = "init" | "resume";
 
@@ -198,7 +209,8 @@ export interface ZCodePromptFileAttachment {
   mimeType: string;
   sizeBytes: number;
   /** 附件来源；clipboard-text 表示由长文本粘贴落盘生成，agent 只应按临时文件引用处理。 */
-  sourceKind?: "clipboard-text";
+  sourceKind?: "clipboard-text" | "topic-history";
+  messageCount?: number;
   /** 旧版/无路径环境的兼容回退；新桌面 GUI 不再为普通文件发送 base64。 */
   dataBase64?: string;
   /** 无本地路径时的小文本回退；有 localPath 时由 agent 自行读取。 */
@@ -284,6 +296,20 @@ export interface ZCodeTaskMeta {
    * 导致任务列表、快照和日志互相串读。这里补充 workspaceIdentity 参与隔离。
    */
   workspaceIdentity?: string;
+  /**
+   * 任务运行所在的受管 worktree 根目录（tasks-index `worktree_root`，docs/git/worktree.md §6.6.1）。
+   * 只在 worktree 任务上出现；此时 `cwd` 位于该 worktree 内，不是 workspacePath（§2.1）。
+   */
+  worktreeRoot?: string;
+  /**
+   * 任务 cwd（tasks-index `root_path`）。只在与 workspacePath 不同时出现（worktree 任务）；
+   * 按 cwd 工作的界面（Git、diff、文件树、终端、编辑器）必须用它（§3.7）。
+   */
+  cwd?: string;
+  /** Controller/renderer 任务列表投影使用；不参与 workspace identity 或持久化 key。 */
+  sourceServerId?: string;
+  /** Source directory 的用户可读名称；缺失时 UI 回退 sourceServerId。 */
+  serverDisplayName?: string;
   /** app-owned workspace 分类；缺省为 project，不参与 workspaceKey。 */
   workspacePurpose?: import("./workspacePurpose.js").WorkspacePurpose;
   createdAt: number;
@@ -338,10 +364,18 @@ export interface ZCodeTaskMeta {
    * 但拿不到错误正文，用户会以为发送没有触发。这里把失败原因随 task meta 一起持久化。
    */
   lastError?: ZCodeTaskLastError;
+  /** task 级历史修复状态，用于避免读 snapshot 时重复执行一次性迁移逻辑。 */
+  repairState?: ZCodeTaskRepairState;
   /** 任务级文件改动摘要，仅用于列表/标题展示，真实回滚仍以 fileChanges 为准 */
   changeSummary?: ZCodeTaskChangeSummary;
   /** zcode-cli /goal 会话目标；null 表示已显式清空。 */
   target?: ZCodeTaskGoal | null;
+}
+export interface ZCodeTaskRepairState {
+  /** Claude 原生日志补齐历史 snapshot assistant 正文的修复版本。 */
+  claudeNativeSnapshotAssistantContentVersion?: number;
+  /** Codex 原生日志补齐历史 snapshot 子 agent 工具块的修复版本。 */
+  codexNativeSnapshotSubagentToolsVersion?: number;
 }
 export interface ZCodeTaskChangeSummary {
   /** 整个任务里涉及过的唯一文件数 */
@@ -562,8 +596,10 @@ export interface ZCodeToolCall {
   title: string;
   /** agent ToolCall 原始 payload，调试协议字段时以此为准 */
   raw: unknown;
+  pluginMetadata?: { pluginId: string; component: "mcp" };
   /** Skill resolved metadata；只用于 telemetry attribution。 */
   skillMetadata?: {
+    name?: string;
     qualifiedName?: string;
     pluginId?: string;
     source?: "agents" | "zcode" | "bundled" | "plugin" | "remote";
@@ -591,8 +627,10 @@ export interface ZCodeToolCallUpdate {
   error?: string;
   /** agent ToolCallUpdate 原始 payload，调试协议字段时以此为准 */
   raw: unknown;
+  pluginMetadata?: { pluginId: string; component: "mcp" };
   /** Skill resolved metadata；只用于 telemetry attribution。 */
   skillMetadata?: {
+    name?: string;
     qualifiedName?: string;
     pluginId?: string;
     source?: "agents" | "zcode" | "bundled" | "plugin" | "remote";
@@ -700,6 +738,7 @@ export interface ZCodeTaskComplete {
   usage?: ZCodeUsage;
 }
 export interface ZCodeTaskRunStarted {
+  inputOrigin?: "desktop" | "mobile";
   type: "task_run_started";
   taskId: string;
   traceId: TraceId;

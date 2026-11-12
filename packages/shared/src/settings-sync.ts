@@ -196,3 +196,7 @@ export interface SettingsSyncImportResult {
   failedCount: number;
   taskResults: SettingsSyncTaskImportResult[];
 }
+
+export interface SettingsSyncFirstRunPromptState {
+  handled: boolean;
+}

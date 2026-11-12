@@ -1,32 +1,39 @@
 /* oxlint-disable eslint(max-lines) -- 平台事件和分享导入共用同一生命周期。 */
+import { getConversationShareErrorDetails } from "@/lib/conversationShareError.js";
 import { useEffect, useRef, useState } from "react";
 import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
-import type { IPlatformService } from "@zcode/shared";
+import type { CreateTaskOptions } from "@/app-shell/types.js";
+import type { IPlatformService, ZCodeTaskClientMode } from "@zcode/shared";
+import { readV4ComposerDraft, V4_DRAFT_SCOPE_ROOT } from "@/v4/composer/composerDraftStore.js";
+import { readComposerWorkspaceScope } from "@/v4/composer/composerDraftStore.js";
+import { useComposerClientNamespace } from "@/hooks/useServices.js";
 import { isWorkspaceTab, type TabStoreState, type WindowTabState } from "@/store/tabStore.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";
 import { logger } from "@/logger.js";
-import { seedImportedSessionDraft } from "@/v4/composer/newTaskDraft.js";
+import { resolveImportedComposerConfig } from "@/v4/composer/newTaskDraft.js";
 import { dismissToast, toast, updateToast } from "@/components/ui/toast.js";
 import { matchesPrimaryShortcut } from "@/lib/keyboardShortcuts.js";
 import { isShortcutRecordingActive } from "@/shortcuts/bindings.js";
 import { isRendererReloadNavigation } from "@/lib/rendererNavigation.js";
+import {
+  useWebRemoteControlWorkspaceSync,
+  shouldPublishCompleteWorkspaceSnapshot,
+} from "@/root/rootPlatformWorkspaceSync.js";
 import { useOptionalBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
-import { shouldPublishCompleteWorkspaceSnapshot } from "@/root/rootPlatformWorkspaceSync.js";
 import {
   createShareImportIntent,
   isShareImportIntentSame,
   resolveShareImportFailurePresentation,
   type ShareImportIntent,
 } from "@/root/shareImportIntent.js";
-import { createChatComposerPathAttachment } from "@/lib/chatAttachments.js";
-import { pushSystemComposerInjection } from "@/store/systemComposerInjection.js";
-import { persistV4ComposerDraft, V4_DRAFT_SCOPE_ROOT } from "@/v4/composer/composerDraftStore.js";
 
 export function useRootPlatformEffects({
   initialWorkspaceAbsPath,
   initialWorkspaceIdentity,
   initialWorkspacePurpose,
   initialTaskId,
+  initialTaskDraft,
+  clientMode = "desktop-continuous",
   canBootstrapInitialWorkspace = true,
   addTab,
   setIsBootstrappingInitialWorkspace,
@@ -40,12 +47,13 @@ export function useRootPlatformEffects({
   allowOpenWorkspace = true,
   isDesktop,
   locale,
+  localeResolved = true,
   tabs,
   activeWorkspacePath,
   activeWorkspaceIdentity,
   reconnectingRemoteWorkspaceKeys = [],
   remoteWorkspaceErrorByWorkspaceKey = {},
-  totalUnreadTaskCount,
+  webRemoteControlFeatureEnabled = false,
   hasCompletedFullTabRestore = true,
   intl,
   isRestoringOAuthSession,
@@ -54,6 +62,8 @@ export function useRootPlatformEffects({
   initialWorkspaceIdentity?: string;
   initialWorkspacePurpose?: import("@zcode/shared").WorkspacePurpose;
   initialTaskId?: string;
+  initialTaskDraft?: CreateTaskOptions;
+  clientMode?: ZCodeTaskClientMode;
   canBootstrapInitialWorkspace?: boolean;
   addTab: (
     workspacePath: string,
@@ -65,20 +75,26 @@ export function useRootPlatformEffects({
   setIsBootstrappingInitialWorkspace: (value: boolean) => void;
   platform: IPlatformService;
   activateTabByPath: (workspacePath: string, options?: { workspaceIdentity?: string }) => boolean;
-  startDraftInWorkspace: (workspacePath: string, workspaceIdentity?: string) => void;
+  startDraftInWorkspace: (
+    workspacePath: string,
+    workspaceIdentity?: string,
+    options?: CreateTaskOptions,
+  ) => void;
   startNewTaskFromActiveWorkspace: (source: string) => void;
   openWorkspace: () => void;
-  openWorkspacePath: (workspacePath: string) => void;
+  openWorkspacePath: (workspacePath: string, activateOtherWindow?: boolean) => void | Promise<void>;
   setWorkspaceActionError: (message: string | null) => void;
   allowOpenWorkspace?: boolean;
   isDesktop?: boolean;
   locale: ReturnType<typeof import("@/i18n/IntlProvider.js").useZCodeIntl>["locale"];
+  /** IntlProvider 是否已从持久化设置确定语言；未确定前 locale 只是占位初值。 */
+  localeResolved?: boolean;
   tabs: WindowTabState[];
   activeWorkspacePath?: string | null;
   activeWorkspaceIdentity?: string | null;
   reconnectingRemoteWorkspaceKeys?: string[];
   remoteWorkspaceErrorByWorkspaceKey?: Record<string, string>;
-  totalUnreadTaskCount: number;
+  webRemoteControlFeatureEnabled?: boolean;
   hasCompletedFullTabRestore?: boolean;
   intl: ReturnType<typeof import("@/i18n/IntlProvider.js").useZCodeIntl>["intl"];
   isRestoringOAuthSession: boolean;
@@ -87,6 +103,7 @@ export function useRootPlatformEffects({
   const baseServices = useOptionalBaseWorkspaceServices();
   const pendingShareImportRef = useRef<ShareImportIntent | null>(null);
   const [shareImportRevision, setShareImportRevision] = useState(0);
+  const composerClientNamespace = useComposerClientNamespace();
   const activeShareImportRef = useRef<ShareImportIntent | null>(null);
   const importOperationRef = useRef<string | null>(null);
   const lastImportProgressToastRef = useRef<{ phase: string; at: number } | null>(null);
@@ -100,7 +117,47 @@ export function useRootPlatformEffects({
     }
 
     didBootstrapInitialWorkspaceRef.current = true;
+    if (
+      isDesktop &&
+      initialWorkspaceAbsPath &&
+      initialWorkspacePurpose === "project" &&
+      clientMode === "desktop-continuous" &&
+      !initialWorkspaceIdentity &&
+      !initialTaskId &&
+      !initialTaskDraft &&
+      !isRendererReloadNavigation()
+    ) {
+      // 冷启动的 project 标记只描述 tab，不能代替草稿 projectId；与运行中系统目录
+      // 入口共用 Host 项目接纳，完成前保留启动屏障，避免空归属草稿先被预热。
+      void Promise.resolve(openWorkspacePath(initialWorkspaceAbsPath)).finally(() => {
+        setIsBootstrappingInitialWorkspace(false);
+      });
+      return;
+    }
     if (initialWorkspaceAbsPath) {
+      const savedScope = readComposerWorkspaceScope(
+        initialWorkspaceAbsPath,
+        initialWorkspaceIdentity,
+        composerClientNamespace,
+      );
+      // 手机重建 Root 时 bridge 只有地址；项目意图随已有浏览器草稿恢复，先于 prewarm。
+      const savedDraft =
+        clientMode === "web-remote-replayable" && !initialTaskId && !initialTaskDraft
+          ? readV4ComposerDraft(
+              initialWorkspaceAbsPath,
+              initialWorkspaceIdentity,
+              V4_DRAFT_SCOPE_ROOT,
+              savedScope,
+            )
+          : null;
+      const draftIntent =
+        initialTaskDraft ??
+        (savedScope
+          ? { projectId: savedScope.projectId, taskGroupId: savedDraft?.taskGroupId }
+          : undefined) ??
+        (savedDraft?.projectId !== undefined
+          ? { projectId: savedDraft.projectId, taskGroupId: savedDraft.taskGroupId }
+          : undefined);
       addTab(
         initialWorkspaceAbsPath,
         initialWorkspaceIdentity || initialWorkspacePurpose
@@ -114,11 +171,11 @@ export function useRootPlatformEffects({
         useZCodeSessionStore
           .getState()
           .setActiveTaskId(initialWorkspaceAbsPath, initialTaskId, initialWorkspaceIdentity);
-      } else if (!isRendererReloadNavigation()) {
-        // main 注入 initial workspace 只表达工作区入口；没有显式 taskId
+      } else if (draftIntent || !isRendererReloadNavigation()) {
+        // 修复原因：main 注入 initial workspace 只表达工作区入口；没有显式 taskId
         // 的 app 冷启动必须进入草稿，不能让 renderer-local last-session/group/pane
         // 抢回历史会话；同一 renderer reload 则保留当前 session 续流资格。
-        startDraftInWorkspace(initialWorkspaceAbsPath, initialWorkspaceIdentity);
+        startDraftInWorkspace(initialWorkspaceAbsPath, initialWorkspaceIdentity, draftIntent);
       }
     }
     // Dock 最近项目会通过 initialWorkspaceAbsPath 直达工作区。
@@ -128,8 +185,13 @@ export function useRootPlatformEffects({
     setIsBootstrappingInitialWorkspace(false);
   }, [
     addTab,
+    openWorkspacePath,
+    isDesktop,
     canBootstrapInitialWorkspace,
     initialTaskId,
+    initialTaskDraft,
+    composerClientNamespace,
+    clientMode,
     initialWorkspaceAbsPath,
     initialWorkspaceIdentity,
     initialWorkspacePurpose,
@@ -140,11 +202,8 @@ export function useRootPlatformEffects({
   useEffect(() => {
     const disposeFocusTab = platform.onFocusTab((path: string) => {
       logger.info("[Root] onFocusTab:", path);
-      if (activateTabByPath(path)) {
-        // 系统 workspace focus 是 workspace-only 导航；任务通知另有
-        // 显式 taskId 路径，不能在这里隐式恢复这个 workspace 上次选中的 session。
-        startDraftInWorkspace(path);
-      }
+      // 跨窗口打开由目标窗口完成项目接纳，避免只激活目录后留下未归类草稿。
+      void openWorkspacePath(path, false);
     });
     const disposeNewTab = platform.onNewTab(() => {
       logger.info("[Root] onNewTab");
@@ -153,6 +212,7 @@ export function useRootPlatformEffects({
       // 现在新标签语义收敛为“打开工作区”动作，由 Root 决定目录选择或默认 workspace 兜底。
       openWorkspace();
     });
+    // 新建回调包含当前语言；同步更新订阅，避免快捷键展示切换语言前的错误提示。
     const disposeNewTask = platform.onNewTask(() => {
       startNewTaskFromActiveWorkspace("onNewTask");
     });
@@ -203,39 +263,6 @@ export function useRootPlatformEffects({
           logger.info("[Root] 收到 share import deep link", {
             shareCodeLength: payload.shareCode.length,
           });
-        })
-      : () => {};
-    const disposeInjectComposerAttachment = platform.onInjectComposerAttachment
-      ? platform.onInjectComposerAttachment((payload) => {
-          // 系统侧内容（截图/外部图片）落到全局注入 store，由唯一焦点 composer 认领。
-          logger.info("[Root] onInjectComposerAttachment:", payload.source);
-          pushSystemComposerInjection({
-            source: payload.source,
-            attachment: createChatComposerPathAttachment(payload.imagePath),
-          });
-        })
-      : () => {};
-    const disposeInjectComposerText = platform.onInjectComposerText
-      ? platform.onInjectComposerText((text) => {
-          if (!activeWorkspacePath || text.trim().length === 0) {
-            return;
-          }
-          // 快捷输入浮窗的文本：先写草稿事实源、再发即时插入请求（与初始提示词同一范式），
-          // 保证当前 composer 立即可见、后续 remount 也恢复同一文本。
-          logger.info("[Root] onInjectComposerText");
-          persistV4ComposerDraft(
-            activeWorkspacePath,
-            activeWorkspaceIdentity ?? undefined,
-            V4_DRAFT_SCOPE_ROOT,
-            { text },
-          );
-          useZCodeSessionStore
-            .getState()
-            .requestComposerTextInsert(
-              activeWorkspacePath,
-              text,
-              activeWorkspaceIdentity ?? undefined,
-            );
         })
       : () => {};
     const disposeNotificationClick = platform.onTaskNotificationClick((taskId: string) => {
@@ -314,12 +341,16 @@ export function useRootPlatformEffects({
       disposeOpenWorkspace();
       disposeOpenWorkspacePath();
       disposeShareImport();
-      disposeInjectComposerAttachment();
-      disposeInjectComposerText();
       disposeNotificationClick();
       disposeUpdateCheckResult();
     };
-  }, [activeWorkspaceIdentity, activeWorkspacePath, platform, tabs]);
+  }, [
+    activeWorkspaceIdentity,
+    activeWorkspacePath,
+    platform,
+    startNewTaskFromActiveWorkspace,
+    tabs,
+  ]);
 
   useEffect(() => {
     const pending = pendingShareImportRef.current;
@@ -405,7 +436,7 @@ export function useRootPlatformEffects({
       .then((result) => {
         pending.status = "complete";
         // 先准备实际落地工作区的独立草稿，再激活；复用导入不覆盖会话选择。
-        seedImportedSessionDraft(result);
+        const composerConfig = resolveImportedComposerConfig(result, composerClientNamespace);
         const activated = activateTabByPath(
           result.workspacePath,
           result.workspaceIdentity ? { workspaceIdentity: result.workspaceIdentity } : undefined,
@@ -421,6 +452,7 @@ export function useRootPlatformEffects({
           result.workspacePath,
           result.sessionId,
           result.workspaceIdentity,
+          composerConfig,
         );
         // 导入可能复用当前已打开的 session；仅 setActiveTaskId 不会产生可观察的切换。
         // 每次成功都显式发出一次定位请求，目标 pane 准备好分享内容后再消费。
@@ -469,7 +501,11 @@ export function useRootPlatformEffects({
           typeof firstIssueRecord?.artifactDisplayName === "string"
             ? firstIssueRecord.artifactDisplayName
             : undefined;
+        const diagnostics = getConversationShareErrorDetails(error);
         logger.warn("[Root] share import failed", {
+          status: diagnostics.status,
+          code: diagnostics.code,
+          requestId: diagnostics.requestId,
           operationId,
           clientRequestId: pending.clientRequestId,
           kind,
@@ -526,6 +562,7 @@ export function useRootPlatformEffects({
     isRestoringOAuthSession,
     locale,
     shareImportRevision,
+    composerClientNamespace,
   ]);
 
   useEffect(() => {
@@ -542,6 +579,16 @@ export function useRootPlatformEffects({
       .map((tab) => tab.workspacePath);
     platform.syncWindowTabs(paths);
   }, [hasCompletedFullTabRestore, isDesktop, platform, tabs]);
+
+  useWebRemoteControlWorkspaceSync({
+    platform,
+    tabs,
+    isDesktop: Boolean(isDesktop),
+    featureEnabled: webRemoteControlFeatureEnabled,
+    hasCompletedFullTabRestore,
+    reconnectingRemoteWorkspaceKeys,
+    remoteWorkspaceErrorByWorkspaceKey,
+  });
 
   useEffect(() => {
     if (isDesktop) {
@@ -584,6 +631,14 @@ export function useRootPlatformEffects({
     if (!isDesktop) {
       return;
     }
+    // 冷启动竞态修复：IntlProvider 读完 setting.json 之前，locale 只是占位初值（无本地偏好时按
+    // navigator 系统语言，中文系统即 zh-CN）。以前这里一挂载就把占位值推给 Main，Main 再广播给
+    // Host，导致 UI 选 ja/ru/ko 的用户冷启动后几秒内遥测、client/configs、marketing/touch、
+    // getCustomerInfo 等请求带 X-Client-Language=zh-CN。Main 启动时已从 setting.json 同步拿到
+    // 真实语言，所以这里必须等语言确定后再同步，不能用占位值覆盖。
+    if (!localeResolved) {
+      return;
+    }
 
     let disposed = false;
 
@@ -600,13 +655,7 @@ export function useRootPlatformEffects({
     return () => {
       disposed = true;
     };
-  }, [isDesktop, locale, platform]);
-
-  useEffect(() => {
-    // Dock badge 一期只统计“后台完成后还没点开”的 task 数。
-    // 失败态红点和 permission tag 仍留在各自 UI 语义里，避免把平台徽标混成泛化告警数。
-    platform.syncWindowUnreadCount(totalUnreadTaskCount);
-  }, [platform, totalUnreadTaskCount]);
+  }, [isDesktop, locale, localeResolved, platform]);
 
   const activeTabId = useTabStore((state: TabStoreState) => state.activeTabId);
   const activeTabCandidate = useTabStore((state: TabStoreState) =>

@@ -31,7 +31,6 @@ export async function persistPendingToolPart(
   runtime: AgentRuntimeInternal,
   options: {
     assistantMessageId: MessageId;
-    declarationIndex: number;
     input: Record<string, unknown>;
     partID: PartId;
     toolCall: ToolCall;
@@ -58,11 +57,17 @@ export async function persistPendingToolPart(
       messageID: options.assistantMessageId,
       type: "tool",
       callID: options.toolCall.id,
-      declarationIndex: options.declarationIndex,
+      // savePart 遇到冲突时整体替换 data，每次写入 tool part 都要带 blockIndex。
+      ...(options.toolCall.blockIndex !== undefined
+        ? { blockIndex: options.toolCall.blockIndex }
+        : {}),
       tool: projected.toolName,
       metadata: {
         ...projected.metadata,
         ...options.metadata,
+        ...(options.toolCall.modelCallWrapper
+          ? { modelCallWrapper: options.toolCall.modelCallWrapper }
+          : {}),
       },
       state: {
         status: "pending",

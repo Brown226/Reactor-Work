@@ -1,14 +1,13 @@
 import type { ZCodeProvider } from "@zcode/shared";
-import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 type SkillSourceType = "glm" | "unknown";
 
-function resolveSkillSourceType(skillPath: string): SkillSourceType {
+export function resolveSkillSourceType(skillPath: string): SkillSourceType {
   const normalized = skillPath.replaceAll("\\", "/").toLowerCase();
-  if (normalized.includes(`/${USER_DATA_DIR_NAME}/skills/`)) {
+  if (normalized.includes("/.zcode/skills/")) {
     return "glm";
   }
-  if (normalized.includes(`/${USER_DATA_DIR_NAME}/cli/plugins/cache/`)) {
+  if (normalized.includes("/.zcode/cli/plugins/cache/")) {
     return "glm";
   }
   return "unknown";

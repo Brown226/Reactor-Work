@@ -7,6 +7,7 @@ import { homedir } from "node:os";
 import {
   DATA_BASE_DIR_FORBIDDEN_WINDOWS_INSTALL_DIR_ERROR_CODE,
   USER_DATA_DIR_NAME,
+  ZCODE_AGENT_RUNTIME,
   ZCODE_DATA_SCOPE_ENV_KEY,
   ZCODE_DATA_SCOPE_MARKER_FILE_NAME,
   ZCODE_LOCAL_DATA_SCOPE,
@@ -20,13 +21,13 @@ export const ZCODE_WINDOWS_APP_INSTALL_DIR_ENV = "ZCODE_WINDOWS_APP_INSTALL_DIR"
 const envDataBaseDir = process.env.ZCODE_DATA_BASE_DIR?.trim() || null;
 const defaultDataBaseDir = process.env.HOME?.trim() || homedir();
 
-interface DataBaseDirTargetValidationOptions {
+export interface DataBaseDirTargetValidationOptions {
   platform?: NodeJS.Platform | string;
   env?: Record<string, string | undefined>;
   appInstallDir?: string | null;
 }
 
-type DataBaseDirTargetValidationResult =
+export type DataBaseDirTargetValidationResult =
   | { ok: true }
   | {
       ok: false;
@@ -48,98 +49,36 @@ export function getDataBaseDir(): string {
   return defaultDataBaseDir;
 }
 
-/** {dataBaseDir}/{USER_DATA_DIR_NAME} —— 用户级数据根，目录名见 shared/user-data-dir。 */
+/** {dataBaseDir}/.zcode */
 export function getZCodeDataRootDir(): string {
-  return join(getDataBaseDir(), USER_DATA_DIR_NAME);
+  return join(getDataBaseDir(), ".zcode");
 }
 
-/**
- * 数据命名空间 marker 路径：`{用户数据根}/data-scope.json`。
- *
- * 刻意放在任何 `users/{scope}` 目录**之外**——本地态与各企业用户必须读到同一份事实源，
- * 否则切到某个 scope 之后就再也读不回 marker 了。
- */
-export function getZCodeDataScopeMarkerFilePath(): string {
-  return join(getZCodeDataRootDir(), ZCODE_DATA_SCOPE_MARKER_FILE_NAME);
-}
-
-let cachedDataScope: string | null = null;
-
-/**
- * 当前数据命名空间：注入的 env > marker > `local`。
- *
- * env 由 Main 在 fork Host 时按 marker 注入（CLI/agent 再继承它）；这里读 marker 只兜底
- * 「Host 被手工启动、没有 env」的情况。进程内只解析一次：scope 变化必须重启进程才生效
- * （已打开的 SQLite 句柄与缓存目录不会跟着搬，见方案文档 §3 时序）。
- *
- * 注入值必须**原样信任，包括 `local`**：marker 的写入方就是 Host 自己（登录/登出 RPC），
- * 若把注入的 `local` 当成"未覆盖"再回头读一次 marker，而 marker 已在此期间被改写，
- * Host 就会解析出与 agent（只认 env）不同的 scope——任务列表读新用户、消息正文读旧用户，
- * 正是方案文档 §3 警告的撕裂视图。变量真的不存在（手工启动）才允许回落 marker。
- */
-export function getZCodeDataScope(): string {
-  if (cachedDataScope !== null) {
-    return cachedDataScope;
-  }
-  const injected = process.env[ZCODE_DATA_SCOPE_ENV_KEY]?.trim();
-  if (injected) {
-    cachedDataScope = sanitizeZCodeDataScope(injected);
-    return cachedDataScope;
-  }
-  const markerPath = getZCodeDataScopeMarkerFilePath();
-  cachedDataScope = existsSync(markerPath)
-    ? (() => {
-        try {
-          return parseZCodeDataScopeMarkerFile(readFileSync(markerPath, "utf8")).scope;
-        } catch {
-          // marker 损坏 = 无法判断归属，回落本地态；不为猜一个用户而冒数据串读的风险。
-          return ZCODE_LOCAL_DATA_SCOPE;
-        }
-      })()
-    : ZCODE_LOCAL_DATA_SCOPE;
-  return cachedDataScope;
-}
-
-/** 撤销 `getZCodeDataScope()` 的进程内缓存（仅测试用；Host 侧 scope 变化靠重启）。 */
-export function resetZCodeDataScopeCache(): void {
-  cachedDataScope = null;
-}
-
-/**
- * 当前命名空间的数据根；`local` 返回 null，表示沿用历史路径、不做任何迁移
- * （`docs/已完成/已完成-data-directory-contract.md` §5：本产品不做数据迁移）。
- */
-export function getZCodeUserScopedDataRootDir(): string | null {
-  const scope = getZCodeDataScope();
-  if (scope === ZCODE_LOCAL_DATA_SCOPE) {
-    return null;
-  }
-  return join(getZCodeDataRootDir(), ZCODE_USER_SCOPED_DATA_DIR_NAME, scope);
-}
-
-/**
- * `v2` 配置目录的当前命名空间形态。
- *
- * 全局配置（凭据、provider、设置、策略缓存）继续用 {@link getAppConfigDir}；
- * 只有会话/任务派生的数据（tasks-index、legacy 快照、检查点、memory、审计 outbox）
- * 走这里——凭据若跟着 scope 搬走，重启后就读不到令牌，登录会被自己打成死循环。
- */
-export function getUserScopedAppConfigDir(): string {
-  const scoped = getZCodeUserScopedDataRootDir();
-  return scoped ? join(scoped, "v2") : getAppConfigDir();
-}
-
-/** 非项目对话共享的真实工作目录；默认 {用户数据根}/workspace/default。 */
+/** 非项目对话共享的真实工作目录；默认 ~/.zcode/workspace/default。 */
 export function getConversationWorkspaceDir(): string {
-  const scoped = getZCodeUserScopedDataRootDir();
-  return scoped
-    ? join(scoped, "workspace", "default")
-    : join(getZCodeDataRootDir(), "workspace", "default");
+  return join(getZCodeDataRootDir(), "workspace", "default");
 }
 
-/** {dataBaseDir}/{USER_DATA_DIR_NAME}/v2 */
+/** {dataBaseDir}/.zcode/v2 */
 export function getAppConfigDir(): string {
   return join(getZCodeDataRootDir(), "v2");
+}
+
+/**
+ * Agent 侧用户级默认指令（个性化）文件的 home 解析。
+ * 必须与 CLI adapter（apps/zcode-cli/packages/adapters/src/context/index.ts 的
+ * resolveUserHomeDir）保持完全一致：只认 HOME/USERPROFILE。不能改用
+ * ZCODE_DATA_BASE_DIR（CLI 读该文件时忽略它）或 ZCODE_DESKTOP_HOME_DIR
+ * （agent 子进程不认），否则 App 写的文件和 Agent 读的文件会分叉。
+ */
+export function resolveAgentUserInstructionsHomeDir(env: NodeJS.ProcessEnv = process.env): string {
+  const envHome = env.HOME?.trim() || env.USERPROFILE?.trim();
+  return envHome && envHome.length > 0 ? envHome : homedir();
+}
+
+/** `{home}/.zcode/AGENTS.md`：用户自定义指令（个性化）的唯一事实源文件。 */
+export function getAgentUserInstructionsFilePath(env: NodeJS.ProcessEnv = process.env): string {
+  return join(resolveAgentUserInstructionsHomeDir(env), ".zcode", "AGENTS.md");
 }
 
 function readEnvValue(env: Record<string, string | undefined>, key: string): string | undefined {
@@ -267,13 +206,12 @@ export function getFeedbackLogArchiveDir(): string {
 }
 
 export function getGitCheckpointIndexRootDir(): string {
-  const scoped = getZCodeUserScopedDataRootDir();
-  return join(scoped ?? getZCodeDataRootDir(), "git-checkpoint-index");
+  return join(getZCodeDataRootDir(), "git-checkpoint-index");
 }
 
-/** ~/.zcode/v2/tasks-index.sqlite（本地态）或 ~/.zcode/users/{scope}/v2/tasks-index.sqlite */
+/** ~/.zcode/v2/tasks-index.sqlite */
 export function getTasksIndexDatabasePath(): string {
-  return join(getUserScopedAppConfigDir(), "tasks-index.sqlite");
+  return join(getAppConfigDir(), "tasks-index.sqlite");
 }
 
 /** workspace 级身份键：远程优先使用 workspaceIdentity，本地回退 workspacePath。 */
@@ -289,13 +227,9 @@ export function getWorkspaceHash(workspacePath: string, workspaceIdentity?: stri
     .slice(0, 12);
 }
 
-/** ~/.zcode/v2/sessions/{workspaceHash}（本地态）或 users/{scope}/v2/sessions/{workspaceHash} */
+/** ~/.zcode/v2/sessions/{workspaceHash} */
 function getTaskSessionDir(workspacePath: string, workspaceIdentity?: string): string {
-  return join(
-    getUserScopedAppConfigDir(),
-    "sessions",
-    getWorkspaceHash(workspacePath, workspaceIdentity),
-  );
+  return join(getAppConfigDir(), "sessions", getWorkspaceHash(workspacePath, workspaceIdentity));
 }
 
 /** ~/.zcode/v2/sessions/{workspaceHash}/{taskId}.json */
@@ -317,13 +251,24 @@ export function getLegacyDeletedTaskSessionSnapshotPath(
 }
 
 /**
- * Copy the user data directory from one base dir to another.
+ * GLM（唯一 agent provider）的配置目录：~/.zcode/cli。
+ * Bugfix：GLM 配置改为直接读写新版 zcode-cli 的全局配置目录，不做 workspace 隔离，
+ * 避免同机不同工作区配置漂移。
+ */
+export function getProviderWorkspaceConfigDir(): string {
+  return ZCODE_AGENT_RUNTIME.nativeConfigDir
+    ? join(getDataBaseDir(), ZCODE_AGENT_RUNTIME.nativeConfigDir)
+    : join(getDataBaseDir(), ".zcode", "cli");
+}
+
+/**
+ * Copy the .zcode/v2 data directory from one base dir to another.
  * Excludes setting.json and its transient atomic-write siblings — bootstrap
  * state must only live at the default homedir location.
  */
 export async function copyDataDirectory(oldBaseDir: string, newBaseDir: string): Promise<void> {
-  const oldDir = join(oldBaseDir, USER_DATA_DIR_NAME, "v2");
-  const newDir = join(newBaseDir, USER_DATA_DIR_NAME, "v2");
+  const oldDir = join(oldBaseDir, ".zcode", "v2");
+  const newDir = join(newBaseDir, ".zcode", "v2");
   await cp(oldDir, newDir, {
     recursive: true,
     force: false,
@@ -345,4 +290,88 @@ export async function copyDataDirectory(oldBaseDir: string, newBaseDir: string):
       return true;
     },
   });
+}
+
+
+// ============================================================
+// [本地定制] 用户数据作用域（env > marker > local）
+//
+// 这是数据落点红线：丢失会让「任务列表读新用户、消息正文读旧用户」，
+// 数据串读且运行期不报错。整包同步会用上游 paths.ts 覆盖本文件，勿删本段。
+// ============================================================
+
+/**
+ * 当前数据命名空间：注入的 env > marker > `local`。
+ *
+ * env 由 Main 在 fork Host 时按 marker 注入（CLI/agent 再继承它）；这里读 marker 只兜底
+ * 「Host 被手工启动、没有 env」的情况。进程内只解析一次：scope 变化必须重启进程才生效
+ * （已打开的 SQLite 句柄与缓存目录不会跟着搬，见方案文档 §3 时序）。
+ *
+ * 注入值必须**原样信任，包括 `local`**：marker 的写入方就是 Host 自己（登录/登出 RPC），
+ * 若把注入的 `local` 当成"未覆盖"再回头读一次 marker，而 marker 已在此期间被改写，
+ * Host 就会解析出与 agent（只认 env）不同的 scope——任务列表读新用户、消息正文读旧用户，
+ * 正是方案文档 §3 警告的撕裂视图。变量真的不存在（手工启动）才允许回落 marker。
+ */
+let cachedDataScope: string | null = null;
+
+export function getZCodeDataScope(): string {
+  if (cachedDataScope !== null) {
+    return cachedDataScope;
+  }
+  const injected = process.env[ZCODE_DATA_SCOPE_ENV_KEY]?.trim();
+  if (injected) {
+    cachedDataScope = sanitizeZCodeDataScope(injected);
+    return cachedDataScope;
+  }
+  const markerPath = getZCodeDataScopeMarkerFilePath();
+  cachedDataScope = existsSync(markerPath)
+    ? (() => {
+        try {
+          return parseZCodeDataScopeMarkerFile(readFileSync(markerPath, "utf8")).scope;
+        } catch {
+          // marker 损坏 = 无法判断归属，回落本地态；不为猜一个用户而冒数据串读的风险。
+          return ZCODE_LOCAL_DATA_SCOPE;
+        }
+      })()
+    : ZCODE_LOCAL_DATA_SCOPE;
+  return cachedDataScope;
+}
+
+/**
+ * 数据命名空间 marker 路径：`{用户数据根}/data-scope.json`。
+ *
+ * 刻意放在任何 `users/{scope}` 目录**之外**——本地态与各企业用户必须读到同一份事实源，
+ * 否则切到某个 scope 之后就再也读不回 marker 了。
+ */
+export function getZCodeDataScopeMarkerFilePath(): string {
+  return join(getZCodeDataRootDir(), ZCODE_DATA_SCOPE_MARKER_FILE_NAME);
+}
+
+/**
+ * 当前命名空间的数据根；`local` 返回 null，表示沿用历史路径、不做任何迁移
+ * （`docs/已完成/已完成-data-directory-contract.md` §5：本产品不做数据迁移）。
+ */
+export function getZCodeUserScopedDataRootDir(): string | null {
+  const scope = getZCodeDataScope();
+  if (scope === ZCODE_LOCAL_DATA_SCOPE) {
+    return null;
+  }
+  return join(getZCodeDataRootDir(), ZCODE_USER_SCOPED_DATA_DIR_NAME, scope);
+}
+
+/** 撤销 `getZCodeDataScope()` 的进程内缓存（仅测试用；Host 侧 scope 变化靠重启）。 */
+export function resetZCodeDataScopeCache(): void {
+  cachedDataScope = null;
+}
+
+/**
+ * `v2` 配置目录的当前命名空间形态。
+ *
+ * 全局配置（凭据、provider、设置、策略缓存）继续用 {@link getAppConfigDir}；
+ * 只有会话/任务派生的数据（tasks-index、legacy 快照、检查点、memory、审计 outbox）
+ * 走这里——凭据若跟着 scope 搬走，重启后就读不到令牌，登录会被自己打成死循环。
+ */
+export function getUserScopedAppConfigDir(): string {
+  const scoped = getZCodeUserScopedDataRootDir();
+  return scoped ? join(scoped, "v2") : getAppConfigDir();
 }

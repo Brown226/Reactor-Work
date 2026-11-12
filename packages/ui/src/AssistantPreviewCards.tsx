@@ -19,12 +19,12 @@ import type { CodeViewerSource } from "@/lib/codeViewer.js";
 import { FileDisplayIcon, resolveFileDisplayDescriptor } from "@/lib/fileDisplay.js";
 import { OpenSplitButton } from "@/OpenSplitButton.js";
 
-interface AssistantPreviewCardValidationResult {
+export interface AssistantPreviewCardValidationResult {
   visibleCards: AssistantPreviewCard[];
   settled: boolean;
 }
 
-function buildAssistantPreviewCardFileSource(
+export function buildAssistantPreviewCardFileSource(
   card: Extract<AssistantPreviewCard, { type: "markdown" | "file" }>,
   scope: {
     workspacePath?: string;
@@ -44,7 +44,7 @@ function buildAssistantPreviewCardFileSource(
   };
 }
 
-function buildAssistantPreviewPptxAutoOpenRequest(
+export function buildAssistantPreviewPptxAutoOpenRequest(
   visibleCards: readonly AssistantPreviewCard[],
   baseKey: string,
   scope: {
@@ -78,13 +78,15 @@ interface AssistantPreviewCardsProps {
   /** Desktop 完成态生成产物：批量打开本轮已通过校验的 PPTX。 */
   autoOpenPptxKey?: string;
   onAutoOpenPptx?: (request: AssistantPreviewCardsAutoOpenRequest) => void;
+  compactForRemoteControl?: boolean;
 }
 
-function shouldRenderAssistantPreviewCardAsFile(
+export function shouldRenderAssistantPreviewCardAsFile(
   card: AssistantPreviewCard,
   scope: {
     workspaceIdentity?: string;
     workspaceRemoteSessionId?: string;
+    compactForRemoteControl?: boolean;
   },
 ): boolean {
   const filePath = getAssistantPreviewCardFilePath(card);
@@ -96,7 +98,7 @@ function shouldRenderAssistantPreviewCardAsFile(
   );
 }
 
-function useAssistantPreviewCardValidation(
+export function useAssistantPreviewCardValidation(
   cards: AssistantPreviewCard[],
   scope: {
     workspacePath?: string;
@@ -190,6 +192,7 @@ export function AssistantPreviewCards({
   onOpenCodeViewer,
   autoOpenPptxKey,
   onAutoOpenPptx,
+  compactForRemoteControl,
 }: AssistantPreviewCardsProps) {
   const { intl } = useZCodeIntl();
   const { visibleCards, settled } = useAssistantPreviewCardValidation(cards, {
@@ -239,6 +242,7 @@ export function AssistantPreviewCards({
           onOpenBrowserUrl={onOpenBrowserUrl}
           onOpenFileLink={onOpenFileLink}
           onOpenCodeViewer={onOpenCodeViewer}
+          compactForRemoteControl={compactForRemoteControl}
         />
       ))}
     </div>
@@ -255,6 +259,7 @@ function AssistantPreviewCardRow({
   onOpenBrowserUrl,
   onOpenFileLink,
   onOpenCodeViewer,
+  compactForRemoteControl,
 }: {
   card: AssistantPreviewCard;
   animationDelayMs: number;
@@ -265,11 +270,14 @@ function AssistantPreviewCardRow({
   onOpenBrowserUrl?: (url: string) => void;
   onOpenFileLink?: (target: MessageFileLinkTarget) => void;
   onOpenCodeViewer?: (source: CodeViewerSource) => void;
+  compactForRemoteControl?: boolean;
 }) {
+  const { intl } = useZCodeIntl();
   const filePath = getAssistantPreviewCardFilePath(card);
   const renderAsFile = shouldRenderAssistantPreviewCardAsFile(card, {
     workspaceIdentity,
     workspaceRemoteSessionId,
+    compactForRemoteControl,
   });
   const descriptor = filePath ? resolveFileDisplayDescriptor(filePath) : null;
   const fileSource =
@@ -284,60 +292,90 @@ function AssistantPreviewCardRow({
         }
       : null;
   return (
-    <div
-      className="flex w-full items-center gap-3 rounded-xl border border-card-border bg-card p-3 pr-4 text-foreground"
-      data-zcode-stream-animate="true"
-      style={
-        {
-          "--zcode-stream-animation-delay": `${animationDelayMs}ms`,
-        } as CSSProperties
+    <OpenSplitButton
+      renderCard={(button, { handlePreview, canPreview }) => (
+        <div
+          className="group/preview-card relative isolate flex w-full items-center gap-3 rounded-xl border border-card-border bg-card p-3 pr-4 text-foreground"
+          data-preview-card-title={card.title}
+          data-zcode-stream-animate="true"
+          style={
+            {
+              "--zcode-stream-animation-delay": `${animationDelayMs}ms`,
+            } as CSSProperties
+          }
+        >
+          {/* 修复：hover token 在深色与 Zai 主题中是半透明色，不能直接覆盖 bg-card；
+              用独立叠加层保留卡片底色，才能得到 card + hover 的合成效果。 */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -z-10 rounded-xl bg-hover opacity-0 transition-opacity group-hover/preview-card:opacity-100"
+          />
+
+          {/* 卡片主体（空白、图标、文件名）与"打开"主按钮执行同一应用内预览动作：
+              铺满卡片的透明按钮承载整卡点击，右侧打开/下拉控件 relative z-10 置于其上层，
+              一次点击只会命中其中一个目标，不会触发两次预览。 */}
+          <button
+            type="button"
+            className="absolute inset-0 cursor-pointer rounded-xl disabled:pointer-events-none disabled:cursor-default"
+            aria-label={intl.formatMessage(
+              { id: "chat.previewCards.openCard" },
+              { title: card.title },
+            )}
+            disabled={!canPreview}
+            onClick={handlePreview}
+          />
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-background text-foreground-subtle">
+            {!renderAsFile && card.type === "website" ? (
+              <GlobeIcon className="size-6" />
+            ) : descriptor ? (
+              <FileDisplayIcon src={descriptor.fileIconSrc} size={24} />
+            ) : (
+              <FileTextIcon className="size-6" />
+            )}
+          </div>
+          <div className="min-w-0 flex flex-1 flex-col gap-1">
+            <div className="truncate text-ui-base font-medium leading-5">{card.title}</div>
+            <div className="truncate text-ui-base leading-5 text-foreground-subtlest">
+              {subtitle}
+            </div>
+          </div>
+          <div className="relative z-10 shrink-0">{button}</div>
+        </div>
+      )}
+      target={
+        !renderAsFile && card.type === "website"
+          ? {
+              type: "website",
+              url: card.url,
+              // website 卡有两个来源——html 引用卡（file://）与 localhost
+              // 预览卡（http(s) 活服务）。localPath 直开只对前者生效；localhost 卡
+              // 必须继续把 URL 交给浏览器，否则丢路由/动态内容。
+              workspacePath,
+              localPath: card.url.startsWith("file:") ? card.filePath : undefined,
+              // 远程工作区的 filePath 是远端路径，不能交给本机文件管理器定位。
+              sourcePath:
+                workspaceIdentity || workspaceRemoteSessionId ? undefined : card.filePath,
+            }
+          : {
+              type: "file",
+              path: filePath!,
+              title: card.title,
+              label: card.title,
+              // Preview Card 以前没有 CodeViewer scope，远程 Linux path
+              // 会被 OpenSplitButton 当成本地路径交给宿主编辑器。
+              previewSource:
+                card.type === "website"
+                  ? fileSource!
+                  : buildAssistantPreviewCardFileSource(card, {
+                      workspacePath,
+                      workspaceIdentity,
+                      workspaceRemoteSessionId,
+                    }),
+            }
       }
-    >
-      <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-background text-foreground-subtle">
-        {!renderAsFile && card.type === "website" ? (
-          <GlobeIcon className="size-6" />
-        ) : descriptor ? (
-          <FileDisplayIcon src={descriptor.fileIconSrc} size={24} />
-        ) : (
-          <FileTextIcon className="size-6" />
-        )}
-      </div>
-      <div className="min-w-0 flex flex-1 flex-col gap-1">
-        <div className="truncate text-ui-base font-medium leading-5">{card.title}</div>
-        <div className="truncate text-ui-base leading-5 text-foreground-subtlest">{subtitle}</div>
-      </div>
-      <OpenSplitButton
-        target={
-          !renderAsFile && card.type === "website"
-            ? {
-                type: "website",
-                url: card.url,
-                // website 卡有两个来源——html 引用卡（file://）与 localhost
-                // 预览卡（http(s) 活服务）。localPath 直开只对前者生效；localhost 卡
-                // 必须继续把 URL 交给浏览器，否则丢路由/动态内容。
-                localPath: card.url.startsWith("file:") ? card.filePath : undefined,
-              }
-            : {
-                type: "file",
-                path: filePath!,
-                title: card.title,
-                label: card.title,
-                // Preview Card 以前没有 CodeViewer scope，远程 Linux path
-                // 会被 OpenSplitButton 当成本地路径交给宿主编辑器。
-                previewSource:
-                  card.type === "website"
-                    ? fileSource!
-                    : buildAssistantPreviewCardFileSource(card, {
-                        workspacePath,
-                        workspaceIdentity,
-                        workspaceRemoteSessionId,
-                      }),
-              }
-        }
-        onOpenBrowserUrl={onOpenBrowserUrl}
-        onOpenFileLink={onOpenFileLink}
-        onOpenCodeViewer={onOpenCodeViewer}
-      />
-    </div>
+      onOpenBrowserUrl={onOpenBrowserUrl}
+      onOpenFileLink={onOpenFileLink}
+      onOpenCodeViewer={onOpenCodeViewer}
+    />
   );
 }

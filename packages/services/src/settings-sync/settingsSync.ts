@@ -2,6 +2,7 @@ import type {
   SettingsSyncDiscoveryResult,
   SettingsSyncClaudeAgentsFileCopyResult,
   SettingsSyncClaudeAgentsFileMigrationStatus,
+  SettingsSyncFirstRunPromptState,
   SettingsSyncImportResult,
   SettingsSyncProgressEvent,
   SettingsSyncSelection,
@@ -31,6 +32,8 @@ export interface ISettingsSyncService {
     selections: SettingsSyncSelection[];
     onProgress?: (event: SettingsSyncProgressEvent) => void;
   }): Promise<SettingsSyncImportResult>;
+  getFirstRunPromptState(): Promise<SettingsSyncFirstRunPromptState>;
+  markFirstRunPromptHandled(): Promise<void>;
 }
 
 export const ISettingsSyncService = createServiceDescriptor<ISettingsSyncService>(
