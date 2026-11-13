@@ -87,6 +87,31 @@ export interface BotStoreDeps {
 
 const PREFS_KEY = "reactor-bot-prefs-v1";
 
+/**
+ * 每个会话已下发的最后一条消息 key（见 readChat 的增量语义）。
+ * 只在 store 生命周期内有效：刷新后重新全量拉一次，不会丢历史。
+ */
+const chatCursors = new Map<string, string>();
+
+/** 消息在 DS-Bot item 形状里的稳定 key：有 id 用 id，否则退回 时间+文本。 */
+function itemKeyOf(item: { id?: string; time?: number; text?: string }): string {
+  return item.id ? `id:${item.id}` : `t:${item.time ?? 0}:${item.text ?? ""}`;
+}
+
+function lastKeyOf(items: Array<{ id?: string; time?: number; text?: string }>): string {
+  return items.length > 0 ? itemKeyOf(items[items.length - 1]!) : "";
+}
+
+/** seen 之后的所有条目（按 key 顺序，seen 为空则全量）。 */
+function afterSeen<T extends { id?: string; time?: number; text?: string }>(
+  items: T[],
+  seen: string,
+): T[] {
+  if (!seen) return items;
+  const index = items.findIndex((item) => itemKeyOf(item) === seen);
+  return index === -1 ? items : items.slice(index + 1);
+}
+
 function readPrefs(): Record<string, unknown> {
   try {
     return JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}") ?? {};
@@ -198,11 +223,40 @@ export function createBotStore(deps: BotStoreDeps) {
       emit("hello", {});
     },
 
-    /** DS-Bot 的 `chat` 端点：一个话题的消息分页。 */
+    /**
+     * DS-Bot 的 `chat` 端点：一个话题的消息分页。
+     *
+     * 增量语义（关键）：Reactor 没有把 v4 流式传输接到这里，所以回复不会主动推过来。
+     * 做法是「轮询补齐」——每个会话记住已下发的最后一条消息 id，之后每次调用只返回
+     * 新增部分，并把它们以 `message` 事件广播出去。DS-Bot 的 chat.js 对 `message`
+     * 的处理是「追加到当前列表」，正好匹配；`stream` 事件让活动行显示「正在回复」。
+     *
+     * cursor 为空 = 首屏（全量）；之后由调用方周期性重拉（见 start() 的轮询）。
+     */
     async readChat(payload: { botId?: string; cursor?: string } | null): Promise<DsBotChatPage> {
       const taskId = payload?.botId;
       if (!taskId) return { sessionId: "", items: [], cursor: null };
-      return deps.readChat({ taskId, ...(payload?.cursor ? { cursor: payload.cursor } : {}) });
+      const page = await deps.readChat({ taskId, ...(payload?.cursor ? { cursor: payload.cursor } : {}) });
+      const items = page.items ?? [];
+      const seen = chatCursors.get(taskId);
+      const firstScreen = payload?.cursor === undefined || payload.cursor === null || payload.cursor === "";
+
+      if (firstScreen || seen === undefined) {
+        // 首屏：全量下发，只记进度，不广播（避免把历史当成新消息刷未读）。
+        if (items.length > 0) chatCursors.set(taskId, lastKeyOf(items));
+        return { sessionId: taskId, items, cursor: null };
+      }
+
+      // 增量屏：从 seen 之后开始，逐条广播。
+      const fresh = items.filter((item) => itemKeyOf(item) !== seen && afterSeen(items, seen));
+      for (const item of fresh) {
+        emit("message", { sessionId: taskId, item });
+        // 助手回复进行中：给活动行一个「正在回复」的信号。Reactor 的消息是完成态
+        // 快照，没有 phase，所以这里只在新增助手消息时发一次。
+        if (item.kind === "bot") emit("stream", { sessionId: taskId, phase: "done", text: item.text });
+      }
+      if (fresh.length > 0) chatCursors.set(taskId, lastKeyOf(items));
+      return { sessionId: taskId, items: fresh, cursor: null };
     },
 
     /** DS-Bot 的 `send` 端点。 */
@@ -211,7 +265,11 @@ export function createBotStore(deps: BotStoreDeps) {
       const text = payload?.text?.trim();
       if (!taskId || !text) return { ok: false };
       await deps.sendMessage({ taskId, text });
-      emit("message", { sessionId: taskId, item: { kind: "user", text, time: Date.now() } });
+      // 立即回显用户消息（不等轮询）。给它一个稳定 key 并记进 cursor，
+      // 这样随后的轮询拉到同一条时不会重复广播。
+      const optimistic = { kind: "user" as const, text, time: Date.now(), id: `local-${Date.now()}` };
+      chatCursors.set(taskId, itemKeyOf(optimistic));
+      emit("message", { sessionId: taskId, item: optimistic });
       return { ok: true };
     },
 

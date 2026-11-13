@@ -270,13 +270,23 @@ export function createTeam() {
       if (READ_AGAIN.has(event)) read()
       onFeed(event, data)
     })
-    const timer = setInterval(read, CATCH_UP_MS)
+    // [Reactor 本地定制] 额外轮询当前会话的消息增量。
+    // 上游的 feed 是 SSE 推送（message/stream），Reactor 没有把 v4 流式传输接到
+    // botBridge，所以回复不会主动到达。这里对 shown 的会话周期性调 chat 端点，
+    // 由 botStore 做增量去重后以 message/stream 事件广播（见 readChat 的注释）。
+    // 间隔取 CATCH_UP_MS 的一半：流式场景下 15s 太钝，7.5s 接近可用。
+    const chatTimer = setInterval(() => {
+      const id = shown.getSnapshot()
+      if (!id) return
+      void call('chat', { botId: id }).catch(() => {})
+    }, Math.max(1000, Math.floor(CATCH_UP_MS / 2)))
     const onPageHide = () => leaveVisits(Object.keys(ui.getSnapshot().visits ?? {}))
     window.addEventListener('pagehide', onPageHide)
     return () => {
       stopped = true
       closeFeed()
       clearInterval(timer)
+      clearInterval(chatTimer)
       window.removeEventListener('pagehide', onPageHide)
     }
   }
