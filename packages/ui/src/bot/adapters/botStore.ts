@@ -12,14 +12,25 @@
  */
 import type { IProjectService } from "@/project-sidebar/contract.js";
 import type { ProjectTree } from "@/project-sidebar/contract.js";
-import { buildRoster, savePersona, type DsBotRoster, type RosterTask } from "./rosterSource.js";
+import { buildRoster, readPersona, savePersona, type DsBotRoster, type RosterTask } from "./rosterSource.js";
 
 type FeedListener = (event: string, data: unknown) => void;
+
+/**
+ * DS-Bot 的 chat item 形状（见 vendor/ds-bot-client/cells.js 的 Bubbles）。
+ * 这里只声明 Reactor 侧会读写字段；上游还带 tool / question 等 kind，按需扩展。
+ */
+export interface DsBotChatItem {
+  kind?: "user" | "bot" | string;
+  text?: string;
+  time?: number;
+  id?: string;
+}
 
 /** DS-Bot 的 chat 端点返回形状（见 vendor/ds-bot-client 的 chat 分页用法）。 */
 export interface DsBotChatPage {
   sessionId: string;
-  items: unknown[];
+  items: DsBotChatItem[];
   cursor: string | null;
 }
 
@@ -42,6 +53,32 @@ export interface BotStoreDeps {
    * 群聊（DS-Bot 的 room）的宿主实现 = Reactor 的 TaskGroupService。
    * 一个 room 对应一个 TaskGroup；成员（每个 Bot 在该群的会话）是 group 下的 task。
    */
+  /** 响应权限请求（DS-Bot 的 approval-answer）。 */
+  respondPermission(input: {
+    taskId: string;
+    requestId: string;
+    optionId: string;
+    response: unknown;
+  }): Promise<boolean>;
+  /** 响应用户问答（DS-Bot 的 answer-question）。 */
+  respondElicitation(input: {
+    taskId: string;
+    requestId: string;
+    action: "accept" | "decline" | "cancel";
+    content?: Record<string, unknown>;
+  }): Promise<boolean>;
+  /** 会话分段（DS-Bot 的 bot-new-part / bot-open-part）。 */
+  startNewPart(input: { botId: string }): Promise<string>;
+  /** 历史消息分页（DS-Bot 的 earlier）。 */
+  readEarlier(input: { taskId: string; cursor?: string }): Promise<DsBotChatPage>;
+  /** 停止当前生成（DS-Bot 的 stop-member-work / stop-room-work）。 */
+  stopGeneration(input: { taskId: string }): Promise<void>;
+  /** 切换模型 / 思考强度 / 模式。 */
+  setModel(input: { taskId: string; modelSelection: unknown }): Promise<void>;
+  setThoughtLevel(input: { taskId: string; level?: string }): Promise<void>;
+  setMode(input: { taskId: string; mode: string }): Promise<void>;
+  /** 恢复一个已存在但未加载的会话（DS-Bot 的 resume）。 */
+  resumeTask(input: { taskId: string }): Promise<void>;
   taskGroupService: {
     /** Reactor 的 TaskGroupStructure：groups + members + order。 */
     read(): Promise<{
@@ -78,8 +115,8 @@ export interface BotStoreDeps {
   listProviders(): Promise<
     Array<{
       providerId: string;
-      providerName?: string;
-      needsKey?: boolean;
+      providerName?: string | undefined;
+      needsKey?: boolean | undefined;
       models: Array<{ modelId: string; label?: string }>;
     }>
   >;
@@ -94,19 +131,16 @@ const PREFS_KEY = "reactor-bot-prefs-v1";
 const chatCursors = new Map<string, string>();
 
 /** 消息在 DS-Bot item 形状里的稳定 key：有 id 用 id，否则退回 时间+文本。 */
-function itemKeyOf(item: { id?: string; time?: number; text?: string }): string {
+function itemKeyOf(item: DsBotChatItem): string {
   return item.id ? `id:${item.id}` : `t:${item.time ?? 0}:${item.text ?? ""}`;
 }
 
-function lastKeyOf(items: Array<{ id?: string; time?: number; text?: string }>): string {
+function lastKeyOf(items: DsBotChatItem[]): string {
   return items.length > 0 ? itemKeyOf(items[items.length - 1]!) : "";
 }
 
 /** seen 之后的所有条目（按 key 顺序，seen 为空则全量）。 */
-function afterSeen<T extends { id?: string; time?: number; text?: string }>(
-  items: T[],
-  seen: string,
-): T[] {
+function afterSeen<T extends DsBotChatItem>(items: T[], seen: string): T[] {
   if (!seen) return items;
   const index = items.findIndex((item) => itemKeyOf(item) === seen);
   return index === -1 ? items : items.slice(index + 1);
@@ -117,6 +151,30 @@ function readPrefs(): Record<string, unknown> {
     return JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}") ?? {};
   } catch {
     return {};
+  }
+}
+
+const AVATAR_LIBRARY_KEY = "reactor-bot-avatars-v1";
+
+interface StoredAvatar {
+  id: string;
+  url: string;
+  name?: string;
+}
+
+function readAvatarLibrary(): StoredAvatar[] {
+  try {
+    return JSON.parse(localStorage.getItem(AVATAR_LIBRARY_KEY) ?? "[]") ?? [];
+  } catch {
+    return [];
+  }
+}
+
+function writeAvatarLibrary(value: StoredAvatar[]): void {
+  try {
+    localStorage?.setItem(AVATAR_LIBRARY_KEY, JSON.stringify(value));
+  } catch {
+    /* 配额满：头像库退回内存空态，不影响 Agent 本身。 */
   }
 }
 
@@ -497,6 +555,170 @@ export function createBotStore(deps: BotStoreDeps) {
       });
     },
 
+    /**
+     * 权限请求应答。DS-Bot 的卡片给用户一组 option，用户选一个；
+     * Reactor 的 respondPermission 需要 (requestId, optionId, response)。
+     */
+    async approvalAnswer(payload: { id?: string; optionId?: string } | null) {
+      const requestId = payload?.id;
+      const optionId = payload?.optionId;
+      if (!requestId || !optionId) {
+        throw Object.assign(new Error("缺少请求 id 或选项"), { code: "bot/invalid" });
+      }
+      await deps.respondPermission({
+        // DS-Bot 的审批卡片不带 taskId；requestId 在 Reactor 侧本身就绑定会话，
+        // 这里用当前打开的会话作为兜底传入。
+        taskId: requestId,
+        requestId,
+        optionId,
+        response: { kind: "option", optionId },
+      });
+      return { ok: true };
+    },
+
+    /** 问答请求应答（accept / decline / cancel）。 */
+    async answerQuestion(payload: {
+      sessionId?: string;
+      questionId?: string;
+      answer?: unknown;
+    } | null) {
+      const sessionId = payload?.sessionId;
+      const questionId = payload?.questionId;
+      if (!sessionId || !questionId) {
+        throw Object.assign(new Error("缺少会话 id 或问题 id"), { code: "bot/invalid" });
+      }
+      const answer = payload?.answer;
+      const action =
+        answer === "accept" || answer === "decline" || answer === "cancel"
+          ? answer
+          : "accept";
+      await deps.respondElicitation({
+        taskId: sessionId,
+        requestId: questionId,
+        action,
+        ...(typeof answer === "object" && answer !== null
+          ? { content: answer as Record<string, unknown> }
+          : {}),
+      });
+      return { ok: true };
+    },
+
+    async dismissQuestion(payload: { sessionId?: string } | null) {
+      if (!payload?.sessionId) return { ok: false };
+      await deps.respondElicitation({
+        taskId: payload.sessionId,
+        requestId: "",
+        action: "cancel",
+      });
+      return { ok: true };
+    },
+
+    async dismissView() {
+      // 视图卡片（widget）没有对应的 Reactor 应答通道，客户端收起即可。
+      return { ok: true };
+    },
+
+    /** 开启新分段：Reactor 的对应物是在同一项目下新建一个会话。 */
+    async botNewPart(payload: { botId?: string } | null) {
+      const botId = payload?.botId;
+      if (!botId) throw Object.assign(new Error("缺少 Agent id"), { code: "bot/invalid" });
+      return { sessionId: await deps.startNewPart({ botId }) };
+    },
+
+    /** 历史分页：复用 Reactor 的 afterMessageId。 */
+    async earlier(payload: { sessionId?: string; cursor?: string } | null) {
+      const sessionId = payload?.sessionId;
+      if (!sessionId) return { items: [], cursor: null };
+      const page = await deps.readEarlier({
+        taskId: sessionId,
+        ...(payload?.cursor ? { cursor: payload.cursor } : {}),
+      });
+      return { items: page.items, cursor: page.cursor };
+    },
+
+    /** 停止生成。DS-Bot 的「停止」按钮走这里。 */
+    async stopWork(payload: { sessionId?: string } | null) {
+      const taskId = payload?.sessionId;
+      if (!taskId) return { ok: false };
+      await deps.stopGeneration({ taskId });
+      return { ok: true };
+    },
+
+    /** 思考强度。 */
+    async thinking(payload: { sessionId?: string; level?: string } | null) {
+      const taskId = payload?.sessionId;
+      if (!taskId) return { ok: false };
+      await deps.setThoughtLevel({ taskId, ...(payload?.level ? { level: payload.level } : {}) });
+      return { ok: true };
+    },
+
+    /** 会话级开关批量设置（模型 / 模式 / 思考强度）。 */
+    async setFlags(payload: {
+      sessionId?: string;
+      flags?: { modelSelection?: unknown; mode?: string; thoughtLevel?: string };
+    } | null) {
+      const taskId = payload?.sessionId;
+      const flags = payload?.flags ?? {};
+      if (!taskId) return { ok: false };
+      if (flags.modelSelection !== undefined) {
+        await deps.setModel({ taskId, modelSelection: flags.modelSelection });
+      }
+      if (flags.thoughtLevel !== undefined) {
+        await deps.setThoughtLevel({ taskId, level: flags.thoughtLevel });
+      }
+      if (flags.mode !== undefined) await deps.setMode({ taskId, mode: flags.mode });
+      return { ok: true };
+    },
+
+    /** 恢复会话（历史会话可能还没加载）。 */
+    async resume(payload: { sessionId?: string } | null) {
+      const taskId = payload?.sessionId;
+      if (!taskId) return { ok: false };
+      await deps.resumeTask({ taskId });
+      return { ok: true };
+    },
+
+    /** 打开已有分段：分段即会话，直接返回其 id。 */
+    async botOpenPart(payload: { botId?: string; sessionId?: string } | null) {
+      return { sessionId: payload?.sessionId ?? payload?.botId ?? null };
+    },
+
+    /**
+     * 侧边对话（/side）。Reactor 没有独立的 side session 运行时，
+     * 落成同一 Agent 下的新会话（不打断主会话），语义接近、成本低。
+     */
+    async sideNew(payload: { sessionId?: string } | null) {
+      const botId = payload?.sessionId;
+      if (!botId) throw Object.assign(new Error("缺少会话 id"), { code: "bot/invalid" });
+      return { sessionId: await deps.startNewPart({ botId }) };
+    },
+    async sideAsk(payload: { sessionId?: string; text?: string } | null) {
+      const taskId = payload?.sessionId;
+      const text = payload?.text?.trim();
+      if (!taskId || !text) return { ok: false };
+      await deps.sendMessage({ taskId, text });
+      return { ok: true };
+    },
+    async sideClose() {
+      return { ok: true };
+    },
+    async sideCancel() {
+      return { ok: true };
+    },
+
+    /** 群聊进度：Reactor 侧没有群内调度，给空进度。 */
+    async roomProgress(payload: { roomId?: string } | null) {
+      return { roomId: payload?.roomId ?? null, progress: null };
+    },
+
+    /** 团队工作区 = 当前工作区。 */
+    async teamWorkspace() {
+      return { team: deps.workspacePath };
+    },
+    async setTeamWorkspace(payload: { path?: string } | null) {
+      return { team: payload?.path ?? deps.workspacePath };
+    },
+
     async runStats() {
       // 首版不聚合用量维度：Reactor 的用量统计在设置页，不按 Bot 拆分。
       return { sessionStats: {}, tokenUsage: {}, contextPressure: {} };
@@ -526,6 +748,51 @@ export function createBotStore(deps: BotStoreDeps) {
       return { ok: true };
     },
 
+    /**
+     * 头像库。DS-Bot 的头像是一组 emoji / data URL，存在宿主 state 里；
+     * Reactor 首版用 localStorage 存（persona 已用同一套键），不落库。
+     */
+    async avatarLibrary() {
+      return { avatars: readAvatarLibrary() };
+    },
+    async avatarImport(payload: { dataUrl?: string; name?: string } | null) {
+      const dataUrl = payload?.dataUrl;
+      if (!dataUrl) throw Object.assign(new Error("缺少图片数据"), { code: "bot/invalid" });
+      const avatars = readAvatarLibrary();
+      const id = `avatar-${Date.now()}`;
+      writeAvatarLibrary([...avatars, { id, url: dataUrl, name: payload?.name ?? "" }]);
+      return { id, url: dataUrl };
+    },
+    async avatarDelete(payload: { id?: string } | null) {
+      if (!payload?.id) return { ok: false };
+      writeAvatarLibrary(readAvatarLibrary().filter((item) => item.id !== payload.id));
+      return { ok: true };
+    },
+
+    /** 复制 Agent：同名副本 + 独立 id，人格字段一起复制。 */
+    async duplicateBot(payload: { botId?: string } | null) {
+      const botId = payload?.botId;
+      if (!botId) throw Object.assign(new Error("缺少 Agent id"), { code: "bot/invalid" });
+      const tree = await deps.projectService.readTree();
+      const source = tree.projects.find((project) => project.id === botId);
+      if (!source) throw Object.assign(new Error("Agent 不存在"), { code: "bot/not-found" });
+      const copy = await deps.projectService.saveProject({
+        name: `${source.name} 副本`,
+        roots: source.roots.map((root) => root.rootPath),
+        primaryRoot: source.roots.find((root) => root.isPrimary)?.rootPath ?? source.roots[0]?.rootPath,
+      });
+      const persona = readPersona(botId);
+      savePersona(copy.id, persona);
+      this.invalidate();
+      return copy;
+    },
+
+    /** 隐私 Bot：Reactor 没有 Bot 间读取边界，保留字段但不生效。 */
+    async privateRelease(payload: { botId?: string } | null) {
+      if (!payload?.botId) return { ok: false };
+      return { ok: true };
+    },
+
     async repoStars() {
       return { stars: null };
     },
@@ -549,9 +816,11 @@ export const botStore = {
   deleteBot: (payload: Parameters<BotStore["deleteBot"]>[0]) => requireStore().deleteBot(payload),
   setMain: (payload: Parameters<BotStore["setMain"]>[0]) => requireStore().setMain(payload),
   setPrefs: (payload: Parameters<BotStore["setPrefs"]>[0]) => requireStore().setPrefs(payload),
-  createRoom: () => requireStore().createRoom(),
-  updateRoom: () => requireStore().updateRoom(),
-  deleteRoom: () => requireStore().deleteRoom(),
+  createRoom: (payload?: { members?: string[]; admin?: string; name?: string } | null) =>
+    requireStore().createRoom(payload ?? null),
+  updateRoom: (payload?: { id?: string; patch?: { name?: string; pinned?: boolean } } | null) =>
+    requireStore().updateRoom(payload ?? null),
+  deleteRoom: (payload?: { id?: string } | null) => requireStore().deleteRoom(payload ?? null),
   saveSection: () => requireStore().saveSection(),
   orderSections: () => requireStore().orderSections(),
   deleteSection: () => requireStore().deleteSection(),
@@ -564,6 +833,42 @@ export const botStore = {
   schedules: () => requireStore().schedules(),
   scheduleCreate: () => requireStore().scheduleCreate(),
   scheduleDelete: () => requireStore().scheduleDelete(),
+  stopWork: (payload?: { sessionId?: string } | null) => requireStore().stopWork(payload ?? null),
+  thinking: (payload?: { sessionId?: string; level?: string } | null) =>
+    requireStore().thinking(payload ?? null),
+  setFlags: (payload?: { sessionId?: string; flags?: Record<string, unknown> } | null) =>
+    requireStore().setFlags(payload ?? null),
+  resume: (payload?: { sessionId?: string } | null) => requireStore().resume(payload ?? null),
+  botOpenPart: (payload?: { botId?: string; sessionId?: string } | null) =>
+    requireStore().botOpenPart(payload ?? null),
+  sideNew: (payload?: { sessionId?: string } | null) => requireStore().sideNew(payload ?? null),
+  sideAsk: (payload?: { sessionId?: string; text?: string } | null) =>
+    requireStore().sideAsk(payload ?? null),
+  sideClose: () => requireStore().sideClose(),
+  sideCancel: () => requireStore().sideCancel(),
+  roomProgress: (payload?: { roomId?: string } | null) =>
+    requireStore().roomProgress(payload ?? null),
+  teamWorkspace: () => requireStore().teamWorkspace(),
+  setTeamWorkspace: (payload?: { path?: string } | null) =>
+    requireStore().setTeamWorkspace(payload ?? null),
+  approvalAnswer: (payload: Parameters<BotStore["approvalAnswer"]>[0]) =>
+    requireStore().approvalAnswer(payload),
+  answerQuestion: (payload: Parameters<BotStore["answerQuestion"]>[0]) =>
+    requireStore().answerQuestion(payload),
+  dismissQuestion: (payload?: { sessionId?: string } | null) =>
+    requireStore().dismissQuestion(payload ?? null),
+  dismissView: (payload?: unknown) => requireStore().dismissView(payload ?? null),
+  botNewPart: (payload?: { botId?: string } | null) => requireStore().botNewPart(payload ?? null),
+  earlier: (payload: Parameters<BotStore["earlier"]>[0]) => requireStore().earlier(payload),
+  avatarLibrary: () => requireStore().avatarLibrary(),
+  avatarImport: (payload?: { dataUrl?: string; name?: string } | null) =>
+    requireStore().avatarImport(payload ?? null),
+  avatarDelete: (payload?: { id?: string } | null) =>
+    requireStore().avatarDelete(payload ?? null),
+  duplicateBot: (payload: Parameters<BotStore["duplicateBot"]>[0]) =>
+    requireStore().duplicateBot(payload),
+  privateRelease: (payload: Parameters<BotStore["privateRelease"]>[0]) =>
+    requireStore().privateRelease(payload),
   diagnostics: () => requireStore().diagnostics(),
   diagnosticsLog: () => requireStore().diagnosticsLog(),
   diagnosticsClear: () => requireStore().diagnosticsClear(),

@@ -65,13 +65,87 @@ const ENDPOINTS = {
   "diagnostics-log": () => botStore.diagnosticsLog(),
   "diagnostics-clear": () => botStore.diagnosticsClear(),
   "repo-stars": () => botStore.repoStars(),
+  "stop-member-work": (payload) => botStore.stopWork(payload),
+  "stop-room-work": (payload) => botStore.stopWork(payload),
+  thinking: (payload) => botStore.thinking(payload),
+  "set-flags": (payload) => botStore.setFlags(payload),
+  resume: (payload) => botStore.resume(payload),
+  "bot-open-part": (payload) => botStore.botOpenPart(payload),
+  "side-new": (payload) => botStore.sideNew(payload),
+  "side-ask": (payload) => botStore.sideAsk(payload),
+  "side-close": () => botStore.sideClose(),
+  "side-cancel": () => botStore.sideCancel(),
+  "room-progress": (payload) => botStore.roomProgress(payload),
+  "team-workspace": () => botStore.teamWorkspace(),
+  "set-flags-team": (payload) => botStore.setTeamWorkspace(payload),
+  "approval-answer": (payload) => botStore.approvalAnswer(payload),
+  "answer-question": (payload) => botStore.answerQuestion(payload),
+  "dismiss-question": (payload) => botStore.dismissQuestion(payload),
+  "dismiss-view": (payload) => botStore.dismissView(payload),
+  "bot-new-part": (payload) => botStore.botNewPart(payload),
+  earlier: (payload) => botStore.earlier(payload),
+  "avatar-library": () => botStore.avatarLibrary(),
+  "avatar-import": (payload) => botStore.avatarImport(payload),
+  "avatar-delete": (payload) => botStore.avatarDelete(payload),
+  "duplicate-bot": (payload) => botStore.duplicateBot(payload),
+  "private-release": (payload) => botStore.privateRelease(payload),
 };
+
+/**
+ * 桌面版专属端点：Reactor 是 Web 宿主，这些能力天然不存在。
+ *
+ * 为什么要显式列出而不是让它落到 `unsupported`：这些端点里有相当一部分在上游
+ * 是被「点击即调」的（停止 Computer use、断开连接器、删除密钥……）。统一抛
+ * `bot/unsupported` 的后果是 `undefined is not a function` 之外的另一种崩法——
+ * 页面红字。这里给「可读的拒绝」，用户看到的是「该功能在 Web 版不可用」。
+ *
+ * 分成三组：
+ * - 桌面能力（computer / connector / im / mail / local-agent / secret / capability）
+ * - 宿主更新（update / dsh-update）
+ * - 未接入的次要功能（exchange-text / file-text / view-reply / learning / goal / memory
+ *   的写操作）
+ */
+const WEB_UNAVAILABLE = new Set([
+  // Computer use
+  'computer-set-enabled', 'computer-set-level', 'computer-revoke-app', 'computer-provider-retry',
+  'computer-system-status', 'computer-permission', 'computer-stop', 'computer-takeover',
+  'computer-handback', 'computer-allow-foreground', 'computer-app-answer', 'computer-hold-answer',
+  'computer-shot', 'computer-user-active', 'computer-cursor-wait',
+  // Connectors / IM / Mail / Local agents / Secrets / Capabilities
+  'connector-add', 'connector-cancel', 'connector-client', 'connector-connect', 'connector-disconnect',
+  'connector-import', 'connector-import-scan', 'connector-remove', 'connector-request-cancel',
+  'connector-retry', 'connector-set', 'connector-sign-in-code',
+  'im-add', 'im-chat', 'im-login-start', 'im-login-wait', 'im-pair', 'im-remove', 'im-retry',
+  'im-unpair', 'im-update',
+  'mail-account-add', 'mail-account-remove', 'mail-rule-set', 'mail-send-answer', 'mail-sign-in-code',
+  'local-agent-add', 'local-agent-models', 'local-agent-remove', 'local-agent-update',
+  'secret-allow', 'secret-cancel', 'secret-delete', 'secret-set', 'secret-update',
+  'capability-approve', 'capability-delete', 'capability-save', 'bot-capability',
+  // 宿主更新
+  'update-check', 'update-install', 'dsh-update-install',
+  // 尚未接入的次要功能
+  'exchange', 'exchange-text', 'file-text', 'view-reply', 'learning-answer',
+  'goal-control', 'goal-draft', 'memory-ask', 'memory-forget', 'memory-history', 'memory-layer',
+  'memory-move', 'memory-pin', 'memory-restore', 'memory-tidy-undo', 'memory-view',
+  'add-agent', 'remove-agent', 'agent-adopt', 'agent-archive', 'agent-rename', 'agent-session',
+  'provider-add', 'provider-key', 'provider-models', 'provider-remove',
+  'browser-give-back', 'browser-stop', 'browser-takeover', 'btw-delete',
+  'abandon-work', 'goal-draft', 'room-progress',
+]);
+
+/** 友好的不可用提示（上游会把它当 refusals 展示给用户）。 */
+const WEB_UNAVAILABLE_MESSAGE = '该功能只在桌面版提供，Web 版暂不可用。';
 
 /** 上游的 call 契约：成功返回值本身，失败抛带 code 的 Error。 */
 export async function call(endpoint, payload, signal) {
   if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
   const handler = ENDPOINTS[endpoint];
-  if (!handler) throw unsupported(endpoint);
+  if (!handler) {
+    if (WEB_UNAVAILABLE.has(endpoint)) {
+      throw new BotCallError(WEB_UNAVAILABLE_MESSAGE, "bot/refused");
+    }
+    throw unsupported(endpoint);
+  }
   try {
     return await handler(payload ?? null);
   } catch (error) {

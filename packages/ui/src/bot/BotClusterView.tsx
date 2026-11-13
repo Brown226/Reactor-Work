@@ -103,6 +103,80 @@ export function BotClusterView({
             archived: task.archived,
           }));
         },
+        respondPermission: async ({ taskId, requestId, optionId, response }) => {
+          await services.zcodeTaskService.respondPermission({
+            taskId,
+            requestId,
+            optionId,
+            response: response as never,
+          });
+          return true;
+        },
+        respondElicitation: async ({ taskId, requestId, action, content }) => {
+          await services.zcodeTaskService.respondElicitation({
+            taskId,
+            requestId,
+            action,
+            ...(content ? { content } : {}),
+          });
+          return true;
+        },
+        startNewPart: async ({ botId }) => {
+          // 新分段 = 同一 Agent（project）下再开一个会话，与 Reactor 侧栏的任务同级。
+          const created = await services.zcodeTaskService.createTask({
+            workspacePath,
+            ...(workspaceIdentity ? { workspaceIdentity } : {}),
+            projectId: botId,
+          });
+          return created.taskId;
+        },
+        readEarlier: async ({ taskId, cursor }) => {
+          const messages = await services.zcodeSessionService.readSessionMessages({
+            workspacePath,
+            ...(workspaceIdentity ? { workspaceIdentity } : {}),
+            sessionId: taskId,
+            ...(cursor ? { afterMessageId: cursor } : {}),
+          });
+          return { sessionId: taskId, items: toDsBotChatItems(messages), cursor: null };
+        },
+        stopGeneration: async ({ taskId }) => {
+          await services.zcodeTaskService.stopGeneration({
+            taskId,
+            workspacePath,
+            ...(workspaceIdentity ? { workspaceIdentity } : {}),
+          });
+        },
+        setModel: async ({ taskId, modelSelection }) => {
+          await services.zcodeSessionService.setModel({
+            workspacePath,
+            ...(workspaceIdentity ? { workspaceIdentity } : {}),
+            sessionId: taskId,
+            modelSelection: modelSelection as never,
+          });
+        },
+        setThoughtLevel: async ({ taskId, level }) => {
+          await services.zcodeSessionService.setThoughtLevel({
+            workspacePath,
+            ...(workspaceIdentity ? { workspaceIdentity } : {}),
+            sessionId: taskId,
+            ...(level ? { thoughtLevel: level } : {}),
+          });
+        },
+        setMode: async ({ taskId, mode }) => {
+          await services.zcodeSessionService.setMode({
+            workspacePath,
+            ...(workspaceIdentity ? { workspaceIdentity } : {}),
+            sessionId: taskId,
+            mode: mode as never,
+          });
+        },
+        resumeTask: async ({ taskId }) => {
+          await services.zcodeTaskService.resumeTask({
+            taskId,
+            workspacePath,
+            ...(workspaceIdentity ? { workspaceIdentity } : {}),
+          });
+        },
         createTask: async ({ projectId }) => {
           // 建空会话：沿用 Reactor 的建任务入口，标题留空由首条消息决定。
           const created = await services.zcodeTaskService.createTask({
@@ -139,7 +213,7 @@ export function BotClusterView({
           const view = await services.modelSelectionService.getView();
           return (view?.providers ?? []).map((provider) => ({
             providerId: provider.providerId,
-            providerName: provider.providerName,
+            ...(provider.providerName ? { providerName: provider.providerName } : {}),
             // needsKey：Reactor 用 config 判断是否缺密钥；这里只取「模板要求」这一项，
             // 避免把账号态（登录后才知）泄漏给 Bot 视图。
             needsKey: Boolean((provider.config as { needsKey?: boolean } | undefined)?.needsKey),
