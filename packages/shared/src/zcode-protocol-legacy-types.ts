@@ -14,11 +14,13 @@ const timestampMsSchema = z.number().int().nonnegative();
 export const zcodeDeliveryKindSchema = z.enum(["desktop-continuous", "web-remote-replayable"]);
 export const zcodeMessageVisibilitySchema = z.enum(["user-visible", "model-only"]);
 export const zcodeSyntheticUserMessageSourceSchema = z.enum([
+  "agent_listing_delta",
   "background_task",
   "fork",
   "goal_state_change",
   "goal-continuation",
   "plugin_reference",
+  "bot_topic_context",
   "rewind",
   "selection_side_chat",
   "subagent",
@@ -71,7 +73,7 @@ export const zcodePermissionResponseSchema = z
   })
   .strict();
 export type ZCodePermissionResponse = z.infer<typeof zcodePermissionResponseSchema>;
-export const zcodeSessionModeSchema = z.enum(["plan", "build", "edit", "yolo", "auto"]);
+export const zcodeSessionModeSchema = z.enum(["plan", "build", "edit", "yolo", "guarded", "auto"]);
 export const zcodeSessionStatusSchema = z.enum([
   "idle",
   "running",
@@ -89,6 +91,17 @@ export const zcodeSessionKindSchema = z.enum([
   "subagent_child",
   "nested_workflow_child",
 ]);
+// 修复原因：只识别 subagent_child 会漏掉工作流与辅助对话的父归属、隐藏索引规则。
+// fork 和 workflow_parent 是独立任务，即使有 parentSessionId 也不能沿父链改写项目。
+export function isAuxiliarySessionKind(kind: string | undefined): boolean {
+  return isReadonlyAgentSessionKind(kind) || kind === "selection_side_chat";
+}
+
+// 辅助对话可继续输入；只有由 Agent / 工作流驱动的子会话对用户只读。
+export function isReadonlyAgentSessionKind(kind: string | undefined): boolean {
+  return kind === "subagent_child" || kind === "workflow_child" || kind === "nested_workflow_child";
+}
+
 export const zcodeSessionGoalSchema = z
   .object({
     sessionId: nonEmptyString,
@@ -135,6 +148,7 @@ export const zcodeSessionGoalVerificationTimelineSchema = z
 export const zcodeSessionInfoSchema = z
   .object({
     sessionId: nonEmptyString,
+    directorySessionId: nonEmptyString.optional(),
     workspace: zcodeWorkspaceRefSchema,
     parentSessionId: nonEmptyString.optional(),
     traceId: nonEmptyString.optional(),
@@ -147,7 +161,6 @@ export const zcodeSessionInfoSchema = z
     target: zcodeSessionGoalSchema.nullable().optional(),
     createdAt: timestampMsSchema,
     updatedAt: timestampMsSchema,
-    archivedAt: timestampMsSchema.optional(),
   })
   .strict();
 export type ZCodeSessionInfo = z.infer<typeof zcodeSessionInfoSchema>;
@@ -316,6 +329,7 @@ export const zcodeTimelinePartSchema = partBaseSchema
       "goal_verification",
       "session_fork",
       "model_change",
+      "worktree_creation",
     ]),
     display: z.enum(["separator", "worklog"]),
     status: z.string().optional(),
@@ -354,6 +368,16 @@ export const zcodeTimelinePartSchema = partBaseSchema
       .extend({
         label: nonEmptyString,
       })
+      .optional(),
+    // timelineType = worktree_creation：受管 worktree 的创建结果（docs/git/worktree.md §6.6.4）。
+    worktreeCreation: z
+      .object({
+        path: nonEmptyString,
+        sha: nonEmptyString,
+        ref: z.string().nullable(),
+        output: z.string(),
+      })
+      .strict()
       .optional(),
   })
   .strict();

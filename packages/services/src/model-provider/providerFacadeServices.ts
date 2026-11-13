@@ -41,8 +41,8 @@ export type {
 export interface IProviderSettingsService {
   readonly onDidChange: Event<ProviderSettingsView>;
   /**
-   * `includeHidden` 仅供服务层做身份识别/清理：hidden 的语义是「不展示」，
-   * 不是「不存在」，管理路径必须能看见它们。
+   * 【本地定制】`includeHidden` 仅供服务层做身份识别/清理：
+   * hidden 的语义是「不展示」而不是「不存在」，管理路径必须能看见它们。
    */
   getView(input?: { includeHidden?: boolean }): Promise<ProviderSettingsView>;
   refresh(reason: string): Promise<ProviderSettingsView>;
@@ -84,7 +84,9 @@ export interface IProviderSettingsService {
     input: ProviderSettingsConnectivityRequest,
   ): Promise<ModelConnectivityResult>;
   /** 一次性拉取供应商模型目录（只读，不写配置）；在 host 侧执行以绕开渲染层 CORS。 */
-  listProviderModelCatalog(input: ProviderModelCatalogRequest): Promise<ProviderModelCatalogResult>;
+  listProviderModelCatalog(
+    input: ProviderModelCatalogRequest,
+  ): Promise<ProviderModelCatalogResult>;
 }
 
 export const IProviderSettingsService = createServiceDescriptor<IProviderSettingsService>(

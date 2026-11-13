@@ -1,69 +1,55 @@
-import type { ZCodeToolExecResource, BackgroundBashOutputResult } from "@zcode/shared";
+import type { OfficialPluginPreparation } from "./bundled-plugins.js";
+import type { OfficialCommandSessionObserver } from "../official-command-endpoint/index.js";
 import type { AiSdkModelAdapter } from "@zcode/adapters/model";
+import type { SessionControlBinding } from "@zcode/core/session-control";
 import type {
-  AgentRuntime,
-  AgentRuntimeConfig,
-  ExecuteTurnOptions,
-  ExpertWorkflowCommandResult,
-  ProviderRuntimeHeadersPort,
-  PresentationSurface,
-  ResumeSessionResult,
-  StartSavedWorkflowRunResult,
-  AmendWorkflowRunSettingsInput,
-  AmendWorkflowRunSettingsResult,
-  TurnAttachment,
-  ModelExecutionContext,
-  TurnResult,
-  WorkflowAgentRunner,
-  WorkspaceCheckpointSummary,
-  WorkspaceForkResult,
-  WorkspaceGenerateTextInput,
-  WorkspaceHookReviewTarget,
-  WorkspaceHookPolicyProvider,
-} from "@zcode/core";
-import type {
-  WorkspaceHookReviewDecision,
-  WorkspaceHookTrustRevokeTarget,
-} from "@zcode/shared/zcode-protocol-v4";
-import type { ZCodeModelOption } from "@zcode/shared";
-import type { EffectiveModelSelectionResult } from "@zcode/shared/model-selection";
-export type { ZCodeModelOption } from "@zcode/shared";
-import type { ModelProviderSourceTitle } from "../model-config.js";
-import type { ZCodeInstalledPluginData } from "../plugins.js";
-import type {
+  AgentTelemetryRuntimeOwner,
   AutomationPort,
-  OffPeakPort,
+  PluginDiscoveryPort,
   BackgroundTaskCancelResult,
+  BrowserControlPort,
   CollaborationMode,
   ContextSourcePort,
   DynamicWorkflowRunArtifact,
   DynamicWorkflowRunArtifactBytes,
-  DynamicWorkflowRunArtifactItem,
+  DynamicWorkflowRunArtifactItemsResult,
+  DynamicWorkflowRunEventsResult,
+  DynamicWorkflowRunProgressPayload,
+  DynamicWorkflowRunResumeResult,
+  DynamicWorkflowRunSessionSummary,
   DynamicWorkflowRunWorkspaceNode,
   DynamicWorkflowRunWorkspaceNodeResult,
-  DynamicWorkflowRunEvent,
-  DynamicWorkflowRunResumeResult,
-  DynamicWorkflowRunProgressPayload,
-  DynamicWorkflowRunSessionSummary,
   ExecutionPort,
-  BrowserControlPort,
+  ExecutionShellSelection,
   FileSystemPort,
   GoalStatus,
   HttpClientPort,
   ImageProcessorPort,
-  PdfDocumentPort,
   InputDelivery,
   InputHistoryEntry,
   InputHistoryKind,
   InputHistoryStorePort,
   LoggerFactory,
+  McpListResourceTemplatesResult,
+  McpListResourcesResult,
   McpPort,
+  McpReadResourceResult,
   McpServerStatus,
+  McpToolCallResult,
+  MessageWithParts,
   ModelSelection,
+  ModelToolCall,
+  ModelUsage,
+  OffPeakPort,
+  TopicResourcePort,
+  PdfDocumentPort,
   PermissionBrokerPort,
+  PluginPort,
   PluginLoadOutcome,
   PluginMetadata,
   PluginReferenceCatalog,
+  ProviderEndpointRoutingPort,
+  QueryId,
   SessionEvent,
   SessionEventSink,
   SessionEventStorePort,
@@ -73,29 +59,66 @@ import type {
   SessionStorePort,
   SkillLoadOutcome,
   SkillPort,
+  SupportedLocale,
+  TodoItem,
   ToolArtifactReadResult,
   ToolArtifactStorePort,
-  TodoItem,
-  QueryId,
   TraceContext,
   TurnId,
-  TurnSteerResult,
   TurnInputIntentMetadata,
-  MessageWithParts,
-  ModelUsage,
-  ModelToolCall,
-  SupportedLocale,
+  TurnSteerResult,
   UiLocale,
   UiThemePreference,
   WorkflowEvent,
   WorkflowRunListItem,
-  ExecutionShellSelection,
+  WorkspaceHookPolicy,
+  PendingInputEditLock,
 } from "@zcode/contracts";
-import type { NodeReplBrowserBroker } from "./node-repl-browser-broker.js";
+import type {
+  AgentRuntime,
+  AgentRuntimeConfig,
+  AmendWorkflowRunSettingsInput,
+  AmendWorkflowRunSettingsResult,
+  EditPendingInputOptions,
+  EditPendingInputResult,
+  ExecuteTurnOptions,
+  ExpertWorkflowCommandResult,
+  LockPendingInputEditResult,
+  McpAppProvidedToolDefinition,
+  McpAppProvidedToolExecutor,
+  ModelExecutionContext,
+  PresentationSurface,
+  ProviderRuntimeHeadersPort,
+  ResumeSessionResult,
+  StartSavedWorkflowRunResult,
+  TurnAttachment,
+  TurnResult,
+  WorkflowAgentRunner,
+  WorkspaceCheckpointSummary,
+  WorkspaceForkResult,
+  WorkspaceGenerateTextInput,
+  WorkspaceHookPolicyProvider,
+  WorkspaceHookReviewTarget,
+} from "@zcode/core";
+import type {
+  BackgroundBashOutputResult,
+  SubagentRuntimeConfig,
+  ZCodeModelOption,
+  ZCodeToolExecResource,
+} from "@zcode/shared";
+import type { McpAppsToolVisibility } from "@zcode/shared/mcp-apps";
+import type { EffectiveModelSelectionResult } from "@zcode/shared/model-selection";
+import type {
+  WorkspaceHookReviewDecision,
+  WorkspaceHookTrustRevokeTarget,
+} from "@zcode/shared/zcode-protocol-v4";
+import type { ModelProviderSourceTitle } from "../model-config.js";
+import type { ZCodeInstalledPluginData } from "../plugins.js";
 import type { SessionTranscriptMessage } from "../session-transcript.js";
-import type { WorkspaceHookReviewCommandResult } from "./workspace-hook-review-controller.js";
-import type { AgentTelemetryRuntimeOwner, WorkspaceHookPolicy } from "@zcode/contracts";
+import type { NodeReplBrowserBroker } from "./node-repl-browser-broker.js";
 import type { ProviderRegistryModelSource } from "./provider-registry-model-runtime.js";
+import type { WorkspaceHookReviewCommandResult } from "./workspace-hook-review-controller.js";
+export type { ZCodeModelOption } from "@zcode/shared";
 
 export interface WorkspaceHookReviewHostContext {
   taskId: string;
@@ -121,6 +144,18 @@ export type RevokeWorkspaceHookTrustInput =
 export type ZCodeAppRuntimeConfigInput = AgentRuntimeConfig;
 
 export interface ZCodeAppOptions {
+  /** 独立 CLI 的配置菜单编辑输入默认值；其他装配保留显式 Session 配置语义。 */
+  modelSelectionMode?: "cli-default";
+  /** 仅独立 TUI/headless 入口开启；不得由模型或项目配置指定。 */
+  standaloneSessionControl?: boolean;
+  /** Host 在运行实例创建时传入，运行中不刷新。 */
+  additionalDirectories?: readonly string[];
+  /**
+   * 会话所属 workspace 的对外 key（Hook Trust admission、审核 request 等）。受管 worktree 会话
+   * 属于项目 workspace，key 与工作目录不同（docs/git/worktree.md §7.3）；缺省按远程 identity
+   * 优先、否则工作目录。
+   */
+  workspaceKey?: string;
   sessionId?: SessionId;
   resume?: boolean;
   version?: string;
@@ -131,6 +166,11 @@ export interface ZCodeAppOptions {
    * 普通 CLI 不传，继续使用 cli 默认值。
    */
   sourceTitle?: ModelProviderSourceTitle;
+  /** 本地 Host 源文档读取；无此能力时保持启动期配置。 */
+  readSubagentRuntimeConfig?: (input: {
+    signal: AbortSignal;
+    traceContext: TraceContext;
+  }) => Promise<SubagentRuntimeConfig>;
   eventStore?: SessionEventStorePort;
   sessionStore?: SessionStorePort;
   sessionMailboxPort?: SessionMailboxPort;
@@ -144,6 +184,7 @@ export interface ZCodeAppOptions {
   modelIoFullRetentionEnabled?: boolean;
   /** 同进程嵌入宿主可注入完整的 borrowed 进程级 Owner；Endpoint 配置不得覆盖它。 */
   telemetryOwner?: AgentTelemetryRuntimeOwner;
+  providerEndpointRoutingPort?: ProviderEndpointRoutingPort;
   /**
    * provider runtime headers 端口：主 runtime 每次调用报自己的会话；child runtime 一律向父
    * runtime 取派生实例。
@@ -152,7 +193,20 @@ export interface ZCodeAppOptions {
   loggerFactory?: LoggerFactory;
   officialPluginRoots?: string[];
   pluginStorageRoot?: string;
+  /** 借用进程级插件准备状态；App 不负责关闭。 */
+  pluginPreparation?: OfficialPluginPreparation;
+  pluginDiscovery?: PluginPort;
   executionPort?: ExecutionPort;
+  /**
+   * 官方命令端点（技术方案 5.8）：返回本 session 的 Bash/tool 子进程要带的端点地址与 token。
+   * workspace 是本 session 的工作区，端点取身份头时据此让 host 路由；observer 接收端点为本 session 观察到的事实。
+   * 由协议宿主注入；缺省时官方插件的 CLI 拿不到身份。
+   */
+  officialCommandEnv?: (
+    sessionId: string,
+    workspace: { workspacePath: string; workspaceIdentity?: string },
+    observer?: OfficialCommandSessionObserver,
+  ) => Promise<Record<string, string>>;
   /** 资源遥测旁路；由协议宿主注入，主任务和 workflow 的执行适配器共用。 */
   onToolExecResource?: (sample: ZCodeToolExecResource) => void;
   /** browser-use 控制端口；注入后 node_repl 的 agent.browsers.* 可用。缺省则不可用。 */
@@ -165,12 +219,15 @@ export interface ZCodeAppOptions {
   pdfDocumentPort?: PdfDocumentPort;
   artifactStore?: ToolArtifactStorePort;
   contextSourcePort?: ContextSourcePort;
+  /** 仅协议宿主注入；普通 CLI 不加载内置 visualize 技能。 */
+  includeVisualize?: boolean;
   skillPort?: SkillPort;
   mcpPort?: McpPort;
   /** 由宿主提供 per-app lease；产出的端口归 app 所有。 */
   mcpPortFactory?: (input: { workingDirectory?: string }) => McpPort;
   permissionBroker?: PermissionBrokerPort;
   eventSink?: SessionEventSink;
+  onOffPeakLifecycleEvent?: (event: import("@zcode/shared").OffPeakLifecycleNotification) => void;
   env?: NodeJS.ProcessEnv;
   platform?: NodeJS.Platform | string;
   projectConfigPath?: string;
@@ -179,8 +236,12 @@ export interface ZCodeAppOptions {
   uiDetectedLocale?: string | null;
   uiLocale?: UiLocale;
   onWorkflowEvent?: (event: WorkflowEvent) => void | Promise<void>;
+  /** 可信启动装配，不能从项目配置或模型输入填充。 */
+  sessionControl?: SessionControlBinding;
   automationPort?: AutomationPort;
   offPeakPort?: OffPeakPort;
+  topicResourcePort?: TopicResourcePort;
+  pluginDiscoveryPort?: PluginDiscoveryPort;
   /** 首次真实用户执行或 cold-resume fallback 时解析一次，之后由 app 生命周期缓存。 */
   resolveInitialBashShellSelection?: () => Promise<ExecutionShellSelection | undefined>;
   /** Trusted embedder policy; workspace/project files cannot populate this field. */
@@ -235,11 +296,11 @@ export interface SteerTurnOptions {
 
 export type SendInputOptions = SubmitPromptOptions & {
   inputId?: string;
-  /** 可信消费入口确定的呈现标记；不改变原始用户内容或调度语义。 */
-  inputPresentation?: ExecuteTurnOptions["inputPresentation"];
   delivery?: InputDelivery;
   /** sendText 的产品 guide/queue 意图；是否 busy 仍由 Core admission 判断。 */
   queueDelivery?: "guide" | "queue";
+  /** Highspeed 等必须延后到独立 turn 的输入，即使 admission 时已转为空闲也保持排队。 */
+  requireQueue?: boolean;
   requireIdle?: boolean;
   expectedTurnId?: TurnId;
   commandKind?: "sendText" | "sendGoalCommand" | "compact";
@@ -313,6 +374,8 @@ export interface ZCodeApp {
    * coordinator 并重发 admission 状态，否则已信任 Hook 继续被拒、banner 不刷新。
    */
   reloadWorkspaceHookTrust(): Promise<void>;
+  /** 设置授权落盘后更新同工作区会话的提示；不自动连接。 */
+  reloadWorkspaceMcpTrust?(): Promise<void>;
   close?(): Promise<void>;
   getMode(): CollaborationMode;
   getModel(): string;
@@ -395,6 +458,73 @@ export interface ZCodeApp {
   getSkillCatalog(): Promise<SkillLoadOutcome>;
   listMcpServers(): Promise<Record<string, McpServerStatus>>;
   connectMcpServer(name: string): Promise<McpServerStatus>;
+  /**
+   * 插件 UI：UI 发起的资源读取与工具调用，
+   * 走 session 自己的 mcpPort；归属校验在 mcp-ui 处理器完成，这里不重复。
+   */
+  readMcpResource(
+    serverName: string,
+    uri: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<McpReadResourceResult>;
+  onMcpAppConnectionInvalidated(serverName: string, listener: () => void): () => void;
+  getMcpAppConnectionSnapshot(serverName: string): { identity: string; generation: number } | null;
+  waitForMcpAppConnection(
+    serverName: string,
+  ): Promise<{ identity: string; generation: number } | null>;
+  callMcpToolForUi(
+    serverName: string,
+    toolName: string,
+    args: Record<string, unknown> | undefined,
+    options?: { signal?: AbortSignal },
+  ): Promise<McpToolCallResult>;
+  /**
+   * 按 tools/list 的 descriptor 给出工具可见性；工具不存在返回 null。
+   * mcp-ui 用它拒绝 model-only 工具的 UI 调用。
+   */
+  getMcpToolVisibility(
+    serverName: string,
+    toolName: string,
+  ): Promise<readonly McpAppsToolVisibility[] | null>;
+  /**
+   * App-Provided Tools：用给定集合整体替换本会话的 App 工具，失效工具缓存让下一次模型请求可见。
+   * 与非 App 工具重名的定义跳过。返回实际登记的模型侧名字。
+   */
+  replaceMcpAppProvidedTools(
+    definitions: readonly McpAppProvidedToolDefinition[],
+    execute: McpAppProvidedToolExecutor,
+  ): string[];
+  /** 页面发起的 resources/list、resources/templates/list 与订阅（订阅者身份由调用方给出）。 */
+  listMcpResourcesForUi(
+    serverName: string,
+    cursor?: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<McpListResourcesResult>;
+  listMcpResourceTemplatesForUi(
+    serverName: string,
+    cursor?: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<McpListResourceTemplatesResult>;
+  subscribeMcpResourceForUi(
+    serverName: string,
+    uri: string,
+    subscriberKey: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<void>;
+  unsubscribeMcpResourceForUi(
+    serverName: string,
+    uri: string,
+    subscriberKey: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<void>;
+  /** 会话关闭：清掉本会话（subscriberKey 前缀）的全部订阅。 */
+  unsubscribeMcpResourcesForUi(subscriberKeyPrefix: string): Promise<number>;
+  /** 插件页面发起的 resources/read；与 readMcpResource 同一端口，独立入口便于审计与限流。 */
+  readMcpResourceForUi(
+    serverName: string,
+    uri: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<McpReadResourceResult>;
   readBackgroundBashOutput(workId: string, sessionId?: string): Promise<BackgroundBashOutputResult>;
   cancelBackgroundTask?(
     taskId: string,
@@ -412,7 +542,8 @@ export interface ZCodeApp {
     runId: string;
     afterSequence?: number;
     limit?: number;
-  }): Promise<DynamicWorkflowRunEvent[]>;
+    maxBytes?: number;
+  }): Promise<DynamicWorkflowRunEventsResult>;
   /**
    * 恢复一个 dwf run。可选能力，缺席条件同
    * {@link listDynamicWorkflowRunEvents}。成功路径除了 port.resume 之外还负责**追踪重臂**
@@ -477,7 +608,7 @@ export interface ZCodeApp {
   }): Promise<readonly DynamicWorkflowRunArtifact[] | undefined>;
   /**
    * 喂给某个预置看板的 `report` 条目分页（cursor = journal sequence，严格大于）。
-   * `limit` 由网关钳好再传下来，这里**精确**兑现——调用方传「上限 + 1」探测 hasMore。
+   * `limit` 与 `maxBytes` 由网关定好再传下来，这里**精确**兑现；`hasMore` 由存储层判定。
    * 缺席条件同 {@link listDynamicWorkflowRunArtifacts}。
    */
   listDynamicWorkflowRunArtifactItems?(input: {
@@ -485,7 +616,9 @@ export interface ZCodeApp {
     artifactId: string;
     afterSequence?: number;
     limit: number;
-  }): Promise<readonly DynamicWorkflowRunArtifactItem[]>;
+    maxBytes: number;
+    fields?: readonly string[];
+  }): Promise<DynamicWorkflowRunArtifactItemsResult>;
   /**
    * 读一个产物版本的**全部**字节；分块归网关（≤ 512 KiB 一块）。授权链在端口实现侧：
    * 该 run 必须属于本会话 ∧ journal 里有 `(artifactId, version)` 的 completed 行，然后才拿
@@ -520,6 +653,10 @@ export interface ZCodeApp {
     targetMessageId?: string;
     traceContext?: TraceContext;
   }): Promise<WorkspaceForkResult>;
+  sampleModel(
+    input: Parameters<AgentRuntime["sampleModel"]>[0],
+    options: Parameters<AgentRuntime["sampleModel"]>[1],
+  ): ReturnType<AgentRuntime["sampleModel"]>;
   generateWorkspaceText(
     input: WorkspaceGenerateTextInput,
     options?: { abortSignal?: AbortSignal; traceContext?: TraceContext },
@@ -687,10 +824,27 @@ export interface ZCodeApp {
     reservationId: string,
     options?: { traceContext?: TraceContext },
   ): Promise<boolean>;
-  /** v4 queue 单项编辑：按 pendingInputId 替换排队输入文本（保位）。返回是否命中。 */
+  /**
+   * v4 queue 单项编辑：按 pendingInputId 原地替换排队输入（保位）。携带 editorId 时必须持有
+   * composer 编辑锁，成功后同一调用释放锁（docs/ui/composer-edit-mode.md）。
+   */
   editQueueItem(
     pendingInputId: string,
-    newText: string,
+    /** undefined = 保留原输入，只改配置。 */
+    newText: string | undefined,
+    options?: Omit<EditPendingInputOptions, "pendingInputId" | "newText"> & {
+      traceContext?: TraceContext;
+    },
+  ): Promise<EditPendingInputResult>;
+  /** composer 编辑态冻结排队项；锁与 sendQueuedNow reservation 互斥。 */
+  lockQueueItemEdit(
+    pendingInputId: string,
+    editLock: PendingInputEditLock,
+    options?: { traceContext?: TraceContext },
+  ): Promise<LockPendingInputEditResult>;
+  /** 释放编辑锁；无锁返回 false。 */
+  releaseQueueItemEdit(
+    pendingInputId: string,
     options?: { traceContext?: TraceContext },
   ): Promise<boolean>;
   /** v4 queue 重排：移动 pendingInputId 到 beforePendingInputId 之前（null=队尾）。 */
@@ -741,6 +895,7 @@ export interface RunZCodeProtocolAgentOptions {
   input?: NodeJS.ReadableStream;
   output?: NodeJS.WritableStream;
   presentationSurface?: PresentationSurface;
+  providerEndpointRoutingPort?: ProviderEndpointRoutingPort;
   version?: string;
 }
 

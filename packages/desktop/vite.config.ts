@@ -1,14 +1,23 @@
 import { createRequire } from "node:module";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, extname, isAbsolute, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { resolveZCodeEndpointOrigin, pickProductEndpointEnv } from "@zcode/shared/zcodeEndpoint";
+import { resolveZCodeEndpointOrigin } from "@zcode/shared/zcodeEndpoint";
 import { pdfJsCMapsPlugin } from "../ui/vite/pdfJsCMapsPlugin.js";
-import { dwgViewerAssetsPlugin } from "../ui/vite/dwgViewerAssetsPlugin.js";
 import { getBuildMetadata } from "./scripts/build-metadata.mjs";
 import { resolveDesktopProductFlavor } from "./scripts/desktop-product-identity.mjs";
+
+// 动态加载仓库根的构建工具，避免配置打包后其 import.meta.dirname 被重定位到 desktop。
+// 构建期可选能力（ARMS、事件上报、自动更新），见 docs/desktop/build-time-optional-capabilities.md
+const { resolveBuildTimeConfig, createBuildTimeConfigDefines } = await import(
+  pathToFileURL(resolve(__dirname, "../../scripts/build-time-config.mjs")).href
+);
+const buildTimeConfigDefines = createBuildTimeConfigDefines(
+  await resolveBuildTimeConfig(process.env),
+);
 
 const buildMetadata = getBuildMetadata();
 const desktopRequire = createRequire(import.meta.url);
@@ -141,19 +150,25 @@ function stripViteRequestQuery(id: string) {
   return id.split("?")[0] ?? id;
 }
 
-export default defineConfig(({ mode, command }) => {
-  // Vite 用 process.env.NODE_ENV === "production" 推导 isProduction，而 @vitejs/plugin-react
-  // 在 isProduction 时跳过注入 $RefreshReg$/$RefreshSig$ 的 preamble，却仍按 command === "serve"
-  // 打开 oxc 的 jsx.refresh —— 结果调用点存在、preamble 缺失，渲染进程启动即抛
-  // "Uncaught ReferenceError: $RefreshSig$ is not defined"，React 永不挂载，界面停在灰屏。
-  // 机器级/用户级 NODE_ENV=production（CI 镜像、全局环境变量）会踩中，这里在 dev server 下
-  // 强制 development，与 Vite 自身的 dev 语义对齐。必须在返回配置对象前设置：Vite 在
-  // resolveConfig 里读取它，而该阶段晚于本回调。
-  if (command === "serve" && process.env.NODE_ENV === "production") {
-    process.env.NODE_ENV = "development";
-  }
+function createReactScanDevPlugin(): Plugin {
+  const scriptPath = normalizePathForVite(desktopRequire.resolve("react-scan/dist/auto.global.js"));
+  return {
+    name: "zcode:react-scan",
+    apply: "serve",
+    transformIndexHtml: {
+      order: "post",
+      handler(_html, context) {
+        if (context.path !== "/index.html") return [];
+        // Scan 必须先安装 hook，再加载 React；普通 head script 保证顺序，避免异步导入漏掉首次挂载。
+        return [{ tag: "script", attrs: { src: `/@fs/${scriptPath}` }, injectTo: "head-prepend" }];
+      },
+    },
+  };
+}
+
+export default defineConfig(({ command, mode }) => {
   // `.env*` 只提供链接常量；当前产品环境由启动脚本或 CI 注入 ZCODE_ENV。
-  const env = { ...loadEnv(mode, "../..", ""), ...process.env };
+  const env = loadEnv(mode, "../..", "");
   const repoRoot = resolve(__dirname, "../..");
   const zcodeEnv = resolveZCodeEnv(env.ZCODE_ENV);
   // 安装包身份与后端环境分轴；renderer 用它决定是否展示更新入口。
@@ -168,15 +183,20 @@ export default defineConfig(({ mode, command }) => {
     env.VITE_ZCODE_E2E_STORE_BRIDGE === "1" || process.env.VITE_ZCODE_E2E_STORE_BRIDGE === "1";
   const zcodeEndpointOrigin = resolveZCodeEndpointOrigin({
     env: zcodeEnv,
-    envBaseOrigin: env.ZCODE_BASE_URL ?? env.ZCODE_ENDPOINT_ORIGIN,
+    envBaseOrigin:
+      env.ZCODE_BASE_URL ??
+      env.ZCODE_ENDPOINT_ORIGIN ??
+      (zcodeEnv === "production" ? env.ZCODE_PRODUCTION_BASE_URL : env.ZCODE_TEST_BASE_URL),
   });
   const codingPlanWebviewOrigin =
     env.VITE_CODING_PLAN_WEBVIEW_ORIGIN ?? process.env.VITE_CODING_PLAN_WEBVIEW_ORIGIN ?? "";
   const plugins = [
+    // 仅开发服务器装配，所有 build 都不注入；后端 ZCODE_ENV 不决定是否开启开发工具。
+    ...(command === "serve" && mode !== "production" && env.ZCODE_REACT_SCAN !== "0"
+      ? [createReactScanDevPlugin()]
+      : []),
     ...(e2eCoverageEnabled ? [createE2EUIRendererCoveragePlugin(repoRoot)] : []),
     pdfJsCMapsPlugin(),
-    // CAD 看图资产（worker/wasm + 字体）：桌面渲染进程走 file://，字体也由插件代发
-    dwgViewerAssetsPlugin({ includeFonts: true }),
     react(),
     tailwindcss(),
   ];
@@ -201,12 +221,13 @@ export default defineConfig(({ mode, command }) => {
     },
     server: { port: 5174, strictPort: true },
     define: {
-      __ZCODE_ENDPOINT_ENV__: JSON.stringify(pickProductEndpointEnv(env)),
       __ZCODE_VERSION__: JSON.stringify(buildMetadata.appVersion),
+      __ZCODE_MIN_COMPATIBLE_VERSION__: JSON.stringify(buildMetadata.minCompatibleVersion),
       __ZCODE_COMMIT__: JSON.stringify(buildMetadata.buildCommitId),
       __ZCODE_BUILD_TIME__: JSON.stringify(buildMetadata.buildTime),
       __ZCODE_ENV__: JSON.stringify(zcodeEnv),
       __ZCODE_PRODUCT_FLAVOR__: JSON.stringify(zcodeProductFlavor),
+      ...buildTimeConfigDefines,
       __ZCODE_LOCAL_DEVELOPMENT_RUNTIME__: JSON.stringify(mode !== "production"),
       "import.meta.env.VITE_ZCODE_BASE_URL": JSON.stringify(zcodeEndpointOrigin),
       // 兼容旧 renderer 读取名；新代码统一读 VITE_ZCODE_BASE_URL。
@@ -215,7 +236,7 @@ export default defineConfig(({ mode, command }) => {
       "import.meta.env.VITE_REWARDS_WEBVIEW_ORIGIN": JSON.stringify(
         env.VITE_REWARDS_WEBVIEW_ORIGIN ?? process.env.VITE_REWARDS_WEBVIEW_ORIGIN ?? "",
       ),
-      // E2E store bridge 只能由 WDIO 专用变量打开，避免把 ZCODE_ENV=test 产品环境误当成测试运行态。
+      // Bugfix: E2E store bridge 只能由 WDIO 专用变量打开，避免把 ZCODE_ENV=test 产品环境误当成测试运行态。
       "import.meta.env.VITE_ZCODE_E2E_STORE_BRIDGE": JSON.stringify(
         e2eStoreBridgeEnabled ? "1" : "",
       ),
@@ -242,7 +263,8 @@ export default defineConfig(({ mode, command }) => {
           index: resolve(__dirname, "src/renderer/index.html"),
           "resource-manager": resolve(__dirname, "src/renderer/resource-manager.html"),
           "cua-permission-panel": resolve(__dirname, "src/renderer/cua-permission-panel.html"),
-          "quick-input": resolve(__dirname, "src/renderer/quick-input.html"),
+          // 插件 UI 沙箱的受信 shell，经 zcode-sandbox:// 提供
+          "plugin-sandbox": resolve(__dirname, "src/renderer/plugin-sandbox.html"),
         },
       },
     },

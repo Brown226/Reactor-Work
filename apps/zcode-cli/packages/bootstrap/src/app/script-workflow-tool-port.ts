@@ -20,7 +20,6 @@ import {
 import { readWorkflowScriptDocument } from "./script-workflow-meta.js";
 import type { ScriptWorkflowRuntime } from "./script-workflow-runtime.js";
 import { isScriptWorkflowStore } from "./script-workflow-utils.js";
-import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 const WORKFLOW_SCRIPT_SUFFIX = ".workflow.js";
 const WORKFLOW_NAME_PATTERN = /^[A-Za-z0-9_.-]+$/;
@@ -37,10 +36,14 @@ interface ScriptWorkflowToolPortDeps {
   workingDirectory: string;
 }
 
-export function createScriptWorkflowToolPort(deps: ScriptWorkflowToolPortDeps): WorkflowPort {
+export function createScriptWorkflowToolPort(
+  deps: ScriptWorkflowToolPortDeps,
+): WorkflowPort & { close(): Promise<void> } {
   const completionSnapshots = new Map<string, Promise<WorkflowTaskSnapshot | undefined>>();
   const launchSnapshots = new Map<string, WorkflowTaskSnapshot>();
-  return {
+  const shutdown = new AbortController();
+  const launches = new Set<Promise<unknown>>();
+  const port: WorkflowPort = {
     async getTask(taskId): Promise<WorkflowTaskSnapshot | undefined> {
       return (await getWorkflowTaskSnapshot(deps, taskId)) ?? launchSnapshots.get(taskId);
     },
@@ -55,7 +58,12 @@ export function createScriptWorkflowToolPort(deps: ScriptWorkflowToolPortDeps): 
       if (options?.signal?.aborted) {
         throw createCoreError(CoreErrorType.ToolCancelled, "Workflow launch cancelled");
       }
-      const source = await resolveWorkflowToolSource(deps, request, options?.signal);
+      const signal = options?.signal
+        ? AbortSignal.any([options.signal, shutdown.signal])
+        : shutdown.signal;
+      signal.throwIfAborted();
+      const source = await resolveWorkflowToolSource(deps, request, signal);
+      signal.throwIfAborted();
       if (options?.signal?.aborted) {
         throw createCoreError(CoreErrorType.ToolCancelled, "Workflow launch cancelled");
       }
@@ -75,7 +83,7 @@ export function createScriptWorkflowToolPort(deps: ScriptWorkflowToolPortDeps): 
 
       const runtime = deps.getRuntime();
       // 后台 workflow 已脱离当前 tool call；父 turn 取消不应中止已返回 runId 的任务。
-      const runAbortController = new AbortController();
+      const runAbortController = shutdown;
       const runPromise = source.scriptPath
         ? runtime.run(
             {
@@ -115,12 +123,16 @@ export function createScriptWorkflowToolPort(deps: ScriptWorkflowToolPortDeps): 
             taskId: runId,
           };
           launchSnapshots.set(runId, snapshot);
-          deps.logger?.error("Background workflow failed before status was persisted", toError(error), {
-            event: "workflow.tool.background_failed",
-            module: "bootstrap.workflow",
-            runId,
-            status: "failed",
-          });
+          deps.logger?.error(
+            "Background workflow failed before status was persisted",
+            toError(error),
+            {
+              event: "workflow.tool.background_failed",
+              module: "bootstrap.workflow",
+              runId,
+              status: "failed",
+            },
+          );
           return snapshot;
         },
       );
@@ -141,6 +153,28 @@ export function createScriptWorkflowToolPort(deps: ScriptWorkflowToolPortDeps): 
         status: "backgrounded",
         traceId: request.trace.traceId,
       };
+    },
+  };
+  let closePromise: Promise<void> | undefined;
+  return {
+    ...port,
+    start(request, options) {
+      if (shutdown.signal.aborted) return Promise.reject(new Error("Workflow tool owner closed"));
+      const launch = port.start(request, options);
+      launches.add(launch);
+      void launch.then(
+        () => launches.delete(launch),
+        () => launches.delete(launch),
+      );
+      return launch;
+    },
+    close() {
+      shutdown.abort(new Error("Workflow tool owner closed"));
+      closePromise ??= (async () => {
+        while (launches.size) await Promise.allSettled(launches);
+        await Promise.allSettled(completionSnapshots.values());
+      })();
+      return closePromise;
     },
   };
 }
@@ -316,7 +350,7 @@ async function resolveNamedWorkflowPath(
   const fileName = workflowFileName(name);
   const candidates = [
     join(deps.workingDirectory, ".zcode", "workflows", fileName),
-    join(homedir(), USER_DATA_DIR_NAME, "workflows", fileName),
+    join(homedir(), ".zcode", "workflows", fileName),
   ];
   const builtIn = BUILTIN_WORKFLOW_ALLOWLIST.get(name);
   if (builtIn) candidates.push(builtIn);

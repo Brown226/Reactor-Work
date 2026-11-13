@@ -214,9 +214,17 @@ export class ProviderSettingsFacade {
     this.#mutations = mutations;
   }
 
-  getView(options?: { includeHidden?: boolean }): ProviderSettingsView {
+  /**
+   * 读取设置视图。
+   *
+   * 【本地定制】新增 `includeHidden`：manager 路径（凭据清理、身份识别）必须能看见
+   * visibility=hidden 的 provider —— hidden 的语义是「不展示」而不是「不存在」。
+   * 上游 v3.18.0 的 getView 无参且一律过滤 hidden，导致按 id 定位时误判成「已删除」。
+   */
+  getView(input?: { includeHidden?: boolean }): ProviderSettingsView {
     const snapshot = requireSnapshot(this.#source);
     return createProviderSettingsView({
+      includeHidden: input?.includeHidden === true,
       revision: snapshot.registry.revision,
       zcodeBuiltinProviders: snapshot.config.zcodeBuiltinProviders,
       zcodeBuiltinProviderTemplates: snapshot.config.zcodeBuiltinProviderTemplates,
@@ -224,7 +232,6 @@ export class ProviderSettingsFacade {
       personalModels: snapshot.config.personalModels,
       resolution: snapshot.resolution,
       accountStates: snapshot.account.states,
-      includeHidden: options?.includeHidden,
     });
   }
 
@@ -611,13 +618,7 @@ function createProviderSettingsView(input: {
   personalModels: ProviderRegistryServiceSnapshot["config"]["personalModels"];
   resolution: ProviderConfigResolution;
   accountStates?: import("./account-provider-state.js").AccountProviderStates;
-  /**
-   * 管理用途读取：返回包含 hidden 的全部 provider。
-   *
-   * hidden 的语义是「不展示」，不是「不存在」。登录同步、名称唯一性校验与空壳清理
-   * 都必须看见 hidden 条目，否则会误判"不存在"而重复创建，并留下永远无法回收的残骸
-   * （见 docs/未完成-企业provider可见性与登录自愈-spec-v1.md）。
-   */
+  /** [本地定制] true 时不过滤 visibility=hidden 的 provider（manager 路径需要）。 */
   includeHidden?: boolean;
 }): ProviderSettingsView {
   const executableProviderIds = new Set(

@@ -27,7 +27,7 @@ const WINDOWS_100NS_PER_MS = 10_000;
 /** 上一轮 cputime 基线在这么久没被再次看到后丢弃（pid 复用防护） */
 const CPU_BASELINE_TTL_MS = 60_000;
 
-interface ProcessResourceRow {
+export interface ProcessResourceRow {
   pid: number;
   ppid: number;
   rssKb: number;
@@ -37,7 +37,7 @@ interface ProcessResourceRow {
   command: string;
 }
 
-type ProcessResourceTableReader = (
+export type ProcessResourceTableReader = (
   signal?: AbortSignal,
 ) => Promise<ProcessResourceRow[] | undefined>;
 
@@ -73,7 +73,7 @@ function parseNonNegativeInteger(text: string | undefined): number | undefined {
  * 解析 ps 的 cputime 文本：macOS `[[dd-]hh:]mm:ss.cc`、Linux `[dd-]hh:mm:ss`。
  * 返回毫秒；无法解析返回 undefined。
  */
-function parseCpuTimeText(text: string): number | undefined {
+export function parseCpuTimeText(text: string): number | undefined {
   const trimmed = text.trim();
   if (!trimmed) return undefined;
   let days = 0;
@@ -96,7 +96,7 @@ function parseCpuTimeText(text: string): number | undefined {
 }
 
 /** `ps -axo pid=,ppid=,rss=,cputime=,comm=` 的输出；comm 可能含空格，取前 4 列后剩余全部为 comm */
-function parseDarwinProcessTable(stdout: string): ProcessResourceRow[] {
+export function parseDarwinProcessTable(stdout: string): ProcessResourceRow[] {
   const rows: ProcessResourceRow[] = [];
   for (const line of stdout.split(/\r?\n/)) {
     const match = /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(.*)$/.exec(line);
@@ -113,7 +113,7 @@ function parseDarwinProcessTable(stdout: string): ProcessResourceRow[] {
 }
 
 /** 解析 `/proc/<pid>/stat`：comm 用括号包裹且可含空格/括号，按最后一个 `)` 切分 */
-function parseLinuxProcStat(
+export function parseLinuxProcStat(
   content: string,
 ): { pid: number; ppid: number; command: string; cpuTimeMs: number } | undefined {
   const open = content.indexOf("(");
@@ -153,7 +153,7 @@ export function parseLinuxVmRssKb(content: string): number {
 }
 
 /** PowerShell 输出：`pid ppid workingSetBytes cpu100ns name...` */
-function parseWindowsProcessTable(stdout: string): ProcessResourceRow[] {
+export function parseWindowsProcessTable(stdout: string): ProcessResourceRow[] {
   const rows: ProcessResourceRow[] = [];
   for (const line of stdout.split(/\r?\n/)) {
     const match = /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*(.*)$/.exec(line);
@@ -176,7 +176,7 @@ function parseWindowsProcessTable(stdout: string): ProcessResourceRow[] {
   return rows;
 }
 
-interface CreateProcessResourceTableReaderOptions {
+export interface CreateProcessResourceTableReaderOptions {
   platform?: NodeJS.Platform;
   execFile?: ExecFileFn;
   readdir?: (path: string) => Promise<string[]>;
@@ -272,7 +272,7 @@ export interface ProcessResourceSampler {
   sample(signal?: AbortSignal): Promise<Map<number, ProcessResourceSample> | undefined>;
 }
 
-interface CreateProcessResourceSamplerOptions {
+export interface CreateProcessResourceSamplerOptions {
   readTable: ProcessResourceTableReader;
   now?: () => number;
   logicalCpuCount?: number;
@@ -333,11 +333,11 @@ export interface HostResourceUsageAgent {
   pid: number;
   provider: string;
   workspacePath: string;
-  /** CLI `process/childProcesses` 的回报；请求失败时为空数组，其后代全部归入 cli */
+  /** CLI `process/childProcesses` 的回报；请求失败时为空数组，非根后代按任务进程归类 */
   children: readonly ZCodeProcessChildProcess[];
 }
 
-interface AttributeHostProcessTreeOptions {
+export interface AttributeHostProcessTreeOptions {
   samples: ReadonlyMap<number, ProcessResourceSample>;
   hostPid: number;
   agents: readonly HostResourceUsageAgent[];
@@ -379,7 +379,8 @@ function ownerToRow(
       name: isOwnerRoot
         ? formatZCodeAgentProcessName(owner.agent.provider, owner.agent.workspacePath)
         : commandDisplayName(sample.command),
-      category: "base",
+      // Agent 本身是基础开销；其非插件后代随用户任务变化，单独归入任务进程。
+      category: isOwnerRoot ? "base" : "task",
       groupKey: "cli",
       groupLabel: "cli",
       cpuPercent,
@@ -413,7 +414,7 @@ function ownerToRow(
 
 /**
  * 把 Host 的全部后代按“最近的已知祖先”归属：
- * MCP 根 pid → 对应插件；Agent pid → 基础服务 cli；无归属 → 基础服务 host 子进程。
+ * MCP 根 pid → 对应插件；Agent 根 → 基础服务，非插件后代 → 任务进程；无归属 → 基础服务 host。
  * Host 自身不在结果里（它的指标由 main 的 app.getAppMetrics 提供）。
  */
 export function attributeHostProcessTree(

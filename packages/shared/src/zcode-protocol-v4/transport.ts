@@ -1,4 +1,4 @@
-import { localTtftFactsSchema } from "../localTtft.js";
+import { localTtftFactsSchema } from "../local-ttft/contract.js";
 /* eslint-disable max-lines -- 三个 topic 的 logical/physical/candidate schema 必须共享同一通用传输声明，避免跨文件分叉。 */
 // 传输外壳：连接握手 / 订阅 / 帧信封。
 // 阶段为类型占位（后半接通道层时启用），数据形状已按规范定稿。
@@ -10,9 +10,10 @@ import {
   V4_WIRE_PROTOCOL_VERSION,
   conversationRowTargetSchema,
   timestampSchema,
+  v4ColdResumeWorkspaceSchema,
 } from "./core.js";
 import { conversationDeltaSchema } from "./delta.js";
-import { conversationRowSchema, toolCallRowSchema } from "./rows.js";
+import { displayConversationRowSchema, toolCallRowSchema } from "./rows.js";
 import { sessionsIndexDeltaSchema, sessionsIndexSnapshotSchema } from "./sessions-index.js";
 import { WORKFLOW_RUN_STOP_REASONS } from "./workflow-observation-display.js";
 import { conversationSnapshotSchema } from "./snapshot.js";
@@ -29,6 +30,22 @@ export const hostCapabilitiesSchema = z.object({
   // Wire-compatible：旧 Host 缺失等价于 false；调用方必须用 === true 判断。
   workspaceHookReview: z.boolean().optional(),
   independentPlanState: z.boolean().optional(),
+  genUiContext: z.boolean().optional(),
+  /**
+   * 本 Host 会发 `workflowRun.*` 键级增量（delta.ts 的两条 op），因而 `workflowRuns` 的
+   * actors / nodes 可以到 1024 而不是旧界的 256。没有这个位的消费者收到的仍是整键
+   * `state.updated`，并且先经 `clampWorkflowRunsForLegacy` 裁到旧界。
+   */
+  workflowRunDeltas: z.boolean().optional(),
+  pluginDiscovery: z.boolean().optional(),
+  historyFirst: z.boolean().optional(),
+  /**
+   * 本 Host 开启并转发 `v4/conversation/inputPrediction`。旧 Host 缺失等价于 false，
+   * 手机必须用 === true 判断，否则不发预测请求。
+   */
+  inputPrediction: z.boolean().optional(),
+  /** 本 Host 支持 rowsRange 的 `residency: "resident-only"`；缺失等价于 false，手机不得预加载。 */
+  residentRowsRange: z.boolean().optional(),
 });
 export type HostCapabilities = z.infer<typeof hostCapabilitiesSchema>;
 
@@ -67,7 +84,20 @@ export const clientHelloSchema = z
     clientKind: z.enum(["desktop", "web", "mobileRemote", "mobileApp"]).optional(),
     appVersion: z.string(),
     // 缺失代表旧客户端，不具备 Settings-centered review UI。
-    capabilities: z.object({ workspaceHookReviewUi: z.boolean().optional() }).strict().optional(),
+    capabilities: z
+      .object({
+        workspaceHookReviewUi: z.boolean().optional(),
+        /**
+         * 本客户端认得 `workflowRun.*` 增量。⚠ 声明规则是**单向**的：客户端只有在 Host 的
+         * hello 里见到 `workflowRunDeltas === true` 时才能带上这个键——这个 capabilities 对象
+         * 是 `.strict()` 的，老 Host 见到不认识的键会整条 clientHello 解析失败、连接握不上手。
+         */
+        workflowRunDeltas: z.boolean().optional(),
+        pluginDiscoveryUi: z.boolean().optional(),
+        historyFirst: z.boolean().optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type ClientHello = z.infer<typeof clientHelloSchema>;
@@ -80,13 +110,23 @@ export function clientSupportsWorkspaceHookReview(clientHello: ClientHello): boo
   return clientHello.capabilities?.workspaceHookReviewUi === true;
 }
 
-// ── 订阅 ──
+export function hostSupportsWorkflowRunDeltas(capabilities: HostCapabilities): boolean {
+  return capabilities.workflowRunDeltas === true;
+}
+
+export function clientSupportsWorkflowRunDeltas(clientHello: ClientHello): boolean {
+  return clientHello.capabilities?.workflowRunDeltas === true;
+}
+
+// ── §3.1 订阅 ──
 export const subscribeParamsSchema = z
   .object({
     // "conversation/<sessionId>" | "sessions-index/<workspaceId>" | ...
     topic: z.string(),
     // 水位不变量：仅当客户端真持有该时刻一致状态才允许带。
     base: z.object({ logEpoch: z.string(), seq: z.number() }).optional(),
+    // 手动重试仅消费当前 failed attempt；普通重连不重跑 hook。
+    retryInitialization: z.string().min(1).optional(),
     // QoS hint，只影响调度，不影响语义。
     visibility: z.enum(["foreground", "background"]).optional(),
   })
@@ -117,6 +157,7 @@ export const conversationOpenTimingSchema = z
     cliRequestMs: openTimingMsSchema,
     cliBootstrapMs: openTimingMsSchema,
     cliSessionRestoreMs: openTimingMsSchema,
+    historyReadyMs: openTimingMsSchema,
     initialFrameEncodeMs: openTimingMsSchema,
     cliProcessState: z.enum(["spawned", "reused"]).optional(),
     sessionRuntimeState: z.enum(["cold", "warm"]).optional(),
@@ -310,14 +351,18 @@ export const V4_METHODS = {
   controllerResync: "v4/controller/resync",
   controllerUnsubscribe: "v4/controller/unsubscribe",
   conversationSubscribe: "v4/conversation/subscribe",
+  sessionsIndexReconcile: "v4/sessionsIndex/reconcile",
   conversationResync: "v4/conversation/resync",
   conversationUnsubscribe: "v4/conversation/unsubscribe",
   // 行分页 query（rows/range）：只读、无状态、超时重发安全。
   conversationRowsRange: "v4/conversation/rowsRange",
+  // 手机输入预测（input-prediction.ts）：只读查询；旧 CLI 不认识时手机静默无 hint。
+  conversationInputPrediction: "v4/conversation/inputPrediction",
   // 当前有效分支的终态 ExitPlanMode 目录；只读、无状态、超时重发安全。
   conversationPlans: "v4/conversation/plans",
   conversationFileChanges: "v4/conversation/fileChanges",
   backgroundBashOutput: "v4/conversation/backgroundBashOutput",
+  offPeakControl: "v4/conversation/offPeakControl",
   conversationFileRewindPreview: "v4/conversation/fileRewindPreview",
   // workflow run 的事件日志分页（详情页审计面）：只读、无状态、超时重发安全。
   // 新方法天然偏斜安全——旧桌面根本不会调用它。
@@ -340,6 +385,15 @@ export const V4_METHODS = {
   // 故收敛为 v4 query 而非 host 直连；旧词 usage/stats、session/usage 就此消费清零。
   usageStats: "v4/usage/stats",
   conversationUsage: "v4/conversation/usage",
+  // context 组成（context-composition/contract.ts）：只读、existing-only；
+  // 旧 CLI 返回 method-not-found，App 当作 null。
+  conversationContextComposition: "v4/conversation/contextComposition",
+  // 项目数据彻底删除（schema 在 session-data.ts）：measure 只读；purge 幂等，已不存在的会话按 0 字节成功。
+  // 新方法偏斜安全：旧 CLI 返回 method-not-found，Host 据此不显示「删除数据」选项。
+  sessionDataMeasure: "v4/storage/sessionData/measure",
+  sessionDataPurge: "v4/storage/sessionData/purge",
+  sessionDeletionPreview: "v4/storage/sessionData/deletionPreview",
+  sessionDeletionExecute: "v4/storage/sessionData/deletionExecute",
   // 附件事务：禁止 full-data RPC。每个 chunk 的 decoded bytes <=512KiB，
   // renderer->host Channel 与 host->CLI NDJSON 都必须逐 request 证明 <=1MiB。
   attachmentBegin: "v4/attachment/begin",
@@ -380,6 +434,7 @@ export type V4ConnectionFlowParams = z.infer<typeof v4ConnectionFlowParamsSchema
 export const v4ConnectionFlowResultSchema = z.object({}).strict();
 
 export const V4_NOTIFICATIONS = {
+  offPeakLifecycle: "v4/offPeak/lifecycle",
   // 下行帧（snapshot / deltas），params = ConversationTopicFrame。
   conversationFrame: "v4/conversation/frame",
   // 仅 live ingest 的无正文事实；不进入 topic snapshot/recovery。
@@ -387,6 +442,11 @@ export const V4_NOTIFICATIONS = {
   localTtftFacts: "v4/telemetry/local-ttft",
   // 仅当前进程 live ToolCallResult 产生；历史与 replayable 链路不得补造。
   cuaPermissionObservation: "v4/cua/permission-observation",
+  pluginUiToolResult: "v4/plugin-ui/tool-result",
+  // context 组成变更：只带 { sessionId, revision }，live-only，不进 snapshot。
+  conversationContextCompositionChanged: "v4/conversation/contextCompositionChanged",
+  // 模型请求指标（telemetry.ts 的 modelRequestMetricsFactSchema）：live-only，旧 App 不认识即忽略。
+  modelRequestMetrics: "v4/telemetry/model-request-metrics",
 } as const;
 
 /** 3.3.6 SSH 历史任务归属证明与 sessions-index 冷种子共享同一有界窗口。 */
@@ -395,14 +455,29 @@ export const MAX_LEGACY_TASK_IDS_PER_SUBSCRIBE = 200;
 // subscribe 请求 = 通用 SubscribeParams + connectionId（重订阅替换按
 // (connectionId, topic) 判定；stdio 单管道场景由 host 为每个下游客户端分配）。
 export const v4ConversationSubscribeParamsSchema = subscribeParamsSchema.extend({
+  additionalDirectories: z.array(z.string().trim().min(1)).max(256).optional(),
   connectionId: z.string(),
   clientMode: z.enum(["desktop-continuous", "web-remote-replayable"]),
   // 当前可信 attachment 的 workspace；cold resume 优先使用它恢复身份，live 不消费。
   workspace: zcodeWorkspaceRefSchema.optional(),
   /** host 从当前 remote workspace 的 tasks-index 精确读取的旧任务归属 allowlist。 */
   legacyTaskIds: z.array(z.string().min(1)).max(MAX_LEGACY_TASK_IDS_PER_SUBSCRIBE).optional(),
+  /**
+   * 本地 workspace 下 cwd 与 workspace 目录不同的会话（受管 worktree 任务，docs/git/worktree.md
+   * §6.6.2）。CLI 本地冷列表只按 directory 扫描，看不到它们；host 从 tasks-index 精确提供 id，
+   * CLI 只为这些 id 补读摘要，不改写任何存储字段。
+   */
+  worktreeSessionIds: z.array(z.string().min(1)).max(MAX_LEGACY_TASK_IDS_PER_SUBSCRIBE).optional(),
   // 仅供 host→CLI cold resume 使用；live conversation 不消费该 hint。
   resumeThoughtLevel: z.string().trim().min(1).optional(),
+  /**
+   * 这条订阅收不收 `workflowRun.*` 键级增量。与 `clientMode` 同族：由**可信 host** 从该连接的
+   * clientHello 注入，面向 UI 的 subscribe 选不了它——一个客户端能不能认得增量是连接的事实，
+   * 不是某一次订阅可以自选的口味。缺席 = 按旧消费者处理（整键 patch + 旧界裁剪）。
+   */
+  workflowRunDeltas: z.boolean().optional(),
+  pluginDiscoveryUi: z.boolean().optional(),
+  historyFirst: z.boolean().optional(),
 });
 export type V4ConversationSubscribeParams = z.infer<typeof v4ConversationSubscribeParamsSchema>;
 
@@ -478,18 +553,25 @@ export type V4ConversationUnsubscribeParams = z.infer<typeof v4ConversationUnsub
 // ── rows/range（游标制行分页，loadOlder）──
 // 无 index 语义：全序 = rowId 升序；客户端按 rowId 键控合并。
 export const v4ConversationRowsRangeParamsSchema = z.object({
+  workspace: v4ColdResumeWorkspaceSchema,
   sessionId: z.string(),
   /** Host attachment injects this trusted value; renderer callers omit it. */
   clientMode: z.enum(["desktop-continuous", "web-remote-replayable"]).optional(),
   // 取 rowId < beforeRowId 的行；缺省 = 从当前尾部向前。
   beforeRowId: z.number().optional(),
   limit: z.number().min(1).max(PROTOCOL_V4_LIMITS.rowsRangeMaxLimit),
+  /**
+   * 手机预加载只读热会话：会话不在内存就报 proto.sessionNotResident，不冷恢复、不重建投影；
+   * Host 同时只复用已运行的工作区 CLI，不为它拉起进程。缺省 = 现有行为（按需冷恢复）。
+   */
+  residency: z.literal("resident-only").optional(),
 });
 export type V4ConversationRowsRangeParams = z.infer<typeof v4ConversationRowsRangeParamsSchema>;
 
 export const v4ConversationRowsRangeResultSchema = z.object({
-  // rowId 升序。
-  rows: z.array(conversationRowSchema),
+  // rowId 升序。历史回补与 snapshot 的 window 同档，逐行降级（封闭规则 13）：
+  // 补拉旧页时遇到读不懂的行不能让整次 rows/range 失败，那会让会话永远卷不到顶。
+  rows: z.array(displayConversationRowSchema),
   // 服务端取值时的水位/纪元；与 fileChanges 等只读查询共用，避免跨 revision 拼接发布数据。
   atSeq: z.number(),
   atRevision: z.number().int().nonnegative(),
@@ -503,6 +585,7 @@ export type V4ConversationRowsRangeResult = z.infer<typeof v4ConversationRowsRan
 // 目录来自 CLI 完整有效 projection，不能用 renderer 的有界 tail window 推导。
 export const v4ConversationPlansParamsSchema = z
   .object({
+    workspace: v4ColdResumeWorkspaceSchema,
     sessionId: z.string().min(1),
   })
   .strict();
@@ -530,6 +613,7 @@ const readonlyDiffHunkSchema = z
 
 export const v4ConversationFileChangesParamsSchema = z
   .object({
+    workspace: v4ColdResumeWorkspaceSchema,
     sessionId: z.string().min(1),
     target: conversationRowTargetSchema,
     baseRevision: z.number().int().nonnegative(),
@@ -565,13 +649,25 @@ export type V4ConversationFileChangesResult = z.infer<typeof v4ConversationFileC
 // （`appendEvent` 单调分配），在 workflowRuns[].lastEventSequence 抬升时重取。
 // 刻意**不是** v4 command：command 的 ACK 结果是 commandResultSchema 那个封闭的「变更结果」
 // 判别联合，把一页只读事件塞进去等于把读放进写的词汇表，还要白背 baseRevision/幂等那套机制。
+
+/**
+ * 事件日志一页的两道界，网关按它们取数（apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md
+ * 「Reading the journal」）。字节按存储里的序列化字节计、取协议单帧上限的四分之一：条数单独
+ * 管不住字节，500 条带着大 report item 的事件足以顶到单帧上限。
+ */
+export const WORKFLOW_RUN_EVENTS_PAGE_LIMITS = {
+  maxEvents: 500,
+  maxBytes: PROTOCOL_V4_LIMITS.logicalFrameAssemblyMaxBytes / 4,
+} as const;
+
 export const v4ConversationWorkflowRunEventsParamsSchema = z
   .object({
+    workspace: v4ColdResumeWorkspaceSchema,
     sessionId: z.string().min(1),
     runId: z.string().min(1),
     /** 只取 sequence 严格大于该值的事件；缺省从头取。 */
     afterSequence: z.number().int().nonnegative().optional(),
-    limit: z.number().int().positive().max(500).optional(),
+    limit: z.number().int().positive().max(WORKFLOW_RUN_EVENTS_PAGE_LIMITS.maxEvents).optional(),
   })
   .strict();
 export type V4ConversationWorkflowRunEventsParams = z.infer<
@@ -592,7 +688,7 @@ export const v4ConversationWorkflowRunEventsResultSchema = z
         })
         .strict(),
     ),
-    /** 本页取满 limit 且后面仍有事件。 */
+    /** 本页之后仍有事件（页可能因条数或字节上界提前收尾）。 */
     hasMore: z.boolean(),
   })
   .strict();
@@ -622,6 +718,7 @@ export type V4ConversationWorkflowRunEventsResult = z.infer<
 // 新方法天然偏斜安全：旧桌面永远不会调用它。
 export const v4ConversationWorkflowRunsParamsSchema = z
   .object({
+    workspace: v4ColdResumeWorkspaceSchema,
     sessionId: z.string().min(1),
     /** 返回条数上限；缺省与钳制在 CLI 侧（枚举面有界，绝不无界扫库）。 */
     limit: z.number().int().positive().max(64).optional(),
@@ -678,6 +775,7 @@ export type V4ConversationWorkflowRunsResult = z.infer<
 
 export const v4ConversationFileRewindPreviewParamsSchema = z
   .object({
+    workspace: v4ColdResumeWorkspaceSchema,
     sessionId: z.string().min(1),
     target: conversationRowTargetSchema,
     baseRevision: z.number().int().nonnegative(),
@@ -800,6 +898,7 @@ const v4AttachmentChecksumSchema = z.string().regex(/^sha256:[0-9a-f]{64}$/);
 
 export const v4AttachmentBeginParamsSchema = z
   .object({
+    workspace: v4ColdResumeWorkspaceSchema,
     connectionId: z.string().min(1),
     uploadId: v4AttachmentUploadIdSchema,
     sessionId: z.string().min(1),
@@ -923,6 +1022,7 @@ export const v4AttachmentAbortResultSchema = z.object({}).strict();
 /** 已发送 image/video/PDF 预览 query；ref 必须由 CLI 对当前 session projection 再授权。 */
 export const v4AttachmentReadParamsSchema = z
   .object({
+    workspace: v4ColdResumeWorkspaceSchema,
     sessionId: z.string().min(1),
     ref: z.string().min(1),
     // 新 renderer 用稳定 row 身份 + 附件序号消除同一路径跨轮歧义；两者必须成对出现。
@@ -945,6 +1045,7 @@ export type V4AttachmentReadParams = z.infer<typeof v4AttachmentReadParamsSchema
 /** Desktop local 已发送视频 source query；远端与 Web 必须返回 chunked。PDF 始终走 chunked。 */
 export const v4AttachmentPreviewSourceParamsSchema = z
   .object({
+    workspace: v4ColdResumeWorkspaceSchema,
     sessionId: z.string().min(1),
     ref: z.string().min(1),
     target: conversationRowTargetSchema.optional(),
@@ -985,8 +1086,9 @@ export const v4AttachmentReadResultSchema = z
         (value) =>
           value.startsWith("image/") ||
           value.startsWith("video/") ||
-          value.split(";", 1)[0]?.trim().toLowerCase() === "application/pdf",
-        "attachment preview only supports image/video/pdf media types",
+          value.split(";", 1)[0]?.trim().toLowerCase() === "application/pdf" ||
+          value.split(";", 1)[0]?.trim().toLowerCase() === "text/plain",
+        "attachment preview only supports image/video/pdf/plain text types",
       ),
     totalBytes: z.number().int().nonnegative().max(PROTOCOL_V4_LIMITS.attachmentPreviewMaxBytes),
     nextOffset: z.number().int().positive().nullable(),
@@ -994,7 +1096,9 @@ export const v4AttachmentReadResultSchema = z
   .strict()
   .superRefine((value, context) => {
     if (
-      value.mediaType.startsWith("image/") &&
+      // 根因：运行时已支持材料文本，响应 schema 仍只接受媒体，导致跨进程预览失败。
+      (value.mediaType.startsWith("image/") ||
+        value.mediaType.split(";", 1)[0]?.trim().toLowerCase() === "text/plain") &&
       value.totalBytes > PROTOCOL_V4_LIMITS.attachmentMaxBytes
     ) {
       context.addIssue({
@@ -1002,7 +1106,7 @@ export const v4AttachmentReadResultSchema = z
         maximum: PROTOCOL_V4_LIMITS.attachmentMaxBytes,
         origin: "number",
         inclusive: true,
-        message: "image preview exceeds total byte limit",
+        message: "image/text preview exceeds total byte limit",
         path: ["totalBytes"],
       });
     }
@@ -1034,6 +1138,7 @@ export type V4AttachmentReadResult = z.infer<typeof v4AttachmentReadResultSchema
 /** Share 读取用户输入附件，允许任意已授权 MIME，不改变媒体预览 read 的语义。 */
 export const v4ConversationAttachmentReadParamsSchema = z
   .object({
+    workspace: v4ColdResumeWorkspaceSchema,
     sessionId: z.string().min(1),
     ref: z.string().min(1),
     target: conversationRowTargetSchema,
@@ -1085,6 +1190,7 @@ export type V4ConversationAttachmentReadResult = z.infer<
 /** Share 选择阶段的 metadata-only 附件检查。 */
 export const v4ConversationAttachmentStatParamsSchema = z
   .object({
+    workspace: v4ColdResumeWorkspaceSchema,
     sessionId: z.string().min(1),
     ref: z.string().min(1),
     target: conversationRowTargetSchema,

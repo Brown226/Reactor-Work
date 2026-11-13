@@ -1,21 +1,30 @@
-/* oxlint-disable eslint(max-lines) -- settings helper 聚合多个设置分组；终端、网络与自动归档多侧能力暂时超过行数限制。 */
+/* oxlint-disable eslint(max-lines) -- settings helper 聚合应用常规、Agent 行为与自动归档设置。 */
 import type {
+  AppToolSearchMode,
   IntegratedTerminalShellOption,
   IntegratedTerminalShellSelection,
   LocalePreference,
   ZCodeInteractionBehavior,
 } from "@zcode/shared";
 import {
+  appToolSearchModeSchema,
+  DEFAULT_APP_TOOL_SEARCH_MODE,
+  LOCALE_NATIVE_NAMES,
+  SUPPORTED_LOCALES,
+} from "@zcode/shared";
+import {
   TID_SETTINGS_ASK_USER_QUESTION_AUTO_RESOLUTION_SWITCH,
   TID_SETTINGS_NATIVE_SEARCH_SWITCH,
-} from "@zcode/shared";
+  TID_SETTINGS_TOOL_SEARCH_SELECT,
+  TID_SETTINGS_TOOL_SEARCH_OPTION,
+} from "@zcode/shared/test-ids";
 import { useState, useCallback, useEffect } from "react";
 import type { IPlatformService } from "@zcode/shared";
 import {
   TID_SETTINGS_LOCALE_SELECT_ITEM,
   TID_SETTINGS_LOCALE_SELECT_TRIGGER,
   testId,
-} from "@zcode/shared";
+} from "@zcode/shared/test-ids";
 import {
   Select,
   SelectContent,
@@ -26,23 +35,105 @@ import {
 import { Switch } from "@/components/ui/switch.js";
 import { Input } from "@/components/ui/input.js";
 import { Button } from "@/components/ui/button.js";
-import { SettingsBadge, SettingsGroupCard, SettingsRow } from "@/settings/SettingsPageParts.js";
+import { SettingsGroupCard, SettingsRow } from "@/settings/SettingsPageParts.js";
 import { DataBaseDirControl } from "@/settings/DataBaseDirControl.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useOptionalServices } from "@/hooks/useServices.js";
 import { ProactiveSuggestionsSetting } from "@/settings/ProactiveSuggestionsSetting.js";
+import { PluginAutoRecommendationSetting } from "@/settings/PluginAutoRecommendationSetting.js";
+import { DynamicWorkflowModeSetting } from "@/settings/DynamicWorkflowModeSetting.js";
+import type { InterfaceMode } from "@/lib/interfaceMode.js";
 import {
   createSettingsPageConfig,
   resolveSettingsSectionForPlatform,
+  SETTINGS_SECTION_GROUPS,
+  SETTINGS_SECTIONS,
+  isSettingsSectionAvailable,
   type SettingsSectionId,
 } from "@/settings/settingsPageConfig.js";
 
 export type { Locale, LocalePreference } from "@zcode/shared";
 export { type SettingsSectionId };
 export { createSettingsPageConfig, resolveSettingsSectionForPlatform };
+export { SETTINGS_SECTION_GROUPS, SETTINGS_SECTIONS };
+export { isSettingsSectionAvailable };
 
 const TASK_AUTO_ARCHIVE_DAY_OPTIONS = [3, 7, 14, 30] as const;
 const ZCODE_INTERACTION_BEHAVIOR_OPTIONS: readonly ZCodeInteractionBehavior[] = ["queue", "guide"];
+
+/**
+ * 归档偏好与归档列表集中展示，设置值和保存动作继续由 SettingsPage 持有。
+ * Bugfix：关闭时禁用时长会迫使用户先开启归档，旧阈值可能立即生效；允许先保存时长再开启。
+ */
+export function TaskAutoArchiveSettings({
+  taskAutoArchiveEnabled,
+  taskAutoArchiveOlderThanDays,
+  onTaskAutoArchiveEnabledChange,
+  onTaskAutoArchiveOlderThanDaysChange,
+}: {
+  taskAutoArchiveEnabled: boolean;
+  taskAutoArchiveOlderThanDays: number;
+  onTaskAutoArchiveEnabledChange: (enabled: boolean) => Promise<void>;
+  onTaskAutoArchiveOlderThanDaysChange: (days: number) => Promise<void>;
+}) {
+  const { intl } = useZCodeIntl();
+  return (
+    <SettingsGroupCard>
+      <SettingsRow
+        searchId="settings.taskAutoArchive"
+        controlLayout="wide"
+        label={intl.formatMessage({ id: "settings.taskAutoArchive" })}
+        description={intl.formatMessage({
+          id: "settings.taskAutoArchiveDescription",
+        })}
+        control={
+          <Switch
+            data-testid="archive-auto-archive-switch"
+            aria-label={intl.formatMessage({ id: "settings.taskAutoArchive" })}
+            checked={taskAutoArchiveEnabled}
+            onCheckedChange={(checked) => {
+              void onTaskAutoArchiveEnabledChange(checked);
+            }}
+          />
+        }
+      />
+      <SettingsRow
+        searchId="settings.taskAutoArchiveDays"
+        controlLayout="wide"
+        label={intl.formatMessage({ id: "settings.taskAutoArchiveDays" })}
+        description={intl.formatMessage({
+          id: "settings.taskAutoArchiveDaysDescription",
+        })}
+        control={
+          <Select
+            value={String(taskAutoArchiveOlderThanDays)}
+            onValueChange={(value) => {
+              void onTaskAutoArchiveOlderThanDaysChange(Number(value));
+            }}
+          >
+            <SelectTrigger
+              data-testid="archive-auto-archive-days"
+              aria-label={intl.formatMessage({ id: "settings.taskAutoArchiveDays" })}
+              size="lg"
+              className="w-full min-w-0 justify-between"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TASK_AUTO_ARCHIVE_DAY_OPTIONS.map((days) => (
+                <SelectItem key={days} value={String(days)}>
+                  {intl.formatMessage({
+                    id: `settings.taskAutoArchiveDays.option.${days}`,
+                  })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        }
+      />
+    </SettingsGroupCard>
+  );
+}
 
 export function GeneralSectionContent({
   localePreference,
@@ -51,6 +142,8 @@ export function GeneralSectionContent({
   closeToTrayOnWindows,
   keepAwakeWhileRunning = false,
   launchAtLogin = false,
+  mobilePushEnabled = true,
+  onMobilePushEnabledChange = async () => {},
   desktopChromiumHardwareAccelerationEnabled = true,
   receivePreviewUpdates,
   autoDownloadAndInstallUpdates,
@@ -59,59 +152,46 @@ export function GeneralSectionContent({
   terminalFontFamily = "",
   integratedTerminalShell = { mode: "auto" },
   integratedTerminalShellOptions = [],
-  nativeSearchEnhancementsEnabled,
   httpProxy = "",
   httpProxyNoProxy = "",
   httpProxyCaCertPath = "",
   defaultHomeDir,
   isDesktop,
   isWindowsDesktop,
+  isLinuxDesktop,
+  linuxCloseToTray,
   showIntegratedTerminalShell = false,
   setLocalePreference,
   setNotificationEnabled,
   setNotificationSoundEnabled,
-  taskAutoArchiveEnabled,
-  taskAutoArchiveOlderThanDays,
-  messageStreamShowReasoning,
-  messageStreamShowTodos,
-  toolGroupingExploreEnabled,
-  toolGroupingTerminalEnabled,
-  toolGroupingChangesEnabled,
-  zcodeInteractionBehavior,
-  askUserQuestionAutoResolutionEnabled = true,
-  modelIoFullRetentionEnabled = false,
   onDataBaseDirChange,
   onSelectDataBaseDir,
   onTerminalInheritSystemProfileChange = async () => {},
   onTerminalFontFamilyChange = async () => {},
   onIntegratedTerminalShellChange = async () => {},
-  onNativeSearchEnhancementsEnabledChange,
   onHttpProxyChange = async () => {},
   onHttpProxyNoProxyChange = async () => {},
   onHttpProxyCaCertPathChange = async () => {},
-  onTaskAutoArchiveEnabledChange,
-  onTaskAutoArchiveOlderThanDaysChange,
   onCloseToTrayOnWindowsChange,
   onKeepAwakeWhileRunningChange = async () => {},
   onLaunchAtLoginChange = async () => {},
   onDesktopChromiumHardwareAccelerationChange = async () => {},
   onReceivePreviewUpdatesChange,
   onAutoDownloadAndInstallUpdatesChange,
-  onMessageStreamShowReasoningChange,
-  onMessageStreamShowTodosChange,
-  onToolGroupingExploreEnabledChange,
-  onToolGroupingTerminalEnabledChange,
-  onToolGroupingChangesEnabledChange,
-  onZCodeInteractionBehaviorChange,
-  onAskUserQuestionAutoResolutionEnabledChange = async () => {},
-  onModelIoFullRetentionEnabledChange = async () => {},
+  onOpenOnboardingDialog,
 }: {
   localePreference: LocalePreference;
+  /** 本地已移除设置页的界面模式下拉（三档切换在主面板草稿区）；仍接收调用方传参以保持接口稳定。 */
+  interfaceMode?: InterfaceMode;
+  setInterfaceMode?: (mode: InterfaceMode) => void;
   notificationEnabled: boolean;
   notificationSoundEnabled: boolean;
   closeToTrayOnWindows: boolean;
   keepAwakeWhileRunning?: boolean;
   launchAtLogin?: boolean;
+  /** 本机 offline push 上报开关（spec：docs/web-remote-control/mobile-event-push.md 6.4），仅桌面端展示 */
+  mobilePushEnabled?: boolean;
+  onMobilePushEnabledChange?: (enabled: boolean) => Promise<void>;
   desktopChromiumHardwareAccelerationEnabled?: boolean;
   receivePreviewUpdates: boolean;
   autoDownloadAndInstallUpdates: boolean;
@@ -120,53 +200,43 @@ export function GeneralSectionContent({
   terminalFontFamily: string;
   integratedTerminalShell?: IntegratedTerminalShellSelection;
   integratedTerminalShellOptions?: IntegratedTerminalShellOption[];
-  nativeSearchEnhancementsEnabled: boolean;
   httpProxy?: string;
   httpProxyNoProxy?: string;
   httpProxyCaCertPath?: string;
   defaultHomeDir: string;
   isDesktop?: boolean;
   isWindowsDesktop?: boolean;
+  /** Linux 桌面端（isDesktop 且非 win/mac）；关闭驻留托盘设置在 Linux 上按能力自适应展示 */
+  isLinuxDesktop?: boolean;
+  /** Linux 关闭驻留托盘能力状态（spec：docs/desktop/linux-close-to-tray.md）；Windows 不传 */
+  linuxCloseToTray?: {
+    /** 能力探测中或确认不可用，开关锁定 */
+    disabled: boolean;
+    /** 确认不可用（描述文案切换为"未提供系统托盘"） */
+    unavailable: boolean;
+    /** GNOME 系桌面且无托盘（追加 AppIndicator 扩展安装提示） */
+    gnomeLikeHint: boolean;
+  };
   showIntegratedTerminalShell?: boolean;
   platform?: IPlatformService;
   setLocalePreference: (locale: LocalePreference) => void;
   setNotificationEnabled: (enabled: boolean) => void;
   setNotificationSoundEnabled: (enabled: boolean) => void;
-  taskAutoArchiveEnabled: boolean;
-  taskAutoArchiveOlderThanDays: number;
-  messageStreamShowReasoning: boolean;
-  messageStreamShowTodos: boolean;
-  toolGroupingExploreEnabled: boolean;
-  toolGroupingTerminalEnabled: boolean;
-  toolGroupingChangesEnabled: boolean;
-  zcodeInteractionBehavior: ZCodeInteractionBehavior;
-  askUserQuestionAutoResolutionEnabled?: boolean;
-  modelIoFullRetentionEnabled?: boolean;
   onDataBaseDirChange: (dir: string) => Promise<void>;
   onSelectDataBaseDir: () => Promise<string | null>;
   onTerminalInheritSystemProfileChange: (enabled: boolean) => Promise<void>;
   onTerminalFontFamilyChange: (fontFamily: string) => Promise<void>;
   onIntegratedTerminalShellChange?: (selection: IntegratedTerminalShellSelection) => Promise<void>;
-  onNativeSearchEnhancementsEnabledChange: (enabled: boolean) => Promise<void>;
   onHttpProxyChange?: (httpProxy: string) => Promise<void>;
   onHttpProxyNoProxyChange?: (noProxy: string) => Promise<void>;
   onHttpProxyCaCertPathChange?: (caCertPath: string) => Promise<void>;
-  onTaskAutoArchiveEnabledChange: (enabled: boolean) => Promise<void>;
-  onTaskAutoArchiveOlderThanDaysChange: (days: number) => Promise<void>;
   onCloseToTrayOnWindowsChange: (enabled: boolean) => Promise<void>;
   onKeepAwakeWhileRunningChange?: (enabled: boolean) => Promise<void>;
   onLaunchAtLoginChange?: (enabled: boolean) => Promise<void>;
   onDesktopChromiumHardwareAccelerationChange?: (enabled: boolean) => Promise<void>;
   onReceivePreviewUpdatesChange: (enabled: boolean) => Promise<void>;
   onAutoDownloadAndInstallUpdatesChange: (enabled: boolean) => Promise<void>;
-  onMessageStreamShowReasoningChange: (enabled: boolean) => Promise<void>;
-  onMessageStreamShowTodosChange: (enabled: boolean) => Promise<void>;
-  onToolGroupingExploreEnabledChange: (enabled: boolean) => Promise<void>;
-  onToolGroupingTerminalEnabledChange: (enabled: boolean) => Promise<void>;
-  onToolGroupingChangesEnabledChange: (enabled: boolean) => Promise<void>;
-  onZCodeInteractionBehaviorChange: (behavior: ZCodeInteractionBehavior) => Promise<void>;
-  onAskUserQuestionAutoResolutionEnabledChange?: (enabled: boolean) => Promise<void>;
-  onModelIoFullRetentionEnabledChange?: (enabled: boolean) => Promise<void>;
+  onOpenOnboardingDialog: () => void;
 }) {
   const { intl } = useZCodeIntl();
   const hasServices = Boolean(useOptionalServices());
@@ -277,6 +347,7 @@ export function GeneralSectionContent({
     <div className="space-y-4">
       <SettingsGroupCard>
         <SettingsRow
+          searchId="settings.locale"
           label={intl.formatMessage({ id: "settings.locale" })}
           description={intl.formatMessage({ id: "settings.localeDescription" })}
           control={
@@ -298,18 +369,17 @@ export function GeneralSectionContent({
                 >
                   {intl.formatMessage({ id: "settings.locale.system" })}
                 </SelectItem>
-                <SelectItem
-                  value="zh-CN"
-                  data-testid={testId(TID_SETTINGS_LOCALE_SELECT_ITEM, "zh-CN")}
-                >
-                  {intl.formatMessage({ id: "settings.locale.zh-CN" })}
-                </SelectItem>
-                <SelectItem
-                  value="en-US"
-                  data-testid={testId(TID_SETTINGS_LOCALE_SELECT_ITEM, "en-US")}
-                >
-                  {intl.formatMessage({ id: "settings.locale.en-US" })}
-                </SelectItem>
+                {/* 语言选项显示各语言本名（LOCALE_NATIVE_NAMES），不随界面语言翻译。 */}
+                {SUPPORTED_LOCALES.map((locale) => (
+                  <SelectItem
+                    key={locale}
+                    value={locale}
+                    lang={locale}
+                    data-testid={testId(TID_SETTINGS_LOCALE_SELECT_ITEM, locale)}
+                  >
+                    {LOCALE_NATIVE_NAMES[locale]}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           }
@@ -325,6 +395,7 @@ export function GeneralSectionContent({
 
       <SettingsGroupCard>
         <SettingsRow
+          searchId="settings.terminalProfile"
           label={intl.formatMessage({ id: "settings.terminalProfile" })}
           description={intl.formatMessage({ id: "settings.terminalProfileDescription" })}
           control={
@@ -337,6 +408,7 @@ export function GeneralSectionContent({
           }
         />
         <SettingsRow
+          searchId="settings.terminalFontFamily"
           label={intl.formatMessage({ id: "settings.terminalFontFamily" })}
           description={intl.formatMessage({ id: "settings.terminalFontFamilyDescription" })}
           control={
@@ -370,6 +442,7 @@ export function GeneralSectionContent({
         />
         {showIntegratedTerminalShell ? (
           <SettingsRow
+            searchId="settings.integratedTerminalShell"
             label={intl.formatMessage({ id: "settings.integratedTerminalShell" })}
             description={intl.formatMessage({
               id: "settings.integratedTerminalShellDescription",
@@ -398,30 +471,11 @@ export function GeneralSectionContent({
             }
           />
         ) : null}
-        <SettingsRow
-          label={intl.formatMessage({
-            id: "settings.nativeSearchEnhancements",
-          })}
-          description={intl.formatMessage({
-            id: "settings.nativeSearchEnhancementsDescription",
-          })}
-          control={
-            <Switch
-              aria-label={intl.formatMessage({
-                id: "settings.nativeSearchEnhancements",
-              })}
-              checked={nativeSearchEnhancementsEnabled}
-              data-testid={TID_SETTINGS_NATIVE_SEARCH_SWITCH}
-              onCheckedChange={(checked) => {
-                void onNativeSearchEnhancementsEnabledChange(checked);
-              }}
-            />
-          }
-        />
       </SettingsGroupCard>
 
       <SettingsGroupCard>
         <SettingsRow
+          searchId="settings.httpProxy"
           label={intl.formatMessage({ id: "settings.httpProxy" })}
           description={intl.formatMessage({ id: "settings.httpProxyDescription" })}
           control={
@@ -455,6 +509,7 @@ export function GeneralSectionContent({
         />
         {/* No Proxy 与 HTTP 代理共同决定同一出口策略，必须贴在代理地址下面。*/}
         <SettingsRow
+          searchId="settings.httpProxyNoProxy"
           label={intl.formatMessage({ id: "settings.httpProxyNoProxy" })}
           description={intl.formatMessage({
             id: "settings.httpProxyNoProxyDescription",
@@ -490,6 +545,7 @@ export function GeneralSectionContent({
         />
         {/* 自定义 CA 属于 HTTP 代理的同一网络出口策略，必须跟代理输入放在同一卡片里。*/}
         <SettingsRow
+          searchId="settings.httpProxyCaCertPath"
           label={intl.formatMessage({ id: "settings.httpProxyCaCertPath" })}
           description={intl.formatMessage({
             id: "settings.httpProxyCaCertPathDescription",
@@ -529,6 +585,7 @@ export function GeneralSectionContent({
         {isDesktop ? (
           <>
             <SettingsRow
+              searchId="settings.desktopChromiumHardwareAcceleration"
               label={intl.formatMessage({
                 id: "settings.desktopChromiumHardwareAcceleration",
               })}
@@ -548,6 +605,7 @@ export function GeneralSectionContent({
               }
             />
             <SettingsRow
+              searchId="settings.receivePreviewUpdates"
               label={intl.formatMessage({ id: "settings.receivePreviewUpdates" })}
               description={intl.formatMessage({
                 id: "settings.receivePreviewUpdatesDescription",
@@ -563,6 +621,7 @@ export function GeneralSectionContent({
               }
             />
             <SettingsRow
+              searchId="settings.autoDownloadAndInstallUpdates"
               label={intl.formatMessage({
                 id: "settings.autoDownloadAndInstallUpdates",
               })}
@@ -584,6 +643,7 @@ export function GeneralSectionContent({
           </>
         ) : null}
         <SettingsRow
+          searchId="settings.notification"
           label={intl.formatMessage({ id: "settings.notification" })}
           description={intl.formatMessage({
             id: "settings.notificationDescription",
@@ -593,6 +653,7 @@ export function GeneralSectionContent({
           }
         />
         <SettingsRow
+          searchId="settings.notificationSound"
           label={intl.formatMessage({ id: "settings.notificationSound" })}
           description={intl.formatMessage({
             id: "settings.notificationSoundDescription",
@@ -605,15 +666,42 @@ export function GeneralSectionContent({
             />
           }
         />
-        {isWindowsDesktop ? (
+        {isDesktop ? (
           <SettingsRow
+            searchId="settings.mobilePush"
+            label={intl.formatMessage({ id: "settings.mobilePush" })}
+            description={intl.formatMessage({ id: "settings.mobilePushDescription" })}
+            control={
+              <Switch
+                aria-label={intl.formatMessage({ id: "settings.mobilePush" })}
+                data-testid="settings-mobile-push-switch"
+                checked={mobilePushEnabled}
+                onCheckedChange={(checked) => {
+                  void onMobilePushEnabledChange(checked);
+                }}
+              />
+            }
+          />
+        ) : null}
+        {isWindowsDesktop || isLinuxDesktop ? (
+          <SettingsRow
+            searchId="settings.closeToTrayOnWindows"
             label={intl.formatMessage({ id: "settings.closeToTrayOnWindows" })}
-            description={intl.formatMessage({
-              id: "settings.closeToTrayOnWindowsDescription",
-            })}
+            description={
+              linuxCloseToTray?.unavailable
+                ? linuxCloseToTray.gnomeLikeHint
+                  ? `${intl.formatMessage({ id: "settings.closeToTrayUnavailable" })} ${intl.formatMessage({ id: "settings.closeToTrayGnomeHint" })}`
+                  : intl.formatMessage({ id: "settings.closeToTrayUnavailable" })
+                : intl.formatMessage({
+                    id: "settings.closeToTrayOnWindowsDescription",
+                  })
+            }
             control={
               <Switch
                 checked={closeToTrayOnWindows}
+                // Linux 上托盘能力未知（探测中）或确认不可用时都锁定，防止误开导致关窗失联
+                //（spec：docs/desktop/linux-close-to-tray.md）。
+                disabled={Boolean(linuxCloseToTray?.disabled)}
                 onCheckedChange={(checked) => {
                   void onCloseToTrayOnWindowsChange(checked);
                 }}
@@ -623,6 +711,7 @@ export function GeneralSectionContent({
         ) : null}
         {isDesktop ? (
           <SettingsRow
+            searchId="settings.keepAwakeWhileRunning"
             label={intl.formatMessage({ id: "settings.keepAwakeWhileRunning" })}
             description={intl.formatMessage({
               id: "settings.keepAwakeWhileRunningDescription",
@@ -661,6 +750,140 @@ export function GeneralSectionContent({
 
       <SettingsGroupCard>
         <SettingsRow
+          searchId="settings.dataBaseDir"
+          label={intl.formatMessage({ id: "settings.dataBaseDir" })}
+          description={intl.formatMessage({
+            id: "settings.dataBaseDirDescription",
+          })}
+          control={
+            <DataBaseDirControl
+              dataBaseDir={dataBaseDir}
+              defaultHomeDir={defaultHomeDir}
+              onDataBaseDirChange={onDataBaseDirChange}
+              onSelectDataBaseDir={onSelectDataBaseDir}
+            />
+          }
+        />
+      </SettingsGroupCard>
+
+      <SettingsGroupCard>
+        <SettingsRow
+          searchId="settings.onboarding"
+          label={intl.formatMessage({ id: "settings.onboarding" })}
+          description={intl.formatMessage({
+            id: "settings.onboardingDescription",
+          })}
+          control={
+            <Button type="button" size="lg" variant="outline" onClick={onOpenOnboardingDialog}>
+              {intl.formatMessage({ id: "settings.onboardingOpen" })}
+            </Button>
+          }
+        />
+      </SettingsGroupCard>
+    </div>
+  );
+}
+
+export function AgentBehaviorSectionContent({
+  toolSearchMode = DEFAULT_APP_TOOL_SEARCH_MODE,
+  onToolSearchModeChange,
+  nativeSearchEnhancementsEnabled,
+  messageStreamShowReasoning,
+  messageStreamShowTodos,
+  zcodeInteractionBehavior,
+  askUserQuestionAutoResolutionEnabled = true,
+  modelIoFullRetentionEnabled = false,
+  onNativeSearchEnhancementsEnabledChange,
+  onMessageStreamShowReasoningChange,
+  onMessageStreamShowTodosChange,
+  onZCodeInteractionBehaviorChange,
+  onAskUserQuestionAutoResolutionEnabledChange = async () => {},
+  onModelIoFullRetentionEnabledChange = async () => {},
+}: {
+  toolSearchMode?: AppToolSearchMode;
+  onToolSearchModeChange: (mode: AppToolSearchMode) => Promise<void>;
+  nativeSearchEnhancementsEnabled: boolean;
+  messageStreamShowReasoning: boolean;
+  messageStreamShowTodos: boolean;
+  zcodeInteractionBehavior: ZCodeInteractionBehavior;
+  askUserQuestionAutoResolutionEnabled?: boolean;
+  modelIoFullRetentionEnabled?: boolean;
+  onNativeSearchEnhancementsEnabledChange: (enabled: boolean) => Promise<void>;
+  onMessageStreamShowReasoningChange: (enabled: boolean) => Promise<void>;
+  onMessageStreamShowTodosChange: (enabled: boolean) => Promise<void>;
+  onZCodeInteractionBehaviorChange: (behavior: ZCodeInteractionBehavior) => Promise<void>;
+  onAskUserQuestionAutoResolutionEnabledChange?: (enabled: boolean) => Promise<void>;
+  onModelIoFullRetentionEnabledChange?: (enabled: boolean) => Promise<void>;
+}) {
+  const { intl } = useZCodeIntl();
+  const hasServices = Boolean(useOptionalServices());
+
+  return (
+    <div className="space-y-4">
+      <SettingsGroupCard>
+        <SettingsRow
+          searchId="settings.toolSearch"
+          label={intl.formatMessage({ id: "settings.toolSearch" })}
+          description={intl.formatMessage({ id: "settings.toolSearchDescription" })}
+          detail={
+            <p className="text-ui-sm leading-5 text-foreground-subtle">
+              {intl.formatMessage({ id: "settings.toolSearchExperimentalNotice" })}
+            </p>
+          }
+          control={
+            <Select
+              value={toolSearchMode}
+              onValueChange={(value) => {
+                void onToolSearchModeChange(appToolSearchModeSchema.parse(value));
+              }}
+            >
+              <SelectTrigger
+                size="lg"
+                className="w-[260px] min-w-0 justify-between"
+                data-testid={TID_SETTINGS_TOOL_SEARCH_SELECT}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {appToolSearchModeSchema.options.map((mode) => (
+                  <SelectItem
+                    key={mode}
+                    value={mode}
+                    data-testid={testId(TID_SETTINGS_TOOL_SEARCH_OPTION, mode)}
+                  >
+                    {intl.formatMessage({ id: `settings.toolSearch.${mode}` })}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          }
+        />
+        <SettingsRow
+          searchId="settings.nativeSearchEnhancements"
+          label={intl.formatMessage({
+            id: "settings.nativeSearchEnhancements",
+          })}
+          description={intl.formatMessage({
+            id: "settings.nativeSearchEnhancementsDescription",
+          })}
+          control={
+            <Switch
+              aria-label={intl.formatMessage({
+                id: "settings.nativeSearchEnhancements",
+              })}
+              checked={nativeSearchEnhancementsEnabled}
+              data-testid={TID_SETTINGS_NATIVE_SEARCH_SWITCH}
+              onCheckedChange={(checked) => {
+                void onNativeSearchEnhancementsEnabledChange(checked);
+              }}
+            />
+          }
+        />
+      </SettingsGroupCard>
+
+      <SettingsGroupCard>
+        <SettingsRow
+          searchId="settings.zcodeInteractionBehavior"
           label={intl.formatMessage({ id: "settings.zcodeInteractionBehavior" })}
           description={intl.formatMessage({
             id: "settings.zcodeInteractionBehaviorDescription",
@@ -688,6 +911,7 @@ export function GeneralSectionContent({
           }
         />
         <SettingsRow
+          searchId="settings.askUserQuestionAutoResolution"
           label={intl.formatMessage({
             id: "settings.askUserQuestionAutoResolution",
           })}
@@ -707,7 +931,11 @@ export function GeneralSectionContent({
             />
           }
         />
+        {/* docs/dynamic-workflow/launch.md「The user's choice」：服务端未提供时整行不渲染。 */}
+        {hasServices ? <PluginAutoRecommendationSetting /> : null}
+        {hasServices ? <DynamicWorkflowModeSetting /> : null}
         <SettingsRow
+          searchId="settings.modelIoFullRetention"
           label={intl.formatMessage({ id: "settings.modelIoFullRetention" })}
           description={intl.formatMessage({
             id: "settings.modelIoFullRetentionDescription",
@@ -723,6 +951,7 @@ export function GeneralSectionContent({
           }
         />
         <SettingsRow
+          searchId="settings.messageStreamShowReasoning"
           label={intl.formatMessage({ id: "settings.messageStreamShowReasoning" })}
           description={intl.formatMessage({
             id: "settings.messageStreamShowReasoningDescription",
@@ -738,6 +967,7 @@ export function GeneralSectionContent({
           }
         />
         <SettingsRow
+          searchId="settings.messageStreamShowTodos"
           label={intl.formatMessage({ id: "settings.messageStreamShowTodos" })}
           description={intl.formatMessage({
             id: "settings.messageStreamShowTodosDescription",
@@ -752,126 +982,7 @@ export function GeneralSectionContent({
             />
           }
         />
-        <SettingsRow
-          label={intl.formatMessage({ id: "settings.toolGroupingExplore" })}
-          description={intl.formatMessage({
-            id: "settings.toolGroupingExploreDescription",
-          })}
-          control={
-            <Switch
-              aria-label={intl.formatMessage({ id: "settings.toolGroupingExplore" })}
-              checked={toolGroupingExploreEnabled}
-              onCheckedChange={(checked) => {
-                void onToolGroupingExploreEnabledChange(checked);
-              }}
-            />
-          }
-        />
-        <SettingsRow
-          label={intl.formatMessage({ id: "settings.toolGroupingTerminal" })}
-          description={intl.formatMessage({
-            id: "settings.toolGroupingTerminalDescription",
-          })}
-          control={
-            <Switch
-              aria-label={intl.formatMessage({ id: "settings.toolGroupingTerminal" })}
-              checked={toolGroupingTerminalEnabled}
-              onCheckedChange={(checked) => {
-                void onToolGroupingTerminalEnabledChange(checked);
-              }}
-            />
-          }
-        />
-        <SettingsRow
-          label={intl.formatMessage({ id: "settings.toolGroupingChanges" })}
-          description={intl.formatMessage({
-            id: "settings.toolGroupingChangesDescription",
-          })}
-          control={
-            <Switch
-              aria-label={intl.formatMessage({ id: "settings.toolGroupingChanges" })}
-              checked={toolGroupingChangesEnabled}
-              onCheckedChange={(checked) => {
-                void onToolGroupingChangesEnabledChange(checked);
-              }}
-            />
-          }
-        />
       </SettingsGroupCard>
-
-      <SettingsGroupCard>
-        <SettingsRow
-          label={intl.formatMessage({ id: "settings.taskAutoArchive" })}
-          description={intl.formatMessage({
-            id: "settings.taskAutoArchiveDescription",
-          })}
-          control={
-            <Switch
-              checked={taskAutoArchiveEnabled}
-              onCheckedChange={(checked) => {
-                void onTaskAutoArchiveEnabledChange(checked);
-              }}
-            />
-          }
-        />
-        <SettingsRow
-          label={intl.formatMessage({ id: "settings.taskAutoArchiveDays" })}
-          description={intl.formatMessage({
-            id: "settings.taskAutoArchiveDaysDescription",
-          })}
-          control={
-            <Select
-              value={String(taskAutoArchiveOlderThanDays)}
-              onValueChange={(value) => {
-                void onTaskAutoArchiveOlderThanDaysChange(Number(value));
-              }}
-              disabled={!taskAutoArchiveEnabled}
-            >
-              <SelectTrigger size="lg" className="w-[260px] min-w-0 justify-between">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TASK_AUTO_ARCHIVE_DAY_OPTIONS.map((days) => (
-                  <SelectItem key={days} value={String(days)}>
-                    {intl.formatMessage({
-                      id: `settings.taskAutoArchiveDays.option.${days}`,
-                    })}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          }
-        />
-      </SettingsGroupCard>
-
-      <SettingsGroupCard>
-        <SettingsRow
-          label={intl.formatMessage({ id: "settings.dataBaseDir" })}
-          description={intl.formatMessage({
-            id: "settings.dataBaseDirDescription",
-          })}
-          control={
-            <DataBaseDirControl
-              dataBaseDir={dataBaseDir}
-              defaultHomeDir={defaultHomeDir}
-              onDataBaseDirChange={onDataBaseDirChange}
-              onSelectDataBaseDir={onSelectDataBaseDir}
-            />
-          }
-        />
-      </SettingsGroupCard>
-    </div>
-  );
-}
-
-export function GeneralSectionHeader({ localePreference }: { localePreference: LocalePreference }) {
-  const { intl } = useZCodeIntl();
-
-  return (
-    <div className="mt-4 flex flex-wrap gap-2">
-      <SettingsBadge>
-        {intl.formatMessage({ id: `settings.locale.${localePreference}` })}
-      </SettingsBadge>
     </div>
   );
 }

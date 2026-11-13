@@ -12,7 +12,8 @@
 
 import {
   EVAL_WORKFLOW_SNIPPET_DEFAULT_TIMEOUT_MS,
-  EVAL_WORKFLOW_SNIPPET_SOURCE_ERROR,
+  EVAL_WORKFLOW_SNIPPET_SOURCE_CONFLICT_ERROR,
+  EVAL_WORKFLOW_SNIPPET_SOURCE_MISSING_ERROR,
   EVAL_WORKFLOW_SNIPPET_TOOL_NAME,
   EvalWorkflowSnippetInputJsonSchema,
   EvalWorkflowSnippetInputSchema,
@@ -43,6 +44,7 @@ import { EVAL_WORKFLOW_SNIPPET_TOOL_DESCRIPTION } from "./eval-workflow-snippet-
 import { readWorkflowScriptFile } from "./workflow-path-source.js";
 import { formatWorkflowDiagnosticLines } from "./workflow-script-notes.js";
 import { describeWorkflowScriptPath } from "./workflow-script-path.js";
+import { requireDynamicWorkflowSkill } from "./workflow-skill-gate.js";
 
 // 工具级超时是**外层兜底**，不是 snippet 的墙钟：入参 timeoutMs（≤600s）驱动 harness
 // 到点 kill 子进程并正常返回失败；这里再留编译与收尾的余量。双时钟语义刻意不存在——
@@ -66,10 +68,14 @@ function validateEvalWorkflowSnippetInput(input: unknown): ToolInputValidationRe
   const hasCode = parsed.data.code !== undefined;
   const hasPath = parsed.data.path !== undefined;
   if (hasCode === hasPath) {
+    // 「两个都给」与「两个都没给」分开报：后者多半是参数 JSON 没解析出来、被 adapter 恢复成 `{}`
+    // （见 WORKFLOW_SOURCE_MISSING_HINT），并成一句时写了 `code` 的模型读不出原因。
     return {
       result: false,
       errorCode: EVAL_WORKFLOW_SNIPPET_FAILURE_CODE,
-      message: EVAL_WORKFLOW_SNIPPET_SOURCE_ERROR,
+      message: hasCode
+        ? EVAL_WORKFLOW_SNIPPET_SOURCE_CONFLICT_ERROR
+        : EVAL_WORKFLOW_SNIPPET_SOURCE_MISSING_ERROR,
     };
   }
   return { result: true };
@@ -78,13 +84,25 @@ function validateEvalWorkflowSnippetInput(input: unknown): ToolInputValidationRe
 /**
  * `path` 来源归一化成 `code`。整个文件就是片段（不解析元数据块），路径写成绝对形——此后确认门
  * （`prepareApproval` 读 `code` 找 `world.run` 站点）与 handler 看到的都是同一串字节。
+ *
+ * 两条来源都回填 `script`（= `code`），让 PreToolUse hook 用另外三个工具的字段名就能读到片段
+ * （见 `EvalWorkflowSnippetInputSchema` 的注释）。
  */
 async function resolveEvalWorkflowSnippetInput(
   input: unknown,
   cwd: string,
 ): Promise<ToolInputResolutionResult> {
   const parsed = EvalWorkflowSnippetInputSchema.safeParse(input);
-  if (!parsed.success || parsed.data.path === undefined) return { result: true, input };
+  if (!parsed.success) return { result: true, input };
+  if (parsed.data.path === undefined) {
+    const { code } = parsed.data;
+    // `code` 缺席到不了这里：validateInput 已挡掉「两个都不给」。
+    if (code === undefined) return { result: true, input };
+    return {
+      result: true,
+      input: { ...parsed.data, code, script: code } satisfies EvalWorkflowSnippetInput,
+    };
+  }
   const read = await readWorkflowScriptFile({
     cwd,
     inputPath: parsed.data.path,
@@ -98,6 +116,7 @@ async function resolveEvalWorkflowSnippetInput(
     input: {
       ...parsed.data,
       code: read.file.source,
+      script: read.file.source,
       path: read.file.path,
     } satisfies EvalWorkflowSnippetInput,
   };
@@ -243,6 +262,7 @@ export const evalWorkflowSnippetToolEntry: ToolEntry = {
   capability:
     "Compile and synchronously run a small dynamic-workflow TypeScript snippet (world reads + pure logic) against the real workflow execution path, fully ephemerally",
   metadata: {
+    shouldDefer: true,
     name: EVAL_WORKFLOW_SNIPPET_TOOL_NAME,
     description: EVAL_WORKFLOW_SNIPPET_TOOL_DESCRIPTION,
     // world.run 落地后 snippet 可表达效应：readOnly 翻面，确认门在 prepareApproval
@@ -261,6 +281,8 @@ export const evalWorkflowSnippetToolEntry: ToolEntry = {
   // 来源二选一只对模型入参成立；`path` 在归一化里读成 `code`，确认门与 handler 因此同形。
   validateInput: (input) => validateEvalWorkflowSnippetInput(input),
   resolveInput: (input, context) =>
+    // 技能门先于 path 归一化（handlers/workflow-skill-gate.ts）：片段的语言规则也在技能里。
+    requireDynamicWorkflowSkill(context, EVAL_WORKFLOW_SNIPPET_TOOL_NAME) ??
     resolveEvalWorkflowSnippetInput(input, context.workingDirectory ?? "."),
   inputSchema: EvalWorkflowSnippetInputJsonSchema,
   outputSchema: EvalWorkflowSnippetOutputJsonSchema,

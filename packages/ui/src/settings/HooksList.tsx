@@ -28,7 +28,7 @@ type HookSection =
   | { kind: "legacy"; title: "Legacy"; count: number; hooks: Hook[] }
   | { kind: "plugin"; title: string; pluginId: string; count: number; hooks: PluginHookRow[] };
 
-function groupHookSections(
+export function groupHookSections(
   editableHooks: Hook[],
   compatibilityHooks: Hook[],
   pluginHooks: PluginHookRow[],
@@ -47,9 +47,7 @@ function groupHookSections(
     const key = hook.pluginId || hook.pluginName.trim().toLocaleLowerCase();
     pluginGroups.set(key, [...(pluginGroups.get(key) ?? []), hook]);
   }
-  for (const [, hooks] of [...pluginGroups.entries()].sort(([left], [right]) =>
-    left.localeCompare(right),
-  )) {
+  for (const [, hooks] of [...pluginGroups.entries()].sort(([left], [right]) => left.localeCompare(right))) {
     sections.push({
       kind: "plugin",
       pluginId: hooks[0]?.pluginId ?? "",
@@ -163,11 +161,7 @@ export function HooksList({
                           onTrust={onTrust}
                         />
                       ) : (
-                        <CompatibilityHookRow
-                          hook={hook}
-                          busy={operatingHookId === hook.id}
-                          onImport={onImport}
-                        />
+                        <CompatibilityHookRow hook={hook} busy={operatingHookId === hook.id} onImport={onImport} />
                       )}
                     </div>
                   ))}
@@ -215,9 +209,7 @@ function HookItemFrame({
       )}
       <div className="min-w-0">{children}</div>
       {actions ? (
-        <div className="col-start-2 flex shrink-0 items-center justify-end gap-2 sm:col-start-auto">
-          {actions}
-        </div>
+        <div className="col-start-2 flex shrink-0 items-center justify-end gap-2 sm:col-start-auto">{actions}</div>
       ) : null}
     </div>
   );
@@ -278,11 +270,7 @@ function ConfiguredHookRow({
               variant="outline"
               size="sm"
               disabled={busy || trusting || !trustActionAvailable}
-              title={
-                trustActionAvailable
-                  ? undefined
-                  : intl.formatMessage({ id: "settings.hooks.review.unavailable" })
-              }
+              title={trustActionAvailable ? undefined : intl.formatMessage({ id: "settings.hooks.review.unavailable" })}
               onClick={(event) => {
                 event.stopPropagation();
                 void onTrust(hook);

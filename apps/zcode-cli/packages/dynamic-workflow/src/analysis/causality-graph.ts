@@ -8,17 +8,17 @@ import {
   type PhaseSourceFact,
 } from "./phase-graph.js";
 import type { SiteGraph, SiteLoc, SiteNode } from "./types.js";
-import { SINK_ID, UNKNOWN_LANE, WORKSPACE_LANE } from "./causality-graph-types.js";
+import { MAIN_LANE, SINK_ID, UNKNOWN_LANE, WORKSPACE_LANE } from "./causality-graph-types.js";
 import type { CausalityGraph, Certainty, Fact, Lane } from "./causality-graph-types.js";
 import type { OrderEdge, Region, Step, StepKind } from "./causality-graph-types.js";
-import { dedupeFacts, expandMaySetLanes, weakest } from "./causality-graph-lanes.js";
+import { dedupeFacts, expandMaySetLanes, fillOf, weakest } from "./causality-graph-lanes.js";
 
 /** Re-exported so the causality vocabulary is importable from one module. */
 export type { NamePattern } from "./types.js";
 // 拆分：本文件顶到 oxlint max-lines 上限（400 行）。公开类型与三个 lane 常量定义
 // 在 causality-graph-types.ts，may-set 车道展开与事实去重在 causality-graph-lanes.ts；这里原样
 // 再导出，既有的 `from "./causality-graph.js"` 引用一个不改。
-export { SINK_ID, UNKNOWN_LANE, WORKSPACE_LANE } from "./causality-graph-types.js";
+export { MAIN_LANE, SINK_ID, UNKNOWN_LANE, WORKSPACE_LANE } from "./causality-graph-types.js";
 export type { CausalityGraph, Certainty, Lane, OrderEdge } from "./causality-graph-types.js";
 export type { Phase, Region, Step, StepKind } from "./causality-graph-types.js";
 
@@ -57,7 +57,8 @@ export function projectCausalityGraph(core: AnalysisCore, site: SiteGraph): Caus
 
   const stepNodes = site.nodes.filter(
     (node): node is SiteNode & { loc: SiteLoc } =>
-      (node.kind === "ask" || node.kind === "world-read") && node.loc !== undefined,
+      (node.kind === "ask" || node.kind === "world-read" || node.kind === "hole") &&
+      node.loc !== undefined,
   );
   const stepIds = new Set(stepNodes.map((node) => node.id));
 
@@ -241,6 +242,10 @@ export function projectCausalityGraph(core: AnalysisCore, site: SiteGraph): Caus
       laneSet.set(node.id, [WORKSPACE_LANE]);
       continue;
     }
+    if (node.kind === "hole") {
+      laneSet.set(node.id, [MAIN_LANE]); // 留白等的是主代理：它的车道（docs/analysis.md「Sites」）
+      continue;
+    }
     const actors = node.actors ?? [];
     laneSet.set(node.id, actors.length > 0 ? [...actors] : [UNKNOWN_LANE]);
   }
@@ -291,7 +296,9 @@ export function projectCausalityGraph(core: AnalysisCore, site: SiteGraph): Caus
     (a, b) => (minIssue.get(a.id) ?? 0) - (minIssue.get(b.id) ?? 0),
   );
   const realLanes = (step: string): string[] =>
-    (laneSet.get(step) ?? []).filter((lane) => lane !== WORKSPACE_LANE && lane !== UNKNOWN_LANE);
+    (laneSet.get(step) ?? []).filter(
+      (lane) => lane !== WORKSPACE_LANE && lane !== UNKNOWN_LANE && lane !== MAIN_LANE,
+    );
   for (let i = 0; i < issueOrder.length; i += 1) {
     for (let j = i + 1; j < issueOrder.length; j += 1) {
       const a = issueOrder[i] as SiteNode;
@@ -360,11 +367,24 @@ export function projectCausalityGraph(core: AnalysisCore, site: SiteGraph): Caus
     id === SINK_ID ? Number.MAX_SAFE_INTEGER : (minIssue.get(id) ?? 0);
   const lastIssueOf = (id: string): number =>
     id === SINK_ID ? Number.MAX_SAFE_INTEGER : (maxIssue.get(id) ?? 0);
-  const iterationRegionsOf = (id: string): string[] =>
-    [...(regionsOf.get(id) ?? [])].filter((region) => {
-      const kind = regionById.get(region)?.kind;
-      return kind === "loop" || kind === "fanout";
-    });
+  // 修复原因：sharesIteration 每次调用都重新过滤站点出现过的全部 region。阶段拷贝的时间可行性
+  // 判定（phase-graph.ts 的 admits）对每个拷贝对都问一次，而被许多阶段共用的 helper 的站点有
+  // 成千上万个 region，于是代价是拷贝对数 × region 数（25 个 fan-out、250 处调用时 33 秒）。
+  // regionsOf 在上面的事件扫描里已经定型，所以每个站点算一次即可。
+  const iterationRegionCache = new Map<string, ReadonlySet<string>>();
+  const iterationRegionsOf = (id: string): ReadonlySet<string> => {
+    let regions = iterationRegionCache.get(id);
+    if (regions === undefined) {
+      regions = new Set(
+        [...(regionsOf.get(id) ?? [])].filter((region) => {
+          const kind = regionById.get(region)?.kind;
+          return kind === "loop" || kind === "fanout";
+        }),
+      );
+      iterationRegionCache.set(id, regions);
+    }
+    return regions;
+  };
   /**
    * Do two sites share an enclosing iteration region? That is the one thing repetition can
    * realize, and it is why "b's position precedes a's" does not mean "b cannot follow a":
@@ -376,8 +396,8 @@ export function projectCausalityGraph(core: AnalysisCore, site: SiteGraph): Caus
    * by another would put a contradiction in one picture.
    */
   const sharesIteration = (a: string, b: string): boolean => {
-    const enclosing = new Set(iterationRegionsOf(b));
-    return iterationRegionsOf(a).some((region) => enclosing.has(region));
+    const enclosing = iterationRegionsOf(b);
+    return [...iterationRegionsOf(a)].some((region) => enclosing.has(region));
   };
   /**
    * Can `to` really run again after `from`? A back edge in issue order is only
@@ -399,7 +419,7 @@ export function projectCausalityGraph(core: AnalysisCore, site: SiteGraph): Caus
    */
   const realizableCarry = (from: string, to: string): boolean => {
     if (from === to) {
-      return iterationRegionsOf(to).length > 0 || lastIssueOf(to) > positionOf(to);
+      return iterationRegionsOf(to).size > 0 || lastIssueOf(to) > positionOf(to);
     }
     return sharesIteration(from, to);
   };
@@ -469,6 +489,7 @@ export function projectCausalityGraph(core: AnalysisCore, site: SiteGraph): Caus
   for (const node of stepNodes) for (const lane of laneSet.get(node.id) ?? []) usedLanes.add(lane);
 
   const laneOrder: Lane[] = [];
+  if (usedLanes.has(MAIN_LANE)) laneOrder.push({ id: MAIN_LANE });
   if (usedLanes.has(WORKSPACE_LANE)) laneOrder.push({ id: WORKSPACE_LANE });
   for (const actor of site.actors) {
     if (!usedLanes.has(actor.id)) continue;
@@ -522,11 +543,15 @@ export function projectCausalityGraph(core: AnalysisCore, site: SiteGraph): Caus
     if (lane.families !== undefined) lane.families = lane.families.map(renamed);
   }
 
+  // 开放的留白自己的 id 不带前缀（名字键，hole-id.ts）：它属于哪次补全要问站点表。
+  const holeFill = new Map(core.sites.holes.map((hole) => [hole.id, hole.fill]));
   const steps: Step[] = stepNodes.map((node) => {
     const lanes = laneSet.get(node.id) ?? [UNKNOWN_LANE];
     const repeats = repeat.get(node.id);
+    const fill = fillOf(node.id) ?? holeFill.get(node.id);
     return {
       certainty: certaintyOf(node.id),
+      ...(fill === undefined ? {} : { fill }),
       id: node.id,
       kind: node.kind as StepKind,
       label: node.label,

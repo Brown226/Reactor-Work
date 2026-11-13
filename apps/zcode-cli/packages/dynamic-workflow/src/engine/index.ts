@@ -5,6 +5,22 @@
 export { WorkflowEngine, type EngineConfig, type RunSettlement } from "./engine.js";
 export { InMemoryJournalStore } from "./journal-memory.js";
 export {
+  HOLE_PROMPT_MAX_CHARS,
+  type FilledHole,
+  type FillHoleResult,
+  type HoleFill,
+  type OpenHole,
+} from "./engine-holes.js";
+export {
+  ALL_EVENTS,
+  NODE_KINDS,
+  NON_REPORT_NODE_KINDS,
+  type GetNodeOptions,
+  type ListActorsOptions,
+  type ListNodesOptions,
+  type RunEventType,
+} from "./journal-read-types.js";
+export {
   ConcurrencyController,
   CONCURRENCY_DECREASE_FACTOR,
   CONCURRENCY_FLOOR,
@@ -22,6 +38,8 @@ export {
   LAST_TOOL_TARGET_MAX_CHARS,
   NUDGE_ATTEMPTS,
   REPAIR_ATTEMPTS,
+  DEFAULT_WEB_SEARCH_BUDGET_PER_ASK,
+  MAX_WEB_SEARCH_BUDGET_PER_ASK,
   refToString,
   type ActorId,
   type ActorRecord,
@@ -43,6 +61,7 @@ export {
   type JournalStorePort,
   type ImportedActorCandidate,
   type ImportedAskEntry,
+  type ImportedInFlightAsk,
   type ImportedRunCache,
   type ImportedWorldEntry,
   type ListEventsOptions,
@@ -53,6 +72,7 @@ export {
   type WorldReadInput,
   WORLD_READ_INPUT_MAX_BYTES,
   type PersonaSpec,
+  type PersonaBudget,
   type RunEvent,
   type RunRecord,
   type RunSettlementRecord,

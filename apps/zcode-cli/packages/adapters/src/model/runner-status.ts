@@ -1,9 +1,11 @@
 import type {
   Logger,
+  ModelRequestObservationStatusEvent,
   ModelNetworkStatusEvent,
   ModelReasoningCallHint,
   ModelStatusSink,
   ModelTransportKind,
+  ModelRequestSessionFeature,
   ModelRequestSessionType as ModelRequestSessionTypeValue,
   QueryId,
   ResolvedModelApiCallObservation,
@@ -19,6 +21,7 @@ import { UNBOUNDED_RETRY_MAX_ATTEMPTS } from "./retry-budget.js";
 // 既有 importer 不必改路径。
 import { resolveModelRequestSessionType } from "./runner-attribution.js";
 import type { AiSdkModelTextRequest, ResolvedAiSdkModel } from "./runner-runtime.js";
+import type { ModelRequestObservationSource } from "./request-security.js";
 import { stringMetadata } from "./runner-record.js";
 
 export {
@@ -41,6 +44,8 @@ export interface ModelStatusContext {
   providerId: ResolvedAiSdkModel["providerId"];
   modelId: ResolvedAiSdkModel["modelId"];
   modelRequestSessionType: ModelRequestSessionTypeValue;
+  /** 本会话已用能力标签；重试沿用同一份（与 session type 一样不随 attempt 变化）。 */
+  modelRequestSessionFeatures?: readonly ModelRequestSessionFeature[];
   baseURL?: string;
   providerKind?: string;
   transport: ModelTransportKind;
@@ -67,6 +72,9 @@ export function createStatusContext(input: {
       input.request.modelRequestSessionType,
       resolvedModelCall,
     ),
+    ...(input.request.modelRequestSessionFeatures === undefined
+      ? {}
+      : { modelRequestSessionFeatures: input.request.modelRequestSessionFeatures }),
     requestId: stringMetadata(metadata.requestId) ?? crypto.randomUUID(),
     sessionId: (input.request.traceContext?.sessionId ??
       stringMetadata(metadata.sessionId)) as ModelStatusContext["sessionId"],
@@ -191,6 +199,7 @@ export async function publishModelStatus(
      * 状态事件汇，治理器从这里读结果。与 request/telemetry sink 同一条投递纪律（失败只告警）。
      */
     admissionTicket?: ModelStatusSink;
+    requestObservations?: ModelRequestObservationSource;
     failureError?: unknown;
     logger?: Logger;
     requestStatusSink?: ModelStatusSink;
@@ -198,6 +207,7 @@ export async function publishModelStatus(
   },
 ): Promise<void> {
   logStatusEvent(event, options.logger);
+  await publishRequestObservations(event, options);
 
   const deliveries: Array<() => void | Promise<void>> = [];
   if (options.admissionTicket) {
@@ -231,6 +241,43 @@ export async function publishModelStatus(
         errorMessage:
           result.reason instanceof Error ? result.reason.message : String(result.reason),
         event: "model.status_sink.failed",
+        status: "failed",
+      });
+    }
+  }
+}
+
+/**
+ * attempt 终态前，把 signer 暂存的签名观测按 requestId 取出并只发给进程级 Telemetry Sink。
+ * 必须先于终态事件投递：recorder 收到终态后会释放该 attempt 的 span writer。
+ * 本地日志已在 fetch 层即时写入，这里不重复记录。
+ */
+async function publishRequestObservations(
+  event: ModelNetworkStatusEvent,
+  options: {
+    requestObservations?: ModelRequestObservationSource;
+    logger?: Logger;
+    statusSink?: ModelStatusSink;
+  },
+): Promise<void> {
+  if (event.type !== "model_request_completed" && event.type !== "model_request_failed") return;
+  const store = options.requestObservations;
+  if (!store) return;
+  const observations = store.take(event.requestId);
+  if (observations.length === 0 || !options.statusSink) return;
+  for (const observation of observations) {
+    const observationEvent: ModelRequestObservationStatusEvent = {
+      ...event,
+      observation,
+      type: "model_request_observation",
+    };
+    try {
+      await options.statusSink.publish(observationEvent);
+    } catch (error) {
+      options.logger?.warn("Model request observation sink failed", {
+        ...modelStatusLogContext(event),
+        errorMessage: error instanceof Error ? error.message : String(error),
+        event: "model.request_observation.sink_failed",
         status: "failed",
       });
     }
@@ -300,6 +347,27 @@ function modelStatusLogContext(event: ModelNetworkStatusEvent): Record<string, u
 }
 
 function logStatusEvent(event: ModelNetworkStatusEvent, logger?: Logger): void {
+  // 只保留每个 attempt 的边界；旧 first_content 接受空 block start，不能用于本地首有效内容。
+  if (event.querySource === "main_turn" || event.querySource === "compact") {
+    const names: Partial<Record<ModelNetworkStatusEvent["type"], string>> = {
+      model_request_queued: "queued",
+      model_request_admitted: "admitted",
+      model_request_started: "request_started",
+      model_request_completed: "completed",
+      model_request_failed: "failed",
+      model_retry_scheduled: "retry_wait",
+      model_first_provider_event: "first_provider_event",
+    };
+    const name = names[event.type];
+    if (name)
+      logLocalModelMilestone(logger, event, name, {
+        ...("attempt" in event ? { attempt: event.attempt } : {}),
+        ...("queuedMs" in event ? { queuedMs: event.queuedMs } : {}),
+        ...("durationMs" in event ? { durationMs: event.durationMs } : {}),
+        ...("delayMs" in event ? { delayMs: event.delayMs } : {}),
+        ...("statusCode" in event ? { statusCode: event.statusCode } : {}),
+      });
+  }
   switch (event.type) {
     case "model_request_queued":
       logger?.debug("Model request queued for admission", {
@@ -383,5 +451,35 @@ function logStatusEvent(event: ModelNetworkStatusEvent, logger?: Logger): void {
         status: "completed",
       });
       return;
+
+    case "model_request_observation":
+      // fetch 层已即时写入本地日志，这里只负责 telemetry 投递。
+      return;
+  }
+}
+
+/** 本地生产诊断只保留关联和耗时，不把请求 URL、Header 或正文写进日志。 */
+export function logLocalModelMilestone(
+  logger: Logger | undefined,
+  context: ModelStatusContext | ModelNetworkStatusEvent,
+  name: string,
+  fields: Record<string, unknown> = {},
+): void {
+  try {
+    logger?.info("Model first-response diagnostic", {
+      event: `ttft.model.${name}`,
+      traceId: context.traceId,
+      sessionId: context.sessionId,
+      turnId: context.turnId,
+      queryId: context.queryId,
+      querySource: context.querySource,
+      requestId: context.requestId,
+      providerId: context.providerId,
+      modelId: context.modelId,
+      at: performance.timeOrigin + performance.now(),
+      ...fields,
+    });
+  } catch {
+    /* 诊断不能中断流或重试。 */
   }
 }

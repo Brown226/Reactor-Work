@@ -1,9 +1,9 @@
 import React from "react";
 import type { ApprovalPrompt } from "./app-model.js";
-import { approvalDecisions, palette } from "./app-model.js";
+import { palette } from "./app-model.js";
+import { decisionsForApproval } from "./app-approval.js";
 import {
   approvalDecisionLabel,
-  approvalDecisionsFor,
   isOfficialCuaProjectApproval,
   approvalPermissionScopes,
   approvalRequestDescription,
@@ -29,6 +29,47 @@ type ApprovalTextRow = {
   key: string;
   text: string;
 };
+
+/**
+ * 审批区：请求不属于当前主会话时（例如 CreateSession 建的后台会话），在面板上方标明来源。
+ * 主会话的子代理和 workflow actor 已把 sessionId 改写为主会话，不标注；B 的子代理标注为 B。
+ */
+export function ApprovalArea({
+  approval,
+  contentWidth,
+  copy,
+  mainSessionId,
+}: {
+  approval: ApprovalPrompt;
+  contentWidth?: number;
+  copy: ReturnType<typeof import("@zcode/i18n").getZCodeCopy>["tui"];
+  mainSessionId?: string;
+}): React.ReactElement {
+  const originSessionId = approvalOriginSessionId(approval.request.sessionId, mainSessionId);
+  return h(
+    React.Fragment,
+    null,
+    originSessionId
+      ? h(
+          "text",
+          { style: { fg: palette.accent, height: 1, width: "100%" } },
+          truncateDisplay(
+            copy.approval.fromSession(originSessionId),
+            normalizeApprovalContentWidth(contentWidth),
+          ),
+        )
+      : null,
+    h(ApprovalPanel, { approval, contentWidth }),
+  );
+}
+
+/** 主会话未知时不猜测来源；只有确定不同才标注。 */
+export function approvalOriginSessionId(
+  requestSessionId: string,
+  mainSessionId: string | undefined,
+): string | undefined {
+  return mainSessionId && requestSessionId !== mainSessionId ? requestSessionId : undefined;
+}
 
 export function ApprovalPanel({
   approval,
@@ -117,8 +158,7 @@ function approvalRows(approval: ApprovalPrompt, contentWidth: number): ApprovalT
     );
   }
 
-  // 选项列表按 optionsPolicy 收窄（见 approvalDecisionsFor），不再固定渲染三项。
-  for (const decision of approvalDecisionsFor(approval.request)) {
+  for (const decision of decisionsForApproval(approval.request)) {
     rows.push(
       approvalTextRow(
         decision,

@@ -1,8 +1,8 @@
 node_modules/
 dist/
-# zcode-server-cli 发行包 staging 输出，本地组装产物不入库。
+# zcode-server-cli 发行包 staging 输出（spec §7.1），本地组装产物不入库。
 dist-release/
-# macOS CI 按架构隔离 electron-builder 输出目录，这些仍是构建产物。
+# Bugfix: macOS CI 按架构隔离 electron-builder 输出目录，这些仍是构建产物。
 packages/desktop/dist-*/
 out/
 prebuilds/
@@ -12,6 +12,12 @@ packages/desktop/bundled-resources/
 packages/desktop/bundled-agents/
 packages/desktop/bundled-tools/
 packages/desktop/mock-cdn/
+packages/desktop/.e2e-home/
+# 修复原因：Windows shard runner 会生成带 run id 的 HOME；中断后不应把测试产物误判为源码改动。
+packages/desktop/.e2e-home-*/
+packages/desktop/.e2e-artifacts/
+packages/desktop/.e2e-cache/
+packages/desktop/.e2e-network-capture/
 *.tsbuildinfo
 .DS_Store
 coverage/
@@ -31,12 +37,15 @@ coverage/
 z-work/
 openclaw/
 .run-logs/
+# 旧开发目录：开发版运行时已改名为 .zcode-runtime，老机器上残留的目录仍需忽略，避免误提交 Electron.app 副本。
+.codex-runtime/
 .worktrees/
 packages/stream-animate/dist-server/
 packages/stream-animate/.stream-animate-data/
+.claude/worktrees/
 .codegraph
 .mimosa/
-# 集成分支曾混入 node-gyp 构建产物与 .playwright-mcp 临时快照；
+# 2026-08-20：集成分支曾混入 node-gyp 构建产物与 .playwright-mcp 临时快照；
 # 入库由 scripts/ci/ci-repo-hygiene.mjs 在 CI 第一站拒绝，这里让本地 git add 也忽略它们。
 .playwright-mcp/
 *.o
@@ -46,11 +55,12 @@ config.gypi
 gyp-mac-tool
 *.target.mk
 binding.Makefile
-# 这两条原来写成 build/Makefile、build/Release/*.node，含中间斜杠的 pattern
-# 只相对 .gitignore 所在目录（仓库根）生效，匹配不到 packages/ax-macos/build/ 下的产物；
-# 而 ci-repo-hygiene.mjs 的 denylist 用的是 (^|/)build/... 任意层级匹配。
-# 宽严不一致时无斜杠 pattern 能拦住的产物会被 git add -A 重新扫进索引。
-# 加 **/ 让忽略范围与门禁范围对齐。
+# 修复原因（2026-08-25）：这两条原来写成 build/Makefile、build/Release/*.node，
+# 含中间斜杠的 pattern 只相对 .gitignore 所在目录（仓库根）生效，压根匹配不到
+# packages/ax-macos/build/ 下的产物；而 ci-repo-hygiene.mjs 的 denylist 用的是
+# (^|/)build/... 任意层级匹配。宽严不一致的结果：合并 wf-more-primitives 时一次
+# git add -A 把这两个文件重新扫进索引（其余 7 个产物因 *.o / obj.target/ 等无斜杠
+# pattern 生效而被拦住），CI 第一站直接红。加 **/ 让忽略范围与门禁范围对齐。
 **/build/Makefile
 **/build/Release/*.node
 
@@ -59,89 +69,9 @@ binding.Makefile
 packages/desktop/resources/macos-window-bounds/
 # CUA Helper SEA 基座下载缓存（scripts/cua-helper-sea-base.mjs 落盘的官方 Node 22 运行时，纯下载产物）
 /.tmp/
-# office-engines 资产下载/解包中间产物（scripts/prepare-office-engines-assets.mjs）；
-# 最终 staged 资产在下方已忽略的 packages/desktop/bundled-tools/ 下，此处只是暂存缓存
-/.tmp-office-engines/
+# R3 服务器部署时写入的实际 commit 标记（harness/remote/deploy-server.sh 产出，随环境变化）
+.deployed-commit
 # Python 字节码（docker/plugin-eval/summarize.py 在主机上跑会生成）。
 __pycache__/
 *.pyc
-
-# 本地工具运行产物，均可再生：桌面端 e2e 的截图/缓存/网络抓包，以及桌面
-# 开发运行器的 Electron 下载缓存。
-packages/desktop/.e2e-artifacts/
-packages/desktop/.e2e-cache/
-packages/desktop/.e2e-network-capture/
-.zcode-runtime/
-
-# 本地笔记，内含真实供应商 API Key，只留本地、永不入库。
-# 不锚定根目录：文件即使被挪到子目录（或换成同名副本）也仍然被忽略，
-# 避免"移动一下就重新暴露给 git add"这种最容易造成永久泄露的路径。
-模型信息.txt
-
-# ── 本地垃圾/再生产物（不入库） ─────────────────────────────────
-# 一次性实验、调试脚本与输出（*.ps1/*.mjs/*.cs/*.json/*.md 等均按前缀拦）
-.tmp-*
-# 本地 e2e / 探索脚本
-.server-skill-e2e.mts
-# zcode 本地工作区与用户配置（与 .gitignore 同内容的副本）
-/.zcode/
-/.zcodeignore
-# 根目录误生成的对照页/预览页
-/index.html
-# DWG sidecar .NET 构建缓存（源码在 tools/dwg-sidecar/*.cs）
-**/dwg-sidecar/bin/
-**/dwg-sidecar/obj/
-# 产品站点（官网 docs/site/ + 说明书 portal/manual/）构建输出与本地工具
-# 说明书源码 pages/*.md 入库；HTML 由 build.mjs 生成，不入库（index.html 除外）
-portal/manual/*.html
-!portal/manual/index.html
-portal/manual/check.mjs
-portal/manual/smoke-render.mjs
-portal/manual/verify-html.mjs
-# 评审用预览截图（临时产物，不进库）
-portal/manual/_preview-*.png
-# 官网/说明书改版评审截图：playwright 渲染验证输出，同样不入库
-portal-preview/
-
-# 审查板块联调用的真实业务数据（含真实项目编号的 PDF/DWG/DOCX/XLSX/PPTX）
-# 与提取产物、一次性提取脚本；已在 origin/main 历史中，此处阻止再次纳入索引。
-docs/审查板块原始数据/
-
-# 内网部署交付物：Docker 镜像 tar + 数据卷备份 + config/.env（真实生产密钥），
-# 总体积约 385MB。属交付物而非源码，严禁入库/外发。
-/Reactor 服务端部署镜像/
-# tsup 运行期生成的临时展开配置（bundled_<hash>.mjs），非源码
-packages/desktop/tsup.config.bundled_*.mjs
-
-# 桌面端安装包本地迭代/交付产物（单文件约 324MB，超过 GitHub 单文件 100MB 硬限制，
-# 入库会导致 push 失败）。属交付物而非源码，不入库。
-packages/desktop/安装包迭代/
-
-# 第三方逆向分析报告与对照源码：不含本项目代码，且公开仓库不宜外发。
-# - 根目录 4 份逆向/可吸收点分析报告（含第三方产品授权机制细节）
-# - server/scaffold-master/ 第三方 MIT 脚手架（仅本地对照参考，非本项目产物）
-/逆向分析报告-*.md
-/Namiwork功能可吸收点-*.md
-/NewMax功能可吸收点-*.md
-/UI设计吸收点-*.md
-server/scaffold-master/
-
-# 构建产物（tsc 生成的声明映射，非源码）
-packages/desktop/src/scheduler/*.d.ts.map
-# scaffold 对照评估文档：引用未跟踪的参考副本，随该副本一并留在本地
-server/SCAFFOLD-*.md
-# Excel 导入导出的一次性运行时验证脚本（文件头自述"跑完删除"）
-server/packages/server/std-io-verify.mjs
-
-# 交付包内的镜像归档体积过大，不入库（用 MANIFEST.sha256 校验完整性）
-Reactor Web 交付包/*/images/*.tar.gz
-Reactor 服务端部署镜像/*/images/*.tar.gz
-deploy/web/certs/
-Reactor Web 交付包/*/config/certs/
-
-# DWG 查看器字体（scripts/fetch-dwg-fonts.mjs 下载，不入库）
-packages/web/public/dwg/
-
-# 交付快照/镜像 tar 出库管理（放 E:/工作/Reactor-版本更新，不入版本库；仓库只留 MANIFEST）
-/Reactor Web 交付包/
-/Reactor 服务端部署镜像/
+.zcode-runtime

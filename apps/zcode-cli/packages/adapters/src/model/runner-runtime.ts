@@ -1,7 +1,9 @@
+import type { RequestVerificationReason } from "@zcode/shared";
 import { generateText as aiGenerateText, streamText as aiStreamText } from "ai";
 import type {
   ModelProperties,
   ModelRequestAuth,
+  ModelRequestSessionFeature,
   ModelTextRequest,
   TraceContext,
 } from "@zcode/contracts";
@@ -29,8 +31,10 @@ export interface AiSdkModelTextRequest extends ModelTextRequest {
   // 必须在每个 attempt 发送前给 core/host 一个刷新机会。
   refreshRuntimeHeadersBeforeAttempt?: (input: {
     accountAccess?: ZCodeProviderAccountAccess;
+    expectedAccountScope?: string;
+    rejectedProjectTokenFingerprint?: string;
     attempt: number;
-    reason?: "model-request";
+    reason?: RequestVerificationReason;
     abortSignal?: AbortSignal;
     providerId: string;
     modelId: string;
@@ -44,6 +48,9 @@ export interface AiSdkModelTextRequest extends ModelTextRequest {
   // 同一源文件加载边界还需显式接住 compact 专用 provider stream 边界，
   // 避免 contracts 构建产物尚未刷新时 adapter 独立 typecheck 丢失该 runtime-only 字段。
   preserveProviderStreamBoundaries?: boolean;
+  // runtime 层的会话能力标签只经调用上下文到达 adapter（docs/design/v2/model/session-features-header.md），
+  // 不属于业务 ModelTextRequest；runner 展开调用上下文时由这里接住。
+  modelRequestSessionFeatures?: readonly ModelRequestSessionFeature[];
 }
 
 export const defaultRuntime: AiSdkModelRuntime = {

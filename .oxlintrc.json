@@ -3,11 +3,164 @@
   "plugins": null,
   "categories": {},
   "rules": {
-    // 全仓行数上限 400 → 1000：编排型文件（启动接线、构建脚本、portal 产物管线）
-    // 天然超过 400 行且拆分会切断内聚阅读；1000 仍保留超长文件需人工复核的拦截。
-    "max-lines": ["error", { "max": 1000, "skipBlankLines": true, "skipComments": true }]
+    "max-lines": ["error", { "max": 800, "skipBlankLines": true, "skipComments": true }]
   },
   "overrides": [
+    {
+      // 在 override 中只增加 Hooks 规则，保留原插件，避免开启全部 React 默认规则。
+      "files": ["**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"],
+      "plugins": ["unicorn", "typescript", "oxc", "react"],
+      "rules": {
+        "react/rules-of-hooks": "error",
+        "react/exhaustive-deps": "warn"
+      }
+    },
+    {
+      // 首次扫描的 20 条存量调用位置诊断仍告警；逐文件修复后删除例外，不扩大到目录。
+      // 依赖诊断与其他规则不降级，详见 docs/testing/react-hooks-lint.md。
+      "files": [
+        "**/packages/desktop/test/e2e/helpers/web-remote-visibility-browser.ts",
+        "**/packages/ui/src/ToolCallBlocks/renderers/resume-workflow-run.tsx",
+        "**/packages/ui/src/hooks/useOnboardingRecordService.ts",
+        "**/packages/ui/src/hooks/useZCodeAgentService.ts",
+        "**/packages/ui/src/hooks/useZCodeSessionService.ts",
+        "**/packages/ui/src/hooks/useZCodeTaskService.ts",
+        "**/packages/ui/src/project-sidebar/grouped/task-row.tsx"
+      ],
+      "plugins": ["unicorn", "typescript", "oxc", "react"],
+      "rules": {
+        "react/rules-of-hooks": "warn"
+      }
+    },
+    {
+      // 会话控制核心只依赖契约和注入端口，禁止把运行环境重新耦合进用例。
+      "files": ["packages/session-control/src/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "node:*",
+                  "node:*/**",
+                  "fs",
+                  "fs/**",
+                  "child_process",
+                  "worker_threads",
+                  "net",
+                  "http",
+                  "https",
+                  "http2",
+                  "dgram",
+                  "dns",
+                  "dns/**",
+                  "tls",
+                  "os",
+                  "path",
+                  "path/**",
+                  "crypto",
+                  "stream",
+                  "stream/**",
+                  "timers",
+                  "timers/**",
+                  "process",
+                  "module",
+                  "vm",
+                  "electron",
+                  "react",
+                  "react/**",
+                  "react-dom",
+                  "react-dom/**",
+                  "zustand",
+                  "zustand/**",
+                  "@zcode/services",
+                  "@zcode/services/**",
+                  "@zcode/shared",
+                  "@zcode/shared/**",
+                  "@zcode/core",
+                  "@zcode/core/**",
+                  "@zcode/bootstrap",
+                  "@zcode/bootstrap/**",
+                  "@zcode/adapters",
+                  "@zcode/adapters/**",
+                  "**/services/src/**",
+                  "**/apps/zcode-cli/**"
+                ],
+                "message": "Session control uses injected ports; environment and host implementations belong in adapters."
+              },
+              {
+                "group": [
+                  "../cli/**",
+                  "../app/**",
+                  "../../cli/**",
+                  "../../app/**",
+                  "@zcode/session-control/cli",
+                  "@zcode/session-control/app",
+                  "#src/application/cli/**",
+                  "#src/application/app/**",
+                  "#session-control/application/cli/**",
+                  "#session-control/application/app/**"
+                ],
+                "message": "CLI and App use cases are independent; share contracts or pure domain rules instead."
+              }
+            ]
+          }
+        ],
+        "no-restricted-globals": [
+          "error",
+          "process",
+          "window",
+          "fetch",
+          "setTimeout",
+          "setInterval",
+          "Date"
+        ]
+      }
+    },
+    {
+      // 本次上游整合保留既有职责完整的实现；这些文件超 800 行只告警，不机械拆分。
+      "files": [
+        // 插件市场沿用上游存量大文件，只补充目录字段投影；不为行数机械拆分安装流程。
+        "**/apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts",
+        // MCP 连接入口沿用上游存量实现；连接屏障修复不为行数重排整个 adapter。
+        "**/apps/zcode-cli/packages/adapters/src/mcp/index.ts",
+        // 流式 runner 沿用上游存量大文件；workflow 未知业务码重试上限只把尝试次数递给策略表，
+        // 不为行数拆分 attempt 循环。
+        "**/apps/zcode-cli/packages/adapters/src/model/runner-stream.ts",
+        "**/apps/zcode-cli/packages/bootstrap/src/plugins.ts",
+        "**/apps/zcode-cli/packages/adapters/src/storage/session-store/migrations.ts",
+        "**/apps/zcode-cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts",
+        "**/apps/zcode-cli/packages/bootstrap/src/app/create-app.ts",
+        "**/apps/zcode-cli/packages/bootstrap/src/app/session-facade.ts",
+        // v4 权威投影沿用上游存量大文件；队列身份修复不为行数机械拆分投影器。
+        "**/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts",
+        "**/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts",
+        // 后台 Agent 终态改为 originMeta 结构化下发，只补充透传与冷恢复回读；不为行数机械拆分投影。
+        "**/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts",
+        "**/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/transcript-hydration.ts",
+        "**/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server.ts",
+        "**/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/session-mapper.ts",
+        "**/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/v4-bridge.ts",
+        "**/apps/zcode-cli/packages/contracts/src/interfaces/session-store.port.ts",
+        // model 契约继承上游存量 901 行；本次仅增加配置网络错误码，不为此拆分公共契约。
+        "**/apps/zcode-cli/packages/contracts/src/model/index.ts",
+        // fork 选型回退只补一行隐藏提醒判定；不为行数机械拆分 fork 流程。
+        "**/apps/zcode-cli/packages/core/src/runtime/methods/session-fork.ts",
+        "**/apps/zcode-cli/packages/core/src/runtime/methods/steering.ts",
+        "**/apps/zcode-cli/packages/core/src/runtime/methods/turn.ts",
+        "**/apps/zcode-cli/packages/core/src/runtime/methods/turn-model-step.ts",
+        // core 包内以 --no-ignore 运行时，oxlint 按 cwd 相对路径匹配同一组存量文件。
+        "src/runtime/methods/session-fork.ts",
+        "src/runtime/methods/steering.ts",
+        "src/runtime/methods/turn.ts",
+        "src/runtime/methods/turn-model-step.ts",
+        "**/packages/ui/src/remote-connection-flow/index.ts"
+      ],
+      "rules": {
+        "max-lines": ["warn", { "max": 800, "skipBlankLines": true, "skipComments": true }]
+      }
+    },
     {
       // 测试文件天然会堆叠大量场景与断言，继续复用生产代码的行数上限会造成误报，
       // 因此只对 test/spec 文件关闭 max-lines，避免放宽业务代码约束。
@@ -60,13 +213,11 @@
     "dist-release",
     "packages/ui/src/components/ui",
     "packages/ui/src/components/ai-elements",
+    ".claude/skills",
     ".agents/skills",
     "packages/formal-proof",
     "apps/zcode-cli",
-    "docs/electron",
-    // server/ 是从 Reactor-Desktop 搬来的独立 pnpm workspace（服务端：身份底座 + 模型网关）。
-    // 它有自带的 lockfile、tsconfig 与更宽松的行数口径（多个 repo/routes 文件数百行），
-    // 且不是本仓 workspace 成员 —— 根仓 lint 不应拦截它；它自己跑 pnpm typecheck/门禁。
-    "server"
+    "packages/zcode-cua",
+    "docs/electron"
   ]
 }

@@ -1,4 +1,4 @@
-import { app, Menu, nativeImage, Tray } from "electron";
+import { app, Menu, Tray } from "electron";
 import { join } from "node:path";
 import {
   DesktopCommandIds,
@@ -12,43 +12,40 @@ import {
 let desktopTray: Tray | null = null;
 let rebuildDesktopTrayContextMenu: (() => void) | null = null;
 
-/**
- * 托盘图标在开发态/打包态的路径解析。
- *
- * Windows 沿用既有的独立 `tray_icon.ico`（通知区域在高 DPI 下比缩放 PNG 清晰）；
- * macOS/Linux 复用随包分发的 `icons/32x32.png`，不新增二进制资产。
- */
-function resolveDesktopTrayIconPath() {
-  if (process.platform === "win32") {
+export function resolveDesktopTrayIconPath(platform: NodeJS.Platform = process.platform) {
+  // Linux 托盘只接受 PNG（.ico 不会渲染）；打包态 icon.png 已由 extraResources 无条件放入
+  // resources 目录（electron-builder.config.js），Windows 继续用独立托盘 .ico 避免高 DPI 模糊。
+  if (platform === "linux") {
     return app.isPackaged
-      ? join(process.resourcesPath, "tray_icon.ico")
-      : join(import.meta.dirname, "../../build/icon.ico");
+      ? join(process.resourcesPath, "icon.png")
+      : join(import.meta.dirname, "../../build/icon.png");
   }
-
   return app.isPackaged
-    ? join(process.resourcesPath, "icons/32x32.png")
-    : join(import.meta.dirname, "../../build/icons/32x32.png");
+    ? join(process.resourcesPath, "tray_icon.ico")
+    : join(import.meta.dirname, "../../build/icon.ico");
 }
 
 export function createDesktopTray(options: {
+  platform?: NodeJS.Platform;
   getLocale: () => Locale;
   showCurrentWindow: () => Promise<void> | void;
   executeDesktopCommand: (command: DesktopCommandId) => Promise<unknown>;
   quitApp: () => void;
   logger: { warn: (...args: unknown[]) => void };
 }) {
+  const platform = options.platform ?? process.platform;
+  // Linux 驻留能力由 createCloseToTrayCapabilityMonitor 探测决定（spec：
+  // docs/desktop/linux-close-to-tray.md）；这里只挡平台，能力不过关时调用方不应传入 linux。
+  if (platform !== "win32" && platform !== "linux") {
+    return null;
+  }
+
   if (desktopTray) {
     return desktopTray;
   }
 
-  const iconPath = resolveDesktopTrayIconPath();
   try {
-    const icon = nativeImage.createFromPath(iconPath);
-    if (process.platform === "darwin") {
-      // 模板图由系统按菜单栏明暗着色，避免固定彩色图标在深色菜单栏发灰。
-      icon.setTemplateImage(true);
-    }
-    desktopTray = new Tray(icon);
+    desktopTray = new Tray(resolveDesktopTrayIconPath(platform));
   } catch (error) {
     options.logger.warn("[desktop-tray] failed to create tray icon", error);
     return null;
@@ -100,8 +97,9 @@ export function createDesktopTray(options: {
           click: () => executeTrayCommand(DesktopCommandIds.ShowAbout),
         },
         {
-          label: getLabel(desktopMenuMessageIds.helpClearAllData),
-          click: () => executeTrayCommand(DesktopCommandIds.ClearAllData),
+          // 托盘只提供日志诊断入口，避免右键菜单暴露清除全部数据操作；复用应用菜单导出命令。
+          label: getLabel(desktopMenuMessageIds.helpExportLogs),
+          click: () => executeTrayCommand(DesktopCommandIds.ExportLogs),
         },
         { type: "separator" },
         {
@@ -120,6 +118,6 @@ export function createDesktopTray(options: {
   return desktopTray;
 }
 
-export function updateDesktopTrayMenu() {
+export function updateWindowsDesktopTrayMenu() {
   rebuildDesktopTrayContextMenu?.();
 }

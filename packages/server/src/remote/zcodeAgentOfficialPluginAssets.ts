@@ -2,37 +2,23 @@ import { posix } from "node:path";
 
 export const REMOTE_AGENT_OFFICIAL_PLUGIN_DIR_NAME = "packages";
 
-/**
- * 随包官方插件的目录名（= `packages/<目录>`，即 seed 的 rootCandidates）。
- *
- * ⚠ 与 `scripts/official-plugin-seeds.mjs`（桌面打包 + 远端预构建共用的单一数据源）
- * **一一对应**：那份漏一个，这里就会在 dev 态 SSH 部署时静默少一个插件——
- * 「本地有、远端没有」没有任何报错。2026-10-09 已把两份补满到 17 个随包插件
- * （历史：44b25ed46c 只改了一部分，安装包一度只剩 3 个而 dev 链仍拿全部）。
- *
- * 唯一的有意差异：`node-repl-host` 不进这份合同 —— 远端工作区当前不承载
- * Browser Use / Computer Use，宿主 runtime 部署了也没有消费者。
- */
 export const REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES = [
+  "android-emulator-plugin",
   "browser-use-plugin",
-  // 审查技能随包内置：远端工作区跑审查同样需要这些技能。缺了不报错，只是静默没有技能，
-  // 所以这里必须进合同，靠 required 相对路径在部署前拦住半成品。
-  "review-skills-plugin",
-  // ── 以下 14 个为 2026-10-09 补全（与官方插件集合对齐）────────────────────
-  "file-tools-plugin",
-  "ocr-tools-plugin",
-  "dwg-tools-plugin",
+  "zcode-cua-plugin",
   "documents-plugin",
   "pdf-plugin",
   "presentations-plugin",
   "spreadsheets-plugin",
-  "accounting-and-reporting-plugin",
-  "analytics-plugin",
-  "research-plugin",
-  "obsidian-plugin",
-  "superpowers-plugin",
+  "image-search-plugin",
+  "ios-simulator-plugin",
+  "restore-legacy-sessions-plugin",
   "skill-creator-plugin",
+  "plugin-creator-plugin",
   "zcode-guide-plugin",
+  "visualize-plugin",
+  "zcode-site-plugin",
+  "design-plugin",
 ] as const;
 
 export const REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS = [
@@ -41,9 +27,6 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS = [
   "README.md",
   // 开发态远程插件复制使用独立白名单，遗漏 agents 会只在远端丢失子代理。
   "agents",
-  // file-tools / dwg-tools 的引擎资产树：远端没有 resources/tools 独立分发，
-  // 少了它 seed 会以「声明了 assets 却没有文件」整体拒绝这两个插件。
-  "assets",
   "commands",
   "dist",
   "docs",
@@ -58,6 +41,10 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS = [
 ] as const;
 
 export const REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS = [
+  // 工作流技能已迁出插件；远端复用仍必须检查这份 Agent 必需资产。
+  "bundled-skills/skills/dynamic-workflows/SKILL.md",
+  "bundled-skills/skills/dynamic-workflows/patterns.md",
+  "bundled-skills/skills/dynamic-workflows/examples.md",
   ...REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES.map(
     (packageName) => `${packageName}/.zcode-plugin/plugin.json`,
   ),
@@ -70,6 +57,30 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS = [
   // 远程工作区当前不承载 Browser Use / Computer Use，因此宿主 runtime 不进这份远端合同——
   // 要支持远程 bua/cua 时，应把 node-repl-host 补进上面的 PACKAGE_NAMES 并在此声明它的
   // dist/mcp/server.js，而不是把宿主产物挂回 browser-use 名下。
+  "visualize-plugin/skills/visualize/SKILL.md",
+  "visualize-plugin/skills/visualize/references/api.md",
+  "visualize-plugin/skills/visualize/references/styles.md",
+  "visualize-plugin/skills/visualize/tweak.md",
+  "visualize-plugin/skills/visualize/LICENSE.md",
+  "visualize-plugin/skills/visualize/scripts/render.py",
+  "visualize-plugin/skills/visualize/assets/visualize.css",
+  "visualize-plugin/skills/visualize/assets/visualize.html",
+  "visualize-plugin/skills/visualize/assets/calendar.js",
+  "visualize-plugin/skills/visualize/assets/runtime-manifest.json",
+  "visualize-plugin/skills/visualize/scripts/vendor.py",
+  "visualize-plugin/skills/visualize/assets/vendor/manifest.json",
+  "visualize-plugin/skills/visualize/assets/vendor/floating-ui-core-1.7.3.min.js",
+  "visualize-plugin/skills/visualize/assets/vendor/floating-ui-core-1.7.3.min.js.LICENSE",
+  "visualize-plugin/skills/visualize/assets/vendor/floating-ui-dom-1.7.4.min.js",
+  "visualize-plugin/skills/visualize/assets/vendor/floating-ui-dom-1.7.4.min.js.LICENSE",
+  "visualize-plugin/skills/visualize/assets/vendor/lucide-1.17.0.js",
+  "visualize-plugin/skills/visualize/assets/vendor/lucide-1.17.0.js.LICENSE",
+  "visualize-plugin/skills/visualize/assets/vendor/d3-7.9.0.min.js",
+  "visualize-plugin/skills/visualize/assets/vendor/d3-7.9.0.min.js.LICENSE",
+  "visualize-plugin/skills/visualize/assets/standalone-host-bridge.js",
+  "visualize-plugin/skills/visualize/assets/standalone-shell.js",
+  "visualize-plugin/skills/visualize/widgets/calendar.md",
+  "visualize-plugin/skills/visualize/examples/calendar.html",
   "browser-use-plugin/docs/api.json",
   "browser-use-plugin/docs/documents.json",
   "browser-use-plugin/docs/overview.md",
@@ -79,74 +90,53 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS = [
   "browser-use-plugin/scripts/browser-client.mjs",
   "browser-use-plugin/skills/control-browser/SKILL.md",
   "browser-use-plugin/skills/web-gui-tester/SKILL.md",
-  // 仅校验 manifest 无法发现文档插件缺少技能正文或视觉评审 Agent。
-  //
-  // 审查技能同理：只校验 plugin.json 会放过「有壳没技能」的残缺目录，
-  // 而少一个 SKILL.md 在运行时表现为「这个审查类型答案很水」，不是报错。
-  "review-skills-plugin/skills/review-compare/SKILL.md",
-  "review-skills-plugin/skills/review-consistency/SKILL.md",
-  "review-skills-plugin/skills/review-contract/SKILL.md",
-  "review-skills-plugin/skills/review-proofread/SKILL.md",
-  "review-skills-plugin/skills/review-proofread/references/typo-dictionary.md",
-  "review-skills-plugin/skills/review-standard-check/SKILL.md",
-  // ── 以下 14 个插件为 2026-10-09 补全（与 scripts/official-plugin-seeds.mjs 同源）──
-  // 运行时型（MCP server 必须先构建出 dist/mcp/server.js）
-  "file-tools-plugin/dist/mcp/server.js",
-  "file-tools-plugin/dist/mcp/pdf.worker.mjs",
-  "ocr-tools-plugin/dist/mcp/server.js",
-  "dwg-tools-plugin/dist/mcp/server.js",
-  // 办公四件套：技能正文 + 视觉评审子代理
+  // 修复原因：仅校验 manifest 无法发现文档插件缺少技能正文或视觉评审 Agent。
+  // 文档插件 0.2.0 起带查看面板，远端还必须有 office-runtime 构建出的 server 与面板资源。
+  "image-search-plugin/.mcp.json",
   "documents-plugin/agents/visual-judge.md",
   "documents-plugin/skills/docx/SKILL.md",
+  "documents-plugin/skills/docx-viewer/SKILL.md",
+  "documents-plugin/dist/server.mjs",
+  "documents-plugin/dist/ui/assets.json",
+  "documents-plugin/dist/ui/panel.html",
   "pdf-plugin/agents/visual-judge.md",
   "pdf-plugin/skills/pdf/SKILL.md",
+  "pdf-plugin/skills/pdf-viewer/SKILL.md",
+  "pdf-plugin/dist/server.mjs",
+  "pdf-plugin/dist/ui/assets.json",
+  "pdf-plugin/dist/ui/panel.html",
   "presentations-plugin/agents/visual-judge.md",
   "presentations-plugin/skills/pptx/SKILL.md",
+  "presentations-plugin/skills/pptx-viewer/SKILL.md",
+  "presentations-plugin/dist/server.mjs",
+  "presentations-plugin/dist/ui/assets.json",
+  "presentations-plugin/dist/ui/panel.html",
   "spreadsheets-plugin/agents/visual-judge.md",
   "spreadsheets-plugin/skills/xlsx/SKILL.md",
-  // 内容型技能集：逐个钉住 SKILL.md（少一个就只是"这个类型答案变水"，没有报错）
-  "accounting-and-reporting-plugin/skills/account-mapping/SKILL.md",
-  "accounting-and-reporting-plugin/skills/audit-xls/SKILL.md",
-  "accounting-and-reporting-plugin/skills/financial-reporting/SKILL.md",
-  "accounting-and-reporting-plugin/skills/ledger-reconciliation/SKILL.md",
-  "accounting-and-reporting-plugin/skills/month-end-close-review/SKILL.md",
-  "accounting-and-reporting-plugin/skills/report-render/SKILL.md",
-  "accounting-and-reporting-plugin/skills/statement-consistency-check/SKILL.md",
-  "accounting-and-reporting-plugin/skills/xlsx-author/SKILL.md",
-  "analytics-plugin/skills/analyze-data-quality/SKILL.md",
-  "analytics-plugin/skills/build-dashboard/SKILL.md",
-  "analytics-plugin/skills/design-kpis/SKILL.md",
-  "analytics-plugin/skills/metric-diagnostics/SKILL.md",
-  "research-plugin/skills/arxiv/SKILL.md",
-  "research-plugin/skills/super-research/SKILL.md",
-  "obsidian-plugin/skills/defuddle/SKILL.md",
-  "obsidian-plugin/skills/excalidraw-diagram/SKILL.md",
-  "obsidian-plugin/skills/json-canvas/SKILL.md",
-  "obsidian-plugin/skills/knap/SKILL.md",
-  "obsidian-plugin/skills/mermaid-visualizer/SKILL.md",
-  "obsidian-plugin/skills/obsidian-bases/SKILL.md",
-  "obsidian-plugin/skills/obsidian-cli/SKILL.md",
-  "obsidian-plugin/skills/obsidian-markdown/SKILL.md",
-  "obsidian-plugin/skills/setup/SKILL.md",
-  "superpowers-plugin/skills/brainstorming/SKILL.md",
-  "superpowers-plugin/skills/dispatching-parallel-agents/SKILL.md",
-  "superpowers-plugin/skills/executing-plans/SKILL.md",
-  "superpowers-plugin/skills/finishing-a-development-branch/SKILL.md",
-  "superpowers-plugin/skills/receiving-code-review/SKILL.md",
-  "superpowers-plugin/skills/requesting-code-review/SKILL.md",
-  "superpowers-plugin/skills/subagent-driven-development/SKILL.md",
-  "superpowers-plugin/skills/systematic-debugging/SKILL.md",
-  "superpowers-plugin/skills/test-driven-development/SKILL.md",
-  "superpowers-plugin/skills/using-git-worktrees/SKILL.md",
-  "superpowers-plugin/skills/using-superpowers/SKILL.md",
-  "superpowers-plugin/skills/verification-before-completion/SKILL.md",
-  "superpowers-plugin/skills/writing-plans/SKILL.md",
-  "superpowers-plugin/skills/writing-skills/SKILL.md",
-  "skill-creator-plugin/skills/skill-creator/SKILL.md",
-  "zcode-guide-plugin/commands/workflow.md",
-  "zcode-guide-plugin/skills/dynamic-workflows/SKILL.md",
-  "zcode-guide-plugin/skills/dynamic-workflows/examples.md",
-  "zcode-guide-plugin/skills/dynamic-workflows/patterns.md",
+  "spreadsheets-plugin/skills/xlsx-viewer/SKILL.md",
+  "spreadsheets-plugin/dist/server.mjs",
+  "spreadsheets-plugin/dist/ui/assets.json",
+  "spreadsheets-plugin/dist/ui/panel.html",
+  // design 列全本地 seed 必需路径（bootstrap OFFICIAL_DESIGN_REQUIRED_SEED_PATHS，server/test 机械对照），
+  // 不像其他插件只列哨兵：hook 找不到 SKILL.md 时静默退出，规则文件与脚本按需读取/执行，缺一份都只在会话里失败。
+  "design-plugin/skills/design/SKILL.md",
+  "design-plugin/skills/design/references/catalog.md",
+  "design-plugin/skills/design/references/check.md",
+  "design-plugin/skills/design/references/create.md",
+  "design-plugin/skills/design/references/design-system.md",
+  "design-plugin/skills/design/references/interact.md",
+  "design-plugin/skills/design/references/output.md",
+  "design-plugin/skills/design/references/redesign.md",
+  "design-plugin/skills/design/scripts/adapt-canvas.mjs",
+  "design-plugin/skills/design/scripts/design-lint.mjs",
+  "design-plugin/skills/design/scripts/design-tokens.mjs",
+  "design-plugin/skills/design/scripts/import-design-system.mjs",
+  "design-plugin/hooks/hooks.json",
+  "design-plugin/hooks/run-hook.cmd",
+  "design-plugin/hooks/design-rules",
+  "zcode-cua-plugin/docs/computer-use.md",
+  "zcode-cua-plugin/scripts/computer-use-client.mjs",
+  "zcode-cua-plugin/skills/computer-use/SKILL.md",
 ] as const;
 
 export function buildRemoteAgentOfficialPluginDir(remoteProviderDir: string): string {

@@ -1,4 +1,4 @@
-import { PERMISSION_FULL_ACCESS_OPTION_ID } from "@zcode/shared/zcode-protocol-v4";
+import { permissionGrantMode } from "@zcode/shared/zcode-protocol-v4";
 // 权限/后台命令组：resolveInteraction / cancelBackgroundWork。
 // - resolveInteraction：前向命令收口反向请求（permission/AskUserQuestion），经
 //   host.interactions（V4InteractionRegistry）投递给 broker 侧等待中的 deferred。
@@ -47,11 +47,26 @@ async function resolveInteraction(
   envelope: CommandEnvelope,
 ): Promise<CommandResult | undefined> {
   const payload = envelope.payload as CommandPayloadMap["resolveInteraction"];
-  const delivered =
-    payload.answer.optionId === PERMISSION_FULL_ACCESS_OPTION_ID
-      ? ((await host.interactions?.resolveFullAccess(payload.interactionId, envelope.sessionId!)) ??
-        false)
-      : (host.interactions?.resolve(payload.interactionId, payload.answer) ?? false);
+  const mode = permissionGrantMode(payload.answer.optionId);
+  const delivered = mode
+    ? ((await host.interactions?.resolvePermissionMode(
+        payload.interactionId,
+        envelope.sessionId!,
+        mode,
+      )) ?? false)
+    : (host.interactions?.resolve(
+        payload.interactionId,
+        payload.answer,
+        envelope.sessionId,
+        envelope.pluginDiscoveryUi === true,
+      ) ?? false);
+  // 未命中也会返回 accepted；只有实际提交的授权才能作为新会话默认权限的依据。
+  if (delivered && mode) {
+    return {
+      type: "resolveInteraction",
+      resolvedBy: { clientId: envelope.clientId, optionId: payload.answer.optionId },
+    };
+  }
   if (!delivered) {
     host.logger?.info?.("v4 resolveInteraction no pending interaction (idempotent)", {
       event: "zcode_protocol.v4.interaction_already_resolved",
@@ -78,7 +93,7 @@ async function snoozeInteractionAutoResolution(
   return undefined;
 }
 
-class V4WorkspaceHookReviewRejectedError extends Error {
+export class V4WorkspaceHookReviewRejectedError extends Error {
   constructor(readonly reasonCode: string) {
     super(`Workspace Hook review command rejected: ${reasonCode}`);
     this.name = "V4WorkspaceHookReviewRejectedError";
@@ -188,6 +203,33 @@ async function cancelBackgroundWork(
   if (result?.reason !== undefined) {
     throw new V4BackgroundWorkCancelRejectedError(result.reason, payload.workId);
   }
+  return undefined;
+}
+
+class V4SubagentStopRejectedError extends Error {
+  readonly reasonCode: string;
+  constructor(reason: string, taskId: string) {
+    super(`subagent ${taskId} was not stopped: ${reason}`);
+    this.name = "V4SubagentStopRejectedError";
+    this.reasonCode = `fault.command.subagentStopRejected.${reason.replace(/^background_task_/, "")}`;
+  }
+}
+
+async function stopSubagent(
+  host: V4CommandCoreHost,
+  envelope: CommandEnvelope,
+): Promise<CommandResult | undefined> {
+  const payload = envelope.payload as CommandPayloadMap["stopSubagent"];
+  const record = requireRecord(host, envelope.sessionId);
+  if (!record.app.runtime?.stopBackgroundTask) {
+    throw new V4CapabilityUnsupportedError("stopBackgroundTask", record.app.sessionId);
+  }
+  const result = await record.app.runtime.stopBackgroundTask(payload.taskId, {
+    expectedExecutionId: payload.executionId,
+    initiator: "user",
+    strict: true,
+  });
+  if (!result.ok) throw new V4SubagentStopRejectedError(result.reason, payload.taskId);
   return undefined;
 }
 
@@ -315,6 +357,7 @@ export const interactionBackgroundHandlers = {
   requestWorkspaceHookReview,
   snoozeInteractionAutoResolution,
   cancelBackgroundWork,
+  stopSubagent,
   resumeWorkflowRun,
   startSavedWorkflow,
   amendWorkflowRunSettings,

@@ -1,9 +1,11 @@
+import type { ToolSearchMode } from "@zcode/contracts";
 import { getDefaultConfigPath, updateUiLocaleInFileConfig } from "@zcode/adapters/config";
 import type { SessionEvent } from "@zcode/contracts";
 import type { ZCodeAppOptions } from "@zcode/bootstrap";
 import { DEFAULT_LOCALE, type SupportedLocale } from "@zcode/i18n";
 import type { TuiRequestPermission } from "@zcode/tui";
 import type { GlobalOptions } from "@zcode/shared-types";
+import type { DynamicWorkflowMode } from "@zcode/shared";
 import { createCommandCenter, parseSlashCommand } from "./command-center.js";
 import type { CommandCenterApp } from "./command-center.js";
 import { resolveDisplayLocale } from "./locale.js";
@@ -38,6 +40,7 @@ import {
 } from "./tui-command-state.js";
 import { createTuiModelAvailabilityChecker } from "./tui-login-state.js";
 import { withTuiMetadata } from "./tui-submit-metadata.js";
+import { DEFAULT_CLI_WORKFLOW_MODE, resolveWorkflowModeRuntimeConfig } from "./workflow-mode.js";
 import type {
   CliModeState,
   CliPermissionMode,
@@ -57,8 +60,10 @@ export function createTuiSubmitPrompt(
   startupLocale: SupportedLocale = DEFAULT_LOCALE,
   toolDisallowlist?: readonly string[],
   forceMcs = false,
+  toolsearchMode: ToolSearchMode = "off",
   browserUse?: GlobalOptions["browserUse"],
   browserExecutable?: GlobalOptions["browserExecutable"],
+  workflowMode: DynamicWorkflowMode = DEFAULT_CLI_WORKFLOW_MODE,
 ): TuiPromptHandler {
   let app: Awaited<ReturnType<NonNullable<RunDependencies["createZCodeApp"]>>> | undefined;
   let activeUiLocale = uiLocale;
@@ -70,14 +75,17 @@ export function createTuiSubmitPrompt(
     object,
     NonNullable<ReturnType<typeof createCliHeadlessBrowserRuntime>>
   >();
-  let activeRequestPermission: TuiRequestPermission | undefined;
+  // Bug 根因：审批入口原先只在单次 submitPrompt/sendInput 调用内有效，调用结束即恢复为空；
+  // 通知驱动的回合和 CreateSession 建的后台会话在这之外询问，只能被 fail closed 拒绝。
+  // 现在由 TUI 挂载时登记、卸载时注销，入口只有这一个 owner，不再按提交切换。
+  let registeredRequestPermission: TuiRequestPermission | undefined;
   const cleanupTimeoutMs = Math.max(
     1,
     Math.trunc(deps.shutdownCleanupTimeoutMs ?? DEFAULT_CLI_CLEANUP_TIMEOUT_MS),
   );
   const permissionBroker: NonNullable<ZCodeAppOptions["permissionBroker"]> = {
     requestPermission: async (request, requestOptions) => {
-      const requestPermission = activeRequestPermission;
+      const requestPermission = registeredRequestPermission;
       if (!requestPermission) {
         return {
           decision: "deny",
@@ -141,13 +149,17 @@ export function createTuiSubmitPrompt(
       sessionId,
       workingDirectory,
     } = await prepareTuiAppRuntime(deps, version, request, processRuntime);
+    const providerEndpointRoutingPort = processRuntime.providerEndpointRoutingPort;
     const browserRuntime = createCliHeadlessBrowserRuntime({ browserExecutable, browserUse }, deps);
     let createdApp: Awaited<ReturnType<NonNullable<RunDependencies["createZCodeApp"]>>>;
     try {
       createdApp = await createAppFactory({
+        modelSelectionMode: "cli-default",
+        standaloneSessionControl: true,
         browserControlPort: browserRuntime?.browserControlPort,
         env: appEnv,
         projectConfigPath: deps.projectConfigPath,
+        ...(providerEndpointRoutingPort ? { providerEndpointRoutingPort } : {}),
         providerRegistry: providerRegistryRuntime.runtime.registryService,
         configuredDefaultModelSelection,
         ...(providerRegistryRuntime.providerRuntimeHeadersPort
@@ -159,7 +171,10 @@ export function createTuiSubmitPrompt(
         runtimeConfig: {
           ...(modeState.override ? { mode: modeState.override } : {}),
           ...(toolDisallowlist ? { toolDisallowlist } : {}),
+          toolSearch: { mode: toolsearchMode },
           ...(forceMcs ? { midConversationSystem: { mode: "force" as const } } : {}),
+          // 首个 app 与 /new、/resume、fork 都经这里创建，mode 因此在进程内一致。
+          ...resolveWorkflowModeRuntimeConfig(workflowMode),
           modelStreaming: "on",
           titleGeneration: TUI_TITLE_GENERATION_CONFIG,
           workingDirectory,
@@ -299,55 +314,49 @@ export function createTuiSubmitPrompt(
       };
     },
     setMode: setCliMode,
+    workflowMode,
   });
 
   const submitPrompt: TuiPromptHandler = async (input, options) => {
-    const previousRequestPermission = activeRequestPermission;
-    activeRequestPermission = options.requestPermission;
-
-    try {
-      const result = await commandCenter(input, options);
-      return app ? { ...result, ...(await readTuiSessionMetadata(await getApp())) } : result;
-    } finally {
-      activeRequestPermission = previousRequestPermission;
-    }
+    const result = await commandCenter(input, options);
+    return app ? { ...result, ...(await readTuiSessionMetadata(await getApp())) } : result;
   };
 
   submitPrompt.setMode = async (nextMode) => ({ mode: await setCliMode(nextMode) });
 
+  submitPrompt.registerPermissionRequester = (requestPermission) => {
+    registeredRequestPermission = requestPermission;
+    return () => {
+      // 只注销自己：重新挂载时新入口先登记，旧入口的迟到注销不能把它清掉。
+      if (registeredRequestPermission === requestPermission)
+        registeredRequestPermission = undefined;
+    };
+  };
+
   submitPrompt.sendInput = async (input, options) => {
-    const previousRequestPermission = activeRequestPermission;
-    // busy-turn or resumed input can start a new turn through sendInput,
-    // bypassing submitPrompt's scoped approval handler and leaving approvals invisible.
-    activeRequestPermission = options?.requestPermission;
-
-    try {
-      // Model/effort changes configure subsequent requests, including during an active turn.
-      const command = parseSlashCommand(typeof input === "string" ? input : input.text);
-      if (command?.type === "known" && (command.name === "model" || command.name === "effort")) {
-        return {
-          kind: "command_result",
-          result: await submitPrompt(input, {
-            ...options,
-            abortSignal: options?.abortSignal ?? new AbortController().signal,
-          }),
-        };
-      }
-      const activeApp = await getApp();
-      if (activeApp.sendInput) {
-        const result = await activeApp.sendInput(input, options);
-        if (result.kind !== "started_turn") return result;
-        return withTuiMetadata(result.result, activeApp, currentCliMode(modeState));
-      }
-
-      return withTuiMetadata(
-        await activeApp.submitPrompt(input, options),
-        activeApp,
-        currentCliMode(modeState),
-      );
-    } finally {
-      activeRequestPermission = previousRequestPermission;
+    // Model/effort changes configure subsequent requests, including during an active turn.
+    const command = parseSlashCommand(typeof input === "string" ? input : input.text);
+    if (command?.type === "known" && (command.name === "model" || command.name === "effort")) {
+      return {
+        kind: "command_result",
+        result: await submitPrompt(input, {
+          ...options,
+          abortSignal: options?.abortSignal ?? new AbortController().signal,
+        }),
+      };
     }
+    const activeApp = await getApp();
+    if (activeApp.sendInput) {
+      const result = await activeApp.sendInput(input, options);
+      if (result.kind !== "started_turn") return result;
+      return withTuiMetadata(result.result, activeApp, currentCliMode(modeState));
+    }
+
+    return withTuiMetadata(
+      await activeApp.submitPrompt(input, options),
+      activeApp,
+      currentCliMode(modeState),
+    );
   };
 
   attachTuiAppQueries(submitPrompt, getApp);

@@ -4,7 +4,6 @@
 
 import http from "node:http";
 import https from "node:https";
-import { Readable } from "node:stream";
 import { ProxyAgent } from "proxy-agent";
 import {
   createHttpClientError,
@@ -16,22 +15,18 @@ import {
   type HttpClientRunOptions,
 } from "@zcode/contracts";
 import {
-  isReactorEgressHostAllowed,
-  type ReactorDesktopPolicySource,
-} from "@zcode/shared";
-import {
   loadTlsCaCertificates,
   resolveProxyForRequest,
   resolveWebFetchProxyForRequest,
 } from "../network/http-config.js";
-import { createDesktopPolicySource } from "../policy/desktopPolicySource.js";
 import {
   assertPublicEgressDestination,
   createPublicEgressLookup,
   defaultPublicDnsLookup,
   type DnsLookup,
 } from "./public-egress-policy.js";
-import { readResponseBody } from "./response-body.js";
+import { readIncomingResponse } from "../network/incoming-response.js";
+import { readResponseBody, type ResponseLike } from "./response-body.js";
 
 const TRACE_HEADER = "x-zcode-trace-id";
 const DEFAULT_TIMEOUT_MS = 180_000;
@@ -46,22 +41,6 @@ export interface NodeHttpClientAdapterOptions {
   caCertFile?: string;
   dnsLookup?: DnsLookup;
   capturedUserProxyEnvFallback?: boolean;
-  /**
-   * 组织出网白名单来源（P4.3）：缺省读 `{用户数据根}/desktop-policy.json`（Host 写、CLI 只读）。
-   * 只作用于 `egressPolicy === "public"` 的请求（WebFetch 这类统一出网口），
-   * 未配置（文件不存在 / 名单为空）时行为与接线前完全一致 —— 不限制。
-   */
-  desktopPolicy?: ReactorDesktopPolicySource;
-}
-
-/** 进程内共享的默认策略来源：读同一个文件，没必要每个 client 各持一份缓存。 */
-let sharedDesktopPolicySource: ReactorDesktopPolicySource | null = null;
-function resolveDesktopPolicySource(
-  override: ReactorDesktopPolicySource | undefined,
-): ReactorDesktopPolicySource {
-  if (override) return override;
-  sharedDesktopPolicySource ??= createDesktopPolicySource();
-  return sharedDesktopPolicySource;
 }
 
 export class NodeHttpClientAdapter implements HttpClientPort {
@@ -106,9 +85,6 @@ export class NodeHttpClientAdapter implements HttpClientPort {
 
     try {
       if (publicDnsLookup) {
-        // P4.3 出网白名单：与 public-egress（私网 IP 校验）**双重判定**，互不替代。
-        // 顺序上先判组织名单（本地判定，不需要 DNS），再判公网可达性。
-        assertEgressAllowlist(url, this.options.desktopPolicy);
         assertPublicEgressProxyBoundary(url, proxy.proxyUrl);
         await assertPublicEgressDestination(url, publicDnsLookup, {
           signal: abortController.signal,
@@ -187,7 +163,7 @@ function fetchHttpResponse(
   proxyUrl: string | undefined,
   tlsCaCertificates: Buffer | undefined,
   publicDnsLookup: DnsLookup | undefined,
-): Promise<Response> {
+): Promise<ResponseLike & { statusText: string; url?: string }> {
   const useCustomTlsAgent = url.protocol === "https:" && tlsCaCertificates !== undefined;
   if (!proxyUrl && !useCustomTlsAgent && !publicDnsLookup) {
     return fetch(url.toString(), {
@@ -201,7 +177,7 @@ function fetchHttpResponse(
 
   const headers = buildHeaders(request);
   const transport = url.protocol === "https:" ? https : http;
-  const agent = createRequestAgent(url, proxyUrl, tlsCaCertificates);
+  const agent = createRequestAgent(url, proxyUrl, tlsCaCertificates, signal);
   const lookup = publicDnsLookup
     ? createPublicEgressLookup(url.toString(), publicDnsLookup, { signal })
     : undefined;
@@ -223,24 +199,14 @@ function fetchHttpResponse(
         lookup: proxyUrl ? undefined : lookup,
       },
       (message) => {
-        const responseHeaders = new Headers();
-        for (const [name, value] of Object.entries(message.headers)) {
-          if (Array.isArray(value)) {
-            for (const item of value) {
-              responseHeaders.append(name, item);
-            }
-          } else if (value !== undefined) {
-            responseHeaders.append(name, String(value));
-          }
+        // 不包成 `Response`：它表示不了 999 之类的状态码，而这里只要状态、头与正文（与原生 fetch 一样原样带回）。
+        // 回调里抛出的东西没人接得住、会打死整个 agent 进程，所以一律转成这一次请求的 reject。
+        try {
+          resolve(readIncomingResponse(message));
+        } catch (error) {
+          message.destroy();
+          reject(error);
         }
-
-        resolve(
-          new Response(Readable.toWeb(message) as ReadableStream<Uint8Array>, {
-            headers: responseHeaders,
-            status: message.statusCode ?? 502,
-            statusText: message.statusMessage,
-          }),
-        );
       },
     );
 
@@ -277,10 +243,13 @@ function createRequestAgent(
   url: URL,
   proxyUrl: string | undefined,
   tlsCaCertificates: Buffer | undefined,
+  signal: AbortSignal,
 ): http.Agent | undefined {
   if (proxyUrl) {
     return new ProxyAgent({
       ca: tlsCaCertificates,
+      // CONNECT 返回前 ClientRequest.destroy 不持有 socket；让取消同时关闭代理连接。
+      signal,
       getProxyForUrl: () => proxyUrl,
       httpsAgent: tlsCaCertificates ? new https.Agent({ ca: tlsCaCertificates }) : undefined,
     }) as unknown as http.Agent;
@@ -293,24 +262,8 @@ function createRequestAgent(
   return undefined;
 }
 
-/**
- * 组织出网白名单闸（P4.3）：命中"不在名单内"即拒绝，理由给中文可读文案（会进入模型上下文）。
- *
- * 判定规则见 `@zcode/shared` 的 `isReactorEgressHostAllowed`（裸域含子域 / `*.` 不含裸域 /
- * `*` 逃生阀 / 端口不参与匹配）；名单为空或策略文件不存在 = 不限制，与接线前行为一致。
- */
-function assertEgressAllowlist(url: URL, source: ReactorDesktopPolicySource | undefined): void {
-  const allowlist = resolveDesktopPolicySource(source).current()?.egressAllowlist;
-  if (!allowlist || allowlist.length === 0) return;
-  if (isReactorEgressHostAllowed(url.hostname, allowlist)) return;
-  throw createHttpClientError({
-    code: "egress_blocked",
-    url: url.toString(),
-    message: `出网被组织策略拒绝：域名 ${url.hostname} 不在允许访问的清单内（如需访问请联系管理员调整出网白名单）`,
-  });
-}
-
-function assertPublicEgressProxyBoundary(url: URL, proxyUrl: string | undefined): void {  if (!proxyUrl) return;
+function assertPublicEgressProxyBoundary(url: URL, proxyUrl: string | undefined): void {
+  if (!proxyUrl) return;
   // 普通代理会在代理侧解析目标域名，本地 DNS 校验无法证明最终 IP 仍是公网地址。
   throw createHttpClientError({
     code: "egress_blocked",

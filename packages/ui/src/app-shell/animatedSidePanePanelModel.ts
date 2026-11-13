@@ -1,6 +1,10 @@
-const MIN_PREVIEW_PANE_HEAVY_CONTENT_VISIBLE_INLINE_SIZE_PX = 96;
+export const MIN_PREVIEW_PANE_HEAVY_CONTENT_VISIBLE_INLINE_SIZE_PX = 96;
+
+/** 「打开标签页」里内置的 Sites 入口打开的官方插件（只有一个 surface）。 */
+export const SITES_PLUGIN_ID = "zcode-site@zcode-plugins-official";
 
 export type OpenTabLauncherItemId =
+  | "sites"
   | "selection-side-conversation"
   | "changes"
   | "files"
@@ -12,30 +16,35 @@ export function resolveOpenTabLauncherItemIds({
   developerToolsEnabled,
   hasChangesTab,
   canOpenSelectionSideConversation = false,
+  canOpenSites = false,
   supportsEmbeddedBrowser = true,
 }: {
   developerToolsEnabled: boolean;
   hasChangesTab: boolean;
   canOpenSelectionSideConversation?: boolean;
+  canOpenSites?: boolean;
   supportsEmbeddedBrowser?: boolean;
 }): OpenTabLauncherItemId[] {
-  const itemIds: OpenTabLauncherItemId[] = [];
+  // 工作区文件：与变更审查/终端并列的常驻入口（文件树从左侧抽屉迁到右侧后的主入口）。
+  const itemIds: OpenTabLauncherItemId[] = ["files"];
 
-  if (canOpenSelectionSideConversation) {
-    itemIds.push("selection-side-conversation");
+  if (supportsEmbeddedBrowser) {
+    itemIds.push("browser");
   }
 
   if (!hasChangesTab) {
     itemIds.push("changes");
   }
 
-  // 工作区文件：与变更审查/终端并列的常驻入口（文件树从左侧抽屉迁到右侧后的主入口）。
-  itemIds.push("files");
+  // Sites 面板是官方插件 zcode-site 的 UI surface，产品要求作为内置入口排在辅助对话前。
+  if (canOpenSites) {
+    itemIds.push("sites");
+  }
 
   itemIds.push("terminal");
 
-  if (supportsEmbeddedBrowser) {
-    itemIds.push("browser");
+  if (canOpenSelectionSideConversation) {
+    itemIds.push("selection-side-conversation");
   }
 
   if (developerToolsEnabled) {
@@ -47,13 +56,27 @@ export function resolveOpenTabLauncherItemIds({
 
 export function shouldOfferSelectionSideConversation({
   activeTaskId,
+  isMobileTextInputViewport,
+  mobileOverlay,
 }: {
   activeTaskId: string | null;
+  isMobileTextInputViewport: boolean;
+  mobileOverlay: boolean;
 }): boolean {
-  return Boolean(activeTaskId);
+  return Boolean(activeTaskId && !mobileOverlay && !isMobileTextInputViewport);
 }
 
-export function resolveAnimatedSidePanePanelLayout() {
+export function resolveAnimatedSidePanePanelLayout({ mobileOverlay }: { mobileOverlay: boolean }) {
+  if (mobileOverlay) {
+    return {
+      collapsedSize: "0px",
+      defaultSize: "100%",
+      maxSize: "100%",
+      minSize: "0px",
+      useResizablePanel: false,
+    };
+  }
+
   return {
     collapsedSize: "0px",
     defaultSize: "0px",
@@ -66,6 +89,7 @@ export function resolveAnimatedSidePanePanelLayout() {
 export function shouldRenderPreviewPaneHeavyContent({
   isActiveTab,
   isMediaPreview = false,
+  isMobileOverlay = false,
   isResizeSettling = false,
   isSidePaneVisible,
   minVisibleInlineSizePx = MIN_PREVIEW_PANE_HEAVY_CONTENT_VISIBLE_INLINE_SIZE_PX,
@@ -73,6 +97,7 @@ export function shouldRenderPreviewPaneHeavyContent({
 }: {
   isActiveTab: boolean;
   isMediaPreview?: boolean;
+  isMobileOverlay?: boolean;
   isResizeSettling?: boolean;
   isSidePaneVisible: boolean;
   minVisibleInlineSizePx?: number;
@@ -80,6 +105,12 @@ export function shouldRenderPreviewPaneHeavyContent({
 }) {
   if (!isSidePaneVisible || !isActiveTab) {
     return false;
+  }
+
+  if (isMobileOverlay) {
+    // Bugfix: 手机远控右侧栏用 transform 抽屉滑入，首次测量时可能还在视口外。
+    // transform 动画结束不会触发 ResizeObserver，不能用桌面窄条优化延迟真实预览。
+    return true;
   }
 
   if (isResizeSettling) {

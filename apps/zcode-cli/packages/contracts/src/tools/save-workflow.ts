@@ -3,7 +3,6 @@
 // ============================================================
 
 import { z } from "zod";
-import { USER_DATA_DIR_NAME } from "@zcode/shared";
 import { toToolJsonSchema } from "./json-schema.js";
 import { CreateWorkflowDiagnosticSchema } from "./create-workflow.js";
 import {
@@ -33,26 +32,24 @@ export const SaveWorkflowInputSchema = z
       .string()
       .min(1)
       .max(SAVED_WORKFLOW_MAX_NAME_CHARS)
-      .describe(
-        "File-safe identifier the workflow will be recalled by. Letters, digits, dot, dash and underscore only.",
-      ),
+      .describe("File-safe identifier: letters, digits, dot, dash and underscore."),
     description: z
       .string()
       .min(1)
-      .describe("One line saying what the workflow does. Shown wherever the workflow is listed."),
+      .describe("One line saying what the workflow does."),
     whenToUse: z
       .string()
       .min(1)
       .optional()
-      .describe("Optional guidance on the situations this workflow is the right answer to."),
+      .describe("When this workflow is the right answer."),
     args: SavedWorkflowArgsDeclarationSchema.optional().describe(
-      "Optional argument declarations. The script reads validated values off the `args` global.",
+      "Argument declarations the script reads off `args`.",
     ),
     script: z
       .string()
       .optional()
       .describe(
-        "Full TypeScript workflow script written against the dynamic-workflow facade, exactly as CreateWorkflow takes it. Body only — do not include a metadata block. Provide this OR `script_path`, never both.",
+        "The script body, inline, without a metadata block. This OR `script_path`, never both.",
       ),
     /**
      * 正文的第二条来源：一个已经在盘上的文件，
@@ -64,13 +61,28 @@ export const SaveWorkflowInputSchema = z
       .min(1)
       .optional()
       .describe(
-        "The file holding the script body, relative to the working directory or absolute — usually a draft a CreateWorkflow/AmendWorkflow result named. Provide this OR `script`, never both; it saves a working draft without re-emitting it. A `/* zcode-workflow` block in that file is dropped: the metadata comes from this call's `description` / `whenToUse` / `args`.",
+        "A file holding the script body, usually a draft a result named. This OR `script`, never both.",
       ),
     // 作用域由**模型**说出，不由系统猜——没有默认值，每次都要判断。判据中性：脚本是否
     // 引用本仓库的东西？是 → project，否 → global。
     scope: SavedWorkflowScopeSchema.describe(
-      `Where the workflow is saved. "project" when the script references this repository's files, commands, conventions or directory layout; "global" when it depends on nothing in this project and should be available from every project (saved under ~/${USER_DATA_DIR_NAME}/workflows). Decide every time; there is no default.`,
+      '"project" when the script depends on this repository; "global" when it depends on nothing in it. Required, no default.',
     ),
+    /**
+     * 溯源（docs/dynamic-workflow/launch.md「`SaveWorkflow`」）：本定义是从哪次 run 提炼来的。
+     * **不是第三条正文来源**——正文仍只能来自 `script` / `script_path`，handler 也不读它。
+     * 它唯一的作用是让那次 run 的完成卡认出自己已被保存
+     * （docs/dynamic-workflow/transcript-and-notifications.md「Which workflow a run is saved as」），
+     * 而这是模型存下来的定义与那次 run 之间**仅有的**持久联系：名字由模型另起，脚本被概括改写过，
+     * 两者都联接不回去。
+     */
+    run_id: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        "Provenance only: the id of the run this workflow was distilled from, when saving a workflow that just ran. Pass it whenever you know it; it does not change what is saved.",
+      ),
     // ——以下三个字段由 `resolveInput` 解析回填，模型不填——
     // 它们是**确认窗要展示的事实**：这次保存落到哪个文件、是不是一次覆盖、是否遮蔽了另一档。
     // 走入参而不是 display，是因为入参通道对每个客户端版本都是无 schema 的透传，旧桌面与

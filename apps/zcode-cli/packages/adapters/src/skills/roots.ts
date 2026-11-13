@@ -1,19 +1,18 @@
 import { stat } from "node:fs/promises";
 import { homedir } from "node:os";
-import { dirname, isAbsolute, join, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import type { SkillRoot, SkillSource } from "@zcode/contracts";
-import { USER_DATA_DIR_NAME } from "@zcode/shared";
 
 const GIT_MARKER = ".git";
 const HOME_PREFIX = "~/";
 const PRIORITY_STEP = 10;
 const SKILLS_DIR = "skills";
-/** 工作区级目录名：项目配置语义，保持字面量。用户级改用 USER_DATA_DIR_NAME。 */
 const ZCODE_DIR = ".zcode";
 const AGENTS_DIR = ".agents";
 
 export interface SkillRootResolutionOptions {
   homeDirectory?: string;
+  additionalDirectories?: readonly string[];
   extraRoots?: string[];
   extraResolvedRoots?: SkillRoot[];
   includeZcodeSkills?: boolean;
@@ -45,12 +44,6 @@ export async function resolveDefaultSkillRoots(
   }
 
   if (includeZcode) {
-    // 企业服务端下发目录（server-skills）。同名解析走 first-match，因此 priority 必须
-    // 排在用户级两根之前：server 版优先，而显式配置的 extraRoots 仍最高（契约
-    // docs/已完成/已完成-server-skill-sync.md §6.1）。列表语义不变——discoverSkills 按 path 保留全部同名。
-    roots.push(
-      root(join(home, USER_DATA_DIR_NAME, "server-skills"), "user", "remote", nextPriority()),
-    );
     roots.push(...skillRootsForBase(home, "user", nextPriority));
   }
 
@@ -59,6 +52,18 @@ export async function resolveDefaultSkillRoots(
     if (includeZcode) {
       roots.push(...skillRootsForBase(directory, "project", nextPriority));
     }
+  }
+
+  for (const directory of new Set(
+    (options.additionalDirectories ?? []).map((path) => resolve(path)),
+  )) {
+    if (directory === resolvedWorkingDirectory) continue;
+    roots.push(
+      ...skillRootsForBase(directory, "project", nextPriority).map((item) => ({
+        ...item,
+        namespace: basename(directory),
+      })),
+    );
   }
 
   roots.push(...(options.extraResolvedRoots ?? []));
@@ -104,13 +109,10 @@ function skillRootsForBase(
   scope: SkillRoot["scope"],
   nextPriority: () => number,
 ): SkillRoot[] {
-  // 合并而不是 fallback：用户可能同时安装原生 ZCode skill 和兼容 `.agents` skill。
-  // 同一级别仍保持 ZCode 目录优先，后续同名按 root 顺序解析。
-  // 本函数同时服务用户级与工作区级：用户级落在 USER_DATA_DIR_NAME，工作区级是项目
-  // 配置语义、保持字面量 `.zcode`——共用一个字面量会让用户级读回官方版的旧目录。
-  const zcodeDirName = scope === "user" ? USER_DATA_DIR_NAME : ZCODE_DIR;
+  // 合并而不是 fallback：用户可能同时安装原生 `.zcode` skill 和兼容 `.agents` skill。
+  // 同一级别仍保持 `.zcode` 优先，后续同名按 root 顺序解析。
   return [
-    root(join(baseDirectory, zcodeDirName, SKILLS_DIR), scope, "zcode", nextPriority()),
+    root(join(baseDirectory, ZCODE_DIR, SKILLS_DIR), scope, "zcode", nextPriority()),
     root(join(baseDirectory, AGENTS_DIR, SKILLS_DIR), scope, "agents", nextPriority()),
   ];
 }

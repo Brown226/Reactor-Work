@@ -13,8 +13,13 @@
 import type { DatabaseSync } from "node:sqlite";
 import type {
   ActorRecord,
+  Caps,
+  GetNodeOptions,
   JournalStorePort,
+  ListActorsOptions,
   ListEventsOptions,
+  ListNodesOptions,
+  NodeKind,
   NodeRecord,
   RunEvent,
   RunRecord,
@@ -26,21 +31,28 @@ import { encodeJson } from "../json.js";
 // 产物读面自成一个模块：它只要一个 db 句柄，与 run/actor/node/event 的写入-读取无共享状态，
 // 而它的两条查询各自带着一大段「为什么是这个取数源、这个排序、这个游标」的论证。
 import {
+  countTaggedReports,
   listArtifactItems,
   listArtifactRows,
   type DwfArtifactItem,
   type DwfArtifactItemsQuery,
 } from "./dwf-journal-artifacts.js";
+import { listEventPage, type DwfEventPageQuery } from "./dwf-journal-pages.js";
+import {
+  countNodeRows,
+  getNodeRow,
+  listActorRows,
+  listEventRows,
+  listNodeRows,
+  sumResultBytes,
+} from "./dwf-journal-reads.js";
 import {
   decodeActor,
-  decodeEvent,
-  decodeNode,
   decodeRun,
   encodeResultJson,
   encodeRunSettlement,
   type DwfActorRow,
   type DwfEventRow,
-  type DwfNodeRow,
   type DwfWorldNodeRow,
   type DwfRunDetailRow,
   type DwfRunListItem,
@@ -51,12 +63,14 @@ import {
   countNodesByStatus,
   getRunRow,
   listRecentLogEvents,
+  listRunLifeSpans,
   listRuns,
   listRunsByParentSession,
   listWorldNodes,
   type DwfListRunsQuery,
   type DwfNodeStatusCounts,
   type DwfRunIntrospectionQueries,
+  type DwfRunLifeSpan,
 } from "./dwf-journal-introspection.js";
 
 export type { DwfArtifactItem, DwfArtifactItemsQuery } from "./dwf-journal-artifacts.js";
@@ -66,6 +80,7 @@ export type {
   DwfListRunsQuery,
   DwfNodeStatusCounts,
   DwfRunIntrospectionQueries,
+  DwfRunLifeSpan,
 } from "./dwf-journal-introspection.js";
 
 class SqliteDwfJournalStore implements JournalStorePort, DwfRunIntrospectionQueries {
@@ -102,6 +117,9 @@ class SqliteDwfJournalStore implements JournalStorePort, DwfRunIntrospectionQuer
           // lineage 同属这条只写一次的元数据路：修订是 supersede，前驱行零触碰，
           // 所以「本 run 修订自谁」只有建 run 这一刻能写下。
           record.resumedFrom ?? null,
+          // caps 与上面几列**不**同路：它不是只写一次的元数据。`updateRunCaps` 是这一列的第二个
+          // 写入者——一次只改 `max_concurrency` 的修订就地作用在活着的 run 上，而 resume 沿用
+          // 行里的值（docs/dynamic-workflow/concurrency.md「Two bounds on a run」）。
           record.caps.maxConcurrency,
           record.spentTokens,
           settlement.status,
@@ -183,6 +201,34 @@ class SqliteDwfJournalStore implements JournalStorePort, DwfRunIntrospectionQuer
   }
 
   /**
+   * 本 run 并发上界的就地更新（docs/dynamic-workflow/concurrency.md「Two bounds on a run」）。
+   * 与 `updateRunUsage` 同族的窄写入：**只列 caps_max_concurrency**，状态、用量与结算信封
+   * 都不在这条语句里——它们各有自己的写入路径，混进来就会让一次改上界顺手回退一个结算。
+   * 零迁移：列早已存在，本方法只是它的第二个写入者。
+   */
+  updateRunCaps(runId: string, caps: Caps): void {
+    const { changes } = this.db
+      .prepare("update dwf_run set caps_max_concurrency = ?, time_updated = ? where id = ?")
+      .run(caps.maxConcurrency, Date.now(), runId);
+    this.assertRunTouched(changes, runId);
+  }
+
+  /**
+   * 把**有效脚本**写回 run 行（docs/execution-engine.md「Holes」→「The engine's part」）。它是
+   * `script_text` / `script_hash` 两列在 `createRun` 之后的第二个写入者：一次补全把留白的函数体
+   * 接进脚本，此后 resume 拿行里的哈希对行里的文本，所以两列**必须同一条 UPDATE**——分两笔写会
+   * 开出一个「文本是新的、哈希是旧的」的崩溃窗口，resume 撞上它就是 ScriptHashMismatch。
+   * 与 `updateRunUsage` 同族的窄写入：状态、用量、上界与结算袋都不在这条语句里。零迁移：两列
+   * 早已存在，本方法只是它们的第二个写入者。
+   */
+  updateRunScript(runId: string, scriptText: string, scriptHash: string): void {
+    const { changes } = this.db
+      .prepare("update dwf_run set script_text = ?, script_hash = ?, time_updated = ? where id = ?")
+      .run(scriptText, scriptHash, Date.now(), runId);
+    this.assertRunTouched(changes, runId);
+  }
+
+  /**
    * 某个父会话名下所有**非终态**的 run。刻意不在 `JournalStorePort` 上：引擎从不按父会话找
    * run，这条查询只服务于宿主侧的孤儿收敛——一个进程被杀掉的 run 会永远停在 `running`，
    * 由下一次同会话的 app 构造把它收敛掉（`bootstrap/src/app/dynamic-workflow-run-service.ts`，
@@ -226,10 +272,13 @@ class SqliteDwfJournalStore implements JournalStorePort, DwfRunIntrospectionQuer
     return listRecentLogEvents(this.db, runId, limit);
   }
 
+  listRunLifeSpans(runId: string): DwfRunLifeSpan[] {
+    return listRunLifeSpans(this.db, runId);
+  }
+
   listRunsByParentSession(parentSessionId: string, limit: number): DwfRunSessionListItem[] {
     return listRunsByParentSession(this.db, parentSessionId, limit);
   }
-
 
   putActor(record: ActorRecord): void {
     const now = Date.now();
@@ -268,11 +317,8 @@ class SqliteDwfJournalStore implements JournalStorePort, DwfRunIntrospectionQuer
     return row ? decodeActor(row) : undefined;
   }
 
-  listActors(runId: string): ActorRecord[] {
-    const rows = this.db
-      .prepare("select * from dwf_actor where run_id = ? order by id")
-      .all(runId) as unknown as DwfActorRow[];
-    return rows.map(decodeActor);
+  listActors(runId: string, opts: ListActorsOptions): ActorRecord[] {
+    return listActorRows(this.db, runId, opts);
   }
 
   putNode(record: NodeRecord): void {
@@ -330,22 +376,35 @@ class SqliteDwfJournalStore implements JournalStorePort, DwfRunIntrospectionQuer
       );
   }
 
-  getNode(runId: string, siteId: string, ordinal: number): NodeRecord | undefined {
-    const row = this.db
-      .prepare("select * from dwf_node where run_id = ? and site_id = ? and ordinal = ?")
-      .get(runId, siteId, ordinal) as DwfNodeRow | undefined;
-    return row ? decodeNode(row) : undefined;
+  // ---- 节点 / 事件 / actor 的列表读：SQL 与论证住在 dwf-journal-reads.ts（读面选项全部下推）。
+
+  getNode(
+    runId: string,
+    siteId: string,
+    ordinal: number,
+    opts?: GetNodeOptions,
+  ): NodeRecord | undefined {
+    return getNodeRow(this.db, runId, siteId, ordinal, opts);
   }
 
-  listNodes(runId: string): NodeRecord[] {
-    const rows = this.db
-      .prepare("select * from dwf_node where run_id = ? order by id")
-      .all(runId) as unknown as DwfNodeRow[];
-    return rows.map(decodeNode);
+  listNodes(runId: string, opts: ListNodesOptions): NodeRecord[] {
+    return listNodeRows(this.db, runId, opts);
+  }
+
+  countNodes(runId: string, kind: NodeKind): number {
+    return countNodeRows(this.db, runId, kind);
+  }
+
+  sumResultBytes(runId: string, kind: NodeKind): number {
+    return sumResultBytes(this.db, runId, kind);
   }
 
   listArtifactRows(runId: string): NodeRecord[] {
     return listArtifactRows(this.db, runId);
+  }
+
+  countTaggedReports(runId: string): ReadonlyMap<string, number> {
+    return countTaggedReports(this.db, runId);
   }
 
   listWorldNodes(runId: string): DwfWorldNodeRow[] {
@@ -356,8 +415,15 @@ class SqliteDwfJournalStore implements JournalStorePort, DwfRunIntrospectionQuer
     runId: string,
     artifactId: string,
     query: DwfArtifactItemsQuery,
-  ): DwfArtifactItem[] {
+  ): { items: DwfArtifactItem[]; hasMore: boolean } {
     return listArtifactItems(this.db, runId, artifactId, query);
+  }
+
+  listEventPage(
+    runId: string,
+    query: DwfEventPageQuery,
+  ): { events: StoredEvent[]; hasMore: boolean } {
+    return listEventPage(this.db, runId, query);
   }
 
   appendEvent(runId: string, event: RunEvent): StoredEvent {
@@ -387,18 +453,8 @@ class SqliteDwfJournalStore implements JournalStorePort, DwfRunIntrospectionQuer
     return { sequence: row.sequence, event, timeCreated };
   }
 
-  listEvents(runId: string, opts?: ListEventsOptions): StoredEvent[] {
-    // cursor 与 limit 都下推到 SQL：在这里取全量再切片，等于每翻一页把整条 journal
-    // 读进内存——分页存在的理由就是不这么做。cursor 语义是"严格大于"（内存实现同）。
-    const after = opts?.afterSequence;
-    const limit = opts?.limit;
-    const where = after === undefined ? "run_id = ?" : "run_id = ? and sequence > ?";
-    const params: Array<string | number> = after === undefined ? [runId] : [runId, after];
-    // `limit -1` 是 SQLite 的"不限"写法，因此缺省与显式 limit 共用同一条语句形状。
-    const rows = this.db
-      .prepare(`select * from dwf_event where ${where} order by sequence limit ?`)
-      .all(...params, limit === undefined ? -1 : Math.max(0, limit)) as unknown as DwfEventRow[];
-    return rows.map(decodeEvent);
+  listEvents(runId: string, opts: ListEventsOptions): StoredEvent[] {
+    return listEventRows(this.db, runId, opts);
   }
 
   /** UPDATE 影响 0 行即"未知 run"——SQLite 不会为此报错，必须显式检出并大声失败。 */

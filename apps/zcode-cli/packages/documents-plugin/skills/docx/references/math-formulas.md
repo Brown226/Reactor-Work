@@ -1,32 +1,15 @@
-# Math Formulas — LaTeX → OMML（主路线）
+# Math Formulas — LaTeX → docx-js Mapping
 
 ## Design Philosophy
 
-**输入语法是 LaTeX**（模型友好）；**落盘格式是 Word 原生 OMML**（可编辑、可缩放、与正文字体一致）。
+GLM uses **LaTeX as the formula input syntax**, internally converting to docx-js Math objects.
 
-| 路线 | 何时用 | 实现 |
-| --- | --- | --- |
-| **主路线：OMML** | Python 生成 docx（`insert_math.py` / document 脚本） | `office_skill_lib.omml.latex_to_omml_*`（LaTeX→MathML→OMML） |
-| 旁路：docx-js Math | 仅 JS 侧且已嵌入公式对象时 | 下表的 docx-js 映射 |
-| **降级：PNG / 纯文本** | OMML 转换返回 `None` 时 | `postcheck.math-omml` 会报降级条数 |
+**Why not write OMML directly?**
+- Models are naturally proficient in LaTeX (abundant in training data)
+- LaTeX is semantically clear and highly readable
+- Conversion layer is encapsulated internally, transparent to the user
 
-```bash
-# Python 主路线（office-engines Python）
-python scripts/insert_math.py in.docx out.docx --latex '\frac{a}{b}' --display
-python scripts/postcheck.py out.docx   # 看 math-omml 项
-```
-
-失败语义：`latex_to_omml_*` 返回 `None` 不抛；调用方必须降级并可被 postcheck 观测，禁止静默丢公式。
-
-## Quick Start（Python · OMML）
-
-```python
-from office_skill_lib import omml
-xml = omml.latex_to_omml_xml(r"\frac{a}{b}", display=True)
-# 或用 CLI：insert_math.py
-```
-
-## Quick Start（JS · docx-js Math，旁路）
+## Quick Start
 
 ```js
 const { Math: OoxmlMath, MathRun, MathFraction, MathSuperScript,

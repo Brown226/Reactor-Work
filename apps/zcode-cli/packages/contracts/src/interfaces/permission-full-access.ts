@@ -17,9 +17,9 @@ export const permissionFullAccessReceiptSchema = z
         sequenceNumber: z.number().int().nonnegative(),
         payload: z
           .object({
-            mode: z.literal("yolo"),
+            mode: z.enum(["guarded", "yolo"]),
             planEnabled: z.boolean(),
-            previousMode: z.enum(["build", "edit", "yolo", "auto", "plan"]),
+            previousMode: z.enum(["build", "edit", "yolo", "guarded", "auto", "plan"]),
             previousPlanEnabled: z.boolean(),
             source: z.literal("command"),
             permissionGrant: z

@@ -1,6 +1,8 @@
 import {
   buildZCodeEndpointUrls,
   buildZCodeSourceHeadersFromContext,
+  resolveOptionalZCodeAuthorization,
+  type ZCodeJwtTokenResolver,
   ZCODE_ENV,
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
 } from "@zcode/shared";
@@ -12,18 +14,21 @@ import {
 
 export { ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV };
 
-type DesktopContextPromptRolloutLogger = SingleFeatureRolloutLogger;
+export type DesktopContextPromptRolloutLogger = SingleFeatureRolloutLogger;
+export const DESKTOP_CONTEXT_PROMPT_REQUEST_TIMEOUT_MS = 3_000;
 export const DESKTOP_CONTEXT_PROMPT_CACHE_TTL_MS = 60 * 60 * 1_000;
 const DESKTOP_CONTEXT_PROMPT_MAX_RESPONSE_BYTES = 1024 * 1024;
 
-interface DesktopContextPromptConfig {
+export interface DesktopContextPromptConfig {
   enabled: boolean;
   configVersion?: string;
 }
 
-type DesktopContextPromptRollout = SingleFeatureRollout<DesktopContextPromptConfig>;
+export type DesktopContextPromptRollout = SingleFeatureRollout<DesktopContextPromptConfig>;
 
-function resolveDesktopContextPromptConfig(payload: unknown): DesktopContextPromptConfig | null {
+export function resolveDesktopContextPromptConfig(
+  payload: unknown,
+): DesktopContextPromptConfig | null {
   if (typeof payload !== "object" || payload === null) {
     return null;
   }
@@ -81,16 +86,24 @@ export function createElectronDesktopContextPromptConfigFetcher(options: {
   appVersion: string;
   deviceMid: string;
   resolveEndpointOrigin: () => Promise<string>;
+  /** 当前界面语言；以前不传，X-Client-Language 固定为 unknown。 */
+  getClientLanguage: () => string;
+  resolveZcodeJwtToken?: ZCodeJwtTokenResolver;
 }): (signal: AbortSignal) => Promise<unknown> {
   return async (signal) => {
     const { net } = await import("electron");
     const endpointOrigin = await options.resolveEndpointOrigin();
+    const authorization = await resolveOptionalZCodeAuthorization(options.resolveZcodeJwtToken);
+    signal.throwIfAborted();
     const url = new URL(`${buildZCodeEndpointUrls(endpointOrigin).origin}/api/v1/client/configs`);
     url.searchParams.set("app_version", options.appVersion);
     url.searchParams.set("platform", `${process.platform}-${process.arch}`);
 
     return await new Promise<unknown>((resolve, reject) => {
       const request = net.request(url.toString());
+      // Chromium 可能复用匿名请求的公开 HTTP 缓存，导致登录后不发请求；要求每次向服务端校验。
+      request.setHeader("Cache-Control", "no-cache");
+      if (authorization) request.setHeader("Authorization", authorization);
       let responseBytes = 0;
       let body = "";
       let settled = false;
@@ -113,6 +126,7 @@ export function createElectronDesktopContextPromptConfigFetcher(options: {
       const sourceHeaders = buildZCodeSourceHeadersFromContext({
         appVersion: options.appVersion,
         arch: process.arch,
+        clientLanguage: options.getClientLanguage(),
         deviceMid: options.deviceMid,
         endpointOrigin,
         platform: process.platform,
@@ -122,6 +136,10 @@ export function createElectronDesktopContextPromptConfigFetcher(options: {
       for (const [name, value] of Object.entries(sourceHeaders)) {
         request.setHeader(name, value);
       }
+      request.on("redirect", () => {
+        settle(() => reject(new Error("desktop context prompt config redirect rejected")));
+        request.abort();
+      });
       request.on("response", (response) => {
         const statusCode = response.statusCode ?? 0;
         if (statusCode < 200 || statusCode >= 300) {

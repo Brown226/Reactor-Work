@@ -1,14 +1,14 @@
 import http from "node:http";
 import https from "node:https";
-import { Readable } from "node:stream";
 import { ProxyAgent } from "proxy-agent";
 import {
   loadTlsCaCertificates,
   resolveProxyUrlForRequest,
   resolveTlsCaCertFile,
 } from "./http-config.js";
+import { readIncomingResponse, toWebResponse } from "./incoming-response.js";
 
-type NetworkFetch = typeof globalThis.fetch;
+export type NetworkFetch = typeof globalThis.fetch;
 
 interface NetworkProxyFetchOptions {
   caCertFile?: string;
@@ -95,7 +95,13 @@ async function normalizeFetchRequest(
     body,
     headers: request.headers,
     method,
-    signal: request.signal,
+    // 临时 Request 的 controller 可被 GC，不能把其从属 signal 留作取消来源。
+    signal:
+      init?.signal !== undefined
+        ? init.signal
+        : input instanceof Request
+          ? input.signal
+          : undefined,
     url: new URL(request.url),
   };
 }
@@ -119,7 +125,6 @@ function fetchWithAgent(
 
     const cleanupAll = (): void => {
       signal?.removeEventListener("abort", onAbort);
-      clientRequest?.off("error", onRequestError);
       clientRequest?.off("close", onRequestClose);
       responseMessage?.off("close", cleanupAll);
       responseMessage?.off("error", onResponseError);
@@ -154,7 +159,7 @@ function fetchWithAgent(
 
     clientRequest = transport.request(
       {
-        agent: createRequestAgent(request.url, options),
+        agent: createRequestAgent(request.url, { ...options, signal }),
         headers: headersToOutgoing(request.headers),
         hostname: request.url.hostname,
         method: request.method,
@@ -166,29 +171,24 @@ function fetchWithAgent(
         responseMessage = message;
         responseMessage.once("close", cleanupAll);
         responseMessage.once("error", onResponseError);
-        const headers = new Headers();
-        for (const [name, value] of Object.entries(message.headers)) {
-          if (Array.isArray(value)) {
-            for (const item of value) {
-              headers.append(name, item);
-            }
-          } else if (value !== undefined) {
-            headers.append(name, String(value));
-          }
+        // 回调里抛出的东西没人接得住、会打死整个 agent 进程（network/incoming-response.ts）：
+        // 表示不了的状态码只让这一次请求失败。
+        let response: Response;
+        try {
+          response = toWebResponse(readIncomingResponse(message));
+        } catch (error) {
+          message.destroy();
+          rejectOnce(error);
+          return;
         }
-
         settled = true;
-        resolve(
-          new Response(Readable.toWeb(message) as ReadableStream<Uint8Array>, {
-            headers,
-            status: message.statusCode ?? 502,
-            statusText: message.statusMessage,
-          }),
-        );
+        resolve(response);
       },
     );
 
-    clientRequest.once("error", onRequestError);
+    // 响应读完后 MCP 会立即取消代理连接，底层 socket 与 TLS 可在请求 close 后各转发一次错误。
+    // 监听随请求对象回收，不能提前移除或只监听一次，否则单次 MCP 失败会带崩 Agent。
+    clientRequest.on("error", onRequestError);
     clientRequest.once("close", onRequestClose);
     clientRequest.end(request.body);
   });
@@ -206,11 +206,13 @@ function abortReason(signal: AbortSignal | undefined): Error {
 
 function createRequestAgent(
   url: URL,
-  options: { ca?: Buffer; proxyUrl?: string },
+  options: { ca?: Buffer; proxyUrl?: string; signal?: AbortSignal },
 ): http.Agent | https.Agent | ProxyAgent {
   if (options.proxyUrl) {
     return new ProxyAgent({
       ca: options.ca,
+      // CONNECT 返回前 socket 尚未归属 ClientRequest，取消必须抵达建连层。
+      signal: options.signal,
       getProxyForUrl: () => options.proxyUrl ?? "",
       httpsAgent: options.ca ? new https.Agent({ ca: options.ca }) : undefined,
     }) as unknown as http.Agent;

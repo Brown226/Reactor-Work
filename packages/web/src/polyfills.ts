@@ -156,7 +156,7 @@ if (typeof uint8With.fromBase64 !== "function") {
     configurable: true,
   });
 }
-if (typeof Uint8Array.prototype.toBase64 !== "function") {
+if (typeof (Uint8Array.prototype as unknown as { toBase64?: unknown }).toBase64 !== "function") {
   Object.defineProperty(Uint8Array.prototype, "toBase64", {
     value: function toBase64(this: Uint8Array) {
       let binary = "";
@@ -171,12 +171,12 @@ if (typeof Uint8Array.prototype.toBase64 !== "function") {
     configurable: true,
   });
 }
-if (typeof Uint8Array.prototype.toHex !== "function") {
+if (typeof (Uint8Array.prototype as unknown as { toHex?: unknown }).toHex !== "function") {
   Object.defineProperty(Uint8Array.prototype, "toHex", {
     value: function toHex(this: Uint8Array) {
       let hex = "";
       for (let index = 0; index < this.length; index += 1) {
-        hex += this[index].toString(16).padStart(2, "0");
+        hex += (this[index] ?? 0).toString(16).padStart(2, "0");
       }
       return hex;
     },

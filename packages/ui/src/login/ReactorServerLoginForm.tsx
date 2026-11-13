@@ -10,12 +10,14 @@ import { useCallback, useEffect, useState } from "react";
 import {
   DesktopCommandIds,
   isCredentialDecryptError,
+} from "@zcode/shared";
+import {
   TID_REACTOR_SERVER_LOGIN,
   TID_REACTOR_SERVER_PASSWORD_INPUT,
   TID_REACTOR_SERVER_STATUS,
   TID_REACTOR_SERVER_URL_INPUT,
   TID_REACTOR_SERVER_USERNAME_INPUT,
-} from "@zcode/shared";
+} from "@zcode/shared/test-ids";
 import { Alert, AlertDescription } from "@/components/ui/alert.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";

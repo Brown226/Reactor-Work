@@ -1,3 +1,4 @@
+import { ExecuteCommand } from "@/ToolCallBlocks/renderers/ExecuteCommand.js";
 import {
   bashOutputDisplaySchema,
   executionOutputPreviewSchema,
@@ -269,7 +270,12 @@ export function ExecuteToolCallBlock(context: ToolCallBlockRenderContext) {
   const { intl } = useZCodeIntl();
   const { toolCallNode, isRunning, statusLabel, errorText, isFocusedMode = false } = context;
   const { toolCall } = toolCallNode;
-  const secondaryText = getExecuteSecondaryText(toolCall.input);
+  // 摘要展示调用意图，详情仍从原始 input 读取命令，避免 description 替代真实执行内容。
+  const description =
+    (toolCall.toolName ?? toolCall.kind) === "Bash" && isPlainRecord(toolCall.input)
+      ? readFirstStringField(toolCall.input, ["description"])
+      : undefined;
+  const secondaryText = description ?? getExecuteSecondaryText(toolCall.input);
   const contentParts = getExecuteContentParts(toolCall.input);
   const outputText = extractExecuteResultText(toolCall.output);
   const rawOutputText = isPlainRecord(toolCall.raw)
@@ -291,22 +297,25 @@ export function ExecuteToolCallBlock(context: ToolCallBlockRenderContext) {
   const secondaryTextNode = useMemo(
     // 收起态 command 属于摘要正文，使用 UI sans 与同一行文案保持一致；
     // 展开后的完整命令仍保留 font-mono，便于阅读和复制技术内容。
-    () => <code className="truncate font-sans">{secondaryText}</code>,
+    () => <code className="truncate font-sans text-foreground-subtlest">{secondaryText}</code>,
     [secondaryText],
   );
   const renderContent = useCallback(
     () => (
-      <div className="space-y-3 mb-2 rounded-xl border border-border bg-panel px-4 py-3">
+      <div
+        data-testid="execute-detail"
+        className="space-y-3 mb-2 rounded-xl border border-border bg-panel px-4 py-3"
+      >
         <div className="space-y-1">
           <div className="flex items-start gap-2 font-sans text-ui-base text-foreground">
-            <span className="shrink-0 text-foreground-subtle">$</span>
-            <pre className="min-w-0 flex-1 block max-h-15 overflow-over truncate whitespace-pre-wrap break-words">
-              {contentParts.executionCommand}
-            </pre>
+            <ExecuteCommand
+              key={contentParts.executionCommand}
+              command={contentParts.executionCommand}
+            />
           </div>
         </div>
 
-        {outputPreview || failureVisibleText || resultText ? (
+        {context.isPermissionPreview ? null : outputPreview || failureVisibleText || resultText ? (
           <ExecuteOutput
             text={outputPreview?.fullText ?? failureVisibleText ?? resultText ?? ""}
             running={isRunning}
@@ -324,7 +333,15 @@ export function ExecuteToolCallBlock(context: ToolCallBlockRenderContext) {
         )}
       </div>
     ),
-    [contentParts.executionCommand, failureVisibleText, intl, isRunning, resultText, outputPreview],
+    [
+      contentParts.executionCommand,
+      context.isPermissionPreview,
+      failureVisibleText,
+      intl,
+      isRunning,
+      resultText,
+      outputPreview,
+    ],
   );
 
   return (
@@ -335,7 +352,8 @@ export function ExecuteToolCallBlock(context: ToolCallBlockRenderContext) {
         showIcon={context.showIcon !== false}
         canToggle={!isFocusedMode && (context.canToggle ?? true)}
         forceOpen={!isFocusedMode && (context.forceOpen ?? false)}
-        hideSecondaryTextWhenOpen
+        // 描述是调用意图，展开后仍保留；只有命令摘要沿用隐藏规则，避免与详情重复。
+        hideSecondaryTextWhenOpen={!description}
         kindLabel={
           (isFocusedMode
             ? intl.formatMessage({
@@ -345,7 +363,7 @@ export function ExecuteToolCallBlock(context: ToolCallBlockRenderContext) {
               })
             : context.kindLabelOverride) ??
           intl.formatMessage({
-            id: isRunning ? "chat.toolCall.execute.running" : "chat.toolCall.kind.terminal",
+            id: isRunning ? "chat.toolCall.execute.running" : "chat.toolCall.execute.ran",
           })
         }
         sourceLabel={context.sourceLabel}
@@ -361,7 +379,7 @@ export function ExecuteToolCallBlock(context: ToolCallBlockRenderContext) {
         statusTooltip={isFocusedMode ? undefined : failureVisibleText}
         showFailureStatus={toolCall.status === "failed"}
         isRunning={isRunning}
-        title={isFocusedMode ? undefined : toolCall.title}
+        title={isFocusedMode ? undefined : (description ?? toolCall.title)}
         renderContent={renderContent}
       />
       {!isFocusedMode ? (

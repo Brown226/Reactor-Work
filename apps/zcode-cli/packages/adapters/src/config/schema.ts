@@ -11,7 +11,7 @@ const modelStreamSchema = z.object({
 });
 
 const permissionSchema = z.object({
-  mode: z.enum(["plan", "build", "edit", "yolo", "auto"]).optional(),
+  mode: z.enum(["plan", "build", "edit", "yolo", "guarded", "auto"]).optional(),
   allowedTools: z.array(z.string()).optional(),
   disallowedTools: z.array(z.string()).optional(),
   autoApproveHighRisk: z.boolean().optional(),
@@ -44,6 +44,9 @@ const memorySchema = z.object({
 });
 
 const mcpServerBaseSchema = {
+  alwaysLoad: z.boolean().optional(),
+  // Host DTO 和连接池已有 isolation；文件解析不能丢弃整条已支持的声明。
+  isolation: z.enum(["session", "workspace"]).optional(),
   // 设置页和 MCP adapter 已支持协议选择；配置入口漏掉该字段会因 strict 校验丢弃整个 server。
   protocolVersion: z.enum(["auto", "legacy", "2026-07-28"]).optional(),
   enabled: z.boolean().optional(),
@@ -231,7 +234,7 @@ const modelAnomalyGuardSchema = z.object({
 // 因此本副本按原样保留（本包 zod 构造），并保持与 shared 的校验语义等价；
 // 运行时校验语义仍以 shared 为准（discovery/trust 装配入口都走 shared schema——
 // 本 schema 只负责配置文件装载诊断）。若未来统一 zod 实例，应删除本副本改 re-export。
-const hookProcessSchema = z
+export const hookProcessSchema = z
   .object({
     type: z.literal("process"),
     command: z.string().min(1),
@@ -239,11 +242,12 @@ const hookProcessSchema = z
     args: z.array(z.string()).optional(),
     timeoutMs: positiveNumberSchema.optional(),
     statusMessage: z.string().min(1).optional(),
+    onError: z.enum(["allow", "deny"]).optional(),
   })
 
   .passthrough();
 
-const hookCommandSchema = z
+export const hookCommandSchema = z
   .object({
     type: z.literal("command"),
     command: z.string().min(1),
@@ -253,17 +257,18 @@ const hookCommandSchema = z
     timeout: positiveNumberSchema.optional(),
     timeoutMs: positiveNumberSchema.optional(),
     statusMessage: z.string().min(1).optional(),
+    onError: z.enum(["allow", "deny"]).optional(),
   })
   .passthrough();
 
-const hookMatcherSchema = z
+export const hookMatcherSchema = z
   .object({
     matcher: z.string().min(1).optional(),
     hooks: z.array(z.discriminatedUnion("type", [hookProcessSchema, hookCommandSchema])).min(1),
   })
   .strict();
 
-const hooksSchema = z
+export const hooksSchema = z
   .object({
     enabled: z.boolean().optional(),
     timeoutMs: positiveNumberSchema.optional(),
@@ -305,6 +310,30 @@ export const ZCodeConfigFileSchema = z
   })
   .passthrough();
 
+// 项目曾复用用户配置 schema，可改写代理、CA 和插件存储根目录。只开放扩展声明，
+// 在校验前剔除运行参数，防止新增用户字段自动向项目开放，也避免无效的禁用字段拖垮 MCP/Hook。
+const projectConfigFileSchema = ZCodeConfigFileSchema.pick({
+  mcp: true,
+  hooks: true,
+  skill: true,
+  command: true,
+})
+  .extend({
+    plugins: pluginsSchema.pick({ enabledPlugins: true, options: true }).optional(),
+    skills: z
+      .preprocess(
+        (value) =>
+          isPlainRecord(value)
+            ? Object.fromEntries(
+                Object.entries(value).filter(([path]) => isAbsoluteConfigPath(path)),
+              )
+            : value,
+        z.record(z.string(), skillToggleSchema),
+      )
+      .optional(),
+  })
+  .strip();
+
 export type ZCodeConfigFile = z.infer<typeof ZCodeConfigFileSchema>;
 
 type SkillCommandOverrideMap = Record<string, { enable?: boolean }>;
@@ -323,7 +352,7 @@ export interface ConfigDiagnostic {
   severity: ConfigDiagnosticSeverity;
 }
 
-interface ParseConfigFileResult {
+export interface ParseConfigFileResult {
   config: RuntimeConfigPatch;
   diagnostics: ConfigDiagnostic[];
 }
@@ -385,10 +414,13 @@ function normalizeMcpServerConfigInput(value: unknown): unknown {
 
 export function parseConfigFileToRuntimePatchWithDiagnostics(
   value: unknown,
+  scope: "user" | "project" = "user",
 ): ParseConfigFileResult {
   const diagnostics: ConfigDiagnostic[] = [];
   const normalized = normalizeConfigFileInput(value, diagnostics);
-  const parsed = ZCodeConfigFileSchema.parse(normalized);
+  const parsed = (scope === "project" ? projectConfigFileSchema : ZCodeConfigFileSchema).parse(
+    normalized,
+  );
   return {
     config: parsedConfigFileToRuntimePatch(parsed),
     diagnostics,
@@ -518,6 +550,10 @@ function formatMcpServerError(error: z.ZodError): string {
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function readPositiveNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
 function parseSkillsRuntimeConfig(

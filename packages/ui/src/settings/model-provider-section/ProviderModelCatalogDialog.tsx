@@ -15,7 +15,7 @@ import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import {
   TID_MODEL_PROVIDER_CATALOG_CONFIRM_BUTTON,
   TID_MODEL_PROVIDER_CATALOG_DIALOG,
-} from "@zcode/shared";
+} from "@zcode/shared/test-ids";
 import type { ProviderModelCatalogEntry } from "@zcode/services";
 
 /**

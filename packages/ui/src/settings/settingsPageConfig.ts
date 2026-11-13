@@ -1,8 +1,12 @@
 import {
+  Archive,
+  Share2,
+  Folders,
   Monitor,
   Moon,
   Settings,
   Settings2,
+  SlidersHorizontal,
   Package,
   Palette,
   Sun,
@@ -14,9 +18,12 @@ import {
   Blocks,
   Globe2,
   Cable,
+  HardDrive,
   Keyboard,
   FileSearch,
   ServerCog,
+  RefreshCw,
+  User,
 } from "lucide-react";
 import { isSettingsSectionEnabled, type SettingsSectionId } from "@/lib/settingsNavigation.js";
 import type { Theme } from "@/useTheme.js";
@@ -30,7 +37,7 @@ export const THEME_MODES: Array<{
   { mode: "zai-light", icon: Sun },
 ];
 
-type SettingsSectionGroupId = "basics" | "agentCapabilities" | "dataAndStats";
+export type SettingsSectionGroupId = "basics" | "agentCapabilities" | "dataAndStats";
 
 interface SettingsSectionDefinition {
   id: SettingsSectionId;
@@ -81,6 +88,20 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
     titleId: "settings.modelProviderTitle",
     groupId: "basics",
   },
+  // 个性化（用户自定义指令）是 Agent 能力组的第一项：编辑 ~/.zcode/AGENTS.md，
+  // 对所有会话生效（spec：docs/ui/settings-personalization.md）。
+  {
+    id: "personalization",
+    icon: User,
+    titleId: "settings.personalization.title",
+    groupId: "agentCapabilities",
+  },
+  {
+    id: "agentBehavior",
+    icon: SlidersHorizontal,
+    titleId: "settings.agentBehavior.title",
+    groupId: "agentCapabilities",
+  },
   {
     id: "memory",
     icon: Brain,
@@ -124,6 +145,14 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
     titleId: "settings.browser.title",
     groupId: "basics",
   },
+  // 原型导航顺序：浏览器之后才是远程设备；电脑控制继续紧随其后并受灰度门禁。
+  {
+    id: "remoteDevices",
+    icon: HardDrive,
+    titleId: "settings.remoteDevicesTitle",
+    contentTitleId: "settings.remoteDevicesTitle",
+    groupId: "basics",
+  },
   // 电脑控制紧跟「浏览器」：两者都是给 Agent 用的本机操控入口，
   // 放在基础设置里让用户在同一处理解「控制浏览器 / 控制整台电脑」的关系。
   {
@@ -146,12 +175,46 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
     titleId: "settings.workspaceFileSearch.title",
     groupId: "basics",
   },
+  // 数据同步是「数据与统计」的第一项（docs/remote/data-sync.md），仅桌面端显示。
+  {
+    id: "dataSync",
+    icon: RefreshCw,
+    titleId: "remoteSync.title",
+    contentTitleId: "remoteSync.title",
+    groupId: "dataAndStats",
+  },
   {
     id: "usage",
     icon: BarChart3,
     titleId: "settings.usageTitle",
     groupId: "dataAndStats",
   },
+  // 项目管理排在归档管理之前（docs/superpowers/specs/2026-10-24-project-management.md）。
+  {
+    id: "projects",
+    icon: Folders,
+    titleId: "projectManagement.nav",
+    groupId: "dataAndStats",
+  },
+  {
+    id: "archives",
+    icon: Archive,
+    titleId: "archives.nav",
+    groupId: "dataAndStats",
+  },
+  // 分享管理排在归档管理之后，仅桌面端（docs/conversation-share-v1.md「设置页分享管理」）。
+  {
+    id: "shares",
+    icon: Share2,
+    titleId: "conversationShare.manage.nav",
+    groupId: "dataAndStats",
+  },
+  // 暂时隐藏设置页里的 Migration 入口，只保留页面实现，后续可以直接恢复这一项。
+  // {
+  //   id: "migration",
+  //   icon: ArrowLeftRight,
+  //   titleId: "settings.migration.title",
+  // },
 ];
 
 // 兼容既有只读消费者：默认配置代表不带桌面平台能力的 Web 视图；
@@ -160,7 +223,7 @@ export const SETTINGS_SECTIONS = BASE_SETTINGS_SECTIONS.filter(
   (section) => section.id !== "computerUse" && isSettingsSectionEnabled(section.id),
 );
 
-interface SettingsPageConfigOptions {
+export interface SettingsPageConfigOptions {
   isDesktop?: boolean;
   isMacDesktop?: boolean;
   isWindowsDesktop?: boolean;
@@ -196,4 +259,23 @@ export function resolveSettingsSectionForPlatform(
   return visibleSections[0]?.id ?? "general";
 }
 
+export const SETTINGS_SECTION_GROUPS = BASE_SETTINGS_SECTION_GROUPS.map((group) => ({
+  ...group,
+  sections: SETTINGS_SECTIONS.filter((section) => section.groupId === group.id),
+})).filter((group) => group.sections.length > 0);
+
 export type { SettingsSectionId };
+
+/** 依赖本机 Source Server 管理与设备连接的设置页，Web 与手机远控不显示。 */
+const DESKTOP_ONLY_SETTINGS_SECTIONS = new Set<SettingsSectionId>([
+  "remoteDevices",
+  "dataSync",
+  "shares",
+]);
+
+export function isSettingsSectionAvailable(
+  section: SettingsSectionId,
+  isDesktop: boolean,
+): boolean {
+  return isDesktop || !DESKTOP_ONLY_SETTINGS_SECTIONS.has(section);
+}

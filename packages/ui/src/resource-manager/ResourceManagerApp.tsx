@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  TID_RESOURCE_MANAGER_TAB,
-  testId,
-  type ResourceUsageCategory,
-  type ResourceUsageSnapshot,
-  type StorageManagementBridge,
-} from "@zcode/shared";
+import type { ResourceManagerAppProps, ResourceManagerTab } from "@/resource-manager/contract.js";
+import { type ResourceUsageCategory, type ResourceUsageSnapshot } from "@zcode/shared";
+import { TID_RESOURCE_MANAGER_TAB, testId } from "@zcode/shared/test-ids";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs.js";
 import { useZCodeIntl } from "@/i18n/index.js";
 import { StorageSection } from "./storage/StorageSection.js";
+import { NetworkSection } from "./NetworkSection.js";
 import { UNSAMPLED_PLACEHOLDER, UsageGroup, UsageMeter } from "./resourceUsageParts.js";
 import {
   clampPercent,
@@ -18,28 +15,20 @@ import {
   type ResourceUsageGroupView,
 } from "./resourceUsageView.js";
 
-export interface ResourceManagerAppProps {
-  /** 缺省表示桥接不可用（例如非桌面环境） */
-  getSnapshot?: () => Promise<ResourceUsageSnapshot>;
-  setSamplingActive?: (active: boolean) => void;
-  /** 存储管理桥（window.resourceManager.storage）；缺省时「存储」tab 显示接口不可用 */
-  storage?: StorageManagementBridge;
-  refreshIntervalMs?: number;
-  /** 初始 tab，默认 CPU */
-  initialTab?: ResourceManagerTab;
-}
+export type { ResourceManagerAppProps, ResourceManagerTab } from "@/resource-manager/contract.js";
 
-export type ResourceManagerTab = "cpu" | "memory" | "storage";
-const RESOURCE_MANAGER_TABS: ResourceManagerTab[] = ["cpu", "memory", "storage"];
+const RESOURCE_MANAGER_TABS: ResourceManagerTab[] = ["cpu", "memory", "storage", "network"];
 const TAB_LABEL_IDS: Record<ResourceManagerTab, string> = {
   cpu: "resourceManager.cpu",
   memory: "resourceManager.memory",
   storage: "resourceManager.storage",
+  network: "resourceManager.network",
 };
 
 const DEFAULT_REFRESH_INTERVAL_MS = 1_000;
 const CATEGORY_LABEL_IDS: Record<ResourceUsageCategory, string> = {
   base: "resourceManager.category.base",
+  task: "resourceManager.category.task",
   "builtin-plugin": "resourceManager.category.builtinPlugin",
   "community-plugin": "resourceManager.category.communityPlugin",
 };
@@ -52,17 +41,19 @@ export function ResourceManagerApp({
   getSnapshot,
   setSamplingActive,
   storage,
+  network,
   refreshIntervalMs = DEFAULT_REFRESH_INTERVAL_MS,
   initialTab = "cpu",
 }: ResourceManagerAppProps) {
   const { intl } = useZCodeIntl();
   const [tab, setTab] = useState<ResourceManagerTab>(initialTab);
   // CPU / 内存共用一份进程快照；存储 tab 激活时停止轮询，避免和扫盘争抢 IO。
-  const pollingActive = tab !== "storage";
+  const pollingActive = tab === "cpu" || tab === "memory";
   const [snapshot, setSnapshot] = useState<ResourceUsageSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<ResourceUsageCategory, boolean>>({
     base: true,
+    task: true,
     "builtin-plugin": true,
     "community-plugin": true,
   });
@@ -149,6 +140,8 @@ export function ResourceManagerApp({
       <div className="min-h-0 flex-1 overflow-auto bg-background-alt p-4">
         {tab === "storage" ? (
           <StorageSection bridge={storage} active={tab === "storage"} />
+        ) : tab === "network" ? (
+          <NetworkSection bridge={network} />
         ) : (
           <UsageTabContent
             metric={tab}

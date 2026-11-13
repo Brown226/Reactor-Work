@@ -14,7 +14,10 @@
  */
 import { Loader2, RefreshCw } from "lucide-react";
 import type { ReactorServerStatus, ReactorServerUsageOverview } from "@zcode/services";
-import { TID_ACCOUNT_QUOTA, TID_REACTOR_SERVER_REFRESH_USAGE } from "@zcode/shared";
+import {
+  TID_ACCOUNT_QUOTA,
+  TID_REACTOR_SERVER_REFRESH_USAGE,
+} from "@zcode/shared/test-ids";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";

@@ -5,13 +5,16 @@ import {
   isTrustedCodingPlanWebviewOrigin,
   isZaiCodingPlanProviderId,
   normalizeZCodeEndpointOrigin,
+  type ZCodeEnv,
+  type OAuthProviderId,
+  ZCODE_ENV,
   ZAI_PROVIDER_ID,
 } from "@zcode/shared";
 import type { CodingPlanWebviewLocale } from "@zcode/shared";
 import type { CodingPlanFunnelContext } from "@/lib/codingPlanFunnelTelemetry.js";
 import type { CodingPlanProviderId } from "@/settings/model-provider-section/constants.js";
 
-type CodingPlanWebsiteProvider = "zai" | "bigmodel";
+export type CodingPlanWebsiteProvider = "zai" | "bigmodel";
 export type CodingPlanPurchaseAudience = "personal" | "team";
 
 export interface CodingPlanEmbeddedCredentials {
@@ -20,7 +23,7 @@ export interface CodingPlanEmbeddedCredentials {
   bigmodelAccessToken?: string | null;
 }
 
-interface CodingPlanEmbeddedReportContext {
+export interface CodingPlanEmbeddedReportContext {
   purchase_funnel_id?: string;
   purchase_entry_reporter?: "app";
   upgrade_source?: string;
@@ -43,16 +46,18 @@ export type CodingPlanEmbeddedTheme = "zai-light" | "zai-dark";
  * App locale（zh-CN / en-US）→ 官网 URL lang 段（cn / en）。
  * 用于 webview URL 的 ?lang= hint，让官网首屏就有正确语言，避免注入前的英文闪烁。
  */
-function codingPlanLocaleToWebsiteLang(
+export function codingPlanLocaleToWebsiteLang(
   locale: CodingPlanWebviewLocale | null | undefined,
 ): "cn" | "en" {
   return locale === "zh-CN" ? "cn" : "en";
 }
 
-interface ResolveCodingPlanEmbeddedOriginOptions {
+export interface ResolveCodingPlanEmbeddedOriginOptions {
+  dev: boolean;
   endpointOrigin: string;
   e2eStoreBridgeEnabled?: boolean;
   overrideOrigin?: string | null;
+  zcodeEnv?: ZCodeEnv;
 }
 
 export const CODING_PLAN_WEBVIEW_OVERRIDE_ENV_KEY = "VITE_CODING_PLAN_WEBVIEW_ORIGIN";
@@ -60,6 +65,8 @@ const CODING_PLAN_WEBVIEW_CREDENTIAL_LOCAL_STORAGE_KEYS = [
   "oauth:zai:access_token",
   "zcodejwttoken",
   "oauth:bigmodel:access_token",
+  "oauth:zai_cn:access_token",
+  "oauth:active_provider",
 ] as const;
 const CODING_PLAN_REPORT_CONTEXT_STORAGE_KEY = "zcode:coding-plan:report-context";
 
@@ -73,9 +80,11 @@ export function resolveCodingPlanWebsiteProvider(
 }
 
 export function resolveCodingPlanEmbeddedOrigin({
+  dev,
   endpointOrigin,
   e2eStoreBridgeEnabled,
   overrideOrigin,
+  zcodeEnv = ZCODE_ENV,
 }: ResolveCodingPlanEmbeddedOriginOptions): string {
   const normalizedOverride = overrideOrigin?.trim();
   if (
@@ -83,6 +92,10 @@ export function resolveCodingPlanEmbeddedOrigin({
     isTrustedCodingPlanWebviewOrigin(normalizedOverride, { e2eStoreBridgeEnabled })
   ) {
     return normalizeZCodeEndpointOrigin(normalizedOverride);
+  }
+  // Bug 原因：本地开发默认注入 ZCODE_ENV=production，不能仅凭 Vite DEV 就打开未启动的官网本地页。
+  if (dev && zcodeEnv === "test") {
+    return "http://localhost:3000";
   }
   const normalizedEndpointOrigin = normalizeZCodeEndpointOrigin(endpointOrigin);
   return isTrustedCodingPlanWebviewOrigin(normalizedEndpointOrigin, { e2eStoreBridgeEnabled })
@@ -166,7 +179,11 @@ export function createCodingPlanAuthInjectionScript({
   theme,
   locale,
   reportContext,
+  loginProvider,
+  expectedUrl,
 }: {
+  loginProvider?: OAuthProviderId | null;
+  expectedUrl?: string;
   provider: CodingPlanWebsiteProvider;
   credentials: CodingPlanEmbeddedCredentials;
   theme: CodingPlanEmbeddedTheme;
@@ -191,6 +208,7 @@ export function createCodingPlanAuthInjectionScript({
           zcodejwttoken: credentials.zcodeJwtToken?.trim() || null,
           "oauth:bigmodel:access_token": credentials.bigmodelAccessToken?.trim() || null,
         };
+  values["oauth:active_provider"] = loginProvider ?? null;
   const storageUpdates = Object.entries(values)
     .map(([key, value]) =>
       value
@@ -202,6 +220,7 @@ export function createCodingPlanAuthInjectionScript({
   const normalizedReportContext = normalizeCodingPlanEmbeddedReportContext(reportContext);
 
   return `(() => {
+  ${expectedUrl ? `if (window.location.href !== ${JSON.stringify(expectedUrl)}) return;` : ""}
   ${storageUpdates}
   const zcodeTheme = ${JSON.stringify(theme)};
   document.documentElement.classList.toggle("dark", zcodeTheme === "zai-dark");

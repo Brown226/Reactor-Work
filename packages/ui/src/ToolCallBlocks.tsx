@@ -1,6 +1,9 @@
-import { memo, type ReactNode, useEffect, useMemo, useState } from "react";
-import { TID_CHAT_TOOL_CALL_BLOCK, testId } from "@zcode/shared";
-import { useIsFocusedMode } from "@/hooks/useInterfaceMode.js";
+import { memo, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { SummaryIconOnlyContext } from "@/v4/conversationRowContext.js";
+import { useToolPresentationHostCapabilities } from "@/hooks/useToolPresentationHostCapabilities.js";
+import { ToolPresentationCapabilitiesProvider } from "@/ToolCallBlocks/presentationCapabilities.js";
+import { TID_CHAT_TOOL_CALL_BLOCK, testId } from "@zcode/shared/test-ids";
+import { useIsFocusedMode, useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { mapToolStatus } from "@/lib/mapToolStatus.js";
 import { buildToolDisplayModel } from "@/lib/toolDisplay.js";
@@ -11,18 +14,18 @@ import {
   isCompactToolCallRunningState,
 } from "@/lib/toolCallSummary.js";
 import type { CodeViewerSource } from "@/lib/codeViewer.js";
-import { CuaGroupToolCallBlock } from "@/ToolCallBlocks/renderers/cua-group.js";
 import { resolveToolCallRenderer } from "@/ToolCallBlocks/resolveRenderer.js";
+import * as PluginUi from "@/plugin-ui/index.js";
 import { resolveToolCallIdentity } from "@/lib/toolIdentity.js";
 import {
   readRawToolCallFileSummaries,
   type ToolCallBlockRenderContext,
 } from "@/ToolCallBlocks/shared.js";
 import type { MessageFileLinkTarget } from "@/components/ai-elements/message.js";
-import type { ConversationCuaGroupEvent } from "@/v4/conversationCuaGroups.js";
 
 const NESTED_TOOLCALL_CONTAINER_CLASS =
   "ml-2 space-y-2 border-border border-l pl-3.5 border-border";
+
 const MAX_TOOL_ENTRANCE_ANIMATION_KEYS = 800;
 const TOOL_ENTRANCE_ANIMATION_CLEANUP_MS = 1000;
 const toolEntranceAnimationKeys = new Map<string, number>();
@@ -66,7 +69,7 @@ function canPlayToolEntranceAnimation(key: string, active: boolean) {
   return active && !hasPlayedToolEntranceAnimation(key);
 }
 
-function isAgentToolCall(toolCall: TaskChatToolCallTreeNode["toolCall"]): boolean {
+export function isAgentToolCall(toolCall: TaskChatToolCallTreeNode["toolCall"]): boolean {
   return resolveToolCallIdentity(toolCall).family === "agent";
 }
 
@@ -85,6 +88,7 @@ function ToolCallBlockComponent({
   onOpenBrowserUrl,
   onOpenAutomationsMain,
   onOpenPlanDetail,
+  pluginUi: providedPluginUi,
   onOpenWorkflowRun,
   onResumeWorkflowRun,
   onOpenWorkflowActor,
@@ -97,13 +101,10 @@ function ToolCallBlockComponent({
   showTodoToolCalls = true,
   disableSummaryContentAnimation = false,
   animateDiffCountOnMount = false,
-  agentSummaryAction,
-  authoritativeAgentType,
   streamingEntranceActive = false,
   streamingEntranceKeyPrefix = "tool",
-  cuaGroupEvents,
-  renderCuaAssistantMessage,
-  renderCuaReasoning,
+  agentSummaryAction,
+  authoritativeAgentType,
 }: {
   toolCallNode: TaskChatToolCallTreeNode;
   depth?: number;
@@ -125,6 +126,7 @@ function ToolCallBlockComponent({
   onOpenBrowserUrl?: (url: string) => void;
   onOpenAutomationsMain?: (automationId?: string) => void;
   onOpenPlanDetail?: ToolCallBlockRenderContext["onOpenPlanDetail"];
+  pluginUi?: ToolCallBlockRenderContext["pluginUi"];
   onOpenWorkflowRun?: ToolCallBlockRenderContext["onOpenWorkflowRun"];
   /** 工具卡页脚的 Resume；与 workflowRun 同样不向子工具卡透传。 */
   onResumeWorkflowRun?: ToolCallBlockRenderContext["onResumeWorkflowRun"];
@@ -147,18 +149,16 @@ function ToolCallBlockComponent({
   showTodoToolCalls?: boolean;
   disableSummaryContentAnimation?: boolean;
   animateDiffCountOnMount?: boolean;
+  /** 流式工具卡入场动画：是否处于流式阶段（新出现的卡才播放一次）。 */
+  streamingEntranceActive?: boolean;
+  /** 入场动画 key 前缀：聚合卡与单个工具卡用不同前缀，避免 key 相撞误吞动画。 */
+  streamingEntranceKeyPrefix?: string;
   agentSummaryAction?: ToolCallBlockRenderContext["agentSummaryAction"];
   authoritativeAgentType?: ToolCallBlockRenderContext["authoritativeAgentType"];
-  streamingEntranceActive?: boolean;
-  streamingEntranceKeyPrefix?: string;
-  cuaGroupEvents?: readonly ConversationCuaGroupEvent[];
-  renderCuaAssistantMessage?: (
-    event: Extract<ConversationCuaGroupEvent, { kind: "assistantMessage" }>,
-  ) => ReactNode;
-  renderCuaReasoning?: (
-    event: Extract<ConversationCuaGroupEvent, { kind: "reasoning" }>,
-  ) => ReactNode;
 }) {
+  const presentationCapabilities = useToolPresentationHostCapabilities(workspacePath);
+  const inheritedPluginUi = PluginUi.usePluginUiToolBinding(toolCallNode.toolCall.toolId);
+  const pluginUi = providedPluginUi ?? inheritedPluginUi;
   const { toolCall, childToolCalls } = toolCallNode;
   const { intl } = useZCodeIntl();
   const isFocusedMode = useIsFocusedMode();
@@ -196,6 +196,7 @@ function ToolCallBlockComponent({
       window.clearTimeout(cleanupTimer);
     };
   }, [shouldPlayEntranceAnimation, toolEntranceAnimationKey]);
+  const isOfficeMode = useIsOfficeMode();
   // 注意：下面的 early return 必须放在所有 hook 调用之后。
   // 之前这里在 useMemo 之前就 `return null`，导致当某个 toolCall 的
   // family 在 todo 与非 todo 之间切换（或 showTodoToolCalls 变化）时，
@@ -267,8 +268,6 @@ function ToolCallBlockComponent({
               showTodoToolCalls={showTodoToolCalls}
               disableSummaryContentAnimation={disableSummaryContentAnimation}
               animateDiffCountOnMount={animateDiffCountOnMount}
-              streamingEntranceActive={streamingEntranceActive}
-              streamingEntranceKeyPrefix={streamingEntranceKeyPrefix}
             />
           ))}
         </div>
@@ -283,8 +282,6 @@ function ToolCallBlockComponent({
       onOpenFileLink,
       showIcon,
       showTodoToolCalls,
-      streamingEntranceActive,
-      streamingEntranceKeyPrefix,
       suppressSourceLabel,
       theme,
       codePreviewSettings,
@@ -295,6 +292,8 @@ function ToolCallBlockComponent({
 
   const renderContext: ToolCallBlockRenderContext = useMemo(
     () => ({
+      nestedToolRenderer: ToolCallBlock,
+      isOfficeMode,
       isFocusedMode,
       toolCallNode,
       workspacePath,
@@ -322,6 +321,7 @@ function ToolCallBlockComponent({
       onOpenBrowserUrl,
       onOpenAutomationsMain,
       onOpenPlanDetail,
+      pluginUi,
       // onOpenWorkflowRun 之前只被透传给子工具卡，从未进过 renderContext，
       // 于是 CreateWorkflow renderer 永远收不到它——「打开详情页」的入口不是被埋深了，
       // 是根本没渲染过。run 态紧凑卡就挂在这个回调上，所以它必须在这里。
@@ -336,6 +336,7 @@ function ToolCallBlockComponent({
     }),
     [
       isFocusedMode,
+      isOfficeMode,
       agentSummaryAction,
       authoritativeAgentType,
       childToolList,
@@ -350,6 +351,7 @@ function ToolCallBlockComponent({
       onOpenAutomationsMain,
       onOpenBrowserUrl,
       onOpenPlanDetail,
+      pluginUi,
       onOpenWorkflowRun,
       onResumeWorkflowRun,
       onOpenWorkflowActor,
@@ -373,31 +375,36 @@ function ToolCallBlockComponent({
     ],
   );
 
-  const ToolCallRenderer = useMemo(() => resolveToolCallRenderer(renderContext), [renderContext]);
+  const iconOnly = useContext(SummaryIconOnlyContext);
+  const ToolCallRenderer = useMemo(() => {
+    const Renderer = resolveToolCallRenderer(renderContext);
+    // 插件声明与 session 绑定已由宿主校验，不能再用通用 renderer 身份截断入口。
+    // 没有合法插件声明时仍保持共同注册表的专用工具优先级。
+    return PluginUi.shouldRenderPluginUi(renderContext) ? PluginUi.PluginUiToolCallBlock : Renderer;
+  }, [renderContext]);
   // early return 必须在所有 hook 之后（见上方注释说明的崩溃原因）
   if (!showTodoToolCalls && identity.family === "todo") {
     return null;
   }
-  return (
-    <div
-      className="w-full"
-      data-testid={testId(TID_CHAT_TOOL_CALL_BLOCK, toolCall.toolId)}
-      data-tool-call-id={toolCall.toolId}
-      data-tool-name={toolCall.toolName ?? toolCall.kind ?? ""}
-      data-status={toolCall.status}
-      data-zcode-tool-stream-animate={shouldPlayEntranceAnimation ? "true" : undefined}
-    >
-      {toolCall.kind === "cuaGroup" ? (
-        <CuaGroupToolCallBlock
-          {...renderContext}
-          events={cuaGroupEvents}
-          renderAssistantMessage={renderCuaAssistantMessage}
-          renderReasoning={renderCuaReasoning}
-        />
-      ) : (
+  // 图标投影不是另一条工具记录，不创建重复的工具身份与入场动画节点。
+  if (iconOnly)
+    return (
+      <ToolPresentationCapabilitiesProvider value={presentationCapabilities}>
         <ToolCallRenderer {...renderContext} />
-      )}
-    </div>
+      </ToolPresentationCapabilitiesProvider>
+    );
+  return (
+    <ToolPresentationCapabilitiesProvider value={presentationCapabilities}>
+      <div
+        className="w-full"
+        data-testid={testId(TID_CHAT_TOOL_CALL_BLOCK, toolCall.toolId)}
+        data-tool-call-id={toolCall.toolId}
+        data-tool-name={toolCall.toolName ?? toolCall.kind ?? ""}
+        data-status={toolCall.status}
+      >
+        <ToolCallRenderer {...renderContext} />
+      </div>
+    </ToolPresentationCapabilitiesProvider>
   );
 }
 

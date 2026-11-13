@@ -151,6 +151,11 @@ export interface SettingsSyncAgentSummary {
   categories: SettingsSyncCategorySummary[];
 }
 
+/** 首启迁移提示的消费状态：handled=true 表示用户已处理过，不再自动弹出。 */
+export interface SettingsSyncFirstRunPromptState {
+  handled: boolean;
+}
+
 export interface SettingsSyncDiscoveryResult {
   agents: SettingsSyncAgentSummary[];
 }

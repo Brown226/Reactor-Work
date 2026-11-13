@@ -19,6 +19,9 @@ export type ShortcutCommandId =
   | "switchTheme"
   | "toggleTerminal"
   | "toggleSidePane"
+  | "toggleSidePaneFullView"
+  | "toggleInterfaceMode"
+  | "openOnboarding"
   | "previousConversation"
   | "nextConversation"
   | "navigateBack"
@@ -69,6 +72,11 @@ export const SHORTCUT_COMMANDS: readonly ShortcutCommandEntry[] = [
   { id: "switchTheme", channel: "window", defaultBindings: ["CmdOrCtrl+Shift+l"] },
   { id: "toggleTerminal", channel: "window", defaultBindings: ["CmdOrCtrl+j"] },
   { id: "toggleSidePane", channel: "window", defaultBindings: ["CmdOrCtrl+Alt+b"] },
+  // Side Pane 完整视图（仅桌面注册处理器）：mac ⇧⌘F / win·linux Ctrl+Shift+F
+  { id: "toggleSidePaneFullView", channel: "window", defaultBindings: ["CmdOrCtrl+Shift+f"] },
+  // 界面模式三档切换 / 首启引导（上游引导页与其快捷键提示共用这两个 ID）
+  { id: "toggleInterfaceMode", channel: "window", defaultBindings: ["CmdOrCtrl+Shift+u"] },
+  { id: "openOnboarding", channel: "window", defaultBindings: ["CmdOrCtrl+Shift+o"] },
   { id: "previousConversation", channel: "window", defaultBindings: ["CmdOrCtrl+Shift+["] },
   { id: "nextConversation", channel: "window", defaultBindings: ["CmdOrCtrl+Shift+]"] },
   { id: "navigateBack", channel: "window", defaultBindings: ["CmdOrCtrl+["] },

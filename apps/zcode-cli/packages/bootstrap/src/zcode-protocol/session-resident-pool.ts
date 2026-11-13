@@ -4,9 +4,9 @@
 // 安全事实和去激活执行面；pool 只维护 idle TTL、LRU touch、operation lease 与
 // deactivation gate。
 
-const DEFAULT_SESSION_RESIDENT_TARGET_COUNT = 8;
+export const DEFAULT_SESSION_RESIDENT_TARGET_COUNT = 8;
 export const DEFAULT_SESSION_RESIDENT_HIGH_WATER_COUNT = 16;
-const DEFAULT_SESSION_RESIDENT_IDLE_TIMEOUT_MS = 10 * 60 * 1_000;
+export const DEFAULT_SESSION_RESIDENT_IDLE_TIMEOUT_MS = 10 * 60 * 1_000;
 
 export type SessionDeactivationReason = "high_water_lru" | "idle_timeout";
 
@@ -31,6 +31,7 @@ export interface SessionResidencyFacts {
 
 export interface SessionResidentPoolHost {
   listSessionIds(): string[];
+  onOperationsReleased?(sessionId: string): void;
   readResidencyFacts(sessionId: string): SessionResidencyFacts | null;
   /**
    * 首个同步执行片必须把 session 从 resident registry 摘除；返回 Promise 只等待
@@ -114,7 +115,10 @@ export class SessionResidentPool {
       for (const sessionId of sessionIds) {
         this.touch(sessionId);
         const next = (this.operationLeaseCounts.get(sessionId) ?? 1) - 1;
-        if (next <= 0) this.operationLeaseCounts.delete(sessionId);
+        if (next <= 0) {
+          this.operationLeaseCounts.delete(sessionId);
+          this.host.onOperationsReleased?.(sessionId);
+        }
         else this.operationLeaseCounts.set(sessionId, next);
       }
       this.activeOperationCount = Math.max(0, this.activeOperationCount - 1);
@@ -221,6 +225,10 @@ export class SessionResidentPool {
 
   waitForDeactivation(sessionId: string): Promise<void> {
     return this.inFlightDeactivations.get(sessionId) ?? Promise.resolve();
+  }
+
+  operationCount(sessionId: string): number {
+    return this.operationLeaseCounts.get(sessionId) ?? 0;
   }
 
   private isEligible(sessionId: string, facts: SessionResidencyFacts): boolean {

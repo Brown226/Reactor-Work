@@ -53,6 +53,8 @@ interface UseModelProviderNavigationOptions {
   entitledAccountProviderIds?: ReadonlySet<string>;
   codingPlanEntitlements?: Partial<Record<string, CodingPlanEntitlementState>>;
   providerFamilyDomain?: ProviderFamilyDomain | null;
+  /** 上游新增：账号可用供应商家族。本 hook 已下线 Coding Plan 入口、不再消费，仅保留签名稳定。 */
+  availableFamilies?: readonly ProviderFamilyDomain[];
   subscribedTeamProducts?: EnterpriseCodingPlanProductDisplay[];
   showPurchasedTeamPlanFallback?: boolean;
 }
@@ -336,6 +338,40 @@ function pickFamilyModeNavigationItem(
       connectionSelectionMatchesNavigationItem(familyId, selection, item),
     ) ?? null
   );
+}
+
+export function resolveSelectedFamilyModeNodeKey({
+  selectedNavItem,
+  selectableNavigationItems,
+  connectionSelections = {},
+  pendingConnectionSelections = {},
+}: {
+  selectedNavItem: Exclude<
+    ModelProviderNavGroup["items"][number],
+    { type: "codingPlanLoading" }
+  > | null;
+  selectableNavigationItems: Array<
+    Exclude<ModelProviderNavGroup["items"][number], { type: "codingPlanLoading" }>
+  >;
+  connectionSelections?: ProviderFamilyConnectionSelectionSettings;
+  pendingConnectionSelections?: ProviderFamilyConnectionSelectionSettings;
+}): string | null {
+  if (
+    selectedNavItem?.type !== "preset" &&
+    selectedNavItem?.type !== "codingPlan" &&
+    selectedNavItem?.type !== "teamPlan"
+  ) {
+    return null;
+  }
+  const familySpec = resolveModelProviderFamilySpecByProviderId(selectedNavItem.presetId);
+  if (!familySpec) {
+    return null;
+  }
+  const savedItem = pickFamilyModeNavigationItem(selectableNavigationItems, familySpec.id, {
+    ...connectionSelections,
+    ...pendingConnectionSelections,
+  });
+  return savedItem && savedItem.key !== selectedNavItem.key ? savedItem.key : null;
 }
 
 export function connectionSelectionMatchesNavigationItem(

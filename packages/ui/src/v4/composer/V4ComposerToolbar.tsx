@@ -16,12 +16,12 @@
  * 三件套不能全部门控在 config!==null 上——草稿态会整体不渲染。
  */
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AlarmClockIcon } from "lucide-react";
+import { cn } from "@/components/lib/utils.js";
 import {
   BUILTIN_MODEL_PROVIDER_IDS,
   getModelProviderFamilySpec,
   resolveModelProviderFamilySpecByProviderId,
-  TID_V4_MODEL_CONFIG,
-  TID_V4_COMPOSER_INPUT,
   ZCODE_AGENT_PROVIDER,
   type ProviderFamilyConnectionSelection,
   type ProviderFamilyConnectionSelectionSettings,
@@ -32,6 +32,7 @@ import {
   type ZCodeConfigOption,
   type ZCodeProvider,
 } from "@zcode/shared";
+import { TID_V4_MODEL_CONFIG, TID_V4_COMPOSER_INPUT } from "@zcode/shared/test-ids";
 import type {
   SessionConfigState,
   SessionPhase,
@@ -41,7 +42,10 @@ import { ModelConfigSelect, type ModelSelectGroup } from "@/ModelConfigSelect.js
 import { useReactorServer } from "@/hooks/useReactorServer.js";
 import { useDevModeUnlocked } from "@/lib/devMode.js";
 import { resolveEnterpriseModelScope, scopeModelSelectionView } from "@/lib/modelScope.js";
+import type { ComposerModelOptions } from "@/chat-input-toolbar/ComposerModelMenu.js";
 import { Button } from "@/components/ui/button.js";
+import { HighspeedModelIndicator } from "@/highspeed/HighspeedModelIndicator.js";
+import { formatHighspeedRemainingTime } from "@/highspeed/highspeedTime.js";
 import { ChatContextUsage } from "@/chat-input-toolbar/display.js";
 import {
   hasChatCodingPlanUsageRemaining,
@@ -52,7 +56,10 @@ import {
   type ChatStartPlanBalanceConfig,
 } from "@/chat-input-toolbar/StartPlanContextBalance.js";
 import { ThoughtLevelCycleControl } from "@/chat-input-toolbar/ThoughtLevelCycleControl.js";
-import { getNextThoughtLevelValue } from "@/chat-input-toolbar/thoughtLevelOptions.js";
+import {
+  getNextThoughtLevelValue,
+  getThoughtLevelLabel,
+} from "@/chat-input-toolbar/thoughtLevelOptions.js";
 import type { V4ComposerConfigPicker } from "@/v4/composer/configPickerState.js";
 import { useToolbarShortcutBindings } from "@/v4/composer/toolbarShortcuts.js";
 import { resolveModelSelectTriggerDisplay } from "@/chat-input-toolbar/modelSelection.js";
@@ -60,8 +67,19 @@ import { resolveV4ModelTriggerDisplay } from "@/v4/composer/modelTriggerDisplay.
 import { setPendingSettingsUsageCodingPlanIntent } from "@/lib/settingsNavigation.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";
 import type { ModelSelectionView } from "@zcode/services";
-import type { ModelSelectionState } from "@/hooks/useModelSelectionView.js";
+import type {
+  ModelSelectionState,
+  ModelSelectionRefreshResult,
+} from "@/hooks/useModelSelectionView.js";
 import { useProviderSettingsView } from "@/hooks/useProviderSettingsView.js";
+import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
+import { useComposerConnectionSwitch } from "@/hooks/useComposerConnectionSwitch.js";
+import {
+  buildComposerPlanGroups,
+  composerConnectionKey,
+  chooseConnectionModel,
+} from "@/lib/composerPlanGroups.js";
+import { useZCodeStoreWithDefault } from "@/store/StoreProvider.js";
 import { useSettings } from "@/hooks/useSettingService.js";
 import {
   useUsageEntitlement,
@@ -105,6 +123,50 @@ const MODEL_SELECTION_LOADING_STATE: ModelSelectionState = { status: "loading" }
 
 /** 稳定空回调（热键 hook 单实例只处理本组件拥有的选项，其余动作占位）。 */
 function noop(): void {}
+
+function HighspeedCountdown({ expiresAt }: { expiresAt: number }) {
+  const { intl, locale } = useZCodeIntl();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const remainingTime = formatHighspeedRemainingTime(expiresAt, now);
+  const absoluteExpiryLabel = intl.formatMessage(
+    { id: "chat.highspeed.expiresAt" },
+    {
+      time: new Date(expiresAt).toLocaleTimeString(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    },
+  );
+  const remainingTimeLabel = intl.formatMessage(
+    { id: "chat.highspeed.remainingTime" },
+    { time: remainingTime },
+  );
+
+  // Bug 根因：倒计时原先晚于 Think 折叠，在中等窄窗口继续占用固定 82px；
+  // 窄窗口只收起数值，保留可 hover 的时钟入口。
+  return (
+    <span
+      aria-label={absoluteExpiryLabel}
+      title={remainingTimeLabel}
+      data-highspeed-countdown="true"
+      className="highspeed-inline-countdown inline-flex h-7 w-[82px] shrink-0 items-center justify-center gap-1 rounded-md p-1 text-ui-caption @max-xl/composer:w-7 @max-xl/composer:gap-0 @max-xl/composer:p-0"
+    >
+      <AlarmClockIcon className="size-4 shrink-0" aria-hidden="true" />
+      <span
+        data-highspeed-countdown-value="true"
+        className="relative h-[18px] w-[54px] shrink-0 leading-4 tabular-nums @max-xl/composer:hidden"
+      >
+        <span className="absolute left-0 top-0.5">{remainingTime}</span>
+      </span>
+    </span>
+  );
+}
 
 export interface ModelSelectionSource {
   provider: string;
@@ -323,10 +385,12 @@ export interface V4ComposerToolbarProps {
   modelSelectionView?: ModelSelectionView | null;
   modelSelectionState?: ModelSelectionState;
   modelSelectionReload?: () => void;
+  modelSelectionRefresh?: () => Promise<ModelSelectionRefreshResult>;
   sessionId: string | null;
   phase: SessionPhase | null;
   provider?: ZCodeProvider;
   /** 当前工具条是否运行在 Web 远控壳中。 */
+  isWebRemoteControl?: boolean;
   /** 当前视口是否为手机输入布局。 */
   isMobileViewport?: boolean;
   /** 草稿态（sessionId=null），仅区分新任务呈现，不改变选择来源。 */
@@ -335,6 +399,20 @@ export interface V4ComposerToolbarProps {
   draftConfig?: Partial<SessionConfigState>;
   usage: SessionUsageState | null;
   disabled: boolean;
+  modelSelectionPending?: boolean;
+  onConnectionPendingChange?: (pending: boolean) => void;
+  /** Highspeed 卡生效时固定本轮模型，禁止通过选择器或快捷键切换。 */
+  modelLocked?: boolean;
+  /** 扩散尾段开始后（恢复入场则立即）展示 Highspeed 模型与倒计时。 */
+  highspeedPresented?: boolean;
+  /** 本次入场是否为 draw 新命中的激活动效；恢复入场的模型标识不做翻页。 */
+  highspeedEntranceAnimated?: boolean;
+  /** 模型翻页完成并静置后播放一次扫光。 */
+  highspeedSweepActive?: boolean;
+  /** Highspeed 卡片过期时间；有值时在模型与 Think 之间显示倒计时。 */
+  highspeedExpiresAt?: number;
+  /** draw 响应绑定的模型；只覆盖锁定期的触发器文案。 */
+  highspeedModel?: string;
   /** 单个 composer 内的配置 picker 排他 owner；只属于 renderer-local presentation。 */
   activeConfigPicker: V4ComposerConfigPicker | null;
   onConfigPickerOpenChange: (picker: V4ComposerConfigPicker, open: boolean) => void;
@@ -346,7 +424,8 @@ export interface V4ComposerToolbarProps {
     provider: string,
     model: string,
     sourceModel: ModelSelectionSource | null,
-  ) => void;
+    reasoningLevel?: string,
+  ) => void | Promise<void>;
   /** 选中思考深度；modelContext 固定本次用户操作的目标模型。 */
   onSelectThought: (thought: string, modelContext: { provider: string; model: string }) => void;
   onSwitchMode: (mode: string) => void;
@@ -365,12 +444,23 @@ function V4ComposerModelControlsImpl({
   modelSelectionView = null,
   modelSelectionState = MODEL_SELECTION_LOADING_STATE,
   modelSelectionReload,
+  modelSelectionRefresh,
+  sessionId,
   provider,
+  isWebRemoteControl = false,
   isMobileViewport = false,
   draftMode = false,
   draftConfig,
   usage,
   disabled,
+  modelSelectionPending = false,
+  onConnectionPendingChange,
+  modelLocked = false,
+  highspeedPresented = false,
+  highspeedEntranceAnimated = false,
+  highspeedSweepActive = false,
+  highspeedExpiresAt,
+  highspeedModel,
   activeConfigPicker,
   onConfigPickerOpenChange,
   onSelectModel,
@@ -392,7 +482,8 @@ function V4ComposerModelControlsImpl({
     providerSettingsRead.state.status === "ready" ? providerSettingsRead.state.view : null;
   const providerSourcesLoading = providerSettingsRead.state.status !== "ready";
   // 配置面存活服务读（过渡归宿 = 配置面 v4 化）：连接方式选中键喂 BigModel Team Plan 门控豁免。
-  const { settings: sharedSettings } = useSettings();
+  const baseServices = useBaseWorkspaceServices();
+  const { settings: sharedSettings } = useSettings({ services: baseServices });
   const {
     entitlements,
     enabledStartPlanProviderIds,
@@ -409,6 +500,12 @@ function V4ComposerModelControlsImpl({
   // Ctrl+M 热键：递增 openRequestKey 请求 ModelConfigSelect 打开菜单（旧 handleOpenModelMenuShortcut 语义）。
   const [modelMenuOpenRequestKey, setModelMenuOpenRequestKey] = useState(0);
   const [recoveryPending, setRecoveryPending] = useState(false);
+  // 独立档位下拉沿用选中关闭；合并模型面板不能因 ACK 等待收起，否则选模和滑杆都会中断。
+  useEffect(() => {
+    if (modelSelectionPending) {
+      onConfigPickerOpenChange("thought", false);
+    }
+  }, [modelSelectionPending, onConfigPickerOpenChange]);
   const handleOpenModelMenuShortcut = useCallback(() => {
     setModelMenuOpenRequestKey((current) => current + 1);
   }, []);
@@ -534,34 +631,62 @@ function V4ComposerModelControlsImpl({
     ? contextStartPlanBalanceConfig
     : undefined;
 
-  // 原 hook 不传 family，默认只拉 bigmodel 企业 pricing，
-  // zai team plan 拿不到订阅产品，模型选择器里的 team 模型组建不出来。
-  // 按 contextPlanConnection.family 让 hook 拉对应 family 的 team products。
+  // 按当前连接 family 拉取团队产品，避免 zai 团队误用 bigmodel 产品目录。
+  const connectionFamily =
+    resolveModelProviderFamilySpecByProviderId(effectiveConfig?.provider ?? "")?.id ??
+    sharedSettings?.providerFamilyDomain ??
+    "bigmodel";
+  const user = useZCodeStoreWithDefault((state) => state.user, undefined);
+  const connectionAuthenticated =
+    user !== null &&
+    Boolean(
+      providerSettingsView?.providers.some(
+        (p) =>
+          p.effectiveConfig.access?.type === "zhipu-account" &&
+          p.effectiveConfig.access.accountType === connectionFamily &&
+          p.enabled &&
+          p.accountState?.unavailableReason !== "not-authenticated" &&
+          (p.effectiveConfig.access.mode === "team-coding-plan" ||
+            p.accountState?.availability === "available"),
+      ),
+    );
   const enterpriseProducts = useEnterpriseCodingPlanProducts({
     enabled:
       !providerSourcesLoading &&
-      contextPlanConnection.kind === "teamCoding" &&
-      Boolean(contextAccountProviderAccess),
-    authenticated: true,
-    family: contextPlanConnection.kind === "teamCoding" ? contextPlanConnection.family : undefined,
+      (contextPlanConnection.kind === "teamCoding" || activeConfigPicker === "model") &&
+      connectionAuthenticated,
+    authenticated: connectionAuthenticated,
+    family: connectionFamily,
   });
   const subscribedTeamProducts = useMemo(
     () =>
-      enterpriseProducts.snapshot?.productList.filter((product) => product.subscribed === true) ??
-      [],
-    [enterpriseProducts.snapshot?.productList],
+      (connectionAuthenticated
+        ? enterpriseProducts.snapshot?.productList.filter((product) => product.subscribed === true)
+        : undefined) ?? [],
+    [connectionAuthenticated, enterpriseProducts.snapshot?.productList],
   );
-  const contextTeamUsageSourceCacheRef = useRef<CodingPlanUsageSource[]>([]);
+  const authSessionSeq = useZCodeStoreWithDefault((state) => state.authSessionSeq, 0);
+  const teamUsageScope = useMemo(
+    () => ({}),
+    [baseServices, connectionFamily, user?.id, authSessionSeq],
+  );
+  const contextTeamUsageSourceCacheRef = useRef<{
+    scope: object;
+    sources: CodingPlanUsageSource[];
+  }>({ scope: teamUsageScope, sources: [] });
+  // 原因：独立来源缓存可复活已清空的目录；鉴权边界要在本次渲染就隔离，不能等待 Provider 刷新。
+  if (contextTeamUsageSourceCacheRef.current.scope !== teamUsageScope || !connectionAuthenticated)
+    contextTeamUsageSourceCacheRef.current = { scope: teamUsageScope, sources: [] };
   const contextCodingPlanUsageProviderId =
     contextPlanConnection.kind === "personalCoding" || contextPlanConnection.kind === "teamCoding"
       ? contextPlanConnection.providerId
       : undefined;
   const contextCodingPlanUsageTeamSource = useMemo(
     () =>
-      contextPlanConnection.kind === "teamCoding"
+      connectionAuthenticated && contextPlanConnection.kind === "teamCoding"
         ? resolveContextCodingPlanUsageSource({
             accountAccess: contextAccountProviderAccess?.access,
-            cachedTeamSources: contextTeamUsageSourceCacheRef.current,
+            cachedTeamSources: contextTeamUsageSourceCacheRef.current.sources,
             // 原硬取 bigmodelCodingPlan 的 entitlement snapshot，
             // zai team plan 查不到额度。改为按 connection.providerId 取对应 snapshot。
             entitlementSnapshot: entitlements[contextPlanConnection.providerId]?.snapshot ?? null,
@@ -571,6 +696,8 @@ function V4ComposerModelControlsImpl({
           })
         : null,
     [
+      connectionAuthenticated,
+      teamUsageScope,
       contextAccountProviderAccess?.access,
       contextPlanConnection,
       entitlements,
@@ -581,13 +708,16 @@ function V4ComposerModelControlsImpl({
     if (!contextCodingPlanUsageTeamSource) {
       return;
     }
-    const cache = contextTeamUsageSourceCacheRef.current;
+    const cache = contextTeamUsageSourceCacheRef.current.sources;
     const nextCache = cache.filter((source) => source.id !== contextCodingPlanUsageTeamSource.id);
     nextCache.unshift(contextCodingPlanUsageTeamSource);
     // Team -> Personal(no_plan) -> Team 期间企业商品或个人 snapshot 可能短暂缺失。
     // 保留最近解析过的团队 source，避免输入框 context 余额跟随水合顺序闪断。
-    contextTeamUsageSourceCacheRef.current = nextCache.slice(0, 8);
-  }, [contextCodingPlanUsageTeamSource]);
+    contextTeamUsageSourceCacheRef.current = {
+      scope: teamUsageScope,
+      sources: nextCache.slice(0, 8),
+    };
+  }, [contextCodingPlanUsageTeamSource, teamUsageScope]);
   const contextCodingPlanUsageSelectedSourceId: SidebarUsageCodingPlanSourceId | undefined =
     contextPlanConnection.kind === "teamCoding"
       ? contextCodingPlanUsageTeamSource?.id
@@ -730,18 +860,8 @@ function V4ComposerModelControlsImpl({
     });
   }, [draftMode, effectiveConfig, modelSelectionView?.revision]);
 
-  const modelSelectGroups = useMemo<ModelSelectGroup[]>(() => {
-    if (!modelSelectionView) return [];
-    // 企业会话激活时，可选模型收敛到服务端下发的目录（解锁开发者模式即解除）。
-    // 单一过滤点与边界见 lib/modelScope.ts + docs/已完成/已完成-model-governance-and-dev-mode.md。
-    const scopedView = scopeModelSelectionView(
-      modelSelectionView,
-      resolveEnterpriseModelScope({
-        enterpriseModels: enterpriseSession.status?.models ?? null,
-        devModeUnlocked,
-      }),
-    );
-    return buildRegistryModelSelectGroups(displayProvider, scopedView ?? modelSelectionView, {
+  const modelGroupLabels = useMemo(
+    () => ({
       apiKeyLabel: intl.formatMessage({ id: "settings.modelProvider.apiKey" }),
       apiKeyBadgeLabel: intl.formatMessage({
         id: "settings.modelProvider.connectionMode.apiKeyBadge",
@@ -764,8 +884,32 @@ function V4ComposerModelControlsImpl({
       teamPlanFallbackLabel: intl.formatMessage({
         id: "settings.modelProvider.connectionMode.teamPlan",
       }),
-    });
-  }, [devModeUnlocked, displayProvider, enterpriseSession.status?.models, intl, modelSelectionView]);
+    }),
+    [intl],
+  );
+  const modelSelectGroups = useMemo<ModelSelectGroup[]>(() => {
+    if (!modelSelectionView) return [];
+    // 企业会话激活时，可选模型收敛到服务端下发的目录（解锁开发者模式即解除）。
+    // 单一过滤点与边界见 lib/modelScope.ts + docs/已完成/已完成-model-governance-and-dev-mode.md。
+    const scopedView = scopeModelSelectionView(
+      modelSelectionView,
+      resolveEnterpriseModelScope({
+        enterpriseModels: enterpriseSession.status?.models ?? null,
+        devModeUnlocked,
+      }),
+    );
+    return buildRegistryModelSelectGroups(
+      displayProvider,
+      scopedView ?? modelSelectionView,
+      modelGroupLabels,
+    );
+  }, [
+    devModeUnlocked,
+    displayProvider,
+    enterpriseSession.status?.models,
+    modelGroupLabels,
+    modelSelectionView,
+  ]);
 
   // 聊天输入框不再提供「管理模型」入口（改由设置页承担）；模型菜单只负责选择当前模型。
 
@@ -781,7 +925,7 @@ function V4ComposerModelControlsImpl({
     return effectiveConfig.model;
   }, [effectiveConfig, modelSelectionView]);
 
-  // 触发器显示兜底——`<synthetic>`（Claude SDK 恢复合成模型）或当前模型
+  // 触发器显示兜底——`<synthetic>`（SDK 恢复时合成的占位模型）或当前模型
   // 不在可选组（失效/下线/退登）→ 回落占位/默认「选择模型」，不直显协议内部占位符或失效
   // 模型 id。复用存活的 resolveModelSelectTriggerDisplay。
   const triggerDisplay = useMemo(
@@ -814,7 +958,8 @@ function V4ComposerModelControlsImpl({
     triggerDisplay.placeholder,
   ]);
   const handleModelValueChange = useCallback(
-    (value: string) => {
+    (value: string, reasoningLevel?: string) => {
+      if (modelLocked) return;
       const decoded = decodeCustomModelValue(value);
       // 草稿的点击时可见模型可能只存在于 catalog，或已经被最新 draft
       // intent 覆盖，不能让 SessionPane 再从迟到的 prewarm projection 反推。
@@ -858,16 +1003,21 @@ function V4ComposerModelControlsImpl({
         return;
       }
       if (decoded) {
-        onSelectModel(decoded.providerId, decoded.modelName ?? "", sourceModel);
-        return;
+        if (reasoningLevel !== undefined)
+          return onSelectModel(
+            decoded.providerId,
+            decoded.modelName ?? "",
+            sourceModel,
+            reasoningLevel,
+          );
+        else return onSelectModel(decoded.providerId, decoded.modelName ?? "", sourceModel);
       }
       const slashIndex = value.indexOf("/");
       if (slashIndex > 0) {
-        onSelectModel(value.slice(0, slashIndex), value.slice(slashIndex + 1), sourceModel);
-        return;
+        return onSelectModel(value.slice(0, slashIndex), value.slice(slashIndex + 1), sourceModel);
       }
       // 裸 model id：provider 沿用当前（宿主从最新投影补齐）。
-      onSelectModel("", value, sourceModel);
+      return onSelectModel("", value, sourceModel);
     },
     [
       configOptionsError,
@@ -877,11 +1027,69 @@ function V4ComposerModelControlsImpl({
       effectiveConfig?.provider,
       onRecoverCustomModelSelection,
       onSelectModel,
+      modelLocked,
       modelSelectionView,
       workspaceIdentity,
       workspacePath,
     ],
   );
+
+  const planGroups = useMemo(
+    () =>
+      buildComposerPlanGroups(
+        modelSelectGroups,
+        subscribedTeamProducts,
+        providerSettingsView,
+        displayProvider,
+        modelGroupLabels,
+        sharedSettings?.providerFamilyConnectionSelections,
+      ),
+    [
+      modelSelectGroups,
+      subscribedTeamProducts,
+      providerSettingsView,
+      displayProvider,
+      modelGroupLabels,
+      sharedSettings?.providerFamilyConnectionSelections,
+    ],
+  );
+  const connectionSwitch = useComposerConnectionSwitch({
+    scopeId: sessionId ?? undefined,
+    onPendingChange: onConnectionPendingChange,
+    workspacePath,
+    workspaceIdentity,
+    agentProvider: displayProvider,
+    normalizedValue: normalizedModelValue,
+    currentReasoningLevel: effectiveConfig?.thought,
+    onSelectModel: handleModelValueChange,
+    waitForPresentation: true,
+    refreshPresentation: modelSelectionRefresh,
+    presentationStatus: modelSelectionState.status,
+    presentationRevision: modelSelectionView?.revision,
+    presentationErrorRevision:
+      modelSelectionState.status === "ready"
+        ? modelSelectionState.refreshError?.revision
+        : undefined,
+  });
+  const selectedProviderId = decodeCustomModelValue(normalizedModelValue)?.providerId;
+  const selectedPlanGroup = planGroups.find((group) => {
+    const connection = group.connection;
+    if (!connection || connection.providerId !== selectedProviderId) return false;
+    const selection = sharedSettings?.providerFamilyConnectionSelections?.[connection.family];
+    return (
+      connection.selection?.kind !== "team-coding-plan" ||
+      (selection && composerConnectionKey(connection.family, selection) === connection.key)
+    );
+  });
+  const selectedPlanKey = connectionSwitch.pending
+    ? connectionSwitch.previousKey
+    : (selectedPlanGroup?.key ??
+      // 团队共用模型 value；当前过期行隐藏后，不能误选另一团队并阻止用户点击它。
+      planGroups.find(
+        (group) =>
+          group.connection?.selection?.kind !== "team-coding-plan" &&
+          group.items.some((item) => item.value === normalizedModelValue),
+      )?.key);
 
   const draftModelThoughtOption = useMemo(
     () =>
@@ -958,6 +1166,71 @@ function V4ComposerModelControlsImpl({
   // 改绑后按钮提示即时跟随（不能用硬编码文案）。
   const modelShortcutLabel = useShortcutCommandLabel("openModelMenu");
   const thoughtShortcutLabel = useShortcutCommandLabel("cycleThoughtLevel");
+  const selectConnection = connectionSwitch.select;
+  // 原因：内联对象会在无关渲染时使 memo 选择器失效；按展示事实和回调缓存选项。
+  const composerOptions = useMemo<ComposerModelOptions>(
+    () => ({
+      providerMenu: {
+        groups: planGroups,
+        selectedKey: selectedPlanKey,
+        pending: connectionSwitch.pending || modelSelectionPending,
+        // 团队目录查询不是用户的连接切换操作，不能把登录错误挂到 API 菜单。
+        error: connectionSwitch.error,
+        onSelect: (group) => {
+          // 原因：展示失败时设置可能已成功；已选连接仍须允许重试，不能被同 key 短路。
+          if (group.key === selectedPlanKey && !connectionSwitch.error) return;
+          if (group.connection) {
+            void selectConnection(group.connection, selectedPlanKey);
+          } else {
+            const model = chooseConnectionModel(
+              group.items,
+              decodeCustomModelValue(normalizedModelValue)?.modelName,
+            );
+            const providerId = decodeCustomModelValue(model?.value ?? "")?.providerId;
+            // 原因：普通 API 原先绕过连接切换 owner，缺少 loading 且会暴露旧目录。
+            if (providerId)
+              void selectConnection(
+                {
+                  key: group.key,
+                  label: group.label,
+                  providerId,
+                  family: connectionFamily,
+                  items: group.items,
+                },
+                selectedPlanKey,
+              );
+          }
+        },
+      },
+      providerLabel: intl.formatMessage({ id: "chat.toolbar.combined.provider" }),
+      modelsLabel: intl.formatMessage({ id: "chat.toolbar.combined.models" }),
+      effortLabel: intl.formatMessage({ id: "chat.toolbar.combined.effort" }),
+      effortShortcutLabel: thoughtShortcutLabel,
+      selectModelLabel: intl.formatMessage({ id: "chat.toolbar.combined.selectModel" }),
+      levels:
+        thoughtOption?.options?.map((entry) => ({
+          value: entry.value,
+          label: getThoughtLevelLabel(intl, displayProvider, thoughtOption, entry),
+        })) ?? [],
+      value: String(thoughtOption?.currentValue ?? ""),
+      onValueChange: handleThoughtValueChange,
+    }),
+    [
+      planGroups,
+      selectedPlanKey,
+      connectionSwitch.pending,
+      modelSelectionPending,
+      connectionSwitch.error,
+      selectConnection,
+      normalizedModelValue,
+      connectionFamily,
+      intl,
+      thoughtShortcutLabel,
+      thoughtOption,
+      displayProvider,
+      handleThoughtValueChange,
+    ],
+  );
   const isModelOptionLocked = useCallback(() => false, []);
 
   // 键盘热键（旧 useToolbarShortcutBindings）：Ctrl+M 打开模型菜单、Ctrl+T 循环思考深度。
@@ -965,11 +1238,25 @@ function V4ComposerModelControlsImpl({
   // 模型留空是正常的待选择状态，包括已有会话；不能因为没有已选模型隐藏重选入口。
   // 有可选组时才显示重选入口；模型留空是正常的待选择状态。
   const modelMenuVisible = modelSelectGroups.length > 0;
-  const providerSubmenuClassName = undefined;
+  // 配置恢复不是用户改选：未知时不显示“选择模型”，首次恢复不播放新旧标签滚动。
+  const sessionConfigPending = sessionId !== null && draftConfig?.mode === undefined;
+  // Bug 根因：手机端固定宽度的二级菜单没有消费 Radix 测得的当前方向可用宽度，
+  // 共享 min-w-32 还会阻止极窄空间继续收缩。保持二级交互，同时把窗口边缘作为硬上限。
+  const providerSubmenuClassName =
+    isWebRemoteControl && isMobileViewport
+      ? "w-40 min-w-0 max-w-(--radix-dropdown-menu-content-available-width)"
+      : undefined;
   useToolbarShortcutBindings({
     hasAnyOption: Boolean(modelOption) || Boolean(thoughtOption),
-    toolbarDisabled: disabled || recoveryPending,
-    modelMenuDisabled: disabled || recoveryPending || !modelMenuVisible,
+    toolbarDisabled:
+      disabled || recoveryPending || connectionSwitch.pending || modelSelectionPending,
+    modelMenuDisabled:
+      disabled ||
+      recoveryPending ||
+      modelLocked ||
+      connectionSwitch.pending ||
+      modelSelectionPending ||
+      !modelMenuVisible,
     modelOption,
     thoughtOption: thoughtOption ?? undefined,
     onOpenModelMenu: handleOpenModelMenuShortcut,
@@ -981,7 +1268,7 @@ function V4ComposerModelControlsImpl({
     <>
       {/*
         e2e 契约（TID_V4_MODEL_CONFIG）：Composer/usage 状态的 data-* 属性锚点。
-        跨模型切换会主动清除源模型的显式 thought；此时可见控件已按目标模型
+        Bug 原因：跨模型切换会主动清除源模型的显式 thought；此时可见控件已按目标模型
         Option Spec 展示默认档位，但旧锚点仍暴露空的原始投影。data-thought 必须与用户
         实际看到的受控值一致，不能重新引入一份草稿状态。
       */}
@@ -1006,17 +1293,28 @@ function V4ComposerModelControlsImpl({
         data-usage-max={usage?.contextWindow?.maxTokens ?? ""}
         className="hidden"
       />
-      <ChatContextUsage
-        codingPlanUsageRemaining={codingPlanUsageRemaining}
-        taskUsage={taskUsage}
-        startPlanBalance={contextStartPlanBalance}
-        selectedProvider={displayProvider}
-        intl={intl}
-        locale={locale}
-        onSendCompressionCommand={onSendCompressionCommand}
-        compressionDisabled={disabled || recoveryPending}
-      />
-      {modelSelectionState.status === "error" && modelSelectionReload ? (
+      {/* Highspeed 卡激活即锁定模型；不能等动效交接完成才隐藏，否则 usage 圈圈会短暂闪现。 */}
+      {!modelLocked ? (
+        <ChatContextUsage
+          codingPlanUsageRemaining={codingPlanUsageRemaining}
+          taskUsage={taskUsage}
+          startPlanBalance={contextStartPlanBalance}
+          selectedProvider={displayProvider}
+          intl={intl}
+          locale={locale}
+          onSendCompressionCommand={onSendCompressionCommand}
+          compressionDisabled={disabled || recoveryPending}
+        />
+      ) : null}
+      {/* 加速轮的模型由本次卡决定，选型菜单此时不可用，所以指示器优先于选型加载态。 */}
+      {highspeedPresented && highspeedModel ? (
+        <HighspeedModelIndicator
+          model={highspeedModel}
+          originalModel={modelTriggerDisplay.fullLabel}
+          sweepActive={highspeedSweepActive}
+          animateEntrance={highspeedEntranceAnimated}
+        />
+      ) : modelSelectionState.status === "error" && modelSelectionReload ? (
         <Button
           type="button"
           variant="ghost"
@@ -1037,45 +1335,68 @@ function V4ComposerModelControlsImpl({
         </span>
       ) : modelMenuVisible ? (
         <ModelConfigSelect
+          key={JSON.stringify([
+            workspaceIdentity?.trim() || workspacePath,
+            sessionId,
+            sessionConfigPending,
+          ])}
           modelGroups={modelSelectGroups}
+          contentAlign="center"
           normalizedValue={normalizedModelValue}
           triggerLabel={modelTriggerDisplay.fullLabel}
           triggerLabelPrefix={modelTriggerDisplay.providerPrefix}
           triggerLabelValue={modelTriggerDisplay.modelLabel}
           triggerLabelPrefixClassName="composer-provider-prefix hidden @2xl/composer:inline group-data-[composer-provider-compact=true]/toolbar:hidden"
+          composerOptions={composerOptions}
+          showManageModelsAction={false}
           lockReasonMessage={intl.formatMessage({
-            id: "chat.toolbar.modelSwitch.lockedByRunningTask",
+            id: modelLocked
+              ? "chat.highspeed.modelLocked"
+              : "chat.toolbar.modelSwitch.lockedByRunningTask",
           })}
           isItemLocked={isModelOptionLocked}
           onValueChange={handleModelValueChange}
-          disabled={disabled || recoveryPending || modelSelectionState.status !== "ready"}
+          pending={modelSelectionPending || connectionSwitch.pending}
+          disabled={
+            disabled ||
+            modelSelectionPending ||
+            recoveryPending ||
+            modelLocked ||
+            (modelSelectionState.status !== "ready" &&
+              !(modelSelectionState.status === "loading" && modelSelectionState.catalog))
+          }
           tooltipTitle={modelTriggerDisplay.fullLabel}
           shortcutLabel={modelShortcutLabel}
           triggerRef={modelTriggerRef}
-          open={activeConfigPicker === "model"}
+          open={!modelLocked && activeConfigPicker === "model"}
           onOpenChange={handleModelPickerOpenChange}
           openRequestKey={modelMenuOpenRequestKey}
           labelVisibilityClassName="hidden @sm/composer:inline-flex"
-          indicatorClassName="hidden @sm/composer:block group-data-[composer-model-icon=true]/toolbar:hidden"
-          triggerLabelClassName="hidden min-w-0 text-left @sm/composer:block group-data-[composer-model-icon=true]/toolbar:hidden [&>span]:max-w-full [&>span>span]:block [&>span>span]:truncate"
-          triggerClassName="composer-model-trigger max-w-[var(--composer-model-max-width,16rem)] group-data-[composer-model-icon=true]/toolbar:size-7 group-data-[composer-model-icon=true]/toolbar:p-0 group-data-[composer-model-icon=true]/toolbar:gap-0 group-data-[composer-model-icon=true]/toolbar:justify-center @max-sm/composer:size-7 @max-sm/composer:justify-center @max-sm/composer:gap-0 @max-sm/composer:p-0"
-          triggerIconClassName="inline-flex @sm/composer:hidden group-data-[composer-model-icon=true]/toolbar:inline-flex"
+          indicatorClassName="block group-data-[composer-model-icon=true]/toolbar:hidden"
+          triggerLabelClassName="block min-w-0 text-left group-data-[composer-model-icon=true]/toolbar:hidden [&>span]:max-w-full [&>span>span]:block [&>span>span]:truncate"
+          triggerClassName="composer-model-trigger group-data-[composer-model-icon=true]/toolbar:px-1.5 group-data-[composer-model-icon=true]/toolbar:justify-center"
+          triggerIconClassName="hidden group-data-[composer-model-icon=true]/toolbar:inline-flex"
           focusSelectorOnClose={V4_COMPOSER_INPUT_SELECTOR}
           providerSubmenuClassName={providerSubmenuClassName}
         />
       ) : null}
-      {thoughtOption ? (
+      {highspeedPresented && highspeedExpiresAt !== undefined ? (
+        <HighspeedCountdown expiresAt={highspeedExpiresAt} />
+      ) : null}
+      {thoughtOption && (modelLocked || highspeedPresented) ? (
         <ThoughtLevelCycleControl
-          indicatorClassName="hidden @xl/composer:block"
-          triggerClassName="@max-sm/composer:size-7 @max-sm/composer:justify-center @max-sm/composer:p-0"
+          composerCollapsePriority={3}
+          labelVisibilityClassName="inline-flex"
+          indicatorClassName="block"
+          triggerClassName={cn(highspeedPresented && "text-ui-caption")}
           option={thoughtOption}
           onValueChange={handleThoughtValueChange}
-          disabled={disabled || recoveryPending}
+          disabled={disabled || recoveryPending || modelSelectionPending}
           intl={intl}
           provider={displayProvider}
           shortcutLabel={thoughtShortcutLabel}
           triggerRef={thoughtTriggerRef}
-          open={activeConfigPicker === "thought"}
+          open={!modelSelectionPending && activeConfigPicker === "thought"}
           onOpenChange={handleThoughtPickerOpenChange}
           restoreFocusSelector={V4_COMPOSER_INPUT_SELECTOR}
         />

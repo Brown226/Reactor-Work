@@ -37,15 +37,17 @@ import {
 import { logger } from "@/logger.js";
 import { SSHDialog } from "@/SSHDialog.js";
 import {
-  TID_COMPOSER_PROJECT_DETACH,
-  TID_COMPOSER_REMOTE_CONNECTION,
-  TID_COMPOSER_WORK_OUTSIDE_PROJECT,
-  TID_COMPOSER_WORKSPACE_TRIGGER,
   resolveWorkspaceKey,
   type RemoteTarget,
   type RemoteWorkspaceSessionEntry,
   type WorkspacePurpose,
 } from "@zcode/shared";
+import {
+  TID_COMPOSER_PROJECT_DETACH,
+  TID_COMPOSER_REMOTE_CONNECTION,
+  TID_COMPOSER_WORK_OUTSIDE_PROJECT,
+  TID_COMPOSER_WORKSPACE_TRIGGER,
+} from "@zcode/shared/test-ids";
 import { runUserAction, runUserActionAsync } from "@/lib/userActionTelemetry.js";
 export {
   getScratchWorkspaceLocationHint,

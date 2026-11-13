@@ -1,6 +1,7 @@
 import { mkdirSync, appendFileSync } from "node:fs";
-import { join } from "node:path";
-import { formatTimestamp } from "@zcode/shared";
+import { mkdir, appendFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { createLocalTtftLogQueue, formatTimestamp } from "@zcode/shared";
 import { cleanupExpiredLogFiles, LOG_RETENTION_DAYS } from "./logRetention.js";
 import { getAppConfigDir, maybeThrowInjectedFsFault } from "@zcode/services/node";
 
@@ -28,6 +29,25 @@ if (logRetentionResult.failedFiles.length > 0) {
 }
 
 type LogLevel = "debug" | "info" | "warn" | "error";
+
+let reportedTtftDrops = 0;
+const localTtftLogs = createLocalTtftLogQueue(async (entries, dropped) => {
+  const files = new Map<string, string>();
+  for (const entry of entries) files.set(entry.path, (files.get(entry.path) ?? "") + entry.line);
+  for (const [path, contents] of files) {
+    await mkdir(dirname(path), { recursive: true });
+    maybeThrowInjectedFsFault({ operation: "appendFile", path });
+    const loss =
+      dropped > reportedTtftDrops
+        ? `[ttft] ${JSON.stringify({ event: "ttft.log.dropped", count: dropped })}\n`
+        : "";
+    await appendFile(path, loss + contents, "utf8");
+    reportedTtftDrops = dropped;
+  }
+});
+export async function flushLocalTtftLogs(): Promise<void> {
+  await localTtftLogs.flush();
+}
 
 function isBrokenPipeError(error: unknown): boolean {
   return (
@@ -77,11 +97,38 @@ function write(level: LogLevel, source: string, ...args: unknown[]) {
   const message = args.map((a) => (typeof a === "string" ? a : JSON.stringify(a))).join(" ");
   const line = `[${ts}] [${level}] [pid:${pid}] [${source}] ${message}\n`;
   const logDir = getLogDir();
-  mkdirSync(logDir, { recursive: true });
   const filePath = join(logDir, `${formatDate(now)}.log`);
+  // TTFT 会经过 renderer IPC 和 host relay；只分流专用标记，避免观测同步写盘拖慢被测链路。
+  if (message.includes("[ttft] ")) {
+    localTtftLogs.enqueue({ path: filePath, line });
+    return;
+  }
+  mkdirSync(logDir, { recursive: true });
 
   // 同时保留 console 输出，方便开发调试；console 也加时间戳和 PID，与文件格式对齐
   safeConsoleWrite(level, `[${ts}] [pid:${pid}] [${source}]`, ...args);
+
+  try {
+    maybeThrowInjectedFsFault({ operation: "appendFile", path: filePath });
+    appendFileSync(filePath, line);
+  } catch {
+    // 日志写入失败不应影响应用运行
+  }
+}
+
+function writeDedicated(filePrefix: string, level: LogLevel, source: string, ...args: unknown[]) {
+  const now = new Date();
+  const ts = formatTimestamp(now);
+  const pid = process.pid;
+  const message = args.map((a) => (typeof a === "string" ? a : JSON.stringify(a))).join(" ");
+  const line = `[${ts}] [${level}] [pid:${pid}] [${source}] ${message}\n`;
+  const logDir = getLogDir();
+  mkdirSync(logDir, { recursive: true });
+  // Bugfix: 远控 relay trace 与主日志混放时，目录内文件会快速增多，人工排查不直观。
+  // 这里把高频 trace 分流到 logs 子目录，避免影响主日志浏览与导出定位。
+  const dedicatedDir = join(logDir, "web-remote-control");
+  mkdirSync(dedicatedDir, { recursive: true });
+  const filePath = join(dedicatedDir, `${filePrefix}-${formatDate(now)}.log`);
 
   try {
     maybeThrowInjectedFsFault({ operation: "appendFile", path: filePath });
@@ -108,4 +155,17 @@ export const logger = {
 
   /** renderer 日志通过 IPC 传入后调用此方法写入同一文件 */
   fromRenderer: (level: LogLevel, args: unknown[]) => write(level, "renderer", ...args),
+};
+
+/**
+ * Web remote control relay message trace 专用日志。
+ * 仅用于高频链路排障，独立落盘避免淹没主日志文件。
+ */
+export const webRemoteControlRelayLogger = {
+  info: (...args: unknown[]) =>
+    writeDedicated("web-remote-control-relay", "info", "web-remote-control-relay", ...args),
+  warn: (...args: unknown[]) =>
+    writeDedicated("web-remote-control-relay", "warn", "web-remote-control-relay", ...args),
+  error: (...args: unknown[]) =>
+    writeDedicated("web-remote-control-relay", "error", "web-remote-control-relay", ...args),
 };

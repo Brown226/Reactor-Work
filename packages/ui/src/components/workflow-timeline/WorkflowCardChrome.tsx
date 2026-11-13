@@ -85,7 +85,7 @@ export function WorkflowRunStatus({
         aria-hidden
         className={cn("wf-lamp size-2 shrink-0 rounded-full", RUN_STATUS_DOT[effectiveStatus])}
       />
-      {/* 状态词按值换：旧词退场新词进场。 */}
+      {/* 状态词按值换：旧词退场新词进场（追记「悬停与运动」的 Kind 一节）。 */}
       <span
         className={cn("wf-swap text-ui-sm", RUN_STATUS_TEXT[effectiveStatus])}
         data-testid={testId}
@@ -170,7 +170,7 @@ export function WorkflowCardHeader({
     });
   return (
     <div
-      className="flex min-w-0 items-center gap-2 text-ui-base"
+      className="flex min-w-0 flex-wrap items-center gap-2 text-ui-base"
       data-testid="workflow-card-header"
     >
       {WORKFLOW_CARD_ICON}
@@ -184,18 +184,28 @@ export function WorkflowCardHeader({
       </span>
       <span
         // 名称是 UI 文本；工具摘要与取消等状态共用的卡片表头都要经过同一修正。
-        className="min-w-0 flex-1 truncate text-foreground-subtle"
+        // 手机分享页的状态簇曾把名称挤到 0 宽；名称保留最小宽度，空间不足时状态整组换行。
+        className="min-w-20 flex-1 truncate text-foreground-subtle"
         data-testid="workflow-card-name"
         title={name}
       >
         {name}
       </span>
-      <span className="flex shrink-0 items-center gap-2">
+      {/* 右簇可压缩，簇里只有细节串会让位：芯片、状态与按钮都是 shrink-0（Button 基类自带），
+          细节串 min-w-0 + truncate，于是负空间全落在它身上，Configure / Stop / ⤢ 留在卡内。
+          簇上的 min-w-0 是必需的，别当成冗余删掉：flex item 的 automatic minimum size 等于
+          min-content，而 truncate 的 `white-space:nowrap` 让细节串的 min-content 就是整串字宽
+          ——`overflow:hidden` 与子元素的 min-w-0 都不会把它算小。不写簇的 min-w-0，簇的地板
+          就是「整串细节 + 按钮」，它一个像素都不会缩，按钮照样被顶出卡外（本次修复的起因）。
+          浏览器实测（卡宽逐档收窄）：修复前 520px 起按钮就出界；修复后 290px 以上零溢出，
+          带待答问题芯片时 380px——芯片也是 shrink-0，它把地板整体抬高。
+          ml-auto 只在右簇换行到独立行时生效（分享页窄屏）：名称是 flex-1，同行时它没有作用。 */}
+      <span className="ml-auto flex min-w-0 items-center gap-2">
         {leading}
         {status}
         {detail === undefined || detail.length === 0 ? null : (
           <span
-            className="text-ui-base tabular-nums text-foreground-subtlest"
+            className="min-w-0 truncate text-ui-base tabular-nums text-foreground-subtlest"
             data-testid="workflow-card-detail"
             {...(detailTitle === undefined ? {} : { title: detailTitle })}
           >

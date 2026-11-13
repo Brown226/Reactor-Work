@@ -1,4 +1,4 @@
-import type { WorkflowRunState } from "@zcode/shared/zcode-protocol-v4";
+import { workflowRunStepCounts, type WorkflowRunState } from "@zcode/shared/zcode-protocol-v4";
 import type { WorkflowCausalityGraphData } from "@/components/workflow-graph/types.js";
 import { workflowSubagentModelCardLabel } from "./subagent-model-label.js";
 import type { WorkflowTimelineModel } from "./timeline-model.js";
@@ -42,15 +42,6 @@ export function timelineRounds(model: WorkflowTimelineModel): number {
   return rounds;
 }
 
-export function workflowRunStepCounts(run: WorkflowRunState): {
-  settled: number;
-  observed: number;
-} {
-  let settled = 0;
-  for (const node of run.nodes) if (node.phase === "settled") settled += 1;
-  return { observed: run.nodes.length, settled };
-}
-
 function count(format: FormatMessage, one: string, many: string, value: number): string {
   return format({ id: value === 1 ? one : many }, { count: value.toLocaleString() });
 }
@@ -65,12 +56,19 @@ export function workflowPhasesDetail(
   graph: WorkflowCausalityGraphData | undefined,
 ): string {
   const counts = timelineCounts(model, graph);
-  return count(
+  // 还开着的留白不算阶段（docs/dynamic-workflow/presentation.md「Holes on the timeline」）：「2 个阶段 · 2 处留白」。
+  const holes = model.stations.filter(
+    (station) => station.hole !== undefined && station.hole.state !== "filled",
+  ).length;
+  const phases = count(
     format,
     "chat.toolCall.workflow.card.phase",
     "chat.toolCall.workflow.card.phases",
-    counts.phases,
+    counts.phases - holes,
   );
+  return holes === 0
+    ? phases
+    : `${phases} · ${count(format, "chat.toolCall.workflow.card.hole", "chat.toolCall.workflow.card.holes", holes)}`;
 }
 
 /** 子代理那一段：跑着时数工作中的，结束后数总数（投影与静态图取大）。 */
@@ -199,10 +197,9 @@ export function workflowSummaryParts(
       ),
     );
   }
-  const { observed, settled } = workflowRunStepCounts(run);
-  parts.push(
-    format({ id: "chat.toolCall.workflow.card.steps" }, { done: settled, total: observed }),
-  );
+  // 步数走 @zcode/shared 的唯一实现：表内 + 表外（撞界后没进表的实例仍算步数）。
+  const { settled, total } = workflowRunStepCounts(run);
+  parts.push(format({ id: "chat.toolCall.workflow.card.steps" }, { done: settled, total }));
   if (options.tokens !== false) {
     parts.push(
       format(

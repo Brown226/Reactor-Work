@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- 八类 strict telemetry fact 的同源归一集中维护，避免 privacy allowlist 分叉。 */
 import type {
   CompactLifecyclePayload,
   DynamicWorkflowRunProgressPayload,
@@ -19,11 +20,13 @@ import type {
   TurnStartedPayload,
 } from "@zcode/contracts";
 import { getModelUsageTotalTokens, SessionEventType } from "@zcode/contracts";
-import { parseAutomationRunId } from "@zcode/shared";
+import { parseAutomationRunId, sanitizeTelemetrySkillName } from "@zcode/shared";
 import { workflowLifecycleFactFromProgress } from "./conversation-telemetry-workflow-facts.js";
 import {
   conversationTelemetryFactSchema,
+  modelRequestMetricsFactSchema,
   type ConversationTelemetryFact,
+  type ModelRequestMetricsFact,
 } from "@zcode/shared/zcode-protocol-v4";
 
 const MAX_TRACKED_LIFECYCLE_KEYS = 2_000;
@@ -107,7 +110,11 @@ function skillTelemetryFactFields(
   const qualifiedName = optionalString(value.qualifiedName);
   const pluginId = optionalString(value.pluginId);
   const source = optionalString(value.source);
+  // 仅消费加载结果 metadata；请求参数不证明技能存在，不能进入遥测。
+  const name =
+    source && value.name !== undefined ? sanitizeTelemetrySkillName(value.name) : undefined;
   return {
+    ...(name ? { skillName: name } : {}),
     ...(qualifiedName ? { skillQualifiedName: qualifiedName } : {}),
     ...(pluginId ? { skillPluginId: pluginId } : {}),
     ...(source ? { skillSource: source } : {}),
@@ -117,13 +124,16 @@ function skillTelemetryFactFields(
 export function streamingParentToolCallId(payload: Record<string, unknown>): string | undefined {
   const meta = recordValue(payload._meta);
   const zcode = recordValue(meta.zcode);
+  const claudeCode = recordValue(meta.claudeCode);
   return (
     optionalString(payload.parentToolCallId) ??
     optionalString(payload.parentToolUseId) ??
     optionalString(meta.parentToolCallId) ??
     optionalString(meta.parentToolUseId) ??
     optionalString(zcode.parentToolCallId) ??
-    optionalString(zcode.parentToolUseId)
+    optionalString(zcode.parentToolUseId) ??
+    optionalString(claudeCode.parentToolCallId) ??
+    optionalString(claudeCode.parentToolUseId)
   );
 }
 
@@ -153,6 +163,28 @@ function eventTimestamp(event: SessionEvent): number {
   const value =
     event.timestamp instanceof Date ? event.timestamp.getTime() : Number(event.timestamp);
   return Number.isFinite(value) && value >= 0 ? value : 0;
+}
+
+function factBase(
+  sessionId: string,
+  event: SessionEvent,
+  runtimeMetadata: { memoryEnabled?: boolean } | undefined,
+) {
+  const turnId = event.turnId ? String(event.turnId) : undefined;
+  return {
+    turnKey: turnId ? `${sessionId}\0${turnId}` : undefined,
+    base: {
+      ...(runtimeMetadata?.memoryEnabled !== undefined
+        ? { memoryEnabled: runtimeMetadata.memoryEnabled }
+        : {}),
+      version: 1 as const,
+      eventId: String(event.id),
+      eventSeq: Math.max(0, Math.floor(event.sequenceNumber)),
+      occurredAt: eventTimestamp(event),
+      sessionId,
+      ...(turnId ? { turnId } : {}),
+    },
+  };
 }
 
 function automationAdmission(inputId: string | undefined, automationId: string | undefined) {
@@ -290,13 +322,53 @@ export class ConversationTelemetryFactNormalizer {
   private readonly firstStreamChunks = new BoundedKeySet();
   private readonly sourceCommandByTurn = new BoundedValueMap<string>();
   private readonly toolNameByCall = new BoundedValueMap<string>();
-  /** 洞②：started 时缓存「按入参解析后的只读结论」，终态 fact 附带（缓存模式同 toolNameByCall）。 */
-  private readonly sideEffectByCall = new BoundedValueMap<boolean>();
   private readonly modelBySession = new BoundedValueMap<{
     modelName: string;
     modelProvider: string;
   }>();
   private readonly completedModelRequests = new BoundedValueMap<CompletedModelRequestIdentity[]>();
+
+  /**
+   * 模型请求指标：只由 `model_request_completed` 产生，供扩展进程算生成速率。
+   * 走独立通知，不进 ConversationTelemetryFact（docs/monitoring/conversation-telemetry-v4.md「模型请求指标」）。
+   * 必须在同一事件的 normalize 之后调用，sourceCommandId 依赖 normalize 记下的轮次输入。
+   */
+  normalizeModelRequestMetrics(
+    sessionId: string,
+    event: SessionEvent,
+    runtimeMetadata?: { memoryEnabled?: boolean },
+  ): ModelRequestMetricsFact | null {
+    if (event.type !== SessionEventType.ModelNetworkStatus) return null;
+    const payload = event.payload as ModelNetworkStatusPayload;
+    if (payload.type !== "model_request_completed") return null;
+    const { base, turnKey } = factBase(sessionId, event, runtimeMetadata);
+    const sourceCommandId = turnKey ? this.sourceCommandByTurn.get(turnKey) : undefined;
+    const usage = recordValue(payload.usage);
+    const token = (value: unknown) => nonNegative(value);
+    const usageFields = {
+      inputTokens: token(usage.inputTokens),
+      outputTokens: token(usage.outputTokens),
+      reasoningTokens: token(usage.reasoningTokens),
+      cacheReadTokens: token(usage.cacheReadTokens),
+      cacheWriteTokens: token(usage.cacheWriteTokens),
+      totalTokens: token(usage.totalTokens),
+    };
+    return modelRequestMetricsFactSchema.parse({
+      ...base,
+      kind: "model.request.metrics",
+      ...(sourceCommandId ? { sourceCommandId } : {}),
+      requestId: String(payload.requestId),
+      providerId: String(payload.providerId),
+      modelId: String(payload.modelId),
+      ...(payload.querySource ? { querySource: payload.querySource } : {}),
+      ...(payload.queryId ? { queryId: String(payload.queryId) } : {}),
+      durationMs: nonNegative(payload.durationMs) ?? 0,
+      ...(nonNegative(payload.timeToFirstContentMs) !== undefined
+        ? { timeToFirstContentMs: payload.timeToFirstContentMs }
+        : {}),
+      ...Object.fromEntries(Object.entries(usageFields).filter(([, value]) => value !== undefined)),
+    });
+  }
 
   normalize(
     sessionId: string,
@@ -304,18 +376,7 @@ export class ConversationTelemetryFactNormalizer {
     runtimeMetadata?: { modelName?: string; modelProvider?: string; memoryEnabled?: boolean },
   ): ConversationTelemetryFact | null {
     const turnId = event.turnId ? String(event.turnId) : undefined;
-    const turnKey = turnId ? `${sessionId}\0${turnId}` : undefined;
-    const base = {
-      ...(runtimeMetadata?.memoryEnabled !== undefined
-        ? { memoryEnabled: runtimeMetadata.memoryEnabled }
-        : {}),
-      version: 1 as const,
-      eventId: String(event.id),
-      eventSeq: Math.max(0, Math.floor(event.sequenceNumber)),
-      occurredAt: eventTimestamp(event),
-      sessionId,
-      ...(turnId ? { turnId } : {}),
-    };
+    const { base, turnKey } = factBase(sessionId, event, runtimeMetadata);
     const sourceCommandId = turnKey ? this.sourceCommandByTurn.get(turnKey) : undefined;
 
     switch (event.type) {
@@ -333,6 +394,13 @@ export class ConversationTelemetryFactNormalizer {
         return conversationTelemetryFactSchema.parse({
           ...base,
           kind: "turn.started",
+          ...((payload.intent?.inputOrigin ?? payload.inputOrigin)
+            ? { inputOrigin: payload.intent?.inputOrigin ?? payload.inputOrigin }
+            : {}),
+          ...(runtimeMetadata?.modelName ? { modelName: runtimeMetadata.modelName } : {}),
+          ...(runtimeMetadata?.modelProvider
+            ? { modelProvider: runtimeMetadata.modelProvider }
+            : {}),
           ...(inputId ? { sourceCommandId: inputId } : {}),
           ...automationAdmission(inputId, optionalString(payload.automationId)),
           ...(optionalString(payload.offPeakTaskId)
@@ -468,11 +536,6 @@ export class ConversationTelemetryFactNormalizer {
         const key = `${turnKey ?? sessionId}\0${toolCallId}`;
         const explicitName = "toolName" in payload ? optionalString(payload.toolName) : undefined;
         const toolName = explicitName ?? this.toolNameByCall.get(key);
-        // 洞②（审计补全）：started 携带解析后的副作用结论（如 Bash 只读命令为 false），
-        // 缓存到终态再放进 fact——终态是 Host 上报 tool_call 的唯一依据，未声明按副作用处理。
-        if (event.type === SessionEventType.ToolCallStarted) {
-          this.sideEffectByCall.set(key, (payload as ToolCallStartedPayload).readOnly !== true);
-        }
         const result =
           event.type === SessionEventType.ToolCallResult
             ? (payload as ToolCallResultPayload)
@@ -498,13 +561,7 @@ export class ConversationTelemetryFactNormalizer {
           phase === "completed" && toolName === "CronCreate"
             ? cronCreateAutomationId(result?.result.content)
             : undefined;
-        // 洞②：只在终态取缓存并附带；started/progress 不带（Host 只消费终态）。
-        const isTerminalPhase = phase === "completed" || phase === "failed";
-        const sideEffect = isTerminalPhase ? this.sideEffectByCall.get(key) : undefined;
-        if (isTerminalPhase) {
-          this.toolNameByCall.delete(key);
-          this.sideEffectByCall.delete(key);
-        }
+        if (phase === "completed" || phase === "failed") this.toolNameByCall.delete(key);
         return conversationTelemetryFactSchema.parse({
           ...base,
           kind: "tool.lifecycle",
@@ -512,7 +569,6 @@ export class ConversationTelemetryFactNormalizer {
           phase,
           toolCallId,
           ...(toolName ? { toolName } : {}),
-          ...(sideEffect !== undefined ? { sideEffect } : {}),
           ...(automationId ? { automationId } : {}),
           ...(result ? { durationMs: result.duration } : {}),
           ...(error ? { errorCode: error.error.code ?? error.error.type } : {}),
@@ -522,6 +578,9 @@ export class ConversationTelemetryFactNormalizer {
             : {}),
           ...(result?.result.error ? { errorMessage: result.result.error.message } : {}),
           ...skillTelemetryFactFields(toolName, error?.skillMetadata ?? result?.skillMetadata),
+          ...((error?.pluginId ?? result?.pluginId)
+            ? { pluginId: error?.pluginId ?? result?.pluginId, pluginComponent: "mcp" }
+            : {}),
           // subagent mirror 把父子关联放在工具事件 payload 顶层，旧 normalizer
           // 只读取 result.display，导致 agent_id 等字段在进入 agent_step 前被静默丢弃。
           ...mirroredSubagentToolFields(rawPayload, display),
@@ -567,8 +626,6 @@ export class ConversationTelemetryFactNormalizer {
             : {}),
           ...(rawPayload.background === true ? { background: true } : {}),
           ...(resolved ? { decision: resolved.decision } : {}),
-          // 洞②（审计补全）：规则拒绝携带 ruleId，Host 据此区分 policy.* 拦截与普通规则拒绝。
-          ...(denied?.ruleId ? { ruleId: denied.ruleId } : {}),
         });
       }
       case SessionEventType.ModelComplete: {
@@ -751,7 +808,6 @@ export class ConversationTelemetryFactNormalizer {
     this.sourceCommandByTurn.delete(turnKey);
     this.firstStreamChunks.deletePrefix(`${turnKey}\0`);
     this.toolNameByCall.deletePrefix(`${turnKey}\0`);
-    this.sideEffectByCall.deletePrefix(`${turnKey}\0`);
   }
 
   clearSession(sessionId: string): void {
@@ -759,7 +815,6 @@ export class ConversationTelemetryFactNormalizer {
     this.sourceCommandByTurn.deletePrefix(prefix);
     this.firstStreamChunks.deletePrefix(prefix);
     this.toolNameByCall.deletePrefix(prefix);
-    this.sideEffectByCall.deletePrefix(prefix);
     this.modelBySession.delete(sessionId);
     this.completedModelRequests.deletePrefix(prefix);
   }

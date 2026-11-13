@@ -4,6 +4,7 @@ import { readdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { createRequire } from "node:module";
+import { HELPER_APP_NAME } from "@zcode/zcode-cua/broker/helperConstants";
 import { runCommand, runCommandAndReadStdout } from "../../scripts/spawn-command.mjs";
 import { loadBuiltinProviderConfig } from "../../scripts/builtin-provider-config.mjs";
 import { noticesFileName, stageElectronNotices } from "../../scripts/third-party-notices.mjs";
@@ -15,48 +16,29 @@ import {
   restoreTargetNodePtyPrebuild,
 } from "./scripts/node-pty-package-assets.mjs";
 import { cleanupPackagedSourcemaps } from "./scripts/packaged-sourcemap-cleanup.mjs";
+import { pruneIncompatiblePlatformPackages } from "./scripts/packaged-platform-dependency-prune.mjs";
 import { getTargetPlatform } from "./scripts/target-platform.mjs";
 import {
   resolveDesktopArtifactSuffix,
   resolveDesktopProductIdentity,
 } from "./scripts/desktop-product-identity.mjs";
+import { createWindowsPowerShellSecurityArgs } from "./scripts/powershell-command.mjs";
+import { writeWindowsUpdatePublisher } from "./scripts/windows-update-publisher.mjs";
+import {
+  isSharpRequiredByComputerUse,
+  verifyStagedSharp,
+} from "./scripts/sharp-package-assets.mjs";
+import { isRealComputerUseProducerInstalled } from "./scripts/computer-use-producer.mjs";
+import {
+  MAC_ELECTRON_LANGUAGES,
+  findMissingMacElectronLocales,
+  resolveMacElectronFrameworkResourcesDir,
+} from "./scripts/mac-electron-locales.mjs";
 import { verifyStagedKoffi } from "./scripts/koffi-package-assets.mjs";
-const ELECTRON_BUILDER_ARCH = {
-  1: "x64",
-  3: "arm64",
-};
-function resolveElectronBuilderWindowsTarget({
-  electronPlatformName,
-  arch,
-  configuredTargetPlatform,
-}) {
-  if (electronPlatformName !== "win32") {
-    throw new Error(
-      `[electron-builder.config] context platform is not win32: ${String(electronPlatformName)}`,
-    );
-  }
-  const actualArch = ELECTRON_BUILDER_ARCH[arch];
-  if (!actualArch) {
-    throw new Error(
-      `[electron-builder.config] unsupported electron-builder Windows architecture: ${String(arch)}`,
-    );
-  }
-  const actualTarget = {
-    os: "win32",
-    arch: actualArch,
-    key: `win32-${actualArch}`,
-  };
-  if (
-    configuredTargetPlatform?.os !== actualTarget.os ||
-    configuredTargetPlatform?.arch !== actualTarget.arch ||
-    configuredTargetPlatform?.key !== actualTarget.key
-  ) {
-    throw new Error(
-      `[electron-builder.config] configured target ${String(configuredTargetPlatform?.key)} does not match electron-builder target ${actualTarget.key}`,
-    );
-  }
-  return actualTarget;
-}
+import {
+  finalizePackagedWindowsCuaHelper,
+  resolveElectronBuilderWindowsTarget,
+} from "./scripts/windows-cua-helper-assets.mjs";
 import {
   findDesktopNativePackageViolations,
   createDesktopNativePackagePrunePatterns,
@@ -65,11 +47,16 @@ import {
 import { replaceAppAsarFromStaging } from "./scripts/app-asar-repack.mjs";
 import {
   patchNsisInstallSectionFile,
+  patchNsisInstallUtilFile,
   restoreNsisInstallSectionFileSync,
 } from "./scripts/patch-nsis-install-section.mjs";
 
 const buildMetadata = getBuildMetadata();
 const targetPlatform = getTargetPlatform();
+// 修复原因：Windows Chrome 导入入口已暂时隐藏，默认安装包不应继续携带、签名或校验原生 helper。
+// 代码和完整供应链保留在显式 opt-in 后，便于未来恢复而不影响当前发布流程。
+const shouldPackageWindowsBrowserImportHelper =
+  targetPlatform.os === "win32" && process.env.ZCODE_ENABLE_WINDOWS_BROWSER_IMPORT === "1";
 const builtinProviderConfig = await loadBuiltinProviderConfig();
 const desktopProductIdentity = resolveDesktopProductIdentity({
   ...process.env,
@@ -86,6 +73,9 @@ const shouldEnableMacSigning =
   process.env.ZCODE_ENABLE_MAC_SIGN === "1" && Boolean(macSigningIdentity);
 const workspaceRoot = resolve(import.meta.dirname, "../..");
 const desktopPackageRoot = import.meta.dirname;
+// Computer Use Helper（macOS .app、Windows runtime）只随真实 producer 打包；开源占位包下跳过随包资源与校验。
+const shouldPackageComputerUseHelper = isRealComputerUseProducerInstalled({ desktopPackageRoot });
+const HELPER_FILENAME = "zcode-browser-import-helper.exe";
 const runtimeModuleLookupRoots = [
   desktopPackageRoot,
   workspaceRoot,
@@ -93,6 +83,12 @@ const runtimeModuleLookupRoots = [
   resolve(workspaceRoot, "node_modules", ".pnpm", "node_modules"),
 ];
 const desktopDistDir = process.env.ZCODE_DESKTOP_DIST_DIR || "dist";
+const bundledCuaHelperSource = resolve(
+  desktopPackageRoot,
+  "bundled-cua-helper",
+  targetPlatform.arch,
+  HELPER_APP_NAME,
+);
 const DEFAULT_ELECTRON_MIRROR = "https://npmmirror.com/mirrors/electron/";
 // `pnpm exec asar` 依赖 `.bin/asar`，但 @electron/asar 仅是 electron-builder 传递依赖时，
 // Linux CI（pnpm hoisted）往往解析不到该二进制，`asar list` 未运行即 exit 1。
@@ -114,12 +110,19 @@ const REQUIRED_ASAR_RUNTIME_MODULES = [
   // workspace 根目录解析，但 electron-builder 不会稳定复制这条 hoisted 依赖，导致安装包启动即崩溃。
   // 将 sdk-metrics 作为闭包根注入，同时递归带齐它的 OpenTelemetry 运行时依赖。
   "@opentelemetry/sdk-metrics",
-  // OTLP proto 导出链闭包根：递归带齐 otlp-transformer/protobufjs 及其子依赖，
-  // 否则 hoisted 布局漏 protobufjs 时已安装应用启动即报 Cannot find module 'protobufjs/minimal'。
+  // Bugfix：主进程的本地 TTFT / renderer 动作追踪导出器使用 OTLP proto 导出链。pnpm hoisted 布局下
+  // electron-builder 会把 otlp-transformer 打进 app.asar，却漏拷其传递依赖 protobufjs，已安装应用启动即报
+  // Cannot find module protobufjs/minimal（开源侧 3.14.0 arm64 DMG 实测复现）。以两个 proto exporter
+  // 作为闭包根注入，递归带齐 otlp-transformer、protobufjs 与 @protobufjs/* 全链。
   "@opentelemetry/exporter-trace-otlp-proto",
   "@opentelemetry/exporter-metrics-otlp-proto",
   "pngjs",
-  // @zcode/services 的代理连通性探测会动态 require("undici") 取 ProxyAgent。
+  // Bugfix: @arms/rum-core 把 @babel/runtime 声明成 peerDependency，pnpm 安装时可由 peer 解析兜住，
+  // 但 electron-builder 重打 app.asar 时不会因为 @arms/rum-electron 本体进包，就稳定把这个 peer 运行时一起带上。
+  // 线上已出现安装包启动即报 Cannot find module '@babel/runtime/helpers/interopRequireDefault'，
+  // 这里显式把 @babel/runtime 作为闭包根注入，确保 ARMS 主进程埋点链路在生产包内可解析。
+  "@babel/runtime",
+  // Bugfix: @zcode/services 的代理连通性探测会动态 require("undici") 取 ProxyAgent。
   // tsup 虽然把 services 代码并进了主/host 产物，但不会把这个运行时 require 的包内联进去，
   // electron-builder 产物又可能漏掉 hoisted 的 undici，最终 mac 安装包启动即报 Cannot find module "undici"。
   // 这里把 undici 和其他兜底依赖一样强制注入 app.asar，避免用户在已安装应用里主进程直接崩溃。
@@ -128,6 +131,8 @@ const REQUIRED_ASAR_RUNTIME_MODULES = [
   // 这与 yauzl 漏 pend 是同一类隐患——校验要求的模块必须有人负责补齐。node-forge 无子依赖，
   // 已在产物里时 afterPack 扫描会跳过它，不改变现有打包结果。
   "node-forge",
+  // Main 静态依赖 PKIjs；收集其完整闭包并校验产物，避免 pnpm 去重后漏包。
+  "pkijs",
   // 2.7.0 起 services 新增反馈日志压缩链路并引入 yazl；2.6.0 没有这条启动期依赖，
   // pnpm hoisted 布局下 yazl 可能进了 app.asar，但子依赖 buffer-crc32 没有稳定随包进入产物；
   // 这里显式以 yazl 作为闭包根注入，让递归依赖收集把 ZIP 打包链路所需依赖一起补齐。
@@ -138,12 +143,18 @@ const REQUIRED_ASAR_RUNTIME_MODULES = [
   // 要到 bundle 校验阶段才报「缺少运行时依赖 pend」。这里以 yauzl 作为闭包根注入，
   // 与 bundle.mjs 的校验名单保持一致，让递归依赖收集把 pend 一起补进产物。
   "yauzl",
+  // Bugfix: 飞书 SDK 被 desktop main/host 外置后，安装包运行时必须能从 app.asar 解析到它。
+  // 这里显式注入 scoped 包，避免开发态正常、生产包启动时才报 Cannot find module。
+  "@larksuiteoapi/node-sdk",
   // 生产态里 ssh2 虽然被打进 app.asar，但它的依赖链偶发被 electron-builder 漏拷。
   // 已出现线上报错 Cannot find module 'asn1'（Require stack: ssh2 keyParser）。
   // 这里把 ssh2 关键依赖链一起注入，避免远程 SSH 连接在已安装应用里因缺包直接失败。
   "asn1",
   "bcrypt-pbkdf",
   "tweetnacl",
+  // 26.17.0 的 pnpm collector 仍可能漏掉 deduped 传递依赖。以 updater 入口展开完整闭包，
+  // 与现有 afterPack 补齐和最终产物校验共同阻止安装后才暴露 MODULE_NOT_FOUND。
+  "electron-updater",
   // electron-updater → builder-util-runtime → debug 运行时 require("ms")。
   // pnpm hoisted 布局下 electron-builder 偶发漏拷这个叶子依赖；3.4.0(ci/cua-v0.3.17 打的)
   // 已在线上触发安装包启动即报 Cannot find module 'ms'（Require stack: debug/src/common.js），
@@ -164,7 +175,7 @@ const PACMAN_RUNTIME_DEPENDENCIES = [
   "xdg-utils",
 ];
 
-const WINDOWS_INSTALL_MANIFEST_NAME = ".reactor-install-manifest";
+const WINDOWS_INSTALL_MANIFEST_NAME = ".zcode-install-manifest";
 
 async function writeWindowsInstallManifest(context) {
   if (context.electronPlatformName !== "win32") return;
@@ -202,6 +213,37 @@ function resolveElectronDownloadMirror(env = process.env) {
   return DEFAULT_ELECTRON_MIRROR;
 }
 
+function assertPackagedMacElectronLocales(context) {
+  if (context.electronPlatformName !== "darwin") return;
+  // .app 名以 electron-builder 的 productFilename 为准，和同文件 asar 路径同源。
+  const resourcesDir = resolveMacElectronFrameworkResourcesDir(
+    join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`),
+  );
+  const missing = findMissingMacElectronLocales(resourcesDir);
+  if (missing.length > 0) {
+    // 语言包名对不上时 electron-builder 会静默删光所有 lproj，3.16.2 就因此丢了视频菜单文案。
+    throw new Error(
+      `Packaged ZCode is missing Electron locales: ${missing.map((l) => `${l}.lproj`).join(", ")} in ${resourcesDir}`,
+    );
+  }
+}
+
+function assertPackagedCuaHelper(context) {
+  if (targetPlatform.os !== "darwin" || !shouldPackageComputerUseHelper) return;
+  const appPath = join(
+    context.appOutDir,
+    `${desktopProductIdentity.productName}.app`,
+    "Contents",
+    "Resources",
+    "cua-helper",
+    HELPER_APP_NAME,
+  );
+  if (!existsSync(appPath)) {
+    throw new Error(`Packaged ZCode is missing bundled Computer Use Helper: ${appPath}`);
+  }
+}
+const shouldEnableWindowsVsign =
+  process.platform === "win32" && process.env.ZCODE_ENABLE_WINDOWS_SIGN === "1";
 const commandStdoutMaxBuffer = 64 * 1024 * 1024;
 // 产物后缀只标记后端环境（_TEST）；身份靠 productName 区分，生产后端的 Preview 包没有后缀。
 const desktopArtifactEnvSuffix = resolveDesktopArtifactSuffix(process.env);
@@ -231,6 +273,25 @@ const PACKAGING_PRUNE_PATTERNS = [
   "!**/CONTRIBUTING*",
   "!**/CODE_OF_CONDUCT*",
   "!**/SECURITY*",
+  // 26.17 的 pnpm 收集器按 lockfile 全平台图收包，会把纯构建期依赖带进 app.asar
+  // （2026-10-26 与 26.8.1 产物 asar 逐包对账 +24MB 未压缩）。以下均已核实零运行时引用：
+  // - shadcn 是 @zcode/ui 误声明在生产位的组件脚手架 CLI，连带 @ts-morph/ts-morph、
+  //   @babel 生态与 caniuse-lite/browserslist/baseline-browser-mapping 数据包；
+  // - node-gyp/node-addon-api 是 CUA 原生模块构建工具链；
+  // - cpu-features/nan 是 ssh2 的可选原生加速，缺失时 ssh2 自动降级。
+  // @babel/runtime 可能被在包库运行时 require，紧随整目录排除后重新包含。
+  "!node_modules/shadcn/**",
+  "!node_modules/@ts-morph/**",
+  "!node_modules/ts-morph/**",
+  "!node_modules/@babel/**",
+  "node_modules/@babel/runtime/**",
+  "!node_modules/caniuse-lite/**",
+  "!node_modules/browserslist/**",
+  "!node_modules/baseline-browser-mapping/**",
+  "!node_modules/node-gyp/**",
+  "!node_modules/node-addon-api/**",
+  "!node_modules/cpu-features/**",
+  "!node_modules/nan/**",
 ];
 
 function buildDesktopArtifactName(platformName, extension = "${ext}") {
@@ -423,6 +484,11 @@ async function stripPackagedSourcemapReferences(context) {
         targetPlatformKey: targetPlatform.key,
         runAsarCommand,
       }),
+    pruneStagingDirectory:
+      targetPlatform.key === "win32-x64" &&
+      process.env.ZCODE_PRUNE_PACKAGED_PLATFORM_DEPENDENCIES === "1"
+        ? (stagingDir) => pruneIncompatiblePlatformPackages(stagingDir, targetPlatform)
+        : null,
   });
 }
 
@@ -448,6 +514,92 @@ function assertPackagedNodePtyPrebuild(context) {
     throw new Error(`node-pty 预编译产物缺失: ${targetBinaryPath}`);
 }
 
+function assertPackagedCuaSharp(context) {
+  if (!isSharpRequiredByComputerUse({ desktopPackageRoot })) return;
+  const problems = [
+    [
+      "packages/browser-use-plugin",
+      verifyStagedSharp({
+        resourcesDir: resolvePackagedResourcesDir(context),
+        targetPlatform,
+        pluginRelativePath: "packages/browser-use-plugin",
+      }),
+    ],
+    [
+      "packages/zcode-cua-plugin",
+      verifyStagedSharp({
+        resourcesDir: resolvePackagedResourcesDir(context),
+        targetPlatform,
+        pluginRelativePath: "packages/zcode-cua-plugin",
+      }),
+    ],
+  ].flatMap(([pluginPath, pluginProblems]) =>
+    pluginProblems.map((problem) => `${pluginPath}: ${problem}`),
+  );
+  if (problems.length > 0) {
+    throw new Error(
+      `node_repl sharp runtime is incomplete in the packaged app:\n- ${problems.join("\n- ")}`,
+    );
+  }
+}
+
+function assertPackagedCuaKoffi(context) {
+  const problems = verifyStagedKoffi({
+    resourcesDir: resolvePackagedResourcesDir(context),
+    targetPlatform,
+  });
+  if (problems.length > 0) {
+    throw new Error(
+      `CUA plugin koffi runtime is incomplete in the packaged app:\n- ${problems.join("\n- ")}`,
+    );
+  }
+}
+
+function assertSignedWindowsHelper(context, relativeHelperPath) {
+  if (context.electronPlatformName !== "win32" || !shouldEnableWindowsVsign) return;
+  const helperPath = resolve(context.appOutDir, "resources", relativeHelperPath);
+  const appExecutablePath = resolve(
+    context.appOutDir,
+    `${context.packager.appInfo.productFilename}.exe`,
+  );
+  const script = [
+    "$helper=Microsoft.PowerShell.Security\\Get-AuthenticodeSignature -LiteralPath $zcodeArg0;",
+    "$app=Microsoft.PowerShell.Security\\Get-AuthenticodeSignature -LiteralPath $zcodeArg1;",
+    "if($helper.Status -ne 'Valid' -or $app.Status -ne 'Valid'){",
+    "[Console]::Error.WriteLine(('Authenticode status invalid: helper={0} ({1}); app={2} ({3})' -f $helper.Status,$helper.StatusMessage,$app.Status,$app.StatusMessage));",
+    "exit 23};",
+    "if($null -eq $helper.SignerCertificate -or $null -eq $app.SignerCertificate){",
+    "[Console]::Error.WriteLine('Authenticode signer certificate missing');exit 24};",
+    "if($helper.SignerCertificate.Thumbprint -ne $app.SignerCertificate.Thumbprint){",
+    "[Console]::Error.WriteLine(('Authenticode signer mismatch: helper={0}; app={1}' -f $helper.SignerCertificate.Thumbprint,$app.SignerCertificate.Thumbprint));",
+    "exit 25};",
+  ].join("");
+  // Bugfix 原因：extraResources 下的 EXE 是否进入 electron-builder 默认签名遍历会随版本变化；
+  // 同时 Windows PowerShell 的 `-Command` 不会把尾随路径放进 `$args`，旧校验因此固定误报 exit 23。
+  // 发布态改用 EncodedCommand，并从 PSHOME 显式加载系统 Security 模块，避免 pwsh 继承的
+  // PSModulePath 让 Windows PowerShell 5.1 错误加载不兼容模块。
+  runCommand(
+    "powershell.exe",
+    createWindowsPowerShellSecurityArgs(script, [helperPath, appExecutablePath]),
+  );
+}
+
+function signWindowsHelper(context, relativeHelperPath) {
+  if (context.electronPlatformName !== "win32" || !shouldEnableWindowsVsign) return;
+  const helperPath = resolve(context.appOutDir, "resources", relativeHelperPath);
+  runCommand("powershell.exe", [
+    "-NoLogo",
+    "-NoProfile",
+    "-NonInteractive",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    resolve(workspaceRoot, "scripts/sign-windows.ps1"),
+    "-FilePath",
+    helperPath,
+  ]);
+}
+
 /** @type {import("electron-builder").Configuration} */
 export default {
   appId: desktopProductIdentity.appId,
@@ -456,21 +608,24 @@ export default {
   extraMetadata: {
     version: buildMetadata.appVersion,
     zcodeProductFlavor: desktopProductIdentity.flavor,
-    // TODO(reactor): 替换为对外发布用的真实网址与联系邮箱（deb/rpm 打包要求 email 合法）。
-    homepage: "https://example.com",
+    homepage: "https://zcode.z.ai",
     author: {
-      name: "China Nuclear Power Engineering Co., Ltd.",
-      email: "dev@example.com",
+      name: "ZCode",
+      email: "dev@zcode.z.ai",
     },
   },
   // macOS 签名阶段会对 Electron Framework 下每个语言包逐个 codesign。
   // 默认全量语言会产生大量 locale.pak 签名调用，显著拉长打包时长。
   // 这里仅保留当前产品必需语言，减少签名文件数并缩短 CI 总耗时。
+  // builder 按语言包文件名精确匹配：Windows/Linux 是 locales/en-US.pak，macOS 见 mac.electronLanguages。
   electronLanguages: ["en-US", "zh-CN"],
-  // pnpm workspace + semver range（如 ^41.0.3）下，electron-builder
-  // 有时无法从依赖树里稳定推导出 Electron 版本，导致 bundle 直接中断。
-  // 显式写死当前桌面端使用的 Electron 版本，避免打包阶段再做不可靠的猜测。
-  electronVersion: "41.0.3",
+  // builder 的依赖树推导不稳定；显式读取 package.json，避免开发与安装包版本分叉。
+  electronVersion: desktopElectronVersion,
+  // 旧 Windows 协议注册可能在应用 JS 重写注册表前注入 --inspect-brk。
+  // 在签名前关闭原生 Inspector 参数，覆盖升级后首次启动；保留 Agent 所需的 RunAsNode。
+  ...(targetPlatform.os === "win32"
+    ? { electronFuses: { enableNodeCliInspectArguments: false } }
+    : {}),
   electronDownload: {
     // ELECTRON_MIRROR 是 @electron/get 的全局环境变量，会覆盖 dmg-builder 等
     // generic artifact 自己传入的 mirrorOptions，导致 builder 辅助包被错误拼到 Electron runtime 镜像目录。
@@ -496,6 +651,7 @@ export default {
     "!node_modules/react-dom/**",
   ],
   asarUnpack: [
+    "node_modules/@napi-rs/keyring-*/**/*.node",
     // node-pty 的 target prebuild 还包含 spawn-helper / winpty-agent.exe 等辅助可执行文件，
     // 整个目标目录必须 unpack；其他平台目录已由 files 规则裁剪。
     `node_modules/node-pty/prebuilds/${targetPlatform.key}/**`,
@@ -517,7 +673,6 @@ export default {
     const patchResult = await runTimedAsync("beforePack:patchNsisInstallSection", () =>
       patchNsisInstallSectionFile(nsisInstallSectionPath),
     );
-    nsisInstallSectionPatched = true;
     nsisInstallSectionOriginalSource = patchResult.originalSource;
     if (patchResult.changed) {
       // electron-builder 在当前进程内随后才会编译 NSIS；等整个构建进程退出后恢复 node_modules
@@ -529,6 +684,17 @@ export default {
         });
       });
     }
+    const installUtilPath = resolve(dirname(nsisInstallSectionPath), "include", "installUtil.nsh");
+    const utilPatch = await patchNsisInstallUtilFile(installUtilPath);
+    if (utilPatch.changed) {
+      process.once("exit", () => {
+        restoreNsisInstallSectionFileSync({
+          filePath: installUtilPath,
+          originalSource: utilPatch.originalSource,
+        });
+      });
+    }
+    nsisInstallSectionPatched = true;
   },
   afterExtract: async (context) => {
     // 修复：macOS 重命名阶段会删除归档顶层许可证，必须在 afterExtract 保留目标平台原文。
@@ -537,7 +703,12 @@ export default {
       context.electronPlatformName === "darwin"
         ? resolve(context.appOutDir, framework.distMacOsAppName, "Contents", "Resources")
         : resolve(context.appOutDir, "resources");
-    await stageElectronNotices(context.appOutDir, resources, framework.version);
+    // 26.17.0 在 afterExtract 前已将 macOS 的 LICENSE/Chromium 声明移动到 app Resources；
+    // Windows/Linux 仍把许可文件保留在 appOutDir 根目录。源目录必须跟随 Builder 的平台布局，
+    // 否则 macOS 会继续读取已经被移动的 LICENSE.electron.txt 并在签名前失败。
+    const extractedLicenseRoot =
+      context.electronPlatformName === "darwin" ? resources : context.appOutDir;
+    await stageElectronNotices(extractedLicenseRoot, resources, framework.version);
   },
   afterPack: async (context) => {
     const actualWindowsTarget =
@@ -560,25 +731,71 @@ export default {
     runTimedSync("afterPack:assertPackagedNodePtyPrebuild", () =>
       assertPackagedNodePtyPrebuild(context),
     );
-    if (actualWindowsTarget) {
+    runTimedSync("afterPack:assertPackagedCuaSharp", () => assertPackagedCuaSharp(context));
+    runTimedSync("afterPack:assertPackagedCuaKoffi", () => assertPackagedCuaKoffi(context));
+    runTimedSync("afterPack:assertPackagedCuaHelper", () => assertPackagedCuaHelper(context));
+    runTimedSync("afterPack:assertPackagedMacElectronLocales", () =>
+      assertPackagedMacElectronLocales(context),
+    );
+    if (actualWindowsTarget && shouldPackageComputerUseHelper) {
+      await runTimedAsync("afterPack:finalizePackagedWindowsCuaHelper", () =>
+        finalizePackagedWindowsCuaHelper({
+          resourcesDir: resolvePackagedResourcesDir(context),
+          targetPlatform: actualWindowsTarget,
+          electronVersion: desktopElectronVersion,
+        }),
+      );
       await runTimedAsync("afterPack:writeWindowsInstallManifest", () =>
         writeWindowsInstallManifest(context),
       );
     }
+    if (context.electronPlatformName === "win32") {
+      signWindowsHelper(context, "tools/runtime-host/zcode-runtime-host.exe");
+    }
+    if (shouldPackageWindowsBrowserImportHelper) {
+      runTimedSync("afterPack:signWindowsBrowserImportHelper", () =>
+        signWindowsHelper(context, `browser-import/${HELPER_FILENAME}`),
+      );
+    }
   },
-  // 文件关联：把常用文本/标记文档关联到本应用，支持"用 Reactor 打开文件"。
-  // 只关联文本类，避免误双击可执行/二进制；文件打开后映射为"打开其所在目录"（见 main）。
-  fileAssociations: [
-    {
-      ext: ["txt", "md", "markdown", "json", "log"],
-      name: "Text document",
-      role: "Editor",
-    },
-  ],
+  afterSign: async (context) => {
+    if (context.electronPlatformName === "win32") {
+      assertSignedWindowsHelper(context, "tools/runtime-host/zcode-runtime-host.exe");
+    }
+    if (shouldPackageWindowsBrowserImportHelper) {
+      runTimedSync("afterSign:assertSignedWindowsBrowserImportHelper", () =>
+        assertSignedWindowsHelper(context, `browser-import/${HELPER_FILENAME}`),
+      );
+    }
+    if (context.electronPlatformName === "win32" && shouldEnableWindowsVsign) {
+      await runTimedAsync("afterSign:writeWindowsUpdatePublisher", () =>
+        writeWindowsUpdatePublisher({
+          appOutDir: context.appOutDir,
+          executableName: context.packager.appInfo.productFilename,
+        }),
+      );
+    }
+  },
   extraResources: [
+    ...(targetPlatform.os === "win32"
+      ? [
+          {
+            from: `bundled-tools/${targetPlatform.key}/runtime-host/zcode-runtime-host.exe`,
+            to: "tools/runtime-host/zcode-runtime-host.exe",
+          },
+        ]
+      : []),
     { from: resolve(workspaceRoot, noticesFileName), to: noticesFileName },
     ...(targetPlatform.os === "darwin"
       ? [
+          ...(shouldPackageComputerUseHelper
+            ? [
+                {
+                  from: bundledCuaHelperSource,
+                  to: `cua-helper/${HELPER_APP_NAME}`,
+                },
+              ]
+            : []),
           {
             // CUA 权限浮窗的吸附数据源（CGWindowListCopyWindowInfo，不需要任何 TCC 权限）。
             // 主进程按 process.resourcesPath 解析；缺失时 watcher fail-open，浮窗仍可用
@@ -629,6 +846,22 @@ export default {
           },
         ]
       : []),
+    ...(targetPlatform.os === "win32" && shouldPackageComputerUseHelper
+      ? [
+          {
+            // 根因：electron-builder 会跳过 from 根目录下的 node_modules；主树与依赖树必须分开映射，
+            // 否则安装包有 manifest/entry，却会在 Helper 启动时缺 express/Sharp。
+            from: `bundled-tools/${targetPlatform.key}/cua-helper`,
+            to: "tools/cua-helper",
+            filter: ["**/*", "!node_modules{,/**/*}"],
+          },
+          {
+            from: `bundled-tools/${targetPlatform.key}/cua-helper/node_modules`,
+            to: "tools/cua-helper/node_modules",
+            filter: ["**/*", "!**/*.map"],
+          },
+        ]
+      : []),
     {
       // agent 运行时资产，打包到 resources/glm。
       // 桌面端内置的是 agent 的 JS bundle（glm/zcode.cjs，由 prepare:agent-bundle 生成），
@@ -651,58 +884,37 @@ export default {
       to: `tools/${toolId}`,
       filter: ["**/*"],
     })),
-    {
-      // file-tools：anydoc + canvas（parse_document / pdf-research）。
-      // OCR 在 office-engines，DWG 在 tools/dwg-tools（docs/未完成-file-tools拆三插件方案.md）。
-      from: `bundled-tools/${targetPlatform.key}/file-tools`,
-      to: "tools/file-tools",
-      filter: ["**/*"],
-    },
-    {
-      // dwg-tools：ACadSharp sidecar（自包含 .NET）。
-      from: `bundled-tools/${targetPlatform.key}/dwg-tools`,
-      to: "tools/dwg-tools",
-      filter: ["**/*"],
-    },
-    // 办公四件套 skill 的本地引擎树（便携 Python + wheels / CJK 字体；LibreOffice 按内网策略不打包）。
-    // 资产由 scripts/prepare-office-engines-assets.mjs 生成（版本 + sha256 固定，
-    // bundled-tools 不进 git，CI/发布流水线负责准备）。electron-builder 对不存在的
-    // from 目录会直接报错，因此未准备的平台/机器整体跳过该项：安装器与运行时都按
-    // 「无内置引擎」降级（skill env_check 走 on-demand 报告），不影响其他能力。
-    // 准入判断必须与 from 同基准：from 相对 desktop 包根解析，暂存脚本也写在
-    // packages/desktop/bundled-tools/<platform>/office-engines；曾误用 workspaceRoot
-    // （仓库根）导致该项永远被跳过，安装包从来没有过内置 Python/OCR。
-    ...(existsSync(
-      resolve(desktopPackageRoot, "bundled-tools", targetPlatform.key, "office-engines"),
-    )
-      ? [
-          {
-            from: `bundled-tools/${targetPlatform.key}/office-engines`,
-            to: "tools/office-engines",
-            filter: ["**/*"],
-          },
-        ]
-      : []),
   ],
+  // pnpm 依赖图不完整时禁止仅记录警告并继续生成安装包；afterPack 只能补齐可解析依赖，
+  // collector 已确认缺失的生产依赖必须在打包阶段停止。
+  allowMissingDependencies: false,
   // postinstall 会先优先复用 node-pty 自带的 Windows 预编译产物，其他平台再按需 electron-rebuild。
   // 打包阶段统一复用安装时准备好的原生文件，避免 electron-builder 再触发一轮不受控的本地编译。
   npmRebuild: false,
   // OAuth deep link 协议注册（macOS 打包后需要 Info.plist 中声明 CFBundleURLTypes）
   protocols: [
     {
-      // 双 scheme 注册：OAuth 回调地址固定在 zcode://oauth/callback（上游服务端已注册该
-      // redirect_uri，单独改成 reactor:// 会直接断掉登录），reactor:// 为自有协议。
-      // 协议描述跟随安装包身份；两个应用争抢同一 scheme 时，最后注册者成为默认 handler。
+      // 协议处理器的展示名之前使用小写 scheme，打包产物里的协议描述无法体现产品名。
+      // 展示名跟随安装包身份；scheme 仍保持 zcode，因此两个应用中最后注册者会成为默认 handler。
       name: desktopProductIdentity.productName,
-      schemes: ["zcode", "reactor"],
+      schemes: ["zcode"],
     },
   ],
   mac: {
+    minimumSystemVersion: "13.0.0",
     target: ["dmg", "zip"],
     category: "public.app-category.developer-tools",
     artifactName: buildDesktopArtifactName("mac"),
+    // macOS 语言包是 en.lproj / zh_CN.lproj，沿用顶层 "en-US" 会一个都匹配不上被全部删掉，
+    // Chromium 自带文案随之丢失（视频控件菜单只剩图标、播放速度子菜单空白）。
+    electronLanguages: MAC_ELECTRON_LANGUAGES,
     extendInfo: {
       NSAppleEventsUsageDescription: `${desktopProductIdentity.productName} needs Apple Events access to coordinate local automation workflows with user-approved desktop apps.`,
+      // 缺失该 key 时 macOS 会静默拒绝 CoreBluetooth 枚举，内置浏览器 Web Bluetooth
+      // 的设备选择器列表恒为空（实测 Chrome 有蓝牙隐私权限则正常）。
+      NSBluetoothAlwaysUsageDescription: `${desktopProductIdentity.productName} needs Bluetooth access to list nearby devices when a website you open in the embedded browser requests one.`,
+      // 语音输入（docs/chat/composer-voice-input.md）：缺失该 key 时 askForMediaAccess 直接失败。
+      NSMicrophoneUsageDescription: `${desktopProductIdentity.productName} needs microphone access to turn your speech into text when you use voice input.`,
     },
     // 预签名脚本走的是原生 codesign，要求完整的 "Developer ID Application: ..." 身份串；
     // 但 electron-builder 的 mac.identity 在 26.x 下会拒绝带此前缀的名字。
@@ -726,6 +938,7 @@ export default {
     // CUA Helper 在独立 job 中已完成 Developer ID 签名和 notarization staple；
     // electron-builder 若再次签名嵌套 Helper 会改变 CDHash，使最终用户包中的 staple 失效。
     signIgnore: [
+      "[/\\\\]Contents[/\\\\]Resources[/\\\\]cua-helper([/\\\\]|$)",
       "[/\\\\]Contents[/\\\\]Resources[/\\\\]glm([/\\\\]|$)",
       "[/\\\\]Contents[/\\\\]Resources[/\\\\]tools([/\\\\]|$)",
     ],
@@ -733,6 +946,19 @@ export default {
   win: {
     target: ["nsis"],
     artifactName: buildDesktopArtifactName("win"),
+    verifyUpdateCodeSignature: true,
+    signExts: [".node", ".dll"],
+    // Bugfix: Windows CI 之前完全依赖 electron-builder 内置 signtool.exe，
+    // 一旦 runner 的证书链路要求改走 vsigntool，打包阶段就会在内置签名环节卡死。
+    // 这里通过自定义 sign hook 把所有 Windows 可执行文件统一切到仓库内的 vsigntool 封装，
+    // 既保留 electron-builder 的签名时机，又和 CI 机器上的签名基础设施保持一致。
+    ...(shouldEnableWindowsVsign
+      ? {
+          signtoolOptions: {
+            sign: "./scripts/sign-windows-hook.cjs",
+          },
+        }
+      : {}),
   },
   linux: {
     target: ["AppImage", "deb", "rpm", "pacman"],
@@ -743,8 +969,7 @@ export default {
     // 与 /usr/share/icons/hicolor/*/apps/zcode.png 保持一致。
     executableName: desktopProductIdentity.linuxExecutableName,
     category: "Development",
-    // TODO(reactor): 同上，随对外发布替换。
-    maintainer: "China Nuclear Power Engineering Co., Ltd. <dev@example.com>",
+    maintainer: "ZCode <dev@zcode.z.ai>",
   },
   deb: {
     // 生产版与 Preview 必须是两个 dpkg package；只改可执行名仍会让安装器把另一版本当成升级替换。
@@ -781,9 +1006,11 @@ export default {
     // 安装盘图标统一使用安装专用素材，避免复用应用图标导致安装识别度不足。
     icon: "build/icon_installer.icns",
     contents: [
-      // 实验性调整：为隐藏资源文件显式指定图标坐标，尽量把它们移到角落区域。
-      { x: 640, y: 56, type: "file", path: ".background.tiff" },
-      { x: 640, y: 56, type: "file", path: ".VolumeIcon.icns" },
+      // dmg-builder@1.2.5 的 dmgbuild 会对每个 type:"file" 条目执行 ditto <path>，
+      // path 被当作真实源文件解析。.background.tiff / .VolumeIcon.icns 是 dmgbuild
+      // 在镜像内自行生成的隐藏文件，不是源文件；把它们列进 contents 在旧 dmgbuild
+      // 上被容忍，在新 dmgbuild 上直接 ditto 报 "Cannot get the real path"（2026-10-23
+      // CI x64 DMG 实况）。隐藏文件坐标交给 dmgbuild 默认摆放，不再显式列举。
       { x: 130, y: 220 },
       { x: 410, y: 220, type: "link", path: "/Applications" },
     ],

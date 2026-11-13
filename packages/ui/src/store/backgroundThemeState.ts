@@ -91,11 +91,13 @@ export function normalizeBackgroundThemeBroadcast(
  * 统一读取，读完后通过 `setBackgroundImage` 回填；这里只负责"用当前 URL 应用一次"。
  */
 export function createBackgroundThemeStoreActions(options: {
+  /** 装配期 `get()` 可能返回残缺状态，故所有字段可选、整体可 undefined。 */
   read: () => {
-    backgroundTheme: BackgroundThemeSettings;
-    backgroundImage: BackgroundImageRuntime;
+    backgroundTheme?: BackgroundThemeSettings;
+    backgroundImage?: BackgroundImageRuntime;
     accentColor?: AccentColorSettings;
-  };
+    refreshWallpaperPalette?: () => void;
+  } | undefined;
   write: (patch: {
     backgroundTheme?: BackgroundThemeSettings;
     backgroundImage?: BackgroundImageRuntime;
@@ -114,17 +116,18 @@ export function createBackgroundThemeStoreActions(options: {
     backgroundTheme: initial,
     setBackgroundTheme: (patch) => {
       const current = options.read();
+      // 装配期可能读不到残缺状态：此时用本切片自己的初始值起算。
       const next = resolveBackgroundThemeUpdate(
-        current.backgroundTheme,
+        current?.backgroundTheme ?? initial,
         patch,
-        current.backgroundImage.url,
-        current.accentColor?.presetId ?? "default",
+        (current?.backgroundImage ?? IDLE_BACKGROUND_IMAGE).url,
+        current?.accentColor?.presetId ?? initialAccentPresetId,
       );
       options.write({ backgroundTheme: next });
     },
     backgroundImage: IDLE_BACKGROUND_IMAGE,
     setBackgroundImage: (patch) => {
-      const next = { ...options.read().backgroundImage, ...patch };
+      const next = { ...(options.read()?.backgroundImage ?? IDLE_BACKGROUND_IMAGE), ...patch };
       if (patch.status === "error" && patch.error) {
         logger.warn("[BackgroundTheme] 自定义背景图片不可用", { error: patch.error });
       }

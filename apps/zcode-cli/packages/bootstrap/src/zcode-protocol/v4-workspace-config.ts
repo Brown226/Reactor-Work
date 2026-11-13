@@ -8,7 +8,7 @@ import { listProtocolSlashCommands } from "./slash-commands.js";
 import type { ZCodeProtocolAgentServerContext } from "./server-types.js";
 
 /** Session settings 只投影非模型的 workspace mode 与 slash commands。 */
-function toV4WorkspaceConfigState(
+export function toV4WorkspaceConfigState(
   settings: ZCodeSessionSettingsState,
   slashCommands: readonly ZCodeSlashCommand[],
 ): WorkspaceConfigState {
@@ -53,6 +53,10 @@ export async function buildLiveWorkspaceConfigStateV4(
     dynamicWorkflowEnabled: context.appRuntimePreferences.dynamicWorkflowEnabled,
     env: context.deps.env,
     logger: context.logger,
+    pluginPreparation: context.deps?.pluginPreparation,
+    pluginDiscovery: context.deps?.pluginDiscovery,
+    workspaceIdentity: record.workspace.workspaceIdentity,
+    remoteSessionId: record.workspace.remoteSessionId,
     workingDirectory: record.workspace.workspacePath,
   });
   return toV4WorkspaceConfigState(settings, slashCommands);

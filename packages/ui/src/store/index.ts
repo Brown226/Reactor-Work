@@ -25,16 +25,6 @@ import {
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import { readSafeLocalStorage, writeSafeLocalStorage } from "@/lib/browserEnvironment.js";
 import {
-  createBackgroundThemeStoreActions,
-  normalizeBackgroundThemeBroadcast,
-  type BackgroundThemeStoreState,
-} from "@/store/backgroundThemeState.js";
-import {
-  createAccentColorStoreActions,
-  type AccentColorStoreState,
-} from "@/store/accentColorState.js";
-import { normalizeAccentColorSettings } from "@/lib/accentColor.js";
-import {
   applyUiFontSizePx,
   loadUiFontSizePx,
   normalizeUiFontSizePx,
@@ -57,6 +47,15 @@ import {
   type InterfaceMode,
 } from "@/lib/interfaceMode.js";
 import { logger } from "@/logger.js";
+import {
+  createBackgroundThemeStoreActions,
+  type BackgroundImageRuntime,
+} from "@/store/backgroundThemeState.js";
+import {
+  createAccentColorStoreActions,
+  type AccentColorStoreState,
+} from "@/store/accentColorState.js";
+import type { BackgroundThemeSettings } from "@/lib/backgroundTheme.js";
 
 export type LoginEntryPurpose = "app-login";
 
@@ -81,6 +80,27 @@ export interface LoginEntryAttempt {
 
 const CODE_PREVIEW_SETTINGS_KEY = "zcode-code-preview-settings";
 const PERFORMANCE_MODE_STORAGE_KEY = "zcode-performance-mode";
+const HIDE_PROJECT_DEVICE_NAMES_STORAGE_KEY = "zcode-hide-project-device-names";
+export const FILE_MANAGER_NAVIGATION_PREFERENCES_STORAGE_KEY =
+  "zcode-file-manager-navigation-preferences";
+
+function loadFileManagerNavigationPreferences(): Record<string, boolean> {
+  try {
+    const raw = readSafeLocalStorage(FILE_MANAGER_NAVIGATION_PREFERENCES_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+
+    return Object.fromEntries(
+      Object.entries(parsed).filter(
+        (entry): entry is [string, boolean] =>
+          entry[0].trim().length > 0 && typeof entry[1] === "boolean",
+      ),
+    );
+  } catch {
+    return {};
+  }
+}
 
 function loadCodePreviewSettings(): CodePreviewSettings {
   try {
@@ -111,7 +131,7 @@ function loadPerformanceMode(): boolean {
 // State 定义
 // ============================================================================
 
-export interface ZCodeState extends BackgroundThemeStoreState, AccentColorStoreState {
+export interface ZCodeState {
   /** 展示详情偏好，不改变 Agent 权限或执行能力。 */
   interfaceMode: InterfaceMode;
   setInterfaceMode: (mode: InterfaceMode) => void;
@@ -136,6 +156,11 @@ export interface ZCodeState extends BackgroundThemeStoreState, AccentColorStoreS
   /** 代码预览设置 */
   codePreviewSettings: CodePreviewSettings;
   setCodePreviewSettings: (patch: Partial<CodePreviewSettings>) => void;
+
+  /** 各 workspace 的文件导航显隐偏好；缺席时默认展开。 */
+  fileManagerNavigationOpenByWorkspace: Record<string, boolean>;
+  setFileManagerNavigationOpen: (workspaceKey: string, open: boolean) => void;
+
   /** UI 根 rem 字号（px） */
   uiFontSizePx: number;
   setUiFontSizePx: (fontSizePx: number) => void;
@@ -143,6 +168,10 @@ export interface ZCodeState extends BackgroundThemeStoreState, AccentColorStoreS
   /** 是否启用性能模式 */
   performanceMode: boolean;
   setPerformanceMode: (enabled: boolean) => void;
+
+  /** 仅桌面项目行消费；设备身份和其他入口的显示不受影响。 */
+  hideProjectDeviceNames: boolean;
+  setHideProjectDeviceNames: (hidden: boolean) => void;
 
   /** 是否启用任务通知（桌面通知；提示音由子开关控制） */
   notificationEnabled: boolean;
@@ -218,6 +247,28 @@ export interface ZCodeState extends BackgroundThemeStoreState, AccentColorStoreS
   releaseCodingPlanQuotaResetAutoPlay: (
     reservation: CodingPlanQuotaResetAutoPlayReservation,
   ) => Promise<void>;
+
+  /** 手动请求打开 onboarding 弹窗 */
+  newUserOnboardingOpen: boolean;
+  setNewUserOnboardingOpen: (open: boolean) => void;
+  /** 请求打开迁移向导；所有入口都直接进入第一步「会话」。 */
+  onboardingDialogRequested: boolean;
+  requestOnboardingDialog: () => void;
+  clearOnboardingDialogRequest: () => void;
+
+  // ===== [本地定制] 背景壁纸主题 =====
+  // 上游无此功能：工作区整窗背景图 + 模糊/覆盖色 + 预设壁纸切换。
+  // slice 实现在 store/backgroundThemeState.ts，由 createBackgroundThemeStoreActions 装配。
+  backgroundTheme: BackgroundThemeSettings;
+  setBackgroundTheme: (patch: Partial<BackgroundThemeSettings>) => void;
+  backgroundImage: BackgroundImageRuntime;
+  setBackgroundImage: (patch: Partial<BackgroundImageRuntime>) => void;
+  applyCurrentBackgroundTheme: (imageUrl: string | null) => void;
+  refreshWallpaperPalette: () => void;
+
+  // ===== [本地定制] 强调色档位（与壁纸配色联动）=====
+  accentColor: AccentColorStoreState["accentColor"];
+  setAccentColor: AccentColorStoreState["setAccentColor"];
 }
 
 // ============================================================================
@@ -229,8 +280,8 @@ const BROADCAST_FIELDS = new Set([
   "locale",
   "uiFontSizePx",
   "interfaceMode",
-  "backgroundTheme",
-  "accentColor",
+  "notificationEnabled",
+  "hideProjectDeviceNames",
 ]);
 
 type BroadcastField =
@@ -238,8 +289,10 @@ type BroadcastField =
   | "locale"
   | "uiFontSizePx"
   | "interfaceMode"
-  | "backgroundTheme"
-  | "accentColor";
+  | "hideProjectDeviceNames"
+  // 任务通知开关跨窗口同步：角标是应用级表面，A 窗口关通知而 B 窗口仍上报未读时，
+  // 主进程 max 聚合会让任务栏/托盘继续亮，设置与提醒状态错位。
+  | "notificationEnabled";
 
 /** 广播频道名前缀 */
 const STATE_CHANNEL_PREFIX = "state:";
@@ -266,6 +319,36 @@ export function createZCodeStore(
   let syncSystemThemeListener = (_theme: Theme) => {};
 
   const useStore = create<ZCodeState>()((set, get) => ({
+    // [本地定制] 背景壁纸主题切片（上游无此功能）
+    // [本地定制] 强调色切片（壁纸配色的让位判定依赖它，必须先于 backgroundTheme 装配）
+    // 装配期 `get()` 返回的可能是残缺状态（本切片还没并进去），全部走可选链，
+    // 否则 `get().accentColor` 会在 store 首次构造时抛 undefined 解引用并白屏。
+    ...createAccentColorStoreActions({
+      read: () => {
+        const state = get() as Partial<ZCodeState> | undefined;
+        return {
+          accentColor: state?.accentColor,
+          refreshWallpaperPalette: (
+            state as { refreshWallpaperPalette?: () => void } | undefined
+          )?.refreshWallpaperPalette?.bind(state),
+        };
+      },
+      write: (patch) => set(patch),
+    }),
+    ...createBackgroundThemeStoreActions({
+      read: () => {
+        const state = get() as Partial<ZCodeState> | undefined;
+        return {
+          backgroundTheme: state?.backgroundTheme,
+          backgroundImage: state?.backgroundImage,
+          accentColor: state?.accentColor,
+          refreshWallpaperPalette: (
+            state as { refreshWallpaperPalette?: () => void } | undefined
+          )?.refreshWallpaperPalette?.bind(state),
+        };
+      },
+      write: (patch) => set(patch),
+    }),
     interfaceMode: normalizeInterfaceMode(readSafeLocalStorage(INTERFACE_MODE_STORAGE_KEY)),
     availableInterfaceModes: null,
     setInterfaceMode: (mode) => {
@@ -305,9 +388,9 @@ export function createZCodeStore(
       }
       set({ availableInterfaceModes: available, interfaceMode: next });
     },
-    // 默认主题为浅色（zai-light）：产品面向内网办公与审查场景，浅色是预期首启观感。
+    // 默认主题统一收敛到 Zai dark，避免首次启动时 store 与其他主题入口表现不一致。
     // 仍然优先尊重 localStorage 中已保存的用户选择，不覆盖已有偏好。
-    theme: normalizeThemePreference((readSafeLocalStorage("zcode-theme") as Theme) || "zai-light"),
+    theme: normalizeThemePreference((readSafeLocalStorage("zcode-theme") as Theme) || "zai-dark"),
     setTheme: (theme: Theme) => {
       const normalizedTheme = normalizeThemePreference(theme);
       writeSafeLocalStorage("zcode-theme", normalizedTheme);
@@ -338,6 +421,23 @@ export function createZCodeStore(
         return { codePreviewSettings: next };
       }),
 
+    fileManagerNavigationOpenByWorkspace: loadFileManagerNavigationPreferences(),
+    setFileManagerNavigationOpen: (workspaceKey, open) => {
+      const normalizedWorkspaceKey = workspaceKey.trim();
+      if (!normalizedWorkspaceKey) return;
+      set((state) => {
+        const next = {
+          ...state.fileManagerNavigationOpenByWorkspace,
+          [normalizedWorkspaceKey]: open,
+        };
+        writeSafeLocalStorage(
+          FILE_MANAGER_NAVIGATION_PREFERENCES_STORAGE_KEY,
+          JSON.stringify(next),
+        );
+        return { fileManagerNavigationOpenByWorkspace: next };
+      });
+    },
+
     uiFontSizePx: loadUiFontSizePx(),
     setUiFontSizePx: (fontSizePx: number) => {
       const normalizedFontSizePx = normalizeUiFontSizePx(fontSizePx);
@@ -346,21 +446,16 @@ export function createZCodeStore(
       set({ uiFontSizePx: normalizedFontSizePx });
     },
 
-    ...createBackgroundThemeStoreActions({
-      // 取整份状态：切片只声明它需要的两个字段，其余字段不参与。
-      read: () => get(),
-      write: (patch) => set(patch),
-    }),
-
-    ...createAccentColorStoreActions({
-      read: () => get(),
-      write: (patch) => set(patch),
-    }),
-
     performanceMode: loadPerformanceMode(),
     setPerformanceMode: (enabled: boolean) => {
       writeSafeLocalStorage(PERFORMANCE_MODE_STORAGE_KEY, enabled ? "true" : "false");
       set({ performanceMode: enabled });
+    },
+
+    hideProjectDeviceNames: readSafeLocalStorage(HIDE_PROJECT_DEVICE_NAMES_STORAGE_KEY) === "true",
+    setHideProjectDeviceNames: (hidden) => {
+      writeSafeLocalStorage(HIDE_PROJECT_DEVICE_NAMES_STORAGE_KEY, String(hidden));
+      set({ hideProjectDeviceNames: hidden });
     },
 
     notificationEnabled: isTaskNotificationEnabled(),
@@ -453,6 +548,12 @@ export function createZCodeStore(
       readState: get,
       writeState: (updater) => set((state) => updater(state)),
     }),
+
+    newUserOnboardingOpen: false,
+    setNewUserOnboardingOpen: (open) => set({ newUserOnboardingOpen: open }),
+    onboardingDialogRequested: false,
+    requestOnboardingDialog: () => set({ onboardingDialogRequested: true }),
+    clearOnboardingDialogRequest: () => set({ onboardingDialogRequested: false }),
   }));
 
   syncSystemThemeListener = (theme: Theme) => {
@@ -535,17 +636,15 @@ export function createZCodeStore(
         state.setLocale(msg.payload);
       } else if (
         field === "interfaceMode" &&
-        (msg.payload === "office" || msg.payload === "coding" || msg.payload === "review")
+        (msg.payload === "office" || msg.payload === "coding")
       ) {
         state.setInterfaceMode(normalizeInterfaceMode(msg.payload));
       } else if (field === "uiFontSizePx" && typeof msg.payload === "number") {
         state.setUiFontSizePx(msg.payload);
-      } else if (field === "backgroundTheme") {
-        state.setBackgroundTheme(
-          normalizeBackgroundThemeBroadcast(state.backgroundTheme, msg.payload),
-        );
-      } else if (field === "accentColor") {
-        state.setAccentColor(normalizeAccentColorSettings(msg.payload, state.accentColor));
+      } else if (field === "notificationEnabled" && typeof msg.payload === "boolean") {
+        state.setNotificationEnabled(msg.payload);
+      } else if (field === "hideProjectDeviceNames" && typeof msg.payload === "boolean") {
+        state.setHideProjectDeviceNames(msg.payload);
       }
     } finally {
       applyingBroadcast = false;

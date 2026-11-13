@@ -4,10 +4,13 @@ import type {
   TurnHeaderRow,
   UserInputRow,
 } from "@zcode/shared/zcode-protocol-v4";
+// Bugfix：必须直接引用纯函数模块，不能走 `@/plugin-ui/index.js` 桶文件。本文件在分享只读
+// 时间线闭包里，桶文件会把 plugin-ui 全量组件 → V4ConversationContext → @zcode/services →
+// @zcode/provider 拖进 web-share 构建，导致 `@zcode/shared/mcp-apps` 等子路径无法解析、构建失败。
 import {
-  ENABLE_CUA_TOOL_CALL_GROUPING,
-  prepareCuaGroupFlowItems,
-} from "@/v4/conversationCuaGroups.js";
+  isPluginUiPinnedToolRow,
+  type PluginUiRowPinResolver,
+} from "@/plugin-ui/domain/pluginUiRowPolicy.js";
 import { buildConversationFlowItems } from "@/v4/conversationTurnFlowItems.js";
 import type { AssistantWorkRow, ConversationTurnFlowItem } from "@/v4/conversationTurnFlowItems.js";
 
@@ -79,11 +82,30 @@ function isAssistantWorkRow(row: ConversationRow): row is AssistantWorkRow {
   return row.kind !== "turnHeader" && row.kind !== "userInput";
 }
 
-function splitVisualWorkSegments(rows: readonly ConversationRow[]): DraftVisualWorkSegment[] {
+function isGuidedUserInputRow(row: ConversationRow | undefined): row is UserInputRow {
+  return row !== undefined && isUserInputRow(row) && row.guided === true;
+}
+
+function splitVisualWorkSegments(
+  rows: readonly ConversationRow[],
+  header: TurnHeaderRow | undefined,
+): DraftVisualWorkSegment[] {
+  // 工作段边界只认 CLI 下发的 workSegments：哪几条 guide 是同一次取出，只有 CLI 知道。
+  // 修复原因：原来每条 guided user 都开一段，与 CLI 每条 guide 一段的分段一致。runtime 改为一个边界
+  // 按 FIFO 取出全部已等待的 guide 后，逐条切分会把一次取出拆成多段；这里只在 CLI 声明的段首切分。
+  // 没有 workSegments 的旧快照才回退：上一行已是 guided user 时并入当前段。
+  const triggerEntityIds = header?.workSegments
+    ? new Set(header.workSegments.flatMap((segment) => segment.triggerEntityId ?? []))
+    : undefined;
   const segments: DraftVisualWorkSegment[] = [];
   let current: DraftVisualWorkSegment = { orderedRows: [] };
   for (const row of rows) {
-    if (isUserInputRow(row) && row.guided === true && current.orderedRows.length > 0) {
+    const opensSegment =
+      isUserInputRow(row) &&
+      (triggerEntityIds
+        ? row.entityId !== undefined && triggerEntityIds.has(row.entityId)
+        : row.guided === true && !isGuidedUserInputRow(current.orderedRows.at(-1)));
+    if (opensSegment && current.orderedRows.length > 0) {
       segments.push(current);
       current = { orderedRows: [], triggerRow: row };
     }
@@ -143,8 +165,10 @@ export function buildConversationTurnWorkSegments(options: {
   forceOpenHistory: boolean;
   timelineOnly: boolean;
   nowMs?: number;
+  /** 插件卡片进不进折叠区的裁决；缺省沿用"全部常驻"。 */
+  pluginUiPinResolver?: PluginUiRowPinResolver;
 }): ConversationTurnWorkSegment[] {
-  const visualDrafts = splitVisualWorkSegments(options.orderedRows);
+  const visualDrafts = splitVisualWorkSegments(options.orderedRows, options.header);
   const tailRowIds = new Set(options.assistantTailRows.map((row) => row.rowId));
   return visualDrafts.map((segment, segmentIndex) => {
     const segmentAssistantRows = segment.orderedRows.filter(isAssistantWorkRow);
@@ -164,11 +188,14 @@ export function buildConversationTurnWorkSegments(options: {
     const visibleAssistantIndex = visibleAssistantTextRow
       ? segmentFlowRows.findIndex((row) => row.rowId === visibleAssistantTextRow.rowId)
       : -1;
-    const segmentHistoryRows = options.timelineOnly
-      ? []
-      : visibleAssistantIndex < 0
-        ? segmentFlowRows
-        : segmentFlowRows.slice(0, visibleAssistantIndex);
+    // 插件 UI 工具行留在折叠区外（与 assistantText 同级），过程行照常折叠；见 isPluginUiPinnedToolRow。
+    const segmentHistoryRows = (
+      options.timelineOnly
+        ? []
+        : visibleAssistantIndex < 0
+          ? segmentFlowRows
+          : segmentFlowRows.slice(0, visibleAssistantIndex)
+    ).filter((row) => !isPluginUiPinnedToolRow(row, options.pluginUiPinResolver));
     const segmentFollowingRows =
       visibleAssistantIndex < 0 ? [] : segmentFlowRows.slice(visibleAssistantIndex + 1);
     const segmentRunning = segmentIndex === visualDrafts.length - 1 && options.isRunning;
@@ -206,10 +233,7 @@ export function buildConversationTurnWorkSegments(options: {
     return {
       key: segmentKey,
       ...(segment.triggerRow ? { triggerRow: segment.triggerRow } : {}),
-      flowItems: prepareCuaGroupFlowItems(flowItems, {
-        enabled: ENABLE_CUA_TOOL_CALL_GROUPING,
-        stageTailIsRunning: segmentRunning,
-      }),
+      flowItems,
       assistantWorkRows: segmentAssistantRows,
       assistantHistoryRows: segmentHistoryRows,
       assistantFollowingRows: segmentFollowingRows,

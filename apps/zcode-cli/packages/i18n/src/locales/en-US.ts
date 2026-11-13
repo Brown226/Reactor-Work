@@ -7,15 +7,15 @@ export const enUS: ZCodeCopy = {
       localeUnsupported: (value) =>
         `Unsupported --locale value: ${value}. Supported locales: en-US, zh-CN, auto.`,
     },
-    help: (version) => `reactor ${version}
+    help: (version) => `zcode ${version}
 
 Usage:
-  reactor [command] [options]
+  zcode [command] [options]
 
-With no command, reactor opens the full-screen TUI.
+With no command, zcode opens the full-screen TUI.
 
 Commands:
-  app-server Run the Reactor Protocol stdio app server
+  app-server Run the ZCode Protocol stdio app server
   commands   List custom slash commands (\`commands list\`)
   doctor     Inspect runtime and packaging assumptions
   login [zai|bigmodel]  Sign in through browser authorization
@@ -39,12 +39,14 @@ Options:
     Remove whole tools for this prompt/TUI run only; saved settings are unchanged.
     Comma or space-separated tool names, e.g. "Bash Edit".
     "Bash(git *)" removes all of Bash; command patterns are not matched.
+  --toolsearch-mode <auto|native|local|off> ToolSearch mode (default: off; this launch only)
   --force-mcs      Force mid-conversation system projection for Anthropic providers
   --locale <locale>  UI locale: en-US, zh-CN, or auto
-  --mode <mode>    Permission mode for prompts: build, edit, plan, or yolo (default: yolo for --prompt)
+  --mode <mode>    Permission mode for prompts: build, edit, plan, yolo, or guarded (default: yolo for --prompt)
   --resume <sessionId>  Resume a persisted session by sessionId (sess_...)
   --target <text>  Run or set the session goal in headless mode
   --target-replace Replace any existing session goal set by --target
+  --workflow-mode <mode>  Dynamic workflows for prompts/TUI: disabled, onDemand, or alwaysOn (default: disabled)
   -c, --continue        Resume the latest session for the current directory
   --json           Print machine-readable JSON where supported
   --no-browser     Print the OAuth URL without opening a browser
@@ -60,7 +62,7 @@ Slash Commands:
   /dwf [list|cancel|resume]  List, cancel, or resume dynamic workflow runs
   /fork [latest|checkpointId]  Fork a new session from a workspace checkpoint
   /mcp [list|status|connect|disconnect]  Show or manage MCP servers
-  /mode [mode]          Show or switch permission mode: build, edit, plan, or yolo
+  /mode [mode]          Show or switch permission mode: build, edit, plan, yolo, or guarded
   /model [id]           Show or switch the current session model
   /new                  Start a fresh session in the TUI
   /resume [sessionId]   Resume a session by sessionId; omit it for latest in cwd
@@ -70,6 +72,9 @@ Slash Commands:
 `,
   },
   tui: {
+    approval: {
+      fromSession: (sessionId) => `From background session ${sessionId}`,
+    },
     copy: {
       copied: "Copied selected text to clipboard.",
       failed: "Could not copy selected text.",
@@ -286,7 +291,7 @@ Slash Commands:
     },
     terminal: {
       requiresInteractive: "TUI requires an interactive terminal.",
-      starting: "Starting Reactor... Ctrl+C to exit",
+      starting: "Starting ZCode... Ctrl+C to exit",
     },
     transcript: {
       compact: {

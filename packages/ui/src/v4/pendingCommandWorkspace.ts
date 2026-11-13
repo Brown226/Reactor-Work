@@ -1,12 +1,14 @@
 import type { SessionCreateSource } from "@zcode/shared";
-import type { GroupedDraftTaskState } from "@/store/zcodeSessionStoreTypes.js";
-
+import type { ComposerRecentReceipt, FullAccessRecentReceipt } from "@/lib/composerRecent.js";
 export interface PendingCommandClientContext {
+  fullAccess?: FullAccessRecentReceipt;
+  composer?: ComposerRecentReceipt & { draftId?: string; submittedText?: string };
   workspace?: {
     workspacePath: string;
     workspaceIdentity?: string;
   };
-  groupedDraftTask?: GroupedDraftTaskState;
+  projectId?: string | null;
+  taskGroupId?: string | null;
   sessionCreateSource?: SessionCreateSource;
 }
 
@@ -19,7 +21,9 @@ interface WorkspaceScopedPendingCommand {
   };
 }
 
-function resolvePendingCommandWorkspaceKey(entry: WorkspaceScopedPendingCommand): string | null {
+export function resolvePendingCommandWorkspaceKey(
+  entry: WorkspaceScopedPendingCommand,
+): string | null {
   const workspace = entry.clientContext?.workspace;
   if (workspace) {
     return workspace.workspaceIdentity?.trim() || workspace.workspacePath;

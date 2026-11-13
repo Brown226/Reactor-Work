@@ -8,12 +8,10 @@ import {
   type LinuxDeepLinkRegistrationLogger,
 } from "./desktopLinuxXdg.js";
 
-const LINUX_DEEP_LINK_DESKTOP_FILE = "reactor.desktop";
-// 双 scheme：OAuth 回调地址固定在 zcode://（上游服务端已注册该 redirect_uri），
-// reactor:// 为自有协议。首项为自有协议，作为注册结果与失败日志的代表。
-const LINUX_DEEP_LINK_MIME_TYPES = ["x-scheme-handler/reactor", "x-scheme-handler/zcode"] as const;
-// 归属标记：用于识别用户级 reactor.desktop 是否由本应用写入。
-const LINUX_DESKTOP_ENTRY_OWNERSHIP_MARKER = "Comment=Reactor Desktop App";
+const LINUX_DEEP_LINK_DESKTOP_FILE = "zcode.desktop";
+const LINUX_DEEP_LINK_MIME_TYPE = "x-scheme-handler/zcode";
+// 归属标记：用于识别用户级 zcode.desktop 是否由本应用写入（历史所有版本都带这行 Comment）。
+const LINUX_DESKTOP_ENTRY_OWNERSHIP_MARKER = "Comment=ZCode Desktop App";
 
 type LinuxDesktopEnv = {
   APPIMAGE?: string;
@@ -51,7 +49,7 @@ const APPIMAGE_DEEP_LINK_ARG_PREFIXES = [
   "--enable-features=",
 ];
 
-function resolveLinuxDeepLinkCommand(params: {
+export function resolveLinuxDeepLinkCommand(params: {
   env?: { APPIMAGE?: string };
   executablePath: string;
   argv?: string[];
@@ -105,14 +103,14 @@ function formatDesktopExec(command: LinuxDeepLinkCommand): string {
     .join(" ");
 }
 
-function createLinuxDeepLinkDesktopEntry(params: {
+export function createLinuxDeepLinkDesktopEntry(params: {
   executablePath: string;
   args?: string[];
   productName?: string;
   iconName?: string;
 }): string {
-  const productName = params.productName ?? "Reactor";
-  const iconName = params.iconName ?? "reactor";
+  const productName = params.productName ?? "ZCode";
+  const iconName = params.iconName ?? "zcode";
   const command = {
     executablePath: params.executablePath,
     args: params.args ?? [],
@@ -126,13 +124,13 @@ function createLinuxDeepLinkDesktopEntry(params: {
     "Type=Application",
     `Icon=${iconName}`,
     "Categories=Development;",
-    `MimeType=${LINUX_DEEP_LINK_MIME_TYPES.join(";")};`,
+    `MimeType=${LINUX_DEEP_LINK_MIME_TYPE};`,
     `StartupWMClass=${productName}`,
     "",
   ].join("\n");
 }
 
-function resolveLinuxUserDataDir(params: {
+export function resolveLinuxUserDataDir(params: {
   env?: { XDG_DATA_HOME?: string };
   homeDir: string;
 }): string {
@@ -140,7 +138,7 @@ function resolveLinuxUserDataDir(params: {
   return xdgDataHome || join(params.homeDir, ".local", "share");
 }
 
-function resolveLinuxSystemApplicationDirs(env?: { XDG_DATA_DIRS?: string }): string[] {
+export function resolveLinuxSystemApplicationDirs(env?: { XDG_DATA_DIRS?: string }): string[] {
   const raw = env?.XDG_DATA_DIRS?.trim();
   const entries = raw
     ? raw
@@ -262,13 +260,11 @@ export function registerLinuxDeepLinkProtocol(options: RegisterLinuxDeepLinkProt
     // deep link 是 OAuth/支付/工作区打开的核心链路，必须先完成用户级协议处理器刷新；
     // 图标安装是可选增强，放到核心注册成功后独立降级，避免扩大登录回调失败域。
     const updateResult = runCommand("update-desktop-database", [applicationsDir]);
-    // 两个 scheme 都要指向本 desktop entry；任一失败都算注册未完成。
-    const defaultResults = LINUX_DEEP_LINK_MIME_TYPES.map((mimeType) => ({
-      mimeType,
-      result: runCommand("xdg-mime", ["default", LINUX_DEEP_LINK_DESKTOP_FILE, mimeType]),
-    }));
-    const failedDefault = defaultResults.find((entry) => entry.result.status !== 0);
-    const defaultResult = failedDefault?.result ?? defaultResults[0].result;
+    const defaultResult = runCommand("xdg-mime", [
+      "default",
+      LINUX_DEEP_LINK_DESKTOP_FILE,
+      LINUX_DEEP_LINK_MIME_TYPE,
+    ]);
 
     if (defaultResult.status === 0) {
       protocolRegistered = true;
@@ -282,7 +278,6 @@ export function registerLinuxDeepLinkProtocol(options: RegisterLinuxDeepLinkProt
     } else {
       options.logger.warn("[deep-link] Linux 用户级协议注册失败", {
         desktopFilePath,
-        mimeType: failedDefault?.mimeType,
         executablePath: command.executablePath,
         args: command.args,
         status: defaultResult.status,

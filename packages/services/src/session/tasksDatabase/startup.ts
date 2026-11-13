@@ -96,8 +96,11 @@ export async function prepareTasksIndexStorage(
     }
   }
   markTasksStorageMigrated(path);
+  // [适配上游 v3.18.0] TaskIndexRepo 构造函数改为
+  // (migrationSettings, storageHostId, startupDbPath, startupBusyTimeoutMs)；
+  // 这里只负责启动期打开指定 db，前两个保持 undefined。
   const repos = [
-    new TaskIndexRepo(path, LOCK_WAIT_MS),
+    new TaskIndexRepo(undefined, undefined, path, LOCK_WAIT_MS),
     new AutomationRepo(path, LOCK_WAIT_MS),
     new OffPeakTaskRepo(path, LOCK_WAIT_MS),
   ];

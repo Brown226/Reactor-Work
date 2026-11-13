@@ -16,6 +16,10 @@ import {
   CronListInputSchema,
   CronListOutputJsonSchema,
   CronListOutputSchema,
+  CronPauseSelfInputJsonSchema,
+  CronPauseSelfInputSchema,
+  CronPauseSelfOutputJsonSchema,
+  CronPauseSelfOutputSchema,
   CronUpdateInputJsonSchema,
   CronUpdateInputSchema,
   CronUpdateOutputJsonSchema,
@@ -27,6 +31,7 @@ import {
   type CronDeleteInput,
   type CronDeleteOutput,
   type CronListOutput,
+  type CronPauseSelfOutput,
   type CronUpdateInput,
   type CronUpdateOutput,
   type ToolPermissionSpec,
@@ -59,7 +64,7 @@ function assertNotAutomationTurn(
 
 function assertAutomationPort(
   context: ToolExecutionContext,
-  toolName: "CronCreate" | "CronList" | "CronUpdate" | "CronDelete",
+  toolName: "CronCreate" | "CronList" | "CronUpdate" | "CronDelete" | "CronPauseSelf",
 ): asserts context is ToolExecutionContext & {
   automationPort: NonNullable<ToolExecutionContext["automationPort"]>;
 } {
@@ -96,7 +101,7 @@ function toModelAutomation(automation: CronAutomation): CronAutomation {
   };
 }
 
-const cronCreateHandler: ToolHandler = async (input, context) => {
+export const cronCreateHandler: ToolHandler = async (input, context) => {
   assertNotAutomationTurn(context, "CronCreate");
   const parsed = CronCreateInputSchema.parse(input) as CronCreateInput;
   assertAutomationPort(context, "CronCreate");
@@ -113,7 +118,7 @@ const cronCreateHandler: ToolHandler = async (input, context) => {
   } satisfies CronCreateOutput;
 };
 
-const cronListHandler: ToolHandler = async (input, context) => {
+export const cronListHandler: ToolHandler = async (input, context) => {
   CronListInputSchema.parse(input);
   assertAutomationPort(context, "CronList");
 
@@ -123,7 +128,39 @@ const cronListHandler: ToolHandler = async (input, context) => {
   } satisfies CronListOutput;
 };
 
-const cronUpdateHandler: ToolHandler = async (input, context) => {
+export const cronPauseSelfHandler: ToolHandler = async (input, context) => {
+  // 暂停目标只来自 executor 注入的本轮 automationId：没有身份就没有可暂停的任务，
+  // 普通用户轮、只有 denylist / queryId 兜底信号的轮都落在这里。先校验身份再解析输入，
+  // 保证任何路径都不会用模型输入或任务元数据反推目标。
+  const automationId = context.automationId?.trim();
+  if (!automationId) {
+    throw createCoreError(
+      CoreErrorType.PermissionDenied,
+      "CronPauseSelf is only available while running a scheduled automation.",
+      {
+        context: {
+          toolCallId: context.toolCallId,
+          toolName: "CronPauseSelf",
+        },
+        recoverable: false,
+        retryable: false,
+      },
+    );
+  }
+  CronPauseSelfInputSchema.parse(input);
+  assertAutomationPort(context, "CronPauseSelf");
+
+  const paused = await context.automationPort.pause({ id: automationId });
+  return {
+    paused,
+    id: automationId,
+    message: paused
+      ? `Paused automation ${automationId}. It will not run on schedule until the user resumes it.`
+      : `Automation ${automationId} is not active (already paused, completed, failed, or deleted), so nothing changed.`,
+  } satisfies CronPauseSelfOutput;
+};
+
+export const cronUpdateHandler: ToolHandler = async (input, context) => {
   assertNotAutomationTurn(context, "CronUpdate");
   const parsed = CronUpdateInputSchema.parse(input) as CronUpdateInput;
   assertAutomationPort(context, "CronUpdate");
@@ -135,7 +172,7 @@ const cronUpdateHandler: ToolHandler = async (input, context) => {
   } satisfies CronUpdateOutput;
 };
 
-const cronDeleteHandler: ToolHandler = async (input, context) => {
+export const cronDeleteHandler: ToolHandler = async (input, context) => {
   assertNotAutomationTurn(context, "CronDelete");
   const parsed = CronDeleteInputSchema.parse(input) as CronDeleteInput;
   assertAutomationPort(context, "CronDelete");
@@ -162,11 +199,7 @@ function cronPermission(
     sideEffectScope: "workspace" as const,
     needsApproval,
     patternSources: ["toolName", "input"],
-    // 声明写全（此前 needsApproval 时是 undefined，审批 UI 会给出「项目级永久放行」选项）。
-    // 自动化是持久对象，每次新建/改动都该过目，所以只放会话级免确认（同 create-workflow 的口径），
-    // 不提供项目级「总是允许」——否则点一次就把整个 Cron 家族永久放行。
-    alwaysAllowPatternSources: ["toolName"],
-    askOptions: { allowAlways: "session" },
+    alwaysAllowPatternSources: needsApproval ? undefined : ["toolName"],
     denyPriority: "beforeAsk" as const,
   };
 }
@@ -190,7 +223,9 @@ const cronTimeout = {
 export const cronCreateToolEntry: ToolEntry = {
   capability: "Create a scheduled automation for the current workspace",
   metadata: {
+    shouldDefer: true,
     name: "CronCreate",
+    searchHint: "schedule a recurring or one-shot prompt",
     // 二阶调度要求应在工具 contract 中直接约束模型；自然语言不能靠关键词或正则可靠判定，
     // automation 执行轮的 mutation tool denylist 才是阻止递归修改任务定义的权限边界。
     description:
@@ -216,6 +251,8 @@ export const cronCreateToolEntry: ToolEntry = {
       "Always set title and preserve the user's natural-language schedule phrase verbatim in it. The title may be concise, but must not omit timing such as '每20分钟', '每天早上9点', or 'every Friday'.",
       "Write prompt as a complete instruction that can run later without relying on unstated conversation context.",
       "Write the final work directly in prompt. Never ask the scheduled run to create, schedule, or configure another automation, and never ask it to call CronCreate.",
+      // 执行轮只能通过 CronPauseSelf 自暂停；停止条件必须写进 prompt，否则模型没有判定依据。
+      "If the user describes a condition under which the automation should stop, write that stop condition into prompt and tell the run to call CronPauseSelf once the condition is met. The run cannot edit or delete the automation itself.",
     ],
     readOnly: false,
     destructive: false,
@@ -254,7 +291,9 @@ export const cronCreateToolEntry: ToolEntry = {
 export const cronListToolEntry: ToolEntry = {
   capability: "List scheduled automations for the current workspace",
   metadata: {
+    shouldDefer: true,
     name: "CronList",
+    searchHint: "list active cron jobs",
     description: "List scheduled automations in the current workspace.",
     readOnly: true,
     destructive: false,
@@ -298,6 +337,7 @@ export const cronListToolEntry: ToolEntry = {
 export const cronUpdateToolEntry: ToolEntry = {
   capability: "Update a scheduled automation in the current workspace",
   metadata: {
+    shouldDefer: true,
     name: "CronUpdate",
     description:
       "Update selected definition fields of an existing scheduled automation in the current workspace while preserving its id and run history.",
@@ -350,7 +390,9 @@ export const cronUpdateToolEntry: ToolEntry = {
 export const cronDeleteToolEntry: ToolEntry = {
   capability: "Delete a scheduled automation from the current workspace",
   metadata: {
+    shouldDefer: true,
     name: "CronDelete",
+    searchHint: "cancel a scheduled cron job",
     description: "Delete a scheduled automation from the current workspace by automation id.",
     readOnly: false,
     destructive: true,
@@ -381,6 +423,58 @@ export const cronDeleteToolEntry: ToolEntry = {
   trace: {
     required: true,
     propagateToAdapters: true,
+    recordInput: "summary",
+    recordOutput: "summary",
+  },
+};
+
+export const cronPauseSelfToolEntry: ToolEntry = {
+  capability: "Pause the scheduled automation that triggered the current run",
+  metadata: {
+    shouldDefer: true,
+    name: "CronPauseSelf",
+    searchHint: "pause the automation that triggered this run",
+    description:
+      "Pause the scheduled automation that triggered the current run so it stops running on schedule until the user resumes it. It only targets the automation of this run, takes no input, and cannot change the automation definition.",
+    modelInstructions: [
+      "Call this only when the stop condition written in the automation prompt is met.",
+      "Do not call it to skip a single run; finish the run normally instead.",
+      "After pausing, briefly tell the user the automation was paused and why.",
+    ],
+    readOnly: false,
+    destructive: false,
+    concurrentSafe: false,
+    timeoutMs: CRON_TOOL_TIMEOUT_MS,
+    maxOutputBytes: CRON_MODEL_BYTES,
+    sideEffectScope: "workspace",
+    riskLevel: "low",
+    needsApproval: false,
+  },
+  handler: cronPauseSelfHandler,
+  inputSchema: CronPauseSelfInputJsonSchema,
+  outputSchema: CronPauseSelfOutputJsonSchema,
+  runtimeInputSchema: CronPauseSelfInputSchema,
+  runtimeOutputSchema: CronPauseSelfOutputSchema,
+  permission: {
+    permission: "automation.pause",
+    reason: "CronPauseSelf only pauses the automation that triggered the current run",
+    riskLevel: "low",
+    sideEffectScope: "workspace",
+    needsApproval: false,
+    patternSources: ["toolName"],
+    alwaysAllowPatternSources: ["toolName"],
+    denyPriority: "beforeAsk",
+  },
+  resultBudget: cronResultBudget,
+  timeout: cronTimeout,
+  cancellation: {
+    supported: true,
+    cleanup: "none",
+    userVisibleMessage: "CronPauseSelf was cancelled before the automation was paused",
+  },
+  trace: {
+    required: true,
+    propagateToAdapters: false,
     recordInput: "summary",
     recordOutput: "summary",
   },

@@ -1,7 +1,7 @@
 import type { ScriptLoc } from "../compiler/compile.js";
 import type { JumpKind, OrderRegion } from "./causality-order.js";
 import type { AnalysisCore } from "./core.js";
-import { collectFlowPhases, quotientFlow } from "./flow-phase.js";
+import { collectFlowHoles, collectFlowPhases, quotientFlow } from "./flow-phase.js";
 import { createStrandPark } from "./flow-strands.js";
 import { buildTree, type LeafNode, type RegionNode, type TreeNode } from "./flow-tree.js";
 
@@ -82,6 +82,23 @@ export interface FlowPhase {
    * when empty. All-or-nothing with the rest of the phase vocabulary.
    */
   alongside?: string[];
+  /** The filled hole whose body wrote this phase (a hole's own phase names the hole enclosing it). */
+  fill?: string;
+}
+
+/**
+ * An OPEN hole as the display lists it (docs/dynamic-workflow/presentation.md, `holes`): the
+ * station the rail draws dashed ahead of the run. `phase` is where the hole STANDS — the
+ * phase of its issue node, the hole's own memberless phase being `siteId` itself.
+ */
+export interface FlowHole {
+  siteId: string;
+  name: string;
+  /** The author's spelling of the type argument. */
+  type: string;
+  phase?: string;
+  /** The tail form `return await hole<T>(...)`: the script's end is open. */
+  tail?: true;
 }
 
 /** Terminal node ids. `sink` is the causality graph's sink: the script completed normally. */
@@ -102,6 +119,8 @@ export interface ControlFlowGraph {
   phaseEdges?: FlowEdge[];
   /** Phases that appear on some node, in first-reach order, {@link UNPHASED_ID} first. */
   phases?: FlowPhase[];
+  /** The open holes in source order; present iff the script has one (see {@link FlowHole}). */
+  holes?: FlowHole[];
 }
 
 // --- Flow ---------------------------------------------------------------------------------
@@ -192,6 +211,12 @@ export function projectControlFlow(core: AnalysisCore): ControlFlowGraph {
   const occurrences = new Map<string, number>();
   const park = createStrandPark(trace.phases);
   let placeholders = 0;
+  /** What each entry placeholder stands for: the incoming sources of the body it was fed to. */
+  const standsFor = new Map<string, readonly string[]>();
+  const resolve = (from: string): string[] => {
+    const real = standsFor.get(from);
+    return real === undefined ? [from] : real.flatMap(resolve);
+  };
 
   const emit = (from: string, to: string, kind: FlowEdgeKind, via?: FlowVia): void => {
     const key = `${from}|${to}|${kind}|${via ?? ""}`;
@@ -237,9 +262,28 @@ export function projectControlFlow(core: AnalysisCore): ControlFlowGraph {
   const leaf = (node: LeafNode, incoming: readonly Src[]): Src[] => {
     const { event } = node;
     if (event.at === "actor") return [...incoming];
-    // A barrier is transparent to the main line and is where the strands it awaits rejoin
-    // it: their parked exits continue from here, beside the sources that arrived.
-    if (event.at === "settle") return [...incoming, ...park.join(event.joins ?? [])];
+    // A barrier is where the strands it awaits rejoin the main line, and where the main line
+    // gives up the control it carried for them: the parked exits continue from here, beside
+    // the sources that arrived MINUS the ones that stood at the spawn of each strand joined
+    // for certain (a may-join or a strand control passed through consumes nothing).
+    //
+    // 修复原因：此前 settle 对主线完全透明（原样返回 incoming），于是每个 helper 调用的分叉点
+    // 永远留在主线上：n 个顺序 `await helper()` 画出 entry 与每个早先调用到每个后来调用的边，
+    // 共 n(n+1)/2 条（80 层 helper × 800 处调用时 1,629 万条边、4.7 GB），而且图是错的——
+    // 它说第三步可以不等前两步就跑。确定地 join 一个 strand 的屏障，就是分叉时那份控制流
+    // 等待的地方，所以屏障之后接的是 strand 的出口，不是分叉点。
+    // 占位符（withEntries 正在学习入口的 body）代表它的 incoming：它代表的源全部被消耗时才算被消耗。
+    if (event.at === "settle") {
+      const { consumed, exits } = park.join(event.joins ?? [], new Set(event.maybeJoins ?? []));
+      const kept =
+        consumed.size === 0
+          ? [...incoming]
+          : incoming.filter((src) => {
+              const real = resolve(src.from);
+              return real.length === 0 || !real.every((from) => consumed.has(from));
+            });
+      return [...kept, ...exits];
+    }
     if (event.at === "jump") {
       const { kind, via } = jumpEdge(event.kind);
       pending.push({ kind: event.kind, srcs: retype(incoming, kind, via), target: event.target });
@@ -282,10 +326,14 @@ export function projectControlFlow(core: AnalysisCore): ControlFlowGraph {
   ): { entries: string[]; exits: Src[]; passed: Src[] } => {
     placeholders += 1;
     const ph = `$entry${placeholders}`;
+    standsFor.set(ph, incoming.map((src) => src.from));
     const pendingMark = pending.length;
+    // 修复原因：下面的扫描曾从 edges 末尾一直扫到 0。占位符的边只可能在刚才的 sequence 里产生，
+    // 所以扫到进入前的长度即可；原来每个 loop / fan-out / strand 都重扫整张图，是 region 数 × 边数。
+    const edgeMark = edges.length;
     const exits = sequence(children, [{ from: ph, kind: "next" }]);
     const entries: string[] = [];
-    for (let i = edges.length - 1; i >= 0; i -= 1) {
+    for (let i = edges.length - 1; i >= edgeMark; i -= 1) {
       const edge = edges[i] as FlowEdge;
       if (edge.from !== ph) continue;
       edges.splice(i, 1);
@@ -369,8 +417,11 @@ export function projectControlFlow(core: AnalysisCore): ControlFlowGraph {
    * `passed` is dropped, and so is any exit still standing on one of the strand's own
    * incoming sources: both are the spawner's control, not the strand's, and they leave
    * with `incoming`. Parking one would draw a second, `join`-kinded copy of the
-   * pass-through edge the spawner already makes. A strand left with nothing to park is
-   * invisible and parks nothing.
+   * pass-through edge the spawner already makes. Either one does mark the strand as
+   * PASSED THROUGH, so the barrier that joins it leaves the spawner's control standing:
+   * on that path there was nothing to wait for. The park also gets the sources the strand
+   * was spawned from (placeholders resolved), which a certain join consumes. A strand left
+   * with nothing to park is invisible and parks nothing.
    *
    * "Nothing" is judged on the EXITS, never on `entries`. Both corners that rule out the
    * tempting `entries.length === 0` test are in the corpus, and both were measured:
@@ -387,12 +438,15 @@ export function projectControlFlow(core: AnalysisCore): ControlFlowGraph {
   const strandRegion = (node: RegionNode, incoming: readonly Src[]): Src[] => {
     const nodeMark = nodes.length;
     const spawner = new Set(incoming.map((src) => src.from));
-    const { exits: bodyExits } = withEntries(node.children, retype(incoming, "fork"));
+    const { exits: bodyExits, passed } = withEntries(node.children, retype(incoming, "fork"));
     const returns = settle(take(node.region.id, ["return"]), "join", "return");
     const all = dedupeSrcs([...retype(bodyExits, "join"), ...returns]);
     const exits = all.filter((src) => !spawner.has(src.from));
+    const passThrough = passed.length > 0 || exits.length < all.length;
     const phases = new Set(nodes.slice(nodeMark).map((inner) => inner.phase));
-    if (exits.length > 0 || phases.size > 0) park.park(node.region.id, exits, [...phases]);
+    if (exits.length > 0 || phases.size > 0) {
+      park.park(node.region.id, exits, [...phases], new Set([...spawner].flatMap(resolve)), passThrough);
+    }
     return [...incoming];
   };
 
@@ -507,10 +561,12 @@ export function projectControlFlow(core: AnalysisCore): ControlFlowGraph {
 
   sortEdges(nodes, edges);
   const phases = collectFlowPhases(trace, nodes);
+  const holes = collectFlowHoles(core, nodes);
   return {
     edges,
     nodes,
     ...(trace.phases.length === 0 ? {} : { phaseEdges: quotientFlow(nodes, edges, phases), phases }),
+    ...(holes.length === 0 ? {} : { holes }),
   };
 }
 

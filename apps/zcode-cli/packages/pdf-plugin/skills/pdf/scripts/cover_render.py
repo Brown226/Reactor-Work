@@ -93,35 +93,12 @@ def _try_register(name, path, idx):
     path = os.path.expanduser(path)
     if not os.path.exists(path):
         return False
-    # TTC 整册在 ReportLab 上可能极慢/卡死；PDF 嵌入只走 .ttf
-    if path.lower().endswith(".ttc"):
-        return False
     try:
         pdfmetrics.registerFont(TTFont(name, path) if idx is None
                                 else TTFont(name, path, subfontIndex=idx))
         return True   # succeeds only for embeddable TrueType-outline fonts
     except Exception:
         return False  # CFF/PostScript-outline (PingFang/Hiragino/Noto CJK) land here
-
-def _skill_fonts_pick(role):
-    """优先 office_skill_lib.skill_fonts（受管 TTF / 系统扫描，含 CFF 黑名单）。"""
-    try:
-        from office_skill_lib import skill_fonts as sf
-    except ImportError:
-        return None
-    try:
-        resolved = sf.get_font_manager().resolve(allow_download=False)
-    except Exception:
-        return None
-    path = resolved.bold_path if role == "serif" and resolved.bold_path else resolved.regular_path
-    if not path:
-        return None
-    if sf.looks_cff(path) or path.lower().endswith(".ttc"):
-        return None
-    name = "F_%s_SkillFonts" % role
-    if _try_register(name, path, None):
-        return name
-    return None
 
 def _fc_fallback(role):
     """Last resort: query fontconfig for a zh font and try to embed it."""
@@ -150,9 +127,6 @@ def detect_fonts(overrides=None):
             nm, p, i = overrides[role]
             if _try_register(nm, p, i):
                 chosen = nm
-        if not chosen:
-            # 受管 office-engines / skill_fonts 解析优先（TrueType，可嵌）
-            chosen = _skill_fonts_pick(role)
         if not chosen:
             for nm, paths, idx in cands:
                 for p in paths:

@@ -6,12 +6,12 @@ import { ToolSnapshotFieldNotice } from "@/ToolCallBlocks/ToolSnapshotFieldNotic
 import { getFileDisplayPath } from "@/lib/fileDisplay.js";
 import type { ToolInlinePreview } from "@/lib/toolDisplay.js";
 import { ToolLayout } from "../ToolLayout.js";
+import { renderFilePath } from "../renderers.js";
 import type { ToolCallBlockRenderContext } from "../shared.js";
 import { EditInlineDiffContent } from "@/ToolCallBlocks/renderers/EditInlineDiffContent.js";
 import {
   getEditKindLabelMessageId,
   renderDiffCount,
-  renderFilePath,
   renderJoinedFileChips,
   renderFileChip,
   type EditKindSource,
@@ -115,13 +115,6 @@ export function EditToolCallBlock(context: ToolCallBlockRenderContext) {
         : null,
     [context.workspacePath, onOpenCodeViewer, openFilePreview, rawFileSummaries],
   );
-  const secondaryText = useMemo(
-    () =>
-      rawFileSummaries.length === 1
-        ? renderFilePath(rawFileSummaries[0]?.filePath, context.workspacePath)
-        : undefined,
-    [context.workspacePath, rawFileSummaries],
-  );
   const totalChangeStat = useMemo(
     () =>
       rawFileSummaries.reduce(
@@ -180,6 +173,14 @@ export function EditToolCallBlock(context: ToolCallBlockRenderContext) {
         primaryText
       ),
     [intl, primaryText, rawFileSummaries.length],
+  );
+  // 单文件时把路径作为副标题（本地定制的标题/副标题两行摘要）。
+  const secondaryText = useMemo(
+    () =>
+      rawFileSummaries.length === 1
+        ? renderFilePath(rawFileSummaries[0]?.filePath, context.workspacePath)
+        : undefined,
+    [context.workspacePath, rawFileSummaries],
   );
   const singleFileInlinePreview = buildEditInlinePreview(
     rawFileSummaries.length === 1 ? (rawFileSummaries[0] ?? null) : null,
@@ -399,10 +400,6 @@ function EditFileSummaryBlock({
       }),
     [onOpenCodeViewer, openFilePreview, summary, workspacePath],
   );
-  const secondaryText = useMemo(
-    () => renderFilePath(summary.filePath, workspacePath),
-    [summary.filePath, workspacePath],
-  );
   const diffCount = useMemo(
     () =>
       renderDiffCount(summary.changeStat, {
@@ -466,7 +463,6 @@ function EditFileSummaryBlock({
         sourceLabel={sourceLabel}
         primaryText={primaryText}
         prioritizePrimaryText
-        secondaryText={secondaryText}
         diffCount={diffCount}
         statusLabel={statusLabel}
         statusTooltip={isFailed ? errorText : undefined}

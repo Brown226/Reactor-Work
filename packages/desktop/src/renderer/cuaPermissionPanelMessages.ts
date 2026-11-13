@@ -1,6 +1,7 @@
 import type { CuaPermissionKind, Locale } from "@zcode/shared";
+import { toZhOrEnLocale } from "@zcode/shared";
 
-interface CuaPermissionPanelMessages {
+export interface CuaPermissionPanelMessages {
   documentTitle: string;
   dragTitle: string;
   hintPrefix: string;
@@ -10,11 +11,11 @@ interface CuaPermissionPanelMessages {
 }
 
 const MESSAGES: Record<
-  Locale,
+  "zh-CN" | "en-US",
   Omit<CuaPermissionPanelMessages, "permissionLabel"> & Record<CuaPermissionKind, string>
 > = {
   "zh-CN": {
-    documentTitle: "Reactor Computer Use 权限",
+    documentTitle: "ZCode Computer Use 权限",
     dragTitle: "拖动我到上面的权限列表",
     hintPrefix: "把左边的图标拖进上方的",
     hintSuffix: "列表",
@@ -23,7 +24,7 @@ const MESSAGES: Record<
     screen_recording: "屏幕录制",
   },
   "en-US": {
-    documentTitle: "Reactor Computer Use Permissions",
+    documentTitle: "ZCode Computer Use Permissions",
     dragTitle: "Drag me to the permission list above",
     hintPrefix: "Drag the icon on the left into the ",
     hintSuffix: " list above",
@@ -37,7 +38,8 @@ export function resolveCuaPermissionPanelMessages(
   locale: Locale,
   permission: CuaPermissionKind,
 ): CuaPermissionPanelMessages {
-  const messages = MESSAGES[locale];
+  // 权限引导面板只有中英两套文案；日/俄/韩直接下标会取到 undefined 导致面板渲染崩溃，降级到英文。
+  const messages = MESSAGES[toZhOrEnLocale(locale)];
   return {
     documentTitle: messages.documentTitle,
     dragTitle: messages.dragTitle,

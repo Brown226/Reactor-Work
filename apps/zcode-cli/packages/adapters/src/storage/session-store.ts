@@ -1,5 +1,4 @@
 export {
-  applyDataScopeToDefaultSessionDbPath,
   createSqliteSessionStore,
   getDefaultSessionDbPath,
   openStartupSqliteSessionStore,
@@ -15,7 +14,9 @@ export type {
   DwfListRunsQuery,
   DwfNodeStatusCounts,
   DwfRunIntrospectionQueries,
+  DwfRunLifeSpan,
 } from "./session-store/repositories/dwf-journal.js";
+export type { DwfEventPageQuery } from "./session-store/repositories/dwf-journal-pages.js";
 export type {
   DwfRunDetailRow,
   DwfRunListItem,

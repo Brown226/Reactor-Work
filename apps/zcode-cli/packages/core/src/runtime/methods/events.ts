@@ -23,8 +23,9 @@ import { titleFromInput, slugify, projectIdFromDirectory } from "../helpers/inde
 import type { AgentRuntimeInternal } from "../internal.js";
 import { buildPersistedConversationInputIntent } from "./input-intent-persistence.js";
 import { recordToolUsageFromEvent } from "./usage-observability.js";
-import { persistSessionShellEnvironmentSnapshot } from "./session-shell-environment.js";
 import { persistRuntimeModelSelection } from "./turn-model.js";
+import { writeDynamicWorkflowActivationEntryIfActivated } from "./dynamic-workflow-activation.js";
+import { writeSessionFeaturesEntryAfterFirstPersist } from "../session-features/contract.js";
 import {
   persistWorkspaceCheckpointEntry,
   persistWorkspaceFileRewindEntry,
@@ -266,6 +267,22 @@ async function persistDurableSessionEvent(
   traceContext: TraceContext,
 ): Promise<void> {
   if (!this.sessionStore) return;
+
+  if (event.type === SessionEventType.TurnComplete || event.type === SessionEventType.TurnError) {
+    const payload = event.payload as { resultType?: string };
+    // 终态由 CLI 在发布事件前持久化；Host 冷启动不能再把全部历史任务推导为成功。
+    await this.sessionStore.updateSession({
+      id: event.sessionId,
+      lastOutcome:
+        event.type === SessionEventType.TurnError
+          ? "error"
+          : payload.resultType === "cancelled"
+            ? "interrupted"
+            : "completed",
+      timeUpdated: event.timestamp.getTime(),
+    });
+    return;
+  }
 
   if (event.type === SessionEventType.CheckpointCreated) {
     await persistWorkspaceCheckpointEntry(this, event, traceContext);
@@ -555,7 +572,32 @@ export function isSessionPersisted(this: AgentRuntimeInternal): boolean {
   return this.sessionPersisted;
 }
 
+const pendingSessionPersistence = new WeakMap<AgentRuntimeInternal, Promise<void>>();
+
+/** 授权复用已有持久化等待；读取不能使草稿提前成为正式任务。 */
+export function getPendingSessionPersistence(
+  runtime: AgentRuntimeInternal,
+): Promise<void> | undefined {
+  return pendingSessionPersistence.get(runtime);
+}
+
 export async function ensureSessionPersisted(
+  this: AgentRuntimeInternal,
+  input: string,
+  traceContext: TraceContext,
+): Promise<void> {
+  if (!this.sessionStore || this.sessionPersisted) return;
+  const pending = pendingSessionPersistence.get(this);
+  if (pending) return pending;
+  // App sampling 可与首轮任务并发；同一任务创建必须合并，避免重复插入及模型配置覆盖。
+  const created = persistSession
+    .call(this, input, traceContext)
+    .finally(() => pendingSessionPersistence.delete(this));
+  pendingSessionPersistence.set(this, created);
+  return created;
+}
+
+async function persistSession(
   this: AgentRuntimeInternal,
   input: string,
   traceContext: TraceContext,
@@ -582,7 +624,8 @@ export async function ensureSessionPersisted(
     const workspaceIdentity = this.config.memory?.workspaceIdentity?.trim();
     await this.sessionStore.createSession({
       id: this.sessionId,
-      projectID: projectIdFromDirectory(directory),
+      // 受管 worktree 会话的项目身份映射回源仓库路径（§6.6.3），directory 仍是实际 cwd。
+      projectID: projectIdFromDirectory(this.config.projectDirectory ?? directory),
       // Memory workspaceIdentity 是上游提供的不透明隔离键。这里只做类型品牌化，
       // 不能调用会改写字符串的 ID 生成器，否则恢复后的 Memory root 会发生漂移。
       workspaceID: this.config.workspaceIdentity ?? (workspaceIdentity as WorkspaceId | undefined),
@@ -606,13 +649,15 @@ export async function ensureSessionPersisted(
     phase = "session_model_selection";
     const initialSelection = this.getSessionModelSelection();
     if (initialSelection) await persistRuntimeModelSelection(this, initialSelection);
-    phase = "session_shell_snapshot";
-    await persistSessionShellEnvironmentSnapshot(this, traceContext);
     phase = "session_execution_state";
     await this.sessionStore.saveSessionEntry?.(
       buildExecutionStateEntry(this.sessionId, readRuntimeExecutionState(this)),
     );
+    // `/workflow` 作为首轮时激活先于落盘（launch.md「On demand: activation」），entry 在这里补写。
+    await writeDynamicWorkflowActivationEntryIfActivated(this);
     this.sessionPersisted = true;
+    // 落盘前打的会话能力标签只在内存里，这里补写；之后的打点各自排队写入。
+    await writeSessionFeaturesEntryAfterFirstPersist(this, traceContext);
     this.logger?.debug("Session persisted", {
       ...traceContextToLogContext(traceContext),
       event: "session.persisted",

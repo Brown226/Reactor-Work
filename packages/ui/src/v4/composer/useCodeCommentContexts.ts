@@ -9,22 +9,51 @@ import {
   isCodeCommentRemovePayload,
   type CodeCommentComposerAttachment,
 } from "@/lib/codeCommentContext.js";
+import { isComposerEditScopeId } from "@/composer-edit-mode/contract.js";
 
-interface UseCodeCommentContextsOptions {
+export interface UseCodeCommentContextsOptions {
   listenAddToChatEvents?: boolean;
   onContextRemoved?: (context: CodeCommentComposerAttachment) => void;
   requestFocus?: () => void;
   scopeKey: string;
 }
 
-interface UseCodeCommentContextsResult {
+export interface UseCodeCommentContextsResult {
   contexts: readonly CodeCommentComposerAttachment[];
   hasContexts: boolean;
   removeContext: (
-    context: Pick<CodeCommentComposerAttachment, "id" | "workspaceIdentity" | "workspacePath">,
+    context: Pick<
+      CodeCommentComposerAttachment,
+      "id" | "workspaceIdentity" | "workspacePath"
+    >,
   ) => void;
   clearContexts: () => void;
   getContexts: () => readonly CodeCommentComposerAttachment[];
+}
+
+// 按 composer 草稿 scope 缓存未发送的代码评论：切任务或进入/退出 composer 编辑态后切回，
+// 原草稿的评论 chip 原样恢复（docs/ui/task-scoped-composer-drafts.md、composer-edit-mode.md）。
+const scopedCodeCommentContexts = new Map<string, readonly CodeCommentComposerAttachment[]>();
+
+/** 进入编辑态前为 edit scope 预置待编辑消息的代码评论；scope 切换时载入。 */
+export function seedCodeCommentContextsForScope(
+  scopeKey: string,
+  contexts: readonly CodeCommentComposerAttachment[],
+) {
+  if (contexts.length > 0) scopedCodeCommentContexts.set(scopeKey, [...contexts]);
+  else scopedCodeCommentContexts.delete(scopeKey);
+}
+
+/** composer 编辑态的 edit scope 用完即弃：离开时不缓存，原草稿 scope 正常缓存。 */
+function stashScopeContexts(
+  scopeKey: string,
+  contexts: readonly CodeCommentComposerAttachment[],
+) {
+  if (isComposerEditScopeId(scopeKey)) {
+    scopedCodeCommentContexts.delete(scopeKey);
+    return;
+  }
+  seedCodeCommentContextsForScope(scopeKey, contexts);
 }
 
 function createCodeCommentAttachmentId() {
@@ -35,7 +64,10 @@ function createCodeCommentAttachmentId() {
 }
 
 function contextKey(
-  context: Pick<CodeCommentComposerAttachment, "id" | "workspaceIdentity" | "workspacePath">,
+  context: Pick<
+    CodeCommentComposerAttachment,
+    "id" | "workspaceIdentity" | "workspacePath"
+  >,
 ) {
   return `${getCodeCommentWorkspaceKey(context.workspacePath, context.workspaceIdentity)}\0${context.id}`;
 }
@@ -46,27 +78,43 @@ export function useCodeCommentContexts({
   requestFocus,
   scopeKey,
 }: UseCodeCommentContextsOptions): UseCodeCommentContextsResult {
-  const [contexts, setContexts] = useState<readonly CodeCommentComposerAttachment[]>([]);
+  const [contexts, setContexts] = useState<
+    readonly CodeCommentComposerAttachment[]
+  >(() => {
+    const restored = scopedCodeCommentContexts.get(scopeKey) ?? [];
+    scopedCodeCommentContexts.delete(scopeKey);
+    return restored;
+  });
   const contextsRef = useRef(contexts);
   const callbacksRef = useRef({ onContextRemoved, requestFocus });
   const scopeKeyRef = useRef(scopeKey);
   callbacksRef.current = { onContextRemoved, requestFocus };
 
-  const commitContexts = useCallback((next: readonly CodeCommentComposerAttachment[]) => {
-    const nextKeys = new Set(next.map(contextKey));
-    for (const context of contextsRef.current) {
-      if (!nextKeys.has(contextKey(context))) {
-        callbacksRef.current.onContextRemoved?.(context);
+  const commitContexts = useCallback(
+    (next: readonly CodeCommentComposerAttachment[]) => {
+      const nextKeys = new Set(next.map(contextKey));
+      for (const context of contextsRef.current) {
+        if (!nextKeys.has(contextKey(context))) {
+          callbacksRef.current.onContextRemoved?.(context);
+        }
       }
-    }
-    contextsRef.current = next;
-    setContexts(next);
-  }, []);
+      contextsRef.current = next;
+      setContexts(next);
+    },
+    [],
+  );
 
   const removeContext = useCallback(
-    (target: Pick<CodeCommentComposerAttachment, "id" | "workspaceIdentity" | "workspacePath">) => {
+    (
+      target: Pick<
+        CodeCommentComposerAttachment,
+        "id" | "workspaceIdentity" | "workspacePath"
+      >,
+    ) => {
       const targetKey = contextKey(target);
-      const next = contextsRef.current.filter((context) => contextKey(context) !== targetKey);
+      const next = contextsRef.current.filter(
+        (context) => contextKey(context) !== targetKey,
+      );
       if (next.length !== contextsRef.current.length) {
         commitContexts(next);
       }
@@ -84,9 +132,20 @@ export function useCodeCommentContexts({
 
   useEffect(() => {
     if (scopeKeyRef.current === scopeKey) return;
+    stashScopeContexts(scopeKeyRef.current, contextsRef.current);
     scopeKeyRef.current = scopeKey;
-    clearContexts();
-  }, [clearContexts, scopeKey]);
+    const restored = scopedCodeCommentContexts.get(scopeKey) ?? [];
+    scopedCodeCommentContexts.delete(scopeKey);
+    // scope 切换只换展示的那一份；被切走的评论仍属于原草稿，不能触发「移除」回调清掉代码预览标记。
+    contextsRef.current = restored;
+    setContexts(restored);
+  }, [scopeKey]);
+  useEffect(
+    () => () => {
+      stashScopeContexts(scopeKeyRef.current, contextsRef.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!listenAddToChatEvents || typeof window === "undefined") return;
@@ -109,7 +168,9 @@ export function useCodeCommentContexts({
         id: event.detail.id ?? createCodeCommentAttachmentId(),
       };
       const key = contextKey(attachment);
-      const existingIndex = contextsRef.current.findIndex((context) => contextKey(context) === key);
+      const existingIndex = contextsRef.current.findIndex(
+        (context) => contextKey(context) === key,
+      );
       const next =
         existingIndex < 0
           ? [...contextsRef.current, attachment]
@@ -121,7 +182,10 @@ export function useCodeCommentContexts({
     };
 
     const handleRemove = (event: Event) => {
-      if (!isCodeCommentRemoveFromChatEvent(event) || !isCodeCommentRemovePayload(event.detail)) {
+      if (
+        !isCodeCommentRemoveFromChatEvent(event) ||
+        !isCodeCommentRemovePayload(event.detail)
+      ) {
         return;
       }
       removeContext(event.detail);
@@ -131,7 +195,10 @@ export function useCodeCommentContexts({
     window.addEventListener(CODE_COMMENT_REMOVE_FROM_CHAT_EVENT, handleRemove);
     return () => {
       window.removeEventListener(CODE_COMMENT_ADD_TO_CHAT_EVENT, handleAdd);
-      window.removeEventListener(CODE_COMMENT_REMOVE_FROM_CHAT_EVENT, handleRemove);
+      window.removeEventListener(
+        CODE_COMMENT_REMOVE_FROM_CHAT_EVENT,
+        handleRemove,
+      );
     };
   }, [commitContexts, listenAddToChatEvents, removeContext]);
 

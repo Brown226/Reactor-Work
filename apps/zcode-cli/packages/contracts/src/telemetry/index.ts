@@ -1,4 +1,4 @@
-import type { ModelId, ModelProviderId } from "../model/index.js";
+import type { ModelRequestObservation, ModelId, ModelProviderId } from "../model/index.js";
 import type {
   AgentExecutionTelemetryPort,
   AgentTelemetryAbandonReason,
@@ -19,6 +19,8 @@ export const ModelApiOperation = {
   ProjectMemoryExtract: "project_memory_extract",
   ReadSessionContextExtract: "read_session_context_extract",
   ReadSessionContextSynthesize: "read_session_context_synthesize",
+  ProjectMemoryDream: "project_memory_dream",
+  ProjectMemoryRecall: "project_memory_recall",
   SessionTitle: "session_title_generation",
   ToolInternalModelCall: "tool_internal_model_call",
   WebFetch: "web_fetch_processing",
@@ -187,14 +189,19 @@ function mapQuerySourceToModelApiOperation(querySource: string | undefined): {
       return { operation: ModelApiOperation.WebSearch, actorKind: ModelApiActorKind.Tool };
     case "web_fetch_processing":
       return { operation: ModelApiOperation.WebFetch, actorKind: ModelApiActorKind.Tool };
-    case "read_session_context":
-      return {
-        operation: ModelApiOperation.ReadSessionContextExtract,
-        actorKind: ModelApiActorKind.Tool,
-      };
     case "project_memory_extract":
       return {
         operation: ModelApiOperation.ProjectMemoryExtract,
+        actorKind: ModelApiActorKind.System,
+      };
+    case "project_memory_dream":
+      return {
+        operation: ModelApiOperation.ProjectMemoryDream,
+        actorKind: ModelApiActorKind.System,
+      };
+    case "project_memory_recall":
+      return {
+        operation: ModelApiOperation.ProjectMemoryRecall,
         actorKind: ModelApiActorKind.System,
       };
     default:
@@ -339,6 +346,8 @@ export interface ModelAttemptSpanWriter extends AgentTelemetryScope {
   markFirstContent(): void;
   markFirstText(): void;
   markStreamStalled(idleMs: number): void;
+  /** 请求观测交由发行实现映射到 Attribute 与 Event。 */
+  recordRequestObservation(observation: ModelRequestObservation): void;
   finishCompleted(): void;
   finishFailed(
     stage: ModelAttemptFailureStage,

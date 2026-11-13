@@ -1,10 +1,11 @@
-import { TID_FEEDBACK_LOGS_OPT_IN } from "@zcode/shared";
+import { TID_FEEDBACK_LOGS_OPT_IN } from "@zcode/shared/test-ids";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button.js";
 import { Switch } from "@/components/ui/switch.js";
 import { Textarea } from "@/components/ui/textarea.js";
 import { cn } from "@/components/lib/utils.js";
 import { SubmitProgressView } from "@/feedback/FeedbackSubmitProgressView.js";
+import { RequiredMarker } from "@/feedback/feedbackBadges.js";
 import type { FeedbackSubmissionProgressState } from "@/feedback/feedbackSubmissionJob.js";
 import { InboxIcon } from "lucide-react";
 
@@ -21,12 +22,20 @@ export function DescriptionSection({
 }) {
   return (
     <Section
-      title={formatMessage("feedback.submit.simple.descriptionTitle")}
+      title={
+        <>
+          <RequiredMarker />
+          {formatMessage("feedback.submit.simple.descriptionTitle")}
+        </>
+      }
       right={<Counter value={value.length} max={max} />}
     >
       <Field>
         <Textarea
           autoFocus
+          required
+          aria-required="true"
+          aria-label={formatMessage("feedback.submit.simple.descriptionTitle")}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           rows={5}
@@ -143,7 +152,7 @@ export function Section({
   right,
   children,
 }: {
-  title: string;
+  title: ReactNode;
   right?: ReactNode;
   children: ReactNode;
 }) {

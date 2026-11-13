@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { resolveNativeSearchReleasePlan } from "../../../scripts/native-search-tools-config.mjs";
 import { runCommand } from "../../../scripts/spawn-command.mjs";
 import { getTargetPlatform } from "./target-platform.mjs";
+import { isRealComputerUseProducerInstalled } from "./computer-use-producer.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const desktopRoot = resolve(scriptDir, "..");
@@ -19,15 +20,19 @@ const nativeSearchReleasePlan = resolveNativeSearchReleasePlan({
 // 保留显式开关，后续恢复入口时仍可复用既有原生实现和供应链校验。
 const shouldPrepareWindowsBrowserImportHelper =
   target.os === "win32" && process.env.ZCODE_ENABLE_WINDOWS_BROWSER_IMPORT === "1";
+// Windows Computer Use Helper 由真实 producer 提供；开源占位包没有 Helper runtime，跳过准备。
+const shouldPrepareWindowsCuaHelper =
+  target.os === "win32" && isRealComputerUseProducerInstalled({ desktopPackageRoot: desktopRoot });
 // CUA 权限浮窗的吸附数据源。仅 macOS；缺 swiftc 时脚本内部自行降级为跳过（浮窗 fail-open
 // 到屏幕底部，仍可用），所以无条件挂在 darwin 上不会让构建变脆。
 const shouldPrepareMacosWindowBounds = target.os === "darwin";
 
-// 本机桌面包内置 agent 的 JS bundle（prepare:agent-bundle），运行时由 app 的 Electron Node runtime 执行。
-// 远端跨平台原生二进制仍由上面的 prepare:remote-assets 提供。
-// native-search 归档随仓库分发，准备步骤只做本地解包校验，不需要任何下载源配置。
+// 本机桌面包不再内置 glm 原生二进制（prepare:glm），改为内置 agent 的 JS bundle（prepare:agent-bundle），
+// 运行时由 app 的 Electron Node runtime 执行。Source Server 资源由独立 stage:remote-assets 入口负责。
 const localRuntimeScripts = [
   "prepare:agent-bundle",
+  ...(target.os === "win32" ? ["prepare:windows-runtime-host"] : []),
+  ...(shouldPrepareWindowsCuaHelper ? ["prepare:windows-cua-helper"] : []),
   ...(nativeSearchReleasePlan.enabled ? ["prepare:native-search"] : []),
   ...(shouldPrepareWindowsBrowserImportHelper ? ["prepare:browser-import-helper"] : []),
   ...(shouldPrepareMacosWindowBounds ? ["prepare:macos-window-bounds"] : []),
@@ -48,69 +53,6 @@ function runTimedPnpmScript(scriptName) {
   }
 }
 
-/** 仓库根脚本（native-search / file-tools 资产等）：按目标平台显式传 --platform。 */
-function runTimedRepoScript(scriptRelativePath, args) {
-  const startMs = Date.now();
-  console.log(`[ci][timer] prepare-runtime-assets:${scriptRelativePath} start`);
-  try {
-    runCommand(process.execPath, [resolve(desktopRoot, "..", "..", scriptRelativePath), ...args], {
-      cwd: desktopRoot,
-      env: process.env,
-    });
-  } finally {
-    console.log(
-      `[ci][timer] prepare-runtime-assets:${scriptRelativePath} end duration_ms=${Date.now() - startMs}`,
-    );
-  }
-}
-
-const shouldSkipRemoteAssets = process.env.ZCODE_SKIP_REMOTE_ASSETS === "1";
-
-if (!shouldSkipRemoteAssets) {
-  runTimedPnpmScript("prepare:remote-assets");
-} else {
-  // Windows build job 的桌面安装包不依赖 mock-cdn remote 资产。
-  // 之前这里无条件执行 prepare:remote-assets，会在同一个 job 里串行下载/打包跨平台资源，
-  // 导致 CI 时间被白白拉长并逼近 1 小时上限。增加显式开关，只在需要时才准备 remote 资产。
-  console.log("[prepare:runtime-assets] skip prepare:remote-assets (ZCODE_SKIP_REMOTE_ASSETS=1)");
-}
-
 for (const scriptName of localRuntimeScripts) {
   runTimedPnpmScript(scriptName);
-}
-
-// file-tools 官方插件的原生资产树（anydoc napi / onnxruntime / @napi-rs/canvas / PP-OCR
-// 模型 / libredwg wasm）。electron-builder 的 extraResources 直接引用
-// bundled-tools/<platformKey>/file-tools，干净检出缺少该目录会直接让打包失败，
-// 因此挂在 prepare 主链上（非可选）。模型从 hf-mirror 下载并按 sha256 固定；
-// 脚本自带 dev 副本缓存复用，重复构建不会重复下载。
-runTimedRepoScript("scripts/prepare-file-tools-assets.mjs", ["--platform", target.key]);
-
-// 办公四件套 skill 的 Python 运行时（embeddable + 钉死的 19 包）。与 file-tools 的差别：
-// 可降级 —— 暂存失败（内网 CI 拉不到 PyPI 镜像）只告警不阻断打包，electron-builder 的
-// extraResources 是条件注入（目录不存在即跳过），安装包退化为「无内置 Python」，
-// 此时 skill 依赖机器自带 python3（部署文档已说明）。产物不进 git，CI 必须在此生成。
-// 显式跳过：ZCODE_SKIP_OFFICE_ENGINES=1。目前只支持 win32-x64（脚本按平台硬报错）。
-const shouldSkipOfficeEngines = process.env.ZCODE_SKIP_OFFICE_ENGINES === "1";
-if (shouldSkipOfficeEngines) {
-  console.log("[prepare:runtime-assets] skip office-engines (ZCODE_SKIP_OFFICE_ENGINES=1)");
-} else if (target.key !== "win32-x64") {
-  console.log(
-    `[prepare:runtime-assets] skip office-engines: 当前仅支持 win32-x64（目标 ${target.key}）`,
-  );
-} else {
-  try {
-    // 不带 --record：以仓库内 scripts/office-engines-assets.json 的 sha256 为准做校验，
-    // hash 不符即失败；manifest 的更新是显式的人工动作（改 PACKAGE_PINS 后 local --record）。
-    runTimedRepoScript("scripts/prepare-office-engines-assets.mjs", [
-      "--platform",
-      target.key,
-      "--stage",
-      "python",
-    ]);
-  } catch (error) {
-    console.warn(
-      `[prepare:runtime-assets] office-engines 准备失败（继续打包，安装包将无内置 Python）: ${error.message}`,
-    );
-  }
 }

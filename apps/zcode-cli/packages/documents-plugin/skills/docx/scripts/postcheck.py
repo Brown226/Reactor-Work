@@ -39,7 +39,6 @@ NS = {
     "wp": "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing",
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
     "pic": "http://schemas.openxmlformats.org/drawingml/2006/picture",
-    "m": "http://schemas.openxmlformats.org/officeDocument/2006/math",
 }
 
 
@@ -449,47 +448,6 @@ def check_font_fallback(root: ET.Element) -> CheckResult:
     return CheckResult("font-fallback", True, f"All fonts are common system fonts ({len(fonts_used)} types)")
 
 
-def check_math_omml(root: ET.Element) -> CheckResult:
-    """Native OMML formulas vs image/text fallbacks.
-
-    产品规则：公式主路径是 LaTeX→OMML（office_skill_lib.omml）。本项只做可观测统计：
-    有 m:oMath 即视为原生公式；若只剩 [公式: …] 纯文本占位则提示降级。
-    """
-    math_ns = NS["m"]
-    omml_inline = root.findall(f".//{{{math_ns}}}oMath")
-    omml_display = root.findall(f".//{{{math_ns}}}oMathPara")
-    n_omml = len(omml_inline) + len(omml_display)
-
-    # 纯文本降级占位：[公式: ...]
-    text_fallback = 0
-    for t in root.iter(f"{{{NS['w']}}}t"):
-        if t.text and t.text.strip().startswith("[公式:"):
-            text_fallback += 1
-
-    if n_omml == 0 and text_fallback == 0:
-        return CheckResult(
-            "math-omml", True,
-            "No formulas detected (0 OMML, 0 text fallbacks)",
-            "info",
-        )
-    if n_omml > 0 and text_fallback == 0:
-        return CheckResult(
-            "math-omml", True,
-            f"Native OMML formulas present (display={len(omml_display)}, inline={len(omml_inline)})",
-            "info",
-        )
-    if n_omml > 0 and text_fallback > 0:
-        return CheckResult(
-            "math-omml", False,
-            f"Mixed formula modes: {n_omml} OMML + {text_fallback} text fallbacks — prefer OMML for all",
-            "warning",
-        )
-    return CheckResult(
-        "math-omml", False,
-        f"{text_fallback} formula(s) fell back to plain text ([公式:]) — OMML conversion failed or skipped",
-        "warning",
-    )
-
 
 def check_heading_levels(root: ET.Element) -> CheckResult:
     """Check whether headings skip levels"""
@@ -774,7 +732,6 @@ def run_all_checks(docx_path: str) -> list[CheckResult]:
         check_line_spacing,
         check_image_overflow,
         check_font_fallback,
-        check_math_omml,
         check_heading_levels,
         check_shading_type,
     ]

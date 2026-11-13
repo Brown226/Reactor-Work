@@ -4,6 +4,7 @@ import { z } from "zod";
 import { PROTOCOL_V4_LIMITS } from "./core.js";
 import { crc32WireBytes, decodeWireBase64 } from "./wire-binary.js";
 import type { TopicFrameDeliveryKind, TopicWireFrame } from "./wire.js";
+import { WIRE_FAULT_INVALID_PAYLOAD } from "./wire-fault.js";
 
 export type ReassembleTopicWireFramesResult<F> =
   | { kind: "complete"; frame: F; deliveryKind: TopicFrameDeliveryKind }
@@ -24,7 +25,10 @@ function frameMatchesEnvelope(
 ): boolean {
   if (typeof frame !== "object" || frame === null) return false;
   const record = frame as { topic?: unknown; subscriptionId?: unknown };
-  return record.topic === wire.topic && record.subscriptionId === wire.subscriptionId;
+  return (
+    record.topic === wire.topic &&
+    record.subscriptionId === wire.subscriptionId
+  );
 }
 
 export function reassembleTopicWireFrames<F>(
@@ -64,11 +68,14 @@ export function reassembleTopicWireFrames<F>(
     const parsed = frameSchema.safeParse(first.frame);
     return parsed.success
       ? { kind: "complete", frame: parsed.data, deliveryKind: first.deliveryKind }
-      : { kind: "rejected", reasonCode: "proto.frameAssemblyInvalidPayload" };
+      : { kind: "rejected", reasonCode: WIRE_FAULT_INVALID_PAYLOAD };
   }
 
-  if (first.fragmentCount > PROTOCOL_V4_LIMITS.logicalFrameAssemblyMaxFragments) {
-    // fragmentCount 曾只受 logicalBytes 约束，恶意元数据可在
+  if (
+    first.fragmentCount >
+    PROTOCOL_V4_LIMITS.logicalFrameAssemblyMaxFragments
+  ) {
+    // 修复原因：fragmentCount 曾只受 logicalBytes 约束，恶意元数据可在
     // 缺片路径制造千万级 missingIndexes，先用协议硬上限阻断无界分配。
     return {
       kind: "rejected",
@@ -203,5 +210,5 @@ export function reassembleTopicWireFrames<F>(
   const parsed = frameSchema.safeParse(value);
   return parsed.success
     ? { kind: "complete", frame: parsed.data, deliveryKind: first.deliveryKind }
-    : { kind: "rejected", reasonCode: "proto.frameAssemblyInvalidPayload" };
+    : { kind: "rejected", reasonCode: WIRE_FAULT_INVALID_PAYLOAD };
 }

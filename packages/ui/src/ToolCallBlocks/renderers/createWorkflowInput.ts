@@ -29,18 +29,29 @@ function readTrimmedString(value: unknown): string | undefined {
  * `amend` 为真时换成修订词汇：
  * 同一个渲染器、同一套相位，只是词不同——模型不是在启动什么，而是在改一个用户正看着的东西。
  */
-export function readWorkflowKindMessageId(raw: unknown, isRunning: boolean, amend = false): string {
-  const ids = amend ? AMEND_KIND_IDS : CREATE_KIND_IDS;
+export function readWorkflowKindMessageId(
+  raw: unknown,
+  isRunning: boolean,
+  amend: WorkflowKindVocabulary = false,
+  /**
+   * 这次调用只在调并发上限（`isWorkflowRetuneInput`）：不写脚本、也不编译，所以在途期一个字都不
+   * 能提「校验」（docs/dynamic-workflow/concurrency.md）。修订词表的 `writing`「正在调整工作流」
+   * 对它恒真——无论最后是就地生效还是（run 已结算时）退回一次真修订——所以整个在途期都用它，
+   * 不为一个只活几百毫秒的相位新造一个词。待确认另说：那一相在场时它自己的词更有信息量。
+   */
+  retuning = false,
+): string {
+  const ids = workflowKindIds(amend);
   if (!isRunning) {
     return ids.ran;
   }
 
   const v4Status = isPlainRecord(raw) ? raw.v4Status : undefined;
-  if (v4Status === "inputStreaming") {
-    return ids.writing;
-  }
   if (v4Status === "pendingApproval") {
     return ids.awaitingConfirmation;
+  }
+  if (v4Status === "inputStreaming" || retuning) {
+    return ids.writing;
   }
 
   return ids.running;
@@ -56,9 +67,9 @@ export function readWorkflowKindMessageId(raw: unknown, isRunning: boolean, amen
  */
 export function readWorkflowPrelaunchKindMessageId(
   phase: { compileErrors: boolean; failed: boolean; writing: boolean; revising: boolean },
-  amend: boolean,
+  amend: WorkflowKindVocabulary,
 ): string {
-  const ids = amend ? AMEND_KIND_IDS : CREATE_KIND_IDS;
+  const ids = workflowKindIds(amend);
   if (phase.compileErrors) return ids.draft;
   if (phase.failed) return ids.ran;
   if (phase.writing) return phase.revising ? ids.revising : ids.writing;
@@ -92,6 +103,24 @@ const AMEND_KIND_IDS: WorkflowKindIds = {
   ran: "chat.toolCall.workflow.amend.ran",
   draft: "chat.toolCall.workflow.amend.draft",
 };
+
+/** 留白补全词汇（docs/dynamic-workflow/presentation.md「The fill row」）；校验中同样沿用创建的词。 */
+const HOLE_KIND_IDS: WorkflowKindIds = {
+  writing: "chat.toolCall.workflow.hole.writing",
+  revising: "chat.toolCall.workflow.hole.revising",
+  awaitingConfirmation: "chat.toolCall.workflow.hole.awaitingConfirmation",
+  running: "chat.toolCall.workflow.running",
+  ran: "chat.toolCall.workflow.hole.ran",
+  draft: "chat.toolCall.workflow.hole.draft",
+};
+
+/** 三套词表的选择：`true` 是修订（历史上的布尔参数），`"hole"` 是留白补全，其余是创建。 */
+export type WorkflowKindVocabulary = boolean | "hole";
+
+function workflowKindIds(vocabulary: WorkflowKindVocabulary): WorkflowKindIds {
+  if (vocabulary === "hole") return HOLE_KIND_IDS;
+  return vocabulary ? AMEND_KIND_IDS : CREATE_KIND_IDS;
+}
 
 /** CreateWorkflow 工具入参里的可选展示名；聊天卡片与运行确认窗共用同一读取规则。 */
 export function readWorkflowName(input: unknown): string | undefined {
@@ -162,7 +191,47 @@ export function readWorkflowMaxConcurrency(input: unknown): number | undefined {
 }
 
 /**
- * `subagent_model`：这次 run 的**子代理**跑在哪个模型上。
+ * 这次 `AmendWorkflow` 调用**只在调并发上限**：`run_id` + `max_concurrency`，没有任何脚本来源、
+ * 也不改模型、不改名字。run 还在飞时这样的调用就地生效（docs/dynamic-workflow/concurrency.md）：
+ * 不停这次 run、不铸新 run、不编译，结果只有一句话，连 display 都没有。
+ *
+ * **入参是这条事实在线上的唯一落点**：工具的结构化输出不过 v4（只有 `text` 与 `display`），而
+ * 三处 `create_workflow` display schema 都是 `.strict()` 的冻结字段集——多一个键会让旧端把整条
+ * 工具结果丢掉。所以呈现按入参形状裁，零协议改动。
+ *
+ * 只看**形状**，不预言结果：run 已经结算时同一个调用会退回一次真修订（带上前驱的脚本去编译）。
+ * 那条路会留下 display、也会铸出一条按 toolCallId 联接得上的 run，两者都是接线层的判据。
+ * 流式中入参只到了一半时这个形状也会短暂成立（脚本还没流到），所以在途只用它挑一个对两种结局
+ * 都真的词，不据它改变行的形态。
+ */
+export interface WorkflowRetuneCall {
+  runId: string;
+  /**
+   * 用户要求的上限；`null` = 解除本 run 自己的界（回到默认并发）。
+   *
+   * ⚠ **未经取整**：CLI 的 `resolveInput` 只把它向下取整到至少 1（没有上限），而这里读到的是模型
+   * 发出的那个数。等于默认并发的数与 `null` 一样读作「回到默认」，所以展示方要拿默认并发去比。
+   */
+  requested: number | null;
+}
+
+export function readWorkflowRetuneCall(input: unknown): WorkflowRetuneCall | undefined {
+  if (!isPlainRecord(input)) return undefined;
+  const runId = readWorkflowAmendTarget(input);
+  if (runId === undefined) return undefined;
+  const bound = input.max_concurrency;
+  const requested = bound === null ? null : readWorkflowMaxConcurrency(input);
+  if (requested === undefined) return undefined;
+  // 任何一个别的意图在场都不是「只调并发上限」：脚本与 path 要编译，模型与名字要换一条 run。
+  if (readWorkflowScript(input) !== undefined || readTrimmedString(input.path) !== undefined) {
+    return undefined;
+  }
+  if (input.subagent_model !== undefined || input.name !== undefined) return undefined;
+  return { runId, requested };
+}
+
+/**
+ * `subagent_model`：这次 run 的**子代理**跑在哪个模型上（docs/dynamic-workflow/launch.md）。
  * 与 `max_concurrency` 同一条纪律：Create 与 Amend 是同一个字段名，读取规则也只有一份。
  *
  * 只认非空字符串：Amend 的 `null`（退回会话模型）与缺席在确认窗里是同一件事——子代理跟随
@@ -172,6 +241,54 @@ export function readWorkflowMaxConcurrency(input: unknown): number | undefined {
  */
 export function readWorkflowSubagentModel(input: unknown): string | undefined {
   return isPlainRecord(input) ? readTrimmedString(input.subagent_model) : undefined;
+}
+
+/**
+ * 脚本给某些子代理点名了模型（CLI `resolveInput` 回填的 `model_bindings` 非空，docs/dynamic-workflow/
+ * launch.md「Models the script names」）。确认窗不逐名列出它们——那是作者模型的选择——只据此把模型
+ * 那一句改口成「子代理默认运行在」：它不再替每一个子代理说话。
+ */
+export function workflowScriptNamesModels(input: unknown): boolean {
+  return (
+    isPlainRecord(input) &&
+    isPlainRecord(input.model_bindings) &&
+    Object.keys(input.model_bindings).length > 0
+  );
+}
+
+/** CLI `resolveInput` 回填的「确认窗可调」事实（`adjustable_settings`）。 */
+export interface WorkflowAdjustableSettings {
+  /** 宿主能解析窗里选的模型；false 时模型那一行只是一句话。 */
+  subagentModel: boolean;
+  /**
+   * 默认并发 D（线上键 `concurrency_ceiling`，名字早于「默认并发」）；缺席即未知。它不是上限：
+   * 步进器从 1 起没有上界，只拿它写「默认 N」与判「等于默认 = 不设自己的界」。
+   */
+  defaultConcurrency?: number;
+}
+
+/**
+ * 确认窗可调的两项设置（docs/dynamic-workflow/launch.md「Adjusting the settings in the window」）。
+ * 走入参而不是 display：display 的字段集冻结，多一个键旧端会整块丢掉。块缺席即旧 agent——它不会
+ * 应用窗里改的值，确认窗就照旧只画纯文本条件行。
+ */
+export function readWorkflowAdjustableSettings(
+  input: unknown,
+): WorkflowAdjustableSettings | undefined {
+  if (!isPlainRecord(input) || !isPlainRecord(input.adjustable_settings)) {
+    return undefined;
+  }
+  const block = input.adjustable_settings;
+  // 线上键名 `concurrency_ceiling` 早于「默认并发」这个概念，为兼容旧端保留；它现在装的是 D。
+  const defaultConcurrency = block.concurrency_ceiling;
+  return {
+    subagentModel: block.subagent_model === true,
+    ...(typeof defaultConcurrency === "number" &&
+    Number.isInteger(defaultConcurrency) &&
+    defaultConcurrency > 0
+      ? { defaultConcurrency }
+      : {}),
+  };
 }
 
 /**

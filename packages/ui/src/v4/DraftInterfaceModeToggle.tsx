@@ -1,4 +1,6 @@
-import { TID_V4_DRAFT_INTERFACE_MODE_TOGGLE } from "@zcode/shared";
+import {
+  TID_V4_DRAFT_INTERFACE_MODE_TOGGLE,
+} from "@zcode/shared/test-ids";
 
 import { SegmentedTabs } from "@/components/ui/segmented-tabs.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";

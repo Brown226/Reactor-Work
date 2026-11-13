@@ -17,7 +17,7 @@ import {
   TID_ACCOUNT_CAPABILITY,
   TID_ACCOUNT_PERMISSIONS,
   TID_REACTOR_SERVER_POLICY,
-} from "@zcode/shared";
+} from "@zcode/shared/test-ids";
 import { useServerAgentSync } from "@/hooks/useServerAgentSync.js";
 import { useServerSkillMarket } from "@/hooks/useServerSkillMarket.js";
 import type { ReactorServerAction } from "@/hooks/useReactorServer.js";

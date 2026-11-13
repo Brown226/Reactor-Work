@@ -1,4 +1,5 @@
 import browserUseIconUrl from "@/assets/plugin-icons/browser-use.png";
+import designIconUrl from "@/assets/plugin-icons/design.png";
 import documentsIconUrl from "@/assets/plugin-icons/documents.png";
 import imageSearchIconUrl from "@/assets/plugin-icons/image-search.png";
 import obsidianIconUrl from "@/assets/plugin-icons/obsidian.png";
@@ -8,11 +9,13 @@ import presentationsIconUrl from "@/assets/plugin-icons/presentations.png";
 import skillCreatorIconUrl from "@/assets/plugin-icons/skill-creator.png";
 import spreadsheetsIconUrl from "@/assets/plugin-icons/spreadsheets.png";
 import superpowersIconUrl from "@/assets/plugin-icons/superpowers.png";
+import visualizeIconUrl from "@/assets/plugin-icons/visualize.png";
 import zcodeGuideIconUrl from "@/assets/plugin-icons/zcode-guide.png";
 import { isTrustedImageUrl } from "@/lib/trustedImageUrl.js";
 
 const OFFICIAL_PLUGIN_ICON_BY_ID: Readonly<Record<string, string>> = {
   "browser-use@zcode-plugins-official": browserUseIconUrl,
+  "design@zcode-plugins-official": designIconUrl,
   "documents@zcode-plugins-official": documentsIconUrl,
   "image-search@zcode-plugins-official": imageSearchIconUrl,
   "obsidian@zcode-plugins-official": obsidianIconUrl,
@@ -22,6 +25,7 @@ const OFFICIAL_PLUGIN_ICON_BY_ID: Readonly<Record<string, string>> = {
   "skill-creator@zcode-plugins-official": skillCreatorIconUrl,
   "spreadsheets@zcode-plugins-official": spreadsheetsIconUrl,
   "superpowers@zcode-plugins-official": superpowersIconUrl,
+  "visualize@zcode-plugins-official": visualizeIconUrl,
   "zcode-guide@zcode-plugins-official": zcodeGuideIconUrl,
   // file-tools / ocr-tools / dwg-tools 无自有图标：与 definitions 的 listing 一致复用 documents 图标
   // （三者的 listing.icon 都指向 documents/icon.png；内网 CDN 不可达时这里兜底）。

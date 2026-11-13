@@ -1,3 +1,7 @@
+import {
+  isSameOAuthAccountMaterial,
+  type OAuthAccountMaterial,
+} from "#src/oauth/repo/oauthCredentialRepo.js";
 import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import type {
@@ -43,6 +47,7 @@ export type AccountProviderFamilyAvailabilityResolver = (
 ) => Promise<Partial<Record<string, CodingPlanAvailabilityResult>>>;
 
 export interface AccountProviderConnectionResolverOptions {
+  readonly loadSessionRevision: () => Promise<string | null>;
   readonly readSettings: () => Promise<AccountProviderConnectionSettings>;
   readonly loadCodingPlanApiKey: (
     providerId: string,
@@ -56,6 +61,9 @@ export interface AccountProviderConnectionResolverOptions {
 
 export interface CodingPlanFamilyAvailabilityResolverOptions {
   readonly apiClient: ApiClient;
+  readonly loadOAuthAccountMaterial: (
+    family: ProviderFamilyDomain,
+  ) => Promise<OAuthAccountMaterial | null>;
   readonly credentialService?: {
     load(key: string): Promise<string | null>;
   };
@@ -63,6 +71,15 @@ export interface CodingPlanFamilyAvailabilityResolverOptions {
 
 export interface AccountProviderConfigSourceOptions extends AccountProviderConnectionResolverOptions {
   readonly configSource: ProviderSource<ProviderConfigSnapshot>;
+}
+
+/**
+ * off-peak 与 highspeed 都不是独立套餐，而是「已连接的个人/团队 Coding Plan」派生出的
+ * 执行入口：请求期鉴权分别来自 ticket 与加速卡 JWT，本身没有可校验的套餐 Key。
+ * 因此它们既不进入 Coding Plan availability 校验，也不按 selection.kind 直接比对模式。
+ */
+function isCodingPlanDerivedMode(mode: string | undefined): mode is "off-peak" | "highspeed" {
+  return mode === "off-peak" || mode === "highspeed";
 }
 
 /**
@@ -76,6 +93,7 @@ export function createAccountProviderConnectionResolver(
 ): AccountProviderConnectionResolver {
   let previousScopes = new Map<string, string>();
   return async ({ configuredProviders, reasons = [] }) => {
+    const sessionRevision = await options.loadSessionRevision();
     const settings = structuredClone(await options.readSettings());
     const forceCredentialRefresh = reasons.some(isCredentialRefreshReason);
     const accountIdentityByFamily = new Map<ProviderFamilyDomain, Promise<string | null>>();
@@ -98,7 +116,7 @@ export function createAccountProviderConnectionResolver(
           config.access?.type === "zhipu-account" &&
           config.access.accountType === family &&
           config.access.mode &&
-          config.access.mode !== "off-peak"
+          !isCodingPlanDerivedMode(config.access.mode)
             ? [{ providerId, config, planKind: config.access.mode }]
             : [],
         );
@@ -161,31 +179,39 @@ export function createAccountProviderConnectionResolver(
       // last-known-good 只对同账号、同 Team 身份成立。切账号后的网络失败不能复活旧权益。
       const scope = JSON.stringify([
         await loadAccountIdentity(access.accountType),
-        access.mode === "team-coding-plan" && selection?.kind === "team-coding-plan"
+        // 派生入口跟随当前套餐；它的 last-known-good 作用域也必须包含完整 Team 身份。
+        // 否则切 Team 后母体会 fail-closed，派生入口却可能沿用旧 Team 权益。
+        (access.mode === "team-coding-plan" || isCodingPlanDerivedMode(access.mode)) &&
+        selection?.kind === "team-coding-plan"
           ? [selection.organizationId, selection.projectId, selection.productId]
           : null,
       ]);
       scopes.set(providerId, scope);
       const resetPrevious =
         previousScopes.has(providerId) && previousScopes.get(providerId) !== scope;
-      if (access.mode === "off-peak") {
+      if (isCodingPlanDerivedMode(access.mode)) {
         const selectedPlanKind = selection?.kind;
-        const matchingPlanAvailable =
+        const entitlementSource =
           settings.providerFamilyDomain === access.accountType &&
-          (selectedPlanKind === "individual-coding-plan" ||
-            selectedPlanKind === "team-coding-plan") &&
-          configuredProviders
-            .entries()
-            .some(
-              ([candidateId, candidate]) =>
-                candidate.access?.type === "zhipu-account" &&
-                candidate.access.accountType === access.accountType &&
-                candidate.access.mode === selectedPlanKind &&
-                availabilityByProviderId.get(candidateId)?.kind === "available",
-            );
+          (selectedPlanKind === "individual-coding-plan" || selectedPlanKind === "team-coding-plan")
+            ? configuredProviders
+                .entries()
+                .find(
+                  ([, candidate]) =>
+                    candidate.access?.type === "zhipu-account" &&
+                    candidate.access.accountType === access.accountType &&
+                    candidate.access.mode === selectedPlanKind,
+                )
+            : undefined;
+        const sourceProviderId = entitlementSource?.[0];
+        const availability = sourceProviderId
+          ? (availabilityByProviderId.get(sourceProviderId) ?? { kind: "unknown" as const })
+          : undefined;
         connections.push({
           providerId,
-          status: matchingPlanAvailable ? "available" : "unavailable",
+          status: availability?.kind ?? "unavailable",
+          ...(sourceProviderId ? { entitlementSourceProviderId: sourceProviderId } : {}),
+          ...(resetPrevious ? { resetPrevious: true } : {}),
         });
         continue;
       }
@@ -233,9 +259,12 @@ export function createAccountProviderConnectionResolver(
           (await captured) === ((await options.loadAccountIdentity(family))?.trim() || null),
       ),
     );
+    const latestSettings = await options.readSettings();
+    const latestSessionRevision = await options.loadSessionRevision();
     if (
+      sessionRevision !== latestSessionRevision ||
       identitiesUnchanged.some((unchanged) => !unchanged) ||
-      !isDeepStrictEqual(settings, await options.readSettings())
+      !isDeepStrictEqual(settings, latestSettings)
     ) {
       throw new Error("账号查询期间连接或身份发生变化，丢弃过期结果");
     }
@@ -286,15 +315,22 @@ export function createAccountProviderConfigSource(
 export function createCodingPlanFamilyAvailabilityResolver(
   options: CodingPlanFamilyAvailabilityResolverOptions,
 ): AccountProviderFamilyAvailabilityResolver {
-  return ({ family, providers, selections }) => {
+  return async ({ family, providers, selections }) => {
+    const accountMaterial = await options.loadOAuthAccountMaterial(family);
     const context = {
       apiClient: options.apiClient,
       credentialService: options.credentialService,
+      accountMaterial,
       providerFamilyConnectionSelections: selections,
     };
-    return family === "zai"
+    const result = await (family === "zai"
       ? validateZaiAccountProviderAvailability(providers, context)
-      : validateBigModelAccountProviderAvailability(providers, context);
+      : validateBigModelAccountProviderAvailability(providers, context));
+    if (
+      !isSameOAuthAccountMaterial(accountMaterial, await options.loadOAuthAccountMaterial(family))
+    )
+      throw new Error("project_token_scope_invalidated");
+    return result;
   };
 }
 
@@ -318,7 +354,7 @@ export async function resolveCurrentAccountAccess(input: {
   }
   const selection = settings.selections[accountType];
   if (!selection) return null;
-  if (mode === "off-peak") {
+  if (isCodingPlanDerivedMode(mode)) {
     if (selection.kind !== "individual-coding-plan" && selection.kind !== "team-coding-plan") {
       return null;
     }

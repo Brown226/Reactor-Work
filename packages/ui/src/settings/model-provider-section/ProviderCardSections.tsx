@@ -5,7 +5,6 @@ import {
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
-  type RefObject,
   type ReactNode,
 } from "react";
 import type {
@@ -24,7 +23,7 @@ import {
   TID_MODEL_PROVIDER_NAME_INPUT,
   TID_MODEL_PROVIDER_PULL_MODELS_BUTTON,
   testId,
-} from "@zcode/shared";
+} from "@zcode/shared/test-ids";
 import {
   CloudDownload,
   InfoIcon,
@@ -54,6 +53,7 @@ import { type ProviderModelDraftValues } from "@/settings/model-provider-section
 import { ProviderModelMetadataDialog } from "@/settings/model-provider-section/ProviderModelMetadataDialog.js";
 import { ProviderModelCatalogDialog } from "@/settings/model-provider-section/ProviderModelCatalogDialog.js";
 import {
+  PROVIDER_CONNECTION_API_FORMATS,
   ProviderApiFormatSelect,
   resolveProviderConnectionApiFormatDisplayLabel,
 } from "@/settings/model-provider-section/ProviderApiFormatSelect.js";
@@ -62,13 +62,19 @@ import { useProviderModelDraft } from "@/settings/model-provider-section/useProv
 import { ProviderLogo } from "@/settings/model-provider-section/ProviderLogo.js";
 import type { ProviderConfigObject } from "@zcode/provider";
 
-export { formatModelContextWindowLabel } from "@/lib/tokenNumberFormat.js";
 export {
   resolveProviderConnectionApiFormatDisplayLabel,
   resolveProviderConnectionApiFormatOptions,
 } from "@/settings/model-provider-section/ProviderApiFormatSelect.js";
+export { formatModelContextWindowLabel } from "@/lib/tokenNumberFormat.js";
 
-function shouldShowProviderApiFormat(
+export function resolveProviderApiFormatOptions(
+  _provider: Pick<ProviderSettingsFormProvider, "config" | "models">,
+): ProviderApiType[] {
+  return [...PROVIDER_CONNECTION_API_FORMATS];
+}
+
+export function shouldShowProviderApiFormat(
   _provider: Pick<ProviderSettingsFormProvider, "providerId">,
 ): boolean {
   return true;
@@ -79,7 +85,6 @@ export function ProviderCardHeader({
   logo,
   editingName,
   nameValue,
-  nameInputRef,
   nameEditable = true,
   onNameChange,
   onNameBlur,
@@ -95,7 +100,6 @@ export function ProviderCardHeader({
   logo?: ProviderConfigObject["logo"];
   editingName: boolean;
   nameValue: string;
-  nameInputRef: RefObject<HTMLInputElement | null>;
   nameEditable?: boolean;
   onNameChange: (value: string) => void;
   onNameBlur: () => void;
@@ -118,7 +122,7 @@ export function ProviderCardHeader({
         {editingName ? (
           <Input
             {...TECHNICAL_INPUT_ATTRIBUTES}
-            ref={nameInputRef}
+            autoFocus
             data-testid={TID_MODEL_PROVIDER_NAME_INPUT}
             type="text"
             size="lg"
@@ -156,10 +160,11 @@ export function ProviderCardHeader({
             <DropdownMenuContent
               align="end"
               onCloseAutoFocus={(event) => {
-                // 重命名后的焦点交给输入框，不能被菜单关闭时重新抢回触发按钮。
+                // 退场动画中的菜单仍会因鼠标移动抢焦点，必须关闭后再挂载并聚焦输入框。
                 if (renameRequestedRef.current) {
                   event.preventDefault();
                   renameRequestedRef.current = false;
+                  onStartEditName();
                 }
               }}
             >
@@ -168,7 +173,6 @@ export function ProviderCardHeader({
                   data-testid={TID_MODEL_PROVIDER_NAME_EDIT_BUTTON}
                   onSelect={() => {
                     renameRequestedRef.current = true;
-                    onStartEditName();
                   }}
                 >
                   <Pencil className="size-3.5" />

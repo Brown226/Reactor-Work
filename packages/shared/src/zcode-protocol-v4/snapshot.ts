@@ -1,6 +1,7 @@
 /* oxlint-disable max-lines -- v4 snapshot schema is a frozen cross-process contract; additions stay grouped here. */
 // ConversationSnapshot A 区。
 // A 区更新语义 = 字段级整体替换（state.updated），绝不深合并——深合并是错乱之母。
+import { pluginInstallRequestPayloadSchema } from "./pluginInstall.js";
 import { z } from "zod";
 import { sharedContextImportStateSchema } from "./shared-context-import.js";
 export { sharedContextImportStateSchema } from "./shared-context-import.js";
@@ -12,7 +13,7 @@ import {
   zcodeSessionContextCacheUsageSchema,
 } from "../zcode-protocol-legacy-types.js";
 import { timestampSchema } from "./core.js";
-import { conversationRowSchema } from "./rows.js";
+import { displayConversationRowSchema } from "./rows.js";
 import { toolCallDisplaySchema } from "./toolDisplay.js";
 
 import { workspaceHookReviewRequestPayloadSchema } from "./workspace-hook-review.js";
@@ -60,6 +61,7 @@ export const activeWorkSummarySchema = z.object({
     "turnSteer",
   ]),
   foregroundExecutionId: z.string().min(1).optional(),
+  sourceCommandId: z.string().min(1).optional(),
   startedAt: timestampSchema,
 });
 export type ActiveWorkSummary = z.infer<typeof activeWorkSummarySchema>;
@@ -99,6 +101,10 @@ export const errorAttributionSchema = z
     statusCode: z.number().int().min(100).max(599).optional(),
     providerErrorCode: z.string().min(1).max(160).optional(),
     retryable: z.boolean().optional(),
+    /** string=使用该 Highspeed 卡，null=明确未使用，undefined=旧 Agent 未发布。 */
+    highspeedCardId: z.string().nullable().optional(),
+    /** true=本轮 Highspeed 失败已命中退回声明但无可用退回目标；Renderer 据此作废匹配卡。 */
+    highspeedFallbackUnavailable: z.boolean().optional(),
   })
   .strict();
 export type ErrorAttribution = z.infer<typeof errorAttributionSchema>;
@@ -157,6 +163,9 @@ export const sessionActionAvailabilitySchema = z.object({
   sendQueuedNow: actionAvailabilitySchema,
   pauseGoal: actionAvailabilitySchema,
   resumeGoal: actionAvailabilitySchema,
+  // 文件撤销的 session 锁；目标资格看 turnHeader.actions.canRewindFiles。
+  // optional 只用于兼容旧 CLI 的帧（旧 CLI 把锁写在行上）：客户端缺失时按允许处理。
+  rewindFiles: actionAvailabilitySchema.optional(),
 });
 export type SessionActionAvailability = z.infer<typeof sessionActionAvailabilitySchema>;
 
@@ -206,11 +215,29 @@ export const sessionUsageStateSchema = z.object({
 export type SessionUsageState = z.infer<typeof sessionUsageStateSchema>;
 
 // ── queue（不持久化，裁决：CLI 进程死亡即丢，客户端对账后由用户决定重发）──
+// editorId 标识单个编辑器实例（每个窗口/标签页一个，sessionStorage 持久）；clientId 同设备多窗口共享，
+// 不能单独作为锁归属。inputOrigin 由 Host 可信注入，只用于展示「桌面 / 手机」。
+export const queueItemEditLockSchema = z
+  .object({
+    editorId: z.string().min(1),
+    clientId: z.string().min(1),
+    inputOrigin: z.enum(["desktop", "mobile"]).optional(),
+  })
+  .strict();
+export type QueueItemEditLock = z.infer<typeof queueItemEditLockSchema>;
+
 export const queueItemSchema = conversationInputIntentSchema.extend({
   dispatch: conversationInputDispatchSchema.extend({
     state: z.enum(["queued", "reserved", "promoting"]),
   }),
+  /** Host 准入注入的可信 automation 身份；只允许队列提升原样回放。 */
+  automationId: z.string().min(1).optional(),
   toolDisallowlist: z.array(z.string().min(1)).optional(),
+  /**
+   * 底部 composer 正在编辑该项（docs/ui/composer-edit-mode.md）：CLI 内存权威，冻结期间
+   * 自动续跑停在该项前，且不能删除、重排或立即发送。缺省 = 未锁。
+   */
+  editLock: queueItemEditLockSchema.optional(),
 });
 export type QueueItem = z.infer<typeof queueItemSchema>;
 
@@ -227,6 +254,12 @@ export type QueueState = z.infer<typeof queueStateSchema>;
 export const MAX_PERMISSION_FEEDBACK_CHARS = 4_096;
 
 export const PERMISSION_FULL_ACCESS_OPTION_ID = "fullAccess";
+export const PERMISSION_GUARDED_OPTION_ID = "allowAndSwitchGuarded";
+export function permissionGrantMode(optionId: string | undefined): "guarded" | "yolo" | undefined {
+  if (optionId === PERMISSION_GUARDED_OPTION_ID) return "guarded";
+  if (optionId === PERMISSION_FULL_ACCESS_OPTION_ID) return "yolo";
+  return undefined;
+}
 const permissionOptionSchema = z.object({
   optionId: z.string(),
   label: z.string(),
@@ -244,8 +277,10 @@ export const permissionRequestPayloadSchema = z.object({
   freeText: z.boolean().optional(),
   origin: zcodeInteractionRequestOriginSchema.optional(),
   // 工具自报的确认预览，复用 row 的 display 投影（同一有界形状）。缺省 = 纯文本 ask。
-  display: toolCallDisplaySchema.optional(),
+  // 同样不设门：预览解析失败退化成纯文本 ask，不拒整份 snapshot（见 toolDisplay.ts 注释）。
+  display: toolCallDisplaySchema.optional().catch(undefined),
   // 独立 additive 能力：旧 UI 忽略此字段，仍只显示原 options，不出现半实现授权入口。
+  modeSwitch: z.enum(["choose", "fullAccessOnly"]).optional(),
   fullAccessOption: permissionOptionSchema
     .extend({
       optionId: z.literal(PERMISSION_FULL_ACCESS_OPTION_ID),
@@ -309,7 +344,7 @@ export type InteractionAutoResolution = z.infer<typeof interactionAutoResolution
 export const pendingInteractionSchema = z
   .object({
     interactionId: z.string(),
-    kind: z.enum(["permission", "userInput", "workspaceHookReview"]),
+    kind: z.enum(["permission", "userInput", "workspaceHookReview", "pluginInstall"]),
     // null = 会话级（如 provider 交互和 workspace Hook review）。
     anchorRowId: z.number().nullable(),
     createdAt: timestampSchema,
@@ -318,6 +353,7 @@ export const pendingInteractionSchema = z
       permissionRequestPayloadSchema,
       userInputRequestPayloadSchema,
       workspaceHookReviewRequestPayloadSchema,
+      pluginInstallRequestPayloadSchema,
     ]),
   })
   .superRefine((interaction, context) => {
@@ -328,7 +364,10 @@ export const pendingInteractionSchema = z
         message: "pending interaction kind must match payload kind",
       });
     }
-    if (interaction.kind === "workspaceHookReview" && interaction.autoResolution) {
+    if (
+      (interaction.kind === "workspaceHookReview" || interaction.kind === "pluginInstall") &&
+      interaction.autoResolution
+    ) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["autoResolution"],
@@ -388,6 +427,10 @@ export const runningSubagentSummarySchema = z.object({
   title: z.string(),
   summary: z.string().optional(),
   status: z.enum(["running", "waiting", "blocked"]),
+  stopControl: z
+    .object({ taskId: z.string().min(1), executionId: z.string().min(1) })
+    .strict()
+    .optional(),
   startedAt: timestampSchema.optional(),
 });
 export type RunningSubagentSummary = z.infer<typeof runningSubagentSummarySchema>;
@@ -448,8 +491,9 @@ export type PlanState = z.infer<typeof planStateSchema>;
 
 // ── Snapshot 总览 ──
 export const rowsWindowSchema = z.object({
-  // 尾部窗口，rowId 升序。
-  window: z.array(conversationRowSchema),
+  // 尾部窗口，rowId 升序。逐行降级（封闭规则 13）：读不懂的行退化成 unreadable 占位行，
+  // 不再让整帧被拒。totalCount/firstRowId 不受影响——降级只改变一行能否渲染，不改变它是否存在。
+  window: z.array(displayConversationRowSchema),
   // 当前全序行数（截断后会减小；仅用于滚动条估计）。
   totalCount: z.number(),
   // 全序第一行 rowId；window 首行等于它 ⇔ 已到顶（游标分页判定）。
@@ -466,7 +510,28 @@ export const workspaceHookAdmissionStateSchema = z.object({
 });
 export type WorkspaceHookAdmissionSnapshotState = z.infer<typeof workspaceHookAdmissionStateSchema>;
 
+export const workspaceMcpAdmissionStateSchema = z.object({
+  pendingCount: z.number().int().nonnegative(),
+  bundleDigest: z.string().regex(/^[a-f0-9]{64}$/u),
+  workspaceIdentity: z.string().min(1).optional(),
+});
+export type WorkspaceMcpAdmissionSnapshotState = z.infer<typeof workspaceMcpAdmissionStateSchema>;
+
+// 冷历史可读不代表 runtime 已可执行；缺席兼容旧发送端。
+export const runtimeInitializationSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("initializing"), attemptId: z.string().min(1) }),
+  z.object({ status: z.literal("ready"), attemptId: z.string().min(1) }),
+  z.object({
+    status: z.literal("failed"),
+    attemptId: z.string().min(1),
+    reasonCode: z.string(),
+    message: z.string(),
+  }),
+]);
+export type RuntimeInitialization = z.infer<typeof runtimeInitializationSchema>;
+
 export const conversationSnapshotSchema = z.object({
+  runtimeInitialization: runtimeInitializationSchema.optional(),
   protocolVersion: z.literal(1),
   sessionId: z.string(),
   logEpoch: z.string(),
@@ -502,6 +567,10 @@ export const conversationSnapshotSchema = z.object({
   // 旧快照/旧发送端不携带此字段 → 解析得 null,不破坏兼容性(遵守冻结规则)。
   // pendingCount === 0 时投影层置 null(提示条消失)。
   workspaceHookAdmission: workspaceHookAdmissionStateSchema.nullable().default(null),
+  // 旧发送端可缺席；null 或缺席均无 MCP 待审核提示。
+  workspaceMcpAdmission: workspaceMcpAdmissionStateSchema.nullable().optional(),
+  // （2026-09-12）：原 additive 字段 pluginUiSurfaces 已删除，插件面板 widgetState 只留在
+  // 宿主 renderer 内存。
   // B 区
   rows: rowsWindowSchema,
 });

@@ -1,5 +1,6 @@
-import { AlertTriangle, Loader2, RefreshCw, Trash2 } from "lucide-react";
+import { AlertTriangle, LoaderCircle, RefreshCw, Trash2 } from "lucide-react";
 import type { ZCodePluginMarketplaceSummary } from "@zcode/shared";
+import { CLAUDE_OFFICIAL_PLUGIN_MARKETPLACE_ID } from "@zcode/shared";
 import { Button } from "@/components/ui/button.js";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -8,18 +9,21 @@ import {
   isPublicStoreMarketplaceId,
   sortMarketplaceSources,
 } from "@/settings/pluginStoreListing.js";
+import { DEFAULT_MARKETPLACE_ID } from "@/settings/recommendedPlugins.js";
 
 // 官方市场不可移除：移除后启动时会被重新补种，只会造成「删了又回来」的困惑。
 function isRemovableMarketplace(marketplace: ZCodePluginMarketplaceSummary): boolean {
-  return !isPublicStoreMarketplaceId(marketplace.id);
+  if (isPublicStoreMarketplaceId(marketplace.id)) return false;
+  if (marketplace.id === DEFAULT_MARKETPLACE_ID) return false;
+  return true;
 }
 
-function PluginStoreSourceRefreshFailure({
+export function PluginStoreSourceRefreshFailure({
   failure,
 }: {
   failure: NonNullable<ZCodePluginMarketplaceSummary["refreshFailure"]>;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl, locale } = useZCodeIntl();
   return (
     <div
       className="mt-1 flex min-w-0 items-start gap-1 text-ui-base text-destructive"
@@ -29,7 +33,7 @@ function PluginStoreSourceRefreshFailure({
       <span className="min-w-0 break-words">
         {intl.formatMessage(
           { id: "settings.plugins.store.sources.refreshFailed" },
-          { time: formatSourceTime(failure.failedAt) },
+          { time: formatSourceTime(failure.failedAt, locale) },
         )}
         {`: ${failure.message}`}
       </span>
@@ -37,23 +41,26 @@ function PluginStoreSourceRefreshFailure({
   );
 }
 
-/** 顶栏齿轮 → 市场源管理：列出已登记市场，支持刷新与移除（新增走 New 按钮）。 */
+/** 顶栏店铺图标 → 市场源管理：列出已登记市场，支持刷新与移除（新增走 New 按钮）。 */
 export function PluginStoreSourcesDialog({
   open,
   onOpenChange,
   marketplaces,
   onUpdateMarketplace,
   onRemoveMarketplace,
-  operationId,
+  activeOperations,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   marketplaces: ZCodePluginMarketplaceSummary[];
   onUpdateMarketplace: (marketplace: string) => void;
   onRemoveMarketplace: (marketplace: string) => void;
-  operationId: string | null;
+  activeOperations: ReadonlyArray<{ id: string }>;
 }) {
   const { intl, locale } = useZCodeIntl();
+  const claudeCodePlugins = intl.formatMessage({
+    id: "settings.plugins.marketplace.claudeCodePlugins",
+  });
   const sortedMarketplaces = sortMarketplaceSources(marketplaces, locale);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -71,8 +78,12 @@ export function PluginStoreSourcesDialog({
             </p>
           ) : (
             sortedMarketplaces.map((marketplace) => {
-              const updating = operationId === `marketplace:update:${marketplace.id}`;
-              const removing = operationId === `marketplace:remove:${marketplace.id}`;
+              const updating = activeOperations.some(
+                (operation) => operation.id === `marketplace:update:${marketplace.id}`,
+              );
+              const removing = activeOperations.some(
+                (operation) => operation.id === `marketplace:remove:${marketplace.id}`,
+              );
               return (
                 <div
                   key={marketplace.id}
@@ -83,7 +94,11 @@ export function PluginStoreSourcesDialog({
                   <div className="min-w-0 flex-1">
                     <div className="flex min-w-0 items-center gap-1.5">
                       <span className="truncate text-ui-base font-medium text-foreground">
-                        {resolveMarketplaceDisplayName(marketplace.id, [marketplace])}
+                        {resolveMarketplaceDisplayName(
+                          marketplace.id,
+                          [marketplace],
+                          claudeCodePlugins,
+                        )}
                       </span>
                     </div>
                     <div className="mt-0.5 truncate text-ui-base text-foreground-subtle">
@@ -94,11 +109,13 @@ export function PluginStoreSourcesDialog({
                       {marketplace.lastUpdated
                         ? ` · ${intl.formatMessage(
                             { id: "settings.plugins.store.sources.lastUpdated" },
-                            { time: formatSourceTime(marketplace.lastUpdated) },
+                            { time: formatSourceTime(marketplace.lastUpdated, locale) },
                           )}`
                         : ""}
                     </div>
-                    {marketplace.refreshFailure ? (
+                    {marketplace.refreshFailure &&
+                    // claude-plugins-official 的刷新失败不提示（同 pluginManagementStore.updateMarketplace）。
+                    marketplace.id !== CLAUDE_OFFICIAL_PLUGIN_MARKETPLACE_ID ? (
                       <PluginStoreSourceRefreshFailure failure={marketplace.refreshFailure} />
                     ) : null}
                   </div>
@@ -134,7 +151,7 @@ export function PluginStoreSourcesDialog({
                       onClick={() => onRemoveMarketplace(marketplace.id)}
                     >
                       {removing ? (
-                        <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                        <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
                       ) : (
                         <Trash2 className="size-3.5" aria-hidden="true" />
                       )}
@@ -150,8 +167,9 @@ export function PluginStoreSourcesDialog({
   );
 }
 
-function formatSourceTime(value: string): string {
+// 按界面语言格式化时间（不跟系统语言）
+function formatSourceTime(value: string, locale: string): string {
   const time = new Date(value);
   if (Number.isNaN(time.getTime())) return value;
-  return time.toLocaleString();
+  return time.toLocaleString(locale);
 }

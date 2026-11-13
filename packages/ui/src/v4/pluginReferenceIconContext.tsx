@@ -1,8 +1,9 @@
 import { createContext, useContext } from "react";
 
-interface SessionPluginIconProjection {
+export interface SessionPluginIconProjection {
   sessionId: string;
   iconByPluginId: ReadonlyMap<string, string>;
+  nameByPluginId?: ReadonlyMap<string, string>;
 }
 
 const PluginReferenceIconContext = createContext<SessionPluginIconProjection | null>(null);

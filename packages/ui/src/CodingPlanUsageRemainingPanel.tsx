@@ -10,7 +10,7 @@ import {
   type OAuthProviderId,
   ZAI_PROVIDER_ID,
 } from "@zcode/shared";
-import { ChevronRightIcon, Loader2 } from "lucide-react";
+import { ChevronRightIcon, LoaderCircle } from "lucide-react";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -210,6 +210,15 @@ export function resolveCodingPlanUsageRemainingState(params: {
   };
 }
 
+export function hasCodingPlanUsageRemainingPanel(params: {
+  availableProviders: CodingPlanUsageAvailableProvider[];
+  entitlements: CodingPlanUsageRemainingEntitlement[];
+  modelProvidersLoading: boolean;
+  selectedProviderId?: SidebarUsageCodingPlanSourceId;
+}): boolean {
+  return Boolean(resolveCodingPlanUsageRemainingState(params));
+}
+
 export function CodingPlanUsageRemainingPanel({
   availableProviders,
   audience,
@@ -318,7 +327,7 @@ export function CodingPlanUsageRemainingPanel({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            {/* 同一份 Usage Remaining 展示会出现在 sidebar 和输入框上下文菜单。
+            {/* 修复原因：同一份 Usage Remaining 展示会出现在 sidebar 和输入框上下文菜单。
                 详情入口必须由调用方传入，避免共享展示组件直接依赖 tab/store 导航。 */}
             {onUsageClick ? (
               <UsageDetailsButton
@@ -365,7 +374,7 @@ export function CodingPlanUsageRemainingPanel({
       <div className="px-3 py-2">
         {state.loading && !state.visibleSnapshot ? (
           <div className="flex items-center gap-2 p-2 text-ui-base text-foreground-subtle">
-            <Loader2 className="size-3.5 animate-spin" />
+            <LoaderCircle className="size-3.5 animate-spin" />
             {intl.formatMessage({ id: "sidebar.usage.plan.loading" })}
           </div>
         ) : state.displayedEntitlement?.error ? (

@@ -13,7 +13,11 @@
  */
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { TID_ACCOUNT_SECTION, TID_ACCOUNT_TAB, TID_REACTOR_SERVER_STATUS } from "@zcode/shared";
+import {
+  TID_ACCOUNT_SECTION,
+  TID_ACCOUNT_TAB,
+  TID_REACTOR_SERVER_STATUS,
+} from "@zcode/shared/test-ids";
 import { SegmentedTabs } from "@/components/ui/segmented-tabs.js";
 import { useReactorServer } from "@/hooks/useReactorServer.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";

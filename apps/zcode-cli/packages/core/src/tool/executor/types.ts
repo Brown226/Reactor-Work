@@ -1,37 +1,42 @@
+import type { ToolSearchExecutionContext } from "@zcode/contracts";
+import type { SessionControlBinding } from "../session-control/contract.js";
 import type {
   AgentExecutionTelemetryPort,
   AgentTelemetryActorKind,
+  AutomationPort,
   BackgroundResultOriginMeta,
+  BrowserControlPort,
   CollaborationMode,
   CoordinatorResponsePort,
   DynamicWorkflowRunPort,
   DynamicWorkflowSnippetPort,
-  ModelCatalogPort,
   EmbeddedSearchBackend,
   ExecutionPort,
-  BrowserControlPort,
   ExecutionShellSelection,
-  AutomationPort,
-  OffPeakPort,
+  PluginDiscoveryPort,
   FileSystemPort,
   HttpClientPort,
   ImageProcessorPort,
-  PdfDocumentPort,
   Logger,
   Model,
+  ModelCatalogPort,
+  OffPeakPort,
+  TopicResourcePort,
+  PdfDocumentPort,
   PermissionBrokerPort,
   SessionEvent,
   SessionId,
   SessionModePort,
   SessionStorePort,
   SkillPort,
-  SubagentRunOptions,
   SubagentPort,
+  SubagentRunOptions,
   ToolArtifactStorePort,
   TraceContext,
   TurnId,
-  WorkflowPort,
   WorkflowEscalatePort,
+  WorkflowWebSearchBudgetPort,
+  WorkflowPort,
   WorkflowSubmitPort,
 } from "@zcode/contracts";
 import type { HookRunner } from "../../hooks/index.js";
@@ -40,10 +45,10 @@ import type { RuntimeTaskRegistry } from "../../runtime-task/registry.js";
 import type { ToolRegistry } from "../registry.js";
 import type { ToolSchedule } from "../scheduler.js";
 import type {
+  BackgroundTaskControlPort,
   ExecutableToolCall,
   ReadFileStateMap,
   ToolBatchEvent,
-  BackgroundTaskControlPort,
   ToolExecutionResult,
   ToolRuntimeScope,
 } from "../types.js";
@@ -79,6 +84,8 @@ export interface ToolExecutorOptions {
   permissionService: PermissionService;
   permissionBroker?: PermissionBrokerPort;
   emitEvent: (event: SessionEvent) => Promise<void>;
+  /** 后台跟踪的真实完成链（含终态写入）属于 runtime，不能随工具返回丢失。 */
+  registerResidencyBlockingWork?: (work: Promise<void>) => void;
   enqueueBackgroundTaskNotification?: EnqueueBackgroundTaskNotification;
   shouldEnqueueBackgroundTaskNotification?: ShouldEnqueueBackgroundTaskNotification;
   sessionId: SessionId;
@@ -103,9 +110,14 @@ export interface ToolExecutorOptions {
   workflowSubmitPort?: WorkflowSubmitPort;
   /** actor 的升级端口；存在即为该会话注册 escalate。 */
   workflowEscalatePort?: WorkflowEscalatePort;
+  /** actor 每个 ask 的 WebSearch 预算；缺席即无上限。 */
+  webSearchBudget?: WorkflowWebSearchBudgetPort;
   artifactStore?: ToolArtifactStorePort;
+  sessionControl?: SessionControlBinding;
   automationPort?: AutomationPort;
   offPeakPort?: OffPeakPort;
+  topicResourcePort?: TopicResourcePort;
+  pluginDiscoveryPort?: PluginDiscoveryPort;
   sessionStore?: SessionStorePort;
   sessionModePort?: SessionModePort;
   workflowPort?: WorkflowPort;
@@ -116,12 +128,15 @@ export interface ToolExecutorOptions {
   modelCatalogPort?: ModelCatalogPort;
   runtimeTaskRegistry?: RuntimeTaskRegistry;
   readFileState?: ReadFileStateMap;
+  /** 技能门的探针（ToolInputResolutionContext.hasLoadedSkill）；runtime 按 provider 可见历史回答。 */
+  hasLoadedSkill?: (skillName: string) => boolean;
   subagentBackgroundBashMaxMs?: number;
   bashShellSelection?: ExecutionShellSelection;
   getBashShellSelection?: () => ExecutionShellSelection | undefined;
   workingDirectory?: string;
   workspaceRoot?: string;
   workspaceIdentity?: string;
+  workspaceKey?: string;
   remoteSessionId?: string;
   clientMode?: "desktop-continuous" | "web-remote-replayable";
   deliveryKind?: "desktop-continuous" | "web-remote-replayable";
@@ -138,6 +153,22 @@ export interface ToolExecutorOptions {
 }
 
 export interface ToolExecutor {
+  /** 同一权限链供 MCP App 使用；返回审批后的输入，不执行 handler / 不做模型结果投影。 */
+  authorizeAppTool?(
+    toolCall: ExecutableToolCall,
+    entry: import("../types.js").ToolEntry,
+    options?: ToolExecuteOptions,
+  ): Promise<unknown>;
+
+  /**
+   * 不跑 hook、不弹确认、不发事件：按当前模式与权限规则逐个判定 Read 是否被拒绝（Read 未注册时全部算拒绝）。
+   * 和 Read 工具调用共用同一套静态判定，规则只加载一次；compaction 补回文件用它跳过读权限 deny 的文件。
+   */
+  areReadsDeniedWithoutPrompt(
+    filePaths: readonly string[],
+    traceContext: TraceContext,
+  ): Promise<boolean[]>;
+
   execute(toolCall: ExecutableToolCall, options?: ToolExecuteOptions): Promise<ToolExecutionResult>;
   executeBatch(
     toolCalls: ExecutableToolCall[],
@@ -164,7 +195,10 @@ export interface ToolExecutor {
 }
 
 export interface ToolExecuteOptions {
+  toolSearch?: ToolSearchExecutionContext;
+  pluginDiscoveryUi?: boolean;
   automationTurn?: boolean;
+  automationId?: string;
   offPeakTurn?: boolean;
   signal?: AbortSignal;
   traceContext?: TraceContext;
@@ -183,6 +217,8 @@ export interface ToolExecutorDeps {
   permissionService: PermissionService;
   permissionBroker: PermissionBrokerPort;
   emitEvent: (event: SessionEvent) => Promise<void>;
+  /** 后台跟踪的真实完成链（含终态写入）属于 runtime，不能随工具返回丢失。 */
+  registerResidencyBlockingWork?: (work: Promise<void>) => void;
   enqueueBackgroundTaskNotification?: EnqueueBackgroundTaskNotification;
   shouldEnqueueBackgroundTaskNotification?: ShouldEnqueueBackgroundTaskNotification;
   sessionId: SessionId;
@@ -207,9 +243,14 @@ export interface ToolExecutorDeps {
   workflowSubmitPort?: WorkflowSubmitPort;
   /** actor 的升级端口；存在即为该会话注册 escalate。 */
   workflowEscalatePort?: WorkflowEscalatePort;
+  /** actor 每个 ask 的 WebSearch 预算；缺席即无上限。 */
+  webSearchBudget?: WorkflowWebSearchBudgetPort;
   artifactStore?: ToolArtifactStorePort;
+  sessionControl?: SessionControlBinding;
   automationPort?: AutomationPort;
   offPeakPort?: OffPeakPort;
+  topicResourcePort?: TopicResourcePort;
+  pluginDiscoveryPort?: PluginDiscoveryPort;
   sessionStore?: SessionStorePort;
   sessionModePort?: SessionModePort;
   workflowPort?: WorkflowPort;
@@ -220,6 +261,9 @@ export interface ToolExecutorDeps {
   modelCatalogPort?: ModelCatalogPort;
   runtimeTaskRegistry?: RuntimeTaskRegistry;
   readFileState: ReadFileStateMap;
+  /** 文件读取快照的下一个序号；执行器持有计数器，只增不减。 */
+  nextReadFileStateSnapshotIndex: () => number;
+  hasLoadedSkill?: (skillName: string) => boolean;
   subagentBackgroundBashMaxMs?: number;
   bashShellSelection?: ExecutionShellSelection;
   getBashShellSelection?: () => ExecutionShellSelection | undefined;
@@ -227,6 +271,7 @@ export interface ToolExecutorDeps {
   setWorkingDirectory?: (cwd: string) => Promise<void> | void;
   getWorkspaceRoot: () => string;
   workspaceIdentity?: string;
+  workspaceKey?: string;
   remoteSessionId?: string;
   clientMode?: "desktop-continuous" | "web-remote-replayable";
   deliveryKind?: "desktop-continuous" | "web-remote-replayable";

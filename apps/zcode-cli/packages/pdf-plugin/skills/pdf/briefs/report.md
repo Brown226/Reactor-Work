@@ -227,11 +227,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import registerFontFamily
 
-# 主路线：office_skill_lib.skill_fonts（受管 NotoSansSC TTF / 系统 TrueType，自动跳过 CFF/TTC）
-from office_skill_lib import skill_fonts as sf
-sf.get_font_manager().register_pdf_fonts()  # → SkillDocSans / SkillDocSansBold / SkillDocFamily
-
-# Chinese fonts（仅 .ttf；勿用 PingFang / Noto CJK OTF / 大体积 .ttc）
+# Chinese fonts
 pdfmetrics.registerFont(TTFont('Microsoft YaHei', '/usr/share/fonts/truetype/chinese/msyh.ttf'))
 pdfmetrics.registerFont(TTFont('SimHei', '/usr/share/fonts/truetype/chinese/SimHei.ttf'))
 pdfmetrics.registerFont(TTFont("SarasaMonoSC", '/usr/share/fonts/truetype/chinese/SarasaMonoSC-Regular.ttf'))

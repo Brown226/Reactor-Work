@@ -10,7 +10,10 @@ import { Loader2, LogOut, RefreshCw } from "lucide-react";
 import { useCallback, useState } from "react";
 import type { ReactorServerStatus } from "@zcode/services";
 import { REACTOR_SERVER_PROVIDER_NAME } from "@zcode/services";
-import { TID_REACTOR_SERVER_LOGOUT, TID_REACTOR_SERVER_SYNC_MODELS } from "@zcode/shared";
+import {
+  TID_REACTOR_SERVER_LOGOUT,
+  TID_REACTOR_SERVER_SYNC_MODELS,
+} from "@zcode/shared/test-ids";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.js";
 import { Button } from "@/components/ui/button.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";

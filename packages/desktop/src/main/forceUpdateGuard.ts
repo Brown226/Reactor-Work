@@ -4,8 +4,10 @@ import {
   buildZCodeEndpointUrls,
   getForceUpdateMinimalVersionFromConfig,
   resolveForceUpdateRequirement,
+  resolveOptionalZCodeAuthorization,
   type ForceUpdateRequirement,
   type Locale,
+  type ZCodeJwtTokenResolver,
 } from "@zcode/shared";
 import { requestForceAutoUpdate, type ForceAutoUpdateState } from "./autoUpdater.js";
 import { showForceUpdatePrompt } from "./forceUpdatePrompt.js";
@@ -28,29 +30,26 @@ export interface ForceUpdateGuardLogger {
   warn: (...args: unknown[]) => void;
 }
 
-interface ForceUpdateGuardResult {
+export interface ForceUpdateGuardResult {
   blocked: boolean;
   requirement?: ForceUpdateRequirement;
 }
 
-interface ForceUpdateGuardOptions {
+export interface ForceUpdateGuardOptions {
   locale: Locale;
   logger: ForceUpdateGuardLogger;
   endpointOrigin?: string;
   fetchRemoteConfig?: () => Promise<unknown>;
-  /**
-   * 手动升级的下载地址；未提供（null/undefined/空串）时点击「手动升级」只占位提示，
-   * 不打开任何网页——与产品文档入口同规矩：不硬编码官方站，没有第二级兜底 URL。
-   * 待服务端策略下发下载地址后，由调用方注入。
-   */
-  manualUpdateUrl?: string | null;
+  resolveZcodeJwtToken?: ZCodeJwtTokenResolver;
   requestAutoUpdate?: (
     onStateChange?: (state: ForceAutoUpdateState) => void,
   ) => (() => void) | void;
   onBlocked?: (requirement: ForceUpdateRequirement) => void;
 }
 
-function resolveForceUpdateClientConfigUrl(endpointOrigin = DEFAULT_ZCODE_ENDPOINT_ORIGIN): string {
+export function resolveForceUpdateClientConfigUrl(
+  endpointOrigin = DEFAULT_ZCODE_ENDPOINT_ORIGIN,
+): string {
   const url = new URL(
     `${buildZCodeEndpointUrls(endpointOrigin).origin}${ZCODE_CLIENT_CONFIG_API_PATH}`,
   );
@@ -80,12 +79,14 @@ function getForceUpdateMinimalVersionFromClientConfig(config: unknown): string |
 async function fetchRemoteForceUpdateConfig(
   endpointOrigin?: string,
   fetchRemoteConfig?: () => Promise<unknown>,
+  resolveZcodeJwtToken?: ZCodeJwtTokenResolver,
 ): Promise<unknown> {
   if (fetchRemoteConfig) {
     return fetchRemoteConfig();
   }
 
   const { net } = await import("electron");
+  const authorization = await resolveOptionalZCodeAuthorization(resolveZcodeJwtToken);
   return new Promise<unknown>((resolve, reject) => {
     let request: ReturnType<typeof net.request>;
     let timer: ReturnType<typeof setTimeout>;
@@ -118,6 +119,10 @@ async function fetchRemoteForceUpdateConfig(
     timer.unref?.();
 
     request = net.request(resolveForceUpdateClientConfigUrl(endpointOrigin));
+    // 同一 URL 可返回不同身份的配置，不能由 Chromium 的匿名 HTTP 缓存绕过本次登录头。
+    request.setHeader("Cache-Control", "no-cache");
+    if (authorization) request.setHeader("Authorization", authorization);
+    request.on("redirect", () => fail(new Error("force update config redirect rejected")));
     request.on("response", (response) => {
       const statusCode = response.statusCode ?? 0;
       if (statusCode < 200 || statusCode >= 300) {
@@ -153,10 +158,11 @@ async function fetchRemoteForceUpdateConfig(
   });
 }
 
-async function resolveDesktopForceUpdateRequirement(options: {
+export async function resolveDesktopForceUpdateRequirement(options: {
   logger: ForceUpdateGuardLogger;
   endpointOrigin?: string;
   fetchRemoteConfig?: () => Promise<unknown>;
+  resolveZcodeJwtToken?: ZCodeJwtTokenResolver;
 }): Promise<ForceUpdateRequirement | null> {
   const resolveFromConfig = (config: unknown) =>
     resolveForceUpdateRequirement({
@@ -173,6 +179,7 @@ async function resolveDesktopForceUpdateRequirement(options: {
     const remoteConfig = await fetchRemoteForceUpdateConfig(
       options.endpointOrigin,
       options.fetchRemoteConfig,
+      options.resolveZcodeJwtToken,
     );
     const remoteRequirement = resolveFromConfig(remoteConfig);
     if (remoteRequirement) {
@@ -187,31 +194,21 @@ async function resolveDesktopForceUpdateRequirement(options: {
   return null;
 }
 
-function formatForceUpdateManualUrlMissingText(locale: Locale): {
-  title: string;
-  message: string;
-} {
-  if (locale === "zh-CN") {
-    return {
-      title: "升级地址尚未配置",
-      message: "服务端尚未配置新版本下载地址，请联系平台管理员在桌面策略中填写后再试。",
-    };
-  }
-
-  return {
-    title: "Download URL not configured",
-    message:
-      "The server has not configured a download URL yet. Ask your platform admin to set it in the desktop policy.",
-  };
+export function resolveForceUpdateDownloadUrl(
+  locale: Locale,
+  endpointOrigin = DEFAULT_ZCODE_ENDPOINT_ORIGIN,
+): string {
+  const origin = buildZCodeEndpointUrls(endpointOrigin).origin;
+  return locale === "zh-CN" ? `${origin}/cn` : `${origin}/en`;
 }
 
-function formatForceUpdateDialogText(
+export function formatForceUpdateDialogText(
   requirement: ForceUpdateRequirement,
   locale: Locale,
 ): ForceUpdateDialogText {
   if (locale === "zh-CN") {
     return {
-      title: "需要升级 Reactor",
+      title: "需要升级 ZCode",
       message: "当前版本无法继续使用",
       detail: `当前版本：v${requirement.currentVersion}\n最低可用版本：v${requirement.minimalVersion}`,
       autoUpdateButton: "自动升级",
@@ -221,7 +218,7 @@ function formatForceUpdateDialogText(
   }
 
   return {
-    title: "Update Reactor",
+    title: "Update ZCode",
     message: "The current version can no longer be used",
     detail: `Current version: v${requirement.currentVersion}\nMinimum supported version: v${requirement.minimalVersion}`,
     autoUpdateButton: "Auto update",
@@ -259,25 +256,9 @@ export async function maybeBlockStartupForForceUpdate(
   }
 
   if (action === "manual") {
-    const manualUpdateUrl = options.manualUpdateUrl?.trim();
-    if (manualUpdateUrl) {
-      options.logger.info(`[force-update] 用户选择手动升级：${manualUpdateUrl}`);
-      await shell.openExternal(manualUpdateUrl);
-    } else {
-      // 下载地址未配置：不开网页（旧实现会跳 ZCode 官网，对 Reactor 用户是错误目的地），
-      // 只占位提示，与产品文档入口「未配置不打开任何网页」同规矩。
-      const missing = formatForceUpdateManualUrlMissingText(options.locale);
-      options.logger.warn("[force-update] 用户选择手动升级，但下载地址未配置，仅占位提示");
-      const { dialog } = await import("electron");
-      await dialog.showMessageBox({
-        type: "info",
-        title: missing.title,
-        message: missing.message,
-        buttons: [options.locale === "zh-CN" ? "知道了" : "OK"],
-        defaultId: 0,
-        noLink: true,
-      });
-    }
+    const url = resolveForceUpdateDownloadUrl(options.locale, options.endpointOrigin);
+    options.logger.info(`[force-update] 用户选择手动升级：${url}`);
+    await shell.openExternal(url);
   }
 
   // 强制升级命中后不能进入主界面；非自动升级路径处理完弹窗后退出，避免露出旧客户端功能。

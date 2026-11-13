@@ -15,18 +15,20 @@ export interface SessionSummaryDeriveExtra {
   workspaceId: string;
   createdAt: number;
   lastActivityAt: number;
+  lastOutcome?: SessionSummary["lastOutcome"];
   parentSessionId?: string;
 }
 
 const MAX_PREVIEW_CHARS = 120;
 
 /** 从 ConversationSnapshot + 会话元信息派生 SessionSummary（纯函数，golden 可测）。 */
-function deriveSessionSummary(
+export function deriveSessionSummary(
   snapshot: ConversationSnapshot,
   extra: SessionSummaryDeriveExtra,
 ): SessionSummary {
   // 最后一条 assistantText row 的文本作预览（≤120 字符）。
   let lastAssistantPreview: string | undefined;
+  const lastOutcome = extra.lastOutcome;
   const rows = snapshot.rows.window;
   for (let i = rows.length - 1; i >= 0; i -= 1) {
     const row = rows[i];
@@ -49,26 +51,36 @@ function deriveSessionSummary(
   });
   // workspaceHookReview 由 Hooks Settings 呈现，不降级成 permission/userInput 侧栏徽标。
   const pending = snapshot.pendingInteractions.find(
-    (interaction) => interaction.kind === "permission" || interaction.kind === "userInput",
+    (interaction) =>
+      interaction.kind === "permission" ||
+      interaction.kind === "userInput" ||
+      interaction.kind === "pluginInstall",
   );
   const permissionCount = snapshot.pendingInteractions.filter(
     (interaction) => interaction.kind === "permission",
   ).length;
   const userInputCount = snapshot.pendingInteractions.filter(
-    (interaction) => interaction.kind === "userInput",
+    (interaction) => interaction.kind === "userInput" || interaction.kind === "pluginInstall",
   ).length;
   // 兼容恢复迁移或归约测试构造的裁剪快照：不能因新增轻量 toolName 投影，
   // 在旧 pending interaction 暂缺 payload 时阻断整个任务列表。
   const pendingPayload = pending?.payload;
   const pendingToolName =
-    pendingPayload && "toolName" in pendingPayload ? pendingPayload.toolName : undefined;
+    pendingPayload?.kind === "pluginInstall"
+      ? "SuggestPluginInstall"
+      : pendingPayload && "toolName" in pendingPayload
+        ? pendingPayload.toolName
+        : undefined;
   const pendingInteraction =
     pending &&
     pendingPayload &&
-    (pendingPayload.kind === "permission" || pendingPayload.kind === "userInput")
+    (pendingPayload.kind === "permission" ||
+      pendingPayload.kind === "userInput" ||
+      pendingPayload.kind === "pluginInstall")
       ? {
           interactionId: pending.interactionId,
-          kind: pendingPayload.kind,
+          kind:
+            pendingPayload.kind === "pluginInstall" ? ("userInput" as const) : pendingPayload.kind,
           ...(pendingToolName ? { toolName: pendingToolName } : {}),
           ...(pending.autoResolution ? { autoResolution: pending.autoResolution } : {}),
         }
@@ -79,6 +91,7 @@ function deriveSessionSummary(
     ...(extra.parentSessionId ? { parentSessionId: extra.parentSessionId } : {}),
     title: snapshot.meta.title,
     titleSource: snapshot.meta.titleSource,
+    ...(lastOutcome ? { lastOutcome } : {}),
     phase: snapshot.control.phase,
     // 忠实透传 control.sessionEnded（语义：成功轮收口后即 true，不代表已删除）。
     sessionEnded: snapshot.control.sessionEnded,
@@ -108,6 +121,7 @@ function summariesEqual(a: SessionSummary, b: SessionSummary): boolean {
     a.parentSessionId === b.parentSessionId &&
     a.title === b.title &&
     a.titleSource === b.titleSource &&
+    a.lastOutcome === b.lastOutcome &&
     a.phase === b.phase &&
     a.sessionEnded === b.sessionEnded &&
     a.hasBackgroundWork === b.hasBackgroundWork &&

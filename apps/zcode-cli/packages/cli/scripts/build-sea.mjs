@@ -6,7 +6,6 @@ import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { resolveSpawnRuntimeOptions } from "../../../../../scripts/spawn-command.mjs";
 import { resolveDownloadedNodeBinary } from "./sea-node-download.mjs";
-import { stageNodeNotices } from "../../../../../scripts/third-party-notices.mjs";
 import {
   adHocCodesignArgs,
   hostTarget,
@@ -23,6 +22,7 @@ import {
 import { removeWindowsAuthenticodeSignature } from "./windows-authenticode.mjs";
 import { collectSeaTuiAssets } from "./sea-tui-assets.mjs";
 import { collectSeaOfficialPluginAssets } from "./sea-official-plugin-assets.mjs";
+import { collectSeaBundledSkillAssets } from "./sea-bundled-skill-assets.mjs";
 import { collectSeaRuntimeToolAssets } from "./sea-runtime-tool-assets.mjs";
 import { prepareSeaRuntimeToolAssets } from "./sea-runtime-tool-prepare.mjs";
 import { collectSeaPlaywrightAssets } from "./sea-playwright-assets.mjs";
@@ -137,7 +137,7 @@ const resolveNodeBinary = async ({ nodeBinaries, nodeVersion, target }) => {
   });
 };
 
-const prepareSeaBlob = async (target, nodeVersion) => {
+const prepareSeaBlob = async (target) => {
   const seaBlob = seaBlobForTarget(target);
   const seaConfig = seaConfigForTarget(target);
   await prepareSeaRuntimeToolAssets({
@@ -154,6 +154,11 @@ const prepareSeaBlob = async (target, nodeVersion) => {
     root,
     stagingDirectory: seaAssetStagingForTarget(`${target}-official-plugins`),
   });
+  const { assets: bundledSkillAssets, manifest: bundledSkillManifest } =
+    await collectSeaBundledSkillAssets({
+      root,
+      stagingDirectory: seaAssetStagingForTarget(`${target}-bundled-skills`),
+    });
   const { assets: runtimeToolAssets, manifest: runtimeToolManifest } =
     await collectSeaRuntimeToolAssets({
       root: repositoryRoot,
@@ -167,7 +172,6 @@ const prepareSeaBlob = async (target, nodeVersion) => {
       target,
     });
   const providerConfigAssets = await collectSeaProviderConfigAssets({ root: repositoryRoot });
-  const nodeLicensePath = await stageNodeNotices(seaAssetStagingForTarget(`${target}-node`), nodeVersion, repositoryRoot);
 
   await writeFile(
     seaConfig,
@@ -176,10 +180,10 @@ const prepareSeaBlob = async (target, nodeVersion) => {
         assets: {
           ...tuiAssets,
           ...pluginAssets,
+          ...bundledSkillAssets,
           ...runtimeToolAssets,
           ...playwrightAssets,
           ...providerConfigAssets,
-          "zcode-node-license": nodeLicensePath,
         },
         disableExperimentalSEAWarning: true,
         main: "dist/zcode.cjs",
@@ -193,7 +197,7 @@ const prepareSeaBlob = async (target, nodeVersion) => {
   );
 
   console.log(
-    `[sea] generating SEA blob for ${target} with ${tuiManifest.files.length} TUI assets, ${pluginManifest.plugins.length} official plugins, ${runtimeToolManifest.tools.length} runtime tools, and ${playwrightManifest.files.length} Playwright assets`,
+    `[sea] generating SEA blob for ${target} with ${tuiManifest.files.length} TUI assets, ${pluginManifest.plugins.length} official plugins, ${bundledSkillManifest.files.length} bundled skill files, ${runtimeToolManifest.tools.length} runtime tools, and ${playwrightManifest.files.length} Playwright assets`,
   );
   run(process.execPath, ["--experimental-sea-config", seaConfig]);
   return seaBlob;
@@ -256,7 +260,7 @@ const smokeTestHostTarget = async (target, binaryPath) => {
 
 const buildTarget = async ({ nodeBinaries, nodeVersion, postjectBin, target }) => {
   const binaryPath = resolve(dist, outputBinaryName(target));
-  const seaBlob = await prepareSeaBlob(target, nodeVersion);
+  const seaBlob = await prepareSeaBlob(target);
   const targetNodeBinary = await resolveNodeBinary({
     nodeBinaries,
     nodeVersion,
@@ -266,8 +270,6 @@ const buildTarget = async ({ nodeBinaries, nodeVersion, postjectBin, target }) =
   console.log(`[sea] building ${target} -> ${binaryPath}`);
   await copyFile(targetNodeBinary, binaryPath);
   await chmod(binaryPath, 0o755);
-  // 同一原文既内嵌到 --licenses，也随 dist 提供，单文件上传仍可取到完整材料。
-  await stageNodeNotices(dist, nodeVersion, repositoryRoot);
 
   const sentinelFuse = await findSeaFuse(binaryPath);
   if (!sentinelFuse.startsWith(sentinelFusePrefix)) {

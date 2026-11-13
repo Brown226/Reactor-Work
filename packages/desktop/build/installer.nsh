@@ -2,24 +2,24 @@
 !include FileFunc.nsh
 
 !ifndef ZCODE_INSTALLER_DEFAULT_LOG_PATH
-  !define ZCODE_INSTALLER_DEFAULT_LOG_PATH "$TEMP\Reactor-installer.log"
+  !define ZCODE_INSTALLER_DEFAULT_LOG_PATH "$TEMP\ZCode-installer.log"
 !endif
 !ifndef ZCODE_INSTALLER_ELEVATED_LOG_PATH
-  !define ZCODE_INSTALLER_ELEVATED_LOG_PATH "$WINDIR\Logs\Reactor-installer.log"
+  !define ZCODE_INSTALLER_ELEVATED_LOG_PATH "$WINDIR\Logs\ZCode-installer.log"
 !endif
 !ifndef ZCODE_INSTALLER_IS_ELEVATED_INNER
-  ; 来源只在测试夹具模拟内层，正式默认恒假会让提权进程继续使用调用方 /LOG。
+  ; 修复原因：来源只在测试夹具模拟内层，正式默认恒假会让提权进程继续使用调用方 /LOG。
   ; 使用 electron-builder 同一 UAC 判据；隔离夹具仍可显式替换，不改变真正的提权流程。
   !include UAC.nsh
   !define ZCODE_INSTALLER_IS_ELEVATED_INNER `${UAC_IsInnerInstance}`
 !endif
 
 !ifndef ZCODE_INSTALL_MANIFEST_NAME
-  !define ZCODE_INSTALL_MANIFEST_NAME ".reactor-install-manifest"
+  !define ZCODE_INSTALL_MANIFEST_NAME ".zcode-install-manifest"
 !endif
 
 !ifndef ZCODE_UNINSTALLER_LOG_PATH
-  !define ZCODE_UNINSTALLER_LOG_PATH "$TEMP\Reactor-uninstaller.log"
+  !define ZCODE_UNINSTALLER_LOG_PATH "$TEMP\ZCode-uninstaller.log"
 !endif
 !ifndef ZCODE_UNINSTALLER_FUNCTION_PREFIX
   !define ZCODE_UNINSTALLER_FUNCTION_PREFIX "un."
@@ -30,7 +30,7 @@
 
   ; 卸载器只在更新时删除旧文件；单独记录清理阶段，避免外层把权限/空间错误误报成应用仍在运行。
   !macro ZCodeReportUninstallerStage MESSAGE
-    DetailPrint "Reactor: ${MESSAGE}"
+    DetailPrint "ZCode: ${MESSAGE}"
     Push "${MESSAGE}"
     Call ${ZCODE_UNINSTALLER_FUNCTION_PREFIX}ZCodeWriteUninstallerLog
   !macroend
@@ -72,7 +72,7 @@
 !endif
 
 !macro customRemoveFiles
-  ; electron-builder 默认在更新时递归删除整个 $INSTDIR，用户放入的无关文件也会被清掉。
+  ; Bugfix：electron-builder 默认在更新时递归删除整个 $INSTDIR，用户放入的无关文件也会被清掉。
   ; 只按上一版本随包生成的所有权清单删除，清单缺失时迁移旧版本采用 fail-open 保留策略。
   ${if} ${isUpdated}
     !ifdef BUILD_UNINSTALLER
@@ -97,6 +97,8 @@
       StrCpy $R2 $R1 2
       StrCmp $R2 ".." zcodeManifestRead
       StrCmp $R1 "${UNINSTALL_FILENAME}" zcodeManifestRead
+      ; 清单是当前打开的元数据，自引用条目不能当作普通载荷删除。
+      StrCmp $R1 "${ZCODE_INSTALL_MANIFEST_NAME}" zcodeManifestRead
       GetFullPathName $R2 "$INSTDIR\$R1"
       StrCmp $R2 "$INSTDIR\$R1" 0 zcodeManifestRead
 
@@ -148,7 +150,7 @@
   ; 详情面板和文件日志共用同一条阶段事件，避免静默安装丢失关键上下文。
   !macro ZCodeReportInstallerStage MESSAGE
     SetDetailsPrint listonly
-    DetailPrint "Reactor: ${MESSAGE}"
+    DetailPrint "ZCode: ${MESSAGE}"
     Push "${MESSAGE}"
     Call ZCodeWriteInstallerLog
   !macroend
@@ -218,7 +220,7 @@
       IfErrors zcodeShowUninstallerDetailsClose
       StrCmp $R1 "" zcodeShowUninstallerDetailsRead
       SetDetailsPrint listonly
-      DetailPrint "Reactor: cleanup-log $R1"
+      DetailPrint "ZCode: cleanup-log $R1"
       Goto zcodeShowUninstallerDetailsRead
     zcodeShowUninstallerDetailsClose:
       FileClose $R0
@@ -289,16 +291,212 @@
     zcodePreviousUninstallerCapabilityDone:
   FunctionEnd
 
+  !macro ZCodeCleanupErrorMessage CHINESE ENGLISH
+    ${If} $LANGUAGE == 2052
+      MessageBox MB_OK|MB_ICONSTOP "${CHINESE}" /SD IDOK
+    ${Else}
+      MessageBox MB_OK|MB_ICONSTOP "${ENGLISH}" /SD IDOK
+    ${EndIf}
+  !macroend
+
+  Var ZCodeCleanupSource
+  Var ZCodeCleanupBackup
+  Var ZCodeCleanupMode
+  Var ZCodeCleanupFailed
+  Var ZCodeCleanupManifest
+  Var ZCodeCleanupManifestHasSelf
+
+  ; 旧卸载器已删除的文件不会自行恢复。新安装器在调用旧代码前保存受管文件，
+  ; 清理失败只补回缺失项，避免覆盖仍被占用的原文件；备份失败时不进入旧卸载器。
+  ; 自定义 include 先于 common.nsh；延迟展开，确保卸载器名称已定义，避免正式打包 warning 6000。
+  !macro ZCodeDefineCleanupSnapshot
+  Function ZCodeCleanupSnapshot
+    Push $R0
+    Push $R1
+    Push $R2
+    Push $R3
+    Push $R4
+    Push $R5
+    StrCpy $R5 ""
+    StrCpy $ZCodeCleanupFailed "0"
+    StrCmp $ZCodeCleanupMode "restore" zcodeSnapshotRead
+    StrCpy $ZCodeCleanupBackup ""
+    StrCpy $ZCodeCleanupManifestHasSelf "0"
+    IfFileExists "$ZCodeCleanupSource\${ZCODE_INSTALL_MANIFEST_NAME}" 0 zcodeSnapshotDone
+    ${GetParent} $ZCodeCleanupSource $R0
+    ClearErrors
+    GetTempFileName $ZCodeCleanupBackup $R0
+    IfErrors zcodeSnapshotFailed
+    Delete "$ZCodeCleanupBackup"
+    CreateDirectory "$ZCodeCleanupBackup"
+    IfErrors zcodeSnapshotFailed
+    System::Call 'kernel32::CopyFileW(w "$ZCodeCleanupSource\${ZCODE_INSTALL_MANIFEST_NAME}", w "$ZCodeCleanupBackup\${ZCODE_INSTALL_MANIFEST_NAME}", i 1) i.R3 ?e'
+    Pop $R4
+    StrCmp $R3 "0" zcodeSnapshotFailed
+    GetTempFileName $ZCodeCleanupManifest "$ZCodeCleanupBackup"
+    IfErrors zcodeSnapshotFailed
+    FileOpen $R5 "$ZCodeCleanupManifest" w
+    IfErrors zcodeSnapshotFailed
+
+    zcodeSnapshotRead:
+      StrCmp $ZCodeCleanupBackup "" zcodeSnapshotDone
+      ClearErrors
+      FileOpen $R0 "$ZCodeCleanupBackup\${ZCODE_INSTALL_MANIFEST_NAME}" r
+      IfErrors zcodeSnapshotFailed
+    zcodeSnapshotNext:
+      ClearErrors
+      FileRead $R0 $R1
+      IfErrors zcodeSnapshotClose
+      StrCpy $R1 $R1 -2
+      StrCmp $R1 "" zcodeSnapshotNext
+      StrCmp $ZCodeCleanupMode "restore" zcodeSnapshotValidateEntry
+      StrCmp $R1 "${ZCODE_INSTALL_MANIFEST_NAME}" zcodeSnapshotSelfEntry
+      FileWrite $R5 "$R1$\r$\n"
+      IfErrors zcodeSnapshotFailedClose
+      Goto zcodeSnapshotValidateEntry
+    zcodeSnapshotSelfEntry:
+      StrCpy $ZCodeCleanupManifestHasSelf "1"
+      Goto zcodeSnapshotNext
+    zcodeSnapshotFailedClose:
+      StrCpy $ZCodeCleanupFailed "1"
+      Goto zcodeSnapshotClose
+    zcodeSnapshotValidateEntry:
+      ; 只接受清单中规范的相对路径，拒绝越界、通配符和卸载器自身。
+      StrCpy $R2 $R1 1
+      StrCmp $R2 "\" zcodeSnapshotNext
+      StrCmp $R2 "/" zcodeSnapshotNext
+      StrCpy $R2 $R1 2
+      StrCmp $R2 ".." zcodeSnapshotNext
+      StrCmp $R1 "${UNINSTALL_FILENAME}" zcodeSnapshotNext
+      ; 清单已在循环前单独备份；自引用时再次排他复制会因目标存在而中止更新。
+      StrCmp $R1 "${ZCODE_INSTALL_MANIFEST_NAME}" zcodeSnapshotNext
+      ; Windows NSIS 对已删除的目标返回空路径；恢复时校验仍存在的备份，不能跳过待补回文件。
+      StrCpy $R3 "$ZCodeCleanupSource"
+      StrCmp $ZCodeCleanupMode "restore" 0 +2
+        StrCpy $R3 "$ZCodeCleanupBackup"
+      GetFullPathName $R2 "$R3\$R1"
+      StrCmp $R2 "$R3\$R1" 0 zcodeSnapshotNext
+      StrCpy $R2 0
+    zcodeSnapshotValidate:
+      StrCpy $R3 $R1 1 $R2
+      StrCmp $R3 "" zcodeSnapshotCopy
+      StrCmp $R3 "*" zcodeSnapshotInvalidPath
+      StrCmp $R3 "?" zcodeSnapshotInvalidPath
+      StrCmp $R3 ":" zcodeSnapshotInvalidPath
+      IntOp $R2 $R2 + 1
+      Goto zcodeSnapshotValidate
+    zcodeSnapshotInvalidPath:
+      StrCpy $ZCodeCleanupFailed "1"
+      Goto zcodeSnapshotClose
+    zcodeSnapshotCopy:
+      StrCmp $ZCodeCleanupMode "restore" zcodeSnapshotRestore
+      IfFileExists "$ZCodeCleanupSource\$R1" 0 zcodeSnapshotNext
+      ${GetParent} "$ZCodeCleanupBackup\$R1" $R2
+      CreateDirectory "$R2"
+      System::Call 'kernel32::CopyFileW(w "$ZCodeCleanupSource\$R1", w "$ZCodeCleanupBackup\$R1", i 1) i.R3 ?e'
+      Pop $R4
+      Goto zcodeSnapshotCopyResult
+    zcodeSnapshotRestore:
+      IfFileExists "$ZCodeCleanupBackup\$R1" 0 zcodeSnapshotNext
+      IfFileExists "$ZCodeCleanupSource\$R1" 0 zcodeSnapshotRestoreMissing
+      ; 同名目录不能充当恢复后的文件，否则会误报已恢复主程序。
+      System::Call 'kernel32::GetFileAttributesW(w "$ZCodeCleanupSource\$R1") i.R3'
+      IntOp $R3 $R3 & 0x10
+      StrCmp $R3 0 zcodeSnapshotNext
+      StrCpy $ZCodeCleanupFailed "1"
+      Goto zcodeSnapshotNext
+    zcodeSnapshotRestoreMissing:
+      ${GetParent} "$ZCodeCleanupSource\$R1" $R2
+      CreateDirectory "$R2"
+      System::Call 'kernel32::CopyFileW(w "$ZCodeCleanupBackup\$R1", w "$ZCodeCleanupSource\$R1", i 1) i.R3 ?e'
+      Pop $R4
+    zcodeSnapshotCopyResult:
+      ; System 的 ?e 在 CopyFileW 返回时保存 Win32 错误，避免插件后续调用覆盖 GetLastError。
+      StrCmp $R3 "0" 0 zcodeSnapshotNext
+      !insertmacro ZCodeReportInstallerStage "cleanup-$ZCodeCleanupMode-file-failed path=$R1 win32-error=$R4"
+      StrCpy $ZCodeCleanupFailed "1"
+      StrCmp $ZCodeCleanupMode "restore" zcodeSnapshotNext
+    zcodeSnapshotClose:
+      FileClose $R0
+      StrCmp $ZCodeCleanupMode "restore" zcodeSnapshotRestoreManifest
+      FileClose $R5
+      StrCpy $R5 ""
+      StrCmp $ZCodeCleanupFailed "1" zcodeSnapshotDone
+      StrCmp $ZCodeCleanupManifestHasSelf "1" 0 zcodeSnapshotDone
+      ; 旧卸载器也会删除打开中的清单。完整备份后，仅原子移除自引用项供旧代码读取。
+      System::Call 'kernel32::MoveFileExW(w "$ZCodeCleanupManifest", w "$ZCodeCleanupSource\${ZCODE_INSTALL_MANIFEST_NAME}", i 9) i.R3 ?e'
+      Pop $R4
+      StrCmp $R3 "0" zcodeSnapshotFailed zcodeSnapshotDone
+    zcodeSnapshotRestoreManifest:
+      ; 旧清单可能仍存在但已去掉自引用；失败回滚须恢复原始字节，而非仅补不存在的文件。
+      System::Call 'kernel32::CopyFileW(w "$ZCodeCleanupBackup\${ZCODE_INSTALL_MANIFEST_NAME}", w "$ZCodeCleanupSource\${ZCODE_INSTALL_MANIFEST_NAME}", i 0) i.R3 ?e'
+      Pop $R4
+      StrCmp $R3 "0" zcodeSnapshotFailed zcodeSnapshotDone
+    zcodeSnapshotFailed:
+      StrCpy $ZCodeCleanupFailed "1"
+    zcodeSnapshotDone:
+      StrCmp $R5 "" +2
+        FileClose $R5
+      !insertmacro ZCodeReportInstallerStage "cleanup-$ZCodeCleanupMode-completed failed=$ZCodeCleanupFailed backup=$ZCodeCleanupBackup"
+      Pop $R5
+      Pop $R4
+      Pop $R3
+      Pop $R2
+      Pop $R1
+      Pop $R0
+  FunctionEnd
+  !macroend
+
+  !macro customOldUninstallPrepare
+    StrCpy $ZCodeCleanupSource "$installationDir"
+    StrCpy $ZCodeCleanupMode "backup"
+    Call ZCodeCleanupSnapshot
+    ${If} $ZCodeCleanupFailed == "1"
+      ; 此时尚未运行旧卸载器，原文件仍完整；失败的半份备份可以安全清理。
+      RMDir /r "$ZCodeCleanupBackup"
+      !insertmacro ZCodeCleanupErrorMessage "无法备份旧版本文件，安装已停止，旧版本未改动。请检查权限与剩余空间。" "Cannot back up the previous version. Setup stopped without changing it. Check permissions and free disk space."
+      SetErrorLevel 2
+      Quit
+    ${EndIf}
+  !macroend
+
+  !macro customOldUninstallRetryFailed
+    ; 上游把任意卸载非零都显示成应用未关闭；实际进程检查仍由 CHECK_APP_RUNNING 负责。
+    !insertmacro ZCodeReportInstallerStage "cleanup-retries-exhausted exit-code=$R0"
+    ${If} $LANGUAGE == 2052
+      MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "旧版本清理失败（错误码 $R0）。请排除文件占用或权限问题后重试，或取消以恢复旧版本。日志：$ZCodeInstallerLogPath" /SD IDCANCEL IDRETRY OneMoreAttempt
+    ${Else}
+      MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "Previous version cleanup failed (exit code $R0). Resolve file locks or permissions and retry, or cancel to restore the previous version. Log: $ZCodeInstallerLogPath" /SD IDCANCEL IDRETRY OneMoreAttempt
+    ${EndIf}
+  !macroend
+
+  Function ZCodeFinishOldUninstall
+    ${If} $R0 != 0
+      StrCpy $ZCodeCleanupMode "restore"
+      Call ZCodeCleanupSnapshot
+      ${If} $ZCodeCleanupFailed == "1"
+        !insertmacro ZCodeCleanupErrorMessage "旧版本文件恢复失败，备份已保留：$ZCodeCleanupBackup。详细日志：$ZCodeInstallerLogPath" "Cannot restore the previous version. Backup retained: $ZCodeCleanupBackup. Log: $ZCodeInstallerLogPath"
+        Return
+      ${EndIf}
+    ${EndIf}
+    StrCmp $ZCodeCleanupBackup "" zcodeFinishOldUninstallDone
+    RMDir /r "$ZCodeCleanupBackup"
+    StrCpy $ZCodeCleanupBackup ""
+    zcodeFinishOldUninstallDone:
+  FunctionEnd
+
   !macro customUnInstallCheck
+    Call ZCodeFinishOldUninstall
     ; handleUninstallResult 会把旧卸载器的退出码放在 $R0；失败时显示清理诊断，
     ; 不再复用 appCannotBeClosed（该文案只适用于进程占用）。
     ${if} $R0 != 0
-      ; 静默自动更新无人值守，未设置 /SD 的模态框会一直等待用户点击，
+      ; 修复原因：静默自动更新无人值守，未设置 /SD 的模态框会一直等待用户点击，
       ; 使明确的退出码无法返回 electron-updater。静默时自动采用 IDOK，交互时仍显示提示。
       SetDetailsPrint listonly
-      DetailPrint "Reactor: cleanup-failed exit-code=$R0"
+      DetailPrint "ZCode: cleanup-failed exit-code=$R0"
       Call ZCodeShowUninstallerCleanupDetails
-      MessageBox MB_OK|MB_ICONSTOP "旧版本清理失败（错误码 $R0）。可能是文件被占用、权限不足或磁盘空间不足。详细日志：${ZCODE_UNINSTALLER_LOG_PATH}" /SD IDOK
+      ; 最终错误也沿用安装器语言，避免英文 Retry/Cancel 之后固定切回中文。
+      !insertmacro ZCodeCleanupErrorMessage "旧版本清理失败（错误码 $R0）。可能是文件被占用、权限不足或磁盘空间不足。详细日志：${ZCODE_UNINSTALLER_LOG_PATH}" "Previous version cleanup failed (exit code $R0). Files may be in use, permissions may be insufficient, or disk space may be low. Log: ${ZCODE_UNINSTALLER_LOG_PATH}"
       SetErrorLevel 2
       Quit
     ${endif}
@@ -315,7 +513,8 @@
 
 !macro customHeader
   !ifndef BUILD_UNINSTALLER
-    ; 异步生成的 header 可能先 include 本文件，再注册 UAC 插件目录。
+    !insertmacro ZCodeDefineCleanupSnapshot
+    ; 修复原因：异步生成的 header 可能先 include 本文件，再注册 UAC 插件目录。
     ; 在 customHeader 展开函数，确保插件已注册；preInit 仍调用同一函数和真实 UAC 判据。
     Function ZCodeInitializeInstallerLog
       Push $R0
@@ -348,11 +547,11 @@
       Pop $R0
     FunctionEnd
 
-    ; electron-builder 的 common.nsh 先设置 ShowInstDetails nevershow；
+    ; 修复原因：electron-builder 的 common.nsh 先设置 ShowInstDetails nevershow；
     ; hide 在该模板组合下仍可能留下空白列表且没有可展开入口，因此直接常显阶段详情。
     ShowInstDetails show
     !ifdef allowToChangeInstallationDirectory
-      ; electron-builder 已在 assistedInstaller.nsh 中用该开关生成安装目录页面，
+      ; 修复原因：electron-builder 已在 assistedInstaller.nsh 中用该开关生成安装目录页面，
       ; 但 installUtil.nsh 随后还会用它禁止无 --updated 的手动覆盖保留快捷方式，导致旧卸载器
       ; 调用 UninstShortcut 注销开始菜单固定项。页面生成后撤掉开关，让自动更新和手动覆盖
       ; 在同一安装目录覆盖时都通过 KeepShortcuts 保留同一个 .lnk。
@@ -362,7 +561,7 @@
 !macroend
 
 !ifndef BUILD_UNINSTALLER
-  ; electron-builder 会先编译卸载器，但快捷方式目标读取只在安装更新流程中调用。
+  ; 修复原因：electron-builder 会先编译卸载器，但快捷方式目标读取只在安装更新流程中调用。
   ; 若把函数带入卸载器，NSIS 会产生 6010 未引用告警，并在 /WX 下直接中断 Windows CI。
   Function ZCodeReadShortcutTarget
     Exch $R9
@@ -395,7 +594,7 @@
     Pop $R0
     StrCmp $R0 "$appExe" ${LABEL_PREFIX}Done 0
 
-    ; 历史版本可能留下指向已移动 exe 的 .lnk，但无条件覆盖正确快捷方式会让
+    ; 修复原因：历史版本可能留下指向已移动 exe 的 .lnk，但无条件覆盖正确快捷方式会让
     ; 部分 Windows 11 丢失“所有应用”索引或用户固定关系，因此只修复目标不一致的项。
     ClearErrors
     CreateShortCut "${SHORTCUT_PATH}" "$appExe" "" "$appExe" 0 "" "" "${APP_DESCRIPTION}"
@@ -406,7 +605,7 @@
       Goto ${LABEL_PREFIX}Done
     ${LABEL_PREFIX}Succeeded:
       WinShell::SetLnkAUMI "${SHORTCUT_PATH}" "${APP_ID}"
-      ; 重写后的 .lnk 必须在最后一次写入后通知 Shell，避免开始菜单继续使用旧索引。
+      ; 修复后的 .lnk 必须在最后一次写入后通知 Shell，避免开始菜单继续使用旧索引。
       System::Call 'Shell32::SHChangeNotify(i 0x00002000, i 0x0005, w "${SHORTCUT_PATH}", p 0)'
     ${LABEL_PREFIX}Done:
   ${endIf}
@@ -427,7 +626,7 @@
     !endif
   ${endIf}
 
-  ; 手动覆盖没有 --updated，继承旧快捷方式时仍需检查目标；首次安装没有旧项，
+  ; 修复原因：手动覆盖没有 --updated，继承旧快捷方式时仍需检查目标；首次安装没有旧项，
   ; 不应额外启动 PowerShell。用户已删除的快捷方式也不会重建。
   ; assisted installer 完成页始终直接运行本次安装落盘的 exe。
   StrCpy $launchLink "$appExe"
@@ -453,7 +652,7 @@
     IntCmp $7 ${ZCODE_INSTALL_DIR_BACK_BUTTON_WIDTH} zcodeResizeInstallDirBackButtonDone zcodeResizeInstallDirBackButtonResize zcodeResizeInstallDirBackButtonDone
 
     zcodeResizeInstallDirBackButtonResize:
-      ; 阻断页把“上一步”改成中文动作文案，NSIS 默认按钮宽度可能裁掉文字。
+      ; 修复原因：阻断页把“上一步”改成中文动作文案，NSIS 默认按钮宽度可能裁掉文字。
       ; 保持右边缘不动向左扩宽，避免和右侧“安装/取消”按钮重叠。
       IntOp $3 $5 - ${ZCODE_INSTALL_DIR_BACK_BUTTON_WIDTH}
       System::Call "user32::MoveWindow(p r1, i r3, i r4, i ${ZCODE_INSTALL_DIR_BACK_BUTTON_WIDTH}, i r8, i 1)"
@@ -506,7 +705,7 @@
     Call ZCodeDetectPreviousUninstallerCapabilities
     StrCmp $ZCodePreviousUninstallerSupportsManifest "1" zcodeInstallDirDataBlockSkip
 
-    ;  用户可能把数据存储目录放进安装目录，Windows 更新覆盖安装目录时会清掉 .zcode。
+    ; Bugfix: 用户可能把数据存储目录放进安装目录，Windows 更新覆盖安装目录时会清掉 .zcode。
     ; assisted installer 会把不含应用名的选择目录补成 "$INSTDIR\${APP_FILENAME}"，所以这里按相同规则计算最终安装目录。
     ${StrContains} $R1 "${APP_FILENAME}" "$INSTDIR"
     StrCmp $R1 "" 0 zcodeInstallDirDataBlockUseSelectedDir
@@ -517,7 +716,7 @@
       StrCpy $R0 "$INSTDIR"
 
     zcodeInstallDirDataBlockCheckDir:
-      ; 旧阻断只检查最终安装目录直属的 .zcode，漏掉 data\.zcode 等子目录数据。
+      ; 修复原因：旧阻断只检查最终安装目录直属的 .zcode，漏掉 data\.zcode 等子目录数据。
       ; 安装器覆盖安装时会管理整个安装目录树，递归命中任意 .zcode 都必须阻断。
       Push "$R0"
       Call ZCodeFindNestedDataDir
@@ -560,7 +759,7 @@
   FunctionEnd
 
   Function ZCodeBlockInstallDirContainsDataLeave
-    ; 阻断页的下一步按钮已禁用，但自动化或系统快捷键仍可能触发下一页。
+    ; 修复原因：阻断页的下一步按钮已禁用，但自动化或系统快捷键仍可能触发下一页。
     ; leave 回调只处理继续前进的路径，这里强制留在当前页，确保用户只能返回修改安装目录。
     Abort
   FunctionEnd

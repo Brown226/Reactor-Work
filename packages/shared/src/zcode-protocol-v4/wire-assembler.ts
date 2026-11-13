@@ -6,6 +6,7 @@ import { PROTOCOL_V4_LIMITS } from "./core.js";
 import { crc32WireBytes, decodeWireBase64 } from "./wire-binary.js";
 import { measureTopicNotificationEnvelopeBytes } from "./wire-codec.js";
 import type { TopicFrameDeliveryKind, TopicWireFrameCandidate } from "./wire.js";
+import { WIRE_FAULT_INVALID_PAYLOAD } from "./wire-fault.js";
 
 export interface TopicWireAssemblyFault {
   /** 缺失/伪值本身也必须成为 owned typed fault，此时不能伪造用途。 */
@@ -191,7 +192,10 @@ export class TopicWireFrameAssembler<F> {
   accept(wire: TopicWireFrameCandidate, now = Date.now()): TopicWireAssemblyEvent<F>[] {
     const events = this.expire(now);
     const key = routeKey(wire.topic, wire.subscriptionId);
-    if (!Number.isSafeInteger(wire.logicalFrameOrdinal) || wire.logicalFrameOrdinal < 1) {
+    if (
+      !Number.isSafeInteger(wire.logicalFrameOrdinal) ||
+      wire.logicalFrameOrdinal < 1
+    ) {
       events.push(this.fault(wire, "proto.frameAssemblyMetadataMismatch"));
       return events;
     }
@@ -289,7 +293,7 @@ export class TopicWireFrameAssembler<F> {
       const parsed = this.frameSchema.safeParse(wire.frame);
       if (!parsed.success) {
         this.settle(key, wire);
-        events.push(this.fault(wire, "proto.frameAssemblyInvalidPayload"));
+        events.push(this.fault(wire, WIRE_FAULT_INVALID_PAYLOAD));
         return events;
       }
       this.settle(key, wire);
@@ -460,7 +464,7 @@ export class TopicWireFrameAssembler<F> {
     const parsed = this.frameSchema.safeParse(value);
     if (!parsed.success) {
       this.settle(key, assembly);
-      events.push(this.fault(assembly, "proto.frameAssemblyInvalidPayload"));
+      events.push(this.fault(assembly, WIRE_FAULT_INVALID_PAYLOAD));
       return events;
     }
     this.settle(key, assembly);

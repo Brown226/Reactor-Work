@@ -2,9 +2,14 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { XIcon } from "lucide-react";
 import type { IFeedbackService } from "@zcode/services";
 import { Button } from "@/components/ui/button.js";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.js";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog.js";
 import { Textarea } from "@/components/ui/textarea.js";
-import { FeedbackErrorTip } from "@/feedback/feedbackBadges.js";
+import { FeedbackErrorTip, RequiredMarker } from "@/feedback/feedbackBadges.js";
 import { ScrollFadeViewport } from "@/components/ui/scroll-fade-viewport.js";
 import { SubmitProgressView } from "@/feedback/FeedbackSubmitProgressView.js";
 import {
@@ -38,9 +43,8 @@ export const FeatureRequestDialog = memo(function FeatureRequestDialogComponent(
   const [description, setDescription] = useState("");
   const [solution, setSolution] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [submitProgress, setSubmitProgress] = useState<FeedbackSubmissionProgressState | null>(
-    null,
-  );
+  const [submitProgress, setSubmitProgress] =
+    useState<FeedbackSubmissionProgressState | null>(null);
   const [submissionJob, setSubmissionJob] = useState<FeedbackSubmissionJob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
@@ -157,7 +161,15 @@ export const FeatureRequestDialog = memo(function FeatureRequestDialogComponent(
       setError(getErrorMessage(submitError));
       setSubmitting(false);
     }
-  }, [copy, description, feedbackService, formatMessage, locale, openTickets, solution]);
+  }, [
+    copy,
+    description,
+    feedbackService,
+    formatMessage,
+    locale,
+    openTickets,
+    solution,
+  ]);
 
   return (
     <Dialog
@@ -281,7 +293,7 @@ function FeatureRequestTextarea({
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-ui-base font-semibold text-foreground">
-          {required ? <span className="mr-1 text-destructive">*</span> : null}
+          {required ? <RequiredMarker /> : null}
           {title}
         </h3>
         <span className="text-ui-xs tabular-nums text-foreground-subtle">
@@ -290,6 +302,9 @@ function FeatureRequestTextarea({
       </div>
       <Textarea
         autoFocus={autoFocus}
+        required={required}
+        aria-required={required}
+        aria-label={title}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         rows={4}
@@ -303,7 +318,7 @@ function FeatureRequestTextarea({
   );
 }
 
-function buildFeatureRequestDescription({
+export function buildFeatureRequestDescription({
   description,
   solution,
   source,

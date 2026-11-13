@@ -53,8 +53,7 @@ function parseArgs(argv) {
   return {
     command: commandAndArgs[0],
     args: commandAndArgs.slice(1),
-    // 目录名与 packages/shared/src/user-data-dir.ts 的 USER_DATA_DIR_NAME 保持一致
-    logDir: logDir || join(homedir(), ".reactor", "v2", "dev", "stdio-traffic"),
+    logDir: logDir || join(homedir(), ".zcode", "v2", "dev", "stdio-traffic"),
     workspaceKey,
   };
 }
@@ -107,10 +106,28 @@ function extractProtocolMeta(message) {
 }
 
 function createRecorder({ childPid, stream, workspaceKey }) {
+  const credentialReplies = new Set();
   return function recordLine(direction, raw, bytes) {
     const parsed =
       direction === "agent-stderr" ? { message: null, parseError: null } : tryParseJsonLine(raw);
     const meta = extractProtocolMeta(parsed.message);
+    const message = parsed.message;
+    const replyKey = `${direction}:${typeof meta.id}:${meta.id}`;
+    if (meta.method === "interaction/requestCredentialCipher") {
+      const replyDirection = direction === "agent-to-app" ? "app-to-agent" : "agent-to-app";
+      credentialReplies.add(`${replyDirection}:${typeof meta.id}:${meta.id}`);
+      // 加解密载荷含凭据明文；调试抓包只保留元数据，转发的原始字节不变。
+      parsed.message = {
+        jsonrpc: message.jsonrpc,
+        id: meta.id,
+        method: meta.method,
+        params: "<redacted>",
+      };
+      raw = JSON.stringify(parsed.message);
+    } else if (!meta.method && credentialReplies.delete(replyKey)) {
+      parsed.message = { jsonrpc: message.jsonrpc, id: meta.id, result: "<redacted>" };
+      raw = JSON.stringify(parsed.message);
+    }
     const record = {
       ts: new Date().toISOString(),
       workspaceKey,

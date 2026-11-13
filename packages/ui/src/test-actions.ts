@@ -1,8 +1,9 @@
 import type { TaskChatMessage as ChatMessage } from "@/lib/taskChatMessageTypes.js";
 import { shouldExposeE2EStoreBridge } from "@/lib/e2eStoreBridge.js";
-import type { IZCodeAgentService } from "@zcode/services";
+import type { IBotsService, IZCodeAgentService, IZCodeTaskService } from "@zcode/services";
 import type { TaskListE2EActions } from "@/lib/taskListE2EActions.js";
 import { useEffect } from "react";
+import type { Locale } from "@zcode/shared";
 
 // Vite 注入的 import.meta.env 类型声明
 declare global {
@@ -16,14 +17,18 @@ declare global {
  * 仅在非 production 环境下注册，避免泄露到生产。
  */
 export interface TestActions extends TaskListE2EActions {
+  /** 受控 E2E 输入走真实 Host Bot 服务与 CLI admission，不伪造队列投影。 */
+  sendBotMessage: IBotsService["handleInboundMessage"];
+  /** 受控材料夹具走真实任务服务、上传与 CLI 队列，不注入 UI row。 */
+  submitBotGroupInput: NonNullable<IZCodeTaskService["submitBotGroupInput"]>;
   /** 获取当前主题 */
   getTheme: () => string;
   /** 设置主题 */
   setTheme: (theme: "light" | "dark" | "zai-light" | "zai-dark" | "system") => void;
   /** 获取当前语言，仅供跨语言展示 E2E */
-  getLocale: () => "zh-CN" | "en-US";
+  getLocale: () => Locale;
   /** 设置当前语言，仅供跨语言展示 E2E */
-  setLocale: (locale: "zh-CN" | "en-US") => void;
+  setLocale: (locale: Locale) => void;
   /** 注入聊天展示用的 mock 消息 */
   setChatMessages: (messages: ChatMessage[]) => void;
   /** 获取当前 mock 消息数量 */

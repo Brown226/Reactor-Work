@@ -1,16 +1,20 @@
+import { useState } from "react";
+import { DesktopCommandIds } from "@zcode/shared";
 import {
-  DesktopCommandIds,
   TID_WORKSPACE_HELP_MENU_RESOURCE_MANAGER,
   TID_WORKSPACE_HELP_MENU_TRIGGER,
-} from "@zcode/shared";
+} from "@zcode/shared/test-ids";
 import {
   ActivityIcon,
   BookOpenIcon,
   CircleHelpIcon,
+  CopyIcon,
+  DownloadIcon,
   LightbulbIcon,
   InfoIcon,
   MessageSquareIcon,
   RefreshCwIcon,
+  ShieldAlertIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
@@ -27,8 +31,10 @@ import { useFeedbackStore } from "@/feedback/feedbackStore.js";
 import { useDesktopUpdateMenu } from "@/hooks/useDesktopUpdateMenu.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useProductDocsUrl } from "@/hooks/useProductDocsUrl.js";
+import { useVulnerabilityReportUrl } from "@/hooks/useVulnerabilityReportUrl.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { createHelpMenuActionHandlers } from "@/lib/helpMenuActions.js";
+import { toast } from "@/components/ui/toast.js";
 
 export function WorkspaceHelpMenuButton({
   className,
@@ -43,6 +49,9 @@ export function WorkspaceHelpMenuButton({
 }) {
   const { intl } = useZCodeIntl();
   const platform = usePlatform();
+  const [open, setOpen] = useState(false);
+  const { url: vulnerabilityReportUrl, loading: vulnerabilityReportLoading } =
+    useVulnerabilityReportUrl(open);
   const updateMenu = useDesktopUpdateMenu(isDesktop);
   const openFeedbackSubmit = useFeedbackStore((state) => state.openSubmit);
   const openFeatureRequest = useFeedbackStore((state) => state.openFeatureRequest);
@@ -62,8 +71,21 @@ export function WorkspaceHelpMenuButton({
     void platform.executeDesktopCommand(DesktopCommandIds.ShowAbout);
   };
 
+  const handleCopyDeviceMid = async () => {
+    try {
+      const deviceMid = platform.getDeviceId();
+      if (!deviceMid || typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
+        throw new Error("clipboard unavailable");
+      }
+      await navigator.clipboard.writeText(deviceMid);
+      toast(intl.formatMessage({ id: "workspaceHeader.help.deviceMidCopied" }));
+    } catch {
+      toast(intl.formatMessage({ id: "workspaceHeader.help.deviceMidCopyFailed" }));
+    }
+  };
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <ControlHintTooltip title={helpMenuLabel} side="bottom">
         <DropdownMenuTrigger asChild>
           <Button
@@ -96,6 +118,20 @@ export function WorkspaceHelpMenuButton({
           <MessageSquareIcon className="size-4" />
           {intl.formatMessage({ id: "workspaceHeader.help.issueReport" })}
         </DropdownMenuItem>
+        {vulnerabilityReportLoading || vulnerabilityReportUrl ? (
+          <DropdownMenuItem
+            disabled={vulnerabilityReportLoading}
+            aria-busy={vulnerabilityReportLoading}
+            onSelect={
+              vulnerabilityReportUrl
+                ? () => platform.openExternal(vulnerabilityReportUrl)
+                : undefined
+            }
+          >
+            <ShieldAlertIcon className="size-4" />
+            {intl.formatMessage({ id: "workspaceHeader.help.reportVulnerability" })}
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem onSelect={openFeatureRequest}>
           <LightbulbIcon className="size-4" />
           {intl.formatMessage({ id: "workspaceHeader.help.productRequest" })}
@@ -105,6 +141,15 @@ export function WorkspaceHelpMenuButton({
         {isDesktop ? (
           <>
             <DropdownMenuSeparator />
+            {/* 独立导出入口曾被移除；复用原菜单动作，保持打包、系统定位与提示一致。 */}
+            <DropdownMenuItem onSelect={helpMenuActions.exportLogs}>
+              <DownloadIcon className="size-4" />
+              {intl.formatMessage({ id: "titleBar.menu.help.exportLogs" })}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={handleCopyDeviceMid}>
+              <CopyIcon className="size-4" />
+              {intl.formatMessage({ id: "workspaceHeader.help.copyDeviceMid" })}
+            </DropdownMenuItem>
             <DropdownMenuItem
               data-testid={TID_WORKSPACE_HELP_MENU_RESOURCE_MANAGER}
               onSelect={handleOpenResourceManager}

@@ -78,6 +78,7 @@ export function parseWorkbenchSessionDragPayload(
   }
 }
 
+// ===== [本地定制] resolveWorkbenchDropSide（上游 v3.18.0 无此导出，整包同步会覆盖本文件）=====
 export function resolveWorkbenchDropSide(
   rect: RectLike,
   clientX: number,

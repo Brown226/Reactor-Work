@@ -6,6 +6,7 @@ import {
   CoreErrorType,
   WEBSEARCH_PROVIDER_NATIVE_SPEC,
   WEBSEARCH_TOOL_CONTRACT,
+  WEB_SEARCH_BUDGET_EXHAUSTED_ERROR_CODE,
   WebSearchInputJsonSchema,
   WebSearchInputSchema,
   WebSearchOutputJsonSchema,
@@ -21,7 +22,7 @@ import {
   type WebSearchInput,
   type WebSearchOutput,
 } from "@zcode/contracts";
-import type { ToolEntry, ToolHandler } from "../types.js";
+import type { ToolEntry, ToolHandler, ToolHandlerFailure } from "../types.js";
 import { auxiliaryModelOptions } from "../../model/auxiliary-model-options.js";
 import { buildWebSearchOutput, formatWebSearchModelContent } from "./websearch-results.js";
 import { webSearchTraceFromContext } from "./websearch-support.js";
@@ -31,33 +32,16 @@ const PROVIDER_WEBSEARCH_TOOL_NAME = "web_search";
 const DEFAULT_TIMEOUT_MS = 60_000;
 const DEFAULT_MAX_USES = 8;
 
-const WEBSEARCH_MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-] as const;
+// 当前月份不写进描述：模型从会话里的当前日期得知月份，描述保持逐字节稳定，跨月不让 tools 缓存失效。
+const WEBSEARCH_PROVIDER_DESCRIPTION = [
+  "Search the web. Returns result blocks with titles and URLs. US-only.",
+  "",
+  "- The current month is (provided in the conversation below) — use this when searching for recent information.",
+  "- `allowed_domains` / `blocked_domains` filter results.",
+  '- After answering from results, end with a "Sources:" list of the URLs you used as markdown links.',
+].join("\n");
 
-function buildWebSearchProviderDescription(now: Date = new Date()): string {
-  const currentMonth = `${WEBSEARCH_MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`;
-  return [
-    "Search the web. Returns result blocks with titles and URLs. US-only.",
-    "",
-    `- The current month is ${currentMonth} — use this when searching for recent information.`,
-    "- `allowed_domains` / `blocked_domains` filter results.",
-    '- After answering from results, end with a "Sources:" list of the URLs you used as markdown links.',
-  ].join("\n");
-}
-
-const webSearchHandler: ToolHandler<WebSearchInput, WebSearchOutput> = async (input, context) => {
+const webSearchHandler: ToolHandler<WebSearchInput, WebSearchOutput | ToolHandlerFailure> = async (input, context) => {
   const startedAt = Date.now();
   const model = context.model;
 
@@ -77,6 +61,21 @@ const webSearchHandler: ToolHandler<WebSearchInput, WebSearchOutput> = async (in
         recoverable: true,
       },
     );
+  }
+
+  // 动态工作流子代理的 per-ask 预算（docs: execution-engine.md「Search budget」）。
+  // 成因：模型在长 turn 里退化后会一直发 WebSearch（实测一个子代理 77 分钟约 2000 次、
+  // 查询退化成无意义词），而 loop 本身按设计不限工具次数，没有任何东西会让它停下。
+  // 扣减放在能力校验之后、发请求之前：超额的调用不产生任何内部模型请求；端口同步扣减，
+  // 同一批并行调用计数精确。回失败而非正常结果：输出 schema 没有承载拒绝的字段，
+  // 且 tool_usage 的 error 计数让预算命中无需新事件即可观测。
+  const charge = context.webSearchBudget?.charge();
+  if (charge?.kind === "exhausted") {
+    return {
+      result: false,
+      errorCode: WEB_SEARCH_BUDGET_EXHAUSTED_ERROR_CODE,
+      message: charge.message,
+    } satisfies ToolHandlerFailure;
   }
 
   const request: Parameters<typeof model.streamText>[0] = {
@@ -114,7 +113,6 @@ const webSearchHandler: ToolHandler<WebSearchInput, WebSearchOutput> = async (in
           toolName: WEBSEARCH_TOOL_NAME,
           querySource: "web_search_tool",
         },
-        modelRequestSessionType: "other",
         modelCall: { operation: "web_search" },
         // statusSink 不在这里设：执行器交出的 context.model 已带默认会话事件出口。
         traceContext: webSearchTraceFromContext(context),
@@ -131,11 +129,8 @@ export const webSearchToolEntry: ToolEntry = {
   providerNative: undefined,
   metadata: {
     name: WEBSEARCH_TOOL_NAME,
-    // 写死月份会导致模型可见的 WebSearch 描述过期。
-    // 每次读取时重新生成，避免长驻进程跨月后继续投递旧月份。
-    get description() {
-      return buildWebSearchProviderDescription();
-    },
+    searchHint: "search the web for current information",
+    description: WEBSEARCH_PROVIDER_DESCRIPTION,
     readOnly: true,
     destructive: false,
     concurrentSafe: true,

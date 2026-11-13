@@ -1,3 +1,18 @@
+/** 与 core `model-errors.ts` 中 anomaly guard 文案保持一致。 */
+export const SUSPICIOUS_EMPTY_MODEL_RESULT_MESSAGE =
+  "Model returned no text, no tool calls, and no usage before completing the turn.";
+
+import {
+  requestVerificationActionMessages,
+  requestVerificationRecoveryAction,
+  type RequestVerificationRecoveryAction,
+} from "@/request-security-edition/errors.js";
+export {
+  resolveRequestVerificationBusinessCode,
+  isRequestVerificationTerminalError,
+  isRequestVerificationRejectedMessage,
+  REQUEST_VERIFICATION_REJECTED_MESSAGE,
+} from "@/request-security-edition/errors.js";
 /**
  * zcode-plan / Coding Plan 业务错误码与前端处理约定。
  *
@@ -10,12 +25,13 @@
  * | 安全校验拒绝   | 3007 | 403  | 客户端无法完成安全校验，提示联系支持 |
  * | 模型并发上限   | 3010 | 429  | Start Plan 下走升级横幅 |
  * | 请求过频       | 3002/429 | 429 | 限流提示，稍后重试 |
- * | 闲时票据不可用 | 3102 | 400  | 单段运行时间到顶，提示新建闲时任务续跑 |
+ * | 闲时票据过期 | 3102 | 400  | 过号或旧版过期，提示手动新建任务 |
+ * | 闲时运行超时 | 3106 | 400  | 单次运行时间到顶，提示手动新建任务 |
  * | 上游 HTTP 异常 | 2007 | 500  | 可重试；刷新配额，勿本地扣额度 |
  */
-import { isOffPeakTicketExpiredError } from "@zcode/shared";
+import { isOffPeakTicketExpiredError, OFF_PEAK_TICKET_EXPIRED_MARKER } from "@zcode/shared";
 
-const PROVIDER_BUSINESS_ERROR_CODES = [
+export const PROVIDER_BUSINESS_ERROR_CODES = [
   "1006",
   "1005",
   "3006",
@@ -26,20 +42,22 @@ const PROVIDER_BUSINESS_ERROR_CODES = [
   "3010",
   "3002",
   "3102",
+  "3106",
   "2007",
   "429",
 ] as const;
 
-type ProviderBusinessErrorCode = (typeof PROVIDER_BUSINESS_ERROR_CODES)[number];
+export type ProviderBusinessErrorCode = (typeof PROVIDER_BUSINESS_ERROR_CODES)[number];
 
 export type ProviderBusinessErrorUiAction =
   | "login"
   | "refresh-quota"
   | "switch-model"
+  | RequestVerificationRecoveryAction
   | "retry-later"
   | "upgrade";
 
-const PROVIDER_BUSINESS_ERROR_MESSAGE_IDS: Record<ProviderBusinessErrorCode, string> = {
+export const PROVIDER_BUSINESS_ERROR_MESSAGE_IDS: Record<ProviderBusinessErrorCode, string> = {
   "1006": "zcode.error.providerBusiness.1006",
   "1005": "zcode.error.providerBusiness.1005",
   "3006": "zcode.error.providerBusiness.3006",
@@ -50,8 +68,21 @@ const PROVIDER_BUSINESS_ERROR_MESSAGE_IDS: Record<ProviderBusinessErrorCode, str
   "3009": "zcode.error.providerBusiness.3009",
   "3010": "zcode.error.providerBusiness.3010",
   "3102": "zcode.error.providerBusiness.3102",
+  "3106": "zcode.error.providerBusiness.3106",
   "2007": "zcode.error.providerBusiness.2007",
   "429": "zcode.error.providerBusiness.429",
+};
+
+export const PROVIDER_BUSINESS_ERROR_ACTION_MESSAGE_IDS: Record<
+  ProviderBusinessErrorUiAction,
+  string
+> = {
+  login: "chat.error.action.relogin",
+  "refresh-quota": "chat.error.action.refreshQuota",
+  "switch-model": "chat.error.action.switchModel",
+  ...requestVerificationActionMessages,
+  "retry-later": "chat.error.action.retryLater",
+  upgrade: "chat.quota.action.upgrade",
 };
 
 const PROVIDER_BUSINESS_ERROR_UI_ACTIONS: Record<
@@ -62,15 +93,15 @@ const PROVIDER_BUSINESS_ERROR_UI_ACTIONS: Record<
   "1005": "refresh-quota",
   "3006": "switch-model",
   "3001": null,
-  // 3007 安全校验拒绝：客户端无法完成安全校验，没有可执行的恢复动作。
-  "3007": null,
+  "3007": requestVerificationRecoveryAction,
   // 3008/3009/3010 并发上限：Start Plan 下走升级横幅，非 Start Plan 走 upgrade 动作
   "3008": "upgrade",
   "3009": "upgrade",
   "3010": "upgrade",
   "3002": "retry-later",
-  // 3102 闲时票据不可用：只能新建闲时任务续跑，横幅里的重试/切模型都救不回来。
+  // 过号和运行超时都需要新票，横幅重试或切模型不能恢复原票。
   "3102": null,
+  "3106": null,
   "2007": "retry-later",
   "429": "retry-later",
 };
@@ -85,6 +116,9 @@ export function isProviderBusinessErrorCode(
 }
 
 export function getProviderBusinessErrorMessageId(code: string | undefined): string | undefined {
+  if (code === OFF_PEAK_TICKET_EXPIRED_MARKER) {
+    return "zcode.error.offPeakTicketExpired";
+  }
   if (!isProviderBusinessErrorCode(code)) {
     return undefined;
   }
@@ -134,6 +168,8 @@ export function resolveStartPlanQuotaExhaustedBusinessCode(
 
   return undefined;
 }
+
+const CONCURRENT_LIMIT_BUSINESS_CODES = new Set(["3008", "3009", "3010"]);
 
 const CONCURRENT_LIMIT_WRAPPER_CODES = new Set([
   "PROVIDER_BUSINESS_ERROR",
@@ -212,6 +248,11 @@ export function resolveStartPlanConcurrentLimitBusinessCode(
   return undefined;
 }
 
+/** 判断业务码是否为并发上限类型。 */
+export function isConcurrentLimitBusinessCode(code: string | undefined): boolean {
+  return Boolean(code && CONCURRENT_LIMIT_BUSINESS_CODES.has(code));
+}
+
 export function resolveGlmQuotaBannerBusinessCode(
   code: string | undefined,
 ): GlmQuotaBannerBusinessCode | undefined {
@@ -232,24 +273,23 @@ export function resolveStartPlanConcurrentLimitBannerReason(
     : "initial-busy";
 }
 
-/** 与 core `model-errors.ts` 中 anomaly guard 文案保持一致。 */
-export const SUSPICIOUS_EMPTY_MODEL_RESULT_MESSAGE =
-  "Model returned no text, no tool calls, and no usage before completing the turn.";
+/** 上游 500 类错误：重试前建议刷新配额快照，避免 UI 本地误扣额度。 */
+export function shouldRefreshQuotaOnProviderBusinessRetry(code: string | undefined): boolean {
+  return code === "2007" || code === "1005";
+}
 
 /**
- * 闲时票据不可用（上游 3102：票据失效或过期）。
- * 适配层会把该业务码包成 `off-peak-ticket-expired: <上游原文>` 落到 turn 错误里，
- * 外层 code 被压成 PROVIDER_BUSINESS_ERROR 等包装码时靠稳定标记兜底，
- * 否则横幅会把 "off peak ticket is invaliad or expired" 原文直接怼给用户。
+ * 只有明确的 3102 才能提示额度返还；历史标记也包含运行超时，不能当成 3102。
  */
 export function resolveOffPeakTicketExpiredBusinessCode(
   code: string | undefined,
   message: string | undefined,
-): "3102" | undefined {
-  if (code?.trim() === "3102") {
-    return "3102";
+): "3102" | "3106" | typeof OFF_PEAK_TICKET_EXPIRED_MARKER | undefined {
+  const normalized = code?.trim();
+  if (normalized === "3102" || normalized === "3106") {
+    return normalized;
   }
-  return isOffPeakTicketExpiredError(message) ? "3102" : undefined;
+  return isOffPeakTicketExpiredError(message) ? OFF_PEAK_TICKET_EXPIRED_MARKER : undefined;
 }
 
 export function isSuspiciousEmptyModelResultMessage(message: string | undefined): boolean {

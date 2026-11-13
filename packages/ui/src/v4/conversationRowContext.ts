@@ -1,3 +1,4 @@
+import { createContext } from "react";
 // v4 行渲染上下文（ai-elements / ToolCallBlocks 回接所需的宿主注入面）。
 // 注入模式对齐 PermissionDialog（store 耦合剥离）：展示组件不自取 store，
 // theme / codePreviewSettings 在宿主（SessionPane）处取，向下走稳定 props。
@@ -9,8 +10,10 @@ import type { MessageFileLinkTarget } from "@/components/ai-elements/message.js"
 import type { WorkflowCausalityGraphData } from "@/components/workflow-graph/types.js";
 import type { WorkflowRunSettingsChange } from "@/components/workflow-timeline/workflowRunSettings.js";
 import type { WorkflowDraftPosition, WorkflowRunCardSummary } from "@/ToolCallBlocks/shared.js";
+import type { WorkflowFillGraph } from "@/v4/workflowRunCardJoin.js";
 import type { Theme } from "@/useTheme.js";
 import type { ModelSelectionView } from "@zcode/services";
+import type { ZCodeWorkflowsForRunCandidate } from "@zcode/shared";
 import type { ConversationAttachmentReadParams, ConversationTransport } from "@/v4/transport.js";
 import type {
   OpenPlanDetailSideTabRequest,
@@ -52,6 +55,7 @@ export interface ConversationRowRenderContext {
   /** @deprecated 旧内联下钻标记；新的子会话统一打开侧栏详情。 */
   inSubagentDrilldown?: boolean;
   /** 手机 /remote 紧凑模式：隐藏外部 App 打开下拉，只保留应用内预览。 */
+  compactForRemoteControl?: boolean;
   /** 当前 session 正在 compact 或 goal verify；专用状态 UI 独占进度反馈。 */
   chatLoadingBlockedByActiveWork?: boolean;
   /** 当前 session 正在等待权限确认或 AskUserQuestion 回答，隐藏底部 ChatLoading。 */
@@ -62,12 +66,6 @@ export interface ConversationRowRenderContext {
   messageStreamFirstReasoningRowId?: number;
   /** 常规设置：是否在对话消息流中渲染 Todo 工具卡片。 */
   messageStreamShowTodos?: boolean;
-  /** 常规设置：是否聚合连续的 Explore-compatible 工具。 */
-  toolGroupingExploreEnabled?: boolean;
-  /** 常规设置：是否聚合连续的非只读 Shell 工具。 */
-  toolGroupingTerminalEnabled?: boolean;
-  /** 常规设置：是否聚合连续的文件写入工具。 */
-  toolGroupingChangesEnabled?: boolean;
   /**
    * Tier 1 fork 跳转：把当前 pane 切到目标会话（forkNotice → 父会话，复用 onSessionCreated
    * 原地切换）。rowId 预留 Tier 2 精确滚动——当前 forkNotice.parentRowId 恒为 0 占位、暂忽略。
@@ -87,6 +85,7 @@ export interface ConversationRowRenderContext {
   onOpenFileLink?: (target: MessageFileLinkTarget) => void;
   onOpenSubagentSession?: (request: OpenSubagentSideTabRequest) => void;
   onOpenPlanDetail?: (request: OpenPlanDetailSideTabRequest) => void;
+  /** 插件 UI：内联卡片请求在侧栏打开；RowView 补 parentSessionId 与 workspace 字段。 */
   onOpenWorkflowRun?: (request: OpenWorkflowRunSideTabRequest) => void;
   /**
    * 产物的全尺寸查看 tab 入口。
@@ -121,6 +120,19 @@ export interface ConversationRowRenderContext {
     workId: string,
     change: WorkflowRunSettingsChange,
   ) => Promise<CommandAck>;
+  /**
+   * 完成卡的「保存」/「再次运行」（docs/dynamic-workflow/transcript-and-notifications.md
+   * 「Saving the run, and running it again」）：把 GUI 写好的那条用户消息发进本会话，交给 ZCode
+   * 去提炼保存。与 Resume 同两道门（只读、灰度）且**同一个供给点**——写文件与起引擎都属于
+   * 「Resume 被收走的地方一并收走」。缺席即卡上只剩「已保存」芯片那条事实。
+   */
+  onSendWorkflowSaveRequest?: (text: string) => Promise<void>;
+  /**
+   * runId → 转写里认领过这次 run 的 SaveWorkflow 候选（`workflowRunCardJoin.buildWorkflowSaveCandidatesByRunId`），
+   * 由宿主从行窗口一遍建立。它是「模型另起名字存下的那份定义」与这次 run 之间仅有的联系
+   * （模型不会用 run 名当工作流名），所以必须从转写里读。
+   */
+  workflowSaveCandidatesByRunId?: ReadonlyMap<string, readonly ZCodeWorkflowsForRunCandidate[]>;
   /** 会话当前模型（「配置」弹层首项「会话模型」的名字）；读不到即缺席，首项只写「会话模型」。 */
   workflowSessionModel?: { providerId: string; modelId: string };
   /**
@@ -164,6 +176,11 @@ export interface ConversationRowRenderContext {
    */
   workflowGraphByToolCallId?: ReadonlyMap<string, WorkflowCausalityGraphData>;
   /**
+   * runId → 最新一次成功补全的有效脚本图（`workflowRunCardJoin.buildWorkflowFillGraphByRunId`）：补全之后
+   * run 卡与侧板取它，而不是发起行的图（docs/dynamic-workflow/presentation.md「Holes on the timeline」）。
+   */
+  workflowFillGraphByRunId?: ReadonlyMap<string, WorkflowFillGraph>;
+  /**
    * CreateWorkflow / AmendWorkflow 行 → 草稿位置（稿号、是否已被替代），由宿主从行窗口一遍建立
    * （`workflowDraftJoin.buildWorkflowDraftByToolCallId`）。编译反馈行据此写「第 n 稿」并决定空环灯的
    * 颜色；缺席时卡片不编号。
@@ -177,6 +194,11 @@ export interface ConversationRowRenderContext {
     target: ConversationRowTarget,
   ) => Promise<V4ConversationFileRewindPreviewResult>;
   applyFileRewind?: (target: ConversationRowTarget) => Promise<CommandAck>;
+  /**
+   * 文件撤销被 session 锁住（availability.rewindFiles 拒绝），且锁一解除就能撤销。锁住时 pane
+   * 不下发上面两个回调；只读 pane、运行时未就绪时为 false，禁用按钮不显示锁定提示。
+   */
+  fileRewindLocked?: boolean;
   /** 已发送 image/video 预览；由 pane 绑定的 workspace transport 注入。 */
   readAttachment?: (
     params: ConversationAttachmentReadParams,
@@ -210,3 +232,12 @@ export function isConversationReasoningRowVisible(
     visibility.messageStreamFirstReasoningRowId === rowId
   );
 }
+
+// Context 独立于组件热更新边界，避免提供方和已挂载工具消费方持有不同实例，
+// 将整条工具摘要误渲染到统计组头的图标槽。
+export const SummaryIconOnlyContext = createContext(false);
+export const SummaryPreviewContext = createContext(false);
+export const SummaryGroupBoundaryContext = createContext<{
+  taskRunning: boolean;
+  tailRowId?: number;
+}>({ taskRunning: false });
