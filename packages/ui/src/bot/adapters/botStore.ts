@@ -38,6 +38,19 @@ export interface BotStoreDeps {
   /** 当前可用模型。 */
   listModels(): Promise<{ ref: string; label?: string }[]>;
   defaultModel(): string | null;
+  /**
+   * 模型供应商视图（DS-Bot 的 Models 设置页）。
+   * Reactor 侧就是 providerSettingsService.getView()；这里抽成端口，
+   * 是为了让 botStore 不直接依赖 services 的装配细节，便于测试替身。
+   */
+  listProviders(): Promise<
+    Array<{
+      providerId: string;
+      providerName?: string;
+      needsKey?: boolean;
+      models: Array<{ modelId: string; label?: string }>;
+    }>
+  >;
 }
 
 const PREFS_KEY = "reactor-bot-prefs-v1";
@@ -235,18 +248,89 @@ export function createBotStore(deps: BotStoreDeps) {
     },
 
     async models() {
-      const models = await deps.listModels();
+      // DS-Bot 的 Models 页读的是 { models, defaultModel }，models 每项含
+      // ref / label / needsKey / reasoning。Reactor 的 ModelSelectionView 提供
+      // providerId + modelId，这里拼成 DS-Bot 的 ref 形态（`provider/model`）。
+      const providers = await deps.listProviders();
+      const models = providers.flatMap((provider) =>
+        provider.models.map((model) => ({
+          ref: `${provider.providerId}/${model.modelId}`,
+          label: model.label ?? model.modelId,
+          provider: provider.providerId,
+          needsKey: provider.needsKey === true,
+        })),
+      );
       return { models, defaultModel: deps.defaultModel() };
     },
+
+    async providers() {
+      const providers = await deps.listProviders();
+      return {
+        providers: providers.map((provider) => ({
+          id: provider.providerId,
+          name: provider.providerName ?? provider.providerId,
+          needsKey: provider.needsKey === true,
+          models: provider.models.map((model) => ({
+            id: model.modelId,
+            name: model.label ?? model.modelId,
+          })),
+        })),
+      };
+    },
+
     async efforts() {
-      // 思考强度由 Reactor 的模型选择器管理，Bot 视图这里给空表。
+      // 思考强度由 Reactor 的模型选择器统一管理，Bot 视图不需要自己的档位表。
       return { efforts: [] };
     },
+
+    /**
+     * 工作区与文件夹。
+     * DS-Bot 的 General 页用它显示「团队工作区」；Reactor 的对应物就是当前工作区，
+     * 所以原样返回当前路径，不伪造多选。
+     */
+    async folders() {
+      return { team: deps.workspacePath };
+    },
+    async folderList() {
+      return { folders: [] };
+    },
+    async folderPick() {
+      throw Object.assign(new Error("Reactor 请用侧栏的项目入口选择文件夹"), {
+        code: "bot/unsupported",
+      });
+    },
+
     async runStats() {
+      // 首版不聚合用量维度：Reactor 的用量统计在设置页，不按 Bot 拆分。
       return { sessionStats: {}, tokenUsage: {}, contextPressure: {} };
     },
     async usage() {
       return { byBot: [], byModel: [], byDay: [] };
+    },
+
+    async schedules() {
+      // 定时任务：Reactor 的自动化中心在侧栏「自动化」入口，Bot 视图不重复一份。
+      return { schedules: [] };
+    },
+    async scheduleCreate() {
+      throw Object.assign(new Error("请在侧栏「自动化」里创建"), { code: "bot/unsupported" });
+    },
+    async scheduleDelete() {
+      throw Object.assign(new Error("请在侧栏「自动化」里删除"), { code: "bot/unsupported" });
+    },
+
+    async diagnostics() {
+      return { lines: [] };
+    },
+    async diagnosticsLog() {
+      return { lines: [] };
+    },
+    async diagnosticsClear() {
+      return { ok: true };
+    },
+
+    async repoStars() {
+      return { stars: null };
     },
   };
 }
@@ -275,7 +359,18 @@ export const botStore = {
   orderSections: () => requireStore().orderSections(),
   deleteSection: () => requireStore().deleteSection(),
   models: () => requireStore().models(),
+  providers: () => requireStore().providers(),
   efforts: () => requireStore().efforts(),
+  folders: () => requireStore().folders(),
+  folderList: () => requireStore().folderList(),
+  folderPick: () => requireStore().folderPick(),
+  schedules: () => requireStore().schedules(),
+  scheduleCreate: () => requireStore().scheduleCreate(),
+  scheduleDelete: () => requireStore().scheduleDelete(),
+  diagnostics: () => requireStore().diagnostics(),
+  diagnosticsLog: () => requireStore().diagnosticsLog(),
+  diagnosticsClear: () => requireStore().diagnosticsClear(),
+  repoStars: () => requireStore().repoStars(),
   // 这两个端点上游带 payload（botId / 时间范围），Reactor 首版不区分维度，
   // 收下参数但不使用，避免 Parameters<无参方法> 退化成空元组。
   runStats: (_payload?: unknown) => requireStore().runStats(),

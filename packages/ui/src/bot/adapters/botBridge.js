@@ -51,9 +51,20 @@ const ENDPOINTS = {
   "section-order": (payload) => botStore.orderSections(payload),
   "section-delete": (payload) => botStore.deleteSection(payload),
   "models": () => botStore.models(),
+  providers: () => botStore.providers(),
   "efforts": () => botStore.efforts(),
   "run-stats": (payload) => botStore.runStats(payload),
-  "usage": (payload) => botStore.usage(payload),
+  usage: (payload) => botStore.usage(payload),
+  folders: () => botStore.folders(),
+  "folder-list": () => botStore.folderList(),
+  "folder-pick": (payload) => botStore.folderPick(payload),
+  schedules: () => botStore.schedules(),
+  "schedule-create": (payload) => botStore.scheduleCreate(payload),
+  "schedule-delete": (payload) => botStore.scheduleDelete(payload),
+  diagnostics: () => botStore.diagnostics(),
+  "diagnostics-log": () => botStore.diagnosticsLog(),
+  "diagnostics-clear": () => botStore.diagnosticsClear(),
+  "repo-stars": () => botStore.repoStars(),
 };
 
 /** 上游的 call 契约：成功返回值本身，失败抛带 code 的 Error。 */

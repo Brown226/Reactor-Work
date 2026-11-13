@@ -145,6 +145,37 @@ export function createTeam() {
 
   const actions = {
     ...teamActions({ call, after, partFor, roster, ui, live, cards, turnClock }),
+    // [Reactor 本地定制] 上游 About 页的「应用更新 / DSH 更新 / 检查更新」一组动作。
+    // Reactor 是 Web 宿主：没有 Electron 自动更新，也没有「DSH」这个宿主概念
+    // （Reactor 自己就是宿主）。所以这里全部给诚实空实现——页面能打开、状态显示
+    // 「不可用」，而不是点了没反应或抛 undefined is not a function。
+    checkOwnApp: async () => ({ available: false, reason: 'web' }),
+    installOwnApp: async () => ({ ok: false, reason: 'web' }),
+    openOwnApp: () => {},
+    checkUpdate: async () => ({ available: false }),
+    installUpdate: async () => ({ ok: false, reason: 'web' }),
+    installDshUpdate: async () => ({ ok: false, reason: 'web' }),
+    openAppUpdates: () => {},
+    // [Reactor 本地定制] 记忆面板的一组动作。Reactor 的记忆体系（mnemon）由
+    // Harness 统一管理，不在 Bot 视图里提供「按 Bot 增删改」的入口，所以这里给
+    // 只读空实现：面板能打开、列表为空、写操作明确拒绝，不会抛 undefined。
+    memoryView: async () => ({ entries: [] }),
+    memoryAsk: async () => ({ answer: null }),
+    memoryHistory: async () => ({ entries: [] }),
+    memoryPin: async () => ({ ok: false, reason: 'web' }),
+    memoryForget: async () => ({ ok: false, reason: 'web' }),
+    memoryMove: async () => ({ ok: false, reason: 'web' }),
+    memoryLayer: async () => ({ ok: false, reason: 'web' }),
+    memoryRestore: async () => ({ ok: false, reason: 'web' }),
+    memoryTidyUndo: async () => ({ ok: false, reason: 'web' }),
+    // [Reactor 本地定制] 群聊 Goal。Reactor 侧还没有「多 Agent 一个会话」的运行时，
+    // 目标拆解/阶段验收整组不可用；同样给只读空实现，保证面板可开。
+    goalDraft: () => {},
+    goalControl: async () => ({ ok: false, reason: 'web' }),
+    composeGoal: () => {},
+    closeGoalCompose: () => {},
+    toggleGoal: () => {},
+    closeGoal: () => {},
     // The full-pane overlays sit above the conversation, so opening one dismisses them.
     openSession: (id) => {
       ui.set(state => (state.newChat || state.exchange || state.menu || state.palette ? { ...state, newChat: null, exchange: null, menu: null, palette: null } : state))

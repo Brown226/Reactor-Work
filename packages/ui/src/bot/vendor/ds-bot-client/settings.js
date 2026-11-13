@@ -37,6 +37,10 @@ const capitalize = word => word[0].toUpperCase() + word.slice(1)
 // its Models page opens from DS Bot's Models page as the advanced settings.
 const SETTINGS_PAGES = [['general', 'General'], ['models', 'Models'], ['local-agents', 'Local agents'], ['bots', 'Bots'], ['groups', 'Group chats'], ['connectors', 'Connectors'], ['im', 'IM'], ['capabilities', 'Capabilities'], ['browser', 'Browser'], ['computer', 'Computer use'], ['schedules', 'Scheduled tasks'], ['usage', 'Usage'], ['secrets', 'Secrets'], ['feedback', 'Feedback'], ['about', 'About DS Bot']]
 const LAST_PAGES = new Set(['feedback', 'about'])
+// [Reactor 本地定制] Web 宿主不提供的设置页（见上方 pages 过滤处的说明）。
+const REACTOR_HIDDEN_PAGES = new Set([
+  'connectors', 'im', 'capabilities', 'computer', 'local-agents', 'secrets',
+])
 // DSH sections DS Bot's own pages already hold.
 const MERGED_SECTIONS = new Set(['general', 'models'])
 // DSH General rows that sit under Appearance; the rest go under More.
@@ -308,7 +312,14 @@ export function SettingsDialog({ page, id, roster, actions, useUpdate, leaving =
   // A Bot or group deleted while its form is open leaves its page on the list.
   const bot = page === 'bots' && id ? roster.byId[id] : undefined
   const room = page === 'groups' && id ? roster.roomsById[id] : undefined
-  const pages = SETTINGS_PAGES.filter(([key]) => key !== 'models' || actions.providers !== undefined)
+  // [Reactor 本地定制] 上游这行只按「有没有 providers 动作」过滤 Models 页。
+  // Reactor 是 Web 宿主，没有桌面版的 IM 渠道、连接器（500+ apps）、Computer use、
+  // Local agents（本机 CLI）与 Secrets（宿主密钥库）——这些页面在 Reactor 里点进去
+  // 只会报 bot/unsupported，所以直接不进导航。general / models / bots / groups /
+  // browser / schedules / usage / feedback / about 保留。
+  const pages = SETTINGS_PAGES.filter(
+    ([key]) => !REACTOR_HIDDEN_PAGES.has(key) && (key !== 'models' || actions.providers !== undefined),
+  )
   const extra = dshPages(dsh)
   // A DSH page is `dsh` with its section id; one no longer registered falls back to General.
   const section = page === 'dsh' ? extra.find(row => row.id === id) : undefined

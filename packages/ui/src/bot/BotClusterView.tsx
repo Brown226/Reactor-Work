@@ -129,19 +129,35 @@ export function BotClusterView({
             cursor: null,
           };
         },
-        listModels: async () => {
+        listProviders: async () => {
           const view = await services.modelSelectionService.getView();
-          return (view?.providers ?? []).flatMap((provider) =>
-            (provider.models ?? []).map((model) => ({
-              ref: `${provider.providerId}/${model.modelId}`,
-              // DS-Bot 用 label 做显示名；Reactor 的展示名在 config 里，取不到就退回 id。
+          return (view?.providers ?? []).map((provider) => ({
+            providerId: provider.providerId,
+            providerName: provider.providerName,
+            // needsKey：Reactor 用 config 判断是否缺密钥；这里只取「模板要求」这一项，
+            // 避免把账号态（登录后才知）泄漏给 Bot 视图。
+            needsKey: Boolean((provider.config as { needsKey?: boolean } | undefined)?.needsKey),
+            models: (provider.models ?? []).map((model) => ({
+              modelId: model.modelId,
+              // DS-Bot 的 label 是展示名；Reactor 的展示名在 model.config 里。
               label:
                 (model.config as { label?: string; displayName?: string } | undefined)?.label ??
                 (model.config as { label?: string; displayName?: string } | undefined)
                   ?.displayName ??
                 model.modelId,
             })),
-          );
+          }));
+        },
+        listModels: async () => {
+          // 兼容旧端口：Bot 侧栏的模型徽标仍读这个。取第一个可用 provider 的模型表。
+          const view = await services.modelSelectionService.getView();
+          const first = view?.providers?.[0];
+          return (first?.models ?? []).map((model) => ({
+            ref: `${first?.providerId}/${model.modelId}`,
+            label:
+              (model.config as { label?: string; displayName?: string } | undefined)?.label ??
+              model.modelId,
+          }));
         },
         defaultModel: () => null,
       });
