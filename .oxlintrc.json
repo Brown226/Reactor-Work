@@ -217,6 +217,11 @@
     ".agents/skills",
     "packages/formal-proof",
     "apps/zcode-cli",
+    // [本地定制] Agents 集群 vendor 进来的第三方前端（DS-Bot / deep-view，Apache-2.0）。
+    // 原样保留上游代码，不按本仓规范改写；升级时整目录覆盖。
+    "packages/ui/src/bot/vendor",
+    // 上游 app/ui/src 的窗口壳（chat.js / team.js / app.js），同样是原样移植。
+    "packages/ui/src/bot/shell",
     "packages/zcode-cua",
     "docs/electron"
   ]

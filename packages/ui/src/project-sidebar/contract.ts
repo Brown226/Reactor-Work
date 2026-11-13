@@ -177,6 +177,12 @@ export interface ProjectSidebarProps {
   /** 我的空间（Web 宿主专属入口）。 */
   onOpenMySpace?: () => void;
   mySpaceActive?: boolean;
+  /**
+   * [本地定制] Agents 集群主视图（Bot 形态外壳，见 packages/ui/src/bot/）。
+   * 与市场同层级：桌面与 Web 都传；缺省时不渲染按钮，侧栏保持上游原样。
+   */
+  onOpenBot?: () => void;
+  botActive?: boolean;
   /** 打开工作区文件树（本地 files 侧栏 tab）。 */
   onOpenWorkspaceFiles?: () => void;
   onFileTreeOpenChange?: (open: boolean) => void;

@@ -1,4 +1,4 @@
-import { Blocks, Bot, CalendarClock, FolderOpen } from "lucide-react";
+import { Blocks, Bot, BotMessageSquare, CalendarClock, FolderOpen } from "lucide-react";
 import { memo } from "react";
 import { TID_AUTOMATIONS_OPEN } from "@zcode/shared/test-ids";
 import type { ProjectSidebarProps } from "@/project-sidebar/contract.js";
@@ -23,6 +23,8 @@ export const ProjectSidebarNavigation = memo(function ProjectSidebarNavigation({
     | "pluginStoreActive"
     | "onOpenMarket"
     | "marketActive"
+    | "onOpenBot"
+    | "botActive"
     | "onOpenMySpace"
     | "mySpaceActive"
     | "webRemoteControlWorkspaceSwitcher"
@@ -69,6 +71,22 @@ export const ProjectSidebarNavigation = memo(function ProjectSidebarNavigation({
         >
           <Blocks className="size-4" />
           {intl.formatMessage({ id: "workspace.openPluginsSettings" })}
+        </Button>
+      ) : null}
+      {/* [本地定制] Agents 集群：Bot 形态主视图入口。放在导航最前，与样图的
+          「Agents 花名册是产品主轴」一致；上游没有这一项，onOpenBot 缺省即不渲染。 */}
+      {!props.isWebRemoteControl && props.onOpenBot ? (
+        <Button
+          variant="ghost"
+          size="lg"
+          className={`w-full justify-start gap-2 ${props.botActive ? "bg-selected text-foreground" : ""}`}
+          aria-pressed={props.botActive ?? false}
+          onClick={() => props.onOpenBot?.()}
+          data-icon="inline-start"
+          data-testid="agents-cluster-open"
+        >
+          <BotMessageSquare className="size-4" />
+          {intl.formatMessage({ id: "bot.nav.title" })}
         </Button>
       ) : null}
       {/* Reactor 定制入口：插件市场 / 我的空间。上游侧栏没有这两项。

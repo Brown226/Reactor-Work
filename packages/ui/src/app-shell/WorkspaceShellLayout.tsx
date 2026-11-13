@@ -73,6 +73,7 @@ import { AutomationsMainBreadcrumbFrame } from "@/settings/AutomationsMainBreadc
 import { PluginStorePage } from "@/settings/PluginStorePage.js";
 import { MarketPage } from "@/marketplace/MarketPage.js";
 import { MySpacePage } from "@/my-space/index.js";
+import { BotClusterView } from "@/bot/index.js";
 import { createChatComposerPathAttachment } from "@/lib/chatAttachments.js";
 import { pushSystemComposerInjection } from "@/store/systemComposerInjection.js";
 import { TaskFindDialog } from "@/quickpick/TaskFindDialog.js";
@@ -325,6 +326,7 @@ const WorkspaceShellLayoutContent = memo(function WorkspaceShellLayoutComponent(
   handleOpenAutomations,
   handleOpenPluginStore,
   onOpenMarket,
+  onOpenBot,
   marketIntent,
   onOpenModelProviderSettings,
   onOpenMySpace,
@@ -2431,6 +2433,9 @@ const WorkspaceShellLayoutContent = memo(function WorkspaceShellLayoutComponent(
       pluginStoreActive={workspaceMainView === "plugin-store"}
       onOpenMarket={onOpenMarket}
       marketActive={workspaceMainView === "market"}
+      // [本地定制] Agents 集群入口（src/bot/）。
+      onOpenBot={onOpenBot}
+      botActive={workspaceMainView === "bot"}
       onOpenMySpace={onOpenMySpace}
       mySpaceActive={workspaceMainView === "my-space"}
       onOpenWorkspaceFiles={handleOpenWorkspaceFiles}
@@ -2693,6 +2698,103 @@ const WorkspaceShellLayoutContent = memo(function WorkspaceShellLayoutComponent(
     ) : (
       wideContent
     );
+
+  // [本地定制] 原生聊天主区抽成常量：Agents 集群视图要在它左侧插入 Bot 栏，
+  // 同时保持非 Bot 视图的渲染与抽离前完全一致（纯搬运，无行为变化）。
+
+  const chatMainContent = (
+    <main className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+        {renderChatFindDialog()}
+        <ScopedErrorBoundary
+          scope="workspace-chat"
+          resetKeys={workspaceDraftResetKeys}
+          variant="panel"
+          className="h-full"
+        >
+          {/* Bugfix(2026-07-05, M3 验收)：pane 绑定必须用原始选择态 activeTaskId，
+              不能用 meta 派生的 activeSessionId——v4 createSession 刚建的会话
+              不在 taskListCache/optimistic 缓存里，meta 解析为 null 会让 pane
+              永远停在 draft。v4 语义下 sessionId ≡ taskId，meta 只服务 Header 显示。
+              M5⑤：桌面主区升级为分屏宿主（Layout/Focus 两层）；primary pane
+              绑定语义与 testid 契约（paneId=workspace-main）不变。 */}
+          {handoffCreation ? (
+            <div className="absolute inset-0 z-10 flex flex-col bg-background">
+              <ManagedWorktreeCreationView creation={handoffCreation} />
+            </div>
+          ) : null}
+          {viewedCreation ? (
+            <ManagedWorktreeCreationView creation={viewedCreation} />
+          ) : (
+            <V4WorkspaceChatArea
+              allowEscapeStopOutsidePane={
+                isWorkspaceVisible && !isSidePaneOpen && !isSidePaneVisible
+              }
+              readOnly={Boolean(workspaceReadOnlyReason)}
+              readOnlyReason={workspaceReadOnlyReason}
+              foregroundEnabled={isWorkspaceVisible}
+              workspacePath={workspaceAbsPath}
+              workspaceIdentity={workspaceIdentity}
+              isDesktop={isDesktop === true}
+              remoteSessionId={workspaceRemoteSessionId}
+              compactForRemoteControl={isWebRemoteControlShell}
+              sessionId={activeTaskId}
+              activeSelectionSideChatSessionId={
+                activeSelectionSideChatSessionId
+              }
+              provider={activeTaskProvider ?? undefined}
+              onSessionCreated={handleV4SessionCreated}
+              onSessionDeleted={handleV4SessionDeleted}
+              draftComposerHeader={draftComposerHeader}
+              onPrimaryDraftDropTargetControllerChange={
+                registerDraftHeaderDropTarget
+              }
+              gitSummary={gitState.summary}
+              gitDirtyFileCount={gitDirtyFileCount}
+              activeTaskChangeSummary={activeTaskChangeSummary}
+              gitWorktreeReviewSourceId={gitWorktreeReviewSourceId}
+              gitWorktreeChangeSummary={gitWorktreeChangeSummary}
+              summaryPanelVariantOverride={summaryPanelVariantOverride}
+              onSummaryPanelVariantOverrideChange={
+                onSummaryPanelVariantOverrideChange
+              }
+              onRefreshGit={handleRefreshGit}
+              onOpenGitReview={handleOpenGitReview}
+              onPaneActiveSessionChange={handlePaneActiveSessionChange}
+              onOpenBrowserUrl={handleOpenBrowserUrl}
+              onOpenAutomationsMain={handleOpenAutomations}
+              onOpenCodeViewer={handleOpenCodeViewer}
+              onAutoOpenAssistantPptx={
+                isDesktop && !isWebRemoteControlShell
+                  ? handleAutoOpenAssistantPptx
+                  : undefined
+              }
+              onOpenBackgroundBash={handleOpenBackgroundBash}
+              onOpenSubagentSession={handleOpenSubagentSession}
+              onOpenSubagentDirectory={handleOpenSubagentDirectory}
+              onSyncSubagentSessionTabs={handleSyncSubagentSessionTabs}
+              onOpenSelectionSideChat={handleOpenSelectionSideChat}
+              onOpenPlanDetail={handleOpenPlanDetail}
+              onOpenWorkflowRun={handleOpenWorkflowRun}
+              onOpenWorkflowArtifact={handleOpenWorkflowArtifact}
+              onOpenWorkflowRunDirectory={handleOpenWorkflowRunDirectory}
+              onOpenWorkflowActorSession={handleOpenWorkflowActorSession}
+              onOpenWorkflowWorkspace={handleOpenWorkflowWorkspace}
+              onOpenFileLink={handleOpenMarkdownFileLink}
+              conversationFindQuery={conversationFindQuery}
+              conversationFindActiveIndex={conversationFindActiveIndex}
+              conversationFindNavigationRequestId={
+                conversationFindNavigationRequestId
+              }
+              onConversationFindMatchStateChange={
+                onConversationFindMatchStateChange
+              }
+              searchResultHighlightRequest={activeSearchResultHighlightRequest}
+              onSearchResultHighlightDone={onSearchResultHighlightDone}
+            />
+          )}
+        </ScopedErrorBoundary>
+      </main>
+  );
 
   const wideContent = (
     // 完成卡上那两个壳级落点（docs/dynamic-workflow/transcript-and-notifications.md「Saving the
@@ -3136,98 +3238,16 @@ const WorkspaceShellLayoutContent = memo(function WorkspaceShellLayoutComponent(
                                 </ScopedErrorBoundary>
                               </AutomationsMainBreadcrumbFrame>
                             </main>
+                          ) : workspaceMainView === "bot" ? (
+                            // [本地定制] Agents 集群：左侧是 Bot 花名册 + 话题列表，
+                            // 右侧原样复用 Reactor 原生聊天区（V4WorkspaceChatArea），
+                            // 不重写消息流。实现见 src/bot/。
+                            <BotClusterView
+                              workspacePath={workspaceAbsPath}
+                              workspaceIdentity={workspaceIdentity}
+                            />
                           ) : (
-                            <main className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-                              {renderChatFindDialog()}
-                              <ScopedErrorBoundary
-                                scope="workspace-chat"
-                                resetKeys={workspaceDraftResetKeys}
-                                variant="panel"
-                                className="h-full"
-                              >
-                                {/* Bugfix(2026-07-05, M3 验收)：pane 绑定必须用原始选择态 activeTaskId，
-                                    不能用 meta 派生的 activeSessionId——v4 createSession 刚建的会话
-                                    不在 taskListCache/optimistic 缓存里，meta 解析为 null 会让 pane
-                                    永远停在 draft。v4 语义下 sessionId ≡ taskId，meta 只服务 Header 显示。
-                                    M5⑤：桌面主区升级为分屏宿主（Layout/Focus 两层）；primary pane
-                                    绑定语义与 testid 契约（paneId=workspace-main）不变。 */}
-                                {handoffCreation ? (
-                                  <div className="absolute inset-0 z-10 flex flex-col bg-background">
-                                    <ManagedWorktreeCreationView creation={handoffCreation} />
-                                  </div>
-                                ) : null}
-                                {viewedCreation ? (
-                                  <ManagedWorktreeCreationView creation={viewedCreation} />
-                                ) : (
-                                  <V4WorkspaceChatArea
-                                    allowEscapeStopOutsidePane={
-                                      isWorkspaceVisible && !isSidePaneOpen && !isSidePaneVisible
-                                    }
-                                    readOnly={Boolean(workspaceReadOnlyReason)}
-                                    readOnlyReason={workspaceReadOnlyReason}
-                                    foregroundEnabled={isWorkspaceVisible}
-                                    workspacePath={workspaceAbsPath}
-                                    workspaceIdentity={workspaceIdentity}
-                                    isDesktop={isDesktop === true}
-                                    remoteSessionId={workspaceRemoteSessionId}
-                                    compactForRemoteControl={isWebRemoteControlShell}
-                                    sessionId={activeTaskId}
-                                    activeSelectionSideChatSessionId={
-                                      activeSelectionSideChatSessionId
-                                    }
-                                    provider={activeTaskProvider ?? undefined}
-                                    onSessionCreated={handleV4SessionCreated}
-                                    onSessionDeleted={handleV4SessionDeleted}
-                                    draftComposerHeader={draftComposerHeader}
-                                    onPrimaryDraftDropTargetControllerChange={
-                                      registerDraftHeaderDropTarget
-                                    }
-                                    gitSummary={gitState.summary}
-                                    gitDirtyFileCount={gitDirtyFileCount}
-                                    activeTaskChangeSummary={activeTaskChangeSummary}
-                                    gitWorktreeReviewSourceId={gitWorktreeReviewSourceId}
-                                    gitWorktreeChangeSummary={gitWorktreeChangeSummary}
-                                    summaryPanelVariantOverride={summaryPanelVariantOverride}
-                                    onSummaryPanelVariantOverrideChange={
-                                      onSummaryPanelVariantOverrideChange
-                                    }
-                                    onRefreshGit={handleRefreshGit}
-                                    onOpenGitReview={handleOpenGitReview}
-                                    onPaneActiveSessionChange={handlePaneActiveSessionChange}
-                                    onOpenBrowserUrl={handleOpenBrowserUrl}
-                                    onOpenAutomationsMain={handleOpenAutomations}
-                                    onOpenCodeViewer={handleOpenCodeViewer}
-                                    onAutoOpenAssistantPptx={
-                                      isDesktop && !isWebRemoteControlShell
-                                        ? handleAutoOpenAssistantPptx
-                                        : undefined
-                                    }
-                                    onOpenBackgroundBash={handleOpenBackgroundBash}
-                                    onOpenSubagentSession={handleOpenSubagentSession}
-                                    onOpenSubagentDirectory={handleOpenSubagentDirectory}
-                                    onSyncSubagentSessionTabs={handleSyncSubagentSessionTabs}
-                                    onOpenSelectionSideChat={handleOpenSelectionSideChat}
-                                    onOpenPlanDetail={handleOpenPlanDetail}
-                                    onOpenWorkflowRun={handleOpenWorkflowRun}
-                                    onOpenWorkflowArtifact={handleOpenWorkflowArtifact}
-                                    onOpenWorkflowRunDirectory={handleOpenWorkflowRunDirectory}
-                                    onOpenWorkflowActorSession={handleOpenWorkflowActorSession}
-                                    onOpenWorkflowWorkspace={handleOpenWorkflowWorkspace}
-                                    onOpenFileLink={handleOpenMarkdownFileLink}
-                                    conversationFindQuery={conversationFindQuery}
-                                    conversationFindActiveIndex={conversationFindActiveIndex}
-                                    conversationFindNavigationRequestId={
-                                      conversationFindNavigationRequestId
-                                    }
-                                    onConversationFindMatchStateChange={
-                                      onConversationFindMatchStateChange
-                                    }
-                                    searchResultHighlightRequest={activeSearchResultHighlightRequest}
-                                    onSearchResultHighlightDone={onSearchResultHighlightDone}
-                                  />
-                                )}
-                              </ScopedErrorBoundary>
-                            </main>
+                            chatMainContent
                           )}
                         </div>
                       </section>
@@ -3327,7 +3347,7 @@ const WorkspaceShellLayoutContent = memo(function WorkspaceShellLayoutComponent(
   );
   return (
     <DesktopWindowFrame
-      title={`ZCode / ${getPathLeaf(workspaceAbsPath)}`}
+      title={`Reactor / ${getPathLeaf(workspaceAbsPath)}`}
       showHeader
       isDesktop={isDesktop}
       isMacDesktop={isMacDesktop}

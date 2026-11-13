@@ -218,7 +218,14 @@ export interface GitChangeSummary {
   removed: number;
 }
 
-export type WorkspaceMainView = "chat" | "automations" | "plugin-store" | "market" | "my-space";
+// [本地定制] "bot" = Agents 集群主视图（src/bot/）。上游同步新增视图时保留本成员。
+export type WorkspaceMainView =
+  | "chat"
+  | "automations"
+  | "plugin-store"
+  | "market"
+  | "my-space"
+  | "bot";
 
 /** 市场页导航意图（命令面板等外部入口用）：指定打开哪个视图与市场/我的模式。 */
 export interface MarketIntent {
@@ -248,6 +255,11 @@ export interface WorkspaceShellLayoutProps extends Omit<AppProps, "baseFeedbackS
   handleOpenPluginStore: () => void;
   /** 打开「专家·技能」市场主视图（插件市场入口上方的新菜单项）。 */
   onOpenMarket: () => void;
+  /**
+   * [本地定制] Agents 集群入口。上游没有这一项；桌面与 Web 都提供。
+   * 与 onOpenMarket 同层级：导航主轴的扩展项，选中态由 Shell 的 workspaceMainView 派生。
+   */
+  onOpenBot: () => void;
   /** 切到「我的空间」主视图；只有 Web 宿主传，桌面端侧栏因此不出现该入口。 */
   onOpenMySpace?: () => void;
   /** 命令面板等入口携带的市场视图意图；MarketPage 挂载/变更时落到指定 tab 与模式。 */

@@ -967,6 +967,11 @@ export function App({
     preserveNextSettingsExit();
     setWorkspaceMainView("plugin-store");
   }, [preserveNextSettingsExit]);
+  // [本地定制] Agents 集群：Bot 形态主视图。与 market / my-space 同一条切换路径，
+  // 只新增一个主视图取值，不改任务导航与 settings 退出逻辑。
+  const handleOpenBot = useCallback(() => {
+    setWorkspaceMainView("bot");
+  }, []);
   const handleOpenMarket = useCallback(() => {
     // 侧栏入口回落默认视图：清掉命令面板可能留下的意图（MarketPage 重挂载即默认专家/市场）。
     setMarketIntent(null);
@@ -1435,6 +1440,8 @@ export function App({
             // taskFindDialogProps 是对象 prop，内联创建会让 shell 在流式刷新中每轮都看到新引用。
             taskFindDialogProps={taskFindDialogProps}
             onOpenMarket={handleOpenMarket}
+            // [本地定制] Agents 集群（Bot 形态主视图，见 packages/ui/src/bot/）。
+            onOpenBot={handleOpenBot}
             marketIntent={marketIntent}
             onOpenMySpace={mySpaceEnabled ? handleOpenMySpace : undefined}
             onOpenModelProviderSettings={handleManageModelsFromMarket}
