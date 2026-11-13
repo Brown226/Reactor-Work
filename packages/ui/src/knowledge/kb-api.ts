@@ -26,6 +26,28 @@ const log = logger.warn.bind(logger);
 /** 网关 base：与其它 `/api/*` 同源，相对路径即可（开发态走 vite proxy）。 */
 const BASE = "/api/knowledge/owned";
 
+/** 向量模型选项（与 EvoFlow `collectEmbeddingModelOptions` 消费的形状一致）。 */
+export interface KnowledgeModelOption {
+  name: string;
+  display_name?: string;
+  model?: string;
+  supportsChat?: boolean;
+}
+
+/**
+ * 模型列表注入点。
+ *
+ * 模型目录的唯一 owner 是 provider 体系（React hook），不是本模块。
+ * 宿主在挂载知识库视图前注入一个读取函数即可，避免这里维护第二份模型状态。
+ */
+let knowledgeModelProvider: (() => Promise<KnowledgeModelOption[]>) | null = null;
+
+export function setKnowledgeModelProvider(
+  provider: (() => Promise<KnowledgeModelOption[]>) | null,
+): void {
+  knowledgeModelProvider = provider;
+}
+
 /** 未实现的后端能力：明确拒绝，不静默返回空。 */
 function notImplemented(name: string): never {
   throw new Error(`知识库能力尚未实现：${name}`);
@@ -172,6 +194,28 @@ export const api = {
   purgeOrphanOwnedJobs: () => Promise.resolve({ purged: 0 }),
   getOwnedKnowledgeSettings: () => notImplemented("getOwnedKnowledgeSettings"),
   setOwnedKnowledgeSettings: () => notImplemented("setOwnedKnowledgeSettings"),
+
+  /**
+   * 可选模型列表（建库时选向量模型用）。
+   *
+   * EvoFlow 从它自己的 `GET /api/models` 取。我们的模型目录在 provider 体系里，
+   * 由 React hook（useModelProviders 等）持有，模块级函数拿不到 ——
+   * 所以这里返回空列表，UI 会走「无向量模型时创建按钮不可用」的既有降级，
+   * 用户仍可建**纯关键词库**（contentMode: "keyword"，检索照样可用）。
+   *
+   * 需要完整能力时：由宿主在挂载前调 `setKnowledgeModelProvider()` 注入一个
+   * 返回模型列表的函数（见下），不在这里再造一份 provider 状态。
+   */
+  listModels: async (): Promise<{ models: KnowledgeModelOption[] }> => {
+    const provider = knowledgeModelProvider;
+    if (!provider) return { models: [] };
+    try {
+      return { models: await provider() };
+    } catch (error) {
+      log("listModels 注入的 provider 失败，回退空列表", error);
+      return { models: [] };
+    }
+  },
 
   // ── 宿主能力（桌面端「打开所在目录」）─────────────────────────────────
   revealPathInFileManager: (path: string) => {

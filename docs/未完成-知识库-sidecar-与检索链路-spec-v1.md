@@ -621,3 +621,72 @@ embedding 侧天然兼容 OpenAI `/v1/embeddings`（已验证 SiliconFlow、并�
     运行期才报 `ModuleNotFoundError`。逐个显式列出。
 12. **numpy 是 cp311 ABI wheel**：与 Python 3.12 不兼容，`import numpy` 直接失败。
     这是放弃 markitdown/pandas 的最后一根稻草。
+
+## 15. 前端接入记录（2026-11-13）
+
+### 结论：EvoFlow 前端可直接复用，不需写 59 个 shim
+
+原估算「写 tauri-api shim 要 2-3 周」是错的。读了 EvoFlow 的
+`evopanel/src/lib/tauri-api.js` 后确认：**它本身就是双模式** ——
+桌面走 Tauri `invoke`，Web 模式走 `gatewayProxy`，而 `gatewayProxyOnce`
+的非 Tauri 分支就是普通 `fetch`。所以只要按它已约定的 REST 契约提供网关
+（见 §16），前端 API 层一行不用改。
+
+### 已落地
+
+| 位置 | 内容 |
+| --- | --- |
+| `packages/ui/src/knowledge/` | 页面与组件 11,032 行（4 个 .jsx + 2 个 .css + 6 个工具模块） |
+| `knowledge/kb-api.ts` | 56 个方法 → HTTP 网关的适配层 |
+| `knowledge/kb-modal.ts` | 模块级 `showConfirm` → `useConfirmDialogStore` |
+| `knowledge/right-stage/kb-bridge-services.ts` | EvoFlow 两个特有工厂的最小替身 |
+| `knowledge/nav-panel-prefetch.js` | hover 预热缓存 shim（恒返回 null，回源） |
+| `knowledge/knowledge-owned-aside.js` | 退化为 no-op（侧栏折叠归 ShellLayout 唯一持有） |
+| `components/ai-elements/markdownTableVariant.tsx` | 20 行表格变体 context |
+| `packages/server/src/knowledge/routes.ts` | `/api/knowledge/owned/*` 网关 |
+
+主视图接线：`WorkspaceMainView` 加 `"knowledge"`、`WorkspaceShellLayout` 渲染分支、
+侧栏 `knowledge-trigger`、`knowledgeEnabled` 开关（Root → RootWorkspaceContent →
+App → ShellLayout，web 入口置 true）。
+
+### 搬迁时踩的坑（都已修）
+
+1. **动态 import 是第二层地雷**：静态 import 全改完后 `vite build` 才暴露 7 处
+   动态 import（Office 预览 4、nav-prefetch、ForceGraph、tauri dialog）。
+   前两类指向本仓已有模块或降级为 shim；ForceGraph 被 `KB_GRAPH_UI_ENABLED=false`
+   关掉且依赖 EvoFlow 自有 graph-layout，整段摘除；tauri dialog 改为变量间接引用
+   （`@tauri-apps/plugin-dialog` 不在依赖里，静态 import 会让 build 直接失败）。
+2. **`styles-bridge.css` 不能搬**：那是 EvoFlow 的 Tailwind 主入口（2176 行，
+   `@import "tailwindcss/theme.css"` 等），与我们 `styles.css` 会双份注册
+   Tailwind 变量与 plugin。工具类本就全局可用，不引入。
+3. **`.jsx` 在本仓无类型**：本项目统一 `.tsx`。给 4 个页面组件加 `.d.ts`
+   提供最小类型面（`export default function(): JSX.Element`）。
+4. **Vite 的 `.js` 后缀不映射 `.tsx`**：EvoFlow 用 `from "./x.js"` 指 `.tsx`，
+   在它的构建里成立；我们的 vite 配置按真实扩展名解析。指向本仓组件时要写
+   真实路径（`@/components/...`）而非 `.js`。
+5. **`max-lines` 超限**：`knowledge-owned.jsx` 4245 行，按仓库既有约定在
+   `.oxlintrc.json` 登记为**告警**（与 WorkspaceGroupedTasksSection 等存量同规格）。
+6. **`listModels` 拿不到**：模型目录的 owner 是 provider 体系（React hook），
+   模块级 `kb-api` 取不到。返回空列表让 UI 走既有降级（可建纯关键词库），
+   并留 `setKnowledgeModelProvider()` 注入点，不在适配层再造第二份模型状态。
+
+### 验证状态
+
+| 项 | 结果 |
+| --- | --- |
+| `tsc -b packages/ui packages/web packages/server` | ✅ 0 错误 |
+| `npx vite build`（packages/web） | ✅ built in 50.66s |
+| `oxlint packages/ui/src/knowledge/` | ✅ 0 错误（21 警告均为 EvoFlow 原有未使用变量） |
+| HTTP 端到端（真实 sidecar） | ✅ GET/POST/PATCH/DELETE bases、documents、stats；search 返回 501 符合预期 |
+| **浏览器内点击验证** | ⏳ **未做** —— 手机 proot 环境装不了 chromium（Ubuntu 24.04 的 chromium 只有 snap 包装，proot 跑不了 snap；playwright 的 chromium 能下载但启动卡住） |
+
+浏览器验证待在有可用 chromium 的环境完成。建议验证清单：
+
+1. 侧栏出现「知识库」入口，点开进主视图
+2. 新建库（选纯关键词模式，因无向量模型）
+3. 上传一个 .md → 状态从「排队中」走到「已处理」
+4. 切到「检索」页签，输入关键词能命中
+
+> P0-b（解析/分块）落地后第 3、4 步才有完整数据；
+> 当前上传只会登记并排 parse 任务（`parseStatus: "pending"`），不会真的解析。
+
