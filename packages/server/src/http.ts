@@ -46,6 +46,7 @@ import {
   type SourceServerWorkspaceIdentityMapper,
 } from "@zcode/services/node";
 import { createHostCapabilityStore } from "./hostCapability.js";
+import { registerKnowledgeRoutes } from "./knowledge/routes.js";
 
 function wrapWebSocket(ws: WebSocket): ISocket {
   const onData = new Emitter<VSBuffer>();
@@ -155,6 +156,8 @@ export interface HttpServerOptions {
   spaFallback?: boolean;
   staticRoot?: string;
   workspaces?: ServerRemoteWorkspaceInfo[];
+  /** 知识库数据根目录；提供时才挂 `/api/knowledge/owned/*` 网关。 */
+  knowledgeDataRoot?: string;
 }
 
 function readTrimmedEnv(name: string): string | undefined {
@@ -450,6 +453,14 @@ export function createHttpServer(
 
   app.post("/api/bots/:provider", handleBotCallback);
   app.post("/api/bots/:provider/:botId", handleBotCallback);
+
+  // 知识库网关：把 EvoFlow 的 `/api/knowledge/owned/*` 契约落到 Python sidecar。
+  // 契约来源见 packages/server/src/knowledge/routes.ts 头部说明 —— EvoFlow 前端
+  // 原生走 gatewayProxy，Web 模式即普通 HTTP，所以不必为 59 个方法写 shim。
+  const knowledgeDataRoot = options.knowledgeDataRoot?.trim();
+  if (knowledgeDataRoot) {
+    registerKnowledgeRoutes(app, { dataRoot: knowledgeDataRoot });
+  }
 
   // Bug 原因：旧 `/api/connect-remote` + `/ws/remote/:id` 会在 Server 内另起临时 stdio
   // runtime，绕过 R3 的 Window Host → Source Server attachment 主链；两个入口必须一起不可达。

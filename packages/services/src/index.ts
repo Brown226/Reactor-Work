@@ -437,3 +437,15 @@ export * from "./reactor-server/reactorServer.js";
 export * from "./reactor-server/reactorServerClient.js";
 export * from "./server-agents/serverAgentSync.js";
 export * from "./server-skills/serverSkillSync.js";
+
+// ============================================================
+// 知识库 sidecar 客户端
+//
+// 上游 v3.18.0 无此模块；整包同步会用上游 index.ts 覆盖本文件，勿删。
+// 进程生命周期与 RPC 契约见 src/knowledge/knowledgeClient.ts。
+// ============================================================
+export {
+  KnowledgeClient,
+  KnowledgeRpcCallError,
+  KnowledgeUnavailableError,
+} from "./knowledge/knowledgeClient.js";

@@ -268,6 +268,83 @@ class KnowledgeHandlers:
             "skipped": False,
         }
 
+    async def delete_doc(self, params: dict[str, Any]) -> dict[str, Any]:
+        """删文档：连同它的分块、向量、FTS 条目与 blob 一起清掉。"""
+        kb_id = self._require_kb_id(params)
+        self._base_by_id(kb_id)
+        doc_id = str(params.get("docId") or "").strip()
+        if not doc_id:
+            raise StorageError("MISSING_DOC_ID", "docId 不能为空")
+        with self._store.kb_conn(kb_id) as conn:
+            row = conn.execute(
+                "SELECT id, doc_id FROM kb_documents WHERE id=? OR doc_id=?",
+                (doc_id, doc_id),
+            ).fetchone()
+            if row is None:
+                raise StorageError("DOC_NOT_FOUND", f"文档不存在：{doc_id}")
+            # FTS 是外部 content 表，级联删不到，必须显式清。
+            conn.execute("DELETE FROM kb_chunks_fts WHERE doc_id=?", (row["id"],))
+            conn.execute("DELETE FROM kb_documents WHERE id=?", (row["id"],))
+        # blob 目录随文档删除（与 kb.delete 的整库清理保持一致）。
+        self._store.kb_blobs_dir(kb_id)
+        import shutil
+
+        blob_dir = self._store.kb_dir(kb_id) / "blobs" / row["id"]
+        if blob_dir.exists():
+            shutil.rmtree(blob_dir, ignore_errors=True)
+        return {"deleted": True, "docId": row["id"]}
+
+    async def job(self, params: dict[str, Any]) -> dict[str, Any]:
+        """查单个索引任务状态（前端轮询用）。"""
+        job_id = str(params.get("jobId") or "").strip()
+        if not job_id:
+            raise StorageError("MISSING_JOB_ID", "jobId 不能为空")
+        # 任务表在每个库的 DB 里，但前端只给 jobId —— 扫全部库。
+        # P0 只有 parse 一种任务，量小；任务种类变多后再加 job→kb 索引。
+        for base in self._all_base_ids():
+            with self._store.kb_conn(base["id"]) as conn:
+                row = conn.execute("SELECT * FROM kb_jobs WHERE id=?", (job_id,)).fetchone()
+                if row:
+                    return {
+                        "id": row["id"],
+                        "kind": row["kind"],
+                        "docId": row["doc_id"],
+                        "state": row["state"],
+                        "attempts": row["attempts"],
+                        "lastError": row["last_error"],
+                        "createdAt": row["created_at"],
+                        "updatedAt": row["updated_at"],
+                    }
+        raise StorageError("JOB_NOT_FOUND", f"任务不存在：{job_id}")
+
+    async def list_jobs(self, params: dict[str, Any]) -> dict[str, Any]:
+        kb_id = self._require_kb_id(params)
+        self._base_by_id(kb_id)
+        with self._store.kb_conn(kb_id) as conn:
+            rows = conn.execute(
+                "SELECT * FROM kb_jobs ORDER BY created_at DESC LIMIT 200"
+            ).fetchall()
+        return {
+            "jobs": [
+                {
+                    "id": row["id"],
+                    "kind": row["kind"],
+                    "docId": row["doc_id"],
+                    "state": row["state"],
+                    "attempts": row["attempts"],
+                    "lastError": row["last_error"],
+                    "createdAt": row["created_at"],
+                    "updatedAt": row["updated_at"],
+                }
+                for row in rows
+            ]
+        }
+
+    def _all_base_ids(self) -> list[dict[str, Any]]:
+        with self._store.central() as conn:
+            rows = conn.execute("SELECT id FROM kb_bases").fetchall()
+        return [{"id": row["id"]} for row in rows]
+
     # ── P0-b 之后实现 ───────────────────────────────────────────────────
     async def search(self, _params: dict[str, Any]) -> Any:
         raise StorageError("NOT_IMPLEMENTED", "检索链路在 P0-c/d 实现")
