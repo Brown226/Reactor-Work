@@ -1,0 +1,623 @@
+# 知识库 · Python Sidecar 与检索链路 Spec
+
+状态：P0-a 已落地｜适用范围：文档知识库（解析 / 分块 / 索引 / 检索 / 问答）｜维护者：待定
+设计来源：EvoFlow `backend/packages/harness/evoflow/knowledge/`（PolyForm Noncommercial，
+仅作设计参考，代码按需自行实现）；sidecar 分发机制复用本仓 `office-engines` 与 `dwg-tools` 先例。
+
+> **许可提醒**：EvoFlow 主体是 PolyForm Noncommercial，商用需授权。本文档只借鉴其**架构与
+> 数据结构**，不逐字复制代码。若要复用具体实现，需先确认许可边界（其 vendored 的
+> `evopanel/src/zcode-*` 才是 Apache-2.0，`backend/` 不是）。
+
+## 1. 背景与缺口
+
+内网审查 / 技术文档场景的输入是大量 PDF、Word、标准规范。现状：
+
+| 能力 | 现状 | 问题 |
+| --- | --- | --- |
+| 规则下发 | `knowledgeSyncService.ts`（352 行）拉企业规则库到本地 | 只有「同步 + 缓存」，无检索 |
+| 文档检索 | 无 | Agent 只能靠 grep 全文扫，长文档命中率低 |
+| 向量检索 | 无 | 同义表述、跨语言检索完全不可用 |
+| 重排序 | 无 | 召回结果只按字面或向量距离排，精度不足 |
+| 知识库产品面 | 无 | 无建库、上传、文件夹、Wiki、图谱 |
+
+与现有模块的边界：
+
+1. **审查板块**（`review/`）= 对被审文件出问题清单并定位，owner 是 `report-review-issues`。
+   它消费 `knowledgeSyncService` 下发的规则库，**不消费本文档的知识库检索**。
+2. **知识库**（本文档）= 对「用户上传的资料」做解析、索引、检索、问答。
+   与审查板块共用「本地缓存 + 离线可用」纪律，但数据与索引独立。
+3. **记忆 / 资产中心**（若将来做）= 关于用户的小事实；知识库是用户主动上传的资料。两者不混。
+
+## 2. 目标与非目标
+
+### 2.1 目标（P0）
+
+1. **离线可用**：断网环境下检索、问答全部可用（模型服务走内网）。
+2. **混合检索**：FTS5 关键词 + 向量语义 + 标题匹配，RRF 融合。
+3. **模型重排**：用本地 rerank 服务对融合结果精排（优于纯词面启发式）。
+4. **中文友好**：jieba 分词进 FTS5，解决中文无空格切分问题。
+5. **文档解析**：PDF / Word / Excel / PPT / Markdown / 纯文本 → Markdown 正文。
+6. **分块保结构**：表格、代码块、图片不被切断。
+7. **Agent 接线**：`knowledge` 工具（search / read / docs / list）+ 检索结果自动注入。
+
+### 2.2 非目标（P0 明确不做）
+
+- **本地嵌入模型打包**：用内网已有的 embedding 服务，不打包 PyTorch（-400MB）。
+- **Wiki 生成 / 三张图谱**：P1 再评估。P0 只做检索。
+- **多租户知识库可见性**：P0 单用户本地库，权限收敛留 P1。
+- **内置库随版本同步**：P0 不做，等 P1。
+- **前端完整知识库 UI**：P0 只做最小检索面板 + 工具卡，完整 UI 留 P1。
+
+## 3. 分层与状态所有权
+
+```text
+┌──────────────────────────────────────────────────────────┐
+│  Renderer / UI（React）                                   │
+│  · 知识库列表 / 上传 / 检索面板                            │
+│  · 工具卡 knowledge.tsx                                   │
+│        │ 只通过 services 访问，不碰文件、不碰 DB            │
+│        ▼                                                  │
+│  packages/services/src/knowledge/                         │
+│  · knowledgeClient.ts   —— sidecar 生命周期 + RPC 客户端   │
+│  · knowledgeService.ts  —— 业务编排（建库/上传/检索）       │
+│  · 唯一 owner：库元数据、索引状态的**业务投影**             │
+│        │  stdio JSON-RPC（NDJSON）                        │
+│        ▼                                                  │
+│  knowledge-sidecar（Python，常驻）                         │
+│  · 唯一 owner：SQLite 文件、分块、向量、索引任务           │
+│  · 不做权限判断，只执行；权限在 services 层                │
+│        │  HTTP（内网）                                     │
+│        ▼                                                  │
+│  embedding 服务 / rerank 服务（已有，非本项目）             │
+└──────────────────────────────────────────────────────────┘
+```
+
+**状态所有权铁律**：
+
+| 状态 | 唯一 owner | 说明 |
+| --- | --- | --- |
+| SQLite 文件（`owned.sqlite` + 每库 `kb_<id>.sqlite`） | sidecar | Node 侧不直接读写 |
+| 文档解析状态 / 索引进度 | sidecar | services 只做投影缓存 |
+| 库的业务元数据（名称/描述/向量模型配置） | services | sidecar 存原始，services 做校验与展示 |
+| 权限与可见性 | services | sidecar 不感知 principal |
+| 检索结果的最终排序 | sidecar | 但 rerank 服务由 sidecar 调用 |
+
+## 4. Sidecar 进程管理
+
+### 4.1 生命周期
+
+```text
+services 启动
+   ↓
+首次知识库操作时懒启动（不在 app 启动时拉起，避免拖慢冷启动）
+   ↓
+spawn knowledge-sidecar
+   ↓
+握手：等待 stdout 出现 {"type":"ready","version":"1"}（超时 10s）
+   ↓
+常驻：NDJSON 请求/响应
+   ↓
+空闲 5 分钟无请求 → 优雅退出（SIGTERM，等待 3s，超时 SIGKILL）
+   ↓
+下次操作重新启动
+```
+
+**为什么常驻而非一次性 spawn**：知识库检索是高频操作（每次对话可能触发多次）。
+Python 解释器启动 + SQLite 打开约 300-800ms，一次性 spawn 会显著拖慢对话。
+对照 `ocr-tools` 的一次性 spawn 是合理的（OCR 低频），但知识库不同。
+
+### 4.2 通信协议（NDJSON over stdio）
+
+请求（Node → sidecar）：
+
+```json
+{"id":"req-1","method":"kb.search","params":{"kbId":"kb_abc","query":"标准引用","topK":10,"mode":"hybrid"}}
+```
+
+响应（sidecar → Node）：
+
+```json
+{"id":"req-1","ok":true,"result":{"hits":[...]}}
+{"id":"req-1","ok":false,"error":{"code":"KB_NOT_FOUND","message":"..."}}
+```
+
+**协议约束**：
+
+- 一行一个 JSON，`\n` 分隔。**stdout 只输出协议行**，日志一律走 stderr。
+  （`dwg-tools` 踩过这个坑：stdout 混日志会让解析失败。）
+- 请求可并发：sidecar 内部用 asyncio，按 `id` 回包，**不保证顺序**。
+- 单请求超时 120s（嵌入可能慢）；超时 Node 侧取消，sidecar 收到 `kb.cancel` 后尽力中断。
+- 大结果不内联：单次返回 ≤ 64KB，超出走 `kb.fetchPage` 分页。
+
+### 4.3 方法清单（P0）
+
+| 方法 | 用途 | 关键参数 |
+| --- | --- | --- |
+| `kb.ping` | 健康检查 | — |
+| `kb.list` | 列出所有库 | — |
+| `kb.create` | 建库 | `name` `description` `embeddingModel` `embeddingDim` |
+| `kb.update` | 改库设置 | `kbId` + 可改字段 |
+| `kb.delete` | 删库（含文档与索引） | `kbId` |
+| `kb.upload` | 上传文件（走文件路径，不走 base64） | `kbId` `filePath` `relPath` |
+| `kb.listDocs` | 列文档 + 状态 | `kbId` |
+| `kb.deleteDoc` | 删文档 | `kbId` `docId` |
+| `kb.retryDoc` | 重试失败文档 | `kbId` `docId` |
+| `kb.search` | 检索 | `kbId` `query` `topK` `mode`(hybrid/keyword/vector) |
+| `kb.readDoc` | 读文档正文 | `kbId` `docId` `maxChars` |
+| `kb.stats` | 库统计（文档数/向量维度/健康度） | `kbId` |
+| `kb.reindex` | 整库重建索引 | `kbId` |
+
+**P1 预留**（接口先留空实现）：`kb.wiki.generate`、`kb.graph.entities`、`kb.folder.*`。
+
+### 4.4 失败语义
+
+| 场景 | 行为 |
+| --- | --- |
+| sidecar 启动失败 | 返回 `KNOWLEDGE_UNAVAILABLE`，UI 提示「知识库引擎不可用」，**不阻塞对话** |
+| 嵌入服务不可达 | 文档索引标记 `embedding_failed`，但**关键词检索仍可用**（降级为 keyword 模式） |
+| 向量维度不匹配（换模型） | 拒绝写入，提示需重建索引；不静默混用两种维度 |
+| sidecar 崩溃 | Node 侧检测到 exit，标记不可用，**自动重启一次**；再失败则降级 |
+| SQLite 锁冲突 | 重试 3 次（退避 100/300/900ms），仍失败则报 `KB_BUSY` |
+
+## 5. 数据模型（SQLite）
+
+### 5.1 库结构
+
+```text
+<userData>/knowledge/
+├── owned.sqlite              # 中心库：所有库的元数据 + mem:* 图谱
+└── kb_<kbId>/
+    ├── kb.sqlite             # 该库的文档/分块/向量/任务
+    └── blobs/                # 原始文件（按 docId 分目录）
+```
+
+**为什么每库一个 SQLite**：库可独立备份/删除/重建；单库索引损坏不影响其他库；
+向量表按库隔离，换模型时只重建该库。
+
+### 5.2 核心表（照 EvoFlow schema 结构，字段按需裁剪）
+
+```sql
+-- 中心库 owned.sqlite
+CREATE TABLE kb_bases (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  storage_dir TEXT NOT NULL,
+  embedding_model TEXT DEFAULT '',   -- 空 = 用默认
+  embedding_dim INTEGER DEFAULT 0,   -- 0 = 未建索引
+  content_mode TEXT DEFAULT 'hybrid',-- hybrid | keyword | vector
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  deleted_at TEXT
+);
+
+-- 每库 kb.sqlite
+CREATE TABLE kb_documents (
+  id TEXT PRIMARY KEY,
+  doc_id TEXT NOT NULL,              -- 稳定 id（rel_path 派生）
+  title TEXT NOT NULL,
+  file_name TEXT NOT NULL,
+  rel_path TEXT NOT NULL,
+  content_hash TEXT NOT NULL,        -- 用于增量：哈希未变则跳过
+  byte_size INTEGER NOT NULL,
+  parse_status TEXT NOT NULL,        -- pending | parsing | completed | failed
+  parse_error TEXT,
+  summary_text TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  deleted_at TEXT
+);
+CREATE UNIQUE INDEX idx_docs_rel_path ON kb_documents(rel_path) WHERE deleted_at IS NULL;
+
+CREATE TABLE kb_chunks (
+  id TEXT PRIMARY KEY,
+  doc_id TEXT NOT NULL REFERENCES kb_documents(id) ON DELETE CASCADE,
+  ordinal INTEGER NOT NULL,
+  content TEXT NOT NULL,
+  context_header TEXT DEFAULT '',    -- 分块所属标题路径
+  heading_path TEXT DEFAULT '',
+  chunk_kind TEXT DEFAULT 'text',    -- text | table | code | image_caption
+  token_estimate INTEGER DEFAULT 0,
+  enabled INTEGER DEFAULT 1
+);
+CREATE INDEX idx_chunks_doc ON kb_chunks(doc_id, ordinal);
+
+CREATE TABLE kb_chunk_embeddings (
+  chunk_id TEXT PRIMARY KEY REFERENCES kb_chunks(id) ON DELETE CASCADE,
+  doc_id TEXT NOT NULL,
+  model TEXT NOT NULL,
+  dim INTEGER NOT NULL,
+  embedding BLOB NOT NULL            -- struct.pack('f'*dim)，小端 float32
+);
+CREATE INDEX idx_emb_model ON kb_chunk_embeddings(model, dim);
+
+-- 关键词索引（jieba 预分词后写入，中文可检索）
+CREATE VIRTUAL TABLE kb_chunks_fts USING fts5(
+  chunk_id UNINDEXED, doc_id UNINDEXED, content, tokenize='unicode61'
+);
+
+-- 索引任务队列
+CREATE TABLE kb_jobs (
+  id TEXT PRIMARY KEY,
+  kind TEXT NOT NULL,                -- parse | embed | wiki
+  doc_id TEXT,
+  state TEXT NOT NULL,               -- queued | running | done | failed
+  attempts INTEGER DEFAULT 0,
+  last_error TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX idx_jobs_claim ON kb_jobs(state, created_at);
+```
+
+**关键设计说明**：
+
+1. **`content_hash` 做增量**：再同步时哈希未变的文档直接跳过，不重复解析/嵌入。
+2. **`kb_chunk_embeddings` 存 BLOB 而非独立向量表**：sqlite-vec 是可选加速，
+   没装时退化为 Python 余弦计算。两套路径共用同一份 BLOB，不重复存储。
+3. **`tokenize='unicode61'` + 预分词**：中文先 jieba 切词再用空格连回写入 FTS，
+   查询时同样处理。这样 FTS5 才能命中中文。
+4. **`chunk_kind` 保留结构信息**：检索时可按类型加权（表格/代码命中权重更高）。
+
+## 6. 检索链路
+
+### 6.1 三路召回 → RRF 融合 → 模型重排
+
+```text
+query
+  ├─→ [1] FTS5 关键词召回（jieba 分词后 BM25）      → top 20
+  ├─→ [2] 向量召回（embedding → cosine / sqlite-vec） → top 20
+  └─→ [3] 标题/文件名匹配（LIKE + CJK 重叠）         → top 10
+                    ↓
+              RRF 融合（k=60）
+               score = Σ 1/(k + rank_i)
+                    ↓
+              候选集 top 30
+                    ↓
+        [4] rerank 模型精排（内网服务，cross-encoder）
+                    ↓
+              最终 top K（默认 10）
+```
+
+### 6.2 各阶段细节
+
+**[1] 关键词召回**
+
+```python
+# 写入时：jieba 分词
+tokens = " ".join(jieba.cut(content))
+conn.execute("INSERT INTO kb_chunks_fts VALUES (?,?,?)", (chunk_id, doc_id, tokens))
+
+# 查询时：同样分词
+q_tokens = " ".join(jieba.cut(query))
+# FTS5 bm25() 排序，返回 chunk_id + 负分
+```
+
+**[2] 向量召回**
+
+```python
+# 优先 sqlite-vec（vec0 虚拟表，余弦距离）
+vec_hits = vector_index.recall_ids(conn, kb_id, dim, model, query_vec, top_k=20)
+# 降级：全表扫 + Python 余弦
+if vec_hits is None:
+    rows = conn.execute("SELECT chunk_id, embedding FROM kb_chunk_embeddings WHERE dim=? AND model=?", ...)
+    scores = [(cid, cosine(query_vec, unpack(blob))) for ...]
+    vec_hits = heapq.nlargest(top_k, scores, key=lambda x: x[1])
+```
+
+**距离 → 相似度**：`similarity = 1 / (1 + distance)`，保证落在 (0, 1]，避免负分污染融合。
+（EvoFlow 的 `CORE-KB-02` 修的就是这个。）
+
+**[3] 标题匹配**：`LIKE %query%` 命中标题/文件名/摘要，给固定高分。这条对
+「按名字找文档」的场景很关键，纯向量检索经常漏掉。
+
+**[4] RRF 融合**
+
+```python
+RRF_K = 60
+score[chunk_id] += 1.0 / (RRF_K + rank)
+```
+
+三路各自排名倒数相加。**RRF 的好处**是不需要归一化不同来源的分数（BM25 是
+无界负分、余弦是 0-1、标题是固定分），避免手调权重。
+
+**[5] 模型重排**（本文档相对 EvoFlow 的升级点）
+
+EvoFlow 的 `rerank_by_query_match` 只是词面启发式（标题命中 +3、正文命中 +1.5、
+CJK 字符重叠加权），**不是模型**。我们有本地 rerank 服务，换成真 cross-encoder：
+
+```python
+# POST <rerank_base_url>/rerank
+{
+  "model": "<配置的模型名>",
+  "query": query,
+  "documents": [hit["content"] for hit in candidates[:30]],
+  "top_n": top_k
+}
+# → {"results":[{"index":3,"relevance_score":0.92}, ...]}
+```
+
+**失败降级**：rerank 服务不可达时，退回 RRF 顺序 + 词面加权（保留 EvoFlow 那套
+启发式作为 fallback），不报错、不阻塞检索。
+
+### 6.3 模式切换
+
+| 模式 | 召回路径 | 适用 |
+| --- | --- | --- |
+| `hybrid`（默认） | [1]+[2]+[3] → RRF → rerank | 正常 |
+| `keyword` | [1]+[3] → 字面排序 | 嵌入服务不可用 / 用户显式选 |
+| `vector` | [2] → 余弦排序 | 查语义相近内容 |
+
+**自动降级规则**：请求 `hybrid` 但该库无向量（`embedding_dim=0` 或全部
+`embedding_failed`）→ 自动走 `keyword`，响应里带 `degraded: "no_vector"`，
+UI 提示「语义索引未就绪，已用关键词检索」。**不报错**。
+
+## 7. 分块策略
+
+### 7.1 保护性区段（关键）
+
+分块前先识别**不可切断的区段**，切分时跳过这些区间：
+
+| 区段 | 正则 | 理由 |
+| --- | --- | --- |
+| 围栏代码块 | ` ```[\s\S]*?``` ` | 切断后代码无法理解 |
+| 图片引用 | `!\[[^\]]*\]\([^)]+\)` | 切断后引用失效 |
+| Markdown 表格 | 表头 + 分隔行 + 数据行 | 切断后表结构丢失 |
+
+```python
+def _find_protected_spans(text) -> list[(start, end)]:
+    spans = []
+    for rx in (_FENCE_RE, _IMAGE_RE, _TABLE_RE):
+        spans.extend((m.start(), m.end()) for m in rx.finditer(text))
+    return merge_overlapping(sorted(spans))
+```
+
+### 7.2 切分算法
+
+```text
+1. 若 len(doc) <= chunk_size → 整篇一个 chunk（不切）
+2. 否则：
+   a. 按段落（\n\n）分组
+   b. 贪心累积段落直到接近 chunk_size
+   c. 若单段 > chunk_size，在保护性区段之外找句子边界（。！？\n）切
+   d. 相邻 chunk 保留 overlap（默认 chunk_size 的 15%）
+3. 每个 chunk 记录 context_header（当前标题路径），检索时一并返回
+```
+
+**踩过的坑（EvoFlow 注释里的真实事故）**：曾有个固定 5000 字符上限忽略配置，
+导致 3k 字符的 FAQ 包变成单个向量，检索直接失效。**配置的 `chunk_size` 是唯一权威，
+不允许再出现隐藏上限。**
+
+### 7.3 默认参数
+
+| 参数 | 默认 | 说明 |
+| --- | --- | --- |
+| `chunk_size` | 1000 字符 | 中文场景比英文小，避免语义稀释 |
+| `chunk_overlap` | 150 字符 | 15% |
+| `min_chunk_size` | 100 字符 | 小于此值并入前一块 |
+
+## 8. 打包与分发
+
+### 8.1 复用 office-engines 机制
+
+```text
+scripts/prepare-knowledge-assets.mjs    ← 新增，照 prepare-office-engines-assets.mjs
+  ↓ 产出
+packages/desktop/bundled-tools/<platform>/knowledge-engines/
+  ├── python/                    # embeddable Python 3.12（~15MB）
+  ├── site-packages/             # 纯 Python wheels
+  │   ├── markitdown/            # 文档解析
+  │   ├── sqlite_vec/            # 向量扩展
+  │   ├── jieba/                 # 中文分词
+  │   ├── openpyxl/              # xlsx
+  │   └── (pdfplumber 等)
+  └── sidecar/                   # 我们的 Python 代码
+      └── knowledge_sidecar/
+  ↓ electron-builder extraResources
+resources/tools/knowledge-engines/
+```
+
+### 8.2 体积预算（P0-a 实测）
+
+linux-arm64 实测 **45.0 MiB**（`node scripts/prepare-knowledge-assets.mjs` 输出）：
+
+| 组件 | 体积 | 备注 |
+|---|---|---|
+| markdownify / bs4 / soupsieve / puremagic | ~4 MB | 轻量格式处理，纯 Python |
+| requests + urllib3 + idna / certifi | ~2 MB | sidecar 调 embedding / rerank HTTP 服务 |
+| sqlite-vec | ~2 MB | 平台相关 wheel（manylinux / macosx / win） |
+| jieba + 词典 | ~15 MB | sdist，`pip --target` 装 |
+| six | ~12 KB | markdownify 依赖，只有 sdist |
+| sidecar 代码 | <1 MB | 6 个 .py |
+| Windows embeddable Python | ~15 MB | 仅 Windows；Unix 记录系统解释器 |
+| **合计** | **~45 MB**（linux-arm64） | 无 PyTorch / onnxruntime / numpy |
+
+**关键决策：不使用 markitdown**（实测后放弃）。两版都踩坑：
+
+- `0.1.x` 依赖 `magika` → `onnxruntime`（14.4MB 原生 wheel）+ 运行时下载 ONNX 模型权重；
+- `0.0.1a2` 顶层硬导入 `mammoth` / `pandas` / `pdfminer` / `pptx`，
+  其中 `pandas` → `numpy`，而 numpy 的 `cp311` ABI wheel 与 Python 3.12 不兼容，
+  实测 `import numpy` 直接失败。
+
+P0 改为**自写轻量解析器**（纯标准库 `zipfile` + `ElementTree` 解析 docx/pptx/xlsx），
+文档解析能力复用本仓已有的 `file-tools-plugin`。代价是 Office 解析要自己实现，
+收益是资产树零原生依赖、无平台 ABI 矩阵、离线部署可控。
+
+**相比完整方案（含 sentence-transformers + torch）省约 400-500MB。**
+
+### 8.3 平台矩阵
+
+| 平台 | 支持 | 说明 |
+| --- | --- | --- |
+| win32-x64 | ✅ | 主要目标 |
+| darwin-arm64 | ✅ | |
+| darwin-x64 | ✅ | 无本地嵌入，走内网服务，**无降级问题** |
+| linux-x64 | ✅ | |
+
+有本地模型服务后，**四个平台一致**，不再有 EvoFlow 那个 macOS Intel 缺口。
+
+## 9. 与 Agent 的接线
+
+### 9.1 工具定义
+
+```typescript
+// knowledge 工具（MCP tool），四个 action
+{
+  name: "knowledge",
+  inputSchema: {
+    action: "search" | "read" | "docs" | "list",
+    kbId?: string,        // 省略 = 搜所有已绑定库
+    query?: string,       // search 必填
+    docId?: string,       // read 必填
+    topK?: number,        // 默认 10
+    mode?: "hybrid" | "keyword" | "vector"
+  }
+}
+```
+
+### 9.2 检索结果注入（可选，按配置）
+
+在调用模型前自动检索，把片段放进上下文：
+
+```text
+配置项（每个 agent 独立）：
+  autoInject: boolean          // 是否自动注入
+  topK: number                 // 注入条数，默认 5
+  minScore: number             // 最低相关度，默认 0.3
+  maxTokens: number            // 注入 token 上限，默认 2000
+  onFailure: "continue" | "abort"  // 检索失败时继续还是中止
+```
+
+**默认关闭自动注入**（P0）。理由：自动注入会让每轮对话多一次嵌入调用 + 检索，
+对不需要知识库的对话是纯浪费。等实测有效后再考虑默认开。
+
+### 9.3 权限收敛（P1）
+
+P0 单用户，不涉及。P1 引入多租户后：
+
+- 普通 agent 只能搜「绑定给它的库」
+- 管理员可搜全部
+- 权限判断在 **services 层**，sidecar 不感知
+
+## 10. 验收场景
+
+| # | 场景 | 期望 |
+| --- | --- | --- |
+| 1 | 上传 10 个 PDF，等待索引完成 | 全部 `completed`，可检索 |
+| 2 | 中文查询「标准引用有哪些」 | 命中相关文档，rerank 后首位正确 |
+| 3 | 断网（仅内网模型服务可用） | 检索、问答全部正常 |
+| 4 | 嵌入服务停机 | 文档标记 `embedding_failed`，关键词检索仍可用，UI 提示降级 |
+| 5 | rerank 服务停机 | 退回 RRF 顺序，不报错 |
+| 6 | 换 embedding 模型 | 提示需重建索引；重建后维度一致 |
+| 7 | 上传含表格/代码的 Markdown | 表格与代码块不被切断 |
+| 8 | 同一文件重复上传 | `content_hash` 命中，跳过重复解析 |
+| 9 | sidecar 崩溃后操作 | 自动重启一次，恢复可用 |
+| 10 | 检索 100 次（并发 5） | 无 SQLite 锁错误，P95 < 800ms |
+| 11 | 删除库 | SQLite 文件与 blobs 目录一并清理 |
+| 12 | 库索引损坏 | 该库不可用，其他库不受影响 |
+
+## 11. 实施拆解
+
+| 阶段 | 内容 | 工期 | 依赖 |
+| --- | --- | --- | --- |
+| P0-a | sidecar 骨架（进程管理 + NDJSON RPC + 打包脚本） | 1 周 | 无 |
+| P0-b | 解析 + 分块 + schema | 1.5 周 | P0-a |
+| P0-c | FTS5 + jieba + 向量索引 | 1 周 | P0-b |
+| P0-d | 三路召回 + RRF + rerank 对接 | 1.5 周 | P0-c |
+| P0-e | services 层 + 工具 + 最小 UI | 2 周 | P0-d |
+| P0-f | 多平台打包 + 验收 | 1 周 | P0-e |
+| **合计** | | **8 周** | |
+
+## 12. 待决问题
+
+1. **Python 运行时是否复用 office-engines 那一份？**
+   复用省 15MB，但两者 wheel 需求不同（office 要 LibreOffice 绑定，知识库要 markitdown），
+   耦合后升级会互相牵制。**建议独立**，代价 +15MB。
+
+2. **文档原始文件存哪？**
+   `<userData>/knowledge/kb_<id>/blobs/`（跟随库）还是统一 `<userData>/blobs/`？
+   建议跟随库，删库即清。
+
+3. **rerank 服务接口格式确认**
+   需要确认内网 rerank 服务的实际接口（是否 OpenAI 兼容、是否支持 batch）。
+
+4. **是否要 Wiki / 图谱？**
+   P0 不做。若后续要做，`wiki.py` / `kg.py` 的结构可复用，但要评估产品价值。
+
+## 13. 参考实现对照
+
+| EvoFlow 模块 | 行数 | 本方案处理 |
+| --- | --- | --- |
+| `owned/chunking.py` | 343 | 复用算法（保护性区段 + 边界切分） |
+| `owned/retrieve.py` | 494 | 复用 RRF 骨架，**rerank 升级为模型** |
+| `owned/vector_index.py` + `vector/sqlite_vec.py` | 423 | 复用 |
+| `owned/schema.py` | 738 | 复用表结构，裁剪字段 |
+| `owned/pipeline.py` | 597 | 复用流程，改任务编排 |
+| `owned/jobs.py` | 761 | 复用状态机 |
+| `embedding/cloud_provider.py` | 289 | 复用（base_url 指向内网服务） |
+| `parser.py` | 234 | 复用（markitdown） |
+| `embedding/local_provider.py` | 441 | **不采用**（无 PyTorch） |
+| `owned/service.py` | 3320 | **重写**（接本仓存储与权限） |
+| `owned/wiki.py` + `kg.py` | 787 | P1 再评估 |
+
+## 14. P0-a 落地记录（2026-11-13）
+
+### 已交付
+
+| 文件 | 内容 |
+| --- | --- |
+| `apps/zcode-cli/packages/knowledge-sidecar/sidecar/knowledge_sidecar/transport.py` | NDJSON RPC：stdout 只走协议、日志走 stderr、8 MiB 行上限、按 id 并发回包 |
+| `.../store.py` | 中心库 + 每库独立 SQLite、WAL + `busy_timeout=5s`、FTS5 可用性探测 |
+| `.../handlers.py` | ping / list / create / update / delete / upload / listDocs / stats；检索类留 `NOT_IMPLEMENTED` |
+| `.../models.py` | OpenAI 兼容 embedding 客户端 + 多格式 rerank 探测 + 纯 Python 余弦 |
+| `.../__main__.py` | 参数解析、信号处理、ready 握手 |
+| `packages/services/src/knowledge/knowledgeClient.ts` | 常驻进程管理 + RPC 客户端 + 资产候选链 |
+| `scripts/prepare-knowledge-assets.mjs` | 资产 staging（wheel / sdist / sidecar 代码三类） |
+
+### 实测结果
+
+- **Node → Python 全链路**：握手 552 ms，建库 / 列表 / 统计 / 优雅退出全部通过
+- **模型服务**（SiliconFlow，OpenAI 兼容）：
+  - embedding `BAAI/bge-m3` → 1024 维，`pack/unpack` float32 往返一致
+  - rerank `BAAI/bge-reranker-v2-m3` → 自动识别 `results` 数组格式，排序正确
+- **资产体积**：linux-arm64 **45.0 MiB**，零原生重依赖
+- `tsc -b packages/services` 0 错误；`oxlint` 改动文件 0 警告 0 错误
+
+### rerank 接口格式兼容（用户明确要求）
+
+OpenAI **没有**标准 rerank 接口，各家形状不同，`models.py` 做成自动探测 + 显式覆盖：
+
+| 格式 | 响应形状 | 配置值 |
+| --- | --- | --- |
+| SiliconFlow / Jina | `{"results":[{"index":0,"relevance_score":0.04}]}` | `auto`（默认自动识别） |
+| TEI（HuggingFace） | `[{"index":0,"score":0.04}]` | `tei` |
+| 自定义 | 任意 | `ZCODE_KNOWLEDGE_RERANK_FORMAT` + 扩展 `_extract_results` |
+
+embedding 侧天然兼容 OpenAI `/v1/embeddings`（已验证 SiliconFlow、并支持
+`encoding_format` 可选字段），vLLM / Ollama / LM Studio 可直接切换。
+
+### 踩过的坑（都已修，留档防再犯）
+
+1. **`--data-root` 漏传**：sidecar argparse 必填，缺了 exit 2；Node 侧只看到
+   「引擎退出（code=2）」，一个参数缺失被表现成引擎崩溃。
+2. **`PYTHONPATH` 直接赋值**：覆盖了调用方注入的值，症状「资产在、import 不到」。
+   改为「显式 env → 资产树 → 继承」的顺序拼接。
+3. **Unix 不能用 executable 反推资产树**：Unix 走系统 python（`interpreter.json`），
+   `/usr/local/bin/python3` 的 `../../` 跟资产树无关。改为显式写
+   `ZCODE_KNOWLEDGE_SIDECAR_DIR`。
+4. **`Set.map` 不存在**：去重后要 `[...new Set(...)]` 再 map。
+5. **`kb_conn` 建库时鸡生蛋**：它先查文件存在，而建库时文件还没创建。`_init_kb`
+   改用底层 `_connect`。
+6. **目录名 `kb_kb_xxx` 双前缀**：id 已带 `kb_`，路径又拼一次。
+7. **Dirent 的 `d_type` 在 FUSE / proot 不可靠**：硬链接被误报成 symlink，
+   `isFile()`/`isDirectory()` 同时为 false。用 `stat` 复核（两处：打包脚本与 sidecar）。
+8. **清华/阿里镜像不提供 PyPI JSON API**：`/pypi/<name>/<ver>/json` 返回 404。
+   元数据只问官方 PyPI，文件下载再换镜像。
+9. **`spawnSync` 里跑 fetch 不稳**：本机高并发/网络抖动下子进程常 status=5 退出，
+   改主进程 `fetch` + 三次重试后稳定。
+10. **解 zip 无系统工具**：容器里既无 `7z` 也无 `unzip`，GNU tar 不支持 zip。
+    加 `fflate` 纯 Node 兜底（带 zip-slip 防护）。
+11. **wheel 传递依赖不会自动拉**：markitdown 缺 `requests`、markdownify 缺 `six`，
+    运行期才报 `ModuleNotFoundError`。逐个显式列出。
+12. **numpy 是 cp311 ABI wheel**：与 Python 3.12 不兼容，`import numpy` 直接失败。
+    这是放弃 markitdown/pandas 的最后一根稻草。
