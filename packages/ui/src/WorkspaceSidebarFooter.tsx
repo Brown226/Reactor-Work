@@ -69,7 +69,7 @@ function getSidebarProfileName(user?: UserInfo | null): string {
     return username;
   }
 
-  return "ZCode";
+  return "Reactor";
 }
 
 function getAvatarFallbackText(profileName: string | null): string {

@@ -114,8 +114,8 @@ const BUILTIN_SKILL_DESCRIPTIONS: Record<string, Record<"zh-CN" | "en-US", strin
     "en-US": "Use when completing tasks, implementing major features, or before merging to verify work meets requirements.",
   },
   "restore-legacy-sessions": {
-    "zh-CN": "检查、规划或执行 ACP 时代 ZCode 旧 session 恢复到新的 ZCode 任务与会话库。",
-    "en-US": "Inspect, plan, or restore old ACP-era ZCode sessions into the new ZCode task and session stores.",
+    "zh-CN": "检查、规划或执行 ACP 时代旧 session 恢复到新的 Reactor 任务与会话库。",
+    "en-US": "Inspect, plan, or restore old ACP-era sessions into the new Reactor task and session stores.",
   },
   "plugin-creator": {
     "zh-CN": "创建、校验 Reactor 插件，并指导本地安装与更新。",

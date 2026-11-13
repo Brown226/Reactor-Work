@@ -5,7 +5,8 @@
 import type { ContextSection } from "../types.js";
 import { estimateTokens } from "../utils.js";
 
-const CLI_PREFIX_PROMPT = "You are ZCode, an interactive agent";
+// [Reactor 定制] 模型自我标识必须是产品名 Reactor，否则用户问「你是谁」会自称 ZCode。
+const CLI_PREFIX_PROMPT = "You are Reactor, an interactive agent";
 
 export function buildCliPrefixSection(): ContextSection {
   const content = CLI_PREFIX_PROMPT;

@@ -27,7 +27,7 @@ const copyByLocale = {
     offline: "离线",
     unnamed: "未命名设备",
     connections: (count: number) => `${count} 个连接`,
-    notFound: "没看到你的电脑？在电脑端 ZCode 登录同一账号并开启远程控制，然后刷新。",
+    notFound: "没看到你的电脑？在电脑端 Reactor 登录同一账号并开启远程控制，然后刷新。",
     emptyTitle: "暂无设备",
     emptyDescription: "在电脑端登录同一账号并开启 Web 远程控制，然后刷新列表。",
     error: "无法加载设备，请检查网络后刷新。",
@@ -102,7 +102,7 @@ function describeDevice(
   const single = device.onlineConnections.length === 1 ? device.onlineConnections[0] : undefined;
   const version = single?.meta.version?.trim();
   const parts = online
-    ? [platform, version ? `ZCode ${version}` : undefined]
+    ? [platform, version ? `Reactor ${version}` : undefined]
     : [platform, copy.offline];
   const filtered = parts.filter((part): part is string => Boolean(part));
   if (filtered.length === 0) filtered.push(online ? copy.online : copy.offline);
