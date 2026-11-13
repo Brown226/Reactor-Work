@@ -8042,6 +8042,7 @@ const zhCN: Record<string, string> = {
   "paperMode.instruction.ask": "我想就这段原文提问：",
   "paperMode.instruction.citationRelation": "请解释这条参考文献与当前讨论的关系。",
   "workspaceHeader.mySpace": "我的空间",
+  "workspaceHeader.knowledge": "知识库",
   // [本地定制] Agents 集群（Bot 形态外壳，见 src/bot/）
   "bot.nav.title": "Agents 集群",
   "bot.roster.title": "Agents",

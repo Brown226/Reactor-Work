@@ -73,6 +73,7 @@ import { AutomationsMainBreadcrumbFrame } from "@/settings/AutomationsMainBreadc
 import { PluginStorePage } from "@/settings/PluginStorePage.js";
 import { MarketPage } from "@/marketplace/MarketPage.js";
 import { MySpacePage } from "@/my-space/index.js";
+import { KnowledgePage } from "@/knowledge/index.js";
 import { BotClusterView } from "@/bot/index.js";
 import { createChatComposerPathAttachment } from "@/lib/chatAttachments.js";
 import { pushSystemComposerInjection } from "@/store/systemComposerInjection.js";
@@ -330,6 +331,7 @@ const WorkspaceShellLayoutContent = memo(function WorkspaceShellLayoutComponent(
   marketIntent,
   onOpenModelProviderSettings,
   onOpenMySpace,
+  onOpenKnowledge,
   onConnectRemote,
   onSelectRemoteProject,
   onCancelRemoteProject,
@@ -2443,6 +2445,9 @@ const WorkspaceShellLayoutContent = memo(function WorkspaceShellLayoutComponent(
       botActive={workspaceMainView === "bot"}
       onOpenMySpace={onOpenMySpace}
       mySpaceActive={workspaceMainView === "my-space"}
+      // [本地定制] 知识库入口（src/knowledge/）。
+      onOpenKnowledge={onOpenKnowledge}
+      knowledgeActive={workspaceMainView === "knowledge"}
       onOpenWorkspaceFiles={handleOpenWorkspaceFiles}
       navPrimarySlot={navPrimarySlot}
       // 桌面没有 mobile 导航动作；内联包装曾让右侧开关穿透侧栏 memo，重复渲染全部项目。
@@ -3253,6 +3258,28 @@ const WorkspaceShellLayoutContent = memo(function WorkspaceShellLayoutComponent(
                               workspaceIdentity={workspaceIdentity}
                               onExit={() => onWorkspaceMainViewChange("chat")}
                             />
+                          ) : workspaceMainView === "knowledge" ? (
+                            // [本地定制] 知识库主视图：整页交给 src/knowledge/
+                            // （EvoFlow 既有实现的适配搬迁，见 knowledge/kb-api.ts）。
+                            // 与 my-space 同一形态：面包屑框 + 错误边界，页面自管 hash 路由。
+                            <main className="flex h-full min-h-0 flex-1 flex-col bg-background">
+                              <AutomationsMainBreadcrumbFrame
+                                isDesktop={Boolean(isDesktop)}
+                                showTopStrip={Boolean(isDesktop)}
+                                reserveFloatingToggleGutter={!isDesktop && !isSidebarVisible}
+                                sectionLabel={intl.formatMessage({ id: "workspaceHeader.knowledge" })}
+                                ariaLabel={intl.formatMessage({ id: "workspaceHeader.knowledge" })}
+                              >
+                                <ScopedErrorBoundary
+                                  scope="knowledge"
+                                  resetKeys={workspaceOnlyResetKeys}
+                                  variant="panel"
+                                  className="h-full"
+                                >
+                                  <KnowledgePage />
+                                </ScopedErrorBoundary>
+                              </AutomationsMainBreadcrumbFrame>
+                            </main>
                           ) : (
                             chatMainContent
                           )}

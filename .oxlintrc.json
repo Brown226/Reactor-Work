@@ -155,7 +155,10 @@
         "src/runtime/methods/steering.ts",
         "src/runtime/methods/turn.ts",
         "src/runtime/methods/turn-model-step.ts",
-        "**/packages/ui/src/remote-connection-flow/index.ts"
+        "**/packages/ui/src/remote-connection-flow/index.ts",
+        // 知识库页是 EvoFlow 既有实现的整体搬迁（UI 壳 + 多个模态框集合，原文件即 4245 行），
+        // 本次只做接口适配不拆结构；登记为行数告警，后续按职责分离再重构。
+        "**/packages/ui/src/knowledge/knowledge-owned.jsx"
       ],
       "rules": {
         "max-lines": ["warn", { "max": 800, "skipBlankLines": true, "skipComments": true }]

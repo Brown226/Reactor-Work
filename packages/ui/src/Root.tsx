@@ -227,6 +227,8 @@ function RootInner({
   allowRemoteWorkspace = true,
   lockedServerUrl,
   mySpaceEnabled = false,
+  // [本地定制] 知识库主视图开关（宿主挂了 /api/knowledge/owned 网关才为 true）。
+  knowledgeEnabled = false,
   webRemoteControlWorkspaceSwitcher,
   initialSidebarFileTreeOpen,
   initialWebRemoteControlMobileNavigationIntent,
@@ -1851,6 +1853,7 @@ function RootInner({
               }
               webRemoteControlTerminalTransportState={webRemoteControlTerminalTransportState}
               mySpaceEnabled={mySpaceEnabled}
+              knowledgeEnabled={knowledgeEnabled}
               isDesktop={isDesktop}
               isMacDesktop={isMacDesktop}
               isWindowsDesktop={isWindowsDesktop}

@@ -7926,6 +7926,7 @@ const enUS: Record<string, string> = {
   "paperMode.instruction.ask": "I would like to ask about this passage:",
   "paperMode.instruction.citationRelation": "Please explain how this reference relates to the current discussion.",
   "workspaceHeader.mySpace": "My space",
+  "workspaceHeader.knowledge": "Knowledge",
   // [本地定制] Agents 集群（Bot 形态外壳，见 src/bot/）
   "bot.nav.title": "Agents",
   "bot.roster.title": "Agents",

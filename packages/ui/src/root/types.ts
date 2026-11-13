@@ -98,6 +98,8 @@ export interface RootProps {
    * Web 宿主传 true；桌面端不传 → 不渲染入口，行为零变化。
    */
   mySpaceEnabled?: boolean;
+  /** [本地定制] 知识库主视图开关：宿主挂载了 /api/knowledge/owned 网关才为 true。 */
+  knowledgeEnabled?: boolean;
   /** Web 远程控制模式下的已打开 workspace 切换入口 */
   webRemoteControlWorkspaceSwitcher?: WebRemoteControlWorkspaceSwitcherApi;
   /** Web 远控跨 workspace 点击任务后的单次移动端落点 */

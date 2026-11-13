@@ -106,6 +106,8 @@ function isFile(path: string): boolean {
 export function resolveKnowledgeSidecarCommand(
   env: NodeJS.ProcessEnv = process.env,
   moduleDir: string = import.meta.dirname,
+  /** 知识库数据根；透传给 sidecar 的 --data-root（缺省退到 env）。 */
+  dataRoot?: string,
 ): { executable: string; args: string[] } | null {
   // 显式覆盖：测试与自定义部署直接指到 python 可执行文件。
   const explicitPython = env.ZCODE_KNOWLEDGE_PYTHON_PATH?.trim();
@@ -113,7 +115,7 @@ export function resolveKnowledgeSidecarCommand(
   if (explicitPython && isFile(explicitPython) && explicitSidecar && isDirectory(explicitSidecar)) {
     return {
       executable: explicitPython,
-      args: withDataRoot(["-m", "knowledge_sidecar"]),
+      args: withDataRoot(["-m", "knowledge_sidecar"], dataRoot),
     };
   }
 
@@ -168,7 +170,7 @@ export function resolveKnowledgeSidecarCommand(
     if (!process.env.ZCODE_KNOWLEDGE_SIDECAR_DIR) {
       process.env.ZCODE_KNOWLEDGE_SIDECAR_DIR = sidecarDir;
     }
-    return { executable: python, args: withDataRoot(["-m", "knowledge_sidecar"]) };
+    return { executable: python, args: withDataRoot(["-m", "knowledge_sidecar"], dataRoot) };
   }
 
   return null;
@@ -179,12 +181,15 @@ export function resolveKnowledgeSidecarCommand(
  *
  * 早期漏了它：sidecar 的 argparse 把它设为必填，缺了直接 exit 2。而 Node 侧只看到
  * 「引擎退出（code=2）」——一个纯参数缺失被表现成引擎崩溃，白排查很久。
- * 数据根从 `ZCODE_KNOWLEDGE_DATA_ROOT` 取，由 services 装配层注入。
+ *
+ * 数据根优先用构造函数传入的 `dataRoot`（调用方明确知道的落点），
+ * 再退到 `ZCODE_KNOWLEDGE_DATA_ROOT` env（部署方注入）。早期版本只读 env，
+ * 于是 `new KnowledgeClient({ dataRoot })` 传了也白传 —— sidecar 照样 exit 2。
  */
-function withDataRoot(args: string[]): string[] {
-  const dataRoot = process.env.ZCODE_KNOWLEDGE_DATA_ROOT?.trim();
-  if (!dataRoot) return args;
-  return [...args, "--data-root", dataRoot];
+function withDataRoot(args: string[], dataRoot?: string): string[] {
+  const root = dataRoot?.trim() || process.env.ZCODE_KNOWLEDGE_DATA_ROOT?.trim();
+  if (!root) return args;
+  return [...args, "--data-root", root];
 }
 
 /** 读 prepare 脚本写的 interpreter.json，取系统解释器绝对路径。 */
@@ -230,7 +235,8 @@ export class KnowledgeClient {
     if (this.starting) return;
     this.starting = true;
     try {
-      const command = this.options.command ?? resolveKnowledgeSidecarCommand();
+      const command =
+        this.options.command ?? resolveKnowledgeSidecarCommand(process.env, import.meta.dirname, this.options.dataRoot);
       if (!command) {
         throw new KnowledgeUnavailableError(
           "未找到知识库引擎（knowledge-engines 资产缺失）。" +

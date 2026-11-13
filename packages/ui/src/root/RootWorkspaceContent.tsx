@@ -55,6 +55,8 @@ interface RootWorkspaceContentProps {
   supportsEmbeddedBrowser: NonNullable<RootProps["supportsEmbeddedBrowser"]>;
   windowsWindowControlsRightPaddingPx?: number;
   mySpaceEnabled?: boolean;
+  /** [本地定制] 知识库主视图开关（宿主挂了 /api/knowledge/owned 网关才为 true）。 */
+  knowledgeEnabled?: boolean;
 }
 
 export function RootWorkspaceContent({
@@ -99,6 +101,7 @@ export function RootWorkspaceContent({
   supportsEmbeddedBrowser,
   windowsWindowControlsRightPaddingPx,
   mySpaceEnabled,
+  knowledgeEnabled,
 }: RootWorkspaceContentProps) {
   const workspaceKey = workspaceIdentity?.trim() || workspaceShellPath;
 
@@ -190,6 +193,7 @@ export function RootWorkspaceContent({
                 isWindowsDesktop={isWindowsDesktop}
                 supportsEmbeddedBrowser={supportsEmbeddedBrowser}
                 mySpaceEnabled={mySpaceEnabled}
+                knowledgeEnabled={knowledgeEnabled}
               />
             </ScopedErrorBoundary>
           </ServiceProvider>

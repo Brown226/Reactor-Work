@@ -627,6 +627,9 @@ async function bootstrapWebApp() {
             platform={platform}
             {...(bootstrap.lockedServerUrl ? { lockedServerUrl: bootstrap.lockedServerUrl } : {})}
             mySpaceEnabled={true}
+            // [本地定制] 知识库主视图：Web 宿主已挂 /api/knowledge/owned 网关（
+            // packages/server/src/knowledge/routes.ts），这里开启入口。
+            knowledgeEnabled={true}
             initialWorkspaceAbsPath={bootstrap.initialWorkspaceAbsPath}
             initialWorkspaceIdentity={bootstrap.initialWorkspaceIdentity}
             initialTaskId={bootstrap.initialTaskId}

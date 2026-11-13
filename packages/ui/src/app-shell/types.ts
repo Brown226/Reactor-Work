@@ -211,6 +211,8 @@ export interface AppProps {
    * 缺省 false：侧栏不渲染入口、主视图也无法切入 my-space。
    */
   mySpaceEnabled?: boolean;
+  /** [本地定制] 知识库主视图开关：宿主挂载了 /api/knowledge/owned 网关才为 true。 */
+  knowledgeEnabled?: boolean;
 }
 
 export interface GitChangeSummary {
@@ -225,7 +227,9 @@ export type WorkspaceMainView =
   | "plugin-store"
   | "market"
   | "my-space"
-  | "bot";
+  | "bot"
+  // [本地定制] "knowledge" = 知识库主视图（src/knowledge/）。上游同步新增视图时保留本成员。
+  | "knowledge";
 
 /** 市场页导航意图（命令面板等外部入口用）：指定打开哪个视图与市场/我的模式。 */
 export interface MarketIntent {
@@ -262,6 +266,8 @@ export interface WorkspaceShellLayoutProps extends Omit<AppProps, "baseFeedbackS
   onOpenBot: () => void;
   /** 切到「我的空间」主视图；只有 Web 宿主传，桌面端侧栏因此不出现该入口。 */
   onOpenMySpace?: () => void;
+  /** [本地定制] 知识库主视图入口（src/knowledge/）。 */
+  onOpenKnowledge?: () => void;
   /** 命令面板等入口携带的市场视图意图；MarketPage 挂载/变更时落到指定 tab 与模式。 */
   marketIntent: MarketIntent | null;
   /** 子智能体表单「管理模型」跳设置·模型分区（App 持有 intent+打开逻辑）。 */

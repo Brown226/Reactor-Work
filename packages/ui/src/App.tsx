@@ -148,6 +148,8 @@ export function App({
   isWindowsDesktop,
   supportsEmbeddedBrowser: explicitSupportsEmbeddedBrowser,
   mySpaceEnabled = false,
+  // [本地定制] 知识库主视图开关：宿主挂载了 /api/knowledge/owned 网关才为 true。
+  knowledgeEnabled = false,
 }: AppProps) {
   // 展示 label 统一从快捷键生效表取（用户改键后 tooltip 同步更新），不再硬编码键位。
   const toggleSidebarShortcutLabel = useShortcutCommandLabel("toggleSidebar");
@@ -981,6 +983,9 @@ export function App({
   const handleOpenMySpace = useCallback(() => {
     setWorkspaceMainView("my-space");
   }, []);
+  const handleOpenKnowledge = useCallback(() => {
+    setWorkspaceMainView("knowledge");
+  }, []);
   const handleManageModelsFromMarket = useCallback(() => {
     // 子智能体表单「管理模型」→ 设置·模型分区；该分区被治理隐藏时由 settingsNavigation 回落。
     setPendingSettingsSection("modelProvider");
@@ -1444,6 +1449,8 @@ export function App({
             onOpenBot={handleOpenBot}
             marketIntent={marketIntent}
             onOpenMySpace={mySpaceEnabled ? handleOpenMySpace : undefined}
+            // [本地定制] 知识库主视图（src/knowledge/）。与 my-space 同为 Web 专属。
+            onOpenKnowledge={knowledgeEnabled ? handleOpenKnowledge : undefined}
             onOpenModelProviderSettings={handleManageModelsFromMarket}
             handleOpenWorkspaceFiles={handleOpenWorkspaceFiles}
           />

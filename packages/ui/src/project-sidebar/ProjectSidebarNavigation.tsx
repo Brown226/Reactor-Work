@@ -1,4 +1,4 @@
-import { Blocks, Bot, BotMessageSquare, CalendarClock, FolderOpen } from "lucide-react";
+import { Blocks, BookOpen, Bot, BotMessageSquare, CalendarClock, FolderOpen } from "lucide-react";
 import { memo } from "react";
 import { TID_AUTOMATIONS_OPEN } from "@zcode/shared/test-ids";
 import type { ProjectSidebarProps } from "@/project-sidebar/contract.js";
@@ -27,6 +27,8 @@ export const ProjectSidebarNavigation = memo(function ProjectSidebarNavigation({
     | "botActive"
     | "onOpenMySpace"
     | "mySpaceActive"
+    | "onOpenKnowledge"
+    | "knowledgeActive"
     | "webRemoteControlWorkspaceSwitcher"
     | "navPrimarySlot"
     | "workspacePath"
@@ -118,6 +120,22 @@ export const ProjectSidebarNavigation = memo(function ProjectSidebarNavigation({
         >
           <FolderOpen className="size-4" />
           {intl.formatMessage({ id: "workspaceHeader.mySpace" })}
+        </Button>
+      ) : null}
+      {/* [本地定制] 知识库入口：与我的空间同为 Web 宿主主视图。
+          只有宿主提供 knowledgeDataRoot（挂载了 /api/knowledge/owned 网关）时才显示。 */}
+      {props.onOpenKnowledge ? (
+        <Button
+          variant="ghost"
+          size="lg"
+          className={`w-full justify-start gap-2 ${props.knowledgeActive ? "bg-selected text-foreground" : ""}`}
+          aria-pressed={props.knowledgeActive ?? false}
+          onClick={() => props.onOpenKnowledge?.()}
+          data-icon="inline-start"
+          data-testid="knowledge-trigger"
+        >
+          <BookOpen className="size-4" />
+          {intl.formatMessage({ id: "workspaceHeader.knowledge" })}
         </Button>
       ) : null}
       {/* 扩展导航条目（nav.primary）：手机远控与「插件市场」一同隐藏；逻辑都在 extension-slots。 */}
