@@ -87,14 +87,21 @@ function copyDirectory(source, target) {
   for (const entry of readdirSync(source, { withFileTypes: true })) {
     const sourcePath = join(source, entry.name);
     const targetPath = join(target, entry.name);
-    if (entry.isDirectory()) {
+    // 修复原因：Dirent 的 d_type 在部分文件系统（FUSE / proot bind mount）上不可靠 ——
+    // 硬链接文件会被报成 symlink，isFile() 与 isDirectory() 同时为 false。
+    // 2026-11-13 在 Android proot 环境实测：pnpm store 硬链接进 node_modules 的依赖包
+    // （anydoc / @napi-rs/canvas）因此被整棵跳过，staging 只留下空目录，
+    // 症状是 file-tools 资产 0 字节、运行期「未找到 anydoc 原生资产」。
+    // 用 stat 复核真实类型，避免依赖树被静默剪空。
+    const stats = statSync(sourcePath);
+    if (stats.isDirectory()) {
       copyDirectory(sourcePath, targetPath);
-    } else if (entry.isFile()) {
+    } else if (stats.isFile()) {
       writeFileSync(targetPath, readFileSync(sourcePath));
       // 保留可执行位：dwg-sidecar 是直接 spawn 的二进制，且 plugins seed 会以源文件
       // mode 落盘缓存文件（bundled-plugins.modeForSeedFile）；writeFileSync 新建文件默认
       // 0644，darwin/linux 上会让 sidecar 在缓存副本里 EACCES 起不来。
-      chmodSync(targetPath, statSync(sourcePath).mode & 0o777);
+      chmodSync(targetPath, stats.mode & 0o777);
     }
   }
 }

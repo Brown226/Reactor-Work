@@ -255,6 +255,65 @@ export const officialSeaPlugins = [
     rootPath: join("packages", "design-plugin"),
     version: "0.7.2",
   },
+  // ── Reactor 自建插件（上游 v3.18.0 没有这些包）──────────────────────────────
+  // 2026-11-12 上游同步事故：`2c0fc9dd` 把本清单里的 4 个自建插件整块删掉，SEA 产物
+  // 不再嵌入它们，安装包里图纸解析 / 扫描件识别 / 文件审查直接消失。
+  // 判定标准是 3-way（上游没动、本地动了 = 真定制）。
+  {
+    // 审查技能：纯内容型插件（只有 skills，没有 MCP server），requiresRuntime:false 跳过
+    // runtime 校验，但 requiredSeedPaths 仍逐个钉住 SKILL.md——SEA 产物缺文件时技能会
+    // 静默失效，而不是报错。
+    marketplace: "zcode-plugins-official",
+    name: "review-skills",
+    requiresRuntime: false,
+    requiredSeedPaths: [
+      "skills/review-compare/SKILL.md",
+      "skills/review-consistency/SKILL.md",
+      "skills/review-contract/SKILL.md",
+      "skills/review-proofread/SKILL.md",
+      "skills/review-proofread/references/punctuation-rules.md",
+      "skills/review-proofread/references/typo-dictionary.md",
+      "skills/review-standard-check/SKILL.md",
+    ],
+    rootPath: join("packages", "review-skills-plugin"),
+    version: "0.1.0",
+  },
+  // 文件能力三件套（docs/未完成-file-tools拆三插件方案.md）：file-tools=parse/docx/pdf，
+  // ocr-tools=扫描件识字，dwg-tools=图纸。requiresRuntime 走 dist/mcp/server.js。
+  {
+    marketplace: "zcode-plugins-official",
+    name: "file-tools",
+    packageName: "@zcode/file-tools-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: ["dist/mcp/server.js", "dist/mcp/pdf.worker.mjs"],
+    // 与 bootstrap 的 OFFICIAL_PLUGIN_DEFINITIONS.runtimeTopLevelPaths 对齐：
+    // anydoc/canvas 引擎资产树。SEA 不采集它，运行期 seed gate 会以
+    // 「声明了 assets 却收不到文件」拒绝整个插件（hasDeclaredAssetsButNoFiles）。
+    runtimeTopLevelPaths: ["assets"],
+    rootPath: join("packages", "file-tools-plugin"),
+    version: "0.1.0",
+  },
+  {
+    marketplace: "zcode-plugins-official",
+    name: "ocr-tools",
+    packageName: "@zcode/ocr-tools-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: ["dist/mcp/server.js"],
+    runtimeTopLevelPaths: [],
+    rootPath: join("packages", "ocr-tools-plugin"),
+    version: "0.1.0",
+  },
+  {
+    marketplace: "zcode-plugins-official",
+    name: "dwg-tools",
+    packageName: "@zcode/dwg-tools-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: ["dist/mcp/server.js"],
+    // ACadSharp sidecar 资产树，来源 scripts/prepare-file-tools-assets.mjs。
+    runtimeTopLevelPaths: ["assets"],
+    rootPath: join("packages", "dwg-tools-plugin"),
+    version: "0.1.0",
+  },
   // superpowers 已从内置插件下线，改走 UI 推荐区按需安装；这里不再打入 SEA 资源清单。
 ];
 
@@ -283,7 +342,7 @@ export const collectSeaOfficialPluginAssets = async ({
     const pluginFiles = [];
     for await (const sourcePath of walkFiles(pluginRoot)) {
       const relativePath = relative(pluginRoot, sourcePath);
-      if (!shouldIncludePluginFile(relativePath)) continue;
+      if (!shouldIncludePluginFile(relativePath, plugin)) continue;
 
       const bytes = await readFile(sourcePath);
       const sourceStats = await stat(sourcePath);
@@ -304,6 +363,8 @@ export const collectSeaOfficialPluginAssets = async ({
     }
 
     pluginFiles.sort((left, right) => left.path.localeCompare(right.path));
+    // 先断言资产树，再推进 manifest：缺引擎的插件必须在采集阶段炸掉，而不是发布后才被发现。
+    assertPluginRuntimeAssetPaths(plugin, pluginFiles);
     plugins.push({
       files: pluginFiles,
       marketplace: plugin.marketplace,
@@ -413,13 +474,32 @@ const includedTopLevelPaths = new Set([
   "templates",
 ]);
 
-const shouldIncludePluginFile = (relativePath) => {
+const shouldIncludePluginFile = (relativePath, plugin) => {
   const segments = relativePath.split(sep);
   if (segments.includes(".DS_Store") || segments.some((segment) => segment.endsWith(".pyc"))) {
     return false;
   }
   const [topLevel] = relativePath.split(sep);
-  return topLevel !== undefined && includedTopLevelPaths.has(topLevel);
+  if (topLevel === undefined) return false;
+  if (includedTopLevelPaths.has(topLevel)) return true;
+  // 声明了 runtimeTopLevelPaths 的插件（如 file-tools / dwg-tools 的引擎资产树）
+  // 按声明放行；不声明的一律不收，避免把无关大目录卷进 SEA 产物。
+  return (plugin.runtimeTopLevelPaths ?? []).includes(topLevel);
+};
+
+// 声明了 runtimeTopLevelPaths 的插件，SEA 采集阶段就必须收到至少一个资产文件。
+// 缺了会让「有插件壳、无引擎」的残缺产物直接发布，运行期 seed 再整体拒绝该插件。
+const assertPluginRuntimeAssetPaths = (plugin, pluginFiles) => {
+  const declared = plugin.runtimeTopLevelPaths ?? [];
+  for (const topLevel of declared) {
+    const collected = pluginFiles.some((file) => file.path.split("/")[0] === topLevel);
+    if (!collected) {
+      throw new Error(
+        `Missing ${plugin.name} runtime asset tree "${topLevel}/" in the SEA staging. ` +
+          `Run \`node scripts/prepare-file-tools-assets.mjs\` before \`pnpm sea\`.`,
+      );
+    }
+  }
 };
 
 const toPosixPath = (value) => value.split(sep).join("/");

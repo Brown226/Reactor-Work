@@ -75,6 +75,14 @@ interface OfficialPluginSeedPluginSource {
   /** definition 声明 buildIdentityPath 时读取的构建身份；同版本下它变化也要重建。 */
   buildIdentity?: string;
   missingSeedPaths: string[];
+  /**
+   * 声明了 runtime 资产目录（`runtimeTopLevelPaths` 含 `assets`）却一个文件都没收上来。
+   * 特指 file-tools / dwg-tools 这类「原生资产在 build 期生成」的插件：源目录处于正在重建的
+   * 窗口期时（先清空再拷贝），文件集是完整的但资产是空的，marker 会写成完整 —— 于是缓存
+   * 「seed 成功却缺资产」，运行时报「未找到 anydoc 原生资产」，而同步多少次都不会好。
+   * 所以 seed 前先判：要求至少收入一个资产文件，否则按残缺处理。
+   */
+  missingAssetFiles?: boolean;
   rootPath?: string;
 }
 
@@ -288,15 +296,18 @@ async function prepareBundledOfficialPlugins(
     // 入口旁的插件拷贝可能与新定义错配（升级中的桌面包、旧 checkout 未构建 dist）。
     // 缺 requiredSeedPaths 时 seed 源解析曾直接抛错，一个残缺插件把全部插件连同会话恢复
     // 一起炸成 resumeFailed。残缺只作用于单插件：拒绝写缓存，按既有降级协议告警并回退到可用旧缓存。
-    if (plugin.missingSeedPaths.length > 0) {
+    if (plugin.missingSeedPaths.length > 0 || plugin.missingAssetFiles) {
       warnCacheDegraded(input.logger, {
         error: Object.assign(
           new Error(
-            `Bundled official plugin ${plugin.definition.name} is missing required seed assets: ${plugin.missingSeedPaths.join(", ")}`,
+            plugin.missingAssetFiles
+              ? `Bundled official plugin ${plugin.definition.name} declares runtime assets but none were collected (source assets are being rebuilt?) — refusing to seed an incomplete cache`
+              : `Bundled official plugin ${plugin.definition.name} is missing required seed assets: ${plugin.missingSeedPaths.join(", ")}`,
           ),
           { code: "ZCODE_PLUGIN_SEED_INCOMPLETE" },
         ),
         missingSeedPaths: plugin.missingSeedPaths,
+        missingAssetFiles: plugin.missingAssetFiles,
         operation: "seed_plugin",
         pluginId,
         targetRoot,
@@ -347,6 +358,18 @@ async function prepareBundledOfficialPlugins(
                     signal,
                   )
                 : plugin.files;
+            // filesystem 路径只登记了 manifest，资产树是否收上来要枚举后才知道。
+            // 声明了 assets 却一份都没收到（源目录正在重建、或构建脚本没跑）时，
+            // 必须在此炸掉并让外层降级回退，不能写出「seed 成功但缺引擎」的缓存 ——
+            // 那种缓存的症状是运行期报「未找到 anydoc 原生资产」，且永远不会自愈。
+            if (hasDeclaredAssetsButNoFiles(plugin.definition, files)) {
+              throw Object.assign(
+                new Error(
+                  `Bundled official plugin ${plugin.definition.name} declares runtime assets but none were collected (source assets are being rebuilt?)`,
+                ),
+                { code: "ZCODE_PLUGIN_SOURCES_CHANGED" },
+              );
+            }
             for (const file of files) {
               signal?.throwIfAborted();
               const bytes = await readSeedFileBytes(source, plugin, file, signal);
@@ -511,6 +534,7 @@ function resolveSeaSeedSource(): OfficialPluginSeedSource | undefined {
         definition,
         files: plugin.files,
         hash: hashSeedFiles(plugin.files),
+        missingAssetFiles: hasDeclaredAssetsButNoFiles(definition, plugin.files),
         missingSeedPaths: findMissingOfficialPluginSeedPaths(definition, plugin.files),
       },
     ];
@@ -565,6 +589,23 @@ export function findMissingOfficialPluginSeedPaths(
   return (definition.requiredSeedPaths ?? []).filter(
     (requiredPath) => !availablePaths.has(requiredPath),
   );
+}
+
+/**
+ * 插件声明了 `runtimeTopLevelPaths` 里的 `assets`，却一个资产文件都没收上来。
+ *
+ * 2026-09-23 实测：file-tools 的 anydoc/canvas/onnxruntime 原生资产树被整棵漏掉后，
+ * 运行时不报「seed 失败」，而是报「未找到 anydoc 原生资产」，工具在应用里直接不可用；
+ * 而 marker 已写成完整，之后每次同步都认为缓存是新的，永远不会自愈。
+ * 所以这类「声明了却没有」必须在 seed 前当成残缺处理，而不是等运行期报错。
+ */
+function hasDeclaredAssetsButNoFiles(
+  definition: Pick<OfficialPluginDefinition, "runtimeTopLevelPaths">,
+  files: ReadonlyArray<{ path: string }>,
+): boolean {
+  const wantsAssets = (definition.runtimeTopLevelPaths ?? []).includes("assets");
+  if (!wantsAssets) return false;
+  return !files.some((file) => file.path === "assets" || file.path.startsWith("assets/"));
 }
 
 function getSeaModule(): SeaModule | undefined {
@@ -849,6 +890,8 @@ function warnCacheDegraded(
   input: {
     error: NodeJS.ErrnoException;
     missingSeedPaths?: readonly string[];
+    /** 声明了 runtime 资产树却一个文件都没收到（源资产正在重建）。 */
+    missingAssetFiles?: boolean;
     operation: "remove_suppressed_plugin" | "seed_plugin";
     pluginId: string;
     targetRoot: string;
@@ -859,6 +902,9 @@ function warnCacheDegraded(
     degraded: true,
     errorCode: input.error.code,
     ...(input.missingSeedPaths ? { missingSeedPaths: input.missingSeedPaths } : {}),
+    ...(input.missingAssetFiles !== undefined
+      ? { missingAssetFiles: input.missingAssetFiles }
+      : {}),
     module: "bootstrap.official_plugin_cache",
     operation: input.operation,
     pluginId: input.pluginId,

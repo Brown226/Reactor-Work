@@ -259,6 +259,45 @@ const officialPluginPackages = [
     stagedPath: "packages/zcode-site-plugin",
   },
   {
+    // ── Reactor 自建插件（上游 v3.18.0 没有这些包）──────────────────────────
+    // 2026-11-12 上游同步事故：`2c0fc9dd` 用上游清单覆盖本文件，这 4 个自建插件从
+    // 桌面安装包的 stage 清单里消失，首启 seed 拿不到它们。判定标准是 3-way。
+    // 审查技能（5 个）：纯内容型插件，没有 runtime 构建步骤，只需把 skills/ 与清单拷进
+    // glm/packages。此前这些技能只存在于企业服务端技能库，安装包不带、也没人发现，
+    // 结果是「不登录企业端就没有审查能力」；内置后由 definition 的 defaultEnabled 直接可用。
+    packageName: "@zcode/review-skills-plugin",
+    relativePath: "apps/zcode-cli/packages/review-skills-plugin",
+    requiresRuntime: false,
+    stagedPath: "packages/review-skills-plugin",
+  },
+  {
+    // 文件能力三件套（docs/未完成-file-tools拆三插件方案.md）：file-tools=parse/docx/pdf，
+    // ocr-tools=扫描件识字，dwg-tools=图纸。三者都带 MCP server，须先构建 dist/mcp/server.js。
+    packageName: "@zcode/file-tools-plugin",
+    relativePath: "apps/zcode-cli/packages/file-tools-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: ["dist/mcp/server.js", "dist/mcp/pdf.worker.mjs"],
+    runtimeBuildScript: "scripts/build.mjs",
+    stagedPath: "packages/file-tools-plugin",
+  },
+  {
+    packageName: "@zcode/ocr-tools-plugin",
+    relativePath: "apps/zcode-cli/packages/ocr-tools-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: ["dist/mcp/server.js"],
+    runtimeBuildScript: "scripts/build.mjs",
+    stagedPath: "packages/ocr-tools-plugin",
+  },
+  {
+    // DWG 图纸：ACadSharp sidecar 走 resources/tools/dwg-tools，这里只 seed MCP server。
+    packageName: "@zcode/dwg-tools-plugin",
+    relativePath: "apps/zcode-cli/packages/dwg-tools-plugin",
+    requiresRuntime: true,
+    requiredRuntimePaths: ["dist/mcp/server.js"],
+    runtimeBuildScript: "scripts/build.mjs",
+    stagedPath: "packages/dwg-tools-plugin",
+  },
+  {
     // node_repl 宿主：Browser Use 与 Computer Use 共用的 MCP runtime，本轮抽成独立包。
     // 它没有 listing（不进插件市场展示面），但生产包首启 seed 必须拿到它的 dist runtime，
     // 否则 bua/cua 任一开启时都会连不上 node_repl。
@@ -323,6 +362,13 @@ const includedOfficialPluginTopLevelPaths = new Set([
   "README.md",
   // Electron 生产资源复制有独立白名单，遗漏 agents 会让首启 filesystem seed 永久缺少子代理。
   "agents",
+  // file-tools / dwg-tools 的引擎资产树（anydoc/canvas/dwg-sidecar）。
+  // 打包态运行时优先从 resources/tools/<插件> 解析（见 dwg-tools src/assets.ts 的候选链），
+  // 但 seed 侧必须非空 —— bundled-plugins.hasDeclaredAssetsButNoFiles 会把
+  // 「声明了 runtimeTopLevelPaths: ["assets"] 却收不到文件」的插件整体拒绝 seed，
+  // 症状是文档解析/图纸解析在安装包里直接消失。故此处随包拷贝（definitions 注释
+  // 称之为「seed 副本兜底」）。
+  "assets",
   "commands",
   "dist",
   "docs",

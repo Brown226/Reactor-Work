@@ -3,3 +3,7 @@ dist/
 dist-types/
 node_modules/
 assets/
+# dotnet publish / build 的中间与输出产物（tools/dwg-sidecar 由 publish-sidecar.mjs 构建，
+# 自包含 sidecar 体积 ~35MB，随 bin/Release 一起落盘；两者都只是本地构建残留）。
+bin/
+obj/

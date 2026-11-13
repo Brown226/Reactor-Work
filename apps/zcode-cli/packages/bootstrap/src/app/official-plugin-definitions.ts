@@ -125,6 +125,19 @@ export const OFFICIAL_DESIGN_REQUIRED_SEED_PATHS = [
   "hooks/design-rules",
 ] as const;
 
+// review-skills 是 Reactor 自建的纯内容型插件（审查技能集）。逐个钉住 SKILL.md 与
+// references：审查技能缺一条规则文件时，技能会静默降级成「通用校对」，不报错也不可见。
+// 与 apps/zcode-cli/packages/cli/scripts/sea-official-plugin-assets.mjs 的 requiredSeedPaths 一致。
+export const OFFICIAL_REVIEW_SKILLS_REQUIRED_SEED_PATHS = [
+  "skills/review-compare/SKILL.md",
+  "skills/review-consistency/SKILL.md",
+  "skills/review-contract/SKILL.md",
+  "skills/review-proofread/SKILL.md",
+  "skills/review-proofread/references/punctuation-rules.md",
+  "skills/review-proofread/references/typo-dictionary.md",
+  "skills/review-standard-check/SKILL.md",
+] as const;
+
 export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = [
   {
     // 交互视图默认关闭，避免默认注入固定上下文；旧开关由配置迁移关闭一次。
@@ -527,6 +540,141 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       "dist/ui/panel.html",
     ],
     version: "0.5.0",
+  },
+
+  // ===== Reactor 自建插件（上游 v3.18.0 没有这些包，同步时不得清空）=====
+  // 2026-11-12 上游同步事故：`2c0fc9dd` 用「上游为基准」整块覆盖时把下面 4 个本地自建插件的
+  // 定义删掉了（它们 100% 是 fork 自有，上游 b95ebaff 里根本没有这些目录），症状是
+  // 图纸解析 / 扫描件识别 / 文件审查在插件市场和运行期一起消失，而编译和检查脚本都不报错。
+  // 判定标准是 3-way：「上游没动、本地动了」= 真定制，不能按「上游有没有这个文件」判断。
+
+  {
+    // 审查技能：产品决策内置、默认启用。纯内容型插件（只有 skills，无 MCP / 无系统依赖）。
+    // 过去这 6 个技能走企业服务端技能库下发，等于「管理员不导入就没有审查能力」，
+    // 而且内网离线部署时它是最容易被漏掉的一步。服务端技能库回归本位：只装企业自建技能。
+    defaultEnabled: true,
+    listing: {
+      author: ZAI_AUTHOR,
+      category: "productivity",
+      displayName: "Review Skills",
+      displayName_i18n: { "zh-CN": "文件审查技能" },
+      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/documents/icon.png`,
+      description_i18n: {
+        "zh-CN":
+          "文件审查板块的判定规则与输出格式：基础校对、全文一致性、以文审文、合同风险审查、标准引用自检、批量审查报告。",
+      },
+      examplePrompts: [
+        "Proofread this document and list every typo",
+        "Check the standard references cited in this document",
+      ],
+      examplePrompts_i18n: {
+        "zh-CN": ["帮我校对这份文件，逐条指出错别字", "检查这份文件引用的标准是否已废止"],
+      },
+    },
+    name: "review-skills",
+    requiredSeedPaths: OFFICIAL_REVIEW_SKILLS_REQUIRED_SEED_PATHS,
+    rootCandidates: [
+      "packages/review-skills-plugin",
+      "../review-skills-plugin",
+      "../../review-skills-plugin",
+      "../../../review-skills-plugin",
+    ],
+    version: "0.1.0",
+  },
+  {
+    // 文件能力三件套之一：parse_document（Office/PDF→Markdown）/ docx_patch（不改格式的
+    // 外科手术式修改）/ pdf-research。推理引擎 anydoc + canvas 在 assets/（build 期生成，
+    // 不入库），所以必须声明 runtimeTopLevelPaths，否则 seed 收不到引擎文件。
+    defaultEnabled: true,
+    listing: {
+      author: ZAI_AUTHOR,
+      category: "productivity",
+      displayName: "File Tools",
+      displayName_i18n: { "zh-CN": "文件解析工具" },
+      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/documents/icon.png`,
+      description_i18n: {
+        "zh-CN": "解析 Word / Excel / PDF 的正文与标准引用，并在不改格式的前提下修改 docx。",
+      },
+      examplePrompts: [
+        "Parse this Word document and summarize its standard references",
+        "Patch the typo in this docx without reformatting",
+      ],
+      examplePrompts_i18n: {
+        "zh-CN": ["解析这份 Word 文档并提取引用的标准", "在不改格式的前提下修掉 docx 里的错别字"],
+      },
+    },
+    name: "file-tools",
+    requiredSeedPaths: [
+      "dist/mcp/server.js",
+      // pdfjs fake worker：随 bundle 一起拷贝（scripts/build.mjs）。
+      "dist/mcp/pdf.worker.mjs",
+    ],
+    rootCandidates: [
+      "packages/file-tools-plugin",
+      "../file-tools-plugin",
+      "../../file-tools-plugin",
+      "../../../file-tools-plugin",
+    ],
+    // anydoc + canvas 资产树：packaged 走 resources/tools/file-tools；seed 副本兜底。
+    runtimeTopLevelPaths: ["assets"],
+    version: "0.1.0",
+  },
+  {
+    // OCR（扫描件/图片识字）。推理在 office-engines Python，本插件无原生资产。
+    defaultEnabled: true,
+    listing: {
+      author: ZAI_AUTHOR,
+      category: "productivity",
+      displayName: "OCR Tools",
+      displayName_i18n: { "zh-CN": "扫描件识别工具" },
+      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/documents/icon.png`,
+      description_i18n: {
+        "zh-CN": "离线识别图片与扫描件 PDF 中的中英文文字（PP-OCR）。",
+      },
+      examplePrompts: ["Read the scanned PDF I just attached"],
+      examplePrompts_i18n: { "zh-CN": ["识别我刚上传的扫描件 PDF"] },
+    },
+    name: "ocr-tools",
+    requiredSeedPaths: ["dist/mcp/server.js"],
+    rootCandidates: [
+      "packages/ocr-tools-plugin",
+      "../ocr-tools-plugin",
+      "../../ocr-tools-plugin",
+      "../../../ocr-tools-plugin",
+    ],
+    runtimeTopLevelPaths: [],
+    version: "0.1.0",
+  },
+  {
+    // DWG 图纸解析/修改（ACadSharp sidecar）。
+    // assets/<platformKey>/dwg-sidecar/<rid>/ 由 scripts/prepare-file-tools-assets.mjs 生成：
+    // seed 侧由 runtimeTopLevelPaths 进缓存（dwg-tools 的 src/assets.ts 按插件根 assets 解析），
+    // 打包态走 resources/tools/dwg-tools。这份资产树必须非空 ——
+    // bundled-plugins.hasDeclaredAssetsButNoFiles 会把「声明了 assets 却收不到文件」的
+    // 插件整体拒绝 seed，症状是 dwg_modify / dwg_graph 在任何安装形态下都不可达。
+    defaultEnabled: true,
+    listing: {
+      author: ZAI_AUTHOR,
+      category: "productivity",
+      displayName: "DWG Tools",
+      displayName_i18n: { "zh-CN": "图纸解析工具" },
+      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/documents/icon.png`,
+      description_i18n: {
+        "zh-CN": "解析 DWG 图纸的文本、尺寸、标准引用与符号连接拓扑，并支持结构化修改。",
+      },
+      examplePrompts: ["List the standard references in this DWG drawing"],
+      examplePrompts_i18n: { "zh-CN": ["列出这张 DWG 图纸里的标准引用"] },
+    },
+    name: "dwg-tools",
+    requiredSeedPaths: ["dist/mcp/server.js"],
+    rootCandidates: [
+      "packages/dwg-tools-plugin",
+      "../dwg-tools-plugin",
+      "../../dwg-tools-plugin",
+      "../../../dwg-tools-plugin",
+    ],
+    runtimeTopLevelPaths: ["assets"],
+    version: "0.1.0",
   },
 ];
 

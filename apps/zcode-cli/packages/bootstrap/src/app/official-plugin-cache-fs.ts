@@ -184,17 +184,31 @@ async function* walkFiles(
   allowedTopLevelPaths: ReadonlySet<string>,
   depth = 0,
   signal?: AbortSignal,
+  topLevelSegment?: string,
 ): AsyncGenerator<string> {
   signal?.throwIfAborted();
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     signal?.throwIfAborted();
-    if (shouldSkipDirectory(entry.name, depth, allowedTopLevelPaths)) continue;
+    if (shouldSkipDirectory(entry.name, depth, allowedTopLevelPaths, topLevelSegment)) continue;
     const fullPath = join(directory, entry.name);
-    if (entry.isDirectory()) {
-      yield* walkFiles(fullPath, allowedTopLevelPaths, depth + 1, signal);
+    // 修复原因：Dirent 的 d_type 在部分文件系统（FUSE / proot bind mount）上不可靠 ——
+    // 硬链接文件会被报成 symlink，isFile() 与 isDirectory() 同时为 false。
+    // 2026-11-13 在 Android proot 环境实测：pnpm store 硬链接进 node_modules 的资产包
+    // 因此被整棵跳过，filesystem seed 只会收到 manifest，插件在缓存里是空壳。
+    // 用 stat 复核真实类型，避免依赖树被静默剪空。
+    const entryStats = await stat(fullPath);
+    signal?.throwIfAborted();
+    if (entryStats.isDirectory()) {
+      yield* walkFiles(
+        fullPath,
+        allowedTopLevelPaths,
+        depth + 1,
+        signal,
+        topLevelSegment ?? (depth === 0 ? entry.name : undefined),
+      );
       continue;
     }
-    if (entry.isFile()) yield fullPath;
+    if (entryStats.isFile()) yield fullPath;
   }
 }
 
@@ -202,11 +216,21 @@ function shouldSkipDirectory(
   name: string,
   depth: number,
   allowedTopLevelPaths: ReadonlySet<string>,
+  topLevelSegment?: string,
 ): boolean {
   if (name === ".turbo" || name === "coverage" || name === ".venv" || name === "__pycache__") {
     return true;
   }
-  return name === "node_modules" && !(depth === 0 && allowedTopLevelPaths.has(name));
+  if (name !== "node_modules") return false;
+  // 顶层 node_modules 只有在被显式允许时才拷（原行为）。
+  if (depth === 0) return !allowedTopLevelPaths.has(name);
+  // 嵌套的 node_modules 默认剪掉（源码树的依赖不该进缓存），**但**在
+  // `runtimeTopLevelPaths` 显式声明的资产树里必须保留：原生绑定（anydoc / onnxruntime-node /
+  // canvas）本身就是以 node_modules 包的形式分发的，剪掉它们等于交付一个"资产不完整"的插件
+  // ——2026-09-23 实测：file-tools 的 anydoc/canvas/onnxruntime 被整棵剪掉，工具在应用里直接报错，
+  // 而源码态跑得好好的（源码走 require，不经过 seed）。
+  if (topLevelSegment !== undefined && allowedTopLevelPaths.has(topLevelSegment)) return false;
+  return true;
 }
 
 function shouldIncludePluginFile(

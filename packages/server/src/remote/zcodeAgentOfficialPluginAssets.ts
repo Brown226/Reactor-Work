@@ -6,6 +6,16 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES = [
   "android-emulator-plugin",
   "browser-use-plugin",
   "zcode-cua-plugin",
+  // ── Reactor 自建插件（上游 v3.18.0 没有这些包）──────────────────────────
+  // 2026-11-12 上游同步事故：`2c0fc9dd` 把本文件整块重置成上游版本，这 4 个自建插件
+  // 随之从远端合同消失，症状是「本地有、远端没有」且不报错。判定标准是 3-way
+  // （上游没动、本地动了 = 真定制），不能按「上游有没有这个文件」判断。
+  // 审查技能随包内置：远端工作区跑审查同样需要这些技能。
+  "review-skills-plugin",
+  // 文件能力三件套：parse/docx、扫描件识字、DWG 图纸。
+  "file-tools-plugin",
+  "ocr-tools-plugin",
+  "dwg-tools-plugin",
   "documents-plugin",
   "pdf-plugin",
   "presentations-plugin",
@@ -27,6 +37,10 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS = [
   "README.md",
   // 开发态远程插件复制使用独立白名单，遗漏 agents 会只在远端丢失子代理。
   "agents",
+  // file-tools / dwg-tools 的引擎资产树（anydoc/canvas/dwg-sidecar）：远端没有
+  // resources/tools 独立分发，少了它 seed 会以「声明了 assets 却没有文件」整体拒绝
+  // 这两个插件，症状是文档解析/图纸解析在远端静默不可用。
+  "assets",
   "commands",
   "dist",
   "docs",
@@ -90,6 +104,20 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS = [
   "browser-use-plugin/scripts/browser-client.mjs",
   "browser-use-plugin/skills/control-browser/SKILL.md",
   "browser-use-plugin/skills/web-gui-tester/SKILL.md",
+  // ── Reactor 自建插件的必需资产（缺一项就拒绝复用半成品远端缓存）──────────────
+  // 审查技能同理：只校验 plugin.json 会放过「有壳没技能」的残缺目录，
+  // 而少一个 SKILL.md 在运行时表现为「这个审查类型答案很水」，不是报错。
+  "review-skills-plugin/skills/review-compare/SKILL.md",
+  "review-skills-plugin/skills/review-consistency/SKILL.md",
+  "review-skills-plugin/skills/review-contract/SKILL.md",
+  "review-skills-plugin/skills/review-proofread/SKILL.md",
+  "review-skills-plugin/skills/review-proofread/references/typo-dictionary.md",
+  "review-skills-plugin/skills/review-standard-check/SKILL.md",
+  // 运行时型：MCP server 必须先构建出 dist/mcp/server.js（pdf.worker.mjs 随 bundle 拷贝）。
+  "file-tools-plugin/dist/mcp/server.js",
+  "file-tools-plugin/dist/mcp/pdf.worker.mjs",
+  "ocr-tools-plugin/dist/mcp/server.js",
+  "dwg-tools-plugin/dist/mcp/server.js",
   // 修复原因：仅校验 manifest 无法发现文档插件缺少技能正文或视觉评审 Agent。
   // 文档插件 0.2.0 起带查看面板，远端还必须有 office-runtime 构建出的 server 与面板资源。
   "image-search-plugin/.mcp.json",
