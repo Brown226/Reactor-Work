@@ -1,0 +1,99 @@
+/**
+ * 知识库自带的设计 token。
+ *
+ * ## 为什么是「内联具体值」而不是引用
+ *
+ * `knowledge-owned.css`（121KB，从 EvoFlow 搬来）整套依赖一批设计 token：
+ * `--bg-primary`、`--text-primary`、`--border-primary`、`--accent` 等。
+ * 这些 token 原本定义在 EvoFlow 的 `evopanel/src/style/variables.css`，
+ * **本仓没有这套命名**（本仓用 `--color-*`）。
+ *
+ * 直接把这里的值写成具体颜色，而不是映射到本仓的 `--color-*`：
+ * 知识库是一个**自包含的模块**，颜色写死在这里意味着它不随上游参考项目变化、
+ * 也不依赖本仓主题 token 的改名。将来要换主题只改这一个文件。
+ *
+ * ## 深浅色
+ *
+ * 本仓的主题标记是 `html.dark`（见 `styles.css` 的 `.dark` 规则），
+ * 所以这里用 `.dark &` 切换，与 EvoFlow 的 `[data-theme="dark"]` 不同。
+ *
+ * ## 值是哪来的
+ *
+ * 选择器只挂 `.knowledge-owned-page` —— 这是 `knowledge-owned.jsx:2680` 的
+ * 页面根元素；`knowledge-owned-hub` / `-reader` / `-v4-preview` 都是**文件名**
+ * 不是 class 名（早期照文件名写选择器，一条都命中不了）。
+ *
+ * 逐项取自 EvoFlow `variables.css` 的 `:root` / `[data-theme="dark"]` 两个块
+ * （该文件 light 块 154 行、dark 块 139 行，此处只摘出 knowledge-owned.css
+ * 实际引用的 24 个，其余未用到的没有搬）。
+ */
+
+/* ── 浅色（默认）─────────────────────────────────────────────────────── */
+.knowledge-owned-page {
+  /* 背景层次 */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f4f6f8;
+  --bg-tertiary: #ebeef2;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f4f5f7;
+  --bg-elevated: #ffffff;
+
+  /* 边框 */
+  --border-primary: #e6e8ec;
+  --border-secondary: #ecedef;
+  --border-focus: rgba(99, 91, 255, 0.2);
+
+  /* 文本 */
+  --text-primary: #202124;
+  --text-secondary: #656b73;
+  --text-tertiary: #9297a0;
+  --text-inverse: #ffffff;
+
+  /* 强调色（品牌紫） */
+  --accent: #635bff;
+  --accent-muted: rgba(99, 91, 255, 0.08);
+  --accent-secondary: #635bff;
+
+  /* 语义状态色 */
+  --success: #26875a;
+  --warning: #b7791f;
+  --error: #c94a4a;
+  --info: #635bff;
+
+  /* 其他 */
+  --code-inline-bg: #f3f3f6;
+  --shadow-md: 0 4px 12px rgba(32, 33, 36, 0.06);
+}
+
+/* ── 深色 ────────────────────────────────────────────────────────────── */
+/* 本仓把主题类挂在 <html>（见 web/src/main.tsx 的 classList.toggle("dark")），
+   所以 `.dark .xxx` 与 `html.dark .xxx` 命中同一批元素。只保留前者。 */
+.dark .knowledge-owned-page {
+  --bg-primary: #1c1c1c;
+  --bg-secondary: #242424;
+  --bg-tertiary: #2c2c2c;
+  --bg-card: #2a2a2a;
+  --bg-card-hover: #333333;
+  --bg-elevated: #303030;
+
+  --border-primary: rgba(255, 255, 255, 0.11);
+  --border-secondary: rgba(255, 255, 255, 0.07);
+  --border-focus: rgba(123, 116, 255, 0.35);
+
+  --text-primary: #ececec;
+  --text-secondary: #b0b0b0;
+  --text-tertiary: #8a8a8a;
+  --text-inverse: #1c1c1c;
+
+  --accent: #7b74ff;
+  --accent-muted: rgba(123, 116, 255, 0.16);
+  --accent-secondary: #7b74ff;
+
+  --success: #3d9b6c;
+  --warning: #d4a017;
+  --error: #d46464;
+  --info: #7b74ff;
+
+  --code-inline-bg: rgba(255, 255, 255, 0.09);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+}

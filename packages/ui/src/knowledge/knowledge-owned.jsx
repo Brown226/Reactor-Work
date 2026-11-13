@@ -24,6 +24,13 @@ import {
   KnowledgeV4Markdown,
 } from "./knowledge-v4-preview.jsx";
 import { syncKnowledgeAsideForDetail } from "./knowledge-owned-aside.js";
+// [本地定制] 知识库主样式表。EvoFlow 原工程靠全局 CSS 入口聚合，
+// 本仓按模块 import —— 早期只搬了 knowledge-source-tabs.css，
+// 这份 121KB 的 knowledge-owned.css 漏掉后，整个知识库页面**没有任何样式**，
+// 界面上是一堆无排版纯文本。
+// 主题桥接必须在主样式之前：它定义 knowledge-owned.css 依赖的 --bg-* / --text-* token。
+import "./knowledge-theme-bridge.css";
+import "./knowledge-owned.css";
 import "./knowledge-source-tabs.css";
 
 /**
