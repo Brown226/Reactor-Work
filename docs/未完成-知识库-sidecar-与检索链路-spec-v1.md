@@ -921,3 +921,89 @@ Wiki   建页 / 列表 / 图 可用
 - **前端 23 个桩方法**改为调用新 RPC（后端已有能力，前端还没接）
 - **多平台打包**（仅 linux-arm64）
 - **浏览器实点验证**（手机 proot 无 chromium）
+
+## 19. 补齐前端 / 路由 / Agent 工具（2026-11-13 第三轮）
+
+上一轮把 sidecar 补到 47 个方法，但前端仍有 23 个桩、Agent 还不会调用。
+这一轮把三处断点全部接上。
+
+### ① server 路由补齐
+
+新增 `packages/server/src/knowledge/routesExtra.ts`（290 行）：
+文件夹 / Wiki / 图谱 / 同步导入 / 活动 / 标签 / 摘要 / 分块 —— 共 **26 条 REST 路由**。
+
+拆文件的原因：`routes.ts` 已 356 行，合并会超 800 行上限；且两块生命周期不同
+（主链在 P0 稳定，这部分是整包移植后才有的）。
+
+顺带修了两个网关 bug：
+
+| bug | 表现 | 原因 |
+| --- | --- | --- |
+| 库详情全空 | 界面「库名空白、模型未配置」 | `GET /bases/:id` 只调 `kb.stats` 并把 `base` 写成 `{id}`，没取 `kb.name` |
+| 全库检索 404 | 「全部知识库」视图搜不出东西 | 缺 `POST /api/knowledge/owned/search`（前端 kbId 省略时走这条） |
+
+### ② 前端 23 个桩 → 真实调用
+
+`packages/ui/src/knowledge/kb-api.ts` 的 `notImplemented()` 已全部消除。
+
+几个需要说明的适配：
+
+- **`listOwnedWikiPages`**：前端读 `res.items`，sidecar 返回 `{pages}` —— 在适配层
+  统一成 `items`，UI 一行不改。
+- **`listOwnedKnowledgeTags`**：同理 `{tags}` → `{items}`。
+- **`rebuildOwnedWiki` / `rebuildOwnedKg`**：sidecar 没有「只重建 wiki」的独立入口
+  （wiki 生成是 pipeline 的一部分），改为走整库 reindex，语义等价。
+- **`purgeOrphanOwnedJobs`**：如实返回 0 —— worker 每轮会自动 reconcile，
+  没有独立入口，不伪造「清理了 N 条」。
+- **`getOwnedKnowledgeSettings`**：返回空对象让 UI 走默认值，比抛错合适
+  （设置由库级字段承载，没有独立 KV 接口）。
+
+### ③ Agent `Knowledge` 工具
+
+新增两处：
+
+| 文件 | 内容 |
+| --- | --- |
+| `contracts/src/tools/knowledge.ts` | 输入/输出 schema（zod），4 个 action |
+| `core/src/tool/handlers/knowledge.ts` | 执行器，走 HTTP 网关 |
+
+四个 action：`search`（混合检索）/ `read`（读正文）/ `docs`（列文档）/ `list`（列库）。
+
+**与 `KnowledgeCheck` 的分工**（容易混淆，spec 里写清楚）：
+
+| | KnowledgeCheck | Knowledge |
+| --- | --- | --- |
+| 数据 | 端侧审查规则库缓存 | 用户上传的文档 |
+| 用途 | 以库审文（标准比对/术语过滤） | 从资料里找答案 |
+| 检索 | 确定性比对，零 LLM | 混合检索 + 重排 |
+
+**失败语义**：网关不可达时返回 `notice` 而不是抛异常 —— agent 应该能退回用
+grep / read，而不是整个任务中断。`degraded` 如实回传，不谎报召回完整。
+
+### 路径遍历防护
+
+`delete_folder` 等操作原本只做路径标准化（`_norm_folder_path`），不校验 `..`。
+虽然文件夹是逻辑路径（存 `folder_path` 列，不碰真实文件系统），但它会被拼进
+`<kb>/blobs/<doc>/...` 且当前端地址用。新增 `_safe_path()` 在入口拒绝
+`..` / `.` / 空段，实测 `path=../../etc` 返回 400 INVALID_PATH。
+
+### 实测（真实 HTTP 网关 + sidecar + SiliconFlow）
+
+```
+1)  列库 ✅       2)  建库 ✅       3)  库详情（含 name/model）✅
+4)  文档列表 ✅   5)  文件夹列表 ✅  6)  建文件夹 ✅
+7)  统计 ✅       8)  标签 ✅       9)  活动流 ✅
+10) Wiki ✅      11) 图谱 ✅        12) 文档图 ✅
+13) 空库检索 ✅   14) 全库检索 ✅   15) 路径穿越拦截 400 ✅
+16) 上传 ✅      17) 索引 1文档/1块/1向量 dim=1024 ✅
+18) 检索 1 条 degraded=false ✅
+19) 全库检索 1 条 ✅
+20) 分块 1 块 ✅
+```
+
+### 遗留
+
+- 多平台打包（仅 linux-arm64）
+- 浏览器实点验证（手机 proot 无 chromium，验证到 HTTP 层）
+- `listOwnedKnowledgeActivities` 需要 kbId：前端 hub 页不传库，会退化为空列表
+  （不伪造数据，符合文件头「纪律」）

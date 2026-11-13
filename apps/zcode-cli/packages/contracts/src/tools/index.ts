@@ -60,6 +60,7 @@ export * from "./tool-result-metadata.js";
 
 // [本地定制] 审查板块 / 知识检查 / GenUI 树 / 会话上下文工具契约
 export * from "./knowledge-check.js";
+export * from "./knowledge.js";
 export * from "./report-review-issues.js";
 export * from "./export-review-report.js";
 export * from "./read-session-context.js";

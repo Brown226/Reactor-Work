@@ -26,6 +26,7 @@ import {
 import type { ToolEntry } from "../types.js";
 import { deferredToolCallEntry } from "./deferred-tool-call.js";
 import { toolSearchToolEntry } from "./tool-search.js";
+import { knowledgeToolEntry } from "./knowledge.js";
 import { readToolEntry } from "./read.js";
 import { writeToolEntry } from "./write.js";
 import { editToolEntry } from "./edit.js";
@@ -97,6 +98,8 @@ export const builtInTools: ToolEntry[] = [
   bashToolEntry,
   globToolEntry,
   grepToolEntry,
+  // 文档知识库检索：与 grep 互补 —— grep 查代码，Knowledge 查上传的资料。
+  knowledgeToolEntry,
   webFetchToolEntry,
   webSearchToolEntry,
   todoReadToolEntry,
