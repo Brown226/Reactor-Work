@@ -151,7 +151,8 @@ export function BotClusterView({
             workspacePath,
             ...(workspaceIdentity ? { workspaceIdentity } : {}),
             sessionId: taskId,
-            modelSelection: modelSelection as never,
+            // ZCodeSessionSetModelParams 的字段名是 model（ModelSelection）。
+            model: modelSelection as never,
           });
         },
         setThoughtLevel: async ({ taskId, level }) => {

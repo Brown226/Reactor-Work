@@ -719,6 +719,75 @@ export function createBotStore(deps: BotStoreDeps) {
       return { team: payload?.path ?? deps.workspacePath };
     },
 
+    /**
+     * 记忆面板。Reactor 的记忆归 Harness 的 mnemon 体系，没有「按 Bot 增删改条目」
+     * 的宿主 API。这里给可用的只读视图（空列表），写操作明确拒绝——
+     * 面板能打开、能看空态，不会因为 undefined 崩掉。
+     */
+    async memoryView() {
+      return { entries: [] };
+    },
+    async memoryAsk() {
+      return { reply: "", changes: [] };
+    },
+    async memoryHistory() {
+      return { entries: [] };
+    },
+    async memoryLayer() {
+      return { ok: false, reply: "Reactor 的记忆由 harness 统一管理，Bot 视图不提供分层写入。" };
+    },
+    async memoryMove() {
+      return { ok: false };
+    },
+    async memoryPin() {
+      return { ok: false };
+    },
+    async memoryForget() {
+      return { ok: false };
+    },
+    async memoryRestore() {
+      return { ok: false };
+    },
+    async memoryTidyUndo() {
+      return { ok: false };
+    },
+
+    /** 消息文本分页（DS-Bot 的 file-text，用于附件预览）。 */
+    async fileText(payload: { sessionId?: string; path?: string } | null) {
+      const path = payload?.path;
+      if (!path) return { text: "" };
+      // 附件正文由 Reactor 的预览组件渲染，Bot 视图这里只回空文本，
+      // 不越过权限边界去读宿主文件。
+      return { text: "" };
+    },
+
+    /** 对话交换（两个 Bot 互相看对方的对话）。Reactor 无此运行时。 */
+    async exchange() {
+      return { ok: false, reason: "web" };
+    },
+    async exchangeText() {
+      return { text: "" };
+    },
+
+    /** 视图卡片应答（widget）。Reactor 的 gen-ui 由主会话承载，Bot 视图无通道。 */
+    async viewReply() {
+      return { ok: false, reason: "web" };
+    },
+
+    /** 学习卡片应答。 */
+    async learningAnswer() {
+      return { ok: false, reason: "web" };
+    },
+
+    /** 放弃某个等待中的交接。 */
+    async abandonWork() {
+      return { ok: true };
+    },
+
+    async btwDelete() {
+      return { ok: true };
+    },
+
     async runStats() {
       // 首版不聚合用量维度：Reactor 的用量统计在设置页，不按 Bot 拆分。
       return { sessionStats: {}, tokenUsage: {}, contextPressure: {} };
@@ -833,6 +902,23 @@ export const botStore = {
   schedules: () => requireStore().schedules(),
   scheduleCreate: () => requireStore().scheduleCreate(),
   scheduleDelete: () => requireStore().scheduleDelete(),
+  memoryView: (_payload?: unknown) => requireStore().memoryView(),
+  memoryAsk: (_payload?: unknown) => requireStore().memoryAsk(),
+  memoryHistory: (_payload?: unknown) => requireStore().memoryHistory(),
+  memoryLayer: (_payload?: unknown) => requireStore().memoryLayer(),
+  memoryMove: (_payload?: unknown) => requireStore().memoryMove(),
+  memoryPin: (_payload?: unknown) => requireStore().memoryPin(),
+  memoryForget: (_payload?: unknown) => requireStore().memoryForget(),
+  memoryRestore: (_payload?: unknown) => requireStore().memoryRestore(),
+  memoryTidyUndo: (_payload?: unknown) => requireStore().memoryTidyUndo(),
+  fileText: (payload?: { sessionId?: string; path?: string } | null) =>
+    requireStore().fileText(payload ?? null),
+  exchange: () => requireStore().exchange(),
+  exchangeText: () => requireStore().exchangeText(),
+  viewReply: () => requireStore().viewReply(),
+  learningAnswer: () => requireStore().learningAnswer(),
+  abandonWork: () => requireStore().abandonWork(),
+  btwDelete: () => requireStore().btwDelete(),
   stopWork: (payload?: { sessionId?: string } | null) => requireStore().stopWork(payload ?? null),
   thinking: (payload?: { sessionId?: string; level?: string } | null) =>
     requireStore().thinking(payload ?? null),
@@ -857,7 +943,7 @@ export const botStore = {
     requireStore().answerQuestion(payload),
   dismissQuestion: (payload?: { sessionId?: string } | null) =>
     requireStore().dismissQuestion(payload ?? null),
-  dismissView: (payload?: unknown) => requireStore().dismissView(payload ?? null),
+  dismissView: () => requireStore().dismissView(),
   botNewPart: (payload?: { botId?: string } | null) => requireStore().botNewPart(payload ?? null),
   earlier: (payload: Parameters<BotStore["earlier"]>[0]) => requireStore().earlier(payload),
   avatarLibrary: () => requireStore().avatarLibrary(),

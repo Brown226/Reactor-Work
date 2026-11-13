@@ -65,6 +65,62 @@ const ENDPOINTS = {
   "diagnostics-log": () => botStore.diagnosticsLog(),
   "diagnostics-clear": () => botStore.diagnosticsClear(),
   "repo-stars": () => botStore.repoStars(),
+  // 模型供应商：读走 botStore.providers（真实视图），写指向侧栏的模型设置。
+  "provider-key": () => {
+    throw new BotCallError("请在侧栏「设置 → 模型」里管理 API Key。", "bot/refused");
+  },
+  "provider-add": () => {
+    throw new BotCallError("请在侧栏「设置 → 模型」里添加供应商。", "bot/refused");
+  },
+  "provider-models": () => botStore.providers(),
+  "provider-remove": () => {
+    throw new BotCallError("请在侧栏「设置 → 模型」里删除供应商。", "bot/refused");
+  },
+  // Agent（DSH Agent）相关：Reactor 没有 DSH Agent 概念，只有 Bot。
+  "add-agent": () => {
+    throw new BotCallError("Reactor 没有 DSH Agent，请用「新建 Agent」。", "bot/refused");
+  },
+  "remove-agent": () => {
+    throw new BotCallError("Reactor 没有 DSH Agent。", "bot/refused");
+  },
+  "agent-adopt": () => {
+    throw new BotCallError("Reactor 没有 DSH Agent。", "bot/refused");
+  },
+  "agent-archive": () => {
+    throw new BotCallError("Reactor 没有 DSH Agent。", "bot/refused");
+  },
+  "agent-rename": () => {
+    throw new BotCallError("Reactor 没有 DSH Agent。", "bot/refused");
+  },
+  "agent-session": () => {
+    throw new BotCallError("Reactor 没有 DSH Agent。", "bot/refused");
+  },
+  // 浏览器控制台（Bot 内嵌浏览器）：Reactor 的浏览器能力在主视图 side pane。
+  "browser-give-back": () => ({ ok: true }),
+  "browser-stop": () => ({ ok: true }),
+  "browser-takeover": () => {
+    throw new BotCallError("Bot 内嵌浏览器在 Web 版不可用。", "bot/refused");
+  },
+  // 群 Goal 与合并对话：需要 Agent 间调度运行时。
+  "goal-draft": () => ({ ok: false, reason: "web" }),
+  "goal-control": () => ({ ok: false, reason: "web" }),
+  "bot-capability": () => ({ ok: true }),
+  "memory-view": () => botStore.memoryView(),
+  "memory-ask": () => botStore.memoryAsk(),
+  "memory-history": () => botStore.memoryHistory(),
+  "memory-layer": () => botStore.memoryLayer(),
+  "memory-move": () => botStore.memoryMove(),
+  "memory-pin": () => botStore.memoryPin(),
+  "memory-forget": () => botStore.memoryForget(),
+  "memory-restore": () => botStore.memoryRestore(),
+  "memory-tidy-undo": () => botStore.memoryTidyUndo(),
+  "file-text": (payload) => botStore.fileText(payload),
+  exchange: () => botStore.exchange(),
+  "exchange-text": () => botStore.exchangeText(),
+  "view-reply": () => botStore.viewReply(),
+  "learning-answer": () => botStore.learningAnswer(),
+  "abandon-work": () => botStore.abandonWork(),
+  "btw-delete": () => botStore.btwDelete(),
   "stop-member-work": (payload) => botStore.stopWork(payload),
   "stop-room-work": (payload) => botStore.stopWork(payload),
   thinking: (payload) => botStore.thinking(payload),
