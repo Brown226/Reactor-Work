@@ -51,7 +51,10 @@ export function getDataBaseDir(): string {
 
 /** {dataBaseDir}/.zcode */
 export function getZCodeDataRootDir(): string {
-  return join(getDataBaseDir(), ".zcode");
+  // [红线] 用户数据根目录名必须走 USER_DATA_DIR_NAME（= ".reactor"），
+  // 整包吸收上游时这里曾被改回硬编码 ".zcode"，等于把用户数据落到别的目录。
+  // 见 packages/shared/src/user-data-dir.ts 与 docs/上游同步-防复发流程.md。
+  return join(getDataBaseDir(), USER_DATA_DIR_NAME);
 }
 
 /** 非项目对话共享的真实工作目录；默认 ~/.zcode/workspace/default。 */

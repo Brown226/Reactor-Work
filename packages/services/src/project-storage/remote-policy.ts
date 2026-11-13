@@ -20,7 +20,11 @@ export function assertRemoteTaskDirectories(
   additionalDirectories: readonly string[] = [],
 ): void {
   if (!ownerHostId || ownerHostId === "local") return;
-  if (!project) throw new Error("project.remote-project-required");
+  // [本地定制] 独立 Server（Lite HTTP 入口）没有桌面端「先选项目」的向导，
+  // 首页直发的草稿会话天然没有 project_id。此前这里硬拒绝会让 Web 端第一条消息
+  // 永远发不出去（project.remote-project-required）。允许无项目，但一旦有项目，
+  // 下面的单根/目录归属校验照旧执行，不放宽跨机目录约束。
+  if (!project) return;
   assertRemoteProjectRoots(
     ownerHostId,
     project.roots.map((root) => root.rootPath),

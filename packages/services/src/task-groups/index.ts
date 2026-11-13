@@ -23,11 +23,18 @@ const taskSchema = z
     taskId: z.string().min(1),
   })
   .strict()
-  .refine(
-    (task) =>
-      (remoteHostIdFromWorkspaceIdentity(task.workspaceIdentity ?? "") ?? "local") === task.hostId,
-    "task-group.host-identity-mismatch",
-  );
+  .refine((task) => {
+    // hostId 与 workspaceIdentity 必须同源推导。带 identity 时按 identity 校验；
+    // 不带 identity 说明任务是本机 workspace，此时 hostId 必须是 "local"。
+    //
+    // [本地定制] 独立 Server（Lite HTTP 入口）上，前端会把 hostId 记成
+    // "remote:server:<id>"（数据目录隔离键），但 workspace 就在服务端本进程内，
+    // 没有远端 identity 可推导。此前这里直接判不一致，导致每次首发消息都报
+    // 「分组操作失败」——会话能建、消息能发，唯独任务入组失败。
+    // 归一规则：identity 缺失时，把本机 server 形态的 hostId 视同 local。
+    if (!task.workspaceIdentity) return task.hostId === "local" || task.hostId.startsWith("remote:server:");
+    return remoteHostIdFromWorkspaceIdentity(task.workspaceIdentity) === task.hostId;
+  }, "task-group.host-identity-mismatch");
 const nodeSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("group"), groupId: z.string().min(1) }).strict(),
   z.object({ type: z.literal("task"), task: taskSchema }).strict(),

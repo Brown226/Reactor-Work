@@ -282,7 +282,11 @@ export function createProjectService(options: {
       const id = params?.projectId;
       const remoteOwner = Boolean(options.ownerHostId && options.ownerHostId !== "local");
       // 旧入口可绕过项目直接在远端 mkdir；必须在目录或会话副作用之前拒绝。
-      if (remoteOwner && !id) throw new Error("project.remote-project-required");
+      // [本地定制] 独立 Server（Lite HTTP 入口）没有桌面端那层「先选项目」的向导，
+      // 用户在首页直接发消息时必须能落到一个草稿目录，否则 Web 端永远发不出第一条消息
+      // （报 project.remote-project-required）。这里不复用远端 mkdir 语义：
+      // 仍走下面的 workspaceDirectory/draft-* 分支，只放开 ownerHostId 的限制。
+      // 真正的跨机目录约束由 assertRemoteTaskDirectories 在任务落库时把关，不会被绕过。
       if (id && creationFlights.has(id)) return creationFlights.get(id)!;
       const flight = (async (): Promise<ProjectDirectories> => {
         if (!id) {
@@ -293,8 +297,16 @@ export function createProjectService(options: {
             draftId ? `draft-${draftId}` : `${Date.now()}-${randomUUID()}`,
           );
           // 已交付的目录若被移走，只报告缺失；不能用 mkdir 静默重建空目录。
+          // [本地定制] 但草稿目录从未创建过（客户端持久化了 draftId、目录却被清理，
+          // 例如换了数据目录或清理过 .reactor）时，stat 会把原始 ENOENT 抛到界面上：
+          //   ENOENT: no such file or directory, stat '/root/.reactor/workspace/draft-<id>'
+          // 草稿目录是纯缓存（内容都在客户端草稿里），不存在就直接建出来，不阻断首发消息。
           if (params?.reuseDraft) {
-            if (!(await stat(path)).isDirectory()) throw new Error("project.directory-required");
+            const exists = await stat(path).then(
+              (info) => info.isDirectory(),
+              () => false,
+            );
+            if (!exists) await mkdir(path, { recursive: true });
           } else await mkdir(path, { recursive: true });
           return { workspacePath: path, additionalDirectories: [], projectId: null };
         }

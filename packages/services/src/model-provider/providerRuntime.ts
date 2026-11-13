@@ -182,8 +182,12 @@ function createSettingsMutationTarget(
       ),
     refresh: (reason) => registryService.refresh(reason),
     refreshSources: async (reason) => {
+      // 为什么不再 force：force 会绕过缓存直接下载上游 Built-in 配置，实测每次 19 秒
+      // （provider-settings.refresh / client-scenes.list 都卡在这一步），而新建对话必须等它，
+      // 表现就是「发送后按钮一直转圈」。内置配置本身有缓存与版本校验，非 force 的刷新
+      // 命中缓存即可返回；真正需要强制更新的场景（用户在设置里手动点刷新）走单独入口。
       const [builtinResult, accountResult] = await Promise.allSettled([
-        configRuntime.refreshZCodeBuiltin({ force: true }),
+        configRuntime.refreshZCodeBuiltin(),
         accountSource.refresh?.(reason) ?? Promise.resolve(),
       ]);
       // 远端更新失败不代表本地配置不可用；此前统一抛错会让套餐切换回滚，

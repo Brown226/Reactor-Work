@@ -42,7 +42,7 @@ export type {
 } from "#src/app-control/contract.js";
 export { createRemoteProjectService } from "#src/remote-projects/index.js";
 import { getZCodeDataRootDir as projectDataRoot } from "#src/paths.js";
-import { getDataBaseDir } from "#src/paths.js";
+import { getDataBaseDir, getTasksIndexDatabasePath } from "#src/paths.js";
 import { createGitWorktreeRepo } from "#src/git/managed-worktree/index.js";
 import { createGitCommandProvider } from "#src/git/providers/gitCommandProvider.js";
 import { HOST_WORKTREE_COMMAND } from "#src/zcode-agent/zcodeAgent.js";
@@ -1531,6 +1531,25 @@ export function createLocalServices(options: {
   // onboarding 资格与任务列表共用同一份全局 tasks-index；repo 懒加载数据库，提前构造不会
   // 增加启动 I/O，后续 session syncer 也继续复用这一实例。
   const taskIndexRepo = new TaskIndexRepo(undefined, options?.projectStorageHostId);
+  // [本地定制] 启动即触发 tasks-index 建库 + 迁移。
+  // 为什么必须显式做：repo 是懒加载，只有第一次被调用才 initialize；而
+  // tasks-index.sqlite 里没有任何表时（首装 / 旧的空壳文件），所有依赖它的
+  // 调用（任务列表、任务分组、onboarding 判定）都会先撞上空库：
+  // meta_json 解析全部失败、task-groups.admit 拿不到任务事实。
+  // createLocalServices 是同步装配，这里只发起不等待（ensureReady 本身幂等，
+  // 后续调用会复用同一个 initializePromise），失败仅告警不阻断启动。
+  createServiceLogger("task-index-repo").info(undefined, "[诊断] 触发 tasks-index 建库", {
+    path: getTasksIndexDatabasePath(),
+  });
+  void taskIndexRepo.ensureReady().then(
+    () => createServiceLogger("task-index-repo").info(undefined, "[诊断] tasks-index 建库完成"),
+  ).catch((error: unknown) => {
+    createServiceLogger("task-index-repo").warn(
+      undefined,
+      "tasks-index 初始化失败，任务列表与分组可能不可用:",
+      error instanceof Error ? error.message : String(error),
+    );
+  });
   // onboarding 完成记录：userId 由登录态补全（apikey/未登录为 null），见 docs/onboarding-record-spec.md。
   const onboardingEvidenceLogger = createServiceLogger("onboardingRecordService");
   const onboardingRecordService = createOnboardingRecordService({
@@ -2458,12 +2477,18 @@ export function createLocalServices(options: {
     database: () => taskIndexRepo.getOrganizationDatabase(),
     afterChange: publishProjectChange,
   });
+  // 为什么用 "local" 而不是 projectStorageHostId：前者是"项目归属的 Host 视角"，
+  // 后者是"本机数据目录隔离键"。独立 Server 的 workspace 在它自己进程里就是本机，
+  // 前端拿到的 workspaceIdentity 也是从 projectStorageHostId 派生；若这里再传
+  // projectStorageHostId，会形成"自己是自己的远端"——任务组 admission 报
+  // task-group.host-identity-mismatch、项目路由报 project.host-offline。
+  // 数据隔离由 projectStorageHostId 在存储层保证，与项目归属视角无关。
   const projectService = createProjectService({
     directories: {
       home: async () => (await systemService.info()).homedir,
       read: (params) => fileService.readdir(params),
     },
-    ownerHostId: options?.projectStorageHostId,
+    ownerHostId: "local",
     resolveHost: options?.resolveProjectHostService,
     repository: () => taskIndexRepo.getProjectRepository(),
     workspaceDirectory: join(projectDataRoot(), "workspace"),
@@ -2490,7 +2515,17 @@ export function createLocalServices(options: {
     database: () => taskIndexRepo.getOrganizationDatabase(),
     resolveTasks: async (refs) => {
       // 只读所属 Host 的权威目录；项目路由不会为分组建立连接或启动 Agent。
-      const hostIds = [...new Set(refs.map((task) => task.hostId))];
+      //
+      // 归一：projectService 在该 Host 上的 ownerHostId 是 "local"（见 createProjectService
+      // 处的注释），因此指向本机 server 的 "remote:server:*" 形态 hostId 不能直接
+      // 交给 readTree——那会被当成真实的远端设备去 resolveHost，报 project.host-offline。
+      const normalizeHostId = (hostId: string) =>
+        !options?.projectStorageHostId ||
+        options.projectStorageHostId === "local" ||
+        hostId === options.projectStorageHostId
+          ? "local"
+          : hostId;
+      const hostIds = [...new Set(refs.map((task) => normalizeHostId(task.hostId)))];
       const results = await Promise.all(
         hostIds.map(async (hostId) => {
           const tree = await projectService.readTree({ hostId, includeDeletedTasks: true });
@@ -2501,12 +2536,17 @@ export function createLocalServices(options: {
             ].map((task) => [groupTaskKey(task), task]),
           );
           return refs
-            .filter((ref) => ref.hostId === hostId)
+            .filter((ref) => normalizeHostId(ref.hostId) === hostId)
             .flatMap((ref) => {
               const fact = facts.get(groupTaskKey(ref));
-              return fact && fact.hostId === ref.hostId && fact.workspacePath === ref.workspacePath
-                ? [{ ...fact, ...ref }]
-                : [];
+              if (!fact || fact.workspacePath !== ref.workspacePath) return [];
+              // 归一后再比对：facts 来自本机 projectService（hostId 都是 "local"），
+              // ref 来自前端（可能是 "remote:server:<id>" 隔离键）。直接比原值会永远不等，
+              // 导致 admit 报 task-group.created-task-unavailable，界面显示「分组操作失败」。
+              if (normalizeHostId(fact.hostId) !== normalizeHostId(ref.hostId)) return [];
+              // 输出 fact 时把 hostId 统一成归一值，保证下游（makeGroupTaskKey /
+              // placement 比对）看到的是同一套身份。
+              return [{ ...fact, ...ref, hostId: normalizeHostId(ref.hostId) }];
             });
         }),
       );
@@ -2514,9 +2554,13 @@ export function createLocalServices(options: {
     },
     afterChange: () => broadcastService.send({ channel: "state:task-groups", payload: {} }),
   });
+  // hostId 必须与 workspaceIdentity 同口径：两者本该一并描述"任务属于哪个 Host 的哪个目录"。
+  // 独立 Server 上 projectStorageHostId 是数据隔离键（remote:server:...），而 workspace 就在
+  // 本进程内，所以这里统一用 "local" + undefined；否则任务的 hostId 与 identity 互相矛盾，
+  // 任务组 admission 直接判 host-identity-mismatch。
   const prepareProjectExecution = async (projectId: string) => ({
     ...(await projectService.prepareSession({ projectId })),
-    hostId: options?.projectStorageHostId ?? "local",
+    hostId: "local",
     workspaceIdentity: undefined,
   });
   let appControlService: AppControlService | undefined;

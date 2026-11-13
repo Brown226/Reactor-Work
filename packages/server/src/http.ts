@@ -1,6 +1,8 @@
 /* eslint-disable max-lines -- HTTP、WebSocket 与静态资源路由集中注册，保持同一鉴权顺序。 */
 import { randomUUID } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
+import { brotliCompress, gzip, constants as zlibConstants } from "node:zlib";
+import { promisify } from "node:util";
 import { hostname } from "node:os";
 import { resolveServerOsUser } from "@zcode/shared/node";
 import * as nodePath from "node:path";
@@ -454,18 +456,63 @@ export function createHttpServer(
 
   if (options.staticRoot?.trim()) {
     const staticRoot = options.staticRoot.trim();
+    // 为什么必须压缩：Web 首屏主包是 ~7.4MB 未压缩 JS，手机端光传输 + 解析就要几十秒，
+    // 表现就是「一直转圈」。文本类资源按 Accept-Encoding 走 br/gzip，实测主包降到 ~1.9MB。
+    // index.html 不压缩（体积极小且必须每请求新鲜）；已压缩格式（png/woff2 等）跳过。
+    const COMPRESSIBLE = new Set([".js", ".mjs", ".css", ".json", ".map", ".svg", ".txt", ".md"]);
+    const compressCache = new Map<string, { br?: Buffer; gzip?: Buffer }>();
+    const gzipAsync = promisify(gzip);
+    const brotliAsync = promisify(brotliCompress);
     app.get("*", async (c) => {
       const pathname = new URL(c.req.url).pathname;
       const filePath = await resolveStaticFile(staticRoot, pathname, options.spaFallback ?? true);
       if (!filePath) {
         return c.notFound();
       }
-      return c.body(await readFile(filePath), 200, {
+      const body = await readFile(filePath);
+      const ext = extname(filePath).toLowerCase();
+      const headers: Record<string, string> = {
         "Cache-Control": filePath.endsWith("index.html")
           ? "no-cache"
           : "public, max-age=31536000, immutable",
         "Content-Type": staticContentType(filePath),
-      });
+      };
+
+      if (COMPRESSIBLE.has(ext) && body.byteLength > 1024) {
+        const accept = c.req.header("accept-encoding") ?? "";
+        const cacheKey = filePath;
+        const useBr = accept.includes("br");
+        const useGzip = !useBr && accept.includes("gzip");
+        if (useBr || useGzip) {
+          let entry = compressCache.get(cacheKey);
+          if (!entry) {
+            entry = {};
+            compressCache.set(cacheKey, entry);
+            if (compressCache.size > 512) {
+              // 产物很多（数千 chunk），只缓存最近访问的，避免常驻内存过大。
+              const oldest = compressCache.keys().next().value;
+              if (oldest !== undefined) compressCache.delete(oldest);
+            }
+          }
+          let payload = useBr ? entry.br : entry.gzip;
+          if (!payload) {
+            payload = useBr
+              ? await brotliAsync(body, {
+                  params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 5 },
+                })
+              : await gzipAsync(body, { level: 6 });
+            if (useBr) entry.br = payload;
+            else entry.gzip = payload;
+          }
+          return c.body(new Uint8Array(payload), 200, {
+            ...headers,
+            "Content-Encoding": useBr ? "br" : "gzip",
+            Vary: "Accept-Encoding",
+          });
+        }
+      }
+
+      return c.body(new Uint8Array(body), 200, headers);
     });
   }
 
