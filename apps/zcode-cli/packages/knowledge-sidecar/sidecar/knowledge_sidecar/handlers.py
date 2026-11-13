@@ -345,12 +345,98 @@ class KnowledgeHandlers:
             rows = conn.execute("SELECT id FROM kb_bases").fetchall()
         return [{"id": row["id"]} for row in rows]
 
-    # ── P0-b 之后实现 ───────────────────────────────────────────────────
+    # ── 文档正文与分块 ───────────────────────────────────────────────────
+    async def read_doc(self, params: dict[str, Any]) -> dict[str, Any]:
+        """读文档的已解析正文 + 分块列表。
+
+        正文由分块拼回（保留 `\\n\\n` 分隔）：这样不必单独存一份全文，
+        且读到的就是检索命中的同一份内容 —— 不会出现「预览和检索结果不一致」。
+        """
+        kb_id = self._require_kb_id(params)
+        self._base_by_id(kb_id)
+        doc_ref = str(params.get("docId") or "").strip()
+        if not doc_ref:
+            raise StorageError("MISSING_DOC_ID", "docId 不能为空")
+        max_chars = int(params.get("maxChars") or 200_000)
+
+        with self._store.kb_conn(kb_id) as conn:
+            doc = conn.execute(
+                "SELECT * FROM kb_documents WHERE id=? OR doc_id=?", (doc_ref, doc_ref)
+            ).fetchone()
+            if doc is None:
+                raise StorageError("DOC_NOT_FOUND", f"文档不存在：{doc_ref}")
+            chunks = conn.execute(
+                "SELECT * FROM kb_chunks WHERE doc_id=? AND enabled=1 ORDER BY ordinal",
+                (doc["id"],),
+            ).fetchall()
+
+        content = "\n\n".join(row["content"] for row in chunks)
+        truncated = len(content) > max_chars
+        if truncated:
+            content = content[:max_chars]
+        return {
+            "doc": {
+                "id": doc["id"],
+                "docId": doc["doc_id"],
+                "title": doc["title"],
+                "fileName": doc["file_name"],
+                "relPath": doc["rel_path"],
+                "byteSize": doc["byte_size"],
+                "parseStatus": doc["parse_status"],
+                "parseError": doc["parse_error"],
+                "summaryText": doc["summary_text"],
+                "updatedAt": doc["updated_at"],
+            },
+            "content": content,
+            "truncated": truncated,
+            "chunks": [
+                {
+                    "id": row["id"],
+                    "ordinal": row["ordinal"],
+                    "content": row["content"],
+                    "headingPath": row["heading_path"],
+                    "contextHeader": row["context_header"],
+                    "chunkKind": row["chunk_kind"],
+                    "tokenEstimate": row["token_estimate"],
+                }
+                for row in chunks
+            ],
+        }
+
+    async def retry_doc(self, params: dict[str, Any]) -> dict[str, Any]:
+        """重试失败的文档：重置状态并重新排 parse 作业。"""
+        kb_id = self._require_kb_id(params)
+        self._base_by_id(kb_id)
+        doc_ref = str(params.get("docId") or "").strip()
+        if not doc_ref:
+            raise StorageError("MISSING_DOC_ID", "docId 不能为空")
+
+        with self._store.kb_conn(kb_id) as conn:
+            doc = conn.execute(
+                "SELECT id FROM kb_documents WHERE id=? OR doc_id=?", (doc_ref, doc_ref)
+            ).fetchone()
+            if doc is None:
+                raise StorageError("DOC_NOT_FOUND", f"文档不存在：{doc_ref}")
+            now = _now()
+            conn.execute(
+                "UPDATE kb_documents SET parse_status='pending', parse_error=NULL, updated_at=? "
+                "WHERE id=?",
+                (now, doc["id"]),
+            )
+            # 清掉该文档的旧 parse 作业，避免重复排队
+            conn.execute(
+                "DELETE FROM kb_jobs WHERE doc_id=? AND kind='parse'", (doc["id"],)
+            )
+            conn.execute(
+                "INSERT INTO kb_jobs (id, kind, doc_id, state, created_at, updated_at) "
+                "VALUES (?, 'parse', ?, 'queued', ?, ?)",
+                (_new_id("job"), doc["id"], now, now),
+            )
+        return {"retried": True, "docId": doc["id"]}
+
+    # ── P0-c 之后实现 ───────────────────────────────────────────────────
     async def search(self, _params: dict[str, Any]) -> Any:
         raise StorageError("NOT_IMPLEMENTED", "检索链路在 P0-c/d 实现")
-
-    async def read_doc(self, _params: dict[str, Any]) -> Any:
-        raise StorageError("NOT_IMPLEMENTED", "正文读取在 P0-b 实现")
 
     async def stats(self, params: dict[str, Any]) -> dict[str, Any]:
         kb_id = self._require_kb_id(params)

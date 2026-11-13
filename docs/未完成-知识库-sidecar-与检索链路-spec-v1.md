@@ -690,3 +690,78 @@ App → ShellLayout，web 入口置 true）。
 > P0-b（解析/分块）落地后第 3、4 步才有完整数据；
 > 当前上传只会登记并排 parse 任务（`parseStatus: "pending"`），不会真的解析。
 
+
+## 16. P0-b 落地记录（2026-11-13）
+
+### 已交付
+
+| 文件 | 内容 |
+| --- | --- |
+| `knowledge_sidecar/parser.py` | 文档解析：docx/pptx/xlsx（纯标准库 zip+XML）、pdf（pdfplumber 优先 + 标准库兜底）、纯文本类 |
+| `knowledge_sidecar/chunking.py` | 递归分块 + 保护性区段 + 标题路径 |
+| `knowledge_sidecar/pipeline.py` | 解析 → 分块 → 落库 + FTS 索引；parse/embed 两类作业 |
+| `knowledge_sidecar/worker.py` | 后台单线程 worker，轮询 kb_jobs，不阻塞 RPC |
+| `handlers.py` | `read_doc`（正文+分块）、`retry_doc`（重排作业） |
+
+### 为什么不用 markitdown（最终决策）
+
+实测两版都不可接受：
+
+- `0.1.x` → `magika` → `onnxruntime`（14.4MB 原生 wheel）+ 运行时下载 ONNX 模型；
+- `0.0.1a2` → 顶层硬导入 `mammoth`/`pandas`/`pdfminer`/`pptx`，其中 `pandas`
+  → `numpy`，而 numpy 的 **cp311 ABI wheel 与 Python 3.12 不兼容**，
+  `import numpy` 直接失败。
+
+改为纯标准库：`.docx`/`.pptx`/`.xlsx` 本质是 zip + XML，用 `zipfile` +
+`ElementTree` 直解。代价是 Office 解析自己实现（约 400 行），收益是资产树
+零原生依赖、无平台 ABI 矩阵。
+
+### 分块策略要点
+
+- **保护性区段**：围栏代码块、图片引用、Markdown 表格在切分时跳开，不被切断；
+- **三级边界**：标题 → 段落 → 句子，优先保持语义单元完整；
+- **overlap**：相邻块保留尾部重叠（默认 150 字符）；
+- **`chunk_kind`**：自动识别 text / table / code / image_caption，供检索时按类型加权；
+- **`heading_path`**：记录「第2章 > 2.1 概述」这样的路径，检索结果可溯源。
+
+`chunk_size` 是唯一权威，没有隐藏上限（这是 EvoFlow 注释里记录的真实事故：
+固定 5000 字符上限让 3k 字符的 FAQ 包变成单个向量，检索彻底失效）。
+
+### job 拆成 parse / embed 两类的原因
+
+失败语义不同，合并会误导演排：
+
+| 失败点 | 文档状态 | 检索可用性 |
+| --- | --- | --- |
+| 解析失败 | `parse_status=failed` | 完全不可用（无正文） |
+| 嵌入失败 | `parse_status=completed` | 关键词仍可用（语义降级） |
+
+合成一个 job 会让「嵌入服务挂了」表现成「文档解析失败」。
+
+### worker 设计
+
+- **独立线程**：解析一个 PDF 可能几秒到几十秒，同步做会让 `kb.upload` 卡住；
+- **单线程而非线程池**：SQLite 写锁是库级（即使 WAL 同时只有一个写者），
+  多线程只会互相排队并增加 `database is locked` 风险。每库一个 DB 已隔离，
+  将来可每库一线程；
+- **幂等**：重跑 parse 先删旧 chunks 与 FTS 行，不累积重复；
+- **优雅停止**：先停 worker 再退出，避免写 SQLite 时被 SIGTERM 打断。
+
+### 实测结果
+
+| 场景 | 结果 |
+| --- | --- |
+| `.md` 解析 | ✅ 标题结构保留，`has_structure=true` |
+| `.docx` 解析 | ✅ `Heading1`/`Heading2` 正确映射成 `#`/`##`，段落完整 |
+| 长文档分块（2411 字符，chunk_size=600） | ✅ 切 5 块，`heading_path` 精确到章节 |
+| 表格保护 | ✅ `\| 列A \| 列B \|` 到 `\| 值3 \| 值4 \|` 同块未切断 |
+| 代码块保护 | ✅ `def func_5` 与 `return 5` 同块 |
+| `chunk_kind` 识别 | ✅ 正确标出 table / code / text |
+| jieba 分词 | ✅ 首次加载 0.58s，之后走缓存 |
+| worker 异步链路 | ✅ 3 文件上传后 `pending` → 1.0s 内全部 `completed`，5 chunks 入库 |
+| 类型检查 | ✅ services / server / ui / web 四包 0 错误 |
+
+### 未做（P0-c/d）
+
+- embedding 写入（`kembed` job 标记为 `failed: embedding 尚未实现`，不会永久 queued）
+- 检索链路（`kb.search` 仍返回 `NOT_IMPLEMENTED`）

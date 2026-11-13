@@ -27,6 +27,7 @@ from .handlers import KnowledgeHandlers
 from . import VERSION as _PKG_VERSION
 from .store import KnowledgeStore
 from .transport import RpcServer, emit_ready
+from .worker import IndexWorker
 
 VERSION = _PKG_VERSION
 
@@ -61,6 +62,10 @@ async def _run(data_root: Path) -> int:
     store = KnowledgeStore(data_root)
     handlers = KnowledgeHandlers(store, VERSION)
 
+    # 索引 worker：解析/嵌入在独立线程里做，不阻塞 RPC
+    worker = IndexWorker(store)
+    worker.start()
+
     server = RpcServer()
     server.register("kb.ping", handlers.ping)
     server.register("kb.list", handlers.list)
@@ -75,6 +80,7 @@ async def _run(data_root: Path) -> int:
     server.register("kb.search", handlers.search)
     server.register("kb.readDoc", handlers.read_doc)
     server.register("kb.stats", handlers.stats)
+    server.register("kb.retryDoc", handlers.retry_doc)
     server.register("kb.reindex", handlers.reindex)
 
     loop = asyncio.get_running_loop()
@@ -89,7 +95,12 @@ async def _run(data_root: Path) -> int:
         "ready: version=%s dataRoot=%s", VERSION, data_root
     )
     emit_ready()
-    await server.serve()
+    try:
+        await server.serve()
+    finally:
+        # 先停 worker 再退出：避免它正在写 SQLite 时进程被 SIGTERM 打断，
+        # 留下半截 chunk 或锁。
+        worker.stop()
     logging.getLogger("knowledge_sidecar").info("shutdown")
     return 0
 
