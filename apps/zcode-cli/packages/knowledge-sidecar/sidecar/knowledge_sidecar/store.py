@@ -161,8 +161,26 @@ class KnowledgeStore:
 
     # ── 初始化 ──────────────────────────────────────────────────────────
     def _init_central(self) -> None:
+        """中心库建表。
+
+        [踩过的坑] 早期这里执行本文件顶部的 `CENTRAL_SCHEMA`（本仓自写的简化版
+        kb_bases，只有 8 个字段）。而移植过来的 `owned/` 层用的是 EvoFlow 的完整
+        schema（30+ 字段，含 deleted_at / vector_enabled / storage_dir …）。
+
+        两者都写 `CREATE TABLE IF NOT EXISTS kb_bases`，谁先执行谁生效 ——
+        于是简化版先建表，EvoFlow 的完整版被 IF NOT EXISTS 跳过，
+        结果所有 `WHERE deleted_at IS NULL` 的查询全报
+        `sqlite3.OperationalError: no such column: deleted_at`，
+        表现为「库列表接口 500、内置库永远建不出来」。
+
+        现在统一由 EvoFlow 的 `ensure_schema()` 负责建表（它也是 owned 层的
+        唯一事实源）；本仓自写的 CENTRAL_SCHEMA 保留在文件里作为历史参考，
+        但不再执行。
+        """
+        from .owned.schema import ensure_schema
+
         with self.central() as conn:
-            conn.executescript(CENTRAL_SCHEMA)
+            ensure_schema(conn)
 
     def _init_kb(self, kb_id: str) -> None:
         self.kb_dir(kb_id).mkdir(parents=True, exist_ok=True)
@@ -171,7 +189,11 @@ class KnowledgeStore:
         # 用它建库会自己把自己挡在门外（KB_NOT_FOUND）。
         conn = _connect(self.kb_db_path(kb_id))
         try:
-            conn.executescript(KB_SCHEMA)
+            # 同 _init_central：per-KB 库也用 EvoFlow 的 schema，
+            # 避免本仓简化版先建表导致 owned 层查询缺列。
+            from .owned.schema import ensure_kb_schema
+
+            ensure_kb_schema(conn)
         finally:
             conn.close()
 
