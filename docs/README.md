@@ -7,6 +7,91 @@
 - **`未完成-*.md`**：仍在推进的方案 / 计划 / 缺陷清单，留在本目录根下便于日常查阅与续写。
 - **`已完成-*.md`**：已按源码核实落地的契约、规范与实测报告，归档在 [`已完成/`](已完成/) 子目录。
 
+## 主题分类目录
+
+根目录只保留**状态前缀文档**（`未完成-*.md`）与 `README.md`；其余无前缀的散落文档已按主题归入下列子目录，便于按领域检索。
+归类脚本为 `scripts/organize-docs.mjs`（只移动、不删除，目标同名时跳过），新增文档时按同一主题放入对应目录即可。
+
+| 目录 | 文档数 |
+| --- | --- |
+| [`electron/`](electron/) | 282 |
+| [`superpowers/`](superpowers/) | 262 |
+| [`working-memory/`](working-memory/) | 260 |
+| [`ui/`](ui/) | 176 |
+| [`issues/`](issues/) | 131 |
+| [`webdriverio/`](webdriverio/) | 124 |
+| [`testing/`](testing/) | 92 |
+| [`browser-use/`](browser-use/) | 53 |
+| [`misc/`](misc/) | 53 |
+| [`desktop/`](desktop/) | 51 |
+| [`knip/`](knip/) | 47 |
+| [`cua/`](cua/) | 45 |
+| [`chat/`](chat/) | 43 |
+| [`monitoring/`](monitoring/) | 35 |
+| [`v4-refactor/`](v4-refactor/) | 33 |
+| [`plugins/`](plugins/) | 29 |
+| [`已完成/`](已完成/) | 29 |
+| [`model/`](model/) | 28 |
+| [`architecture/`](architecture/) | 22 |
+| [`plans/`](plans/) | 21 |
+| [`coding-plan/`](coding-plan/) | 20 |
+| [`web-remote-control/`](web-remote-control/) | 20 |
+| [`archive/`](archive/) | 19 |
+| [`zcode/`](zcode/) | 17 |
+| [`git/`](git/) | 16 |
+| [`specs/`](specs/) | 15 |
+| [`agents/`](agents/) | 14 |
+| [`builtin-provider-maintenance/`](builtin-provider-maintenance/) | 14 |
+| [`remote/`](remote/) | 14 |
+| [`performance/`](performance/) | 13 |
+| [`mcp/`](mcp/) | 12 |
+| [`settings/`](settings/) | 11 |
+| [`trace/`](trace/) | 11 |
+| [`conversation/`](conversation/) | 10 |
+| [`design/`](design/) | 10 |
+| [`task/`](task/) | 10 |
+| [`cua-permission-broker/`](cua-permission-broker/) | 9 |
+| [`off-peak-task/`](off-peak-task/) | 9 |
+| [`bots/`](bots/) | 8 |
+| [`oauth/`](oauth/) | 8 |
+| [`analysis/`](analysis/) | 7 |
+| [`dynamic-workflow/`](dynamic-workflow/) | 7 |
+| [`plan/`](plan/) | 7 |
+| [`runtime-tools/`](runtime-tools/) | 7 |
+| [`migration/`](migration/) | 5 |
+| [`product/`](product/) | 5 |
+| [`windows/`](windows/) | 5 |
+| [`workspace/`](workspace/) | 5 |
+| [`wsl/`](wsl/) | 5 |
+| [`adr/`](adr/) | 4 |
+| [`automation/`](automation/) | 4 |
+| [`ci/`](ci/) | 4 |
+| [`cli/`](cli/) | 4 |
+| [`external-agent/`](external-agent/) | 4 |
+| [`cloud-content/`](cloud-content/) | 3 |
+| [`feedback/`](feedback/) | 3 |
+| [`highspeed/`](highspeed/) | 3 |
+| [`onboarding/`](onboarding/) | 3 |
+| [`session/`](session/) | 3 |
+| [`shell/`](shell/) | 3 |
+| [`usage/`](usage/) | 3 |
+| [`context/`](context/) | 2 |
+| [`files/`](files/) | 2 |
+| [`marketing/`](marketing/) | 2 |
+| [`project/`](project/) | 2 |
+| [`security/`](security/) | 2 |
+| [`site/`](site/) | 2 |
+| [`web-share/`](web-share/) | 2 |
+| [`审查板块原始数据/`](审查板块原始数据/) | 2 |
+| [`brand/`](brand/) | 1 |
+| [`i18n/`](i18n/) | 1 |
+| [`permission/`](permission/) | 1 |
+| [`todo/`](todo/) | 1 |
+| [`tools/`](tools/) | 1 |
+| [`upstream/`](upstream/) | 1 |
+| [`web/`](web/) | 1 |
+| [`上游合并评估-v3.16.2/`](上游合并评估-v3.16.2/) | 1 |
+
 ## 未完成（进行中）
 
 | 文档                                                                               | 内容                                                                                                                                                                                                     |
