@@ -78,7 +78,7 @@ export function BotClusterView({
       // 缺省时不给半成品状态，直接抛错交给上层错误边界显示。
       throw new Error("Agents 集群需要 projectService，当前宿主未装配");
     }
-    return createBotStore({
+    const instance = createBotStore({
       projectService,
         workspacePath,
         ...(workspaceIdentity ? { workspaceIdentity } : {}),
@@ -141,12 +141,17 @@ export function BotClusterView({
         },
         defaultModel: () => null,
       });
+    // 注册必须发生在渲染期（见下方 effect 的注释）：早于子组件 effect 里的 team.start()。
+    botStore.register(instance);
+    return instance;
   }, [services, workspacePath, workspaceIdentity]);
 
-  useEffect(() => {
-    botStore.register(store);
-    return () => botStore.register(null);
-  }, [store]);
+  // 注册必须发生在渲染期，不能用 useEffect。
+  // 为什么：React 的 effect 是**子先父后**，而 DS-Bot 的 <App> 在它自己的 useEffect
+  // 里立刻 `team.start()` → 首个 `call('state')`。若在这里用 useEffect 注册，父层
+  // effect 会排在子层之后，首个读取必然撞上「Agents 集群尚未就绪」。
+  // useMemo 只在依赖变化时重跑，重复注册是幂等的，因此放在这里安全。
+  useEffect(() => () => botStore.register(null), [store]);
 
   // 3) 深色主题：DS-Bot 的样式按 body[data-ds-dark-theme] 切换，
   //    Reactor 的深浅由 <html class="dark"> 表达，这里把两者对齐。
