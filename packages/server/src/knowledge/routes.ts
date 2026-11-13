@@ -27,6 +27,8 @@ import type { Hono } from "hono";
 import { formatLogPrefix } from "@zcode/shared";
 import { KnowledgeClient, KnowledgeRpcCallError, KnowledgeUnavailableError } from "@zcode/services";
 
+import { registerKnowledgeExtraRoutes } from "./routesExtra.js";
+
 // server 侧日志统一用 formatLogPrefix（与 user-space 一致），不走 services 的
 // createServiceLogger —— 后者是 services 包内部设施，未从 index 导出。
 const logError = (...args: unknown[]) =>
@@ -146,10 +148,15 @@ export function registerKnowledgeRoutes(app: Hono, deps: KnowledgeGatewayDeps): 
 
   app.get("/api/knowledge/owned/bases/:kbId", async (c) => {
     try {
-      // sidecar 的 kb.stats 已含 base 信息与统计；这里补齐 base 形状
       const kbId = c.req.param("kbId");
-      const stats = (await client.call("kb.stats", { kbId })) as Record<string, unknown>;
-      return c.json({ base: { id: kbId }, ...stats });
+      // [坑] 早期只调 kb.stats 并把统计平铺到顶层、base 里只放 id ——
+      // 前端读 base.name / base.embeddingModel 全是 undefined，
+      // 界面上「库名空白、向量模型未配置」。这里必须单独取一次 base。
+      const [baseResult, stats] = await Promise.all([
+        client.call("kb.get", { kbId }) as Promise<{ base: Record<string, unknown> }>,
+        client.call("kb.stats", { kbId }) as Promise<Record<string, unknown>>,
+      ]);
+      return c.json({ base: normalizeBase(baseResult.base), ...stats });
     } catch (error) {
       return gatewayError(c, error);
     }
@@ -255,6 +262,21 @@ export function registerKnowledgeRoutes(app: Hono, deps: KnowledgeGatewayDeps): 
   });
 
   // ── 检索 ──────────────────────────────────────────────────────────────
+  // 跨库检索：前端在「全部知识库」视图下不传 kbId，走这条。
+  app.post("/api/knowledge/owned/search", async (c) => {
+    try {
+      const body = await c.req.json<Record<string, unknown>>();
+      const result = (await client.call("kb.searchAll", {
+        query: body.query,
+        topK: body.topK,
+        mode: body.mode,
+      })) as Record<string, unknown>;
+      return c.json(result);
+    } catch (error) {
+      return gatewayError(c, error);
+    }
+  });
+
   app.post("/api/knowledge/owned/bases/:kbId/search", async (c) => {
     try {
       const kbId = c.req.param("kbId");
@@ -308,6 +330,9 @@ export function registerKnowledgeRoutes(app: Hono, deps: KnowledgeGatewayDeps): 
       return gatewayError(c, error);
     }
   });
+
+  // 文件夹 / Wiki / 图谱 / 同步 / 活动 / 设置 —— 拆到 routesExtra.ts（见该文件头说明）。
+  registerKnowledgeExtraRoutes(app, client);
 }
 
 // ── 工具函数 ──────────────────────────────────────────────────────────────
