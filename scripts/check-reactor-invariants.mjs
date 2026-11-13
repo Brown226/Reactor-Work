@@ -130,6 +130,104 @@ const INVARIANTS = [
     test: (s) => s !== null && s.includes("createBackgroundThemeStoreActions"),
     hint: "恢复 store/backgroundThemeState.ts 与 store/accentColorState.ts 并装配进 store/index.ts。",
   },
+
+  // ── 自建插件注册红线（2026-11-12 上游同步事故后补）────────────────────────
+  // 事故：`2c0fc9dd` 用「上游为基准」整块覆盖时，把 4 个本地自建插件
+  // （file-tools / ocr-tools / dwg-tools / review-skills）的注册条目全部删掉。
+  // 它们 100% 是 fork 自有，上游 b95ebaff 里根本没有这些目录，却被当成杂质扫掉。
+  // 症状：图纸解析 / 扫描件识别 / 文件审查在插件市场和运行期一起消失，
+  // 而 tsc、lint、vite build 全都不报错。
+  // 判定标准是 3-way：「上游没动、本地动了」= 真定制；
+  // **不能**按「上游有没有这个文件」判断，否则每次同步都会再丢一次。
+  {
+    name: "自建插件在官方插件注册表里（file-tools/ocr-tools/dwg-tools/review-skills）",
+    file: "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-definitions.ts",
+    test: (s) =>
+      s !== null &&
+      ["file-tools", "ocr-tools", "dwg-tools", "review-skills"].every((n) =>
+        new RegExp(`name:\\s*"${n}"`).test(s),
+      ),
+    hint:
+      "从 dbc38d7d 取回 4 个自建插件的定义块插进 OFFICIAL_PLUGIN_DEFINITIONS。" +
+      "它们上游不存在，整包同步会静默删掉；每次同步上游后必须跑本检查。",
+  },
+  {
+    name: "自建内容型插件在官方插件注册表里（accounting/research/analytics/obsidian）",
+    file: "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-definitions.ts",
+    test: (s) =>
+      s !== null &&
+      ["accounting-and-reporting", "research", "analytics", "obsidian"].every((n) =>
+        new RegExp(`name:\\s*"${n}"`).test(s),
+      ),
+    hint:
+      "从 dbc38d7d 取回 4 个自建内容型插件的 map 定义块插进 OFFICIAL_PLUGIN_DEFINITIONS。" +
+      "它们上游不存在，整包同步会静默删掉。" +
+      "注意 superpowers 不在此列：上游主动下线了它（改走 UI 推荐区按需安装），别一并塞回内置。",
+  },
+  {
+    name: "自建插件在远端资产合同里（server/remote/zcodeAgentOfficialPluginAssets.ts）",
+    file: "packages/server/src/remote/zcodeAgentOfficialPluginAssets.ts",
+    test: (s) =>
+      s !== null &&
+      [
+        "file-tools-plugin",
+        "ocr-tools-plugin",
+        "dwg-tools-plugin",
+        "review-skills-plugin",
+        "accounting-and-reporting-plugin",
+        "analytics-plugin",
+        "research-plugin",
+        "obsidian-plugin",
+      ].every((n) => s.includes(n)),
+    hint:
+      "补回 REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES 与 REQUIRED_RELATIVE_PATHS 里的自建插件，" +
+      "并把 assets 加回 INCLUDED_TOP_LEVEL_PATHS（缺了 seed 会以「声明了 assets 却没文件」整体拒绝）。",
+  },
+  {
+    name: "自建插件在 SEA 资源清单里（cli/scripts/sea-official-plugin-assets.mjs）",
+    file: "apps/zcode-cli/packages/cli/scripts/sea-official-plugin-assets.mjs",
+    test: (s) =>
+      s !== null &&
+      [
+        "file-tools",
+        "ocr-tools",
+        "dwg-tools",
+        "review-skills",
+        "accounting-and-reporting",
+        "research",
+        "analytics",
+        "obsidian",
+      ].every((n) => new RegExp(`name:\\s*"${n}"`).test(s)),
+    hint:
+      "补回 officialSeaPlugins 里的自建插件条目（file-tools/dwg-tools 带 runtimeTopLevelPaths: [\"assets\"]）。",
+  },
+  {
+    name: "自建插件在桌面打包 stage 清单里（prepare-agent-node-bundle.mjs）",
+    file: "packages/desktop/scripts/prepare-agent-node-bundle.mjs",
+    test: (s) =>
+      s !== null &&
+      [
+        "file-tools-plugin",
+        "ocr-tools-plugin",
+        "dwg-tools-plugin",
+        "review-skills-plugin",
+        "accounting-and-reporting-plugin",
+        "analytics-plugin",
+        "research-plugin",
+        "obsidian-plugin",
+      ].every((n) => s.includes(n)),
+    hint:
+      "补回 officialPluginPackages 里的自建插件，并把 assets 加回 includedOfficialPluginTopLevelPaths。" +
+      "上游已把本文件从「展开 CONTENT_PLUGIN_SEED_ENTRIES」改成显式清单，内容型插件也要逐条列出。",
+  },
+  {
+    name: "声明了 assets 的插件必须真收到资产文件（seed 守卫存在）",
+    file: "apps/zcode-cli/packages/bootstrap/src/app/bundled-plugins.ts",
+    test: (s) => s !== null && s.includes("hasDeclaredAssetsButNoFiles"),
+    hint:
+      "恢复 hasDeclaredAssetsButNoFiles 与 missingAssetFiles 门禁：声明 runtimeTopLevelPaths 却收不到文件时，" +
+      "必须按残缺处理并降级，不能写出「seed 成功但缺引擎」的缓存（症状是运行期报未找到原生资产，且永不自愈）。",
+  },
 ];
 
 let failed = 0;
