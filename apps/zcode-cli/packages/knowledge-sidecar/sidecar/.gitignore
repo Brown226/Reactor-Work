@@ -1,0 +1,3 @@
+
+# 内置知识库播种的指纹文件（运行时生成，不入库）
+.reactor_user_guide_fingerprint

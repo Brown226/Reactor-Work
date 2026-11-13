@@ -54,6 +54,30 @@ interface KnowledgeSettingsSectionProps {
   isDesktop?: boolean;
 }
 
+/**
+ * 设置请求超时。
+ *
+ * [踩过的坑] 早期没设超时，而 sidecar 启动时会先播种内置用户指南（75 篇文档，
+ * 解析 + 分块要几十秒）。这段时间里网关请求会被排住，设置面板就永远停在
+ * 「正在读取知识库设置…」—— 用户看到的是「打不开」，其实是请求没返回。
+ *
+ * 12s 足够覆盖正常的一次查询（实测 < 100ms），又能在引擎忙时及时
+ * 退到「不可用」提示，而不是无限转圈。
+ */
+const SETTINGS_REQUEST_TIMEOUT_MS = 12_000;
+
+async function fetchSettingsJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), SETTINGS_REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return (await response.json()) as T;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function KnowledgeSettingsSection({ isDesktop = false }: KnowledgeSettingsSectionProps) {
   // 本仓的 useZCodeIntl() 返回 { intl }，不是 intl 本身。
   const { intl } = useZCodeIntl();
@@ -65,9 +89,10 @@ export function KnowledgeSettingsSection({ isDesktop = false }: KnowledgeSetting
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${resolveGatewayBase()}/settings`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      setSettings((await response.json()) as KnowledgeSettings);
+      const data = await fetchSettingsJson<KnowledgeSettings>(
+        `${resolveGatewayBase()}/settings`,
+      );
+      setSettings(data);
       setUnavailable(false);
     } catch (error) {
       // 网关不可用（sidecar 没起来 / 未配置模型服务）时不能假装读到空配置，
@@ -87,13 +112,15 @@ export function KnowledgeSettingsSection({ isDesktop = false }: KnowledgeSetting
     async (next: Partial<KnowledgeSettings>) => {
       setSaving(true);
       try {
-        const response = await fetch(`${resolveGatewayBase()}/settings`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(next),
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        setSettings((await response.json()) as KnowledgeSettings);
+        const data = await fetchSettingsJson<KnowledgeSettings>(
+          `${resolveGatewayBase()}/settings`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(next),
+          },
+        );
+        setSettings(data);
         // toast 是函数（toast(message, options)），没有 .success/.error 方法。
         toast(intl.formatMessage({ id: "settings.knowledge.saved" }), { variant: "success" });
       } catch (error) {

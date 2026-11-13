@@ -35,6 +35,7 @@ import logging
 import os
 import signal
 import sys
+import threading
 from pathlib import Path
 
 from . import VERSION as _PKG_VERSION
@@ -104,6 +105,29 @@ async def _run(data_root: Path) -> int:
     # 索引 worker：解析/嵌入在独立线程里做，不阻塞 RPC
     worker = IndexWorker(store, model_client)
     worker.start()
+
+    # 内置知识库播种：把随包的用户指南导入成一个可检索的知识库，
+    # 让用户装完就有一份能搜的文档（不必先自己上传才知道这功能怎么用）。
+    #
+    # 放在后台线程做：75 篇文档要解析 + 分块，同步执行会让 ready 事件
+    # 延迟十几秒，前端等不到就报「引擎未就绪」。播种失败也只记日志 ——
+    # 内置库是附加价值，不能因为磁盘满/文档损坏就阻断整个知识库。
+    def _seed_builtin() -> None:
+        try:
+            from .owned.builtin_seed import ensure_builtin_owned_knowledge
+
+            result = ensure_builtin_owned_knowledge()
+            logger.info(
+                "内置知识库就绪：action=%s kb=%s created=%s updated=%s",
+                result.get("action"),
+                result.get("kbId"),
+                result.get("created"),
+                result.get("updated"),
+            )
+        except Exception:  # noqa: BLE001 — 播种失败不影响主功能
+            logger.warning("内置知识库播种失败（不影响其它库）", exc_info=True)
+
+    threading.Thread(target=_seed_builtin, name="kb-builtin-seed", daemon=True).start()
 
     server = RpcServer()
 

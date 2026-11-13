@@ -20,8 +20,8 @@ from knowledge_sidecar.owned.ids import utc_now
 logger = logging.getLogger(__name__)
 
 # Stable id so Agent / UI can rely on it across fresh installs.
-BUILTIN_USER_GUIDE_VAULT_ID = "evoflow-user-guide"
-BUILTIN_USER_GUIDE_VAULT_NAME = "EvoFlow 用户指南"
+BUILTIN_USER_GUIDE_VAULT_ID = "reactor-user-guide"
+BUILTIN_USER_GUIDE_VAULT_NAME = "Reactor 用户指南"
 BUILTIN_OWNED_USER_GUIDE_KB_ID = "kb_builtin_user_guide"
 _FP_META_KEY = f"builtin_owned:{BUILTIN_USER_GUIDE_VAULT_ID}:fingerprint"
 
@@ -44,22 +44,24 @@ def _repo_docs_user() -> Path | None:
     """Locate user docs in the source tree or the packaged Gateway assets."""
     here = Path(__file__).resolve()
     candidates: list[Path] = []
-    # Prefer package-adjacent assets (matches avatar/soul layout: evoflow/assets/…).
+    # 优先用包内 assets：<knowledge_sidecar>/assets/builtin_knowledge_vaults/user-guide
+    # （由 scripts/prepare-knowledge-assets.mjs 一并打进资产树）。
+    # 本文件在 owned/ 下，所以 assets 在 parents[1]（= knowledge_sidecar/）。
     try:
         candidates.append(
-            here.parents[2] / "assets" / "builtin_knowledge_vaults" / "user-guide"
+            here.parents[1] / "assets" / "builtin_knowledge_vaults" / "user-guide"
         )
     except IndexError:
         pass
     meipass = getattr(sys, "_MEIPASS", None)
     if meipass:
         candidates.append(
-            Path(meipass) / "evoflow" / "assets" / "builtin_knowledge_vaults" / "user-guide"
+            Path(meipass) / "knowledge_sidecar" / "assets" / "builtin_knowledge_vaults" / "user-guide"
         )
     for parent in here.parents:
         candidates.append(parent / "docs" / "user")
         candidates.append(
-            parent / "evoflow" / "assets" / "builtin_knowledge_vaults" / "user-guide"
+            parent / "assets" / "builtin_knowledge_vaults" / "user-guide"
         )
     seen: set[str] = set()
     for candidate in candidates:
@@ -106,7 +108,7 @@ def materialize_user_guide_vault_result(force: bool = False) -> dict[str, Any]:
 
     fingerprint = _content_fingerprint(src)
     # Check if already materialized (match vault/builtin.py fingerprint logic).
-    marker_path = src.parent / ".evoflow_user_guide_fingerprint"
+    marker_path = src.parent / ".reactor_user_guide_fingerprint"
     try:
         if not force and marker_path.is_file():
             prev = marker_path.read_text(encoding="utf-8").strip()
@@ -267,7 +269,24 @@ def _create_fresh_builtin_base() -> dict[str, Any] | None:
         )
         return None
 
-    binding = resolve_create_binding({})
+    # [本地定制] 传入环境变量里配置的 embedding 模型，而不是空 payload。
+    #
+    # 空 payload 会让 resolve_create_binding 回落到 EvoFlow 的默认
+    # `text-embedding-3-small` + 空 base_url → 内置库的向量嵌入被判定为
+    # 「embedding API unavailable (missing base URL)」全部跳过，结果 75 篇文档
+    # 只有关键词索引、没有向量（stats 显示 vectorDegraded: 75）。
+    #
+    # 本仓的模型配置来自 ZCODE_KNOWLEDGE_*，这里显式带进去，
+    # 让内置库与用户自建库用同一套模型。
+    import os as _os
+
+    binding = resolve_create_binding(
+        {
+            "embeddingModel": _os.environ.get("ZCODE_KNOWLEDGE_EMBEDDING_MODEL", "").strip(),
+            "embeddingBaseUrl": _os.environ.get("ZCODE_KNOWLEDGE_MODEL_BASE_URL", "").strip(),
+            "embeddingApiKey": _os.environ.get("ZCODE_KNOWLEDGE_MODEL_API_KEY", "").strip(),
+        }
+    )
     now = utc_now()
     name = BUILTIN_USER_GUIDE_VAULT_NAME
     description = "系统内置 · 随版本自动同步产品文档"
