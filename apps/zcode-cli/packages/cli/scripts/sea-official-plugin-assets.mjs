@@ -255,6 +255,72 @@ export const officialSeaPlugins = [
     rootPath: join("packages", "design-plugin"),
     version: "0.7.2",
   },
+  // ── Reactor 自建内容型技能插件（上游 v3.18.0 没有这些包）──────────────────
+  // 2026-11-12 上游同步事故：`2c0fc9dd` 把这 4 个条目整块删掉，SEA 产物不再嵌入它们，
+  // 单文件可执行程序里财务核算 / 自主研究 / 经营分析 / Obsidian 笔记直接消失。
+  // 判定标准是 3-way（上游没动、本地动了 = 真定制）。
+  // 纯内容型（只有 skills，没有 MCP server）：requiresRuntime:false 跳过 runtime 校验，
+  // 但 requiredSeedPaths 仍逐个钉住 SKILL.md —— 缺一个技能只是「这类答案变水」，不报错。
+  // 注意：superpowers 不在这批里，上游主动下线了它（改走 UI 推荐区按需安装）。
+  {
+    marketplace: "zcode-plugins-official",
+    name: "obsidian",
+    requiresRuntime: false,
+    requiredSeedPaths: [
+      "skills/defuddle/SKILL.md",
+      "skills/excalidraw-diagram/SKILL.md",
+      "skills/json-canvas/SKILL.md",
+      "skills/knap/SKILL.md",
+      "skills/mermaid-visualizer/SKILL.md",
+      "skills/obsidian-bases/SKILL.md",
+      "skills/obsidian-cli/SKILL.md",
+      "skills/obsidian-markdown/SKILL.md",
+      "skills/setup/SKILL.md",
+    ],
+    rootPath: join("packages", "obsidian-plugin"),
+    version: "0.1.2",
+  },
+  {
+    marketplace: "zcode-plugins-official",
+    name: "accounting-and-reporting",
+    requiresRuntime: false,
+    requiredSeedPaths: [
+      "skills/account-mapping/SKILL.md",
+      "skills/audit-xls/SKILL.md",
+      "skills/financial-reporting/SKILL.md",
+      "skills/ledger-reconciliation/SKILL.md",
+      "skills/month-end-close-review/SKILL.md",
+      "skills/report-render/SKILL.md",
+      "skills/statement-consistency-check/SKILL.md",
+      "skills/xlsx-author/SKILL.md",
+    ],
+    rootPath: join("packages", "accounting-and-reporting-plugin"),
+    version: "0.1.1",
+  },
+  {
+    // mimocode 内置包整包复制（书面许可）；脚本 stdlib-only，运行期按需联网。
+    marketplace: "zcode-plugins-official",
+    name: "research",
+    requiresRuntime: false,
+    requiredSeedPaths: ["skills/super-research/SKILL.md", "skills/arxiv/SKILL.md"],
+    rootPath: join("packages", "research-plugin"),
+    version: "0.1.0",
+  },
+  // 经营分析插件（docs/未完成-经营分析插件-方案-v1.md）：纯内容型，四个 workflow
+  // 拆自上游 data-analytics（书面许可）；财务域归 accounting-and-reporting。
+  {
+    marketplace: "zcode-plugins-official",
+    name: "analytics",
+    requiresRuntime: false,
+    requiredSeedPaths: [
+      "skills/analyze-data-quality/SKILL.md",
+      "skills/design-kpis/SKILL.md",
+      "skills/metric-diagnostics/SKILL.md",
+      "skills/build-dashboard/SKILL.md",
+    ],
+    rootPath: join("packages", "analytics-plugin"),
+    version: "0.1.0",
+  },
   // ── Reactor 自建插件（上游 v3.18.0 没有这些包）──────────────────────────────
   // 2026-11-12 上游同步事故：`2c0fc9dd` 把本清单里的 4 个自建插件整块删掉，SEA 产物
   // 不再嵌入它们，安装包里图纸解析 / 扫描件识别 / 文件审查直接消失。

@@ -291,6 +291,107 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       version,
     }),
   ),
+  // ── Reactor 自建内容型技能插件（上游 v3.18.0 没有这些包）──────────────────
+  // 2026-11-12 上游同步事故：`2c0fc9dd` 用「上游为基准」整块覆盖时，把这 4 个本地自建
+  // 插件的注册条目全部删掉（它们上游 b95ebaff 里根本没有这些目录），症状是财务核算 /
+  // 自主研究 / 经营分析 / Obsidian 笔记在插件市场和运行期一起消失，而编译和检查都不报错。
+  // 判定标准是 3-way：「上游没动、本地动了」= 真定制，不能按「上游有没有这个文件」判断。
+  //
+  // 注意：superpowers 不在这批里 —— 它的目录上游本来就有，且上游是主动下线的
+  // （见 prepare-agent-node-bundle.mjs 的同名注释「改走 UI 推荐区按需安装」），
+  // 属于产品决策而非同步丢失，不在此处恢复。
+  ...(
+    [
+      {
+        name: "obsidian",
+        version: "0.1.2",
+        displayName: "Obsidian",
+        chineseName: "Obsidian 笔记",
+        description:
+          "Obsidian 笔记创作技能集：markdown 编辑、excalidraw 图表、json-canvas 画布、mermaid 可视化与 bases 数据库。",
+        skills: [
+          "defuddle",
+          "excalidraw-diagram",
+          "json-canvas",
+          "knap",
+          "mermaid-visualizer",
+          "obsidian-bases",
+          "obsidian-cli",
+          "obsidian-markdown",
+          "setup",
+        ],
+      },
+      {
+        name: "accounting-and-reporting",
+        version: "0.1.1",
+        displayName: "Accounting & Reporting",
+        chineseName: "财务核算与报告",
+        description:
+          "企业财务核算与报告技能集：科目映射、底稿审计、财务报告、台账对账、月结复核、报表渲染、勾稽检查与 xlsx 编制。",
+        skills: [
+          "account-mapping",
+          "audit-xls",
+          "financial-reporting",
+          "ledger-reconciliation",
+          "month-end-close-review",
+          "report-render",
+          "statement-consistency-check",
+          "xlsx-author",
+        ],
+      },
+      {
+        name: "research",
+        version: "0.1.0",
+        displayName: "Research",
+        chineseName: "自主研究",
+        description:
+          "自主研究技能集：八模式研究方法与纪律（实验循环/主题调研/量化分析/对比评测/根因排查/消融实验/论文复现/论文写作与引用校验），外加 arXiv 论文级工具belt。",
+        skills: ["super-research", "arxiv"],
+      },
+      {
+        name: "analytics",
+        version: "0.1.0",
+        displayName: "Analytics",
+        chineseName: "经营分析",
+        description:
+          "产品与经营分析技能集：数据质量核查、KPI 框架设计、指标波动诊断与看板搭建（BI 平台 / HTML / Streamlit）。",
+        skills: [
+          "analyze-data-quality",
+          "design-kpis",
+          "metric-diagnostics",
+          "build-dashboard",
+        ],
+      },
+    ] as const
+  ).map(
+    ({
+      name,
+      version,
+      displayName,
+      chineseName,
+      description,
+      skills,
+    }): OfficialPluginDefinition => ({
+      defaultEnabled: true,
+      listing: {
+        author: ZAI_AUTHOR,
+        category: "productivity",
+        displayName,
+        displayName_i18n: { "zh-CN": chineseName },
+        // 这三个插件在原 CDN 目录里没有发布过图标，按约定回退标题首字母头像。
+        description_i18n: { "zh-CN": description },
+      },
+      name,
+      requiredSeedPaths: skills.map((skill) => `skills/${skill}/SKILL.md`),
+      rootCandidates: [
+        `packages/${name}-plugin`,
+        `../${name}-plugin`,
+        `../../${name}-plugin`,
+        `../../../${name}-plugin`,
+      ],
+      version,
+    }),
+  ),
   {
     // 沿用原聚合文档插件的官方搜图能力，仅拆出独立开关；认证仍由官方 MCP adapter 注入。
     defaultEnabled: true,

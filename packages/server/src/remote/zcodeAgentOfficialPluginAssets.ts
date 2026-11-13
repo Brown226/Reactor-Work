@@ -20,6 +20,13 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES = [
   "pdf-plugin",
   "presentations-plugin",
   "spreadsheets-plugin",
+  // ── Reactor 自建内容型技能插件（上游 v3.18.0 没有这些包）──────────────────
+  // 2026-11-12 上游同步事故：`2c0fc9dd` 把本文件整块重置成上游版本，这 4 个自建插件
+  // 随之从远端合同消失，症状是「本地有、远端没有」且不报错。判定标准是 3-way。
+  "accounting-and-reporting-plugin",
+  "analytics-plugin",
+  "research-plugin",
+  "obsidian-plugin",
   "image-search-plugin",
   "ios-simulator-plugin",
   "restore-legacy-sessions-plugin",
@@ -118,6 +125,32 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS = [
   "file-tools-plugin/dist/mcp/pdf.worker.mjs",
   "ocr-tools-plugin/dist/mcp/server.js",
   "dwg-tools-plugin/dist/mcp/server.js",
+  // ── Reactor 自建内容型技能插件的必需资产（缺一项就拒绝复用半成品远端缓存）────
+  // 只校验 plugin.json 会放过「有壳没技能」的残缺目录，而少一个 SKILL.md 在运行时
+  // 表现为「这个类型答案很水」，不是报错。superpowers 上游已主动下线，不在此列。
+  "accounting-and-reporting-plugin/skills/account-mapping/SKILL.md",
+  "accounting-and-reporting-plugin/skills/audit-xls/SKILL.md",
+  "accounting-and-reporting-plugin/skills/financial-reporting/SKILL.md",
+  "accounting-and-reporting-plugin/skills/ledger-reconciliation/SKILL.md",
+  "accounting-and-reporting-plugin/skills/month-end-close-review/SKILL.md",
+  "accounting-and-reporting-plugin/skills/report-render/SKILL.md",
+  "accounting-and-reporting-plugin/skills/statement-consistency-check/SKILL.md",
+  "accounting-and-reporting-plugin/skills/xlsx-author/SKILL.md",
+  "analytics-plugin/skills/analyze-data-quality/SKILL.md",
+  "analytics-plugin/skills/build-dashboard/SKILL.md",
+  "analytics-plugin/skills/design-kpis/SKILL.md",
+  "analytics-plugin/skills/metric-diagnostics/SKILL.md",
+  "research-plugin/skills/arxiv/SKILL.md",
+  "research-plugin/skills/super-research/SKILL.md",
+  "obsidian-plugin/skills/defuddle/SKILL.md",
+  "obsidian-plugin/skills/excalidraw-diagram/SKILL.md",
+  "obsidian-plugin/skills/json-canvas/SKILL.md",
+  "obsidian-plugin/skills/knap/SKILL.md",
+  "obsidian-plugin/skills/mermaid-visualizer/SKILL.md",
+  "obsidian-plugin/skills/obsidian-bases/SKILL.md",
+  "obsidian-plugin/skills/obsidian-cli/SKILL.md",
+  "obsidian-plugin/skills/obsidian-markdown/SKILL.md",
+  "obsidian-plugin/skills/setup/SKILL.md",
   // 修复原因：仅校验 manifest 无法发现文档插件缺少技能正文或视觉评审 Agent。
   // 文档插件 0.2.0 起带查看面板，远端还必须有 office-runtime 构建出的 server 与面板资源。
   "image-search-plugin/.mcp.json",

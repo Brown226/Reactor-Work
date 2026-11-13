@@ -271,6 +271,36 @@ const officialPluginPackages = [
     stagedPath: "packages/review-skills-plugin",
   },
   {
+    // ── Reactor 自建内容型技能插件（上游 v3.18.0 没有这些包）──────────────────
+    // 2026-11-12 上游同步事故：`2c0fc9dd` 把这 4 个插件的注册条目删掉，安装包里
+    // 财务核算 / 自主研究 / 经营分析 / Obsidian 笔记一起消失。判定标准是 3-way。
+    // 上游已把本文件从「展开 CONTENT_PLUGIN_SEED_ENTRIES」改成显式清单，
+    // 所以这里按现有写法逐条列出，与 skill-creator / design 等内容型插件一致。
+    // 纯内容型：只有 skills/ 与清单，没有 MCP server，无需 runtime 构建。
+    packageName: "@zcode/obsidian-plugin",
+    relativePath: "apps/zcode-cli/packages/obsidian-plugin",
+    requiresRuntime: false,
+    stagedPath: "packages/obsidian-plugin",
+  },
+  {
+    packageName: "@zcode/accounting-and-reporting-plugin",
+    relativePath: "apps/zcode-cli/packages/accounting-and-reporting-plugin",
+    requiresRuntime: false,
+    stagedPath: "packages/accounting-and-reporting-plugin",
+  },
+  {
+    packageName: "@zcode/research-plugin",
+    relativePath: "apps/zcode-cli/packages/research-plugin",
+    requiresRuntime: false,
+    stagedPath: "packages/research-plugin",
+  },
+  {
+    packageName: "@zcode/analytics-plugin",
+    relativePath: "apps/zcode-cli/packages/analytics-plugin",
+    requiresRuntime: false,
+    stagedPath: "packages/analytics-plugin",
+  },
+  {
     // 文件能力三件套（docs/未完成-file-tools拆三插件方案.md）：file-tools=parse/docx/pdf，
     // ocr-tools=扫描件识字，dwg-tools=图纸。三者都带 MCP server，须先构建 dist/mcp/server.js。
     packageName: "@zcode/file-tools-plugin",
