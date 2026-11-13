@@ -880,7 +880,12 @@ const WorkspaceShellLayoutContent = memo(function WorkspaceShellLayoutComponent(
   const fullViewConversationTitle =
     activeTaskTitle?.trim() || intl.formatMessage({ id: "taskList.untitled" });
   // 完整视图保留左侧任务列表与左上角按钮组，侧栏显隐只由用户开关决定。
-  const isSidebarPanelVisible = isSidebarVisible;
+  //
+  // [本地定制] Agents 集群例外：那一页自带完整的两栏导航（DS-Bot 侧栏 + 对话），
+  // 再叠加 Reactor 的侧栏就是两套导航并排，视觉上必然混乱。这里在 Bot 主视图下
+  // 收起外层侧栏；用 forceHidden 而不是改用户偏好，切回对话时原状态自动恢复。
+  const isBotMainView = workspaceMainView === "bot";
+  const isSidebarPanelVisible = isSidebarVisible && !isBotMainView;
   const {
     panelRef: terminalPanelRef,
     panelElementRef: terminalPanelElementRef,
@@ -3239,12 +3244,14 @@ const WorkspaceShellLayoutContent = memo(function WorkspaceShellLayoutComponent(
                               </AutomationsMainBreadcrumbFrame>
                             </main>
                           ) : workspaceMainView === "bot" ? (
-                            // [本地定制] Agents 集群：左侧是 Bot 花名册 + 话题列表，
-                            // 右侧原样复用 Reactor 原生聊天区（V4WorkspaceChatArea），
-                            // 不重写消息流。实现见 src/bot/。
+                            // [本地定制] Agents 集群：整页交给 DS-Bot 自己的界面
+                            // （侧栏 + 对话 + 覆盖层，见 src/bot/）。
+                            // 这一支同时收起 Reactor 外层侧栏（isSidebarPanelVisible），
+                            // 避免两套导航并排；所以必须自带一条返回对话的路径。
                             <BotClusterView
                               workspacePath={workspaceAbsPath}
                               workspaceIdentity={workspaceIdentity}
+                              onExit={() => onWorkspaceMainViewChange("chat")}
                             />
                           ) : (
                             chatMainContent

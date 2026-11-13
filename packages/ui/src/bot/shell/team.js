@@ -11,6 +11,7 @@ import { createSource, EMPTY_ROSTER, indexRoster } from '@/bot/vendor/ds-bot-cli
 import { STORAGE, migrateStorage } from '@/bot/vendor/ds-bot-client/storage.js'
 import { teamActions } from '@/bot/vendor/ds-bot-client/team-actions.js'
 import { currentPart } from '@/bot/vendor/ds-bot-client/text.js'
+import { DSH_NARROW } from '@/bot/vendor/ds-bot-client/frame-layout.js'
 import { registry } from '@/bot/vendor/ds-bot-client/themes.js'
 import { openFeed } from './hostApi.js'
 
@@ -65,7 +66,11 @@ export function createTeam() {
   const update = createSource({ available: false, phase: 'idle' })
   const browserPages = createSource({})
   const browserTabs = createSource({})
-  const layout = createSource({ wide: true })
+  // [Reactor 本地定制] 上游窗口默认宽栏（桌面 Electron）；Reactor 的 Web 主视图
+  // 在手机上只有 393px 左右，宽栏会把对话区挤没。按视口初值，并在窗口尺寸变化时
+  // 跟随 DSH 自己的窄屏阈值（frame-layout.js 的 DSH_NARROW = 1024）。
+  const wideAt = () => (typeof window === 'undefined' ? true : window.innerWidth >= DSH_NARROW)
+  const layout = createSource({ wide: wideAt() })
   // The Session facts: the list (each one's latest entry and change, and which one fills
   // the main view), the status (running, a reply not yet seen) and what was just sent.
   const sessions = createSource({ ids: [], byId: {} })

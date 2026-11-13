@@ -1,12 +1,49 @@
+/* [Reactor 本地定制] 本文件来自 DS-Bot app/ui/src/app.css，但做了两处作用域收窄：
+ *
+ * 1. 删掉了 `html,body,#root` 与全局 `::-webkit-scrollbar` 规则——上游那个文件是给
+ *    独立 Electron 窗口用的，直接搬进 Reactor 会污染整个应用（全局背景、全局滚动条、
+ *    全局 color-scheme）。这些属性改由下面 `.bot-cluster` 作用域的规则提供。
+ * 2. `.dsb-frame` 依赖祖先有确定高度。上游窗口里 `#root{height:100%}` 提供这条链，
+ *    Reactor 主区里没有，所以在 `.bot-cluster` 上显式建立：h-full + min-h-0。
+ *
+ * 颜色变量（--bt-*）来自 DS-Bot 自己的 themes.js，不需要在这里定义。
+ */
+.bot-cluster {
+  /* 建立高度与滚动边界，让 .dsb-frame 的 height:100% 有参照。 */
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bt-main);
+  color: var(--bt-ink);
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.bot-cluster[data-dark] {
+  color-scheme: dark;
+}
+/* 滚动条只作用于本视图内部，不影响 Reactor 其它区域。 */
+.bot-cluster *::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.bot-cluster *::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 12px;
+  background: var(--bt-line-2) content-box;
+}
+.bot-cluster *::-webkit-scrollbar-thumb:hover {
+  background-color: var(--bt-ink-3);
+}
+.bot-cluster *::-webkit-scrollbar-track,
+.bot-cluster *::-webkit-scrollbar-corner {
+  background: transparent;
+}
+/* .dsb-frame 自身的栅格规则保留原样（下面紧跟上游原文）。 */
+
 /* The frame around the Bot views. The views bring their own stylesheets (main.js); these
    rules give the frame the sizes the views have in DSH. Colors come from the --bt-* variables. */
-html,body,#root{height:100%;margin:0}
-body{color-scheme:light;background:var(--bt-main);color:var(--bt-ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-body[data-ds-dark-theme]{color-scheme:dark}
-::-webkit-scrollbar{width:12px;height:12px}
-::-webkit-scrollbar-thumb{border:3px solid transparent;border-radius:12px;background:var(--bt-line-2) content-box}
-::-webkit-scrollbar-thumb:hover{background-color:var(--bt-ink-3)}
-::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}
 
 .dsb-frame{display:grid;grid-template-columns:280px minmax(0,1fr);height:100%}
 .dsb-frame[data-rail]{grid-template-columns:56px minmax(0,1fr)}

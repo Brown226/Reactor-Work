@@ -10,7 +10,7 @@
  * 与上游唯一的差别：它挂到 `#root` 上接管整个窗口，这里挂在 Reactor 主区里，
  * 所以不接管 body 背景、不接管 `#root` 尺寸（那些由 Reactor 的壳决定）。
  */
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { generateTraceId } from "@zcode/shared";
 import { useServices } from "@/hooks/useServices.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -53,13 +53,17 @@ const SHEETS = [
 export function BotClusterView({
   workspacePath,
   workspaceIdentity,
+  onExit,
 }: {
   workspacePath: string;
   workspaceIdentity?: string;
+  /** 返回 Reactor 对话主视图。外层侧栏在本视图下是收起的，必须留这条路径。 */
+  onExit?: () => void;
 }) {
   const services = useServices();
   const { locale } = useZCodeIntl();
   const installed = useRef(false);
+  const [isDark, setIsDark] = useState(false);
 
   // 1) 样式 + 语言：全局只装一次，重复安装会堆叠 <style>。
   useEffect(() => {
@@ -158,7 +162,13 @@ export function BotClusterView({
   useEffect(() => {
     const root = document.documentElement;
     const sync = () => root.classList.contains("dark");
-    const apply = () => document.body.toggleAttribute("data-ds-dark-theme", sync());
+    const apply = () => {
+      // DS-Bot 的样式按 body[data-ds-dark-theme] 切换；同时用 state 让容器拿到
+      // color-scheme（滚动条、原生控件的深浅），两者必须同步。
+      const dark = sync();
+      document.body.toggleAttribute("data-ds-dark-theme", dark);
+      setIsDark(dark);
+    };
     apply();
     const observer = new MutationObserver(apply);
     observer.observe(root, { attributes: true, attributeFilter: ["class"] });
@@ -171,7 +181,29 @@ export function BotClusterView({
   // 4) 渲染 DS-Bot 自己的整个界面（侧栏 + 聊天 + 覆盖层）。
   //    它的 App 组件内部自己管自己的尺寸，这里只给一个撑满的容器。
   return (
-    <div className="bot-cluster" data-testid="agents-cluster">
+    <div className="bot-cluster" data-testid="agents-cluster" data-dark={isDark ? "" : undefined}>
+      {/* 返回按钮：本视图下 Reactor 外层侧栏是收起的，用户需要一个不依赖侧栏的出口。
+          放在左上角并让出 DS-Bot 自己的顶部按钮位，用 fixed 定位保证始终可点。 */}
+      {onExit ? (
+        <button
+          type="button"
+          onClick={onExit}
+          title="返回对话"
+          aria-label="返回对话"
+          data-testid="agents-cluster-exit"
+          className="absolute left-2 top-2 z-50 flex size-8 items-center justify-center rounded-full bg-black/25 text-white backdrop-blur-sm transition hover:bg-black/40"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M15 18l-6-6 6-6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      ) : null}
       <DsBotApp />
     </div>
   );
