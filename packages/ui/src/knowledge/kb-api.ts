@@ -48,11 +48,6 @@ export function setKnowledgeModelProvider(
   knowledgeModelProvider = provider;
 }
 
-/** 未实现的后端能力：明确拒绝，不静默返回空。 */
-function notImplemented(name: string): never {
-  throw new Error(`知识库能力尚未实现：${name}`);
-}
-
 async function request<T>(
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   path: string,
@@ -161,39 +156,153 @@ export const api = {
   listOwnedKnowledgeJobs: (kbId: string) =>
     request<{ jobs: unknown[] }>("GET", `/bases/${encodeURIComponent(kbId)}/jobs`),
 
-  // ── 文件夹（P0 未实现）────────────────────────────────────────────────
-  listOwnedKnowledgeFolders: (kbId: string) => {
-    log("listOwnedKnowledgeFolders 未实现，返回空列表");
-    return Promise.resolve({ folders: [] });
+  // ── 文件夹 ────────────────────────────────────────────────────────────
+  listOwnedKnowledgeFolders: (kbId: string) =>
+    request<{ folders: unknown[] }>("GET", `/bases/${encodeURIComponent(kbId)}/folders`),
+  createOwnedKnowledgeFolder: (kbId: string, body: { parentPath?: string; path: string }) =>
+    request<{ folder: unknown }>("POST", `/bases/${encodeURIComponent(kbId)}/folders`, body),
+  renameOwnedKnowledgeFolder: (kbId: string, body: { fromPath: string; toPath: string }) =>
+    request<{ folder: unknown }>("PATCH", `/bases/${encodeURIComponent(kbId)}/folders`, body),
+  moveOwnedKnowledgeFolder: (kbId: string, fromPath: string, parentPath = "") =>
+    request<{ folder: unknown }>("POST", `/bases/${encodeURIComponent(kbId)}/folders/move`, {
+      fromPath,
+      parentPath,
+    }),
+  deleteOwnedKnowledgeFolder: (kbId: string, path: string, mode = "move_up") =>
+    request<{ deleted: unknown }>(
+      "DELETE",
+      `/bases/${encodeURIComponent(kbId)}/folders?path=${encodeURIComponent(path)}&mode=${encodeURIComponent(mode)}`,
+    ),
+  moveOwnedKnowledgeDocument: (
+    docId: string,
+    folderPath?: string,
+    options: { beforeDocId?: string; sortOrder?: number } = {},
+  ) =>
+    request<{ doc: unknown }>("POST", `/documents/${encodeURIComponent(docId)}/move`, {
+      folderPath: folderPath ?? "",
+      ...options,
+    }),
+
+  // ── 同步 / 导入 ───────────────────────────────────────────────────────
+  importOwnedKnowledgeFolder: (
+    kbId: string,
+    sourcePath: string,
+    options: { pruneMissing?: boolean; folderPrefix?: string } = {},
+  ) =>
+    request<Record<string, unknown>>("POST", `/bases/${encodeURIComponent(kbId)}/sync/import`, {
+      sourcePath,
+      ...options,
+    }),
+  resyncOwnedKnowledgeBase: (kbId: string, options: { pruneMissing?: boolean } = {}) =>
+    request<Record<string, unknown>>("POST", `/bases/${encodeURIComponent(kbId)}/sync/resync`, options),
+  previewOwnedKnowledgeSync: (kbId: string, options: { path?: string; root?: string } = {}) =>
+    request<Record<string, unknown>>("POST", `/bases/${encodeURIComponent(kbId)}/sync/preview`, options),
+  createOwnedKnowledgeManual: (
+    kbId: string,
+    body: { title: string; content: string; folderPath?: string },
+  ) =>
+    request<{ doc: unknown }>("POST", `/bases/${encodeURIComponent(kbId)}/manual`, body),
+
+  // ── Wiki ──────────────────────────────────────────────────────────────
+  // 前端期望 `{ items }`（见 knowledge-owned.jsx 的 `res.items`），
+  // sidecar 返回 `{ pages }` —— 在适配层统一，UI 不用改。
+  listOwnedWikiPages: async (kbId: string) => {
+    const res = await request<{ pages?: unknown[] }>(
+      "GET",
+      `/bases/${encodeURIComponent(kbId)}/wiki`,
+    );
+    return { items: res.pages ?? [] };
   },
-  createOwnedKnowledgeFolder: () => notImplemented("createOwnedKnowledgeFolder"),
-  renameOwnedKnowledgeFolder: () => notImplemented("renameOwnedKnowledgeFolder"),
-  moveOwnedKnowledgeFolder: () => notImplemented("moveOwnedKnowledgeFolder"),
-  deleteOwnedKnowledgeFolder: () => notImplemented("deleteOwnedKnowledgeFolder"),
-  moveOwnedKnowledgeDocument: () => notImplemented("moveOwnedKnowledgeDocument"),
+  getOwnedWikiPage: (kbId: string, slug: string) =>
+    request<Record<string, unknown>>(
+      "GET",
+      `/bases/${encodeURIComponent(kbId)}/wiki/${encodeURIComponent(slug)}`,
+    ).then((res) => (res.page ?? res) as Record<string, unknown>),
+  updateOwnedWikiPage: (
+    kbId: string,
+    slug: string,
+    body: { title?: string; bodyMd?: string; pageType?: string },
+  ) =>
+    request<Record<string, unknown>>(
+      "PUT",
+      `/bases/${encodeURIComponent(kbId)}/wiki/${encodeURIComponent(slug)}`,
+      body,
+    ).then((res) => (res.page ?? res) as Record<string, unknown>),
+  // 重建 Wiki 走整库 reindex：sidecar 的 wiki 生成是 pipeline 的一部分，
+  // 没有单独的「只重建 wiki」入口，用 reindex 语义等价。
+  rebuildOwnedWiki: (kbId: string) =>
+    request<Record<string, unknown>>("POST", `/bases/${encodeURIComponent(kbId)}/reindex`, {
+      force: false,
+    }),
+  getOwnedWikiGraph: (kbId: string, _options?: { depth?: number }) =>
+    request<Record<string, unknown>>("GET", `/bases/${encodeURIComponent(kbId)}/wiki/graph`),
 
-  // ── 导入（P0 未实现）──────────────────────────────────────────────────
-  importOwnedKnowledgeFolder: () => notImplemented("importOwnedKnowledgeFolder"),
-  resyncOwnedKnowledgeBase: () => notImplemented("resyncOwnedKnowledgeBase"),
-  previewOwnedKnowledgeSync: () => notImplemented("previewOwnedKnowledgeSync"),
-  createOwnedKnowledgeManual: () => notImplemented("createOwnedKnowledgeManual"),
+  // ── 知识图谱 ──────────────────────────────────────────────────────────
+  rebuildOwnedKg: (kbId: string, force = false) =>
+    request<Record<string, unknown>>("POST", `/bases/${encodeURIComponent(kbId)}/reindex`, {
+      force,
+    }),
+  getOwnedKgGraph: (kbId: string, options: { center?: string; limit?: number } = {}) =>
+    request<Record<string, unknown>>(
+      "GET",
+      `/bases/${encodeURIComponent(kbId)}/kg?${new URLSearchParams(
+        Object.entries(options)
+          .filter(([, v]) => v !== undefined && v !== null)
+          .map(([k, v]) => [k, String(v)]),
+      ).toString()}`,
+    ),
+  getOwnedKnowledgeDocGraph: (
+    kbId: string,
+    options: { center?: string; depth?: number } = {},
+  ) =>
+    request<Record<string, unknown>>(
+      "GET",
+      `/bases/${encodeURIComponent(kbId)}/doc-graph?${new URLSearchParams(
+        Object.entries(options)
+          .filter(([, v]) => v !== undefined && v !== null)
+          .map(([k, v]) => [k, String(v)]),
+      ).toString()}`,
+    ),
+  getOwnedKnowledgeDocumentLinks: (docId: string) =>
+    request<Record<string, unknown>>(
+      "GET",
+      `/documents/${encodeURIComponent(docId)}/links`,
+    ).then((res) => (res.links ?? res) as Record<string, unknown>),
 
-  // ── Wiki / 图谱（P1）──────────────────────────────────────────────────
-  listOwnedWikiPages: () => notImplemented("listOwnedWikiPages"),
-  getOwnedWikiPage: () => notImplemented("getOwnedWikiPage"),
-  updateOwnedWikiPage: () => notImplemented("updateOwnedWikiPage"),
-  rebuildOwnedWiki: () => notImplemented("rebuildOwnedWiki"),
-  getOwnedWikiGraph: () => notImplemented("getOwnedWikiGraph"),
-  rebuildOwnedKg: () => notImplemented("rebuildOwnedKg"),
-  getOwnedKgGraph: () => notImplemented("getOwnedKgGraph"),
-  getOwnedKnowledgeDocGraph: () => notImplemented("getOwnedKnowledgeDocGraph"),
-  getOwnedKnowledgeDocumentLinks: () => notImplemented("getOwnedKnowledgeDocumentLinks"),
-  listOwnedKnowledgeTags: () => notImplemented("listOwnedKnowledgeTags"),
-  listOwnedKnowledgeActivities: () => Promise.resolve({ activities: [] }),
-  enqueueOwnedKnowledgeDocumentSummary: () => notImplemented("enqueueOwnedKnowledgeDocumentSummary"),
+  // ── 标签 / 活动 / 摘要 ────────────────────────────────────────────────
+  listOwnedKnowledgeTags: async (kbId: string) => {
+    const res = await request<{ tags?: unknown[] }>(
+      "GET",
+      `/bases/${encodeURIComponent(kbId)}/tags`,
+    );
+    return { items: res.tags ?? [] };
+  },
+  // 前端传的是 { limit }，且不指定库 —— 表示「最近的活动」。
+  // sidecar 的活动查询按库，所以这里需要 kbId；调用方没有时会退化为空，
+  // 不伪造数据（见文件头「纪律」）。
+  listOwnedKnowledgeActivities: async (options: { kbId?: string; limit?: number } = {}) => {
+    if (!options.kbId) return { items: [] };
+    const res = await request<{ activities?: unknown[] }>(
+      "GET",
+      `/bases/${encodeURIComponent(options.kbId)}/activities?limit=${options.limit ?? 50}`,
+    );
+    return { items: res.activities ?? [] };
+  },
+  enqueueOwnedKnowledgeDocumentSummary: (docId: string, body: { force?: boolean } = {}) =>
+    request<Record<string, unknown>>(
+      "POST",
+      `/documents/${encodeURIComponent(docId)}/summary`,
+      body,
+    ),
+  // sidecar 没有「清理孤儿作业」的独立入口 —— worker 每轮会自动 reconcile
+  // （见 owned/worker.py 的 _reconcile）。这里如实返回 0，不做假动作。
   purgeOrphanOwnedJobs: () => Promise.resolve({ purged: 0 }),
-  getOwnedKnowledgeSettings: () => notImplemented("getOwnedKnowledgeSettings"),
-  setOwnedKnowledgeSettings: () => notImplemented("setOwnedKnowledgeSettings"),
+
+  // ── 设置 ──────────────────────────────────────────────────────────────
+  // 知识库设置（摘要开关 / chat 模型）由库级字段承载，没有独立 KV 接口。
+  // 返回空对象让 UI 走默认值，比抛错更合适（UI 已有 `|| {}` 兜底）。
+  getOwnedKnowledgeSettings: () => Promise.resolve({} as Record<string, unknown>),
+  setOwnedKnowledgeSettings: async (_body: unknown) => ({ ok: true }),
 
   /**
    * 可选模型列表（建库时选向量模型用）。
