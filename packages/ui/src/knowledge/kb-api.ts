@@ -23,8 +23,26 @@ import { logger } from "../logger.js";
 
 const log = logger.warn.bind(logger);
 
-/** 网关 base：与其它 `/api/*` 同源，相对路径即可（开发态走 vite proxy）。 */
-const BASE = "/api/knowledge/owned";
+/**
+ * 网关 base。
+ *
+ * - **Web**：与其它 `/api/*` 同源，相对路径即可（开发态走 vite proxy）。
+ * - **桌面端**：没有常驻 HTTP server，main 进程为知识库单独起了一个只监听
+ *   127.0.0.1 的网关，地址经 preload 注入到 `window.__ZCODE_KNOWLEDGE_GATEWAY_URL__`。
+ *   此时 BASE 变成绝对地址 `<注入值>/api/knowledge/owned`。
+ *
+ * 注入值为空（网关启动失败 / 非 Electron 环境）时退回相对路径，
+ * 请求会自然失败 —— 比静默返回空数据更诚实。
+ */
+function resolveBase(): string {
+  const injected = (
+    globalThis as { __ZCODE_KNOWLEDGE_GATEWAY_URL__?: string }
+  ).__ZCODE_KNOWLEDGE_GATEWAY_URL__;
+  const origin = typeof injected === "string" ? injected.trim().replace(/\/+$/, "") : "";
+  return `${origin}/api/knowledge/owned`;
+}
+
+const BASE = resolveBase();
 
 /** 向量模型选项（与 EvoFlow `collectEmbeddingModelOptions` 消费的形状一致）。 */
 export interface KnowledgeModelOption {

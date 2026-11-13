@@ -36,8 +36,31 @@ function parseDeviceIdFromArgs(): string {
   return "";
 }
 
+/**
+ * 从 command-line 参数中解析 --knowledge-gateway-url=
+ *
+ * 桌面端没有 Web 那样的常驻 HTTP server；main 进程为知识库单独起了一个
+ * 只监听 127.0.0.1 的轻量网关，地址经 additionalArguments 传到这里，
+ * 再由 renderer 的 kb-api.ts 作为 BASE 使用。
+ *
+ * 返回空串表示网关未启动（main 侧启动失败），前端会退回相对路径。
+ */
+function parseKnowledgeGatewayUrlFromArgs(): string {
+  for (const arg of process.argv) {
+    if (arg.startsWith("--knowledge-gateway-url=")) {
+      return arg.slice("--knowledge-gateway-url=".length);
+    }
+  }
+  return "";
+}
+
 // 在 contextBridge 建立之前就暴露同步值，让 renderer 在 React 渲染前就能读到
 contextBridge.exposeInMainWorld("__ZCODE_DEVICE_ID__", parseDeviceIdFromArgs());
+// 知识库网关地址：同样是同步值，kb-api.ts 在模块加载时就要用。
+contextBridge.exposeInMainWorld(
+  "__ZCODE_KNOWLEDGE_GATEWAY_URL__",
+  parseKnowledgeGatewayUrlFromArgs(),
+);
 
 import type {
   AppSettings,

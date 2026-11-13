@@ -7,6 +7,11 @@ import { installRequestSecurityDiagnostics } from "./request-security-edition/in
 import { createLocalTtftExporter } from "./localTtftExporter.js";
 /* eslint-disable max-lines */
 import "./desktopEarlyDataBaseDirBootstrap.js";
+import {
+  ensureKnowledgeGateway,
+  getKnowledgeGatewayUrl,
+  shutdownKnowledgeGateway,
+} from "./knowledgeGateway.js";
 import "./desktopEarlyChromiumHardwareAccelerationBootstrap.js";
 import { powerMonitor, powerSaveBlocker } from "electron";
 import { crashCapturePaths } from "./appCrashCaptureBootstrap.js";
@@ -1133,9 +1138,19 @@ broadcastHub.onMobilePushEvent = (event) =>
 app
   .whenReady()
   .then(() => powerMonitor.on("resume", () => void webRemoteControlManager.refreshNotifications()));
-app.on("will-quit", () => webRemoteControlManager.disposeNotifications());
+app.on("will-quit", () => {
+  webRemoteControlManager.disposeNotifications();
+  // 关停知识库网关：它会释放到 sidecar 常驻进程的连接，不关会留下孤儿进程。
+  void shutdownKnowledgeGateway();
+});
 
 let forceUpdateMainWindowCreationBlocked = false;
+
+/**
+ * 知识库网关启动中。窗口创建（同步路径）会等它就绪后再注入地址；
+ * 未启动（null）时直接开窗，前端退回相对路径。
+ */
+let knowledgeGatewayReady: Promise<unknown> | null = null;
 
 function resolveExternalWorkspaceConfirmationCopy() {
   const effectiveLocale =
@@ -1184,7 +1199,20 @@ const primaryWindowCoordinator = createPrimaryWindowCoordinator({
     });
   },
   createWindow: (startupBootstrap) => {
-    createWindowInstance(startupBootstrap);
+    // 网关是异步启动的，窗口创建是同步路径。等它就绪再开窗，用户点开知识库
+    // 时地址一定已经注入；最多等 3s，超时也照常开窗（知识库届时不可用，
+    // 但不该因为一个附加能力让用户看不到主界面）。
+    const gatewayReady = knowledgeGatewayReady;
+    if (!gatewayReady) {
+      createWindowInstance(startupBootstrap);
+      return;
+    }
+    void Promise.race([
+      gatewayReady,
+      new Promise((resolve) => setTimeout(resolve, 3000)),
+    ]).then(() => {
+      createWindowInstance(startupBootstrap);
+    });
   },
   canCreateWindow: (reason) => {
     if (!forceUpdateMainWindowCreationBlocked) {
@@ -2148,6 +2176,8 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
     // 已恢复 workspace 建立后台索引。始终注入 canonical fallback，才能覆盖非 active 历史目录已删除的情况。
     agentSpawnFallbackCwd: getConversationWorkspaceDir(),
     deviceMid,
+    // 网关可能尚未就绪（异步启动）：未就绪时传 undefined，前端退回相对路径。
+    knowledgeGatewayUrl: getKnowledgeGatewayUrl(),
     remoteAssets: resolveRemoteAssetDirs({ locale: currentApplicationLocale }, hostProcessLocalEnv),
     runtimeProcessEnvPatchPromise: runtimeProcessEnvPreparation.patchPromise,
     runtimeProcessEnvFallbackPatch: runtimeProcessEnvPreparation.fallbackPatch,
@@ -2230,6 +2260,9 @@ app.on("second-instance", (_event, argv, _workingDirectory, additionalData) => {
 
 app.whenReady().then(async () => {
   markMainLaunchAppReady();
+  // 知识库网关：桌面端没有 Web 那样的常驻 Hono server，为知识库单独起一个
+  // 只监听 127.0.0.1 的轻量 server，异步进行、失败不影响主流程（见该模块说明）。
+  knowledgeGatewayReady = ensureKnowledgeGateway(logger);
   installRequestSecurityDiagnostics(session.defaultSession.webRequest, logger);
   installLocalMediaPreviewProtocol(session.defaultSession.protocol, {
     isPathAuthorized: localMediaPreviewPathRegistry.isAuthorized,

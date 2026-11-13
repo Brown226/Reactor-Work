@@ -368,6 +368,11 @@ function initializeBusinessRoot(port: MessagePort): void {
           assistantCodeCommentCardsEnabled
           isMacDesktop={isMacDesktop}
           isWindowsDesktop={isWindowsDesktop}
+          // [本地定制] 知识库入口：main 进程为该功能单独起了本地网关
+          // （packages/server/src/knowledge/standalone.ts），地址经 preload 注入。
+          // 网关启动失败时地址为空，入口仍显示但请求会失败 —— 比整块隐藏更
+          // 容易让用户看出「这个功能存在但坏了」，也便于排查。
+          knowledgeEnabled
           restoreSession={restoreSession}
           supportsSettings={supportsSettings}
           initialWorkspaceAbsPath={initialWorkspaceAbsPath}

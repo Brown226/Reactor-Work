@@ -590,6 +590,17 @@ export function createBrowserWindow(options: {
   logger: { warn: (...args: unknown[]) => void };
   /** 桌面端设备标识符（基于 userData 路径的 SHA-256），用于 renderer 同步读取 */
   deviceMid?: string;
+  /**
+   * 知识库网关地址（`http://127.0.0.1:<port>`）。
+   *
+   * 桌面端不像 Web 端有一个常驻的 Hono server，而知识库 UI 是按 HTTP 契约写的
+   * （EvoFlow 的 Web 模式）。所以 main 进程为知识库单独起一个只监听回环的
+   * 轻量 server（见 packages/server/src/knowledge/standalone.ts），把地址传进来
+   * 注入 preload —— 这样前端 `kb-api.ts` 一行都不用改。
+   *
+   * 为空表示网关未启动（例如 sidecar 起不来），此时前端会退回相对路径并自然失败。
+   */
+  knowledgeGatewayUrl?: string;
   /** 桌面端持久化页面缩放档位；窗口创建时先应用，避免首屏回到默认大小。 */
   initialDesktopZoomLevel?: number;
   /** 主进程设置服务读取的最近一次普通窗口尺寸与最大化状态。 */
@@ -633,8 +644,14 @@ export function createBrowserWindow(options: {
       // 永久 backgroundThrottling=false 会唤醒整窗 renderer、所有 webview guest
       // 和 GPU。窗口保持默认节流；截图期只临时唤醒 owner renderer 与当前目标 guest。
       zoomFactor: initialDesktopZoomFactor,
-      // 将 deviceMid 透传给 preload，供 renderer 在 React 渲染前同步读取
-      additionalArguments: [`--device-id=${options.deviceMid ?? ""}`],
+      // 将 deviceMid 透传给 preload，供 renderer 在 React 渲染前同步读取。
+      // 知识库网关地址同路注入：preload 读 argv → 挂到 window，kb-api.ts 取用。
+      additionalArguments: [
+        `--device-id=${options.deviceMid ?? ""}`,
+        ...(options.knowledgeGatewayUrl
+          ? [`--knowledge-gateway-url=${options.knowledgeGatewayUrl}`]
+          : []),
+      ],
     },
   });
 

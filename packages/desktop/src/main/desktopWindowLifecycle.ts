@@ -55,6 +55,8 @@ export function createWindow(options: {
   agentWarmupTargets?: readonly StartupWorkspaceWarmupTarget[];
   agentSpawnFallbackCwd: string;
   deviceMid: string;
+  /** 知识库网关地址；见 desktopWindowChrome.createBrowserWindow 的同名参数说明。 */
+  knowledgeGatewayUrl?: string;
   remoteAssets?: RemoteAssetDirs;
   initialDesktopZoomLevel?: number;
   initialWindowSize?: DesktopWindowSize;
@@ -90,6 +92,7 @@ export function createWindow(options: {
     },
     logger: options.logger,
     deviceMid: options.deviceMid,
+    knowledgeGatewayUrl: options.knowledgeGatewayUrl,
     initialDesktopZoomLevel: options.initialDesktopZoomLevel,
     initialWindowSize: options.initialWindowSize,
     currentApplicationLocale: options.currentApplicationLocale,
