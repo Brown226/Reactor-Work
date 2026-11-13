@@ -31,7 +31,8 @@ from typing import Any
 from .pipeline import (
     claim_job,
     finish_job,
-    pending_parse_jobs,
+    pending_jobs,
+    run_embed_job,
     run_parse_job,
 )
 from .store import KnowledgeStore, StorageError
@@ -44,8 +45,9 @@ IDLE_POLL_SECONDS = 0.2
 
 
 class IndexWorker:
-    def __init__(self, store: KnowledgeStore) -> None:
+    def __init__(self, store: KnowledgeStore, model_client: Any = None) -> None:
         self._store = store
+        self._model_client = model_client
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
 
@@ -84,7 +86,7 @@ class IndexWorker:
         for base in self._all_bases():
             kb_id = base["id"]
             try:
-                jobs = pending_parse_jobs(self._store, kb_id, limit=5)
+                jobs = pending_jobs(self._store, kb_id, limit=5)
             except StorageError:
                 # 库在扫描过程中被删掉了，跳过
                 continue
@@ -115,13 +117,35 @@ class IndexWorker:
                     error=outcome.error,
                 )
             elif kind == "embed":
-                # P0-c 实现；当前只把这些作业标记为跳过，避免永久 queued
+                if not doc_pk:
+                    finish_job(self._store, kb_id, job_id, ok=False, error="作业缺 doc_id")
+                    return
+                if self._model_client is None:
+                    # 没有配置模型服务：标记失败而不是无限 queued，
+                    # 关键词检索照常可用（spec §4.4 语义降级）。
+                    finish_job(
+                        self._store,
+                        kb_id,
+                        job_id,
+                        ok=False,
+                        error="未配置 embedding 服务（关键词检索仍可用）",
+                    )
+                    return
+                outcome = run_embed_job(
+                    self._store,
+                    kb_id,
+                    doc_pk,
+                    client=self._model_client,
+                    # 必须与建库时登记的 embeddingModel 一致，否则检索侧按 model
+                    # 过滤会一条都匹配不上（表现为「嵌入成功但检索永远只有关键词」）。
+                    model=self._resolve_embedding_model(kb_id),
+                )
                 finish_job(
                     self._store,
                     kb_id,
                     job_id,
-                    ok=False,
-                    error="embedding 尚未实现（P0-c）",
+                    ok=outcome.ok,
+                    error=outcome.error,
                 )
             else:
                 finish_job(self._store, kb_id, job_id, ok=False, error=f"未知作业类型：{kind}")
@@ -131,6 +155,22 @@ class IndexWorker:
                 finish_job(self._store, kb_id, job_id, ok=False, error=str(exc))
             except Exception:  # noqa: BLE001
                 pass
+
+    def _resolve_embedding_model(self, kb_id: str) -> str:
+        """取该库登记的 embedding 模型名。
+
+        嵌入写入与检索查询必须用**同一个** model 值做过滤条件，
+        否则两边对不上：写入写 model=''、查询按 model='BAAI/bge-m3' 过滤，
+        结果就是「向量明明写了却检索不到」。这里以库的登记值为准。
+        """
+        try:
+            with self._store.central() as conn:
+                row = conn.execute(
+                    "SELECT embedding_model FROM kb_bases WHERE id=?", (kb_id,)
+                ).fetchone()
+            return str(row["embedding_model"] or "") if row else ""
+        except Exception:  # noqa: BLE001 — 读不到就退化为空串（不过滤）
+            return ""
 
     def _all_bases(self) -> list[dict[str, Any]]:
         with self._store.central() as conn:

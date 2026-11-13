@@ -25,6 +25,7 @@ from pathlib import Path
 
 from .handlers import KnowledgeHandlers
 from . import VERSION as _PKG_VERSION
+from .models import client_from_env
 from .store import KnowledgeStore
 from .transport import RpcServer, emit_ready
 from .worker import IndexWorker
@@ -60,10 +61,21 @@ def _configure_logging(level: str) -> None:
 
 async def _run(data_root: Path) -> int:
     store = KnowledgeStore(data_root)
-    handlers = KnowledgeHandlers(store, VERSION)
+
+    # 模型服务客户端：从 ZCODE_KNOWLEDGE_* 环境变量读配置。
+    # 没配就返回 None —— 此时仍可建库/上传/解析/关键词检索，只是没有向量
+    # （spec §4.4 语义降级），不要把「没配模型」当成启动失败。
+    model_client = client_from_env()
+    if model_client is None:
+        logging.getLogger("knowledge_sidecar").warning(
+            "未配置模型服务（ZCODE_KNOWLEDGE_MODEL_BASE_URL），"
+            "向量检索不可用，关键词检索正常"
+        )
+
+    handlers = KnowledgeHandlers(store, VERSION, model_client)
 
     # 索引 worker：解析/嵌入在独立线程里做，不阻塞 RPC
-    worker = IndexWorker(store)
+    worker = IndexWorker(store, model_client)
     worker.start()
 
     server = RpcServer()
@@ -78,6 +90,7 @@ async def _run(data_root: Path) -> int:
     server.register("kb.job", handlers.job)
     server.register("kb.listJobs", handlers.list_jobs)
     server.register("kb.search", handlers.search)
+    server.register("kb.ask", handlers.ask)
     server.register("kb.readDoc", handlers.read_doc)
     server.register("kb.stats", handlers.stats)
     server.register("kb.retryDoc", handlers.retry_doc)

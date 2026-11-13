@@ -1,12 +1,13 @@
-"""P0-a 的方法实现：库的增删改查 + 健康检查。
+"""RPC 方法实现：库增删改查、上传、解析状态、检索、重建索引。
 
-检索链路（P0-c/d）与解析分块（P0-b）不在本阶段实现，先留明确的 ``NOT_IMPLEMENTED``，
-避免前端拿到一个「能调但返回空」的假接口。
+检索链路移植自 EvoFlow `owned/service.py`（见 `search.py` 头部说明），
+降级语义遵循 spec §4.4：任何一路不可用都不中断整体检索，只在结果里标 `degraded`。
 """
 
 from __future__ import annotations
 
 import hashlib
+import logging
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -14,8 +15,15 @@ from typing import Any
 
 from .store import KnowledgeStore, StorageError
 
-# 内容模式白名单：与 spec §6.3 一致。
+logger = logging.getLogger("knowledge_sidecar.handlers")
+
+# 内容模式白名单：与 spec §6.3 一致。title 只在检索时作为可选模式出现，
+# 建库时不允许设成 title（那等于关掉正文检索）。
 CONTENT_MODES = {"hybrid", "keyword", "vector"}
+
+# 检索模式白名单：比 CONTENT_MODES 多一个 title（按文档名找文档）。
+# 建库时只能选 CONTENT_MODES，检索时允许 title。
+SEARCH_MODES = CONTENT_MODES | {"title"}
 
 
 def _now() -> str:
@@ -40,9 +48,15 @@ def _row_to_base(row: Any) -> dict[str, Any]:
 
 
 class KnowledgeHandlers:
-    def __init__(self, store: KnowledgeStore, version: str) -> None:
+    def __init__(
+        self,
+        store: KnowledgeStore,
+        version: str,
+        model_client: Any = None,
+    ) -> None:
         self._store = store
         self._version = version
+        self._model_client = model_client
 
     # ── 健康检查 ────────────────────────────────────────────────────────
     async def ping(self, _params: dict[str, Any]) -> dict[str, Any]:
@@ -434,9 +448,186 @@ class KnowledgeHandlers:
             )
         return {"retried": True, "docId": doc["id"]}
 
-    # ── P0-c 之后实现 ───────────────────────────────────────────────────
-    async def search(self, _params: dict[str, Any]) -> Any:
-        raise StorageError("NOT_IMPLEMENTED", "检索链路在 P0-c/d 实现")
+    # ── 检索 ────────────────────────────────────────────────────────────
+    async def search(self, params: dict[str, Any]) -> dict[str, Any]:
+        """混合检索：三路召回 → RRF 融合 → 模型重排。
+
+        编排移植自 EvoFlow `owned/service.py::search()`，降级链按 spec §6.3：
+        - keyword 模式：只走 FTS + LIKE；
+        - vector 模式：只走向量（无向量时降级为关键词并标记 degraded）；
+        - hybrid（默认）：关键词 + 向量 → RRF(w_kw=1.8, w_vec=0.65)。
+          关键词权重更高是因为「精确术语 / 编号 / 引用」场景比语义相似更重要。
+
+        重排：配了 rerank 服务就先模型精排，失败退回词面启发式。
+        """
+        kb_id = self._require_kb_id(params)
+        self._base_by_id(kb_id)
+
+        query = str(params.get("query") or "").strip()
+        if not query:
+            raise StorageError("MISSING_QUERY", "query 不能为空")
+
+        top_k = int(params.get("topK") or 8)
+        top_k = max(1, min(top_k, 50))
+        mode = str(params.get("mode") or "hybrid").strip().lower()
+        # title 是**检索**专用模式（按文档名找），不在建库的 CONTENT_MODES 白名单里，
+        # 但检索时必须允许 —— 早期版本直接拿 CONTENT_MODES 校验，把 title 静默
+        # 降级成 hybrid，导致「按文件名找文档」这个场景彻底失效。
+        if mode not in SEARCH_MODES:
+            mode = "hybrid"
+
+        from .search import (
+            apply_model_rerank,
+            enrich_hits,
+            rerank_by_query_match,
+            rrf_fuse,
+            search_keyword,
+            search_title,
+            search_vector,
+        )
+
+        fetch_k = max(top_k * 3, 20)
+        degraded = False
+        keyword_hits: list[dict[str, Any]] = []
+        vector_hits: list[dict[str, Any]] = []
+
+        base = self._base_by_id(kb_id)
+        embedding_dim = int(base.get("embeddingDim") or 0)
+
+        with self._store.kb_conn(kb_id) as conn:
+            # 标题模式：按文档名找，直接返回每篇文档的首块
+            if mode == "title":
+                fused = search_title(conn, query, top_k=fetch_k)
+                items = enrich_hits(conn, fused)[:top_k]
+                return {
+                    "items": items,
+                    "total": len(items),
+                    "mode": mode,
+                    "degraded": False,
+                }
+
+            if mode in ("keyword", "hybrid"):
+                keyword_hits = search_keyword(conn, query, top_k=fetch_k)
+
+            if mode in ("vector", "hybrid"):
+                qvec: list[float] = []
+                if self._model_client is not None and embedding_dim > 0:
+                    try:
+                        qvec = self._model_client.embed([query])[0]
+                    except Exception as exc:  # noqa: BLE001 — 降级不报错
+                        degraded = True
+                        logger.warning("查询向量化失败，降级为关键词检索：%s", exc)
+                if qvec:
+                    vector_hits = search_vector(
+                        conn,
+                        qvec,
+                        top_k=fetch_k,
+                        model=str(base.get("embeddingModel") or ""),
+                    )
+                elif mode == "vector":
+                    # 明确要语义检索但没有向量能力 → 诚实标记降级
+                    degraded = True
+
+            # 融合
+            if mode == "keyword" or (mode == "hybrid" and not vector_hits):
+                fused = keyword_hits[:fetch_k]
+                for i, h in enumerate(fused):
+                    h["rank"] = i + 1
+                    rel = float(h.get("score") or 0)
+                    h["rrf_score"] = rel if rel > 0 else 1.0 / (60 + i + 1)
+                if mode == "hybrid" and embedding_dim > 0 and not vector_hits:
+                    degraded = True
+            elif mode == "vector":
+                fused = vector_hits[:fetch_k]
+                for i, h in enumerate(fused):
+                    h["rank"] = i + 1
+                    h["rrf_score"] = h.get("score") or 0
+            else:
+                # 精确词 / 编号 / 引号短语要压过「语义相近」的结果
+                fused = rrf_fuse(
+                    keyword_hits,
+                    vector_hits,
+                    top_k=fetch_k,
+                    w_kw=1.8,
+                    w_vec=0.65,
+                )
+
+            items = enrich_hits(conn, fused)
+            # 补 kbId（enrich 时不知道库 id，这里统一填）
+            for item in items:
+                item["kbId"] = kb_id
+
+            # 精排：模型优先，失败退回词面启发式
+            if self._model_client is not None and self._model_client.has_rerank:
+                try:
+                    items = apply_model_rerank(
+                        items, query, self._model_client, top_k=top_k
+                    )
+                except Exception as exc:  # noqa: BLE001 — rerank 挂了不影响结果
+                    logger.warning("模型重排失败，退回词面启发式：%s", exc)
+                    items = rerank_by_query_match(items, query)[:top_k]
+            else:
+                items = rerank_by_query_match(items, query)[:top_k]
+
+        return {
+            "items": items,
+            "total": len(items),
+            "mode": mode,
+            "degraded": degraded,
+        }
+
+    async def ask(self, params: dict[str, Any]) -> dict[str, Any]:
+        """问答：检索出相关片段并拼成带引用的答案上下文。
+
+        **P0 不在这里调 LLM**：sidecar 只负责「检索 + 组装上下文」，生成答案
+        由上层 agent / 模型完成。这样做的原因：
+        - sidecar 不该持有对话状态，也不该懂 prompt 拼装；
+        - 用户换模型 / 换 prompt 策略不需要重启 sidecar；
+        - 断网时检索仍可用，只是没有生成能力。
+        """
+        kb_id = self._require_kb_id(params)
+        self._base_by_id(kb_id)
+        query = str(params.get("query") or "").strip()
+        if not query:
+            raise StorageError("MISSING_QUERY", "query 不能为空")
+
+        top_k = int(params.get("topK") or 6)
+        top_k = max(1, min(top_k, 20))
+
+        result = await self.search(
+            {
+                "kbId": kb_id,
+                "query": query,
+                "topK": top_k,
+                "mode": params.get("mode") or "hybrid",
+            }
+        )
+        items = result.get("items") or []
+
+        # 组装上下文：每段前加来源标记，方便上层引用和前端跳转
+        blocks: list[str] = []
+        for index, item in enumerate(items, 1):
+            header = str(item.get("contextHeader") or "").strip()
+            title = str(item.get("title") or item.get("fileName") or "").strip()
+            label = " › ".join(part for part in (title, header) if part)
+            blocks.append(f"[{index}] {label}\n{item.get('content') or ''}")
+        context = "\n\n".join(blocks)
+
+        return {
+            "query": query,
+            "context": context,
+            "sources": [
+                {
+                    "index": index,
+                    "chunkId": item.get("chunkId"),
+                    "docId": item.get("docId"),
+                    "title": item.get("title"),
+                    "contextHeader": item.get("contextHeader"),
+                }
+                for index, item in enumerate(items, 1)
+            ],
+            "degraded": result.get("degraded", False),
+        }
 
     async def stats(self, params: dict[str, Any]) -> dict[str, Any]:
         kb_id = self._require_kb_id(params)
@@ -461,8 +652,39 @@ class KnowledgeHandlers:
             "byStatus": by_status,
         }
 
-    async def reindex(self, _params: dict[str, Any]) -> Any:
-        raise StorageError("NOT_IMPLEMENTED", "重建索引在 P0-c 实现")
+    async def reindex(self, params: dict[str, Any]) -> dict[str, Any]:
+        """整库重建索引：清掉全部分块/向量/FTS，为每篇文档重排 parse + embed。
+
+        parse 会重新分块并再排一个 embed job，所以这里只需要排 parse。
+        """
+        kb_id = self._require_kb_id(params)
+        self._base_by_id(kb_id)
+        now = _now()
+
+        with self._store.kb_conn(kb_id) as conn:
+            conn.execute("DELETE FROM kb_chunks")
+            conn.execute("DELETE FROM kb_chunk_embeddings")
+            try:
+                conn.execute("DELETE FROM kb_chunks_fts")
+            except Exception:  # noqa: BLE001 — FTS 不可用时忽略
+                pass
+            conn.execute("DELETE FROM kb_jobs WHERE state IN ('queued','running')")
+            docs = conn.execute(
+                "SELECT id FROM kb_documents ORDER BY created_at"
+            ).fetchall()
+            for doc in docs:
+                conn.execute(
+                    "UPDATE kb_documents SET parse_status='pending', parse_error=NULL, "
+                    "updated_at=? WHERE id=?",
+                    (now, doc["id"]),
+                )
+                conn.execute(
+                    "INSERT INTO kb_jobs (id, kind, doc_id, state, created_at, updated_at) "
+                    "VALUES (?, 'parse', ?, 'queued', ?, ?)",
+                    (_new_id("job"), doc["id"], now, now),
+                )
+        logger.info("整库重建索引 kb=%s docs=%d", kb_id, len(docs))
+        return {"reindexed": True, "documents": len(docs)}
 
     # ── 内部 ────────────────────────────────────────────────────────────
     def _require_kb_id(self, params: dict[str, Any]) -> str:

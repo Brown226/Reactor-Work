@@ -122,6 +122,20 @@ class ModelServiceClient:
     def __init__(self, config: ModelServiceConfig) -> None:
         self._config = config
 
+    @property
+    def has_embedding(self) -> bool:
+        """是否配置了 embedding 模型。"""
+        return bool(self._config.embedding_model)
+
+    @property
+    def has_rerank(self) -> bool:
+        """是否配置了 rerank 模型。没配就跳过精排，直接用 RRF + 词面启发式。"""
+        return bool(self._config.rerank_model)
+
+    @property
+    def embedding_model(self) -> str:
+        return self._config.embedding_model
+
     # ── embedding（OpenAI 标准）─────────────────────────────────────────
     def embed(self, texts: list[str]) -> list[list[float]]:
         if not texts:

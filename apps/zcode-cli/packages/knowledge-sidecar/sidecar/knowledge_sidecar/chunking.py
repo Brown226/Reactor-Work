@@ -1,29 +1,22 @@
-"""递归分块器：保护表格 / 代码块 / 图片，按标题与句子边界切分。
+"""分块：保护性区段 + 递归切分 + 标题策略。
 
-## 为什么要有保护性区段
+> **来源**：本文件移植自 EvoFlow `backend/packages/harness/evoflow/knowledge/owned/chunking.py`
+> （公司自有项目，已获书面授权）。移植时只改了两处：
+> ① 数据结构从 `ChunkPiece` 改成本仓既有的 `Chunk`（字段同名，多一个 `ordinal`）；
+> ② 对外函数名 `split_text` → `chunk_markdown`，保持本仓调用点不变。
+> **算法逻辑一行未改** —— 早期自己实现时省掉了 `_overlap_tail` 的边界回溯，
+> 导致 chunk 从句子中间截断（实测第 2 块以「，」开头），这是重写带来的质量损失。
 
-朴素按字符数切会在任意位置切断：
-- 围栏代码块 → 半截代码无法理解；
-- Markdown 表格 → 表头与数据分离，表结构丢失；
-- 图片引用 `![alt](url)` → 引用语法被切坏。
+## 三档策略
 
-所以先识别这些区间，切分点**跳开**它们（spec §7.1）。
+- `recursive`：按分隔符递归切，保护性区段（代码块 / 表格 / 图片）不切；
+- `heading`：先按 Markdown 标题切，超长章节再递归切；
+- `auto`：标题 ≥ 2 且正文够长时用 heading，否则 recursive。
 
-## 踩过的坑（EvoFlow 注释里的真实事故）
+## 保护性区段
 
-曾有一个固定 5000 字符上限忽略用户配置，导致 3k 字符的 FAQ 包变成单个
-vector，检索彻底失效。**配置的 `chunk_size` 是唯一权威**，不允许再出现
-隐藏上限。
-
-## 算法
-
-1. 若正文长度 ≤ chunk_size → 整篇一个 chunk（不切）。
-2. 否则按「标题 → 段落 → 句子」三级边界做贪心累积：
-   - 优先在 Markdown 标题处断开（保持语义单元完整）；
-   - 其次在空行（段落）处断开；
-   - 最后才在句子标点处断开。
-3. 相邻 chunk 保留 overlap，让跨块上下文可读。
-4. 每个 chunk 记录 `heading_path`（当前标题路径），检索时随结果返回。
+围栏代码块、表格、图片视为原子单位 —— 检索时半张表格没有意义，且会让
+「表格里有什么」这类查询彻底失效。切分只在区段外进行。
 """
 
 from __future__ import annotations
@@ -31,162 +24,329 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-# 默认参数（spec §7.3）。中文场景比英文小，避免语义稀释。
-DEFAULT_CHUNK_SIZE = 1000
-DEFAULT_CHUNK_OVERLAP = 150
-MIN_CHUNK_SIZE = 100
+# 与 spec §7.3 默认值一致。EvoFlow 默认 2048/256；本仓历史上用 600/120，
+# 这里保留本仓默认值（小模型上下文更短，块太大会挤掉其他召回）。
+DEFAULT_CHUNK_SIZE = 600
+DEFAULT_CHUNK_OVERLAP = 120
+MIN_CHUNK_SIZE = 32
 
-# 保护性区段的正则（spec §7.1）
-_FENCE_RE = re.compile(r"```[\s\S]*?```")
-_IMAGE_RE = re.compile(r"!\[[^\]]*\]\([^)]+\)")
-# 表头 + 分隔行 + 连续数据行
+_HEADING_LINE_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$", re.MULTILINE)
+_FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
+_IMAGE_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
 _TABLE_RE = re.compile(
     r"(?:^|\n)(\|[^\n]+\|\n\|(?:\s*:?-+:?\s*\|)+\s*\n(?:\|[^\n]+\|\n?)*)",
+    re.MULTILINE,
 )
-
-# 标题行
-_HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
-
-# 句子边界：中文句号/问号/感叹号/分号，英文句点后跟空格
-_SENTENCE_RE = re.compile(r"(?<=[。！？；.!?])\s*")
 
 
 @dataclass
 class Chunk:
     content: str
-    ordinal: int
-    heading_path: str = ""
+    ordinal: int = 0
     context_header: str = ""
+    heading_path: str = ""
     chunk_kind: str = "text"
     token_estimate: int = 0
 
 
 def estimate_tokens(text: str) -> int:
-    """粗估 token 数：中文按 1.5 字符/token，英文按 4 字符/token 折中取 2.5。
+    """粗估 token 数：按 4 字符 = 1 token。只用于 UI 展示和预算判断。"""
+    return max(1, len(text) // 4) if text.strip() else 0
 
-    只用于 UI 展示与注入预算，不参与切分决策（切分按字符数）。
-    """
-    if not text.strip():
-        return 0
-    return max(1, int(len(text) / 2.5))
+
+# ── 保护性区段 ────────────────────────────────────────────────────────────
 
 
 def find_protected_spans(text: str) -> list[tuple[int, int]]:
-    """返回不可切断的区间列表（已合并重叠）。"""
+    """找出不可切断的区段（代码块 / 表格 / 图片），返回合并后的区间。"""
     spans: list[tuple[int, int]] = []
-    for pattern in (_FENCE_RE, _IMAGE_RE, _TABLE_RE):
-        for match in pattern.finditer(text):
-            spans.append((match.start(), match.end()))
-    if not spans:
-        return []
+    for rx in (_FENCE_RE, _IMAGE_RE, _TABLE_RE):
+        for m in rx.finditer(text):
+            spans.append((m.start(), m.end()))
     spans.sort()
-    merged = [spans[0]]
-    for start, end in spans[1:]:
-        last_start, last_end = merged[-1]
-        if start <= last_end:
-            merged[-1] = (last_start, max(last_end, end))
+    merged: list[tuple[int, int]] = []
+    for s, e in spans:
+        if merged and s <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], e))
         else:
-            merged.append((start, end))
+            merged.append((s, e))
     return merged
 
 
-def _inside_protected(position: int, spans: list[tuple[int, int]]) -> bool:
-    for start, end in spans:
-        if start < position < end:
+def _is_inside(spans: list[tuple[int, int]], pos: int) -> bool:
+    for s, e in spans:
+        if s < pos < e:
             return True
+        if pos < s:
+            return False
     return False
 
 
-def _nearest_safe_position(
-    text: str, position: int, spans: list[tuple[int, int]], search_back: int = 200
-) -> int:
-    """把切分点从保护性区段内部挪到其外部（向前找最近的边界）。"""
-    if not _inside_protected(position, spans):
-        return position
-    for start, _end in spans:
-        if start < position:
-            candidate = start
+# ── 切分原语 ──────────────────────────────────────────────────────────────
+
+
+def _split_separators(text: str, separators: list[str]) -> list[str]:
+    if not separators:
+        return [text] if text else []
+    sep = separators[0]
+    rest = separators[1:]
+    # Python str.split("") raises; treat empty sep as character-level split.
+    if sep == "":
+        return list(text) if text else []
+    if sep not in text:
+        return _split_separators(text, rest) if rest else ([text] if text else [])
+    parts = text.split(sep)
+    out: list[str] = []
+    for i, part in enumerate(parts):
+        piece = part if i == len(parts) - 1 else part + sep
+        if not piece:
+            continue
+        if rest and len(piece) > 0:
+            out.extend(_split_separators(piece, rest))
         else:
-            # 落在该区段里：退到区段起点之前
-            candidate = max(0, start)
-            if candidate > position:
-                candidate = start
-            break
-    else:
-        return position
-    # 再往前找最近的段落/句末，避免切在单词中间
-    floor = max(0, candidate - search_back)
-    window = text[floor:candidate]
-    for pattern in (r"\n\n", r"[。！？；.!?]\s", r"\n"):
-        matches = list(re.finditer(pattern, window))
-        if matches:
-            return floor + matches[-1].end()
-    return candidate
+            out.append(piece)
+    return out
 
 
-def _heading_stack(text: str) -> list[tuple[int, int, int, str]]:
-    """扫描全文的标题，返回 (起始偏移, 级别, 结束偏移占位, 标题文本)。
+def _kind_for(text: str) -> str:
+    has_table = "|" in text and re.search(r"\|(?:\s*:?-+:?\s*\|)", text) is not None
+    has_code = "```" in text
+    has_img = "![" in text
+    if has_code:
+        return "code"
+    if has_table and has_img:
+        return "mixed"
+    if has_table:
+        return "table"
+    if has_img:
+        return "mixed"
+    return "text"
 
-    用行扫描而不是正则全文匹配，避免代码块里的 `#` 被误判标题。
+
+def _overlap_tail(text: str, overlap: int) -> str:
+    """取尾部重叠窗口，尽量从可读边界开始。
+
+    优先在重叠窗口内回溯到段落 / 句子开头，让下一块不从半句话中间开始
+    （这是「上下文片段丢失」的常见成因）。候选片段太短（< max(48, overlap//5)）
+    就认为没有意义，继续尝试更宽松的边界。
     """
-    spans = find_protected_spans(text)
-    result: list[tuple[int, int, int, str]] = []
-    offset = 0
-    for line in text.split("\n"):
-        line_end = offset + len(line)
-        match = _HEADING_RE.match(line)
-        if match and not _inside_protected(offset, spans):
-            result.append((offset, len(match.group(1)), line_end, match.group(2).strip()))
-        offset = line_end + 1
-    return result
+    text = text or ""
+    overlap = int(overlap or 0)
+    if overlap <= 0 or not text:
+        return ""
+    if len(text) <= overlap:
+        return text
 
-
-def _heading_path_at(
-    headings: list[tuple[int, int, int, str]], position: int
-) -> tuple[str, str]:
-    """返回 position 处生效的 heading_path（如「第2章 > 2.1 概述」）与最近的标题。"""
-    stack: list[tuple[int, str]] = []
-    for start, level, _end, title in headings:
-        if start > position:
+    window = text[-overlap:]
+    # Prefer the latest clean boundary so we keep as much overlap as possible.
+    best = ""
+    for sep in ("\n\n", "\n", "。", "！", "？", "；", ". ", "! ", "? ", "; "):
+        idx = window.rfind(sep)
+        if idx < 0:
+            continue
+        candidate = window[idx + len(sep) :]
+        # Keep enough context; tiny tails are useless for retrieval continuity.
+        if len(candidate) >= max(48, overlap // 5):
+            best = candidate
             break
-        while stack and stack[-1][0] >= level:
-            stack.pop()
-        stack.append((level, title))
-    if not stack:
-        return "", ""
-    path = " > ".join(title for _level, title in stack)
-    return path, stack[-1][1]
+    if best:
+        return best.lstrip()
+    return window.lstrip()
 
 
-def _split_text_by_budget(text: str, limit: int, spans: list[tuple[int, int]]) -> list[str]:
-    """把一段文本按 limit 字符切成若干片，避开保护性区段。"""
-    if len(text) <= limit:
-        return [text]
-    pieces: list[str] = []
-    start = 0
-    length = len(text)
-    while start < length:
-        end = min(start + limit, length)
-        if end >= length:
-            pieces.append(text[start:])
-            break
-        # 优先在段落边界断开
-        window_start = max(start + limit // 2, start)
-        segment = text[window_start:end]
-        cut = -1
-        for pattern in (r"\n\n", r"[。！？；.!?]\s", r"\n", r"\s"):
-            matches = list(re.finditer(pattern, segment))
-            if matches:
-                cut = window_start + matches[-1].end()
+def _make_chunk(
+    content: str,
+    *,
+    ordinal: int = 0,
+    context_header: str = "",
+    heading_path: str = "",
+) -> Chunk:
+    body = (content or "").strip()
+    return Chunk(
+        content=body,
+        ordinal=ordinal,
+        context_header=context_header,
+        heading_path=heading_path,
+        chunk_kind=_kind_for(body),
+        token_estimate=estimate_tokens(body),
+    )
+
+
+def _split_recursive(
+    text: str,
+    *,
+    chunk_size: int = 2048,
+    chunk_overlap: int = 256,
+    context_header: str = "",
+    heading_path: str = "",
+) -> list[Chunk]:
+    """Split by character budget with protected spans (spec §7.2)."""
+    text = (text or "").strip()
+    if not text:
+        return []
+
+    chunk_size = max(64, int(chunk_size))
+    chunk_overlap = max(0, min(int(chunk_overlap), chunk_size // 2))
+    # Whole section already fits — do not nick it into scraps.
+    if len(text) <= chunk_size:
+        return [
+            _make_chunk(
+                text, context_header=context_header, heading_path=heading_path
+            )
+        ]
+
+    protected = find_protected_spans(text)
+
+    # Extract protected blocks as atomic units interleaved with free text.
+    units: list[str] = []
+    cursor = 0
+    for s, e in protected:
+        if cursor < s:
+            units.append(text[cursor:s])
+        units.append(text[s:e])
+        cursor = e
+    if cursor < len(text):
+        units.append(text[cursor:])
+
+    # Further split free-text units; keep protected units whole.
+    seps = ["\n\n", "\n", "。", "；", " ", ""]
+    atoms: list[str] = []
+    for unit in units:
+        if not unit:
+            continue
+        # Protected if unit matches a protected span content approximately
+        is_prot = False
+        for s, e in protected:
+            if text[s:e] == unit:
+                is_prot = True
                 break
-        if cut <= start:
-            cut = end
-        cut = _nearest_safe_position(text, cut, spans)
-        if cut <= start:
-            cut = end
-        pieces.append(text[start:cut])
-        start = cut
-    return pieces
+        if is_prot or len(unit) <= chunk_size:
+            atoms.append(unit)
+        else:
+            atoms.extend(_split_separators(unit, seps))
+
+    chunks: list[Chunk] = []
+    buf = ""
+    for atom in atoms:
+        if not atom:
+            continue
+        if len(atom) > chunk_size * 2:
+            # Hard split oversized atom (e.g. huge table) by lines.
+            if buf.strip():
+                chunks.append(
+                    _make_chunk(
+                        buf,
+                        context_header=context_header,
+                        heading_path=heading_path,
+                    )
+                )
+                carry = _overlap_tail(buf, chunk_overlap)
+                buf = ""
+            else:
+                carry = ""
+            lines = atom.splitlines(keepends=True)
+            cur = carry
+            header = ""
+            if lines and lines[0].strip().startswith("|") and len(lines) > 1:
+                header = lines[0] + (
+                    lines[1] if re.search(r":?-+:?", lines[1] or "") else ""
+                )
+            for line in lines:
+                if cur and len(cur) + len(line) > chunk_size:
+                    chunks.append(
+                        _make_chunk(
+                            cur,
+                            context_header=context_header,
+                            heading_path=heading_path,
+                        )
+                    )
+                    tail = _overlap_tail(cur, chunk_overlap)
+                    cur = (header + line) if header else (tail + line if tail else line)
+                else:
+                    cur += line
+            if cur.strip():
+                chunks.append(
+                    _make_chunk(
+                        cur,
+                        context_header=context_header,
+                        heading_path=heading_path,
+                    )
+                )
+            buf = ""
+            continue
+
+        if buf and len(buf) + len(atom) > chunk_size:
+            chunks.append(
+                _make_chunk(
+                    buf, context_header=context_header, heading_path=heading_path
+                )
+            )
+            # Always try to carry readable overlap (even when buf ≤ overlap).
+            carry = _overlap_tail(buf, chunk_overlap)
+            buf = (carry + atom) if carry else atom
+        else:
+            buf += atom
+
+    if buf.strip():
+        chunks.append(
+            _make_chunk(buf, context_header=context_header, heading_path=heading_path)
+        )
+    return chunks
+
+
+def _heading_at(text: str, pos: int) -> tuple[str, int]:
+    """返回 pos 位置所属标题的 (标题文本, 标题级别)。"""
+    current = ("", 0)
+    for m in _HEADING_LINE_RE.finditer(text):
+        if m.start() > pos:
+            break
+        current = (m.group(2).strip(), len(m.group(1)))
+    return current
+
+
+def _split_by_heading(
+    text: str,
+    *,
+    chunk_size: int = 2048,
+    chunk_overlap: int = 256,
+) -> list[Chunk]:
+    """按 Markdown 标题切分；单节超长时递归切分并保留 heading 上下文。"""
+    matches = list(_HEADING_LINE_RE.finditer(text))
+    if not matches:
+        return _split_recursive(
+            text, chunk_size=chunk_size, chunk_overlap=chunk_overlap
+        )
+
+    # 每个标题开启一节；第一个标题之前的内容算前言。
+    sections: list[tuple[str, str, int]] = []  # (heading_path, body, start_pos)
+    if matches[0].start() > 0:
+        sections.append(("", text[: matches[0].start()], 0))
+    for i, m in enumerate(matches):
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        title = m.group(2).strip()
+        sections.append((title, text[m.start() : end], m.start()))
+
+    chunks: list[Chunk] = []
+    for heading_path, body, start_pos in sections:
+        if not body.strip():
+            continue
+        if len(body) <= chunk_size:
+            chunks.append(
+                _make_chunk(
+                    body, context_header=heading_path, heading_path=heading_path
+                )
+            )
+        else:
+            chunks.extend(
+                _split_recursive(
+                    body,
+                    chunk_size=chunk_size,
+                    chunk_overlap=chunk_overlap,
+                    context_header=heading_path,
+                    heading_path=heading_path,
+                )
+            )
+    return chunks
 
 
 def chunk_markdown(
@@ -194,94 +354,61 @@ def chunk_markdown(
     *,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
+    strategy: str = "auto",
 ) -> list[Chunk]:
     """把 Markdown 正文切成 chunk 列表。
 
-    chunk_size / chunk_overlap 会被校验并夹到合理范围；配置是唯一权威，
+    ``strategy``：``recursive`` | ``heading`` | ``auto``（默认，按标题密度自动选）。
+    ``chunk_size`` / ``chunk_overlap`` 会被夹到合理范围；配置是唯一权威，
     没有隐藏上限（见模块头的历史事故）。
     """
-    body = (text or "").strip()
-    if not body:
+    raw = text or ""
+    stripped = raw.strip()
+    if not stripped:
         return []
 
     size = max(MIN_CHUNK_SIZE, int(chunk_size or DEFAULT_CHUNK_SIZE))
-    overlap = max(0, min(int(chunk_overlap or 0), size // 2))
+    overlap = max(0, int(chunk_overlap or 0))
 
-    # 1) 短文档整篇一个 chunk
-    if len(body) <= size:
-        heading_path, _ = _heading_path_at(_heading_stack(body), 0)
-        return [
-            Chunk(
-                content=body,
-                ordinal=0,
-                heading_path=heading_path,
-                context_header=heading_path,
-                chunk_kind=_dominant_kind(body),
-                token_estimate=estimate_tokens(body),
-            )
-        ]
+    # Already fits the configured budget → keep whole (strategy irrelevant).
+    if len(stripped) <= size:
+        heading = ""
+        m = _HEADING_LINE_RE.search(stripped)
+        if m:
+            heading = m.group(2).strip()
+        return [_make_chunk(stripped, context_header=heading, heading_path=heading)]
 
-    spans = find_protected_spans(body)
-    headings = _heading_stack(body)
-    pieces = _split_text_by_budget(body, size, spans)
-
-    chunks: list[Chunk] = []
-    cursor = 0
-    for index, piece in enumerate(pieces):
-        # 定位该片段在原文的起点（用于取 heading_path）
-        position = body.find(piece[:40], cursor) if piece[:40] else cursor
-        if position < 0:
-            position = cursor
-        cursor = position + len(piece)
-
-        heading_path, nearest = _heading_path_at(headings, position)
-
-        # 加 overlap：从上一片段尾部取，避免跨块上下文断裂
-        content = piece
-        if index > 0 and overlap > 0:
-            previous_tail = pieces[index - 1][-overlap:]
-            if previous_tail and not content.startswith(previous_tail):
-                content = previous_tail + content
-
-        chunks.append(
-            Chunk(
-                content=content.strip(),
-                ordinal=index,
-                heading_path=heading_path,
-                context_header=nearest or heading_path,
-                chunk_kind=_dominant_kind(piece),
-                token_estimate=estimate_tokens(content),
-            )
+    picked = (strategy or "auto").strip().lower()
+    if picked == "auto":
+        headings = len(_HEADING_LINE_RE.findall(stripped))
+        picked = (
+            "heading"
+            if headings >= 2 and len(stripped) > max(128, size)
+            else "recursive"
         )
 
-    # 过短的块并入前一块（MIN_CHUNK_SIZE 阈值）
-    merged: list[Chunk] = []
-    for chunk in chunks:
-        if merged and len(chunk.content) < MIN_CHUNK_SIZE:
-            previous = merged[-1]
-            merged[-1] = Chunk(
-                content=f"{previous.content}\n\n{chunk.content}".strip(),
-                ordinal=previous.ordinal,
-                heading_path=previous.heading_path,
-                context_header=previous.context_header,
-                chunk_kind=previous.chunk_kind,
-                token_estimate=estimate_tokens(previous.content) + chunk.token_estimate,
-            )
-        else:
-            merged.append(chunk)
+    result: list[Chunk]
+    if picked == "heading":
+        result = _split_by_heading(
+            stripped, chunk_size=size, chunk_overlap=overlap
+        )
+    else:
+        result = _split_recursive(
+            stripped, chunk_size=size, chunk_overlap=overlap
+        )
 
-    # 重编号，保证 ordinal 连续
-    for index, chunk in enumerate(merged):
+    # 重编号，保证 ordinal 连续（下游按 ordinal 排序取正文）
+    for index, chunk in enumerate(result):
         chunk.ordinal = index
-    return merged
+    return result
 
 
-def _dominant_kind(text: str) -> str:
-    """判断片段主类型，供检索时按类型加权（表格/代码命中权重更高）。"""
-    if _FENCE_RE.search(text):
-        return "code"
-    if _TABLE_RE.search(text):
-        return "table"
-    if _IMAGE_RE.search(text):
-        return "image_caption"
-    return "text"
+__all__ = [
+    "Chunk",
+    "DEFAULT_CHUNK_OVERLAP",
+    "DEFAULT_CHUNK_SIZE",
+    "MIN_CHUNK_SIZE",
+    "chunk_markdown",
+    "estimate_tokens",
+    "find_protected_spans",
+]

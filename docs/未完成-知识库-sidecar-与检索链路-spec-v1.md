@@ -1,6 +1,6 @@
 # 知识库 · Python Sidecar 与检索链路 Spec
 
-状态：P0-a 已落地｜适用范围：文档知识库（解析 / 分块 / 索引 / 检索 / 问答）｜维护者：待定
+状态：P0-a / P0-b / P0-c / P0-d 已落地｜适用范围：文档知识库（解析 / 分块 / 索引 / 检索 / 问答）｜维护者：待定
 设计来源：EvoFlow `backend/packages/harness/evoflow/knowledge/`（PolyForm Noncommercial，
 仅作设计参考，代码按需自行实现）；sidecar 分发机制复用本仓 `office-engines` 与 `dwg-tools` 先例。
 
@@ -765,3 +765,72 @@ App → ShellLayout，web 入口置 true）。
 
 - embedding 写入（`kembed` job 标记为 `failed: embedding 尚未实现`，不会永久 queued）
 - 检索链路（`kb.search` 仍返回 `NOT_IMPLEMENTED`）
+
+## 17. P0-c/d 落地记录（2026-11-13）
+
+**本轮起改用「移植 EvoFlow」而不是重写。** 前期自己实现的 `chunking.py` 漏掉了
+`_overlap_tail()` 的边界回溯，实测 chunk 从「，」中间截断（`'，并按规定进行抽样复验'`），
+这是重写导致的质量损失。经确认 EvoFlow 是公司自有项目且已获书面授权，本轮
+**算法逻辑照搬、只改存储适配层**。
+
+### 已交付
+
+| 文件 | 来源 | 改动 |
+| --- | --- | --- |
+| `chunking.py` | EvoFlow `owned/chunking.py` | `ChunkPiece`→`Chunk`，`split_text`→`chunk_markdown`，补 `strategy` 参数 |
+| `search.py` | EvoFlow `owned/retrieve.py` | 去掉 `kb_id`/`deleted_at` 过滤；rerank 升级为模型 |
+| `vector_index.py` | EvoFlow `owned/vector_index.py` | 表名去 `kb_id`，修 `id(conn)` 缓存 bug |
+| `tokenize.py` | 新增（EvoFlow 无此模块） | 抽出共用分词，修「写入分词、查询不分词」的致命 bug |
+| `pipeline.py` | — | 新增 `run_embed_job()`；`pending_parse_jobs`→`pending_jobs` |
+| `worker.py` | — | 消费 embed job；新增 `_resolve_embedding_model()` |
+| `handlers.py` | — | `kb.search` / `kb.reindex` / `kb.ask` 落地 |
+| `entry-http.ts` | — | 补 `knowledgeDataRoot`（网关此前从未挂载） |
+
+### 本轮修掉的 4 个真 bug
+
+1. **写入分词、查询不分词** —— FTS 索引里是「材料 复验 不合格」，查询拿整串去做短语匹配，
+   一条都命中不了。只有向量检索时完全看不出来，关掉向量即全废。抽出 `tokenize.py` 共用。
+2. **`id(conn)` 缓存扩展加载状态** —— CPython 复用已释放对象的 id，第二个连接被误判为
+   「已加载」→ 跳过 `load_extension` → `no such module: vec0`。症状是「第一次检索正常，
+   之后全部静默退化」。SQLite 扩展本来就是连接级的，直接去掉缓存。
+3. **嵌入写入与检索查询的 model 不一致** —— 写入 `model=''`、查询按 `model='BAAI/bge-m3'`
+   过滤，表现是「嵌入明明成功，检索永远只有关键词」。worker 改为读库登记的 model。
+4. **`id(item)` 去重导致结果重复** —— dict 的 id 会复用，同一 chunk 出现两次
+   （一次带 `rerankScore`、一次不带）。改用 `chunkId` 去重。
+
+### 实测结果
+
+```
+端到端（2 文档 / 7 块 / 真实 SiliconFlow 服务）
+  检索 5/5 通过，degraded 全为 false
+  典型时延 630–770ms（含查询嵌入 + 网络往返）
+  嵌入 BAAI/bge-m3 1024 维，rerank BAAI/bge-reranker-v2-m3
+
+降级路径（三条都验证）
+  rerank 服务不可达   → 退回词面启发式，不报错
+  embedding 服务不可达 → 降级为关键词检索，degraded=true
+  无模型配置          → 建库/上传/解析/关键词检索全可用
+
+NDJSON RPC 全链路（真实子进程）
+  kb.create → kb.upload → worker 异步 parse+embed → kb.search → kb.ask → kb.reindex  ✅
+```
+
+### 验证命令
+
+```sh
+set -a && . .secrets/siliconflow.env && set +a
+ZCODE_KNOWLEDGE_MODEL_BASE_URL="$SILICONFLOW_BASE_URL" \
+ZCODE_KNOWLEDGE_MODEL_API_KEY="$SILICONFLOW_API_KEY" \
+ZCODE_KNOWLEDGE_EMBEDDING_MODEL="$SILICONFLOW_EMBEDDING_MODEL" \
+ZCODE_KNOWLEDGE_RERANK_MODEL="$SILICONFLOW_RERANK_MODEL" \
+PYTHONPATH="$PWD/packages/desktop/bundled-tools/linux-arm64/knowledge-engines/python/Lib/site-packages" \
+python3 scripts/dev/knowledge-e2e.py
+```
+
+### 仍未做
+
+- **Agent 工具接线**（spec §9 的 `knowledge` 工具：search/read/docs/list 四个 action）
+- **文件夹操作**（前端 5 个方法仍是桩）
+- **Wiki / 图谱**（9 个方法，P1）
+- **多平台打包**（当前只有 linux-arm64 资产树）
+- **浏览器实点验证**（手机 proot 装不了 chromium，仅验证到 HTTP/RPC 层）
