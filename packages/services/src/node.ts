@@ -2477,18 +2477,23 @@ export function createLocalServices(options: {
     database: () => taskIndexRepo.getOrganizationDatabase(),
     afterChange: publishProjectChange,
   });
-  // 为什么用 "local" 而不是 projectStorageHostId：前者是"项目归属的 Host 视角"，
-  // 后者是"本机数据目录隔离键"。独立 Server 的 workspace 在它自己进程里就是本机，
-  // 前端拿到的 workspaceIdentity 也是从 projectStorageHostId 派生；若这里再传
-  // projectStorageHostId，会形成"自己是自己的远端"——任务组 admission 报
-  // task-group.host-identity-mismatch、项目路由报 project.host-offline。
-  // 数据隔离由 projectStorageHostId 在存储层保证，与项目归属视角无关。
+  // 归属 Host 必须与 projectStorageHostId 同源。原因（可复现）：
+  // ProjectRepository 是用 taskIndexRepo 的 storageHostId 构造的（见
+  // taskIndexRepo.getProjectRepository），项目行按 storageHostId 落库、按它过滤；
+  // 而本服务此前被改成 "local"，形成"服务认为自己是 local、仓储认为自己是
+  // remote:server:<id>"的分裂：
+  //   - 新建项目：前端确实发 hostId=remote:server:<id>（前端 workspaceIdentity 就由
+  //     storageHostId 派生），服务判 input.hostId !== ownerHostId，直接抛
+  //     project.host-immutable（界面红字 Error: project.host-immutable）；
+  //   - 已有项目：readTree 按 "local" 过滤，storageHostId 落的行永远看不见。
+  // 所以这里与仓储保持同一身份。真正需要归一的是"任务事实去哪读"（见 resolveTasks）
+  // 和"执行 Host 是谁"（见 prepareProjectExecution），不是项目归属。
   const projectService = createProjectService({
     directories: {
       home: async () => (await systemService.info()).homedir,
       read: (params) => fileService.readdir(params),
     },
-    ownerHostId: "local",
+    ownerHostId: options?.projectStorageHostId ?? "local",
     resolveHost: options?.resolveProjectHostService,
     repository: () => taskIndexRepo.getProjectRepository(),
     workspaceDirectory: join(projectDataRoot(), "workspace"),
@@ -2515,16 +2520,12 @@ export function createLocalServices(options: {
     database: () => taskIndexRepo.getOrganizationDatabase(),
     resolveTasks: async (refs) => {
       // 只读所属 Host 的权威目录；项目路由不会为分组建立连接或启动 Agent。
-      //
-      // 归一：projectService 在该 Host 上的 ownerHostId 是 "local"（见 createProjectService
-      // 处的注释），因此指向本机 server 的 "remote:server:*" 形态 hostId 不能直接
-      // 交给 readTree——那会被当成真实的远端设备去 resolveHost，报 project.host-offline。
+      // 前端可能把"本机 server"的 hostId 写成 "local"（旧数据）或
+      // "remote:server:<id>"（由 storageHostId 派生）。两者指向同一份仓储，
+      // 统一成本机 ownerHostId 再查询，避免把本机当成真实远端去 resolveHost。
+      const localOwnerHostId = options?.projectStorageHostId ?? "local";
       const normalizeHostId = (hostId: string) =>
-        !options?.projectStorageHostId ||
-        options.projectStorageHostId === "local" ||
-        hostId === options.projectStorageHostId
-          ? "local"
-          : hostId;
+        hostId === "local" || hostId === localOwnerHostId ? localOwnerHostId : hostId;
       const hostIds = [...new Set(refs.map((task) => normalizeHostId(task.hostId)))];
       const results = await Promise.all(
         hostIds.map(async (hostId) => {
@@ -2554,15 +2555,17 @@ export function createLocalServices(options: {
     },
     afterChange: () => broadcastService.send({ channel: "state:task-groups", payload: {} }),
   });
-  // hostId 必须与 workspaceIdentity 同口径：两者本该一并描述"任务属于哪个 Host 的哪个目录"。
-  // 独立 Server 上 projectStorageHostId 是数据隔离键（remote:server:...），而 workspace 就在
-  // 本进程内，所以这里统一用 "local" + undefined；否则任务的 hostId 与 identity 互相矛盾，
-  // 任务组 admission 直接判 host-identity-mismatch。
-  const prepareProjectExecution = async (projectId: string) => ({
-    ...(await projectService.prepareSession({ projectId })),
-    hostId: "local",
-    workspaceIdentity: undefined,
-  });
+  // hostId 与 workspaceIdentity 必须同源：prepareSession 返回的 workspaceIdentity 由
+  // storageHostId 派生，任务行也按 storageHostId 落库，因此这里用同一个值；
+  // 强行写 "local" + undefined 会让任务事实（storageHostId）与执行归属（local）分裂。
+  const prepareProjectExecution = async (projectId: string) => {
+    const prepared = await projectService.prepareSession({ projectId });
+    return {
+      ...prepared,
+      hostId: options?.projectStorageHostId ?? "local",
+      workspaceIdentity: prepared.workspaceIdentity,
+    };
+  };
   let appControlService: AppControlService | undefined;
   // 受管 worktree 的删除租约：worktree 服务取得，Agent 服务与终端服务据此拒绝新操作（§8.3）。
   // 租约只在本 Host 内生效，前提是一台机器只有一个本地 Host：应用持有单实例锁，主窗口只经
