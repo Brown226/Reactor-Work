@@ -448,6 +448,43 @@ def upload_file(params: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+# ── 设置 ─────────────────────────────────────────────────────────────────
+#
+# 知识库设置是**全局**的（不像库级开关写在 kb_bases 里）：
+# - primary：默认用「自建库」还是「内置库」
+# - defaultEmbeddingModel：新建库时预选的向量模型
+# - chatModel：问答/摘要用的对话模型
+# - summaryDefaultEnabled：新建库是否默认开启自动摘要
+#
+# 实现直接转调 EvoFlow 移植过来的 `owned/settings.py`，那边已经把这套
+# 读写与默认值回退逻辑写好了（含 registry 解析）。
+
+
+def get_settings(_params: dict[str, Any]) -> dict[str, Any]:
+    from knowledge_sidecar.owned import settings as kb_settings
+
+    return kb_settings.settings_payload()
+
+
+def _set_settings(params: dict[str, Any]) -> dict[str, Any]:
+    from knowledge_sidecar.owned import settings as kb_settings
+
+    # 逐项可选更新：只处理请求里出现的键，避免「没传就清空」。
+    if "primary" in params and params["primary"] is not None:
+        kb_settings.set_primary(str(params["primary"]))
+    if "defaultEmbeddingModel" in params:
+        raw = params["defaultEmbeddingModel"]
+        kb_settings.set_default_embedding_model(
+            None if raw is None else str(raw)
+        )
+    if "chatModel" in params:
+        raw = params["chatModel"]
+        kb_settings.set_chat_model(None if raw is None else str(raw))
+    if "summaryDefaultEnabled" in params and params["summaryDefaultEnabled"] is not None:
+        kb_settings.set_default_summary_enabled(bool(params["summaryDefaultEnabled"]))
+    return kb_settings.settings_payload()
+
+
 # ── Wiki ─────────────────────────────────────────────────────────────────
 
 
@@ -552,6 +589,9 @@ REGISTRY: dict[str, Any] = {
     "kb.sync.previewResync": preview_resync_base,
     "kb.sync.import": import_local_folder,
     "kb.sync.resync": resync_base,
+    # 设置
+    "kb.settings.get": get_settings,
+    "kb.settings.set": _set_settings,
     # 检索
     "kb.search": search,
     "kb.searchAll": search_all,

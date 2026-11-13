@@ -263,6 +263,25 @@ export const SETTINGS_SEARCH_ITEMS = [
     description: "settings.memoryDescription",
     visibility: "all",
   },
+  // ── 知识库 ──────────────────────────────────────────────────────────
+  {
+    id: "settings.knowledge.embeddingModel",
+    section: "knowledge",
+    description: "settings.knowledge.embeddingModelDescription",
+    visibility: "all",
+  },
+  {
+    id: "settings.knowledge.chatModel",
+    section: "knowledge",
+    description: "settings.knowledge.chatModelDescription",
+    visibility: "all",
+  },
+  {
+    id: "settings.knowledge.summaryDefault",
+    section: "knowledge",
+    description: "settings.knowledge.summaryDefaultDescription",
+    visibility: "all",
+  },
   {
     id: "settings.pluginAutoRecommendation",
     section: "agentBehavior",

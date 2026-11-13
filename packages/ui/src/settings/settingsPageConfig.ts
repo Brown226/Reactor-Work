@@ -24,6 +24,7 @@ import {
   ServerCog,
   RefreshCw,
   User,
+  Database,
 } from "lucide-react";
 import { isSettingsSectionEnabled, type SettingsSectionId } from "@/lib/settingsNavigation.js";
 import type { Theme } from "@/useTheme.js";
@@ -106,6 +107,14 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
     id: "memory",
     icon: Brain,
     titleId: "settings.memory",
+    groupId: "agentCapabilities",
+  },
+  // 知识库紧跟记忆：两者都是 agent 的知识来源（记忆=关于用户的小事实，
+  // 知识库=用户主动上传的资料）。放相邻便于理解分工。
+  {
+    id: "knowledge",
+    icon: Database,
+    titleId: "settings.knowledge.title",
     groupId: "agentCapabilities",
   },
   {

@@ -283,6 +283,20 @@ export function registerKnowledgeExtraRoutes(app: Hono, client: KnowledgeClient)
     }),
   );
 
+  // ── 设置 ──────────────────────────────────────────────────────────────
+  // 知识库设置是全局的（不挂在某个 kbId 下）：默认向量模型、对话模型、
+  // 新建库是否默认开摘要、以及「自建库 / 内置库」的主次。
+  app.get("/api/knowledge/owned/settings", async (c) =>
+    handle(c, client, "kb.settings.get", () => ({})),
+  );
+
+  app.put("/api/knowledge/owned/settings", async (c) =>
+    handle(c, client, "kb.settings.set", async () => {
+      const body = await c.req.json<Record<string, unknown>>();
+      return body;
+    }),
+  );
+
   // ── 分块 ──────────────────────────────────────────────────────────────
   app.get("/api/knowledge/owned/documents/:docId/chunks", async (c) =>
     handle(c, client, "kb.listChunks", () => ({ docId: c.req.param("docId") })),

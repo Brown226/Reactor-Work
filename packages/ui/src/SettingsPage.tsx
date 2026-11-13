@@ -44,6 +44,7 @@ import { usePlatform } from "@/hooks/usePlatform.js";
 import { logger } from "@/logger.js";
 import { getPathLeaf } from "@/lib/path.js";
 import { useProviderSettingsView } from "@/hooks/useProviderSettingsView.js";
+import { KnowledgeSettingsSection } from "@/settings/KnowledgeSettingsSection.js";
 import { useUsageEntitlement } from "@/hooks/useUsageEntitlement.js";
 import {
   addPendingSettingsSectionListener,
@@ -2135,6 +2136,8 @@ export function SettingsPage({
                           isDesktop={Boolean(isDesktop)}
                           workspaceDisplayNames={memoryWorkspaceDisplayNames}
                         />
+                      ) : activeSection === "knowledge" ? (
+                        <KnowledgeSettingsSection isDesktop={Boolean(isDesktop)} />
                       ) : activeSection === "plugin" ? (
                         <PluginsSection
                           key={`plugin:${settingsSectionNavigationVersion}`}
