@@ -37,6 +37,22 @@ def _require(params: dict[str, Any], key: str) -> str:
     return value
 
 
+def _safe_path(params: dict[str, Any], key: str) -> str:
+    """文件夹路径校验：拒绝 `..` / `.` / 空段 / 绝对路径。
+
+    sidecar 的文件夹是**逻辑路径**（存进 kb_documents.folder_path），不是真实
+    文件系统路径，所以理论上穿越不了。但它会被拼进 `<kb>/blobs/<doc>/...`
+    这类真实路径，且前端展示时会当地址用 —— 放行 `..` 等于给未来的路径
+    拼接留后门。在入口挡掉最省事。
+    """
+    raw = str(params.get(key) or "").replace("\\", "/").strip().strip("/")
+    if raw:
+        for part in raw.split("/"):
+            if part in ("", ".", ".."):
+                raise StorageError("INVALID_PATH", f"非法文件夹路径：{raw}")
+    return raw
+
+
 def _opt(params: dict[str, Any], key: str, default: str = "") -> str:
     value = params.get(key)
     return default if value is None else str(value)
@@ -193,11 +209,7 @@ def list_folders(params: dict[str, Any]) -> dict[str, Any]:
 
 
 def create_folder(params: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "folder": svc.create_folder(
-            _require(params, "kbId"), _require(params, "path")
-        )
-    }
+    return {"folder": svc.create_folder(_require(params, "kbId"), _safe_path(params, "path"))}
 
 
 def rename_folder(params: dict[str, Any]) -> dict[str, Any]:
@@ -206,8 +218,8 @@ def rename_folder(params: dict[str, Any]) -> dict[str, Any]:
     return {
         "folder": svc.rename_folder(
             _require(params, "kbId"),
-            _require(params, "path"),
-            _require(params, "newPath"),
+            _safe_path(params, "path"),
+            _safe_path(params, "newPath"),
         )
     }
 
@@ -216,8 +228,8 @@ def move_folder(params: dict[str, Any]) -> dict[str, Any]:
     return {
         "folder": svc.move_folder(
             _require(params, "kbId"),
-            _require(params, "fromPath"),
-            _opt(params, "parentPath"),
+            _safe_path(params, "fromPath"),
+            _safe_path(params, "parentPath"),
         )
     }
 
@@ -234,7 +246,7 @@ def delete_folder(params: dict[str, Any]) -> dict[str, Any]:
     return {
         "deleted": svc.delete_folder(
             _require(params, "kbId"),
-            _require(params, "path"),
+            _safe_path(params, "path"),
             mode=mode,
         )
     }
@@ -243,7 +255,7 @@ def delete_folder(params: dict[str, Any]) -> dict[str, Any]:
 def move_document(params: dict[str, Any]) -> dict[str, Any]:
     return {
         "doc": svc.move_document(
-            _require(params, "docId"), _opt(params, "folderPath")
+            _require(params, "docId"), _safe_path(params, "folderPath")
         )
     }
 

@@ -190,13 +190,26 @@ export function registerKnowledgeRoutes(app: Hono, deps: KnowledgeGatewayDeps): 
   });
 
   // ── 文档 ──────────────────────────────────────────────────────────────
+  /**
+   * 文档列表。
+   *
+   * [坑] 返回形状必须是 `{ items, folders }`，**不是** `{ documents }`。
+   * 前端 `knowledge-owned.jsx` 读的是 `res.items` 和 `res.folders`
+   * （见 `setDocs(dedupeDocsByRelPath(res.items || []))`），
+   * 早期这里返回 `{ documents }`，导致**文档列表永远为空** ——
+   * 数据都在、接口 200、只是字段名对不上，界面上表现为「上传成功但列表空」。
+   *
+   * folders 与文档同一次返回：前端加载列表时要同时渲染目录树，
+   * 分成两个请求会让树和数据短暂不一致。
+   */
   app.get("/api/knowledge/owned/bases/:kbId/documents", async (c) => {
     try {
       const kbId = c.req.param("kbId");
-      const result = (await client.call("kb.listDocs", { kbId })) as {
-        docs: Record<string, unknown>[];
-      };
-      return c.json({ documents: result.docs });
+      const [docsResult, foldersResult] = await Promise.all([
+        client.call("kb.listDocs", { kbId }) as Promise<{ docs: Record<string, unknown>[] }>,
+        client.call("kb.folder.list", { kbId }) as Promise<{ folders: Record<string, unknown>[] }>,
+      ]);
+      return c.json({ items: docsResult.docs, folders: foldersResult.folders });
     } catch (error) {
       return gatewayError(c, error);
     }

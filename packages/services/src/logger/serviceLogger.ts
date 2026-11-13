@@ -24,7 +24,15 @@ export function createServiceLogger(
     isDebugEnabled?: boolean | (() => boolean);
   },
 ): ServiceLogger {
-  const pid = options?.pid ?? process.pid;
+  // [本地定制] browser 没有 process 全局，直接读会抛
+  // "ReferenceError: process is not defined" —— 而这段代码会被打进 Web 产物
+  // （ui/ 侧经 @zcode/services 的公开入口间接引用到它）。一旦崩溃发生在模块
+  // 初始化期，整个 React 树都挂不上，页面永久停在启动壳。
+  //
+  // 浏览器侧没有 pid 概念（同一个页面不分进程），降级为 undefined：
+  // formatLogPrefix 用 `pid != null` 判断，undefined 时不输出 [pid:...] 段，
+  // 日志照样可读。
+  const pid = options?.pid ?? (typeof process !== "undefined" ? process.pid : undefined);
   const sink = options?.sink ?? console;
   const debugOption = options?.isDebugEnabled;
   const resolveDebugEnabled: () => boolean =
