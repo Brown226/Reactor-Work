@@ -1,4 +1,4 @@
-"""sidecar 入口：解析参数、建 store、注册方法、跑事件循环。
+"""sidecar 入口：解析参数、初始化存储、注册方法、跑事件循环。
 
 启动方式（Node 侧见 ``packages/services/src/knowledge/knowledgeClient.ts``）：
 
@@ -11,6 +11,20 @@
 * 启动成功后先输出一行 ``{"type":"ready","version":1}`` 再进入请求循环；
 * stdout 只走协议，日志全部 stderr（spec §4.2）；
 * 收到 SIGTERM / stdin EOF 时优雅退出，退出码 0。
+
+## 两套实现的共存关系
+
+本 sidecar 有两层：
+
+1. **`owned/` 下的移植层**（EvoFlow `knowledge/owned/`，约 9000 行）——
+   完整能力：库/文档/文件夹/Wiki/图谱/同步/活动流/作业状态机。
+   这是**主路径**，`owned.owned_api.REGISTRY` 里的 46 个方法都走它。
+2. **顶层 `handlers.py`**（本仓自写，约 700 行）—— 早期实现，只覆盖
+   「建库/上传/解析/检索」最小闭环。保留它是因为 `owned/` 的 worker 与本仓
+   的 worker 调度方式不同，热切换有风险；并且它能作为移植层的对照实现。
+
+注册顺序上 `owned` 先注册、`handlers` 后注册会冲突（同名方法只能注册一次），
+所以这里**以 owned 为准**，handlers 只补 owned 没有的方法。
 """
 
 from __future__ import annotations
@@ -23,14 +37,19 @@ import signal
 import sys
 from pathlib import Path
 
-from .handlers import KnowledgeHandlers
 from . import VERSION as _PKG_VERSION
+from .env_bridge import apply_env_bridge
+from .evoflow.config import paths as evo_paths
+from .handlers import KnowledgeHandlers
 from .models import client_from_env
+from .owned.owned_api import REGISTRY as OWNED_REGISTRY
 from .store import KnowledgeStore
 from .transport import RpcServer, emit_ready
 from .worker import IndexWorker
 
 VERSION = _PKG_VERSION
+
+logger = logging.getLogger("knowledge_sidecar")
 
 
 def _parse_args(argv: list[str]) -> argparse.Namespace:
@@ -60,6 +79,14 @@ def _configure_logging(level: str) -> None:
 
 
 async def _run(data_root: Path) -> int:
+    # 移植代码按 EvoFlow 的变量名读凭据，本仓用 ZCODE_ 前缀。
+    # 启动期做一次映射，避免改上游代码（见 env_bridge.py 的说明）。
+    apply_env_bridge()
+
+    # 移植层（owned/）通过 evoflow.config.paths 拿根目录，必须先初始化，
+    # 否则它所有 `xxx_root()` 调用都会抛「兼容层未初始化」。
+    evo_paths.set_base_dir(data_root)
+
     store = KnowledgeStore(data_root)
 
     # 模型服务客户端：从 ZCODE_KNOWLEDGE_* 环境变量读配置。
@@ -67,7 +94,7 @@ async def _run(data_root: Path) -> int:
     # （spec §4.4 语义降级），不要把「没配模型」当成启动失败。
     model_client = client_from_env()
     if model_client is None:
-        logging.getLogger("knowledge_sidecar").warning(
+        logger.warning(
             "未配置模型服务（ZCODE_KNOWLEDGE_MODEL_BASE_URL），"
             "向量检索不可用，关键词检索正常"
         )
@@ -79,22 +106,18 @@ async def _run(data_root: Path) -> int:
     worker.start()
 
     server = RpcServer()
-    server.register("kb.ping", handlers.ping)
-    server.register("kb.list", handlers.list)
-    server.register("kb.create", handlers.create)
-    server.register("kb.update", handlers.update)
-    server.register("kb.delete", handlers.delete)
-    server.register("kb.upload", handlers.upload)
-    server.register("kb.listDocs", handlers.list_docs)
-    server.register("kb.deleteDoc", handlers.delete_doc)
-    server.register("kb.job", handlers.job)
-    server.register("kb.listJobs", handlers.list_jobs)
-    server.register("kb.search", handlers.search)
-    server.register("kb.ask", handlers.ask)
-    server.register("kb.readDoc", handlers.read_doc)
-    server.register("kb.stats", handlers.stats)
-    server.register("kb.retryDoc", handlers.retry_doc)
-    server.register("kb.reindex", handlers.reindex)
+
+    # ① 移植层（完整能力，46 个方法）
+    for method, handler in OWNED_REGISTRY.items():
+        server.register(method, handler)
+
+    # ② 本仓自写层：只补 owned 没有的方法，避免重复注册
+    legacy = {
+        "kb.ping": handlers.ping,
+    }
+    for method, handler in legacy.items():
+        if method not in OWNED_REGISTRY:
+            server.register(method, handler)
 
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGTERM, signal.SIGINT):
@@ -104,8 +127,11 @@ async def _run(data_root: Path) -> int:
             # Windows 上 add_signal_handler 不可用，靠 stdin EOF 退出。
             pass
 
-    logging.getLogger("knowledge_sidecar").info(
-        "ready: version=%s dataRoot=%s", VERSION, data_root
+    logger.info(
+        "ready: version=%s dataRoot=%s methods=%d",
+        VERSION,
+        data_root,
+        len(OWNED_REGISTRY) + len(legacy),
     )
     emit_ready()
     try:
@@ -114,7 +140,7 @@ async def _run(data_root: Path) -> int:
         # 先停 worker 再退出：避免它正在写 SQLite 时进程被 SIGTERM 打断，
         # 留下半截 chunk 或锁。
         worker.stop()
-    logging.getLogger("knowledge_sidecar").info("shutdown")
+    logger.info("shutdown")
     return 0
 
 

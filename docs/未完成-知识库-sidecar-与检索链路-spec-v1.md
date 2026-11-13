@@ -834,3 +834,90 @@ python3 scripts/dev/knowledge-e2e.py
 - **Wiki / 图谱**（9 个方法，P1）
 - **多平台打包**（当前只有 linux-arm64 资产树）
 - **浏览器实点验证**（手机 proot 装不了 chromium，仅验证到 HTTP/RPC 层）
+
+## 18. 整包移植 EvoFlow（2026-11-13 第二轮）
+
+上一轮只移植了检索链路（chunking / retrieve / vector_index，约 1200 行），
+这一轮把 EvoFlow `knowledge/` **整包搬过来**，补上文件夹、Wiki、图谱、
+活动流、作业状态机、同步导入等全部缺口。
+
+### 规模对比
+
+| 阶段 | Python 行数 | RPC 方法 |
+| --- | ---: | ---: |
+| 只有自写实现 | 3,790 | 15 |
+| 整包移植后 | **20,791** | **47** |
+
+### 新增模块
+
+**从 EvoFlow 直接复制（未改逻辑）**：
+`owned/` 下 30 个模块 —— schema、jobs、wiki、kg、folders、activity、
+doc_links、assets、blob_store、migrate、builtin_seed、service(3320行)、
+pipeline、worker、settings、secrets、kg_pipeline、wiki_pipeline 等；
+`embedding/` 整个包；`chunker` / `processor` / `llm_indexer` / `index_builder` /
+`local_source` / `wiki_chunker`。
+
+**新写的适配层（约 1,500 行）**：
+
+| 文件 | 作用 |
+| --- | --- |
+| `evoflow/` 包 | 14 个 shim，承接 EvoFlow 对外部框架的依赖 |
+| `owned/owned_api.py` | 46 个 RPC 方法的参数搬运 + 错误归一化 |
+| `owned/parser_adapter.py` | 把本仓 `ParseResult` 转成 EvoFlow 期望的 `str` |
+| `env_bridge.py` | `ZCODE_KNOWLEDGE_*` → EvoFlow 期望的变量名 |
+| `httpx.py` | httpx 的标准库替代（省掉 httpcore/h11/anyio 一整套） |
+
+### shim 清单（EvoFlow 依赖 → 本仓实现）
+
+| EvoFlow 模块 | 本仓对应 | 说明 |
+| --- | --- | --- |
+| `config.paths` | `--data-root` | 启动时 `set_base_dir()` |
+| `config.app_config` | 环境变量 | 构造 models 列表供 registry 解析 |
+| `config.model_config` | dataclass | 字段名必须完全对齐（少一个就 TypeError） |
+| `persistence.db` | `owned.db` | 同一个中心库 |
+| `persistence.config_repositories` | 恒返回默认值 | 本仓无设置库 |
+| `persistence.secret_store` | 内存实现 | 凭据不落盘 |
+| `models.*` | 抛 NotImplementedError | sidecar 不调 LLM，调用方都 try/except |
+| `context.internal_model_invoke` | 同左 | 摘要/Wiki 生成由上层 agent 负责 |
+| `authz.*` | 恒 True / 固定 local | P0 单用户 |
+| `error_classifier` | 按错误文本分类 | 决定 embedding 冷却时长 |
+| `memory.consolidate` | 空操作 | 知识库不管记忆 |
+| `langchain_core.messages` | 最小 Message | 只为 import 通过，不会真发给模型 |
+
+### 本轮修掉的 5 个 bug（3 个是 EvoFlow 原生）
+
+1. **`(kb_id)` 缺逗号**（EvoFlow 原生 bug）——
+   `conn.execute(sql, (kb_id))` 把 35 个字符展开成 35 个参数，每次混合检索都抛
+   `ProgrammingError`，被 `except` 吞掉后标记 `degraded=True`。
+   症状是「文档索引完成、关键词能搜，但向量永远不参与」。
+2. **`index_fts` 与查询都不分词**（EvoFlow 原生缺口）——
+   EvoFlow 直接把正文写进 FTS5，靠 unicode61 默认分词。中文没有空格，
+   整句变一个 token，等于中文关键词检索不可用。改用本仓 `tokenize`，写入/查询两侧一致。
+3. **`ModelConfig` 字段不全**（shim 缺失）——
+   移植代码用 `ModelConfig(name=..., use=..., vendor=...)` 构造，
+   shim 少字段就抛 TypeError，表现为「embedding runtime check failed」。
+4. **`_vector_stats` 键名对不上**（适配层 bug）——
+   它返回 `totalChunks`/`embeddedChunks`，`get_status` 却读 `chunks`/`embeddings`，
+   统计恒为 0，前端会误判成索引失败。
+5. **`Handler` 类型只接受 async**——移植层多为同步函数，
+   `await handler()` 抛 `object dict can't be used in 'await' expression`。
+
+### 实测结果（真实 SiliconFlow 服务）
+
+```
+索引   3 文档 → 3 chunks → 3 embeddings，dim=1024
+检索   4/4 命中正确文档，degraded 全 false
+模式   keyword / vector / hybrid 三档均正常
+文件夹 建 / 改名 / 删（move_up）全部可用
+Wiki   建页 / 列表 / 图 可用
+图谱   文档图 3 节点
+活动流 10 条
+作业   done=3
+```
+
+### 仍未做
+
+- **Agent 工具接线**（spec §9 的 `knowledge` 工具）
+- **前端 23 个桩方法**改为调用新 RPC（后端已有能力，前端还没接）
+- **多平台打包**（仅 linux-arm64）
+- **浏览器实点验证**（手机 proot 无 chromium）

@@ -1,0 +1,233 @@
+"""Background worker for owned KB jobs (in-process, no Redis)."""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+import os
+import threading
+import traceback
+import uuid
+from typing import Any
+
+from knowledge_sidecar.owned import jobs
+from knowledge_sidecar.owned.db import db
+from knowledge_sidecar.owned.embedding_bind import embedding_runtime_ready_for_base_row
+from knowledge_sidecar.owned.kg_pipeline import run_kg_extract
+from knowledge_sidecar.owned.pipeline import run_parse_index, run_summary_doc
+from knowledge_sidecar.owned.wiki_pipeline import run_wiki_finalize, run_wiki_ingest
+
+logger = logging.getLogger(__name__)
+
+_worker_lock = threading.Lock()
+_started = False
+_stop = threading.Event()
+_WORKER_ID = f"gw-{uuid.uuid4().hex[:8]}"
+
+# Idle poll was 0.75s and thrashed owned.sqlite; 5s is enough for KB job latency.
+_DEFAULT_IDLE_POLL_S = 5.0
+
+
+def owned_kb_worker_enabled() -> bool:
+    raw = (os.getenv("EVOFLOW_OWNED_KB_WORKER") or "1").strip().lower()
+    return raw not in ("0", "false", "no", "off", "disabled")
+
+
+def owned_kb_idle_poll_seconds() -> float:
+    raw = (os.getenv("EVOFLOW_OWNED_KB_POLL_S") or str(_DEFAULT_IDLE_POLL_S)).strip()
+    try:
+        return max(1.0, float(raw))
+    except ValueError:
+        return _DEFAULT_IDLE_POLL_S
+
+
+async def _dispatch(job: dict[str, Any]) -> None:
+    jtype = job.get("type")
+    try:
+        if jtype == "parse_index" or jtype == "reindex":
+            kb_id = str(job.get("kb_id") or job.get("kbId") or "").strip()
+            skip_embedding = False
+            skip_reason: str | None = None
+            from knowledge_sidecar.owned.pipeline import embedding_quota_skip_active
+
+            payload = job.get("payload") if isinstance(job.get("payload"), dict) else {}
+            if payload.get("skip_embedding"):
+                skip_embedding = True
+                skip_reason = str(
+                    payload.get("skip_embedding_reason") or "skip_embedding"
+                ).strip() or "skip_embedding"
+
+            cooled, cool_reason = embedding_quota_skip_active()
+            if not skip_embedding and cooled:
+                # Recent monthly quota / rate-limit — do not re-hit the API for
+                # every queued doc; publish keyword index instead.
+                skip_embedding = True
+                skip_reason = cool_reason or "embedding quota/rate-limit cooldown"
+                logger.warning(
+                    "owned kb job will skip vectors (quota cooldown): %s type=%s kb=%s reason=%s",
+                    job.get("id"),
+                    jtype,
+                    kb_id,
+                    skip_reason,
+                )
+            elif not skip_embedding and kb_id:
+                with db() as conn:
+                    base = conn.execute(
+                        "SELECT * FROM kb_bases WHERE id=? AND deleted_at IS NULL",
+                        (kb_id,),
+                    ).fetchone()
+                if base is not None:
+                    base_d = dict(base)
+                    if int(base_d.get("vector_enabled") if base_d.get("vector_enabled") is not None else 1) == 0:
+                        # Library opted into keyword-only — design choice, not a failure.
+                        skip_embedding = True
+                        skip_reason = "此库已设为仅关键词检索"
+                        logger.info(
+                            "owned kb job will skip vectors (keyword-only KB): %s type=%s kb=%s",
+                            job.get("id"),
+                            jtype,
+                            kb_id,
+                        )
+                    else:
+                        ready, reason = embedding_runtime_ready_for_base_row(base_d)
+                        if not ready:
+                            # Do not burn the job as permanent failure — still parse / chunk /
+                            # FTS so keyword search works. Vectors wait until a model is ready.
+                            skip_embedding = True
+                            skip_reason = reason or "embedding runtime unavailable"
+                            logger.warning(
+                                "owned kb job will skip vectors (embedding unavailable): %s type=%s kb=%s reason=%s",
+                                job.get("id"),
+                                jtype,
+                                kb_id,
+                                skip_reason,
+                            )
+            await run_parse_index(
+                job,
+                skip_embedding=skip_embedding,
+                skip_embedding_reason=skip_reason,
+            )
+            jobs.complete(job["id"])
+        elif jtype == "summary_doc":
+            await run_summary_doc(job)
+            jobs.complete(job["id"])
+        elif jtype == "wiki_ingest":
+            await run_wiki_ingest(job)
+            jobs.complete(job["id"])
+        elif jtype == "wiki_finalize":
+            await run_wiki_finalize(job)
+            jobs.complete(job["id"])
+        elif jtype == "kg_extract":
+            await run_kg_extract(job)
+            jobs.complete(job["id"])
+        elif jtype == "mem_consolidate":
+            from knowledge_sidecar.evoflow.memory.consolidate import run_consolidate_job
+
+            await asyncio.to_thread(run_consolidate_job, job)
+            jobs.complete(job["id"])
+        elif jtype in ("mem_kg_extract", "mem_kg_batch"):
+            # Memory entity-graph extract retired (Asset Hub is SoT; no UI/platform callers).
+            jobs.complete(job["id"], error="retired: mem_kg_* removed")
+        else:
+            jobs.complete(job["id"], error=f"unknown job type: {jtype}")
+    except Exception as exc:
+        tb = traceback.format_exc()
+        last_line = tb.strip().splitlines()[-1] if tb.strip() else str(exc)
+        # Keep the user-facing message first (matches what kb_documents.error_message
+        # stores) and append the last traceback line so the UI can show *where* it
+        # failed without dumping the whole stack into a toast.
+        combined = f"{str(exc)[:1500]}\n[traceback] {last_line}"[:2000]
+        msg = str(exc)
+        # Quota / rate-limit is expected ops noise — don't dump full stack as ERROR.
+        if "429" in msg or "rate limit" in msg.lower() or "usage quota" in msg.lower():
+            logger.warning(
+                "owned kb job deferred (embedding quota/rate-limit): %s — %s",
+                job.get("id"),
+                msg[:300],
+            )
+        else:
+            logger.exception("owned kb job failed: %s", job.get("id"))
+        jobs.complete(job["id"], error=combined)
+
+
+async def _loop() -> None:
+    poll_s = owned_kb_idle_poll_seconds()
+    logger.info(
+        "owned KB worker started id=%s idle_poll=%ss (disable with EVOFLOW_OWNED_KB_WORKER=0)",
+        _WORKER_ID,
+        poll_s,
+    )
+    reconcile_every = max(30.0, poll_s * 6)
+    last_reconcile = 0.0
+    while not _stop.is_set():
+        if not owned_kb_worker_enabled():
+            await asyncio.sleep(poll_s)
+            continue
+        now_mono = asyncio.get_running_loop().time()
+        if now_mono - last_reconcile >= reconcile_every:
+            last_reconcile = now_mono
+            try:
+
+                def _reconcile() -> int:
+                    jobs.reclaim_stale_running()
+                    jobs.purge_failed_orphan_jobs(limit=200)
+                    from knowledge_sidecar.owned import service as owned_service
+
+                    # Auto path: only pending/processing — never loop forever on failed.
+                    result = owned_service.requeue_orphan_parse_docs(limit=50, include_failed=False)
+                    unpublished = owned_service.requeue_unpublished_keyword_docs(limit=50)
+                    # Old hard-embed failures left parse_status=failed; heal to keyword-only.
+                    healed = owned_service.requeue_embedding_failed_as_keyword(limit=50)
+                    return (
+                        int(result.get("requeued") or 0)
+                        + int(unpublished.get("requeued") or 0)
+                        + int(healed.get("requeued") or 0)
+                    )
+
+                n = await asyncio.to_thread(_reconcile)
+                if n:
+                    logger.info("owned KB requeued %s orphan/unpublished parse docs", n)
+            except Exception:
+                logger.debug("owned KB orphan reconcile skipped", exc_info=True)
+        job = await asyncio.to_thread(jobs.claim_next, _WORKER_ID)
+        if not job:
+            await asyncio.sleep(poll_s)
+            continue
+        await _dispatch(job)
+        # Drain backlog without idle delay between consecutive jobs.
+    logger.info("owned KB worker stopped")
+
+
+def ensure_owned_kb_worker_started() -> None:
+    """Idempotent: spawn one asyncio task on the running loop, or a daemon thread."""
+    global _started
+    with _worker_lock:
+        if _started:
+            return
+        if not owned_kb_worker_enabled():
+            logger.info("owned KB worker not started (EVOFLOW_OWNED_KB_WORKER=0)")
+            return
+        _started = True
+        _stop.clear()
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop and loop.is_running():
+            loop.create_task(_loop())
+            return
+
+        def _thread_main() -> None:
+            asyncio.run(_loop())
+
+        t = threading.Thread(target=_thread_main, name="owned-kb-worker", daemon=True)
+        t.start()
+
+
+def stop_owned_kb_worker_for_tests() -> None:
+    global _started
+    _stop.set()
+    with _worker_lock:
+        _started = False

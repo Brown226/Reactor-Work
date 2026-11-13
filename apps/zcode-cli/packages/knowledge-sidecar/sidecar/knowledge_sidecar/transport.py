@@ -12,11 +12,12 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import json
 import logging
 import sys
 import traceback
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from typing import Any
 
 # 单行上限：知识库请求里最大的是检索 query 与上传路径，8 MiB 足够。
@@ -26,7 +27,8 @@ PROTOCOL_VERSION = 1
 
 logger = logging.getLogger("knowledge_sidecar.transport")
 
-Handler = Callable[[dict[str, Any]], Awaitable[Any]]
+# 处理器可以返回 awaitable，也可以直接返回结果（见 serve() 里的说明）。
+Handler = Callable[[dict[str, Any]], Any]
 
 
 class ProtocolError(Exception):
@@ -117,7 +119,14 @@ class RpcServer:
             if not isinstance(params, dict):
                 raise ProtocolError("BAD_PARAMS", "params 必须是 JSON 对象")
 
-            result = await handler(params)
+            # 处理器可以是同步函数：移植自 EvoFlow 的 service 层大多是普通 def
+            # （内部走 sqlite3 同步 API），只有 search / ask 是 async def。
+            # 直接 `await handler()` 会对同步返回值抛
+            # "object dict can't be used in 'await' expression"，
+            # 所以这里判断是否有 __await__ 再决定要不要 await。
+            result = handler(params)
+            if inspect.isawaitable(result):
+                result = await result
             await self._write({"id": request_id, "ok": True, "result": result})
         except ProtocolError as exc:
             await self._write(

@@ -1,0 +1,3320 @@
+"""Public service API for owned knowledge bases."""
+
+from __future__ import annotations
+
+import logging
+import mimetypes
+import sqlite3
+import threading
+import time
+from pathlib import Path
+from typing import Any
+
+from knowledge_sidecar.embedding import get_embedding
+from knowledge_sidecar.owned import activity as owned_activity
+from knowledge_sidecar.owned import blob_store, jobs
+from knowledge_sidecar.owned import kg as kg_store
+from knowledge_sidecar.owned.db import db
+from knowledge_sidecar.owned import settings as owned_settings
+from knowledge_sidecar.owned.embedding_bind import resolve_create_binding
+from knowledge_sidecar.owned.formats import (
+    MAX_FILE_BYTES,
+    is_supported_file,
+    folder_path_has_skipped_dir,
+    should_skip_dir,
+    should_skip_file,
+)
+from knowledge_sidecar.owned.ids import new_id, utc_now
+from knowledge_sidecar.owned.kb_conn import db_for_kb
+from knowledge_sidecar.owned.pipeline import _model_config_for_base
+from knowledge_sidecar.owned.retrieve import (
+    enrich_hits,
+    purge_document_index,
+    rerank_by_query_match,
+    rrf_fuse,
+    search_keyword,
+    search_title,
+    search_vector,
+)
+from knowledge_sidecar.owned.worker import ensure_owned_kb_worker_started
+
+logger = logging.getLogger(__name__)
+
+_MISSING = object()
+
+_QUERY_EMBED_CACHE: dict[tuple[str, ...], tuple[float, list[float]]] = {}
+_QUERY_EMBED_CACHE_LOCK = threading.Lock()
+_QUERY_EMBED_CACHE_TTL_S = 300.0
+_QUERY_EMBED_CACHE_MAX = 128
+
+# Parse failures whose error text looks like embedding — heal to keyword-only
+# instead of leaving the hub stuck on 「需要处理失败文档」.
+_EMBED_FAIL_HINTS = (
+    "embedding",
+    "embed ",
+    "向量",
+    "embeddingerror",
+    "429",
+    "quota",
+    "rate limit",
+    "insufficient_quota",
+    "doubao-embedding",
+    "text-embedding",
+    "embedding-vision",
+    "dimension",
+    "vector",
+    "model not found",
+    "invalid model",
+    "not support",
+    "unsupported",
+)
+
+
+def _error_looks_like_embedding_failure(*parts: str) -> bool:
+    blob = " ".join(str(p or "") for p in parts).lower()
+    if not blob.strip():
+        return False
+    return any(h in blob for h in _EMBED_FAIL_HINTS)
+
+
+async def _cached_query_embedding(cache_key: tuple[str, ...], loader: Any) -> list[float]:
+    now = time.monotonic()
+    with _QUERY_EMBED_CACHE_LOCK:
+        cached = _QUERY_EMBED_CACHE.get(cache_key)
+        if cached and now - cached[0] < _QUERY_EMBED_CACHE_TTL_S:
+            return list(cached[1])
+    vec = list(await loader())
+    with _QUERY_EMBED_CACHE_LOCK:
+        if len(_QUERY_EMBED_CACHE) >= _QUERY_EMBED_CACHE_MAX:
+            oldest = min(_QUERY_EMBED_CACHE, key=lambda key: _QUERY_EMBED_CACHE[key][0])
+            _QUERY_EMBED_CACHE.pop(oldest, None)
+        _QUERY_EMBED_CACHE[cache_key] = (now, vec)
+    return list(vec)
+
+
+_CHUNK_SIZE_MIN = 64
+_CHUNK_SIZE_MAX = 8192
+_CHUNK_OVERLAP_MIN = 0
+_CHUNK_OVERLAP_MAX = 4096
+# Character budget defaults (not tokens). Must match CreateBaseBody /
+# gateway defaults — oversized defaults + old no-split ceiling used to
+# collapse multi-FAQ docs into a single retrieval vector.
+_CHUNK_SIZE_DEFAULT = 2048
+_CHUNK_OVERLAP_DEFAULT = 256
+
+
+def _parse_int_field(raw: Any, *, field: str) -> int:
+    try:
+        return int(raw)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{field} must be an integer") from exc
+
+
+def _validate_chunk_size(raw: Any) -> int:
+    n = _parse_int_field(raw, field="chunkSize")
+    if n < _CHUNK_SIZE_MIN or n > _CHUNK_SIZE_MAX:
+        raise ValueError(f"chunkSize must be between {_CHUNK_SIZE_MIN} and {_CHUNK_SIZE_MAX}")
+    return n
+
+
+def _validate_chunk_overlap(raw: Any, *, chunk_size: int) -> int:
+    n = _parse_int_field(raw, field="chunkOverlap")
+    if n < _CHUNK_OVERLAP_MIN or n > _CHUNK_OVERLAP_MAX:
+        raise ValueError(f"chunkOverlap must be between {_CHUNK_OVERLAP_MIN} and {_CHUNK_OVERLAP_MAX}")
+    if n >= chunk_size:
+        raise ValueError("chunkOverlap must be less than chunkSize")
+    return n
+
+
+def _normalize_content_mode(raw: Any) -> str:
+    """``copy`` (default) or ``link`` (reference the user's files in place)."""
+    mode = str(raw or "").strip().lower()
+    return mode if mode in {"copy", "link"} else "copy"
+
+
+def _prepare_kb_storage(kb_id: str, payload: dict[str, Any]) -> Path:
+    """Create the KB's directory + index DB and return the resolved directory.
+
+    Honours an explicit ``storageDir`` / ``storage_dir``; falls back to the
+    configured KB root or the app data dir. If the requested directory is not
+    writable (git checkout, read-only mount, network share) we fall back to the
+    app data dir so KB creation never fails outright.
+    """
+    from knowledge_sidecar.owned import store_paths
+
+    requested = str(payload.get("storageDir") or payload.get("storage_dir") or "").strip()
+    if requested:
+        target = Path(requested).expanduser()
+        if not store_paths.is_dir_writable(target):
+            logger.warning(
+                "kb storage dir not writable, falling back to app data dir: %s (kb=%s)",
+                target,
+                kb_id,
+            )
+            target = store_paths.default_kb_dir(kb_id)
+    else:
+        target = store_paths.default_kb_dir(kb_id)
+
+    store_paths.ensure_kb_layout(target)
+    # Create the index DB eagerly so the layout is complete before first use.
+    from knowledge_sidecar.owned.kb_conn import db_for_dir
+
+    with db_for_dir(target):
+        pass
+    return target.resolve()
+
+
+def _write_kb_meta(kb_id: str, kb_dir: str | Path, *, name: str = "") -> None:
+    """Write ``kb.json`` describing this KB (portable metadata next to its index)."""
+    from knowledge_sidecar.owned import store_paths
+
+    try:
+        store_paths.write_kb_meta(
+            kb_dir,
+            {
+                "kbId": kb_id,
+                "name": name,
+                "schemaVersion": 1,
+                "layout": ".evoflow/kb",
+                "createdBy": "EvoFlow",
+            },
+        )
+    except Exception:
+        logger.debug("kb.json write skipped for kb=%s", kb_id, exc_info=True)
+
+
+def _resolved_storage_dir(d: dict[str, Any]) -> str:
+    """Absolute KB directory even when ``storage_dir`` was never stamped.
+
+    Legacy bases (pre per-KB split) keep ``storage_dir=''``; resolving through
+    ``store_paths`` keeps the "open folder" action working for them too.
+    """
+    try:
+        from knowledge_sidecar.owned import store_paths
+
+        raw = str(d.get("storage_dir") or "").strip()
+        return str(store_paths.resolve_kb_dir(str(d.get("id") or ""), storage_dir=raw or None))
+    except Exception:
+        logger.debug("resolved storage dir lookup failed", exc_info=True)
+        return str(d.get("storage_dir") or "")
+
+
+def _vector_stats(kb_id: str, model: str = "", dim: int | None = None) -> dict[str, int | bool]:
+    """Return complete vector coverage for active, completed document chunks."""
+    empty = {
+        "totalChunks": 0,
+        "embeddedChunks": 0,
+        "missingEmbeddingChunks": 0,
+        "vectorized": False,
+    }
+    if not kb_id:
+        return empty
+    try:
+        with db_for_kb(kb_id) as conn:
+            total = int(
+                conn.execute(
+                    """
+                    SELECT COUNT(*) FROM kb_chunks c
+                    JOIN kb_documents d ON d.id=c.doc_id
+                    WHERE c.kb_id=? AND c.enabled=1 AND d.deleted_at IS NULL
+                      AND d.parse_status='completed'
+                    """,
+                    (kb_id,),
+                ).fetchone()[0]
+            )
+            clauses = [
+                "e.kb_id=?", "e.dim=?", "c.enabled=1", "d.deleted_at IS NULL",
+                "d.parse_status='completed'",
+            ]
+            params: list[Any] = [kb_id, int(dim or 0)]
+            if model:
+                clauses.append("e.model=?")
+                params.append(model)
+            embedded = int(
+                conn.execute(
+                    f"""
+                    SELECT COUNT(*) FROM kb_chunk_embeddings e
+                    JOIN kb_chunks c ON c.id=e.chunk_id
+                    JOIN kb_documents d ON d.id=e.doc_id
+                    WHERE {' AND '.join(clauses)}
+                    """,
+                    params,
+                ).fetchone()[0]
+            ) if dim else 0
+        return {
+            "totalChunks": total,
+            "embeddedChunks": embedded,
+            "missingEmbeddingChunks": max(0, total - embedded),
+            "vectorized": total > 0 and embedded == total,
+            "status": "ready" if total > 0 and embedded == total else ("partial" if embedded else "missing"),
+        }
+    except Exception:
+        logger.debug("vector stats lookup failed for kb=%s", kb_id, exc_info=True)
+        return empty
+
+
+def _row_base(row: Any) -> dict[str, Any]:
+    d = dict(row)
+    ref = str(d.get("embedding_api_key_ref") or "")
+    has_key = False
+    if ref:
+        try:
+            from knowledge_sidecar.owned.secrets import has_embedding_key
+
+            has_key = has_embedding_key(ref, is_ref=True)
+        except Exception:
+            has_key = False
+    # Registry-bound cloud models keep the key on the model row, not per-KB secret.
+    if not has_key and str(d.get("embedding_mode") or "").lower() != "local":
+        try:
+            from knowledge_sidecar.owned.embedding_bind import embedding_runtime_ready_for_base_row
+
+            ready, _ = embedding_runtime_ready_for_base_row(dict(d))
+            has_key = bool(ready)
+        except Exception:
+            pass
+    return {
+        "id": d["id"],
+        "name": d["name"],
+        "description": d.get("description") or "",
+        "chunkSize": d.get("chunk_size"),
+        "chunkOverlap": d.get("chunk_overlap"),
+        "chunkStrategy": d.get("chunk_strategy"),
+        "embeddingMode": d.get("embedding_mode"),
+        "embeddingModel": d.get("embedding_model"),
+        "embeddingModelRef": d.get("embedding_model_ref") or "",
+        "embeddingBaseUrl": d.get("embedding_base_url") or "",
+        "embeddingDim": d.get("embedding_dim"),
+        "hasEmbeddingApiKey": has_key,
+        "vectorEnabled": bool(d.get("vector_enabled")),
+        **_vector_stats(
+            str(d.get("id") or ""),
+            model=str(d.get("embedding_model") or ""),
+            dim=int(d.get("embedding_dim") or 0) or None,
+        ),
+        "keywordEnabled": bool(d.get("keyword_enabled")),
+        "wikiEnabled": bool(d.get("wiki_enabled")),
+        "graphEnabled": bool(d.get("graph_enabled")),
+        "summaryEnabled": bool(d.get("summary_enabled")),
+        "imageCaptionEnabled": bool(d.get("image_caption_enabled")),
+        "syncSourceType": d.get("sync_source_type") or "",
+        "syncSourcePath": d.get("sync_source_path") or "",
+        "syncVaultId": d.get("sync_vault_id") or "",
+        "lastSyncedAt": d.get("last_synced_at"),
+        "storageDir": d.get("storage_dir") or "",
+        "resolvedStorageDir": _resolved_storage_dir(d),
+        "contentMode": d.get("content_mode") or "copy",
+        "createdAt": d.get("created_at"),
+        "updatedAt": d.get("updated_at"),
+        "orgId": d.get("org_id") or "",
+        "ownerScopeId": d.get("owner_scope_id") or "",
+        "createdBy": d.get("created_by") or "",
+        "hidden": bool(d.get("hidden")),
+        "builtin": str(d.get("id") or "") == "kb_builtin_user_guide" or str(d.get("sync_vault_id") or "") == "evoflow-user-guide",
+    }
+
+
+def _row_doc(row: Any) -> dict[str, Any]:
+    d = dict(row)
+    tags = []
+    frontmatter: dict[str, Any] = {}
+    try:
+        import json
+
+        tags = json.loads(d.get("tags_json") or "[]") or []
+        if not isinstance(tags, list):
+            tags = []
+        frontmatter = json.loads(d.get("frontmatter_json") or "{}") or {}
+        if not isinstance(frontmatter, dict):
+            frontmatter = {}
+    except Exception:
+        tags = []
+        frontmatter = {}
+    return {
+        "id": d["id"],
+        "kbId": d["kb_id"],
+        "title": d.get("title") or "",
+        "sourceType": d.get("source_type"),
+        "fileName": d.get("file_name") or "",
+        "mime": d.get("mime") or "",
+        "sizeBytes": d.get("size_bytes") or 0,
+        "contentHash": d.get("content_hash") or "",
+        "folderPath": d.get("folder_path") or "",
+        "sourceRelPath": d.get("source_rel_path") or "",
+        "sortOrder": int(d.get("sort_order") or 0),
+        "parseStatus": d.get("parse_status"),
+        "indexStatus": d.get("index_status") or "pending",
+        "keywordStatus": d.get("keyword_status") or "pending",
+        "vectorStatus": d.get("vector_status") or "pending",
+        "indexError": d.get("index_error") or "",
+        "errorMessage": d.get("error_message") or "",
+        "chunkCount": d.get("chunk_count") or 0,
+        "summaryStatus": d.get("summary_status"),
+        "summaryText": d.get("summary_text") or "",
+        "tags": [str(t) for t in tags],
+        "frontmatter": frontmatter,
+        "latestJobId": d.get("latest_job_id"),
+        "createdAt": d.get("created_at"),
+        "updatedAt": d.get("updated_at"),
+    }
+
+
+def _document_counts_by_kb(rows: list[Any]) -> dict[str, int]:
+    """Count active documents per KB by opening each KB's own index DB.
+
+    ``db_for_kb`` resolves the default location when ``storage_dir`` is empty —
+    a KB created without one (e.g. the builtin user guide) still owns a per-KB
+    index DB after the split. Falls back to the central DB only when the
+    per-KB query fails, so the count stays correct during a rolling migration.
+    """
+    counts: dict[str, int] = {}
+    pending: list[str] = []
+    for r in rows:
+        kid = str(r["id"] if isinstance(r, sqlite3.Row) else r[0])
+        try:
+            with db_for_kb(kid) as conn:
+                counts[kid] = int(
+                    conn.execute(
+                        "SELECT COUNT(*) FROM kb_documents WHERE kb_id=? AND deleted_at IS NULL",
+                        (kid,),
+                    ).fetchone()[0]
+                )
+        except Exception:
+            logger.debug("doc count skipped for kb=%s", kid, exc_info=True)
+            pending.append(kid)
+
+    if pending:
+        try:
+            with db() as conn:
+                for kid in pending:
+                    counts[kid] = int(
+                        conn.execute(
+                            "SELECT COUNT(*) FROM kb_documents WHERE kb_id=? AND deleted_at IS NULL",
+                            (kid,),
+                        ).fetchone()[0]
+                    )
+        except Exception:
+            logger.debug("central doc count fallback failed", exc_info=True)
+    return counts
+
+
+def _document_health_by_kb(rows: list[Any]) -> dict[str, dict[str, int]]:
+    """Return parse/index health counts for the list view without loading documents.
+
+    ``vectorDegraded`` counts completed (searchable) docs whose vectors are
+    missing/degraded — a soft hint, not a parse failure.
+    """
+    health: dict[str, dict[str, int]] = {}
+    for r in rows:
+        kid = str(r["id"] if isinstance(r, sqlite3.Row) else r[0])
+        try:
+            with db_for_kb(kid) as conn:
+                grouped = conn.execute(
+                    """
+                    SELECT parse_status, COUNT(*) AS c
+                    FROM kb_documents
+                    WHERE kb_id=? AND deleted_at IS NULL
+                    GROUP BY parse_status
+                    """,
+                    (kid,),
+                ).fetchall()
+                degraded = int(
+                    conn.execute(
+                        """
+                        SELECT COUNT(*) FROM kb_documents
+                        WHERE kb_id=? AND deleted_at IS NULL
+                          AND parse_status='completed'
+                          AND COALESCE(vector_status, '') IN ('degraded', 'failed', 'pending', 'building')
+                        """,
+                        (kid,),
+                    ).fetchone()[0]
+                    or 0
+                )
+            values = {str(item["parse_status"] or "unknown"): int(item["c"] or 0) for item in grouped}
+            health[kid] = {
+                "ready": values.get("completed", 0),
+                "pending": values.get("pending", 0),
+                "processing": values.get("processing", 0),
+                "failed": values.get("failed", 0),
+                "vectorDegraded": degraded,
+            }
+        except Exception:
+            logger.debug("document health skipped for kb=%s", kid, exc_info=True)
+    return health
+
+
+def list_bases(
+    *,
+    is_admin: bool = False,
+    personal_scope: str | None = None,
+    org_scope: str | None = None,
+    principal: Any = None,
+    filter_visibility: bool = False,
+    include_hidden: bool = True,
+) -> list[dict[str, Any]]:
+    ensure_owned_kb_worker_started()
+    with db() as conn:
+        rows = conn.execute("SELECT * FROM kb_bases WHERE deleted_at IS NULL ORDER BY updated_at DESC").fetchall()
+    # Documents live in each KB's own index DB, so counts are gathered per KB.
+    counts = _document_counts_by_kb(rows)
+    health = _document_health_by_kb(rows)
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        item = _row_base(r)
+        # ``include_hidden=False`` is the UI default: hidden (停用/忽略) bases
+        # stay out of the list but are still returned to internal callers so
+        # seeding / dedupe logic keeps seeing them.
+        if not include_hidden and bool(item.get("hidden")):
+            continue
+        if filter_visibility and not kb_visible_to_principal(
+            str(item["id"]),
+            is_admin=is_admin,
+            personal_scope=personal_scope,
+            org_scope=org_scope,
+            principal=principal,
+            owner_scope_id=str(item.get("ownerScopeId") or "") or None,
+        ):
+            continue
+        item["documentCount"] = counts.get(str(item["id"]), 0)
+        item["documentHealth"] = health.get(
+            str(item["id"]),
+            {"ready": 0, "pending": 0, "processing": 0, "failed": 0, "vectorDegraded": 0},
+        )
+        out.append(item)
+    return out
+
+
+def set_kb_owner_scope(
+    kb_id: str,
+    *,
+    org_id: str,
+    owner_scope_id: str,
+    created_by: str | None = None,
+) -> None:
+    kid = str(kb_id or "").strip()
+    if not kid or not owner_scope_id:
+        return
+    with db() as conn:
+        cols = {str(r[1]) for r in conn.execute("PRAGMA table_info(kb_bases)").fetchall()}
+        if "owner_scope_id" not in cols:
+            return
+        if "created_by" in cols and created_by:
+            conn.execute(
+                """
+                UPDATE kb_bases
+                SET org_id = COALESCE(NULLIF(org_id, ''), ?),
+                    owner_scope_id = COALESCE(NULLIF(owner_scope_id, ''), ?),
+                    created_by = COALESCE(NULLIF(created_by, ''), ?)
+                WHERE id = ?
+                """,
+                (org_id, owner_scope_id, created_by, kid),
+            )
+        else:
+            conn.execute(
+                """
+                UPDATE kb_bases
+                SET org_id = COALESCE(NULLIF(org_id, ''), ?),
+                    owner_scope_id = COALESCE(NULLIF(owner_scope_id, ''), ?)
+                WHERE id = ?
+                """,
+                (org_id, owner_scope_id, kid),
+            )
+
+
+def kb_visible_to_principal(
+    kb_id: str,
+    *,
+    is_admin: bool = False,
+    personal_scope: str | None = None,
+    org_scope: str | None = None,
+    principal: Any = None,
+    owner_scope_id: str | None = None,
+) -> bool:
+    from knowledge_sidecar.evoflow.authz.resource_visibility import owner_scope_visible_to_principal
+
+    owner = owner_scope_id
+    if owner is None:
+        with db() as conn:
+            cols = {str(r[1]) for r in conn.execute("PRAGMA table_info(kb_bases)").fetchall()}
+            if "owner_scope_id" not in cols:
+                return is_admin
+            row = conn.execute(
+                "SELECT owner_scope_id FROM kb_bases WHERE id=? AND deleted_at IS NULL",
+                (str(kb_id or "").strip(),),
+            ).fetchone()
+            if not row:
+                return False
+            owner = str(row[0] or "").strip() or None
+    # Built-in user guide: visible to everyone with a principal (shared product doc).
+    if str(kb_id or "") == "kb_builtin_user_guide":
+        return True
+    return owner_scope_visible_to_principal(
+        owner,
+        principal,
+        is_admin=is_admin,
+        personal_scope=personal_scope,
+        org_scope=org_scope,
+    )
+
+
+def create_base(payload: dict[str, Any]) -> dict[str, Any]:
+    ensure_owned_kb_worker_started()
+    kb_id = new_id("kb_")
+    now = utc_now()
+    name = str(payload.get("name") or "").strip() or "未命名知识库"
+    binding = resolve_create_binding(payload)
+    mode = str(binding["embedding_mode"])
+    model = str(binding["embedding_model"])
+    base_url = str(binding.get("embedding_base_url") or "")
+    model_ref = str(binding.get("embedding_model_ref") or "")
+    key_ref = ""
+    api_key = binding.get("embedding_api_key") or ""
+    raw_chunk_size = payload.get("chunkSize", payload.get("chunk_size", None))
+    chunk_size = (
+        _CHUNK_SIZE_DEFAULT if raw_chunk_size is None else _validate_chunk_size(raw_chunk_size)
+    )
+    raw_chunk_overlap = payload.get("chunkOverlap", payload.get("chunk_overlap", None))
+    chunk_overlap = (
+        _CHUNK_OVERLAP_DEFAULT
+        if raw_chunk_overlap is None
+        else _validate_chunk_overlap(raw_chunk_overlap, chunk_size=chunk_size)
+    )
+    # Registry-bound models keep credentials on the models page; only legacy
+    # inline keys are stored per-KB.
+    if not binding.get("from_registry") and api_key and str(api_key).strip() and mode != "local":
+        from knowledge_sidecar.owned.secrets import put_embedding_key
+
+        key_ref = put_embedding_key(kb_id, str(api_key).strip())
+    # Resolve where this KB's own index DB will live (independent root, or the
+    # app data fallback when the requested directory is not writable).
+    storage_dir = _prepare_kb_storage(kb_id, payload)
+    with db() as conn:
+        conn.execute(
+            """
+            INSERT INTO kb_bases(
+              id, name, description, chunk_size, chunk_overlap, chunk_strategy,
+              embedding_mode, embedding_model, embedding_base_url, embedding_api_key_ref,
+              embedding_model_ref,
+              vector_enabled, keyword_enabled, wiki_enabled, graph_enabled,
+              summary_enabled, image_caption_enabled, storage_dir, content_mode,
+              created_at, updated_at
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,1,1,0,0,?,?,?,?,?,?)
+            """,
+            (
+                kb_id,
+                name,
+                str(payload.get("description") or ""),
+                chunk_size,
+                chunk_overlap,
+                str(payload.get("chunkStrategy") or payload.get("chunk_strategy") or "auto"),
+                mode,
+                model,
+                base_url,
+                key_ref,
+                model_ref,
+                1 if payload.get("summaryEnabled", owned_settings.get_default_summary_enabled()) else 0,
+                1 if payload.get("imageCaptionEnabled") else 0,
+                str(storage_dir),
+                _normalize_content_mode(payload.get("contentMode") or payload.get("content_mode")),
+                now,
+                now,
+            ),
+        )
+    _write_kb_meta(kb_id, storage_dir, name=name)
+    out = get_base(kb_id)  # type: ignore[return-value]
+    owned_activity.record(
+        kb_id,
+        "base.create",
+        title=name,
+        detail={"name": name},
+    )
+    return out
+
+
+def update_base(kb_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    """Update KB metadata and optionally rebind embedding (triggers full reindex)."""
+    ensure_owned_kb_worker_started()
+    existing = get_base(kb_id)
+    if not existing:
+        raise ValueError("knowledge base not found")
+
+    now = utc_now()
+    name = payload.get("name")
+    description = payload.get("description")
+    chunk_size = payload.get("chunkSize", payload.get("chunk_size"))
+    chunk_overlap = payload.get("chunkOverlap", payload.get("chunk_overlap"))
+    chunk_strategy = payload.get("chunkStrategy", payload.get("chunk_strategy"))
+    summary_enabled = payload.get("summaryEnabled", payload.get("summary_enabled"))
+    image_caption = payload.get("imageCaptionEnabled", payload.get("image_caption_enabled"))
+    hidden = payload.get("hidden")
+    vector_enabled_raw = payload.get("vectorEnabled", payload.get("vector_enabled", _MISSING))
+
+    embedding_touch = any(
+        k in payload
+        for k in (
+            "embeddingModelRef",
+            "embedding_model_ref",
+            "embeddingMode",
+            "embedding_mode",
+            "embeddingModel",
+            "embedding_model",
+            "embeddingBaseUrl",
+            "embedding_base_url",
+            "embeddingApiKey",
+            "embedding_api_key",
+        )
+    )
+
+    reindex_doc_ids: list[str] = []
+    keyword_only_heal_ids: list[str] = []
+    vector_on_reindex_ids: list[str] = []
+    with db() as conn:
+        row = conn.execute("SELECT * FROM kb_bases WHERE id=? AND deleted_at IS NULL", (kb_id,)).fetchone()
+        if not row:
+            raise ValueError("knowledge base not found")
+
+        sets: list[str] = ["updated_at=?"]
+        vals: list[Any] = [now]
+
+        if name is not None:
+            sets.append("name=?")
+            vals.append(str(name).strip() or existing["name"])
+        if description is not None:
+            sets.append("description=?")
+            vals.append(str(description))
+        if chunk_size is not None:
+            sets.append("chunk_size=?")
+            vals.append(_validate_chunk_size(chunk_size))
+        if chunk_overlap is not None:
+            effective_size = (
+                _validate_chunk_size(chunk_size)
+                if chunk_size is not None
+                else int(existing.get("chunkSize") or _CHUNK_SIZE_DEFAULT)
+            )
+            sets.append("chunk_overlap=?")
+            vals.append(_validate_chunk_overlap(chunk_overlap, chunk_size=effective_size))
+        if chunk_strategy is not None:
+            sets.append("chunk_strategy=?")
+            vals.append(str(chunk_strategy))
+        if summary_enabled is not None:
+            sets.append("summary_enabled=?")
+            vals.append(1 if summary_enabled else 0)
+        if image_caption is not None:
+            sets.append("image_caption_enabled=?")
+            vals.append(1 if image_caption else 0)
+        if hidden is not None:
+            sets.append("hidden=?")
+            vals.append(1 if hidden else 0)
+
+        vector_enabled_changed = False
+        vector_enabled_next: bool | None = None
+        if vector_enabled_raw is not _MISSING:
+            vector_enabled_next = bool(vector_enabled_raw)
+            old_ve = bool(int(row["vector_enabled"] if row["vector_enabled"] is not None else 1))
+            if vector_enabled_next != old_ve:
+                vector_enabled_changed = True
+                sets.append("vector_enabled=?")
+                vals.append(1 if vector_enabled_next else 0)
+
+        embedding_changed = False
+        if embedding_touch:
+            binding = resolve_create_binding(payload)
+            new_mode = str(binding["embedding_mode"])
+            new_model = str(binding["embedding_model"])
+            new_base = str(binding.get("embedding_base_url") or "")
+            new_ref = str(binding.get("embedding_model_ref") or "")
+            old_mode = str(row["embedding_mode"] or "")
+            old_model = str(row["embedding_model"] or "")
+            old_base = str(row["embedding_base_url"] or "")
+            old_ref = str(row["embedding_model_ref"] or "") if "embedding_model_ref" in row.keys() else ""
+            embedding_changed = new_mode != old_mode or new_model != old_model or new_base != old_base or new_ref != old_ref
+            sets.extend(
+                [
+                    "embedding_mode=?",
+                    "embedding_model=?",
+                    "embedding_base_url=?",
+                    "embedding_model_ref=?",
+                ]
+            )
+            vals.extend([new_mode, new_model, new_base, new_ref])
+
+            api_key = binding.get("embedding_api_key") or ""
+            key_ref = str(row["embedding_api_key_ref"] or "")
+            if new_mode == "local" or binding.get("from_registry"):
+                if key_ref:
+                    try:
+                        from knowledge_sidecar.owned.secrets import delete_embedding_key
+
+                        delete_embedding_key(key_ref, is_ref=True)
+                    except Exception:
+                        pass
+                sets.append("embedding_api_key_ref=?")
+                vals.append("")
+            elif api_key and str(api_key).strip():
+                from knowledge_sidecar.owned.secrets import put_embedding_key
+
+                if not key_ref:
+                    key_ref = f"owned_{kb_id}_embedding_api_key"
+                put_embedding_key(kb_id, str(api_key).strip())
+                sets.append("embedding_api_key_ref=?")
+                vals.append(key_ref)
+
+            if embedding_changed:
+                sets.append("embedding_dim=?")
+                vals.append(None)
+                with db_for_kb(kb_id) as kb_conn:
+                    kb_conn.execute("DELETE FROM kb_chunk_embeddings WHERE kb_id=?", (kb_id,))
+                    doc_rows = kb_conn.execute(
+                        """
+                        SELECT id FROM kb_documents
+                        WHERE kb_id=? AND deleted_at IS NULL
+                        """,
+                        (kb_id,),
+                    ).fetchall()
+                reindex_doc_ids = [str(r["id"]) for r in doc_rows]
+            elif row["embedding_dim"] is None:
+                # Same model but never vectorized (or dim cleared) — still enqueue.
+                with db_for_kb(kb_id) as kb_conn:
+                    doc_rows = kb_conn.execute(
+                        """
+                        SELECT id FROM kb_documents
+                        WHERE kb_id=? AND deleted_at IS NULL
+                        """,
+                        (kb_id,),
+                    ).fetchall()
+                reindex_doc_ids = [str(r["id"]) for r in doc_rows]
+
+        if vector_enabled_changed and vector_enabled_next is False:
+            # Keyword-only mode: drop vectors, mark searchable docs degraded, heal failures.
+            if "embedding_dim=?" not in sets:
+                sets.append("embedding_dim=?")
+                vals.append(None)
+            with db_for_kb(kb_id) as kb_conn:
+                kb_conn.execute("DELETE FROM kb_chunk_embeddings WHERE kb_id=?", (kb_id,))
+                kb_conn.execute(
+                    """
+                    UPDATE kb_documents
+                    SET vector_status='degraded',
+                        index_error=CASE
+                          WHEN COALESCE(index_error, '') = '' THEN '此库已设为仅关键词检索'
+                          ELSE index_error
+                        END,
+                        updated_at=?
+                    WHERE kb_id=? AND deleted_at IS NULL AND parse_status='completed'
+                    """,
+                    (now, kb_id),
+                )
+                fail_rows = kb_conn.execute(
+                    """
+                    SELECT id FROM kb_documents
+                    WHERE kb_id=? AND deleted_at IS NULL AND parse_status='failed'
+                    """,
+                    (kb_id,),
+                ).fetchall()
+            # Explicit keyword-only: re-parse failures so they become searchable.
+            keyword_only_heal_ids = [str(r["id"]) for r in fail_rows]
+        elif vector_enabled_changed and vector_enabled_next is True and not embedding_changed:
+            # Re-enable vectors: rebuild with the current embedding binding.
+            with db_for_kb(kb_id) as kb_conn:
+                doc_rows = kb_conn.execute(
+                    """
+                    SELECT id FROM kb_documents
+                    WHERE kb_id=? AND deleted_at IS NULL
+                    """,
+                    (kb_id,),
+                ).fetchall()
+            vector_on_reindex_ids = [str(r["id"]) for r in doc_rows]
+            if row["embedding_dim"] is not None and "embedding_dim=?" not in sets:
+                sets.append("embedding_dim=?")
+                vals.append(None)
+
+        vals.append(kb_id)
+        conn.execute(
+            f"UPDATE kb_bases SET {', '.join(sets)} WHERE id=?",
+            tuple(vals),
+        )
+
+    for doc_id in reindex_doc_ids:
+        try:
+            jobs.enqueue(kb_id=kb_id, doc_id=doc_id, type="reindex", priority=80)
+        except Exception:
+            logger.debug("reindex enqueue failed for %s", doc_id, exc_info=True)
+
+    heal_payload = {
+        "skip_embedding": True,
+        "skip_embedding_reason": "此库已设为仅关键词检索",
+    }
+    for doc_id in keyword_only_heal_ids:
+        try:
+            jobs.enqueue(
+                kb_id=kb_id,
+                doc_id=doc_id,
+                type="reindex",
+                priority=85,
+                payload=heal_payload,
+            )
+        except Exception:
+            logger.debug("keyword-only heal enqueue failed for %s", doc_id, exc_info=True)
+
+    for doc_id in vector_on_reindex_ids:
+        if doc_id in reindex_doc_ids:
+            continue
+        try:
+            jobs.enqueue(kb_id=kb_id, doc_id=doc_id, type="reindex", priority=80)
+        except Exception:
+            logger.debug("vector-on reindex enqueue failed for %s", doc_id, exc_info=True)
+
+    out = get_base(kb_id)
+    if out is None:
+        raise ValueError("knowledge base not found")
+    queued_n = len(reindex_doc_ids) + len(keyword_only_heal_ids) + len(
+        [d for d in vector_on_reindex_ids if d not in reindex_doc_ids]
+    )
+    if queued_n:
+        out = {**out, "reindexQueued": queued_n}
+    return out
+
+
+def reindex_base(
+    kb_id: str,
+    *,
+    embedding_model_ref: str | None = None,
+    force: bool = True,
+) -> dict[str, Any]:
+    """Enqueue full-base vector rebuild; optionally rebind embedding first.
+
+    Use when a KB already exists but ``embedding_dim`` is null / vectors missing,
+    or the user wants to rebuild with the current (or a new) Agent Plan embedding.
+    """
+    ensure_owned_kb_worker_started()
+    existing = get_base(kb_id)
+    if not existing:
+        raise ValueError("knowledge base not found")
+
+    ref = str(embedding_model_ref or "").strip()
+    if ref:
+        # Rebind then rebuild (update_base clears vectors when model changes,
+        # and also queues when dim is still null).
+        return update_base(kb_id, {"embeddingModelRef": ref})
+
+    now = utc_now()
+    reindex_doc_ids: list[str] = []
+    with db() as conn:
+        row = conn.execute(
+            "SELECT id, embedding_dim FROM kb_bases WHERE id=? AND deleted_at IS NULL",
+            (kb_id,),
+        ).fetchone()
+        if not row:
+            raise ValueError("knowledge base not found")
+        if force or row["embedding_dim"] is None:
+            conn.execute(
+                "UPDATE kb_bases SET embedding_dim=?, updated_at=? WHERE id=?",
+                (None, now, kb_id),
+            )
+
+    # Chunks/embeddings/documents are KB-local.
+    with db_for_kb(kb_id) as kb_conn:
+        if force or row["embedding_dim"] is None:
+            # Existing chunks remain searchable until each replacement job
+            # commits successfully in the pipeline.
+            kb_conn.execute(
+                """
+                UPDATE kb_documents
+                SET parse_status=CASE WHEN chunk_count > 0 THEN 'completed' ELSE 'pending' END,
+                    index_status=CASE WHEN chunk_count > 0 THEN 'building' ELSE 'pending' END,
+                    keyword_status=CASE WHEN chunk_count > 0 THEN 'building' ELSE 'pending' END,
+                    vector_status=CASE WHEN chunk_count > 0 THEN 'building' ELSE 'pending' END,
+                    index_error='', error_message='', updated_at=?
+                WHERE kb_id=? AND deleted_at IS NULL
+                """,
+                (now, kb_id),
+            )
+        doc_rows = kb_conn.execute(
+            """
+            SELECT id FROM kb_documents
+            WHERE kb_id=? AND deleted_at IS NULL
+            """,
+            (kb_id,),
+        ).fetchall()
+        reindex_doc_ids = [str(r["id"]) for r in doc_rows]
+
+    for doc_id in reindex_doc_ids:
+        try:
+            jobs.enqueue(kb_id=kb_id, doc_id=doc_id, type="reindex", priority=80)
+        except Exception:
+            logger.debug("reindex enqueue failed for %s", doc_id, exc_info=True)
+
+    out = get_base(kb_id)
+    if out is None:
+        raise ValueError("knowledge base not found")
+    return {**out, "reindexQueued": len(reindex_doc_ids)}
+
+
+def requeue_orphan_parse_docs(
+    kb_id: str | None = None,
+    *,
+    limit: int = 200,
+    include_failed: bool = True,
+) -> dict[str, Any]:
+    """Re-enqueue parse_index for docs stuck without an active job.
+
+    Typical after worker crash, gateway restart mid-embed, or deleting the only
+    completed duplicate while leaving a processing shell behind.
+    """
+    ensure_owned_kb_worker_started()
+    jobs.reclaim_stale_running()
+    statuses = ("pending", "processing", "failed") if include_failed else ("pending", "processing")
+    orphans = jobs.list_orphan_parse_docs(kb_id, limit=limit, statuses=statuses)
+    queued = 0
+    now = utc_now()
+    for row in orphans:
+        doc_id = str(row.get("doc_id") or "").strip()
+        kid = str(row.get("kb_id") or "").strip()
+        if not doc_id or not kid:
+            continue
+        with db_for_kb(kid) as conn:
+            conn.execute(
+                """
+                UPDATE kb_documents
+                SET parse_status='pending', error_message='', updated_at=?
+                WHERE id=? AND deleted_at IS NULL
+                """,
+                (now, doc_id),
+            )
+        try:
+            jobs.enqueue(kb_id=kid, doc_id=doc_id, type="parse_index", priority=90)
+            queued += 1
+        except Exception:
+            logger.debug("orphan requeue failed for %s", doc_id, exc_info=True)
+    return {
+        "ok": True,
+        "orphanCount": len(orphans),
+        "requeued": queued,
+        "kbId": kb_id,
+    }
+
+
+def requeue_unpublished_keyword_docs(
+    kb_id: str | None = None,
+    *,
+    limit: int = 200,
+) -> dict[str, Any]:
+    """Re-enqueue docs that look indexed but have no searchable (enabled) chunks.
+
+    Regression from the skip-embedding path: chunks stayed ``enabled=0`` and FTS
+    was never written, so keyword/hybrid search returned nothing while the UI
+    showed ``keyword_status=ready`` / ``parse_status=completed``.
+    """
+    ensure_owned_kb_worker_started()
+    kids: list[str] = []
+    if kb_id:
+        kids = [str(kb_id).strip()]
+    else:
+        with db() as conn:
+            rows = conn.execute(
+                "SELECT id FROM kb_bases WHERE deleted_at IS NULL ORDER BY updated_at DESC"
+            ).fetchall()
+        kids = [str(r["id"]) for r in rows if r["id"]]
+
+    queued = 0
+    scanned = 0
+    now = utc_now()
+    for kid in kids:
+        if queued >= limit:
+            break
+        try:
+            with db_for_kb(kid) as conn:
+                docs = conn.execute(
+                    """
+                    SELECT d.id AS doc_id
+                    FROM kb_documents d
+                    WHERE d.kb_id=? AND d.deleted_at IS NULL
+                      AND d.parse_status='completed'
+                      AND COALESCE(d.chunk_count, 0) > 0
+                      AND NOT EXISTS (
+                        SELECT 1 FROM kb_chunks c
+                        WHERE c.doc_id=d.id AND c.enabled=1
+                      )
+                      AND EXISTS (
+                        SELECT 1 FROM kb_chunks c
+                        WHERE c.doc_id=d.id AND c.enabled=0
+                      )
+                    LIMIT ?
+                    """,
+                    (kid, max(1, limit - queued)),
+                ).fetchall()
+        except Exception:
+            logger.debug("unpublished keyword scan skipped kb=%s", kid, exc_info=True)
+            continue
+        for row in docs:
+            doc_id = str(row["doc_id"] or "").strip()
+            if not doc_id:
+                continue
+            scanned += 1
+            with db_for_kb(kid) as conn:
+                conn.execute(
+                    """
+                    UPDATE kb_documents
+                    SET parse_status='pending', index_status='building',
+                        keyword_status='building', error_message='', updated_at=?
+                    WHERE id=? AND deleted_at IS NULL
+                    """,
+                    (now, doc_id),
+                )
+            try:
+                jobs.enqueue(kb_id=kid, doc_id=doc_id, type="parse_index", priority=85)
+                queued += 1
+            except Exception:
+                logger.debug("unpublished keyword requeue failed for %s", doc_id, exc_info=True)
+    if queued:
+        logger.info(
+            "requeued unpublished keyword docs scanned=%s queued=%s kb=%s",
+            scanned,
+            queued,
+            kb_id or "*",
+        )
+    return {
+        "ok": True,
+        "scanned": scanned,
+        "requeued": queued,
+        "kbId": kb_id,
+    }
+
+
+def requeue_embedding_failed_as_keyword(
+    kb_id: str | None = None,
+    *,
+    limit: int = 200,
+) -> dict[str, Any]:
+    """Heal docs stuck on ``parse_status=failed`` due to embedding errors.
+
+    Older pipelines marked hard EmbeddingError as parse failure, which kept the
+    hub nagging even though keyword search could work. Re-run with
+    ``skip_embedding`` so chunks + FTS publish without re-hitting a broken model.
+    """
+    ensure_owned_kb_worker_started()
+    kids: list[str] = []
+    if kb_id:
+        kids = [str(kb_id).strip()]
+    else:
+        with db() as conn:
+            rows = conn.execute(
+                "SELECT id FROM kb_bases WHERE deleted_at IS NULL ORDER BY updated_at DESC"
+            ).fetchall()
+        kids = [str(r["id"]) for r in rows if r["id"]]
+
+    # Skip docs that already have an active parse/reindex job.
+    active: set[str] = set()
+    try:
+        with db() as conn:
+            for r in conn.execute(
+                """
+                SELECT DISTINCT doc_id FROM kb_jobs
+                WHERE doc_id IS NOT NULL
+                  AND type IN ('parse_index', 'reindex')
+                  AND state IN ('queued', 'running')
+                """
+            ).fetchall():
+                active.add(str(r[0] or ""))
+    except Exception:
+        logger.debug("active job lookup failed for embed-heal", exc_info=True)
+
+    queued = 0
+    scanned = 0
+    now = utc_now()
+    heal_payload = {
+        "skip_embedding": True,
+        "skip_embedding_reason": "向量失败已降级为仅关键词",
+    }
+    for kid in kids:
+        if queued >= limit:
+            break
+        try:
+            with db_for_kb(kid) as conn:
+                docs = conn.execute(
+                    """
+                    SELECT id, error_message, index_error, vector_status
+                    FROM kb_documents
+                    WHERE kb_id=? AND deleted_at IS NULL AND parse_status='failed'
+                    ORDER BY updated_at ASC
+                    LIMIT ?
+                    """,
+                    (kid, max(1, limit - queued)),
+                ).fetchall()
+        except Exception:
+            logger.debug("embed-fail heal scan skipped kb=%s", kid, exc_info=True)
+            continue
+        for row in docs:
+            doc_id = str(row["id"] or "").strip()
+            if not doc_id or doc_id in active:
+                continue
+            scanned += 1
+            vec = str(row["vector_status"] or "").lower()
+            looks_embed = _error_looks_like_embedding_failure(
+                row["error_message"], row["index_error"]
+            ) or vec in ("failed", "degraded", "building", "pending")
+            if not looks_embed:
+                continue
+            with db_for_kb(kid) as conn:
+                conn.execute(
+                    """
+                    UPDATE kb_documents
+                    SET parse_status='pending', index_status='building',
+                        keyword_status='building', vector_status='building',
+                        error_message='', updated_at=?
+                    WHERE id=? AND deleted_at IS NULL
+                    """,
+                    (now, doc_id),
+                )
+            try:
+                jobs.enqueue(
+                    kb_id=kid,
+                    doc_id=doc_id,
+                    type="reindex",
+                    priority=88,
+                    payload=heal_payload,
+                )
+                queued += 1
+                active.add(doc_id)
+            except Exception:
+                logger.debug("embed-fail heal enqueue failed for %s", doc_id, exc_info=True)
+    if queued:
+        logger.info(
+            "healed embedding-failed docs to keyword scanned=%s queued=%s kb=%s",
+            scanned,
+            queued,
+            kb_id or "*",
+        )
+    return {
+        "ok": True,
+        "scanned": scanned,
+        "requeued": queued,
+        "kbId": kb_id,
+    }
+
+
+def retry_document_parse(kb_id: str, doc_id: str) -> dict[str, Any]:
+    """Re-enqueue ``parse_index`` for a single failed/stuck document.
+
+    Used by the index-status banner's per-row "重试" button. Unlike
+    :func:`requeue_orphan_parse_docs` (which only touches docs that have no
+    active job), this entrypoint:
+
+    1. Verifies the document still exists in the KB (404 otherwise).
+    2. Cancels any in-flight ``parse_index`` job for this doc so a fresh
+       worker pick-up is not stomped by an old shell.
+    3. Resets the document's status columns to ``pending`` and clears the
+       cached ``error_message`` so the UI no longer flags it as failed.
+    4. Enqueues a brand-new ``parse_index`` job at priority 100.
+    """
+    ensure_owned_kb_worker_started()
+    kid = str(kb_id or "").strip()
+    did = str(doc_id or "").strip()
+    if not kid:
+        raise ValueError("kb_id is required")
+    if not did:
+        raise ValueError("doc_id is required")
+
+    with db_for_kb(kid) as conn:
+        row = conn.execute(
+            "SELECT id FROM kb_documents WHERE id=? AND kb_id=? AND deleted_at IS NULL",
+            (did, kid),
+        ).fetchone()
+        if not row:
+            raise ValueError("document not found")
+
+    now = utc_now()
+    # Cancel any queued/running jobs of this doc so the new enqueue is not
+    # de-duplicated away. We do this BEFORE updating the doc status so a
+    # worker that picked the old job up in the meantime sees a fresh state.
+    with db() as conn:
+        conn.execute(
+            """
+            UPDATE kb_jobs
+            SET state='cancelled', error_message='retried by user',
+                finished_at=?, updated_at=?, locked_by='', locked_at=NULL
+            WHERE kb_id=? AND doc_id=? AND state IN ('queued', 'running')
+            """,
+            (now, now, kid, did),
+        )
+
+    with db_for_kb(kid) as conn:
+        conn.execute(
+            """
+            UPDATE kb_documents
+            SET parse_status='pending',
+                index_status='pending',
+                keyword_status='pending',
+                vector_status='pending',
+                error_message='',
+                index_error='',
+                updated_at=?
+            WHERE id=? AND deleted_at IS NULL
+            """,
+            (now, did),
+        )
+
+    job = jobs.enqueue(kb_id=kid, doc_id=did, type="parse_index", priority=100)
+    return {
+        "ok": True,
+        "kbId": kid,
+        "docId": did,
+        "job": job,
+    }
+
+
+def get_base(kb_id: str) -> dict[str, Any] | None:
+    with db() as conn:
+        row = conn.execute("SELECT * FROM kb_bases WHERE id=? AND deleted_at IS NULL", (kb_id,)).fetchone()
+    return _row_base(row) if row else None
+
+
+def _purge_base_documents(conn: Any, kb_id: str, *, now: str) -> int:
+    """Soft-delete every active document of a base and drop its derived rows.
+
+    Historically ``delete_base`` only stamped ``kb_bases.deleted_at`` and deleted
+    the blob directory, leaving all chunks / embeddings / FTS rows behind — data
+    that is unreachable from the UI but still occupies the SQLite file forever.
+
+    Keep the per-document work in sync with :func:`delete_document` so the two
+    paths cannot drift again. Returns the number of documents touched.
+    """
+    doc_ids = [
+        r["id"]
+        for r in conn.execute(
+            "SELECT id FROM kb_documents WHERE kb_id=? AND deleted_at IS NULL",
+            (kb_id,),
+        ).fetchall()
+    ]
+    for doc_id in doc_ids:
+        conn.execute(
+            "UPDATE kb_documents SET deleted_at=?, updated_at=? WHERE id=?",
+            (now, now, doc_id),
+        )
+        purge_document_index(conn, doc_id)
+
+    conn.execute("DELETE FROM kb_folders WHERE kb_id=?", (kb_id,))
+    conn.execute("DELETE FROM kb_doc_links WHERE kb_id=?", (kb_id,))
+    conn.execute("DELETE FROM kb_assets WHERE kb_id=?", (kb_id,))
+
+    # Knowledge graph / wiki tables are optional features; ignore missing tables.
+    try:
+        conn.execute("DELETE FROM kg_edges WHERE kb_id=?", (kb_id,))
+        conn.execute("DELETE FROM kg_nodes WHERE kb_id=?", (kb_id,))
+    except Exception:
+        logger.debug("kg cleanup skipped for kb=%s", kb_id, exc_info=True)
+    try:
+        conn.execute(
+            "DELETE FROM wiki_page_revisions WHERE page_id IN (SELECT id FROM wiki_pages WHERE kb_id=?)",
+            (kb_id,),
+        )
+        conn.execute("DELETE FROM wiki_pages WHERE kb_id=?", (kb_id,))
+        conn.execute("DELETE FROM wiki_folders WHERE kb_id=?", (kb_id,))
+    except Exception:
+        logger.debug("wiki cleanup skipped for kb=%s", kb_id, exc_info=True)
+
+    return len(doc_ids)
+
+
+def delete_base(kb_id: str) -> None:
+    from knowledge_sidecar.owned.builtin_seed import is_builtin_owned_kb_id
+
+    if is_builtin_owned_kb_id(kb_id):
+        raise ValueError("系统内置知识库不可删除，可在库设置中停用或忽略")
+    now = utc_now()
+    base = get_base(kb_id)
+    name = (base or {}).get("name") or kb_id
+    # Registry row lives in the central DB; KB-owned rows live in the KB's index DB.
+    with db() as conn:
+        row = conn.execute("SELECT embedding_api_key_ref FROM kb_bases WHERE id=?", (kb_id,)).fetchone()
+        conn.execute(
+            "UPDATE kb_bases SET deleted_at=?, updated_at=? WHERE id=?",
+            (now, now, kb_id),
+        )
+    with db_for_kb(kb_id) as conn:
+        _purge_base_documents(conn, kb_id, now=now)
+    if row:
+        ref = str(row["embedding_api_key_ref"] or "")
+        if ref:
+            try:
+                from knowledge_sidecar.owned.secrets import delete_embedding_key
+
+                delete_embedding_key(ref, is_ref=True)
+            except Exception:
+                pass
+    jobs.cancel_for_kb(kb_id)
+    blob_store.delete_kb_blobs(kb_id)
+    owned_activity.record(kb_id, "base.delete", title=str(name), detail={"name": name})
+
+
+def list_documents(kb_id: str) -> list[dict[str, Any]]:
+    # Prior webkitdirectory uploads created one row per retry for the same
+    # folder_path+file_name; collapse those before the UI counts/renders.
+    dedupe_documents_by_rel_path(kb_id)
+    # Drop legacy rows for code / images / archives so they leave search + tree.
+    purge_unsupported_documents(kb_id)
+    with db_for_kb(kb_id) as conn:
+        rows = conn.execute(
+            """
+            SELECT * FROM kb_documents
+            WHERE kb_id=? AND deleted_at IS NULL
+            ORDER BY folder_path ASC, sort_order ASC, file_name ASC
+            """,
+            (kb_id,),
+        ).fetchall()
+    return [_row_doc(r) for r in rows]
+
+
+def purge_unsupported_documents(kb_id: str) -> int:
+    """Soft-delete active docs outside the supported set or under skipped dirs.
+
+    Keeps retrieval and the file tree aligned with current formats.py rules
+    (no code / archives / images; no ``.git`` / ``.obsidian`` / etc. paths).
+    """
+    if not get_base(kb_id):
+        return 0
+    now = utc_now()
+    victims: list[str] = []
+    with db_for_kb(kb_id) as conn:
+        rows = conn.execute(
+            """
+            SELECT id, file_name, folder_path FROM kb_documents
+            WHERE kb_id=? AND deleted_at IS NULL
+            """,
+            (kb_id,),
+        ).fetchall()
+        for row in rows:
+            name = str(row["file_name"] or "")
+            folder = str(row["folder_path"] or "")
+            if folder_path_has_skipped_dir(folder):
+                victims.append(str(row["id"]))
+                continue
+            if not name or should_skip_file(name) or not is_supported_file(name):
+                victims.append(str(row["id"]))
+        for doc_id in victims:
+            conn.execute(
+                "UPDATE kb_documents SET deleted_at=?, updated_at=? WHERE id=? AND deleted_at IS NULL",
+                (now, now, doc_id),
+            )
+            try:
+                purge_document_index(conn, doc_id)
+            except Exception:
+                pass
+    for doc_id in victims:
+        try:
+            jobs.cancel_jobs_for_doc(doc_id, reason="unsupported file type removed")
+        except Exception:
+            pass
+        try:
+            blob_store.delete_doc_blobs(kb_id, doc_id)
+        except Exception:
+            pass
+        try:
+            _forget_doc_kb(doc_id)
+        except Exception:
+            pass
+    return len(victims)
+
+
+def dedupe_documents_by_rel_path(kb_id: str) -> int:
+    """Soft-delete older duplicates that share the same folder_path + file_name.
+
+    Keeps the newest ``updated_at`` (then id) row. Returns how many docs were removed.
+    Soft-deletes in-place (does not require ``kb_doc_index``) so legacy duplicate
+    rows from non-upsert uploads are still cleaned up.
+    """
+    if not get_base(kb_id):
+        return 0
+    now = utc_now()
+    victims: list[str] = []
+    with db_for_kb(kb_id) as conn:
+        rows = conn.execute(
+            """
+            SELECT id, folder_path, file_name, updated_at
+            FROM kb_documents
+            WHERE kb_id=? AND deleted_at IS NULL
+            ORDER BY folder_path ASC, file_name ASC, updated_at DESC, id DESC
+            """,
+            (kb_id,),
+        ).fetchall()
+        seen: set[tuple[str, str]] = set()
+        for row in rows:
+            key = (str(row["folder_path"] or ""), str(row["file_name"] or ""))
+            if key in seen:
+                victims.append(str(row["id"]))
+            else:
+                seen.add(key)
+        for doc_id in victims:
+            conn.execute(
+                "UPDATE kb_documents SET deleted_at=?, updated_at=? WHERE id=? AND deleted_at IS NULL",
+                (now, now, doc_id),
+            )
+            try:
+                purge_document_index(conn, doc_id)
+            except Exception:
+                pass
+    for doc_id in victims:
+        try:
+            jobs.cancel_jobs_for_doc(doc_id, reason="duplicate document removed")
+        except Exception:
+            pass
+        try:
+            blob_store.delete_doc_blobs(kb_id, doc_id)
+        except Exception:
+            pass
+        try:
+            _forget_doc_kb(doc_id)
+        except Exception:
+            pass
+    return len(victims)
+
+
+def _norm_folder_path(path: str | None) -> str:
+    return str(path or "").replace("\\", "/").strip().strip("/")
+
+
+def _resolve_folder_path(path: str | None) -> str:
+    folder = _norm_folder_path(path)
+    if folder and any(part in (".", "..") or not part.strip() for part in folder.split("/")):
+        raise ValueError("invalid folder path")
+    return folder
+
+
+def list_folders(kb_id: str) -> list[dict[str, Any]]:
+    """Explicit empty folders + distinct folder_path prefixes from documents."""
+    with db_for_kb(kb_id) as conn:
+        rows = conn.execute(
+            "SELECT path, created_at, updated_at FROM kb_folders WHERE kb_id=? ORDER BY path",
+            (kb_id,),
+        ).fetchall()
+        doc_paths = conn.execute(
+            """
+            SELECT DISTINCT folder_path FROM kb_documents
+            WHERE kb_id=? AND deleted_at IS NULL AND folder_path != ''
+            """,
+            (kb_id,),
+        ).fetchall()
+    paths: set[str] = set()
+    explicit: dict[str, dict[str, Any]] = {}
+    for r in rows:
+        p = _norm_folder_path(r["path"])
+        if not p or folder_path_has_skipped_dir(p):
+            continue
+        paths.add(p)
+        explicit[p] = {
+            "path": p,
+            "name": p.split("/")[-1],
+            "explicit": True,
+            "createdAt": r["created_at"],
+            "updatedAt": r["updated_at"],
+        }
+    for r in doc_paths:
+        raw = _norm_folder_path(r["folder_path"])
+        if not raw or folder_path_has_skipped_dir(raw):
+            continue
+        parts = raw.split("/")
+        acc = ""
+        for part in parts:
+            acc = f"{acc}/{part}" if acc else part
+            paths.add(acc)
+    out: list[dict[str, Any]] = []
+    for p in sorted(paths):
+        if folder_path_has_skipped_dir(p):
+            continue
+        if p in explicit:
+            out.append(explicit[p])
+        else:
+            out.append({"path": p, "name": p.split("/")[-1], "explicit": False})
+    return out
+
+
+def create_folder(kb_id: str, path: str) -> dict[str, Any]:
+    if not get_base(kb_id):
+        raise ValueError("knowledge base not found")
+    folder = _resolve_folder_path(path)
+    if not folder:
+        raise ValueError("folder path required")
+    if folder_path_has_skipped_dir(folder):
+        raise ValueError("hidden or ignored folder path is not allowed")
+    now = utc_now()
+    fid = new_id("fld_")
+    with db_for_kb(kb_id) as conn:
+        existing = conn.execute(
+            "SELECT path FROM kb_folders WHERE kb_id=? AND path=?",
+            (kb_id, folder),
+        ).fetchone()
+        if existing:
+            return {"path": folder, "name": folder.split("/")[-1], "explicit": True, "created": False}
+        # ensure parents exist as explicit rows too
+        parts = folder.split("/")
+        acc = ""
+        for part in parts:
+            acc = f"{acc}/{part}" if acc else part
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO kb_folders(id, kb_id, path, created_at, updated_at)
+                VALUES (?,?,?,?,?)
+                """,
+                (new_id("fld_") if acc != folder else fid, kb_id, acc, now, now),
+            )
+    out = {"path": folder, "name": folder.split("/")[-1], "explicit": True, "created": True}
+    owned_activity.record(
+        kb_id,
+        "folder.create",
+        title=folder,
+        detail={"path": folder},
+    )
+    return out
+
+
+def rename_folder(
+    kb_id: str,
+    from_path: str,
+    to_path: str,
+    *,
+    record_activity: bool = True,
+) -> dict[str, Any]:
+    if not get_base(kb_id):
+        raise ValueError("knowledge base not found")
+    src = _norm_folder_path(from_path)
+    dst = _norm_folder_path(to_path)
+    if not src or not dst:
+        raise ValueError("fromPath and toPath required")
+    if src == dst:
+        return {"fromPath": src, "toPath": dst, "movedDocs": 0}
+    if dst == src or dst.startswith(src + "/"):
+        raise ValueError("cannot rename folder into its own child")
+    now = utc_now()
+    moved = 0
+    with db_for_kb(kb_id) as conn:
+        rows = conn.execute(
+            """
+            SELECT id, folder_path FROM kb_documents
+            WHERE kb_id=? AND deleted_at IS NULL
+              AND (folder_path=? OR folder_path LIKE ?)
+            """,
+            (kb_id, src, f"{src}/%"),
+        ).fetchall()
+        for r in rows:
+            old = _norm_folder_path(r["folder_path"])
+            new = dst if old == src else dst + old[len(src) :]
+            conn.execute(
+                "UPDATE kb_documents SET folder_path=?, updated_at=? WHERE id=?",
+                (new, now, r["id"]),
+            )
+            moved += 1
+        folds = conn.execute(
+            """
+            SELECT path FROM kb_folders
+            WHERE kb_id=? AND (path=? OR path LIKE ?)
+            """,
+            (kb_id, src, f"{src}/%"),
+        ).fetchall()
+        old_paths = [_norm_folder_path(r["path"]) for r in folds]
+        conn.execute(
+            "DELETE FROM kb_folders WHERE kb_id=? AND (path=? OR path LIKE ?)",
+            (kb_id, src, f"{src}/%"),
+        )
+        new_paths = set()
+        if not old_paths:
+            new_paths.add(dst)
+        for old in old_paths:
+            new = dst if old == src else dst + old[len(src) :]
+            new_paths.add(new)
+        # also ensure parent chain for dst
+        parts = dst.split("/")
+        acc = ""
+        for part in parts:
+            acc = f"{acc}/{part}" if acc else part
+            new_paths.add(acc)
+        for p in sorted(new_paths):
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO kb_folders(id, kb_id, path, created_at, updated_at)
+                VALUES (?,?,?,?,?)
+                """,
+                (new_id("fld_"), kb_id, p, now, now),
+            )
+    if record_activity:
+        owned_activity.record(
+            kb_id,
+            "folder.rename",
+            title=f"{src} → {dst}",
+            detail={"fromPath": src, "toPath": dst, "movedDocs": moved},
+        )
+    return {"fromPath": src, "toPath": dst, "movedDocs": moved}
+
+
+def move_folder(kb_id: str, from_path: str, parent_path: str = "") -> dict[str, Any]:
+    """Move folder under a new parent (keep leaf name). parent_path='' → root."""
+    src = _norm_folder_path(from_path)
+    parent = _norm_folder_path(parent_path)
+    if not src:
+        raise ValueError("fromPath required")
+    leaf = src.split("/")[-1]
+    if parent == src or parent.startswith(src + "/"):
+        raise ValueError("cannot move folder into itself or its child")
+    dst = f"{parent}/{leaf}" if parent else leaf
+    if dst == src:
+        return {"fromPath": src, "toPath": dst, "movedDocs": 0, "unchanged": True}
+    out = rename_folder(kb_id, src, dst, record_activity=False)
+    owned_activity.record(
+        kb_id,
+        "folder.move",
+        title=f"{src} → {dst}",
+        detail={"fromPath": src, "toPath": dst, "parentPath": parent, "movedDocs": out.get("movedDocs")},
+    )
+    out["parentPath"] = parent
+    return out
+
+
+def delete_folder(
+    kb_id: str,
+    path: str,
+    *,
+    mode: str = "move_up",
+) -> dict[str, Any]:
+    """Delete folder metadata; docs either move to parent (default) or soft-delete."""
+    if not get_base(kb_id):
+        raise ValueError("knowledge base not found")
+    folder = _norm_folder_path(path)
+    if not folder:
+        raise ValueError("folder path required")
+    mode = (mode or "move_up").lower()
+    if mode not in ("move_up", "delete_docs"):
+        raise ValueError("mode must be move_up or delete_docs")
+    parent = "/".join(folder.split("/")[:-1])
+    now = utc_now()
+    affected = 0
+    deleted_doc_ids: list[str] = []
+    with db_for_kb(kb_id) as conn:
+        rows = conn.execute(
+            """
+            SELECT id, folder_path FROM kb_documents
+            WHERE kb_id=? AND deleted_at IS NULL
+              AND (folder_path=? OR folder_path LIKE ?)
+            """,
+            (kb_id, folder, f"{folder}/%"),
+        ).fetchall()
+        for r in rows:
+            old = _norm_folder_path(r["folder_path"])
+            if mode == "delete_docs":
+                doc_id = str(r["id"])
+                conn.execute(
+                    "UPDATE kb_documents SET deleted_at=?, updated_at=? WHERE id=?",
+                    (now, now, doc_id),
+                )
+                # Keep parity with delete_document(): drop derived index rows so a
+                # folder delete does not silently strand chunks/embeddings/FTS.
+                purge_document_index(conn, doc_id)
+                deleted_doc_ids.append(doc_id)
+            else:
+                if old == folder:
+                    new = parent
+                else:
+                    rest = old[len(folder) :].lstrip("/")
+                    new = f"{parent}/{rest}" if parent and rest else (rest or parent)
+                conn.execute(
+                    "UPDATE kb_documents SET folder_path=?, updated_at=? WHERE id=?",
+                    (_norm_folder_path(new), now, r["id"]),
+                )
+            affected += 1
+        conn.execute(
+            "DELETE FROM kb_folders WHERE kb_id=? AND (path=? OR path LIKE ?)",
+            (kb_id, folder, f"{folder}/%"),
+        )
+    for doc_id in deleted_doc_ids:
+        blob_store.delete_doc_blobs(kb_id, doc_id)
+    owned_activity.record(
+        kb_id,
+        "folder.delete",
+        title=folder,
+        detail={"path": folder, "mode": mode, "affectedDocs": affected},
+    )
+    return {"path": folder, "mode": mode, "affectedDocs": affected}
+
+
+def move_document(
+    doc_id: str,
+    folder_path: str | None = None,
+    *,
+    before_doc_id: str | None = None,
+    sort_order: int | None = None,
+) -> dict[str, Any]:
+    """Move a document into a folder; optionally insert before a sibling (drag reorder)."""
+    doc = get_document(doc_id)
+    if not doc:
+        raise ValueError("document not found")
+    kb_id = doc["kbId"]
+    now = utc_now()
+    with db_for_kb(kb_id) as conn:
+        folder = _resolve_folder_path(folder_path if folder_path is not None else doc.get("folderPath"))
+        target_order = sort_order
+
+        if before_doc_id:
+            if before_doc_id == doc_id:
+                return doc
+            before = conn.execute(
+                """
+                SELECT id, folder_path, sort_order FROM kb_documents
+                WHERE id=? AND kb_id=? AND deleted_at IS NULL
+                """,
+                (before_doc_id, kb_id),
+            ).fetchone()
+            if not before:
+                raise ValueError("before document not found")
+            folder = _norm_folder_path(before["folder_path"])
+            target_order = int(before["sort_order"] or 0)
+            conn.execute(
+                """
+                UPDATE kb_documents
+                SET sort_order = sort_order + 1, updated_at=?
+                WHERE kb_id=? AND deleted_at IS NULL AND folder_path=? AND sort_order >= ?
+                  AND id != ?
+                """,
+                (now, kb_id, folder, target_order, doc_id),
+            )
+
+        if folder:
+            parts = folder.split("/")
+            acc = ""
+            for part in parts:
+                acc = f"{acc}/{part}" if acc else part
+                conn.execute(
+                    """
+                    INSERT OR IGNORE INTO kb_folders(id, kb_id, path, created_at, updated_at)
+                    VALUES (?,?,?,?,?)
+                    """,
+                    (new_id("fld_"), kb_id, acc, now, now),
+                )
+
+        if target_order is None:
+            row = conn.execute(
+                """
+                SELECT COALESCE(MAX(sort_order), -1) AS m FROM kb_documents
+                WHERE kb_id=? AND deleted_at IS NULL AND folder_path=? AND id != ?
+                """,
+                (kb_id, folder, doc_id),
+            ).fetchone()
+            target_order = int(row["m"] if row else -1) + 1
+
+        conn.execute(
+            """
+            UPDATE kb_documents
+            SET folder_path=?, sort_order=?, updated_at=?
+            WHERE id=?
+            """,
+            (folder, int(target_order), now, doc_id),
+        )
+    out = get_document(doc_id) or {}
+    owned_activity.record(
+        kb_id,
+        "doc.move",
+        doc_id=doc_id,
+        title=str(out.get("title") or out.get("fileName") or doc_id),
+        detail={"folderPath": folder, "beforeDocId": before_doc_id or ""},
+    )
+    return out
+
+
+def get_document(doc_id: str) -> dict[str, Any] | None:
+    kb_id = _kb_id_for_doc(doc_id)
+    if not kb_id:
+        return None
+    with db_for_kb(kb_id) as conn:
+        row = conn.execute("SELECT * FROM kb_documents WHERE id=? AND deleted_at IS NULL", (doc_id,)).fetchone()
+    return _row_doc(row) if row else None
+
+
+def resolve_document(kb_id: str, key: str) -> dict[str, Any] | None:
+    """Resolve by doc id, file name, folder/file path, or exact title."""
+    key = str(key or "").strip()
+    if not key:
+        return None
+    doc = get_document(key)
+    if doc and doc.get("kbId") == kb_id:
+        return doc
+    with db_for_kb(kb_id) as conn:
+        rows = conn.execute(
+            """
+            SELECT * FROM kb_documents
+            WHERE kb_id=? AND deleted_at IS NULL
+            """,
+            (kb_id,),
+        ).fetchall()
+    for row in rows:
+        d = _row_doc(row)
+        path = (d.get("folderPath") and f"{d['folderPath']}/{d['fileName']}") or d.get("fileName") or ""
+        if key in (d.get("fileName"), path, d.get("title")):
+            return d
+        if path.endswith("/" + key) or path == key:
+            return d
+    return None
+
+
+def get_document_text(doc_id: str, *, max_chars: int = 12000) -> str:
+    """Reconstruct document text from indexed chunks (preferred) or empty."""
+    chunks = list_chunks(doc_id)
+    if not chunks:
+        doc = get_document(doc_id)
+        return str((doc or {}).get("summaryText") or "")
+    parts = []
+    total = 0
+    cap = max(500, int(max_chars or 12000))
+    for c in chunks:
+        if not c.get("enabled", True):
+            continue
+        piece = str(c.get("content") or "")
+        if not piece:
+            continue
+        if total + len(piece) > cap:
+            parts.append(piece[: max(0, cap - total)])
+            break
+        parts.append(piece)
+        total += len(piece)
+    return "\n\n".join(parts)
+
+
+_TEXT_SUFFIXES = {
+    ".md",
+    ".markdown",
+    ".mdx",
+    ".txt",
+    ".log",
+    ".csv",
+    ".json",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".xml",
+    ".html",
+    ".htm",
+    ".py",
+    ".js",
+    ".ts",
+    ".java",
+    ".go",
+    ".rs",
+    ".c",
+    ".cpp",
+    ".h",
+    ".ini",
+    ".cfg",
+}
+
+
+def _kb_id_for_doc(doc_id: str) -> str | None:
+    """Resolve which KB owns *doc_id*.
+
+    Documents live in per-KB index DBs, so a bare ``doc_id`` cannot locate its
+    file. The central registry keeps a ``kb_doc_index`` map written whenever a
+    document row is created.
+    """
+    did = str(doc_id or "").strip()
+    if not did:
+        return None
+    try:
+        with db() as conn:
+            cols = {str(r[1]) for r in conn.execute("PRAGMA table_info(kb_doc_index)").fetchall()}
+            if not cols:
+                return None
+            row = conn.execute("SELECT kb_id FROM kb_doc_index WHERE doc_id=?", (did,)).fetchone()
+        if row:
+            return str(row[0] or "").strip() or None
+    except Exception:
+        logger.debug("kb_doc_index lookup failed for doc=%s", did, exc_info=True)
+    return None
+
+
+def _remember_doc_kb(doc_id: str, kb_id: str) -> None:
+    """Record doc → kb in the central registry (idempotent)."""
+    did = str(doc_id or "").strip()
+    kid = str(kb_id or "").strip()
+    if not did or not kid:
+        return
+    try:
+        with db() as conn:
+            conn.execute(
+                """
+                INSERT INTO kb_doc_index(doc_id, kb_id, created_at) VALUES (?,?,?)
+                ON CONFLICT(doc_id) DO UPDATE SET kb_id=excluded.kb_id
+                """,
+                (did, kid, utc_now()),
+            )
+    except Exception:
+        logger.debug("kb_doc_index write failed for doc=%s", did, exc_info=True)
+
+
+def _kb_id_for_asset(asset_id: str) -> str | None:
+    """Resolve the KB owning an asset id (assets live in per-KB index DBs)."""
+    aid = str(asset_id or "").strip()
+    if not aid:
+        return None
+    try:
+        with db() as conn:
+            cols = {str(r[1]) for r in conn.execute("PRAGMA table_info(kb_asset_index)").fetchall()}
+            if not cols:
+                return None
+            row = conn.execute("SELECT kb_id FROM kb_asset_index WHERE asset_id=?", (aid,)).fetchone()
+        if row:
+            return str(row[0] or "").strip() or None
+    except Exception:
+        logger.debug("kb_asset_index lookup failed for asset=%s", aid, exc_info=True)
+    return None
+
+
+def _forget_doc_kb(doc_id: str) -> None:
+    try:
+        with db() as conn:
+            conn.execute("DELETE FROM kb_doc_index WHERE doc_id=?", (str(doc_id or "").strip(),))
+    except Exception:
+        logger.debug("kb_doc_index delete failed for doc=%s", doc_id, exc_info=True)
+
+
+def get_document_content(doc_id: str, *, max_chars: int = 500_000) -> dict[str, Any] | None:
+    """Return viewable content for panel: raw text blob when possible, else parsed chunks.
+
+    Lexiang opens `/pages/{id}` with the document body; we mirror that with
+    ``source=raw`` (original text files) or ``source=parsed`` (PDF/Office via pipeline).
+    """
+    kb_id = _kb_id_for_doc(doc_id)
+    if not kb_id:
+        return None
+    with db_for_kb(kb_id) as conn:
+        row = conn.execute("SELECT * FROM kb_documents WHERE id=? AND deleted_at IS NULL", (doc_id,)).fetchone()
+    if not row:
+        return None
+    doc = _row_doc(row)
+    blob_path = str(row["blob_path"] or "")
+    file_name = str(doc.get("fileName") or "")
+    suffix = Path(file_name).suffix.lower()
+    cap = max(1000, int(max_chars or 500_000))
+    content = ""
+    source = "empty"
+    truncated = False
+
+    if blob_path and suffix in _TEXT_SUFFIXES:
+        try:
+            path = blob_store.resolve_blob(blob_path, kb_id=kb_id)
+            if path.is_file():
+                raw = path.read_bytes()
+                for enc in ("utf-8", "utf-8-sig", "gb18030", "latin-1"):
+                    try:
+                        content = raw.decode(enc)
+                        break
+                    except UnicodeDecodeError:
+                        continue
+                else:
+                    content = raw.decode("utf-8", errors="replace")
+                source = "raw"
+        except Exception:
+            content = ""
+
+    if not content.strip():
+        # PDF / Office / failed raw: show pipeline Markdown from chunks.
+        # Avoid list_chunks() (joins embeddings) — content view only needs text.
+        with db_for_kb(kb_id) as conn:
+            chunk_rows = conn.execute(
+                """
+                SELECT content, enabled FROM kb_chunks
+                WHERE doc_id=?
+                ORDER BY ordinal
+                """,
+                (doc_id,),
+            ).fetchall()
+        if chunk_rows:
+            parts = [
+                str(r["content"] or "")
+                for r in chunk_rows
+                if bool(r["enabled"]) and str(r["content"] or "").strip()
+            ]
+            if not parts:
+                parts = [str(r["content"] or "") for r in chunk_rows if str(r["content"] or "").strip()]
+            content = "\n\n".join(parts)
+            source = "parsed"
+        elif doc.get("summaryText"):
+            content = str(doc["summaryText"])
+            source = "summary"
+
+    if len(content) > cap:
+        content = content[:cap]
+        truncated = True
+
+    return {
+        **doc,
+        "content": content,
+        "source": source,  # raw | parsed | summary | empty
+        "truncated": truncated,
+        "blobPath": blob_path,
+    }
+
+
+def resolve_document_file(doc_id: str) -> dict[str, Any] | None:
+    """Resolve original blob path + Content-Type for panel file preview (PDF etc.)."""
+    kb_id = _kb_id_for_doc(doc_id)
+    if not kb_id:
+        return None
+    with db_for_kb(kb_id) as conn:
+        row = conn.execute("SELECT * FROM kb_documents WHERE id=? AND deleted_at IS NULL", (doc_id,)).fetchone()
+    if not row:
+        return None
+    blob_path = str(row["blob_path"] or "")
+    if not blob_path:
+        return None
+    try:
+        path = blob_store.resolve_blob(blob_path, kb_id=kb_id)
+    except ValueError:
+        return None
+    if not path.is_file():
+        return None
+    file_name = str(row["file_name"] or path.name)
+    mime = str(row["mime"] or "") or (mimetypes.guess_type(file_name)[0] or "")
+    suffix = Path(file_name).suffix.lower()
+    if not mime or mime == "application/octet-stream":
+        mime_map = {
+            ".pdf": "application/pdf",
+            ".md": "text/markdown; charset=utf-8",
+            ".txt": "text/plain; charset=utf-8",
+            ".png": "image/png",
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".gif": "image/gif",
+            ".webp": "image/webp",
+        }
+        mime = mime_map.get(suffix, "application/octet-stream")
+    return {
+        "path": path,
+        "mediaType": mime,
+        "fileName": file_name,
+        "docId": doc_id,
+        "kbId": row["kb_id"],
+    }
+
+
+def enqueue_document_summary(doc_id: str, *, force: bool = False) -> dict[str, Any]:
+    """Enqueue ``summary_doc`` job; optionally force rebuild when summary already exists."""
+    ensure_owned_kb_worker_started()
+    doc = get_document(doc_id)
+    if not doc:
+        raise ValueError("document not found")
+    base = get_base(doc["kbId"])
+    if not base:
+        raise ValueError("knowledge base not found")
+    if not base.get("summaryEnabled", False):
+        raise ValueError("summary disabled for this knowledge base")
+    status = str(doc.get("summaryStatus") or "")
+    has_text = bool(str(doc.get("summaryText") or "").strip())
+    if status == "processing" and not force:
+        return {"ok": True, "jobId": doc.get("latestJobId"), "status": status, "queued": False}
+    if has_text and not force:
+        return {
+            "ok": True,
+            "jobId": None,
+            "status": status or "completed",
+            "queued": False,
+            "summaryText": doc.get("summaryText") or "",
+        }
+    now = utc_now()
+    with db_for_kb(str(doc.get("kbId") or "")) as conn:
+        if force:
+            conn.execute(
+                """
+                UPDATE kb_documents
+                SET summary_status='pending', summary_text='', updated_at=?
+                WHERE id=?
+                """,
+                (now, doc_id),
+            )
+        else:
+            conn.execute(
+                "UPDATE kb_documents SET summary_status='pending', updated_at=? WHERE id=?",
+                (now, doc_id),
+            )
+    job = jobs.enqueue(
+        kb_id=doc["kbId"],
+        doc_id=doc_id,
+        type="summary_doc",
+        priority=150,
+        payload={"force": bool(force)},
+    )
+    owned_activity.record(
+        doc["kbId"],
+        "summary.generate",
+        doc_id=doc_id,
+        title=str(doc.get("title") or doc.get("fileName") or doc_id),
+        detail={"force": bool(force)},
+    )
+    return {"ok": True, "jobId": job["id"], "status": "pending", "queued": True, "job": job}
+
+
+async def ask(
+    kb_id: str,
+    query: str,
+    *,
+    doc_id: str | None = None,
+    top_k: int = 6,
+    model_name: str | None = None,
+) -> dict[str, Any]:
+    """One-shot RAG Q&A over an owned base; returns answer + citations (non-streaming)."""
+    ensure_owned_kb_worker_started()
+    q = (query or "").strip()
+    if not q:
+        raise ValueError("query required")
+    if not get_base(kb_id):
+        raise ValueError("knowledge base not found")
+    k = max(1, min(int(top_k or 6), 20))
+    fetch_k = max(k * 2, 12) if doc_id else k
+
+    result = await search(kb_id, q, mode="hybrid", top_k=fetch_k, record_activity=False)
+    items = list(result.get("items") or [])
+    degraded = bool(result.get("degraded"))
+
+    # Hybrid can return empty when vectors are cold; keyword still powers Ask AI.
+    if not items:
+        result = await search(kb_id, q, mode="keyword", top_k=fetch_k, record_activity=False)
+        items = list(result.get("items") or [])
+        degraded = True
+
+    preferred: list[dict[str, Any]] = []
+    rest: list[dict[str, Any]] = []
+    if doc_id:
+        for it in items:
+            if it.get("docId") == doc_id:
+                preferred.append(it)
+            else:
+                rest.append(it)
+        # If current-doc filter yields nothing, pull keyword hits for that doc only.
+        if not preferred:
+            scoped = await search(kb_id, q, mode="keyword", top_k=max(fetch_k, 20))
+            for it in scoped.get("items") or []:
+                if it.get("docId") == doc_id:
+                    preferred.append(it)
+            if scoped.get("degraded"):
+                degraded = True
+        items = (preferred + rest)[:k]
+    else:
+        items = items[:k]
+
+    citations = [
+        {
+            "docId": it.get("docId"),
+            "title": it.get("title") or it.get("fileName") or "",
+            "chunkId": it.get("chunkId"),
+            "snippet": (str(it.get("content") or "")[:280]).strip(),
+        }
+        for it in items
+        if it.get("chunkId")
+    ]
+
+    if not items:
+        return {
+            "answer": "知识库中未检索到与问题相关的内容，请换个问法或先完成文档索引。",
+            "citations": [],
+            "degraded": degraded,
+            "mode": result.get("mode") or "hybrid",
+        }
+
+    ctx_parts: list[str] = []
+    for i, it in enumerate(items, start=1):
+        title = it.get("title") or it.get("fileName") or "文档"
+        header = it.get("contextHeader") or ""
+        body = str(it.get("content") or "").strip()
+        if len(body) > 1200:
+            body = body[:1199] + "…"
+        block = f"[{i}] 标题：{title}"
+        if header:
+            block += f"\n章节：{header}"
+        block += f"\n{body}"
+        ctx_parts.append(block)
+    context = "\n\n---\n\n".join(ctx_parts)
+    focus = ""
+    if doc_id:
+        doc = get_document(doc_id)
+        if doc:
+            focus = f"用户当前正在阅读「{doc.get('title') or doc.get('fileName') or doc_id}」，请优先依据该文档作答；不足时再引用其它片段。\n\n"
+
+    prompt = f"你是企业知识库助手。仅根据下列检索片段回答用户问题，使用简洁中文。禁止臆造片段中未出现的事实；若信息不足请明确说明。回答末尾用「引用：」列出用到的编号（如 [1][3]）。\n\n{focus}问题：{q}\n\n检索片段：\n{context}"
+
+    answer = ""
+    try:
+        from knowledge_sidecar.evoflow.context.internal_model_invoke import ainvoke_internal_chat_model
+        from knowledge_sidecar.evoflow.models import create_chat_model
+
+        model = create_chat_model(
+            name=model_name or owned_settings.resolve_chat_model_name() or None,
+            thinking_enabled=False,
+            invocation_kind="kb_ask",
+        )
+        resp = await ainvoke_internal_chat_model(model, [{"role": "user", "content": prompt}])
+        answer = str(getattr(resp, "content", "") or resp).strip()
+    except Exception as exc:
+        degraded = True
+        logger.info("owned ask LLM failed, falling back to snippets: %s", exc)
+        lines = ["（模型暂不可用，以下为相关片段摘录）", ""]
+        for i, it in enumerate(items[:3], start=1):
+            title = it.get("title") or it.get("fileName") or "文档"
+            snip = (str(it.get("content") or "")[:200]).strip()
+            lines.append(f"[{i}] {title}：{snip}")
+        answer = "\n".join(lines)
+
+    if not answer:
+        answer = "未能生成回答，请稍后重试。"
+
+    owned_activity.record(
+        kb_id,
+        "ask",
+        doc_id=doc_id,
+        title=_preview_title(q),
+        detail={"query": q, "citationCount": len(citations), "degraded": degraded},
+    )
+    return {
+        "answer": answer,
+        "citations": citations,
+        "degraded": degraded,
+        "mode": result.get("mode") or "hybrid",
+    }
+
+
+def _preview_title(text: str, limit: int = 48) -> str:
+    s = " ".join(str(text or "").split())
+    return s if len(s) <= limit else s[: limit - 1] + "…"
+
+
+def _create_doc_record(
+    *,
+    kb_id: str,
+    title: str,
+    file_name: str,
+    folder_path: str,
+    source_type: str,
+    data: bytes | None = None,
+    src_path: Path | None = None,
+) -> dict[str, Any]:
+    if not get_base(kb_id):
+        raise ValueError("knowledge base not found")
+    doc_id = new_id("doc_")
+    now = utc_now()
+    if data is not None:
+        if len(data) > MAX_FILE_BYTES:
+            raise ValueError(f"file too large (max {MAX_FILE_BYTES} bytes)")
+        import hashlib
+
+        digest = hashlib.sha256(data).hexdigest()
+        blob_path = blob_store.put_bytes(kb_id, doc_id, file_name, data)
+        size = len(data)
+    elif src_path is not None:
+        blob_path, size, digest = blob_store.put_file(kb_id, doc_id, src_path, file_name)
+    else:
+        raise ValueError("no file content")
+
+    folder = _resolve_folder_path(folder_path)
+    rel = f"{folder}/{file_name}".strip("/") if folder else file_name
+    mime = mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+    with db_for_kb(kb_id) as conn:
+        conn.execute(
+            """
+            INSERT INTO kb_documents(
+              id, kb_id, title, source_type, file_name, mime, size_bytes, content_hash,
+              blob_path, folder_path, source_rel_path, parse_status, created_at, updated_at
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,'pending',?,?)
+            """,
+            (
+                doc_id,
+                kb_id,
+                title or Path(file_name).stem,
+                source_type,
+                file_name,
+                mime,
+                size,
+                digest,
+                blob_path,
+                folder,
+                rel,
+                now,
+                now,
+            ),
+        )
+    job = jobs.enqueue(kb_id=kb_id, doc_id=doc_id, type="parse_index", priority=100)
+    ensure_owned_kb_worker_started()
+    _remember_doc_kb(doc_id, kb_id)
+    doc = get_document(doc_id) or {}
+    doc["job"] = job
+    return doc
+
+
+def _find_doc_by_rel_path(kb_id: str, folder_path: str, file_name: str) -> dict[str, Any] | None:
+    folder = folder_path.replace("\\", "/").strip("/")
+    with db_for_kb(kb_id) as conn:
+        row = conn.execute(
+            """
+            SELECT * FROM kb_documents
+            WHERE kb_id=? AND deleted_at IS NULL AND folder_path=? AND file_name=?
+            ORDER BY updated_at DESC LIMIT 1
+            """,
+            (kb_id, folder, file_name),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def _update_doc_from_bytes(
+    *,
+    existing: dict[str, Any],
+    data: bytes,
+    source_type: str,
+    file_name: str | None = None,
+) -> dict[str, Any]:
+    """Replace blob when content hash changed; re-enqueue parse_index."""
+    import hashlib
+
+    doc_id = existing["id"]
+    kb_id = existing["kb_id"]
+    name = str(file_name or existing.get("file_name") or "upload.bin")
+    if len(data) > MAX_FILE_BYTES:
+        raise ValueError(f"file too large (max {MAX_FILE_BYTES} bytes)")
+    digest = hashlib.sha256(data).hexdigest()
+    if digest and digest == str(existing.get("content_hash") or ""):
+        doc = get_document(doc_id) or _row_doc(existing)
+        doc["syncStatus"] = "unchanged"
+        return doc
+
+    blob_path = blob_store.put_bytes(kb_id, doc_id, name, data)
+    now = utc_now()
+    mime = mimetypes.guess_type(name)[0] or "application/octet-stream"
+    with db_for_kb(kb_id) as conn:
+        conn.execute(
+            """
+            UPDATE kb_documents SET
+              size_bytes=?, content_hash=?, blob_path=?, mime=?,
+              source_type=?, parse_status='pending', error_message='',
+              updated_at=?
+            WHERE id=?
+            """,
+            (len(data), digest, blob_path, mime, source_type, now, doc_id),
+        )
+    job = jobs.enqueue(kb_id=kb_id, doc_id=doc_id, type="parse_index", priority=100)
+    ensure_owned_kb_worker_started()
+    doc = get_document(doc_id) or {}
+    doc["job"] = job
+    doc["syncStatus"] = "updated"
+    return doc
+
+
+def _update_doc_from_file(
+    *,
+    existing: dict[str, Any],
+    src_path: Path,
+    source_type: str,
+) -> dict[str, Any]:
+    """Replace blob when content hash changed; re-enqueue parse_index."""
+    file_name = str(existing.get("file_name") or src_path.name)
+    return _update_doc_from_bytes(
+        existing=existing,
+        data=src_path.read_bytes(),
+        source_type=source_type,
+        file_name=file_name,
+    )
+
+
+def upload_bytes(
+    kb_id: str,
+    *,
+    file_name: str,
+    data: bytes,
+    folder_path: str = "",
+    title: str = "",
+) -> dict[str, Any]:
+    if not is_supported_file(file_name):
+        raise ValueError(f"unsupported file type: {file_name}")
+    name = Path(file_name).name
+    folder = _resolve_folder_path(folder_path)
+    if folder_path_has_skipped_dir(folder):
+        raise ValueError(f"hidden or ignored folder path is not allowed: {folder}")
+    existing = _find_doc_by_rel_path(kb_id, folder, name)
+    if existing:
+        doc = _update_doc_from_bytes(
+            existing=existing,
+            data=data,
+            source_type="upload",
+            file_name=name,
+        )
+        if doc.get("syncStatus") != "unchanged":
+            owned_activity.record(
+                kb_id,
+                "doc.upload",
+                doc_id=doc.get("id"),
+                title=str(doc.get("title") or name),
+                detail={"fileName": name, "upsert": True},
+            )
+        return doc
+
+    doc = _create_doc_record(
+        kb_id=kb_id,
+        title=title,
+        file_name=name,
+        folder_path=folder,
+        source_type="upload",
+        data=data,
+    )
+    owned_activity.record(
+        kb_id,
+        "doc.upload",
+        doc_id=doc.get("id"),
+        title=str(doc.get("title") or file_name),
+        detail={"fileName": name},
+    )
+    return doc
+
+
+def upload_manual_markdown(kb_id: str, *, title: str, content: str, folder_path: str = "") -> dict[str, Any]:
+    name = f"{(title or 'note').strip() or 'note'}.md"
+    data = (content or "").encode("utf-8")
+    doc = _create_doc_record(
+        kb_id=kb_id,
+        title=title or "note",
+        file_name=name,
+        folder_path=folder_path,
+        source_type="manual",
+        data=data,
+    )
+    owned_activity.record(
+        kb_id,
+        "doc.manual",
+        doc_id=doc.get("id"),
+        title=str(doc.get("title") or name),
+        detail={"fileName": name},
+    )
+    return doc
+
+
+def replace_document_content(doc_id: str, content: str, *, title: str | None = None) -> dict[str, Any]:
+    """Overwrite a document's blob and re-enqueue parse_index (owned write/append)."""
+    doc = get_document(doc_id)
+    if not doc:
+        raise ValueError("document not found")
+    kb_id = doc["kbId"]
+    data = str(content or "").encode("utf-8")
+    if len(data) > MAX_FILE_BYTES:
+        raise ValueError(f"file too large (max {MAX_FILE_BYTES} bytes)")
+    import hashlib
+
+    digest = hashlib.sha256(data).hexdigest()
+    file_name = doc.get("fileName") or f"{Path(title or doc.get('title') or 'note').stem}.md"
+    blob_path = blob_store.put_bytes(kb_id, doc_id, file_name, data)
+    now = utc_now()
+    with db_for_kb(kb_id) as conn:
+        conn.execute(
+            """
+            UPDATE kb_documents SET
+              title=COALESCE(?, title),
+              file_name=?,
+              size_bytes=?,
+              content_hash=?,
+              blob_path=?,
+              parse_status='pending',
+              error_message='',
+              updated_at=?
+            WHERE id=?
+            """,
+            (
+                title.strip() if title and str(title).strip() else None,
+                file_name,
+                len(data),
+                digest,
+                blob_path,
+                now,
+                doc_id,
+            ),
+        )
+    job = jobs.enqueue(kb_id=kb_id, doc_id=doc_id, type="parse_index", priority=100)
+    ensure_owned_kb_worker_started()
+    out = get_document(doc_id) or {}
+    out["job"] = job
+    owned_activity.record(
+        kb_id,
+        "doc.save",
+        doc_id=doc_id,
+        title=str(out.get("title") or out.get("fileName") or doc_id),
+    )
+    return out
+
+
+def append_document_content(doc_id: str, content: str, *, section: str | None = None) -> dict[str, Any]:
+    doc = get_document(doc_id)
+    if not doc:
+        raise ValueError("document not found")
+    kb_id = str(doc.get("kbId") or "")
+    existing = ""
+    with db_for_kb(kb_id) as conn:
+        row = conn.execute("SELECT blob_path FROM kb_documents WHERE id=? AND deleted_at IS NULL", (doc_id,)).fetchone()
+    if row and row["blob_path"]:
+        try:
+            path = blob_store.resolve_blob(row["blob_path"], kb_id=kb_id)
+            if path.is_file():
+                existing = path.read_text(encoding="utf-8", errors="replace")
+        except Exception:
+            existing = get_document_text(doc_id, max_chars=500_000)
+    else:
+        existing = get_document_text(doc_id, max_chars=500_000)
+    addition = str(content or "")
+    if section and str(section).strip():
+        addition = f"\n\n## {str(section).strip()}\n\n{addition}"
+    else:
+        addition = f"\n\n{addition}" if existing.strip() else addition
+    return replace_document_content(doc_id, existing + addition)
+
+
+def remember_sync_source(
+    kb_id: str,
+    *,
+    source_type: str,
+    source_path: str = "",
+    vault_id: str = "",
+) -> None:
+    with db() as conn:
+        conn.execute(
+            """
+            UPDATE kb_bases SET
+              sync_source_type=?, sync_source_path=?, sync_vault_id=?,
+              last_synced_at=?, updated_at=?
+            WHERE id=?
+            """,
+            (
+                str(source_type or ""),
+                str(source_path or ""),
+                str(vault_id or ""),
+                utc_now(),
+                utc_now(),
+                kb_id,
+            ),
+        )
+
+
+def _rel_entry(folder: str, file_name: str, **extra: Any) -> dict[str, Any]:
+    rel = f"{folder}/{file_name}".strip("/") if folder else file_name
+    out = {"folderPath": folder, "fileName": file_name, "relPath": rel}
+    out.update(extra)
+    return out
+
+
+def preview_local_folder_sync(
+    kb_id: str,
+    root: str | Path | None = None,
+    *,
+    folder_prefix: str = "",
+    sample_limit: int = 80,
+) -> dict[str, Any]:
+    """Dry-run folder sync: compare disk vs indexed docs without writing.
+
+    Returns create / update / unchanged / prune candidate lists so the UI can
+    confirm the checklist before calling import/resync.
+    """
+    import hashlib
+
+    if not get_base(kb_id):
+        raise ValueError("knowledge base not found")
+    if root is None or str(root).strip() == "":
+        base = get_base(kb_id) or {}
+        kind = str(base.get("syncSourceType") or "")
+        path = str(base.get("syncSourcePath") or "")
+        if kind != "folder" or not path:
+            raise ValueError("no sync source remembered; import a folder first")
+        root = path
+    root_path = Path(root).expanduser().resolve()
+    if not root_path.is_dir():
+        raise ValueError("folder does not exist")
+    prefix = _resolve_folder_path(folder_prefix)
+    limit = max(1, min(int(sample_limit or 80), 300))
+
+    create_samples: list[dict[str, Any]] = []
+    update_samples: list[dict[str, Any]] = []
+    create_total = 0
+    update_total = 0
+    unchanged = 0
+    skipped = 0
+    seen_keys: set[tuple[str, str]] = set()
+
+    for path in sorted(root_path.rglob("*")):
+        if path.is_dir():
+            continue
+        rel = path.relative_to(root_path).as_posix()
+        parts = rel.split("/")
+        if any(should_skip_dir(p) for p in parts[:-1]):
+            skipped += 1
+            continue
+        if should_skip_file(path.name):
+            skipped += 1
+            continue
+        try:
+            size = path.stat().st_size
+            if size > MAX_FILE_BYTES:
+                skipped += 1
+                continue
+            folder = "/".join(parts[:-1])
+            if prefix:
+                folder = f"{prefix}/{folder}".strip("/") if folder else prefix
+            key = (folder, path.name)
+            seen_keys.add(key)
+            existing = _find_doc_by_rel_path(kb_id, folder, path.name)
+            if not existing:
+                create_total += 1
+                if len(create_samples) < limit:
+                    create_samples.append(
+                        _rel_entry(folder, path.name, sizeBytes=size, action="create")
+                    )
+                continue
+            data = path.read_bytes()
+            digest = hashlib.sha256(data).hexdigest()
+            if digest and digest == str(existing.get("content_hash") or ""):
+                unchanged += 1
+                continue
+            update_total += 1
+            if len(update_samples) < limit:
+                update_samples.append(
+                    _rel_entry(
+                        folder,
+                        path.name,
+                        sizeBytes=size,
+                        action="update",
+                        docId=str(existing.get("id") or ""),
+                    )
+                )
+        except Exception:
+            skipped += 1
+
+    prune_samples: list[dict[str, Any]] = []
+    prune_total = 0
+    with db_for_kb(kb_id) as conn:
+        if prefix:
+            rows = conn.execute(
+                """
+                SELECT id, folder_path, file_name FROM kb_documents
+                WHERE kb_id=? AND deleted_at IS NULL
+                  AND source_type IN ('import_folder', 'import_vault')
+                  AND (folder_path=? OR folder_path LIKE ?)
+                """,
+                (kb_id, prefix, f"{prefix}/%"),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT id, folder_path, file_name FROM kb_documents
+                WHERE kb_id=? AND deleted_at IS NULL
+                  AND source_type IN ('import_folder', 'import_vault')
+                """,
+                (kb_id,),
+            ).fetchall()
+    for r in rows:
+        key = (str(r["folder_path"] or ""), str(r["file_name"] or ""))
+        if key in seen_keys:
+            continue
+        prune_total += 1
+        if len(prune_samples) < limit:
+            prune_samples.append(
+                _rel_entry(
+                    key[0],
+                    key[1],
+                    action="prune",
+                    docId=str(r["id"]),
+                )
+            )
+
+    return {
+        "sourcePath": str(root_path),
+        "folderPrefix": prefix,
+        "create": create_samples,
+        "update": update_samples,
+        "prune": prune_samples,
+        "createTotal": create_total,
+        "updateTotal": update_total,
+        "unchanged": unchanged,
+        "pruneTotal": prune_total,
+        "skipped": skipped,
+        "sampleLimit": limit,
+        "hasChanges": create_total > 0 or update_total > 0 or prune_total > 0,
+    }
+
+
+def preview_resync_base(kb_id: str, *, sample_limit: int = 80) -> dict[str, Any]:
+    """Dry-run against the remembered sync source folder."""
+    return preview_local_folder_sync(kb_id, None, sample_limit=sample_limit)
+
+
+def import_local_folder(
+    kb_id: str,
+    root: str | Path,
+    *,
+    upsert: bool = True,
+    prune_missing: bool = False,
+    folder_prefix: str = "",
+    remember_source: bool = True,
+    activity_action: str | None = "import.folder",
+) -> dict[str, Any]:
+    """Copy supported files from a local folder into the owned KB.
+
+    When upsert=True (default), same folder_path+file_name is updated only if
+    content hash changed; unchanged files are skipped without re-index.
+    ``folder_prefix`` nests imported paths under a virtual root folder.
+    """
+    root_path = Path(root).expanduser().resolve()
+    if not root_path.is_dir():
+        raise ValueError("folder does not exist")
+    prefix = _resolve_folder_path(folder_prefix)
+    # Clear historical duplicates from older non-upsert uploads before scanning.
+    dedupe_documents_by_rel_path(kb_id)
+    created: list[dict[str, Any]] = []
+    updated: list[dict[str, Any]] = []
+    unchanged = 0
+    skipped = 0
+    seen_keys: set[tuple[str, str]] = set()
+    for path in sorted(root_path.rglob("*")):
+        if path.is_dir():
+            if should_skip_dir(path.name):
+                continue
+            continue
+        rel = path.relative_to(root_path).as_posix()
+        parts = rel.split("/")
+        if any(should_skip_dir(p) for p in parts[:-1]):
+            skipped += 1
+            continue
+        if should_skip_file(path.name):
+            skipped += 1
+            continue
+        try:
+            if path.stat().st_size > MAX_FILE_BYTES:
+                skipped += 1
+                continue
+            folder = "/".join(parts[:-1])
+            if prefix:
+                folder = f"{prefix}/{folder}".strip("/") if folder else prefix
+            key = (folder, path.name)
+            seen_keys.add(key)
+            if upsert:
+                existing = _find_doc_by_rel_path(kb_id, folder, path.name)
+                if existing:
+                    doc = _update_doc_from_file(
+                        existing=existing,
+                        src_path=path,
+                        source_type="import_folder",
+                    )
+                    if doc.get("syncStatus") == "unchanged":
+                        unchanged += 1
+                    else:
+                        updated.append(doc)
+                    continue
+            doc = _create_doc_record(
+                kb_id=kb_id,
+                title=path.stem,
+                file_name=path.name,
+                folder_path=folder,
+                source_type="import_folder",
+                src_path=path,
+            )
+            doc["syncStatus"] = "created"
+            created.append(doc)
+        except Exception:
+            skipped += 1
+
+    pruned = 0
+    if prune_missing and upsert:
+        with db_for_kb(kb_id) as conn:
+            if prefix:
+                rows = conn.execute(
+                    """
+                    SELECT id, folder_path, file_name FROM kb_documents
+                    WHERE kb_id=? AND deleted_at IS NULL
+                      AND source_type IN ('import_folder', 'import_vault')
+                      AND (folder_path=? OR folder_path LIKE ?)
+                    """,
+                    (kb_id, prefix, f"{prefix}/%"),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    """
+                    SELECT id, folder_path, file_name FROM kb_documents
+                    WHERE kb_id=? AND deleted_at IS NULL AND source_type IN ('import_folder', 'import_vault')
+                    """,
+                    (kb_id,),
+                ).fetchall()
+        for r in rows:
+            key = (str(r["folder_path"] or ""), str(r["file_name"] or ""))
+            if key not in seen_keys:
+                delete_document(r["id"], record_activity=False)
+                pruned += 1
+
+    if remember_source and not prefix:
+        remember_sync_source(
+            kb_id,
+            source_type="folder",
+            source_path=str(root_path),
+        )
+
+    result = {
+        "items": created + updated,
+        "created": len(created),
+        "updated": len(updated),
+        "unchanged": unchanged,
+        "skipped": skipped,
+        "pruned": pruned,
+        "upsert": upsert,
+        "folderPrefix": prefix,
+    }
+    if activity_action:
+        owned_activity.record(
+            kb_id,
+            activity_action,
+            title=str(root_path.name if hasattr(root_path, "name") else root_path),
+            detail={
+                "created": len(created),
+                "updated": len(updated),
+                "unchanged": unchanged,
+                "skipped": skipped,
+                "pruned": pruned,
+            },
+        )
+    return result
+
+
+def resync_base(kb_id: str, *, prune_missing: bool = False) -> dict[str, Any]:
+    """Re-run last remembered folder sync for a knowledge base."""
+    base = get_base(kb_id)
+    if not base:
+        raise ValueError("knowledge base not found")
+    kind = str(base.get("syncSourceType") or "")
+    path = str(base.get("syncSourcePath") or "")
+    if kind == "folder" and path:
+        return import_local_folder(
+            kb_id,
+            path,
+            upsert=True,
+            prune_missing=prune_missing,
+            remember_source=True,
+            activity_action="sync.resync",
+        )
+    raise ValueError("no sync source remembered; import a folder first")
+
+
+def delete_document(doc_id: str, *, record_activity: bool = True) -> None:
+    title = ""
+    kb_id = _kb_id_for_doc(doc_id) or ""
+    if not kb_id:
+        raise ValueError("document not found")
+    with db_for_kb(kb_id) as conn:
+        row = conn.execute(
+            "SELECT kb_id, title, file_name FROM kb_documents WHERE id=? AND deleted_at IS NULL",
+            (doc_id,),
+        ).fetchone()
+        if not row:
+            raise ValueError("document not found")
+        kb_id = str(row["kb_id"] or kb_id)
+        title = str(row["title"] or row["file_name"] or doc_id)
+        now = utc_now()
+        conn.execute(
+            "UPDATE kb_documents SET deleted_at=?, updated_at=? WHERE id=?",
+            (now, now, doc_id),
+        )
+        purge_document_index(conn, doc_id)
+    # Drop queued/running jobs for this document so the worker never picks up
+    # a deleted doc and burns retries on "document not found".
+    jobs.cancel_jobs_for_doc(doc_id, reason="document deleted")
+    blob_store.delete_doc_blobs(kb_id, doc_id)
+    _forget_doc_kb(doc_id)
+    if record_activity:
+        owned_activity.record(
+            kb_id,
+            "doc.delete",
+            doc_id=doc_id,
+            title=title,
+        )
+
+
+async def search_all(
+    query: str,
+    *,
+    mode: str = "hybrid",
+    top_k: int = 8,
+    tags: list[str] | None = None,
+    record_activity: bool = False,
+    kb_ids: list[str] | None = None,
+) -> dict[str, Any]:
+    """Search visible KBs and fuse the per-KB rankings with RRF.
+
+    KBs live in separate index DBs, so results are merged in memory: each KB
+    contributes its own ranked list and RRF combines them without letting a
+    single large KB dominate.
+
+    When ``kb_ids`` is provided (including ``[]``), only those KB ids are
+    searched — used by the agent ``knowledge`` tool to enforce per-employee
+    vault bindings. ``None`` keeps the historical "all bases" behaviour.
+    """
+    q = (query or "").strip()
+    if not q:
+        return {"items": [], "total": 0, "mode": mode, "degraded": False, "tags": []}
+
+    allow = {str(x).strip() for x in (kb_ids or []) if str(x or "").strip()} if kb_ids is not None else None
+    bases = list_bases()
+    per_kb: list[list[dict[str, Any]]] = []
+    degraded = False
+    for b in bases:
+        kid = str(b.get("id") or "").strip()
+        if not kid:
+            continue
+        if allow is not None and kid not in allow:
+            continue
+        try:
+            res = await search(
+                kid,
+                q,
+                mode=mode,
+                top_k=max(top_k, 8),
+                tags=tags,
+                record_activity=False,
+            )
+        except Exception:
+            logger.debug("cross-kb search skipped kb=%s", kid, exc_info=True)
+            degraded = True
+            continue
+        if res.get("degraded"):
+            degraded = True
+        hits = res.get("items") or []
+        if hits:
+            # Normalise ranks within this KB so RRF compares like with like.
+            # ``search()`` returns camelCase items; rrf_fuse expects index-style keys.
+            ranked: list[dict[str, Any]] = []
+            for i, h in enumerate(hits):
+                item = dict(h)
+                cid = item.get("chunk_id") or item.get("chunkId")
+                if not cid:
+                    continue
+                item["chunk_id"] = cid
+                item["doc_id"] = item.get("doc_id") or item.get("docId")
+                item["kb_id"] = item.get("kb_id") or item.get("kbId") or kid
+                item["rank"] = i + 1
+                ranked.append(item)
+            if ranked:
+                per_kb.append(ranked)
+
+    if not per_kb:
+        return {"items": [], "total": 0, "mode": mode, "degraded": degraded, "tags": list(tags or [])}
+
+    # Fuse pairwise: RRF is associative over ranked lists.
+    fused = per_kb[0]
+    for nxt in per_kb[1:]:
+        fused = rrf_fuse(fused, nxt, top_k=max(top_k * 2, 20))
+
+    # Normalise back to the camelCase shape the API/UI expects.
+    items: list[dict[str, Any]] = []
+    for h in fused[: max(top_k * 2, 20)]:
+        item = dict(h)
+        item["chunkId"] = item.get("chunkId") or item.get("chunk_id")
+        item["docId"] = item.get("docId") or item.get("doc_id")
+        item["kbId"] = item.get("kbId") or item.get("kb_id")
+        item["rrfScore"] = item.get("rrfScore", item.get("rrf_score"))
+        items.append(item)
+    items = rerank_by_query_match(items, q)[:top_k]
+    if record_activity:
+        owned_activity.record(
+            "",
+            "search",
+            title=_preview_title(q),
+            detail={"query": q, "mode": mode, "hitCount": len(items), "scope": "all"},
+        )
+    return {
+        "items": items,
+        "total": len(items),
+        "mode": mode,
+        "degraded": degraded,
+        "tags": [str(t) for t in (tags or [])],
+        "scope": "all",
+        "kbCount": len(per_kb),
+    }
+
+
+async def search(
+    kb_id: str,
+    query: str,
+    *,
+    mode: str = "hybrid",
+    top_k: int = 8,
+    tags: list[str] | None = None,
+    record_activity: bool = True,
+) -> dict[str, Any]:
+    """Search one KB, or all KBs when ``kb_id`` is empty.
+
+    Each KB keeps its own index DB, so a cross-KB search fans out per KB and
+    fuses the per-KB result lists with RRF (``rrf_fuse``).
+    """
+    ensure_owned_kb_worker_started()
+    target = str(kb_id or "").strip()
+    if not target:
+        return await search_all(query, mode=mode, top_k=top_k, tags=tags, record_activity=record_activity)
+    base = get_base(target)
+    if not base:
+        raise ValueError("knowledge base not found")
+    kb_id = target
+    mode = (mode or "hybrid").lower()
+    degraded = False
+    keyword_hits: list[dict[str, Any]] = []
+    vector_hits: list[dict[str, Any]] = []
+    tag_filters = [str(t).strip().lstrip("#") for t in (tags or []) if str(t).strip()]
+    fetch_k = 20 if not tag_filters else 60
+
+    if mode == "title":
+        fused = search_title(kb_id, query, top_k=max(top_k * 3, fetch_k))
+        items = enrich_hits(fused)
+        if tag_filters:
+            items = _filter_hits_by_tags(items, tag_filters)
+        items = items[:top_k]
+        out = {
+            "items": items,
+            "total": len(items),
+            "mode": mode,
+            "degraded": False,
+            "tags": tag_filters,
+        }
+        if record_activity:
+            owned_activity.record(
+                kb_id,
+                "search",
+                title=_preview_title(query),
+                detail={"query": query, "mode": mode, "hitCount": len(items)},
+            )
+        return out
+
+    if mode in ("keyword", "hybrid", "fulltext"):
+        keyword_hits = search_keyword(kb_id, query, top_k=fetch_k)
+
+    # Vector is optional *per KB*: a KB created with no embedding model (lean
+    # desktop installs, ``skip_embedding`` publishing) is keyword-only BY DESIGN
+    # and searches fine. Only flag ``degraded`` when vector was configured and
+    # actually failed — reporting a healthy library as "not ready" pushed agents to
+    # log a fabricated gap and re-check files that were already correct.
+    vector_expected = bool(base.get("embeddingDim")) and bool(base.get("vectorEnabled", True))
+
+    if mode in ("semantic", "vector", "hybrid") and vector_expected:
+        from knowledge_sidecar.owned.pipeline import embedding_quota_skip_active
+
+        cooled, _cool_reason = embedding_quota_skip_active()
+        if cooled and mode == "hybrid":
+            # Index-time already learned the cloud quota is dead — do not burn
+            # another query embedding on every hybrid search; keywords still work.
+            degraded = True
+            vector_hits = []
+        else:
+            try:
+                # ``base`` already carries the registry row (central DB) — no re-read.
+                with db() as conn:
+                    row = conn.execute("SELECT * FROM kb_bases WHERE id=?", (kb_id,)).fetchone()
+                mc = _model_config_for_base(dict(row or {}))
+                cache_key = (
+                    kb_id,
+                    str(base.get("embeddingModel") or ""),
+                    str(getattr(mc, "base_url", "") or ""),
+                    query.strip().casefold(),
+                )
+                qvec = await _cached_query_embedding(
+                    cache_key,
+                    lambda: get_embedding(
+                        query,
+                        mc,
+                        expected_dim=int(base["embeddingDim"]),
+                        purpose="query",
+                        kb_id=kb_id,
+                    ),
+                )
+                vector_hits = search_vector(
+                    kb_id,
+                    qvec,
+                    top_k=fetch_k,
+                    model=str(base.get("embeddingModel") or ""),
+                )
+            except Exception as exc:
+                degraded = True
+                try:
+                    from knowledge_sidecar.owned.pipeline import note_embedding_unavailable
+
+                    note_embedding_unavailable(exc)
+                except Exception:
+                    pass
+                if mode != "hybrid":
+                    raise
+
+    # An explicit semantic request against a keyword-only KB genuinely cannot be
+    # served; a hybrid request can (keywords alone), so it stays non-degraded.
+    if mode in ("semantic", "vector") and not vector_expected:
+        degraded = True
+
+    if mode in ("keyword", "fulltext") or (mode == "hybrid" and not vector_hits):
+        fused = keyword_hits[:fetch_k]
+        for i, h in enumerate(fused):
+            h["rank"] = i + 1
+            # Prefer real keyword relevance when present; fall back to RRF rank term.
+            rel = float(h.get("score") or 0)
+            h["rrf_score"] = rel if rel > 0 else 1.0 / (60 + i + 1)
+        # Only a KB that *should* have vectors is degraded when they come back
+        # empty; a keyword-only KB simply has nothing to fall back from.
+        if mode == "hybrid" and vector_expected and not vector_hits:
+            degraded = True
+    elif mode in ("semantic", "vector"):
+        fused = vector_hits[:fetch_k]
+        for i, h in enumerate(fused):
+            h["rank"] = i + 1
+            h["rrf_score"] = h.get("score") or 0
+    else:
+        # Exact terms, identifiers, and quoted phrases should outrank merely
+        # related semantic matches in the default hybrid mode.
+        fused = rrf_fuse(
+            keyword_hits,
+            vector_hits,
+            top_k=fetch_k,
+            # Prefer exact/keyword evidence over loose semantic neighbors (CORE-KB-02).
+            w_kw=1.8,
+            w_vec=0.65,
+        )
+
+    kg_boosted = False
+    if base.get("graphEnabled") and mode in ("hybrid", "keyword", "fulltext", "semantic", "vector"):
+        try:
+            kg_hits = kg_store.search_graph_chunks(kb_id, query, top_k=12)
+            if kg_hits:
+                # Soft-merge: prepend missing kg chunks, keep fetch_k
+                seen = {h["chunk_id"] for h in fused}
+                merged = list(fused)
+                for h in kg_hits:
+                    if h["chunk_id"] in seen:
+                        continue
+                    h["rrf_score"] = 0.015 + 1.0 / (60 + int(h.get("rank") or 1))
+                    merged.append(h)
+                    seen.add(h["chunk_id"])
+                merged.sort(key=lambda x: float(x.get("rrf_score") or 0), reverse=True)
+                fused = merged[:fetch_k]
+                kg_boosted = True
+        except Exception:
+            pass
+
+    items = enrich_hits(fused)
+    if tag_filters:
+        items = _filter_hits_by_tags(items, tag_filters)
+    items = rerank_by_query_match(items, query)[:top_k]
+    out = {
+        "items": items,
+        "total": len(items),
+        "mode": mode,
+        "degraded": degraded,
+        # False = keyword-only by design (no embedding model bound), not broken.
+        "vectorConfigured": vector_expected,
+        "kgBoosted": kg_boosted,
+        "tags": tag_filters,
+    }
+    if record_activity:
+        owned_activity.record(
+            kb_id,
+            "search",
+            title=_preview_title(query),
+            detail={"query": query, "mode": mode, "hitCount": len(items)},
+        )
+    return out
+
+
+def _filter_hits_by_tags(items: list[dict[str, Any]], tag_filters: list[str]) -> list[dict[str, Any]]:
+    want = {t.lower() for t in tag_filters}
+    out: list[dict[str, Any]] = []
+    for it in items:
+        have = {str(t).lower().lstrip("#") for t in (it.get("tags") or [])}
+        if want & have:
+            out.append(it)
+    return out
+
+
+def list_tags(kb_id: str) -> list[dict[str, Any]]:
+    import json
+
+    counts: dict[str, int] = {}
+    with db_for_kb(kb_id) as conn:
+        rows = conn.execute(
+            """
+            SELECT tags_json FROM kb_documents
+            WHERE kb_id=? AND deleted_at IS NULL AND IFNULL(tags_json,'') NOT IN ('', '[]')
+            """,
+            (kb_id,),
+        ).fetchall()
+    for r in rows:
+        try:
+            tags = json.loads(r["tags_json"] or "[]") or []
+        except Exception:
+            continue
+        if not isinstance(tags, list):
+            continue
+        for t in tags:
+            s = str(t).strip().lstrip("#")
+            if not s:
+                continue
+            counts[s] = counts.get(s, 0) + 1
+    return [{"tag": k, "count": v} for k, v in sorted(counts.items(), key=lambda x: (-x[1], x[0]))]
+
+
+def get_document_links(doc_id: str) -> dict[str, Any] | None:
+    from knowledge_sidecar.owned import doc_links as doc_links_mod
+
+    return doc_links_mod.get_document_links(doc_id)
+
+
+def doc_graph(kb_id: str, *, center_doc_id: str | None = None, depth: int = 1) -> dict[str, Any]:
+    from knowledge_sidecar.owned import doc_links as doc_links_mod
+
+    return doc_links_mod.doc_graph_payload(kb_id, center_doc_id=center_doc_id, depth=depth)
+
+
+def get_job(job_id: str) -> dict[str, Any] | None:
+    return jobs.get_job(job_id)
+
+
+def list_jobs(kb_id: str, *, limit: int = 50, states: list[str] | None = None) -> list[dict[str, Any]]:
+    return jobs.list_jobs(kb_id, limit=limit, states=states)
+
+
+def list_activities(
+    *,
+    kb_id: str | None = None,
+    doc_id: str | None = None,
+    limit: int = 50,
+    before: str | None = None,
+) -> list[dict[str, Any]]:
+    return owned_activity.list_activities(kb_id=kb_id, doc_id=doc_id, limit=limit, before=before)
+
+
+def job_stats(kb_id: str) -> dict[str, Any]:
+    return jobs.job_stats(kb_id)
+
+
+def list_chunks(doc_id: str) -> list[dict[str, Any]]:
+    doc = get_document(doc_id)
+    if not doc:
+        return []
+    with db_for_kb(str(doc.get("kbId") or "")) as conn:
+        rows = conn.execute(
+            """
+            SELECT c.*,
+                   CASE WHEN e.chunk_id IS NULL THEN 0 ELSE 1 END AS has_embedding,
+                   e.dim AS embedding_dim
+            FROM kb_chunks c
+            LEFT JOIN kb_chunk_embeddings e ON e.chunk_id = c.id
+            WHERE c.doc_id=?
+            ORDER BY c.ordinal
+            """,
+            (doc_id,),
+        ).fetchall()
+    return [
+        {
+            "id": r["id"],
+            "ordinal": r["ordinal"],
+            "content": r["content"],
+            "contextHeader": r["context_header"] or "",
+            "headingPath": r["heading_path"] or "",
+            "chunkKind": r["chunk_kind"] or "text",
+            "tokenEstimate": r["token_estimate"],
+            "enabled": bool(r["enabled"]),
+            "hasEmbedding": bool(r["has_embedding"]),
+            "embeddingDim": int(r["embedding_dim"] or 0) if r["has_embedding"] else 0,
+        }
+        for r in rows
+    ]
