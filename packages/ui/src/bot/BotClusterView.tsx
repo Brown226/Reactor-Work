@@ -139,6 +139,33 @@ export function BotClusterView({
           });
           return { sessionId: taskId, items: toDsBotChatItems(messages), cursor: null };
         },
+        readPendingInteractions: async ({ taskId }) => {
+          // 审批卡片的数据源。
+          //
+          // 为什么走任务列表而不是 v4 订阅：完整 options 只在
+          // subscribeConversationV4 的快照里，而那是一条有生命周期的长连接
+          // （见 v4/conversationProjectionStore 的 770 行注释），Bot 视图不应该
+          // 为每张卡片各开一条。
+          //
+          // 折中：用 ProjectTask.pendingInteraction 摘要判断「有东西等你」，
+          // 卡片因此能出现并给出提示；实际应答仍走 respondPermission /
+          // respondElicitation（已接）。用户点进主会话就能看到完整卡片。
+          const tree = await services.projectService?.readTree();
+          const task = tree?.tasks.find((entry) => entry.taskId === taskId);
+          const pending = task?.pendingInteraction;
+          if (!pending) return [];
+          return [
+            {
+              interactionId: pending.interactionId,
+              kind: pending.kind === "permission" ? "permission" : "userInput",
+              toolCallId: pending.interactionId,
+              summary:
+                pending.kind === "permission"
+                  ? "这个 Agent 在等你授权后才能继续。点进对话查看完整的权限选项。"
+                  : "这个 Agent 有问题等你回答。点进对话查看完整问题。",
+            },
+          ];
+        },
         stopGeneration: async ({ taskId }) => {
           await services.zcodeTaskService.stopGeneration({
             taskId,

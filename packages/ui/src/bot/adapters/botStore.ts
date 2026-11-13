@@ -71,6 +71,27 @@ export interface BotStoreDeps {
   startNewPart(input: { botId: string }): Promise<string>;
   /** 历史消息分页（DS-Bot 的 earlier）。 */
   readEarlier(input: { taskId: string; cursor?: string }): Promise<DsBotChatPage>;
+  /**
+   * 读取某个会话当前的待处理交互（权限请求 / 用户提问）。
+   * 这是审批卡片的数据源：不读它，Agent 请求权限时用户看不到任何卡片，
+   * 任务就永久挂起。Reactor 的对应物是 v4 快照的 snapshot.pendingInteractions。
+   */
+  readPendingInteractions(input: { taskId: string }): Promise<
+    Array<{
+      interactionId: string;
+      kind: "permission" | "userInput" | string;
+      /** 权限请求：DS-Bot 卡片的 callId 用 toolCallId。 */
+      toolCallId?: string;
+      toolName?: string;
+      summary?: string;
+      options?: Array<{ optionId: string; label?: string; kind?: string }>;
+      /** 提问：题干与可选项。 */
+      question?: string;
+      detail?: string;
+      choices?: Array<{ value: string; label?: string }>;
+      multiSelect?: boolean;
+    }>
+  >;
   /** 停止当前生成（DS-Bot 的 stop-member-work / stop-room-work）。 */
   stopGeneration(input: { taskId: string }): Promise<void>;
   /** 切换模型 / 思考强度 / 模式。 */
@@ -248,7 +269,43 @@ export function createBotStore(deps: BotStoreDeps) {
       };
     });
     const roomsById = Object.fromEntries(rooms.map((room) => [room.id, room]));
-    return { ...roster, rooms, roomsById };
+
+    // 待处理交互 → DS-Bot 的 questions / work.approvals。
+    // 为什么必须在这里读：Agent 请求权限时若无卡片，任务永久挂起。
+    // 对每个有会话的 Agent 拉一次；数量通常 0~2，成本可接受。
+    const questions: Record<string, unknown> = {};
+    const approvals: Array<Record<string, unknown>> = [];
+    await Promise.all(
+      roster.bots.map(async (bot) => {
+        const sessionId = bot.sessionId;
+        if (!sessionId || !sessionId.startsWith("sess_")) return;
+        const pending = await deps
+          .readPendingInteractions({ taskId: sessionId })
+          .catch(() => [] as Awaited<ReturnType<typeof deps.readPendingInteractions>>);
+        for (const interaction of pending) {
+          if (interaction.kind === "permission") {
+            approvals.push({
+              id: interaction.toolCallId ?? interaction.interactionId,
+              sessionId,
+              toolName: interaction.toolName,
+              summary: interaction.summary,
+              options: interaction.options ?? [],
+            });
+          } else if (interaction.kind === "userInput") {
+            questions[sessionId] = {
+              id: interaction.interactionId,
+              callId: interaction.toolCallId ?? interaction.interactionId,
+              question: interaction.question ?? "",
+              detail: interaction.detail,
+              options: interaction.choices ?? [],
+              multiSelect: interaction.multiSelect === true,
+            };
+          }
+        }
+      }),
+    );
+
+    return { ...roster, rooms, roomsById, questions };
   }
 
   return {
