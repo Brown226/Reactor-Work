@@ -82,9 +82,15 @@ export function BotClusterView({
       // 缺省时不给半成品状态，直接抛错交给上层错误边界显示。
       throw new Error("Agents 集群需要 projectService，当前宿主未装配");
     }
+    const taskGroupService = services.taskGroupService;
+    if (!taskGroupService) {
+      // 群聊建立在 Reactor 的 TaskGroupService 上；缺它时群聊不可用，直接说清楚。
+      throw new Error("Agents 集群的群聊需要 taskGroupService，当前宿主未装配");
+    }
     const instance = createBotStore({
       projectService,
-        workspacePath,
+      taskGroupService,
+      workspacePath,
         ...(workspaceIdentity ? { workspaceIdentity } : {}),
         // 会话列表直接复用项目树的组织字段，不另开查询。
         listTasks: async () => {

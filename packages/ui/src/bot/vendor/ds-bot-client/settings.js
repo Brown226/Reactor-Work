@@ -39,6 +39,8 @@ const SETTINGS_PAGES = [['general', 'General'], ['models', 'Models'], ['local-ag
 const LAST_PAGES = new Set(['feedback', 'about'])
 // [Reactor 本地定制] Web 宿主不提供的设置页（见上方 pages 过滤处的说明）。
 const REACTOR_HIDDEN_PAGES = new Set([
+  // 'groups' 已开放：群聊由 Reactor 的 TaskGroupService 承载（见 adapters/botStore.ts
+  // 的 createRoom），成员/改名/解散都是真实可用的。
   'connectors', 'im', 'capabilities', 'computer', 'local-agents', 'secrets',
 ])
 // DSH sections DS Bot's own pages already hold.

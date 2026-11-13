@@ -39,6 +39,38 @@ export interface BotStoreDeps {
   listModels(): Promise<{ ref: string; label?: string }[]>;
   defaultModel(): string | null;
   /**
+   * 群聊（DS-Bot 的 room）的宿主实现 = Reactor 的 TaskGroupService。
+   * 一个 room 对应一个 TaskGroup；成员（每个 Bot 在该群的会话）是 group 下的 task。
+   */
+  taskGroupService: {
+    /** Reactor 的 TaskGroupStructure：groups + members + order。 */
+    read(): Promise<{
+      groups: Array<{ id: string; title: string }>;
+      members: Array<{ groupId: string; workspaceKey: string; taskId: string; sortOrder: number }>;
+    }>;
+    save(input: { id?: string; title?: string }): Promise<{ id: string; title: string }>;
+    ungroup(id: string): Promise<void>;
+    /** 把一个 task 登记进某个 group（群聊成员落库的唯一入口）。 */
+    admit(input: {
+      tasks: Array<{
+        hostId: string;
+        workspacePath: string;
+        workspaceIdentity?: string;
+        taskId: string;
+      }>;
+      placement?: {
+        task: {
+          hostId: string;
+          workspacePath: string;
+          workspaceIdentity?: string;
+          taskId: string;
+        };
+        groupId: string | null;
+        creationId: string;
+      };
+    }): Promise<void>;
+  };
+  /**
    * 模型供应商视图（DS-Bot 的 Models 设置页）。
    * Reactor 侧就是 providerSettingsService.getView()；这里抽成端口，
    * 是为了让 botStore 不直接依赖 services 的装配细节，便于测试替身。
@@ -87,17 +119,53 @@ export function createBotStore(deps: BotStoreDeps) {
   };
 
   async function loadRoster(): Promise<DsBotRoster> {
-    const [tree, models] = await Promise.all([
+    const [tree, models, structure] = await Promise.all([
       deps.projectService.readTree(),
       deps.listModels().catch(() => [] as { ref: string; label?: string }[]),
+      deps.taskGroupService
+        .read()
+        .catch(() => ({ groups: [], members: [] }) as Awaited<ReturnType<typeof deps.taskGroupService.read>>),
     ]);
-    return buildRoster({
+    const roster = buildRoster({
       projects: tree.projects,
       tasks: tree.tasks,
       models,
       defaultModel: deps.defaultModel(),
       prefs: readPrefs(),
     });
+
+    // 群聊：TaskGroup → DS-Bot 的 room。
+    // 成员从 structure.members 取：每个成员在群里有一个 task，其 projectId 即成员 Bot。
+    const projectIds = new Set(roster.bots.map((bot) => bot.id));
+    const rooms = (structure.groups ?? []).map((group) => {
+      const rows = (structure.members ?? [])
+        .filter((row) => row.groupId === group.id)
+        .slice()
+        .sort((left, right) => left.sortOrder - right.sortOrder);
+      const parts = rows.map((row) => row.taskId);
+      const members = [
+        ...new Set(
+          tree.tasks
+            .filter((task) => parts.includes(task.taskId) && task.projectId !== null)
+            .map((task) => task.projectId as string)
+            .filter((projectId) => projectIds.has(projectId)),
+        ),
+      ];
+      return {
+        id: group.id,
+        name: group.title,
+        sessionId: parts[0] ?? group.id,
+        ownParts: [],
+        parts,
+        createdAt: Date.now(),
+        members,
+        named: true,
+        notice: "",
+        preview: "",
+      };
+    });
+    const roomsById = Object.fromEntries(rooms.map((room) => [room.id, room]));
+    return { ...roster, rooms, roomsById };
   }
 
   return {
@@ -227,15 +295,86 @@ export function createBotStore(deps: BotStoreDeps) {
       return readPrefs();
     },
 
-    /** 群聊：Reactor 侧还没有「多 Agent 一个会话」的运行时，先如实拒绝。 */
-    async createRoom() {
-      throw Object.assign(new Error("Reactor 暂未支持 Agent 群聊"), { code: "bot/unsupported" });
+    /**
+     * 建群聊 = 建一个 TaskGroup，并把每个成员的会话挂进去。
+     *
+     * DS-Bot 的语义：admin 是群主，members 是其他 Bot，每人一个 hidden group session。
+     * Reactor 的对应物：一个 TaskGroup + 每个成员一个 task（taskGroupService.admit）。
+     * 第一版不做「管理员代答 / 顺序发言 / Goal」这些协作策略（那需要 Agent 间的
+     * 调度运行时），但**群本身、成员、群内会话**是真实可用的。
+     */
+    async createRoom(payload: { members?: string[]; admin?: string; name?: string } | null) {
+      const memberIds = payload?.members ?? [];
+      const adminId = payload?.admin;
+      if (memberIds.length < 2) {
+        throw Object.assign(new Error("群聊至少需要两个 Agent"), { code: "bot/invalid" });
+      }
+      const group = await deps.taskGroupService.save({
+        title: payload?.name?.trim() || memberIds.length + " 个 Agent 的群聊",
+      });
+      // 每个成员建一个空会话，作为它在群里的发言位。
+      const sessions = [];
+      for (const botId of memberIds) {
+        const taskId = await deps.createTask({ projectId: botId });
+        sessions.push({ botId, taskId });
+        await deps.taskGroupService.admit({
+          tasks: [
+            {
+              hostId: "local",
+              workspacePath: deps.workspacePath,
+              ...(deps.workspaceIdentity ? { workspaceIdentity: deps.workspaceIdentity } : {}),
+              taskId,
+            },
+          ],
+          placement: {
+            task: {
+              hostId: "local",
+              workspacePath: deps.workspacePath,
+              ...(deps.workspaceIdentity ? { workspaceIdentity: deps.workspaceIdentity } : {}),
+              taskId,
+            },
+            groupId: group.id,
+            creationId: `room-${group.id}`,
+          },
+        });
+      }
+      const byBot = Object.fromEntries(sessions.map((item) => [item.botId, item.taskId]));
+      this.invalidate();
+      return {
+        id: group.id,
+        name: group.title,
+        sessionId: sessions[0]?.taskId ?? group.id,
+        ownParts: [],
+        parts: sessions.map((item) => item.taskId),
+        createdAt: Date.now(),
+        admin: adminId,
+        members: memberIds,
+        memberSessions: byBot,
+        // `named` 表示用户是否显式命名（DS-Bot 据此决定是否自动跟随成员名）。
+        named: Boolean(payload?.name?.trim()),
+        notice: "",
+        preview: "",
+      };
     },
-    async updateRoom() {
-      throw Object.assign(new Error("Reactor 暂未支持 Agent 群聊"), { code: "bot/unsupported" });
+
+    /** 改名 / 置顶群：Reactor 的 TaskGroup 只有 title，其余字段忽略。 */
+    async updateRoom(payload: { id?: string; patch?: { name?: string; pinned?: boolean } } | null) {
+      const id = payload?.id;
+      if (!id) throw Object.assign(new Error("缺少群 id"), { code: "bot/invalid" });
+      const name = payload?.patch?.name;
+      if (name === undefined) return { ok: true };
+      await deps.taskGroupService.save({ id, title: name.trim() || id });
+      this.invalidate();
+      return { ok: true };
     },
-    async deleteRoom() {
-      throw Object.assign(new Error("Reactor 暂未支持 Agent 群聊"), { code: "bot/unsupported" });
+
+    /** 解散群 = ungroup。Reactor 侧只解除组织关系，不删会话（与侧栏行为一致）。 */
+    async deleteRoom(payload: { id?: string } | null) {
+      const id = payload?.id;
+      if (!id) throw Object.assign(new Error("缺少群 id"), { code: "bot/invalid" });
+      await deps.taskGroupService.ungroup(id);
+      this.invalidate();
+      return { ok: true };
     },
     async saveSection() {
       throw Object.assign(new Error("Reactor 暂未支持侧栏分组"), { code: "bot/unsupported" });
