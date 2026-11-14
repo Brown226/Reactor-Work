@@ -460,6 +460,40 @@ def upload_file(params: dict[str, Any]) -> dict[str, Any]:
 # 读写与默认值回退逻辑写好了（含 registry 解析）。
 
 
+def list_models(_params: dict[str, Any]) -> dict[str, Any]:
+    """列出可用于向量嵌入的模型。
+
+    数据源是 `config_repositories.list_models()`（由 app_config 从
+    ZCODE_KNOWLEDGE_* 构造）。只返回看起来能做嵌入的 —— 把 rerank 模型
+    也列进「向量模型」下拉会让用户选错。
+    """
+    from knowledge_sidecar.evoflow.persistence.config_repositories import list_models as _list
+
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for row in _list():
+        name = str(row.get("name") or "").strip()
+        model_id = str(row.get("model") or name).strip()
+        if not name or name in seen:
+            continue
+        haystack = f"{name} {model_id}".lower()
+        # rerank 模型不能当 embedding 用 —— 名字里带 rerank 的直接排除。
+        if "rerank" in haystack:
+            continue
+        if not any(tok in haystack for tok in ("embed", "bge", "m3", "nomic", "gte-")):
+            continue
+        seen.add(name)
+        out.append(
+            {
+                "name": name,
+                "display_name": str(row.get("display_name") or name),
+                "model": model_id,
+                "supportsChat": False,
+            }
+        )
+    return {"models": out}
+
+
 def get_settings(_params: dict[str, Any]) -> dict[str, Any]:
     from knowledge_sidecar.owned import settings as kb_settings
 
@@ -589,7 +623,8 @@ REGISTRY: dict[str, Any] = {
     "kb.sync.previewResync": preview_resync_base,
     "kb.sync.import": import_local_folder,
     "kb.sync.resync": resync_base,
-    # 设置
+    # 模型与设置
+    "kb.models": list_models,
     "kb.settings.get": get_settings,
     "kb.settings.set": _set_settings,
     # 检索

@@ -283,6 +283,13 @@ export function registerKnowledgeExtraRoutes(app: Hono, client: KnowledgeClient)
     }),
   );
 
+  // ── 模型 ──────────────────────────────────────────────────────────────
+  // 知识库可用的向量模型。数据源是 sidecar（它读取 ZCODE_KNOWLEDGE_*），
+  // 而不是本仓 provider 体系 —— 后者管的是对话模型，与嵌入模型是两套端点。
+  app.get("/api/knowledge/owned/models", async (c) =>
+    handle(c, client, "kb.models", () => ({})),
+  );
+
   // ── 设置 ──────────────────────────────────────────────────────────────
   // 知识库设置是全局的（不挂在某个 kbId 下）：默认向量模型、对话模型、
   // 新建库是否默认开摘要、以及「自建库 / 内置库」的主次。

@@ -118,7 +118,42 @@ def all_settings() -> dict[str, Any]:
         return dict(_load())
 
 
+def list_models() -> list[dict[str, Any]]:
+    """返回已配置的模型列表（供 owned/embedding_bind.py 挑选 embedding 模型）。
+
+    [踩过的坑] 这个函数最初漏实现了。缺它的后果很隐蔽：
+    `owned/embedding_bind.list_embedding_model_rows()` 里是
+    `from ... import list_models` 包在 try/except 里的，ImportError 被
+    except 吞掉后返回**空列表** —— 于是 `default_embedding_ref()` 拿不到
+    任何候选，返回空串。
+
+    表现是设置面板里「默认向量模型」「对话模型」两行都显示「未配置」，
+    明明 `ZCODE_KNOWLEDGE_EMBEDDING_MODEL` 配了、内置库也正常建了索引。
+    因为建库路径走的是 `resolve_create_binding`（另一个分支），
+    只有「读默认值」这条路径受影响 —— 所以功能能用但设置显示不出来。
+
+    数据源统一取 app_config（它已经把 ZCODE_KNOWLEDGE_* 转成模型条目），
+    不再另建一份模型注册表。
+    """
+    from knowledge_sidecar.evoflow.config.app_config import get_app_config
+
+    out: list[dict[str, Any]] = []
+    for entry in get_app_config().models:
+        out.append(
+            {
+                "name": entry.name,
+                "display_name": entry.display_name or entry.name,
+                "model": entry.model,
+                "vendor": entry.vendor or "",
+                "base_url": entry.base_url or "",
+                "api_key": entry.api_key or "",
+            }
+        )
+    return out
+
+
 __all__ = [
+    "list_models",
     "all_settings",
     "get_app_setting",
     "reset_cache_for_tests",

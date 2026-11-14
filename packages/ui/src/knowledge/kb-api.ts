@@ -333,13 +333,33 @@ export const api = {
    * 需要完整能力时：由宿主在挂载前调 `setKnowledgeModelProvider()` 注入一个
    * 返回模型列表的函数（见下），不在这里再造一份 provider 状态。
    */
+  /**
+   * 可用的向量模型。
+   *
+   * 数据来源优先级：
+   * 1. 宿主注入的 provider（若宿主有模型目录，走它）；
+   * 2. **sidecar 自己报的模型列表** —— 这才是知识库真正能用的模型，
+   *    因为它就是执行嵌入的一方（配置来自 ZCODE_KNOWLEDGE_*）。
+   *
+   * [踩过的坑] 早期只走 (1)，而 (1) 一直没人注入 → 恒返回空数组，
+   * 建库弹窗的「向量模型」下拉是空的，用户只能建纯关键词库。
+   * 现在补上 (2) 作为兜底：即使宿主没注入，也能列出 sidecar 实际配置的模型。
+   */
   listModels: async (): Promise<{ models: KnowledgeModelOption[] }> => {
     const provider = knowledgeModelProvider;
-    if (!provider) return { models: [] };
+    if (provider) {
+      try {
+        const injected = await provider();
+        if (injected.length > 0) return { models: injected };
+      } catch (error) {
+        log("listModels 注入的 provider 失败，继续回退 sidecar 列表", error);
+      }
+    }
     try {
-      return { models: await provider() };
+      const res = await request<{ models?: KnowledgeModelOption[] }>("GET", "/models");
+      return { models: res.models ?? [] };
     } catch (error) {
-      log("listModels 注入的 provider 失败，回退空列表", error);
+      log("listModels 从 sidecar 取模型失败，回退空列表", error);
       return { models: [] };
     }
   },
