@@ -26,6 +26,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Database, LoaderCircle } from "lucide-react";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select.js";
 import { Switch } from "@/components/ui/switch.js";
 import { toast } from "@/components/ui/toast.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -82,6 +89,8 @@ export function KnowledgeSettingsSection({ isDesktop = false }: KnowledgeSetting
   // 本仓的 useZCodeIntl() 返回 { intl }，不是 intl 本身。
   const { intl } = useZCodeIntl();
   const [settings, setSettings] = useState<KnowledgeSettings | null>(null);
+  /** sidecar 实际可用的向量模型（即「知识库真正能调通的那些」）。 */
+  const [embeddingModels, setEmbeddingModels] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -89,10 +98,19 @@ export function KnowledgeSettingsSection({ isDesktop = false }: KnowledgeSetting
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchSettingsJson<KnowledgeSettings>(
-        `${resolveGatewayBase()}/settings`,
-      );
+      const [data, modelsRes] = await Promise.all([
+        fetchSettingsJson<KnowledgeSettings>(`${resolveGatewayBase()}/settings`),
+        // 模型列表单独取：即使设置读失败，也能知道有哪些可选。
+        fetchSettingsJson<{ models?: { name?: string }[] }>(
+          `${resolveGatewayBase()}/models`,
+        ).catch(() => ({ models: [] as { name?: string }[] })),
+      ]);
       setSettings(data);
+      setEmbeddingModels(
+        (modelsRes.models ?? [])
+          .map((m) => String(m.name ?? "").trim())
+          .filter((name): name is string => name.length > 0),
+      );
       setUnavailable(false);
     } catch (error) {
       // 网关不可用（sidecar 没起来 / 未配置模型服务）时不能假装读到空配置，
@@ -173,15 +191,38 @@ export function KnowledgeSettingsSection({ isDesktop = false }: KnowledgeSetting
           label={label("settings.knowledge.embeddingModel")}
           description={label("settings.knowledge.embeddingModelDescription")}
           detail={
-            embeddingModel ? (
-              <code className="rounded bg-surface px-1.5 py-0.5 text-ui-xs">{embeddingModel}</code>
-            ) : (
+            embeddingModels.length === 0 ? (
               <span className="text-ui-xs text-foreground-subtlest">
-                {label("settings.knowledge.notConfigured")}
+                {label("settings.knowledge.noEmbeddingModels")}
               </span>
+            ) : (
+              <code className="rounded bg-surface px-1.5 py-0.5 text-ui-xs">{embeddingModel}</code>
             )
           }
-          control={<span className="text-ui-sm text-foreground-subtle">—</span>}
+          control={
+            embeddingModels.length === 0 ? (
+              <span className="text-ui-sm text-foreground-subtle">—</span>
+            ) : (
+              <Select
+                value={embeddingModel}
+                disabled={saving}
+                onValueChange={(next) => {
+                  void patch({ defaultEmbeddingModel: next });
+                }}
+              >
+                <SelectTrigger className="w-[260px] min-w-0 justify-between" size="lg">
+                  <SelectValue placeholder={label("settings.knowledge.notConfigured")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {embeddingModels.map((name) => (
+                    <SelectItem key={name} value={name}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )
+          }
         />
 
         <SettingsRow

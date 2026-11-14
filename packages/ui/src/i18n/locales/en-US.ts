@@ -3333,6 +3333,7 @@ const enUS: Record<string, string> = {
   "settings.knowledge.summaryDefault": "Enable auto-summary for new bases",
   "settings.knowledge.summaryDefaultDescription": "New knowledge bases will automatically summarize documents. Toggle existing bases individually on the knowledge page.",
   "settings.knowledge.notConfigured": "Not configured",
+  "settings.knowledge.noEmbeddingModels": "No embedding model detected. Configure ZCODE_KNOWLEDGE_MODEL_BASE_URL and ZCODE_KNOWLEDGE_EMBEDDING_MODEL, then restart the service.",
   "settings.knowledge.saved": "Saved",
   "settings.knowledge.saveFailed": "Save failed",
   "settings.knowledge.desktopDataHint": "Knowledge data is stored locally in the app data directory and never uploaded.",

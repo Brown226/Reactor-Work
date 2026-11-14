@@ -3350,6 +3350,7 @@ const zhCN: Record<string, string> = {
   "settings.knowledge.summaryDefault": "新建库默认开启自动摘要",
   "settings.knowledge.summaryDefaultDescription": "开启后，新建的知识库会自动为文档生成摘要。已有库的开关在知识库页面单独设置。",
   "settings.knowledge.notConfigured": "未配置",
+  "settings.knowledge.noEmbeddingModels": "未检测到可用的向量模型。请配置 ZCODE_KNOWLEDGE_MODEL_BASE_URL 与 ZCODE_KNOWLEDGE_EMBEDDING_MODEL 后重启服务。",
   "settings.knowledge.saved": "已保存",
   "settings.knowledge.saveFailed": "保存失败",
   "settings.knowledge.desktopDataHint": "知识库数据保存在本机应用数据目录下，不会上传到云端。",
