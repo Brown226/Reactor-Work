@@ -144,3 +144,10 @@ export type { DiagnosticCheck, DiagnosticReport, DiagnoseOptions } from "./mcp-l
 
 export { verifiedRun, extractCriteria } from "./determinism/verified-run.js";
 export type { VerifiedRunRequest, VerifiedRunResult } from "./determinism/verified-run.js";
+
+export { listMcpTools, callMcpTool } from "./mcp-adapter.js";
+export type {
+  McpToolDefinition,
+  McpToolResult,
+  EngineeringMcpOptions,
+} from "./mcp-adapter.js";
