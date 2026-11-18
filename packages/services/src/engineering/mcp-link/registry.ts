@@ -1,0 +1,85 @@
+/**
+ * MCP 连接注册表：按 server name 管理运行时连接实例。
+ *
+ * 逆向自 PKPM Agent 的 mcp_link/registry。约定：
+ *   - 连接状态是唯一真相，本模块持有；配置持久化归 mcp-sync，不在此处。
+ *   - 同一 server name 只允许一个活动实例，重复 connect 幂等。
+ *   - 实例不落盘，进程重启后重建。
+ */
+
+import type { BaseMCPLink } from "./base.js";
+import type { ConnectResult, DiscoveryOverrides } from "./types.js";
+import { BimBaseLink } from "./links/bimbase.js";
+
+type LinkFactory = () => BaseMCPLink;
+
+/** 已登记可连接的产品。新增产品在此登记工厂即可。 */
+const FACTORIES: Record<string, LinkFactory> = {
+  bimbase: () => new BimBaseLink(),
+};
+
+const activeLinks = new Map<string, BaseMCPLink>();
+
+/** 已支持连接的 server name 列表。 */
+export function listSupportedServers(): string[] {
+  return Object.keys(FACTORIES);
+}
+
+/** 连接指定 server；已连接时幂等返回成功。 */
+export async function connectToServer(
+  serverName: string,
+  options: DiscoveryOverrides = {},
+): Promise<ConnectResult> {
+  const factory = FACTORIES[serverName];
+  if (!factory) {
+    return `不支持的服务：${serverName}。可用：${listSupportedServers().join("、")}`;
+  }
+
+  const existing = activeLinks.get(serverName);
+  if (existing?.isConnected()) return true;
+
+  const link = existing ?? factory();
+  activeLinks.set(serverName, link);
+
+  const result = await link.connect(options);
+  if (result !== true) {
+    activeLinks.delete(serverName);
+  }
+  return result;
+}
+
+/** 断开指定 server。未连接时静默返回。 */
+export function disconnectServer(serverName: string): boolean {
+  const link = activeLinks.get(serverName);
+  if (!link) return false;
+  link.disconnect();
+  activeLinks.delete(serverName);
+  return true;
+}
+
+/** 判断指定 server 当前是否已连接。 */
+export function isServerConnected(serverName: string): boolean {
+  return activeLinks.get(serverName)?.isConnected() ?? false;
+}
+
+/** 取活动连接实例；未连接返回 undefined。 */
+export function getActiveLink(serverName: string): BaseMCPLink | undefined {
+  return activeLinks.get(serverName);
+}
+
+/** 取全部活动连接，供提示注入与状态展示。 */
+export function getActiveLinks(): Record<string, BaseMCPLink> {
+  return Object.fromEntries(activeLinks);
+}
+
+/** 取全部已连接的 server name。 */
+export function getConnectedServers(): string[] {
+  return [...activeLinks.entries()]
+    .filter(([, link]) => link.isConnected())
+    .map(([name]) => name);
+}
+
+/** 进程退出或切换工程时清空全部连接。 */
+export function disconnectAll(): void {
+  for (const [name] of activeLinks) disconnectServer(name);
+}

@@ -1,0 +1,21 @@
+/**
+ * 工程软件连接层入口。
+ *
+ * 只在需要驱动工程软件（BIMBase/PKPM、SAP2000、AutoCAD、Rhino、Office）时使用。
+ * 连接后通过 Python 执行器注入工具函数，Agent 写脚本批量调用。
+ */
+
+export * from "./contract.js";
+
+export {
+  connectToServer,
+  disconnectAll,
+  disconnectServer,
+  getActiveLink,
+  getActiveLinks,
+  getConnectedServers,
+  isServerConnected,
+  listSupportedServers,
+} from "./mcp-link/registry.js";
+
+export { BimBaseLink } from "./mcp-link/links/bimbase.js";

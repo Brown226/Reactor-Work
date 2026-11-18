@@ -1,0 +1,23 @@
+/**
+ * 工程软件 MCP 连接层 —— 对外契约。
+ *
+ * 设计来源：PKPM Agent 的 software_link_kit / mcp_link 逆向还原。
+ * 核心约定：Agent 下发指令，软件在自己的图形内核里执行；
+ * 不采集屏幕、不嵌入软件窗口、不读界面像素。
+ *
+ * 本文件只做类型与纯函数的再导出，不导入实现模块，避免与 base/discovery
+ * 形成循环依赖。
+ */
+
+export type {
+  ConnectResult,
+  DiscoveryOverrides,
+  InjectionResult,
+  McpCapabilitySnapshot,
+} from "./mcp-link/types.js";
+
+export type { BaseMCPLink } from "./mcp-link/base.js";
+export { isPortOpen, waitForPort, sleep } from "./mcp-link/common.js";
+export { resolveExecutable, candidateRoots, isValidRoot } from "./mcp-link/discovery.js";
+export type { DiscoverySource, CandidateRoot, ResolvedExecutable } from "./mcp-link/discovery.js";
+export { buildBriefing } from "./mcp-link/briefing.js";
