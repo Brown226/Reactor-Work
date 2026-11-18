@@ -8,6 +8,10 @@
 
 import type { ConnectResult, DiscoveryOverrides, InjectionResult } from "./types.js";
 import { waitForPort } from "./common.js";
+import { buildBriefing } from "./briefing.js";
+import type { ConversionResult, GeneratedFunction, McpToolDescriptor } from "./injection.js";
+import { convertTools, toCapabilitySnapshot } from "./injection.js";
+import { functionSearch, type FunctionSearchRequest, type FunctionSearchResult } from "./function-search.js";
 
 /** 等端口就绪的上限，与逆向样保持一致（100 秒，足够 CAD 类软件冷启动）。 */
 const MCP_READY_TIMEOUT_MS = 100_000;
@@ -84,6 +88,44 @@ export abstract class BaseMCPLink {
 
   /** 最近一次握手注入的结果，供上层取简报与能力快照。 */
   protected lastInjection?: InjectionResult;
+  /** 转换后的函数签名，供 function_search 使用。 */
+  protected generatedFunctions: GeneratedFunction[] = [];
+
+  /**
+   * 由子类在握手拿到 tools/list 后调用：完成 Schema → 签名的转换、
+   * 生成简报与能力快照。返回可交给执行器落地的注入结果。
+   */
+  protected prepareInjection(serverName: string, tools: McpToolDescriptor[]): InjectionResult {
+    const conversion: ConversionResult = convertTools(tools);
+    this.generatedFunctions = conversion.functions;
+    const snapshot = toCapabilitySnapshot(serverName, conversion);
+    const briefing = buildBriefing(snapshot);
+    const result: InjectionResult = {
+      injectedFunctions: conversion.functions.map((fn) => fn.name),
+      injectedClasses: Object.keys(conversion.dataStructures),
+      briefing,
+      snapshot,
+    };
+    this.lastInjection = result;
+    return result;
+  }
+
+  /** 取转换后的函数签名列表（含参数与返回类型），供执行器生成调用桩。 */
+  functionSignatures(): GeneratedFunction[] {
+    return this.generatedFunctions;
+  }
+
+  /**
+   * 执行一次 function_search。未连接时返回失败结果而不是抛异常，
+   * 让模型能自己判断下一步。
+   */
+  searchFunctions(request: FunctionSearchRequest): FunctionSearchResult {
+    const snapshot = this.lastInjection?.snapshot;
+    if (!snapshot) {
+      return { ok: false, text: `尚未连接 ${this.serverName}，请先调用 connect。` };
+    }
+    return functionSearch(request, { snapshot, functions: this.generatedFunctions });
+  }
 
   /** 取最近一次握手的能力快照。未连接时返回 undefined。 */
   capabilitySnapshot(): InjectionResult["snapshot"] | undefined {

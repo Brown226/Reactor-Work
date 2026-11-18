@@ -21,3 +21,24 @@ export { isPortOpen, waitForPort, sleep } from "./mcp-link/common.js";
 export { resolveExecutable, candidateRoots, isValidRoot } from "./mcp-link/discovery.js";
 export type { DiscoverySource, CandidateRoot, ResolvedExecutable } from "./mcp-link/discovery.js";
 export { buildBriefing } from "./mcp-link/briefing.js";
+
+export {
+  convertTools,
+  toCapabilitySnapshot,
+  toInjectionResult,
+  findFunctionsByCategory,
+  searchFunctions,
+  UNGROUPED,
+} from "./mcp-link/injection.js";
+export type {
+  McpToolDescriptor,
+  GeneratedFunction,
+  ConversionResult,
+} from "./mcp-link/injection.js";
+
+export { functionSearch } from "./mcp-link/function-search.js";
+export type {
+  FunctionSearchAction,
+  FunctionSearchRequest,
+  FunctionSearchResult,
+} from "./mcp-link/function-search.js";
