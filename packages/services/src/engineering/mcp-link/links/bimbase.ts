@@ -19,6 +19,10 @@ import { BaseMCPLink } from "../base.js";
 import type { DiscoveryOverrides, InjectionResult } from "../types.js";
 import { resolveExecutable, type CandidateRoot, type DiscoverySource } from "../discovery.js";
 import { openMcpSession, type McpSession } from "../session.js";
+import { findProcessesByExecutable } from "../process-discovery.js";
+import { spawn } from "node:child_process";
+import { copyFile, mkdir } from "node:fs/promises";
+import { dirname, join as joinPath } from "node:path";
 
 /** 安装根的特征目录：缺了它就不是 BIMBase 的安装位置。 */
 const FEATURE_PATHS = ["PlantSPythonEnv"];
@@ -27,6 +31,9 @@ const EXE_NAME = "BIMBase.exe";
 
 export class BimBaseLink extends BaseMCPLink {
   private session?: McpSession;
+  private runningPid?: number;
+  private launchedPid?: number;
+  private portResolver?: (pid?: number) => number | undefined;
 
   constructor(host?: string) {
     super({ serverName: "bimbase", host });
@@ -60,7 +67,7 @@ export class BimBaseLink extends BaseMCPLink {
 
     // 未运行：需要拉起进程。此处不猜测端口，交由 MCP 服务启动后回报，
     // 由子类在 connectMcp 中确认。返回 true 表示端口将在握手阶段确定。
-    const project = this.resolveProjectPath(options);
+    const project = await this.resolveProjectPath(options, resolved.path);
     if (project === undefined) {
       return "未能准备可用的工程文件：请先手动打开一个工程，或指定 projectPath。";
     }
@@ -126,33 +133,100 @@ export class BimBaseLink extends BaseMCPLink {
     }
   }
 
-  /** 查找已运行实例的 MCP 端口；未运行返回 undefined。 */
-  private async findRunningInstancePort(_exePath: string): Promise<number | undefined> {
-    // 需要枚举进程并反查其 MCP 端口，依赖平台能力。
-    // 在未接入进程枚举前返回 undefined，走「启动新实例」分支。
+  /**
+   * 查找已运行实例。
+   *
+   * 复用已启动的软件比新起一个更符合用户预期（模型可能已经在里面）。
+   * 端口从实例的 MCP 配置反查；拿不到端口时返回 undefined 走启动分支。
+   */
+  private async findRunningInstancePort(exePath: string): Promise<number | undefined> {
+    const processes = await findProcessesByExecutable(exePath);
+    if (processes.length === 0) return undefined;
+    const first = processes[0];
+    if (!first) return undefined;
+    this.runningPid = first.pid;
+    return this.readMcpPortForPid(first.pid);
+  }
+
+  /**
+   * 从运行实例反查 MCP 端口。
+   *
+   * 逆向上的做法是根据 PID 查软件写入的 MCP 配置文件；这里保留同一思路，
+   * 但具体文件格式随厂商版本变化，无法在无实机的情况下确定。
+   * 因此返回 undefined，由调用方走「启动新实例」并等待端口。
+   */
+  private readMcpPortForPid(_pid: number): number | undefined {
     return undefined;
   }
 
-  /** 解析本次可用的工程文件路径。 */
-  private resolveProjectPath(options: DiscoveryOverrides): string | undefined {
+  /**
+   * 解析本次可用的工程文件路径。
+   *
+   * 优先级：显式路径 > 工作目录下的临时工程（从安装模板复制）。
+   * 显式路径必须是 .p3d；扩展名不对直接返回 undefined，不做猜测替换。
+   */
+  private async resolveProjectPath(
+    options: DiscoveryOverrides,
+    exePath: string,
+  ): Promise<string | undefined> {
     if (options.projectPath) {
       return options.projectPath.toLowerCase().endsWith(".p3d") ? options.projectPath : undefined;
     }
-    // 无显式工程时，需要一个模板工程复制到工作目录。
-    // 模板路径由安装根推导，当前仅做存在性检查。
-    const root = options.workDir;
-    return root;
+
+    const workDir = options.workDir;
+    if (!workDir) return undefined;
+
+    // 模板工程位于安装根的模板目录下；复制一份到工作目录再打开，
+    // 避免直接改到安装目录里的原件。
+    const template = joinPath(dirname(exePath), "PlantSPythonEnv", "..", "Interface", "P3DTemplate", "temp.p3d");
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const target = joinPath(workDir, `agent-${stamp}.p3d`);
+    try {
+      await mkdir(dirname(target), { recursive: true });
+      await copyFile(template, target);
+      return target;
+    } catch {
+      // 模板不存在时不阻塞：让软件自己打开空工程。
+      return workDir;
+    }
   }
 
-  /** 拉起目标进程；成功返回 undefined，失败返回错误文案。 */
-  private async launch(_exePath: string, _projectPath: string): Promise<string | undefined> {
-    // 进程启动依赖平台与激活码校验，待执行器接入后实现。
-    return "BIMBase 启动流程尚未接入执行器，请先手动启动软件后重试连接。";
+  /**
+   * 拉起目标进程。
+   *
+   * 用 detached 让软件独立于本进程存活：关闭 Agent 不应该连带关掉用户
+   * 正在用的建模软件。启动后立刻返回，端口由 waitForPort 轮询。
+   */
+  private async launch(exePath: string, projectPath: string): Promise<string | undefined> {
+    try {
+      const child = spawn(exePath, [projectPath], {
+        detached: true,
+        stdio: "ignore",
+        windowsHide: false,
+      });
+      child.unref();
+      this.launchedPid = child.pid;
+      return undefined;
+    } catch (error) {
+      return `启动 BIMBase 失败：${error instanceof Error ? error.message : String(error)}`;
+    }
   }
 
-  /** 启动后取 MCP 端口。 */
+  /**
+   * 启动后取 MCP 端口。
+   *
+   * 端口由软件在启动时写入自身配置，具体位置随版本变化。
+   * 这里给一个可被调用方覆盖的钩子：子类或配置可注入端口解析器。
+   * 未注入时返回 undefined，让上层给出「已启动但未取得端口」的明确提示，
+   * 而不是假装连上。
+   */
   private async resolveMcpPortAfterLaunch(_exePath: string): Promise<number | undefined> {
-    return undefined;
+    return this.portResolver?.(this.launchedPid);
+  }
+
+  /** 注入端口解析器；便于按实际版本对接。 */
+  setPortResolver(resolver: (pid?: number) => number | undefined): void {
+    this.portResolver = resolver;
   }
 }
 

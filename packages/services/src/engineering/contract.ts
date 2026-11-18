@@ -125,3 +125,6 @@ export {
   startHostBridge,
   bridgeDirName,
 } from "./executor/host-bridge.js";
+
+export { findProcessesByExecutable, normalizePath, samePath, isProcessAlive } from "./mcp-link/process-discovery.js";
+export type { MatchedProcess } from "./mcp-link/process-discovery.js";
