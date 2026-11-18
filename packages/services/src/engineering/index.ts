@@ -118,3 +118,6 @@ export type {
 
 export { diagnose, probePort } from "./mcp-link/diagnostics.js";
 export type { DiagnosticCheck, DiagnosticReport, DiagnoseOptions } from "./mcp-link/diagnostics.js";
+
+export { verifiedRun, extractCriteria } from "./determinism/verified-run.js";
+export type { VerifiedRunRequest, VerifiedRunResult } from "./determinism/verified-run.js";

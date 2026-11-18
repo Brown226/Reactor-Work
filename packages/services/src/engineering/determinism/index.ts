@@ -23,3 +23,6 @@ export type {
 
 export { preflightSpec, describePreflight } from "./preflight.js";
 export { evaluateEvidence, describeVerdict } from "./evidence.js";
+
+export { verifiedRun, extractCriteria } from "./verified-run.js";
+export type { VerifiedRunRequest, VerifiedRunResult } from "./verified-run.js";
