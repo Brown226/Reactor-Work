@@ -90,3 +90,15 @@ export type {
   EngineeringRunRequest,
   EngineeringRunResult,
 } from "./executor/engineering-executor.js";
+
+export {
+  compactMessages,
+  findSafeCutoff,
+  atomicGroupStarts,
+  DEFAULT_TAIL_KEEP,
+} from "./context/compaction.js";
+export type {
+  CompactableMessage,
+  CompactionOptions,
+  CompactionResult,
+} from "./context/compaction.js";
