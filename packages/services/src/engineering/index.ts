@@ -58,3 +58,6 @@ export {
   getBuiltinEngineeringSkill,
 } from "./skills/builtin-skills.js";
 export type { BuiltinSkillSummary } from "./skills/builtin-skills.js";
+
+export { openMcpSession } from "./mcp-link/session.js";
+export type { McpSession, McpSessionOptions } from "./mcp-link/session.js";

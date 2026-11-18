@@ -18,6 +18,7 @@ import { join } from "node:path";
 import { BaseMCPLink } from "../base.js";
 import type { DiscoveryOverrides, InjectionResult } from "../types.js";
 import { resolveExecutable, type CandidateRoot, type DiscoverySource } from "../discovery.js";
+import { openMcpSession, type McpSession } from "../session.js";
 
 /** 安装根的特征目录：缺了它就不是 BIMBase 的安装位置。 */
 const FEATURE_PATHS = ["PlantSPythonEnv"];
@@ -25,6 +26,8 @@ const FEATURE_PATHS = ["PlantSPythonEnv"];
 const EXE_NAME = "BIMBase.exe";
 
 export class BimBaseLink extends BaseMCPLink {
+  private session?: McpSession;
+
   constructor(host?: string) {
     super({ serverName: "bimbase", host });
   }
@@ -74,24 +77,39 @@ export class BimBaseLink extends BaseMCPLink {
     return port;
   }
 
-  protected async connectMcp(_timeoutMs: number): Promise<InjectionResult | string> {
-    // MCP 握手（JSON-RPC over HTTP）与工具/数据结构注入由 Python 执行器侧完成，
-    // 本层只负责建立连接与状态；注入结果由执行器回报后填入。
-    // 当前实现返回空能力快照，待执行器接入后补齐。
-    return {
-      injectedFunctions: [],
-      injectedClasses: [],
-      briefing: "",
-      snapshot: {
-        serverName: this.serverName,
-        categories: [],
-        functionsByCategory: {},
-        dataStructures: [],
-      },
-    };
+  protected async connectMcp(timeoutMs: number): Promise<InjectionResult | string> {
+    if (this.port === undefined) return "尚未确定 MCP 服务端口，无法握手。";
+
+    const session = await openMcpSession({
+      host: this.host,
+      port: this.port,
+      timeoutMs,
+    });
+    if (typeof session === "string") return session;
+
+    let tools;
+    try {
+      tools = await session.listTools();
+    } catch (error) {
+      await session.close();
+      return `已连上 MCP 服务，但拉取工具清单失败：${
+        error instanceof Error ? error.message : String(error)
+      }`;
+    }
+
+    this.session = session;
+    // 转换 Schema → 函数签名，生成简报与能力快照。
+    return this.prepareInjection(this.serverName, tools);
+  }
+
+  /** 取当前 MCP 会话；未连接时为 undefined。供执行器发起实际调用。 */
+  currentSession(): McpSession | undefined {
+    return this.session;
   }
 
   disconnect(): void {
+    void this.session?.close();
+    this.session = undefined;
     this.verifiedExePath = undefined;
   }
 
