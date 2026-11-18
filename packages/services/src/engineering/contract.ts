@@ -102,3 +102,15 @@ export type {
   CompactionOptions,
   CompactionResult,
 } from "./context/compaction.js";
+
+export {
+  classifyTool,
+  decidePermission,
+  describeDecision,
+} from "./permission/permission.js";
+export type {
+  PermissionMode,
+  DangerLevel,
+  PermissionDecision,
+  ToolCallSummary,
+} from "./permission/permission.js";
