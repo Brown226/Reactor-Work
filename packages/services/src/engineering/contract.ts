@@ -74,3 +74,10 @@ export type {
   EvidenceVerdict,
   EvidenceIssue,
 } from "./determinism/index.js";
+
+export {
+  builtinEngineeringSkillsRoot,
+  listBuiltinEngineeringSkills,
+  getBuiltinEngineeringSkill,
+} from "./skills/builtin-skills.js";
+export type { BuiltinSkillSummary } from "./skills/builtin-skills.js";
