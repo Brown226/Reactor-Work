@@ -115,3 +115,6 @@ export type {
   EngineeringToolCall,
   EngineeringToolResult,
 } from "./agent-tools.js";
+
+export { diagnose, probePort } from "./mcp-link/diagnostics.js";
+export type { DiagnosticCheck, DiagnosticReport, DiagnoseOptions } from "./mcp-link/diagnostics.js";
