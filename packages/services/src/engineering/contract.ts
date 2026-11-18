@@ -128,3 +128,13 @@ export {
 
 export { findProcessesByExecutable, normalizePath, samePath, isProcessAlive } from "./mcp-link/process-discovery.js";
 export type { MatchedProcess } from "./mcp-link/process-discovery.js";
+
+export {
+  ENGINEERING_TOOLS,
+  invokeEngineeringTool,
+} from "./agent-tools.js";
+export type {
+  EngineeringTool,
+  EngineeringToolCall,
+  EngineeringToolResult,
+} from "./agent-tools.js";

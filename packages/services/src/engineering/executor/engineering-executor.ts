@@ -17,6 +17,7 @@ import { renderInjectionPreamble, renderInjectionStubs } from "./inject-stubs.js
 import type { PythonRunResult } from "./types.js";
 import { bridgeDirName, renderHostBridge, startHostBridge } from "./host-bridge.js";
 import type { McpSession } from "../mcp-link/session.js";
+import type { FunctionSearchRequest, FunctionSearchResult } from "../mcp-link/function-search.js";
 import { mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 
@@ -74,6 +75,15 @@ export class EngineeringExecutor {
   /** 取连接简报；未连接返回空串。 */
   briefing(server: string): string {
     return getActiveLink(server)?.briefing() ?? "";
+  }
+
+  /** 检索已连接软件的函数；未连接时返回带指引的失败结果。 */
+  searchFunctions(server: string, request: FunctionSearchRequest): FunctionSearchResult {
+    const link = getActiveLink(server);
+    if (!link) {
+      return { ok: false, text: `尚未连接 ${server}，请先调用 connect。` };
+    }
+    return link.searchFunctions(request);
   }
 
   /**
