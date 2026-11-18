@@ -10,12 +10,57 @@
 import type { BaseMCPLink } from "./base.js";
 import type { ConnectResult, DiscoveryOverrides } from "./types.js";
 import { BimBaseLink } from "./links/bimbase.js";
+import { ComSoftwareLink } from "./links/com-software.js";
 
 type LinkFactory = () => BaseMCPLink;
 
-/** 已登记可连接的产品。新增产品在此登记工厂即可。 */
+/**
+ * 已登记可连接的产品。新增产品在此登记工厂即可。
+ *
+ * 两类：MCP 系（bimbase）走 HTTP 握手；COM 系走进程发现 + 本地 API 目录。
+ */
 const FACTORIES: Record<string, LinkFactory> = {
   bimbase: () => new BimBaseLink(),
+
+  sap2000: () =>
+    new ComSoftwareLink({
+      serverName: "sap2000",
+      productName: "SAP2000",
+      exeName: "SAP2000.exe",
+      featurePaths: [],
+      windowsOnly: true,
+      catalog: { id: "sap2000" },
+    }),
+
+  etabs: () =>
+    new ComSoftwareLink({
+      serverName: "etabs",
+      productName: "ETABS",
+      exeName: "ETABS.exe",
+      featurePaths: [],
+      windowsOnly: true,
+      catalog: { id: "etabs" },
+    }),
+
+  autocad: () =>
+    new ComSoftwareLink({
+      serverName: "autocad",
+      productName: "AutoCAD",
+      exeName: "acad.exe",
+      featurePaths: [],
+      windowsOnly: true,
+      catalog: { id: "autocad" },
+    }),
+
+  rhino: () =>
+    new ComSoftwareLink({
+      serverName: "rhino",
+      productName: "Rhino",
+      exeName: "Rhino.exe",
+      featurePaths: [],
+      windowsOnly: true,
+      catalog: { id: "rhino" },
+    }),
 };
 
 const activeLinks = new Map<string, BaseMCPLink>();
