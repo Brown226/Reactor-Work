@@ -11,7 +11,17 @@ export async function checkRemoteTargetSpecs(root = process.cwd()) {
     if (error.code === "ENOENT") return "skipped: private queue absent";
     throw error;
   }
-  const queue = await readFile(resolve(root, "harness/remote/run-all-remote.sh"), "utf8");
+  // [本地定制] harness/remote/ 目录可能只含开源骨架（Dockerfile / README / build.sh），
+  // 而不含实际私有的 run-all-remote.sh 队列——上游把这几个骨架文件带进了开源树，
+  // 但检查只判断「目录是否存在」，于是任何人的推送都会被 ENOENT 挡住。
+  // 这里按「队列脚本是否存在」判断，与目录判断同语义：没有队列就跳过。
+  let queue;
+  try {
+    queue = await readFile(resolve(root, "harness/remote/run-all-remote.sh"), "utf8");
+  } catch (error) {
+    if (error.code === "ENOENT") return "skipped: private queue script absent";
+    throw error;
+  }
   const actual = JSON.parse(
     await readFile(resolve(root, "packages/desktop/scripts/e2e-remote-target-specs.json"), "utf8"),
   );
