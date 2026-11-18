@@ -15,6 +15,10 @@ import type { GeneratedFunction } from "../mcp-link/injection.js";
 import { PythonWorkerPool } from "./python-pool.js";
 import { renderInjectionPreamble, renderInjectionStubs } from "./inject-stubs.js";
 import type { PythonRunResult } from "./types.js";
+import { bridgeDirName, renderHostBridge, startHostBridge } from "./host-bridge.js";
+import type { McpSession } from "../mcp-link/session.js";
+import { mkdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 
 export interface EngineeringRunRequest {
   /** 目标软件的 server name，如 `bimbase`。 */
@@ -92,13 +96,39 @@ export class EngineeringExecutor {
     const functions = this.functions(request.server);
     const preamble = renderInjectionPreamble(functions);
     const stubs = renderInjectionStubs(functions);
-    const composed = [preamble, stubs, request.code].filter(Boolean).join("\n\n");
 
-    const result: PythonRunResult = await this.pool.run({
-      code: composed,
-      key: request.key ?? request.server,
-      timeoutMs: request.timeoutMs,
-    });
+    // 有 MCP 会话时装配宿主桥，让 Python 里的调用能真的回到软件。
+    // 没有会话（COM 系）时桩会抛错——这是对的：COM 调用由技能脚本自己
+    // Dispatch，不走这条桩路径。
+    const link = getActiveLink(request.server) as
+      | { currentSession?: () => McpSession | undefined }
+      | undefined;
+    const session: McpSession | undefined = link?.currentSession?.();
+
+    let bridgeCode = "";
+    let stopBridge: (() => void) | undefined;
+    let bridgeDir: string | undefined;
+
+    if (session) {
+      bridgeDir = bridgeDirName(tmpdir(), request.key ?? request.server);
+      await mkdir(bridgeDir, { recursive: true }).catch(() => undefined);
+      bridgeCode = renderHostBridge(bridgeDir);
+      stopBridge = startHostBridge(bridgeDir, session);
+    }
+
+    const composed = [bridgeCode, preamble, stubs, request.code].filter(Boolean).join("\n\n");
+
+    let result: PythonRunResult;
+    try {
+      result = await this.pool.run({
+        code: composed,
+        key: request.key ?? request.server,
+        timeoutMs: request.timeoutMs,
+      });
+    } finally {
+      stopBridge?.();
+      if (bridgeDir) await rm(bridgeDir, { recursive: true, force: true }).catch(() => undefined);
+    }
 
     return {
       ok: result.ok,

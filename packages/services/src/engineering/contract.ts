@@ -119,3 +119,9 @@ export { ComSoftwareLink } from "./mcp-link/links/com-software.js";
 export type { ComLinkOptions } from "./mcp-link/links/com-software.js";
 export { loadApiCatalogTools, clearApiCatalogCache } from "./mcp-link/api-catalog.js";
 export type { ApiCatalogSpec } from "./mcp-link/api-catalog.js";
+
+export {
+  renderHostBridge,
+  startHostBridge,
+  bridgeDirName,
+} from "./executor/host-bridge.js";
