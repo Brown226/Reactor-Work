@@ -55,3 +55,22 @@ export {
   safeParamName,
   HOST_CALL_ENTRY,
 } from "./executor/inject-stubs.js";
+
+export {
+  REQUIRED_SPEC_FIELDS,
+  preflightSpec,
+  describePreflight,
+  evaluateEvidence,
+  describeVerdict,
+} from "./determinism/index.js";
+export type {
+  RequiredSpecField,
+  AnalysisSpec,
+  PreflightStatus,
+  PreflightIssue,
+  PreflightResult,
+  AcceptanceOperator,
+  AcceptanceCriterion,
+  EvidenceVerdict,
+  EvidenceIssue,
+} from "./determinism/index.js";
