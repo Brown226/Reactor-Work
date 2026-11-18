@@ -19,3 +19,16 @@ export {
 } from "./mcp-link/registry.js";
 
 export { BimBaseLink } from "./mcp-link/links/bimbase.js";
+
+export { PythonWorkerPool } from "./executor/python-pool.js";
+export type {
+  PythonWorkerOptions,
+  PythonRunRequest,
+  PythonRunResult,
+} from "./executor/types.js";
+export {
+  renderInjectionStubs,
+  renderInjectionPreamble,
+  safeParamName,
+  HOST_CALL_ENTRY,
+} from "./executor/inject-stubs.js";

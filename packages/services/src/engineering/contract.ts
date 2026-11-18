@@ -42,3 +42,16 @@ export type {
   FunctionSearchRequest,
   FunctionSearchResult,
 } from "./mcp-link/function-search.js";
+
+export { PythonWorkerPool } from "./executor/python-pool.js";
+export type {
+  PythonWorkerOptions,
+  PythonRunRequest,
+  PythonRunResult,
+} from "./executor/types.js";
+export {
+  renderInjectionStubs,
+  renderInjectionPreamble,
+  safeParamName,
+  HOST_CALL_ENTRY,
+} from "./executor/inject-stubs.js";
