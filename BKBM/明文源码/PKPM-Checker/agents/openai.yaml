@@ -1,0 +1,4 @@
+interface:
+  display_name: "PKPM Checker"
+  short_description: "调用 PKPM 图纸识别校审并展示、批注或导出结果"
+  default_prompt: "Use $pkpm-checker to confirm PKPM checking parameters, run AutoRecDwg for DWG files, inspect log.json, parse CheckList/MulCkdata results, annotate CAD, and open Word report export."
