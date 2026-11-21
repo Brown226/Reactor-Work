@@ -26,7 +26,6 @@ import {
   Stack,
   UserCircle,
   UsersThree,
-  Wrench,
 } from "@phosphor-icons/react";
 import type { Role } from "./types";
 import { Account } from "./pages/Account";
@@ -170,24 +169,9 @@ export const NAV: NavGroup[] = [
         roles: A,
         el: <Agents />,
       },
-      {
-        key: "tools",
-        path: "/tools",
-        title: "工具管理",
-        icon: Wrench,
-        roles: A,
-        el: (
-          <Planned
-            title="工具管理"
-            desc="统一工具目录（内置 + MCP + 连接器 + Agent）作为授权实体；会话类型工具隔离。"
-            phase="第 4 批"
-            items={[
-              { name: "工具目录", note: "office/编码/浏览器/检索 + 扩展源" },
-              { name: "授权", note: "角色×工具 / 部门范围" },
-            ]}
-          />
-        ),
-      },
+      // 「工具管理」（原第 4 批统一工具目录规划页）已于 2026-11-21 移除：MCP 治理平面
+      // 落地后工具治理归「MCP 服务」页（三档策略随 /desktop/policy 下发），统一工具目录
+      // 不再作为独立菜单存在；服务端 /me/nav 已同步去掉该 key（漏一边页面永不显示）。
     ],
   },
   {
