@@ -66,16 +66,23 @@ export abstract class BaseMCPLink {
 
     const started = await this.startMcpServer(options);
     if (typeof started === "string") return started;
-    if (typeof started === "number") this.port = started;
 
-    if (this.port === undefined) {
-      return "已启动目标软件，但未能确定 MCP 服务端口";
-    }
+    // COM 系软件（AutoCAD/SAP2000/ETABS/Rhino）不提供 HTTP 端点，
+    // startMcpServer 以 `true` 表示「无需端口等待」，能力改由本地 API 目录提供。
+    // 原实现只处理 number/string，`true` 会被当成「端口未取到」直接失败，
+    // 导致 COM 系软件在进程已确认可用的前提下仍报「未能确定 MCP 服务端口」。
+    if (started !== true) {
+      this.port = started;
 
-    try {
-      await waitForPort(this.port, MCP_READY_TIMEOUT_MS, this.host);
-    } catch (error) {
-      return error instanceof Error ? error.message : String(error);
+      if (this.port === undefined) {
+        return "已启动目标软件，但未能确定 MCP 服务端口";
+      }
+
+      try {
+        await waitForPort(this.port, MCP_READY_TIMEOUT_MS, this.host);
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error);
+      }
     }
 
     const handshake = await this.connectMcp(HANDSHAKE_TIMEOUT_MS);
