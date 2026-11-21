@@ -16,7 +16,7 @@
 
 | 文件 | 职责 |
 | --- | --- |
-| `base.ts` | `BaseMCPLink` 抽象：`connect` 流程固定为「启动服务 → 等端口 → 握手」，子类只实现 `startMcpServer` 与 `connectMcp` |
+| `base.ts` | `BaseMCPLink` 抽象：`connect` 流程为「启动服务 → (MCP 系) 等端口 → 握手」，子类只实现 `startMcpServer` 与 `connectMcp` |
 | `registry.ts` | 按 server name 管理连接实例，提供 connect/disconnect/isConnected/getActiveLink 等入口 |
 | `discovery.ts` | 安装位置发现：显式路径 > 环境变量 > 上次成功路径 > 自动发现（注册表四路） |
 | `common.ts` | 端口探测、PID 反查端口、等待服务就绪 |
@@ -33,6 +33,7 @@
 
 **错误与状态**
 
+- `startMcpServer` 返回三态：`number` 为已取到的 MCP 端口（继续等就绪并握手）；`true` 为无需端口（COM 系软件，跳过端口等待直接握手）；`string` 为失败文案。
 - 启动失败返回 `string` 错误描述（不抛异常），调用方转告用户。
 - 端口等待超时返回明确文案，包含等待时长与端口号。
 - 连接失败不自动重试；用户处理后再次调用 `connect`。
