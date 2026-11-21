@@ -449,3 +449,12 @@ export {
   KnowledgeRpcCallError,
   KnowledgeUnavailableError,
 } from "./knowledge/knowledgeClient.js";
+
+// ============================================================
+// 工程软件连接层（PKPM/BIMBase、AutoCAD、SAP2000、ETABS、Rhino）
+//
+// 以命名空间导出，避免与主命名空间里同名的通用类型（Contract/Agent 等）冲突。
+// 使用方按 `engineering.connectToServer` / `engineering.EngineeringExecutor` 访问。
+// 能力边界与状态所有权见 specs/engineering-mcp-link.md。
+// ============================================================
+export * as engineering from "./engineering/index.js";
