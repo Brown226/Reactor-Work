@@ -26,7 +26,10 @@ const DISPLAY_NAME_MARKERS = ["BIMBase", "PlantS", "三维工厂结构设计系�
 export function extractExePath(command: string): string | undefined {
   const quoted = command.match(/^"([^"]+\.exe)"/i);
   if (quoted) return quoted[1];
-  const bare = command.match(/^([a-z]:\\[^\s"]*?\.exe)/i);
+  // 无引号但路径含空格：COM 的 LocalServer32 常写成
+  // `C:\Program Files\...\acad.exe /Automation`。这里截到第一个 `.exe` 为止，
+  // 不能用 `[^\s]` 排除空格，否则 Program Files 下的路径只匹配到 `C:\Program`。
+  const bare = command.match(/^([a-z]:\\.+?\.exe)(?=\s|$)/i);
   return bare?.[1];
 }
 
@@ -39,6 +42,7 @@ function rootOf(exePath: string): string {
 interface RegistryApi {
   enumerableKeys(root: string): Promise<string[]>;
   readValue(root: string, name: string): Promise<string | undefined>;
+  readDefaultValue(root: string): Promise<string | undefined>;
 }
 
 /** 载入平台注册表能力；不可用时返回 undefined。 */
@@ -72,6 +76,12 @@ async function loadRegistryApi(): Promise<RegistryApi | undefined> {
       async readValue(root: string, name: string): Promise<string | undefined> {
         const output = await run(["query", root, "/v", name]);
         const match = output.match(new RegExp(`${name}\\s+REG_\\w+\\s+(.+)`, "i"));
+        return match?.[1]?.trim();
+      },
+      async readDefaultValue(root: string): Promise<string | undefined> {
+        // reg query <key> /ve 输出形如 `    (默认)    REG_SZ    <值>`。
+        const output = await run(["query", root, "/ve"]);
+        const match = output.match(/REG_\w+\s+(.+)/i);
         return match?.[1]?.trim();
       },
     };
@@ -133,4 +143,36 @@ export async function readRegistryRoots(): Promise<CandidateRoot[]> {
   }
 
   return roots;
+}
+
+/**
+ * 判断 COM ProgID 是否已在本机注册。
+ *
+ * 只查 `<progId>\CLSID` 是否存在：注册了 CLSID 才可能被 Dispatch 创建。
+ * 读注册表失败按未注册处理——调用方据此走 exe 定位或给出明确错误。
+ */
+export async function isComProgIdRegistered(progId: string): Promise<boolean> {
+  if (process.platform !== "win32") return false;
+  const api = await loadRegistryApi();
+  if (!api) return false;
+  const clsid = await api.readDefaultValue(`HKCR\\${progId}\\CLSID`);
+  return Boolean(clsid);
+}
+
+/**
+ * 从 COM ProgID 反查可执行文件。
+ *
+ * 路径：`<progId>\CLSID` 取 CLSID，再读 `CLSID\<clsid>\LocalServer32` 的命令行。
+ * 只有进程外服务器（LocalServer32）带 exe；InprocServer32（如 WPS 的 Office
+ * 兼容层、Excel 的自动化代理）拿不到 exe，此时返回 undefined，由调用方按
+ * 「已注册即可连接」处理——Office 这类软件 Dispatch 时会自行拉起进程。
+ */
+export async function resolveComProgIdExe(progId: string): Promise<string | undefined> {
+  if (process.platform !== "win32") return undefined;
+  const api = await loadRegistryApi();
+  if (!api) return undefined;
+  const clsid = await api.readDefaultValue(`HKCR\\${progId}\\CLSID`);
+  if (!clsid) return undefined;
+  const command = await api.readDefaultValue(`HKCR\\CLSID\\${clsid}\\LocalServer32`);
+  return command ? extractExePath(command) : undefined;
 }

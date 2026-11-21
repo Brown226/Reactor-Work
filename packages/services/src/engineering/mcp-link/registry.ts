@@ -34,6 +34,8 @@ const FACTORIES: Record<string, LinkFactory> = {
       exeName: "SAP2000.exe",
       featurePaths: [],
       windowsOnly: true,
+      // 厂商公开的 OAPI ProgID；本机未装 SAP2000，未验证。
+      progId: "CSI.SAP2000.API.SapObject",
       catalog: { id: "sap2000" },
     }),
 
@@ -44,6 +46,8 @@ const FACTORIES: Record<string, LinkFactory> = {
       exeName: "ETABS.exe",
       featurePaths: [],
       windowsOnly: true,
+      // 厂商公开的 OAPI ProgID；本机未装 ETABS，未验证。
+      progId: "CSI.ETABS.API.ETABSObject",
       catalog: { id: "etabs" },
     }),
 
@@ -54,6 +58,8 @@ const FACTORIES: Record<string, LinkFactory> = {
       exeName: "acad.exe",
       featurePaths: [],
       windowsOnly: true,
+      // 本机 AutoCAD 2021 实测：ProgID 已注册，LocalServer32 可取到 acad.exe。
+      progId: "AutoCAD.Application",
       catalog: { id: "autocad" },
     }),
 
@@ -64,6 +70,8 @@ const FACTORIES: Record<string, LinkFactory> = {
       exeName: "Rhino.exe",
       featurePaths: [],
       windowsOnly: true,
+      // 官方公开 ProgID；本机未装 Rhino，未验证。
+      progId: "Rhino.Application",
       catalog: { id: "rhino" },
     }),
 };

@@ -20,6 +20,7 @@ import type { DiscoveryOverrides, InjectionResult } from "../types.js";
 import type { McpToolDescriptor } from "../injection.js";
 import { resolveExecutable, type CandidateRoot } from "../discovery.js";
 import { loadApiCatalogTools, type ApiCatalogSpec } from "../api-catalog.js";
+import { isComProgIdRegistered, resolveComProgIdExe } from "../win-registry.js";
 
 export interface ComLinkOptions {
   serverName: string;
@@ -32,6 +33,10 @@ export interface ComLinkOptions {
   /** 环境变量名。 */
   exeEnvVars?: string[];
   rootEnvVars?: string[];
+  /** 注册表候选安装根提供者；不提供时候选根只剩环境变量与上次成功路径。 */
+  registryRoots?: () => Promise<CandidateRoot[]>;
+  /** COM ProgID：注册表已注册时视为可连接，不强制先定位 exe。 */
+  progId?: string;
   /** 本地 API 目录的定位参数。 */
   catalog: ApiCatalogSpec;
   /** 平台限制：仅 Windows 可用的子类返回 false 时给出明确提示。 */
@@ -49,36 +54,49 @@ export class ComSoftwareLink extends BaseMCPLink {
     this.options = options;
   }
 
-  protected async startMcpServer(_options: DiscoveryOverrides): Promise<number | true | string> {
+  protected async startMcpServer(options: DiscoveryOverrides): Promise<number | true | string> {
     if (this.options.windowsOnly && process.platform !== "win32") {
       return `${this.options.productName} 的 COM 接口仅在 Windows 上可用。`;
     }
 
-    const resolved = await resolveExecutable(_options, {
+    // 1. 安装位置发现：显式路径 > 环境变量 > 上次成功路径 > 注册表候选根。
+    const resolved = await resolveExecutable(options, {
       productName: this.options.productName,
       exeName: this.options.exeName,
       featurePaths: this.options.featurePaths,
       exeEnvVars: this.options.exeEnvVars,
       rootEnvVars: this.options.rootEnvVars,
+      registryRoots: this.options.registryRoots,
       verifiedPath: () => this.verifiedExePath,
     });
 
-    if (!resolved) {
-      return (
-        `未能自动定位 ${this.options.productName}。请先启动软件，` +
-        `或在连接时传入 exePath。`
-      );
+    if (resolved) {
+      // COM 系不需要等端口：进程在运行即可由 Python 侧 Dispatch。
+      // 这里只校验可执行文件存在，避免把「装了但没启动」误判成可连接。
+      if (!existsSync(resolved.path)) {
+        return `${this.options.productName} 的可执行文件不存在：${resolved.path}`;
+      }
+      this.verifiedExePath = resolved.path;
+      // 返回 true 表示无需端口等待；握手阶段直接载入 API 目录。
+      return true;
     }
 
-    // COM 系不需要等端口：进程在运行即可由 Python 侧 Dispatch。
-    // 这里只校验可执行文件存在，避免把「装了但没启动」误判成可连接。
-    if (!existsSync(resolved.path)) {
-      return `${this.options.productName} 的可执行文件不存在：${resolved.path}`;
+    // 2. 注册表兜底：featurePaths 为空时候选根恒为空，自动发现必然失败。
+    //    但 COM 软件只要 ProgID 已注册，Python 侧 Dispatch 就能拉起进程，
+    //    不必先定位 exe。Office 兼容层（WPS）走 InprocServer32，本就没有 exe。
+    if (this.options.progId) {
+      const registered = await isComProgIdRegistered(this.options.progId);
+      if (registered) {
+        // exe 仅用于诊断展示，取不到不影响连接。
+        this.verifiedExePath = await resolveComProgIdExe(this.options.progId);
+        return true;
+      }
     }
 
-    this.verifiedExePath = resolved.path;
-    // 返回 true 表示无需端口等待；握手阶段直接载入 API 目录。
-    return true;
+    return (
+      `未能自动定位 ${this.options.productName}。请先启动软件，` +
+      `或在连接时传入 exePath。`
+    );
   }
 
   protected async connectMcp(_timeoutMs: number): Promise<InjectionResult | string> {
