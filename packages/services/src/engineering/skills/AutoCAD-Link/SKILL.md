@@ -31,40 +31,34 @@ AutoCAD 刚启动时可能短暂拒绝 COM 调用（`RPC_E_CALL_REJECTED`／「�
 
 只用 `Autocad` 连接，不直接调用 `GetActiveObject`、`CreateObject` 或加载固定产品的类型库。
 
-默认优先连接已运行实例。用户未明确指定产品时，省略 `cad_type`，不得猜测预填。
-
-多款 CAD 同时运行时，将会提示可连接的选项，列出候选并请用户选择。
-
-当没有在运行的CAD实例，且 `create_if_not_exists=True` 时，才会创建（未指定 `cad_type` 时按 `.dwg` 关联创建，明确指定 `cad_type` 时按指定创建）。
-
-保留并复用仍有效的 `acad`。浩辰由脚本创建后，后续可能无法通过 COM 重新发现。
+优先复用已运行实例；没有运行实例且 `create_if_not_exists=True` 时才创建。
 
 ```python
 import pyautocad
 from pyautocad import Autocad, APoint
 
-try:
-    _ = acad.app.Version
-    acad.connection.selected_by = "reused"
-    acad.connection.was_created = False
-except Exception:
-    acad = Autocad(create_if_not_exists=True, visible=True)
-connection = acad.connection
+# 已运行则直接连上；未运行且 create_if_not_exists=True 时自动启动。
+acad = Autocad(create_if_not_exists=True, visible=True)
+app = acad.app
 print(
-    f"已连接 {connection.display_name}: {connection.progid}; "
-    f"依据={connection.selected_by}; 新建={connection.was_created}"
+    f"已连接 AutoCAD {app.Version}；"
+    f"文档数={app.Documents.Count}；当前={app.ActiveDocument.Name}"
 )
 ```
 
-异常：`CadSelectionRequiredError` 展示可连接、暂时忙碌和当前不可连接的候选，请用户明确选择 `cad_type`；`CadApplicationBusyError` 表示 CAD 暂时忙碌，请用户关闭模态对话框或等待当前命令完成后重试，不要关闭或重复启动 CAD；`CadRunningButUnavailableError` 应优先检查 Python 与 CAD 的运行权限是否一致，不得重复启动；`DwgAssociationError` 请用户指定产品。`CadApplicationActivationError`、`CadApplicationInitializationError` 或 `CadApplicationVisibilityError` 表示创建后可能已有 CAD 进程残留，不得再次尝试启动或自动调用 `Quit()`，应展示原始错误并请用户按提示结束相关进程后重试。
+复用同一 `acad` 对象，不要每次重复构造。
 
-需要枚举常量时，连接后使用当前实例的类型库：
+**当前执行环境只支持 AutoCAD。** 社区版 pyautocad 把 `AutoCAD.Application` 写死在连接逻辑里，没有 `cad_type`/`progid` 参数，也没有 `acad.connection`、`acad.constants`、`CadSelectionRequiredError` 等定制接口。需要浩辰（GstarCAD）、中望（ZWCAD）多产品适配时，必须使用定制版 pyautocad；在它补齐之前，不要声称支持这些产品。
 
-```python
-constants = acad.constants
-```
+连接异常处理：
 
-不要导入 `comtypes.gen.AutoCAD`。全局 `ACAD` 仅兼容单连接旧代码；多连接时用 `acad.constants`。类型库失败时不得借用其他产品的类型库。
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| `comtypes.COMError`，消息含「被调用方拒绝接收呼叫」/ `RPC_E_CALL_REJECTED` | CAD 正在启动，或弹着模态对话框 | 等待后重试，**不要重复启动** CAD |
+| `WindowsError` / `OSError`，且 `create_if_not_exists=False` | 没有运行实例 | 改为 `True`，或先启动 CAD 再连 |
+| `AttributeError: ... has no attribute 'connection'` | 用了定制版接口 | 按本文档的社区版写法改 |
+
+创建失败后可能已有 CAD 进程残留：不要再次尝试启动，也不要自动调用 `Quit()`，展示原始错误并请用户自行结束进程。
 
 ## 核心 API 速查
 
@@ -211,7 +205,8 @@ obj.color = 1  # CAD 颜色索引号
 操作完成后刷新视图，确保用户能看到结果：
 
 ```python
-acad.app.ActiveDocument.Regen(acad.constants.acAllViewports)
+# 1 = acAllViewports，重生成全部视口（社区版没有 acad.constants，直接用枚举值）
+acad.app.ActiveDocument.Regen(1)
 # 或缩放到全图
 acad.app.ZoomExtents()
 ```
