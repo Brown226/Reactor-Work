@@ -12,7 +12,8 @@ import { existsSync } from "node:fs";
 import { isPortOpen } from "./common.js";
 import { candidateRoots, isValidRoot } from "./discovery.js";
 import { findProcessesByExecutable } from "./process-discovery.js";
-import { getConnectedServers, listSupportedServers } from "./registry.js";
+import { getConnectedServers, listComServerSpecs, listSupportedServers } from "./registry.js";
+import { isComProgIdRegistered, resolveComProgIdExe } from "./win-registry.js";
 
 /** 单项检查结果。 */
 export interface DiagnosticCheck {
@@ -58,6 +59,15 @@ export async function diagnose(options: DiagnoseOptions = {}): Promise<Diagnosti
 
   if (options.server === "bimbase") {
     checks.push(...(await bimbaseChecks()));
+  } else if (options.server) {
+    const spec = listComServerSpecs().find((item) => item.serverName === options.server);
+    if (spec) checks.push(await comServerCheck(spec));
+  } else {
+    // 未指定目标：逐个核对已登记的 COM 系软件是否已安装。
+    // 这是「界面上能看到装了什么」的数据来源，不需要建立连接。
+    for (const spec of listComServerSpecs()) {
+      checks.push(await comServerCheck(spec));
+    }
   }
 
   return {
@@ -111,6 +121,37 @@ function explicitExeCheck(exePath: string): DiagnosticCheck {
     ok: exists,
     detail: exists ? `存在：${exePath}` : `不存在：${exePath}`,
     suggestion: exists ? undefined : "请确认路径与文件名，注意 Windows 路径分隔符。",
+  };
+}
+
+/**
+ * 单个 COM 系软件的安装检查。
+ *
+ * 判据是 ProgID 是否已注册：注册了才可能被 Dispatch 创建。exe 路径只用于
+ * 展示；InprocServer32 型服务器（如 WPS 的 Office 兼容层）本就没有独立 exe，
+ * 取不到是正常现象，不能据此判定「未安装」。
+ */
+async function comServerCheck(spec: {
+  serverName: string;
+  productName: string;
+  progId: string;
+}): Promise<DiagnosticCheck> {
+  const registered = await isComProgIdRegistered(spec.progId);
+  if (!registered) {
+    return {
+      name: `COM 注册 · ${spec.productName}`,
+      ok: false,
+      detail: `ProgID ${spec.progId} 未注册，未检测到安装。`,
+      suggestion: `安装 ${spec.productName} 后重试；若已安装，确认其 COM 组件已注册。`,
+    };
+  }
+  const exe = await resolveComProgIdExe(spec.progId);
+  return {
+    name: `COM 注册 · ${spec.productName}`,
+    ok: true,
+    detail: exe
+      ? `ProgID ${spec.progId} 已注册，可执行文件 ${exe}`
+      : `ProgID ${spec.progId} 已注册（进程内服务器，无独立 exe，Dispatch 时自动启动）。`,
   };
 }
 

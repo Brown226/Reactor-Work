@@ -14,6 +14,52 @@ import { ComSoftwareLink } from "./links/com-software.js";
 
 type LinkFactory = () => BaseMCPLink;
 
+/** COM 系软件的连接配置；工厂与诊断共用，避免两处漂移。 */
+export interface ComServerSpec {
+  productName: string;
+  exeName: string;
+  progId: string;
+  catalogId: string;
+}
+
+/**
+ * 已登记的 COM 系软件。
+ *
+ * ProgID 用于注册表判断「是否已安装」：autocad 经本机 2021 实测；
+ * sap2000 / etabs / rhino 取自厂商公开文档，本机未安装，未验证。
+ */
+export const COM_SERVER_SPECS: Record<string, ComServerSpec> = {
+  sap2000: {
+    productName: "SAP2000",
+    exeName: "SAP2000.exe",
+    progId: "CSI.SAP2000.API.SapObject",
+    catalogId: "sap2000",
+  },
+  etabs: {
+    productName: "ETABS",
+    exeName: "ETABS.exe",
+    progId: "CSI.ETABS.API.ETABSObject",
+    catalogId: "etabs",
+  },
+  autocad: {
+    productName: "AutoCAD",
+    exeName: "acad.exe",
+    progId: "AutoCAD.Application",
+    catalogId: "autocad",
+  },
+  rhino: {
+    productName: "Rhino",
+    exeName: "Rhino.exe",
+    progId: "Rhino.Application",
+    catalogId: "rhino",
+  },
+};
+
+/** 列出全部 COM 系配置（含 serverName），供诊断遍历。 */
+export function listComServerSpecs(): Array<{ serverName: string } & ComServerSpec> {
+  return Object.entries(COM_SERVER_SPECS).map(([serverName, spec]) => ({ serverName, ...spec }));
+}
+
 /**
  * 已登记可连接的产品。新增产品在此登记工厂即可。
  *
@@ -27,53 +73,21 @@ const FACTORIES: Record<string, LinkFactory> = {
   // 不登记会让技能第一步直接报「不支持的服务」。
   pkpmmcp: () => new BimBaseLink({ serverName: "pkpmmcp" }),
 
-  sap2000: () =>
-    new ComSoftwareLink({
-      serverName: "sap2000",
-      productName: "SAP2000",
-      exeName: "SAP2000.exe",
-      featurePaths: [],
-      windowsOnly: true,
-      // 厂商公开的 OAPI ProgID；本机未装 SAP2000，未验证。
-      progId: "CSI.SAP2000.API.SapObject",
-      catalog: { id: "sap2000" },
-    }),
-
-  etabs: () =>
-    new ComSoftwareLink({
-      serverName: "etabs",
-      productName: "ETABS",
-      exeName: "ETABS.exe",
-      featurePaths: [],
-      windowsOnly: true,
-      // 厂商公开的 OAPI ProgID；本机未装 ETABS，未验证。
-      progId: "CSI.ETABS.API.ETABSObject",
-      catalog: { id: "etabs" },
-    }),
-
-  autocad: () =>
-    new ComSoftwareLink({
-      serverName: "autocad",
-      productName: "AutoCAD",
-      exeName: "acad.exe",
-      featurePaths: [],
-      windowsOnly: true,
-      // 本机 AutoCAD 2021 实测：ProgID 已注册，LocalServer32 可取到 acad.exe。
-      progId: "AutoCAD.Application",
-      catalog: { id: "autocad" },
-    }),
-
-  rhino: () =>
-    new ComSoftwareLink({
-      serverName: "rhino",
-      productName: "Rhino",
-      exeName: "Rhino.exe",
-      featurePaths: [],
-      windowsOnly: true,
-      // 官方公开 ProgID；本机未装 Rhino，未验证。
-      progId: "Rhino.Application",
-      catalog: { id: "rhino" },
-    }),
+  ...Object.fromEntries(
+    Object.entries(COM_SERVER_SPECS).map(([serverName, spec]) => [
+      serverName,
+      () =>
+        new ComSoftwareLink({
+          serverName,
+          productName: spec.productName,
+          exeName: spec.exeName,
+          featurePaths: [],
+          windowsOnly: true,
+          progId: spec.progId,
+          catalog: { id: spec.catalogId },
+        }),
+    ]),
+  ),
 };
 
 const activeLinks = new Map<string, BaseMCPLink>();
