@@ -18,9 +18,16 @@ import { fileURLToPath } from "node:url";
 /** 当前文件所在目录（编译后仍在同一相对位置）。 */
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-/** 内置工程技能根目录。 */
+/**
+ * 内置工程技能根目录。
+ *
+ * Bugfix 原因：本文件自身就在 `engineering/skills/` 下，技能目录（`PKPM-Link`、
+ * `Abaqus-Link` …）是 HERE 的直接子目录。此前再拼一层 `skills` 得到
+ * `engineering/skills/skills`，该路径不存在，导致 22 份技能一份都枚举不到。
+ * 修复依据：`listBuiltinEngineeringSkills()` 实跑返回 0 条，而 HERE 下确有 22 个目录。
+ */
 export function builtinEngineeringSkillsRoot(): string {
-  return join(HERE, "skills");
+  return HERE;
 }
 
 /** 一份内置技能的概要。 */

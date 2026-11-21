@@ -83,7 +83,19 @@ export class ComSoftwareLink extends BaseMCPLink {
 
   protected async connectMcp(_timeoutMs: number): Promise<InjectionResult | string> {
     // COM 系没有运行时 tools/list，能力来自本地 API 目录。
+    // 目录缺失不算连接失败：脚本仍可用 win32com 直接 Dispatch，
+    // 只是 function_search 查不到函数清单。这里把这件事说清楚。
     const tools: McpToolDescriptor[] = await loadApiCatalogTools(this.options.catalog);
+    if (tools.length === 0) {
+      const result = this.prepareInjection(this.serverName, []);
+      return {
+        ...result,
+        briefing:
+          `已连接 ${this.options.productName}（COM）。\n` +
+          "未找到本地 API 目录，function_search 查不到函数清单。\n" +
+          `脚本里可直接用 win32com.client.Dispatch 调用 ${this.options.productName} 的 COM 接口。`,
+      };
+    }
     return this.prepareInjection(this.serverName, tools);
   }
 

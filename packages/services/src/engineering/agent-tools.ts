@@ -16,6 +16,8 @@ import { decidePermission, describeDecision } from "./permission/permission.js";
 import type { PermissionMode } from "./permission/permission.js";
 import type { EngineeringExecutor } from "./executor/engineering-executor.js";
 import type { FunctionSearchAction } from "./mcp-link/function-search.js";
+import { evaluateEvidence, describeVerdict } from "./determinism/index.js";
+import type { AcceptanceCriterion } from "./determinism/index.js";
 
 /** 一个可暴露给 Agent 的工具。 */
 export interface EngineeringTool {
@@ -193,7 +195,6 @@ function searchTool(
 }
 
 function evaluateTool(args: Record<string, unknown>): EngineeringToolResult {
-  // 委托给确定性模块，这里只做入参形状检查，避免重复实现判定逻辑。
   const criteria = Array.isArray(args.criteria) ? args.criteria : undefined;
   const evidence =
     args.evidence && typeof args.evidence === "object"
@@ -202,11 +203,15 @@ function evaluateTool(args: Record<string, unknown>): EngineeringToolResult {
   if (!criteria || !evidence) {
     return { ok: false, content: "缺少 criteria 或 evidence 参数。" };
   }
-  // 实际判定由上层调用 determinism 模块；这里返回已接收，避免类型循环。
-  return {
-    ok: true,
-    content: `已接收 ${criteria.length} 条验收标准与 ${Object.keys(evidence).length} 项实测值。`,
-  };
+
+  // Bugfix 原因：此前这里只回「已接收 N 条标准」，从不真正判定，
+  // Agent 拿到的是成功而不是门禁结论 —— 直接违背「未通过只能报告未验证」。
+  // 修复依据：determinism/evidence.ts 已实现判定逻辑，接上即可。
+  const verdict = evaluateEvidence(
+    criteria as AcceptanceCriterion[],
+    evidence as Record<string, number>,
+  );
+  return { ok: verdict.passed, content: describeVerdict(verdict) };
 }
 
 function readString(value: unknown): string | undefined {

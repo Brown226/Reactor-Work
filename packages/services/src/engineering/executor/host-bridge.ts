@@ -35,6 +35,11 @@ const CALL_TIMEOUT_MS = 120_000;
  *
  * 与宿主通过临时目录交换文件：写请求 → 轮询响应 → 读结果。
  * 用文件而不是 stdin/stdout，是因为 stdout 要留给用户脚本的 print。
+ *
+ * 两个入口：
+ *   - `__zcode_mcp_call__(name, args)`：调用 MCP 工具（注入桩的函数体用它）
+ *   - `__zcode_bridge_call__(op, payload)`：调用宿主侧的工程环境操作
+ *     （connect / is_connected / list_connected / function_search）
  */
 export function renderHostBridge(bridgeDir: string): string {
   return `
@@ -42,47 +47,72 @@ import json as _json, os as _os, time as _time, uuid as _uuid
 
 _ZCODE_BRIDGE_DIR = ${JSON.stringify(bridgeDir)}
 
-def __zcode_mcp_call__(name, args):
-    """调用宿主注册的 MCP 工具，同步等待结果。"""
+def __zcode_bridge_call__(op, payload=None):
+    """向宿主发起一次工程环境操作，同步等待结果。"""
     token = _uuid.uuid4().hex
     req_path = _os.path.join(_ZCODE_BRIDGE_DIR, token + "${REQUEST_SUFFIX}")
     res_path = _os.path.join(_ZCODE_BRIDGE_DIR, token + "${RESPONSE_SUFFIX}")
     with open(req_path, "w", encoding="utf-8") as f:
-        _json.dump({"tool": name, "args": args}, f, ensure_ascii=False)
+        _json.dump({"op": op, "payload": payload or {}}, f, ensure_ascii=False)
     deadline = _time.time() + ${Math.floor(CALL_TIMEOUT_MS / 1000)}
     while _time.time() < deadline:
         if _os.path.exists(res_path):
             with open(res_path, "r", encoding="utf-8") as f:
-                payload = _json.load(f)
+                payload_in = _json.load(f)
             try:
                 _os.remove(res_path)
             except OSError:
                 pass
-            if payload.get("ok"):
-                return payload.get("result")
-            raise RuntimeError(payload.get("error") or "MCP 调用失败")
+            if payload_in.get("ok"):
+                return payload_in.get("result")
+            raise RuntimeError(payload_in.get("error") or ("操作失败：" + op))
         _time.sleep(${POLL_INTERVAL_MS / 1000})
-    raise TimeoutError("MCP 调用超时：" + name)
+    raise TimeoutError("宿主操作超时：" + op)
+
+def __zcode_mcp_call__(name, args):
+    """调用宿主注册的 MCP 工具，同步等待结果。"""
+    return __zcode_bridge_call__("mcp_tool", {"tool": name, "args": args})
 `.trim();
 }
 
 /** 一次待处理的调用请求。 */
 interface BridgeRequest {
-  tool: string;
-  args: Record<string, unknown>;
+  /** 操作类型；缺省按 mcp_tool 处理，兼容旧请求形状。 */
+  op?: string;
+  /** mcp_tool 的参数。 */
+  tool?: string;
+  args?: Record<string, unknown>;
+  /** 其它操作的参数。 */
+  payload?: Record<string, unknown>;
+}
+
+/** 宿主侧可响应的操作。 */
+export interface BridgeHandlers {
+  /** 调用 MCP 工具。 */
+  mcpTool: (name: string, args: Record<string, unknown>) => Promise<unknown>;
+  /** 工程环境操作；未提供时返回明确错误。 */
+  engineering?: (op: string, payload: Record<string, unknown>) => Promise<unknown>;
 }
 
 /**
- * 轮询桥接目录，把 Python 发起的调用转发到 MCP 会话。
+ * 轮询桥接目录，把 Python 发起的调用转发到宿主。
  *
  * 返回一个停止函数。调用方在 Python 执行结束后必须停止轮询，
  * 否则会一直占着目录。
+ *
+ * `handlers` 缺省时退化为「只支持 mcp_tool」，保持旧调用点不用改。
  */
 export function startHostBridge(
   bridgeDir: string,
-  session: McpSession,
+  handlers: BridgeHandlers | McpSession,
   options: { onError?: (error: unknown) => void } = {},
 ): () => void {
+  const resolved: BridgeHandlers = isMcpSession(handlers)
+    ? {
+        mcpTool: (name, args) => handlers.callTool(name, args),
+      }
+    : handlers;
+
   let stopped = false;
   let timer: NodeJS.Timeout | undefined;
 
@@ -107,17 +137,7 @@ export function startHostBridge(
         // 先删请求，避免同一请求被处理两次。
         await rm(requestPath, { force: true }).catch(() => undefined);
 
-        let payload: { ok: boolean; result?: unknown; error?: string };
-        try {
-          const result = await session.callTool(request.tool, request.args ?? {});
-          payload = { ok: true, result };
-        } catch (error) {
-          payload = {
-            ok: false,
-            error: error instanceof Error ? error.message : String(error),
-          };
-        }
-
+        const payload = await dispatch(resolved, request);
         await writeFile(responsePath, JSON.stringify(payload), "utf8").catch(() => undefined);
       }
     } catch (error) {
@@ -132,6 +152,33 @@ export function startHostBridge(
     stopped = true;
     if (timer) clearTimeout(timer);
   };
+}
+
+/** 分发一次桥接请求；所有失败都转成 error 字段，不抛。 */
+async function dispatch(
+  handlers: BridgeHandlers,
+  request: BridgeRequest,
+): Promise<{ ok: boolean; result?: unknown; error?: string }> {
+  const op = request.op ?? "mcp_tool";
+  try {
+    if (op === "mcp_tool") {
+      const tool = request.tool;
+      if (!tool) return { ok: false, error: "mcp_tool 请求缺少 tool 字段。" };
+      return { ok: true, result: await handlers.mcpTool(tool, request.args ?? {}) };
+    }
+
+    if (!handlers.engineering) {
+      return { ok: false, error: `宿主未提供工程操作支持（op=${op}）。` };
+    }
+    return { ok: true, result: await handlers.engineering(op, request.payload ?? {}) };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+/** 判断传入的是 McpSession 还是完整 handlers。 */
+function isMcpSession(value: BridgeHandlers | McpSession): value is McpSession {
+  return typeof (value as McpSession).callTool === "function";
 }
 
 /** 生成一个稳定的桥接目录名（按 key 区分，避免并发串台）。 */

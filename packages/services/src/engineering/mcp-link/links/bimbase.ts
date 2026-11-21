@@ -35,8 +35,8 @@ export class BimBaseLink extends BaseMCPLink {
   private launchedPid?: number;
   private portResolver?: (pid?: number) => number | undefined;
 
-  constructor(host?: string) {
-    super({ serverName: "bimbase", host });
+  constructor(options: { serverName?: string; host?: string } = {}) {
+    super({ serverName: options.serverName ?? "bimbase", host: options.host });
   }
 
   protected async startMcpServer(options: DiscoveryOverrides): Promise<number | true | string> {

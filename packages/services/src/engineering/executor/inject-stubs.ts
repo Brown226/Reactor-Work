@@ -86,4 +86,51 @@ export function renderInjectionPreamble(functions: GeneratedFunction[]): string 
   ].join("\n");
 }
 
+/**
+ * 生成工程环境的辅助函数块：`connect_to_server` / `is_server_connected` /
+ * `function_search`。
+ *
+ * 这三个是技能正文里直接调用的入口，但它们是**普通函数**，不是 MCP 工具，
+ * 所以不会出现在 tools/list 里，必须由宿主注入。此前只有 MCP 工具桩被注入，
+ * `PKPM-Link/SKILL.md` 第一步的 `connect_to_server("pkpmmcp")` 和
+ * `function_search(...)` 在脚本里都是 NameError。
+ *
+ * 实现走宿主桥：`__zcode_bridge_call__(op, payload)` 由宿主按 op 分发到
+ * registry / function-search，Python 侧只做参数整形与结果美化。
+ *
+ * @param serverName 当前连接的 server，作为 connect_to_server 的缺省目标
+ */
+export function renderEngineeringHelpers(serverName: string): string {
+  return `
+# ── 工程环境辅助函数（直接调用，不要 import）─────────────────────
+_DEFAULT_SERVER = ${JSON.stringify(serverName)}
+
+def connect_to_server(name=None, work_dir=None, cmd_args=None):
+    """连接工程软件。返回 True 表示成功，返回字符串表示错误原因。"""
+    target = name or _DEFAULT_SERVER
+    return __zcode_bridge_call__("connect", {
+        "server": target,
+        "workDir": work_dir,
+        "cmdArgs": cmd_args,
+    })
+
+def is_server_connected(name=None):
+    """判断指定软件当前是否已连接。"""
+    return __zcode_bridge_call__("is_connected", {"server": name or _DEFAULT_SERVER})
+
+def list_connected_servers():
+    """列出当前已连接的软件。"""
+    return __zcode_bridge_call__("list_connected", {})
+
+def function_search(action, func_type=None, func_names=None):
+    """检索已连接软件的函数。action: GetType / GetName / GetDescription / GetClass。"""
+    return __zcode_bridge_call__("function_search", {
+        "server": _DEFAULT_SERVER,
+        "action": action,
+        "funcType": func_type,
+        "funcNames": func_names,
+    })
+`.trim();
+}
+
 export { HOST_CALL_ENTRY, safeParamName };

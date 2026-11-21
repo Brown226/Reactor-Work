@@ -22,6 +22,11 @@ type LinkFactory = () => BaseMCPLink;
 const FACTORIES: Record<string, LinkFactory> = {
   bimbase: () => new BimBaseLink(),
 
+  // PKPM 的 MCP 服务名。技能正文全程用 `connect_to_server("pkpmmcp")`，
+  // 与 BIMBase 是同一实现（PKPM 建模内核即 BIMBase/PlantS）。
+  // 不登记会让技能第一步直接报「不支持的服务」。
+  pkpmmcp: () => new BimBaseLink({ serverName: "pkpmmcp" }),
+
   sap2000: () =>
     new ComSoftwareLink({
       serverName: "sap2000",

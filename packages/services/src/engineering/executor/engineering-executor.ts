@@ -10,10 +10,15 @@
  */
 
 import type { ConnectResult, DiscoveryOverrides } from "../mcp-link/types.js";
-import { getActiveLink, connectToServer } from "../mcp-link/registry.js";
+import { getActiveLink, connectToServer, getConnectedServers, isServerConnected } from "../mcp-link/registry.js";
 import type { GeneratedFunction } from "../mcp-link/injection.js";
+import type { FunctionSearchAction } from "../mcp-link/function-search.js";
 import { PythonWorkerPool } from "./python-pool.js";
-import { renderInjectionPreamble, renderInjectionStubs } from "./inject-stubs.js";
+import {
+  renderEngineeringHelpers,
+  renderInjectionPreamble,
+  renderInjectionStubs,
+} from "./inject-stubs.js";
 import type { PythonRunResult } from "./types.js";
 import { bridgeDirName, renderHostBridge, startHostBridge } from "./host-bridge.js";
 import type { McpSession } from "../mcp-link/session.js";
@@ -106,27 +111,38 @@ export class EngineeringExecutor {
     const functions = this.functions(request.server);
     const preamble = renderInjectionPreamble(functions);
     const stubs = renderInjectionStubs(functions);
+    // 辅助函数（connect_to_server / function_search / is_server_connected）是
+    // 技能正文直接调用的入口，但它们是普通函数、不在 tools/list 里，必须单独注入。
+    const helpers = renderEngineeringHelpers(request.server);
 
-    // 有 MCP 会话时装配宿主桥，让 Python 里的调用能真的回到软件。
-    // 没有会话（COM 系）时桩会抛错——这是对的：COM 调用由技能脚本自己
-    // Dispatch，不走这条桩路径。
+    // MCP 系（BIMBase/PKPM）有会话，COM 系（AutoCAD/SAP2000…）没有。
     const link = getActiveLink(request.server) as
       | { currentSession?: () => McpSession | undefined }
       | undefined;
     const session: McpSession | undefined = link?.currentSession?.();
 
-    let bridgeCode = "";
-    let stopBridge: (() => void) | undefined;
-    let bridgeDir: string | undefined;
+    // 宿主桥始终装配：辅助函数（connect_to_server / function_search 等）
+    // 走 registry，不依赖 MCP 会话；COM 系软件没有会话，但同样需要这些函数。
+    // 只有注入桩的函数体（mcp_tool）才需要会话，无会话时给出明确错误而不是 NameError。
+    const bridgeDir = bridgeDirName(tmpdir(), request.key ?? request.server);
+    await mkdir(bridgeDir, { recursive: true }).catch(() => undefined);
+    const bridgeCode = renderHostBridge(bridgeDir);
+    const stopBridge = startHostBridge(bridgeDir, {
+      mcpTool: async (name, args) => {
+        if (!session) {
+          throw new Error(
+            `${request.server} 没有 MCP 会话（COM 系软件）。` +
+              "请用技能脚本里的 COM 调用（如 win32com Dispatch），不要直接调用注入函数。",
+          );
+        }
+        return session.callTool(name, args);
+      },
+      engineering: (op, payload) => this.handleEngineeringOp(op, payload),
+    });
 
-    if (session) {
-      bridgeDir = bridgeDirName(tmpdir(), request.key ?? request.server);
-      await mkdir(bridgeDir, { recursive: true }).catch(() => undefined);
-      bridgeCode = renderHostBridge(bridgeDir);
-      stopBridge = startHostBridge(bridgeDir, session);
-    }
-
-    const composed = [bridgeCode, preamble, stubs, request.code].filter(Boolean).join("\n\n");
+    const composed = [bridgeCode, preamble, helpers, stubs, request.code]
+      .filter(Boolean)
+      .join("\n\n");
 
     let result: PythonRunResult;
     try {
@@ -136,8 +152,8 @@ export class EngineeringExecutor {
         timeoutMs: request.timeoutMs,
       });
     } finally {
-      stopBridge?.();
-      if (bridgeDir) await rm(bridgeDir, { recursive: true, force: true }).catch(() => undefined);
+      stopBridge();
+      await rm(bridgeDir, { recursive: true, force: true }).catch(() => undefined);
     }
 
     return {
@@ -152,6 +168,69 @@ export class EngineeringExecutor {
   /** 中断指定通道上正在跑的任务。 */
   interrupt(key: string): void {
     this.pool.killWorker(key);
+  }
+
+  /**
+   * 响应 Python 侧发起的工程环境操作。
+   *
+   * 对应注入的辅助函数：`connect_to_server` / `is_server_connected` /
+   * `list_connected_servers` / `function_search`。这些不是 MCP 工具，
+   * 所以由宿主直接分发到 registry 与 function-search。
+   *
+   * 失败一律转成可读错误文案：Python 侧会把它作为 RuntimeError 抛出，
+   * 让脚本作者看到原因而不是静默拿到 None。
+   */
+  private async handleEngineeringOp(
+    op: string,
+    payload: Record<string, unknown>,
+  ): Promise<unknown> {
+    const readString = (value: unknown): string | undefined =>
+      typeof value === "string" && value.trim() ? value.trim() : undefined;
+
+    switch (op) {
+      case "connect": {
+        const server = readString(payload.server);
+        if (!server) throw new Error("connect 需要 server 参数。");
+        const result = await connectToServer(server, {
+          workDir: readString(payload.workDir),
+          projectPath: readString(payload.cmdArgs),
+        });
+        // ConnectResult 是 true | string；字符串即错误原因。
+        if (result !== true) throw new Error(result);
+        return true;
+      }
+
+      case "is_connected": {
+        const server = readString(payload.server);
+        if (!server) throw new Error("is_connected 需要 server 参数。");
+        return isServerConnected(server);
+      }
+
+      case "list_connected": {
+        return getConnectedServers();
+      }
+
+      case "function_search": {
+        const server = readString(payload.server);
+        if (!server) throw new Error("function_search 需要 server 参数。");
+        const action = readString(payload.action) as FunctionSearchAction | undefined;
+        if (!action) {
+          throw new Error("function_search 需要 action（GetType / GetName / GetDescription / GetClass）。");
+        }
+        const result = this.searchFunctions(server, {
+          action,
+          funcType: readString(payload.funcType),
+          funcNames: Array.isArray(payload.funcNames)
+            ? payload.funcNames.filter((item): item is string => typeof item === "string")
+            : undefined,
+        });
+        if (!result.ok) throw new Error(result.text);
+        return result.text;
+      }
+
+      default:
+        throw new Error(`未知的工程操作：${op}`);
+    }
   }
 
   /** 释放全部通道与临时资源。 */
