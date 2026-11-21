@@ -69,6 +69,12 @@ export type {
 } from "./executor/engineering-executor.js";
 
 export {
+  startEngineeringMcpServer,
+  engineeringMcpServerConfig,
+} from "./mcp-server.js";
+export type { EngineeringMcpServerOptions } from "./mcp-server.js";
+
+export {
   compactMessages,
   findSafeCutoff,
   atomicGroupStarts,

@@ -12,6 +12,10 @@
  */
 
 import { createInterface } from "node:readline";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import type { McpServerConfig } from "@zcode/shared";
 
 import { listMcpTools, callMcpTool } from "./mcp-adapter.js";
 import { EngineeringExecutor } from "./executor/engineering-executor.js";
@@ -152,5 +156,31 @@ export function startEngineeringMcpServer(
   return () => {
     rl.close();
     disconnectAll();
+  };
+}
+
+/**
+ * 生成供宿主注入到 Agent MCP 配置的 server 条目。
+ *
+ * 用 process.execPath + ELECTRON_RUN_AS_NODE：桌面打包态 execPath 是 ZCode Helper，
+ * 缺 Node 模式会误进 Electron main（与 official-plugin-runtime 的处理一致）。
+ *
+ * 限制：SEA 二进制里 execPath 不是 Node，无法用本函数指向外部脚本；
+ * SEA 形态需要把 server 作为内嵌资产并改走统一 host 入口。
+ */
+export function engineeringMcpServerConfig(
+  options: EngineeringMcpServerOptions & { timeoutMs?: number } = {},
+): McpServerConfig {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const env: Record<string, string> = { ELECTRON_RUN_AS_NODE: "1" };
+  if (options.mode) env.ZCODE_ENGINEERING_PERMISSION_MODE = options.mode;
+  if (options.interpreter) env.ZCODE_ENGINEERING_PYTHON = options.interpreter;
+
+  return {
+    type: "stdio",
+    command: process.execPath,
+    args: [join(here, "mcp-server-main.js")],
+    env,
+    timeoutMs: options.timeoutMs ?? 600_000,
   };
 }
