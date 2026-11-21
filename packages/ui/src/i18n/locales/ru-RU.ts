@@ -3985,6 +3985,10 @@ const ruRU: Record<string, string> = {
   "settings.plugins.remoteContext": "Текущее удалённое рабочее пространство: {target}",
   "settings.plugins.remoteSync.open": "Синхронизировать плагины",
   "settings.mcp.remoteContext": "Текущее удалённое рабочее пространство: {target}",
+  "settings.mcp.managed.group": "Управляется организацией",
+  "settings.mcp.managed.disabled": "Отключено",
+  "settings.mcp.managed.readonly":
+    "Настраивается администратором организации (здесь только чтение)",
   "settings.mcp.plugin.active": "Встроенный",
   "settings.mcp.plugin.activeDescription":
     "Этот MCP-сервер предоставлен включённым плагином и управляется им.",

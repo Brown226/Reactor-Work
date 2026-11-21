@@ -4009,6 +4009,9 @@ const jaJP: Record<string, string> = {
   "settings.plugins.remoteContext": "現在のリモートワークスペース: {target}",
   "settings.plugins.remoteSync.open": "プラグインを同期",
   "settings.mcp.remoteContext": "現在のリモートワークスペース: {target}",
+  "settings.mcp.managed.group": "組織が管理する MCP",
+  "settings.mcp.managed.disabled": "無効",
+  "settings.mcp.managed.readonly": "組織の管理者が設定します（ここでは読み取り専用）",
   "settings.mcp.plugin.active": "組み込み",
   "settings.mcp.plugin.activeDescription":
     "この MCP サーバーは有効なプラグインによって提供され、そのプラグインが管理しています。",

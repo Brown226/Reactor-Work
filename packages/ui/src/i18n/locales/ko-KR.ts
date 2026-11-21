@@ -3910,6 +3910,9 @@ const koKR: Record<string, string> = {
   "settings.plugins.remoteContext": "현재 원격 워크스페이스: {target}",
   "settings.plugins.remoteSync.open": "플러그인 동기화",
   "settings.mcp.remoteContext": "현재 원격 워크스페이스: {target}",
+  "settings.mcp.managed.group": "조직이 관리하는 MCP",
+  "settings.mcp.managed.disabled": "비활성화됨",
+  "settings.mcp.managed.readonly": "조직 관리자가 구성합니다(여기서는 읽기 전용)",
   "settings.mcp.plugin.active": "내장",
   "settings.mcp.plugin.activeDescription":
     "이 MCP 서버는 활성화된 플러그인이 제공하며 해당 플러그인이 관리합니다.",

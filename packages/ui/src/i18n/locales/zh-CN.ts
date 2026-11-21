@@ -3689,6 +3689,9 @@ const zhCN: Record<string, string> = {
 // 远程同步入口由独立文案演进，曾混用小写；并排展示时统一为 Skill/MCP/Plugin。
   "settings.plugins.remoteSync.open": "同步 Plugin",
   "settings.mcp.remoteContext": "当前远端工作区：{target}",
+  "settings.mcp.managed.group": "企业下发",
+  "settings.mcp.managed.disabled": "已停用",
+  "settings.mcp.managed.readonly": "由企业管理员配置，此处只读",
   "settings.mcp.plugin.active": "插件内置",
   "settings.mcp.plugin.activeDescription": "该 MCP 服务器由已启用插件提供，配置跟随插件管理。",
   "settings.mcp.plugin.connecting": "连接中",
