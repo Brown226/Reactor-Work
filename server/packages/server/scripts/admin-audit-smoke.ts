@@ -120,6 +120,9 @@ async function main(): Promise<void> {
     app.post("/admin/widget-plain", async (c) => c.json({ ok: true }));
     app.get("/admin/widget-plain", async (c) => c.json({ ok: true }));
     app.post("/admin/widget-forbidden", async (c) => c.json({ error: { code: "403", message: "无权" } }, 403));
+    // 429 用例的路由必须**提前注册**：Hono 首次请求后就锁路由表，运行中 app.post 会抛
+    // "Can not add a route since the matcher is already built"。
+    app.post("/admin/widget-rate", async (c) => c.json({ error: { code: "429", message: "限流" } }, 429));
     app.post("/me/noise", async (c) => c.json({ ok: true }));
     app.post("/desktop/audit/batch", async (c) => c.json({ accepted: 0 }));
     app.post("/auth/logout", async (c) => c.json({ ok: true }));
@@ -212,7 +215,6 @@ async function main(): Promise<void> {
     check("扫描器打不存在的路径 → 404", scanner.status === 404, scanner.status);
     check("404 无路由不落审计（防扫描器刷表）", (await countAll()) === 6, await countAll());
 
-    app.post("/admin/widget-rate", async (c) => c.json({ error: { code: "429", message: "限流" } }, 429));
     const rateLimited = await post("/admin/widget-rate");
     check("429 路由返回 429", rateLimited.status === 429, rateLimited.status);
     const rateRows = await rowsFor("POST /admin/widget-rate");
@@ -257,6 +259,8 @@ async function main(): Promise<void> {
       eventId: `keyset-probe-${index}`,
       ts: new Date(Date.now() - index * 60_000).toISOString(),
       action: "session" as const,
+      // 独立 toolName：键集查询按它过滤，探针集合与同库的 admin_action 事件互不干扰
+      toolName: "keyset-probe",
       summary: `keyset probe ${index}`,
     }));
     const probeActor = await resolveActorForClaims(db, claims);
@@ -265,6 +269,7 @@ async function main(): Promise<void> {
 
     const keysetQuery = async (cursor?: { beforeTs: string; beforeId: number }) =>
       queryAudit(db, { role: "platform_admin", uid: claims.sub, deptIds: [] }, {
+        toolName: "keyset-probe",
         limit: 5,
         offset: 0,
         ...(cursor ? { beforeTs: cursor.beforeTs, beforeId: cursor.beforeId } : {}),

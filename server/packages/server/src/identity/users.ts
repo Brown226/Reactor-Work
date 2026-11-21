@@ -100,8 +100,13 @@ export async function listUsers(db: IdentityDb, opts: UserFilter = {}): Promise<
     params.push(opts.status);
   }
   if (opts.q) {
-    conds.push(`(u.uid ILIKE $${params.length + 1} OR u.name ILIKE $${params.length + 1})`);
-    params.push(`%${opts.q}%`, `%${opts.q}%`);
+    // 修复（2026-11-21）：SQL 里 uid/name 共用同一个占位符（$n 引用两次），但下面 push 了
+    // 两份参数 —— pg 按「去重后的占位符个数」校验，参数多一份直接 08P01（supplies N, requires N-1），
+    // /users?q=... 恒 500，管理台「搜索账号 / 姓名」完全不可用（identity.log 实测）。
+    // 依据：node-postgres 的 $n 引用同一序号只算一个参数，push 一次即可。
+    const qIdx = params.length + 1;
+    conds.push(`(u.uid ILIKE $${qIdx} OR u.name ILIKE $${qIdx})`);
+    params.push(`%${opts.q}%`);
   }
   const where = conds.length ? `WHERE ${conds.join(" AND ")}` : "";
   const { rows } = await db.pool.query<UserDbRow>(`${USER_SELECT} ${where} ORDER BY u.uid LIMIT 2000`, params);
