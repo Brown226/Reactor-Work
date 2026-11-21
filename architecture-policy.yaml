@@ -139,6 +139,16 @@ modules:
       - packages/services/src/session/tasksDatabase/migrations.ts
       - packages/services/src/session/tasksDatabase/prepared.ts
     owner: conversation
+  - id: engineering-mcp-link
+    roots: [packages/services/src/engineering]
+    managed: true
+    requires: [shared]
+    publicEntrypoints:
+      - packages/services/src/engineering/index.ts
+      - packages/services/src/engineering/contract.ts
+    layers:
+      contract: contract.ts
+    owner: engineering
   - id: storage
     roots: [packages/services/src/storage]
     managed: true
