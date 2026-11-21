@@ -81,6 +81,7 @@ import {
   type DynamicWorkflowMode,
   type ProviderProvisioningSourceTrigger,
   toBearerAuthorization,
+  type ZCodeAgentMcpServer,
   ZCODE_CLIENT_LANGUAGE_ENV,
 } from "@zcode/shared";
 
@@ -800,9 +801,11 @@ const taskAutoArchiveDisposers = new WeakMap<ServiceCollection, () => void>();
 // 与其它侧表一样按 ServiceCollection 登记并在 dispose 时统一 close。
 const sharedSqliteRepos = new WeakMap<ServiceCollection, ReadonlyArray<{ close(): void }>>();
 const accountRequestAuthServices = new WeakMap<ServiceCollection, IAccountRequestAuthService>();
-export type OffPeakRequestAuthBuilder = (
-  ticketId: string,
-) => Promise<{ apiKey: string; headers: Record<string, string>; accountScope?: string }>;
+export type OffPeakRequestAuthBuilder = (ticketId: string) => Promise<{
+  apiKey: string;
+  headers: Record<string, string>;
+  accountScope?: string;
+}>;
 const offPeakRequestAuthBuilders = new WeakMap<ServiceCollection, OffPeakRequestAuthBuilder>();
 
 /** Local Host 进程内能力；不会随 ServiceCollection 暴露到通用 RPC Channel。 */
@@ -1455,7 +1458,9 @@ export function createLocalServices(options: {
   const provisioningOAuthKeys = new Set<string>(PROVIDER_PROVISIONING_OAUTH_CREDENTIAL_KEYS);
   const credentialCipherProvider =
     options.credentialCipherProvider ??
-    createSystemCredentialCipher({ filePath: join(resolveAppConfigDir(), "credentials.json") });
+    createSystemCredentialCipher({
+      filePath: join(resolveAppConfigDir(), "credentials.json"),
+    });
   const credentialService = createCredentialService({
     cipherProvider: credentialCipherProvider,
     onDidMutate: ({ keys, operation }) => {
@@ -1523,7 +1528,11 @@ export function createLocalServices(options: {
     isBusinessUnauthorizedRequest: (input, _headers) =>
       isOAuthBusinessRequest({ input, credentialService }),
     resolveBusinessCredentialValidationRequest: (input, headers) =>
-      resolveOAuthBusinessCredentialValidationRequest({ input, headers, credentialService }),
+      resolveOAuthBusinessCredentialValidationRequest({
+        input,
+        headers,
+        credentialService,
+      }),
     resolveZCodeEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
     resolveClientLanguage: options?.resolveClientLanguage,
   });
@@ -1541,15 +1550,18 @@ export function createLocalServices(options: {
   createServiceLogger("task-index-repo").info(undefined, "[诊断] 触发 tasks-index 建库", {
     path: getTasksIndexDatabasePath(),
   });
-  void taskIndexRepo.ensureReady().then(
-    () => createServiceLogger("task-index-repo").info(undefined, "[诊断] tasks-index 建库完成"),
-  ).catch((error: unknown) => {
-    createServiceLogger("task-index-repo").warn(
-      undefined,
-      "tasks-index 初始化失败，任务列表与分组可能不可用:",
-      error instanceof Error ? error.message : String(error),
-    );
-  });
+  void taskIndexRepo
+    .ensureReady()
+    .then(() =>
+      createServiceLogger("task-index-repo").info(undefined, "[诊断] tasks-index 建库完成"),
+    )
+    .catch((error: unknown) => {
+      createServiceLogger("task-index-repo").warn(
+        undefined,
+        "tasks-index 初始化失败，任务列表与分组可能不可用:",
+        error instanceof Error ? error.message : String(error),
+      );
+    });
   // onboarding 完成记录：userId 由登录态补全（apikey/未登录为 null），见 docs/onboarding-record-spec.md。
   const onboardingEvidenceLogger = createServiceLogger("onboardingRecordService");
   const onboardingRecordService = createOnboardingRecordService({
@@ -1576,7 +1588,9 @@ export function createLocalServices(options: {
           return false;
         }
         const hasRow = await hasAnyAgentSessionRow(sessionDbPath);
-        onboardingEvidenceLogger.debug("onboarding 会话证据源已查询", { hasRow });
+        onboardingEvidenceLogger.debug("onboarding 会话证据源已查询", {
+          hasRow,
+        });
         return hasRow;
       },
       resolveLegacyTaskSessionsDir: () => join(resolveAppConfigDir(), "sessions"),
@@ -1713,7 +1727,9 @@ export function createLocalServices(options: {
         }),
     },
     onZCodeBuiltinRefreshError: (error) => {
-      providerConfigLog.warn(undefined, "ZCode Built-in Config 远端刷新失败", { error });
+      providerConfigLog.warn(undefined, "ZCode Built-in Config 远端刷新失败", {
+        error,
+      });
     },
     onPersonalConfigRecovery: (event) => {
       providerConfigLog.warn(
@@ -1982,7 +1998,9 @@ export function createLocalServices(options: {
             if (buffer.includes("\n")) {
               try {
                 const nl = buffer.indexOf("\n");
-                const reply = JSON.parse(buffer.slice(0, nl)) as { ok?: boolean };
+                const reply = JSON.parse(buffer.slice(0, nl)) as {
+                  ok?: boolean;
+                };
                 finish(reply.ok === true ? socketPath : null);
               } catch {
                 finish(null);
@@ -2058,7 +2076,10 @@ export function createLocalServices(options: {
       exitLogPath: `${socketPath}.settings.exit.log`,
       ghostCursorOverlay: true,
       ...(isCuaLocalDevelopmentRuntime(process.env)
-        ? { allowUnsignedLauncherLocalDev: true, allowExternalBrokerClientLocalDev: true }
+        ? {
+            allowUnsignedLauncherLocalDev: true,
+            allowExternalBrokerClientLocalDev: true,
+          }
         : {}),
     });
     try {
@@ -2529,11 +2550,17 @@ export function createLocalServices(options: {
       const hostIds = [...new Set(refs.map((task) => normalizeHostId(task.hostId)))];
       const results = await Promise.all(
         hostIds.map(async (hostId) => {
-          const tree = await projectService.readTree({ hostId, includeDeletedTasks: true });
+          const tree = await projectService.readTree({
+            hostId,
+            includeDeletedTasks: true,
+          });
           const facts = new Map(
             [
               ...tree.tasks,
-              ...(tree.deletedTasks ?? []).map((task) => ({ ...task, deleted: true })),
+              ...(tree.deletedTasks ?? []).map((task) => ({
+                ...task,
+                deleted: true,
+              })),
             ].map((task) => [groupTaskKey(task), task]),
           );
           return refs
@@ -2608,11 +2635,18 @@ export function createLocalServices(options: {
         creationCommand: target.creationCommand,
         additionalDirectories: target.additionalDirectories,
       });
-      return { sessionId: prepared.taskId, additionalDirectories: prepared.additionalDirectories };
+      return {
+        sessionId: prepared.taskId,
+        additionalDirectories: prepared.additionalDirectories,
+      };
     },
     resolveSessionDirectories: async (target) =>
-      (await projectService.resolveSessionDirectories({ ...target, taskId: target.sessionId }))
-        .additionalDirectories,
+      (
+        await projectService.resolveSessionDirectories({
+          ...target,
+          taskId: target.sessionId,
+        })
+      ).additionalDirectories,
     ...(agentAccountProviderConfigSource
       ? { accountProviderConfigSource: agentAccountProviderConfigSource }
       : {}),
@@ -2889,10 +2923,38 @@ export function createLocalServices(options: {
   });
   const cuaProductMcpServerResolver =
     options?.cuaProductMcpServerResolver ?? defaultCuaProductMcpServerResolver;
+  // 托管 MCP（治理平面 P0）会话注入源：读策略 managedMcp + 换 relay 短期令牌。
+  // URL 指向企业服务端 relay（凭据只存服务端）；未登录 / 无下发 / 令牌拿不到 → 空数组
+  // （不注入，绝不放大）。逐会话调用，relay 令牌在 P4 接线内缓存到过期前 10 分钟。
+  const managedMcpServersProvider = async (): Promise<readonly ZCodeAgentMcpServer[]> => {
+    try {
+      const policyView = await reactorServerService.getPolicy();
+      const servers =
+        policyView.policy?.managedMcp.servers.filter((server) => server.enabled) ?? [];
+      if (servers.length === 0) return [];
+      const relayAuth = await reactorServerService.getManagedMcpRelayAuth();
+      if (!relayAuth) return [];
+      const base = relayAuth.serverUrl.replace(/\/+$/, "");
+      return servers.map((server) => ({
+        name: server.name,
+        type: server.type,
+        url: `${base}/desktop/mcp-relay/${encodeURIComponent(server.id)}`,
+        headers: [{ name: "authorization", value: `Bearer ${relayAuth.token}` }],
+      }));
+    } catch (error) {
+      reactorServerWiringLog.warn(
+        undefined,
+        "[managed-mcp] 组装托管 MCP 失败（本会话不注入）",
+        error,
+      );
+      return [];
+    }
+  };
   const zcodeSessionService = createZCodeSessionService({
     agentService: zcodeAgentService,
     taskIndexSyncer: zcodeTaskIndexSyncer,
     cuaProductMcpServerResolver,
+    managedMcpServersProvider,
   });
   const gitCommitMessageGenerator = new GitCommitMessageGenerator({
     currentModelProvider: {
@@ -2947,7 +3009,10 @@ export function createLocalServices(options: {
         (await zcodeAgentService.supportsWorktreeCwd?.(target)) ?? false,
       // HOST_WORKTREE_COMMAND 只有本服务能设置，渲染进程经 RPC 无法携带（§5.1）。
       sendCommand: (command) =>
-        zcodeAgentService.sendConversationCommandV4({ ...command, [HOST_WORKTREE_COMMAND]: true }),
+        zcodeAgentService.sendConversationCommandV4({
+          ...command,
+          [HOST_WORKTREE_COMMAND]: true,
+        }),
       queryCommandResult: async (target) => {
         if (!zcodeAgentService.queryCommandResult) throw new Error("worktree.query-unsupported");
         return await zcodeAgentService.queryCommandResult(target);
@@ -2981,8 +3046,11 @@ export function createLocalServices(options: {
     resolveWorkspaceIdentity:
       options?.projectStorageHostId && options.projectStorageHostId !== "local"
         ? async (workspacePath) =>
-            (await sourceServerWorkspaceService.resolveWorkspace({ workspacePath }))
-              .canonicalWorkspaceKey
+            (
+              await sourceServerWorkspaceService.resolveWorkspace({
+                workspacePath,
+              })
+            ).canonicalWorkspaceKey
         : undefined,
     tasks: zcodeTaskService,
     agent: zcodeAgentService,
@@ -2990,7 +3058,9 @@ export function createLocalServices(options: {
     navigation: options?.appControlNavigation,
     prepareCreation: ({ projectId }) => projectService.prepareSession({ projectId }),
     findCreationReceipts: async (creationCommand) =>
-      (await taskIndexRepo.getProjectRepository()).findCreationReceipts({ creationCommand }),
+      (await taskIndexRepo.getProjectRepository()).findCreationReceipts({
+        creationCommand,
+      }),
     reserveFork: async (target) => {
       // 分叉正文由 CLI 创建；产品归属仍经 Host 的既有原子预留 owner。
       (await taskIndexRepo.getProjectRepository()).reserveCreatedTask({
@@ -3216,7 +3286,10 @@ export function createLocalServices(options: {
         settingService,
         modelSelectionService: providerRuntime.modelSelection,
         remoteWorkspaceService: botRemoteWorkspaceService
-          ? { ...botRemoteWorkspaceService, resolveWorkspace: options?.resolveBotRemoteWorkspace }
+          ? {
+              ...botRemoteWorkspaceService,
+              resolveWorkspace: options?.resolveBotRemoteWorkspace,
+            }
           : undefined,
         // 远端与本地 Bot 都读取所属 Environment 的 Model Selection View。
         // 远端启动期不再轮询旧 Preset，避免重新制造一套模型候选事实。
@@ -3789,7 +3862,10 @@ export async function createServerHostServices(options: {
       filePath: join(resolveAppConfigDir(), "credentials.json"),
     }));
   const projectStorageHostId = remoteHostIdFromWorkspaceIdentity(
-    buildServerRemoteWorkspaceIdentity({ serverId: options.sourceServerId, workspacePath: "/" }),
+    buildServerRemoteWorkspaceIdentity({
+      serverId: options.sourceServerId,
+      workspacePath: "/",
+    }),
   );
   if (!projectStorageHostId) throw new Error("Invalid Source Server storage identity");
   // Bug 原因：billing/balance 把 X-Device-Mid 当必填，而独立 Server 主机没有 Desktop main 写设备身份，
@@ -3808,7 +3884,10 @@ export async function createServerHostServices(options: {
   const workspaceIdentityMapper = new SourceServerWorkspaceIdentityMapper();
   const sourceServerWorkspaceService = createSourceServerWorkspaceService(workspaceAliasRepo, {
     defaultWorkspaceIdentity: (workspacePath) =>
-      buildServerRemoteWorkspaceIdentity({ serverId: options.sourceServerId, workspacePath }),
+      buildServerRemoteWorkspaceIdentity({
+        serverId: options.sourceServerId,
+        workspacePath,
+      }),
     onResolved: ({ workspacePath, canonicalWorkspaceKey }) => {
       workspaceIdentityMapper.register({
         stableIdentity: buildServerRemoteWorkspaceIdentity({

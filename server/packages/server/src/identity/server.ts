@@ -44,6 +44,8 @@ import { ensurePermissionsSchema } from "./permissions.js";
 import { createPermissionsRoutes } from "./permissions-routes.js";
 import { ensureBuiltinLocalAccounts } from "./seed.js";
 import { createIdentityApp, type IdentityAppOptions } from "./routes.js";
+// 托管 MCP（治理平面 P0）：注册表/relay/下发，spec 见 docs/未完成-MCP治理平面-spec-v1.md
+import { createMcpRoutes, ensureMcpSchema } from "../mcp/index.js";
 // 平台运营指标（双平台看板）：建表与 /admin/metrics/platform/* 路由
 import { ensurePlatformMetricsSchema } from "../metrics/schema.js";
 import { createPlatformMetricsRoutes } from "../metrics/routes.js";
@@ -142,6 +144,9 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
   // 平台运营指标（双平台看板）：登录时写入的 client_login 表。历史不可回溯，
   // 越早建表越早开始积累数据（口径见 metrics/schema.ts 头注）。
   await ensurePlatformMetricsSchema(db);
+  // 托管 MCP 注册表（治理平面 P0）：必须先于 audit 路由生效 —— /desktop/policy 的
+  // managedMcp 字段从本表组装，表缺失会让下发打在未建表上。
+  await ensureMcpSchema(db);
   // 公共知识库（KB-⑥）：建表会顺带探测 pgvector 可用性 —— 不可用不阻断启动，
   // 由路由把它如实透出到 /v1/kb/health（与端上「未配置即纯词法」同口径）。
   const kbSchema = await ensureDatasetsSchema(db);
@@ -212,6 +217,9 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
     // 公共知识库（KB-⑥）：/v1/kb/* —— 鉴权与 skills/agents 同一套 claims；
     // 向量化器经网关 /v1/embeddings（KB-⑤），未配置则向量路降级为词法。
     app.route("/", createDatasetsRoutes(db, { schema: kbSchema, ...kbEmbedderDeps(effectiveEmbedModel, embedSource) }));
+    // 托管 MCP（治理平面 P0）：管理面 /admin/mcp/servers* + 用户面 /desktop/mcp/*。
+    // relay 凭据解密沿用启动批的 secretKey；JWT 与 access/gateway 同源（aud 隔离）。
+    app.route("/", createMcpRoutes(db, { secretKey, jwtSecret: cfg.jwtSecret }));
     // 权限点（U-2）：挂载在最后 —— 扫描时读的就是「已挂载完整路由表」
     app.route(
       "/",

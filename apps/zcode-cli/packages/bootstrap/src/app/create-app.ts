@@ -30,6 +30,9 @@ import { createNodeSessionMailboxAdapter } from "@zcode/adapters/mailbox";
 import { createNodeContextSourceAdapter } from "@zcode/adapters/context";
 import { createNodeSkillAdapter } from "@zcode/adapters/skills";
 import { createMcpAdapter } from "@zcode/adapters/mcp";
+// 组织策略只读源（desktop-policy.json，Host 写 / CLI 读）：托管 MCP 三档与命令黑名单类
+// 组织边界从这里取（P4 §4.3；治理平面 P0 的托管 MCP 闸同源）。
+import { createDesktopPolicySource } from "@zcode/adapters/policy";
 import {
   AgentRuntime,
   normalizeAgentProfiles,
@@ -515,6 +518,8 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
       autoApproveHighRisk: configResult.config.permission.autoApproveHighRisk,
       disallowedTools: new Set(configResult.config.permission.disallowedTools),
       allowMediumRiskInAutoMode: configResult.config.permission.allowMediumRiskInAuto,
+      // 同步只读：checkPermission 在权限热路径上，策略文件按 mtime 重读（见 desktopPolicySource.ts）。
+      desktopPolicy: createDesktopPolicySource(),
     });
     const inputHistoryStore = options.inputHistoryStore ?? asInputHistoryStore(sessionStore);
     const artifactStore =

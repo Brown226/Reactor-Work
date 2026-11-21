@@ -107,25 +107,36 @@ export function Audit() {
     };
   }, [range, action, outcome, uid, toolName]);
 
+  const [cursor, setCursor] = useState<{ beforeTs: string; beforeId: number } | null>(null);
+
   const load = useCallback(
-    async (nextOffset = offset) => {
+    async (nextOffset = offset, nextCursor: { beforeTs: string; beforeId: number } | null = cursor) => {
       setLoading(true);
       try {
-        const res = await auditApi.query({ ...params, limit: PAGE_SIZE, offset: nextOffset, stats: true });
+        // 「下一页」走键集游标（治理吸收第二批）：深翻页不再 OFFSET 慢查询，新事件插入也不会漂移；
+        // 「上一页」与跳转仍用 offset（低频路径，语义不变）。
+        const res = await auditApi.query({
+          ...params,
+          limit: PAGE_SIZE,
+          offset: nextOffset,
+          ...(nextCursor ? { beforeTs: nextCursor.beforeTs, beforeId: nextCursor.beforeId } : {}),
+          stats: true,
+        });
         setData(res);
         setOffset(nextOffset);
+        setCursor(res.nextCursor ?? null);
       } catch (e) {
         toast.error((e as Error).message);
       } finally {
         setLoading(false);
       }
     },
-    [params, offset],
+    [params, offset, cursor],
   );
 
   useEffect(() => {
-    void load(0);
-    // 过滤条件变化时回到第一页重新查询
+    // 过滤条件变化时回到第一页重新查询：游标属于上一份筛选的页序，必须显式清掉
+    void load(0, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
 
@@ -304,14 +315,14 @@ export function Audit() {
           共 {total} 条 · 第 {total === 0 ? 0 : Math.floor(offset / PAGE_SIZE) + 1} / {Math.max(1, Math.ceil(total / PAGE_SIZE))} 页
         </span>
         <div className="spacer" />
-        <Button size="sm" variant="outline" disabled={offset === 0 || loading} onClick={() => void load(Math.max(0, offset - PAGE_SIZE))}>
+        <Button size="sm" variant="outline" disabled={offset === 0 || loading} onClick={() => void load(Math.max(0, offset - PAGE_SIZE), null)}>
           上一页
         </Button>
         <Button
           size="sm"
           variant="outline"
           disabled={loading || offset + PAGE_SIZE >= total}
-          onClick={() => void load(offset + PAGE_SIZE)}
+          onClick={() => void load(offset + PAGE_SIZE, cursor)}
         >
           下一页
         </Button>

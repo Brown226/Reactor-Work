@@ -22,6 +22,7 @@ import type {
   ZCodeMcpServer,
   ZCodeMcpServerStatusSnapshot,
   ZCodePluginInfo,
+  ReactorManagedMcpServer,
 } from "@zcode/shared";
 import {
   isZCodeAgentMcpStatusModeUnsupportedError,
@@ -75,10 +76,11 @@ import {
 import { useMcpStore } from "@/store/mcpStore.js";
 import { usePluginManagementStore } from "@/store/pluginManagementStore.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { useServices } from "@/hooks/useServices.js";
 import { useConfigWorkspaceServices as useWorkspaceServices } from "@/workspace-config-catalog/index.js";
 import type { ConfigWorkspaceTarget } from "@/workspace-config-catalog/index.js";
 import { getPluginWorkspaceKey } from "@/settings/PluginScopeMenu.js";
-import { ExternalLink, Import, Plus, UploadCloud } from "lucide-react";
+import { ExternalLink, Import, Lock, Plus, UploadCloud } from "lucide-react";
 import { SegmentedTabs } from "@/components/ui/segmented-tabs.js";
 import { selectPluginsForScope } from "@/settings/pluginCapabilityProjection.js";
 
@@ -470,7 +472,9 @@ function PluginMcpServerList({
           id: "settings.mcp.plugin.disconnectedDescription",
         });
       }
-      return intl.formatMessage({ id: "settings.mcp.plugin.activeDescription" });
+      return intl.formatMessage({
+        id: "settings.mcp.plugin.activeDescription",
+      });
     }
     if (!item.pluginEnabled) {
       return intl.formatMessage({
@@ -594,7 +598,10 @@ export function McpSettingsSection({
     remoteSessionId,
     workspaceIdentity,
     remoteTarget,
-    { unscopedServices, forceUnscoped: Boolean(cacheAuthorityKey || unscopedServices) },
+    {
+      unscopedServices,
+      forceUnscoped: Boolean(cacheAuthorityKey || unscopedServices),
+    },
   );
   const platform = usePlatform();
   // 本地 workspace 的 CLI MCP（新建/编辑/开关落盘）只能走 desktop platform 写宿主用户目录；
@@ -646,6 +653,30 @@ export function McpSettingsSection({
   const [editingServer, setEditingServer] = useState<ZCodeMcpServer | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const query = searchQuery;
+  // 托管 MCP（治理平面 P0）：企业下发的只读分组。仅桌面宿主挂 reactorServerService，
+  // Web 宿主没有企业身份服务 → 空面（不渲染）。getPolicy 只读本地策略缓存，不发网络。
+  const rootServices = useServices();
+  const reactorServerService = rootServices.reactorServerService;
+  const [managedMcpServers, setManagedMcpServers] = useState<ReactorManagedMcpServer[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    const service = reactorServerService;
+    if (!service?.getPolicy) {
+      setManagedMcpServers([]);
+      return;
+    }
+    void service
+      .getPolicy()
+      .then((view) => {
+        if (!cancelled) setManagedMcpServers(view.policy?.managedMcp.servers ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setManagedMcpServers([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reactorServerService]);
   const [editorMode, setEditorMode] = useState<McpEditorMode>("form");
   const [mcpConfigReadyWorkspaceKey, setMcpConfigReadyWorkspaceKey] = useState("");
   const [mcpOAuthAuthorizationFollowupRefresh, setMcpOAuthAuthorizationFollowupRefresh] =
@@ -1173,8 +1204,11 @@ export function McpSettingsSection({
     [query, scopedServers],
   );
   const connectedRemoteSyncTarget =
-    shouldShowRemoteSyncActions({ remoteSessionId, remoteTarget, isWebRemoteControl }) &&
-    activeWorkspacePath
+    shouldShowRemoteSyncActions({
+      remoteSessionId,
+      remoteTarget,
+      isWebRemoteControl,
+    }) && activeWorkspacePath
       ? remoteTarget
       : null;
   const isRemoteSyncContext = Boolean(connectedRemoteSyncTarget);
@@ -1292,7 +1326,10 @@ export function McpSettingsSection({
     workspaceKey: activeWorkspaceKey,
     service: services.mcpSyncService,
   });
-  trustTargetRef.current = { workspaceKey: activeWorkspaceKey, service: services.mcpSyncService };
+  trustTargetRef.current = {
+    workspaceKey: activeWorkspaceKey,
+    service: services.mcpSyncService,
+  };
 
   const trustAbortRef = useRef<AbortController | null>(null);
   useEffect(
@@ -1320,7 +1357,9 @@ export function McpSettingsSection({
     const confirmed = await confirmDialog(
       {
         title: intl.formatMessage(
-          { id: trusted ? "settings.mcp.trust.title" : "settings.mcp.trust.revokeTitle" },
+          {
+            id: trusted ? "settings.mcp.trust.title" : "settings.mcp.trust.revokeTitle",
+          },
           { name: server.name },
         ),
         description: [
@@ -1463,7 +1502,9 @@ export function McpSettingsSection({
       setEditorMode("form");
       onFormScopeKeyChange?.(null);
     };
-    const pluginsBreadcrumbLabel = intl.formatMessage({ id: "settings.plugins.title" });
+    const pluginsBreadcrumbLabel = intl.formatMessage({
+      id: "settings.plugins.title",
+    });
     const formBreadcrumbLabel =
       editingServer?.name ?? intl.formatMessage({ id: "settings.mcp.form.createTitle" });
     return (
@@ -1566,6 +1607,40 @@ export function McpSettingsSection({
             { target: remoteMcpSyncTargetLabel },
           )}
         </div>
+      ) : null}
+
+      {/* 托管 MCP（企业下发）：只读展示 + 锁定；启停与三档策略归企业管理员（/console 的「MCP 服务」），
+          端侧两级强制（relay 过滤 + 权限闸）。同名本地配置会被托管版覆盖（企业为准）。 */}
+      {managedMcpServers.length > 0 ? (
+        <section className="space-y-2" data-mcp-managed-group="true">
+          <SettingsResourceGroupHeader
+            count={managedMcpServers.length}
+            title={intl.formatMessage({ id: "settings.mcp.managed.group" })}
+          />
+          <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
+            {managedMcpServers.map((server) => (
+              <div key={server.id} className="flex items-center gap-2 px-3 py-2 text-ui-base">
+                <Lock className="size-3.5 shrink-0 text-foreground-subtle" aria-hidden="true" />
+                <span className="min-w-0 truncate font-medium">
+                  {server.displayName?.trim() ? server.displayName : server.name}
+                </span>
+                <span className="mono shrink-0 text-xs text-foreground-subtle">
+                  mcp__{server.name}__*
+                </span>
+                {!server.enabled ? (
+                  <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[11px] text-foreground-subtle">
+                    {intl.formatMessage({
+                      id: "settings.mcp.managed.disabled",
+                    })}
+                  </span>
+                ) : null}
+                <span className="ml-auto shrink-0 text-xs text-foreground-subtle">
+                  {intl.formatMessage({ id: "settings.mcp.managed.readonly" })}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
       ) : null}
 
       {!mcpProjectionReady ? (

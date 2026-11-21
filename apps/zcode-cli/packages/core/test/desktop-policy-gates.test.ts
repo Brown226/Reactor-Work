@@ -16,7 +16,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import type { ReactorDesktopPolicy, ReactorDesktopPolicySource } from "@zcode/shared";
+import type {
+  ReactorDesktopPolicy,
+  ReactorDesktopPolicySource,
+  ReactorManagedMcpServer,
+} from "@zcode/shared";
 
 import { PermissionService, defaultPermissionConfig } from "../src/permission/service.js";
 
@@ -30,6 +34,9 @@ function defaultPolicy(overrides: Partial<ReactorDesktopPolicy> = {}): ReactorDe
     commandBlacklist: [],
     egressAllowlist: [],
     quota: { monthlyTokenLimit: null, alertThresholds: [80, 100] },
+    // 白名单默认关闭（不含编程档）与空托管面：与 shared 的 DEFAULT 同口径（spec §1）。
+    allowedInterfaceModes: ["office", "review"],
+    managedMcp: { servers: [] },
     ...overrides,
   };
 }
@@ -114,4 +121,181 @@ test("用户档位优先：没有桌面策略时原样放行（不引入额外�
   });
   assert.equal(decision.mode, "yolo");
   assert.equal(decision.ruleId, "mode.yolo");
+});
+
+// ===== 托管 MCP 三档（治理平面 P0，spec 见 docs/未完成-MCP治理平面-spec-v1.md） =====
+
+const MANAGED_SERVER: ReactorManagedMcpServer = {
+  id: "srv-1",
+  name: "crm",
+  type: "http",
+  enabled: true,
+  toolPolicy: { list_contacts: "allow", delete_contact: "block" },
+  defaultToolPolicy: "ask",
+};
+
+test("托管 MCP：block 是组织硬边界，yolo 也拦", () => {
+  const permission = service(
+    defaultPolicy({ managedMcp: { servers: [MANAGED_SERVER] } }),
+  );
+  const denied = permission.checkPermission({
+    toolName: "mcp__crm__delete_contact",
+    input: { id: "42" },
+    riskLevel: "high",
+    mode: "yolo",
+  });
+  assert.equal(denied.decision, "deny");
+  assert.equal(denied.allowed, false);
+  assert.equal(denied.ruleId, "policy.managedMcp");
+});
+
+test("托管 MCP：ask 强制确认，yolo 不直通", () => {
+  const permission = service(
+    defaultPolicy({ managedMcp: { servers: [MANAGED_SERVER] } }),
+  );
+  const asked = permission.checkPermission({
+    toolName: "mcp__crm__update_opportunity",
+    input: { id: "42" },
+    riskLevel: "medium",
+    mode: "yolo",
+  });
+  assert.equal(asked.decision, "ask");
+  assert.equal(asked.ruleId, "policy.managedMcp");
+});
+
+test("托管 MCP：allow 免确认（build/edit 下同样放行）", () => {
+  const permission = service(
+    defaultPolicy({ managedMcp: { servers: [MANAGED_SERVER] } }),
+  );
+  const allowed = permission.checkPermission({
+    toolName: "mcp__crm__list_contacts",
+    input: {},
+    riskLevel: "low",
+    mode: "build",
+  });
+  assert.equal(allowed.decision, "allow");
+  assert.equal(allowed.ruleId, "policy.managedMcp");
+});
+
+test("托管 MCP：同步新增、管理员未登记的工具默认 ask（防上游升级提权）", () => {
+  const permission = service(
+    defaultPolicy({ managedMcp: { servers: [MANAGED_SERVER] } }),
+  );
+  const asked = permission.checkPermission({
+    toolName: "mcp__crm__export_all_data",
+    input: {},
+    riskLevel: "high",
+    mode: "yolo",
+  });
+  assert.equal(asked.decision, "ask");
+  assert.equal(asked.ruleId, "policy.managedMcp");
+});
+
+test("托管 MCP：停用的服务不参与判定（下发面不携带，双保险）", () => {
+  const permission = service(
+    defaultPolicy({
+      managedMcp: { servers: [{ ...MANAGED_SERVER, enabled: false }] },
+    }),
+  );
+  const allowed = permission.checkPermission({
+    toolName: "mcp__crm__delete_contact",
+    input: { id: "42" },
+    riskLevel: "high",
+    mode: "yolo",
+  });
+  // 停用服务的工具本不该被注入会话；这里即便被直接调用，也走普通链路（yolo 放行），
+  // 组织禁用语义由 relay 端独立拒绝（spec §5 双保险）。
+  assert.equal(allowed.decision, "allow");
+  assert.equal(allowed.ruleId, "mode.yolo");
+});
+
+test("托管 MCP：插件命名空间（服务名含下划线）不会被误判成托管服务", () => {
+  const permission = service(
+    defaultPolicy({ managedMcp: { servers: [MANAGED_SERVER] } }),
+  );
+  const decision = permission.checkPermission({
+    toolName: "mcp__plugin_zcode-cua_computer-use__screenshot",
+    input: {},
+    riskLevel: "low",
+    mode: "yolo",
+  });
+  assert.equal(decision.ruleId, "mode.yolo");
+});
+
+test("托管 MCP：无策略源（未登录）不生效", () => {
+  const permission = new PermissionService(defaultPermissionConfig);
+  const allowed = permission.checkPermission({
+    toolName: "mcp__crm__delete_contact",
+    input: { id: "42" },
+    riskLevel: "high",
+    mode: "yolo",
+  });
+  assert.equal(allowed.decision, "allow");
+  assert.equal(allowed.ruleId, "mode.yolo");
+});
+
+// ===== 会话授权随策略版本失效（治理吸收第二批，spec §1B） =====
+
+const SESSION_GRANT = [
+  {
+    type: "addRules" as const,
+    behavior: "allow" as const,
+    rules: [{ toolName: "mcp__crm__update_opportunity" }],
+  },
+];
+
+test("会话授权：策略版本不变时，「本会话不再询问」持续生效", () => {
+  const permission = service(defaultPolicy({ managedMcp: { servers: [MANAGED_SERVER] }, policyVersion: "v1" }));
+  permission.grantSessionPermission(SESSION_GRANT);
+  const allowed = permission.checkPermission({
+    toolName: "mcp__crm__update_opportunity",
+    input: {},
+    riskLevel: "medium",
+    mode: "yolo",
+  });
+  assert.equal(allowed.decision, "allow");
+  assert.equal(allowed.ruleId, "rule.session.allow");
+});
+
+test("会话授权：policyVersion 变化（管理员改了策略）→ 授权失效重新询问", () => {
+  // 可切换的策略源：先回 v1（建授权），管理员改策略后回 v2
+  let current = defaultPolicy({ managedMcp: { servers: [MANAGED_SERVER] }, policyVersion: "v1" });
+  const switchingSource: ReactorDesktopPolicySource = { current: () => current };
+  const permission = new PermissionService({ ...defaultPermissionConfig, desktopPolicy: switchingSource });
+  permission.grantSessionPermission(SESSION_GRANT);
+
+  const before = permission.checkPermission({
+    toolName: "mcp__crm__update_opportunity",
+    input: {},
+    riskLevel: "medium",
+    mode: "yolo",
+  });
+  assert.equal(before.decision, "allow");
+  assert.equal(before.ruleId, "rule.session.allow");
+
+  // 管理员改了策略：policyVersion v1 → v2
+  current = defaultPolicy({ managedMcp: { servers: [MANAGED_SERVER] }, policyVersion: "v2" });
+  const after = permission.checkPermission({
+    toolName: "mcp__crm__update_opportunity",
+    input: {},
+    riskLevel: "medium",
+    mode: "yolo",
+  });
+  assert.equal(after.decision, "ask", "版本变化后旧的会话授权必须失效、重新询问");
+  assert.equal(after.ruleId, "policy.managedMcp");
+});
+
+test("会话授权：老服务端（无 policyVersion）不误清", () => {
+  const permission = service(defaultPolicy({ managedMcp: { servers: [MANAGED_SERVER] } }));
+  permission.grantSessionPermission(SESSION_GRANT);
+  for (let round = 0; round < 3; round += 1) {
+    const allowed = permission.checkPermission({
+      toolName: "mcp__crm__update_opportunity",
+      input: {},
+      riskLevel: "medium",
+      mode: "yolo",
+    });
+    assert.equal(allowed.decision, "allow");
+    assert.equal(allowed.ruleId, "rule.session.allow");
+  }
 });

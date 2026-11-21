@@ -18,7 +18,13 @@ import {
   type RiskLevel,
   type ToolPermissionSpec,
 } from "@zcode/contracts";
-import { OFFICIAL_CUA_PERMISSION_RULE_TOOL_NAME } from "@zcode/shared";
+import {
+  managedToolPolicyFor,
+  matchReactorCommandBlacklist,
+  OFFICIAL_CUA_PERMISSION_RULE_TOOL_NAME,
+  type ReactorDesktopPolicy,
+  type ReactorDesktopPolicySource,
+} from "@zcode/shared";
 import { resolvePlanModeTransitionPermission } from "./plan-mode-policy.js";
 import { webFetchRuleSubjects, wildcardToRegExp } from "./rule-matching.js";
 import { isPreapprovedWorkflowDraftWrite } from "./workflow-draft-path.js";
@@ -32,6 +38,23 @@ import type { ToolPermissionRulePolicy } from "../tool/types.js";
 
 /** 草稿免确认的规则号。 */
 const WORKFLOW_DRAFT_PREAPPROVED_RULE_ID = "tool.workflowDraft.preapproved";
+
+/** 托管 MCP 组织策略的规则号（治理平面 P0，spec 见 docs/未完成-MCP治理平面-spec-v1.md）。 */
+const MANAGED_MCP_RULE_ID = "policy.managedMcp";
+
+/** 命令黑名单（P4 §4.3）的规则号：shared 的 telemetry 契约与 desktop-policy-gates 测试共用。 */
+const COMMAND_BLACKLIST_RULE_ID = "policy.commandBlacklist";
+
+/**
+ * 解析 MCP 工具全名 `mcp__<服务名>__<工具名>`。
+ * 托管服务名禁下划线（服务端正则约束），故首个 `__` 边界即服务名结束——
+ * 插件命名空间名（`plugin_x_y`）含下划线，不会被误当成托管服务名。
+ */
+function parseMcpToolFullName(toolName: string): { server: string; tool: string } | null {
+  const match = /^mcp__([a-z][a-z0-9-]*)__([A-Za-z0-9_-]+)$/.exec(toolName);
+  if (!match) return null;
+  return { server: match[1], tool: match[2] };
+}
 
 export interface PermissionContext {
   toolName: string;
@@ -94,6 +117,8 @@ export class PermissionService {
    * 都会造一个空的新实例。只服务 alwaysAsk gate（见 checkAlwaysAsk），普通工具的模式语义不认它。
    */
   private sessionRules: PermissionRuleset = { version: 1 };
+  /** 最近一次见到的组织策略版本（治理吸收第二批）：undefined = 从未见过（老服务端/未登录）。 */
+  private lastPolicyVersion: string | undefined;
 
   constructor(private config: PermissionConfig = defaultPermissionConfig) {}
 
@@ -114,6 +139,37 @@ export class PermissionService {
       return planModeTransition.behavior === "allow"
         ? this.allow(context, capability, planModeTransition.ruleId, planModeTransition.reason)
         : this.deny(context, capability, planModeTransition.ruleId, planModeTransition.reason);
+    }
+
+    // 组织策略只读一次（权限热路径：desktopPolicySource 按 mtime 重读）；黑名单、
+    // 托管三档、版本失效判定共用同一份快照，避免同一请求内读出两个版本。
+    const policy = this.config.desktopPolicy?.current() ?? null;
+    this.invalidateSessionRulesOnPolicyChange(policy?.policyVersion);
+
+    // 命令黑名单（P4 §4.3）：组织硬边界——命中即拒，放在一切模式语义之前（yolo/guarded
+    // 直通、plan 只读直通都不能绕），alwaysAsk 工具也走不到后续分支。判定本体在 shared
+    // （子串匹配、大小写不敏感、首尾空白忽略；空名单 = 不限制），此处只做输入提取。
+    const blacklistEntry = this.matchCommandBlacklist(context, policy);
+    if (blacklistEntry) {
+      return this.deny(
+        context,
+        capability,
+        COMMAND_BLACKLIST_RULE_ID,
+        `组织策略禁止的命令：${blacklistEntry}`,
+      );
+    }
+
+    // 托管 MCP 组织策略（治理平面 P0）：block 是组织硬边界，与命令黑名单同地位——
+    // 压过一切模式语义（yolo 直通也不能绕）；ask/allow 的强制见下方 checkManagedAsk
+    // 与 allow 分支。非 MCP 工具或非托管服务返回 null，走原有链路。
+    const managedVerdict = this.resolveManagedMcpVerdict(context, policy);
+    if (managedVerdict === "block") {
+      return this.deny(
+        context,
+        capability,
+        MANAGED_MCP_RULE_ID,
+        `Tool ${context.toolName} is disabled by the organization policy`,
+      );
     }
 
     if (capability.requiresUserInteraction) {
@@ -143,6 +199,22 @@ export class PermissionService {
     // 保留 staging 的工具级确认，不被 Guarded 普通调用的 YOLO 基础策略跳过。
     if (capability.alwaysAsk) {
       return this.checkAlwaysAsk(context, capability, projectRules, rulePolicy);
+    }
+
+    // 托管 ask：组织要求确认的 MCP 工具必须先过闸，即使会话在 yolo/guarded——
+    // 这正是「需确认」档的意义（企业管理员要求人工把关）。
+    if (managedVerdict === "ask") {
+      return this.checkManagedAsk(context, capability, projectRules, rulePolicy);
+    }
+    // 托管 allow：企业管理员明示放行 → 免确认。只在非 plan 下直接放行——
+    // plan 是会话级边界，管理员配置不得替用户越过它（写工具在 plan 下仍被 plan 闸拦）。
+    if (managedVerdict === "allow" && !planEnabled) {
+      return this.allow(
+        context,
+        capability,
+        MANAGED_MCP_RULE_ID,
+        `Tool ${context.toolName} is allowed by the organization policy`,
+      );
     }
 
     if ((context.mode === "yolo" || context.mode === "guarded") && !planEnabled) {
@@ -463,6 +535,97 @@ export class PermissionService {
       "tool.alwaysAsk",
       `Tool ${context.toolName} always requires explicit approval`,
     );
+  }
+
+  /**
+   * 托管 MCP「需确认」档的判定（治理平面 P0）：与 checkAlwaysAsk 同构——先走硬阻断
+   * （auto 未实现 / 用户硬禁用 / 项目 deny），再给「本会话不再询问」一次机会（sessionRules
+   * allow），最后 ask。组织策略版本变化使旧会话授权失效的语义由 P2 的 profile 版本联动承担。
+   */
+  private checkManagedAsk(
+    context: PermissionContext,
+    capability: ResolvedPermissionCapability,
+    projectRules?: PermissionRuleset | null,
+    rulePolicy?: ToolPermissionRulePolicy,
+  ): PermissionDecisionResult {
+    if (context.mode === "auto") {
+      return this.deny(
+        context,
+        capability,
+        "mode.auto.unimplemented",
+        "Auto mode is reserved but not implemented yet",
+      );
+    }
+    if (this.config.disallowedTools.has(context.toolName)) {
+      return this.deny(
+        context,
+        capability,
+        "rule.disallowedTools",
+        `Tool ${context.toolName} is explicitly disallowed`,
+      );
+    }
+    if (this.matchesProjectRules(projectRules, "deny", context, capability, rulePolicy)) {
+      return this.deny(
+        context,
+        capability,
+        "rule.project.deny",
+        `Tool ${context.toolName} is denied by project permission rules`,
+      );
+    }
+    if (this.matchesProjectRules(this.sessionRules, "allow", context, capability, rulePolicy)) {
+      return this.allow(
+        context,
+        capability,
+        "rule.session.allow",
+        `Tool ${context.toolName} was allowed for this session`,
+      );
+    }
+    const planEnabled = context.planEnabled ?? context.mode === "plan";
+    const askResult = this.ask(
+      context,
+      capability,
+      MANAGED_MCP_RULE_ID,
+      `Tool ${context.toolName} requires approval by the organization policy`,
+    );
+    // Plan 下 MCP 询问不提供「始终允许」——plan 闸对 MCP 的既有口径（checkPlanMode 同款）。
+    return planEnabled ? { ...askResult, optionsPolicy: "no-always-allow" } : askResult;
+  }
+
+  /**
+   * 会话授权随策略版本失效（治理吸收第二批，spec §1B）：管理员改了策略或托管面，
+   * policyVersion 变化 → 本会话所有「不再询问」授权清空、重新询问。首次见到版本
+   * （undefined → 有值）同样失效——那些授权是在无策略时给的。老服务端（永远无版本）
+   * 与查询出错（current() 不可读 → undefined）不误清：连续 undefined 比较相等即跳过。
+   */
+  private invalidateSessionRulesOnPolicyChange(version: string | undefined): void {
+    if (version === undefined) return;
+    if (this.lastPolicyVersion !== undefined && version !== this.lastPolicyVersion) {
+      this.sessionRules = { version: 1 };
+    }
+    this.lastPolicyVersion = version;
+  }
+
+  /**
+   * 托管 MCP 三档判定：非 MCP 工具名 / 非托管服务 / 无策略源 → null（走原有链路）。
+   * 未登录时 policy 为 null，managedToolPolicyFor 返回 null——无策略不生效（不放大）。
+   */
+  private resolveManagedMcpVerdict(
+    context: PermissionContext,
+    policy: ReactorDesktopPolicy | null,
+  ): "allow" | "ask" | "block" | null {
+    if (!policy) return null;
+    const parsed = parseMcpToolFullName(context.toolName);
+    if (!parsed) return null;
+    return managedToolPolicyFor(policy, parsed.server, parsed.tool);
+  }
+
+  /** 命令黑名单命中提取：只看 input 里的 `command` 字段（与 ruleSubjects 的输入形状约定一致）。 */
+  private matchCommandBlacklist(context: PermissionContext, policy: ReactorDesktopPolicy | null): string | null {
+    if (!context.input || typeof context.input !== "object") return null;
+    const command = (context.input as Record<string, unknown>).command;
+    if (typeof command !== "string") return null;
+    if (!policy) return null;
+    return matchReactorCommandBlacklist(command, policy.commandBlacklist);
   }
 
   /**
@@ -794,6 +957,11 @@ export interface PermissionConfig {
   disallowedTools: Set<string>;
   autoApproveHighRisk: boolean;
   allowMediumRiskInAutoMode: boolean;
+  /**
+   * 组织策略只读源（desktop-policy.json，Host 写 / CLI 读）。缺省 = 无策略：
+   * 托管 MCP 三档与命令黑名单类组织边界不生效（P4 §4.3「未登录 → 不强制」口径）。
+   */
+  desktopPolicy?: ReactorDesktopPolicySource;
 }
 
 export const defaultPermissionConfig: PermissionConfig = {

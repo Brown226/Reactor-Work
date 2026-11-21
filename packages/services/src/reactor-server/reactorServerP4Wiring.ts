@@ -85,6 +85,14 @@ export interface ReactorServerP4Wiring {
   bootstrap: () => Promise<void>;
   /** 登出/未登录：清空策略缓存（未登录不同步、不强制）。 */
   clearPolicy: () => Promise<void>;
+  /**
+   * 托管 MCP relay 短期令牌与其基地址（治理平面 P0，spec 见 docs/未完成-MCP治理平面-spec-v1.md）。
+   * 进程内缓存到过期前 10 分钟；未登录 / 老服务端 / 拉取失败 → null（调用方不注入托管服务）。
+   */
+  getManagedMcpRelayAuth: () => Promise<{
+    token: string;
+    serverUrl: string;
+  } | null>;
 }
 
 export function createReactorServerP4Wiring(
@@ -139,6 +147,43 @@ export function createReactorServerP4Wiring(
     logger: deps.logger,
   });
 
+  // ===== 托管 MCP relay 令牌（治理平面 P0） =====
+  // 短期 JWT（aud=mcp-relay，服务端 TTL 24h）。会话创建/恢复都可能要它，进程内缓存
+  // 到「过期前 10 分钟」；失败返回 null，调用方不注入托管条目（fail-closed，不放大）。
+  // serverUrl 与令牌一起返回：relay 与 /desktop/policy 同源，端侧不需要第二处来源。
+  let relayTokenCache: {
+    token: string;
+    serverUrl: string;
+    expiresAt: number;
+  } | null = null;
+  async function getManagedMcpRelayAuth(): Promise<{
+    token: string;
+    serverUrl: string;
+  } | null> {
+    const cached = relayTokenCache;
+    if (cached && Date.now() < cached.expiresAt)
+      return { token: cached.token, serverUrl: cached.serverUrl };
+    const serverUrl = await readServerUrl();
+    if (!serverUrl || !(await deps.hasUsableSession())) return null;
+    try {
+      const accessToken = await deps.ensureAccessToken(serverUrl);
+      const issued = await deps.client.mcpRelayToken(serverUrl, accessToken);
+      if (!issued) return null;
+      const ttlMs = issued.expiresIn > 0 ? issued.expiresIn * 1000 : 24 * 60 * 60 * 1000;
+      relayTokenCache = {
+        token: issued.token,
+        serverUrl,
+        expiresAt: Date.now() + Math.max(0, ttlMs - 10 * 60 * 1000),
+      };
+      return { token: issued.token, serverUrl };
+    } catch (error) {
+      deps.logger.warn("获取托管 MCP relay 令牌失败（本会话不注入托管服务）", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
+    }
+  }
+
   return {
     policyCache,
     usageReporting,
@@ -187,5 +232,6 @@ export function createReactorServerP4Wiring(
     },
 
     clearPolicy: () => policyCache.clear(),
+    getManagedMcpRelayAuth,
   };
 }

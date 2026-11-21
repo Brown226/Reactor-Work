@@ -103,6 +103,113 @@ export interface ReactorDesktopPolicy {
    * 端侧据此隐藏切换器中的编程档，并把已存的 `coding` 兜底到办公档。
    */
   allowedInterfaceModes: ReactorInterfaceMode[];
+  /**
+   * 托管 MCP（治理平面 P0）：企业登记的 MCP 服务与逐工具三档策略。
+   * 与服务端 `server/packages/shared/src/audit.ts` 的 `ManagedMcpPolicy` 手工同步。
+   *
+   * 红线：payload **不含凭据、不含上游地址** —— 端侧调用一律经服务端 relay；
+   * 缺省 = `{ servers: [] }`（无托管），绝不因解析失败放大（见 normalize）。
+   * 强制语义见 `managedToolPolicyFor`（未登记工具一律 ask）。
+   */
+  managedMcp: ReactorManagedMcpPolicy;
+  /**
+   * 策略内容寻址版本（治理吸收第二批）：策略本体或托管面任一变化即变化。
+   * 端侧 `PermissionService` 据此判定会话级「不再询问」授权是否失效（版本变化即清空
+   * session allow）。缺省（老服务端/未登录）= undefined = 不联动，行为与现状一致。
+   * 与服务端 `server/packages/shared/src/audit.ts` 的同名字段手工同步（两 workspace
+   * 不共享运行时）。
+   */
+  policyVersion?: string;
+}
+
+/** 托管 MCP 单服务下发条目（无凭据、无上游 URL；端侧只经 relay 调用）。 */
+export type ReactorManagedMcpToolPolicy = "allow" | "ask" | "block";
+
+export interface ReactorManagedMcpServer {
+  /** 稳定 id（relay 路由 `/desktop/mcp-relay/:id` 与端侧引用它） */
+  id: string;
+  /** 服务名 = 模型可见工具前缀段（`mcp__<name>__*`）；服务端约束禁下划线，前缀无歧义 */
+  name: string;
+  displayName?: string;
+  type: "http" | "sse";
+  enabled: boolean;
+  /** 逐工具三档；不在表内的工具按 defaultToolPolicy 处理 */
+  toolPolicy: Record<string, ReactorManagedMcpToolPolicy>;
+  /** 未登记工具的三档（v1 固定 "ask"：新工具默认需确认，防上游升级提权） */
+  defaultToolPolicy: ReactorManagedMcpToolPolicy;
+  updatedAt?: string;
+}
+
+export interface ReactorManagedMcpPolicy {
+  servers: ReactorManagedMcpServer[];
+}
+
+/** 空托管面（未登录 / 老服务端 / 解析失败的合并默认）：绝不放大。 */
+export const EMPTY_REACTOR_MANAGED_MCP: ReactorManagedMcpPolicy = {
+  servers: [],
+};
+
+/** 归一化托管 MCP 下发：逐项校验形状，任一项不合法则**整项丢弃**（宁可少一个服务，不给半成品）。 */
+function normalizeManagedMcp(value: unknown): ReactorManagedMcpPolicy {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !Array.isArray((value as Record<string, unknown>).servers)
+  ) {
+    return { servers: [] };
+  }
+  const servers: ReactorManagedMcpServer[] = [];
+  for (const raw of (value as { servers: unknown[] }).servers) {
+    if (typeof raw !== "object" || raw === null) continue;
+    const server = raw as Record<string, unknown>;
+    if (typeof server.id !== "string" || !server.id) continue;
+    if (typeof server.name !== "string" || !server.name) continue;
+    if (server.type !== "http" && server.type !== "sse") continue;
+    servers.push({
+      id: server.id,
+      name: server.name,
+      ...(typeof server.displayName === "string" && server.displayName
+        ? { displayName: server.displayName }
+        : {}),
+      type: server.type,
+      enabled: server.enabled === true,
+      toolPolicy: normalizeManagedToolPolicyMap(server.toolPolicy),
+      defaultToolPolicy: "ask",
+      ...(typeof server.updatedAt === "string" ? { updatedAt: server.updatedAt } : {}),
+    });
+  }
+  return { servers };
+}
+
+function normalizeManagedToolPolicyMap(
+  value: unknown,
+): Record<string, ReactorManagedMcpToolPolicy> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
+  const out: Record<string, ReactorManagedMcpToolPolicy> = {};
+  for (const [tool, verdict] of Object.entries(value as Record<string, unknown>)) {
+    // 非法值一律按 ask 处理（fail-closed：多问一次好过悄悄放行）
+    out[tool] = verdict === "allow" || verdict === "block" ? verdict : "ask";
+  }
+  return out;
+}
+
+/**
+ * 托管服务的某工具对该会话的三档判定。
+ *
+ * - `serverName` 命中托管服务（按服务名匹配，服务名禁下划线保证前缀无歧义）；
+ * - 该服务停用 / 未命中任何托管服务 → null（调用方按「非托管」走原有注解推导）；
+ * - 工具在策略表内 → 表值；**不在表内 → ask**（新工具默认需确认的端侧兜底，
+ *   与服务端 relay 的再判口径一致：服务端只拒 block/problem，ask/allow 由本端闸负责）。
+ */
+export function managedToolPolicyFor(
+  policy: ReactorDesktopPolicy | null | undefined,
+  serverName: string,
+  toolName: string,
+): ReactorManagedMcpToolPolicy | null {
+  if (!policy) return null;
+  const server = policy.managedMcp.servers.find((candidate) => candidate.name === serverName);
+  if (!server || !server.enabled) return null;
+  return server.toolPolicy[toolName] ?? server.defaultToolPolicy ?? "ask";
 }
 
 /** 界面模式词表（与端上 `packages/ui/src/lib/interfaceMode.ts` 的 `InterfaceMode` 同口径）。 */
@@ -163,6 +270,8 @@ export const DEFAULT_REACTOR_DESKTOP_POLICY: ReactorDesktopPolicy = {
   productDocsUrl: null,
   // 白名单默认关闭：未配置受众时不含编程档（与产品规则一致，见 docs/未完成-编程模式权限-方案-v1.md）。
   allowedInterfaceModes: [...DEFAULT_ALLOWED_INTERFACE_MODES],
+  // 托管 MCP 默认空面：无下发 = 无托管（未登录/老服务端不放大）。fresh 数组防共享可变引用。
+  managedMcp: { servers: [] },
 };
 
 /** 从任一（可能不完整的）策略对象归一化出完整策略：缺字段按默认合并，不把缺失当清空。 */
@@ -198,6 +307,12 @@ export function normalizeReactorDesktopPolicy(raw: unknown): ReactorDesktopPolic
     productDocsUrl: normalizeProductDocsUrl(record.productDocsUrl),
     // 可用界面模式：解析不出就回落白名单关闭默认（不含编程档）——绝不因缺字段放大可见性。
     allowedInterfaceModes: normalizeInterfaceModes(record.allowedInterfaceModes),
+    // 托管 MCP：解析不出 = 无托管（空面）。绝不因老服务端/解析失败放大托管面。
+    managedMcp: normalizeManagedMcp(record.managedMcp),
+    // 策略版本：透传（非法/缺失 = 不联动，行为与现状一致）。
+    ...(typeof record.policyVersion === "string" && record.policyVersion
+      ? { policyVersion: record.policyVersion }
+      : {}),
   };
 }
 

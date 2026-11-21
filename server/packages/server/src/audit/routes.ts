@@ -19,6 +19,7 @@ import {
   DEFAULT_POLICY,
   auditStats,
   getPolicy,
+  derivePolicyVersion,
   insertAuditBatch,
   normalizeProductDocsUrl,
   putPolicy,
@@ -33,6 +34,7 @@ import { evaluateQuotaFor } from "../metering/quota-eval.js";
 import { recordUsage, summarizeLedgerUsage, type UsageLedgerFilter } from "../metering/repo.js";
 // 编程模式受众（按 viewer 计算 allowedInterfaceModes，见 interface-mode/repo.ts）
 import { allowedInterfaceModesFor, getInterfaceModePolicy } from "../interface-mode/repo.js";
+import { listManagedServers } from "../mcp/index.js";
 
 type AppEnv = { Variables: { claims: TokenClaims } };
 type Ctx = Context<AppEnv>;
@@ -79,8 +81,7 @@ async function resolveScope(db: IdentityDb, claims: TokenClaims): Promise<AuditS
   return { role: "user", uid: claims.sub, deptIds: [] };
 }
 
-/** 解析查询过滤参数；from/to 缺省为最近 7 天。 */
-function parseFilters(c: Ctx): AuditQueryFilters | { error: string } {
+/** 解析查询过滤参数；from/to 缺省为最近 7 天。键集游标 beforeTs/beforeId 必须成对出现（治理吸收第二批）。 */function parseFilters(c: Ctx): AuditQueryFilters & { beforeTs?: string; beforeId?: number } | { error: string } {
   const q = c.req.query();
   const limitRaw = Number(q.limit ?? DEFAULT_LIMIT);
   const offsetRaw = Number(q.offset ?? 0);
@@ -91,6 +92,18 @@ function parseFilters(c: Ctx): AuditQueryFilters | { error: string } {
   if (from.getTime() > to.getTime()) return { error: "from 不能晚于 to" };
   const deptIdRaw = q.deptId === undefined ? undefined : Number(q.deptId);
   if (deptIdRaw !== undefined && !Number.isInteger(deptIdRaw)) return { error: "deptId 非法" };
+  // 键集游标（可选）：只影响「下一页」，count/total 不受影响。成对出现、单独出现都 400（防半截游标悄悄退化成 offset）。
+  let beforeTs: string | undefined;
+  let beforeId: number | undefined;
+  if (q.beforeTs !== undefined || q.beforeId !== undefined) {
+    const parsedTs = parseDate(q.beforeTs);
+    const parsedId = Number(q.beforeId);
+    if (!parsedTs || !Number.isInteger(parsedId) || parsedId < 0) {
+      return { error: "游标 beforeTs/beforeId 需成对出现且合法" };
+    }
+    beforeTs = parsedTs.toISOString();
+    beforeId = parsedId;
+  }
   return {
     from,
     to,
@@ -102,6 +115,7 @@ function parseFilters(c: Ctx): AuditQueryFilters | { error: string } {
     ...(q.outcome ? { outcome: q.outcome } : {}),
     limit: limitRaw,
     offset: offsetRaw,
+    ...(beforeTs !== undefined && beforeId !== undefined ? { beforeTs, beforeId } : {}),
   };
 }
 
@@ -287,7 +301,7 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
     const f = parseFilters(c);
     if ("error" in f) return err(c, 400, f.error);
     const scope = await resolveScope(db, claims);
-    const { events, total } = await queryAudit(db, scope, f);
+    const { events, total, nextCursor } = await queryAudit(db, scope, f);
     const format = (c.req.query("format") ?? "").toLowerCase();
     // 报表统计（仅 JSON 返回；CSV 只导出明细）
     const wantStats = format !== "csv" && ["1", "true", "yes"].includes((c.req.query("stats") ?? "").toLowerCase());
@@ -297,7 +311,16 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
       c.header("content-disposition", `attachment; filename="audit-${Date.now()}.csv"`);
       return c.body(toCsv(events));
     }
-    return c.json({ events, total, limit: f.limit, offset: f.offset, scope: scope.role, ...(stats ? { stats } : {}) });
+    return c.json({
+      events,
+      total,
+      limit: f.limit,
+      offset: f.offset,
+      // 键集游标（治理吸收第二批）：管理台「下一页」优先用它，深翻页不再 OFFSET 慢查询/漂移
+      ...(nextCursor ? { nextCursor } : {}),
+      scope: scope.role,
+      ...(stats ? { stats } : {}),
+    });
   });
 
   /**
@@ -341,6 +364,9 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
    * 其余字段是全组织单值；`allowedInterfaceModes` 例外 —— 它**按 viewer 计算**
    * （编程模式受众配置见 docs/未完成-编程模式权限-方案-v1.md）：未授权时不含 "coding"，
    * 端侧据此隐藏编程档入口。受众表为空/未配置时按白名单默认关闭处理。
+   * `managedMcp`（托管 MCP，治理平面 P0）同属按注册表现算：payload 无凭据无上游地址
+   * （spec 见 docs/未完成-MCP治理平面-spec-v1.md）。读取失败**省略该字段**而非报错——
+   * 端侧 normalize 合并为空 = 无托管，绝不因旁路故障放大或阻断其余策略字段。
    */
   app.get("/desktop/policy", async (c) => {
     const claims = c.get("claims");
@@ -351,7 +377,23 @@ export function createAuditRoutes(db: IdentityDb): Hono<AppEnv> {
       role: claims.role,
       deptId: claims.deptId ?? null,
     });
-    return c.json({ policy: { ...policy, allowedInterfaceModes } });
+    const managedMcp = await listManagedServers(db)
+      .then((servers) => ({ servers }))
+      .catch((error: unknown) => {
+        console.warn("[audit] 组装 managedMcp 失败（下发省略该字段）:", error);
+        return undefined;
+      });
+    // 策略内容寻址版本（治理吸收第二批）：策略本体或托管面任一变化即变化；
+    // 端侧 PermissionService 据此判定会话级「不再询问」授权是否失效。现算不落库。
+    const policyVersion = derivePolicyVersion(policy.updatedAt, managedMcp?.servers ?? []);
+    return c.json({
+      policy: {
+        ...policy,
+        allowedInterfaceModes,
+        ...(managedMcp ? { managedMcp } : {}),
+        policyVersion,
+      },
+    });
   });
 
   /** 策略下发（写入）：仅平台管理员 */

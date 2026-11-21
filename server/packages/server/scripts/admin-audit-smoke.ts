@@ -70,7 +70,9 @@ async function main(): Promise<void> {
     const { adminAuditMiddleware, markAdminAudited, shouldRecordAdminAudit } = await import(
       "../src/audit/adminAudit.js"
     );
-    const { recordAdminAction, resolveActorForClaims } = await import("../src/audit/repo.js");
+    const { insertAuditBatch, queryAudit, recordAdminAction, resolveActorForClaims } = await import(
+      "../src/audit/repo.js"
+    );
 
     /* ── ⑤ 纯函数分支（不依赖 DB，先跑） ───────────────────────────── */
     console.log("· shouldRecordAdminAudit 分支");
@@ -203,6 +205,87 @@ async function main(): Promise<void> {
     // 总数复核：1(manual) + 1(plain) + 1(forbidden) + 1(users) + 1(policy) + 1(kb) = 6
     const total = await countAll();
     check("audit_event 兜底总条数恰为 6（无其它路径漏写/双写）", total === 6, total);
+
+    /* ── ⑥ 404 无路由不记 + 429 → denied（治理吸收第二批，spec §1A） ── */
+    console.log("· 404 与 429");
+    const scanner = await post("/admin/does-not-exist-scanner-noise");
+    check("扫描器打不存在的路径 → 404", scanner.status === 404, scanner.status);
+    check("404 无路由不落审计（防扫描器刷表）", (await countAll()) === 6, await countAll());
+
+    app.post("/admin/widget-rate", async (c) => c.json({ error: { code: "429", message: "限流" } }, 429));
+    const rateLimited = await post("/admin/widget-rate");
+    check("429 路由返回 429", rateLimited.status === 429, rateLimited.status);
+    const rateRows = await rowsFor("POST /admin/widget-rate");
+    check(
+      "429 → outcome=denied + errorCode=429",
+      rateRows.rowCount === 1 && rateRows.rows[0]?.outcome === "denied" && rateRows.rows[0]?.error_code === "429",
+      rateRows.rows,
+    );
+
+    /* ── ⑦ 落盘脱敏管道（机制化 NFR-P-01，spec §1A） ─────────────────── */
+    console.log("· 落盘脱敏");
+    const JWT_SAMPLE = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSJ9.sigValue123";
+    await recordAdminAction(db, await resolveActorForClaims(db, claims), {
+      op: "widget.sanitize",
+      target: "widget:9",
+      summary: `更新凭据 ${JWT_SAMPLE}`,
+      details: {
+        changed: ["apiKey"],
+        after: { apiKey: "sk-abc12345678xyz", nested: { token: "plain-secret-value" }, big: "x".repeat(300) },
+      },
+    });
+    const sanitizedRows = await rowsFor("widget.sanitize");
+    check("脱敏用例落 1 条", sanitizedRows.rowCount === 1, sanitizedRows.rows);
+    const detailsRow = await db.pool.query<{ details: Record<string, unknown> | null; summary: string | null }>(
+      `SELECT details, summary FROM audit_event WHERE action='admin_action' AND tool_name = 'widget.sanitize'`,
+    );
+    const storedDetails = detailsRow.rows[0]?.details ?? {};
+    const storedText = JSON.stringify(storedDetails);
+    check("details 里 sk- 密钥值被替换", !storedText.includes("sk-abc12345678xyz"), storedDetails);
+    check("details 里嵌套 token 值被替换", !storedText.includes("plain-secret-value"), storedDetails);
+    check("键名保留（保结构便于对照）", !!(storedDetails as Record<string, unknown>)?.after, Object.keys(storedDetails));
+    const afterBlock = (storedDetails as { after?: Record<string, unknown> })?.after ?? {};
+    check("脱敏占位符落库", storedText.includes("[已脱敏]"), storedDetails);
+    const bigValue = typeof afterBlock.big === "string" ? afterBlock.big : "";
+    check("超长字符串截断（256+…）", bigValue.length === 257 && bigValue.endsWith("…"), bigValue.length);
+    const storedSummary = detailsRow.rows[0]?.summary ?? "";
+    check("summary 里的 Bearer JWT 被替换", !storedSummary.includes("eyJhbGciOi") && !storedSummary.includes("Bearer"), storedSummary);
+
+    /* ── ⑧ 键集分页（spec §1A）：游标翻页不重不漏，total 不受游标影响 ── */
+    console.log("· 键集分页");
+    const probeEvents = Array.from({ length: 12 }, (_, index) => ({
+      eventId: `keyset-probe-${index}`,
+      ts: new Date(Date.now() - index * 60_000).toISOString(),
+      action: "session" as const,
+      summary: `keyset probe ${index}`,
+    }));
+    const probeActor = await resolveActorForClaims(db, claims);
+    const inserted = await insertAuditBatch(db, probeActor, probeEvents);
+    check("键集探针事件全部入库", inserted.accepted === 12, inserted);
+
+    const keysetQuery = async (cursor?: { beforeTs: string; beforeId: number }) =>
+      queryAudit(db, { role: "platform_admin", uid: claims.sub, deptIds: [] }, {
+        limit: 5,
+        offset: 0,
+        ...(cursor ? { beforeTs: cursor.beforeTs, beforeId: cursor.beforeId } : {}),
+      });
+    const page1 = await keysetQuery();
+    check("第一页 5 条 + 有游标", page1.events.length === 5 && page1.nextCursor !== null, page1.nextCursor);
+    const page2 = page1.nextCursor ? await keysetQuery(page1.nextCursor) : null;
+    check("第二页 5 条 + 有游标", page2 !== null && page2.events.length === 5 && page2.nextCursor !== null, page2?.nextCursor);
+    const page1Ids = page1.events.map((event) => event.id);
+    const page2Ids = (page2?.events ?? []).map((event) => event.id);
+    check("两页无重叠", page1Ids.every((id) => !page2Ids.includes(id)), { page1Ids, page2Ids });
+    const merged = [...page1.events, ...page2.events].map((event) => event.ts);
+    const sortedDesc = merged.every((ts, index) => index === 0 || merged[index - 1]! >= ts);
+    check("游标翻页按 (ts,id) 严格续序（无漂移）", sortedDesc, merged);
+    check("total 不受游标影响（仍为全集合数）", page1.total === page2?.total && page1.total >= 12, page1.total);
+    const page3 = page2?.nextCursor ? await keysetQuery(page2.nextCursor) : null;
+    check(
+      "尾页游标耗尽 → nextCursor null（或剩余不足一页）",
+      page3 !== null && page3.events.length + page1.events.length + page2.events.length === 12 && page3.nextCursor === null,
+      { page3Count: page3?.events.length, cursor: page3?.nextCursor },
+    );
   } finally {
     await closeIdentityDb(db).catch(() => undefined);
   }

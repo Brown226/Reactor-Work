@@ -300,6 +300,7 @@ pnpm --filter @reactor/server smoke:gateway-embeddings
 | 反馈与需求（公开提交面 / 管理受理 / wire 格式 / 红点与事件） | `feedback-smoke.ts`（**40 项全绿**；PG 不可达时 SKIP 并以 0 退出） |
 | 知识板块（标准清单 / 术语白名单 / 规范库） | `knowledge-smoke.ts`（**46 项全绿**：三域建表幂等、内置术语 seed 与不可删、U+FFFD 护栏、幂等导入、规范库状态语义与级联删除） |
 | 管理操作审计兜底（中间件留痕 + 手写埋点去重，见 `src/audit/adminAudit.ts`） | `admin-audit-smoke.ts`（**29 项全绿**；PG 不可达时 SKIP 并以 0 退出） |
+| 托管 MCP（治理平面 P0：登记 fail-fast / 凭据红线 / 下发 wire / relay 过滤与拒绝 / tool_call 审计 / 删除留痕，自带假上游 MCP；spec 见 `docs/未完成-MCP治理平面-spec-v1.md`） | `smoke:mcp`（PG 不可达时 SKIP 并以 0 退出） |
 | P4 真机验收·**服务端半边**（登录/网关令牌/四型事件上报与回读/幂等/策略下发/登出吊销；**非冒烟库**，直打运行中的 :8791，结束打印审计测试事件清理命令、策略自动还原） | `acceptance:p4`（**30 项全绿**，2026-10-08；桌面半边见 `docs/未完成-服务端接线-P4-用量上报与策略.md` §17） |
 | 向量化走网关（自带 mock 上游） | `smoke:gateway-embeddings` |
 | **额度分配·管理台视觉验收**（GUI 走查：登录 → 用量与额度 → 额度分配面板 → 新建 5M 规则看换算预览/非法提示/保存/编辑回填/对账表/删除 → **批量分配**对话框（部门下拉/100M 换算预览/超限部门明确报错/ghost uid 的 dryRun 跳过理由/零写入应用回执）；**直打运行中的 :8791**，截图存 `packages/server/shots/`） | `python scripts/quota-admin-walkthrough.py`（**31 项全绿**，2026-10-09；复用系统 Chrome/Edge，未装 playwright 浏览器时 SKIP。覆盖新版面顺序（额度分配→概览→报表）、规则行当期用量、对账折叠） |

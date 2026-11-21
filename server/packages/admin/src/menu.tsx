@@ -1,4 +1,4 @@
-// 管理台导航配置：14 模块 → 分组；元素=真实页或规划态(Planned)
+// 管理台导航配置：模块 → 分组；元素=真实页或规划态(Planned)
 // T1-3：可见性改为「服务端 /me/nav 下发的 key 集合」驱动（角色映射在服务端），
 // 本表仍保留 roles 字段作为 /me/nav 不可用时的本地兜底。
 
@@ -36,6 +36,7 @@ import DashboardPage from "./pages/DashboardPage";
 import { FeedbackInbox } from "./pages/FeedbackInbox";
 import KbDatasetsPage from "./pages/KbDatasetsPage";
 import { InterfaceModePolicyPage } from "./pages/InterfaceModePolicy";
+import { McpServers } from "./pages/McpServers";
 import { OrgUsers } from "./pages/OrgUsers";
 import { Planned } from "./pages/planned";
 import { PlatformOps } from "./pages/PlatformOps";
@@ -193,22 +194,14 @@ export const NAV: NavGroup[] = [
     label: "扩展与接入",
     items: [
       {
+        // 托管 MCP（治理平面 P0，spec 见 docs/未完成-MCP治理平面-spec-v1.md）：
+        // 登记/凭据托管/三档策略在此配置，随 /desktop/policy 下发端侧两级强制。
         key: "mcp",
         path: "/mcp",
         title: "MCP 服务",
         icon: Plug,
         roles: A,
-        el: (
-          <Planned
-            title="MCP 服务管理"
-            desc="MCP Server 注册/工具白名单/密钥托管；配置与白名单下发端侧（G5 受 M7 出网约束）。"
-            phase="第 5 批"
-            items={[
-              { name: "MCP 注册", note: "stdio/http/sse + 连通测试(list_tools)" },
-              { name: "白名单", note: "暴露工具 + 授权部门" },
-            ]}
-          />
-        ),
+        el: <McpServers />,
       },
       {
         key: "apps",

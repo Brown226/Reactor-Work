@@ -158,6 +158,14 @@ export interface IReactorServerService {
   getPolicy(): Promise<ReactorServerPolicyView>;
   /** 设置页用量简报（服务端月度累计 + 策略额度 + 本地积压）。 */
   getUsageOverview(): Promise<ReactorServerUsageOverview>;
+  /**
+   * 托管 MCP relay 短期令牌与其基地址（治理平面 P0，spec 见 docs/未完成-MCP治理平面-spec-v1.md）。
+   * 未登录 / 老服务端 / 拉取失败 → null（调用方不注入托管条目；凭据永不出服务端）。
+   */
+  getManagedMcpRelayAuth(): Promise<{
+    token: string;
+    serverUrl: string;
+  } | null>;
 }
 
 export const IReactorServerService = createServiceDescriptor<IReactorServerService>(

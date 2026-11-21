@@ -176,6 +176,34 @@ export interface UsageSummaryResponse {
   totals: UsageSummaryRow;
 }
 
+/**
+ * 托管 MCP（治理平面 P0）单服务下发条目。
+ *
+ * 红线：**不含凭据、不含上游地址** —— 端侧调用一律经 relay（`/desktop/mcp-relay/:id`），
+ * 共享 headers 只存服务端（AES-256-GCM 封存）。端侧拿到这份就能组会话与强制策略，
+ * 拿不到就能冒充企业 MCP。
+ */
+export type ManagedMcpToolPolicy = "allow" | "ask" | "block";
+
+export interface ManagedMcpServer {
+  /** 稳定 id（relay 路由与端侧引用它） */
+  id: string;
+  /** 服务名 = 模型可见工具前缀段（`mcp__<name>__*`）；禁下划线，保证前缀无歧义可通配 */
+  name: string;
+  displayName?: string;
+  type: "http" | "sse";
+  enabled: boolean;
+  /** 逐工具三档；不在表内的工具按 defaultToolPolicy 处理（端侧兜底同为 ask） */
+  toolPolicy: Record<string, ManagedMcpToolPolicy>;
+  /** 未登记工具的三档（v1 固定 "ask"：新工具默认需确认，防上游升级提权） */
+  defaultToolPolicy: ManagedMcpToolPolicy;
+  updatedAt?: string;
+}
+
+export interface ManagedMcpPolicy {
+  servers: ManagedMcpServer[];
+}
+
 /** 组织级下发策略（M11-04 的可配形态；原先是写死值）。 */
 export interface DesktopPolicy {
   /** 默认访问模式（用户在客户端可覆盖到不超过该天花板） */
@@ -200,6 +228,20 @@ export interface DesktopPolicy {
    * 平台管理员恒为全三档。受众配置见 docs/未完成-编程模式权限-方案-v1.md。
    */
   allowedInterfaceModes?: string[];
+  /**
+   * 托管 MCP 服务与逐工具三档策略。**按注册表现算**（同 allowedInterfaceModes 的下发模式），
+   * 不存于 desktop_policy 单行表；未登录/无注册时缺省（端侧 normalize 合并为空 = 无托管）。
+   * ⚠ 与主仓 `packages/shared/src/desktopPolicy.ts` 的同名字段**手工同步**
+   * （两个 workspace 不共享运行时，改口径必须两边一起改）。
+   */
+  managedMcp?: ManagedMcpPolicy;
+  /**
+   * 策略内容寻址版本（治理吸收第二批）：策略本体或托管面任一变化即变化，用于端侧
+   * 会话级「不再询问」授权的失效判定（PermissionService 版本变化即清 session allow）。
+   * **现算派生**（同 allowedInterfaceModes/managedMcp 的下发模式），不落库；老服务端
+   * 不下发该字段 = 端侧不联动（行为与现状一致）。与主仓 desktopPolicy.ts 手工同步。
+   */
+  policyVersion?: string;
   updatedAt?: string;
   updatedBy?: string;
 }

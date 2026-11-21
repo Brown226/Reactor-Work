@@ -4,6 +4,7 @@ import type { ZCodeTaskIndexSyncer } from "#src/zcode-agent/zcodeTaskIndexSyncer
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import {
   createSessionTraceId,
+  type ZCodeAgentMcpServer,
   type ZCodeSessionStateSnapshot,
   type ZCodeWorkspaceTaskListChanged,
 } from "@zcode/shared";
@@ -42,12 +43,20 @@ interface CreateZCodeSessionServiceOptions {
    */
   taskIndexSyncer?: ZCodeTaskIndexSyncer;
   cuaProductMcpServerResolver?: CuaProductMcpServerResolver;
+  /**
+   * 托管 MCP 会话注入源（治理平面 P0，spec 见 docs/未完成-MCP治理平面-spec-v1.md）。
+   * 由 Host 装配（node.ts）注入：读组织策略 `managedMcp` + 换 relay 短期令牌，返回要并入
+   * 会话的 http/sse MCP 条目（URL 指向服务端 relay，凭据只存服务端）。
+   * 未登录 / 无下发 / 老服务端 → 空数组（不注入，绝不放大）。
+   */
+  managedMcpServersProvider?: () => Promise<readonly ZCodeAgentMcpServer[]>;
 }
 
 export function createZCodeSessionService({
   agentService,
   taskIndexSyncer,
   cuaProductMcpServerResolver,
+  managedMcpServersProvider,
 }: CreateZCodeSessionServiceOptions): IZCodeSessionService {
   const { withApiRetryRuntime } = createZCodeSessionApiRetryRuntimeTracker();
   const deferredDraftSessions = createZCodeDeferredDraftRegistry();
@@ -167,6 +176,14 @@ export function createZCodeSessionService({
   async function withResolvedMcpServers<
     T extends ZCodeSessionCreateParams | ZCodeSessionResumeParams,
   >(params: T): Promise<T> {
+    // 托管 MCP（企业为准）：读失败按空面处理（fail-closed——注入失败宁可少一个服务，
+    // 不让托管面故障阻断会话创建）。只改发往 runtime 的临时参数，不回写用户本地配置。
+    const managedMcpServers = managedMcpServersProvider
+      ? await managedMcpServersProvider().catch((error: unknown) => {
+          logger.warn(undefined, "[managed-mcp] 读取托管 MCP 注入源失败（本会话不注入）", error);
+          return [] as readonly ZCodeAgentMcpServer[];
+        })
+      : [];
     const mcpServers = appendWorkspaceToFilesystemMcpServers(
       params.mcpServers,
       params.workspacePath,
@@ -176,14 +193,30 @@ export function createZCodeSessionService({
           workspacePath: params.workspacePath,
         })
       : mcpServers;
-    if (resolvedMcpServers === params.mcpServers) {
+    if (managedMcpServers.length === 0 && resolvedMcpServers === params.mcpServers) {
       return params;
+    }
+    // 企业托管覆盖本地同名配置（企业为准）：被覆盖的记 warn；本地配置文件不改，
+    // 未托管会话（未登录）仍走用户自己的同名服务。
+    const managedNames = new Set(managedMcpServers.map((server) => server.name));
+    const localMcpServers = (resolvedMcpServers ?? []).filter(
+      (server) => !managedNames.has(server.name),
+    );
+    if (localMcpServers.length !== (resolvedMcpServers?.length ?? 0)) {
+      logger.warn(undefined, "[managed-mcp] 企业托管覆盖本地同名 MCP 配置", {
+        overridden: (resolvedMcpServers ?? [])
+          .filter((server) => managedNames.has(server.name))
+          .map((server) => server.name),
+      });
     }
     // desktop-continuous session 路径绕过 legacy task adapter，之前不会执行
     // filesystem MCP 的 workspace 注入，导致同一 MCP 在直接 session 首发时缺少当前项目授权。
     // 这里只改发往 runtime 的临时参数，不回写用户配置，避免污染跨 workspace 的 MCP 设置；
     // product CUA broker socket/token 同样只注入 runtime 参数。
-    return { ...params, mcpServers: resolvedMcpServers };
+    return {
+      ...params,
+      mcpServers: [...localMcpServers, ...managedMcpServers],
+    };
   }
 
   return {
@@ -213,7 +246,10 @@ export function createZCodeSessionService({
     async createSession(params: ZCodeSessionCreateParams) {
       const startedAt = Date.now();
       const sessionTraceId = params.sessionTraceId ?? createSessionTraceId();
-      const agentParams = await withResolvedMcpServers({ ...params, sessionTraceId });
+      const agentParams = await withResolvedMcpServers({
+        ...params,
+        sessionTraceId,
+      });
       logger.info(sessionTraceId, "[zcode-session-service] createSession 分配 session trace", {
         persistence: agentParams.persistence,
         workspaceIdentity: agentParams.workspaceIdentity,

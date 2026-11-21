@@ -11,7 +11,12 @@ import type { AuditBatchRequest, AuditBatchResponse } from "./auditContract.js";
 export interface ReactorServerRequester {
   <T>(
     url: string,
-    init: { method: string; body?: unknown; accessToken?: string; apiKey?: string },
+    init: {
+      method: string;
+      body?: unknown;
+      accessToken?: string;
+      apiKey?: string;
+    },
   ): Promise<{ data: T; renewedAccessToken?: string }>;
 }
 
@@ -68,6 +73,12 @@ export interface ReactorMyQuota {
   readonly blocked: boolean;
 }
 
+/** 托管 MCP relay 短期令牌（治理平面 P0；aud=mcp-relay，与 access/gateway 令牌 audience 隔离）。 */
+export interface ReactorMcpRelayToken {
+  readonly token: string;
+  readonly expiresIn: number;
+}
+
 export function createReactorServerP4Endpoints(request: ReactorServerRequester) {
   return {
     /**
@@ -87,7 +98,11 @@ export function createReactorServerP4Endpoints(request: ReactorServerRequester) 
         accepted?: unknown;
         duplicates?: unknown;
         rejected?: unknown;
-      }>(`${serverUrl}/desktop/audit/batch`, { method: "POST", accessToken, body });
+      }>(`${serverUrl}/desktop/audit/batch`, {
+        method: "POST",
+        accessToken,
+        body,
+      });
       return normalizeAuditBatchResponse(data);
     },
 
@@ -145,10 +160,11 @@ export function createReactorServerP4Endpoints(request: ReactorServerRequester) 
      */
     async myQuota(serverUrl: string, accessToken: string): Promise<ReactorMyQuota | null> {
       try {
-        const { data } = await request<{ period?: unknown; items?: unknown; blocked?: unknown }>(
-          `${serverUrl}/desktop/quota/me`,
-          { method: "GET", accessToken },
-        );
+        const { data } = await request<{
+          period?: unknown;
+          items?: unknown;
+          blocked?: unknown;
+        }>(`${serverUrl}/desktop/quota/me`, { method: "GET", accessToken });
         const record = (typeof data === "object" && data !== null ? data : {}) as Record<
           string,
           unknown
@@ -160,6 +176,36 @@ export function createReactorServerP4Endpoints(request: ReactorServerRequester) 
         };
       } catch {
         // 老服务端没有该端点 → 静默回落（调用方用旧概览）
+        return null;
+      }
+    },
+
+    /**
+     * 托管 MCP relay 短期令牌（`POST /desktop/mcp/relay-token`，治理平面 P0）。
+     * 端侧会话组装时用它换取 aud=mcp-relay 的短期 JWT，注入 relay MCP 条目的请求头。
+     *
+     * 405/404/任何失败 ⇒ 返回 null：调用方**不注入托管服务**（fail-closed——
+     * 老服务端没有 relay，注入了也调不通；凭据只在服务端，这里拿不到也不需要拿到）。
+     */
+    async mcpRelayToken(
+      serverUrl: string,
+      accessToken: string,
+    ): Promise<ReactorMcpRelayToken | null> {
+      try {
+        const { data } = await request<{
+          token?: unknown;
+          expiresIn?: unknown;
+        }>(`${serverUrl}/desktop/mcp/relay-token`, {
+          method: "POST",
+          accessToken,
+        });
+        if (typeof data?.token !== "string" || !data.token) return null;
+        return {
+          token: data.token,
+          expiresIn: typeof data.expiresIn === "number" ? data.expiresIn : 0,
+        };
+      } catch {
+        // 老服务端没有该端点 → 静默回落（本次会话无托管 MCP）
         return null;
       }
     },
@@ -213,7 +259,11 @@ function normalizeAuditBatchResponse(raw: unknown): AuditBatchResponse {
     : [];
   const count = (value: unknown): number =>
     typeof value === "number" && Number.isFinite(value) && value > 0 ? Math.trunc(value) : 0;
-  return { accepted: count(record.accepted), duplicates: count(record.duplicates), rejected };
+  return {
+    accepted: count(record.accepted),
+    duplicates: count(record.duplicates),
+    rejected,
+  };
 }
 
 export function toUsageSummaryRow(raw: unknown): ReactorUsageSummaryRow {

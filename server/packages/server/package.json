@@ -31,12 +31,14 @@
     "smoke:kb-pure": "tsx scripts/kb-pure-smoke.ts",
     "smoke:kb-server": "tsx scripts/kb-server-smoke.ts",
     "smoke:gateway-embeddings": "tsx scripts/gateway-embeddings-smoke.ts",
+    "smoke:mcp": "tsx scripts/mcp-smoke.ts",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "dependencies": {
     "@ai-sdk/openai": "^3",
     "@firecrawl/anydoc": "0.2.4",
     "@hono/node-server": "^2.1.1",
+    "@modelcontextprotocol/client": "2.0.0",
     "@reactor/shared": "workspace:*",
     "ai": "^6",
     "bcryptjs": "^3.0.3",

@@ -13,6 +13,9 @@
  *  · 本文件仍负责**审计事件**（事实记录：谁在何时做了什么）与**策略读写**。
  */
 
+import { createHash } from "node:crypto";
+
+
 import type {
   AuditBatchResponse,
   AuditEventInput,
@@ -24,6 +27,7 @@ import { normalizeAuditPolicyMode } from "@reactor/shared";
 import type { IdentityDb } from "../identity/db.js";
 import { computeCost, effectiveRates, hasBillableTokens, type PricingRates } from "../common/pricing.js";
 import { MAX_AUDIT_BATCH, MAX_AUDIT_SUMMARY_CHARS } from "./limits.js";
+import { sanitizeAuditDetails, sanitizeAuditSummary } from "./sanitize.js";
 
 /** 服务端写入归属（来自令牌，不信任请求体） */
 export interface AuditActor {
@@ -205,7 +209,8 @@ export async function insertAuditBatch(
       e.policyMode ?? null,
       intOrNull(e.durationMs),
       e.errorCode ?? null,
-      e.summary ?? null,
+      // summary 是调用方手写的短标签：过一遍凭据形态脱敏，误粘 Bearer/sk- 也不落库
+      e.summary ? sanitizeAuditSummary(e.summary) : null,
       intOrNull(e.filesTouched),
       u.model ?? null,
       u.provider ?? null,
@@ -322,23 +327,42 @@ function toRecord(r: Record<string, unknown>): AuditEventRecord {
   };
 }
 
-/** 查询（按 scope 收敛；服务端分页）。 */
-export async function queryAudit(  db: IdentityDb,
+/** 查询（按 scope 收敛；服务端分页；游标为可选的键集分页，spec 见 docs/未完成-审计脱敏与审批版本联动-方案-v1.md §1A）。 */
+export async function queryAudit(
+  db: IdentityDb,
   scope: AuditScope,
-  f: AuditQueryFilters,
-): Promise<{ events: AuditEventRecord[]; total: number }> {
+  f: AuditQueryFilters & { beforeTs?: string; beforeId?: number },
+): Promise<{ events: AuditEventRecord[]; total: number; nextCursor: { beforeTs: string; beforeId: number } | null }> {
   const { where, params } = buildWhere(scope, f);
+  // 键集游标：按排序键 (ts, id) 行比较取「更早的一页」。表只增不改，翻页不慢不漂移；
+  // 提供 cursor 时忽略 offset（调用方二选一，routes 层保证成对出现）。
+  const cursorParams =
+    f.beforeTs !== undefined && f.beforeId !== undefined
+      ? [new Date(f.beforeTs), f.beforeId]
+      : [];
+  const cursorClause =
+    cursorParams.length > 0 ? ` AND (ts, id) < ($${params.length + 1}, $${params.length + 2})` : "";
   const { rows: countRows } = await db.pool.query<{ n: number }>(
     `SELECT count(*)::int AS n FROM audit_event ${where}`,
     params,
   );
-  const limitParam = `$${params.length + 1}`;
-  const offsetParam = `$${params.length + 2}`;
+  const limitParam = `$${params.length + cursorParams.length + 1}`;
+  const offsetParam = `$${params.length + cursorParams.length + 2}`;
   const { rows } = await db.pool.query<Record<string, unknown>>(
-    `SELECT * FROM audit_event ${where} ORDER BY ts DESC, id DESC LIMIT ${limitParam} OFFSET ${offsetParam}`,
-    [...params, f.limit, f.offset],
+    `SELECT * FROM audit_event ${where}${cursorClause} ORDER BY ts DESC, id DESC LIMIT ${limitParam} OFFSET ${offsetParam}`,
+    [...params, ...cursorParams, f.limit, f.offset],
   );
-  return { events: rows.map(toRecord), total: countRows[0]?.n ?? 0 };
+  const events = rows.map(toRecord);
+  const last = events.at(-1);
+  const hasMore =
+    cursorParams.length > 0
+      ? rows.length === f.limit
+      : f.offset + rows.length < (countRows[0]?.n ?? 0);
+  return {
+    events,
+    total: countRows[0]?.n ?? 0,
+    nextCursor: hasMore && last ? { beforeTs: last.ts, beforeId: last.id } : null,
+  };
 }
 
 /** 报表统计（「审计与报表」页）：对**过滤后的集合**按动作/结果/用户聚合。 */
@@ -432,9 +456,10 @@ export async function recordAdminAction(db: IdentityDb, actor: AuditActor, entry
         entry.op,
         entry.target ?? null,
         entry.outcome ?? "ok",
-        entry.summary ?? null,
+        entry.summary ? sanitizeAuditSummary(entry.summary) : null,
         entry.errorCode ?? null,
-        entry.details === undefined ? null : JSON.stringify(entry.details),
+        // 脱敏管道（治理吸收第二批）：调用方误传密钥/超长快照也不会原样落库（机制化 NFR-P-01）
+        entry.details === undefined ? null : JSON.stringify(sanitizeAuditDetails(entry.details)),
       ],
     );
   } catch (err) {
@@ -444,6 +469,24 @@ export async function recordAdminAction(db: IdentityDb, actor: AuditActor, entry
 }
 
 /* ---------------- 策略下发 ---------------- */
+
+/**
+ * 策略内容寻址版本（治理吸收第二批，spec §1B）：策略本体的 updatedAt 与托管面各服务的
+ * (id, updatedAt, toolPolicy) 一起进哈希——任一变化版本必变，无变化必不变。
+ * 端侧 PermissionService 据此失效会话级「不再询问」授权。无输入（库无策略行且无托管面）
+ * 返回 undefined（不下发 = 端侧不联动，与老服务端同口径）。
+ */
+export function derivePolicyVersion(
+  policyUpdatedAt: string | undefined,
+  managedServers: Array<{ id: string; updatedAt?: string; toolPolicy: Record<string, string> }>,
+): string | undefined {
+  if (policyUpdatedAt === undefined && managedServers.length === 0) return undefined;
+  const fingerprint = managedServers
+    .map((server) => [server.id, server.updatedAt ?? "", JSON.stringify(server.toolPolicy)].join("|"))
+    .sort()
+    .join("\n");
+  return createHash("sha256").update(`${policyUpdatedAt ?? ""}\n${fingerprint}`).digest("hex").slice(0, 32);
+}
 
 /** 产品文档地址字段上限（与端侧归一化口径一致，见 packages/shared/src/desktopPolicy.ts）。 */
 const PRODUCT_DOCS_URL_MAX_LENGTH = 500;

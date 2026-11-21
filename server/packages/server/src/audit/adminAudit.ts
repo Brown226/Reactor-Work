@@ -66,10 +66,10 @@ export function shouldRecordAdminAudit(method: string, path: string): boolean {
   return INCLUDE_PREFIXES.some((p) => clean.startsWith(p));
 }
 
-/** 状态码 → 审计 outcome（401/403 = 主动拒绝，其余非 2xx = 失败）。 */
+/** 状态码 → 审计 outcome（401/403/429 = 主动拒绝，其余非 2xx = 失败）。 */
 function outcomeForStatus(status: number): "ok" | "denied" | "error" {
   if (status < 400) return "ok";
-  if (status === 401 || status === 403) return "denied";
+  if (status === 401 || status === 403 || status === 429) return "denied";
   return "error";
 }
 
@@ -93,6 +93,9 @@ export function adminAuditMiddleware(db: IdentityDb): MiddlewareHandler<AuditEnv
 
     // 手写埋点已记（details 快照那条），跳过兜底，避免一案两行。
     if (manualAuditDone.has(c)) return;
+    // 404 = 无路由命中（方法不匹配 / 路径不存在）：扫描器刷表的高频形态，不记
+    // （KnowWork 同口径）。真业务 404 极少走写方法；漏记一条 404 不损失审计价值。
+    if (c.res.status === 404) return;
 
     const claims = c.get("claims");
     if (!claims?.sub) return;

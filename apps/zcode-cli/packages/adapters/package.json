@@ -86,6 +86,10 @@
       "types": "./dist/workflow/index.d.ts",
       "import": "./dist/workflow/index.js"
     },
+    "./policy": {
+      "types": "./dist/policy/index.d.ts",
+      "import": "./dist/policy/index.js"
+    },
     "./tools": {
       "types": "./dist/tools/index.d.ts",
       "import": "./dist/tools/index.js"

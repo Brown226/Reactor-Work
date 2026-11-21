@@ -159,7 +159,10 @@ export function createReactorServerService(
     try {
       // 兜底同上：本机可能存着升级前写入的旧 user JSON（没有该字段）。
       const parsed = JSON.parse(raw) as ReactorServerUserInfo;
-      return { ...parsed, mustChangePassword: parsed.mustChangePassword ?? false };
+      return {
+        ...parsed,
+        mustChangePassword: parsed.mustChangePassword ?? false,
+      };
     } catch {
       return null;
     }
@@ -191,7 +194,11 @@ export function createReactorServerService(
     const accessToken = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.accessToken);
     const refreshToken = await credentials.load(REACTOR_SERVER_CREDENTIAL_KEYS.refreshToken);
     if (!accessToken || !refreshToken) return null;
-    cachedTokens = { accessToken, refreshToken, accessExpiresAt: readJwtExpiryMs(accessToken) };
+    cachedTokens = {
+      accessToken,
+      refreshToken,
+      accessExpiresAt: readJwtExpiryMs(accessToken),
+    };
     return cachedTokens;
   }
 
@@ -273,7 +280,10 @@ export function createReactorServerService(
         await persistTokens(current.accessToken, current.refreshToken, result.renewedAccessToken);
       }
     }
-    cachedGateway = { token: result.token, expiresAt: now() + result.expiresIn * 1000 };
+    cachedGateway = {
+      token: result.token,
+      expiresAt: now() + result.expiresIn * 1000,
+    };
     return cachedGateway.token;
   }
 
@@ -319,7 +329,10 @@ export function createReactorServerService(
     const provider = view.providers.find((candidate) => candidate.providerId === providerId);
     if (!provider) return null;
     // personalConfig 才是我们写的那一层；纯个人 provider 上两者等价，但读前者更贴合语义。
-    return { providerId, config: provider.personalConfig ?? provider.effectiveConfig };
+    return {
+      providerId,
+      config: provider.personalConfig ?? provider.effectiveConfig,
+    };
   }
 
   /** 该 provider 下已配置的个人模型 id（只有 personalConfig 里的这批是我们可改的）。 */
@@ -425,7 +438,11 @@ export function createReactorServerService(
       removed += 1;
     }
     if (added > 0 || removed > 0 || updated > 0) {
-      logger.info(undefined, "企业模型清单已对齐服务端目录", { added, updated, removed });
+      logger.info(undefined, "企业模型清单已对齐服务端目录", {
+        added,
+        updated,
+        removed,
+      });
     }
   }
 
@@ -619,7 +636,9 @@ export function createReactorServerService(
      * （主名被占时自动变成「… 2」），所以这里传主名是安全的；
      * 写完**不再改名**，避免第二次触发唯一性校验。
      */
-    const created = await providerSettings.createPersonalProvider({ providerName });
+    const created = await providerSettings.createPersonalProvider({
+      providerName,
+    });
     await providerSettings.savePersonalProviderOverlay(created.providerId as ProviderId, config);
     return String(created.providerId);
   }
@@ -1003,7 +1022,9 @@ export function createReactorServerService(
       gatewayModels.push(model);
     }
     if (shadowedByDirect > 0) {
-      logger.info(undefined, "同名模型直连优先，网关组已剔除重复条目", { count: shadowedByDirect });
+      logger.info(undefined, "同名模型直连优先，网关组已剔除重复条目", {
+        count: shadowedByDirect,
+      });
     }
 
     await writeEnterpriseProvider(gatewayBaseUrl, gatewayModels);
@@ -1112,7 +1133,10 @@ export function createReactorServerService(
         error: lastError,
       });
     }
-    logger.info(undefined, "企业服务端登录成功", { serverUrl, uid: result.user.uid });
+    logger.info(undefined, "企业服务端登录成功", {
+      serverUrl,
+      uid: result.user.uid,
+    });
     // P4.1 / P4.2b：登录成功 = 用量上报的启动点 + 策略拉取点（都 fire-and-forget，不阻断登录）。
     p4.onLogin();
     if (options.onLoginSuccess) {
@@ -1257,7 +1281,10 @@ export function createReactorServerService(
       return { apiKey: REACTOR_SERVER_API_KEY_PLACEHOLDER };
     }
 
-    logger.debug(undefined, "为企业模型请求注入网关令牌", { providerId, modelId });
+    logger.debug(undefined, "为企业模型请求注入网关令牌", {
+      providerId,
+      modelId,
+    });
     return { apiKey: await ensureGatewayToken(serverUrl) };
   }
 
@@ -1308,5 +1335,6 @@ export function createReactorServerService(
     refreshPolicy: p4.refreshPolicy,
     getPolicy: () => p4.policyCache.getView(),
     getUsageOverview: p4.getUsageOverview,
+    getManagedMcpRelayAuth: p4.getManagedMcpRelayAuth,
   };
 }

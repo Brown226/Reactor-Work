@@ -75,6 +75,9 @@ export interface AuditQueryParams {
   outcome?: string;
   limit?: number;
   offset?: number;
+  /** 键集游标（治理吸收第二批）：下一页优先用它，深翻页不再 OFFSET 慢查询/漂移 */
+  beforeTs?: string;
+  beforeId?: number;
   stats?: boolean;
 }
 
@@ -83,6 +86,8 @@ export interface AuditQueryResult {
   total: number;
   limit: number;
   offset: number;
+  /** 还有下一页时给出（取本页最后一行的 ts+id）；offset 翻页模式同样返回 */
+  nextCursor?: { beforeTs: string; beforeId: number };
   scope: "platform_admin" | "dept_head" | "user";
   stats?: AuditStats;
 }
