@@ -2349,3 +2349,13 @@ exceptions:
     paths:
       - packages/ui/src/root/GlobalDatabaseStartupLoading.tsx
     reason: 启动失败页在现有复制诊断/重试/退出旁增加导出日志按钮（docs/desktop/database-migration-startup-gate-plan.md）。只扩展既有失败页交互，不新增文件、不改变启动状态 owner 或模块边界；接管 packages/ui/src/root 不在本次范围内。
+  - id: engineering-mcp-runtime-bundling
+    rule: unmanaged-new-file
+    paths: [apps/zcode-cli/packages/bootstrap/src/app/engineering-runtime.ts]
+    reason: 工程能力随 CLI 内置为 MCP 服务与技能包（apps/zcode-cli/docs/design/v2/engineering-mcp.md）新增只读探测模块：按路径约定查找 MCP 入口与技能根，CLI 不依赖 @zcode/services 因此不 import 其实现；产物缺失时静默不注册，node_repl 与插件不受影响。接管整个 zcode-cli 未受管模块不在本次范围内。
+  - id: engineering-environment-diagnosis
+    rule: unmanaged-new-file
+    paths:
+      - packages/shared/src/engineering.ts
+      - packages/ui/src/settings/EngineeringSection.tsx
+    reason: 设置页工程软件环境诊断面板（docs/未完成-工程软件MCP接入-工作交接-v1.md）新增一份诊断报告类型与一个只读展示组件；类型只做 main→renderer 的进程边界投影，组件经 IPlatformService 的可选 engineering 端口取数，不直连 services 实现、不读 window.zcode。接管整个 shared 与 ui 未受管模块不在本次范围内。
