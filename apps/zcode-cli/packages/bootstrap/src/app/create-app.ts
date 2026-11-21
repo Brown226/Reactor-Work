@@ -124,6 +124,10 @@ import {
   type NodeReplBrowserBroker,
 } from "./node-repl-browser-broker.js";
 import { resolveBuiltInNodeReplMcpServers } from "./built-in-node-repl.js";
+import {
+  ENGINEERING_MCP_SERVER_NAME,
+  resolveEngineeringRuntime,
+} from "./engineering-runtime.js";
 import { resolveZCodeCustomCommandPrompt } from "../custom-command-prompt.js";
 import { resolveZCodeBuiltinPromptCommandInvocation } from "../builtin-prompt-command.js";
 import { BUILTIN_WORKFLOW_COMMAND_NAME } from "../builtin-workflow-command.js";
@@ -298,10 +302,16 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
             pluginTemplates,
           ).profiles;
     const pluginRuntimeFeatures = resolvePluginRuntimeFeatures(pluginOutcome);
-    const builtInMcpServers = resolveBuiltInNodeReplMcpServers({
-      pluginOutcome,
-      workingDirectory,
-    });
+    // 工程能力随 CLI 内置，与 node_repl 同属 builtInMcpServers（见 docs/design/v2/engineering-mcp.md）。
+    // 产物缺失时不注册，其他能力不受影响。
+    const engineeringRuntime = resolveEngineeringRuntime({ logger });
+    const builtInMcpServers = {
+      ...resolveBuiltInNodeReplMcpServers({ pluginOutcome, workingDirectory }),
+      ...(engineeringRuntime
+        ? { [ENGINEERING_MCP_SERVER_NAME]: engineeringRuntime.mcpServer }
+        : {}),
+    };
+    const engineeringSkillRoots = engineeringRuntime ? [engineeringRuntime.skillRoot] : [];
     // 用户目录已在 loader 前完成原地迁移；不能给项目/插件旧身份加内存兼容旁路。
     const subagentProfiles = [...zcodeSubagentProfiles, ...pluginSubagentProfiles];
     const ownsSessionStore = options.sessionStore === undefined;
@@ -1056,7 +1066,11 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
             createNodeSkillAdapter({
               additionalDirectories: options.additionalDirectories,
               extraRoots: configResult.config.skills.roots,
-              extraResolvedRoots: [...pluginOutcome.skillRoots, ...bundledSkillRoots],
+              extraResolvedRoots: [
+                ...pluginOutcome.skillRoots,
+                ...bundledSkillRoots,
+                ...engineeringSkillRoots,
+              ],
               disabledPaths: [
                 ...collectDisabledPaths(configResult.config.skillOverrides),
                 // 动态工作流关闭时不提供 dynamic-workflows 技能：

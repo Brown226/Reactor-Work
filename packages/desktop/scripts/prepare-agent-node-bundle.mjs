@@ -12,7 +12,7 @@
 // 远端（SSH/WSL/Docker）没有 Electron，由 Source Server archive 自带目标 Node，互不影响。
 
 // 修复原因：bootstrap 清理旧插件 dist 时使用 rmSync，漏导入会在构建前抛出 ReferenceError。
-import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -549,6 +549,66 @@ function stageBundledSkillPack() {
   console.log(`[prepare:agent-bundle] staged bundled skill pack ${bundledSkillPack.stagedPath}`);
 }
 
+// 工程能力（packages/services/src/engineering）：MCP server 入口 + 22 份技能正文。
+// bootstrap 的 resolveEngineeringRuntime 沿 glm 资源树找 packages/engineering，
+// 因此这里必须与 stageOfficialPlugins 同层落盘，不能塞进某个插件的子目录。
+const engineeringRuntimeSource = resolve(repoRoot, "packages/services/dist/engineering");
+const engineeringRuntimeStagedPath = "packages/engineering";
+const engineeringRequiredStagedPaths = ["mcp-server-main.js", "skills"];
+
+function buildEngineeringRuntime() {
+  console.log("[prepare:agent-bundle] building engineering runtime ...");
+  // tsc 只搬 .ts 编译产物，技能正文与 Python 脚本由 copy-engineering-skills 负责；
+  // 两步都必须在 stage 前跑完，否则打出来的包技能目录是空的。
+  runCommand(
+    process.execPath,
+    [
+      resolve(repoRoot, "node_modules/typescript/bin/tsc"),
+      "-b",
+      resolve(repoRoot, "packages/services/tsconfig.json"),
+    ],
+    { cwd: repoRoot, env: pnpmRunEnv },
+  );
+  runCommand(
+    process.execPath,
+    [resolve(repoRoot, "packages/services/scripts/copy-engineering-skills.mjs")],
+    { cwd: repoRoot, env: pnpmRunEnv },
+  );
+}
+
+function stageEngineeringRuntime() {
+  if (!existsSync(engineeringRuntimeSource)) {
+    // 不做静默降级：产物缺失意味着 buildEngineeringRuntime 没跑成功，
+    // 打出来的包会静默失去工程能力，比让打包失败更难排查。
+    throw new Error(
+      `[prepare:agent-bundle] missing engineering runtime: ${engineeringRuntimeSource}`,
+    );
+  }
+  const targetRoot = resolve(glmDir, engineeringRuntimeStagedPath);
+  mkdirSync(targetRoot, { recursive: true });
+  for (const entryName of readdirSync(engineeringRuntimeSource)) {
+    cpSync(resolve(engineeringRuntimeSource, entryName), resolve(targetRoot, entryName), {
+      recursive: true,
+      filter: shouldCopyOfficialPluginAsset,
+    });
+  }
+  // packages/services 编译产物是 ESM（package.json type: module）。
+  // glm 资源树没有 package.json，缺这一个文件时 .js 会被按 CJS 解析，
+  // import 语句直接抛 SyntaxError，表现为工程 MCP 连不上。
+  writeFileSync(
+    resolve(targetRoot, "package.json"),
+    `${JSON.stringify({ name: "@zcode/engineering-runtime", private: true, type: "module" }, null, 2)}\n`,
+  );
+  for (const requiredPath of engineeringRequiredStagedPaths) {
+    if (!existsSync(resolve(targetRoot, requiredPath))) {
+      throw new Error(
+        `[prepare:agent-bundle] missing staged engineering asset: ${requiredPath}`,
+      );
+    }
+  }
+  console.log(`[prepare:agent-bundle] staged engineering runtime ${engineeringRuntimeStagedPath}`);
+}
+
 // stdio MCP 的 npm/npx 回退（用户没装 Node 时由 Electron Node 运行随包 npm）。
 // tarball 按 sha512 缓存在 node_modules/.cache，重复打包不再下载。
 async function stageBundledNpmRuntime() {
@@ -617,8 +677,10 @@ function stageKoffiForCuaPlugin() {
 // 必须先构建 CLI 依赖，再构建官方插件；开发机残留的 dist 曾掩盖这个顺序问题。
 buildCliBundle();
 buildOfficialPluginRuntimes();
+buildEngineeringRuntime();
 await stageBundle();
 stageOfficialPlugins();
+stageEngineeringRuntime();
 stageBundledSkillPack();
 await stageBundledNpmRuntime();
 stageKoffiForCuaPlugin();
