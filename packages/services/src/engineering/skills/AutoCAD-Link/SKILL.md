@@ -13,6 +13,20 @@ license: Proprietary. 未经许可，严禁披露、复制、逆向还原或复�
 
 所有 CAD 代码均通过 `python_executor` 执行。
 
+## 依赖
+
+连接前确认执行环境具备 COM 绑定：
+
+```bash
+pip install pywin32 pyautocad
+```
+
+- `pywin32` 提供 COM 能力；缺失时报 `ModuleNotFoundError: No module named 'win32com'`。
+- `comtypes` 由 pyautocad 自动带入，通常无需单独安装。
+- 自检：`python -c "import win32com.client, pyautocad; print('ok')"`。
+
+AutoCAD 刚启动时可能短暂拒绝 COM 调用（`RPC_E_CALL_REJECTED`／「被调用方拒绝接收呼叫」）。此时**不要重复启动实例**，等待其初始化完成（数秒到数十秒）后重试即可。
+
 ## 连接 CAD
 
 只用 `Autocad` 连接，不直接调用 `GetActiveObject`、`CreateObject` 或加载固定产品的类型库。
