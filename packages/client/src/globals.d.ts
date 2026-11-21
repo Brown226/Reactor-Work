@@ -134,6 +134,13 @@ declare global {
       selectFile(): Promise<string | null>;
       /** 打开系统多文件选择框，返回选中文件路径；取消时返回空数组 */
       selectFiles?(): Promise<string[]>;
+      /**
+       * 工程软件环境诊断（仅桌面端）。main 进程执行只读探测后回传结构化报告；
+       * 未接入该 IPC 的宿主上为 undefined，UI 据此显示「仅桌面端可用」。
+       */
+      diagnoseEngineeringEnvironment?(): Promise<
+        import("@zcode/shared").EngineeringDiagnosticReport
+      >;
       /** 通过系统原生另存为对话框保存文件 */
       saveFile?(
         payload: import("@zcode/shared").SaveFileRequest,

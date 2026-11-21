@@ -253,6 +253,14 @@ export const PlatformChannels = {
   SelectFile: "zcode:select-file",
   /** 打开系统多文件选择框 */
   SelectFiles: "zcode:select-files",
+  /**
+   * Renderer → Main：工程软件环境诊断。
+   *
+   * 必须走 IPC：`diagnose()` 依赖 node:fs / child_process / Windows 注册表，
+   * renderer 进程跑不了，只能在 main 执行后把结构化结果回传。
+   * 只读，不启动软件、不改配置。
+   */
+  EngineeringDiagnose: "zcode:engineering-diagnose",
   /** Renderer → Main：写入宿主 ~/.zcode 临时文本附件 */
   CreateTempTextAttachment: "zcode:create-temp-text-attachment",
   /** Renderer → Main：把 dwf 产物某一版的字节落成本机副本（「作为文件打开」） */

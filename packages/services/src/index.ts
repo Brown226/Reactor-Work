@@ -457,4 +457,8 @@ export {
 // 使用方按 `engineering.connectToServer` / `engineering.EngineeringExecutor` 访问。
 // 能力边界与状态所有权见 specs/engineering-mcp-link.md。
 // ============================================================
-export * as engineering from "./engineering/index.js";
+//
+// 该命名空间整体依赖 node:net / node:fs / node:child_process 等 Node 内置模块，
+// 只从 Node 入口（src/node.ts，即 `@zcode/services/node`）导出。放在这里会被
+// renderer 的依赖链一并加载，浏览器环境访问 node:net.createConnection 即抛错，
+// 与 knowledge sidecar 白屏同因。

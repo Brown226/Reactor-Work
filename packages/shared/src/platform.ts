@@ -27,6 +27,7 @@ import type {
   WebRemoteControlRendererActionRequest,
   WebRemoteControlRendererActionResult,
 } from "#src/web-remote-relay/index.js";
+import type { EngineeringDiagnosticReport } from "./engineering.js";
 import type { AppSettings, Locale } from "./protocol.js";
 import type {
   ExtensionNotificationClick,
@@ -815,6 +816,20 @@ export interface ComposerAttachmentInjectionPayload {
   imagePath: string;
 }
 
+/**
+ * 工程软件环境诊断平台端口（仅桌面端）。
+ *
+ * 为什么不做成 RPC service：`diagnose()` 依赖 node:fs / child_process / Windows
+ * 注册表，只有 Electron main 进程能执行；renderer 无法加载 services 的 Node 入口。
+ *
+ * 边界：只回答「本机环境能不能用」，不反映 Agent 侧 MCP 连接状态——MCP server 是
+ * CLI 子进程，与 desktop host 的 registry 不共享，显示「已连接」会误导用户。
+ */
+export interface EngineeringPlatformPort {
+  /** 执行只读环境诊断；不启动软件、不改配置、不写盘。 */
+  diagnose(): Promise<EngineeringDiagnosticReport>;
+}
+
 export interface IPlatformService {
   /** 是否支持当前客户端本机文件的默认应用与目录操作；Web 不具备此能力。 */
   canOpenLocalFiles?: boolean;
@@ -827,6 +842,12 @@ export interface IPlatformService {
    * web / 手机远控为 undefined，plugin-ui 据此回退到普通 MCP 工具卡片。
    */
   pluginSandbox?: PluginSandboxPlatformPort;
+
+  /**
+   * 工程软件环境诊断端口。只有桌面端实现；Web / 手机远控为 undefined，
+   * UI 据此显示「仅桌面端可用」，不伪造空报告。
+   */
+  engineering?: EngineeringPlatformPort;
 
   /** 打开系统目录选择框，返回选中路径或 null */
   selectDirectory(): Promise<string | null>;

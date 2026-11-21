@@ -112,6 +112,7 @@ import type {
   SaveCliMcpToUserDirectoryRequest,
   SaveFileRequest,
   SaveFileResult,
+  EngineeringDiagnosticReport,
   PrintPageToPdfResult,
   MicrophoneAccessResult,
   MicrophoneSettingsTarget,
@@ -370,6 +371,9 @@ contextBridge.exposeInMainWorld("zcode", {
     ipcRenderer.invoke(PlatformChannels.SelectDirectories),
   /** 打开系统文件选择框，返回选中文件路径或 null */
   selectFile: (): Promise<string | null> => ipcRenderer.invoke(PlatformChannels.SelectFile),
+  /** 工程软件环境诊断：main 执行只读探测，renderer 只负责渲染 */
+  diagnoseEngineeringEnvironment: (): Promise<EngineeringDiagnosticReport> =>
+    ipcRenderer.invoke(PlatformChannels.EngineeringDiagnose),
   /** 打开系统多文件选择框，返回选中文件路径；取消时返回空数组 */
   selectFiles: (): Promise<string[]> => ipcRenderer.invoke(PlatformChannels.SelectFiles),
   /** 通过 main process 的原生另存为对话框明确落盘 */

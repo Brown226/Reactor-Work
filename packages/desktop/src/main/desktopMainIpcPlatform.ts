@@ -1,7 +1,7 @@
 import { decorateRequestSecurityLogArgs } from "./request-security-edition/index.js";
 /* eslint-disable max-lines -- 桌面平台 IPC 集中装配，拆散会让权限边界更难审计；行数随平台能力增长。 */
 import { BrowserWindow, dialog, ipcMain, nativeTheme } from "electron";
-import { readZCodeStdioTapDevState } from "@zcode/services/node";
+import { engineering, readZCodeStdioTapDevState } from "@zcode/services/node";
 import {
   DesktopCommandIds,
   appSettingsPatchSchema,
@@ -154,6 +154,18 @@ export function registerPlatformIpcHandlers(options: {
     }
     return result.filePaths;
   });
+
+  /**
+   * 工程软件环境诊断。
+   *
+   * 为什么放在 main：`diagnose()` 依赖 node:fs / child_process / Windows 注册表，
+   * renderer 进程加载不了 services 的 Node 入口。这里只做进程边界搬运，
+   * 不加工结果——报告的字段语义归 services 侧所有，main 不重复解释。
+   *
+   * 不 try/catch 成「假报告」：diagnose 自身保证不抛异常；真出错说明是 bug，
+   * 让错误冒到 renderer 显示，比伪装成「环境正常」更容易定位。
+   */
+  ipcMain.handle(PlatformChannels.EngineeringDiagnose, () => engineering.diagnose());
 
   registerDesktopSaveFileIpcHandler(options.logger);
   registerDesktopPrintToPdfIpcHandler(options.logger);

@@ -18,6 +18,7 @@ import {
   Blocks,
   Globe2,
   Cable,
+  Wrench,
   HardDrive,
   Keyboard,
   FileSearch,
@@ -127,6 +128,14 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
     id: "mcp",
     icon: Cable,
     titleId: "settings.mcpTitle",
+    groupId: "agentCapabilities",
+  },
+  // 工程软件：回答「本机环境能不能用」，与 MCP 配置页职责分离——用户不配置它，
+  // 它是内置固定服务，需要的是安装状态与依赖诊断。
+  {
+    id: "engineering",
+    icon: Wrench,
+    titleId: "settings.engineering.title",
     groupId: "agentCapabilities",
   },
   {

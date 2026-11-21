@@ -355,6 +355,9 @@ export { createServerSkillSyncService } from "./server-skills/serverSkillSyncSer
 export { createServerAgentSyncService } from "./server-agents/serverAgentSyncService.js";
 // 知识缓存同步（文件审查的依据）：只读登录态与凭据，把标准清单/术语白名单/规范库拉到用户数据目录。
 export { createKnowledgeSyncService } from "./knowledge/knowledgeSyncService.js";
+// 工程软件连接层：整体依赖 node:net / node:fs / node:child_process，只允许从 Node 入口导出。
+// 若放回 src/index.ts，renderer 会一并加载并访问 node:net.createConnection 导致白屏。
+export * as engineering from "./engineering/index.js";
 export { createFeedbackDiagnosticArchive } from "./feedback/feedbackLogArchive.js";
 export { createFeedbackService } from "./feedback/feedbackService.js";
 export type { CreateFeedbackServiceOptions } from "./feedback/feedbackService.js";

@@ -100,6 +100,7 @@ import { PersonalizationSection } from "@/settings/PersonalizationSection.js";
 import { BrowserSettingsSection } from "@/settings/BrowserSettingsSection.js";
 import { ComputerUseSection } from "@/settings/ComputerUseSection.js";
 import { ShortcutSettingsSection } from "@/settings/ShortcutSettingsSection.js";
+import { EngineeringSection } from "@/settings/EngineeringSection.js";
 import {
   SettingsSearch,
   SettingsSearchTargetContext,
@@ -358,6 +359,11 @@ export function SettingsPage({
   const isLinuxDesktop = Boolean(isDesktop && !isMacDesktop && !isWindowsDesktop);
   const usesInlineWindowControls = Boolean(isWindowsDesktop || isLinuxDesktop);
   const platform = usePlatform();
+
+  // 工程软件环境诊断的数据源：只有桌面端 preload 暴露该端口，Web / 手机远控为 undefined。
+  // 直接取端口上的 diagnose 引用（平台对象在宿主侧只创建一次），保持引用稳定，
+  // 否则 EngineeringSection 的 useEffect 会因每次渲染新建闭包而反复触发诊断。
+  const loadEngineeringReport = platform.engineering?.diagnose;
 
   // 左侧导航搜索：只过滤分区列表，不改变当前选中分区与右侧内容。
   const [settingsQuery, setSettingsQuery] = useState("");
@@ -2171,6 +2177,11 @@ export function SettingsPage({
                             requestPluginStoreOpen({ returnScopeKey: "user", intent });
                             onBack?.();
                           }}
+                        />
+                      ) : activeSection === "engineering" ? (
+                        <EngineeringSection
+                          isDesktop={Boolean(isDesktop)}
+                          loadReport={loadEngineeringReport}
                         />
                       ) : activeSection === "skill" ? (
                         <PluginsSection

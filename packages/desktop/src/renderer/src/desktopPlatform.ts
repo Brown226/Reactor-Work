@@ -14,6 +14,11 @@ import { createDesktopPluginSandboxPlatform } from "./plugin-sandbox/desktopPlug
 export function createDesktopPlatform(options: {
   isLocalDevelopmentRuntime: boolean;
 }): IPlatformService {
+  // 诊断端口在这里求值一次：preload 先于 renderer 执行完，不存在「后到」的依赖。
+  // 旧版 preload 没有该 bridge 时整个端口为 undefined，UI 据此显示「仅桌面端可用」，
+  // 而不是留一个调用即抛错的端口。引用稳定，UI 的 useEffect 不会反复触发诊断。
+  const diagnoseEngineeringEnvironment = window.zcode.diagnoseEngineeringEnvironment;
+
   return {
     onAppControlNavigation: (handler) =>
       registerAppControlNavigationHandler(
@@ -37,6 +42,10 @@ export function createDesktopPlatform(options: {
     selectDirectories: () => window.zcode.selectDirectories(),
     selectFile: () => window.zcode.selectFile(),
     selectFiles: () => window.zcode.selectFiles?.() ?? Promise.resolve([]),
+    // 不用 getter：诊断不依赖后到的 Host 服务，preload 在 renderer 之前就跑完了。
+    engineering: diagnoseEngineeringEnvironment
+      ? { diagnose: () => diagnoseEngineeringEnvironment() }
+      : undefined,
     createTempTextAttachment: (payload) => window.zcode.createTempTextAttachment(payload),
     materializeWorkflowArtifactFile: (payload) =>
       window.zcode.materializeWorkflowArtifactFile(payload),
