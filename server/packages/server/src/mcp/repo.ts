@@ -240,35 +240,28 @@ export async function saveSnapshot(
   );
 }
 
-/** 整体替换三档策略表（PUT 语义）；顺带清掉对应工具的 isNew（管理员改过即固化）。 */
+/**
+ * 整体替换三档策略表（PUT 语义）；顺带清掉对应工具的 isNew（管理员改过即固化）。
+ *
+ * isNew 清除刻意在 **Node 侧**做（读快照→改→写回）而不是 SQL jsonb 表达式：
+ * `jsonb ? text` 这类操作符在拼接 SQL 里容易被解析器误判（实测 `jsonb ? jsonb` 报错），
+ * 且快照改写逻辑放 Node 侧类型安全、可测。
+ */
 export async function putToolPolicy(
   db: IdentityDb,
   id: string,
   policy: Record<string, McpToolPolicy>,
   updatedBy: string,
 ): Promise<McpServerRecord | null> {
+  const existing = await getMcpServer(db, id);
+  if (!existing) return null;
+  const snapshot = existing.toolsSnapshot.map((tool) =>
+    policy[tool.name] !== undefined && tool.isNew === true ? { ...tool, isNew: false } : tool,
+  );
+  await saveSnapshot(db, id, snapshot, policy, existing.syncError);
   const { rows } = await db.pool.query<McpServerRow>(
-    `UPDATE mcp_server SET
-       tool_policy = $2::jsonb,
-       tools_snapshot = CASE
-         WHEN $2::jsonb = '{}'::jsonb THEN tools_snapshot
-         ELSE (
-           SELECT jsonb_agg(
-             CASE
-               WHEN entry->>'name' IS NOT NULL AND $2::jsonb ? entry->>'name'
-                 THEN entry || '{"isNew": false}'::jsonb
-                 ELSE entry
-               END
-             ORDER BY ord
-           )
-           FROM jsonb_array_elements(tools_snapshot) WITH ORDINALITY AS t(entry, ord)
-         )
-       END,
-       updated_by = $3,
-       updated_at = now()
-     WHERE id = $1
-     RETURNING *`,
-    [id, JSON.stringify(policy), updatedBy],
+    `UPDATE mcp_server SET updated_by = $2, updated_at = now() WHERE id = $1 RETURNING *`,
+    [id, updatedBy],
   );
   return rows[0] ? rowToRecord(rows[0]) : null;
 }

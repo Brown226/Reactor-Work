@@ -124,6 +124,10 @@ async function main() {
     env: {
       ...process.env,
       REACTOR_IDENTITY_PORT: String(PORT),
+      // 管理面端口 = 用户面端口 → 单端口兼容模式：/admin/*（secrets 等）在 BASE 可达。
+      // 双端口分离后用户面 /admin/* 一律 404（防越权面暴露），不设这行本冒烟的
+      // secrets/providers 段会整体 404（2026-11-21 实测）。
+      REACTOR_IDENTITY_ADMIN_PORT: String(PORT),
       REACTOR_AUTH_MODE: "mixed",
       // 额度告警外发通道（mock）：证明「达阈值会真的推出去」
       REACTOR_QUOTA_WEBHOOK_URL: webhook.url,

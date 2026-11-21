@@ -1,20 +1,21 @@
 /**
  * 托管 MCP 路由（治理平面 P0，spec 见 docs/未完成-MCP治理平面-spec-v1.md）。
  *
- * 两面共用一个工厂（与 quota-routes.ts 同型）：
- *  - 管理面 `/admin/mcp/servers*`：仅 platform_admin；写操作由 adminAudit 兜底记
- *    `admin_action`，创建/修改/删除/策略替换再补带改前改后快照的富审计（markAdminAudited 去重，
- *    快照红线：**密钥值绝不入快照**——对外只回 header 名与末四位）。
- *  - 用户面 `/desktop/mcp/*`：relay 令牌签发 + JSON-RPC/SSE 转发。挂载在 authed 组之后复用其
- *    Bearer（本工厂不自带 use("*")）；relay 调用自身要求 aud=mcp-relay 短期令牌。
+ * **两个工厂、三种挂载点**：
+ *  - `createMcpRoutes`（本文件上方）：管理面 `/admin/mcp/servers*`（仅 platform_admin，
+ *    adminAudit 兜底 + 富审计，红线：**密钥值绝不入快照**）+ relay-token 签发（需 access，
+ *    挂 authed 后复用其 Bearer）。
+ *  - `createMcpRelayRoutes`（文件末尾）：relay 数据面 JSON-RPC/SSE/DELETE —— **挂公开段**
+ *    （authed 之前，与 updates/feedback 公开面同一机制）。原因：authed 组会把 relay 短期令牌
+ *    当 access 验（audience 不同）→ 一律 401；relay 自带 aud=mcp-relay 鉴权，挂公开段让
+ *    长期 access 令牌不进转发链。
  *
  * relay 纪律（spec §1/§6）：
- *  - 注入上游的请求头**白名单**透传（accept/content-type/mcp-session-id 等），其余一律丢弃
- *    —— 端侧带来的 relay JWT 绝不能转发给上游；
+ *  - 注入上游的请求头**白名单**透传（accept/content-type/mcp-session-id 等），其余一律丢弃；
  *  - 逐调用再判：服务停用 / 工具 block / 工具 problem → JSON-RPC error denied；
  *    tools/list 结果同步过滤 block/problem 工具（双保险：端侧注册期已过滤）；
  *  - 上游错误原样转发（状态码 + JSON-RPC error 体），不吞错、不回落、不重试；
- *  - 每次 tools/call 落一条 `tool_call` 审计（只记元数据：服务名/工具名/结果，不含参数与输出）。
+ *  - 每次 tools/call 落一条 `tool_call` 审计（只记元数据，不含参数与输出正文）。
  */
 
 import { randomUUID } from "node:crypto";
@@ -310,6 +311,20 @@ export function createMcpRoutes(db: IdentityDb, opts: McpRoutesOptions) {
     return c.json({ token, audience: "mcp-relay", expiresIn: ttl });
   });
 
+  return app;
+}
+
+/**
+ * relay 数据面（JSON-RPC / SSE / 会话关闭）——**独立工厂、挂公开段**。
+ *
+ * 为什么不能和上面共用一个挂载点：authed 组的 Bearer 中间件会把 relay 短期令牌当
+ * access 令牌验（audience 不同）→ 一律 401（冒烟实测）。relay 自带 aud=mcp-relay 的
+ * 短期令牌鉴权，挂公开段反而更安全——长期 access 令牌不进入转发链，不会被透传上游。
+ * 与 updates/feedback 公开面同一挂载机制（identity/routes.ts 公开段，authed 之前）。
+ */
+export function createMcpRelayRoutes(db: IdentityDb, opts: McpRoutesOptions) {
+  const app = new Hono<AppEnv>();
+
   app.post("/desktop/mcp-relay/:id", async (c) => {
     const relay = await authenticateRelay(c, opts);
     if (!relay) return relayDenied(c);
@@ -326,19 +341,15 @@ export function createMcpRoutes(db: IdentityDb, opts: McpRoutesOptions) {
     }
 
     const upstream = await forwardJsonRpc(target, c, body, opts);
-    // tools/list 结果过滤 block/problem 工具（双保险：端侧注册期已过滤）
+    // tools/list 结果过滤 block/problem 工具（双保险：端侧注册期已过滤）。
+    // ⚠ 必须**原地**改 result.tools：respond 闭包持有的是 forwardJsonRpc 解析出的
+    // 同一个 json 对象引用，重新赋值 upstream.json 不会进入响应（冒烟实测踩过）。
     const isBatch = Array.isArray(body);
     const listResult = upstream.json?.result as { tools?: unknown } | undefined;
     if (!isBatch && body.method === "tools/list" && upstream.ok && listResult && Array.isArray(listResult.tools)) {
-      upstream.json = {
-        ...upstream.json,
-        result: {
-          ...listResult,
-          tools: (listResult.tools as Array<Record<string, unknown>>).filter(
-            (tool) => denyReasonForTool(target, tool?.name) === null,
-          ),
-        },
-      };
+      listResult.tools = (listResult.tools as Array<Record<string, unknown>>).filter(
+        (tool) => denyReasonForTool(target, tool?.name) === null,
+      );
     }
     if (isBatch) {
       for (const request of body) {

@@ -94,7 +94,7 @@ function isRejected(status: number | null): boolean {
   return status === 401 || status === 403;
 }
 
-/** 状态码 → 管理员可读文案（不回上游响应原文）。 */
+/** 状态码 → 管理员可读文案（不回上游响应原文；协议级原始错误摘要不含敏感值，附在末尾便于定位）。 */
 function explainProbeError(error: unknown, status: number | null, timeoutMs: number): string {
   if (status === 401 || status === 403) return `凭据被拒绝（${status}）：共享凭据不对，或该账号没有访问权限`;
   if (status === 404) return "地址不存在或端点不对（404）：确认 URL 指向 MCP 端点";
@@ -102,5 +102,6 @@ function explainProbeError(error: unknown, status: number | null, timeoutMs: num
   const raw = error instanceof Error ? error.message : String(error);
   if (/timed out|超时|abort/i.test(raw)) return `连接或拉取超时（${Math.round(timeoutMs / 1000)} 秒）`;
   if (/fetch failed|ENOTFOUND|ECONNREFUSED|EAI_AGAIN|getaddrinfo/i.test(raw)) return "无法连接到目标地址";
-  return "响应不是 MCP 端点或协议不符";
+  // 兜底：附上原始错误摘要（SDK 协议错误不含请求体/凭据，是定位协议不符的关键线索）
+  return `响应不是 MCP 端点或协议不符（${raw.slice(0, 160)}）`;
 }

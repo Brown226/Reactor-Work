@@ -71,7 +71,23 @@ interface FakeMcpOptions {
 
 function startFakeMcp(options: FakeMcpOptions): Promise<{ server: Server; url: string; close: () => Promise<void> }> {
   return new Promise((resolveServer) => {
+    // 打开的 SSE 流：close 时统一收口，避免进程挂不住
+    const openStreams = new Set<import("node:http").ServerResponse>();
     const server = createServer((request, response) => {
+      // Streamable HTTP：GET 是客户端建服务器→客户端 SSE 流（保持打开，真实上游同形态）；
+      // DELETE 是会话关闭。两者都没有 JSON-RPC body，不能走下面的 POST 解析分支。
+      if (request.method === "GET") {
+        response.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-cache" });
+        response.write(": ping\n\n");
+        openStreams.add(response);
+        response.on("close", () => openStreams.delete(response));
+        return;
+      }
+      if (request.method === "DELETE") {
+        response.writeHead(200, { "content-type": "application/json" });
+        response.end("{}");
+        return;
+      }
       const chunks: Buffer[] = [];
       request.on("data", (chunk: Buffer) => chunks.push(chunk));
       request.on("end", () => {
@@ -100,21 +116,28 @@ function startFakeMcp(options: FakeMcpOptions): Promise<{ server: Server; url: s
         const id = parsed.id ?? null;
         switch (parsed.method) {
           case "initialize":
-            respondJson({
-              jsonrpc: "2.0",
-              id,
-              result: {
-                protocolVersion:
-                  (parsed.params?.protocolVersion as string | undefined) ?? "2025-06-18",
-                capabilities: { tools: {} },
-                serverInfo: { name: "fake-mcp", version: "1.0.0" },
-              },
+            // SDK 2.0 要求 initialize 响应携带 mcp-session-id（服务端分配会话标识）
+            response.writeHead(200, {
+              "content-type": "application/json",
+              "mcp-session-id": options.sessionId ?? "fake-session-1",
             });
+            response.end(
+              JSON.stringify({
+                jsonrpc: "2.0",
+                id,
+                result: {
+                  protocolVersion:
+                    (parsed.params?.protocolVersion as string | undefined) ?? "2025-06-18",
+                  capabilities: { tools: {} },
+                  serverInfo: { name: "fake-mcp", version: "1.0.0" },
+                },
+              }),
+            );
             return;
-          // 官方 SDK 的 initialized 通知没有 id：202 空回执即可
+          // 官方 SDK 的 initialized 通知没有 id：202 **空体**回执（带体会被 SDK 当响应解析失败）
           case "notifications/initialized":
-            response.writeHead(202, { "content-type": "application/json" });
-            response.end("{}");
+            response.writeHead(202);
+            response.end();
             return;
           case "tools/list":
             respondJson({
@@ -161,6 +184,7 @@ function startFakeMcp(options: FakeMcpOptions): Promise<{ server: Server; url: s
         url: `http://127.0.0.1:${port}/mcp`,
         close: () =>
           new Promise<void>((done) => {
+            for (const stream of openStreams) stream.end();
             server.close(() => done());
           }),
       });
@@ -190,20 +214,43 @@ async function main(): Promise<void> {
 
   const fake = await startFakeMcp({
     tools: [
-      { name: "list_contacts", description: "列出联系人", annotations: { readOnlyHint: true } },
-      { name: "delete_contact", description: "删除联系人" },
-      // 参数结构不合格：inputSchema 根类型不是 object → problem
-      { name: "broken_tool", inputSchema: { type: "array" } },
-      { name: "list_contacts", description: "重复名（服务端快照去重）" },
-      { name: "echo", inputSchema: { type: "object", properties: { text: { type: "string" } } } },
+      // SDK 2.0 对 tools/list 做客户端 Zod 校验：每个工具必须有 object 型 inputSchema，
+      // 否则 listTools 整体失败——「坏工具」因此选「SDK 能过、服务端目录才拒」的形态
+      // （>64KB 的 inputSchema），由服务端目录标 problem，而不是依赖上游自觉。
+      {
+        name: "list_contacts",
+        description: "列出联系人",
+        annotations: { readOnlyHint: true },
+        inputSchema: { type: "object", properties: {} },
+      },
+      {
+        name: "delete_contact",
+        description: "删除联系人",
+        inputSchema: { type: "object", properties: { id: { type: "string" } } },
+      },
+      {
+        name: "broken_tool",
+        inputSchema: {
+          type: "object",
+          properties: { blob: { type: "string", description: "x".repeat(70_000) } },
+        },
+      },
+      {
+        name: "search_contacts",
+        description: "搜索联系人",
+        inputSchema: { type: "object", properties: { keyword: { type: "string" } } },
+      },
+      {
+        name: "echo",
+        inputSchema: { type: "object", properties: { text: { type: "string" } } },
+      },
     ],
   });
   const fakeDown = await startFakeMcp({ tools: [], failAll: true });
 
   try {
     const { ensureMcpSchema } = await import("../src/mcp/schema.js");
-    const { createMcpRoutes } = await import("../src/mcp/routes.js");
-    const { listManagedServers } = await import("../src/mcp/repo.js");
+    const { createMcpRoutes, createMcpRelayRoutes } = await import("../src/mcp/routes.js");
     const { createAuditRoutes } = await import("../src/audit/routes.js");
     const { ensureInterfaceModeSchema } = await import("../src/interface-mode/repo.js");
 
@@ -229,6 +276,8 @@ async function main(): Promise<void> {
       await next();
     });
     app.route("/", createMcpRoutes(db, { secretKey: SECRET_KEY, jwtSecret: JWT_SECRET }));
+    // relay 数据面是独立工厂（挂公开段）；冒烟里两个工厂挂同一个 app（claims 中间件对 relay 无副作用）
+    app.route("/", createMcpRelayRoutes(db, { secretKey: SECRET_KEY, jwtSecret: JWT_SECRET }));
     app.route("/", createAuditRoutes(db));
 
     const call = async (
@@ -291,8 +340,7 @@ async function main(): Promise<void> {
     check("登记成功 → 201", created.status === 201, created);
     const serverRow = (created.json as { server?: { id: string; toolsSnapshot?: unknown[]; toolPolicy?: Record<string, string> } })?.server;
     const snapshot = serverRow?.toolsSnapshot ?? [];
-    check("快照 4 个工具（重复名截断在 4 条原始里不会重复落——按名唯一场景取决于上游）",
-      snapshot.length === 4 || snapshot.length === 5, snapshot.length);
+    check("快照 5 个工具（fake 全量，含 1 个坏工具）", snapshot.length === 5, snapshot.length);
     const snapshotNames = snapshot.map((tool) => (tool as { name?: string }).name);
     check("schema 不合格的工具标 problem", snapshot.some((tool) => (tool as { problem?: string }).problem), snapshotNames);
 
@@ -376,6 +424,20 @@ async function main(): Promise<void> {
     };
 
     const relayBase = `/desktop/mcp-relay/${serverRow?.id}`;
+    // relay 前的库态断言：过滤依赖快照里的 problem 与策略表里的 block，这两项不成立
+    // 时 relay 的断言失败只是表象，先把库态钉住（spec §5 事件顺序的前置条件）。
+    const dbRowBeforeRelay = await db.pool.query<{ tool_policy: Record<string, string>; tools_snapshot: Array<{ name: string; problem?: string; isNew?: boolean }> }>(
+      `SELECT tool_policy, tools_snapshot FROM mcp_server WHERE id = $1`,
+      [serverRow?.id],
+    );
+    const policyBeforeRelay = dbRowBeforeRelay.rows[0]?.tool_policy ?? {};
+    const snapshotBeforeRelay = dbRowBeforeRelay.rows[0]?.tools_snapshot ?? [];
+    check("库态：delete_contact 已是 block", policyBeforeRelay.delete_contact === "block", policyBeforeRelay);
+    check(
+      "库态：broken_tool 带 problem 标记",
+      snapshotBeforeRelay.find((tool) => tool.name === "broken_tool")?.problem !== undefined,
+      snapshotBeforeRelay.map((tool) => `${tool.name}:${tool.problem ? "problem" : "ok"}:${tool.isNew ? "new" : ""}`),
+    );
     const noToken = await app.request(relayBase, {
       method: "POST",
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
@@ -432,10 +494,10 @@ async function main(): Promise<void> {
     const policyAfterDelete = await call("GET", "/desktop/policy");
     const serversAfterDelete = ((policyAfterDelete.json as { policy?: { managedMcp?: { servers?: unknown[] } } })?.policy?.managedMcp?.servers ?? []);
     check("删除后下发面不再携带该服务", serversAfterDelete.length === 0, serversAfterDelete.length);
-    const adminAudit = await db.pool.query<{ op: string }>(
-      "SELECT op FROM admin_action WHERE op IN ('mcp.create','mcp.delete','mcp.set_tool_policy') ORDER BY id",
+    const adminAudit = await db.pool.query<{ tool_name: string }>(
+      "SELECT tool_name FROM audit_event WHERE action = 'admin_action' AND tool_name IN ('mcp.create','mcp.delete','mcp.set_tool_policy') ORDER BY id",
     );
-    const ops = adminAudit.rows.map((row) => row.op);
+    const ops = adminAudit.rows.map((row) => row.tool_name);
     check("管理操作审计留痕（create/set_tool_policy/delete）",
       ops.includes("mcp.create") && ops.includes("mcp.set_tool_policy") && ops.includes("mcp.delete"),
       ops);

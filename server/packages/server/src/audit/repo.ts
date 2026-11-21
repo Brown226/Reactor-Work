@@ -336,12 +336,18 @@ export async function queryAudit(
   const { where, params } = buildWhere(scope, f);
   // 键集游标：按排序键 (ts, id) 行比较取「更早的一页」。表只增不改，翻页不慢不漂移；
   // 提供 cursor 时忽略 offset（调用方二选一，routes 层保证成对出现）。
+  // 注意 buildWhere 无过滤条件时返回空串——游标条件要自己补 WHERE，不能拼成悬空 AND。
   const cursorParams =
     f.beforeTs !== undefined && f.beforeId !== undefined
       ? [new Date(f.beforeTs), f.beforeId]
       : [];
-  const cursorClause =
-    cursorParams.length > 0 ? ` AND (ts, id) < ($${params.length + 1}, $${params.length + 2})` : "";
+  const cursorCondition =
+    cursorParams.length > 0 ? `(ts, id) < ($${params.length + 1}, $${params.length + 2})` : null;
+  const fullWhere = cursorCondition
+    ? where
+      ? `${where} AND ${cursorCondition}`
+      : `WHERE ${cursorCondition}`
+    : where;
   const { rows: countRows } = await db.pool.query<{ n: number }>(
     `SELECT count(*)::int AS n FROM audit_event ${where}`,
     params,
@@ -349,7 +355,7 @@ export async function queryAudit(
   const limitParam = `$${params.length + cursorParams.length + 1}`;
   const offsetParam = `$${params.length + cursorParams.length + 2}`;
   const { rows } = await db.pool.query<Record<string, unknown>>(
-    `SELECT * FROM audit_event ${where}${cursorClause} ORDER BY ts DESC, id DESC LIMIT ${limitParam} OFFSET ${offsetParam}`,
+    `SELECT * FROM audit_event ${fullWhere} ORDER BY ts DESC, id DESC LIMIT ${limitParam} OFFSET ${offsetParam}`,
     [...params, ...cursorParams, f.limit, f.offset],
   );
   const events = rows.map(toRecord);

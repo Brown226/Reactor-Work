@@ -4,7 +4,7 @@
  */
 
 export { ensureMcpSchema } from "./schema.js";
-export { createMcpRoutes, type McpRoutesOptions } from "./routes.js";
+export { createMcpRoutes, createMcpRelayRoutes, type McpRoutesOptions } from "./routes.js";
 export {
   listManagedServers,
   listMcpServers,

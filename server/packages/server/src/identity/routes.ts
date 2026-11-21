@@ -55,6 +55,12 @@ export interface IdentityAppOptions {
   /** 管理台 SPA 产物目录（配置则挂到 /console）；见 admin-static.ts */
   adminDist?: string;
   /**
+   * 公开段额外路由（治理平面 P0 的 relay 数据面用）：挂在 authed 组**之前**，
+   * 自带鉴权（relay JWT）。为什么走公开段：authed 组会把 relay 短期令牌当 access 验
+   * （audience 不同）→ 一律 401；见 docs/未完成-MCP治理平面-spec-v1.md。
+   */
+  publicRoutes?: Hono<AppEnv>;
+  /**
    * 是否作为**管理面**运行（默认 `true`，保持既有单端口行为）。
    *
    * `false` = 用户面（桌面客户端连的端口）：不挂管理台 SPA、`GET /` 不再 302 到管理台，
@@ -186,6 +192,10 @@ export function createIdentityApp(cfg: IdentityConfig, db: IdentityDb, opts: Ide
     "/",
     createFeedbackPublicRoutes(db, { verifyOptionalToken: (token) => verifyAccess(cfg, token) }),
   );
+
+  // 托管 MCP relay 数据面（治理平面 P0）：挂公开段 + 自带 aud=mcp-relay 短期令牌鉴权。
+  // 不能进 authed 组：authed 会把 relay 令牌当 access 验 → 一律 401（装配序与 updates/feedback 同理）。
+  if (opts.publicRoutes) app.route("/", opts.publicRoutes);
 
   // ===== 鉴权组 =====
   const authed = new Hono<AppEnv>();

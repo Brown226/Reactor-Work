@@ -45,7 +45,7 @@ import { createPermissionsRoutes } from "./permissions-routes.js";
 import { ensureBuiltinLocalAccounts } from "./seed.js";
 import { createIdentityApp, type IdentityAppOptions } from "./routes.js";
 // 托管 MCP（治理平面 P0）：注册表/relay/下发，spec 见 docs/未完成-MCP治理平面-spec-v1.md
-import { createMcpRoutes, ensureMcpSchema } from "../mcp/index.js";
+import { createMcpRelayRoutes, createMcpRoutes, ensureMcpSchema } from "../mcp/index.js";
 // 平台运营指标（双平台看板）：建表与 /admin/metrics/platform/* 路由
 import { ensurePlatformMetricsSchema } from "../metrics/schema.js";
 import { createPlatformMetricsRoutes } from "../metrics/routes.js";
@@ -229,7 +229,12 @@ export async function startIdentityServer(cfg: IdentityConfig): Promise<Identity
 
   /** 构造一个完整 app（两种面仅差 `adminSurface`，路由表完全相同）。 */
   const buildApp = (opts: IdentityAppOptions) => {
-    const app = createIdentityApp(cfg, db, opts);
+    const app = createIdentityApp(cfg, db, {
+      ...opts,
+      // relay 数据面挂公开段（自带 relay JWT 鉴权）：两个面都要可达（桌面端连用户面，
+      // 管理端冒烟/调试连管理面），且路由表完全相同的纪律对它同样成立。
+      publicRoutes: createMcpRelayRoutes(db, { secretKey, jwtSecret: cfg.jwtSecret }),
+    });
     mountRoutes(app);
     return app;
   };
