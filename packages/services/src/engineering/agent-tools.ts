@@ -16,8 +16,8 @@ import { decidePermission, describeDecision } from "./permission/permission.js";
 import type { PermissionMode } from "./permission/permission.js";
 import type { EngineeringExecutor } from "./executor/engineering-executor.js";
 import type { FunctionSearchAction } from "./mcp-link/function-search.js";
-import { evaluateEvidence, describeVerdict } from "./determinism/index.js";
-import type { AcceptanceCriterion } from "./determinism/index.js";
+import { evaluateEvidence, describeVerdict, verifiedRun } from "./determinism/index.js";
+import type { AcceptanceCriterion, AnalysisSpec } from "./determinism/index.js";
 
 /** 一个可暴露给 Agent 的工具。 */
 export interface EngineeringTool {
@@ -51,6 +51,21 @@ export const ENGINEERING_TOOLS: EngineeringTool[] = [
     parameters: {
       server: { type: "string", required: true, description: "已连接的软件标识" },
       code: { type: "string", required: true, description: "Python 脚本" },
+      timeoutMs: { type: "number", description: "超时毫秒数，缺省 300 秒" },
+    },
+    danger: "danger",
+  },
+  {
+    name: "run_verified_engineering_script",
+    description:
+      "执行带确定性门禁的计算脚本：先按分析规格预检（缺项即停、不替用户补），再执行，" +
+      "最后按证据判定结果。未通过时只能报告未验证，不能宣称结果正确。" +
+      "涉及计算、校核、结果判定的场景必须用本工具，不要用 run_engineering_script。" +
+      "脚本需在最后 print 一行 JSON 作为实测证据，形如 {\"evidence\":{\"metric\":数值}}。",
+    parameters: {
+      server: { type: "string", required: true, description: "已连接的软件标识" },
+      code: { type: "string", required: true, description: "Python 脚本；末行 print 一行 JSON 作为 evidence" },
+      spec: { type: "object", required: true, description: "分析规格，必须含 acceptance_criteria" },
       timeoutMs: { type: "number", description: "超时毫秒数，缺省 300 秒" },
     },
     danger: "danger",
@@ -132,6 +147,8 @@ export async function invokeEngineeringTool(
       return connectTool(call.args, context.executor);
     case "run_engineering_script":
       return runTool(call.args, context.executor);
+    case "run_verified_engineering_script":
+      return runVerifiedTool(call.args, context.executor);
     case "search_engineering_functions":
       return searchTool(call.args, context.executor);
     case "evaluate_engineering_evidence":
@@ -176,6 +193,69 @@ async function runTool(
     return { ok: false, content: result.error || "脚本执行失败。" };
   }
   return { ok: true, content: result.stdout || "（脚本没有 print 输出）" };
+}
+
+/**
+ * 带门禁的执行：预检 → 执行 → 证据判定，三步缺一不可。
+ *
+ * 为什么单独成一个工具而不是让 Agent 自己调 run + evaluate：
+ * 拆开调用时，模型完全可以在 run 之后直接宣称成功、跳过 evaluate。
+ * 这里把三步固定在同一个调用内，门禁不通过时 ok=false，模型拿不到
+ * 「成功」信号，也就无法据此报告结果可信。
+ */
+async function runVerifiedTool(
+  args: Record<string, unknown>,
+  executor: EngineeringExecutor,
+): Promise<EngineeringToolResult> {
+  const server = readString(args.server);
+  const code = readString(args.code);
+  const spec =
+    args.spec && typeof args.spec === "object" && !Array.isArray(args.spec)
+      ? (args.spec as AnalysisSpec)
+      : undefined;
+  if (!server || !code || !spec) {
+    return { ok: false, content: "缺少 server、code 或 spec 参数。" };
+  }
+
+  const timeoutMs = typeof args.timeoutMs === "number" ? args.timeoutMs : undefined;
+  const result = await verifiedRun({
+    spec,
+    run: async () => {
+      const runResult = await executor.run({ server, code, timeoutMs });
+      if (!runResult.ok) return { ok: false, error: runResult.error || "脚本执行失败。" };
+      return { ok: true, evidence: parseEvidence(runResult.stdout) };
+    },
+  });
+
+  // ok 只反映「可交付」；stage=gate 表示算完了但未验证，模型据此只能报未验证。
+  return { ok: result.deliverable, content: result.summary };
+}
+
+/**
+ * 从脚本输出里取实测证据。
+ *
+ * 约定：脚本最后 print 一行 JSON，支持 `{"evidence":{...}}` 与直接对象两种形态。
+ * 找不到时返回空对象——门禁会因「缺测值」判失败，绝不会被当成通过。
+ */
+function parseEvidence(stdout: string | undefined): Record<string, unknown> {
+  const lines = (stdout ?? "").split(/\r?\n/).filter((line) => line.trim());
+  for (let i = lines.length - 1; i >= 0; i -= 1) {
+    const line = lines[i];
+    if (!line) continue;
+    try {
+      const parsed = JSON.parse(line) as unknown;
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) continue;
+      const record = parsed as Record<string, unknown>;
+      const nested = record.evidence;
+      if (nested && typeof nested === "object" && !Array.isArray(nested)) {
+        return nested as Record<string, unknown>;
+      }
+      return record;
+    } catch {
+      // 不是 JSON 行，继续往前找。
+    }
+  }
+  return {};
 }
 
 function searchTool(
@@ -224,4 +304,4 @@ function readStringArray(value: unknown): string[] | undefined {
   return items.length > 0 ? items : undefined;
 }
 
-export { connectTool, runTool, searchTool, evaluateTool };
+export { connectTool, runTool, runVerifiedTool, searchTool, evaluateTool };
