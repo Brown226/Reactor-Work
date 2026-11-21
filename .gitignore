@@ -77,3 +77,9 @@ __pycache__/
 .zcode-runtime
 .secrets/
 .tmp-knowledge-engines/
+# 第三方开源参考源码，仅本地对照阅读，不随本仓库入库。
+开源参考项目/
+# 本地临时验证脚本（python-pool 调试用，不入库）
+.tmp-probe/
+# 本地会话计划产物（zcode 运行时写入）
+.zcode/
