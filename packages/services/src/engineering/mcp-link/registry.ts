@@ -14,6 +14,40 @@ import { ComSoftwareLink } from "./links/com-software.js";
 
 type LinkFactory = () => BaseMCPLink;
 
+/**
+ * 端口解析器：由宿主注入，把「进程」映射到「MCP 服务端口」。
+ *
+ * 为什么做成可插拔而不是写死读某个文件：各厂商、各版本的端口落盘位置与
+ * 格式都不同，且无法在没有实机的情况下确定。宿主用实际环境里验证过的
+ * 方式（配置文件、日志、命名管道、netstat）实现它即可。
+ */
+export type EngineeringPortResolver = (serverName: string, pid?: number) => number | undefined;
+
+let portResolver: EngineeringPortResolver | undefined;
+
+/**
+ * 注入端口解析器；传 undefined 清除。
+ *
+ * 注入后只影响之后创建的连接实例，已存在的实例保持原样——避免中途换解析器
+ * 导致同一连接出现两个端口来源。
+ */
+export function setEngineeringPortResolver(resolver: EngineeringPortResolver | undefined): void {
+  portResolver = resolver;
+}
+
+/** 当前是否已注入端口解析器。 */
+export function hasEngineeringPortResolver(): boolean {
+  return portResolver !== undefined;
+}
+
+/** 把全局解析器绑定到具体连接实例。 */
+function bindPortResolver<T extends BaseMCPLink>(link: T, serverName: string): T {
+  if (portResolver && link instanceof BimBaseLink) {
+    link.setPortResolver((pid?: number) => portResolver?.(serverName, pid));
+  }
+  return link;
+}
+
 /** COM 系软件的连接配置；工厂与诊断共用，避免两处漂移。 */
 export interface ComServerSpec {
   productName: string;
@@ -66,12 +100,12 @@ export function listComServerSpecs(): Array<{ serverName: string } & ComServerSp
  * 两类：MCP 系（bimbase）走 HTTP 握手；COM 系走进程发现 + 本地 API 目录。
  */
 const FACTORIES: Record<string, LinkFactory> = {
-  bimbase: () => new BimBaseLink(),
+  bimbase: () => bindPortResolver(new BimBaseLink(), "bimbase"),
 
   // PKPM 的 MCP 服务名。技能正文全程用 `connect_to_server("pkpmmcp")`，
   // 与 BIMBase 是同一实现（PKPM 建模内核即 BIMBase/PlantS）。
   // 不登记会让技能第一步直接报「不支持的服务」。
-  pkpmmcp: () => new BimBaseLink({ serverName: "pkpmmcp" }),
+  pkpmmcp: () => bindPortResolver(new BimBaseLink({ serverName: "pkpmmcp" }), "pkpmmcp"),
 
   ...Object.fromEntries(
     Object.entries(COM_SERVER_SPECS).map(([serverName, spec]) => [

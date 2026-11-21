@@ -14,9 +14,13 @@ export {
   getActiveLink,
   getActiveLinks,
   getConnectedServers,
+  hasEngineeringPortResolver,
   isServerConnected,
+  listComServerSpecs,
   listSupportedServers,
+  setEngineeringPortResolver,
 } from "./mcp-link/registry.js";
+export type { ComServerSpec, EngineeringPortResolver } from "./mcp-link/registry.js";
 
 export { BimBaseLink } from "./mcp-link/links/bimbase.js";
 

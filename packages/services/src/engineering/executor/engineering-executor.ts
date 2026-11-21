@@ -10,7 +10,14 @@
  */
 
 import type { ConnectResult, DiscoveryOverrides } from "../mcp-link/types.js";
-import { getActiveLink, connectToServer, getConnectedServers, isServerConnected } from "../mcp-link/registry.js";
+import {
+  getActiveLink,
+  connectToServer,
+  getConnectedServers,
+  isServerConnected,
+  setEngineeringPortResolver,
+} from "../mcp-link/registry.js";
+import type { EngineeringPortResolver } from "../mcp-link/registry.js";
 import type { GeneratedFunction } from "../mcp-link/injection.js";
 import type { FunctionSearchAction } from "../mcp-link/function-search.js";
 import { PythonWorkerPool } from "./python-pool.js";
@@ -70,6 +77,17 @@ export class EngineeringExecutor {
   /** 连接目标软件。已连接时幂等。 */
   async connect(server: string, options: DiscoveryOverrides = {}): Promise<ConnectResult> {
     return connectToServer(server, options);
+  }
+
+  /**
+   * 注入 MCP 端口解析器。
+   *
+   * MCP 系软件（bimbase / pkpmmcp）不在 HTTP 默认端口上，端口来源随厂商
+   * 版本而异，本仓库无法在无实机时确定。宿主在实机验证出规则后通过本方法
+   * 注入即可连接；未注入时连接会明确报「未取得端口」而不是静默失败。
+   */
+  setPortResolver(resolver: EngineeringPortResolver | undefined): void {
+    setEngineeringPortResolver(resolver);
   }
 
   /** 取已注入的函数签名；未连接返回空数组。 */
