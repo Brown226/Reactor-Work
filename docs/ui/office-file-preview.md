@@ -10,11 +10,16 @@
 | 状态所有者 | 文件字节由 workspace-scoped `fileService` 读取；解析和预览状态由当前 Preview Pane 持有        |
 | 范围外     | Office 文件编辑、保存、导出、密码解密、跨端预览状态同步                                       |
 
-## 入口路由：`.xlsx` 优先分流到内置查看面板
+## 入口路由：`.docx` / `.xlsx` / `.pptx` / `.pdf` 默认分流到内置查看面板（MCP 面板）
 
-`.xlsx` 在可用环境中不再进入 Preview Pane，改由内置 `spreadsheets@zcode-plugins-official`
-插件的查看面板打开（`docs/plugins/2026-10-15-office-viewer-builtin-panels-spec.md` §9）；
-`.xlsm` / `.xls` 与所有回退路径继续使用本文的 Preview Pane 渲染。
+四种 Office 格式在可用环境下默认不再进入 Preview Pane，改由各自内置插件的查看面板打开：
+`.docx` → `documents@zcode-plugins-official`（Word MCP）、`.xlsx` → `spreadsheets@zcode-plugins-official`、
+`.pptx` → `presentations@zcode-plugins-official`、`.pdf` → `pdf@zcode-plugins-official`。
+2026-11-22 产品决策：点击任意 Word / Excel / PPT / PDF 都默认打开对应 MCP 面板（与 Word 一致），
+便于边看边与 Agent 对话，而不是 Preview Pane 或无插件的裸渲染。
+旧版二进制 `.doc`（无对应 MCP 插件）、`.xls` / `.xlsm` / `.csv` 与所有回退路径继续使用本文的
+Preview Pane 渲染；任一格式的面板不可用（远程 / 无沙箱 / 无有效 session / `open_document` 失败）
+时回退到对应 Preview Pane 只读渲染（OFP-02）。
 
 - 分流点是 UI 打开入口（文件管理器 `navigate` 与 `code-viewer` 打开回调），不是 `PreviewPane`
   内部；路由表数据驱动（扩展名 → pluginId + surfaceId），不把插件身份散落到各调用点。
@@ -39,8 +44,8 @@
 - 失败回退：surface 解析失败、面板就绪超时、`open_document` 返回错误时，回退打开
   Preview Pane `code-viewer` tab（旧链路），并记录 UI logger warn。回退不主动关闭已打开的
   面板 tab。
-- 边界保持：`.xlsm` / `.xls` / `.csv` 与 Word / PPTX / PDF 预览不受分流影响；批量打开入口
-  （一次多个 source）不做分流。
+- 边界保持：`.xlsm` / `.xls` / `.csv` 与旧版 `.doc` 仍走 Preview Pane；`.docx` / `.xlsx` /
+  `.pptx` / `.pdf` 仅在面板不可用时才回退 Preview Pane。批量打开入口（一次多个 source）不做分流。
 
 ## 文档内容安全边界
 
@@ -210,7 +215,7 @@ HTTP、HTTPS 和工作表内跳转正常；PPTX browser 入口与打印渲染也
 | ID     | 文件 / 环境                        | 操作                 | 预期结果                                                          | 状态                     |
 | ------ | ---------------------------------- | -------------------- | ----------------------------------------------------------------- | ------------------------ |
 | OFP-01 | 本地 `.xlsx`                       | 从文件树打开         | 读取完整字节并显示只读 workbook，可切换 sheet                     | accepted                 |
-| OFP-02 | 本地 `.docx`                       | 从文件树打开         | 通过 `docx-preview.renderAsync` 显示只读分页文档                  | accepted                 |
+| OFP-02 | 本地 `.docx`，插件面板不可用       | 从文件树打开         | 回退 Preview Pane，通过 `docx-preview.renderAsync` 显示只读分页文档（含修订/批注） | accepted（回退路径）     |
 | OFP-03 | `.xlsm` / `.xls`                   | 从文件树打开         | 尝试显示底层解析器支持的数据；失败进入统一错误态                  | accepted                 |
 | OFP-04 | SSH / WSL / Docker / Web workspace | 打开 Office 文件     | 使用对应 workspace-scoped `fileService`，不读取本机同路径         | accepted                 |
 | OFP-05 | 手机窄屏或较窄的桌面 Preview Pane  | 打开 Office 文件     | DOCX 生成页面按可用宽度等比缩小且无横向溢出，滚动时能访问最后一页 | accepted                 |
@@ -227,6 +232,7 @@ HTTP、HTTPS 和工作表内跳转正常；PPTX browser 入口与打印渲染也
 | OFP-15 | `.xlsx`，远程 workspace / web / 无沙箱 / 无有效 session | 打开      | 静默回退 Preview Pane 旧渲染，行为与分流前一致                    | accepted                 |
 | OFP-16 | `.xlsx`，`open_document` 失败或面板就绪超时 | 打开            | 回退打开 `code-viewer` tab，logger.warn 留痕；面板 tab 不强制关闭 | accepted                 |
 | OFP-17 | source 归属其他 workspace、工作区外绝对路径或 `..` 越界的 `.xlsx` | 打开 | 分流的严格相对化返回空并回退 Preview Pane；绝不把路径退化成文件名交给 `open_document`（否则会在当前工作区静默打开同名文件） | accepted                 |
+| OFP-19 | 本地 `.docx`，插件面板可用                | 文件树 / 文件链接打开 | 打开 documents（Word MCP）面板 tab 并自动以 `open_document` 加载该文件，可边看边对话；不创建 `code-viewer` tab | accepted                 |
 
 ## Accepted Cases
 

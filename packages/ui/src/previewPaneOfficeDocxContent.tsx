@@ -25,8 +25,11 @@ const DOCX_RENDER_OPTIONS = {
   ignoreWidth: false,
   inWrapper: true,
   renderAltChunks: false,
-  renderChanges: false,
-  renderComments: false,
+  // 只读预览里也展示审阅痕迹：w:ins/w:del 以 <ins>/<del>（下划线/删除线）呈现；
+  // 批注用 CSS Custom Highlight 标范围 + 💬 悬停气泡（作者/时间/内容）。二者默认是关的，
+  // 打开后无需 GenOffice 编辑器即可查看文档中的修订与批注。
+  renderChanges: true,
+  renderComments: true,
   renderEndnotes: true,
   renderFooters: true,
   renderFootnotes: true,

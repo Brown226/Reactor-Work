@@ -139,8 +139,11 @@ export const DocxView = forwardRef<ViewerHandle, ViewerProps>(function DocxView(
       renderFooters: true,
       renderFootnotes: true,
       renderEndnotes: true,
-      renderComments: false,
-      renderChanges: false,
+      // 与原生 Word 预览（packages/ui previewPaneOfficeDocxContent）对齐：只读展示
+      // w:ins/w:del 修订（下划线/删除线）与批注（CSS Custom Highlight + 💬 悬浮气泡），
+      // 让「Word MCP」面板看到的就是 Word 里能看到的修订/批注。
+      renderComments: true,
+      renderChanges: true,
       renderAltChunks: false,
       useBase64URL: true,
     })

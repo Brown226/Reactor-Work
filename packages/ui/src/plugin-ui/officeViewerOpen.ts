@@ -4,17 +4,39 @@ import type { CodeViewerSource } from "@/lib/codeViewer.js";
 import { decodeFilePathUriEscapes, isAbsoluteFilePath, joinFilePath } from "@/lib/path.js";
 
 /**
- * `.xlsx` 文件打开到内置查看面板的路由表：扩展名 → 插件 surface。
+ * `.docx`/`.xlsx`/`.pptx`/`.pdf` 文件打开到内置查看面板（MCP 面板）的路由表：扩展名 → 插件 surface。
  * 这是 UI 层数据驱动的常量，排在插件清单声明的查看器（file.viewer）之前；两者在
  * hooks/useAppPanels.ts 的文件路由里合并（docs/plugins/extension-host.md §16.5），
  * 本模块不依赖 extension-slots。待开文档的排队与 open_document 投递两个来源共用。
  * 产品边界（入口范围、回退语义）见 docs/ui/office-file-preview.md 入口路由章节。
+ *
+ * 产品决策（2026-11-22）：四种 Office 格式点击都默认打开各自 MCP 面板（与 Word 一致），
+ * 可边看边对话；旧版二进制 `.doc` 无对应插件，仍走原生预览。
  */
 const OFFICE_VIEWER_SURFACE_ROUTES = [
   {
+    // Word → documents（Word MCP）面板
+    extensions: [".docx"],
+    pluginId: "documents@zcode-plugins-official",
+    surfaceId: "documents",
+  },
+  {
+    // Excel → spreadsheets 面板
     extensions: [".xlsx"],
     pluginId: "spreadsheets@zcode-plugins-official",
     surfaceId: "spreadsheets",
+  },
+  {
+    // PowerPoint → presentations 面板
+    extensions: [".pptx"],
+    pluginId: "presentations@zcode-plugins-official",
+    surfaceId: "presentations",
+  },
+  {
+    // PDF → pdf 面板
+    extensions: [".pdf"],
+    pluginId: "pdf@zcode-plugins-official",
+    surfaceId: "pdf",
   },
 ] as const;
 

@@ -679,6 +679,12 @@ export function useAppPanels(options: {
   const routeOfficeViewerFile = useCallback(
     (source: CodeViewerSource, fallback: () => void): boolean => {
       if (source.type !== "file" || !source.path) return false;
+      // 产品决策（2026-11-22）：.docx/.xlsx/.pptx/.pdf 点击都默认打开各自内置插件（MCP 面板），
+      // 与 Word 一致，可边看边对话（用户要求四种 Office 格式统一默认 MCP 形式）。
+      // 仅旧版二进制 .doc 无对应 MCP 插件，仍走原生 Preview Pane 只读预览；
+      // 面板不可用（无会话 / 插件未就绪 / 工作区外）时也回退原生预览。
+      // 这是唯一分流入口，返回 false 即由调用方回退到原生预览。
+      if (/\.doc$/i.test(source.path)) return false;
       // 1. 内置 `.xlsx` 常量先查，行为不变；2. 再查插件声明。
       const officeRoute = matchOfficeViewerSurfaceRoute(source.path);
       const pluginRoute = officeRoute ? null : routeFileViewer(source.path);
@@ -811,17 +817,6 @@ export function useAppPanels(options: {
     ],
   );
 
-  const handleNavigateFileManager = useCallback(
-    (tabId: string, source: CodeViewerSource) => {
-      // 文件树在 file-manager tab 内点击 .xlsx 时改开查看面板 tab，本 tab 的预览区不动。
-      const fallback = () =>
-        commitSidePaneState((current) => navigateFileManagerSidePane(current, tabId, source));
-      if (routeOfficeViewerFile(source, fallback)) return;
-      fallback();
-    },
-    [commitSidePaneState, routeOfficeViewerFile],
-  );
-
   const handleOpenCodeViewer = useCallback(
     (source: CodeViewerSource) => {
       const fallback = () => {
@@ -846,6 +841,20 @@ export function useAppPanels(options: {
       routeOfficeViewerFile,
       workspaceAbsPath,
     ],
+  );
+
+  /**
+   * 文件树在 file-manager tab 内点击文件时改开右侧预览。
+   */
+  const handleNavigateFileManager = useCallback(
+    (tabId: string, source: CodeViewerSource) => {
+      // 文件树在 file-manager tab 内点击 .xlsx 时改开查看面板 tab，本 tab 的预览区不动。
+      const fallback = () =>
+        commitSidePaneState((current) => navigateFileManagerSidePane(current, tabId, source));
+      if (routeOfficeViewerFile(source, fallback)) return;
+      fallback();
+    },
+    [commitSidePaneState, routeOfficeViewerFile],
   );
 
   const handleOpenCodeViewers = useCallback(
