@@ -10,3 +10,9 @@ declare module "*?url" {
   const src: string;
   export default src;
 }
+
+// Vite 的 `?worker&url` 导入：经 worker 插件打包后返回可用的 worker URL 字符串。
+declare module "*?worker&url" {
+  const src: string;
+  export default src;
+}

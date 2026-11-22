@@ -6,7 +6,10 @@ import { ChevronLeftIcon, ChevronRightIcon, ZoomInIcon, ZoomOutIcon } from "luci
 import { Document, Page, pdfjs } from "react-pdf";
 import type { PDFDocumentProxy, PDFPageProxy } from "pdfjs-dist";
 import "react-pdf/dist/Page/TextLayer.css";
-import pdfWorkerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+// 用 Vite 的 worker 打包通道取 URL（而不是裸 ?url）：?url 在 dev 下指向未经过 worker
+// 插件处理的 node_modules 原始文件，pdf.js 建 Worker 时会因模块/MIME 不匹配初始化失败，
+// 表现为“PDF 加载失败”。Web 入口会提前覆盖为带垫片的自定义 worker，此处兜底供桌面端使用。
+import pdfWorkerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?worker&url";
 
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
@@ -18,9 +21,15 @@ import { ReviewQuoteCallout } from "@/review/ReviewQuoteCallout.js";
 import { useReviewMarksStore } from "@/store/reviewMarksStore.js";
 import { createQuotePageScan, type QuoteHighlightTarget } from "@/lib/quoteSearch.js";
 
-// Web 入口会在加载 UI 之前把 workerSrc 指到「带 Chromium 109 垫片的自定义 worker」；
-// 这里只在未设置时兜底，避免覆盖 Web 端的设置（桌面端仍用默认 worker）。
-if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+// pdf.js 在模块加载时会把 workerSrc 预置成相对默认值；react-pdf 的 dist/index.js:12 更是在
+// import 时就无条件写死 `pdfjs.GlobalWorkerOptions.workerSrc = "pdf.worker.mjs"`。所以不能只判空：
+// 桌面端从未写过 workerSrc，会被这些「裸文件名」默认值蒙混过去，浏览器会去取 /pdf.worker.mjs
+// （Vite 回 text/html），Worker 初始化失败，表现为「PDF 加载失败」。Web 入口会提前写入带
+// Chromium 109 垫片的**绝对** worker URL，必须保留、不能覆盖。因此只在「空 或 仍是裸默认文件名」时，
+// 才写入经 worker 插件打包好的 worker URL。
+const PDF_JS_DEFAULT_WORKER_SRCS = new Set(["./pdf.worker.mjs", "pdf.worker.mjs"]);
+const currentPdfWorkerSrc = pdfjs.GlobalWorkerOptions.workerSrc;
+if (!currentPdfWorkerSrc || PDF_JS_DEFAULT_WORKER_SRCS.has(currentPdfWorkerSrc)) {
   pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
 }
 
