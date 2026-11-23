@@ -10,6 +10,8 @@
 import { existsSync } from "node:fs";
 
 import { isPortOpen } from "./common.js";
+import { listCapabilities } from "./capabilities.js";
+import type { EngineeringCapability } from "./capabilities.js";
 import { candidateRoots, isValidRoot, resolveExecutable } from "./discovery.js";
 import { findMcpPortByPid } from "./port-lookup.js";
 import { findProcessesByExecutable } from "./process-discovery.js";
@@ -21,6 +23,11 @@ import { isComProgIdRegistered, resolveComProgIdExe } from "./win-registry.js";
 export interface DiagnosticCheck {
   name: string;
   ok: boolean;
+  /**
+   * 分级：ok=正常，missing=本机未安装（正常态），error=已装但探测失败。
+   * 缺省时界面按 `ok` 推导，保留可选以兼容旧调用方。
+   */
+  level?: "ok" | "missing" | "error";
   /** 观察到的事实；失败时是「试了什么、看到什么」。 */
   detail: string;
   /** 建议动作；ok 时为空。 */
@@ -35,6 +42,8 @@ export interface DiagnosticReport {
   connected: string[];
   /** 已登记支持的软件。 */
   supported: string[];
+  /** 能力总览：每个登记软件能做什么，与 checks 同一次读取返回。 */
+  capabilities: EngineeringCapability[];
 }
 
 export interface DiagnoseOptions {
@@ -76,11 +85,15 @@ export async function diagnose(options: DiagnoseOptions = {}): Promise<Diagnosti
     }
   }
 
+  // 能力总览与检查项一起返回：同一次 IPC、同一次刷新，避免界面出现两份时间点不同的快照。
+  const capabilities = await listCapabilities();
+
   return {
     healthy: checks.every((check) => check.ok),
     checks,
     connected: getConnectedServers(),
     supported: listSupportedServers(),
+    capabilities,
   };
 }
 
@@ -89,6 +102,7 @@ function platformCheck(): DiagnosticCheck {
   return {
     name: "平台",
     ok: isWindows,
+    level: isWindows ? "ok" : "error",
     detail: `当前平台：${process.platform}`,
     suggestion: isWindows
       ? undefined
@@ -105,6 +119,7 @@ async function pythonCheck(): Promise<DiagnosticCheck> {
         resolve({
           name: "Python 解释器",
           ok: false,
+          level: "error",
           detail: `未找到 ${interpreter}：${error.message}`,
           suggestion: "工程脚本需要 Python。请安装并确保在 PATH 中。",
         });
@@ -114,6 +129,7 @@ async function pythonCheck(): Promise<DiagnosticCheck> {
       resolve({
         name: "Python 解释器",
         ok: true,
+        level: "ok",
         detail: `${interpreter} → ${version}`,
       });
     });
@@ -125,6 +141,7 @@ function explicitExeCheck(exePath: string): DiagnosticCheck {
   return {
     name: "指定的可执行文件",
     ok: exists,
+    level: exists ? "ok" : "error",
     detail: exists ? `存在：${exePath}` : `不存在：${exePath}`,
     suggestion: exists ? undefined : "请确认路径与文件名，注意 Windows 路径分隔符。",
   };
@@ -175,6 +192,7 @@ async function localApiServerCheck(
   return {
     name: `安装位置 · ${spec.productName}`,
     ok: resolved !== undefined,
+    level: resolved !== undefined ? "ok" : "missing",
     detail: resolved
       ? `找到可执行文件：${resolved.path}（来源：${resolved.source}）` +
         (spec.note ? `；${spec.note}` : "")
@@ -202,6 +220,7 @@ async function comServerCheck(spec: {
     return {
       name: `COM 注册 · ${spec.productName}`,
       ok: false,
+      level: "missing",
       detail: `ProgID ${spec.progId} 未注册，未检测到安装。`,
       suggestion: `安装 ${spec.productName} 后重试；若已安装，确认其 COM 组件已注册。`,
     };
@@ -210,6 +229,7 @@ async function comServerCheck(spec: {
   return {
     name: `COM 注册 · ${spec.productName}`,
     ok: true,
+    level: "ok",
     detail: exe
       ? `ProgID ${spec.progId} 已注册，可执行文件 ${exe}`
       : `ProgID ${spec.progId} 已注册（进程内服务器，无独立 exe，Dispatch 时自动启动）。`,
@@ -232,6 +252,7 @@ async function bimbaseChecks(): Promise<DiagnosticCheck[]> {
     checks.push({
       name: "安装发现",
       ok: false,
+      level: "missing",
       detail: "四路候选（环境变量 / 注册表三分支）都没有返回路径。",
       suggestion:
         "设置环境变量 BIMBASE_EXE_PATH 指向 BIMBase.exe，或在连接时显式传 exePath。",
@@ -241,6 +262,7 @@ async function bimbaseChecks(): Promise<DiagnosticCheck[]> {
     checks.push({
       name: "安装发现",
       ok: valid.length > 0,
+      level: valid.length > 0 ? "ok" : "missing",
       detail:
         `候选 ${roots.length} 个，通过校验 ${valid.length} 个。` +
         (valid[0] ? `首个可用：${valid[0].path}（来源：${valid[0].source}）` : ""),
@@ -261,6 +283,7 @@ async function bimbaseChecks(): Promise<DiagnosticCheck[]> {
     checks.push({
       name: "运行实例",
       ok: processes.length > 0,
+      level: processes.length > 0 ? "ok" : "missing",
       detail:
         processes.length > 0
           ? `找到 ${processes.length} 个实例，首个 PID ${firstProcess?.pid}`
@@ -274,6 +297,7 @@ async function bimbaseChecks(): Promise<DiagnosticCheck[]> {
       checks.push({
         name: "MCP 端口",
         ok: port !== undefined,
+        level: port !== undefined ? "ok" : "missing",
         detail:
           port !== undefined
             ? `PID ${firstProcess.pid} 的监听端口 ${port} 可连接`

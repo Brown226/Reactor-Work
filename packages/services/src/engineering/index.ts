@@ -10,6 +10,7 @@ export * from "./contract.js";
 export {
   COM_SERVER_SPECS,
   LOCAL_API_SERVER_SPECS,
+  MODELING_CORE_SPECS,
   connectToServer,
   disconnectAll,
   disconnectServer,
@@ -158,6 +159,9 @@ export type {
 
 export { diagnose, probePort } from "./mcp-link/diagnostics.js";
 export type { DiagnosticCheck, DiagnosticReport, DiagnoseOptions } from "./mcp-link/diagnostics.js";
+
+export { listCapabilities } from "./mcp-link/capabilities.js";
+export type { EngineeringCapability } from "./mcp-link/capabilities.js";
 
 export { verifiedRun, extractCriteria } from "./determinism/verified-run.js";
 export type { VerifiedRunRequest, VerifiedRunResult } from "./determinism/verified-run.js";

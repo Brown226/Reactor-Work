@@ -132,6 +132,17 @@ COM 系软件（SAP2000 / ETABS / Rhino 等）不提供运行时 `tools/list`，
 - **AutoCAD 没有本地 API 目录**：它走脚本/`sendCommand`，不依赖注入目录，因此登记表中允许其 `catalogId` 解析不到目录；其余登记项缺目录一律视为登记错误（有回归测试拦截）。
 - **非 COM 软件的诊断检查是「安装位置」而不是「COM 注册」**：`diagnose` 对无 `progId` 的登记项检查可执行文件能否按 exe 名与环境变量找到，命中时显示来源路径；不出现「COM 注册」检查项。
 
+## 能力总览
+
+诊断回答「缺什么」，能力总览回答「装了能干什么」。两者同一次读取返回：`diagnose()` 的报告里同时带 `checks` 与 `capabilities`，界面不会出现两份时间点不同的快照，也不新增 IPC 通道。
+
+- **条目内容**：每个登记软件一条 `EngineeringCapability` —— `server` / `productName` / `bridge`（MCP、COM、.NET、本地 HTTP API、Ruby 插件、自带 Python）/ `installed` / `exePath` / `functionCount`（本地 API 目录条数）/ `skillDir`（技能包目录名）/ `hint`（一句示例用法）。
+- **建模内核与桌面软件并列**：BIMBase / PKPM 走 MCP 握手、没有本地目录，`functionCount` 记 0，函数能力由 `tools/list` 提供；它们同样要出现在总览里，否则用户看不到最常用的 PKPM 能力。登记参数在 `MODELING_CORE_SPECS`（`registry.ts`）。
+- **安装判据与诊断一致**：有 `progId` 的按 ProgID 注册判断，其余按可执行文件解析判断。不能用 exe 是否存在判断 COM 软件——进程内服务器没有独立 exe，会误报未安装。
+- **函数数只统计条目数**：直接读 `api.catalog.json` 数组长度，不为页面生成入参 Schema（十几万条记录的 Schema 构造纯属浪费）。解析失败按 0 处理，不抛异常。
+- **检查项要分级**：`DiagnosticCheck` 带 `level`（`ok` / `missing` / `error`）。`missing` 表示本机未安装，是正常态，界面用灰色；只有 `error`（平台不支持、解释器缺失、探测自身失败）才用红色。不区分会把「十一个软件里没装十个」渲染成一片故障。
+- **探测并行**：COM 注册表查询是最慢一步，全部条目并行探测，避免页面被串行查询拖慢。
+
 ## Python 执行器
 
 工程软件的可编程接口几乎只有 Python（COM 绑定、内嵌解释器、厂商 SDK），所以连接层需要一个会话可复用的 Python 执行通道。
@@ -236,3 +247,8 @@ COM 系软件（SAP2000 / ETABS / Rhino 等）不提供运行时 `tools/list`，
 44. 非 COM 登记项没有 `progId` 但必须有 `exeEnvVars`；`diagnose({ server })` 对它们只报「安装位置」检查，不报「COM 注册」。
 45. 连接失败文案与简报按 `bridge` 说明真实调用方式（.NET / 本地 HTTP / Ruby 插件 / COM / 自带 Python），不出现与实际不符的「用 `win32com` Dispatch」。
 46. 显式传入不存在的 `exePath` 时返回「可执行文件不存在」并保持未连接状态，不抛异常、不残留连接。
+47. `diagnose()` 的返回同时包含 `checks` 与 `capabilities`，一次调用即可渲染「能力总览 + 环境检查」，不需要第二次 IPC。
+48. `capabilities` 覆盖全部登记项（建模内核 + 桌面软件），每条的 `functionCount` 等于对应 `api.catalog.json` 的条目数；无目录或走 MCP 的条目为 0，不抛异常。
+49. COM 系软件的 `installed` 按 ProgID 注册判断，不因解析不到 exe 而误判未安装；非 COM 系按可执行文件解析判断。
+50. 未安装的检查项 `level` 为 `missing`（界面灰色），平台不支持、解释器缺失与探测自身失败为 `error`（界面红色）；`healthy` 要求所有检查项 `ok`。
+

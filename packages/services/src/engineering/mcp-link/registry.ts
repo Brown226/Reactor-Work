@@ -73,7 +73,50 @@ export interface DesktopServerSpec {
   bridge: "com" | "dotnet" | "http" | "ruby" | "python";
   /** 已知限制或使用前提，展示给用户看。 */
   note?: string;
+  /** 一句示例用法，用于「能力总览」告诉用户能怎么开口。 */
+  hint?: string;
 }
+
+/**
+ * 走 MCP 握手的建模内核（BIMBase / PKPM）。
+ *
+ * 它们不是「桌面软件 + 本地 API 目录」模式：连接时直接对 MCP 服务握手，
+ * 工具清单由 tools/list 提供。但用户同样需要知道「本机装没装、能干什么」，
+ * 因此能力总览把它们和桌面软件并列展示。
+ *
+ * 安装发现参数与 `diagnostics.ts` 的 bimbaseChecks 一致（同一套环境变量与特征目录），
+ * 但 discovery 用的 productName 仍是 `BIMBase`——注册表按产品显示名匹配键名，
+ * 这里展示用的组合名不能反过来影响安装发现，所以两处各自保留字面量。
+ */
+export const MODELING_CORE_SPECS: Array<
+  { serverName: string; bridgeLabel: string; skillDir: string } & Pick<
+    DesktopServerSpec,
+    "productName" | "exeName" | "featurePaths" | "exeEnvVars" | "rootEnvVars" | "note" | "hint"
+  >
+> = [
+  {
+    serverName: "bimbase",
+    productName: "BIMBase / PlantS",
+    exeName: "BIMBase.exe",
+    featurePaths: ["PlantSPythonEnv"],
+    exeEnvVars: ["BIMBASE_EXE_PATH", "PLANTS_EXE_PATH"],
+    rootEnvVars: ["BIMBASE_HOME", "BIMBASE_ROOT", "PLANTS_HOME", "PLANTS_ROOT"],
+    bridgeLabel: "MCP",
+    skillDir: "PlantS-Link",
+    hint: "用 PlantS 建一段管道并导出模型。",
+  },
+  {
+    serverName: "pkpmmcp",
+    productName: "PKPM（建模内核）",
+    exeName: "BIMBase.exe",
+    featurePaths: ["PlantSPythonEnv"],
+    exeEnvVars: ["BIMBASE_EXE_PATH", "PLANTS_EXE_PATH"],
+    rootEnvVars: ["BIMBASE_HOME", "BIMBASE_ROOT", "PLANTS_HOME", "PLANTS_ROOT"],
+    bridgeLabel: "MCP",
+    skillDir: "PKPM-Link",
+    hint: "建一层框架并计算配筋。",
+  },
+];
 
 /**
  * 已登记的 COM 系软件。
@@ -88,6 +131,7 @@ export const COM_SERVER_SPECS: Record<string, DesktopServerSpec> = {
     progId: "CSI.SAP2000.API.SapObject",
     catalogId: "sap2000",
     bridge: "com",
+    hint: "建一个三层框架并跑模态分析。",
   },
   etabs: {
     productName: "ETABS",
@@ -95,6 +139,7 @@ export const COM_SERVER_SPECS: Record<string, DesktopServerSpec> = {
     progId: "CSI.ETABS.API.ETABSObject",
     catalogId: "etabs",
     bridge: "com",
+    hint: "按规范定义荷载工况并输出楼层剪力。",
   },
   autocad: {
     productName: "AutoCAD",
@@ -102,6 +147,7 @@ export const COM_SERVER_SPECS: Record<string, DesktopServerSpec> = {
     progId: "AutoCAD.Application",
     catalogId: "autocad",
     bridge: "com",
+    hint: "把图纸里墙体所在的图层统一改名。",
   },
   rhino: {
     productName: "Rhino",
@@ -109,6 +155,7 @@ export const COM_SERVER_SPECS: Record<string, DesktopServerSpec> = {
     progId: "Rhino.Application",
     catalogId: "rhino",
     bridge: "com",
+    hint: "用 RhinoScript 生成一版参数化曲面。",
   },
 };
 
@@ -129,6 +176,7 @@ export const LOCAL_API_SERVER_SPECS: Record<string, DesktopServerSpec> = {
     rootEnvVars: ["TEKLA_HOME", "TEKLA_ROOT"],
     bridge: "dotnet",
     note: "只复用已运行且已打开模型的实例，不自动启动；API 为 .NET 程序集（Tekla.Structures），经 Python CLR 调用。",
+    hint: "创建一个 H400×200 的梁柱节点。",
   },
   midas: {
     productName: "MIDAS Civil/Gen NX",
@@ -138,6 +186,7 @@ export const LOCAL_API_SERVER_SPECS: Record<string, DesktopServerSpec> = {
     rootEnvVars: ["MIDAS_HOME", "MIDAS_ROOT"],
     bridge: "http",
     note: "MIDAS 走本地 HTTP API：在软件内「工具 → API → API Settings」配置 Base URL 与 MAPI-Key，连接由 Python 侧完成，不需要端口反查。",
+    hint: "查一下当前模型的单位设置。",
   },
   sketchup: {
     productName: "SketchUp",
@@ -147,6 +196,7 @@ export const LOCAL_API_SERVER_SPECS: Record<string, DesktopServerSpec> = {
     rootEnvVars: ["SKETCHUP_HOME", "SKETCHUP_ROOT"],
     bridge: "ruby",
     note: "经 SketchUp 内插件桥调用 Ruby API；首次连接会自动安装插件，已开着的 SketchUp 需重启一次才连得上。",
+    hint: "按尺寸批量生成一组家具组件。",
   },
   staadpro: {
     productName: "STAAD.Pro",
@@ -156,6 +206,7 @@ export const LOCAL_API_SERVER_SPECS: Record<string, DesktopServerSpec> = {
     rootEnvVars: ["STAADPRO_HOME", "STAADPRO_ROOT"],
     bridge: "com",
     note: "经 OpenSTAAD COM（openstaadpy）调用；只挂接已运行并打开模型的实例，不自动启动、不代开文件。",
+    hint: "建一个钢框架并做承载力验算。",
   },
   abaqus: {
     productName: "Abaqus",
@@ -165,6 +216,7 @@ export const LOCAL_API_SERVER_SPECS: Record<string, DesktopServerSpec> = {
     rootEnvVars: ["ABAQUS_HOME", "ABAQUS_ROOT"],
     bridge: "python",
     note: "通过 Abaqus 自带 Python 连接；启动器随版本改名（如 abq2024.exe），建议用 exePath 或 ABAQUS_EXE_PATH 指定。",
+    hint: "提交一个静力分析作业并提取最大应力。",
   },
 };
 

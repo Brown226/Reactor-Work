@@ -164,6 +164,7 @@
   "packages/services/test/engineeringPortLookup.test.ts",
   "packages/services/test/engineeringApiCatalog.test.ts",
   "packages/services/test/engineeringDesktopServers.test.ts",
+  "packages/services/test/engineeringCapabilities.test.ts",
   "packages/web/test/viteConfigLoad.test.ts",
   "packages/zcode-server-cli/test/packaging.test.ts",
   "packages/zcode-server-cli/test/stageRemoteAssetsCli.test.ts",
