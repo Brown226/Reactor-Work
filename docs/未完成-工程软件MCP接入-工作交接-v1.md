@@ -1,7 +1,7 @@
 # 工程软件 MCP 接入 — 工作交接
 
-- 交接日期：2026-11-21
-- 当前阶段：**B 形态（工具 + 技能）已完成并端到端验证；UI 环境诊断面板代码已写但未接线、未提交**
+- 交接日期：2026-11-21（2026-11-23 更新进展，见 §十一）
+- 当前阶段：**第 1 优先（UI 环境诊断面板 IPC 接线）与第 2 优先（PKPM/BIMBase 端口反查）均已完成并提交；剩余 references 资产入库方式等需产品决策（§十一）**
 - 接手前必读：[AGENTS.md](../AGENTS.md)、[specs/engineering-mcp-link.md](../specs/engineering-mcp-link.md)、[apps/zcode-cli/docs/design/v2/engineering-mcp.md](../apps/zcode-cli/docs/design/v2/engineering-mcp.md)
 - 交接原因：用户要求停止开发，转交另一个 AI 继续
 
@@ -13,7 +13,7 @@
 
 **已完成**：工程能力已作为 MCP 服务随 CLI 内置（5 个工具），22 份技能正文与配套资产已入库，AutoCAD 全链路实测打通（连接 → 绘图 → 读回验证），确定性门禁已强制化。
 
-**未完成**：UI 环境诊断面板只差 IPC 接线；PKPM/BIMBase 因端口反查未实现，至今连不上；references 正文 216/238 是加密密文。
+**未完成（2026-11-23 更新）**：UI 环境诊断面板与 PKPM/BIMBase 端口反查已补齐（`a74a443d`、`abc1b92a`）；仍剩 references 正文 216/238 是加密密文、98MB API 库入库方式待产品决策，以及连接器覆盖、完整打包等收尾项（§十一）。
 
 **最关键的一句话**：代码是完整的、接线的、验证过的，但 **UI 部分未提交，且工作区混着另外两条开发线（桌面 Office 编辑器、插件 seed 降级）的改动**。接手第一件事是分清归属，**绝对不要 `git add .`**。
 
@@ -24,12 +24,12 @@
 ### 2.1 提交状态
 
 ```
-HEAD = 4b907ca7
-本地领先 origin/main 共 9 个提交（未推送）
+HEAD = abc1b92a
+本地领先 origin/main 共 1 个提交（未推送；其余工程提交已随 origin/main 推送）
 暂存区为空
 ```
 
-9 个提交（全部属于本任务）：
+9 个基础提交（全部属于本任务）：
 
 | 提交 | 内容 |
 |---|---|
@@ -42,6 +42,15 @@ HEAD = 4b907ca7
 | `c9d81996` | 新增带门禁的验证执行工具（第 5 个工具） |
 | `e8dbdb80` | 诊断覆盖全部 COM 系软件 |
 | `4b907ca7` | MCP 端口解析器可插拔 + 实机端口探测脚本 |
+
+后续本任务提交（2026-11-22 ~ 11-23）：
+
+| 提交 | 内容 |
+|---|---|
+| `a74a443d` | 设置页环境诊断面板接通桌面 IPC（含 `EngineeringSection`、共享契约、5 语言文案） |
+| `d2ff9c1b` | 本文档与 `docs/README.md` 索引登记 |
+| `5b998576` | 登记工程 MCP 与诊断面板新文件的架构例外 |
+| `abc1b92a` | 端口反查改为按 PID 查询监听端口（`port-lookup.ts` + 回归测试） |
 
 ### 2.2 工作区：**三条开发线混在一起**
 
@@ -260,7 +269,9 @@ review     → stage=gate，永不自动通过 ✅
 
 ## 四、未完成的工作（按优先级）
 
-### 第 1 优先：UI 环境诊断面板接线（约 150 行，本机可做）
+### 第 1 优先：UI 环境诊断面板接线（约 150 行，本机可做）✅ 已完成（`a74a443d`）
+
+> **实现结果（2026-11-22）**：IPC 五件套已落地——`PlatformChannels.EngineeringDiagnose`、`IPlatformService.engineering?: EngineeringPlatformPort`、preload `diagnoseEngineeringEnvironment`、main `ipcMain.handle(..., () => engineering.diagnose())`、renderer `createDesktopPlatform` 组装；`SettingsPage.tsx` 已传 `loadReport`。`diagnose()` 用 `npx tsx .tmp-probe/verify-diagnose.mts` 实跑通过（识别 AutoCAD、如实报未安装）。下方为交接时的原始分析，保留备查。
 
 **已完成**：组件、契约类型、分区注册、文案全部写好（7 个文件，见 2.2 A）。
 
@@ -288,7 +299,9 @@ review     → stage=gate，永不自动通过 ✅
 
 **冲突判断**：语义零冲突（那四个文件里 `grep -i engineering` 零命中，Office 组动的是 `documentEditor`），但文件共用，`git add` 会混。**建议等 Office 组提交后再动**。
 
-### 第 2 优先：PKPM/BIMBase 端口反查（唯一硬阻塞，**必须在装了 PKPM 的机器上做**）
+### 第 2 优先：PKPM/BIMBase 端口反查（唯一硬阻塞，**必须在装了 PKPM 的机器上做**）✅ 已完成（`abc1b92a`，实机待复验）
+
+> **实现结果（2026-11-23）**：新增 `packages/services/src/engineering/mcp-link/port-lookup.ts`，按 PID 取该进程 TCP 监听端口（Windows `Get-NetTCPConnection`→`netstat` 回退；Linux `ss`→`lsof`；其它 POSIX `lsof`），候选按「回环优先→非特权端口优先→端口号升序」排序后逐个连通确认，`waitForMcpPortByPid` 轮询等待（默认 100s，与逆向出的 `wait_local_mcp_ready(port, timeout=100)` 对齐）。`BimBaseLink` 已把「找到进程」与「拿到端口」分开表达：已运行但端口未开时等该 PID，不再退化成再启动一个实例。本机无 PKPM/BIMBase，**实机连通仍需在装有软件的机器上复验**（跑 `node packages/services/scripts/probe-engineering-port.mjs BIMBase` 对照输出即可）。下方为交接时的原始分析，保留备查。
 
 实测现状：
 
@@ -426,16 +439,23 @@ MCP tools/list → convertTools → 生成 Python 桩 → 拼在用户脚本**�
 | bootstrap 类型检查 | `turbo run typecheck --filter=@zcode/bootstrap` → **9 tasks successful** |
 | 本轮 UI 改动 lint | `oxlint` 4 个文件 → **0 error**，3 warning 全部来自 `SettingsPage.tsx` 既有代码 |
 | 架构策略改动 | `git diff -w` 确认是**纯格式化 + 47 行新增**（Office 组的 document-editing 模块登记），无实质冲突 |
+| UI 诊断 `diagnose()` 实跑 | `npx tsx .tmp-probe/verify-diagnose.mts`：6 个 server 全部枚举、AutoCAD 命中、Python 3.13.16 可用、`connected` 为空（符合设计边界） |
+| 本任务文件类型检查 | `npx tsc -p packages/shared/tsconfig.json --noEmit` 通过；`tsconfig.main.json` 中本任务文件零报错；renderer 净增 1 行且与既有 `window.zcode` 类型缺失同族 |
+| 全仓 `pnpm typecheck` | exit 2、42 error，逐文件核对**无一落在本任务文件**（全部是 rakazo/document-editor/quickInput/safeStorage 等既有问题） |
+| 全仓 `pnpm lint` | 682 warnings / 43 errors，全部在 `server/` 等无关目录，本任务 9 个文件零 error |
+| 端口反查单测 | `vitest run --project engineering packages/services/test/engineeringPortLookup.test.ts` → **24/24 通过** |
+| 端口反查类型检查 | `npx tsc -p packages/services/tsconfig.json --noEmit` → **0 error** |
+| 端口反查 lint | `npx oxlint`（port-lookup / bimbase / common / engineering index / 测试）→ **0 warning / 0 error** |
 
 ### ❌ 没跑完 / 不能声称通过
 
 | 项目 | 状态 |
 |---|---|
-| **UI 类型检查** | 后台 `tsc -p packages/ui/tsconfig.json --noEmit` 启动后 **120s 超时转后台，输出文件 0 字节，进程已不存在**。**未完成，不能声称通过。** |
-| `pnpm typecheck` 全量 | 未跑。历史已知既有失败：`rakazoShims.ts`、`quickInputWindow.ts`、`safeStorageMainBridge.ts` 等 8 个文件（与工程模块无关，blob 哈希与合并前一致） |
-| `pnpm lint` 全量 | 未跑。历史已知既有失败：42 errors / 678 warnings，41 个 error 在 `server/` 目录，1 个是 `reactorServerService.ts` 的 `max-lines` |
+| **UI 类型检查** | `packages/ui` 单包全量 `tsc -p tsconfig.json --noEmit` 曾 OOM/超时未跑完；2026-11-22 已用根 `pnpm typecheck` 覆盖 `packages/ui`，42 个 error 均不在本任务文件，但**不能据此声称 UI 全量类型正确** |
+| `pnpm typecheck` 全量 | 已跑：exit 2、42 error，全部为既有失败（`rakazoShims.ts`、`document-editor/*`、`quickInputWindow.ts`、`safeStorageMainBridge.ts` 等，与工程模块无关） |
+| `pnpm lint` 全量 | 已跑：682 warnings / 43 errors，41 个 error 在 `server/` 目录，本任务文件零 error |
 | 完整打包 `prepare:agent-bundle` | 未跑。改用等价验证（模拟目录结构 + 实际启动 MCP） |
-| PKPM/BIMBase 实机连接 | 无法验证（本机未装） |
+| PKPM/BIMBase 实机连接 | 实现已完成（`abc1b92a`），但本机未装软件，**实机连通未验证** |
 
 **接手者请自行重跑**，不要引用本文结论：
 
@@ -463,22 +483,20 @@ npx oxlint packages/ui/src/settings/EngineeringSection.tsx packages/ui/src/Setti
 ## 八、建议的接手顺序
 
 ```
-1. 先跑一遍基线验证（只读，零风险）
-   ├─ git log --oneline -12          确认 HEAD = 4b907ca7
-   ├─ git -c core.quotepath=false status --porcelain   确认约 52 项改动
-   │    （写本文档前是 51 项；本文档自身 + docs/README.md 索引各占 1 项）
-   ├─ npx tsc -p packages/ui/tsconfig.json --noEmit   （补上我未完成的类型检查）
-   └─ cd packages/services && echo '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' | node dist/engineering/mcp-server-main.js
-      （确认 MCP 还能起，应返回 5 个工具）
+1. 基线验证（只读，零风险）— 2026-11-22 已跑
+   ├─ git log --oneline -14          HEAD 已推进到 abc1b92a
+   ├─ git status --porcelain         确认剩余改动仍属 Office/seed/环境线
+   ├─ pnpm typecheck                 42 error 全部既有，不在工程任务文件
+   └─ MCP tools/list                 返回 5 个工具
 
-2. 提交 UI 部分（7 个干净文件）
-   ├─ 2 个新文件：EngineeringSection.tsx、shared/src/engineering.ts
-   ├─ 4 个干净改动：shared/index.ts、SettingsPage.tsx、settingsNavigation.ts、settingsPageConfig.ts
-   └─ 5 个 i18n：**先分离** documentEditor.title 那行，只提交我的 8 行
+2. 提交 UI 部分（7 个干净文件）— ✅ 已提交 a74a443d
+   └─ 5 个 i18n 已按 hunk 精确分离，仅提交 settings.engineering.* 8 行
 
-3. 等 Office 组提交后，做 IPC 四件套（约 150 行）
+3. IPC 五件套（约 150 行）— ✅ 已提交 a74a443d
+   └─ channel / platform 端口 / preload / main handler / renderer 组装 + SettingsPage 传 loadReport
 
-4. 拿到 PKPM 实机，跑 probe-engineering-port.mjs，实现端口反查
+4. 端口反查 — ✅ 已实现并提交 abc1b92a（本机无 PKPM，实机连通待复验）
+   └─ 待办：在装了 PKPM/BIMBase 的机器上跑 probe-engineering-port.mjs 对照端口
 
 5. 产品决策：98MB API 库怎么入库、加密 references 怎么提供
 ```
@@ -499,4 +517,38 @@ npx oxlint packages/ui/src/settings/EngineeringSection.tsx packages/ui/src/Setti
 
 ## 十、交接一句话
 
-**代码是完整的、接线的、验证过的；缺的是 UI 最后 150 行 IPC 接线，和 PKPM 实机上的端口反查。工作区混着两条别人的开发线（Office 编辑器、插件 seed 降级），提交前必须分清归属。**
+**代码是完整的、接线的、验证过的；第 1、2 优先均已落地（`a74a443d`、`abc1b92a`），剩余是 references/API 库入库方式的产品决策与实机复验。工作区混着两条别人的开发线（Office 编辑器、插件 seed 降级），提交前必须分清归属。**
+
+---
+
+## 十一、后续进展（2026-11-23）
+
+### 11.1 第 2 优先：端口反查实现要点（`abc1b92a`）
+
+| 项目 | 内容 |
+|---|---|
+| 新增模块 | `packages/services/src/engineering/mcp-link/port-lookup.ts`（360 行） |
+| 反查方式 | 按 PID 取该进程 TCP 监听端口，不解析厂商配置文件（逆向 `common_tools.pid_to_mcp_port(pid)` 得出） |
+| Windows 命令 | `Get-NetTCPConnection -State Listen -OwningProcess <pid>`，结构化结果为空时回退 `netstat -ano -p TCP` |
+| Linux / 其它 POSIX | `ss -lptnH`，回退 `lsof -nP -iTCP -sTCP:LISTEN -a -p <pid>`；其它 POSIX 直接 `lsof` |
+| 候选排序 | 回环地址优先 → 非特权端口（≥1024）优先 → 端口号升序；同端口去重优先保留带地址记录 |
+| 连通确认 | 排序后逐个 `isPortOpen` 探测，第一个连通的即返回；全不通返回 `undefined` |
+| 等待策略 | `waitForMcpPortByPid` 默认 100s、1s 轮询，超时返回 `undefined` 不抛异常（对齐 `wait_local_mcp_ready(port, timeout=100)`） |
+| 行为修正 | `BimBaseLink` 把「找到进程」与「拿到端口」分开：已运行但端口未开时等该 PID，不再退化成再启动一个实例 |
+| 覆盖顺序 | 注入的 `setEngineeringPortResolver` 仍优先于自动反查 |
+| 测试 | `packages/services/test/engineeringPortLookup.test.ts`（24 例），已注册进 `scripts/engineering-test-files.json` |
+| 文档 | `specs/engineering-mcp-link.md` 新增「端口反查」章节与 4 条验收；`packages/services/src/engineering/CONTRACT.md` 新增 4 条不变量 |
+
+### 11.2 仍未完成
+
+| 项 | 原因 | 下一步 |
+|---|---|---|
+| references 正文 216/238 加密 | 厂商加密，不破解 | 产品决策：随安装包提供 / 构建时解密 / 服务端下发 |
+| API 知识库 10 个 .db（98MB） | 体积不适合 git | 产品决策入库方式（git LFS / 构建下载 / 服务端下发） |
+| 连接器覆盖 | 22 个技能只有 3 个走 `connect_to_server`；`PKPMAgent.software_link_kit` 不在仓库 | 需实机与厂商包确认，勿盲目给 registry 加 Office 项 |
+| 完整打包 `prepare:agent-bundle` | 未跑 | 有发布需求时跑真打包并验证产物 |
+
+### 11.3 本轮新增/更新的验证脚本（`.tmp-probe/`，已 gitignore）
+
+`verify-diagnose.mts`（诊断实跑）、`stage-engineering.py`（混合文件按行写索引）、`stage-testlist.py`（工程测试清单按 blob 写入）、`register-engineering-test.py`（清单插入）、`renumber-acceptance.py`（spec 验收编号重排）。均可复用。
+
