@@ -11,6 +11,7 @@ import { existsSync } from "node:fs";
 
 import { isPortOpen } from "./common.js";
 import { candidateRoots, isValidRoot } from "./discovery.js";
+import { findMcpPortByPid } from "./port-lookup.js";
 import { findProcessesByExecutable } from "./process-discovery.js";
 import { getConnectedServers, listComServerSpecs, listSupportedServers } from "./registry.js";
 import { isComProgIdRegistered, resolveComProgIdExe } from "./win-registry.js";
@@ -199,14 +200,33 @@ async function bimbaseChecks(): Promise<DiagnosticCheck[]> {
   if (firstRoot) {
     const exe = `${firstRoot.path}/BIMBase.exe`.replace(/\\/g, "/");
     const processes = await findProcessesByExecutable(exe);
+    const firstProcess = processes[0];
     checks.push({
       name: "运行实例",
       ok: processes.length > 0,
       detail:
         processes.length > 0
-          ? `找到 ${processes.length} 个实例，首个 PID ${processes[0]?.pid}`
+          ? `找到 ${processes.length} 个实例，首个 PID ${firstProcess?.pid}`
           : "未发现运行中的实例，连接时会尝试启动。",
     });
+
+    // 进程存在不等于 MCP 可用：启动画面阶段软件不监听端口。这里直接把连接层
+    // 使用的同一套 PID 反查结果暴露出来，避免用户只能看到「连不上」。
+    if (firstProcess) {
+      const port = await findMcpPortByPid(firstProcess.pid);
+      checks.push({
+        name: "MCP 端口",
+        ok: port !== undefined,
+        detail:
+          port !== undefined
+            ? `PID ${firstProcess.pid} 的监听端口 ${port} 可连接`
+            : `PID ${firstProcess.pid} 没有可连接的监听端口`,
+        suggestion:
+          port !== undefined
+            ? undefined
+            : "软件可能仍在启动画面，或内嵌 MCP 脚本未加载；进入工程主界面后重试。",
+      });
+    }
   }
 
   return checks;
