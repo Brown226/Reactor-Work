@@ -57,7 +57,10 @@ export async function diagnose(options: DiagnoseOptions = {}): Promise<Diagnosti
     checks.push(explicitExeCheck(options.exePath));
   }
 
-  if (options.server === "bimbase") {
+  // pkpmmcp 与 bimbase 共用 BIMBase/PlantS 内核（见 registry.ts 的 FACTORIES 注释），
+  // 安装发现与运行实例检查完全相同；漏掉它会让 diagnose({ server: "pkpmmcp" })
+  // 只返回平台与 Python 两项，等于没诊断。
+  if (options.server === "bimbase" || options.server === "pkpmmcp") {
     checks.push(...(await bimbaseChecks()));
   } else if (options.server) {
     const spec = listComServerSpecs().find((item) => item.serverName === options.server);
