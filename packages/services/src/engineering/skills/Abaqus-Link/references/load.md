@@ -1,2 +1,64 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQUShkGSC5TE_5BgDENBkM2jyFQ85H8EJ2QWK9h_ytyNQNBoCzEYNXMBIkksMJCatgS_1xKb1urMA7ns2GwuUmPMkEf1W52t6fLpr_F0j-l1XfNd9cYhZqWmDERmFIu1C6ULFQuuw99bL3JvPGjoMH0BUD630_zTn_kTV7ag5E3QJG9NnZGqiOSMi5FyaJAkO3d7CqeAXaPU0XhVUiY_XDfM2BwVukLSpqZXATQmfRYgLL6d3v156jELEVx2YGRi27ra3Yc_4X-J5sNkzjOlMITtoUXxi_YZyWfhrjwfgM7fNZZO33Oq1xO0AxlbVEkYB8bsPBaiwlprZ6ioFM_Ukb3bU1mWVaVEldov5G1UjM6R4GlJy2az_xXGBOfd5odlAvfAv-C4_y_dPj7kKpYAqset0X1cKKdM_twY8pBdMx8KoZsvq6gcEZs5SOGEIBuZtMXnkXdpEgm7MhwTG_aZl0e8AavAODQBg5F1kzKAO4fiD8qOj4Gni6GkgQYk4zJPmF8ZF_7P-HtMPxwxAwXEffbKcQjNhkXFqLP9_oY6ZyxWKJGJfFRgxiP1MsgF1NxFPc_Rrw_tZPpcbB8PDX174xIZI3OBuATMoaWyw3dcOr9sQAtdBjoX2MfTV2hht6CQqBRTqvGbpTZMyFlTGrn_yDNjyOERqEn7XN4Gvy8uK8DOALHrRDnpgaKkrPLGm0iYQTdnHiVDHHPsGV24Y5VYiyFsYO1Eipu-9Vm09XEWgB2sIl_vAqzr2ZAaJZ79IEWaTt_gnG40WkXT2JReb520rMG0YUpITrHNwAclt70q2EVIcW7Rvtmak5Uiv8rd6sLP3FKBoI7DEcnx73FQBFhog--4GbipMONmd6ARPNkh0wbBzPW8mFbFLi5ztj66dRnq-z5cN-7Im1IXbQLk8OJppyvmqZHjhYOd2iAugN-VIDUPyTGeUk5VRRnXpn2LirMQHE4FR146252Pm-XwWhV3isWCZUApNQqXMMTkP63T4wk16mUyGndS4-fnlCFwppp1EihTQ-xDZUSwvevSXysBrIXIJeyzRHn_UPdzOld3nH074E3h9yhH519fJypRk5nW8qS10rdwUbRc_un56QlF_ZCfgn-lx4rmkcb6z3QAULyTRhjeh29pbaGqGayRvNr5r58Kjbl38nRJcGQtQ5e4SBulcGucXPwLVCbWlj8DyPSfB0oai5PD2Dv2ASOqRmWI-dmDffG763eovtBd7jPVZejsaSfK1ehJ6HOhDRKvYLb-jmqBv_RgI8Q84Om0j26_yZQe-gF4OmdpJPp2rITfd_v8F8LcQN_9Sx-52fC22HCA6Y1SMwdIUsov-_MVQGnltU46H6orCdMGvCLcH5ZE2NvaY89WH-XxPpmrsqjU9f2G1UDihs8EVPBxF3UblYkI80Os6Bu3SzPMLOFnZ-hL-VGS2agbOTZ39MIp9eCMwbEYvzkr4ekU2t8vXddj-kNEQyrKfMqdgvDl8EzqkT_PVjEftAAjX6DIgUg9g412Oz2D4LMDngI6JTUCptr0kWBPtKatNouSN_uNztS2ZbRC0SfJelqQWt-MymfwL7xfIjokVs4VALEf7ka3-rzdRtzG6PO0t4tXBhcWDsb0SoyjnKIDOfeL1H54u4AG0jRLKoYW3s-rF5S1Ag19YjLFGgUJozHAOR7BmlaG--U_SVpvgN39U7IVXK_Ke01x8jFses0MQUuPd9HjQF-7BKfC8cFv2ncuyrpYAKcZkbVyEbQP2sZo329O4Pox2nW5KVuUkpywvvAE7JargD55QjC4NkwemlRHjfpUsfCAtPVKzRQYWvY2fEC3FRLm7xqTzFyI6D94_mtS9NYURxoYGYZ3epb3Iga1zewi3JxkeXQ0gQIJuQlmdfOfrM0KK_egAupUllQ0btSC295Zm7NYP2UUMmqEMaWlZkdQYSXAfnEEMy5IfWZ3ytWMXw-txRt7VabkXFzeyklm38ADmu2wOlXnZsyvue5hoo722qDRvWmzVEa41NcK0v2PA_8E0SI39WwTVjsOFzRHHd24y0fxe2JQs32gapVMOriRnVMN3wqGB2aowSSn22i5aZLEmkF-qDuGVW_UlNaXZurk9SMI5P326XU7xQtSWxOvLhritZSu2CVABpNSX5Ib34TuN00-DCuaq5PNjlqvw2hoRH1-M8b2Xj45e58CWoshP4nhDTFYW_XdnT2RDNdVnw7ZxWjbc3ffI8mqvRw849hg9y-Ol5xEqdBu9j48uAc0Qrwc-5bUPP2m5kRa7oyqcluUic18ka23GR7X5DFuKhoZAi3g2U4dFtchLZb30tNVA1N2YdCRsTASFuUGNHm_3OFvSr7RDMRvAYhWkeCRaH118dvaAGxJMUxDesZI-xt7faxkmgX5bOkuFbQsPuEZDwK1I2yruKFF0f6P3SXX73wTabSziWJUl-g0uv0I_R9uwcF1k9iA6rzOxOi31zwVxovN3y_Z7YrMDNBrQUurdMmFKNxc_wR99Dlv9Py6P5YIOGCkU4HoWKTV7vr26AJWK64uUfk7Wjz4yaGk95Vr8dbRoINYcbe40mTByAci-70q9Ay8oXKn49JvYrIwEZ6u2knS6pzc5DHm3VultwxyDwKhyEUufH2xBPCKjxvX5adGMjkP8bNPz0b9xb80h7QlyOsLG-4a6pJd_4p-Zkq2P-STHAZiiuNMKOv-DNci9VQm--ld3KOH9Zz2Mz1NY9vaMLSCpTYFndOiBwQoZMOBLm--Pdr1NouwnBVIzxTmglytrmhPwQspbEehf-OzjV8D0ENvWKGBDQP9VpXbiuQ1F47_wfIRbCs8Dw3pQahFgM3wk60BQuhfAxD7wBpSw6dtgeHG0M-r6Dni4MZ7cCIJrt06rTKzilIQP8H_k_8kYXSb3XrT9QamRB3xpM7mebK-ukUVRiFMTO0s3WCQu7o8EVbb9V0RVj0O_oShRr
+# Abaqus 荷载参考
+
+## 荷载类型选择
+
+| 荷载类型 | Abaqus 类 | 适用 |
+|----------|-----------|------|
+| 集中力 | ConcentratedForce | 具有平移自由度的节点、顶点或参考点 |
+| 压力 | Pressure | 面荷载（分布力） |
+| 重力 | Gravity | 自重 |
+| 位移（强制） | 用 DisplacementBC | 强制位移边界 |
+| 力矩 | Moment | 弯矩/扭矩 |
+| 壳边线荷载 | ShellEdgeLoad | 壳边分布荷载 |
+| 体荷载 | BodyForce | 体积力（如离心力） |
+| 温度场 | Temperature | 热载荷 |
+
+## Abaqus Python API
+
+### 集中力
+
+```python
+# LoadPoint 应由节点、顶点或参考点构成，不能是实体面。
+model.ConcentratedForce(name='Force', createStepName='LoadStep',
+                         region=assembly.sets['LoadPoint'],
+                         cf1=0.0, cf2=-100.0, cf3=0.0)  # Y方向 -100N
+```
+
+### 压力
+
+```python
+model.Pressure(name='Pressure', createStepName='LoadStep',
+               region=assembly.surfaces['TopSurface'],
+               magnitude=1.0)  # 1 MPa
+```
+
+### 重力
+
+```python
+model.Gravity(name='Gravity', createStepName='LoadStep',
+               region=assembly.sets['All'],
+               comp2=-9810.0)  # Y方向重力加速度 (mm/s²)
+```
+
+### 强制位移
+
+```python
+model.DisplacementBC(name='Disp', createStepName='LoadStep',
+                      region=assembly.sets['Top'],
+                      u1=0.0, u2=-5.0, u3=0.0,  # Y方向下压5mm
+                      ur1=UNSET, ur2=UNSET, ur3=UNSET)
+```
+
+## 力的正负号（右手系）
+
+- X 正方向 → cf1 > 0
+- Y 正方向 → cf2 > 0（通常向上）
+- Z 正方向 → cf3 > 0
+
+## 关键注意事项
+
+1. **力、压力、重力等荷载施加在分析 Step 上**；强制位移是 BC，可按加载历史建在 `Initial` 或后续 Step
+2. **使用命名 Set** 选区域：`assembly.sets['LoadPoint']` 而非 `findAt`
+3. **重力必须配合密度**；N-mm-s-tonne 单位制中 g = 9810 mm/s²
+4. **压力正值 = 指向面内**（压缩）
+5. **实体面上的合力不能直接用 ConcentratedForce**：改用 Pressure/SurfaceTraction，或通过参考点与耦合约束传递集中力

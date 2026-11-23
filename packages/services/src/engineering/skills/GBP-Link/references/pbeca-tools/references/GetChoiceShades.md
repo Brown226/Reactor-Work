@@ -1,2 +1,20 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQByHujTbBfVhMmsQXD5anSq9ICA-Kz2W56hjRNAOwT_XJqbaHYqL4e40ijSR4CYBXxW0vip6ZZ6gJ0OWvo_6Z3rSBWld9SuH3uAN_Jb1XgGrJxbdR9uJMtuTJo8oJz4TfxbwkaMdhRZRyNxK1BdNDv_bgTe53pzgz1PeJrSuAXpklT-Lb10tsCj2G3r66qBs1bVnkgFxCfCjb_0zn6Kk22eG-7l24R7dmqdAz6Np87jk2AqFrYuaUh6rNqsCGhjWWLaOBJSCjJo3FrtzAVq6h1AAM2PWS2lCFgPshoLYF1_Xw6_ue1WJBxwbnyg7ebJaWKwRlt6qc_HgkirLH1DiK1vVl9hZeOdCT5VdLIiHK45DbvWfEJmNqJsOGCYo5fi1ILlC-dJxwQJXri67ZupAxbUYqBIenuL6c3ohW1rQQVdm3yB3Y4GjSWaleAtkL0Ilq9NrrH2-bzI89XnVJkC2vHo0TdTFGAHP7KijbvfnBRsB5fIxeSxMCaXhmWPkUjX3EIEdM0v7yeHlgkRi1rusmzlZPjv5_Lu0ZpyG8NBuJ4qQ=
+# GetChoiceShades
+
+**工具说明**：获取可选遮阳。
+
+**调用工具 Json**：
+```json
+{
+    "command": "GetChoiceShades",
+    "parameters": {}
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "获取可选遮阳成功",
+  "Shades": [{"遮阳类型":"水平遮阳", "type":1},{"遮阳类型": "垂直遮阳", "type":2}]
+}
+```

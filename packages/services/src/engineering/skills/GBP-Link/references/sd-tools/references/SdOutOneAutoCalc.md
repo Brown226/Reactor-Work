@@ -1,2 +1,44 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRC6_042P6i5y99oyt4FZBhjiWT4nWVd7yHAMCa7TfkI2VKxWF-yvrNNVLM82CqlfV-a5oSn4PtGv-MXlOZvOaG68AiuzYLKiaoNz1PhG90NImyLcxW9gAsiQY0T0PIvYK1TdBDFq5dsa50UokMc3K4ehwh2m8j3G_196eixccXRU2SUuSj-s8wTTReFu6-kMd9KFR-bfPcvzlebjvw7tUjHbp6BjBl2VG_puemmdO2CO687Sy2AqaUhh0o6z9Bs6_77SaMlFQOl5CZqLasliCWsTSfHoL8z6lyV91dCyOrsa3xqWr5tNjsVEHXWNbc-0nMjYVtvUnvAcPxqAcDGoNhJWyzPl8DOLuSuAgD0-ZHxbN5D9WDCkWLJafCC8mrzppYySx3hPZTp1zarp9IVBwQ3eFhPyAR6QzZO2amhcNGJHf2uWBclrLOh0s6AGOJ6JuK2C_DgoiouZeBRy-BrT5Dgb8Hrr6s0Jzx0gtq8IL75U_cmoJ_8ISIGVxP_4gQXZfk128LHfocoWQwS4n9Uw2TRCVXY_Z8qBa4JkafRzRelzrvEz83yLvO02YLc3xbbJdeQijgyLU6TVJNGeA14Zu2g9VZ3G9A4_zBWdoAOcWXSTpcMTiheCtve98VzCVlnQtuiV03amMSjp3VHSMy7HEvcc3XSNTl3Fp6Ahmb5nCITep4DTVYJko7qhinJTulke1I2MZU_-6Tnbx5UX82tmEiX-hKqkZ-T-3ioE_4ebS6OziDa78jO-wqqdeB1--4ZFHuypfATCCk70EMDT09Ur7E0-cLIQ3ttb5ji7jutbnKRryScpLhQ1_00Y-ER3DM8f7n2cSY6x0u4ElyPyUd48busVduu-XVhwPdCDXM1svumHdP0uA2Pi9OnNkWdEVPj0lp1u69wb29S8EipH0gsrfC44yx7gCR5zpkFTKB1lgGKjvg0YXYAf7g4QznqDW4TV8NfCAXAOT2fDryhomokjuNrW8hPjVkqDlkw3Pv_cbAHi3aJSYe2Gn_tCzl0UFhKHxbMl1ue9UFp9pSHcS3vFWy3gnNKZXj4MPrPLeL6NbCXVJ5ucEPALkl8a_zT95DmaiukoOO1d0h8DSGg2h5dnuxltD55XJu4ahiO48RQUt3aim7gzMIqQz5Fi6xlGgwNQOULPGz7a9ftOt1ogc_3W-cDwar3mCY45Gye4rWQCYZnc=
+# OneAutoCalc
+
+执行一键计算（计算、统计、判断全流程）。计算完成后自动关闭对话框并返回统计分析判断结论。
+
+## 请求示例
+
+```json
+{
+  "command": "SdOutOneAutoCalc",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+```json
+{
+  "code": 1000,
+  "msg": "一键计算完成",
+  "result": {
+    "allresult": [
+      {
+        "name": "区域红线内",
+        "achievement": "满足标准要求"
+      }
+    ],
+    "name": "新项目",
+    "achievement": "满足标准要求",
+    "isAllOk": true
+  }
+}
+```
+
+## 返回字段说明
+
+### result 顶层字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `allresult` | array | 所有子项的详细达标判断数据 |、
+| `name` | string | 项目名称 |
+| `achievement` | string | 达标情况结论 |
+| `isAllOk` | boolean | 是否全部达标 |
+

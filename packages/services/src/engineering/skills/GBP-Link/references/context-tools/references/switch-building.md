@@ -1,2 +1,15 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQw59V28yvGVgz234HgvJ-175rIJd1zXtUoU_ldWCTSbPp2Rsc3q-MG7EIuw_ZzNRotkK0lzoSSACcwE9BJilHgufXGu1QQy4nNxPC0NOCUtXWCX1Ie0bueeGvcoIn9LCCZLDY16XjcVzoHZswXgI2LwcNO_5Nhx2LpRd2RPu3MprfZhmL-5oMEC55oviQyt73YmekF0lLOxneQyhU3p68t-y-e7i-zMKo50EgwktoTHVDStTntPiNqJ1kej1SFiGSgISuMY61ni1Eb8VirB0VhEeWUGfGNsYc_rhCbK__nWYp-1BXzbjqiTafWWJADzbHGHsK8XKL9nBk7W4htCYq685_UviwtB4OVz6OvJoaK-wQxc9lgDV8PvH0QqZxtsif
+# SwitchBuilding
+
+**说明**：切换至指定建筑。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idBuild` | string | 是 | 建筑 ID |
+
+**调用示例**：
+
+```json
+{"idBuild":"109"}
+```

@@ -1,2 +1,258 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbSVeP5nwetrRuVK8y1Z5NTrz_8QP8MHpnfpM8WdhX5NqRjZiV_rK6FVGUEk509587vMrNB62n2Xcxgug_VbcuF5l_ZqDii7-T09YUkMFUgCSXlaifR4j7djAp4XyZRwVvSgRuU0Ktb-xTTEtNZusmY_LJo8UI-iex5qDNUJJRUWChCt86mK4YftcwuAwTmcjJzkVRe5Z9gom6Spr4mZ38SGS0GNN4XFbEQLbNaRItNc7UjzqckGqolxVo2zbDtylblB2YztL7Zkoz0aui2YkLXeYjzDWd5f4lyHJtzkbcbSRSy95l6k2C6q1WauArSOrqoEzxrp2rdUbiCM_9s6CkVmMnQS_jFb0sZNNNXtuH8H9Q06b178uu0rhxP9cyKPHk8pQD3sZk1tl2LHysP23yXRz3EvuqQqlhveo9fad0PLpH7MBeiec00Gb3jxjPG4HIs2dgqExGSdM7yF0pUbb0Zsoh6YZGB418G8r-T9FrYASTO7MNHQgc4vPxIYDWhqaLHOiYSF9BqKOXEa26n9ZdmyKjkc6OdmFj6xufs85ajkiXCgwQ848UyHL0iNVdqaWV6yFN7toVlC4iy454r5AjF2d3oeA38b7z-lOm7pFKRZySCOOnN_P8RCFF3v1ETgTen-CYwQ94vyiP5FV7IqzV4qtuOlZndzxhzaSrdTpi9CqooymjM1KxP_kbRg_viRxM46EfzB5i5b2Nan7kFjPFi6TIy-15oKF_LLr6lDA9VfL2sXmi3GLPXIlajuix6YnImQsn9PoThpcLDIwr4a1pYSnD19lrk1wn0dBt8Je-rabaYkVyMQR38Do4D2nCtjVbTssFI2C7VxCfk5trPiXY6vV-5Bxwz6q_KD8GfMUkI8fHBe_kARCvEdf_odXwQe5UDMkpRT58yrCkthlh-TcIfSwtEEcTFX5x2o_2mHHo6GywoMajTum0-eJhoMGhuzdt_aedkpBmlCfpTDiMEFU3dhb_lsqP2B4kaSqtxTIBg-3metndnQptqd1glOtmuEtW3UlczgmLaoz-1ARMxb_67VnUNhzMqRzQnRB_LVudbj1uubT4elb8yaUA69s_ujRSo2xIp1lOhd2Af-Jx3UfjvqH2JbLIpIuDnd3xsPEzyJsG-32PLk7XSMTlSatHzgHlhoY3HENfczXYz6n15PN4uQE7F6rx78P_54LW3UUKBiWAwbXTU-Jk9ORSBh83rLZer770e31UMp6PGL3fgO-dNQz31QkUdQbUO6W2Mo6G5PIlmRKyNMwUU6QsNEJN59AuSaXSdvu1CJsgGMfLrZC1lXtrDCsCvNtLWZ2H6Wz2QxrozjgEYB-pU2WLIZozXTjjizjFKl7zppNP0YDYG1t1A1JmqfKbuMgi_DXLeh2q5ijUaRtnHOw6er0vLlv8iSXKDiMra9xhP5fM5Dh-zaoM6Of0odVbQtwx62r3ITd6r8x2k0FInxqDUphGq9s-gTqXMvNgj7FlWIA2Oz7X3oJngHCjwMejejggcWKemV9YbbkFp3ywydWXbhhrHBhbqnTNauTbZdAV9ysf3UpSKqlabUzqNh5or-j6tpQFuWjeVzNk5W6Re0TayOFCzSu1qHnuXx6aUFvikS3u99DGaHS07Qv2u_mke1FFDSYUvpiINDeJVI74ryGhUxIbpOjeQ5pN79NSrABuIAciGZDC2_dl6lkfkS-yFAlVhDuteOXBiQPg9OFQIAfd3QSjLQDK9er_iwedAI5ZPohZ6JMV8wh-bmF7c6udA7jQPUUgWZyC0aYOgUJ3pTRDZtmpNkt4sCvv-UyA9hsnIZ3QipMls1hwOy1vS9LHk55PGbDmEZVGL_XV_jokvM9g_DljfKC7B6Eoh8ZbQiFANAPJTzNA-HZcfJTf5H59aNqfpcVPF139b_mGtTMOMNgACYkeipW01xhsf1pgfdhR0K_bA5IsM84oUCPKgWxCByh1zxqBZt_N6MBdia5OX3mqkZ62dyhaHgDec2naoqx-MTfmy28KNVaurp35PL1gBEuqK4JS5v9y2qIlVOB5En8w0Dhwx0_P4iabWPiCGigX1lHFWGBICK38sS4cdVbu6zU_SbVx-o90GaayxpSV3k4drMhE98NWyo1TjHCoAyj2kMF1nsRDLqEfoVgCFk0vXZxpnwjf5pDftRfnx65DHZOB7u4BJCVyZuaUDrTn_5KK6V3AxwKStr0fakXcmfff4By0y-GRF4o-sH6-R36QA86DFzVNTDUspH7qO3M8GH892N0skR6XE36q1UHbKKAxIJWNh_-maU2ufuIjKj8Nm9LKao-hnARBKNEnI8DvNev73CjlInSN45G5iFi3Eyt49bfzxQIEjJSmkTqJtkVLTLTIWy7-NEn_RJsJNr5ZRktyyfy5XQhCgSuNbLNx6h3BrYhCqMzBL1mI7YxbQ1_XH3xN6G0P7mdneqkk8uqun5otdRGxe7WVyJB9wKFvOExyXoC5cXA8X3UlOEKN78o7yirS6rWiDtRfYstVYqtSZyWdBsCvtV9dKp5ps-244dunbAEJgaBGIe-JwCeKQwjePTZignIk3CAfqz5uS7ClrKAII3RTFHkWoaOYQ_LI-vSbEKZSfua-1LLS4gRdRm5t9Eq5S1eL84YbE6t5nCKK-RPs8P4FcG05RiYFRBnD21N9swLe1WeiS-e2iTj2zGnAS4cCHkiG0m44alWwYXSTpHCIeKXbUbMWGs24UlIw8RiPw3dO13cNL0oH-qJcrrJ_KLIZyFaphqEkF6xceOv3mjTgwGUg3sObfPXXdAndS-6Ix07BpgJzK65jzfjCMySztT3Y3oNk1FaRFjHvcILZIeUSqusRJEO1cqJfocPk4qhaFk_j6El4Rr97zzepcThyNERJSN_O4AfrrHSs1qAc-aZvgUzqHbMCwjweOg9CsR0yxQOJNHF7cUOOa0rhqy4LIn1mgaFf3TjLc6mXdiU4BHyk6LV74DbG_cAmPmWX0qRW9bgaGeO601EQFblPGMCV3TcsJXIAU5BUTwOKBWnCS8wCV51ocXXR0s9nyTkaRbLYXthkhI9PtcMV3fiQbiyI6xHdHO1GWoVCAoWaT0vcqWmGTdQn98qtfNEvrcavWBq6GI2bYt4PBFuW_RgLV7mvO-1bcrqq82on1Yw2u26u3MJe4Sn_2l-yZNLwRFAee1mYpIjNpM7s1nJ6SfO1F_nZNx87uKUWQ88_65VcZ_8KQPqLyOhYMhhFaQcJxEXUuVl2LZeoIDsIjErJ3VasNSyAmWzm0MiyG7V1MRyF7kyjxlx8P1kdy9nF5G3Opuy4oMn533KwH04kAWgwGub5MJVji3MmVCX1IHXy24cUcl5mLaGiPJZ6Qu71Phdqp-MHhTjhUoJKBuMTVO9iCFWJvgn5R5-wCwtaoovXqZGls6kU5PuMujBbrcQUSI_IVGP0KHIQIZZukEg1dfTf9DEga85_hPlZlNXWnyOkqGQ6eui8eFR5ZYdZ48_vpHVtK74G0XFWqJ25v5jApVCA6-w0yTf84N3MZxu-FjtShgZZ21cmV4JAO-hbK2Z7dbgwABQ66QWo537Ngr7vGntr_6JJoNrmnTAbmgwHxjM-HURSk-jYxRfecWUY09Ra33k572CtnTftdmpcLzpaTWZvZMiv4D8ybEL1qXYoyC3tXA-WcwE3Bv2upNmeBv3nxgTOS1TbQk1dNdaij16Vx6TLagfptm_nHxd4zH1jQo9ib6cBVQ8JNtl0csO-22LaGliu5rxSDzTyR6l36i6XLg8EicOBx25I-wnHopowr_Zk0xYZAwtBo2g-Qe8JBogGtoDpVgoM-O8vfwOC2zidhCC_m_8P9Y_GwWJELLjtCH3IjCWrWYySeY2YcQ3ERKycIF1r3VnKyro8nvxY-R-uch9z20TPPZXtODzuWqCmWItZOhY2RLf78A1uIe4WRMu5dn73jTBwfW8YByCQQgj9CXkr9_ov9E2gxLPHKcr6pwFI0Hzqf-7AsbMyyW1gxU7spBr9kdP99BHyApqMXgnMhSrYM9CxLjxQmBMBMUGL2cmsgDhHnV9_IkCTKT2wylD0N-inNdzofq4CeBN_fk-TRgySIrHLRkYMOzFTibFxt3FyIMLH7yNew4ahgAmZbw_QFzFVcBA-hQnGKBE53glOGxChAdnLZjtvau_yvMJKvVRtt_0lK2HuavMN9khAB6XemRha845KCPTqzxUyUmKLT5802xFjVJ870LIFtghcXDb9-5FVg1B7jou6s3OVP2JI9KLpamB-Rj9NVDPrBAMItJQfVnSi1vsiN-EcVxpJs9he0FPIvTqc4zFgYoAEaSV-EmCZF534DQOxnmzzWCktKhCs4Pcv3z0sCtH7hCdFTFb0Kl4ehSPaWCAvOYDDdFd_5sLJGq5x8wGSCdjRv0EKyNr6eFWvRWiYpOhZOORP6FHsfzEcLCPWAzPeKlG9QymYv2UP85Gl50HOVNYvT0md-mTA07sOYPdjyBKElU_5Clc6CRYbaJGhxLqa9EICHMIQ4_4JSzVxrDVlDIPbNTYxTuP7lC_fGl2yB0o9ODOC4xBeJGtUST9WiMAwr2GvWRdiRikU78HH9kLVNSU1kREOzCdW7rMDHliGl5UvPR2RV4PKicPN47M_6ucEFaBfmQxDEgV8YPD0zgo0mS1jq82IjUx5JXOmOGVOAXGnrbPQcw9EYBaiLRxtMvyBvdYAEyJPEn3U6RJEafywR6BRGRVGUtHEnleO-QZ2lm-afIO2Ph4htY_RWsUg6vlR0HIC9HBJT4mac87IZqil_eoPo1YwXeu15n4Qyiw-9kPETB5CjW8oTwn04io3SOr9qY8ZdldZ3aN_Oq-aEgyDkTThsECbKCXWIfGxEdrAgTIlWPN1F4JePJADdwyi5MrSUJmCZQ8PpD8qVgEjFjHYz74HHVaiajbVftFmgoqI20Q7WnKZpFTdu95BWVZ3SAQhUTb6gjIF1zeB8lYYYjXDrX6M-tkUduLRpLogkRpoHQbtkonnd22BlhlRnZi2bvlJ-Lhhjhgt6w-_J_HruyxY_CROtbY2CNT_aqIs5GFtSx3OmH-A-bUsRAzrPzTEp8dMHAs9Znu2kZpZ2jufKlRsKsCcimTdZk9_R4SLMKfFox0tW8Ybvqb1sHqirqkxwDFf-dRE5pqCEH_QRoDFLdx-2oZHyuvS7l0tUYIq_td8AVyHJrjhSaQDW6POhKbR3rssQWv8elytBPrz1iJOvarTy6c8TzffML6TomYKJ_hGRA4-ZvHnE_FbqxrbWx7afhCmaR024KxuPZtcoxrbzMccaMIb-6o7yohj4_WUW544U1wuUgGKfFTq6SL8wV3Peb5iJNzZDB9R_nLssd64txJs9_bckv2fOX06C1pQHs0RrQcCLxb6kfdTJX9nEgFzolmV53MpW44cmAFXw9D6q8yJ2id0tKG2yCRUUg81t6W1jfls3WKJU1s1Umjlbuvpt8IWzT48MIAhdbMKX_4csgOpyQNBfj2hCOZ2cVAB98eEqr2vyUbek2ucO1Gbj_adQPq7w_paNcO0WylBmdLclThyx-WFBZRhdGv-tQV9cXMVf6tZJTMbpMS_8pfMMe10sk7PmYgufUudqCyFfjQ4Ld_krUglvlpqlLFyrI2ysZOH7Rf6nKS0fdDscFgNtzq5b-uMXXur0tZ2adFRWxjiu20WKET2TI-8i5GiogtDW42ft_Ms5d8nsrDyOAvBQWkb4EH4PuwoYEgWwBGbjPmjRn2JU6rDUNnV0TqRm4fuBlA4yy1QVaZLhxFlA73_iQtQy--khsqAfVuDMQPZ66F3FU56Q5fBzHkKPfV6zN60KcoFv4YIqZ0mvXRI34cZtlbXpgCXM30sp9XfKuFTLCvZRjRBkahRSQD3Z4AvFmXINQ4yN_8u7ScGKT5oWxzP8Y6rU4SBx1ZmmMF-sgD42aRLsks47ivE5McyefX_8UKa_a35TXmKPK2k9I93ys1bpO62Dqc5r4d9anYUn_PPpd7vRaOvj26I9vAbS_y1WHHDlBRKCd2JV9E27hyTh2Ct6H4tsyEoLQbY6Efkw7Qnf1gf2QB5G_qyn1gzaRx9qWR3H6PAaPxo5aj8-Razmx_0rfFSR303HPdxGXlhOv3mbzZ5PNKS_w81ri6uaJfLaZ0sYYFOv500NL9z7samwl_rBRErpfL-fzqphKBgneQUo1D6iVJbinbf6VUx2XnUD1nJ8p4Uj_UFZnot2o478PTGHR7jQJ9RJvlDKVZPNEJ30ANnHlUTaC2ILR_0D8oo7hJJCKkozn66GlyhUKtL4efSHirJXfxmohPANUAa4oLlCsxp3g5qrkHgJihM1cSyXlivUn1X80PzdzImYMWuGNinUW1wXpO_ISOH4kw_4ifrKNfHxRu9JzU0c-kFoVupgk1GfZtY6-cbT8P7LaCqWh_dwT45BxDXxSzAzMzLDpS6eDLkYON3zuHKSYUZEC2f9oeEVKD9sbvFt8snz1GIuEOwg6KNOxRRoWvxpT8gWSH1-Lr4crPkL1RIqQMWut2WXlKSuTaN29d5lTgv3maWFMB8x3wz9-QTW7ZptSmOWoqhH4IFJkak_2GZQFIF7HfDCpHshxkDkgEsv_c4hesc8WaW09w86pGYxBiiLLXfR7p-2x8Od3dd5J71RkP3iWxSx3ehUKlRLBsOr1hv4utocSGgi7yxAi9kOcS_pIqmtZJKVjcOJtMQENzeNashPAKNoX4KEUwAnG2UC3hs4zI90kuA10bAxqJLkdsATeoX35arkvF3vl9rOR2Hu841qnNWQ193iq2T43o5hzRGGhi_Qkgggm1cjm5KJd6UnUUmUmWRrR8apZL34hyA6H51orPr4hfZSc88oNo77g8PFk15CZK5r0GT2jmbHU_mQC-lymBg42N1lpq-jolIjcD2GXUmWm526SX4G1uJR9llFXY88CdBpBRXtGDyM2t3lnjEQlxA5Snb8Wpmj8P0pYabcixUeI5Mfki152ve3oW6-cotR-FGNOon2sqKKrofhge8mCQi0OK9Bn6JPdwa1ARdGUicyPUiGneKI-ObZU0eXLrig_yPNhrmxLXTz2lqYLaSCuse2Si3vsCQ0zdnQfwqHe-C5Y95kxJNJ1M65-jl5z3JgbjClDaJq04JSE7VjL5AE6bUBiyXI5Jeji4TpONMj-wWHY-Nl_OlUO4t0T5fPwaZ1OPpUAYvNShEF6jlLUy05ruVQV53J4495krnxxaBvYIrKZ2WDDS28I0q-ApeHpnC_hY0mkxvAQ9G4Kp_fR7cd_J77Cr6TYNtaNNlMdwcfQe3b6XsKvhy2RF4zE6Xn780GVqPto5dmNNNFnJNu1yQI5xHJNIYw6R0KoZo_kzBEE5HWq5T-J9_LMjuuu-3evMpjY2Dm7XyXQ51c-y1gEGhjNC2_1r8M5GUdP-e6SdwHO9hdlk4eL9X_ZirYQNWT3l8va4iLY3jI-j8vlErC24ZVf9Zogh6J2N07foDqN4GWU2LZlZRYfdzS0azsBYYrRou5ou3QOMUKgDEPFniFPNuLvF_J70Okaz0OIvKmgSiY6nJD1HAzmjidhm7YpNCqIe_iznlvQqfsXoAE6CgTPXHOaHr95U18PduT1C1bKFM7erNT1I1C94muM4eJ-KHSBwyDiGZ2Uz_46-AmW95UTXOGYC66Ze4IQkDsAsGdCV0iL1HmY4Du23ufTfZkp-mw7m7L_wf9KY76NF5WuvQQJ9kAroX2QO5ds8R3oHKqBhvJzoU5vrvqjnzPJPrXSHy3qiu2OX1Of2MExIAHothkEPi65x59Vn0tp0FIQrhLeWTdo6J8p8oj-v8d7hIiRGRhd-0Ofzcde7fHIgFDclGVrz8y_eIA6oLu0ud0Q0nKiyZeE1bPqmWzm7STKpL31lSay_m3bg9CiyQRfq3_8DAVzDkay-xTBKyAlzreauNmvMaOoo_P4TR1lNffrKw2YZ2HwDMjKBmFHucofAfNBayZxskY5GCwMshs0VCSEEHgIX-Um1txw2jTa54IJvK_YEnJAtEpif-YhFis80suaJLjH5cNbXtUFsf0S2S9TFZav12oABYiUrziJV8TYtFN17qgUhg2457-JSD3O8Vp5b-DU4mYqWniEIRG9efIyjRKKlpQFN4rpcg0_k6D-AwH37MBxX6-oIrUWsgdZs-qeT3NGzC7Sk3bBSGXEe0c8AGouKccqLvhJqy-StBo6Pw3E9EGMC8eFQPtNEK3Yrc4OylBUTNxYqTPUBA_sYfLYJiDEhNgFuBMjKkhwXUvFzkPDOBE1gs89JRG9SAY6ZgQFRzOw26UjQfas39opYUJFdOeg0Pp5vIeSYDmnE-E5TVeSVuwESVVLuct4QR8gLNFk6qUSha-DYIWXFWLxd2-5vYHloVid1wm1TWSMdtpGkrdtyGTA_0i_xFcWQN4BLhC231_O_aR_CqWH9owsXn4AmQhx1Qa7Fhs2LTaXvNHgWffg_dlnLvbhEaqz-ikW3rbN7n3EUjiJSjlZu-IvjOsz3IL6VTlGiJkmhiGnoV3afH7zwClj3Ew-Q71M9WeDYUaYWwSk0fXiw4Wull2AxqPDUdHq95f4WoniV5K8eSlYEIwoB991EfW2bgVejNq4rr5_7T_zYRWWX_0qfCksMxymWQRkaDWmuWpKgSBKNsTZ44noV90Kz-VpGoEivfhuN6ddOWzJ6TcaNGhruu3mV3FL9UIkCP-MneN4l5MS5vczycWOtdGakgJrXt1WBO6xxdE9-SVhouFQldSfUCpl6CyMzk4uh3BGULyzgZRBsOWxBsev7oZLYttmXb3zcA2Pu3-9UUOHCpcmVeJWStzWya5v4BXbkJ_u6qK-zHpqnNX07Cs4rkuEJJXYKFxMjiUsOs-9TXkGe_pe3uwwagHAZ3OeznVZDDXdc19lfig8_jA5-RDo2r6_CSZM-kQoRvVlyRsZdGt3-vP9o9OLQaPDDsWw_c2vC3_9MnMpHsLNkidWtJZWoaAdmQoKDRNJOQbchQ3gJlzl6pB-ksjaKcncX5ygnOKUey9_WQo6QoffYXbKPiOyfd6WPADIFjeZNy7BStugW226c557yj37Mp-QbWnVJxWvCcydLpsrFKI-toit34xk46ZeGaL_e7i3Et_Ihjon6cGubSVuC95ZLDobU6m-gQrkdCSuWBzS6kPJ4PK7TFBtNtlQlP_ByDLLVUyTJku2hHOgQsdkPR12QQBesnHqJi6EGl_BoYuP2BBXzCQ3X2-7dCIYadysc6KrFUNEAe2Scy-r7QYuvWBiLZs0IzWr8vpbD75McyDuQYuT6PQXYxm4LkaAuNhwkucCK7y4p_PEehJMVUIrJw-ajFERIpfvd9qCYUmbi0wz7e-gMv99dlomfIkfwkq72ZUux_X8V_S125q_MSIAm2YbniTPtbrJre-kDmHbzTIuO158QGhmkEPbvs_jOE1rTLYt5C1gaXks4DjCiAmiV2ZgrHLqpQyPHfBVGakx_cA9hMzlJKIyN6juv0W8TOTlJ2qrsvex4fzvxC1o41_8LjN4NlQE5XJp7f0ZyYsXq-aJwp0rZ4N2AMRGndLJ7z70QuDTIGWN7oNjg4tLxhqOZFlcAa1cG8T2aCSIGhGoSvLywTvlyjdOplHxarilm3yv6jsdDUvOJVoDsboPkMHLgzkPdKc_BOMb3mij7JNfEj7PUosRwdW5o8yxyuw-mMpUb0zjbjJimSGMbPDOBnZGoHe9AZlBSA40shC089ckTmd3fR-w5zuN4Nx0okc4KjBTyH7Tki8Fy-VAZHjGrCVX2iB7uZpjFeAOQ9E07prHMUxzRpy1LM7QUn-03TvwmgsEo9OFRgps8ezExkD0vMiJ655IWqHNJhpwSMy2MCfxpbE-jg-TU49lH6jxf_IGJWZ-HaIqWvbP3cgh4uvdFGZqoUrM7JSFJzOU3AJCZoEhlk_MT6ypAvLA_Pi9T6ZaDWl514grHRBvIpzvLeAb1DjDpDEI1mWIomkoz6yM1w_VNH86YOKGJ5cdUMVfSe5scFd_LNvjz6UIj8jBx3VwHDwOVoaduz_4oxvbCrJ-p_vn7zZzSkDKv8sG0ZUp0IwJCkkIh_gGNg46qEEywvlhtNjeIPJdjs957tIP725VXcEaUmcNcRaBVU31lCtxZGV0sboZJtwVUek20SKq3aIry1hT1OiLWAgUefnX07pO4Nqss3aWCpoRwC1NHtWYKzEKTFFkp4fH0kNpKNpi0MxKATs7Pt91kRuZh0sa_F7rH-mTCJQECHyl5zSBvSNn8EAOpqTnN9qnvMHQHV-oQTcNOiDbvb2AiPwSA-xcOD2FdCtQhnQghqQ3D4NAc6TEAjRw8ksDLbyFgIaA9Q4KeZmrxowixAwl6QVHxXrbnn7Pmq7bSYqBxdPBsws-igDI0kwPrmUxz6EdTRVI2o9m701_cDHRofQVm_483e_4xNXQAkqm_1QWwmdLDXBz4dvt36P4sAzyJ8P9rCv3M2xTBdZdi80TkNzhsEI7Oc8yKvaJMuuWm5kzppAskeMJPWajouldG5IOO7WiWUqE2_EoWyA5B2CW54MMxUO6Tv30696MjrN730EMcnsMYkMA0NyaMjwlGRmph2zqigcEnzuVfuUTx0wajr0znsACVpfoMt4vHSCn2zX590s65wx7ECDut7dENVuxzJB05WREIbEyVj2ZRa8Zejrw5-kNT90Ry8Ampx0KNBrufFFcl9flsk-KWlYnWpBijw1WX9HnZwLMLsxMCkHYM5jGXNnf5VRml2ovlOZ91drfMYeZaJ-3712hCdoD7yj86K9WRPKubaB0vUdgGHH6wjTbACnsI_vRFg-4RcyfvyAKl0rqIJrTuFAt5irwKVdFhMVU3QNhhbh_MWdqrYNzxDNyhKKlshbaVja8uEU860kxcZI9EdoFyCKQC-NhQy8EniwAjNZI0ep8S46d355KOR7Qkqmt2ldOYE53knELEdd9x-_wDMvKovBy8YQkj1O1kyBNuoBLFB8_kZKhsAzJo1aA5iVRcya2LgELS3xJEp-juhkd6Sq-vkhPRKJ4KZ646CF6hRKgL0w8CLpY3eGgVXkfcJK--oavehINGxVGgBBEk0kfvr-CDspxCZAFcOQVevpyuYHjOSuWBB-c9zVLDT_TNbv4vAcWx4c6d1-95J1JIIh61xlGnA5ZYOnGOtrNC0ryS6sVvv8UJ-jCUzPAcC14EL90C4o46oM0ydrL56C5LfRK0v6UbDZvHm9acebhdCj0JzE2qnt0IRLl90DJn8FE9DY8DOnhjrHt3xAhzoF6aYZ8cXzg2IkjoWOyd0-MYH_kP2BzQepXLKlg0f24to411K7euNmYl8aZECgRjZYpMY05pZ062MZKvnrze0eHm5nhIAu4VCBnx4216wg-VCd5mXHPLjmGELYhy22VKlLudgVNRehtyMgG1iyIOF-lbvoZeB9M-9fhVJTvbAEpgEG_KmQUTarO0RbMGHgHCA6L0DreIPI0qNXWk4beW31ryrv372dFfUXZpqovPkLe7FclK5PkenRPwsqsr4CCRTLf_MvioRr9H52HwZqUXTOr7JYN7dq04ENaIlnRnZwlm0IopS_dS-mgaXBSVCt1OSS0leuHqn0c8HI2YGQVwj7a3zh5JSIFz_yMOuYw1iVFIyeUGHzidRHNJsM-vphMMVH2ylMI6P3S8SW9Ke3od3Hwbv2aUbbmrqoY7CE9TDX8bafTSfhKez2CHDlcLQ9Jy3_QTt4nps2KmvM90CXRSfAdTkzO8-E_rWaWm6meTxxzE0BEIyf1lvgGUBydo4tp8ohs0LqQO5PL7vMf4k15LkJ6ZL8xLGR_NR8QdNHUycu4pzC8XTyh8-R1AGiZ9uXcVnN1vUgmOTCzpHXiU3v5q-YB6T0nnC16P-RUgnBJAsuG6VLwslUDsTt0kb6z9pB5lq7XIJdtn0TL-5_IqQgOsJjKqtUzSfqZuMlACTqbwM8vXgqvsLaxfCtKMhS5ANaj0-FoXdxyWfY9ukkuU2JqEP6_ptH7xakVwXR7RNwTj9LWGCv9i9AWanEtwfIOJwHRUVGDq0cib0ZF8GZfecG_SHxObGeCk8NEiDe0nYWMwfY5v0mz0MbdhR1u1iZjHNIICNtMFp8U3-FgFo5KaPqzeBC9_0DxNf9EODRMWnQb_GZdnffuAyYzT-SRnYDic9jIPkWai_kwca3FtXmJFWcvvkElpd-ZjpXnJGKIoMpDEX3PzqoF1lIN6mLxhOmuPAsTaqPLrbQCEP9ulNqm4sWj7mpjB3KmNaXtYLgc3m1ujTQvTwgVxC30UOvIatll9-r_MBTAgqS6uxwVdJ4sse-gZM2PYu_jp-lyeTtQO8fMMBJEX4rZQWiB1CHM6o7oDKQyGf_ys2K3Dl7gHlKU9o-I04c9RXxAkskr35PxrFcIn2LYLnOQ7Aj23ye1rjP7SRSL5s93aB73yYt_b7L9tEunxWk_RvZi6GBTCSvbOxHLGxSdj6fpX9nxHLMawJNu4SLjUkxhQqsDtRU7sa8W_MMONO1c9ERZu3hk6NYZp-S0-6h_sktPGGa9I7vo_MEw2GqHBr7pd6B0XsZwJTNI7pi6A2mrvGBRqivVYIclXG2GskkjRZ85jJzaRnn4-PxyVp8xC01YT1XZk42G54hDd4flb1u0BAZRP7iDObISBBZpJnX_CvzxEww5NAcXl7oBQTn0D3zQwaO5YDmmsjelXM5FK_FP0C2yUeHCfG4aOEF8jSpr6vx6ZCWtS-RMNEGxs2f_RkxZKXldGHr3P5tGyWSIFPPiDGY2ToI1ykmcBmlP9xglWJnkUC1rp_kDm2xDn_SFDrpBY4pkAHCqcpcHEGvPIhJwsxnSaEROkJkaQh6mGC7QZsvALcVzhCfWUpv5GzN4-Ei4mG4VVNdNMwMZ4zOYaBYj8SrKVjDbQACH4cVyMQyMxpBYjoOOzswKMl1yyvzwuYQFt2DWr1_0hLsHwkSx1FgQwhKCsf96391z5LE5ccSqUWCTtoAQSIzpssUp5odQWgDJKUP6j50hf_arfW2j0zQAMEbhKXj7quQemZbnTIWAgRorZ64d0i5gdP3ADiCuYWKcEEWwL2IpQjRxxadjHJierGlV5G5oTFSVe6qJ4zGhEuYVEMUjAG45-N0qwlmpQCIZrbbmWZHI0rZrbyzFm4639gJ9IJbWZq45rk-zQY94eqYMr8T54vYdLqCCM5WOpOKnRH0OEKz1xot_VDfnKvyrjBi4JfemiJQ9jGYoADZkVoPPbNN-0cU47WcOV_t7V46j5Z0m6UHbniQI0pTyghm48XbYBD6-5fxEvxfqroQlWyzjhv0UCLtmoIuRXQ0uMqccC70E2NFnFiw7Ri8EiLAVAd8lvIysyu_khN15wHdW-qsVHEaul28MB-m9JF2LRITGMDjnrn9GO57HSl9EnZI5562iQaeSzm-T9UZ49n4InM1yhKp6j43jIq1-hazjSiaHVG8IKYKuiaiSUj0W033lRPn1FD3kvY1-B5LIvGoMdXsURNoEAKOeGEbG9-Gg3HK620uGFXOXqfotBCLqluVUGH3LVfmbpfVs1J1S53aivZbAqAYBX7qA5y1rPygWj3xM1IzwXndKAztvY8USLYea-C4INzUjYzkT_RlgYeAxUwAegD4STDGPEyoRBvnNr-nZaUaf3Kq4zIHNiSKVQ-0U4Huxx1oFVG6azVwCYFPpiipCcmA68rz4PtAVjIY8kbpYjpcQqK28OiWmJlmxHxSKziDyVhDF3Wg_CrWsYy1ZqJ9NpC5i1Usve4MIuFxcLDG8RiWWQREqFKVeEX5eHdP9K-oBDt_0MtDnPczNOUKoBvDPznocf0Zo5q8uaZB08nP3CXqX3qNeL6HjWA4W3BWtGHFGcooCATzGpqOL96lFdWeAGSICVraKt2K431UEkSLhVcsgnkDKgYOQo64nQWrvqy1JeyfStct0f5JE6Gbrm2qgVsBuNFu25JLP7EkcdMOyJVEAdbgGPgKCynQYMu6sJIfMX2IDR3bQHDjenUGvfeQYu1pI2ACiQaPpY6u8YCpZQsP62yh2Gtujw7_C7L67sgOaNDH6ES-R3clc03gOvIj6A3MszLf2kyNGLFrDWiYcAbWOSNN_5-3nNYMdhFgeUX-YzzsCw9YphwvHfMiiaN6k-HGUBmztnr3viV0iqiaOcXwoRDWTGL04HdcJGiPnGkgVih28HVykTQXG9u1a1Ws3pjeg3UdTX3qK7jvCohzx6PGV2ViiHEZJPqH9xbpe3XkZFcMQ2GmBIoriSfoT0gVeJBzna-hfIY2MN4c200dIj2hSj88XwVaiftkqRoXRfVwIc2MJSHjlgrDrITJjlZqG7VtLwHvu0syoUBN7jx1tSZVXiUE12G4LzuAM2TrHbd8hH0tnsv4UT0ujur5SfcY-P7aTqcq7vyoYyoYhsBqlo29lRwjpAgvm5vyPVIgLgRvtD6rggcGafpI-gb4HE7h26hMfASMJHnE8PuucSgEBo38AZfdAWnsVcDNm47pMw4LhGMdleWKb3p9YXAs_dyjeNtu9gatQTNCHoiZjJ1xtPlHW4toUinVfKTbeG4qu7cct7exXVpZ3WYEculM7zUnfbRCJgyaaO5o5phSAqi79oUpQvSwmLHAUiyFOxBbaW7RzxiI3v0uh4GXDbZ5HVHLYyua2Nu-IXk11r5x82-TC8rjEc_j7eX38bkW7KiWrfHwvByIFT0YS1T7qVZHe6ywzRG_euXy-mTsi3jYFzGRGzGmY1rqwMd_TtYP34852naDU6Jv85weWwLYnwN_MI9i2rh7wFFiZ-DdoVH-kdPx1jskuLP_mCEEW3BaXdKslcmHB7FQfsKE3ONaq6aDAFqEJFN0ODSUAg0H_wlU44Zediblkcm5a5-0PQ5kK6uiogfctoRQyJsXlZRj6gA89RSY-3LKE_Z0dTwj6si4n6Aqi9NYJAwsA00kdtClNXGaaDdIzM12ftQrioZ7V9LIWgk6Z4Z7yBjqOpyZ14s0572DJakLn1FddgTxtDC4xEJH9fzy5EjgJJv1uy4K13Cv1pvDJSGU12cPASZ9P7QT_y17slegPDq7s8Gy-ImVceYwe-v1DIQdE5EM9qj9PGGVe9c09ryCle6gChmge2Mo157FKPw8vk7FYrbrZeRxSKnT1A5WPjUqyslRJ_5PRGSwgSqBWcV_e8i_G86k5RoIvrnO6HnSiGXHkKuEUTUPKHtYFVa8v81Glmhf0sDwJXxNtlSwZsa1NUE9t6S3eokyUArz7heG-x3SK0ZQ0qoGsvD8BSNxhvqcYxPnHEU5-goOkh2itDgGgxhe9CsZYqnX9rMWZD8Uqc7Ihd0VT02l1u6PfFNygpim3z6vpB7UoNfFipCuHMFfnXnfMK8PKJRDSkNBtM4wamgJ8txt4M9Hppv4zev71erBayS6_2kVVSZaQ2M5cq7HT0rCpBKysdSh_smxNGpdh3NGjDgEQqsQZGae9bTZR__a0CSaACvtMyhYF-PCpR0MTaWq40ENShHoGgb2INFoeBIXlUGNzy2VlZAYDa08zQkd7EabiZmqP0FBixEYCCkTnViUeTh-2Bv1M0DDaZqOZ_M_RhxuYbJIxVsWOFW8dUsasDwWeRaXCWHB-CD_HBrSHMUpJT9pK_n8USq3XBtDS-3Pj19bujPAyD8pDozgu4gQLTA5s3Grz-UcpNeWhvq-FPJJOBo54k9PfGjmCOJRW8zho5LYxcBS_uyncmcm0chan7ObnC_p-x-ofp-StrkhhWn5VSVRs55mhxqX9kty7V2-BZIDr82-MUTyUlaO53kZfwNABbM0iflMZkGrPHqgS8xKrNC57a2UZf5z_f91YY4h1xLm6J88nCU3TFUdDjWSmUqsWywJrpvQveWWzVoFbFfGeRQ9PhoHengvLOF_RqB_QnWn141pSreip-R1pdgJGqsrAHTvbRi9cGuonKfGBB7Fl9VeituMZeJ4zRg-5QHpT8Fq3B_1luOwNV1Co_LowuMJwoQ2aeZZkJqpp3G88IAc6F9dWJDGAmJuV77WU4lO5qbx_rrZJKwd-LUEoSjSn7kjPdRgp_VZjCWJYid9PI9BtF85i4wpin5nHk5S2aq6Z0jFEPIYyLNiolOUMOHhGzCDm7tmIdP9-ZToOHUBE-3d5_S09ekrvTnI_R7P-NK46vSJxv4mA6NMDfFGQ26FSkTQ3865iJ1lXCaWg2O70g_M4qae5TyPyFpxRzByeOD4OpAGOecnUOoBnVlS8D7SqyeWXXppc5fB17s3Iv7PoWudtL4esHzc975BySUdSFMZF3LpccKbytGLopFzaDDtHpkeazt4fTUIW6ZcPF4hJE0r-ew5qay8di7injfqaGQ9nwkFrBDY3cyk6u7ZwyEX7NOvvoDxrNKBygr46soB71DEz0J4rJEqXeAMJ-X-I_4CxnRVYtN3v37EHCdNz7AE5Qu4vtKSMHfo8nKFMwQn931EEaX-Dpb1Um3nWvqSJqFyohS3L_fbE22D78qNa6-RMT9vKYWxib09SMz1xp-zId48LSoka2JrClDa1zv5i6skdAhteZRtSuyxOcyw5sqyGpxyf9kQRUrbbU7EitGlzQQaU1FoRFb9JQmb3-QMFE4l-3aPlgqz4dQFqfx-Ri6Zu8O1QXZPcMeIAHtbyahV3GCOUiF7xEBdPr5r6NICoUBX8J76PQar2hIMXdwZLi18uGPLDbn5tq3eSu1zERcLQ5BYK-R8qrsDN2FAFt_eq8FFExo9P676gZdT5GIU8JYGVWTj1Unr0PtyZrg-yvdiXPpvtuUxH5S-0CHtWbHIPaZ6O50NOgG-nRrSWFzQ3STK0nFDj2q9qMTJrDDzrPWUK3evLWdbeEjbuh1ksKGJFgfxJPajlYo6yYtJd4SmwpciPutg_HCHzzjzgJKCBp1GEskkXRJf05OJTH6slqwynNk5_Q_8Ql8emmPm0SHaOYEk5blMWOz6pcG6_nFBCENpmy3OFYD8kYzApW5PVygIau-bn44e6yu4lNzpag7aY3D6ejvAKwOuO74Jx_tDe4Gg3mBj4GP8zJMp3doVn2OdQNSmXGMrUljLBzp95-XDepSv9gS3hnx67NMJj8aVPWuaZAAtQVfmnntTmYkW7m3fzg89Moc2t8rVRhU20DU5UfUL-Ge9LS0wHBkDWHJ4CBDX2zamZyvc9Anr0Ghvpd7atsAH-WoVdJLI6PQAZdCj9wZD-hisQQlq3gNi8dpsnr6EJRecF7mgFGzauG22qLeO4gNXfYzXceReRTWIo76-xkKHS5UNf9LQPE74zXiRAkthkWg2ErEy6v8kxfJ0QWpHCopeY2aam2BiJ0cPljNGXgP9FfqLo0jdMxbyYUeqGMVZAf2bj9E2hMBJ_Yy0hn7O2eCx8ykIsP5kytQIfzKfmpifxRMwOmDkA33Tx__JnUGK15b2rpBwmac9hPEW6PayNsfN93deVspM0sCNzePlrbmYebjYlYpegMeA6FRkekjYfO_K4R5cg4cc8kfen1SskPgkvck3uYJqXJZTXKd1sCC8tieD2KjJmiNhK5NVC0Og48GX7ih04s06n-KqgpjKDisB5xgG_bdRyvvzBMtwUigRn0A95did_ZXNN9TbQCdCCLUBMMEQ5gFLeL3DvFYp3qV_vYqx2dck0kEMF4I7cAOuNei4hgkqmLzhvoSlTACCYD0XXDE6c2uuW8K-6Wn3Pt8H--iPvHLdy_FFtFITad1aqmThWXjck8cY2S-pado8ATikO9DhKeJwi37s68p1ohZ2LZtfcdBsByDMm09blxQ2BfEC4KoXulzb9wyFj-h7Ks667kHWukdFAXX_DUTQXamo_EdK9jSUoRgBZIC-q3gX8U5KlS2TwLF2HhZ9VI7OqQFqFlxpQHcvckVLrSpBA637bfybdTjUDK3SceK3n0Edx7RwfDckis_bb4Q5tRoZZ1JM7Jc5Pgt3uxW6rPsfNhkChZLkaXfqiqBZEEpCZ2o6GVjLOUdic5-ZFl1vZnEYzjWxb07H8ubMISmXm2_cR_rH-N9EL_TeeoSaKFwc6Ru60C49Uz3uVTSuxQe45Av1FrX1G64B1Y9cxCTLih2PtL-O4jQf-X-jMKdFyLqNhTGv25qdPJvLjczntzkm2Rsbzu0PyOKLNoupykpuFg7d63taPhQ8SGcYbDcVAwDpcC0eilgKCpNRGPQbLVDUHI0Q3y6ZcgrK-JsFCDp2YOe2edt9FiywfwOf-eghmNgdVKHF7MDuztJFVR82_O_J65LZFkvkcReq7HHW1RpLw3ii14sNuIkSwYvzSaeBAGS-d2Xo3HkPHSCo9LUlV6ksuBgoFBV0uk2lC0FdS_229vsL8HpbSTS5LRd0qccwvPpgplBo2puC4EwcqQxTImoDqgY7uLDXWeppjA4Ayh0RtEz1eANmoIyJfrFd5EElYkhKW0w6LQwU1bXhkPF_iNkEJHyQQlt5yV-EsfRMOAB7Frx5ueJUrerbUJ1u7Eye4CJ23Be7tRM4PJCcFtstaSJ_hqQNUmiD5pNk84exUCzLObBwgXAgVW_8L0lHpDbw0M1V3sE4P1Fs_0zR1FMMNlFmHFHqoM9mbvSq1pdLNpEa1bbtBp-sG751AA0dBekZ0BoQ9Ez3Ow99uEddqiE0Y2cmzvY3W1gJpRAfxbCvnamFcr6OsozLzBlKvCA97PsiK0Hx4OT9pd2Drvjh9O422O_U2hwJ3TWe9VRJDT-8CAGFG3sWkcFQjDzfkEFK22-XqQ_Ps_cGPsosmC-7C8-RcGvKp08nZwFvCZKXh4L83pRCQqLbmtIWSbIvsf4PKd2PbW1mHyqQKK2xcnk9n1Z-E7nvE1WfpO3oBGHxspjAJLwGmY5NvRxYdy2INqT8rZd7QF3cu6a3eaiFlkRMuVAIsn233-DRsu3ZCN_DSK74poxDQKl96rzMKr-kipJna1z0Gw7GZYr0wx5sN2Jk_9xx5FVZXrd3fQb8uvXLoz5FAY54mpO3GcMoryrHaSLrSfCKMZzoPHmKMCXDdolo9-eAI3qjJ8oTxzGs0LVQ3knDeAZQsS0kZskrTDEH6-hzsUU8nHMlacQWdywy5iT_MTdPVYSi3M1L95rJ1aGbvJ5zz3lN-fdiEoHSHSwb8LqkmrtpsHymv7NyNiYc1z_AGEGirX45-5Rsc3vAY8OM-x9o4dUy8-XZY_UoubjSBE4zkAsBdB1ZJjqPd-z2fHyx1Miz4aDG0IWkzZ5YGpvj32Nl0-4ZrErIp21jZlG33Yy0DdhxgMiy72j1zWP8cs2JbgVdk17s-bO4LblX1R3EeuU37sFKipOCz7IR74dysRXj7zMYKpWL_WRhepQbK21opdAssHgt1VqDO6cT6kRCEr7HYZYoseQnqMGJUh-9g0_q51TrY3gr-rOyU3H4TYW5qNU0Y0ayhJtVHkbtdSdp8Uk5wqS8iA1XmRGKSMKBVnd9Q10m3MNI0TjZHBMISTSElGVY8mP8Dhf7uQe9rqzsyn4RCVWsLF7b3I_OJhMMGC9BF5Pquxx0CMW0UKGHRMNv37eBNQ20Pz8Ijbk1sT607-eo_poQet9GRm7FOBrRBomCbofRHbyGZtf7jxVd1HL-u8_vW5q6zlL5wOpy1wySOlePawte84gcyXCieSniKkkU5hO1_sxTCI1hpTFm2uoKf3noVmkECloA0uzqkl9WaHGc6ph971tDLui2lTU-WJLuxzoROpBme7yjifJ_VIioPlCpmZRGeN11NT8fdFWOcO4FxDyR_HUDAdykFM9B4JUUPD2oRqj-MRqmhq6nqU4hqawJL635ePGDZGuV9cCcsFXTneetil6xgHHwZWuy9OOJWQi2iaFYTm7_1d7XdTagX5hrUFFfqhSgZDEkr_UnO-NnHAIRrPSRwFaIImK_Cf_jeQfh13UhoO54tZ9htMnFn7XU0A23Fy3wQ3XrzCC9GziDRtH5C0kqSbxXzveOtfwSBdpMjPezWxRl-P6vTAvEOHAO1ubgAsIlR1Gf_GnfIboyqCNZf3JLeTK7ywFG5MqLnNYw-FxlPF6ZLKGHJ_oGqlU491llT-r4GvlBYaiLovFZT0Jdd2aein90k-7h2_P_gFUo3SBNQMqkV1rOVJ7yTDpy0gRjyk9Mk-4ldNjL-4u4MXR4FuglD9oMmM9SRoHRfqlaqdkymTSTblU-u_qDt59sztl9u2Z-heWHayN1IGjHcticC8NEM4TvF8DR2BNnKz0YM-8itYHKgADz5z6INEL1oDnal3rLXfW9ItH6FM3zCQlFTeKLAhSCaNrt2T_OJZ7_4AqBj8Z7mZn5jTEjAMuLe0YL5GapqEnf4esIvB9NE4Dh7VpIxmp-4SUO2ICbG-6P1Gpnyu2rpiyv_QbPc-vlMWu7KQrQ6jcZ1K3bIF1G0Iw2xXUGktE2RwcAKumPdvuG9K2CyGzYfKwNiUUQ87K5gB5Ga56Qe4rTZi6MGRYiggOWBFwGw6GoIvOSQwy3fv3gZXax5fdbP2N3eN0tBoBkCWRzmZO9E53kzdjfzDHffPh7eUHSCdGkOnEzeSdGsH5J_E5-eCRSEacadirZmgexKyL4Cp9rwTZeNQw2Brgv4is0vqt4h35lVGQdYJsB4WbQZlVq1O-Ng8GEbloteTH5mOVBCNGDPgFgebUDhNy8I2k5WRo8hCTdWvOToP7iYyPS0eA5
+## Parameter Value Conventions
+
+* The `adjustments` parameters are described in the order and quantity defined by OOXML
+* Values generally range over [0, 100000], representing a percentage (100000 = 100%)
+* Angle parameters are in units of 1/60000 of a degree in OOXML; conversion formula: `OOXML value = degrees × 60000` (for example, `16200000` = 270°)
+* The parameter array must remain complete (intermediate values cannot be omitted), or be omitted entirely to use default values
+* `-` indicates the shape has no adjustable parameters
+
+---
+
+## Basic Shapes
+
+| shapeName | Description | adjustments parameters | Default values |
+| --------- | --- | -------------- | ---- |
+| rect | Rectangle | - | - |
+| roundRect | Rounded rectangle | [corner radius] | [16667] |
+| ellipse | Ellipse | - | - |
+| triangle | Triangle | [horizontal position of apex] | [50000] |
+| rtTriangle | Right triangle | - | - |
+| parallelogram | Parallelogram | [slant offset] | [25000] |
+| trapezoid | Trapezoid | [top edge inset] | [25000] |
+| nonIsoscelesTrapezoid | Non-isosceles trapezoid | [left offset, right offset] | [25000, 25000] |
+| diamond | Diamond | - | - |
+| pentagon | Regular pentagon | [horizontal factor, vertical factor] | [105146, 110557] |
+| hexagon | Hexagon | [inset offset, vertical factor] | [25000, 115470] |
+| heptagon | Heptagon | [horizontal factor, vertical factor] | [102572, 105210] |
+| octagon | Octagon | [corner cut size] | [29289] |
+| decagon | Decagon | [vertical factor] | [105146] |
+| dodecagon | Dodecagon | - | - |
+| plus | Plus sign | [arm width ratio] | [25000] |
+| homePlate | Five-sided arrow | [arrowhead tip offset] | [50000] |
+| chevron | V-shaped arrow | [V tip offset] | [50000] |
+| pie | Pie | [start angle°, end angle°] | [0, 16200000] |
+| pieWedge | Pie wedge | - | - |
+| arc | Arc | [start angle°, end angle°] | [16200000, 0] |
+| chord | Chord | [start angle°, end angle°] | [2700000, 16200000] |
+| blockArc | Block arc | [start angle°, end angle°, thickness] | [10800000, 0, 25000] |
+| teardrop | Teardrop | [tail extension ratio] | [100000] |
+| frame | Frame | [border thickness] | [12500] |
+| halfFrame | Half frame | [horizontal thickness, vertical thickness] | [33333, 33333] |
+| corner | Corner | [horizontal thickness, vertical thickness] | [50000, 50000] |
+| diagStripe | Diagonal stripe | [stripe width] | [50000] |
+| foldedCorner | Folded corner | - | - |
+| donut | Donut | [ring width ratio] | [25000] |
+| noSmoking | Prohibition symbol | [slash width] | [18750] |
+| heart | Heart | - | - |
+| lightningBolt | Lightning bolt | - | - |
+| sun | Sun | [inner radius ratio of rays] | [25000] |
+| moon | Moon | [crescent width] | [50000] |
+| cloud | Cloud | - | - |
+| smileyFace | Smiley face | [mouth curvature] | [4653] |
+| bevel | Bevel | [bevel width] | [12500] |
+| can | Cylinder | [elliptical lid height] | [25000] |
+| cube | Cube | [perspective depth] | [25000] |
+| funnel | Funnel | - | - |
+| gear6 | Six-tooth gear | [tooth height, tooth width] | [15000, 3526] |
+| gear9 | Nine-tooth gear | [tooth height, tooth width] | [10000, 1763] |
+| plaque | Plaque | [corner radius] | [16667] |
+| doubleWave | Double wave | [wave amplitude, horizontal offset] | [6250, 0] |
+| wave | Wave | [wave amplitude, horizontal offset] | [12500, 0] |
+| lineInv | Inverse line | - | - |
+
+## Rectangle Variants
+
+| shapeName | Description | adjustments parameters | Default values |
+| --------- | --- | -------------- | ---- |
+| round1Rect | Single-rounded-corner rectangle | [corner radius] | [16667] |
+| round2DiagRect | Rectangle with two diagonally rounded corners | [corner 1 radius, corner 2 radius] | [16667, 0] |
+| round2SameRect | Rectangle with two same-side rounded corners | [top corner radius, bottom corner radius] | [16667, 0] |
+| snip1Rect | Single-cut-corner rectangle | [corner cut size] | [16667] |
+| snip2DiagRect | Rectangle with two diagonally cut corners | [corner 1 cut size, corner 2 cut size] | [0, 16667] |
+| snip2SameRect | Rectangle with two same-side cut corners | [top cut size, bottom cut size] | [16667, 0] |
+| snipRoundRect | Rectangle with one rounded and one cut corner | [corner radius, corner cut size] | [16667, 16667] |
+
+## Stars and Bursts
+
+| shapeName | Description | adjustments parameters | Default values |
+| --------- | --- | -------------- | ---- |
+| star4 | 4-point star | [inner radius ratio] | [12500] |
+| star5 | 5-point star | [inner radius ratio, horizontal factor, vertical factor] | [19098, 105146, 110557] |
+| star6 | 6-point star | [inner radius ratio, horizontal factor] | [28868, 115470] |
+| star7 | 7-point star | [inner radius ratio, horizontal factor, vertical factor] | [34601, 102572, 105210] |
+| star8 | 8-point star | [inner radius ratio] | [37500] |
+| star10 | 10-point star | [inner radius ratio, horizontal factor] | [42533, 105146] |
+| star12 | 12-point star | [inner radius ratio] | [37500] |
+| star16 | 16-point star | [inner radius ratio] | [37500] |
+| star24 | 24-point star | [inner radius ratio] | [37500] |
+| star32 | 32-point star | [inner radius ratio] | [37500] |
+| irregularSeal1 | Burst 1 | - | - |
+| irregularSeal2 | Burst 2 | - | - |
+
+## Arrow Shapes
+
+| shapeName | Description | adjustments parameters | Default values |
+| --------- | --- | -------------- | ---- |
+| rightArrow | Right arrow | [shaft width, arrowhead length] | [50000, 50000] |
+| leftArrow | Left arrow | [shaft width, arrowhead length] | [50000, 50000] |
+| upArrow | Up arrow | [shaft width, arrowhead length] | [50000, 50000] |
+| downArrow | Down arrow | [shaft width, arrowhead length] | [50000, 50000] |
+| leftRightArrow | Left-right arrow | [shaft width, arrowhead length] | [50000, 50000] |
+| upDownArrow | Up-down arrow | [shaft width, up arrowhead length, shaft width, down arrowhead length] | [50000, 50000, 50000, 50000] |
+| quadArrow | Quad arrow | [shaft width, arrowhead width, arrowhead length] | [22500, 22500, 22500] |
+| leftRightUpArrow | Left-right-up arrow | [shaft width, arrowhead width, arrowhead length] | [25000, 25000, 25000] |
+| leftUpArrow | Left-up arrow | [shaft width, arrowhead width, arrowhead length] | [25000, 25000, 25000] |
+| bentArrow | Bent arrow | [shaft width, arrowhead width, arrowhead length, bend position] | [25000, 25000, 25000, 43750] |
+| bentUpArrow | Bent up arrow | [shaft width, arrowhead width, arrowhead length] | [25000, 25000, 25000] |
+| uturnArrow | U-turn arrow | [shaft width, arrowhead width, arrowhead length, bend radius, shaft length] | [25000, 25000, 25000, 43750, 75000] |
+| circularArrow | Circular arrow | [arrowhead width, start angle°, end angle°, arc angle°, arrow tip width] | [12500, 1142319, 20457681, 10800000, 12500] |
+| leftCircularArrow | Left circular arrow | [arrowhead width, start angle°, end angle°, arc angle°, arrow tip width] | [12500, -1142319, 1142319, 10800000, 12500] |
+| leftRightCircularArrow | Left-right circular arrow | [arrowhead width, start angle°, end angle°, arc angle°, arrow tip width] | [12500, 1142319, 20457681, 11942319, 12500] |
+| curvedRightArrow | Curved right arrow | [arrowhead width, curvature, arrowhead length] | [25000, 50000, 25000] |
+| curvedLeftArrow | Curved left arrow | [arrowhead width, curvature, arrowhead length] | [25000, 50000, 25000] |
+| curvedUpArrow | Curved up arrow | [arrowhead width, curvature, arrowhead length] | [25000, 50000, 25000] |
+| curvedDownArrow | Curved down arrow | [arrowhead width, curvature, arrowhead length] | [25000, 50000, 25000] |
+| stripedRightArrow | Striped right arrow | [shaft width, arrowhead length] | [50000, 50000] |
+| notchedRightArrow | Notched right arrow | [shaft width, arrowhead length] | [50000, 50000] |
+| swooshArrow | Swoosh arrow | [tail width, arrowhead length] | [25000, 16667] |
+
+## Arrow Callouts
+
+| shapeName | Description | adjustments parameters | Default values |
+| --------- | --- | -------------- | ---- |
+| rightArrowCallout | Right arrow callout | [shaft width, arrowhead width, arrowhead length, box width] | [25000, 25000, 25000, 64977] |
+| leftArrowCallout | Left arrow callout | [shaft width, arrowhead width, arrowhead length, box width] | [25000, 25000, 25000, 64977] |
+| upArrowCallout | Up arrow callout | [shaft width, arrowhead width, arrowhead length, box height] | [25000, 25000, 25000, 64977] |
+| downArrowCallout | Down arrow callout | [shaft width, arrowhead width, arrowhead length, box height] | [25000, 25000, 25000, 64977] |
+| leftRightArrowCallout | Left-right arrow callout | [shaft width, arrowhead width, arrowhead length, box width] | [25000, 25000, 25000, 48123] |
+| upDownArrowCallout | Up-down arrow callout | [shaft width, arrowhead width, arrowhead length, box height] | [25000, 25000, 25000, 48123] |
+| quadArrowCallout | Quad arrow callout | [shaft width, arrowhead width, arrowhead length, box size] | [18515, 18515, 18515, 48123] |
+
+## Callouts
+
+| shapeName | Description | adjustments parameters | Default values |
+| --------- | --- | -------------- | ---- |
+| wedgeRectCallout | Rectangle callout | [tip X offset, tip Y offset] | [-20833, 62500] |
+| wedgeRoundRectCallout | Rounded rectangle callout | [tip X offset, tip Y offset, corner radius] | [-20833, 62500, 16667] |
+| wedgeEllipseCallout | Ellipse callout | [tip X offset, tip Y offset] | [-20833, 62500] |
+| cloudCallout | Cloud callout | [tip X offset, tip Y offset] | [-20833, 62500] |
+| borderCallout1 | Line callout 1 | [callout line Y1, X1, Y2, X2] | [18750, -8333, 112500, -38333] |
+| borderCallout2 | Line callout 2 | [line Y1, X1, knee point Y, X, end point Y, X] | [18750, -8333, 18750, -16667, 112500, -46667] |
+| borderCallout3 | Line callout 3 | [line Y1, X1, knee point 1 Y, X, knee point 2 Y, X, end point Y, X] | [18750, -8333, 18750, -16667, 100000, -16667, 112963, -8333] |
+| accentCallout1 | Accent line callout 1 | Same as borderCallout1 | [18750, -8333, 112500, -38333] |
+| accentCallout2 | Accent line callout 2 | Same as borderCallout2 | [18750, -8333, 18750, -16667, 112500, -46667] |
+| accentCallout3 | Accent line callout 3 | Same as borderCallout3 | [18750, -8333, 18750, -16667, 100000, -16667, 112963, -8333] |
+| accentBorderCallout1 | Bordered accent line callout 1 | Same as borderCallout1 | [18750, -8333, 112500, -38333] |
+| accentBorderCallout2 | Bordered accent line callout 2 | Same as borderCallout2 | [18750, -8333, 18750, -16667, 112500, -46667] |
+| accentBorderCallout3 | Bordered accent line callout 3 | Same as borderCallout3 | [18750, -8333, 18750, -16667, 100000, -16667, 112963, -8333] |
+| callout1 | Borderless callout 1 | Same as borderCallout1 | [18750, -8333, 112500, -38333] |
+| callout2 | Borderless callout 2 | Same as borderCallout2 | [18750, -8333, 18750, -16667, 112500, -46667] |
+| callout3 | Borderless callout 3 | Same as borderCallout3 | [18750, -8333, 18750, -16667, 100000, -16667, 112963, -8333] |
+
+> **Callout tip offset note**: The X/Y offset values of callout shapes use the shape center as the origin, in units of a percentage of the shape's width/height. Negative values mean the tip is on the left side/above the shape.
+
+## Brackets and Braces
+
+| shapeName | Description | adjustments parameters | Default values |
+| --------- | --- | -------------- | ---- |
+| leftBrace | Left brace | [curvature, middle point position] | [8333, 50000] |
+| rightBrace | Right brace | [curvature, middle point position] | [8333, 50000] |
+| leftBracket | Left bracket | [curvature] | [8333] |
+| rightBracket | Right bracket | [curvature] | [8333] |
+| bracePair | Brace pair | [curvature] | [8333] |
+| bracketPair | Bracket pair | [curvature] | [16667] |
+
+## Ribbons
+
+| shapeName | Description | adjustments parameters | Default values |
+| --------- | --- | -------------- | ---- |
+| ribbon | Down-curved ribbon | [fold height, ribbon curvature] | [16667, 50000] |
+| ribbon2 | Up-curved ribbon | [fold height, ribbon curvature] | [16667, 50000] |
+| ellipseRibbon | Curved-surface down ribbon | [curvature, middle height, fold height] | [25000, 50000, 12500] |
+| ellipseRibbon2 | Curved-surface up ribbon | [curvature, middle height, fold height] | [25000, 50000, 12500] |
+| leftRightRibbon | Left-right ribbon | [fold height, ribbon curvature, fold width] | [50000, 50000, 16667] |
+
+## Scrolls
+
+| shapeName | Description | adjustments parameters | Default values |
+| --------- | --- | -------------- | ---- |
+| horizontalScroll | Horizontal scroll | [scroll size] | [12500] |
+| verticalScroll | Vertical scroll | [scroll size] | [12500] |
+
+## Math Symbols
+
+| shapeName | Description | adjustments parameters | Default values |
+| --------- | --- | -------------- | ---- |
+| mathPlus | Plus sign | [line thickness] | [23520] |
+| mathMinus | Minus sign | [line thickness] | [23520] |
+| mathMultiply | Multiplication sign | [line thickness] | [23520] |
+| mathDivide | Division sign | [line thickness, dot spacing, dot size] | [23520, 5880, 11760] |
+| mathEqual | Equal sign | [line thickness, line spacing] | [23520, 11760] |
+| mathNotEqual | Not-equal sign | [line thickness, slash angle°, line spacing] | [23520, 6600000, 11760] |
+
+## Chart Shapes
+
+| shapeName | Description |
+| --------- | --- |
+| chartPlus | Chart plus |
+| chartStar | Chart star |
+| chartX | Chart X |
+
+## Tab Shapes
+
+| shapeName | Description |
+| --------- | --- |
+| cornerTabs | Corner tabs |
+| squareTabs | Square tabs |
+| plaqueTabs | Plaque tabs |
+
+## Action Buttons
+
+| shapeName | Description |
+| --------- | --- |
+| actionButtonBackPrevious | Back/Previous button |
+| actionButtonBeginning | Beginning button |
+| actionButtonBlank | Blank button |
+| actionButtonDocument | Document button |
+| actionButtonEnd | End button |
+| actionButtonForwardNext | Forward/Next button |
+| actionButtonHelp | Help button |
+| actionButtonHome | Home button |
+| actionButtonInformation | Information button |
+| actionButtonMovie | Movie button |
+| actionButtonReturn | Return button |
+| actionButtonSound | Sound button |
+
+## Flowchart Shapes
+
+| shapeName | Description |
+| --------- | --- |
+| flowChartProcess | Flowchart: Process |
+| flowChartAlternateProcess | Flowchart: Alternate process |
+| flowChartDecision | Flowchart: Decision |
+| flowChartDocument | Flowchart: Document |
+| flowChartMultidocument | Flowchart: Multidocument |
+| flowChartInputOutput | Flowchart: Data |
+| flowChartPredefinedProcess | Flowchart: Predefined process |
+| flowChartInternalStorage | Flowchart: Internal storage |
+| flowChartManualInput | Flowchart: Manual input |
+| flowChartManualOperation | Flowchart: Manual operation |
+| flowChartPreparation | Flowchart: Preparation |
+| flowChartDelay | Flowchart: Delay |
+| flowChartTerminator | Flowchart: Terminator |
+| flowChartConnector | Flowchart: Connector |
+| flowChartOffpageConnector | Flowchart: Off-page connector |
+| flowChartPunchedCard | Flowchart: Punched card |
+| flowChartPunchedTape | Flowchart: Punched tape |
+| flowChartCollate | Flowchart: Collate |
+| flowChartSort | Flowchart: Sort |
+| flowChartExtract | Flowchart: Extract |
+| flowChartMerge | Flowchart: Merge |
+| flowChartOr | Flowchart: Or |
+| flowChartSummingJunction | Flowchart: Summing junction |
+| flowChartOnlineStorage | Flowchart: Online storage |
+| flowChartMagneticDisk | Flowchart: Magnetic disk |
+| flowChartMagneticDrum | Flowchart: Magnetic drum |
+| flowChartMagneticTape | Flowchart: Magnetic tape |
+| flowChartOfflineStorage | Flowchart: Offline storage |
+| flowChartDisplay | Flowchart: Display |

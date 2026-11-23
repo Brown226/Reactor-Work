@@ -1,2 +1,182 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbS9ArTAuNzTH9fgx_Uk-kHQ7rn0B0NmY2bLenX2_57ThsEEOsdEkH6kevNZ2O-tweoXvNaUE-mnqV17HKosXxVxDw_RTXr0OrzcyaFMnk_z_8Yj88G5rSHMybrepQdThHFsKtkfhZGj4g5tIzhfPwAN_ZQIGw5jf4SgEK9PZmV0fe-S1U6yOfj77orNxfkcVr4uGEsFBp9ztC_InQPMPH_3IUr1EuT9V9_3Ju35NGI0hMArcL-4M03YhHvTeIfZqCpf4ix8bfzL0xpWJaA48UoeZtPkuElc96_C0IhZTkpNPfSCfN3n9CgsiwfT7JnxBlaQRhVn9Jup9U54gVeuxFxScwqnYVZ5rHjJyqLRrKflqdIn5LT9WUKDcQPJ5fSU-7oRWASStg78TbzcfTbMi6z-Zo2ujV_0xJKflfjcfuyu3pF08SmZJY8ZLvOgGttS776ZA5cXbEsKj9MMzdCfyMRgqxMEP8X6r6Nbu2t-QP_fNuvpbDQmCzN9UuuU58tQcHDdjPsmNC4pYlSRMLnK2c1Q2iRtDzzwy4hrFYJthNcXMYygEykChMsOM2wleKU8MMaq3WG79inTnczXHIhnByNnRUHRdjSZFVQiO23f57S_LLdRpL_b7v8c75cHBPlEXYPbu7Uktf5aVcYiVVuSsjZ62xD8S_9Q6nKtQ1Ny2o7Mru4j2kETHBv7jecHptw6eZ6gCDJEnLGC5CNkwBAo_3tkImoGlg-A4jXPLQZ6T5kRKt2Y2xi_4duuo9qCUyJS9NjqOadYv7c2ZIeyhikp0xPXUSEfRRwv2wdovhkkYroFzVTE2uxOXg3h2A7cLD-L5CIjgSgmW-9ZkiThQC6aS67phKQbO3davTb_bwe3Wu9rOQtoxKYL3K4tV_xy7HCYHuMwSGfp657T-1JKP0CkEuf2hJfwCZgo0dtmR83VHQtzIw5Ts998TXVEPaAEFkLAtzu3xIMCO5LRSmTv2hkUT3KysnQlJYL2hTv3Bx8WZYk3EzLD1OMhfTQZPmVeP7iG1O7WwLLCuqPodYyANBZYkjYPvPpGxsiCGn9BBb4ks0QFcHLcCuIcCYbaW3a0dDnlvw_39RhbWhHxOhEBuUkwCFKP-j0-wfMau2fH7saekGDRPMUA0tj76nezr1bpbrNvLx8F3tn4Q-P_bvbd7Bu6z76uL6cAYSgFR8mAxenL5A-0r3lQDkBy2mquOBkSHoD4lkvIJvy0s5FFtbyJpwnC7ae9cf8XbGS8qvB1--Mha9_NkU7PmdCvlKqPAq4HYoSzTgupLHuVjH6eO9fdfDU5ASUDAEecbVnK8qzDYBxoUFIREye-EYH7meTqjXxHeLfCUxRYRqcg3xuh25Yp37-60bVuNu8OMDahHu3YGWKy8c8y1YCxQyVoMfUJY0e1beP94IjRIo5RPesKoYvhOVlFfXMzvOsgsvD2YUecdsIWPyYmUk6rEDxnnpN8z_AqYPRHbXtwDNW73N1oDLV8gpNEnrOKF3io45vqzOeY504T3El0EzlAOThxUCIfa0mvGJBWjxG4WBrxQkuW23458OT6Rybg7PeBIKX7qmyDGvsN78vdO6VwUuitXNfS1iMfZ1de2NnUL6J8wTyqkv_IUczJTAealzrEvykWH4FO_TbQxT1BvhadiX5fYo1L4nh0UFH8ndJuoEG4m5aE-6676vB2UrZcox3MdDSO4LQBDLxCEKys3zw7UuFfQrvfB9yRg8-yAlotSX9syE0PMUYjdWOWcU8sM0sOUa8e8clcRFqDCBSQJvlzcHvazYL1p0UiXHnl8NMu24g-yrxWSTsqHDdTolyUOE60bxtxbHxZmQJFw1JUgYOavlIUj4YukfY_4gqfncziuXHi0KM7SaCbIaMBCvr52GJ9e1Agp3oNVjA_tHsYCCB5G-Zv-A9gtD7Wk_XE48zJHxJANOfslrnj1Ip3KMcJ4o1_jdNSuSzcWTkuGrvreu41MifVH8wnwByYA-JV211QDucFg9ZGnC-XV7BXoVLfnIv8K6cuBVR8HizW4SBGUhDe8Vf4zmXRxVhHAOKrk_u53oAfUWdulov0RhivExMvsEUxi7aN-Ob3_cue0R8-_9VQ8jb9i-doYEq1DJkjWenOIYPmCHCC6neIvkwbEjKD2-kR7tRCEymvtB0kKNw_j4dVyzpVOAwsgcS-_Q0I4CBYvQ-Cf_-HEnTEm3OJljzm0vvEJTdsRelzu-a0tPTMIB5FQ_znLy7FFCdqVlqWfuD8g_APjYGVDyrY8TKmEnZI1V1Dgms2ag76wYw1nq1uMLkcPfA0vUN7al7Jy7a6gIKhG2Fe8t7v7FMvWbnFPHzSxBfNJcWQttVcKPxJX61pDvDqzfMvh2OwV2faiFF0rneeQROsvmRheG8w0W5-IYjQWsEhJfrlHkjFXlW_JeGEY1zK5EuJkZv5EkwNwDGdrLlKf4DFL00LgwH7BC8zeuAfAodfbGE1lM6MMtrkiMj73_69FRdYVNy_7R7uc4liEZ3VF0JQF6WjsASHy2GI9KfniN_kDyuuhB__pBO7hHMo6nM111lJt2t59NnC0vV9_qQf2sfEcAKMoBBEH0hIU-3kBL_yhyE4AUwTboDju9TCGYBeixNL9R8gOCHzsIxsxHFdPzOQHlFD7V582gvYRSbfAZ36Ko5ABMX78Wx0S0aZrSj7AzBqWmMTZ5tEaw6Mu4sRQ5TqwyfRyNOpUHZKbWSGroqbNdlCYN1k5-LsL02c8odBQ3JaqYhsDx1FnWG6pobcxSErzA9VZP1pNWd3G7Xny4zgrLiDNHMZMIrCl0lJVBMsPelY4onHTqoQCZ6MVFXYLfPX8TQCjdnMa1jNW1Ay3d76UF2yo5jpsByFUlfDloJYoXyGBaTTkXxycTwqmK7qR5DyxLnHOd77-iT44RjEzlhAUTlwr9deg59dph3Kzfb8jvFe1utWZdoH33INHZsxvFUWsgSFD6FFDQYsmjYCOXGujCNNaO6XESlByw-6n_E9zQGeiDLbTJLcbRG0iCodw7753S9asUtCYyrICv3jxMexrz04etgoG_Old8XDBGcSn-zP0zX35yfmuqIoVX_eYkt1sPOrbIvw6Nyr3TqDbAnMC2WzBI0m5fBtuCxWmwhtx9xlQ3TNCTWiW2TahwiPYvD6hPRo7WgqQMfvkspZOYCCv94OI8ats0v1jniGZskTo_Ka-zYhOdMWucwU6ZTrenQOOjYUlli7sC_d-84bVh3jkKs8EhBTVxsLmucTYIUm_rZHN7s923fTAc_YGs9wHvw39I1g7061ZNpjKGNVMsac72J2HK9_O5cTTgu2Ag7eXx4f8e62l8OX9pMJtyXczCGx7d3J011dALONK3f1-sW-buGKRZH5SzbFTptihgDsf9KSFaPRMfajOsFhDPvZtjB0LEiEMZRwyNSK36y0cPP52gn-0TkwxgCvVzY0teAzh5K6BAaBT0Hu9Wo8t2WCM5V9UcTw_8iuPztvltPDEPZ3pyBc7bk5DeI_5K9QxvvM4oJGr0EWS0y7CXb0Jy0ZJkXAxBUMHR1l-aWfLxcXOSfku3lDyUf3zwzDzxZa8ogI1K72Dmw8M2U4Td84MlgBG8FsvE1ZS6HXlI1q83oInzCxRTHA0kCd2xrXXBZTX81-ajvO7zCDhi20PtTkOmSo2jzANEK9CAN-M-TnND4uj5evn9pIiAVbgHZtJy0U8rpragZ8H3brrxHuYFxiRMWaIUKYOmNy-kONj-umZnpyE0MxaE4DOlwo8LGNt_UuAwXruU_3_A3qPzGNsUv9Livrc91Zvo2y8NOzxLQGTmsfql-Yy-aH98U_6jV4HYL5o_D0RtoJdPTc-C6NO38ROej9EK_YnoNLSaUPyO05QDKuUpqGRY1U0I-cIWo6xcDA3DlVpYC2oMcNS9nzFBhX20lVsrqcqs4Z4785DLURIHYHtPQtMzU3059qqTe7-bfK29x2EDCaZTAlwbCBrESoSHrDzZ077MyLk8Js6Gta5aPkaUJcUsx_6tAp7w-W3wtDoTRtZC3A-I4PptziQYndK9UBohcSqJ-eQ5ZD8mQAsWWGSRhnEMl7ZaNaN0sK9GN5pyA-tMxM-Iim1rKeAj2LWJAmC7K0RWLVoKW0VfA6DLs-VODjvLbQveW70z6Pxgn-3rvcCREyefTQVq1IOLRBe3nWUAFd64A375o1G4JHMykjUnTiuak3cb_b-66aXMhzvb3aTKzhHsLkCbKMkNiElFCfGNEeWl2fG7CJiRorSHOSK6kKehd-S9DcdBiEp5Q_bS1x3pEIAbZN8nL4uVsf86RxsWmzs_z06XzDDi4BZho_8z-ui0liprtPXdQFQAgx0HPYFY7xLNrUC5dUu0OAzodPhpX5ieCzL73Bv1WM_NzO6rq-Nk_SqslVANEtxq96caErcNKMfZiwQiQyGPXqkh890jOYReZzXtruHJN5kbKIF63W8UOqKL3t1Obynm3tcm0uWywKMSEQKQgfAL8hEc3FMZNtQ1xeMZRgjFhrS_05MT2OHekgA46XyXKHSsP9e1lws2CgRybUbvEQtE5umHZXslHzraIvJON2btikcqGFIr7rVNJnCTkz4iCPl1Kp50MQT2s130nNEZyLusOt1QlvCaS1c7x95SUOjV-pOuaX-8iR_gh_UHTec8EUnNnyl2VoRhXNXnbbKgfU0VCNLT7bQx16lpVNSs9pn3OhBVF8AjCeTI2Leg1sar3u4opU1CmLmRnmnh__ydK4OcFlTbqp6AmJqvl0mAJB7-D9hMpPMsTOiICjxw14NaXGhrVoWbVlok3rpnV-OXSTjDvQZvU-kcy_PNC_kybpH4WQRu_DGozlTfAZgx2lZD8U2OJK8pTQ3Jejtq4GN1i6yoUclZApomQxpNjowDu2Umz4qCmFVx-L4ia3_X7Ir50u1wHYkgIcutjZuIrkS4cSG_7Qe79PYtO9A2Ga2AyeMFplSp_tTB5fwob8fWtgXiYkvoJzCPW0-lzpKObVcvh-FVp1YLix1FwZm--cH4pO6hfc8pWCmSG6YZARFePXzLXoipRtK_kMUqNFtxu8IC4sHIlhXKPeu4jnxPyGyodYDoX-w6lcFS81Fr7pvbl7r5Rn-M8ZeKpRJ0eR2EnARagat-5NMbCzsLlD_YVQwgZHXZWiVoFHKt3W1kMbKCyMrQMixdsaY254rrVQOTGalBw1zy9SKgG_i_rzAVrL1Jmkw4o6EO_zpi7D4IL1TkD7thvBqiTwGS0CkAfGEULW67DSmkaQhbj4d80XgcdMjyuw49XFqaZ638auUMRMkHBN2pU5sctOev1UElIPRlk1qkzOysKzssO6jlOxFcjxSgymDtQD5If3LylTAsmMKZB2kepv4GPM3e8OMQSy-cP19V2WD88dK0llprWBDEP6s8FzuHD1rnXa1Ht3rjribTt-sOiv4OSjBLThTAWGQwp2d64yNX03pswPQdLEpRYgN3hKRhju60fnOipzFl7Lqh4OFBa6wItNC_JQqKlVJwayvxsDfA0YgHTzZ9hjR0KcHc6g-6CeqGvmV0QRcuRfCWK_Grevs8QQlZztCx8FD2WQOUTW6rz1M5OGB-_zxb-5wDVWApaAVgWPb453xZU2IsRDcCelXr1TPg5jXvilJKKs2wKDr5DmhJQLQHN1tV_-AoxC08oEjKRO5rGNed_zv7FEDiGaJTePw4ULkQxbV4p4za4UT8NO5E1MWXDrdefR2xtmDKKE3hhu21UFLwx1A_QKpEtBtP-sokyJ-qy8FDTeKH5GlbkNvGg5VOi7yKIVVS_Zfj5RL8s6nHXbWiZwtUsZf25JQYHRoEF9XQyy22zUXmjcMAEf86D2bvqbWEiqQLLPPmNJ318c3YVKGO9ekyizBs9PLxpkBzNZ1MdulRKmDaliVUyNV1FN8q2AWMOd0RpT8Bbhd-SNcicAp5RXeuWkkhKzkGUnobf15Br5DA_XGODSMS_aFVEiEbqgZVr3gy3wBuksX6lzGJKm93_ND_6bhehU-JExsuVXJtodAU8jT2Pj2VaM_jwt_udhKTG68p-gX6y1a2EVenJbR_bt7iE-tdb-ofDcYDIeHQ3VInioKSPqoSeyAB4B7ZQIlpcjmi-T-i8NjpMZlteVsnlNMyEItfNF02wwqutYWBtGIFq4bLkbQSo9m8ER2Knv-7MEJ7cigKnTccAnvVnvw-yI-5xRQ6GpsgTAAnEW38t604Jfv2p0Aoltu8FLuAfi5SgfYnN-A31Ny0djY_yUxcINhj7p8pr1srhCZMoDIU8VOF3HzazsyJuVZNdfZP0nq806Q9eC87r57_iWs2p7qbtmKQC73die0SheZrefHW7IFnE87wG6ZcMN6r3YG2qzQBu4FSxFzXpNqEdJ-y25U7JeyaaBrakBoIepgXbJ0priXUi72I7o8IO6Z0A0avKXmM_zyOSph88l-MVpQpbvDPW5dvWJ1lXU8QfpNG_D-RPwAn6oxAf9S5bU2EK_YgPgeQhKQ17G23MJbgA3lIrGVkoSciBpMjkJLn6IGAXNLmWkBETBAE-OrQ2vQ1x0p2j3t2jTPz_luTU6g6UCxNc1DEy23LLmP-H_vy2tzgZh7C5oNWrO-yvNeS-OXNkAS6iqzqgZdoF1IiEiVo48B82VHTe5G-94k6tJx1EX5cKrvamzjialCFrlW7gfdjyBIkwOnmG9S2vgTs5Oaaeujq-5kDfeFRyin6QCT_l4sbMiFFfhVOju815yusFNM5q72rNnpZQyL1G-JpHBjEOaZhXiVQLizDWJJEq0ATaE8DwyMhzYn75gHJkjx4M8Tat-baAZTnPIImZkd_3H7-IuxUOJAMXTbfcfWUd7OnOqRLLDgYUtZz5_QlajtdAufbGZT6nPZpBbYzO8NLHH52IZhCzoJOwU6sC0OpqsheJ0pee6CjmFFOunUnEC-yU9iNPK7LQkl9xsfknWZdGWKu0dCn940Pyt5HYoXZHnR2EZU5hd1FsL0Ip7U8AczC9nPuGil3kC_jY8vytkvCFLbwlEuiEaHTPB6x3Os2gBBKEIbzUSRB8BGp3A4IGOdRJdff9q-kZoEZIWt0a9igYH8Anctu0n5EQMDias8ZCDYDOv6xwW8T5z1NUbACra7tSKhGjDbyuCiwe9lTD3_U6wxkph-JPg3DPwHOKnjF6C6CzpwtwP4FN76m4ti4aXNiLt6m5VEOGJa1DPeUGthRpS6NbNiEz0LEAXq_310k98ZPb52b1xHUW-9PYYh13uVZP2D8vQiKhjD3wpR7Y1KRxvryxpM2hzoXtglvWdmSVgIbrIVk_eX8xd6RtyIqYHvvJkNWR-_jzBc44S3ZJenCuOQkVyLu8MCK6KejVGsmo0ljnDlK1vMf-8pkBvZI9ZrpJszr5v5mfDhLKBHvpVCvP9zleycgY4K7_yUYI0uPinaPVWovto1XiBERoQ7-2hVMu0d7tRpTzYW_ip1KP6tqD1T2JNr9OaG4Ow_kp5Cp4eI6iQUeLc2LH30ZAD5JaZO70PtDFFaEhLe1ZzXRlb-LJXInSLXGF7fJizoVQkFSO1_6IenZDbeVMuqXmogIQHlfF47KgZN0H-xQ-pvEWyi9CIFYTcWz3Yrx0Tj6_UO_Ss5A1AZ9qYTKIq0ArVlsymeVF9rMLYCAJVZdH4ap_DwyzytIyHz3fw4R_jUfCfwpXN5ujZtFXHaWzH10nsEqkA4hfaYyO0drk-yHeFNOSNG-c1uXbyCvMkhAYy3itVmOEnEbR1VQENaj9uQaBb0wzfze39Z_C57GfmOwNGBrzl-TgP1M7d6cgx-lYrzFWxYwilauOpMbbwAhRoJJT-W1ET71zjwvKOLNP4MrLqBkN64BqDMM2EhIkT6E5dV5u6fW0MCmFl0yYn9-Ek3SglBqJWoyrNl3ANJVhraEVlOZ-SvDp0bzvyBtmrQlj_oHwcwTo9eiJ7wEjgGVbmPfUWM1Kobt1fGyoYUj4RgGQFgeiZSyrHrOVlswLUq1DyQ2rZaM1yp8OdREP375mNqXMnO4fsVgUdhhJGbuji4Mu7lTsPPJZ3S1uSF2OO5LAnHq2bEbAXyDmwCGDTtZzDRu2d_UaOMGyVM-3AhUNEzCcI0D9ptZurnZX7UQSK2Z3P0d-gZPdAbZYfc6yREdA6YuSbgs3ScLpLWDpYv34umdf7NP_t_6OAGSEwkjtT5CF8VuESKF14HXz20nAl4cggIxqNM2v_wFRJITewDoo4a0KvriXXYfTNRXqVcs-yJ9MQJxdLaFOt-zA3oMulXK9DBJM13DiOOH_Q56Wf7DJu_t9jLQz_Gy-LsyJZVFEEkHRdZ7CiVk0-jyn-b6CqHF8jLSw8dWvZBCbnN6lA_kCgxeGC-Ojcg_iMJkAzDg_uC9OWl3BnXXzQK2Brubt_NDLoZuuBgHUHnSKvnwx2A_2p58Bfd6QjDyMrnaQh1QY65Lc66b799thZVUoz_p4xLsUCivB2iYpv0aoD2XFCMFeEhyXnnfANqiP8aPnvcc9Sqvs1k7EI5ybGelb4DYng0Rd6PTzPqw-EoWaPqgAyDWefwoBUTt8YAwCvMcticeZIT5yT9Mk9Y--QnYGYpx3EDRxKn4am4KkZJ9o1yiRa7uHZscEyhAQBwQ2TI3nlgMDTx94_aU9HW2eB3TDbcBAAa-rjsFL1tO0BGvMqvv2dHvRoL7lInwTfa_EVHyngRUhxJTD-RYvoAWy8cnVuy3OX5dS5oQDIsBlAQzUmuL5evx0jbA7so9h0rOMrLCKNrxWOgyNP7L_HNl7wZPWN9srhGVuoO29sSPCmsxFwj12R0zF14QGMct3GicM2vCarfUwOY2oyyAGdzLreP7JbP-TaPEdufmY1nOhxbXLs9LZL3erCfzVw9zZoEetp3P3G41BBCIgR8tg4Bq6pQ23EXxB1RVmpSnMe4D2lGVEmjIoRAFJb1_4ysVyXhWGv8QIW8n84Tb5U78qxua_JjGe9NrfQN9usmFfPac0TQqxiTzkHCLDc-vYxs4GU4IInE63oFSvwPLdTevOarMLBe89eM75nwtThPGJ2XvXxaljyxTQY-6fRHhJoIXOArGYnafay-L6PGPdVzHaZqiUBjXaVxGnYNRT9joj1KF7dxwMwai3_0Zk2e5EF8n-qItKRLBkWNkvxo20obS7rFGY7YOldxmpIAzdoSOvNHLkswvGqkfsg2fvAEWatdhvaKPMUKlM4QlcTSlnozjj3bCRDv0YBIN_ImOv86F_c8df7s948mP7Bvl4hFleYAf4Q6f0901GxOQVE2IyKB0sDfj2nPnKT51oydYAOL7vpQIl5lL1neiUCwAoNeU8CS6WMA73Rql88abeAV86zfMBbUjdXxo3aIWYdm_gLrLgs3AvAJKM3nxSTHFsfTXlKcqdbv3YS6V8Um-g9NLxMH7lBn01pTSi2EXf_uY8tkFrWkrvh1qwiB-d_v0KAo4ZqmLTInWh0nLsOfBsBdg3obwVKD2T4wNPuUeBFbpjL6MwdCbdjAb-oRg0qkACpOqBmTIJZr7AmNd4aYjFm1FJDNVOMoqKiIm0QsexxMhBZmekXcJCY9w3nMErXbfDZO08X4CISI2goE-RxkftYhFXr1zaBIn6J5q1cdn9jsVyvFejjzes555kyJ7j4562qPGlEI_3Z7Tp_fFb_anTy-HcDKmdn6lwP6hE1VjiTDb0ay5XZB6qX7zvfMZsSuIOePXk-FoXRO4TNO3SvIZneZOsDADP5qSOdPjVBq-shM0xbWfkpSUMEPFvoLDG6gFF4cKLo1q4xli7DIDGTw24lX3VMuviHhkNOwuzp16zeLIimWRz-m0OF-jY38dz39frXUy3WTs6dj4rlHMXXlWwF9TrSU0BN35DMZSJ7auj2_xAUTztkhKXrRM-5_1MgeAih9riBVgCT1ctFiya3bPyn1jifoa0Ivkxwvfd9Yj1Lc4xgXMLN12Blyy7YNTBq0BWnCWhXZVpBu_ZVO3-MFkUJBABFT64TkwljiX-SmzkCUF15EIaXfJyWR81t2aa81Dlw6oIIqMvOvwLYG2UVZGCCmnuUsdfymisMqweEubMG9uOVh7VjtglZvadqvjVw9sXRwQITH5ZQgabKFt7EXxa3M8LrsJSJYLZj0lfTBrAhnn6y8SrZpXkSeDznG4RuQ9dQXttjuyUjkroBNLYY8HaK7A1ghMgGVHZUtOQMuo0bODN5dkL2c_WiBfUCgt26nUhp8YmNa_-cVvOaeIosExT5R59MgUpgqJuuKSIkHwKpOCNV-39Y5ZGZOsN5_IXIWNOb6yIRaecRUJXRk-8G1yDEqfGGlDTGd93uIlh49kU9nzibsQTNeKOWipyi6CNApFy9sxGYoc5uChfo-ik6ZH9sZvWtmaeE7k4Dfe7UOLt6Cu1-foKhynOyqWfMlRQ6SiieebMLS8j-RFvGAf0xCrPgviWx1Y0BygTLId24wI4JTgoPmBNmx-H2cpNa15EcCjLOi3xiZEPeAgrjS4haFLTvqUBal8xqtrejS_smnRpmwBq67itwY17BFtn4bIui5PwH9qZSX0xsQq6rOqkKnH3rU-hUTfda-5DQW03rgipomSVmK-thkXoJ04qTIX-rNqQNVMu6a_7KHf21DgkDVlRG5mCm3QiRIKCRkAfjnvfVRROBlvfXU3gNcWdzN8CDRr3IyjXsPJKXzzxE-sTTXw6uQp8CTgcp-DkBWvdSAdcqUbeqqheXW-RpxBNXbZBSBkkldT4eZnnMzfr26NiQtJeiVhPqIOsLNbz9VnE1HlxlV92rlNcmsUV8EaLfgazuI8fdwMwVqNL6OdykFBfXFhU3TOl4C1LiPLaEMFCjPi5oDuTE6b8sby5Vq7VFKxEDRD05H3xfeM3JpMRso3QJLXGXo2Xt0mgJKGss9yMJd6lfYi40HbLBfruLfEKjyx22jwLIxP3E4IIn5PCDyT37jiRXhTmCxaMXWFlLMBim1UopZcUBswaF5OgnvdSO2Y3XAvjB9YuNgxxAoe7SJdnPlZqTQ51GP--b3tX8T78OWi8o_v4tafNp_7ejdOjf2BSqEJM2_uw6LZlUkGUfTTx4--9IKyfMlRKeNbWIH2qyZY4SmZDEOMa7BBZjEsi5zTyZpgP61twk952nPAV9_Vqdymit6acDAnIOROSLnVoj2tbR_vCwVNzIvT9wnBpz0zRHic6J7Pc69GdMutGuzG4IacVMB7s96pklDn2AL5CQJlOmeX1t74K_YBp1iINOjKkNwr8ROR1IHzqnHgYmhuNTsgrx5CvBLrIgH_Ikq38TJozKvINUnYK4_uxZATY9ZgL4WsFq_9BRAyvmhboaU8-zzkgio9OL_Nl_5Gysg46QlmJvkZ08mS9RxeH-blEKBkMN4rQjXpN1EwdvibB87q2Z-0gBLxDUbETln00wbUk1SW2cjQHCq-3r0zkDm151Iz3dRFfg9y8z9yHkpIE86kPdui1GST5LqMCx1Jxkfgf1TZoi51sArWNkmMWBlV452HF4xH5psnb-6BHri7PWsXveiLgmopBwOZQnHAvU7IViyhSZH9QnaPKnICOgAwY8XHljdQKJ5OuLMCQF0WLesuzY-vGbHfhb5rlQ7KMsq3dpwFAfRNnBCX2kbFlDNQUOT4g4V0c01L5tjqQEEIOzupWtOBDAhJNnBnrMjOZVo-yyPNqth3y-xJC9b2wDSbbHOI8OIgv1PMAIon3LXkpwqswOo34SBcolZu3PH7RZ_9JIRSKVkjYx0z-aVvHwEDdbZchkU4-WoSwRNxy7ew2V1v8QIpyTTqQ0aDZhfsJd9UoxlwN3vmxx7zXknvTqFlamp-g39rPUdKrUbBQc4JhpOUinP7_scmtAi5vM-7icwfAcrBqFoIh9aaqwJ3mXbMTNoWZDhmTnxZ205Zaa2d36ugOBiJudeyZ1QqL4hAm57Vo0q6X-enWDItO4LLOOIKMoZFUfkJxTmQ2r8A21qygubAeitfQH481OU-P-F3pJKccUMvLxM0xaRwjKm9uWJfwB3XmkJSbvOmLQihs9jVMnCJuKCIxg6m64lnKUJYQhWYFrAsR9ViDRV6NsE9yuV8KGCUN2UVpfTo9QMIUj7_TJxlQn271BU_2d6d-LIVVTRtwboA5dp4nNXSE0MX4b8W-HO1JwCsvnDtGKUhcs-9kMht-5VoCCStKzSbNZ9Ullt2VEYVDidrVVIQBGd6_i2UD1jz8FbhJ-bdGtF5lx9O8LqGITktGfGwk6kMyjiCDg9JIrGblT2OBjzx5ApOc3RUKfqp5IZbkTcnSpDCEQ_ZphERTEM-NqG9mKZ7VU0D0Tqg1xYQnXryf2MUTy62ocoyTlbwasy1P6z2Gl90XZA9Ty166yYpvhC-6g6D-TqSorYo3a2g5VmK_EUjSnBhMuXNffl1W98Li724yKAOWdzsaweh_IV6u88nhact-_aBEzKZyIFH6_rDVW0IloLsLmGMCi9uda9RpYkg69BzxFtPd5l7fLwLm1a7VKcgDbqhSwsc8uy3QzQwhqcu3X-cK393WeKNerljtooToix_sgCEKDjBl3PK940K6lOIjzcCxOGMhn2qr0icTKnDUnthibYQnvCj_p09UoUAnjpeO_fBrNUZ8zASu22F0ccj8pL-_rG7cUWf890EGGgK0MfRzOzlttBXAfNpuFIOmRnQN3SZAzMihKpXZYuhn8ftTt5pYWuIXmBs5z5kWVLtQ_Wp7_1a8C-K9kW5fRGWlf7TEkgrVWYL7NuB0FfR0qeQU8Sy9uKShPzcwiEemL0dt9GSej6q5A5c6b8C1XPwk_DMAKyAyF9KqBcmvLOew_rxbpKUa2jKfL7shQ1WLhQRn5ENdllQH1WyHFKeL6nAMeSFO2b2lRATtkk9-wl3HplAxotjP6EHVpUwycb-bwMP-QSx5wHgNRm3JhgrjXLzVv6-1VSHDqy1hM_BbOP8VGua352r4Zgsh5Uf5NFzdX9kI9NlrVqiwj_TRnb5fiWKioH5c9R9X6j77-EOafkCPTHyB_18B11mJvyDfMpee-yEOBtnu0neseaCG0LwbOLINnO_UPdUV_iOPF7vDOjfK18lYXHYhcXEbIEKuLX0Toy99eGZayqCYZZo6-qndzOJ1QMiNzPvkeWpPV86ksGDW5ehSK3lAdAQlnJBccpJxupr0OmVdfdCw2mbA0CgFONTneLGCG9Y8ugj0ylm5pbLy0jQAQcrUql4MrLZW_YdF17y_putH0eI5bP8uV-7I1TGOZ8APulS7DJrAgROP91pEOY_dgW6dW5VzS_iSinIHQNu8DEt9BsJTqzM2a_QsnYqOmccAX8DSuRYoiAku_ksgvzHumAnZYlkaWzPMz_KzWVHQNmsQqnXi4i8B
+# SAP2000 常用示例
+
+> 单位制 N_mm_C。COM 返回元组的**最后一个元素是 ret，0 = 成功**；ByRef 出参用 `0 / ' ' / []` 占位，个数必须与 VB 签名一致。
+> 坐标系与内力符号约定见 SKILL.md，本文不重复。
+
+## 1. 最小完整脚本：连接 → 建模 → 分析 → 取结果
+
+可直接运行。后续各节只补充这里没有的内容。
+
+```python
+import os
+import comtypes.client
+
+comtypes.CoInitialize()
+helper = comtypes.client.CreateObject('SAP2000v1.Helper')
+helper = helper.QueryInterface(comtypes.gen.SAP2000v1.cHelper)
+
+# —— 连接：优先已运行实例；无实例时 GetObject 返回 None 而非抛异常 ——
+sap = helper.GetObject("CSI.SAP2000.API.SapObject")
+if sap is None:
+    sap = helper.CreateObjectProgID("CSI.SAP2000.API.SapObject")
+    sap.ApplicationStart()
+SapModel = sap.SapModel
+
+# —— 新建模型：SetPresentUnits 必须放在 NewBlank 之后，否则会被重置 ——
+SapModel.InitializeNewModel()
+SapModel.File.NewBlank()
+SapModel.SetPresentUnits(9)                                       # 9 = N_mm_C
+assert SapModel.GetPresentUnits() == 9
+
+# —— 材料与截面 ——
+SapModel.PropMaterial.SetMaterial('CONC', 2)                      # 2 = Concrete
+SapModel.PropMaterial.SetMPIsotropic('CONC', 30000, 0.2, 0.00001) # E[N/mm²], 泊松比, 线膨胀[1/℃]
+# SetRectangle(名, 材料, t3, t2): t3 = 沿局部 2 轴尺寸（水平梁的梁高）, t2 = 沿局部 3 轴（梁宽）
+# 故 (..., 500, 300) 的强轴惯性矩 I33 = 300*500³/12 = 3.125e9
+SapModel.PropFrame.SetRectangle('RC400', 'CONC', 400, 400)
+SapModel.PropFrame.SetRectangle('RC500x300', 'CONC', 500, 300)
+
+# —— 荷载模式：第 3 参 = 自重系数, 第 4 参 True = 同时创建同名线性静力工况 ——
+SapModel.LoadPatterns.Add('TEST', 8, 0, True)                     # 8 = Other
+
+# —— 悬臂柱 H=3000: 柱底固端, 柱顶 +X 10kN、-Z 100kN ——
+# AddByCoord(xI,yI,zI, xJ,yJ,zJ, 名占位, 截面, 标签, 坐标系); 前一坐标点为 I 端
+[col, ret] = SapModel.FrameObj.AddByCoord(0, 0, 0, 0, 0, 3000, ' ', 'RC400', 'COLP', 'Global')
+[cI, cJ, ret] = SapModel.FrameObj.GetPoints(col, ' ', ' ')
+SapModel.PointObj.SetRestraint(cI, [True] * 6)                    # [UX,UY,UZ,RX,RY,RZ]
+SapModel.PointObj.SetLoadForce(cJ, 'TEST', [10000, 0, -100000, 0, 0, 0])   # 全局坐标, N 与 N·mm
+
+# —— X 向简支梁 L=6000: 满跨向下 w=10 N/mm（= 10 kN/m）——
+[beam, ret] = SapModel.FrameObj.AddByCoord(0, 5000, 3000, 6000, 5000, 3000, ' ', 'RC500x300', 'BEAMX', 'Global')
+[bI, bJ, ret] = SapModel.FrameObj.GetPoints(beam, ' ', ' ')
+SapModel.PointObj.SetRestraint(bI, [True, True, True, True, False, False])  # I 端加 RX, 免去绕梁轴的刚体转动
+SapModel.PointObj.SetRestraint(bJ, [True, True, True, False, False, False])
+# SetLoadDistributed(名, 工况, MyType, Dir, Dist1, Dist2, Val1, Val2, CSys, RelDist, Replace, ItemType)
+# MyType: 1=力/长度 2=弯矩/长度
+# Dir: 1~3=局部轴 4~6=整体 XYZ 7~9=投影 XYZ 10=重力方向(正值向下) 11=投影重力
+# RelDist 默认 True, 故 Dist1=0、Dist2=1 表示满跨
+SapModel.FrameObj.SetLoadDistributed(beam, 'TEST', 1, 10, 0, 1, 10, 10)
+
+# —— 分析：必须先存盘, 否则取不到结果; RunAnalysis 后模型被锁定 ——
+SapModel.View.RefreshView(0, False)
+SapModel.File.Save(os.path.abspath('verify.sdb'))
+SapModel.Analyze.RunAnalysis()
+# 要继续改模型: SapModel.SetModelIsLocked(False)
+
+# —— 结果前置：不选工况则所有提取函数返回 0 行 ——
+SapModel.Results.Setup.DeselectAllCasesAndCombosForOutput()
+SapModel.Results.Setup.SetCaseSelectedForOutput('TEST')           # 组合用 SetComboSelectedForOutput
+
+# 占位符个数 = VB 签名的 ByRef 参数个数, 数错直接报 "call takes exactly N arguments"
+# 节点位移（全局坐标, U1/U2/U3 → X/Y/Z）: Obj,Elm,Case,StepType,StepNum,U1~U3,R1~R3 = 11 个
+[nr, Obj, Elm, Case, StepType, StepNum, U1, U2, U3, R1, R2, R3, ret] = \
+    SapModel.Results.JointDispl(cJ, 0, 0, *[[] for _ in range(11)])
+
+# 杆件内力（局部坐标）: Obj,ObjSta,Elm,ElmSta,Case,StepType,StepNum,P,V2,V3,T,M2,M3 = 13 个
+[nr, Obj, ObjSta, Elm, ElmSta, Case, StepType, StepNum, P, V2, V3, T, M2, M3, ret] = \
+    SapModel.Results.FrameForce(col, 0, 0, *[[] for _ in range(13)])
+for sta, p_, v2_, m3_ in zip(ObjSta, P, V2, M3):
+    print(f'sta={sta:7.0f}  P={p_:10.0f}  V2={v2_:9.0f}  M3={m3_:12.0f}')
+
+# 节点力（全局坐标, 节点作用于杆端的力, 无需翻转符号）: 12 个
+[nr, Obj, Elm, PointElm, Case, StepType, StepNum, F1, F2, F3, M1, M2, M3, ret] = \
+    SapModel.Results.FrameJointForce(col, 0, 0, *[[] for _ in range(12)])
+
+# 支座反力（全局坐标）: 11 个
+[nr, Obj, Elm, Case, StepType, StepNum, F1, F2, F3, M1, M2, M3, ret] = \
+    SapModel.Results.JointReact(cI, 0, 0, *[[] for _ in range(11)])
+# 取全部支座反力: Name='ALL' + ItemTypeElm=2（Group 方式）
+```
+
+## 2. 截面
+
+标准截面的定义见 §1。下面展开需要额外步骤的类型。
+
+**eFramePropType（`PropFrame.GetTypeOAPI` 返回值）**
+
+| 码 | 类型 | 码 | 类型 | 码 | 类型 |
+|----|------|----|------|----|------|
+| 1 | I 工字钢 | 8 | Rectangular 矩形 | 15 | Joist |
+| 2 | Channel 槽钢 | 9 | Circle 实心圆 | 16 | Bridge |
+| 3 | Tee | 10 | General 通用 | 17~22 | 冷弯 C/2C/Z/L/2L/HAT |
+| 4 | Angle 角钢 | 11 | DbChannel | 23 | BuiltupI+盖板 |
+| 5 | DblAngle | 12 | Auto | 24/25 | PCC 工字/U 形梁 |
+| 6 | Box 箱形 | **13** | **SD (Section Designer)** | 26/27 | 组合工字/U 梁(混合) |
+| 7 | Pipe 钢管 | 14 | Variable 变截面 | 41~46 | PCC SuperT / 冷弯箱·圆·T / 梯形 |
+
+### SD 组合截面
+
+"钢管 + 内填混凝土"这类截面在 SAP2000 里是 Section Designer 组合截面（类型码 13），**不能**当标准 Pipe 处理，`PropFrame.GetPipe` 对它无效。读既有模型时按下面三步解析：
+
+```python
+SD = 'C1200*40'
+
+# 第一步: 判类型
+[prop_type, ret] = SapModel.PropFrame.GetTypeOAPI(SD, 0)
+assert prop_type == 13, f'不是 SD 截面, 类型码={prop_type}'
+
+# 第二步: 枚举 SD 内部形状
+[MatProp, NumberItems, ShapeName, MyType, DesignType, Color, Notes, GUID, ret] = \
+    SapModel.PropFrame.GetSDSection(SD, ' ', 0, [], [], 0, 0, ' ', ' ')
+# → MatProp='STEEL', NumberItems=2, ShapeName=['TUBE','CORE'], MyType=[7, 102]
+
+# 第三步: 按 MyType 分派到对应的 SDShape.GetXxx 读几何
+for nm, tp in zip(ShapeName, MyType):
+    if tp == 7:                                       # Pipe
+        [mat, propName, color, xc, yc, dia, thk, ret] = \
+            SapModel.PropFrame.SDShape.GetPipe(SD, nm, ' ', ' ', 0, 0, 0, 0, 0)
+        # → mat='STEEL', dia=1200, thk=40
+    elif tp == 102:                                   # SolidCircle
+        [mat, ss, color, xc, yc, dia, reinf, nbars, rot, cover, barsize, matrebar, ret] = \
+            SapModel.PropFrame.SDShape.GetSolidCircle(SD, nm, ' ', ' ', 0, 0, 0, 0, False, 0, 0, 0, ' ', ' ')
+        # → mat='CONC', dia=1120
+```
+
+新建 SD 截面：先 `SetSDSection` 指定基材，再逐个加形状（形状在截面坐标系内用 XCenter/YCenter 定位）。赋给杆件后与普通截面无异，可直接参与分析。
+
+```python
+SD = 'SD_C1200x40'
+SapModel.PropFrame.SetSDSection(SD, 'STEEL')
+# ShapeName 传 ' ' 时程序自动命名并在返回元组中带回（如 'TUBE' / 'CORE'）
+[shape1, ret] = SapModel.PropFrame.SDShape.SetPipe(SD, ' ', 'STEEL', '', 0, 0, -1, 1200, 40)
+[shape2, ret] = SapModel.PropFrame.SDShape.SetSolidCircle(SD, ' ', 'CONC', 'Default', 0, 0, 1120, -1, False)
+```
+
+其他形状同理：`SetISection / SetRectangle / SetCircle / SetBox / SetAngle / SetPlate / SetPolygon`。
+
+检索这批函数时注意：COM 属性名是 `PropFrame.SDShape`（无下划线），但库里的模块路径是 **`Definitions/Properties/Frame/SD_Shape`**（有下划线），按 COM 名去查会一无所获。该模块下有 43 个函数，`Get*` 21 个。
+
+**SD 形状类型（`GetSDSection` 的 MyType 数组）**
+
+| 码 | 形状 | 码 | 形状 | 码 | 形状 |
+|----|------|----|------|----|------|
+| 1 | I 工字 | 8 | Plate 板 | 103 | Solid Segment |
+| 2 | Channel | 101 | Solid Rectangle | 104 | Solid Sector |
+| 3 | Tee | **102** | **Solid Circle** | 201 | Polygon |
+| 4 | Angle | 301 | 单根钢筋 | 401/402 | 参考线/参考圆 |
+| 5 | Double Angle | 302 | 线配筋 | 501~504 | Caltrans 方/圆/六/八边形 |
+| 6 | Box | 303 | 矩形配筋 | | |
+| **7** | **Pipe** | 304 | 圆形配筋 | | |
+
+## 3. 荷载模式与工况
+
+荷载模式是"荷载的容器"，分析工况（LoadCase）决定如何求解；`LoadPatterns.Add(..., True)` 会顺带创建同名线性静力工况。
+常用模式类型：`1=Dead 2=Live 3=Quake 4=Wind 8=Other`。
+
+```python
+# 查工况类型: 用 GetTypeOAPI_1，不要用只返回 [CaseType, ret] 的旧版 GetTypeOAPI
+[CaseType, SubType, DesignType, DesignTypeOption, Auto, ret] = \
+    SapModel.LoadCases.GetTypeOAPI_1('TEST', 0, 0, 0, 0, 0)
+# → CaseType=1(LinearStatic), DesignType=8(Other)
+```
+
+CaseType（eLoadCaseType）：`1=LinearStatic 2=NonlinearStatic 3=Modal 4=ResponseSpectrum 5/6=模态时程 7/8=直接积分时程 9=MovingLoad 10=Buckling`。
+
+## 4. 坑
+
+| 坑 | 现象 | 对策 |
+|-----|------|------|
+| 出参占位符个数错 | `call takes exactly N arguments` / 解包失败 | 个数必须等于 VB 签名的 ByRef 参数个数；拿不准先 `print()` 原始返回元组再解包 |
+| 同名旧版函数 | `LoadCases.GetTypeOAPI` 只返回 2 个值，信息不全 | 检索结果带 "Newer Function Available" 标记时改用 `_1` 版本 |
+| `SetLoadForce` 默认不覆盖 | 签名里 `Replace` 默认 **False**，同一节点同一工况重复调用会累加 | 重跑脚本前重建模型，或显式传 `Replace=True` |
+| 悬浮杆件 | 无约束无荷载的测试杆留在模型里，可能奇异或污染结果 | 测完删除，或另建文件测试 |

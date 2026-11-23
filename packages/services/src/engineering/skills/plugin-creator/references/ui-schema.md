@@ -1,2 +1,143 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRtS3ddw4uwL8_D20w2fQB8F_nJgTt2d7zIq6cB-fUcRC9pOtK2r9iIOvuMeClwc4Oa5xHih60sOCn3DU70DXgt9plXmMlvquZMFDBJDXzo6kSkqxHSp5-Uoj-uo7wKoxMzlERJ9LB8I6hBRDZCsAnhgrCSebU2qQa_Of_oooyI8ElVlx3XmOGYgQ5WW07TuNB1F3F24K8yGZ3Z6im7MCMw8WxZVxMDx1mE94gblK2c5RYJR0dOMq_65ty_JRE7yyKcvILcA4L8isONJcsQbIwpSDFe1u4jwug9W-iF4KUB0oH_s6x1rkmFZJBkfoZjKXI-IRDCtzcfjg-h3HWqMZ3kocKhxe7VLn8oO-et22WSjX9ujyd7kP-pNuUyoTIbXz92M4gDyquR2XiXgLcSwPV33zLaVgUdZSjeBmFyLwsG45Z3SlaOZViqRlf6ImGPHuKnyLhif3zqIvAmmCOLN4LEvXxpbIdaYy-VrnXjYYH0w7asjhvDbEjctFjWa2XfWOWuHCrkzjnmaw3nZn9V63Ee9cWXqPNOmeb7ba_gYdr7_ctkIl2bPl-xu-s8WX_0uWEnbNGXVkgEtkBejkm-68rO5kFHI0mtiUtIH7zUNlP2IHC2sKI5Q4rL2qqsP8SeiVNWkk6xrJP68exCSb6X05qgZVk5V0tuHK8s9WkQ4lWUbZ611R8zlmaKQ5GKTRFgGA2T0JtHtcz7gdf1_CN8t_rSL8Kn8jJ5CqJF0P5pfZ8LFXUO2ZdJM_Kbb1S3b3NGvNANVhI_IzGVQmEtUjIGi1rAe8BExRoT_P1FzDgM9Cs1wbQjNrIiqiVOIuYN4_xD9QK4uJ-nfFD-D2F0CT--gn3y25jx21rD9IWUs-zvsq34Mz3h8O7ecJPwAQ554VtCaq1WpurPs4sEFQNI7dJZw99yXjVU5ZIJyWbQB4Nq2zHyvHyrZ0kPDFLVaprFzBF4TQ_5WOAVvdfk_2FrIa8c9r3ntdzchVh020YTgvwN3AdDMEZZjbD1o8OYB_1MtYKJRur3NfD9JHiBBVtoblNhwotua27Xxju2IbvCOLPeEdByOofzHvPaFYT0IPF7Tm1EGyx-9TELDMOqTtaIXbMd7lUAyF7fKSQHvAHEnm1oNYjbBI9skINWlVoERW4XD8nkMz4yyPv_874uclRy1r0GpFBswbDpCsml9VeccvtbCtT5WA73Q6sSIjqP2HSFYkrXG3EIVTivFd5AQT9YnqnxjWohIEc1HjiG-Vj8ovFOjBG_T_b5NsDjSFIlie8P3JziORt1xNMKqMMevDX5Tep1tV3zHJGqfiw5-R1fOnyTfScs5l-whTFFUx30G7GTghHzXDr-M48QlYPwem90h9jSijGbE6zVd7WYYWhLmlC1IrldcYEM6cXhQQuBvEVltXwbMVNrpMBYbBvXeHVk9QOKHZf8068uBFZ4yzOuK__pxlbAzi3KgxUkSeAK-5pl1hTTJYwprUuRlt-FJg_lllsUiNvuMPr5NIO78iN_ufw0XJPuG0U5_tDvLMXNMjIvnDVFungwx25rGhEyrzka8d6eNEuqCW9ImPmKrynizGbxlSHPlJg4nkzPEejc4QK83HBHDzkFvdNP6pnsWqTsaALDYH4EiLJaMsiZ7ph_wmKaRdnwJKIW3wbebmhu24c_o6jMTizfyhPBBKUUOQPQV8nwv1ujp0FAAhsn2Fwy7wA9u9JocgrqN5riQJ506v3_WbX8AKmIf7YVZmEylFbuAVg71DWsPM57YqWA8pyMYJoLR9TrG0IpoWOlWYYm5EISTnv2nlZoKH2BwHvpvhgpD2gVk8GXOI9Pwqc_C3kB_sITkViyUH9t3cCFNazsO1cErlSpQG2GBmt6zFlHgVqHJIXSt_9skldogzvwLEXq4KFzMovia8UCLBjnxGibZcMV4ZvKm3tDwrCk-5VNjDqJX3zXkpH9aKEGNcxzclxAwzJ77dq8gIneDM3rdXedTcRzufun2Fq07n5tY873n4devKp7_g8VOtiDwthn0tVuVXDE3-YRa_e18SbTBI59RGJW75VKAUlS1Mhc6Acr_px_9kfzpizogoW7JDP0uwZGdlMW0M1J0Me-I1Fwsuxw14uqZmoozfw9kJ2jMgh9dEsvVS7Ib2jKdOvhfknq5HYZHOPflSNpzVdRvFb7vAlkhoyYtLcZrBwgvvpkIkgz2XM-OWbNEgZb0R0-7jukDguT22ds9gQGSz5Loxlx7mB9hkd4bul9XeLogbIGJ7Pno2eM0I21itXRGCHa0_QbhtCM4ohPZ0he8unOFHtVhkf7FnPDwDOAj4bfFlcCfsP7tvAADEMT1W2u_XLluFpa6FkquMQ2E95SH_6hUurTLhUX4dN1eAj7IGHxHOuyZq9NWkpqZMfdo23dKL4aLqJBbfE40FL2q4d4z9ejQsTpyGJRTchw27-53fMMCo6MQf-kDudBGcJbyQcEmsur_YbQSYQyKFyZtvT4Ytre9r5q0bBqsKw5TeGyLBo8yf3WcBefsytb0eTSkw0drvSzdpulB6WTy9E0STE8SfqwPknB09WOtDT07x5J3zUL2VuTYWwHdl-EtWdrzTJ7K02gFSD6ghLpb-NCQljORub4cf7WhtCUaUZxcFeElFospMYzPN7Oclw3VYHX-WTiMduPLhMuEsiVPenq7CD5EVjGBuweFg7wZy_8V8dg17h6V70nY4ane9-yU2mDA87_egZNFEGaenM1SLvVkIKJBlWqqvLXdPClwtarL3bUhzdLyFdXkxXxuYJFFbwyRpIXd4hMhZlzGK870rGCV62QB613m79vHlzJoeInLCrRWScEeSd_-fZGpQ2elZGsYTDjjjs9gEmK779Nysg48iS73UBz0X4K7f0B6n-hFXqFr0WnbxfPcMNwdAmIqzv0jo-h_JivZfvzW7JoC57ASUnJGF8F3fSxD04KDm71OqDG82nCS4o2yiA2_FLw_faB5U4Hel83GeMFbuNBRRYD1Wvh_uCejIbJqsnkv0yUHqnOAovoDiwAtKAgzSk8a8X0xYCEOVZVzYYoaFcc1tbo_lWD3fr7CJARFJG0xXkNkMovaWZpJp3wo7nMjvCqeTGERrryUZIap9dJHPncgpVfyWlPCESuQ5j9Yf31xUQaAYaYo7bHZsodR7rikr8MXEcFXjn0WdXsr9CrIXuNCWs7Lv8y8uCaJY8iJa973hslnGESedMEcxeS_PmcBq_kw8al7UiYQc-wXunLM08TmFCq317EjHGV17AZY2mPM-tJeAEDDvaB3BgZlZXia4wTFRTmm_I07lODJvAnCpmNsWdVGvClQbTYGbNd6tPSKqNj-fIrmJCVExT0hsKxsCQPdwcCC4l-dNcy0sDQif1GWfFb6U3sgEc2TjJK0d9QA3nVpY7yylAmsmBUe9LjXDIzKkWZehXDQMCcxNuwXoC-nsfbo3iVTaYoKrI4vdL612VJSXUIouCHbTPripcGIUBtsPHbft1sq3SUMh3kLhnguzlsuZ3yAVX3QGeeQTCoGZ7NoNFLZ3dXuq6OE_37iO669mDXKA8cz4IK8drrr3RxtdYZ2pDJtUn3BpdHH6n9FJisnc9JnmBj0gvB_UU0kyLnUyGzSf3piTH5TxuiN35SZkaVFqBTIZbRWM2wIgaNYo5N-RG0VugP9qJpdab9WNeT_83EshmJCs36qiL77cgcOL8BKC_cMWAXvzD03_hStkh9EfDg6Ejuql5OqUnvUnlPB9vVJ1cpxdVlzMLOisNOKNmpZ44LPE9_UveNHlnD8BFVXAnKt5G7fvSx_TIOoFOlYHCUnzEyx4D8PkOOOcXOSy8s1g5pcKfhs_IR4LeBBNk9k-oYxRaXHE_ys1S7dc-oh7PI1Np0_WzGR7GaSQaI_hocPvzQ3Q1CVflxeemk0wCJ-pfzazN13E5_ZAlv7t11FjrBhSJvC6SxoYV6jG0IJuQTIknxSqGxQ4eW9af2kBLjiZigXHx3OEu08ggWCimVselGXY-vMAFLD0gfb__8MpoJ0V8hm2FNv10DMQ2vKGtuK6GAn7bFxjloUAUPPfzFXbWO7x8DbdT-6eNmLzkJ_QSIsYSfTRJvr_3JxwqEBaTFxor8ek9_ETjcv9kI62HW6p-G_7TcpUFBqVablx369l1vN9G6BqqmxjjcdDWP6aFI0TI-kSJ3-Bx6Yhxfdk41fyN9HWw5TDXXbxZfVoYcEKylTc5Y2L8Sb_i5j17tKyrS9xlnOPQNSxUx7Q8gv37Q5UhWGGlORCfAGFKSc1F5YQxppvG4will5Kth-XTGGLhAEhmKPUSYlpxiRwXf96SCesuW7YTx6ukch98adq8VuF59Xn0X9iOtFGSfHCbCQhdn3SXHgW7KzojTc8gr9mAZaXmfJQ0rCH9X7JQp37he6ClFdssCt6N1V71bljO64sCJn_jDTyotWV93dpE9g4BHurel89YZPhICDBvb9dymreCiGbb1rqyHFcy5tWIQm1LXDLAYg-Ed0elzwNCSV-R7tIO2S3dnbNNUChvtDpzrUpbZZti6vmTulz_XiC_dbMdmUTe3VEHuEyaPvfpnk5zf7IUUEywALXA85uilEfaNd0n5DysBa5gxId4S6M6voKdNDb7y_Vmmr52rrVrwDMwaX1rImEzrTQyK2vv43NFz84xi7rIyzcHGEJB5BIS5iaWtWKHALj_DIT18JnicU9izmdXknQ6qWLPkQXaNUHk6L3djVcdonXrHACcFnbRJSxrKv_fths9UI2cb1DGQzWOvcN_xLtoOyVJulYlP-7TgFyqjKqv3TuBbgPYufo6XfL5XCXKl5RFTnTdlmWQdUALyTuxEMmaAPB01u9hzJQfj-EpAfd7r1YWO42GMZ1Y0LKDSqZUXT1R0MxYNhQ4TzTz1tW8Jv1qDxfp0UGUe5h4M5DmVcUDfnj6aaOGQwq2aGzaEbef5ZVjaLqr7zAA1qyUXLiUIZXcjAXFkq5shs9Kr0kAocwRXLyCaQHoNORERWI-T1iNHmiAVSZ0O7g8TQpKUkewKcf2WpytuOZcLiD-BqrPXuyErD_8076bRDFeD0k5232kiGc8LIz3WE0ePb-BkebfXB5TyIHHq5vME__cyuHNXApslMC2sRjVRcFCZ4WgSeRhea7LrWAY97CVm6ToSzj1aQubLxIB9GyTjcmYQVRw3AuYVeyepNG6MVMHZvc35sbKpAC5PMi_0-GCl_tZ3JieWVE279cRifVOaZDni65VwRsvsfm-KkyUQa67z7m0jddGdxbdUgPx5xJvjRyqiiro3cVnEeO7LRnA-_55ivAhagoAHE5Gtc-0TfLWVFFkj3-kmPThU9QAkJbSCzAp5OEHYeasK0Rve0c8CoQPmwDqz0FqaVRiBAtZX7jiskRCiobmPGbVRl_bk5hdZ7BMyfK-9hpwxCEmIBSZbzso2IY18dEQ2ofQMe6G2tI9mY9p6jrbR9KwiCUdc21RW1Pvs9Fepd9eii9cteAXRBN5XTPqBt0up7k65eDLhDhfrd3PDRFg1UX1H4YYcGXFhnzrWzTzydL-Sz5hZzb4re593v0JrlbM59C_f2IoZm1Z73jvuTI6t2pH_er4PkU8v9vaE73GDrSCxWp5RQZvhVBe5SE6e3QR7Y5lvSGutp4MMY26rcRXWs0gHQ9oJDk1PZ0pCM4gT9aa7VL3YiXWC3K3Cl2oHMLD1cFlQq6sMRL4qbeQz6WUkbuIVnJmxqPryL5FoqE9bwXupaYbWdVDzsH5gGQffP9f8WtxWbF1CSZQTGnKzSOTpTPz7KycOAqaTn_Y6AAmnsiyp2sEwUIQybRQlByKwqIfnP6bZFQuE4CffCeeI5eqri4-lSkQWAzGZ2s0DDi1FNHgCeOffc4bOffkd08tdJefswmyoGraIzPclDr4l1NmYAZ-P98XeRQDWnVWNB772WEnxYoknhu13JwHkiGH4OlBoKO8k-EzxR-gySiT0R0WiOo7NT_yKGvtFSzLUWokKV0CeUvCn1JFUwWEBBo1CG8C21PurLw3UZhCrMEt3riZfGRiPJm4NRJu3MvzTB1-nlL-HEQfdeOHZvB4sFg790YfZR883pmArpa1j5N-ynKMkj-RbB50lu5L8LYzgvBjVe5JOVFoXcqSETIt1EqLVW9-L2CbwO49WYEZILGFFJineSlphlnb7qALmCfaCxzYKYb3Ero8YtV5k0TEeFIXFWxkoC6Ws8GFgaRRkYAYH-sFxiIh1gO0_mamGg9cbXP_JKsW7fHTqwmtEx6-IIe2hEE0gT32GNkybjYXMZSKcBE5xpHxAevK8tPVk6t8M-NyhWuyBZVffoIbfYeIb_CRR54twQyDLT8k3Ho8lxs0ds834T1-SJT6GbSXvdh3KqVUKqmUSLgljVKDByqpcd95FUkzdpvGFtADRI5uPQeUul4soYCaWmpkb0kPQFrWI8fCokS9VCF9WGkMeePOxjjKp8jwN6EbfrQZdgH4P7j8ynHcvVqjJQ6ibR7fmBa0-o9X7SVPiZDbeXg0p7Nb3E8Y-GEadQ9CXA9AwTDTwCxQttjqcrRBr7UB6GiGNVYcEHPX76F82MAFYA9BwRUbVYBaGiNMcPHt4ATmcCB3vwE8htsUPMdfo3Mx3QSsjquKMqaajgBZMGy-QbvU-DMf3fLqVE1pAqtAxr6QGFQaWu7t4x4rZbsIQJkVt4Q01x8Fx7yPYYILtZkjPw0LLfaar7r3tnSZNmtV8Yo-Fe6zL-3V6Uc_Z9QSzv3BntHmp3nLzB2amTUvaTGvgHRWCWs9ZsJNSlPwgbOCgoTQh8N1_rqEpZTi3M46lbS9Ih75oyrkmqtuiU2wy_d0jvq1lHBlTCsZg5c98wQT-qzmXPSYwCDKfLcKZuAXF6oxkO0KnVQ2V4O_joiMD7JMDYa6pI4UEe2AnnIDeevgY_lXh1qngRyX9ggkb0hivoCW6G75FfmdfdbyLFBxtbd7KToS0QhuvzDl_b9i269CXuLWHZCTf50TAGu3DGPXd8Wv_Xb8u9HMNawZEiBboqUVxMQTgIjt_Y0Ak65mNTO9DlZrXF7lSJ6DfC01gEvtqNN-KEC6Ln7D2OK7vt9wBws6X1l5Cuiusnjk_OuDgiIf0Kq2B0vrXJA-BN2whEqT-nDO3QIdtVtkgt_--YNv5wr0IT_Hp8h4nxK57Xi4yy5WjVRfJhdYIa-8S4lwXoUstFyF5nqxcnWs3aWgav20lEMgMrFhSKt9zvQI_4kBlPHYyrd3sISbZd5P2i4IPBkhA0KToqFseKzfFwCHY5V29pVXgfAOn3K5HFOBAMJiQjOZzbSXcQ-drmKGF-HFHpo-CdyG0Yerkg3Ke9iHzlBk0ssX0NGO9WBd9fx6zfsgFdhQpUr7KSoNLGL0lx1WX9bpcDcSUaTEPF7Q1tvHIFn7dI8hr8yD1yL-LmAOICO9VjiUh9chonA50HUZ3LNvFE1dFsBUX4xpfeNJb97QYBTcT4OADoM7FHK7GTNelzsn7g_6Qii6zsw9H9bZf_sK6Bv8ghNw4ezal10j3RrA1GglDCTWbVfRFSTRyIwo3TKM2F3pnTmqId-ahllEmEsmkCZtF80hSjtWtjUoKO08UfnaJXG5vVmoROM_z1WeNTY4AGUGE9WrSCiADy_5a4xtSCg5ltxHhyxFxUM-JzAHlnpc2KiGke7iYou3EsXVpQIgT5qZxw6LTn377BzK4HbKDyeXDBW0Jhqaix6G86vPFVmcQMzyNG673bQWgIxfxVtnE_l-q-sWwU5TSw0RHCehva_A-9_UXqlYoNtYwLmoMyIWc9mg7WM6_KW3iF_axik7ZR_G7p91ytmMXABHTY1sIzvSmPpbDj17vMvqFojV33pVDxGBR_vb9bG8TxdhIb7p4QObyVQ14sf6QawGjxhIZyU7i6OQps6NCxRpGdpaxp-8FsBoc6UCRKYj8OTiSxKKHUsPQjXdUVjHd6vA0TQO5eS1MdkLoD6kiQltUuJ2mtcgTKxxvMHkGXmypz-pfDT08aRgrgoHuAUqrHdzJpHsddwo2SoyeU4itjCIgPxctFAcpt4_fTkk7s6cjeaz1VkZK4ldv2736JCHqm22VflT5XOBwy0bHZXrCL10GvlhN4PdouGvQQvb-3WCxZiQR363M1HfMr8uAWgRenjAeyEp1SIJOeH1uSKp6VecmGBBYjZkiAJvqvlogz2O37HKFhaU897-NbedIur9ErSYtceAgsgrYGx5qaDBaPy2vtMcHDTlmxezb0mOOlU1ekKScc3mrAqhoOjqou5UG_m-bRoBsvcZPRQcBb921_DGi39b17FqsLD33YBntRoF3g3GadPUJjjmRlsXFq2FIRu7ZV78T5HaAw_9IXI576YKAX80euOsVmWUwYeUBjEbF8Q_rIQXfCdkMMIERLLrsw6WWXd9oBsPC7hgdGWkFfiJpcbdwYeUJx1f_o0_c8E_AIg3AAF53pyNBYhn4Gqhzs1YUFHwDggSVCQZ1xTnKstLooDZTRNCvvKvZK8dhpsymWv9siqPpFureMBsx8G86krNaGDroxwuBCkofpGR-OSN2UUv28jiGGPf5fKTU83kfDpH4r-pIdNYTnvDh81M8uNLuLeAT--Ri2rOIIJAztT1cqOqgExXCR954s-lj80imvMFgXp65irxxIXl6DDcEOLcZBrM8zgnHR-vl5WxLtmQ6hgyldMMcP5qL_6iDdoisYyq5S2Jv09SJTaKnIK-VvbDWxHzRrBR5V3YR4rdCVUTASb6Yd2AyTnk4r7eXCE9q51BSmkIwf_FU0r0rLMubCdZs1cU-bNm-kFrVkTe1vPa-Z4y5nHs_5210PCp_016EbmQbAjQZDCltZI65ljzeWI0aNlsH55wTzkOQtw_C4RBn8k0PXkzAz3ld9mDZb2fg-lT4bb-HfQULDYBYGV9lOjV7WdzqropAb3nUBU4qa6Jd-IHHg4dPm3FMLoEqcrVwXpKwY4acmPquepV7nQ0le71qgEW2fHEchyIJrhroZWMQwMKDzjTmyBDWplSmIVC9ldk1F1xptFDBWjFEvyi1wMYtC97jpdmxZzusQSW08JR993ZY6JcPXBFEJMAV2TZd7xQ5UJ6oBfG6gAU7xIVAWQR7qHLkl-u5UqnjJUjiz8wdA5Mggx_jFT6inDW-sYpFOvFVOIYtqwTrAM6gyGoSw_SU-5tvGls-kMBc_77F9C__x1J_9UveugfmnAyw3inPuKa4Gm1NopNIJgaRT5JhZtBeDs6xneUM7BXgPr8H-vn_5jl_FN0ENduZy_gasGcLdpgBVu49LaD4n8tZOo8dyDwES_NBto8nccTgShI95SSzHMD-6f8lALf92SK3BLs-ncao3FtuehmB0ALOraPkQHIu8Ey8aVulRovWkpAos_Ijsb7eJDmNIV2YW3qOAeuJHY3IcVCUIuo27SCnY_btvNkxrkuQ2CvxMFcpIvyrb8-TnfUdU35nRHg9PVfg3dBOax2Z5upfmD8e7B69tzE1kjepM7csLw36vzAnKXWNJEjRSRkxH0j98lqEoq0lKDeLH-vDLR6cq0mD1scYI4wLriPhBgNo8_MPLk_eFWynFiGKk3j-VojCDRVWKtWRm-jz1czqRZiSBwVs4cJLX6bZcfNEtYKNl4O-h0kGw0k9UIb50TRM44ZsH4HjfKzqZ8GYNLjd4rLc0TwBha4RR8WuUXbq0SN530D8wMhhagKOcUC-yIo2WICq68LCvF8uObxafMdccmIHwOVE6LnbEp8n5cMFF5cDIq02nIGxe9OBKaHOQrPHgCdyG0lAfZz9MbBA8iZgED1FlGoGyC4WJ6G9aOfDDOdPBO4QU-oQYOgZYxIUfDV-1Ea7pOnBcgWioiNX2bJz0vwvMFPiOO4LwYY6RpZYbNafG1l6zyF2yy2tEmbTcKP1M4P2ADMowcQF9PwHOONioH_7--clCNE2yRE-Bb9QepTgXadwPrqs7MNc-RgjIjdeS_qdmcjtR1Y0u4PZMwdv04SP1lMVAKYu0A3l4389NwKZvVwETAu2SJl90F5JMc1jLJ-juSH7bYJAbjHxVv3hEflloRTzp1xvPuBDGkwJTBqeYv5c4OfBvAcjUBvRmf3jsD4LtFglOnG8x_5Z5hz6WKyjiezfscIAHihuWkhyUgN0g2GU55QrE5thSrGKub93y1OyKIsGsFNZrSchkkMzxztzi7NYuY2aai8vD0CBm478DMJ
+# 插件界面协议 v1
+
+插件目录内的可选 `ui.json` 定义文案、布局和显示条件；不执行表达式或脚本。
+无需显示条件或宽度覆盖时可省略此文件。完整的清单、界面与入口组合见
+`use_skill('plugin-creator', file='references/examples.md')` 的动态截面示例。
+
+## 职责与修改边界
+
+| 文件 | 负责 |
+| --- | --- |
+| `SKILL.md` 的 `plugin.params` | 参数 key、类型、单位、默认值、范围、枚举选项和默认分组 |
+| `ui.json` | 界面文案、布局位置、宽度和按参数 key 关联的显示条件 |
+| `scripts/main.py` | argparse 与业务逻辑；只处理当前业务分支 |
+| `plugins/plugin_state.json` | 应用保存的个人最近取值；Agent 不生成或修改 |
+
+用户保存自定义界面时，应用会重写 `ui.json`，格式和布局顺序可能已变化。
+按主指南的修改流程，以当前磁盘 JSON 为准，按稳定 key / id 保留非目标文案、宽度和顺序。
+新增参数放入合适分组；删除参数清理其布局、文案和条件引用。
+控制参数被删除或选项改变时，重新明确依赖条件，不能静默丢弃条件。
+应用会自动补入遗漏的新参数、清理已删除字段的布局引用；失效条件会报错并阻止运行。
+
+## 结构与布局
+
+```json
+{
+  "version": 1,
+  "fields": {
+    "rect_b": {
+      "label": "宽 b",
+      "help": "矩形截面的宽度，单位 mm",
+      "when": {
+        "mode": "all",
+        "rules": [{"param": "section_type", "op": "eq", "value": "矩形"}]
+      }
+    },
+    "rect_h": {
+      "when": {
+        "mode": "all",
+        "rules": [{"param": "section_type", "op": "eq", "value": "矩形"}]
+      }
+    }
+  },
+  "sections": [
+    {
+      "id": "section-selector",
+      "title": "",
+      "items": [{"id": "field:section_type", "type": "field", "key": "section_type", "width": "full"}]
+    },
+    {
+      "id": "rectangle",
+      "title": "矩形截面",
+      "collapsible": true,
+      "collapsed": false,
+      "items": [
+        {"id": "field:rect_b", "type": "field", "key": "rect_b", "width": 2},
+        {"id": "field:rect_h", "type": "field", "key": "rect_h", "width": 2}
+      ]
+    }
+  ]
+}
+```
+
+- `version` 固定为 `1`；可选顶层 `title` / `description` 覆盖表单抬头，不改变插件标识。
+- `fields` 按参数 key 索引，每项仅有可选的 `label`、`help`、`when`，不改变参数或算法。
+- `sections` 按阅读顺序排列。每组有唯一 `id`、`title`、`items`；
+  可选 `collapsible`、`collapsed`、`width: 1–6`（默认整行）。
+  `kind` 可为 `parameters`（默认）或 `actions`。
+- 非空 `title` 表示分组，空 `title` 表示独立元素：元素直接参与外层排版，
+  不强制另起一行。界面内所有组和元素的 id 均须唯一。
+- 新生成的分组应有内容；用户移走字段后保留的空组是编辑时的拖回目标，运行时隐藏，不自动删除。
+- 每个参数在布局中出现且只出现一次；需要隐藏时使用条件，而非删除布局字段。
+
+| 元素 type | 属性 |
+| --- | --- |
+| `field` | `key` 引用参数；可选 `width: "auto" \| "full" \| 1–6` |
+| `text` | `text` 为纯文字，可换行 |
+| `divider` | 分隔线，仅需 `id` 与 `type` |
+| `action` | `action: "run" \| "reset"`，可选 `label`；不支持新业务动作 |
+
+宽度是所在容器的六档比例，不是固定像素或全局格数。外层最多六列，窄窗口减少列数；
+数字宽度 `n` 按 `n × 当前列数 / 6` 四舍五入取列数，至少一列，`6` / `full` 占满容器。
+分组按外层列数换算，组内列数等于该组实际占用的列数；字段再按组内列数换算。
+例如外层六列时，两格组内字段 `width: 1–4` 都只占一列，`5–6` 占两列。
+因此字段 `width: 4` 放在 `width: 2` 的组内合法，不能比较这两个数来判断越界。
+`auto` 的数值/布尔取一列，文本/枚举最多两列，路径/文件整行，不按标签长度扩宽。
+元素按顺序排列，空间不足才换行，不保存空列、强制换行、CSS 或像素坐标。
+
+顶栏运行、停止和恢复参数按钮由应用固定。
+只有需要额外表单内按钮时才写 `action`，放在 `kind: "actions"` 的独立、
+不可折叠且不包含字段的区块；每种动作至多一个。
+
+兼容旧界面时保留已有属性；旧 `toolbar` 不再改变顶栏，
+`column` / `breakBefore` 不再参与排版，旧字段宽度大于 6 时按 6 显示。
+新界面不生成这些旧属性。
+
+## 选择宽度
+
+为新插件生成界面且用户未要求紧凑布局时，分组省略 `width`，默认整行；
+普通数值字段先用 `width: 2`，外层六列时一行可放三个。
+根据标签、帮助图标、单位、选项和常用输入值所需的空间调整：较长标签先加宽到 `3`，
+仍不足或控件需要整行时再用 `full`；路径和文件选择器通常用 `full`。
+不以中文字数设固定宽度阈值，也不为节省空间删掉有意义的标签或单位。
+
+`width: 1` 和窄分组适合短标签、短输入的紧凑布局，按需使用，不作为通用模板。
+小分组内多个宽度档会合并；字段仍拥挤时需同时考虑组宽和字段宽，
+而非只把字段从 `1` 改为 `2`。
+
+这些是新界面的起点，修改已有插件时保留用户调整过的宽度和顺序，除非本次任务要求改变。
+
+## 显示条件与执行
+
+`when` 包含 `mode: "all" | "any"` 与非空 `rules`，每条规则只有 `param`、`op`、`value`：
+
+- `param`：控制参数的 key。
+- `op: "eq" | "ne"`：`value` 是一个同类型值。
+- `op: "in"`：`value` 是非空的同类型值列表。
+- 枚举条件值必须属于 options；布尔值写 JSON `true` / `false`，数字写有限 JSON 数字。
+- `all` 要求全部规则满足，`any` 要求至少一条满足；不支持规则的嵌套组合。
+
+字段没有 `when` 时始终有效。允许多层参数依赖，不允许自引用或循环。
+控制参数本身隐藏或其值类型无效时，对应规则不成立，`ne` 也一样。
+条件只决定字段有效性，不随拖动或分组位置改变。
+
+隐藏字段保留已填值，但不校验、不传入 argv；脚本使用其 argparse 默认值，
+条件参数不能 `required=True`。折叠仅影响展示，组内有效参数仍参与执行。
+包含字段的分组在所有字段均隐藏时整体隐藏；说明与分隔线随组隐藏。
+整组联动需给组内每个字段配置条件。
+
+例如截面计算，先按 `section_type` 选择分支，再校验和使用该分支尺寸；
+不要在进入分支前验证所有截面的参数。
+
+## 验证
+
+运行 `scripts/validate_plugin.py <插件目录>`，检查字段引用、条件依赖、布局、
+按钮及 argparse 的默认值与 required 设置。应用与该脚本共用 `ui_schema.py`。
+它检查结构和执行契约，不能证明标签与控件可读。
+
+逐个切换业务分支，确认可见字段与有效 argv，并用已知输入验证输出。
+复合条件补查 all/any 和隐藏控制参数。有界面操作条件时，在常用工作区宽度检查长标签、
+选项、单位和文件控件，而非仅看最大化窗口。
+无法预览时沿用上述两档/三档起点；`full` 仍需内容或控件依据，不能仅因未预览就一律占满整行。
+交付时说明界面尚未实测，不把脚本运行成功当作界面验收。
+用户在原位自定义界面时不执行计算，也不能修改条件或新增参数；这些变更由 Agent 完成。

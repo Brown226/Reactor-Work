@@ -1,2 +1,227 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRaBUNTRYTckdtUko29OR-ziaCUhVTcCEd0EVhJXGQUQ4xB5loM9vxv_9ORTSFbnm6NTJVKPNm0DK-fELhnK-oHYtC5U5mAalD3plm1W3utMLUc-NoHmz01apjdrZWqsXUStdX4hDoZmntquS34jal_54qY6VAOXqFY5R0TLX-CnErdBRsD5akRX6soyx5E-A3lSwlrc4h6CqxZ4D6MZcV1FQF9GYFuF9I2UIgafFARiyzD8l8l7D5k86pU_4TQV9UOStKBhk9FCKgIc0Fmy8fPkOWFZMDsNQfvUxP1DjILXpWQfEF7Jo2ngO9S3necjBa0-8HjplUtAsF3imIhZcAAtQh3awkOcjce9UcYilybexLxZXyM_Ctw2Is5sPz5zIDmx8NjICLigtooRkHgX7S7eSHWKRXAhd0z1cIeIDC9w13CuOwWdVjMK7KPczu_cAfOup8_5ewtHNse-erQB6bI6Lwe-Mnzd5rvimZjkLVavfoEBcbPrH_p0WBaTQVi-EWfFDsKJAXUidtHHcVDRgRYcamynTtJT9HM_FrVPOTUdRG7JHMYszKbobK6uROt3UjDzwNOldscw1ROZyPsvnmWaBbclZ5zcKlKie30RZA8iuIzR5inMpBZra4otus8BxCiGzlcgBUUn92kVNTd677IvwlNoOk15icJI1WYnh-FFNX59kSwsGUTW-kf2z37RO8CRGJdM3fJjE5RI331mWfmfMAmW0H0TlluN6mkRokq6gTKH3GEQKS9NG1xN5lDvT7SjLj_qvJVv2o__ZF9cum7fs5WDmh-sFJMJ8BNi8ErYSMsuFXeq_mGrZG80UMDq_o0_vGsqpSPiH_lsV6r0icd2eUmoJUz0-T2FHzVIiS0AqW65zLlfSXc5acqvoKfUv-6GNa5Ngk7CWj-CspzIJZ8sAHNqzOhnBxrd7ymDiwVr3xFOAtDOxeRcJ4wtNnSxly8zmI5OwNgYqsflPDkaBBWEDjvU2TX_XMZn6bpVHU9jgTezDdbCc540fMMiLXDahG7fJqVlOw8EVHZ6_tjGIIqdp6qEvYyG6S_h0TZLQPhib4HtMv9oHlsFuZuPe1Wq8_ZZTJyV3nc9-XQjkSLoxEqNnHh9hbggd04dUStWLU3plVhbrj1qigrnHMPXZNZkhrdBkJ98HiEu6HGJWSYucWCWXH8Mqan-UigsfkYG-nIuT2JDIIskDiOl13XL5cdUlFE_M6V1aTFPKdr_J1QEvw0BVQ5JjucIT0k2ybMyNRH6xmwdNqjmnn1NKp8s0jcgVEn0mmcRm7gYK38N1v6X-j3a2br8Fecj2sSNjtVGt6vW5GKE97K5vAU-An47wj0H9CxC7AMTxhd1QvIeSCLL9q6Pmnr2kHm23eNiDf9ZOkG1NWCOzWxr75itBfDE4nwaNwQh6ZssalK9DkKIqvDnH9AdF4ptrZrZhAAQJkoJxBkcAFHhMdOnz_ipyVEUKgQ1hXTmYJ6CA1rOCLtmKMZ-lFs8iQzC_j6i7mBvNUagWSUkLLnAUGTE33_B0oBSprsXpIqrQJzThFhNBWzIuw9XFypHAw_LRr0-3FXjfpKnaWQw6x6gHefz9nx8If15T6GwSks1jgg535JQK_oVBjBhFz-CzAfJ_cPV0YXjgRO5iddnsSVDxv7VB94miJ0A_0a8Dhr_cKK825-jfLXHJliGsaMTyMSpCmoHRKLgbXOX2EeAvUcDFplb2PHUBd6-Q7lwB9EVDDxJ7KQA1pNKuNe5AsFNq2CkbbZj4-oiK8adNW3icMgZTHVKjQ3SUJ9XWLuYAnCw58MN_SvY1dTexoXHBeRmWGeT1nIJ-M1NqAWYFkH0NPPxtoOZ0T9kUrDHzH6TmDrDnETwHa_VQLpsONXD5F3Gr75DmZ4p20QYQIPBNgpmHtDtYhpysnInyIc7etdvU8P9IryXMeWeQaU7MesWdLw7aVdfMzWe0B5xtgKAsBjAfGGTAJRlaIHUwM-lcQw0bORMFu8rlrteHqB3ji16owY5eMeZSUCs434CjdZf4sKuXxjSpu0mpDNt7zOnPLGGWwMSalI6_N_FTeckQV83n3BC_j88AonGJEqZZlb0GAgF3Samxu69HQWvXGzE-Qs48zsb_MMKgmyAd0fGZm3NsKuTqykjnsb0LUVwUX6p7t11TbkRKFLRwLbTK0iZBrnkJby0IsrCQ9ET3aKLFbIGHxhGWKsI2oUSWi-ZytnK2_wANfp8t7vNNmsu0SmQfZSlSGmscVDqwmkGTRaFRdrmfOCyR-uV9Mz1HoaQpf80s-TssdVQnPv1g4I7QEiZEZf9RaiUUzV5LqmwwfHZuWEcBd7Omx_7ooqldtfB0YZeHnEMFV9_dvpPdrK-6r0DHqeXYCxvVAsGe_u7Gv4MnlSJITnO1hWkFLpfBP2K9mSojVM2divrxkahEPXVPya-TB3yVbjBvTb8nwZP6qRDCS9rFQ0BshiD38-soUx4_GLebWl1TyQbZ7faBXTxVLbFLWfytsbr-Yc_V1L8TEpgnBiW8DirEmgIVPECq18HjUUFeRsBhHaRjC5Mk_eA8c_6l2KUpavDYOFVfa4mAFmmmKC814ku_9VyjA_56J_FqBkZPxik9Iw1yGE2vwY_sB-uvvklw-aajIBR68QkFRoQE9Wz9nopQ3ZRwxILK8XpT9XqAGmwOIGdPrGv3Lx3FRvm9SKRfuJkrFUT360A0jIhpeVbz_jQ9ELSJqCrszystOFKpPL_9JkIWRgBXtcr-aTWtUtq6hryVSFzqBHAOEgO7in0ukII5pT9t2OXee8VpIQElY_YBmmjTkbAYSeR1UtNEwmQmEXvD18Uobe4xdEjaFOPjnxv0VAdKRwwoXufAXg7Fb1QebDggjAP-nC7iMgjYIn6RgzVS3sFpUoHLlQ7RFY50lIhOIwOJjWvqO9-NG4Kujw8ahena-S4RMzDSomkw0rJ9j-0QPit768GIqQc72AaInXZWziaA-dD_a34yUF8pv8CweNY20-ARFYi5UXg5A1GMtwJ8NCw6lOaqJU-v1f2n992HuB61zp5V82o7F0Aoopk-VHPU7-LR7FvqyHGQ6J0JIyZlE82_xnLWa0E4V3SL2ohQLMxqHxk2FZrBWg798sn79MnfxjamQm9mh4WnXsSJl6UF_QVqZvcYcmJ_EHVSgQvKr4FFnQu8b3M59WtDmRSFmdQlyFjOlcWPqX_8O-cUautHkEjv1LU7CtW9eY1y0uVmVZOamWKqJJKma69P2KRBUDgFO_7_zpUH29IJsR7JerWY69n8GVqMsNW3IKe8EeTY6qwlpJwEYNrt7VpCuSR3CNwP85E6s6KDqrl_en_GGYtOztu11rNDQ4BLXsHeiHtqkSE_dWGxdFqgs9GieMuB2A1c0PXfzvMMBMxGd47SuU9iGdCJxJ0TDt2RpYvtd7g3Mib0Sy6GttglPVbzObCeM5KuD9h8kAmwO7f_UelcKZNlUna0TzXZhjcy3xMZUfMbAnonbrvPf6u2qXYr6AuTovV28wDYD7vb5CnztRAJ8hoFYJiwxpgN5AIgTwnwD-4c7C3XR_dCIqQ6BbMsWoBdRoizQLGipiMW04FL3AjlxBTULfprgSi3Q8LOxwDdv_k1EYCyu8LPBfFdtsdKXOp5KV_qm828gIczR4Y09BdNuPDXIbfK8_ftdRplbDKMF5Paf5okJdWG0YmxdZ1kB1sCAYG5GNl_vuC9ugYCs1Q3RbWPsnFvQhVwCJF0ag339y0RntO5WSYDN0VjtxpSaJ7VCfdvXGi3GLqRyMeCpOmnooq_uD7jP2DRRu15WVmitt6NGPHdDmt90J2XGuJuhVnoJGvzI6wbTJ6qp4TqBDn69CCzp00BAor1KGlZVq930rluoct1Cmf65JyM9-DVp7wAd6rJwyPx7V_ZY3Tv9dJk8B8a_pONYrJP0PjSPwfaer5puK-wjP47vOs7goTneufks489_cMGGUPaBqzzOiQewCEHHDxpVmsvKO9T_0J3WJsLR5qLkS3qjRu5gcBQp7vSL3M6hwFBEBW8YWFUD9mRrYlnTYj-l3-MYiFGOC1Z0GodHYyKVxiRW5peGalXPavmifxMTFNlgLGCIbRtK9fzZVZTJ-Mo5UmtrEwoznI4gnmObvnS6fcLpSJ1af5HvZuSBzVRmxhdtwIIM_TMlrpJZZBsZJHhfnGkv8yqECzmpsdINDKakMA-ezknSc3oeKPzfNN8dxeP7X_1RHcUefJTGFSjxV3HoxnHU3rLCPWcz6mh-b0Bc6OTcvQKpGwbGdeqT8DQaUtc6Bal7qzwbsGDSe1X4F8BuH8KIGYr97vq2CMFfqJpuCl86z4plN5kQ2SCDllI4vK9D_2JuX9SWicBmu200zXtRmagAnO1sCcbkT8aHyFKQzEspb_Vq2sPP0MyL8706emUNw-YjdjadqCkESxVcw-Xd81vc4x3ZUuNeSpIefxfRClcxEkVSL8uIXwoDhcwUI7R0onelTNN3cHTU9uw5ADqAvb-gh12QwoaHsn3Qj4OAY7AdfU4yauwj1hazzVOGUL8GYLgKQqomFjKsqMM6gSq0ofBWAY2jpu9X636egWeUoAGs_Tlo3k4sJQG2mTRe24PuOU__oLgGfBiF02z8UiktStf4YVu41nyqabDoTEQ_VHaEsGPjI37mfY1OKTgV2S547Iy8afh_iAShqfM8A5o-119icAqYEhOtIL_pbxuf7alrTUtp8U8oRmSFfxSJm5EYk_Z0iJK33p6JCJUeuB2K3nIi5Ih6rohbwm9DCfR0d2aDYe2TFVogNDDHwOpzAIh8lsJ1L4AqiM0pt3UO9dTnuESG6wm-kYvrPVQ1gahsuxnWAhjT7IpoTTg0oSV05RTjWQ3EdjIvvx-zsorsyr9Bz1WZYcFWfI1bhxe6CJobFM9TE1Q2ChgkGtNaQ7w4rmjYn8YYVomI_SlCK_9eCHvi5iBThXv-dJCngDJWd5KAdDsTNhslgoeDPhD5PbBOoZoqnsv5eswNzd3PonpUCMMlRuCPYhLH20ZDjelw1zkE2300MAXbgmGBVV2RAiM1gbRpSAUbaj4d7oINkn_orLW1I9bP_Pj5tA8BDY4qS2tEui4nocOmQGOVniNcLR0MI-AQs8ARoSgw0-jexRoP2osaL87mbZgSSe5jJawgOYrS8hfSy8zXXuuFR3F_xDURE6_vXbPLbwwjU02Hq5HNo7YLYDoftvMO9h8blbrIJU1ybjBmrU3idFYl05D2DH4XR4YjNwZSGyWOErhjf0FR1wMyxQ6hq55shHbmNlU0AFvb84JqcoPpKQDJVKuAGzGbAMQ54h0aOF8MjsxmmMPxZpfGoFs4Y_qyyFgKmW-1YXbMZZgLXQnrAH4ztidjVVuUyMxJaXbJ8ZYHfUD-pUn4_Nf0ISf_eVOUXezjrOD1LL-p71Hy2Hh55e57ds2q-tS2nSUEEI1mj9LiIW_z-ZzARtFGL1wqUQiZ69d5F9MuHWPdPkA4WzIIWl0mEAPiVpQRQpkVVCmcqTtiXLbdNwJ01fLbG5CfStkbyEFVDUs33TXwmxeaSMrr_cajDkm4KPSElt7ayYh8Xf8EtPE3-wmsRmxFoE1nKpP-an7IL-U8-10vjmuSFbnEoZi6CnplswE3jH1FzUJGcRCGXPQ3dK9rnSaCUbya1TzH80zHWnJDhKXpHOKpv_fb6h5INkkAtDYeDewlBKGlP3IrPeVX74SnYj50duYeIs6X2iv8-9UIMWlhklrKE061tKMNgtztgQJu07SydrYRv0WkXmJpVPPclBvS7oZw6pWJ3iDEmPIWwE8mSxvI3UohGMZ_ZjnqeBEL3fiX8BQur-b9Rq6epQETk1HMvqlhZHyDdAC7ut1FxRJoTPe8yC2HjjVlLVLrlwamQVzxvfyRlKWS-b32jch5lFRYO_yvzud_gRefBO5_ycwCV3QC9annnxHw4IREPYRHw212d7d5NYyVYSXyzdiNUoIO4xGyyrEjoK9BNWjt8Y1xCfOyJOjRMKK5OtL7zaVZTVMDWah8A1OFiOW6D-KWHL39iBy5uZlTVrkyC3Uwg1--TQICSAuRih868HADHpSOp1hlwazbPj3XrRu-CRb_GCVoOQqjn7hPzq9clOEFnf1rYeGcEBgb5WOoU5n0XtZ0h1_lNFCljke1jQabbod76UJlwBZWinBvphEW2Fu6eMDRq_yr6nVQumS07MptMDSg1gVVKqoXvUx0pGgOdknOcDNgtveVWbn7-XXNn0OsyNB9Hx2sKPj_j8jEZ6FL3orBXnMqGqYtMQp952OpAYBEcEuaXJaScFAomxNFw05Z8olxT9H3-vvCbe365QtcKgvWJqNM22G0uWjMMOd_K4m_d_7o3w_gZpl4OF_Y1ciItLtqDmCWy4RgJTwL__VmM6wyjTlD4B8SOL5PspMtFwqYc8U5eLIl9MrXxhZdUztQclxqEh7FT25umo0ES6Jhby-ZPN_ts74r719s6AOfxh0yMvUpLbv6TlN7INgec58v9FC6UK8HjX7ciZJ3Olu8__JhKctPRmSe_CNSpIszJjNzvvLx4546xhHFgTmWUbO7zD49NhycZlZquCDiJW_9EWmB5g4US-a-KKCbsaCS5Pwkzt-WdjBHFGyM3dSu_WK4hCh1oxtV3rREKYPlRtsEv0IAMmUhxTinAabWJNsaQ7-bLCtUlhr8jWX8D2oq-GnkHCzXlU31TuZ6d82O0aryp6nLOobQhjPhjRi9paLADOLNHpzOwCH65DzYJFly170iVWXFz7tw5QFi2fGgK7FaqDyHWpq9HrOSK_pXtN1N3_3EcrYsuxTgOCm1eZinbLxmzFaPDaWsZs25ZSzbjMA-U1Wtr3xiqOphIRvC2_Nnp1kqoJ7VpIE9LMAIqaoVSEE_puztlIu-nPoZRVfeWhWmrUKh-leDu826I1wtEWU8ole6uZB0KqGtansJAPaaLhyD04oz80DtlyOt7dE5CviFAU5sNpQLlj9cY_2rGVflOyn1hYQAB_rCW5OO09I1K1CDRUbqwxzdXpBxbPNZPWbmZxbY-c01gu1SKpSkooJqBFJf5cvOsdcaviHl1y_r5h9Rlp4e1ZdtHoRWLPAZUbUF9PUI2U7iS5VtGc3WZ1Eh-QntWBhnugjl152SAEPIsVbozUw402shqkDQQgQthFNINqj7_I2WOjKTLmO9dhBTGeNxU9AtmFj_ijGZj90pqBb3hnGxl3YnKOAK4GPw423HdiStyAse3nTWvRDX-xMaN4ewKu9_Xqri9Uesd1rygS6jXFzKcbe5ujZEOxXGRf3sqGvOWMkZtYhw1KbF32HrRuvUtkJrmOehriKKBppVWGU2jpLPTxxPfn8XoiE2H8dKADV72lK4oiZFz_Wj4HWkJNraIOkMEVSBe-WtB4aJODYkVvRYWjbACKhZbTbdJGRe4Uj9qsgQrslnCM7b_GxHj4PV76nCX-YBjinPsBaYxRidGRjmuKYV4SlD29CIzelHnmBm3K7TGq1elV9g_HaZHczt6ieKwEOxW4Y9g6Oci_JpBiUXLJ0bLprmeCV_-6qM0lrkPljApIDcUz_ZBv0Q7yHLqmMD_jGIyvhFo-KIyzp9GjtYXw_-FvsTQ64FC8aDiDfmFtPAbyKYK7TzhQ-VxshdxW2wV6zByX7-RRfcNFQMPRA02zbCnJ7Kh1vKPxNlhRlhYTYgav-d1WfaO1choq4_vtQuBPJR9MXZgbL6-N-V0fDXGWJQo65O8T9FMCyA7LLnfTQOicwF56c_Tde8eJlA19Mc0ulKigKp-jlByX2AB9bnpNcETOAuRZrf3SEZlclwsEktxqnTNV1fKsfLzI2k3c_DMal-vHGgW_ayqHJSibVG1PCQ2mt2JBVnR9gISo8i-nb8t118ZbxHBODWBtDe97E9dEO029Vk3-7Rv90BkUW2KsoNg8JEsSOkHbptRbDEUXi_N8RPLyA9tkoqh0lpJ9iOsqEuXB1JBljEoiRz2a01VgEZ3NILmp8Jrhawu4rxcanIYOURUylilJqg_mGx2BUxQ5lad696iGbx4knzoBtrNMW8C3aa8XSZ4MQ5uEQfE94Lboj-pkwAnWUq5TbscbfS_LUuFzCg4PdZ47AKm7Q9xQZwYHUjfKMBp9A7ElOl-BDeXvrS5Q44tnNYcz2zEIYblOIzSJLpo39ASjoGyCTQSAT_cYe-FTI8tJm6o_S7uLIMWrIQGEECDH5k4UUyLKx-7EC03_r5sk40BdWw5l7pQYsuj3dC1Mjr_knSJrWQaUKLrFpi2kRtmr-FET9QLhIohd8rs2QyHaQPYfp_Z_8ms3ql9rNDBE5VfPz6qa71YB4WkzmncyoAqtQbtLeFwLzOKFl0ykSWgLqwVJYr8IYeyqB3zcROaq5Po3xvZJQmV9BriV7vEnj0EYKi8st5Xcj7UK_B3eBRU04pLRlFokJv6L8xLg09QCWGB5FAsw9MipldLYgmDgs-BRhm8GyXzQw6HZQiX1GEkM_ULBeaQuB0nU2j3mdfhvmwhpsIIyfc0ZCFYaiwXnL0-EvmcQ7nwZ8piKxzQ3SVHTOOuV4HeHGnatUsDbw-gf4Di_X8yz3TZ6zAWCPeX_ECpQ4wQKlB3Nuy4PC_BiWFXO5sTpP1nnOYmnhs9u-YUNHS3s3gJIDl4Odh_U8Y3czchPq-4zPi6oGkE3V1j4f0-TzB8D9BnHPbBQE9cRKkuqXC8rPHCuzmjQDigkcVDHX6fHq7c4_yfZiEhJttRKpLuyrCewsapMzj0_9njp_e2ursx1xuFJMSOb4M8ZQ0UfRiTP3j55LSodxLLUewxHAgJvX7gsbxPKxPVHewmFakXvWD_KW0zKdAdk1ijtwjeh9cJrbRT4oFscGYkNLERY3BfK10r8Fr4Qeyt48E-c_dXiOSYL1cmqUnKIH52FDuzdJzpSHGi8PLJZG4F4PqoyCpd_1qiSSvzTdn-knqhNSImgCUvHTUStYvEa_GTLWbTr6dbK5c0spB9gpZv_N4FI7bGTpnGz6IgFAgDMMAQjUPE9U78nz16P0llRoGJGauyMR5fAt1XzcJM9hJ_S86eilYVKCHrSCzjxRFMZ-7ZfIpC4KJWzQU6IzlU2NT2Iaqn076RTElKUb3PFVTtQGMxybzALWIY39SvXSEjcs0PYA3lcNaDhYGuMCgvxKi3XaGAfxhSIbWyW26ddO_bB2Bm3Iws1FZ8lPrXAaYRW99bqx33sUur7a454ikUXVeo41ZVLsNOGdssiHQcQK62AhfzxDSeghs79Jsx5QONb25GW7Y7tqi-nIzL9iJVl_Qe76r49VUSs0MQFRLfw4fUL3cSTCmQzMOTjZllC7_KGAao_zd1jZhbkUUxw1ljCRCASzXqT58twL4n-rWwaSj6vG84AnC3lv5YhPkSyWD_mOyyL1WihixZiFQ5e1dmXums0vEtv2rRuZo-Ncjg8IZw9Y845N5LdIXEqGQIDc5C-g9zV7jjs9ttdUB5atNAPdpkRZLYJB7YzyUl9TaHQ64BW0_mWd626RovQobLRS7nI6q0Sim1j_vcWH-Dv3gd0bWCRMg9mmQTT4ya-_duEAq5zGWG-x0E0PCAzGyuXdgOs7I96K7jmfjnzukUSL_yO5BWHHrzyKny6l9ng_3XsHn96JLJFNJrbTcl0qFvjKLffFCRPxGem1ZL7ai5MLY_Nz_Ukv8dxqlPoMwiRigmxTqH-nZRQmwW8v7WUu1h3bCDX-40yhzEEKAtW4BQOnS3i1zuG-qBlzhcspPK17Mo_aDJwl9YiAb4KNE8Ut4Q45_0ZY_svpIlU3mh8_7BYkPf92IyuydVP-1E4iT2-dUpjWrpIYJq0fJ8jo0EsuKt8gZUVV5VVeQSiaF9aCYX11MbKiISMNgtgI4b3wjix_vnIa1OZJPeCSHZWgn5JiLqDnStkiD4EhO6IkmrJzdmT8BCXDsSXzLekTM6ievmB4e-G0yD6pPXF2wSW3ekKwCLLQ1BWI8oJeLHsX89Ylpn7GNx4aZ3e3QDQYY_Z-46Wn35epaXyS2j0DfzdgPa4_EpvKN5cJAnw0C5Q19Z72zhIciinYpBTXUCm_R2fNMaMOFZB0lnT0DHlqVbeiiOWZ_kFpTBXKCR-jredmvDvHd5NXptBesnaOgWcOJVKRCt77bC1giFBwwih5pGS50KJt_0piyt3nlXBpV8CayqzTzxTqqJ1uppE-UK0iFZPp_czTdqy1RErh83c0a8LOJPd0PgB4hIz2DN1FDuzoWj4G62wQ9lcwa0iGhkmyIh5l0M0s8PoraYwU3F1wOmkf9RC7aRdU2xgPgFI2H_bgMeCuHBQvOqh0crXzr-wdN-_Yi7PNG6P0bTCZGBEyKn6Z_jHjGE4S8VUSp0pnDbOcRPtZPKqbZcDxxmGGaO7zaGdWY13us3Efbi6LLnrxXdbdQCu0TQ6mgix9_P7pcmvxrxQNs-X62hCF8yNe4yOYwXT6o0VaMkYIkZ5PS0J4rSmxforiwTRqiUq_eXojZbvtQjPoJBg-lS0z7cmewuErc_9SB8GN-kbljD2LoYk_4t33gm4nYNgOYJMY64Ct3s4FMJ5B_vI4G28N256ANcBsvSUjcf7sCsgnIFwg_3z_NEoR8P6UYPlEBHoC9Qhv_P7tttqjUaSVK84gYw0RAl5lJCV3mRHUKyfMK8Q0djIvyK3bnLG-zbaesMDf9QMBBMhfhX6-HRnbwupO-v6fizZzpa3tnIAozySK7kATqQScwA5IFTEO2LGhPWdFLEuTMmJZLIJhnDvymX7-WSPtQXjswjGqOXtlFCkUSMwJ9ob9BiMANBsPWltWnrjS9rzAdTu9a1RRMU2i10SvOtQgONu6k61x9Ib7P8t-0BzGZEzFqVUsOJep19sqlZ9wJEGjs_Q_TZ5g-rStx2ulI6YL2WSPUVC9Cyw6h-GKyqPxpKYb6IJQT5uEPbJldBQsoCOu39-ZW7ntUn5xsTQnF-Ikv7n2QytFey0hMOKhut1D89HjjR8SL7F5pkNdRe1u_jDI9g3eBOU5GZPlYudfNU9Q4mQtOKCvSgQ6GH5eD4kqnxwJxi4xsZm7SJcannenTNnFrqd4Vg4nvK-RbnkFEgj_ZrrICm_e_FjPf3jn85uyEEspK0qzpgklMkRO5L4s1QzabS1P9y5pMj0bT17R87ELNYwk_2KwNV45Eji0q9qJ6YUegYJ-W__CUfc9LY7C52cOL-thPxtaA3qxaGbqSswDEGRQG8qX_7PZ4arm8J3yeXIZpGINz2QQePXjburU6FbytY2dr3khGpJYn4zg85hzQ5srItWMemce0JoQX43BB2OFqFRBRvaZ9zlQLkIWuYA3WKKN49iIT6C8o3qP1GyNk4ExzTRjDGN84RfMTmDLpw4vABu1d_PAhQDLv5SU3P_TCBJSe8sa2VB9FQ5EbKp0AI045aIGQySEbh2gIF1J0xVPSyMvlOi2luCtpWDq2mxrySytRxYgnlG1J22yOLTMdAfPCMnA1MvPK7k-oIugOQIlk6wLEqx0ufsJ6ewURKngnt0j0-2lJF9NizWy4ZjhVJ2nXfEiD-IokVmYt55VqYM22Klo_jB4Dbbe6hcaevKcrOHxcmm1T2U3kqQ9IEdgyCiACHTn2bqedu1FN6kv7NtA50dIvXym8C7HFnhbfI_u9rAbcJCD1H6P6JB1fEnpJYZCOhEttSMB8d95R47sumv3duHqyWDp2vHWgrZ75BlDOjGAZGl-wnyolKGf77rfsNL_lFCNynBwtl1qxnYHmrJbTFCGvdgokwGRY0uc5-29phl1s6cXRUjOcIaTxtn5sf1Cd5ueIlIBjpjboiVP_xn7s9VlT-5kNOYDGJ6T53S1KNIBm87CfdELrFQ2F_MIMW2BX0C5jKw1VPYUBHSw2zO53Q8HDTRkfTJZIf_ghK3NYF0msZQbz-mf64lHEajqJUayIcWBXLRmwDx9v7-yd5WDHJ9tTZXMu4IY460NGe54NvWCXZsmHTvoSFN0qTFPQFZN4gJcUT-NcCgrzHKDZAuxo2zu0QygVXrEOVllKE5f_y729abED0AmBPWmnJKyF6vRoeWqZ39LPuz-o0NqhJ9Huski16XidF3No5YcZG1AQNbFCLPqdn408QtmyTLh_mLJbeKsqySnOB_HMkmiXMCANMJGNRaXfndXIHzEEvCf6RqLSczfVf1B-KuJ-n4-sgRYUfuTGUzgZNqN6AqCZV_FIVvrrXf3eHt_G7DQWEKGONpw_VEiYN8J3HhkTNWvw_X82I6XGH7HNTQ4cnQTek14DDeV784UIGjDt6TCVqiWILgcU1QX1h-fwK2c_t-UdDFq9EuBJTER7phLxi8OClyN8BWCpSRDsgn_DMo-UhUyk4bQkclBzXL_Xyx_EiFe1xTJ2chRrULeX-qm7zxBfJeNLpc1WPdiIsQKxzCPLwDweKnB0dVymKVPzmkmYNHq631H6a7LMGuviW_eZ3BW9y8CkOr9PZaCBcWP6yL8uuFnkHBQdpXfponpFWPRJQIyTJs80zLk_JyIXlX2_3RX9ozBfsXZv3IOVxBi5FAD2pg5JEO-DBj9o0MEinqX7MUgGs7-LEzgU8nngn06s1J1k_V-f2RYyOyub_GoUqH_cHSDHidu8B_JXasDRHiy_jrQzPWoaT-NWAeJE5wvhv85I0zWzwrw6abLjiga82qB30hLpXN2H4j-Q7AJWC7Xt7RpYSl0kOBUlzI4fVZEp-6Myzbpet2AOAYo-qeAFUovOLZLQmytpxlgaU7i4jJQMezT9i5Njt4gXoq2hjoIJP5h5f0de-_Yi9lPdRyaADwILXfEOxKQGOFGVSyZ9_3BfJ3p8dNqGRyn8MwDBImEiwH2b_Fy7rP3MSiEGxvj8ddrMHyd__EpS6uNjKrGAGy39oj-QgWUtrLmtPQoeEYseZ-9zARy4aZE5LQK1WPL73sKHLiFOv_6pndl9d-0k6TPhYC_Z7-AumP6ZtJQHrHHhJs84r5ZDu-MyhRpg_J8HSVF0XYTz_6TJev514ifHial4g-E7PqRVzZ26ISspnroXGgPgO8voKR7R8hZ2JgGhjBqOq0ZPoASJBhDubO33J-SYY306Pl6pdk9d4KR6yXCun2haZpl5mthv1h1Zn8bOA9h24SVJ7qtHQToOactYAmSZbwK8VAtrEnvVdOmnCm79JOB8VaTGdIAuPXIGCDy8p5mn2cMUnqZuAuN_QO7aEIvQzponyu4wwU7PpK2ZDMWHA-gv2A7yuCGgSizFPm39EmLMCgIzcmJ1eRvNCq0Utyaycxvnbbxg3TQNwHgHUcGJF1Le1rWWga4r6uNs57inw5LjpNcTSq7TzOdIvEsYywafMif1gzigot83nKhAAZGAwKeWF-KVjuRf4hmg38U2QTav45O5-zXhIiflq4eX-PMYXlFgqmD0E0I33YAN6nrizHZx1NWyIP2K8jWfBbLFlmWefMhFx4umMxjla0RfFVx7j_kx4kXVYUga2jJtQGgJ9NWuDfztuHo4-54tBhEw_8--k7UUEnRX8yUuZIl7wTWrWGX0CNuFrf8TdS9hrky7djzrF7CqC0Z5tE9zCzwqfcDEi-eDTt6yFwd0JiEiC2nOVwgT0gdeYjaTBAu1OM8HUKiciNXQFQcyiOgAh0je-4EDJXZRhu9hxFQSI2pfwXIvtvczoqr_GtiKBzhmn1CsuP8SbRSlx8Q7k6HiE0ALvnT4hiGLuJTRYqtUioC1gyLSDO84NbpaD7q8gE4Hwn37nrI0zrp9_Mex1hjcE569EJ_HlNEYqmPTK8cwgyKK7-swW0mdWDvJcOH8eTewrehd61DjAZAL8t0gtrb0Co5sv5pp-9NiOEgpr9YSyA4fVgF_Qdlu0y5Bo4oAlSjAVnvdj6e6OMv-oJjIBXJVMiuHWQwtCVeil9iXqsV6TM6G--vqhfO84fzc2m_04g4N7-mkzJQy41PiYC8KzbQBuQfp1jOqz0Fl35F8RTZ-sffLav6UTbCu1YsZjWMYqtlf3iJx735qoqF8BxGI45jXLYiphULTCb_meky3z9lgVfOqr0Tdl0piGQYfMHliAir83RstKGS33uy-a84t3JfdgIGRsgnMUdW6FHf_c9dj1ukhINVZT-nzWzXp_NIVO7ezldWQRDCKY2q9zY0LAkiXOdrdw7m7Yyl9CDh-CR_EagPiamE0_oU3iECI_VrsoiOraWL0fn1vFurghlty1tnkoqlqBAocFKhfYj4-zCe2GylciGN9Z5kecIaxr1UA6Uq9ZfopQQ-1gjDqTQ01CgelcPTydC0kqNlWLT3NO4WdOkoyj9vu4vqzoVzr5dBKEueIMgEQ_P-uhFJ4Z9iKfvUwshDmdV5nMv2_INfjiN0HTIsfzLVZ8PQAGXKVoOv3N1qiL0ta_8HIbXlblfgccLggzyImZwUN-f1nDhlzOcCoQ_Iohznc1h4Jtk8Co9mQ8RBUnAPV4Z7vSut0L-TitFcNLz9JSTgl1eq6gZnHDQu87H5TxLcXT9iAwM2oInQ8S-W9orxmXo_D3B5KxoecWhEeiN-NMYo7962tkW6gLIlJv3Iu82ZxO6X6Qs6YZcNQz6kF1jCMlty3ugDgPpt82Fnov_ClOZUrCGWB3AsB8poHO6nHj5MBat-MFqi_LWjxT1IEeKujzIol-mMEarn0L9_LOp7-n9O9AwG6NxbzhyMxmjZD5Bv8fyoXj5haAkqq4JiO_JlxdH_Rab57ab1PmYYCNyOBnnN6nb-_0bpyzJZPdu7iDvt2w_rqw-F1-yvsrh3N0n8y7MZmMs60NRthO9BsInV7yNIfqjJg3r_PS0iCEYaLpNDeueDoJmlsRGKlW0eMGUaofLcQXl7PkFqkKOgY0RaQyFdhSyIh-elMS4wl6tuC6L0ysELw8Wf6yipCb3mNtrynH66K8GtXnqJqGp28n9niqDiIub2--jH3VwPs27XoWF5pF0hPtTiNWJeL6-cCMT7ltKzianh9j2ZaKKf8Edj7GBm66-4IR6Ix4VZedj4c33sHbzsfjP7LkKWt7JJKrEWFGSYlXtxhAQh01iCTuOt9Y3JUkrsM1Taxj6x5AEWVx-jL_FQJwpMEZ3BdJlXxDbBNTncEkokrS5i6HJB3eoz4fewkuOnXWIhBQ08-3X2BYRXyr381UzNhG4rI9vx2W4_6Aj92fYN8xv8f67Cwd8aVSXSUCiW8PvCu1nC8KnllaFlX3zOAzXEoecTiQgXagCrqx2mkbJZckZa9JOHZQH2YmyHJIYcd3FackWERbOX4dZkCuSCAC_UBWqiJj0aEUkiEu_XNXnV7xPGpV4U9Ga--aYZMmjFubhh7tscmW1_y-6nx9HpcDgCHq8yQOHb2BgFtKfb0IJXQ7EI0FeUcooaO2sMWkrD9Xb2aDxjnriXeEEzmsj-NIpJVw4Zi_HeGwaks84R-qci19qj60G6HkKGGmPER5eeaqnTRAUSgVKbOcmN81Z9uR1I0p8eZDYdL6lBAmlaDrNQPXEHVfZOcccUWy4yqmDXZOOmEIVzlXqT8k_EG2662cSyPVnvFMsvIGJTPmFPAYyh1SEVCID59TqTIdnhM6c5cks2q4NDx3X4PNSX0xUxYvYNIWbFEXFg7sBZVlb8Lm6Af1QFL9UQbDPnLLHYMVVi3AmVvyAe6Gzqt2T-_eDyal7wYpZAATJGuw1HoKttNpT9Fk7jzB3FITb06WIKcjAiijE5q7qtg97DR53kmw1EPjRlF2OjeBvId3xwl9O-yq465MwgKUKaZjL7JxRCeGc--Ftw0qNPrr7Eb6dZdg0B0LFaYeO5VbLbGJ496XNVu9VsBobqXxxXSI7EYp3o0eBlfBINWbIMc37tXpUr60o4xU8SVlvnW6FWj0ym-TtM-ZsRziX3hA_zzOEde4wJObDsTK0jH-N5fXeM2zYo26uiT6T_qrgXOu_PiCbgCQ4A9CPh0_VZeTo6X3JrzIt4GZscH0An5_FsLB_NJpA6g4nec62eRNz74GHig9WqrNynoEvPXvLNMr9PIB23181L6sQM5RHGtv0cSebtKocewP_Zvbf4l68ODZTvc6nZNFlyd-Mu-SqxdoBft2kCtw8z0DHx93O7PCk5aVGKs4S_HnoHF3mrtqP3lXwtmhpygWU1qTNDYwletGN8CfIv3KICYRKzUOaW6DYSQ4K6_F1T1zTlmfBHskz35JfWvuW4qzB9lPaOobgXw5T44pRL0KtdAk67CWoEMNdXJrjhMKA3JfJrNlsRf3xgXw9RazuYVPkUPrUpRnoYxTIShv1a5Zfue5BVWbmuNsFKSg2gRzSEjcZ_HTBQ0WP1-2kfWQX9C37P4GVbFmDQkkM8xsesLWKTHoR6s4FG-aJJ7OsJEKVbT_mVQWnjK37m-PigFHdM90nlzHzkfVRqGB0obcorB0AhbOjr3gjSSnOzsDUxFZII3hS5_QYHT1pXH6kFp3aSYChNe-xpjlhoPqZFpQma1qdU5aOpaozW5R9mvXiZTPRC_hi2i73iMrevJ2oeGX6n30sz89MU7uDyMz4zPxrpI5vu_HR7Jz2NCRkL2ba4R2axsb8SZ_3d6mtzkRmabUkPNl3jglmTsNXb4MGjIVJiDh5-ReRWLNbNq_DCeRLdgD7ROj9KvJnj0bxe8yqSn8JfMPw6sQG_WaflErnnay8GRgqUpixn0MrwAJG4ZenRfghk4grgXOZCyoslOjyaF115wltTJjp8dGgaal9KAgZrbmFQaNLuhf0Z5fFlzG8JaktdHb-GzDLSpXoykFUg5CuNsvcmOpQUnLSZhiW0w00UM404u3Ru82ELW2PpRTilDA6KiJEFJp2DAbDKvxKmP8ahvNFHrLuOSxDXdJAJ_1MltGrQ9TlJmG-A9FUuacoorCs-HolG_MmRtskkTZ9DEqfHGnoNjPELh0bQnGdydHrHLJHXyYG3gEdvVvBftyVCX3ac2GHIN8DQGj8iFK_ASz2Tpy_iv-7aU3d_ZJDLfulgvC2G6XJKzUy5OMSyoVccwhNrp7Ol1ptf2cVg46iIegaHTUfHENsg_XKRAVnj93wigh95IPQ26ufb6blyijmipe1YzevuFk3Kg1kzD4YcG5sEHSVJEkYtHkJXmuh58iPAJhDFfqTgUIL04NPm5u4UB7maTW3EdfzcgyvOv290-H3p6xmEfvnEfqeVES1o0sdQ5pWnzSO6G0BGzAVHEThOq_1UWAi-CRa_qCroW-3BZGyOBxBZfhHK3Yq4ZhJ_Tnf3JwbJIfICOg_tk0ZeB1pn2d1zRGMfSPNoVLaNCnVBLA69RTujbrSZgLM5omUFcC9SM0KLuE8jajWyHuGX2N2AM6b_OJkedt-Y7UlqF5LubZ5jXoctF3PHnbnVFQ2oexvUnqOfd_npAfXpVyJRNIRvuyEtao5rR4Rre5SYwo2BOlDxyKCKRDnfBsh-d9sMeacGTCQY3w6W-GK-KpinEBxhGk6NGCtNBQw-X8tgvTRR71MKLzjMHeOA3PpXBM6WYiR1fCdpviiw60AtIYf6PBJIR2zTVbUgXYNj9_UuEwhWoY6CEAH3mYfPkLWtj7a4yrkuaSx_b1Py7ts8JOIueiNAIJ1VKXiTskLHOK3C10n-t5PWwID7You3bkK8vNzYYgLofIa0p6xeoXJS9hgEm4XSYP5BZ5Fhge-JHb8k4sBdZ_0cf4PxzNp8m-ewqIk7flFk3j2BJTui7MbfyCUjoXEMnUyXCEqif_kaK_S69llI8IZKvOoNcOsJ6SxESLE7GO-LfjpP-TLzYK5QAEMi4wzGDuT2c1baOO276oh9358JreOqybJqN_SrvrjarEa_hjEwI93HEXPp5pY6iCnnBP337R4UjR4CI4Z5Xy17Qn4Xx4zgburmNtjZXuvKvOab1ReSdwgGTraudzz6S4zmb-Ve7yVPaejMPTLI-9NY40K0nIb2k6VV0yibel3DopisraNqIF2WQLX18lnjMhZ7Dyy81gO7ZaoaytSjpCZig_1XW9dl7Ja2Ck7l77S5EzUQfD7GymfslvejPxxH9WPCX9ii_OwNXwfRqp-pQEkHt8yR26wHl_GND4CONFV_8D-LAPbCDYe6QFiesC5Rpy3AuktPdv3J9GpQb1UbfmYAW9Hwfp5rdT9DEf_rt4_vN0-tnvn0HTRYE9V07x5TJ_D9SLbWu1ubDZs0CKhHyxljv7yXbxdn4dwsUVq6B54z5EHj3IDIBNEEsEAtPg3vk1v84ybEuv1bMCQjk3Hra2sZztQqM2QkHGi2IHEZRtxrUf2lo30biEzHyblB8nXy_bFD4Do1mS7YpDgM7H3I6G3-ZlUk7fbQCj-s_twxnLtS5vKb72xvg9rrlfTHmGr9j_rmIuYc4q7h1QP0Pw7qNcCKe
+# 枚举速查（结构 / 混合路线） — 参考文档
+
+
+> 枚举值摘自《PyPCAE 用户帮助手册》（内置副本 `../manual/README.md` §三.2）；
+> `ExecutionMode` 的数值依 pypcae 源码标注。不确定时用平台 `list_*` 工具实时核对，
+> 或用 `../scripts/manual_search.py --enum <类名>` 检索手册原文。
+> **本技能高频枚举**：`ExecutionMode`（执行模式）、`ComponentType`（构件类型）、
+> `LineType`/`SurfType`/`SolidType`（几何类型）、`MeshType`（局部网格）、`FixedType`（含线约束）。
+
+## 脚本控制（执行模式）
+
+```text
+ExecutionMode: DEFAULT    = 1   # 默认值：几何脚本、有限元脚本独立执行
+                                #   （首次调用模型类函数即锁定为 STRUONLY 或 FEMONLY）
+               STRUONLY   = 2   # 仅执行几何脚本
+               FEMONLY    = 3   # 仅执行有限元脚本
+               MIXED      = 4   # 几何脚本 + 有限元脚本共同执行（混合流程必须显式设置）
+```
+
+> 用法：`from pypcae.base import init_ctx` → `init_ctx(mode=ExecutionMode.MIXED)`，
+> 位置在全部 import 之后、`clc()` 之前；形参名固定为 `mode`，取值必须用枚举；
+> ★ **手册 2026-10-26 版明确：参数必须关键字传入**（`init_ctx(mode=ExecutionMode.MIXED)`，位置传入不允许）。
+> 缺省该调用时**不支持**几何+有限元脚本共同执行（数值 1/2/3/4 为 pypcae 源码实测）。
+> 本技能两条路线（结构 / 混合）与混合时序见 `stru_model.md`。
+
+## 构件与几何（结构模型 StruModel）
+
+```text
+ComponentType: BEAM / COLUMN / BRACE / WALL / PLATE / SOLID / LINE / SURF / RIGID
+               / TRUSS / SUPPORT / CABLE / BEAM_REBAR / COLUMN_REBAR / WALLBC_REBAR
+               / BEAM_STEEL / COLUMN_STEEL / BRACE_STEEL
+               # BeamColumn.iMark：梁/柱/撑/墙/楼板/体构件/线构件/面构件/刚臂/桁架
+               #   /减隔震构件/拉索/梁柱墙配筋/型钢
+LineType: Straight / Circle / Arc            # Line.type；Arc/Circle 必须同时传 center 与 kp，
+                                             #   漏传任一会被静默改回 Straight（直线）
+SurfType: Plane / Cylinder / Cone / TriPatch / Crown / Ring
+                                             # Surf.type；圆柱/圆锥/球冠/球环面用 bottom/top/center，
+                                             #   不传 outer（outer 只用于 Plane/TriPatch）
+                                             # ★ TriPatch 已实机破解可用（2026-10-16，ERRATA #120~#122）：outer=边界线回路 + 构造后赋值 patches 面片表；
+                                             #    备选：Plane + 3 条边线逐片拼接（#98）
+SolidType: General                           # Solid.type（通用多面体）
+MeshType: Size / Divisions                   # MeshSetting.iType（按网格尺寸 / 按分段数）
+                                             # ⚠️ 两者对整圆线均不生效 → 周向分段不可控（#85）
+```
+
+> 构件用法与硬约束（`Wall` 角点顺序、`Plate` 右手螺旋绕序、`Surf` 引用线 id、`normal` 不得与
+> 杆轴平行）见 `stru_model.md`；网格设置见 `mesh.md`。
+
+### ★ 几何面原语的能力边界（新建任何几何 / 混合模型前先对照这张表；2026-10-15 实测）
+
+| 目标曲面 | 可用原语 | 结论 |
+|---|---|---|
+| 平面多边形（3~N 边，各边共面闭环） | `SurfType.Plane`（`outer` 传边线闭环） | ✅ 直接可用（`outer` 边序无需首尾严格相接，但必须闭合同面） |
+| 圆柱 / 圆台（**含整圆回转面**） | `SurfType.Cylinder`（`bottom`+`top` 传线 id） | ✅ 直接可用（★ 整圆线也可，ERRATA #84 **更正**旧结论） |
+| 圆锥 | `SurfType.Cone`（`bottom` 传线 id、`top` 传**顶点节点 id**） | ✅ 直接可用 |
+| 球面 / 球环面 | `SurfType.Crown` / `Ring` | ✅ 直接可用（整球配方见 ERRATA #52） |
+| **水平环面**（同标高、内外两个整圆） | ★ `SurfType.Plane` + `outer=[外整圆]` + `inners=[[内整圆]]` | ✅ 实测 36/58 单元；⛔ **不能用 `Cylinder` 拼**（报 `**Error:边界点夹角有错-2` 且 **0 单元**，#84） |
+| **三角面片离散面** | `SurfType.TriPatch` | ✅ **已实机破解可用**（2026-10-16，#120~#122）：`outer` 传边界线回路（闭合面 = 接缝链去程+回程）+ 构造后赋值 `surf.patches=[[n1,n2,n3],...]`；一个面承载全部三角面片。配方见 `stru_model.md` §5；备选 `Plane` + 3 条边线逐片拼接（#98） |
+| **一般放样面 / 直纹面 / Coons 面 / NURBS 曲面** | **无** | ❌ **必须离散成三角面片**（配方见 `stru_model.md` §5「三角面片拼闭合实体」） |
+| 翼型 / 船体 / 机翼 / 风机叶片 / 双曲屋面 / 蜗壳 / 拱坝 / 任意"沿路径扫掠+变截面+扭转"实体 | 无 | ❌ 同上；★ **选路线前先看这条**——见路由技能 `pypcae-modeling-router` 的路线判据 |
+
+**推论**：凡不是平面 / 回转面 / 球面的曲面，唯一出路是**三角面片离散**
+（实测规模上限：单个 `Solid` 挂 **706 个平面面片 / 1072 条边线**，自动四面体网格跑通，#98）。
+
+## 材料
+
+```text
+MaterialType: Custom / Concrete / Steel / Rebar
+ConcreteType: Custom / C15 / C20 / C25 / C30 / C35 / C40 / C45 / C50 / C55 / C60
+              / C65 / C70 / C75 / C80
+SteelType: Custom / Q235 / Q345 / Q355 / Q345GJ / Q390 / Q390GJ / Q420 / Q420GJ
+           / Q460 / Q460GJ
+RebarType: Custom / HPB300 / HRB335 / HRBF335 / HRB400 / HRBF400 / HRB500
+           / HRBF500 / HRB600 / HRB635 / RRB400 / CRB550 / CRB600H / HTRB600
+           / HTRB630 / SST1960
+MaterialModel: Elastic / MetalPlastic / ConcretePlasticDamage / ConcreteDamage
+               / ConcreteGuoZhang / ConcreteMander / ConcreteCode / ConcreteHLH
+               / GeoMohrCoulomb / JohnsonCook / Neohookean / hyperfoam
+MatDampType: NoDamping / Rayleigh / DampingRatio
+```
+
+## 截面
+
+```text
+SectionType: Line / Surface / Solid
+ShapeType: SOLID / RECTANGLE / CIRCLE / BOX / ISHAPE / CROSSING / TUBE / TRAPEZOID
+           / LSHAPE / TSHAPE / WELDEDBOXO / SINGLELAYER / ONECELL / TWOCELL
+           / BSTF / CUSTOM
+# 注：结构模型相关枚举见上方「构件与几何」节；脚本执行模式见上方「脚本控制」节。
+```
+
+## 单元
+
+```text
+ElementType: BeamEuler / BeamLink / Link / PlaneClassic / PlateMitc
+             / ShellAssembled / ShellDegenerated / Solid / Cable / Membrane
+             / Penalty / SolidLaStrain / ElasBeamEuler / RebarBeam / SurfaceElem
+             / RebarShell / PlaneStress2D / PlaneStrain2D / BeamEuler2D / Link2D
+             / AxiSymmPlane / AxiSymmLine / BeamTimoshenko / Pipe / CableCatenary
+```
+
+## 自由度与坐标系（三组易混坐标系！）
+
+```text
+Dof: All / Uxyz / Ux / Uy / Uz / Phx / Phy / Phz
+FDof: Fx / Fy / Fz / Mx / My / Mz
+
+CSYS: GlobalSystem / LocalCoordinateSystem     # 荷载类 iCoord 用
+LOCALCSYS: Cartesian / Cylindrical / Spherical  # Csys.iType 用
+ConnCoordType: Auto / Fixed / Follow / Global    # Connector.iCoord 用
+                                             #   ★ 2026-10-30 版手册新增 Global(固定总体系) 与 vy/vx 语义；
+                                             #     ⚠️ 本机 2.2.1 运行时**无 Global 成员**（hasattr=False），
+                                             #     写 ConnCoordType.Global 会 AttributeError；传裸值 iCoord=3 可跑通
+                                             #   2026-10-28 实测：Auto、Fixed(+vy) 可用；Follow 不可用
+```
+
+## 荷载
+
+```text
+LoadType: Cload / Cdisp / Elload / Esload / Eslload / Ebload / Ebsload / Wpload
+          / Wload / Ctem / Emload / PipeLoad / Etem / EtemGrads / ElemPrestressLoad
+LoadDistributionType: Concentrated / Uniform / Nonuniform / BodyForce
+LoadSubType: Force / Moment
+WaterPressureType: SolidSurface / ShellSurface
+WaveType: Acceleration / Velocity / Displacement
+WaveActionType: Boundary / Force                # Wload 的 iType
+InertiaType: Translation / Rotation
+EtemType: TempLoad / BeamTempGrads / ShellTempGrads
+PreStressType: Stress / Strain
+ElemPreStressType: Stress / Strain / AxialForce
+```
+
+## 相互作用与支座
+
+```text
+BindingType: SurfToSurf / NodeToSurf / NodeToNode
+CouplingType: Rigid / Flexible
+DofMode: Both / Translation / Custom            # Custom 仅耦合有效
+EmbededType: NodeToElem / NodeToNode
+ContactType: ElasToElas / RigidToElas
+ContactMethod: NodeToSurf / SurfToSurf          # 接触对离散方式
+ContactMethodCtrl: Lagrange / SuperElement / EquivalentTied   # 全局接触控制（Setting）
+ConnSectType: Translation / Rotation
+ConnStiffType: Linear / Nonlinear / MetalPlastic
+                                             # ★ 2026-10-16 版手册起，keyStiff 决定该填哪组形参：
+                                             #   Linear(0)        → consElas（常刚度，已实机验证）
+                                             #   Nonlinear(1)     → elastics（荷载-位移表，★ 2026-10-28 实机跑通、逐点守表；
+                                             #                      见 fem #145）
+                                             #   MetalPlastic(2)  → plastics（★屈服荷载-**塑性**位移表，2026-10-28 实机跑通）+ m
+                                             #                      m: 0 随动 / 1 等向 / 0<m<1 混合硬化
+                                             # ⚠️ plastics 第 2 列是塑性位移、非总位移（与 elastics 不同），
+                                             #    以求解器 19_ConnectSect.inp 表头为准
+ConnDampType: Off / Constant / Nonlinear
+                                             # ★ 2026-10-22 版手册补齐：keyDamp 决定该填哪组形参：
+                                             #   Off(0)          → 无阻尼（consDamp/dampCoefs 不生效）
+                                             #   Constant(1)     → consDamp（常阻尼，标量）
+                                             #   Nonlinear(2)    → dampCoefs（阻尼力-速度表，第二维长度 2 = 阻尼力/速度）
+                                             #   ⚠️ 两者**能构造能落盘，但动力分析中静默无作用**（2026-10-28 实机：
+                                             #     A/B 两子系统逐帧差 0.000e+00）⇒ 需要阻尼改用分析级阻尼（fem #146）
+ConnFrictionType: Off / On                      # ⚠️ 限值 frictCoef 只能构造后属性赋值（cs.frictCoef=0.3）
+ConnFailType: Off / On                          # ⛔ On 而不赋 dispFail ⇒ sep-processor 崩 0xc0000005
+ConnLockType: Off / On                                             # ★ 连接器（Connector/ConnectorSection）2026-10-15 实机验证**可用**
+                                             #   （原"modelcheck 崩溃 0xc0000409"记载已推翻）；已验证路径：
+                                             #   ★ 2026-10-28 已扩展验证：Rotation（iDofs=[Dof.Phx]）、
+                                             #   Nonlinear(elastics) / MetalPlastic(plastics+m)、iCoord=Fixed（Follow 不可用）、
+                                             #   隐式动力下传力 —— 均可用；阻尼无作用、摩擦/失效/阻止需构造后赋限值
+FixedType: Default / BaseLine / BaseLineGeom
+ElasSupportType: Soil / Lateral / Rotational
+IsolationBearingType: General / GeneralRubber / PlumbumRubber / DampingRubber
+                      / FrictionRubber / SlideRubber
+```
+
+## 分析
+
+```text
+AnaType: MODAL / STATIC / IMPLICIT / BUCKLING / EXPLICIT / HARMONIC / SPECTRUM
+         / POSTBUCK / FATIGUE / STEADYHEAT / TRANSIENTHEAT / STEADYFLUID
+         / TRANSIENTFLUID / SUSPBRIDGEANALY
+NLType: ALinear / PDelta / GeoNonlinear / MaterNonlinear / GeoMaterNonlinear
+        / FoundationRaft
+ImpAnaMethod: Direct / Subspace / Lanczos
+ExAnaMethod: HalfStep / TotalStep
+AnaDampType: RatioToMass / RatioToProportional / Rayleigh
+SpectrumAnaMethod: Standard / Code
+ModalCombine: CQC / SRSS
+SpectrumCurveType: LoadSpectrum / AccSpectrum / VeloSpectrum / DispSpectrum
+                   / AccTimeHist / DispTimeHist / LoadTimeHist
+InterpolationType: Linear / Log
+KeyTfType: Freq / Period
+FreqInterpolationMethod: NO_INTERPOLATION / LINEAR / LOG / OB1 / OB2 / OB3 / OB6
+                         / OB12 / OB24 / LINEAR_FREQCONTAIN / LOG_FREQCONTAIN
+SeismicIntensity: Six / Seven / Eight / Nine
+SeismicLevel: Frequent / Moderate / Rare
+SiteClass: Class0 / Class1 / Class2 / Class3 / Class4
+DesignEarthquakeGroup: Group1 / Group2 / Group3
+LimitDispControl: DispCoef / DispValue
+```
+
+## 模型修正与其他
+
+```text
+ChangeType: Remove / Add
+ChangeChType: Element / Contact / ElasSupport / IsolationBearing / Connect
+              # ⚠️ 官方签名处写作 ChangeElement，以 enums 实际名为准（ERRATA #15）
+JointType: Sphere / BeamEnd
+OffsetType: Translation / Rotation
+OffcenterType: Node / Beam / Shell
+OffcenterDir: Value / TopCenter / BottomCenter / MiddleLeft / MiddleRight
+              / TopLeft / TopRight / BottomLeft / BottomRight
+```
+
+## 附录：单元面号规则（面荷载/体表面荷载/接触用）
+
+**面单元**：Face1 = 正向（1-2-3[-4]），Face2 = 反向。
+
+**体单元**（八节点六面体）：
+
+| 面号 | 组成节点 |
+|---|---|
+| Face 1 | 4-3-2-1（底） |
+| Face 2 | 5-6-7-8（顶） |
+| Face 3 | 1-2-6-5 |
+| Face 4 | 2-3-7-6 |
+| Face 5 | 3-4-8-7 |
+| Face 6 | 4-1-5-8 |
+
+（四/五节点体单元面号详见《PyPCAE 用户帮助手册》附录 1。）

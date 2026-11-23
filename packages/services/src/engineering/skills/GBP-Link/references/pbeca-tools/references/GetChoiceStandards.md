@@ -1,2 +1,26 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQs2p5J5N8WRV9WC52em-naOG5tJyCDU9mTssDMJtPHJK9XmeCWAyzENS7PyogPQL6DuQRJYvUCwHW55eKP4YAVBu-RLDB85RYimQvy3WFFr4odIYfx2nIqDA77GOkC0FrlT8omOyO5QdghPIfl9IKQokpaf-XTbWbwvO8JsIyg_k5EAKHdDItktOG1fI8yhtBQXmilLUtv-KgSdRvkBfaohDkJN1LREv_klBLwGgDlNJy702k8_H5yBJpDdhU6TZklq8DHz5qZxP1EwOKo5Ocl9omTD1BlCILm78jznJVcI2bj0wvZGyL2RuIzD734PuoydWQq524rOnCPLRVCGVd4VXZkHHzTo8CD6aKikykBH7qIoRTX2DuK3JC327TmoToKq_WR-STIVhN68speQ7t3H7i0cKzPIFEntwW2IDyS2qAcEfhrpmNMPMu9C3Qf0kgbCngI_mVTENMYBwwzisOeN3LCmbx8Bgqc4hOl1p64QTVgtcB3crGL-ix2wy-upYGU9spm5eLOOp1elzKySBRO-sYHpGH6N6BIKLtlSJ_moQ-R9L_XlrlgYaCc1SPlfzPt8LTOSpDyH4PIeYcjp6lDhkrzpAKgnNvR40tC7ex6hjnomr2BMDuXiqc2F73kphbpI_PwgRMzjx9bByCpTvjT_tVuHSG6FXfHRcapqZgT_X1H7XQTVgWimCBIlPO2anGymaObOZP5PrXQaZwfTVCgHWu7FLZmvuRxDzesNCvelMB-yqVuLy7UC0RrHNtyDu3
+# GetChoiceStandards
+
+**工具说明**：获取当前可选标准，会区分公居建。
+
+**调用工具 Json**：
+```json
+{
+    "command": "GetChoiceStandards",
+}
+```
+
+**参数说明**：
+
+| 参数名 | 类型 | 说明 |
+| :--- | :--- | :--- |
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg":"获取当前可选标准成功",
+  "bdlsPH":2,//0是公建，1是居建，2是商住，3是工业
+  "公建可选标准":["标准xxx","标准xxx"],
+  "居建可选标准":["标准xxx","标准xxx"]
+}
+```

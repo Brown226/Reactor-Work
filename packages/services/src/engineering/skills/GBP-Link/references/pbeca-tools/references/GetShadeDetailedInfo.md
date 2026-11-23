@@ -1,2 +1,63 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQq-EPstxlFlMY4Pn6tsOHSGsRBv2xNRdyHcvoA148-b1ejMehto-ItZXlpcdPWR3lys0S7BQ2G_T5fu-YoaNJnnoA3sM7jzK3Z2dYkkRIezIP8E3ttoAfuAxBZsDpelEJhke7crtWQtie15edpJXd57sErJ2JEjar3cthBMmGk2SMKurl9EMrhFuoUSGCgrHOksxgpgGKVPQ0yiRlnNMDuaLkUnNUb_KMdSsBMbnk8ukwr1TKWepFZgSscsfFaP49e_B4nItbMRpAClbz2R5lSS7bLb35qNRZVsQgm0aw705KHM7w89AYQjPIN_L50cahu5XKhDqORZRelqXBJQ-qZ_4zGJN89FG3fUteFTtEwiq5SOqBhbtMEZDc_4CSlbg1AjFLSH2sMO4JGV3UKZN8jL-pAbgNJdvFy-ArMMYLAulOsBtwlwKVUK9hJ4PFw4050TYUXECn8E9-J5-kuSPn6-BkuI56JuGmUvdbW7pT_O_C0mruX-3qI7r7azgz42uU22yNhwuU8xv3X6oK2sEJx8WGxUzcmvlDygmZPotNzmjErCqhk_L1Hp2I64wTHH6EJ9UwgErLS7Zd7oEzpO1blJQfiRbWFoRgxEXFKXnNvr78XIr-dqRbx_rylyOaMNFmi3rgYMaKt7TfRAl9PplSCUhWtyyRjoj8zgqvA8wQURo6chFwWQ5Eg85rPSecfAVRFnR8v5UfssycltolXP4L8TaXkpcEHwBG8twuQtjjVVxPP3dwiZh8YARE6HdyvXek7yawqR4DNcQem0ywe4PabHv_pelq-PMZC1OLlkFQn1-Vv0joruTvYWag02TOLnPzJQIY0ITndp5ZB7mX9PZU6xvefNXC9Xuf7qj58tHV002nYMYoj2feJhN1WMegJYiMRT1I7GbirDWykWJljyZg4m5k30MzW3oT3KkEqX81bIEE7qLTydnoefdSbIN4Oma8SM2lTcpfRk6JJSelX8aK2jB2_3ixYe8s5R7IKJO0KnQsrOyNICvA6Sh0ECbibVxh2FxRXwZRjcCqJ64xYLUI-WBqNBlc-rZ3-O5A-WOFASxkf3IslX-0VlaLXlN72s8mEwePKj2zMgavRerslsackr8KjFMZVM_ZkQteQMUOaYHInVrYmiTBmAPlmri5_Y4BJrvUFwJakHTaj57Y0JEWEo_uU9HhfYn_EBUmCORYw1Nvrx62IUM8FnTkJoEhZHH7cP96YnZ4qbLH42zY0jjzB8DAWic0yJCkaslxL2yeQl4H7YFmfeXplSqVaqLUIACK9YFWiNRamy3g2aSKjKlFNJKflj1H9LMcXhcvvpxsD606ybj4A2g6XoOaspcSMPa6y4Spse5umYYW_o-v0XxlktnIgzWWYT-1aDpdrjGlA5Af7Wem5Ytl051rBsLG3waDx9Rt7YzHbLxIhDDDixYZr4m2f10c-Ok9JR7ZTVurm0KzmzlIMHAAxR__E5l_qn5h154DwZKP0ohstf3sET7K6lH3AKfiHkbG45XFRT5Q6SeEIEipHwCDZl-2sbLC93Vz8-dOQdSMH62udyq1woejNZOQ9iKpf_uhIU3EnI4o2k8vjeTwjCkjOAyirOmTvJmqNVjXb9DT9R4FKAg2dT1xVwJrpPxadL4u1Tcx_L5sNEo=
+# GetShadeDetailedInfo
+
+**工具说明**：获取遮阳设置需要的参数。
+
+**调用工具 Json**：
+```json
+{
+    "command": "GetShadeDetailedInfo",
+    "parameters": {
+	"type":"水平遮阳"
+	}
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "遮阳信息已返回",
+  "param": [
+    {
+      "name": "水平挡板深度",
+      "type": "double",
+      "required": true,
+      "unit": "mm",
+      "min": 0
+    },
+    {
+      "name": "与窗垂直距离",
+      "type": "double",
+      "required": true,
+      "unit": "mm",
+      "min": 0
+    },
+    {
+      "name": "水平挡板角度",
+      "type": "double",
+      "required": true,
+      "unit": "°",
+      "min": 0,
+      "max": 90
+    },
+    {
+      "name": "材质",
+      "type": "string",
+      "required": false,
+      "enum": ["织物面料", "玻璃、有机玻璃（深色：0<Se≤0.6）"] 
+    },
+    {
+      "name": "布置位置",
+      "type": "string",
+      "required": true,
+      "enum": ["全楼", "当前层"]
+    },
+    {
+      "name": "朝向",
+      "type": "string",
+      "required": true,
+      "enum": ["东", "南", "西", "北", "全朝向"]
+    }
+  ]
+}
+```

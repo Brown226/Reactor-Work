@@ -1,2 +1,60 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQH5_nSpxkZ0CdZF4ckEUTLA7_VEteqsHhiEyOQJfqJ9mbMR2tVigQtk3OvZ-oNBIQDod4A8cRxOIy3VpdDYLLC5j-XadSctGYL7lxLh3ymq55Pcakn0SQlAu9EO8FT9TG0pVz929Vo14_l2AclvVYfun991LUajl5B9l4DmG_c36-MXvubOmSR2fx0LcbuPiLkGjR_ton-oyxAlBP-ZY1hixaXLLf6gALZU-PF4kv6suOaokCKhWIii7otLOyckUnsbAcOnrKuRwO4RwIumSL1UXrDFzi_rmn-_BUtgOW4y5gOD22LhjTCxgrwwTaKnbTKuOOxht62a17fjx77FBQt71Pa1yJUSpoWOHnYr0400CXLg4ecWKwDJSYE5fVuaAKj3wDkLex87ksiEM2BVDyFg2O1dkeMxCSeFg40PZEUjTkX8iwsfSSUh4FY4P5UmhMgLI0qIItUozLKRZlZAgXUb6Da9wX44IUsKWMGEXoiC1yEyEmoheu1ClqJXLX2ZnKxrx4ShH729mA8hminSz6zf_YJBFx3b1JdB0ZoKUwNZF3t9nz7Ib17RQVFsO9fGUfx0hfgENRw4G_d5PAZNTfwoRNyLVRpJCJ-4NheC9DoFomuCzYFLT55LTaqjJ_-UCoCf7wlG2zIaFMogX7rEgKNe7Fqi613pO2wk4G7uKSMLhdFQckyfpcCCL58bPLV0HrVHN7uyVUybGWXBQzyEz_RWDNB3EFdDvDQFD9LHpqcqLe_7oym9xwSZTnCskKLQZ4tTJL3cv07NpDDwA0Panxvr4FE0mZvMyeEcn70psXacPCiVzRoSRt2QqeSoKeZ1Ub5pFXAR9ZRqu_sr9um-bmizK7KWrWcnEzAoN8iqhT3R9TdsPGbXUBrGqv6sQaV_lUMfHzh_kikYL7aETbrVUOdFIgM8lLz6xFXhy-ZRL5dQsCplSCkEbi7oxpRXxD8uJ51ZcMlzuHoy-UI8HilU26t3IUAZz0lgTmcN-cWvPL_lqSkY4phwlNqFfZ4jJqmOMv2ZnihS0y1vQ8oD7NhIxBo9XYUSRFz0U3axTMpA_W2-mAlroZ554Wr7Vk5-yc68eHfv1LvtKXBPmwfh71V6oS3f3Dfr8mSH7tQhESul0QM3TnsCNsXcx09GgD9p6PL_BzgBz3OVs4wZMzxnxY3cNEj641Rorvs4xj3QXstlr8nMDFXdVyV81XTNu_NyNdoc0kMqTYEkr3xl5i-QsTw3KV3Jl75M6b1LUhYB3WIMLlUJbK1-4kRL2u1KYNhfcKF_RB2NknSRf_4gMhdV8fzA9E7hbOG-zISL7efbVEJOGBPVnd_SVNULiRS83oJ5nEjKqEtWytKQHZIHT5MQLLonbPRlfmS6_ouxXComMH4PFUQLU5ZOvHfat_dQviCC4N02qQnx_U0KYr19D_fuGkpVCKd_3p6ldjKYJBijJoBhf-mhBUQHrzKIk-m4-k47rck-jrmw4p8DSq6PhBY3AMbUTdF_qKG1Qi8upe08bL9zwMZgjvrnwTkyxJVq-BF2LXzaFEdJdYORen3aAo5_dgiyM7qEfejimwNr4Rw4_IAAmtMPHaNWL8t_26vpO5Dq7P0BzruagLJliVgFyHkFAHn5N4ycE1rU_amMygbir89QC0Di0Ltxqg4A5NHy3bFTRW15KIjJC6nu7V1qMnmOz5QjCXc5vepot7Ihc4hDplV70rqWAk6cQmjlvBEahRBc0O1RVeOBzwz3c2kpwRh5WZp0bHkG2EnxdM-JveZ8GhlCwL0W_VRzC0j4PxlAVmfL0XXa5UMk1PzX9VU5JBe01Cq4ekmvE2aGtZDG58uRb00eqs_q3n3g6jvWrXXadI6q32mLnjoQ80_U0EC1_9Vkqlm1jRCsGdGR6o_IMd5XPQjrvNLlznQQxM57gie0zEAZ9bUS0b9U81YnAGY4ui5U8ZEMxBrAFcQRezqp85EkDNq4Pr6Pj16gIWUNbqzQGj9UJTwfSLRds-DpEp3HqOiqW5ba6R6NVx_lBEIWOgzDCXpsHzVYeBTEIkjtagcucBVhU_3ojeQDbEMvjXnLWjP18okCvLzPyAxXWVM5OLv48WDZZYNnmW_PyBhT5AjBtDcyZt9WX8YuHUqzeqiJl2H5GeRYsZLtQpl6LbNIkM7OZoWvFXoPsCfvKes3lc4t-c48LtNlyLKF14Oe5BQOKbwhz0O6uUw6-AwQcOM1A6SWqgb2w4Mto=
+# EntityFilter
+
+**说明**：根据条件筛选建筑中所有实体，并在对话框中展示筛选结果，无需返回任何数据。当前支持同时筛选多种类型的实体。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `category` | int[] | 是 | 筛选实体类别，1=楼板，2=门，3=窗 |
+| `option` | object | 是 | 筛选参数，字段根据 `category` 类型动态变化 |
+
+**楼板（category=[1]）**：
+
+`option` 支持：
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `boardType` | int | 楼板类型，1=普通楼板，2=架空楼板，3=地面 |
+
+调用示例：
+
+```json
+{"category":[1],"option":{"boardType":2}}
+```
+
+**门（category=[2]）**：
+
+`option` 支持：
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `isTransparent` | bool | 是否有透明部分 |
+
+调用示例：
+
+```json
+{"category":[2],"option":{"isTransparent":true}}
+```
+
+**窗（category=[3]）**：
+
+`option` 支持：
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `isShadingCoeff` | bool | 是否带有遮阳 |
+
+调用示例：
+
+```json
+{"category":[3],"option":{"isShadingCoeff":true}}
+```
+
+**同时筛选多种类型实体**：
+
+```json
+{"category":[1, 2, 3],"option":{"boardType": 1,"isTransparent":false,"isShadingCoeff":true}}
+```
+
+> 当前工具仅支持楼板、门和窗三种实体类型的过滤，且仅支持对应专属筛选条件，如楼板按类型筛选，门按是否含透明部分筛选、窗按是否带遮阳筛选，用户提及其他实体类型或筛选条件时，需如实告知当前工具支持范围。

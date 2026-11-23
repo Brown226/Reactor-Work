@@ -1,2 +1,29 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQJBfGJXkTtEC3uu5tFc6a4q69Lx1RCB5ebfdFKJG7g4_mbAViMoL8-BtY4fhqsu322jjAVJcbOB4QsDdi5HqdPvAIrbKRkveSGefgYG-wfxoA9nqo_SGWABUqzrO2Xzxtki7Pu9fn6uO3OFEqBFI-qPLPpMpiMz7bFb2iwZf8PCrbx8CCvChub0w57tlf4uNMSHoKBcv4ZedOAAXKzi9K6Gj_99rsvZa_Z8uP8LaliFQAntvCx1yLax4_ES13mVKINJy3Jhk8UExGZTbomUdVChyr0Vwxs62_yo46r60ZlYujTAhMogvcCOig4fPjGhH0W8Kk1LuBNqUaygY6hh-2IMU86lRE_Cg0zrNNTrlCnW_AsaQyAczeRm0E9LzYNnT7UcBqpH_BUHUGN6bB3gULhJMaqQEMfDIQR5D-JFHa417ETNSUG56oXrVJg-NSipohK7ugZP0B2FENmdpiZVFE1Nr8D-oj41nGToQ-08QAeP763qSlBmQrTPk-Gym-pio4uxQNruM9TUW7RZqrpfWar931OLB3tdKuIwVdpvysP0Arw7VB1zsw4PVZh_8U7VC9d9CW8SdFaapBWZHvhKQqmHxqZimB6T3aoHkx25eD2fnpeFlFEbgcVULfurwXd3NHHoivLRyGqkgMN5Y2WjBVLtA6Bym1u4r2XKKMhoEOr2Jqsq6HcE1xEqnPZ-VpE1_McT0aEARcu0EFKmhvCsXbx9v3Cc6CpyFEI7Y9TdBFsm-iylZ1ldpKbtqQo7317en77pui92ZHQve4VkMKzZbMux6CfOcrDbb2qto_18CG8og0D4qmzjX5p-3GvGjZ4h9tegAPW_4KfFsd0n1KBUkUJHNI1fp4wgECA5JLaTL7IT_oUg65mAB7_akWyrHO1Ibm0pUAn7G7jOXEfCdCfTRp3yzkvHEQ3W3wmrqUpErCP9NMpbYTL_-V6qwq64_vQOdYT2CqEoj33dHwNXbdMPezCbC1hEwbHw2gZeTVpSMTLAnoJSzvxYnLwfNezLF70DsM
+# ShadeDetailedSetting
+
+**工具说明**：进行遮阳设置，先获取所选遮阳类型，让用户选择需要设置的遮阳，再获取所需参数，根据参数内容让用户输入。
+
+**调用工具 Json**：
+```json
+{
+  "command": "ShadeDetailedSetting",
+  "parameters": {
+    "type": "水平遮阳",
+    "param": {
+      "水平挡板深度": 1000,
+      "与窗水平距离": 200,
+      "垂直挡板角度": 90,
+      "材料": "织物面料",
+      "布置位置": "全楼",//仅分为全楼、当前层
+      "朝向": "全朝向"//仅分为全朝向，东，南，西，北
+    }
+  }
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已完成遮阳设置"
+}
+```

@@ -1,2 +1,53 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQzNSyuIjwe_xcsHG4ezG-OOJnVYaSev2P6gLFxJ3mcV8Rr8rUGrCjBq8QmG5h2u443zixSlez47Gev-32uTI5ZYgpZRqBCvg9P1SSSqgdb3Pz77_JV9z9P8qSF7zoAHWd04_8ZqM7TGRtJDfBOjyKEQtkfatgUZtHY2lVkV-cGlYOu_HK8DM-l2oD6ASxFxMagoKCgAEyONfK6DS5KcDrzmNe83vjQrk6USSbnZmWKyqreVjj4DVa6WMrJYgHlEQ7tpusCfavviZYhHG8dEWwMK7joIzuuYjh9FSk8HQu_XtMgVClwSXhZTTDIfJMBiZsrgRpKQEAffTahmv76_cxzorAVcs32fMS3E32M9XMnlM6hS5q8gyyroNkIrQvDVZq0IJGoYU9pJgw3yfuclIBgwWUPm_l7-Z0SJYO_PHFqUMmN2eGK3PE-pFF1jBGP4pUeKfxbvPSFXVXYDb5STWkonNihr8RBjdnFSUvp1z-esV7SgEG0HADRnkI475HGYzGk6UtaLCBbePUzPi2eZPUaFpzjpWwgem1RHQcIhBnjFJriDWS2WgU53BIAcTxKt5PRXiimYVS7OCogBENNK3LKNKSPjqSRPQrZHnDEHhtOYmBBAD_DD4OJZmezcGyw64s-Kl7QmrbVAhqWNqWLrwRs_yYXqmxWTxZ8zibrx1zXqcg3l2zcY92WS4R9chavgpwwatSiYL2QWVrGNqr5WKeahWh-KoBriFSLpI259QwgV-1Wz-jx0EQFepGTkJYeOQrPIm0MxM2H_ILmtE1VedYEm8-MnkLrOMPOpOkqWt4UAmlWaD4sjFd8h0qb1_PhIB2U43P5Y3Q_OIB_J5GF6BnBxy-ckH8XdkzthRgtakt9vBV42XUutitJLZsGt0s4z0LGQu9pKZ6m5boWKiN52jWGi3yN935D5vJ5cX5_oWvDnR6z36OAKwgc90hmFFYIp8amUg9pXIaBEyt1y27Fdj0Ax5VTCe4du0K0G8_klI4qK67KC-djcllWGKKCv3RRqVw6_Mv5BgCJqew5nJdk1g0jRioHUHlhEgiaVHp_agjORidDheJ0_o2c2OprIjhWKswlgdk7aiXKb0taAtzx_w0040DSQkEPNjbI6GF61lpi1fZJo3jYXPyoauEg5BkmqwdRzpwVgHBgCmuOTot5kifwEISHDBBgDcwOMWoIrXaW9feJix1m8WUZTW9M3SdlSgdLh5qWqAqiPr9ZPtBlsFMfVUF-HZNFTOOoDWodWhxdKwMO227qlgSkICCTUDLJKaF7Ndu_h-D0XZ4IPi_--OaNU9e4TbflVCsHkOK-2rrka1ogwL5uKe2_WIOb9n16CKFVHFyBfzOBZ7rrfpTc-hr-AqoPhVKzlA5aegn0ju3YqGGp-VcwJJTb0LX2N_rtNSOqASTSOMkxNmGHXoysEblO-Tok-vPR6gH3MCz__POxgxNii477wxZ7nG2-Jo4NGe6VVTzq_ZwnA-VIU6ERhGsAujQhsSiXONbel4GCoqZiIJqLG8BtZNVADhSGbFFPOJ2JOecvt70mmiFWE8wK6gf7GtMfHGfuB6FFZslIM621W5KR782DsH-dB99iYcA7qdlsMON8kHn3Z00PVzlhCT41iz8UeacFOlQCvTokO4jz24ZyGulESCHLvVehcl3wvqyreEmlnmwwbUmuouiTCGa5F7KgBxIjJA-IgK_iacbNVNh2n7_m_tpi_plHxj-IPzGLRZZ5e14SVeW6DuRLLD_0y2TePA0FPFzShpBxYI62ZOArap90VwF2RmFh56nekyyEItYny8obrWeEyJdNfI2ZA==
+# GpDlGetAllRoomTypes
+
+查询当前建筑中某模块下的所有房间类型。
+
+**请求参数**：
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| subCate | string | 否 | 子分类名称，对应模块自己的房间类型。不传默认 `"采光"`。 |
+
+**请求示例**：
+```json
+{
+  "command": "GpDlGetAllRoomTypes",
+  "parameters": {
+    "subCate": "采光"
+  }
+}
+```
+
+**返回结果**：
+```json
+{
+  "code": 1000,
+  "msg": "查询当前建筑中某模块下的所有房间类型成功！",
+  "result": {
+    "types": [
+      {
+        "buildingType": "医疗",
+        "roomTypes": [
+          { "id": "1001", "name": "治疗室" },
+          { "id": "1002", "name": "诊室" }
+        ]
+      },
+      {
+        "buildingType": "办公",
+        "roomTypes": [
+          { "id": "2001", "name": "办公室" },
+          { "id": "2002", "name": "走廊" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+| 返回字段 | 类型 | 说明 |
+|----------|------|------|
+| code | int | 状态码（1000 成功） |
+| msg | string | 提示信息 |
+| result.types | array | 按建筑类型分组的房间类型列表 |
+| types[].buildingType | string | 建筑类型名称 |
+| types[].roomTypes[].id | string | 房间类型 ID |
+| types[].roomTypes[].name | string | 房间类型名称 |

@@ -1,2 +1,41 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbSHGBNwEtV95Nbq-o34UbeNy4CVsbZ9S1bmaaIEaBBziJblkm2jxNE444JWL0J5OKhIhV6WvCpmJpGDmNpWz4eGqPTUl7X3Jw-g42rnAw9110yZY6b7vPmshhMUatrm85JMM8um-T6WerlQ1JDzPQmx6W5FjKUNjUMbyG8h_3SvaRbCB51--Sit389VR9QL2_2WE1Y_dRa0hL5aOl5wpsyZbvuQswngdUNxLhs9Nw80eaLPIeyqmKh7AvSKXdQg4zZc-XsjF48P9IOybpIPJ7MriG2hiCQMo8X-4CHWVbPJxsdWqfRZpQXqLkdoVqObQ6-iOdWTBDlzADb744auxyDo3LO-dGDYIyNYyN_pntCME6Kgxf-UYEDBf8UlbPZCj3-E5HD95w-ObHAR6q8of1SMSBBs40WdEijC9sofSQRuKgeFbqabwx1b6KVrSRRDxQLzs6AWjR-aQMWTLHmBEx8Aoem6t-kntHHwQJ6yfESvtTYJAqMZi-bppdnvU-fToRg9mAayY6Rst-Rnan9MWryNiLVa5xp8vknqhPLl3WmEJklKygsEbpLxDMZCvz3LcTgJloG5kwlwNMAvvl8GTqcG8R5cS_UJNV1tiFrSRhJaWX54UT6QMaMHwGU0bHOUgtiefVlu-rijroUAxfJe13eqKV32Lbzk-BHdF_dLFMPM_sUSMBFusHgBmeNnA67chO7qfrHnV1eTjFMA7mxHXuIlI2UMShLNVhWvEK0nXRuaLzD5G1RKXDmLG96jP6pUQhEkiZGAX9mVtQfnNpeGub_rl1-sZFr5QK_5mnRdUfwDe1WxOspa7SOv_Xqj6IpoPbZ0xT_ge0ha30I9GdI24LZliMT9M10pZ6WbT0yNnDizRnSXQvAUQU_XH75Gdh6sVXHVgGzoxyjKCMQytPhvLA26OMkLHtSq2uYf02-Fo8GDR2Zjh1LkJKDxSJ_t4G6Ywenlcb8aI43jezpdzKKT-7Mk6xhUc7Oi7Jp3sL3Pe0Szxh1EwUIcQVbVrv6XBjoJ96y24XoWmOOycWLXh1CWqTUXU6dW2lICcLwMHsZmnrnfsNTNwKPcG4k8NIk8GknpG4YlGKFuP1QPCS1izZ1WYWelCdElJIEmIO6PieR66Ze553V8dW88N5iXNwZ4D-vOIgWie43qpjhGyvSSkFyu4KndGH4g9a9ZtIIV1FD-llN_o0u0dMfQKhhuw9gRrN1s0RddLeQHktv9I8nXDpArc-qSrmDm6hQeqSZxcL40UmLwnflj1Qls9tNHC8pGB4_ZmryeCpJeex7PW6J2-2Dd3VwyngD-_XXMUw3XaU9odF1q6kXZWobTyg5DZGirvToKGrn3_KcvQC4r2JDMEVcp0B3GrtARAMQssdXexBpx4TVWG0vzICaX0RlbJ9XviMbw4JJF9qomdzfLey0XRmDC14p5XsrHcbwBsnB03Lmb3NKUck38nNBmKlcn67cpli9t4jrkbyhZDgalR3wxdKyyaB7spoX4Hpfras-pxc35jnfwKGf1RY2QR_a2WofPBb2dwOozn41v1I53wh5SNxpBmBB4rbw8M6c3XWynP8v9Gaq5ahu2vXaGrlyB65KsZMtEYV4CFUtd7CUh-h0rjZlNc6CGjnzNw0JCj6G2TFPbzhkNpJ1njvuOW-1mvImHeUQU-geL_l1eRJ34KEsUeJI64Na9WD3MyONCAVnhFUqnS7Ah-3Eqwg0mW4K4mqk0CRHCI1Ckjj7dwZntO7DDvsHGOTiplBuQgJO_6see_Wct6OP8wawmETcB7BxzzFvKtkk29DevqS2xe9J1Shg2RZMGCpbZP2LCZMKqx14gbTCM9pi4TPpX1nl-B8Zfg4-sKt9DuCnX774LcgEAVZGbZTj6OFwzMBwB7dnUyypwbc7clwFbFmYBMf9z9Ch9MP79yJiSk3hg-ix7X62-nRVkpJo2kucKk0Rzf3D-hUcl0DKCqvVqX8kUgudenL6XImCpG80-1x4MP3LW06GkvA1V6jpDCFyFlBkIeZxrSTNL8eBP3wbKEiZG3vq2Fi9y0QN2bwM2kWs8tJ3BVmC7AnxRinxhleC7x5Rd6PzyRTYpunxLWKAX74KPAAStjjO_hTYtHWpufiLcyRpQ2mNYR8XxYLOZoChLmLVm4zkMlqqLp5SGsWbPIYLomr59RjBYowhWf2XOJGm7tSj3JwDxJYwtswKDtuQkXgoyPggyzmpgHRDG2QxZAVFJJ7h98WveqhX-qefnpHU2n9g6pH_r4fUFjonpbQxPHxpZluXojz05nPd9gy0mDgbxK6I-PRiac6GH44GzJYdB0cmHGNJuiBVTI0Oy9-uGHUyHh7ilc3gAycAMoIQVNFGYcpYTm-XW7jmIFyRUUbHGDwR_m9JO1ZhfJavGKletUXlpKm84QjNY5BqjMY8jvW6_M3RN6irAi96dQe4N1MZpw1U2s8zX4G7xzO16-1g56XuffE5XIHnt4P9Tb2p6bQHP8IoUgfQEliiRf_waBjFG77MgZSMQJq46oqwVOibuAUE6_rmcpIj6Qh53L07SvoauuV1FznV4iKL6o-36TBHRoY8kDMM4rLR2e_21-pvg1liYUxUksbs7MtX3eBi8MtzPHVF74EVaXYmRliAcKOTzgr81RKn6v62RVASKBhJOSHUxaC_NOCzeNB9t_38dovKm7uWa6WwSwhgU90YaTXG3F_-dHDt5wK_F8ZTNkgxIriRw_BaBkaLv8BGnOaJaopjgCoL7m5-drmTkLvOT99O
+# 室内布置
+
+## 1. 朝向
+
+家具的朝向是有含义的：床头靠墙，电视屏幕朝床或沙发，餐椅面朝餐桌，柜门朝向能取用的一侧。
+
+- 每件家具在自己的局部坐标里建好（约定正面朝 -Y），再整体旋转、平移到位。靠垫、腿、把手等部件都放在这件家具的组里，随它一起旋转。
+- 把朝向写进属性，例如 `set_attribute("pkpm", "facing", "床")`，方便之后查找。但属性和名字写对了，不代表几何真的转对了：放好后让代码返回正面在世界坐标里的朝向 `inst.transformation.yaxis.reverse.to_a`（正面朝局部 -Y），和应该朝的方向对一下。
+- 墙上的电视、壁柜：确认装在哪面墙、正面朝向哪个房间，同样用返回的正面朝向核对。
+
+## 2. 常用尺寸（住宅）
+
+| 项目 | 常用值 |
+|---|---|
+| 主要通道净宽 | 800–900 mm |
+| 门扇开启范围 | 不放固定家具，不放椅背 |
+| 餐桌边到餐椅拉出后的椅背 | 约 600 mm |
+| 茶几到沙发前沿 | 350–500 mm |
+| 床边通行宽度 | 至少一侧 ≥ 600 mm |
+| 马桶占位宽 | 650–750 mm |
+| 双人床 | 1500 或 1800 × 2000 mm |
+| 餐桌、书桌高 | 750 mm |
+
+## 3. 精细程度
+
+用户要精细模型时，一件家具拆成多个有名字的小部件，比一个大方块更像：
+
+- 柜：柜体、门、抽屉、踢脚、台面、把手
+- 沙发、椅：底座、坐垫、靠垫、扶手、腿
+- 床：床架、床垫、床头板、枕头、被子
+- 卫浴：浴室柜、台面、面盆、龙头、镜子、马桶
+
+重复的小部件（把手、椅子、灯具）用组件。材质不要全用一个纯色：木、布、石材、金属、玻璃分开。
+
+## 4. 交付前检查
+
+- 门扇开启不撞家具
+- 家具之间、家具和墙不互相穿插
+- 洁具、灯具、把手尺寸正常，没有被放大或缩小
+- 窗台上的东西、窗帘不穿出墙和玻璃
+- 部件不悬空，没有因为重跑而叠出两份（见 SKILL.md 第 13 条）

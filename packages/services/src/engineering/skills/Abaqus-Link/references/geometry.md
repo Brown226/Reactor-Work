@@ -1,2 +1,112 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQmapxbYi8G4rK0hcTovwbJjeNolERx_dn3FlnvR2UeK6YxX9DfFt4Mu8bfHJGtcbJHYga2ealNQaw2M5PSNK583T8Iec2w1WLdrDJbLpoZeLNMZa-wpLeb97qlCwq-EUcr72BnQEAmqAt2AOJbZbMvsglu361VMTDaQSQFUJZDndvzQp_sq6YKhvtQCRB4CSwdDIR4y3VKifScFoMbCC9WLZmqXTNkCgk4t_vajfYCa49H2WDD11La2BURpH5SN4rU8U6GomZ1q5Aa1pZZms65Nyw9gfSIQ9-qrSZOnB6yrVOJaGAIMLRzwoh_-M6CuF9OlabVAbX1rDOEo76tWGxLfvPXXor8SKDKL8gkHujAvNaZi0pQ-Rr0QmTvUqyFYcw0mVtwOkEeAwREytJapsWmzaN1lylMvcUw80P22pfTKlnP5T_CtRquyuFpl3AXaDEh1MaOWuTmSuwgkESiR9hHEeqgYOxgTTxUPJhYdphUaxTX9VQrouRrsTE3CknBr-IUr0G_KTl2gihoaTah05eZIK_SgbtKjwNhwl7Y-L5DX2ribOTY6ie2ket4DCE53LUfBHE6c901VPTg6-vftYy20AGXDm9rOw1FxR3Hdib5gzks2wFZtRBxda2O0o_XwnbnOdE9YI7oanPaDg4yrZTZI48rP3YxKmTK1DDgZ6t_IpTNvpq_-D08u89RkDmZChVqUKDZ8TmTy2U2DsyinHZ1BEPSYZcZ8HOJTJIo4TGQRjGEs8yYH0T02i7LSBY64SKs_w2OvJOooPGbd0omnHeIybuJgD9KlnqoVcEqyGor3p-gNKSberbnq5Km-F31t6V3A_WCLAGZeiChKUbOj72msuJQbiVmGisuZW1zG2nWA1N12vnF24q0EWRnrfT9pO-CR6zUhPpVVbyahBENGD9lPDOCt0pIfJt9yk8uY0IYmjVP3tG82Mwmw2N3w9yjocyy7ns0A19Ceme6Ca0353k_bvWRlg1T8M6dNH9dGFUxvAQbRrubpiUM7kG26skbTYR8YN3EHVrTNh1KWkBRRlmdYusvXVYabgN34t9KUdO_VyrYgpU2dxMS4XraegjwSiV-hHFrmeJH5l-5Ni3LQ1N7q26xAuXUBJYJeQ5wc5cQXdct6hcH7vh1p8M5nKmWgQqUAoirsTai8Ch721pCn0JNNb0w0Vx3jAUOpllBQrluHtrZXxdhN_0UG8eg-AP1T2OsVgCdp5NnZLlZOfYIIlSfIOlyQLceNGOggIF954a1aIMnrRlbSy9ISPiFvn09n5YUGVSV7wJoDcDL8H2aCj20f5mqUKhBMOJ922vpi2EqTSNANCUCx_9qODxlUoxJycjntRUcaPW3IGTnxhRggUzOURF1KzXFIHWVfJubPuCssmoWtqrF1iUyverXNfMZv91UlG0BUNoqvCuWLKH9gwrdizrJQyOrCPYh4YK30N2rz_N4ojYLTAQqw0xBX5-XCMjNoTtebgDrFFYugqHw3NlAjBrDhJID1x0feltwhTeHAhwkvMLpEH0dFwPCQNnqhVF1jCdQVs_Thkn8ViHbT9TSzyCdCbKEKuFhY06ffIL0r4MWRBlgCvjAkaBxEMchgczVgaYO9VEUqtfzGpZlNju0SF_nZJU23BZosz-Y4UtXfVz05opLEcLflBcMDIUnVsttNQvijNEhtjB5jPCFRKwkXW_lemNS3LJTUCugIdX95OLEd1SfUYj_nh3qBn46Jc7dT_GIxGPuxEHFlFx133pM8HhMoQdtVvBhoBWBxsmqKN97rhdjaH5gMyHzuSNMieodfJq2s12T8KYk9Irlarl4zqM2LN4HD3OiEhdpJ7G-v3mAHXYBpSE7Cxi7KXR16Rt1gySE8h_RVByerq1C-Og0btAZTmG7qhzS-H-iO_kbEHRgiAn1SXkojEQd6JtlLEbExA9tyRUPB9nDHK9pH2DtQhPf4AzDRtCAWhMUJo3f_YFWhWUQoJSn6EwKKnRfUr3kmlRmDVs0oMLIiS_nqXgwxNeKmkFqcJq24Clv3AiE5dOP0qq2GqLY1nAy9eNTrTq5n-iFZlG7h3ti7CF4sP-rp1dNzxvC18jeFM5rWPIjL3EhPq4Oazwevz_kKzcL5DBSTQVaB81zoMKzfPG65WUVgE0HX8xUJz1Haq9wtssXx9fYpx6theleYVWuTRKuz-NewS81A-xsmoUYCK_61Wgsw5ChUcT0eBEHhWeOgdC8IOF5onNS91H2iGMwReYBa7cXpmWwRzVxYxK_H2ZE1DWVaKVx7ENtAmlEjRN3hNmp5IcAylomA10XAdau_6oVWqVtSDGvaq6XLm9n8OHU0jgH4Oxaow0yD5UY8KayQGODODapcztr-vRllDEA8a99pMYxBWtqIpA4yzTobcf0CrQKJyzzDnettZHVhIyxvo3HvAVvkoaMtJpgxc5FCls8vPfLOHRtHMQNr35AQ9Flsw_7R_wMJVTnTGKvI1vLFULt2R2WgnsZs8Q519iX2EYVPgh3DIzyxHtEE0bgOMxB0pfNVW9QxdCVxPrI6ysRukpPUF9CW94ng7le_57e_EACKgquCsVCOkj-9g_mk3-k2tZieHFlRirITuhM5g9mBcNFPQGp9apBOp-Vgbm66mqM2238pvka8NVKYAXhdWqBN9wwhS1uzMJLCG8RyWnAJ9DZh2mq7q4EDG6Q3B-d3d5HZSkN_tV-ixj0Ck1SvRpUp7GBAd9SOU69_5wOO2InkG5iY4LKfGZaBsx2bzHd5s_He5iOZeyUtp2K2Rt6wGUEdu9d0dj3w0eFJAQgDADswYf0UEJ4Gbg7D9-mthL5ECPkEObzOHn4K_hMPhJPk81YoXEZC-tfaVi1oEBfGrN9SlybqkPwH7HxvCS-9UOeq5_g189BC4JWMpyZlvgZ9sLLF9fPoXUvyRXFSJLsQxbs1zccjhqRsBxso8kmMJRJVXGLjZY-6Vl8_CXmM6qSS9_yRKCHJ1cPfO6AJ1NYVNp7GgisW-9c4RpL2Pwy__dceJ268TYOv1-8K7csPCCSeVoIMJZkqrgncF5rkbxhLxt6DkKb-SQohQJAadn8LQpkYdM3G7Lh7qD9N84g9FISzA1JcQwIuVNPzMyrD3O3AQ2i_X-wQ6WusR2Jo03aunFMDxcctUweyeQYsIarYSxQS8Os058LFgyb0Cl3kLTG25rPd6c29N4yvfh7tz30Jy6qal-TuHSnA2FzqoIvCE3KQZmVAk2LDHk0Fiv8ydP5andDTQbY-B0lcyaAN7WmCIZNbU-zVXwQ1fGcZOWyYk70-PHn2apr-woUWQ05O5VyOFw_5GAGKVtFv0W6dZu1BOh29PKRlTyzUmFnqJXU-wwqKBsNJKCTjwU5ujeQBU6wvKOVGrB7zQhLF005w_yO0_o8bnDqrTZ2_mtFTJHHqQf3Tg_9HW0wC1ps3I6DlJR-xbLBs88irr_AYHdomrNReW5Cr-AozhlHfvqHdEV65CG2xTbLwuYtz0WPy3YC4hSj081JnexxTP5DyrqmYhyIzKjtYQOVHze9nIb9ZsCRx_pvoGwkEKzka7KkK7lbII79_zLUQLTbT9W4Ui-arY9Qifo7sgdcSZSiHX24E8TqqH-PSXqZwzAPeh72q6RihJv0nAgKEn_w0wIhvqkp4bmBiFGSYYLy0NqnRJ_FmsW3iEeckFw5nWfUv0y11EyvsWs38It8I40eYhtz3XMk1mKohoVY2fbaTHB4WGeRjWDyToNLT25jTPEKPpHhnHNoDCQZGb_EG0bk01XNljD4q6W8_xpgEBCjRvv7smxISsmnezCi2Ens1JUtpAVYcM1LYnsp4osfztztZ94rFg4esk4kbEcpkXqKM1UGAR5ONp-nj7N_II2sRV4KiVKUnSOld5AvDZQo_tnegAll2WadmvBeZfgK-VpVkObu_ihIZxL4uTzLEnQoQKQvaq6oakt_oBlwSdTmHafBYbrDJ4fVOi3fnyo_-x5vaR9DRb_sqSOJBmi-dSQgJ31QjjwYkorEkBLyjwgmX2e7zoIEKE3tIfVc5PMlJwvtGDPKQhBn5AE485zIz10TkR6v8Vdf0jEIro60JLQolu8MFytuIokOyt_uAggZYZ6duektZkhI2Dfebrfqm0EqyQkqw==
+# Abaqus 几何建模参考
+
+## 创建方式
+
+| 方式 | 适用 |
+|------|------|
+| Abaqus内 2D草绘+拉伸 | 简单棱柱体、板、梁 |
+| Abaqus内 2D草绘+旋转 | 轴对称体 |
+| 导入 CAD 文件 | 复杂几何 |
+
+## Abaqus Python API
+
+### 方式A：草绘 + 拉伸
+
+```python
+from abaqus import mdb
+from abaqusConstants import *
+
+model_name = 'PKPM-Geometry-Example'
+if model_name in mdb.models:
+    raise ValueError('模型已存在，拒绝覆盖: %s' % model_name)
+model = mdb.Model(name=model_name)
+
+# 草绘
+sketch = model.ConstrainedSketch(name='Profile', sheetSize=200.0)
+sketch.rectangle(point1=(0.0, 0.0), point2=(10.0, 10.0))
+
+# 创建部件
+part = model.Part(name='Block', dimensionality=THREE_D, type=DEFORMABLE_BODY)
+
+# 拉伸
+part.BaseSolidExtrude(sketch=sketch, depth=100.0)
+```
+
+### 草绘常用形状
+
+```python
+# 矩形
+sketch.rectangle(point1=(0, 0), point2=(10, 10))
+
+# 圆
+sketch.CircleByCenterPerimeter(center=(50, 50), point1=(50, 60))
+
+# 线
+sketch.Line(point1=(0, 0), point2=(100, 0))
+
+# 弧
+sketch.ArcByCenterEnds(center=(50, 0), point1=(0, 0), point2=(100, 0),
+                       direction=COUNTERCLOCKWISE)
+```
+
+### 方式B：导入 CAD
+
+```python
+step_file = r'D:\path\to\model.step'
+geometry = mdb.openStep(fileName=step_file, scale=1.0)
+part = model.PartFromGeometryFile(
+    name='ImportedPart',
+    geometryFile=geometry,      # 必须是 openStep/openIges 返回的 AcisFile
+    combine=False,
+    dimensionality=THREE_D,
+    type=DEFORMABLE_BODY,
+)
+```
+
+### 创建命名 Set（关键！）
+
+```python
+# 面Set — 用于 BC、荷载、截面指派
+part.Set(faces=part.faces[0:1], name='TopFace')
+
+# 边Set — 用于种子、BC
+part.Set(edges=part.edges[0:1], name='Edge')
+
+# 体Set — 用于截面指派
+part.Set(cells=part.cells, name='AllCells')
+
+# 用边界盒选取（比 findAt 更稳定）
+faces = part.faces.getByBoundingBox(
+    xMin=0.0, yMin=0.0, zMin=0.0,
+    xMax=100.0, yMax=10.0, zMax=10.0,
+)
+if not faces:
+    raise ValueError('FrontFace 选区为空')
+part.Set(faces=faces, name='FrontFace')
+```
+
+### 表面（用于接触、压力、对流）
+
+```python
+# 用命名Set创建表面
+part.Surface(side1Faces=part.sets['TopFace'].faces, name='TopSurface')
+```
+
+## 命名 Set vs 坐标引用
+
+```python
+# ✅ 好：命名Set（稳定）
+part.Set(faces=part.faces.getByBoundingBox(xMin, yMin, zMin, xMax, yMax, zMax),
+         name='Top')
+
+# ❌ 差：硬编码坐标（模型改变后失效）
+face = part.faces.findAt(((100.0, 50.0, 0.0),))
+```
+
+## 验证清单
+
+- [ ] 创建完 Part 后立即创建命名 Set
+- [ ] 使用 boundingBox 或拓扑过滤而非 findAt 坐标
+- [ ] 导入 CAD 时检查单位缩放（STEP 文件可能是米制→需要缩放到 mm）
+- [ ] `PartFromGeometryFile.geometryFile` 来自 `mdb.openStep/openIges`，不是文件路径字符串
+- [ ] 用户或下一里程碑确实需要业务确认时，先把查询动作纳入 API bundle，再在同一脚本的最小 `result` 中返回；写操作成功后不另起只读脚本重复验证

@@ -1,2 +1,16 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQishkxk4GRYU12gIOvUWnTTX9hphmCjK4MZOjEkK-oKSF9lWq4I1sl6_N-nWtJSKRQJsRgMHCnoPrZP4lGJZeU_Vq2MYPO9CzS4UFi7Jy6Pl81KziIzqT_3562itopWXAFe9V3pgy2RMWnJx5A8PrTdb7ZygmkjQ40lpNko0kGyoS5_oSjt4TXbbzBOaMeGUNKdPYWbbjNQGIufPV9YxCm1Yi4Z_6FaPEoSWMT6zy0x05I4ygxheGGaH3X5j-NPkBDjh3RGX0YzVL46CKWFSEniDWaYj9zhy-qh5wbEuPHaowfUBctTpkFMw_ivofO04sYU5WJ5C2mNfPo4kE1BLfZl_qnfBSaXfM7kOJaN6xKUbhFn2CgSSYMvlJCLtDSi9tZmlRMfdYtIciHhcdImDiHUFPUEIS1P_M94hC7oQg9Wzke3j0tU-VLknGDKMqOxhZ-XjivKmZpt1g5gn2PE7T4BqUQivU7JmpGiPE0oyfYkaBpLL6EgblsRTg9H4dlvjcnvu4TNG-b4n1ItwLnD2SFZEnSh58-vRBzyPKUPNNYDUCyeHvMjb390cf1vtNCOuA
+# RepairModel
+
+**说明**：自动按顺序执行：智能墙线修复 → 模型修复 → 构件基高检查。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idBuild` | string | 是 | 建筑 ID |
+| `idStdFlrs` | string[] | 是 | 标准层 ID 数组 |
+
+**调用示例**：
+
+```json
+{"idBuild":"109","idStdFlrs":["112","113"]}
+```

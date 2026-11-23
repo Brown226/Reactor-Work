@@ -1,2 +1,64 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQlCZS5s2EQ91lxafYLLZ8iDy8OdBuTmwJr11Xm4Fefaod_huEBVwoe3n6MAmClcGUN7j9gV5RM3AXVnzpL4LXPsnbRoBEZqSSbJGwYAK_Ec7Rn9IE6454Ev1SObsORt3ZuG5Ec72Fj7ROV0NCP3JaUst2F974x2T9_EuiDi5eKDgiFHt99n3TboY9DVzkmHZkkCGF1I09RRJJq2STgCLw557AlEFmaJ0DbBpvlxXdc25FE5IvePKEmTMZJrv8HL-8n7WewqVm4s9ha42TALdjr9mtmFwAl8LLrlKlUQI9z8NPgOabNefHpNPtJ6OEfKAQ5XsK631ZS9YnKssmElv8rdbw1xou-0FyTbaBKAVFF1T2PmAB1sSEi2DYFPeKM8J5xPVAedoDJUS9TX6srjDWLjRvPMleK3YXGSaewK3PPyE9aGJwtPDERAYA_Cpai5WGqt30wyYmPQEHJMiB6pnG7iKG8FAaLPFKd8bVKdjH2-MJSaPYldOuEHhb5pJJVzfccoHnTXLfsAnkDm5gnPSS7Q4mJGr_pYmErXQoA24UeOVozrSAfddkbW0SUc8w2JdWsatKwm2aYbVTiNywmKJ0HtF6alcOfupN6YVEBGn0xNnufvsRLd0ba5cGpeVJGSm2exUvSg9aP6fjbHypmAKcikdMXHDxRanK3wSGcj9Se_FEdEbGDwbR4RYyD-MyC5IQJRI3VU-dpttwR9rCBUfSDKoRhCstQlwXoOYtbUWeRa546rshEbfLVJlqrGZNqawdAW4xR7uToZtq3fW3z2iSi7pFP_Ba0MmGoIUJTu4AIFeqnxuhLK-2BUai14Q5Ex1lnh9NJm_pGOSg4pww3bwzrJE5PlJtvhe6KZHgEn99IeZ0Mpdw0bPtVvg0lBQZ2TPsUYF17YOSA0vZpuW1WFRzpAOinOMwx6oN_1A8k6AlLoVIEkB79e6pDXrZnL3RefazOa-Mo-bvgJzMB34m32AtDwY9SBLOuUbasG8dRzmx5D9hSPfK2npxY9E1YIYBDf7MPkSga3Fx6gstfFS-pd0bSLgWVqb-9WST3pwz2lf2W1JHA43bnn2MQa31v10takPqIphFoa4ACON8lebn1qaUF0swwhiOJV_U9MvTa6VhAyIovFbWBUCIPQ1pl2lMMYt9XQQK3qbKEOKjaifSBAt5NG3a3PKqnOV0UNPoQtQQx-07Ja0_qKK6mwL9TGW8czfn-ag6WT6yNPhr5trcrrN2WLRIV9OfRrF40Eo_HYfC_ZjyDIGpUfu0gI0BRgqgY1GY_P9hu03FLo4O0ymeW43DFE8vgvGrswDqXTa6yggVJJgtgrLAniF2UlqJgelwaGsMKY5DszUqmsUYxKqhW1kW1Q-Rx89sk0GuIaGp7sc-_7_8j_Q423hWwSy4lmum040q11uHYdBPA6u_lhYAqPBQLFqQFTZiai93DR4I8oNBxZnKA5hJV2su2iuCx3QtJ2NGoc5PpTBQtrNJ0EM4d2Pggl8WyBPmf1BGPVPEW3DFifLYxVWSi7m6vVJcC9CMK7aSufYVf7FPs23U6arZ6mn1GsHDaLF0I1UDukv96YOTz193VH5c5e86FRSAuizzxMUyctFSXfOhFGt9UWBym6wnXUxq5qt7vVxjWZQUEJPeBQyNJwEWRtuHd8wrus-DemoFdBAAZ9dBiNraTF8K1EchYPxF5dG4BH1tAgatoEimrkYeelVOhoUUUha9NlSVP99_wpptzmrkLG-Ee4j7SK0Kmg==
+# CreateBuilding
+
+**说明**：在当前工程中创建新的建筑模型。除非工程中已存在可用建筑对象，否则执行后续建筑相关操作前必须先调用此工具。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `name` | string | 是 | 建筑名称 |
+| `pH` | int | 是 | 公居建属性：0=公建，1=居建，2=商住两用，3=工业 |
+
+**调用示例**：
+
+```json
+{"name":"1#","pH":1}
+```
+
+**成功返回**：
+
+```json
+{"idBuild":"109"}
+```
+
+## SetBuilding
+
+**说明**：修改指定建筑的属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idBuild` | string | 是 | 指定建筑 ID |
+| `name` | string | 否 | 建筑名称 |
+| `pH` | int | 否 | 公居建属性 |
+
+除 `idBuild` 以外，其余均为可选的修改属性。
+
+**调用示例**：
+
+```json
+{"idBuild":"109","name":"2#","pH":1}
+```
+
+## GetBuildings
+
+**说明**：查询当前工程中所有单体建筑的信息。
+
+**参数**：无。
+
+## GetBuilding
+
+**说明**：查询某栋单体建筑的信息。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idBuild` | string | 是 | 建筑 ID |
+
+**调用示例**：
+
+```json
+{"idBuild":"110"}
+```

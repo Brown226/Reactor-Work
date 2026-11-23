@@ -1,2 +1,138 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQGR8lP3oGG0L2-Vo743FbEsOE6_vWS4qAjGYqTIdzypFeK_GWDTR2nl4d9qoV2l2dts1ptLGOx2ux_FqXvb_fspxMd1g_AKARbm_sZCji1VB_Jrz8IxxbLP0q_ESfByCNV60xMz2F7N14pLfof0ZfUivqTEkU1VUGbP2vaMEjq4M5lUQhSeZ1mDeinjt5hoLRIzmUoU56RS-5FGFqPUVTYWYTzglyODNiGIEZHn1etdQGbkTU39Ywq7lRRm8jgOQVC8mbPwpol1nP7PwySt5CuFKgeVV-inanVo9Tyu3gTQDLQK27bIVDUsPtEGejttEQo3kOnHXIPl2DssDClUT2VQd2Ik2G0HrU92-qpa3JyUU1yEoKBoaJRbvnQXoTNPKXjxpWWiZ51yYcypHjYyDaykXSgw-KBFlt1NtoidtrwfIGlg4xL2QNacEFFsZvKRiHPtUOLxGj_c2rsBW5AMHw9D7LmcdBJkArnNXP5f2lJoeiBJf6zu5uK0BkdszJc0W_gaW8QKQYoB9UsiyCo47z0OlQ6PVMVo5gm9BWFkhhuPGtOJ1vA4OVf8tbbAAtkIliBJzUY2aMIzwohTKUxi58G55CTofJU83GLvasPRAX3PDlidXPG-3VPuUJYFvAsR2nA5v18QRQCzgA9ziFykVwl1aiHwsyjlu9b19jVZPqGlJss8C6m-Yf7RTQpGR_eSFHX_jBQECeAE5C--hbrRSGwrBNZOIdqL9ic2zc9TmDccp7pN15G-LxFBBuIe6O2I_1bDaaviEalD5vcbSZGu3Ez3j3ijFFtw-OOgnIC5ce20ET86PUm-J0d0vCNEWexyulIDbPLe0kO78Lh0J4OZb9vVMVSjymeqAll6aXQErvuSQ-AHydh6RdsJwneimm23cLOmj05SesATHntztyN-Je6Ghegx6G9NYcJEdLgtmo-BtVwideOfnPq0wE7kA7pFzXMqLpOTY2RX9ug-RW_jhUnjLXys5afnBzPmMNGNVvq7zZdBGotsBcH7TtU0fSW4V1YV8Sc3KtmwfS4-kkJrlmXy-BgQctsQqr48RuiJPrvkguUeyjX18vu8zBDP0p4eBFOt84AngtZHubymVvzxfxlACVeYHd3GJmfAVjZ1TevH2NnPyeQEcmBf_mjhN3zWIo8oGuaPHWRSd7ApbW4Tbk9MrBbaPsdWdnhk8sehkitxNppecUz7SCix2D_ym_HRrRolGCm2eW8WF2rRUZ6A96AO2wsuXyzXfBkibYqdbzr6cRJi5t1p-K5RrWYCn4Wue7xNGl-w7zsvrXywFVrerQQ3Iqa8V8C_OpSx2oc1FDc06nAH1YAAA-IHJmEDdFflkScZ3Mx3-FyRuzVBTTthi51ud4-raKj639SHWKPyYRjCndP-08OU7ohQOIB_b1WGTG50lNpa9J66lVbnhSjMgO45ejgw9v5r670eWJldX7xS2TjvCC_bkk881zxePc-TRu-DViutIRSRsTrNq_qUZI_v_DoGeJznRxuCvpUF3tjZSJQFSgXbLoFLP3YER8cbzXHTSklCV9RnvwymtMR-i6J2GPZKQl-FaU7auXfE0Y5pCv7oYXtGMccT9IyKq3reF87yiobWd_GojI7RxO7eOykVdOFTiyAfyc8-OcwSRtOGmMrm36cUcKuCa_XbLmwrdqzn6xYQM0GbSPJMF3JRg7RPyVZsBtJlmY2JGomAftq-KRA_gk_HP1hEV20xTuikXTl6C9uv1gEyIAggO88V4t01rrhWDncX3DFAq6Onra8hjWVlyNkkQhq3P42KDz7cTx__rW8tGVrLdpJmjrEj2dYG4BrW-qEvFFA9sUwcYfOoOJGNKyvC0mI8M9KbWb_AvGcBqJ-FrJpm4cpXHlm3nQ1L9gyqAnYu8reRSbr_BaRC2610OV2x7DMy-qtvmBvvs8T_UVXxMRQLuzrDgtMlvoiXrN5NVg3rsHMkDHXiZPcZhAMO9MeFbdkj2uVf6BwHAP7f0Q345-tGk47eYxh8hK5z-djGso5jUmDgXv-lshK2jIG8LesBtzGhzOPnDIyxryAYCZCAqoXKD7Bc8vPOW2RQ3sqLEX1tJ-RbGqwbU-3qhfvILWzGUBMdG-wFySh0nArIp7QsPJOHSk1OM2hhKRgJFRgg7CMR-Hw11Vkrlbwr96tU2UiHx3JXkxNm3tSHPvH2qpgzk17cozielPAepuHYu84Om5-YLEOjozJRpzbbWxB1bevzuGnOXXCQtbrKdEmiObRrsRNASR3FWDkwFYPJF3EXfpUaU4F8bpcjHW1PABMsImtOOCssqc81ocILzTueOjIhsbMusHC1Ibfs48hRf52csl5tlKdW1MrgZz3ucG_Ktwgl142unE8r-1dMSpGFONM81_DQ6ZJ6pU49eaQF_kRaI2niXKk-6XQfBwmhn-CAFC_1TUy3Sxmy7fuLq-y8iaw_XMUwbjikKqIOUvSQ8A7kKL5L1om6uLkJ3zIytJImEq83xrsAWLX5IAWycvxhqqIiteMxbhpN7PLih4dtNK9ck32CG-UUV2_Oan9CTC1Zq7UGcyeFvyCPciaxvgcA96UUsuu4YKylPfj5cVCrU-2KEIrhR-46lNnJ94UIFTnxTXSLxmPy4bVbTScAkXjNIaDcHrUMx861GXBtQsSiwoV9QRqQmYerXdkFC4HauRBtaLm8gxm7GHikBIOurSGRuI3Jytb9FEFMhi6WPAoUVB9zBqhMhpfLQYPROqsjIut4898gmPxnhIldAz5_M1xTHZ23U4qN0NGYBrB2HEQ-4PsD2ca_PqkcvL6BsYRUyJq20Za7AVld4xKNfO6PYqF8ODkTVlPq8EoJkGxIapUrb3m97cWtkl-Goref1kkezXtX14VjNh8iSEng9RmtJrRkXW2IHP15f9PFrtAeeNz95-EXZ_R31dRMFqK5-PS7BWcrq0k2qjzZUBZLjFqiUWqfpXLOo3tQ44QlwRk3g0HlNjjubjG-3eQ3RdLBGV1knpXo1tl2HPuYHsMfuidP2rPnq6fAyQ5sGbwicvmaB0FZJ7EECjQCd4LDjwX1qw3pVVV6zZHYvUtGnOiCj7vcR7Th6huTH34y1qkcEutsGK6Yz4pe1PPaedYC7cqA8DWs0FdDUKmjcuHnxoSsMtDu6bzxUsNDGIQG2YdTh6fOoij4Fo86i3J3j3C97qBL0i3LkTA5cJSnz1RWb77sC4xnjyrJpPqkcMCrzCSN-PcyehQOQtT-KvuyfeosDFM6tT5xgTHYDlAiw8jX-jvNhmenGa-BeQMohsFYN2XGdoibGHlLLyTFBcoOod_1quVHFUoRABY_5wW7eFRansVnVZpXIg3FCNZzwHFyJGAIbJb8sHWfiNv-Di6aamp0K6uLZ8IySHr7e8RJI0SNe2NNuqYIOKr5w8pyFrJOKu9W4Q1hmdtAipkoIdaFw9Nu5d6nCc-HAD2AFX2ZmcCHamXgNNdDg-9JuB83Z2VQkpS4qFk0JY5lwe0vbSRwYj2ES9Pw50fnhXPBHc7uJobFaYfe9wM44A1x0v4tpHlqa9z1Rv4aOcReSeoJkNf5n8k4iS9FraQs1SHmyjw-Juyvb3z910PssZ4zbAVY5SyEJdpLHKvJlb5B9VypswhuHI9fA5uM_A92pnsDetd2U8LPOou9z72KMQuvUa4AokfQbiuA0wq4To-Qv02T5rcjbavpWe4KKIGovmnnisv8Kc5xTci0pHdIgYT24oKA3K7bP3TYSJH7D4zjsUan5n7RVe1LSaI7UXizYUHamRa4w5IoNSSJuK6MB_u4x5ozZ49digR5JzDf6NTa0FBEqmPpeQmA7Pu18dsm6ZG8emTQ9PTC_qumXB3SQ8SeXFXMeTgjQNMKzAfKy181zgn9RsaK2j0DpsnBOj6BP9WWGK1-TwTgQshmCd55-eHzGykBt-SqwyD3OfqQW9x4BxfMfMPGHmT5Mk1eLGBa2t9EdXAH1lXEIwf75xSRhS9Hommi2h6K54iDnS6FhAN9xLhuTubpkxDP67PbPYE313spQwG2rjPs0fD5e1bxBKue0m5hPCmVKN3ptlnRb438JEpC2suhl2s25vuQtB209XwV_qWdifzm1N5_zaqcClVHuX7LM1i7HU1zsCqSdU5fk760lbE_zbxmje0bjtcckwSiVKETKwqmjr8O6WEWy9srg2PiC-AR72BCUDzjmBMhYlT5OQypLK4drQcSzwchBVwoHP48Kvs8tMSQ8abf73OxI4VSJ8EmYR0ikTo14RygFWQ3VozkOPe4xAf9OTayCKoM2HTPTL28f9IantK_O_uyxNh1QFqZTYJhyMpGQcVCJUQ74393dR37pTShPozi4GEuYcreOOHErhHbz59_zyHvd9tCj8qjHwyBXEjmNGh7LMVSSo_Ba7P5i0MnjUlk7pbRSA6a1d11eJJxrm85UJ95VMhrTT4CcbHtjmFexqj6gup9fq6nDrtHjzGFXlOAt1eBS03vOZ9KxIDqubCvlM5sWZJitwByYIh8tMJ0qlCJQxmPsyp41BhrDXJ7CP7MC02B1N_ethtGb26hG4yOVfOm8RsD8PBcZvIoTdy_lrUyhb8YHZzNJRYEhpH97U3ZQuLHCIsypkhc1C8u-VQCFPa7HC-MY0d7Uix2z4BTsvZZ435OERxfY18Cp6HsAxvngpQolyZtO_-rsrz54xbWGJC61kSx3Zuq6N8PgIW9TA5z9tnmV6E7GFjLGfZ325C1fkQbOnXxUgz91_memzBwvxLxJNWIrVHHMBLq0Kq5CaEPZxQE70yp0qF3wtlnB-AMajgdCSDJOIpcUHXuMceiTecfkxiSOzdCf2IxgDf05cD_WMybYiGWS-gofY7-8m9i7t_e9I7rJinK-4WvIHWp25UTOMNDHIsi9DK1CM9v5rPh5ob8mer2hqNhCzkni3HCbQRxnQA3Jh8GD_I5j7smoQDI2pfccyK5bgZPLxPbDvc0hO6dhR333c-Rp1y56AAhX9pJ7yMHyEza4TTLgtC3PJo71BBQ8vPaqN1OtK9yfrXsFDGlhIEg3Z09Z7vX-SLlUfTjyfwInzHzxxkPSBAfJmspEgYqqT9sXPd3cq9Pt_d9VP4qPX-F4edLDsctuwp_a0WZVzeWoCgvetzGNmOJKgDrht6x2TLaPR6yEA850DCwPXunalHyscOBfj-k8O9KbQHP6QdEteUHTq4lsD_7iE7EEFwbIztQL2NTTJm9Zf_L9N8kclBYF_kXX8ZKYgxYMBRM0sziD5cfR4Ed6gKdwElTsQoCs3ttXrVedjLUplFiCzbXm3ffJaQD_ycmn3F33B4vSDSKseEmgX6-uB6VuO4xFUm6p5FUwLkoNxaq9VCQapFNhVOif4gzgUNdZGyyvBeufFEUCHLVJCbwkXljtoqH0iEGGr5CPFceJQQQxWg5UhpenmKFtqH7-wMw4vaDJWzJKsryeyNMh7C0NwlC_SRpiflniqt7JIyZKgcpJbXw==
+# Abaqus 模态分析完整工作流
+
+## 流程总览
+
+```
+1. 几何建模 → 2. 材料(含密度) → 3. 装配 → 4. FrequencyStep → 5. BC(不需荷载) → 6. 网格 → 7. 提交并返回 → 8. 查询状态 → 9. 提取频率和模态
+```
+
+## 关键差异：与静力分析
+
+| 方面 | 静力分析 | 模态分析 |
+|------|---------|---------|
+| 材料 | E, ν 必需 | E, ν, **ρ (密度) 必需** |
+| 荷载 | 必须施加 | **不需要**（模态与荷载无关） |
+| 约束 | 通常必须消除刚体运动 | 由目标决定：约束模态或自由—自由模态 |
+| Step | StaticStep | **FrequencyStep** |
+| 结果 | 应力/位移 | 固有频率 + 振型 |
+
+## 步骤详解
+
+### 1. 建模（同静力分析）
+
+### 2. 材料 — 密度是必需的
+
+```python
+mat = model.Material(name='Steel')
+mat.Elastic(table=((210000.0, 0.3),))
+mat.Density(table=((7.85e-9,),))   # ← sequence of sequences；模态分析必须
+```
+
+### 3. 装配（同静力分析）
+
+### 4. 分析步 — FrequencyStep
+
+```python
+model.FrequencyStep(name='Modal', previous='Initial',
+                    numEigen=10,          # 提取10阶模态
+                    eigensolver=LANCZOS)   # Lanczos法（大模型推荐）
+```
+
+### 5. BC — 由目标决定，不加外载荷
+
+```python
+# 完全固定可直接使用 EncastreBC；部分约束再使用 DisplacementBC。
+model.EncastreBC(name='Fixed', createStepName='Initial',
+                 region=instance.sets['FixedEnd'])
+```
+
+自由—自由模态不创建 BC，并应预期出现刚体模态；这不是约束遗漏。
+
+### 6. 网格 — 对目标频段做收敛检查
+
+低阶频率可能比局部应力对网格不敏感，但不能固定假设“粗 2–3 倍”。至少用
+两档网格比较目标阶次的频率和振型，达到任务所需误差后再停止加密。
+
+### 7. 提交并立即返回
+
+```python
+import os
+
+job_name = 'ModalJob'
+job = mdb.Job(name=job_name, model=model.name)
+job.submit()
+result = {
+    'job_name': job_name,
+    'status': str(job.status),
+    'odb_path': os.path.abspath(job_name + '.odb'),
+}
+```
+
+此调用到此结束，同时结束当前聊天回复；不执行 `waitForCompletion()`，也不紧接着自动查询。
+
+### 8. 后续独立调用：查询一次状态
+
+```python
+from abaqus import mdb
+from abaqusConstants import COMPLETED
+
+job_name = 'ModalJob'
+if job_name not in mdb.jobs:
+    raise KeyError('当前受管 CAE 中不存在作业: %s' % job_name)
+job = mdb.jobs[job_name]
+result = {
+    'job_name': job_name,
+    'status': str(job.status),
+    'ready': job.status == COMPLETED,
+}
+```
+
+状态未完成时报告并停止。后续调用继续传入提交时相同的 `workspace_dir`。
+
+### 9. 后续独立调用：完成后读取频率
+
+```python
+from abaqus import mdb
+from abaqusConstants import COMPLETED
+from odbAccess import openOdb
+import os
+
+job_name = 'ModalJob'
+job = mdb.jobs[job_name]
+if job.status != COMPLETED:
+    result = {'job_name': job_name, 'status': str(job.status), 'ready': False}
+else:
+    odb = openOdb(os.path.abspath(job_name + '.odb'), readOnly=True)
+    try:
+        freqs = []
+        for frame in odb.steps['Modal'].frames:
+            if frame.mode > 0:
+                freqs.append({
+                    'mode': frame.mode,
+                    'frequency': frame.frequency,
+                })
+        result = {
+            'job_name': job_name,
+            'status': str(job.status),
+            'ready': True,
+            'frequencies': freqs,
+            'numModes': len(freqs),
+        }
+    finally:
+        odb.close()
+```
+
+## 典型结果解读
+
+```
+自由—自由三维结构通常出现 6 个接近 0 的刚体模态
+约束模型仍出现非预期的接近 0 频率 → 检查约束、连接和孤立部件
+模态是否弯曲/扭转应查看振型，不能只凭频率排序判断
+```
+
+## 验证清单
+
+- [ ] 材料密度已定义
+- [ ] 已明确本次是约束模态还是自由—自由模态
+- [ ] FrequencyStep 而非 StaticStep
+- [ ] 已对目标阶次做至少两档网格的频率收敛比较

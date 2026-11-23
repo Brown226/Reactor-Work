@@ -1,2 +1,40 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQDRgJe4Kc2EhBuQ-cJse0xylSaIFZNjE0A5eECUrr6I02acPsVbRyE_ztFmH587WX6dkT_ffmRRj0NoQVegOsPJceqg7LiMCCd24JT2kRxsXbBgoMYU-MumHUW12pkcK3F_ZzLT9UxlR0kdIQ5Mv-BIfwY4mPDcAO8VkaCiXwYXn7udzz3MboX8TfCHzeNsSr7GzVHGC1j9G1hjPe_6OUP52Cpd2B6A6ZgM9fsoSAEzhTR-rFv-OIBPUOSacD-7rKJsKZTEx_uBoxQF6L39uJsHDaFGhcYILUWySYVLfNuWDDLZNfZBF_AySXfDvV3NXD0BLGztmHjDi0rBUraxN0ie61H71hvx0JSxkEIOi3PcMA336YISutvzUGNcT6hE1X1JEyhbImrz3mgMA272gAGGUmY1DYijPeztWLQo1DxVhhvFQZ3ZUerIZKNSf28rkG4tmdWYRe98rllTsHwLZjhi6k-kY7P4K_dNreYCa1-qbQAWxaAL19vADib549FRrO78FlaEGnGoAi_LvnL_MNf4NoJU2wx_dCD0SClmOMjZO039cSLH7iUQXaBBFXmmsKSC4Wsf_L4TA-eJwnB2T3EpDxqJaLTNsMwU5ddWqtOc_jyelHQkEqPfwsWZE4OptnAF9Ab9ITT3j5NedcFY_4PkdGur2uMF9f_6Fg2kCTynK5yDwY1sqTjD7Gy0__v-vl0zQtN2MVP8ku9TfIm80E5imSVHaAvH6oEhW0_Emld3s1pN9IElSzP7crZHyX82oqzxNCpb1B9WLmT-Dbond4WuBeKRoHcSCeS5EW95aSorkG8rl440YKjSYp8s4DY6s3qBfn8pG6MMHBxshMC2FEUOqlKiyxwzJOLd66I_XmSKtAmunBqnK7nIIVWk7XYIIp2gZP1nCC5Kui8znZBL3MzykLqI3kx_nAz2hq4WRVaRQ72ff1icHR53PRFL4mjv8VAvXcMXL_8b59gAbylO6dkS6UfyaTgBp2BykIfog-c_xr83hWGozOEXEhe3dAw3VZs1CiEEc55yaox9ofZ4CArO1Tc9S0F_E7yoC2xcaiEASxMir30--UxM-jLPcijM3Oswn3_ZtAiFmpOcSevJELymkeM2uL_BSFFsC4A73H_Zl65ILRasyRyMrAlY72P6tjRyWFSV_iULE7T2Pe_DohePBB14xtjqkKP1SY0LQ8boDI9NKrQEdaoXF_56wP2WKNQnbYA_ulcgwUhJCdXbbRLcwJb3cVTC2kvcGpMGiGZpov8bPozHpemwrP0w5uyNQKyaIpbuvHqHlkYbM83tZGf58FOiCVessi-wXdi_SOg_FNcazCdlzV2aaPDJzl6BufAEDI3W8b3CfWcM39iGMDFmspco3CYrgz8Swum0uR0TtFjld3iqzehx8MdUikQjErc17JnalYTOJMBrJcFQAXxjMuzXopYN2-6K4GZ_utN-C0jFYwlpD1nXhKLtu1CH_JIDDuI4LgGKeStiWWlKwC-YbYpSnLkg7qJhW7UcA2JuWRQfoJ4KVrUXbdoMZ29fUxUuJtIFHPuMPD1KHhWqpwDy4kHTMWM8HdShu3SaLI1N-PMWxaa0WkPQ22MDl0e1586XXcLPvxkAsULLfWrqrSxw9l3hA5eQItGrUiFN3SuIxTFNDG3g2xPbjClPdC4_-BrFaMwdb8QI92EZEda3MKENgoDwziDYQizIp6zvsbd4QoczuzvmtZY0_M13xTBfetY_taLfCDU2vMNB9hkMIWTEndw_mRDpOZSocdYLudPK2oHi975evEZKwub_ZQIs-w33Y9iD4-OC_r-3Qo2RFsz70FnebkcbijmNCU8K47-vcD6HwTH9Qdyxog-wzd1xNjIieUGP_n5elGexUAZuG9Pz9-xUqAKxV3DlB8IhqJ0bz3uuHUqxF9mr6WJ_nLD0oKmpb2hdzU7vV5OsZN_OkVkrwAXa4_mZCEr-BSPNsGIraJNGKMZzT5s92mT8LzErbJjqKuLw_SYVK_OJ_zBEv_S35t3bCia-s3Y-MQBO-2WMlxhi8HTT_iRVwKgDalam4fSCOl4ICrm6wo3Yu03WDqLnD9TxTI5hypmvEYYg9CCuUkOaqt4e2Xl8AiCZAG6tA30HHX6n0SfLi4fEq7v_9TI2jAiOS4NxaM-YakP0K1jW5fHm93Okw1wlJYPJCB3mNwI_sAefomjT9vGk0fjAwTxWbB8iNbZAcd3HTYUMcJHy2xNIJs59doTu1mSNOHqWjXg6O_vBCj6kgG3PvGsUYjMdpG7Qbw2QYfixnID1BzL8I=
+# SetProjectProperties
+
+**说明**：修改当前项目的基本属性，包括项目名称、所属省份、城市、城市别名、经纬度、海拔高度信息。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+| ------ | ------ | ------ | ------ |
+| `projectName` | string | 否 | 项目名称 |
+| `province` | string | 否 | 项目所属省份名称 |
+| `city` | string | 否 | 项目所属城市名称，指定城市时必须同时指定所属省份 |
+| `cityUser` | string | 否 | 城市别名，用于表示城市的其他名称或自定义名称 |
+| `longitude` | float | 否 | 项目经度，单位为度(°)。东经使用正值，西经使用负值 |
+| `latitude` | float | 否 | 项目纬度，单位为度(°)。北纬使用正值，南纬使用负值 |
+| `altitude` | float | 否 | 项目海拔高度，单位为毫米(mm) |
+| `landUseNature` | int | 否 | 项目用地性质。0=其他用地，1=居住用地，3=工业用地，-1=无用 |
+
+**调用示例**：
+
+```json
+{"projectName":"PROJ-1","province":"福建","city":"厦门","cityUser":"厦门","longitude":118.0894,"latitude":24.4798,"altitude":5000,"landUseNature":1}
+```
+
+# GetProjectProperties
+
+**说明**：查询当前项目的基本属性，包括项目名称、所属省份、城市、城市别名、经纬度、海拔高度信息。
+
+**参数**：无
+
+**成功返回**：
+
+```json
+{"projectName":"PROJ-1","province":"福建","city":"厦门","cityUser":"厦门","longitude":118.0894,"latitude":24.4798,"altitude":5000,"landUseNature":1}
+```
+
+# SaveProject
+
+**说明**：保存当前工程。若保存失败，即可能当前工程未存在于本地。
+
+**参数**：无。

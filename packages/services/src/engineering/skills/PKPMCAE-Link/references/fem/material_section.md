@@ -1,2 +1,265 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRyh-8Y2dTIm-mgXMG618q4wW98_EtDlevEZLeh0VehYioDCwsTb_avubnH8VmW5wpbL-GUPq10MiD1mDf0MoHGYT6OETihQhd1EUbkLwd30C2o3kUx_2eYVlANdBwjgHnYT_FQd-N8JHbKzZTbT3ZrgK4dtRms6Z21Uqr7UtqjawXgCP2gmAIjYk1CdOnXfnjX_m6kWH5NAB_X3k1NvuKUYdNHHejTN4p2Ba3-VKyqbZ2HizR3VNPNF8AX4duFTdHiA7GDf8GcLissLWk6xom29tCWvYU-HPeBcJ7tqOeNBR4ofKGvHJmNEox-woSeb6UrWzvlTW16OdgRVohHQBXni0I0fAzXPNZd82Spt7nQJtnEcBdD1i-c9xmkPuHPBnzmX0hx5eOMEsfhWRBXespsdmx18VfOoA7YD8idrPeViEpleK-3b-d7bBlh8lKEUmpoBLTRbSUUAYxGUbxZZNvlmw5e6DF0BlfYBWret4glpQSRctflpnwD5SGftcgACbgdO9LoSsxIbjRKsnG7OPo1WaVTEzAnaVmxOD6ZRqsqlU8bOVvsZ3mS3eBz7xZT9CzHHr6IWSYgEpBm9k0DGIWaq0IIJqsx5CZEEbE66Fm77WF_8hWopKG6sUdd1V1g_lwsPC8BaXVuAGRlkP8XzKQM0d28vEJjXo90u38-wq8V0HnlDfEII4M7FDOOYvUdjhNWyZQ1Uh0L1WMejN4KLDPLbuMmPOTOqzUS9VMPkXTqMigbzlHaABtbLH4__T76VChrbDEpXi2GOn_qMRBdWZVRc077CIzXcBRgrTt2m9Mwe_m4VL4r692Z1NSO0HzZMzo80xm213Ucezk1Zj4pwAP-EAa9C6mxSLuiFGSIFWkYBRdTY3e3S5dV97dBZSMK2VIcf-tu2s8cqXB5ODRWZ8hNiC3W7qW3eBNtqBkW9GJA4_8fAAm7lXB6da6aG_3p79AkQSFf-oxtait5GG52lYHFtkJ2aA9mxNf9am9H8dl_APg2YBp4Hv2RmKk8HIMnfqWUuVeQ8IYAKwun31TvLSmzl67_cauKx_94aKzz1rEoSHzm5cWobsgtiD6Xx1OWP8vbJUMbBOzOuYg0gS-Ui_V2PYLc_ahxi72iFzHBrxiQvZa3IpSqje0lcHOe9B77SaHPIL-gG_ymoaqhf3QJCCO0VuZPpkPc0GAaeZyHTmv7LhQg5Wm7C3k-ECq6z0LqRV5gY8hQIV4Wt74wOR_Gx_QsnOzUrssh2B0FIPx4lBlr3U-4TZMVs99_Y1y7d2NfteX6WKheh4KnJaHH05CKGEHoXeWWdmLc9a56BnvwrghtX6z6spqZStwf_JuxzOVXBaqpyc92vkbYfv9KLxuvuxayO8s9WbD9_XlZlRRIG3XGu2N2oclSB0YUGh8UZe61Fncn77yrzh3px7UgwRGRVMqlsTcNziE9Vgun3angceEsJHpaUxfTjoSom7j0BySw9L2wQkoQ_OsrYX62QBx-VF-sOC7pxxd-WWdXGDiEagUxmyc92Ru7CNSlEzWUEEfy1p47Q7E0X3DlULXYLkPBuVo3G3Mu6RZVrRQZHZopyVrp8DNeNXVzqjDfb_BC4LaUxi9luPsWupZd73CMH4H5Fvm84yCrxhSr1dt8rkx_H8fMufw2KNf7oSOSvp8QWL21xq-8jzo2L_97I0Uq7gFxU8OYiP5VdC5sKXmQ9rPmhwUdHwWbTfpYrMx3Jm4zt0W-VBNLtbIu1vVN4aEGCXZ5Tm7mM5i4ByRbYN0qSie0iezJK16SLdcF-ioBzuHftie9G36UI9vNunnsc-hdWofL8LN5cRrzQClnj1gUQvwF08UH7CFtfIe9w4lCneIvUIMj0et_WAyXw77RWjJt59huU4FSJFoz1dYHEqXzGvzswXlprtf411NKKSYprls4rDKUuOeUTHEgJDW5mhp7cTXucRo_IDym71BjC7qeto5FUYUGwFSa_kVzc32B0Cn10jLgaw8rpEm55QoMj9nwR16JEgCLWrgERscg3Tf7P2la0gfmw-0T8iW34dAsSaP2ZZ-htXYtg9yNOV37f9LEJmQdSX5S-RNVUvttnTNMRIKRju32H4y4LhFy9DMNBO9FIie9ss1UfGfXk9E001vMNu3rHx0oPNRsoou9gPosNS0QGKuFMboKttBIWLPXZWZ0aQaheJncd7QetljfLC9N7iUdjh-rewixWGWbEkbTSJ-dZw1SlHtLivqyt0DyK7H_brfa3P0afdUMTYe-3gyThze7UKZMk9QolSZKGoGAzKf2v3ZNGVkeLC4eXYsCXCTx3y-6Q0hw-ONCnxxuumZCrTtOuFBPUPUekpf361HsRrCYLjzxI4pBDG_9Goxbiy9y7R1D8hvrkvaXGseYUwyuYF_DaLpUcmEnhwuUW574FxYS_v_CRZ1JPnGpcnStNO8pAJOMlmxgcZTWMoQi8ZQSPI_b9JUhqiRKdDb5OtWY17D7QHcUwv-wAdFdstdgWDN96wGx43K_OyRns4Nq5aqtVdYVUJIASf1EIzmOQ3D09UNe7SOI8rqhmP-RtCYoCxGX9ktCY-6bkmRP7ewZSn5_eLC2Ek7JS_PioQPyBaziANHAn6_LpoilxzhrRDAgu4dPvudccDfZy0Z-Y8ItlrStbs52Z5DIDnaNaGIE3GVvhGGfTNoyRzjrjDgl4O5v2YAMJTuCi-hsbJrIkKiPidF2DV9eVJzdcmT7JuINhovr5HZsoG-cyOsacbigDToXeTFJaDiGQiVhU8Hl2C4qe87V0s5BuLNEaMpASajlQMTE7FUojgx8GsJ0m45exMkuBYR0MGqkDWKYvX6GMvVl4vFL7AsfvqNaQ4OvUAJRgH51p7nY52j9O0oxi4KOWJoeEsuszVVmZ2wr0pIIdBIsSjoV9zDNZiVhr1Yui_cSoXvJH4G7EJVrC6aI2ZsZEJlT4iIjH3JMmtZb5VrldqMVRMckM-ShmXR50dvZfOKBN2IPX_h18WZafwv5IAL57dj_uXRpuMH86dNC-_qsobxgMA3y-NfRqPzDJxIObOogsjl7a1a7F_yktg3jGPrKU_LUYwFUU5clWDHWwIv3Hl6aHI30UT79WdZbb3EXzdjsHnRVJLf_Z9stQBnaw8ptNafkQyi3PS68WN1zXBgatMsgH6xTvpTQNZvbhu3Hr5jcyzZmB9yepKS5Jais4tWBdF-Dl60XS3D8rycpvT-j9YyQGGQpZrOgAEpUp7XeujNUl6UxJ8hRWmulE6SNScm0FzzLrFugQv4Y03A60bwQDBP_jNadmhVig-RDbQtvTOgSSTMyf-U64OAzJcXsTMhc0fg6pIMNIN_rjKg__PsMLOmHYZ4XybN_zF9KTRE3EGN3t3l0gWIsqzBMN8IcTMnwoHECqZjg67cjCeCZSujQK6FXVrP7tccMBHimsGUyXlI2nSqeCSSAM81-TPMp8WPfWHDu_fBUB1V9iJEZ2aC4GzUe7JtGWa8r6RmpDkJL4Zdst_o0gunZJJKe8_LFcVYSMNtkxx2bOKH-FOBtj8mwRq4Jn4PcUlbupTvqULVXu0FqlUDM6x1qAcC13Rf2u-BMuX-YDJgadae9gyz_jSyw2QdBbqhxubiqn4gMuScsmJdALheRCPKp4adiJJDAFSzBU8vLfsGjUdbP4Mkd9x4Zy1LX9ZuE8aBm6QCQGPhewVCeklaZIYXWR_l_IFDRDhFuutQjdF9PQGjApY2F5beOZx5foTlpkHntCJ2N6RVK5G_78pASYZJzEW1O35uATjPXH0SQ2kqaH3x_gCpVmFFQmqnBhuDpC1iJvdHc5_o-J2v80WfzdGM2DZwwh068M3lfKYjk5bpKT0tyJ3eOYoibuEFi0bnUjEpZzuSJih80-o5ZRIjgUHcJTdNl22Hq2v8SLdhyFoSDdbfRL597ifeSCF3lWO6tALYF_tavZk6MvU62TJRh4jzn3iz-TDpQlr__lKGqB7n9OBp03oj3_0XVl81O-TAvRHQrRkyRUrQ4psKZKWZWtKAbhC4n8ny2xA8dwFT9Mnl-dcrSZekLsQpRGPTkGeHU-J8iXycco9PfgCrmbMAhJhgdvfCpwPCygAJUf_IBuJ5I5WzHP1C4xc3jsRhu3SwN8Bco7hlp9ssflLgO5btcTBL58r3l_tU12Og_R-XRe9L-lTihkI336tltMymTcWbCN0g75er5Zu2ORT9RUetJwu3W2dXnYUVurrcqiv5iUkZKjXrv6GeMM7Pre6hTjOUVO4vKaUznpkbXY5aB3L354sdQmeWLe1ofmwU6jidczwr4XzzGbe9MT1_-zZZRIAdJGAzYtgqQrQp_jSPhWKHc2EOjNGhPsKPg9ar2yOx1RVL5RiRyQeNiTvvwRvAziZ_2v0ARr3saJt8eVS3_MGjIS55JomKkzWekvPce7mwV9ma8dkY5qM3uHFJUlNEmFZ5mhYZWFJpu4yPRqCT2Og1k77L-gTf4azhke1Vs47i0h0OzzPXoUKgR-HTHQ2rU9LYWhcIVcOa5VMtlhQbiKfZnnt9_jVTtYqj6eetzqD4yL4DL9OEM0U99gYhIcnDAs7VsI7nNMC9I_0fm2rEnXGTxKYFRIeAz5OGxGmEApsWRtDJ9JjnXXkv_QXFoxPq0a_6cE0joRTRMmdS8nTxnPfmB89dgpKRwZyBLFy6gtmJSHANexZl8Je345pUKVxaW-G-ydU65HtdQUkrbB74dPyGfXjSSykyPFRl2p2mnnsPKs9iZrnh4H09U44-5rDy_OYFD94Fy8ivsQg94nNVoxdrpiE6i54ROa_RPPOg_HwD2OHOEmLuakkC6_-5R5Uh28NsCk7ptag2V8a1IR6gtk9NKiAItTdjSv8mrGKreA3CmbZ7jTJd97RvWHz3BKN0yFg4qD1Xe3dtTt1oCbKNdFIUvcGv_cXoZvrRojm6eaMaQkU_MD3X6P2X3Uum1ZgOlCAEtItRIrLim0HLhRdJCTbj68WuvgJNafhhC1YOYnkDEl4Bhwew9rOuICjWdbogk4wp73qNKJjrg5HKU9LwYDwuS9zTAtDB1Bf_DYY_JXUXcGF56EUkAG9WZLe2sOgMLWogqfBa0agN_fyzILoB8KE9jDy5QwgMgQwAwUNLeJhz7X2edXM_u1_mpLx8dv0QxYD5zMlIgGXCRYDXntnbxY3Toc4i3FNcNT79xpTCqjDW390wsmHfrqJU_OUu9GL-4H_govF2P6di0nAjYwmhXYjJYBiLNPRf1Ujy79X0oPZ8AWirIiwYCbNkj3WQy_Goev-tXZsUeoEBtaWSwXPJrY_s4tGuRlPopsbZ2qaFvIlFDAXdW9S7sk3g7DUHHMYJHkCWKfD19N6cj3_aUJUhBzyCbd_9N0tYKLHkMH-qLylxEB7SFnetVP20rVsZfvJDEYcTad5Sov9zVe7IB0e53ha9oV2yGrrZ7KJM-IeUIRte9Dd5cHGTUGJJCHI5Zt2xtHH-r4GkU3EqrmPkCR6SZhLc9roktSoWBklMNxzVTA_Ey-QotwuOG0n8gSqi8hEWsoBHyZiaX1w4aPomdNPvuhn0DPDiLOWp5jO9_YS7upJx5P36mB9LQovaxbYepC_SHG4qr8BsW1OH00_wQYdJzYoQJ4lPffN06Qd3CUoWjT1aVqv46ztNlHI9mDdjOjeKn2APuny4jt9i_4zVbvozodZ1pEX-m0Toitdz5Kaa_P9VsFsYIXzGCjiVlQ3DZbMoytDjJxGYnDzirDisoLbQj49h_EuBjKNI5o_JiT3rILvxJ_tOScgPPvRh1ZTmtx7TI9FjJIupPSZlWLSwVOaWLcbIyqFltVPLT4I6chBAVRdcaYHlTUrIxwW4P7cEVlSWeUQIZ0OPCy-Dz6svEvLKHh4EyGKkjblMItCXnY-4k-uvdUC9A5I2f7LZ64EhaKT73S6UGah13WWidPRKOYSd_hnFZw2ItzpROsgzBGdrsEpmhM86XcSGR-373FVP24JnrYgNhMFcK727EIch_vqxcQugwbo4sq-DVPGFRPX3Clpashs70AEPHgEkXAWLpKL4tz0V1UC7LYID8iIFnBuoXtpzQZagT7cL0pWmbeobw8Ndc5tNEl-2psw-zt4slRN7DxrXlHGX_0xjTGfhMiu8MXkoAK8i0mQOMZsfbhWaI_8jmIriLIm6Bj1N6AUExpdY-CTuxKyYBYzD6Wyv_augzLi8fJkwLUIyZHCPn3zphdPAkvPlM1uj0_gmRnr3gKl2Ki4rx-4jCqBn8OTGJyTcmryc2kM6gLI6mMgqgNG_oGK5OjEo755X84L9bftQ3IFmaLdJW1H-YpJ6cOWb0-gZJgj17azRCtHUqun88LvCVoYY37DrEHYQiQ61U0c4AwP6ktBrXSeCqwe_HLHxKXjbdnB6mLGjKdDGquttxe1wgmrMpHjL7mlWyJjLGh534hki93yhu34Na7pLQ_wA4HN-rM3NN366DGjP7IYKBDbScEQ9aYI7_U-XpXPI1VeWPnbrCsqKBMs6rZEAAwvSAzEZXVjt6_fp2py-XLpFQnDfA3R-OFkBpnFCUFgP2fM1A3HJpkD3p5DjAD3G5x69PgNEkwq8XVk_QWtqUoAuRK8sAGnVmlkJe8hQ2qG2Fa1sgog7j0N9IJoGDEuy9PL07pz0k7EBZ14No-6xVvH8HrlPlNFDeVFdWShONCIGrO_9ozJrdfvJUIXm9C8CC29jphfaDF8Pd3HQaL5jisl6olYjsHO5a8apo7rn0Wz59vt1fj6CGxybw_WLmvKbkw09izLvKnRH5l6B1IqI3GepFzBNnrbpbH7Ct_qEudQhzX3yj3GXKEgCETBqrrqfIUnMjgC-1yiKu9NTmn5sdOdfzJc0BB-SyTWYug4KqNl73JjbgaoM4WqLdus0KQU2CKOmbmc4up8sfDoRhaw6iQ1tzL2-C2hz2n1zKpPpcPtLWTzEoMS6jrAmYlk_aWxaT5e5TXtZu5yCzCDEwIXtHmSZuuXoMdeu6XvDjGQaZZJAfg9VkoLeNo0H-DaH_i1Pk02VeZ4xUnvt98svXU0bnH2sMWQ--WWgoIVOi71STslq0DDyXhbRXNqpHgnhWVXHF3vcWEsWSkQczreaH0OBVN79r5XqCL3WbnmcDde0YA6GAr8krM_4Sg9hg1lTPYr_9NM_CD3mIByTk3nbAjypf1J_YJuiwdntBzTubFF1i-YvR26mKvojqGKYTIwUx_oePPgVjeGPDBAtVHCTIccsmrIn_5NO9iI0DTu2lYH7SGSVbqFt3ovWBsIvp34E7R-8DSYG9tLtNp2s0obdsxKjg-wm8LuG1cuPj12B7cdyBZ2gBmj6jpqybax7O6HvZ-wFt74JH13c_jL-TRzqmG8l5hIp7Xp4D2EQ2W_pN1rwXstofOTIMpt_0-UTIvDmdyQNlcjau2bonmNJiMHkVqBllNgwJ8Pmwz02T5phaMX8HoimJGLa2bUmrce5iJ83ZU_lHWNjx-APMuT19OrHTu7QktGjaHHr4S121pCiUxvTnwI_tOGMdc4hEfFN0Y8DWsXvjPPYEm7rL6KBipD5hMUAn7iPTYxpk2C3aPSjMKJNwrdwHT7LIwxv86nIGO4Mc5N0DXxIjwEwYTBDXXMU_OT3xDiPl6xpmdmS900MdMrt00TkgFQculOwzYZ-nwAteGSQjAZaKfVHYGvOMf2xdt4S7OuFiLbi9EzzefHfSS8lc_CDTLmYDZFWBpflbPHaiAxGF4AAMbnSeX22mnMVFX7dHFJIyQuFB_iBmcIOtA_bTqmz1Q62NUddjQYyrQyfMNTyo_foWGCDb3X09xszN7Cl_Y8_r3BbchvEkdVcwyCmvvIi-8j-SKOZFvjJjJ0_wVpaxFBgChmGh0zoF_qNNqOaVOHE2x-Yzvl-gd6UOYViYhMK0s649fgyNR-4BSVOmWonbCgmfMr7Y_RYPMgrsvqvRUMx2b0flHbEMq5O8hUPkH9alCne2zH9U-EDF9Yj0vYfLbttHAbspHypzzckTjmk-eek_yv94aPz7AOCzTmd4IJqlarZfDfbheP7eEOAWsys0ZE3bxT_EDzSuP84CpZcv0fWUWW174L9AcFvOByxQtj6779kP0v3Rr5B2GvquCxH2v0Ikgf6ZlKYsbySypt7Yvf5md0FL0HLTcjWVA7DHEXlcXyBXVF9FfJxx3_XyPuxxCr8IJBudj4sTXm2eRjpP5DQiwrhIVXIS3eHT8jyIAFPpkuaBhuIKC7pZJrxVTr_5AJ8lgeJGmKF5zTSO_GUPDLNAsXZuScPlC4oZFWNhfz3Yw2pfrnG6AmjduOInrNp22tVQZsIb6rCeNxvca-DI7bJgJ4cA0xVMGebs2nLLenPmBWn5P8nr25y94Fv7YdyoBVVKg6l1NWafowuI5m7AkGTo_53yvtmGft4Vcn0dgTMsAZ4AYseVX_QJoJpIuytQbKhm_zGs7PwyHl5rDM2jRsPX2x-uRIBG2ZJjctHpj0fXfVYtW8UOH0yBDnNEEG-sEzX0DWjBsWs9aKpIM3QE5DMXNsLOs-r6hzADzuMZ4uTV_aiDcB5Fw-MXDzF1XQXCBwmpvR2eWUrawy-Z-opSK_WS7vAUaLnx-OY_e5JUZCKrEeZznlxCsqFVPo_lt3uJkqgM0KbysdD6FCGR09aFVsYhcgplrXi3CBt2hAZSFTtfEnsOpbx8nl15ciC26gzssmClpGX2XUwUFwFY9oZEBkjLQx4P9YiS1hJy6QZXW6AqFe6_D-1Bcbi1kPVXH0QeELRS2eAEBUdxKaSiS-13sfbAdWUZEkND-A-6eCmffoUfsi6arf_6hRfjKcFwzaIpezs24E8SQs6OfRN-2v7zurZfwkAyrOWvVv8tTxt44MnVJG571gluswR6PbeBqDmCvY2hEGbAqqo8-tgd3Rec-4XuBJzSoTx0RMIXEmyNb5EPZ4foCW3ie9aFj2jE6cYttCFIkHTeoXS7uoZhHSw9v5KoN8AGX7Aa_r8bfokqhZXrzd_OViTv3DBXTiXDoZAjCTHfysVtFmIj9JmgKxDWTr4LVcBsupQ1sAF6BMp7nvhdi9ndXsX9yksfOpZiVRrRV65mjLj0_FnIJpaBrCgkjHT5URwKOBu9RlCkYoEn5LI9T_2wCM4UxQBR3Xq1W3yUY1DWoMSzT9RX-JPp7ntzApYndDi2n_2HCYohVebydNrzhLWeOc5NxtyX7_IW6XVwEhW9cR0s8YjaIP39K3XqFUWtpzakMyBxiPgWIrDtQIn1adBP-UabQLkFgF1KDZSDorqZHwUQgMTsviGpNJuDU2SCstu1YHr0mxQUmPUv8GWmpLLMj3E_M4NwibbDJkWfGmkGU7myYTf51G73rM3uNSSM0CeWss6-tto5krmJgpeJZl7tDn4rrbMdvazqRz4E-4GEnQZEw3LBiVBbtkWo0aEsriTq5ifrWBHWUsxnTyTYQKdL2s9zA5fUpC8M3J-YDAmTdHPMMt9m9HnFqKLYa_iR9FuiukiLmx5jiTd7uquCzXLTzSjK5dfOPGAiE5QXzTKKe5BJKznNlMY7HENpgbArNO6mpiOswYdPC9iRpqpAmJAvw-WWnDhBxZUZQwhVzajElEEsdv49L-TEbCg1YBXCgaXTbm6cL7OoYO7DaIgqhJoPhhH1PMk4pJ7PbEmah1MjkcevSjIEFjSYRCi5MMDs7_9NlpD_fJ1h0OTbp2ov9YBr-3_JzCq7dt68hcmVdVyVXSi6Ia9RInweBDKovKkbe5oAkyLptuZjOAqUXixRk7rycWyPCWbj7afHvOeN6KMX-mIKiaVUDinWW7VcCIu7O_Aa8iLSKs7Te9KdocdZTIMg3uhUROSwl5RDvyp0apTZBuVGYnA0MZxd2VebD_BWTxLFiuabw4J4r56JIgJbMWr6yjEpm3msEIn01svoQK6mYv7i9NNSV5ua_oqkpHYheH6gT3C7iPDmrlaGrXadrKB-_FVmm9bJSohJBJ-kbRfmUIToAQMI1ENcFjJHkjOblDqNuJnyWPOcqxHuWLpmrtn7dUu0pOyoZNCC7kZZ0dLh33jjaVMP8H_fVZc-wU57Nkq_xyyABAn0XBfEau2h-DkH-kTCOBQCKQ2RcgnrwdNErJkrBjAalMWJXi224VCfUHYM28qZKlA0Kj0UC6qj2_6grDp4R3dg5KzroWgdbLwABmJ8vT9nwtTaKIOSwtPNjzrPRraL7pYNv-scbFB5LvRQxCUSVIz0OgJFAzaiEO7J-a5tKVWtydeTci106ncsCae4Bbhv2PJJM3dPvIrBcMZgsQdVfPBHw5j-XBBJZ5hDOKl_6m4TjkILk45yOiu7PkAN2vWmZLqE0WSOYZhKYk0J4jfAggvoqjGeTRAvI5s39-cq8jjmBffrafGcd0xj80M8ht6ZlS41Y751yOPiqZ-KsrfnQc_VkYtmHBVr6P1L-GOY0P9idkh8SIHcMu4RCE8A9ytnBOTvzx4p-ZHrp3AWramrfhKszgshS7nIo3bMkEOp4d99ji6slKldrjRajv3r4tHE89hPbmbsWGOXNacdx6V6_1vemXSN6syUtMprAFin8MI_6OTpzdQFxIjNSkGrWrau06ZmSXibkjRC7gqrxsQG8s3YG2kWJlY2CXFF6SN64aExuzWNPkXyeP5-6UPSkipFKBTfAOLt_kD2vSLtrEA6QAsPaPXqkwzXIZwXWwYiDQwCHRp-5r5NkRz8T4HZdcwo6HPYD-rJ26SNjiLsR_4IQWBf9jdhTJefPbexLIm3Fx87yP9kKryH6KO_fZTcs-Nav6Y_90UI_gYQ5OKCKVYhCoeUsYiBP2sH9tcURw_uA7b45Jv5EwT6pdfClPpFRi6V8WkqSQAfjPaW6Oo8pzZwbo6EbQe5UNZjhYqovBAycqlI6ixwOf2u8k0PNTX1p8wDtQF__nu3y5fW4klc8dSZugglSlSA4OVGPGlCYJ47AdBE7UqqhqCJzac7vrPtT158Z6tyy68Ffri0d1baKycnQJtzD3S6BldSsV71B8XzO3xI4mV4Lid3HCIREZCNqO8XM0ttAHvrzPkPPwhboueUqFabKVhmblecbdbFGBBU9yDhFx7oGY5lKDASzCuFZy7knCqbvI7TVp9ro58GKd5suUf5mSN2g78-vqMAj4WIiYB4OGNdHTDS4eGYNcZEDp3VURMk_MThgoqC5hAdaM71k6AHF-H5x5VeZfOK8WUonqLWVH_l_zaXEN0FCT-yeBaQH4axuesjHnVfLW6rcyL7sWeLPdO9E7QFoZIlLoYFFhTfajjCvJUnSBGmVJteLQxXXj58oxkceADJxy7C7LwQNdROsnsWp8V4dqVl8t5IU4wRHDUknoW59PNjio23yz3T01Wkcyxc0gxSmVwS4Akjc44rKUb2k2q6BZWJrGDvbj6O-wRk1gzcDdEUmHqh2UUvYNrmVApKt8Yu4p9DrxGLqxC3c1JfxxSTrCal0o98n4pZaNRbWX05UiSbyKzQD-0wXcytxYMjx2Tgny_kU4YPi_JkljjxG5UM-8TOEpSTcL-6ZaCpLjzWOQSv_QPg7oqTp-N4GVuFZZtDTA6k0SwsMNWRY9Ng8YBlJSS9hOKfOFMEWoKpHLq3yfGXsW4BpAN3hF8ljb-rYCKvXiz0EVvf37sNSCv0sAlAPRsyd1o4XgNm6g-y-cyx9AJoxXGQidrI_r9ybni98_n32LzxEIeBlMNXCn4ddZv3LTPoR9SvMDQxYYv6EWmlKhGuMUcjyHfVzl__Bf-i17nN2XHwnYFlDYaksV86GfJWPoNYy_NoLv3VEECXrSzlMIoMkOZLZ4uIU9NiQshG-iEJvZDyCI8RB5VrmkgMFAaSLtdb8mY2ZvRWA9juXrouw3LY42UEWU3Zp1mHbYJ_yhQevqCl77HZAI8p14eQhLfDSdfi7UDbsaIcfscbw5ypA2gjK0kWv0r8NFxgDcZQjaDRicde3AmTKOy73hRutkeMQWckwM9HoUVyhnO285wtGjySpA9SU4SbqAoyJBvPtjG3jzHBhvliEugnMZ-0Q_Pt6pdWlxnTRVMlvf6KsSCO6AnbLvnK0NmwSQeWgDERUcsjhf7RUcCwKHYM8SMDqAhWMLerOzsWoHSBSdH8hkvtTzlS5cj8ACcjSwMdrd8PJINeWig22Axz_M-VIsfHCSSk9brwm41JMEL7rwEBpb5TF_BFHQSBPmD_SRLfNxA1ddSBu0NKGnHTCq8R-rl_O6JD6iAv6Lvmlim8QgyQEOpA5X2Hf0VjTOZ1_YgxOpTLb96fF3nwiMiilW0tMTnnoNPSHi7iA31XH3Sv3NPM0cGqWxDJhYC5c72Sn9KhWZ8r88ZoHOYRJn4NMlnZFrrnMSD_ABlbPq0Y6BdtnjdSSR5S2cyKBKeXeSQ1pw-dYWk_W0tMrqlq3ROTI5Y3Mcis4_h9OP4vRkAi8K9e6Q4xvy_AAmYQo1wx4qGv6lH1LRdHclJ-jbOIadVl7XigneLIuc3FTtAzIYDyOVWsRxfJGvj9GqmuxE37L--9EsPeiijlvDMK7JnZD3z0ouL_scZFcdsuc-UxYKkfzgjtGz_Dgz6ZCJtGytprfWJfNjxGQRsXYHQ8pnWCMDNluhoRKyLGPEkCTXxZhwQtq1AQYKCEsxAcU1vkxdoIs9l_xBIi623iRQhvLznXUaMBZ8elHQRNGGIurmrreHAwte2_Kgd9ObtfaQGHGAEghwPr76FvtzdylU-UVwJ3GIgYgHi8pSDJuTWXamf1IunKkdyc7mC-qPVxbBB2XHwroBz_HgCvyz0a1Rq0fzlBuQd6s9yZwr3X0Is7UmFCZEj2C1qryynC-ehMv3GEvnMbR4hbfhdcGQcUD9h8Z1GlsJFsZHklRcNjwUeqr5doUotCscN7nFq9NHYNqjdef7j_njN21eK5SVIoGoDjzI1SsiwZfe3S-p_iiEDZSU5JMUsxgfV-FglHiQylKj2jRkOM8CfcXIJNLKxq78QtGIPW6nzuvZ72x1BoTx6dyPBLyf-km_MpmKlHzzKwY_tgil4hHIf4OOtfk7SKuj6mawaHHREVGjRIN_yq8w1OoPyNB34N1OtL_nPt3n3QRR_x6RfGvhUAHvXCAZV843thhvzpctMi9bGNWkYAwXNqjx8zWSwVbD5vf9zxLmdMiQAsyWt65_chtxvJHIRntFXElfJ8jMFGxnPAN2x77Xgj6iqXLpYVrM0fAiusuJ3VdO8lts9sdf9csnJLprcB4SonmWCZRtBzih3LozAFe2lMfw_EqhDetpqGbbiEZ7zzL7PH9Z18OAJ8uEslHOqcUjYeC6lpAAu4qPPZfmXuCHqIW1LpAb93Y3tb5pJblTzXH5GwBzVpSRsM0qbDEhsm4L3lMKkGbA0vSJZ_ACJdX2Ggfy6cfbHuLs-uvWk-9RjD1LKJoUvwcKNdYL-krWYIWWo7utpaDgbZ4sPsVcb9xB87zlEBUGNYF8i8Ejur_JWegCBqX03ORpSYKCtpS5aPCyc3AgWSscRiNkoCNWHHsXR6VuBtFkRBzfirIvLIs1g9hD9OK7BFcjDb_IaGvSSu1En5m4klRInWbh6XHuXHnh0qUKWpPWp6CEB2PR57n69TWWCU0n_7wOhsyTmq5ZL08Zx5XD8guMsxEvsLpNhiQfXadsC3cBnnnqI8quRxWh6B1pQlwpp_iEcSl6XIshETxO_GaEGsiUFXd2_1zvHZ4z3Zf6BXN02cuGoVeHzMmjp4LocSJN7uyfE03mDuDzdXoPXEV9rg1SJTSpV5MvlTgmixGNlJYngqg-w5_Janlhed2YY_YPKsLb2CJCmlwrHNMXzKJNNCNaW3ci2JDBlhJJudtfMiYx-JbCWy8B_Nso-56-MkoP9_UDNaNoG-RZ8FbnojzYOJ78D1SHakdJPCUK1vcV5EvRW_ZtUBpPHkSsT_y2dYhwMNctIpBAhE_aYGXSWNk-smFXI9UhbnAHLO8vFj5yQDXMQnGMEyQQONesrix_eeRodYPYGuI2W69KKNZkq5Wq5P0H6j-_5r2rlKHW3TFddBfiaYaCJj0uDxPhnOnsCdeMnUPWiQp_RyCmDXCbl-UIlPb2OCPk0WhSmNfn6yHDq96D0YDfwfjm3PVLvWZ--9Gn7owKRjz6Lqxv-NsfCPROH-zO7dRklvKbunn0ucMVyKU5VlG4w04FBhx0b28LPblzewnO-NW_xDyaM5Az_hQB9u5KmbfX1E-2QmHsfW6AH7qhwZVyKa1Dry3A7pcOTdei7F6UmHgqxXCOGGNSGaBJU5xUKQpwCeVT5YEmWYzpLqkjDm9ri_Sie6zAvWa79ZaApAFRw7aBu37t3c5qG4X6F-yfhhxcyRBHM_zyMOtPjf3NH7XkLg_zpKQ9ocDOy-6SiExnniVacn-WZJ3sNcX6iOap8UDav4yRnqAs2mHcd-FECiDl5SN9W-XQeKLWEGymnBwk29xgComeKnzvPQyS0K92eZYIVmsE6dko_mQrTkc6QAtMnB8bA1a1CzGfCQqK-IARrbzZnaCU8iI5ayx_pv1ZWjjt04juUCiR_tqtkrRKWiUIO0JBnRjkImmAsx6T-WD3AHZR0dsINATH5UqMQmdGqlCeWRTp4Ey1qfcV7i26MNpt8xVLve9Abd5xf-VWz54wxWpp6_1pwlRtQ72Wau7M-Db-cPcL9gkBnUD56kvloIAXLnpwKuM7m0z68gpIR03bVY2mO-s4ctKrTvxgkYnTWMtOjjW25N2-FkN--nX2V6jenbpEROCV2_ZkIUxR-6hMZVroztEtMT3M_Pu3ec52_tZ512iv7i0Umo2fjLEz-Ccaljk3gAU-5yzeRiuQF49oRjX578XJ-lq3mqmmPL4G-xiVVangUEpQfjNnDiau7gI4vTYa14fg9Wrdb6Zwe3OCBJ9hfe9tH4Fxx1fzfBR6GdbYG-QxCJUL0q-lgCYkZv_kL_WmjVmlft29AoOB9wHQFpKI4g221skA_Z_uGqGlqenw_sHbSKzpyDKw_7fWwxkWt5IMZeRbNcRp3EPeEarucb5IuWGmtocyetMBOtjGBdhdXVnrKVPPEatN4_Mmmlx1kb9WDbN4GcqIQb0C1d0pH9xTEVVIS1DzKpCpB9CVgapFhEyZLgy-C7KB4GQUIjX7S8ugNf2OB4QkHl1fGKBLJPHQM5Ch6Okih5MKK0_GdOyeVHw_06_9o1DsTrbZgAt5ramf4_PlSBWcJKZe5r0Toncj9K-2aIL3zBe_HwUOVLBt9B1j4HAa2VkZiUBAxui8U3gf4O8xohCUVk6on7uEyMI5oOv45l_9m4vz6OcSZwItKqfk816CwddWCmCfClxC2rpFvLw40mQNsw8YT4J2_6w9L0oEzF-cm8im8IOaJFb7wjDKdJx2F1RvT-vvlQG_LVHBx-Hmwzm-R9qo6gcAjbbaqFdZljvIVOK9Kt4a-qfJ9tlGr--flcTEFAXdXbifkVNZh2BtM5D7ZW8fGOzS6A42WU3jERwOR2QC3Eve625ipLyIobiaidpFqdVgvyimplH3ZK3TxKNozw1AKkX9yR36WYH5_xCY1W0RtpE_PGhBYGXy61PHio-aSAfucXO4_SZB4-9LVvykVvlwaIsDknBCp-zW2J175-X-Phw-GqgrVQ8xCTzSir1oiu4qlJ5p9GKVCH9UrrPXBEHUjg94063mu9K_niXbjcX93e5lobUa6ap26ApeSgY-BVL8-txTv-nzQH88tAoJ_4wVCiEoQDwuCtw2-gc7OMtGrJnf5qmQKcjFNYp6daNPc9AFU85RNj9GAwm4KclFMUUy7AvsAYrzfsxSK6eL8bU4vg7fMq_B9sMUF-b16s_JfB3eLRTA7Gt88ZYZ2J7B6N3db6b-u7FaHOc2SpVfguETNBJuV8MaZsbl2Xztg_Q3LiWdqSGJwAQawArn0jJcyE75ICKMgwx3j441yjMmhpNz3FdDCeKUZ1wLST40zPxO0P52kgzfSScPARyncyhHhwsvlEkB7uBy4peuoRCgJq2nVnnNUOBvQMgOM0Nen0xlj_RlrYkc5vgILn_dzgsifa_87ta2zHfLEKPo_hAmDSJUgFvdFeJwboPY_FPIWwK8aqOoSwygWtGFqs7omfnxOvFLf32Vm6om3NbqIB7lglR7trbZUiEqz1A7yA7Eb-HF1vn5H6ZjacdzCnldUQSXvAjbG9LbC7W5isDTlR7GCuzXLjKiPwI4rnSSt0hlLikVxIj_aNd8NCh0OsQ91idbIEdLUx-sKPjqWDKVuM3MF1RkmFc2dKMr3glh54ISrbdrc8ut6jSxuf29ZRTRxm2BIKtmRCv3DcnzhaxYvTtbiLfGgas97CbSXpcWEDA7kLAFQjCiU5kI0ZzR6EmDqzFVgdhtQdNidqpLCzgCYtt5EaOYtppSrjBx8MLFqp3rAV3pqjWHh8ApUFcQJPez4hCQhGkVmcpnSdSl03YzZ_i6rye0cRYUZ24FVT-ENjJ33pGomBhKWbw6e7QA_7sFjoLE2j3A4qawveuwQox7EzVHxM13Z1DagHvuTV9X3CNUpzb2hGPtZkZVKZke5au7W9Fhp15gALZdEA_UoKjkJk_GinkzXUdrHltkDxTc1CarnD22MYqT44s8m8O5durxxKIwRp6L0xrTKLZPU7DSyhp2CEWU6VsjPYNY2cMJdXEzJw0FUeXDCIsS2RG3P-AcViAsWIuQ2WzWkwTy0CPbBMGkDUDLs1PfkRsx497RHtqHEOU7p1Qg2ZnV7yBfGBtFfdfY9stXfP5J6N83ewVvVUb9BjAZafdlfu4mQr6szxwRd8LcKirPih8S7Ax5mj62m3krTmgX9AkmIZgv6OVqoBcw_Rw8Rg8j0aFGo8pbbJ1tOV5tdOp3TR3aBdZch5BvD2CAOuV3HfEaJ3iwb3GYKj9_rcDDw16kczEl8yaUfPl2SoHXZcLzjbRjHWqE43Zelov3NUt2GFSbJb8AZ6Y7ojdYrLYqahc-BUH6HrpGZ7futnNufbUqE8tAJVVKAkgmJ45n6CXCADhMZ_yuiDuLEiiHrFDQW2It-oRPbFM7_NFKv16AskiNDGqC3U8mmDqNXdBEkZ7GZTDX06Qp-d3Z_8GyaySoOTz16Zl1SZqiPwbzK46n7bj1iy4Ov_W0UVJhxHaHR37G23bcdzgGoNDxoE2I1ilRpkgUnHcQPDPXJY_FMOpVI48HDbWey_PSTHeVZEfstoeiH0AoyNIjtxOAIXVl9ql60AaFkExlcEEk7iaO3t3QluRUigeenDR_J-39NrLM31N5CGWYEL46Yg1aABLlMg034llKmhv__nncBWEblxT2iVW3h4AL9XWb-tWJd6hYx3xV-9LPRBzyJm6HBEXfqliZK_txkg-ygQ56nFSfrVXwxqCM-PQgnwosYWq0pn9vuA4Criu7lFq45I1Eu_Mr1hqOh8h4AQ3eTEN3tqh4u0wclXZnZWvYdv1NvG5kjY7_AY8QSsCVpe3wrYI6yToXROpdelAx6onppfVaooTWA045lXPnNbOWLLMUSFfBzwsDOhoxUcsGjPM-T2FmqClsbdB06C5ICS6S34oKUWrzQo6lPreN_yPgN6jNZPtJTHSw8xl18h5MLC4QwwbqjnGoICcnSe9Ya7tSI36Gyu48FxVz9V6XInkSWhKOCjGabyddXpRZDK4WC1oxE2rS_6lIT3azUYhN3vPHPxbaG7g6RfrNiNB5Rr8wV0YFE0jwa8DQ96rfoKLeL3Lxou4O23T6_cOfMvKS1jQAPHpVDDh7fngBBxCPz8kwzpE9yLOTGHBiPI3moSwjC-qAsYLuDgv1wCVDIcdwwmMytaMVwMiZleuqbEQDtBPkrOUExB9dFSKWK1VF8FV_ubMHBHLvPnpEQzn5VxFm_Jd84T9DFWdAgnAVVcTuqJaioobSWb0blsa7rJ4rlk3xXQHRDZK4vhkfqjJCqVkYeSVMwpBPJSrOQqW6nmIw_Hvl6XjBjTevCQg-RFQhqg3bbXtoF3ZRKmcraLdG4B3t5PCAV2j4Rf2uKGuMNtiEopfeez-JOp6OEWPRkRqrpBM3Lr53f3IOaXgl5c9huMIYkIaWm5ftoK4vzT2ry-ESLlEr7i27idJyKk9u61bUP_3FQvvPNQ5lFtN0vVJERL2m4_nSY0avZCQG0Emav-qxPo9c-mBu4nGQbDwFycHYB0Q0mUE42jDfFc49B3PkK2a4fnzAAIJrT_qCP18QNEJVIZ4rRa7qX3TQAf2cm_R_L-JfwEPzAEK4PkGEpZBXpkQVRLWYtHVXq9AyXLij0qOOFzMkrOhrDX_D1BCLOg3MsxFO3Xhiyej1l0HFaWw2xyCKD3Ff5_efr5VZBw5m1lK9Ax9i3r2wdZsSJWBccECPYs5nyjhGybEcgNBNcgzrvzX-tJ21rz6oVpm6TuYYCDRtA2Y4vKMG4-qMVz_OltXXYmsjHqTkcxL2sVBItoonYGSTNYFvQbXI1ZIFXRqK-d3vIKggFhX0_x72MoWEMafIGzz4vRIQhrz_mRAaVr0MbxKWdWbKCVT8_ovBm-L-95CC4uLcfOQcMu5d7GL7bCMbh_BaQl0wn9zVAMrIBukMbSXcAEBTcpMhZkdUOEUxnSrlA2pjhIV9cV4iun8IwZxlfyDltojbkJyqGoMFokTfXXmMVjOYcOJZTEfYjvY8ZsCXRE6fVdUJYmeJOtFByAkA8yxCieM4Ho5zDqz39yLNL3ha8Iqg9R5mbf8CN31zXsZRwRoW8kcypHi--ymz7sn2Hvy6ETNNk6BBUxemMa9BXPoIlFaBNQkTqrtmipcgtYfMwXFTVSLYaeMynWuggCRvw-IXPv_mAyZpD9lGMqxlFY4-Tl8gobm8DxdjWKNTCsSE8DpiaPniWeNttMMXYBvcHpNcfkAVgd7iNjsC5sZicKuKRShbZTCXStrYZs0KU6QC5bmLsNP0zg7dt6-_106IFQXGbglxuUWuzIhNuVColqOt6-_IIeQBbqqaM8LmKKyvXWISlbmwhiVbsSuypMQcuCptE3ILp5RJb98GqgKzC20PyA4fRq9NNfE31pdIt6W7LtjsJnSi1ej1aIACDrs8035HxHI78HhNoV8dg7Q8IeTU-puhN-zLz0WNAywR1FALcevHg0sCst4RvlxAPTLfbDcjFAT0QB3XEtilOG9cIXeK6UlrzPqpZPu99X0bbeFT6FSP8Y75rHY317rIQGlh3_KBkM56phdJUDuQjBMz5iZH11iIeLnomBJMHDQsKHuH-aVSnwQ9GKdM5n4Rl9M7_1J3a3y4Qa4LwRFLawiS7oXKpN2_5n7cPqdONizKOPLcSLfEJdBdCHhWt7R1mcKdP2QcGSqcD-M9NVUtLY4ooWQpsQZeBp2xLG3Hx_eNAtDj8na2sLbrv5UCc8tJULDsAXcxqDwhMlwGUwzk0m5A5DEFmkQTjhunlbmQo8mRbiZB74dLR14T122nqzK9fWqpfIRs2oVqrRceitVt9gm4vw9mg3GGp31JUD_JUdEtuxsc5OWgFh6xJGB4bremaekZHgEmusooASSnD-jHcfts_f5LrXMPW7hWbvLG4EtQt7DrrQ35cAbPMvWsr4fAdUrSPqbFCTDYUaljNSo1kZiUT53uY_HHwPxeOskzUIrCb6Jyje1LD6BjQUCqDK1JPndtTIPJ1O2INzO7VoVQTLaUsZi_MkF4rFE-cihiVUqphS2eWg_U7ycnqEAV11gDRbEyOoQ7-0tI-dpMQZjuHlnVBGU9-0oXGMSqneufmWZbXmlImmGuVpPapzcSUHySDCPLGH8BLyi-RNfALbTPOTZtVMmVw6Ze8dYxJxd3euXGxJ0xv642wP9RkI3S0aGHBl6JGoRrGRrXGlsBYtXPnmsgvdBzNVsbUJCFpZAIU9y6gU-jkT7TIfX5Xiwm5VwlhEsiJ85BiQpjCLkNE-FDtu71n-8VaD8I447tO0_VFx9wxMFuMWarWKRvBz7NyfnOEdwLaLpHuUciOdGymU-2duGl_Bc7jW5o6hdlgc2yb8e2kOxlFcRib8UgO5Geq0Ntx9FzDKosQU_uTaIXf0lE4lHPl223bKt2usH_Zfm9gaY484tIN90HsmC3-S31-iuqw1yOyakGKo60iJpQGa_4jBt_AzFqYy6PIE-F4FEa3amlAqTAxGxJe-muPEX1BvpPjjL8aeHi9krJA0zB_XkmHOf0RSTfWk7IDoNXQYhFsmedjuvPzSvLds0MgSKxE0Glurj_IeY9GLKV8oTG3YTbsjQMWr7SQa4JkHnSS6f7RX03XUOjAJSXyMyJvAxZV9X9RfsxIGEhj9Qzb-_8-cpQh-6Vqp_LGzRH6HWqYnPgBgNohz_iV8pyxI4KPXfN71uuJhBZyD1aB0e8hk1u4ivb-bTlxL7oqjfHMOJrp-GWeiTj83CkpKswxNaiTmFYoyT_Ey21WI_AN8SzXS6Q2gO580VmmCy6IYSFrNSETUHdlxVTxrV54YTttFENkO82zDBtH6mDKoWHJD8eu-5o0qvaPJF8R31Mzt7M-YLSzVGHO0JdIAi_jIX3ztcsoyzNrykB0lHhWZLXraijAxyIgafL1XxE4JlxHD-8zFCqFXfLDEWtA6ul5hLvwwqC-4_nIZTL75MWF5SpC2M5GNnWiJ-ifGY0kUFL5Ifr0_XfxvwHqyygOmAIxc-N0-ZRrxAZwy2bwRxsxXTWYSgbq5yiAg029VYpKpr3FOmy3MGhIcH2sV6yviKFMKKgdco1VFpQT5dGmcsEABf8FfJNrkoku_Y1utXHbalYyTAS_-lVoeibe8U1CNLzPg50JtCg2QeHNJzIPO7n9Fyrn6FPmNK9gOP05ZTyPouojxsEpgafmyDe3M5e4S_CGfC2N73W7JLdqy4XWOgYkmYCxihxD_8y5BfHOZC20skh9JNHrRo2im9Sj24aIrirtUEVRUyHfqauY1BnYWSUEb189WbIf35TWieuQ7MKnK0CuJZgKKeccuUGFJrzCfsQF0cWAN4Y0ibqntQ2ap3jj7JbNJqqsLt5gDL2ICjiGu8nFHQGTRg1TpMPY1CPkA5KCfLFC4mFJGwwqKlxOiUACt2Diaoo7ZBusA7srJx-6yAAoAopgR-7aRjushLD8zDBWnYUgx-yvUSiWmn1dMWy-opI2-MiTLyNXrmmOCx9pVWLKqKA6LKnj9dSyAWRsJnKTva3afBvZvHG-Hi8vP0Sv-p0UHFD-zH_hgp1kmC3ANebXk5AKihhLY7Tn7F9eWS7rudBnxk7ygkkNTsD2sS16wBz60H0d_fgf_4129pbgU9bI4bLiJAaMDktbgI4rbK1lU_3nx9ZOtUL4zoN-Yn1WR8fWD_CuAueCWdtbEJOzneLM7LuaVwHQWpcxcNtYNyoCAgCRcITYpO82xQWidm2-XvqK2oE5Kqnt_WYB4PCAuPaJNHO3iy1UrQ6RmYUqIQNhpG8HXz-QY5mMHT4cTcjjoSljNSImZSAZGaPMSGA3azA3k5elBzwWSFkwlrMfUG9sSY0jXzYjGwmqFNXhUIYjohPqFGY1gjl4AHu-
+# 材料与截面 — 参考文档
+
+
+
+
+## 概述
+
+材料（`Material`）与截面（`Section`）是一切模型的前两步。本文覆盖：材料签名与
+本构选型、常用材料速查、截面两类定义方式（iKey=1 形状参数 / iKey=0 直接属性）、
+各截面形状写法与坑位。
+
+## 核心 API
+
+### 材料 Material
+
+```python
+Material(name: str,                     # 必填（唯一必填项）
+         iType: int = MaterialType.Custom,
+         iModel: int = MaterialModel.Elastic,
+         iMark: int = 0,                 # 材料标号（手填材性时不需要）
+         E0: float = 0.0,                # 弹性模量 Pa
+         poisson: float = 0.0,           # 泊松比
+         density: float = 0.0,           # 密度 kg/m³
+         expansion: float = 0.0,         # 热膨胀系数 /℃（温度荷载必需！）
+         dampingType: int = MatDampType.NoDamping,
+         alpha: float = 0.0,             # 瑞雷阻尼-质量矩阵系数
+         beta: float = 0.0,              # 瑞雷阻尼-刚度矩阵系数
+         dampr: float = 0.0)             # 阻尼比（dampingType=DampingRatio 时生效）
+```
+
+- `iType`：`MaterialType.Steel / Concrete / Rebar / Custom`
+- `iModel`：`MaterialModel.Elastic / MetalPlastic / ConcretePlasticDamage /
+  ConcreteDamage / ConcreteGuoZhang / ConcreteMander / ConcreteCode / ConcreteHLH /
+  GeoMohrCoulomb / JohnsonCook / Neohookean / hyperfoam`
+- 材料按创建顺序自动编号，`mat.id` 供截面引用。
+- **阻尼注意**：`alpha`/`beta` 仅对 `Rayleigh` 生效；`dampr` 仅对 `DampingRatio` 生效。
+
+### 材料库 MatDB（标准牌号一律查库，禁止凭记忆手填）
+
+**策略（强制）**：标准牌号（混凝土/钢材/钢筋）**必须调用材料库生成——是"调用"不是"手填"**：
+- **脚本内**：先 `MatDB.load()`，再 `MatDB.assemble(name=..., iType=..., iMark=..., iModel=..., setting=setting)`，`setting` 必传（E0/density 按 setting 单位制换算）；
+- **禁止**在脚本里手写 `Material(name="Q345B", E0=2.06e11, ...)` 这类数值材料——即使数值正确也不允许；
+- 生成前可用平台工具 `get_material_tree` 确认牌号写法、`get_material_param` 预览参数；
+- 仅库外自定义材料（库里没有的牌号/本构）才允许手填 `Material(...)`。
+
+**单位制规则（强制）**：材料库为 **m 制单位体系（SI：m / N / Pa / kg/m³）**：
+- **情况1·用户指定了单位制**：仍优先查库取参，但必须将库参数（m 制）**换算到用户指定单位制**，保证全脚本单位一致（换算锚点：m→mm ×1000；Pa→MPa ÷10⁶；kg/m³→t/mm³ ×10⁻¹²；mm 制自重加速度用 9810）；
+- **情况2·用户未指定单位制**：**默认采用 m 制**（与材料库一致，SI 为软件默认，无需改 Setting），并在交付说明中明确提示用户「未指定单位制，已默认采用 m 制（SI）」。
+
+**两个取参出口，单位基准不同（易错！）**：
+
+| 出口 | 类型 | 单位行为 |
+|---|---|---|
+| `get_material_param` | Agent 平台工具 | `E0`/`density` 已换算为 SI（Pa、kg/m³）；本构参数换算随本构而异 |
+| `MatDB.assemble` | 脚本内接口 | 只换算 `E0`/`density`（随 `setting` 走）；**`plasPara` 与本构曲线原样返回**（库原值 MPa、t/m³） |
+
+- 同一材料内**所有应力类数值必须同单位**（`E0`、`plasPara` 强度项、曲线应力列）——
+  取用前核对数量级，差 1e6 即未统一；
+- `MatDB.assemble` 前必须先 `MatDB.load()`，漏掉报 `illegal material category`；`assemble` 的 `iModel`/`setting` 均有默认值（Elastic / None）——**不传 setting 时采用材料库默认单位制（m 制）**，项目为其他单位制时务必显式传 `setting`（手册 9.28 版澄清）；
+- **spec 通道不支持 `plasPara`，非线性本构必须走 `save_script`**。
+
+```python
+MatDB.load()                       # 必须先加载材料库（在建模语句之前），漏掉报 illegal material category
+setting = Setting()                # 默认 m 制（SI）；其他单位制在 setting 中设定
+
+mat = MatDB.assemble("Q355钢", iType=MaterialType.Steel,
+                     iMark=SteelType.Q355, setting=setting)
+mat_c40 = MatDB.assemble("C40", iType=MaterialType.Concrete,
+                         iModel=MaterialModel.ConcretePlasticDamage,
+                         iMark=ConcreteType.C40, setting=setting)
+```
+
+### 非线性本构参数（plasPara 布局）
+
+```text
+CDP 混凝土塑性损伤（iModel=2，n1=10）：
+    [0]ftr [1]fcr [2]alpha [3]gamma [4]psi剪胀角 [5]xi偏心率
+    [6]wTension [7]wCompression [8]confinedCoef [9]iCurveMode
+金属弹塑性 MetalPlastic（iModel=1，n1=4）：
+    [0]yield [1]strength [2]tangent [3]M（tangent<0 时用自定义曲线）
+混凝土二维规范 ConcreteDamage（iModel=3，n1=2）：
+    [0]ftr [1]fcr
+```
+
+### 本构曲线（userPara）
+
+- 仅 CDP（4 条）与岩土（10/13，1 条）库条目带曲线；钢材/钢筋/弹性混凝土
+  `userPara` 为空，本构由 `plasPara` 描述；
+- CDP 四条曲线：`epsc`（压应力-非弹性应变）、`dcp`（压损伤-应变）、
+  `epst`（拉应力-开裂应变）、`dtp`（拉损伤-应变）；
+- **列序：第一列纵轴量（应力或损伤系数 0~1）、第二列应变，第二列严格递增**；
+- 自检：曲线应力列峰值 ÷ `E0` 应落在材料真实应变量级（或应变列最大值 ≈ fcr/E0）。
+
+### ★ 本构-单元相容性（复合材料 / 各向异性：先判这一条，再谈材料数值）
+
+> 2026-10-15 实测补充（依据：59 m 风电叶片层合板建模会话，ERRATA #115）。
+
+- **实体单元只有各向同性弹性本构**（`E0` / `poisson` / `density`）——**给不了** `E1≠E2≠E3`、`G12`、`ν12` 的
+  **正交各向异性**；
+- 因此复合材料构件若**既要"实体"外形、又要体现层合板各向异性**，二者**本质冲突，必须二选一**：
+
+  | 选择 | 做法 | 代价与必须声明的事项 |
+  |---|---|---|
+  | **要各向异性** | 走**分层壳**路线（分层壳截面 + 各向异性子层，见下「模板 4」） | 外形是**壳**不是实体；厚度方向应力不可得 |
+  | **要实体** | 只能取**各向同性等效值** | ① 脚本注释与交付包写明"由 E1/E2/G12/ν12 折合的各向同性等效，属 **[估算]**"；② 说明该值**与取向相关**（展向主导 vs 弦向主导的等效模量不同），让用户知道适用范围 |
+
+- ★ **交互要求（强制）**：用户**同时**表达"要实体模型"与"给了层合板各向异性参数"时，
+  **应在建模前问一次**，⛔ **不要静默取一个等效值了事**；
+- 层合板等效属**用户/工程师的职责范围**：Agent 可代为换算并如实标注 [估算]，
+  但**不对等效值的工程正确性负责**（`execution_contract.md` §1）。
+
+**库外自定义材料速查（常见工程材料经验量级，仅供 [估算] 参考，正式分析前须由用户确认）**：
+
+| 材料 | E (GPa) | ν | ρ (kg/m³) | 备注 |
+|---|---|---|---|---|
+| 碳/玻混编层合板（等效） | E1≈45、E2≈13、G12≈4.5 | ν12≈0.28 | ≈1900 | 2026-10-15 会话实用值；**各向同性等效须另算并标注 [估算]** |
+| 玻璃纤维层合板 | 10~25 | 0.25~0.30 | 1600~2000 | 树脂体系影响大 |
+| 碳纤维层合板（单向） | E1 120~180、E2 8~12 | 0.25~0.30 | 1500~1600 | 强各向异性，**实体单元无法表达** |
+| 木材（顺纹/横纹） | 9~12 / 0.3~0.6 | — | 400~700 | 正交各向异性 |
+| 砌体 | 1~3 | 0.15~0.25 | 1600~2000 | 抗拉极低，注意本构选择 |
+
+> ⚠️ 上表是**量级参考**，不是设计取值；标准牌号（混凝土/钢材/钢筋）一律走 `MatDB.load()` +
+> `assemble(..., setting=setting)`，**禁止凭记忆或本表手填**。
+
+### ★ 部分钢筋牌号在材料库中只有弹塑性条目（2026-10-14 实测，ERRATA #116）
+
+`get_material_param("HRB400")` 实测**只返回 `iModel=1`（金属弹塑性）一个条目**，无线弹性条目；
+而 `MatDB.assemble` 的 `iModel` 默认为 `0`（`MaterialModel.Elastic`）。
+**实测按默认调用不报错**、材料正常生成、线性静力分析正常求解（线弹性分析不激活塑性参数）。
+⇒ 做**非线性**分析时才需显式指定 `iModel`，并核对 `plasPara` 单位口径
+（库原值为 **MPa / t·m⁻³**，与 `E0` 的 **Pa** 不同）。
+对比：`get_material_param("C30")` 返回 3 个条目（2 个 `iModel=0` 线弹性 + 1 个 `iModel=2`），默认调用即取到线弹性。
+
+### 常用材料速查（SI 制，仅供核对量级/库外自定义材料参考——标准牌号一律用 MatDB.assemble 调用）
+
+| 名称 | E0 (Pa) | poisson | density (kg/m³) | expansion (/℃) |
+|------|---------|---------|-----------------|----------------|
+| Q235 | 2.06e11 | 0.30 | 7850 | 1.2e-5 |
+| Q345B | 2.06e11 | 0.30 | 7850 | 1.2e-5 |
+| C30 | 3.00e10 | 0.20 | 2500 | 1.0e-5 |
+| C40 | 3.25e10 | 0.20 | 2500 | 1.0e-5 |
+| C50 | 3.45e10 | 0.20 | 2600 | 1.0e-5 |
+
+### 截面 Section
+
+```python
+Section(name: str, type: int = SectionType.Solid, sub=None, iKey: int = 1)
+```
+
+- `type`：`SectionType.Line`（线元）/ `Surface`（面元）/ `Solid`（实体）
+- `sub`：**传形状类实例或其实例列表**（如 `Rectangle(...)` 或 `[Rectangle(...)]`；
+  官方签名为 `list[SubSection]`，单实例与列表源码均接受）；**禁止构造 dict**——
+  无对应处理分支，会在后续环节报错
+- `iKey=1`（默认）：传形状参数算属性；`iKey=0`：直接给截面属性（`Arbitrary`）
+- ★ **关键字陷阱（2026-10-15 实测踩坑，`references/fem/known_issues.md` #121）**：`Section` 的类型参数是 **`type=`**，
+  而 `MatDB.assemble` 的类型参数是 **`iType=`**——**两者相反，极易写错**。
+  写成 `Section(name=..., iType=SectionType.Line, ...)` 会在 **Python 层**直接
+  `TypeError: __init__() got an unexpected keyword argument 'iType'`，脚本终止（`exit status 1`），
+  **根本走不到 modelcheck**。对照记忆：`Section(name, **type**=SectionType.*, sub=[...], iKey=1)`；
+  `MatDB.assemble(name, **iType**=MaterialType.*, iMark=..., setting=setting)`（`type=` 只是官方示例别名，#49）
+
+## 代码模板
+
+### 模板 1：标准牌号钢材 + 矩形梁截面（MatDB 调用，推荐）
+
+```python
+MatDB.load()                       # 建模前先加载材料库（全脚本一次即可）
+setting = Setting()                # 默认 m 制（SI）
+mat = MatDB.assemble("Q345B", iType=MaterialType.Steel,
+                     iMark=SteelType.Q345, setting=setting)
+sec_beam = Section("Beam300x600", SectionType.Line,
+                   Rectangle(mid=mat.id, b=0.3, h=0.6))
+```
+
+> 手填 `Material(E0=2.06e11, ...)` 仅允许用于**库外自定义材料**；标准牌号一律走 MatDB。
+
+### 模板 2：标准牌号混凝土板壳截面（MatDB 调用，推荐）
+
+```python
+mat_c = MatDB.assemble("C30", iType=MaterialType.Concrete,
+                       iMark=ConcreteType.C30, setting=setting)
+sec_slab = Section("Slab120", SectionType.Surface,
+                   SingleLayer(mid=mat_c.id, t=0.12))     # t=板厚（随单位制）
+```
+
+> 若需非线性本构（如 CDP），assemble 时加 `iModel=MaterialModel.ConcretePlasticDamage`。
+
+### 模板 3：实体截面
+
+```python
+sec_solid = Section("SolidSec", SectionType.Solid, SolidSect(mid=mat.id))
+```
+
+### 模板 4：分层壳截面（混凝土基层 + 内嵌钢筋层）
+
+```python
+mat_c30   = MatDB.assemble("C30", iType=MaterialType.Concrete, iMark=ConcreteType.C30, setting=setting)
+mat_rebar = MatDB.assemble("HRB400", iType=MaterialType.Rebar, iMark=RebarType.HRB400, setting=setting)
+
+T, COVER, D_BAR, S_BAR = 0.2, 0.025, 0.010, 0.150      # m，板厚/保护层/筋径/间距
+T_REBAR = math.pi * D_BAR**2 / 4.0 / S_BAR              # m，钢筋网等效层厚 = As/s
+Z_REBAR = T / 2.0 - COVER - T_REBAR / 2.0               # m，钢筋层中心距壳中面
+sec = Section("RC_Shell", SectionType.Surface, [
+    SingleLayer(mid=mat_c30.id,   t=T,       offset=0.0),                    # 混凝土基层（全厚）
+    SingleLayer(mid=mat_rebar.id, t=T_REBAR, offset=Z_REBAR,  isotropy=1),   # 上层钢筋等效层（isotropy=1 钢筋层）
+    SingleLayer(mid=mat_rebar.id, t=T_REBAR, offset=-Z_REBAR, isotropy=1),   # 下层钢筋等效层
+])
+```
+
+> 要点：双向等配筋钢筋网按 smeared 等效层处理（t=As/s），**钢筋层必须 `isotropy=1`**（手册 9.28 版新增说明）；`offset` = 子层中心到外层中心的距离，沿壳法向定位，正=法向正侧；完整算例见 `examples/fem/rc_plate_shell_rebar_layer.py`（平板双层双向）与
+> `examples/fem/rc_silo_shell_rebar_layer.py`（圆柱筒仓内层钢筋 + 内壁静水压力）。
+
+### 模板 5：直接给截面属性（iKey=0，常用于桥梁主梁）
+
+```python
+sec_girder = Section("Girder", SectionType.Line,
+                     Arbitrary(mid=mat_c.id, area=7.8, Ix=19.0, Iy=60.0, Iz=8.0),
+                     iKey=0)
+```
+
+## 截面形状速查（iKey=1）
+
+| 形状类 | 签名 | 备注 |
+|---|---|---|
+| `SolidSect` | `(mid)` | 实体 |
+| `SingleLayer` | `(mid, t, offset=0, isotropy=0, normal=None)` | 壳子层，至少传 mid 与 t；t=子层厚；offset=子层中心到外层中心的距离（法向正侧为正）；isotropy：0=各向同性 / 1=钢筋层 / 2=各向异性；normal=主方向向量（各向同性不生效） |
+| `Rectangle` | `(mid, b, h)` | 矩形 |
+| `Circle` | `(mid, d)` | **d 小写**，直径 |
+| `Box` | `(mid, b, h, u, t, d, f)` | 箱形，壁厚须 >0 且 < min(b,h)/2 |
+| `IShape` | `(mid, t, h, bu, tu, bd, td)` | 工字形，**必须全位置参数** |
+| `Tube` | `(mid, D, t)` | 圆管，**必须全位置参数** |
+| `Crossing` | `(mid, b, h, u, t, d, f)` | 十字形 |
+| `LShape` | `(mid, b, h, d, f)` | L 形 |
+| `TShape` | `(mid, b, h, d, f)` | T 形 |
+| `WeldedBoxO` | `(mid, b, h, u, t, d, f)` | 焊接箱形 |
+| `OneCell`/`TwoCell` | `(mid, params, cellChecks=None)` | 单箱单室/双室 |
+| `BSTF` | `(mid, params)` | 带肋箱形 |
+| `Custom` | `(mid, coords=list[DataCurve])` | 自定义 |
+| `Arbitrary`（iKey=0） | `(mid, area, Ix=0, Iy=0, Iz=0, Iyz=0, Asy=0, Asz=0)` | 直接给属性 |
+
+> 定义 `mat`/`sec` 时可只给 `name`，其余特性在 PkpmCAE 界面中补——但 Agent 生成的
+> 计算脚本应给全参数。
+
+## 常见错误
+
+| 现象 | 原因 | 修复 |
+|---|---|---|
+| 温度应力恒为 0 | 材料未填 `expansion` | 钢 1.2e-5 / 混凝土 1.0e-5 |
+| 全模型量级整体错 10³/10⁶ | 材料库 m 制参数直接套进了 mm 制脚本（或反之） | 按单位制规则统一换算；未指定单位制时默认 m 制 |
+| 截面创建报错 | `Tube`/`IShape` 用了关键字传参 | 改全位置参数 |
+| `Circle` 报错 | 直径写成大写 `D` | `Circle(mid, d=...)` 小写 |
+| 截面属性量级异常 | mm 尺寸未换算成 m | 全部 ÷1000（薄壁厚度最易漏） |
+| 自重为 0 | 只设了 density | 自重需 `Emload`，见 `loads.md` |
+| `illegal material category` | `MatDB.assemble` 前漏了 `MatDB.load()` | 先加载材料库 |
+| 非线性结果离谱 | plasPara/曲线单位与 E0 不一致（工具返回 Pa、assemble 返回 MPa 库原值） | 同一材料只按一个出口取数，统一单位制 |
+| spec 生成非线性失败 | spec 通道不支持 plasPara | 非线性走 `save_script` |
+
+## 验证清单
+
+- [ ] 标准牌号已用 `MatDB.load()`+`MatDB.assemble(..., setting=setting)` 从库生成（未手写 Material 数值）；仅库外自定义材料手填
+- [ ] 材料 E0/poisson/density 三件套齐全（动力分析 density 必填）
+- [ ] 非线性本构：plasPara 与曲线应力列同单位、曲线第二列严格递增
+- [ ] 有温度荷载时 expansion 已填
+- [ ] 截面类型与单元类型匹配（Line↔梁杆 / Surface↔壳 / Solid↔实体）
+- [ ] 薄壁/薄板厚度已换算成项目单位

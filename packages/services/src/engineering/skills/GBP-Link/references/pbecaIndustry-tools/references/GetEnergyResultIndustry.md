@@ -1,2 +1,20 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQj75xadmpaYXn4gYXyAuBOmaWb2TaZBLYEz6WPG_0v0OoGAafvstqZxRcN-b0oG61hxuqd3oDTgkfiHcGR5qseNa7pqQn1tnPxT18TMsJdo937eSapTN47TLDH0PPHaIlMJfeeLj9UhCdJSRiEJudVUvtWIvntbJ9yqB8aykpHe7p5cMqNtnBWuDefDqCe0ig9WYoBnINsEZrHn9KLHXi_JZLaFyg3ROrhUKD_LPhfwKDC91jtUcR_dT3NdmXw_26jsKL6KrXaQ0v_mxW2Yoe6G9dUCFCvaSzEL4kK7kxVTpvtZRlEswiTPY9YmLs2TCcZnoC9llgc1TgRjh8al3Yi5C0l55S6Qc3zMRqgRAO_B3CgAzZWCa3WasrsJ34VsoaH6D9C3wXTLDqX0UmsCb0AsDdrh7FqSqaJXO2aSuU3n25u6TuVmizM4BX8FURVZ0bGbwwr9uNLSPgZkzZgHJO4D9j1dI2PTqSSanfbiRMRE4=
+# GetEnergyResultIndustry
+
+**工具说明**：获取权衡计算后的结果。
+
+**调用工具 Json**：
+```json
+{
+    "command": "GetEnergyResultIndustry",
+    "parameters": {}
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已获取权衡计算结果",
+  "result": {}
+}
+```

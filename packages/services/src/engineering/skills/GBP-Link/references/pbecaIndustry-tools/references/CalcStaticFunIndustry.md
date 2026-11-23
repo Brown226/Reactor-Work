@@ -1,2 +1,22 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQOiGFC8Bu9MdeAKOggH0CHuzFvBKY6zsNWoS5R9U7rpAq8fSrXhizslXqyALGlVSgfATc1DuArpcDPKEmQbwmg1-nPymlmLS3P7blCS_9yDGVzbk3HILmRnBJkc5Y_n8lhCECWecNuiaucXlRTxiALEhFHI3RYXYPllMFahzc2PsiAJRvd3nnsripkd9lzY4u37yX2PKtJmToOm05w3GVRRd3BdvKZSzBYjaSUqW9Jlot-0Iwrvxd6or61W9BZNudig7M7sF2UZ6PnKZ8qTuE5aTNdbda54pQ1ATm5Tc6RXngwvrTDFEGNBjShfjQ3Rw0cL5Q8ztpkm4iHWE9MmHgFuvbehlXzsCl2w4GV0LfU_T40U2as-slToWrLXYAkHAm4d97uHEqLE1ocXPwq0rCOnvjIF5V7tAOBLyR2huhsRxwY8_pPPUB-rRdHC7L3yq2rjxW_2Lk-9mLIEoimEWr_t2cHwxp67wiKo6KPdHb6h7gqrLeuTjj9ehxMA4mVyu1WYG_9TAVW6nhUMgziy43zg==
+# CalcStaticFunIndustry
+
+**工具说明**：进行规定性指标计算。
+
+**调用工具 Json**：
+```json
+{
+    "command": "CalcStaticFunIndustry",
+    "parameters": {
+        "tage": "调用规定性指标计算"
+    }
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已计算完成",
+  "bdlsCUR":0
+}
+```

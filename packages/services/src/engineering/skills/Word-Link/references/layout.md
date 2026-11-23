@@ -1,2 +1,69 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbVTGvJu8TGD5kGTv2ul5iZuFfBzAUQi6OVDNXS2UQEP-6c_1CAAqrJVzBduHiFJkeUEE8TbEi1gJX4ixkWrRGX8FijGf-KIMJiIqqtmtwWQuybckQa3Jxwe4AO21Da-MKDDVktsDlnnDJ_YHIMyk3WpM3U3DD5zuaelyEUkBUGnSxcrkILTWqj7cc78crR_WJidEcPr6WnZF9px8QUEclivewL-VGaEz2bA4qumwm2mVOmB-UUWdpSq34jF4marOlx0Z-lPcJVbnj8muk8y9KajrNRjUZiTz79jZyDpQRV7gxIVNqIVFqEADhoNOOAaQSauS3fzJttkZlr0Qwec0oNolxebat1IcVAc0fQ-peN09b541huLbKYzLWlmDS0S5ccPk1t7GmiNzH35bMPRcj3at0nt7UPdukzjC8eAnKq6NsmdJDj0zudaWpgUptioDORWktoXWtSBbT8mD1_O0n1GasZfkG36Jl7KVK1BFkm8b60UdpE9DsSRohkhLQzwT5e4iNlaVr8_kUnIkzgzRSrwC3ID92rqcqz7nZsDWLr7Zma_kw2oVEdwrmiCKiKfWzwQ77Hlons-8TefzKrLcmIOcbljYTDk7ZAMW6dUBxvlGg6b5xDyJYD_oAGwoNboyL5aCKS6s3K_0J-GOQHkSb-kSskSbp6d3yxKg55SO6LhiLX5w5oGV3LzBa5-999INUvYpLlHmIfjTbE6i4Bvk57OIlONIfZcoVxjWn-QoSyf4jzwmoNmyBDbo9oxI0Wu1Qc0a-Ucim1x6f6IFb9qveQiNq_VyUCW3ctF69yTnp1Usld3vdHLECtZZn05zqvM9eqVXeayOfjMgla9Wo74OvwphnQDnYIFPIGOe4qAWdC4XgWLygJBiLkSsG04j9ecMpRlpPM0hgBdAhUJnlFJJiGe6kmGswqns6pOPqvl66JAvFPtBl-0FRt37qVdh0krE9_-DqNEqRU7rXdqgNFuInEN8JS2ig86VjcvD9GxVZALFPJrsZByzGRu7zGuTgVhkSclCWmEIFoOaN68RcTSOVQDmi8xYXXRWKaLd-VearFa2sfPKUc_XmBlUmtj_nZlE83xzC7zI4JPItZXCVPUq8qoc-DpTExQPqVDXXUxCPMpqlNkJOqzMuEqYsfwLMSo-9MJOYwJWE6qnXYVkIG5iyEjd1I9xxl8Qs3xG7BcJkp1VEgZApkKNaLjxQTvNAgCEBvMe-rawWZzREoFxT6tUtA2kz8Fv1u5oJAxClSlBjsCF9reuPkBgFWLPY9KVMKWbnrPvho5n8e1WL34pmKgoGrUrbHIwfmhdEZH0YMIJRlH4WLAE33x6jZLSNe8VGwQPQjPTgKOc0g6oVyX2IXrS-sdc8pho8H8cnAVbP__Bu3MqhQ8NDmPERnFHZ_Jy26hzLtJLwaMB12yGiZWICHLieZ8mz5nhojebKTKya3k-7065JXAEXOvwHoGevdGi0OysXiy_cNEMXsWLEVT_kMW3nOP8w3lpwtGsbzTSVp2Izqti32wvWKZPROE0VUPXXwk3F9BcM34bmb16xOBsdP3o9x9Z1EJmE-1UiGrUCK7F5F5gulHkwY4Qhl8UM7okQPhSDVqSkQUoAe3Kbtq-eOsQ6hC5OV5wI1kS71WzC7kOW5-ir1YhMMOrXwiLI2VCRqUOs4_ApBqiXkGeebkHyqnIVqPfiJU9IF7Jo3KbpPbW5J3_OLkJYVhXi-_mYWcXFcymJ3gvYyCyZDDUruFnFrYC1-UsglX7f4Fd5G1Y9kl_PM4eOEuz58klrY4_nll9GzuCGF7ZrmbGLMk_GrI7QW-20CvM2bIQWrTHpBJW-ItgPLVU4WSsi2TRm6v4Gz6pspTpe18qqEy_u7_L5BWKq3iHx-c-SucWLc-jII30AuDjqgsD3DEwLk_csPE5YFuqYMIoUhxVZPtjJZmblFcvKDD1Jvjaauob1GzaVb2BM6ReHlAx0Z-HqwJHoick-kSrQw-IvQFD5jSPvqNeHFZDazNsJWSGsSaejXe1YEjCdATDijnOu9rVOcGzusAzCTLyy45Il-0DT1CqennSlrqErmKQoEubogYXASEICmpN0DehzSwnPvBR5UgdrD3gBmWXnZHh6qiTqyTMhY_VAQ79grhpZIXU73n1vY69dnqlg9LA_xbF_nDGNk2Fl0SXFVnoTHJaQMiBuYgzsXieOyps-NQvCLCly3CUDMX29g-VfAj3o9WfrtZbLF2Xi8i29RZByJnw8Vg-UHjQSNb2yU-idAaEYeFcu0X66va2whMCJ4zsdsAZZwwmXKfBjKO4o218nae3aBNGY2eOf7eYrzRg6tFcraGLlFz1ctTMDo7Gm2KOSrO1Fgg0e6zd1LiLVnyI0Me6xNBG-MKO_xjiSQ899-BtFb9zIHxqG3NdGTfKHDZk37rxrAypP3LUBp64_GeXb5yELqdzj6iDzwrN4nx9u3naRihJQA4luSKhR62hxFQ2MLlYwJ07gNHVK06iT0Nm1uV4Rvcf-TukVXfHzAktsnz1SJNVOb3rF4oX3MhrOnrIGOxb2N6BuWo1SvlbdqKpFMz28ucy4-dwivDv-EnuLhX4diJGoR-ZE7sN4InD-6amKajlYPfDuf124P8RLzfNRxdCvdYhodnNVIn92GDkrkvEBVRfKifG-HO6P5IRcFKBpyWTJm_8RuuZOUHRj5gnELBsGzM4qXykcuTOsU3aeckAhRa50l9nBzotCgA1w23Bb4kP5xBxMULGLFZNEHBfABE7HGLR-RTOdd4qk7xu-fciYGe2rhgF24VK5WAyamVSW0upmEFTKUykle94n118sbpJm1uz4d19qCoy-Ezx5vHb0WE-32sSnWge3xfgnH1558vXT1qMlbBmW9P1wYnaJ5QuUawszv3NR1ePwCFKeDJSUJILbxpl_RUamcjgnVHN0oOgTunj6EEK9O-7CuL54wQzOZOABO9P7_AhT-Y2L3hsOSsTpgR0njQ0LVm0OlhTQ48hv4Zdbhp9Ud1x12x2ryUw7OEvTYrXEwD9nUdkABUxA4C-WyXwISNGd7KvBb7VCXYaJtE4AdsIhQUPHGgFkM4xQVD_d_tfK7-wNKkOCv-7O3vx_UC0pePSMJ7EpXuHFIbO1hHNn2DWM4sCyr88Cc6ExDRi0trjFp-jnIUIGCqYCEOyOseEj3jHH61udx5aHb-mY6Fv_MDqhy0HvRDmjo--VdHatBzDyo3PTFl7KIlSwOtPyUGi6xxRcybR28yp1F4zfRmr9LXTmzU8qsoBTukxdZxG59Cn4ZLmXDmhSlFhTgKqzs65Y8hNI5IRhvJlZJ3tW3l-7Qiu04rTgeofLlyYZ5zPyHIKJoqQP4MJkn5TbKnmKRn6ozGy7gNqeNCh4p4lpGDqWCVODGyl8mfLC_nsdED5vyy0-ekp0RL5O8j6ZZFWHjiO33EP4LfAmU-eic_1-yqshNBdyT__v485-Z7XvaKCONgxDkbPme5xNNUsJyi4njDFg-pzuyTOywSWYMmCM3iXPZezpP7u3fzRinHyX2lRtxjv1tZxrcJiVQy8dvjfO_IGESJ87hWC4Vuzk0LrLYvHsgFjRkmxnufnglsr7c6SQOtbD13lIbHT1kWFtulybzi-VTr1CsZPhiZKUcDQ-4pD74b83IfmuC2Yv66nrbAZ6dA_lqUL5MdxJGDgH9ZG9jCgEFeJTMH2hYPOhuQl3UtPmI4SqZz05U-gP1lbbedPf23QYe-lGUouhSBew_hcmKOHTBsuXrTjEJxdnASXyBTLbiVqP-ExsNFKoIaYvpb7RRpoJb9tsY3XQ17ThTQVvyVVtGl2d5pR5Q88oZtd84nN19KeKF862HYVi8J-Lt2qnJfMSorpvb5CVviQdnWTShuSpIPkd9HLOwslAqLwlV5d6LSEZLSdaG59EquZcaDG96IJnVO-FvJHptLS6PFCBQen2uOiPNiENdAjCwmGqM7UqNGnkiEA3p4sUUo7cZuAfQ1C6NXt-zwsjLj6J9YFKLvQgAinHJQU1zmbW-di_INdQKI79CEtms-B7EbKuJKuPj34oXHhrwNz7ifF5GY0PPZ5ip-G9U1tYgzKX-AyuS71V7pxbRYdKCCa5hEq-3BhrVd1swAp7eadnjrkXpsrtdvbsjrJwCRJZF3oY4sZZGFljgCpJLdS2tM360s6FtA8c-yOjLsSR-kcT_O-bSKIS2lm7_3IC7pAN22aJEpyoXmWDLVfsOKFuw7aWc4srzN-vEjFPGH6f90QUyPPPAloYVProYAkPvTUnetVC-JgYbmJc81-9b4ap1cxf00pcNh4Vcdy0QNyZzO4nJ12v5NroFPBgbIll0-gPyAuKE4kl3TxmPxsoO4lnROK7gpOWBBVDqvKkmI9TM8PIBEBkT6rqpNebEkLBCvXe0D3qarG5--zvcYP__GmgIpzFtfvWCrLEUNz6J35n4LqJYCavyrhUvAOc-H1_1k8VMcz8xZyoMrPChiDGInDbo3Y-RpwlcE1uDqdnM84aHdrr6LfDY8wm7p6neqChnBunu54G4SkwQ0vCDOuIghkzDviAg1vQjVpLQDyPDbJH_4GQK8ddOtEYBT_sYf_Z-6ewIpgfr7ZS2v1xLP0qfPVJNjmIYnvK220gCMQBsVzm6L7NuuAE9rTrDAArC8EQjpmWj-jivDQalOi0x2foUUbZDoLx4taL1_SIoG2ktdz8OMX6858yCBuNQg6EbQnae36RhKrIqtPaSMGgU3WFpIDtbV0UT2uBhPVQ1rZIq_TMZGQ4OPC9HH7B3QQ5DP9cL55_CrpN7rkQy0INDj5jZ51AZJL_EpSPYleIVoNJ-m0d8kkt2Z9ZsumWBmU0m4XNKDyKiBPIVgWt_ZRcZPaRBcrywPeELBDCgIyhnDvyfOyMh3YbFHMyXXJ0BDcqtJtL4yLRDIsusPe4jJE_4267C3JpSG8GKFCdhz1O5zPRhFgIIBX5ePn1MNpBKDd-YB1ymDnx4R8W93gzqaPxoy9tElF7R9bYIVteGIlr6UZe3RKVDjCrEkJzCckosNEf53lAbK1DO16YqZ3ChbN1-_doSK-DZ4InSGA3YSS6PniBGJmRKlydvbzVUILZGau9p4bxmYcRv3qsncSEiF7pGOwqXvf9yXdaAK1eQaHhwVf71SnWyYGGpNvh-O5wrTjZk1oIkpZBBs25EdWlpV01utvU1Cdxe3ePT_jenHxCIe6riArukFNKtCRmsx3AYJiU2lemJVaeBev_Xcw5Fh868anhFYA9kWdas8NrjOR7K3tM_tNQ8RGYcp-XRgoNbedi5NV0OEd3qlAfXjTR_D0a5qYqN8k2Lvy56odFbdITGUyP0rQFGzjf0ucLppMFJhf1lSxG4jIQuroDbHANptXN0-XbsyUsO_WD7N57vjJZfEKmhsR0WKjIK5B52kfbsiyla3z8XSKWwSstuPM27Csv8wtAstxkJx0KZQ4PKCtp4rjEsMGdFJWUxRHwF2jn4Ov8z6wew1W-VNHSCkLHF5fpWv4NtgPTfm3BEkAMuKQ2PZpIamGCeN5q28fonWTvJCjO0l9BvNDGMZ_1UZJ4S58lhHE-5I67z82lMMfsP1ynzEjvKosnlaNyXKkEDu9RZIImd4eIOqWbcLYW6dUhNP6u5e7O1TELZYWpkH2EDm3FJxHk5fOPEzPKSuLg-QVUfb30HzgcTfBt9sf0malqIP65MQZjgg1NqAKGGCQr84AG2wmmyFfrwGVghZawGC5qoSuVBgYiwJrVe86j9A_FuqXVl2OeXNAM7-Pb3XuQEYtGxLmurJDDZ0vAtpxE4Ft9RVfl4fafbDoKRF6elD_V8-1slVm2e_i2j2ivT090OsJqC5t9Lo_XIv3Yz3T58RCIOjP2mGuH9SN-EuKh1SScyNkJsXHi2gUdK9rHdf-25-EZdxOl1erFg10LbXveEx2qz65OzHpYlLQy6BiGsm_2Z96bFMbIntKCAgKme5h4QWOmXeDZcJK9-mAJHuNKTnMPBq3xX2QB1Eb1mxUGbSPc=
+# 页面、分节与页眉页脚
+
+`s = f.doc.sections[i]` 为第 i+1 节，即 view 中第 i+1 个“分节符”以上的内容，最后一节到文末。view 的分节符行列出这一节的纸张、方向等设置。
+
+## 辅助函数
+
+**`split_section(paragraph, *, start="new_page")`** → `(前一节, 后一节)`
+
+- 在正文段落 `paragraph` 之后分节，两节初始设置相同，再分别修改；后一节的页眉页脚改为链接前一节，显示不变。
+- `paragraph` 不能在表格或文本框中，也不能已是一节的末尾。
+- `start`：后一节的起始方式，`"new_page"`（下一页）、`"continuous"`（连续）、`"odd_page"`（奇数页）、`"even_page"`（偶数页）。
+
+**`landscape_pages(first, last)`** → 横向的节：让 `first` 到 `last`（段落或表格，含两端）单独成节并改为横向，前后内容保持原方向；首尾是表格时，自动在表前后补空段承载分节符。
+
+**`add_page_number(part, template="{PAGE}", *, align="center")`** → 页码段落
+
+- 在页眉或页脚 `part`（如 `s.footer`、`s.even_page_footer`、`s.header`）加入页码：首段为空时写在首段，否则另加一段。
+- `template`：花括号中写域代码，如 `"第 {PAGE} 页 共 {NUMPAGES} 页"`；`align`：`"left"`、`"center"`、`"right"`。
+- 该页眉页脚改为不链接前一节。
+
+## python-docx 直接写
+
+```python
+from docx.shared import Mm, Cm
+from docx.enum.section import WD_ORIENT
+from docx.enum.text import WD_BREAK
+```
+
+| 任务 | 写法 |
+|---|---|
+| 纸张 | `s.page_width, s.page_height = Mm(210), Mm(297)`；A4 为 210×297 毫米，A3 297×420，B5 176×250（JIS B5 182×257），Letter 215.9×279.4 |
+| 方向 | `s.orientation = WD_ORIENT.LANDSCAPE`，同时交换宽高：改方向不会换纸 |
+| 边距、装订线 | `s.top_margin = s.bottom_margin = Cm(2.54)`，`s.left_margin`、`s.right_margin`；`s.gutter` |
+| 分栏 | `get_or_add(s, "w:cols", num=2, space=425)`（栏距 425 缇）；恢复单栏 `num=1` |
+| 页眉页脚距边界 | `s.header_distance`、`s.footer_distance` |
+| 分页 | 段前分页 `p.paragraph_format.page_break_before = True`；段中分页 `run.add_break(WD_BREAK.PAGE)` |
+| 页眉页脚 | `s.header`、`s.footer` 为奇数页的（未设奇偶页不同时为每页）；`s.first_page_header`、`s.even_page_footer` 等为首页、偶数页的；段落在 `.paragraphs` 中，也可用 `f.at("页眉N")` 取 |
+| 改页眉文字 | `s.header.is_linked_to_previous = False`，再 `set_text(s.header.paragraphs[0], "文字")` |
+| 页码格式、起始值 | `get_or_add(s, "w:pgNumType", fmt="upperRoman", start=1)`；`fmt` 常用 `decimal`、`upperRoman`、`lowerRoman`、`chineseCounting`（一、二）；接续前一节时 `start=None` |
+| 首页不同 | `s.different_first_page_header_footer = True`，再改 `s.first_page_header`、`s.first_page_footer` |
+| 奇偶页不同 | `f.doc.settings.odd_and_even_pages_header_footer = True`（整篇生效），再改 `s.even_page_header`、`s.even_page_footer`；原有页码只留在奇数页，偶数页另加 `add_page_number(s.even_page_footer)` |
+| 页眉横线 | 页眉段落加下框线 `get_or_add(p, "w:pPr/w:pBdr/w:bottom", val="single", sz=6, space=1, color="auto")`；去掉样式自带的横线用 `val="nil"` |
+
+## 示例
+
+封面、目录不显示页码，正文从 1 开始：
+
+```python
+s1, s2 = split_section(f.at("正文12"))            # 正文12 为目录后的段落
+get_or_add(s2, "w:pgNumType", start=1)
+add_page_number(s2.footer, "{PAGE}")
+for r in s1.footer._element.xpath(".//w:r"):     # 前一节保留着原页脚，删去其中的页码等内容
+    r.getparent().remove(r)
+```
+
+宽表所在的页改为横向：
+
+```python
+t = f.at("表5")
+landscape_pages(t, t)
+fit_columns(t)                                   # 按横向版心重排列宽
+```
+
+## 注意
+
+- 本节页眉页脚链接前一节时，python-docx 取到的是前一节的页眉页脚，改它会改到前一节；改之前先设 `is_linked_to_previous = False`（`add_page_number` 会自动设）。
+- 分节后，之前取到的节对象只代表分节处之后的部分；改设置前按序号从 `f.doc.sections` 重新取。
+- 段前分页与前面的空段或分页符叠加会多出空白页，加之前先看 view 中有没有 `{分页}`。
+- 设了奇偶页不同，而新节页码从 1 开始时，WPS 会补一张空白页，让这一节从奇数页开始。

@@ -1,2 +1,21 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQSQbQj8Hr71QlYATFodmyuOKKZOT_ZWwAGWyoxwBTB_lNRrPibcTikWGWnonOMKrvZinLJWh464dCGvsHD0szdIxfMwkXSU6op0eEnRO_3XJEzi69p06pNmBPh3yFfIB7-Q0F_7ANjfGeEWixDIuqpgk4IrtRdNmHoUkEmldfD-HaazOM7n7ZSefoMuxADVfEXCuXGLVnFWspac63UoINJYYXKx2OUP_ajrmkfk_2bq5vcNzd069sxS5nZfvf1Mfi2p93SXgq8ewtS72o3JF6s42flilz1jFd_YR5vG4rViTOeKRQaZlApwHxHJzSJFSmi8W-Iv_gvy_7WDdtTp73dCEuwpHZf1iHfImNhoZiyMM6_0iqx-5QvdtCKm37pPctUlXT8SAYz5DNWiItgFbDnFiKsTCRmVF5exhwWvHz3chvKgPTV_f5EVmXNc5Ds94OBi8T8CsK3kNaQYdhFNYJWQncZzw4CZGSQZeO82V8kYU6qts0TU3pUH3EscozX8ybwoyQ44wI5QaQFy9b-UDo6fMUqn9btEBJnuIxYOxW1vo=
+# CreateReportEnergyIndustry
+
+**工具说明**：进行权衡计算报告书生成。
+
+**调用工具 Json**：
+```json
+{
+    "command": "CreateReportEnergyIndustry",
+    "parameters": {
+        "tage": "生成权衡计算报告书"
+    }
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已生成权衡计算报告书"
+}
+```

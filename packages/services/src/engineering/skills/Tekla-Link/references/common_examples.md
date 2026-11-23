@@ -1,2 +1,230 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbSRXw3EbdI0ZRZMh42ye6xuDz7xKryELoLrOKwk7P1Uni66lzDgPy-krkDRGTE6OT-rioH8eCoU8aEeXJw7zs2w3MSUgFbZmDuniPM_lHErH53mkRBSk5I-JduUv4Ck7Ewjyv7cjG93M7Y33zL1ZRDqIPJ0ib_4hnjxkZzo3yARjD1Z5xaTq6r1Flc81NL8ySoXxHy3y_tiY6s_2mgxhrqONwtKXGNDXztMQyYAMiqaIdnM2Tx9G2uftxStv2xe2gP1nTwDCHoefvIP1HhHq0qbqimINu4s1H10CqXoNSGGluYpA1NH9gYi9tQ7GAO1Yba4s4O1mQ79EK449vZACquXJ5crDTZNPH34Mq6BqxhKxVZ246chmz5h8OJGLMHCyhhpelMB4aMTCBlJW-XzffOeJmZFs0ipOZtQ1Ves1HMfyNRgLEOGOSACU4jEaAo_X9JwA7gtGm6g97scnwjdsVChLzxsgr2eGBMVFr5U5JYMYN8ZXZQ4JtDO7lyMdvajtBNhqVbN3oLloGoxzZ1xSRYsIPXhZz4lfSTnn4rvFvM5Si8n4K63HsZHsWDePmr50jwMlCkaSrpuzJc5HBjB107kxkr_wYpRISEffZ58W76o5xDxeRZNJwBrqhOPP1zvi1kllJb4MsWUwfocCmH_1t-LCSvCd7BfutvlIDN9pzSaEkYGTrusb-U81tN32V1vmnYdTegjrtPSfpT9Gelxb4XGA0YkBmiIp5NnbGK7LxKFM-FysFGgv7EwCtXEckzB-ogS8c36-nCY-iLoWkmPTa-6Q3VBr525faVsQ3D6g4Hz9zBzdSNMjwDjj8BZaYvzBkXI5MTDDgZptf2GMbo7eg2yeHy93LqwqfRMy6YEQOLKUe6rHWqPilutErOg8E3cmFbtKStZ6pKXHZgEWS4p-aXyhuqGjI3UBn1b1Y3qyd85TCiaXOqwHrj1tWwqofckEkkdj3c029EWu75EYKAACix2xiaXXoZU6eBgx8JC94cEKpLI9uN403S_QIp_-hPcLS3HFufAfFDkHceM4q_6VtnNreS7aX_fcWC4eHq49OFYTauvzwlkb7hKM2J_Vvo-kwTJTJ6e5Gt7thuK9XhGdRT-ZwsYZAULhlhwpyHixs9igqTytdggIFTduellFPJCK77Gl25XImFIDSlTx4v9x3f2H7nm6Xxt2PldnK7uj3L1301I5zwrxKqjYHb5eJ3m3zdy6POMyj2ziQlioqPtkwHQyRiGwPQh4LREkgpHKqsLY5N5wokGCpwaM6JUqq0XAxiUTOoN7Lwjh7jMuLNY9AgN1-maPKuywXMJ-hJcfTA45UZ4iHo82kxb3yUl2XnCg_urZ1f9wpJfMw5DhUqLOjHo3DnqM6zs2FeKGihnxSGF6Vd0HKsv-tL3OpupIAY19IRUkSLNrPJtM0nHf9jnnQI6UHYqhheyfymAPAblj8m5QuLer4x8K-RzxONrAXgAPVgesHUZ0S37wlONBcHk74REMwS8PXUB79DiqeF5PSquoZ__D3dt-Yiocxtyhn1UegHYVozjbSZihTLHLMTc9L00OJVrXW60qKKb5msO1GV7CTXgdNTfj_b4aJWxaGy641B48JlwkAE23Fyi2OxRNdGpzJ0U44J1ej3x7G_18TkAtwK9O9SQn9-nWYbyRrW64cxUEvjUmN6hbmTFD7gzhChmv68XwSDAh4aj9HbfywrPDzr41qT4-6D6b7oMcZ3lDxsEOCZkqGA3Ey-Wc-1Z-k4FWoawLG58_UCHGgYeoIMWgPZwPLhwOxls1O5c3UwaVSuMxsRV2MiLdb-WnuUz8T0pGLUvIJ-FFnP-zZmQaIFxP9MsHmIikoTSrIstm6VfELQFU0nQgJrgl3CdCrzU_2bUFhBScYcgvU4QQ4L8VdCWaNRPVoVpP4kHP7TLsk2FUgdBCIQVwdeFEPHjmuQN9SCvyL6gFfUnCGzc6qE5Z27hrqlWKE4c-daY-6EqUp8fk-Mu1icKuYteWmtOpmTr8bIRR9vq9us59XM_HyEFIRuJBRJE2HYmJmj4Xx3MOPnftRF4P4ALBGpUQlpiWm7uh4MEkXsAg9k0qhs614yZo1-pEEob7IrwsQ0aCxcoxF7w8_RmKX_zMXE23lv4hWMX2w1XG7xShXDYzs73o-ANfiV6jQtubLFWlEuhPo1wegaclfsZVRZN_nCoNvIFXXPFr02e4ZERpCLM_bhBxGLCYwpgQptVcLxxfHfY-wTmZA21wfcfejRK6jsptxz4J88sbCCf10zsjPSeyrFeNCELgAiC1CJCRnFhCaWUo6xLaroQGKOX7M6XeunaIIHuHDweaC6aPBy8giisf27UH6XwoXBGirnqRnO8Zx5p_PkuRGOq8N2_YX4MHQ7VLor2ipBqs0VCx4aeEdG06TPHeb7udCvB6ASoFcZdeeYCrtSv96bud5O2t5kju5PQIuT0afs59tD-VOpNoood8wBto3UKlGUTa7_7-jX_JJcMUrr74RcVcBwmPOmkce7fasxzplReZrWjCH-WwvtQacAVLdJ2nv_q72HsawG_Ph4WwJ7phu3ceTIcASUJsT1bBqIRSMkGMe7akhFUT2hh7OCfzAfFxR1tGxdiKl8OARgvVdeVGJzU1eSnTlpcaQdbEoZIDL2LoYHHVKZ3ku0v07k3zdrMxKrKfjf0_NXYGHqhbLP8DSBFkoQ03mINFZfBaKSc_kH0noX8i61s-IVfwhIUWijgk5Y6oQsXy11mj_7D9TdunxRggGGFlo24p3HYv6EJe1c6-DyPB66dsfMcDBu77okCoWv8iOmwklAtlVsjipkc-xq0cS8UmxPeExhKcpsHS6gn9NyWQcS_ssNkAszXe5Z2wjtdVpva3OGTNhgsXjG7q5r9EwoGyRUg_WPaJIaveykRMwuvFknAtcTZaG2yztVFlYdjML8r8p18XfJoDvVkjNyWKCYrhh0AFihHQc-Hk-8c8IBMjufV8GBsbP4kb0OPHBqtlLGnLn011ZVHsIpj4zDxPK4Po684IZ_qDOtFNUSIzefQf7ntgYPMuXRSxDK759LEOEl3Z7ZO3PuBhY5C_-hAEarPbHxvWEmZsbo8P8Jya3C9vCBRh2HOIwnl-_9w-fzr1y6VzpYt0-kt6LZpQmdSmKbdGlqXHJd1yRQBEW4VD6lC2l1jiuMYNkF_yvUQxGDyTumr8xbHeBw9w19SDoRhGiH7beaF2vP7wmrXPwR-YuKBRXK7lfLBzYmt8cQXcm8qPfkWW4mxea0sJACp9jUFI-reGSrTVXvuGY7-LuPwDUxqR8pLwmJxJRSSggoAXpqZQk3Xlfc6AJgs-Qwd2Ev8GIZkn023BPWAjecP8p7MEorBIcsbeylFL2oImS3P7C9Z70975ZUd2iHmbyZvMmLYdIvNF1QRkfcq1y9AnVNmphn_RoFMM0LskxStGWSNd-YlTs71-Nc072Q6W-Qj8d4HLELdSeG0I_37OU5K4kqQM9wvTegDA_rpzBU3ou60GYRd6WwXzIAnXtb0Hckgln5RQ--u5Zd6t-MGhqJc9qLoSWkX8mlOzsf-JX3-yEt5sb55P-EieujsT9OJsDG-nKywHpHjyQpzVefyhSpvDbDGqS9JDGuV_3ofvLlo0EEXWrtJ7kPvykBoM2ln6ACwzJfiJVP-oYO8_vNObCEpQB7wH9PsKFSHPTDAKYZsBTYaLxDw5z6em-fn2XP8xz6Dy2nWHVWwFYizH7Ncc5hc3IKTw1XOaj4vn-EeTDzCl-hWqsGSzoq4T2R3zOs07oDcFZkNo7ByAu0tjPyGSlEEn116M_l6pgH-_fyT9gfO2SijVeNkNYj0rDyclhGkKccE6DdzwEYmn_Y_pMzr7XI1F0cwNOUmQG43mSTtrOoodEij_nEhPV1jApn1jKzZhj3FyO9iA9d3f0MI3ZdciMMV3Pfiy6lK2L1In0ymCmi_uvnf7TzRit0XjYiqmQnyYV3zuQgSShc4oQ6S0agzWbY5Mg2_laSBPcpTFg7sd2e6BGX-JgoElo_Vcqd52z1QzcGgQiJXRdsMcE0Ub3TpPGOIXAZOSwr_OupIkwJBJ5zIyuhK2mq0DwmhK6FSPq9cWzOoOcig2OxbCt5b0xigbw4q2YkBu2QY6_l5q9mkz8VUXJE5U-IQQauHTdstTkZWmL5jk6ZwHr3k_K5KSuKSOuAtktVIhP4VvnBRYf2puzff4Prrs-qAtNqDmSHDRTVVu77wkNww391WydMEr0aU22QqLVY8sSiB_7rxORSa60bNtpGX9eIcgox3wYPSeC60zHIAgpQefVwcqjxsWUDrSKTgshp__fOph7oj-iehU94_SbgyYe17PxIA6Mhh1mSChzfx9uojIx2ZG9SNfr7ackqSvSCRnL5FAsP8ZAgwRl-GavYzpl87N2t5b8d_VXcZqVBIUzJnVvoME5sciWBMs0-4Hxz63NK4LptHJDNtND9CZocPSKKXkll77Xlo09OLyl1PVVLK_oKslFi0QZyCmI5PpIwt6ZTJHDXB_aqd4kjemR6aJwjQjVX3KeE2jjei2MQCCwavzmuwv9VNzsd4R7NXqwsSVEyffVRIfB7k8OtrtN3Np83bpxLqM0LaUAwhXZJiqncMgFDp-gk3jTsFGAAHRTPiiAXWVefSn3XMrV8mW2AXE8uhUZ1NKxrJNoKEWqItY3kwm_dx1n0GZpTboZyweb1VJvxqpOxYqtoXAvb5qIgaRFXWBzqu6mwhXUCCT9Z019SNff1KuHdM7JDVnwaRCd8OR_QyqEH0z0d3Uq3kypIdZ1_QQWpNRao6lqWFQExG3Hv1ZQgg4V-_ZQSwGi67C3t13w2lnH0YlJt6eMm93dCPJ6ZuCbrVBDr17Q7FINvySvtr4v25-ryrOOiB1kd9p66L6oiXXkRAWbPKo9PF89LjHSdLHWqMHGxkF8IR_dnUCYPZBDYyf7Jt1o2ozCR-_gEjbqK2XmXTL69xR0Ksph8BZCjCzzssqU9LNbTfjYQUTK9GzhpGIFu8jC0vKOvbzdCMwUcY52TWg08EmaYiUqFpuXl1umPKcIfOhP0zPHCmQs__-xu1Wkok4j2RFp4oeZKsZDIj2El0EqMkQgB-YqiVKn9_yw_cw5yK32Wpch_IYzl6bmJoF-vVyRrRpKdnaN0oH1c-NPPBNRgDzHUznt7AwvmXTJLJOE-JjqEnNNgTkVlXcC0CEN0W7Jqw8NL50fOZd2MH3a_o24aNd6Hv5ML_9B33G-hqOV3zTT5UNgEZnCBPd6FypChqv77t0lm0rViGSjri7_FO9cRSStW1JYeLsEc3QyViY3aW2STWbpObVN0Cz96UrQuNoLawO9-6RPaZUu0JoGJ049H68rJ-hPMxBz6ho08TjTfEOl7HRjblvHEd7H4s2OedXMgU7UOcG_PYJA5M7cOAXk1_ZvSAPY9N882-KZJzvbLsd992iHoJvGE60xdrZjcPmSiK6PH2jd7ztdHBw19PUzXaTVpevhQjaKnH-8VvaiN53CW088dCT5OOvYqJ579Ky_EuHBL-6gsV-UCYL2HQHxuZd7BUHKEQNTaOYNQspSQEFz4YGPZj3KahySpIcIZ-jSd7HaMXWGiyXpZ2e8wE08zOxX0P2Ac-G6nj69yGR5ghDg-s6SmuSIX_0xEmyuFADRZt2ok-sZn-5NZQxtbWpbX-jb9oe19OcjvZ7mRJtkbYNScAIibmtqELOvF4Z2MCEkeJNJ_VqJh3m01My7OhlkLKgLOwLSXNasp8i5tjv0j4qAjOVph5pGJ7oPCqEw9adNTKDJ37uM8e9TJlPxG85kED5VMiQFdgKgdzFhHuhnvcUkR4G5klLq8gdhJ4RgpwySori8aXu0gzJFX7-z-lIYBaEOGzorWHGlo3LVjCgHM-sYCPw1BuawKoOMf-1FSWLuLkXKXN1dPr8ga-v-xuO96kQ0taUFQhSSdCnqF4F1m-5YPbFGYGupyJE6ZjoEcvRj2Q6ymH-j9PxcZyZdTyxP5rYD7-TsAIy50_dStjArqennidBrNyzjpjuECHC22kBLDRk2nRzulLzljc_xLLCRkoKA_VtbYgQx7b4SXSE9A6lnLi-nmWR2cMVRLOaVk7sJJS_Fr-Q3GhlMqkgIZUWNfypX33f8e4PdZrTT0oF2Sv9afGJ4zc0Ig4CCiphV4olaV20uKNZ-DYquZ9hTPNGMqXkliSjDBH1nn8iezacWDm8h0NDR1KRMStpEpvnk_lheVKc3WGq5LbCckRaj7j_PPb56_rcsukirwswdFeP9W1AYpJG-6urEMXBnfWSptwUbJIzpx060y0e9IEbGKPGWmjCsFTCXPIV-SehBDb4UDlFOioPybmTnCV5Dn4NGzxz8-DOL7zeVvi0h-9cDBCAHsmavy-nvZT6FY9uOVId8YI8Wdr2vhkd5c3iW2NCCGMpofbYTc2yFTUbf2eC8V-UpfzimYrnul7Gb-BkC84BdYUdc-xLsSct53SeBzNmemPYzAr5UGw_W2PHfIhTC4KIBIXWRC6arFB6bUl0IOvvjtpLjUdg6AMk_agHlzKtg41M1e-0qeVV6kAQA-OqhSxvEZMJ-dMWJlQ9X-RZtgALAhUDMddQjDlEfX25AFAaEkot3IkIebxdHpNVEXxus28kcB9BUY-mNnBSBG1kVytWQuePqRZgYKyPi_wJI34CHE1OW3RIz2aQ6VVKZbKMBH--CiqTeA4_FNOwXtSjPCX8sUUERJ30h3dF6msbfPy9OOrtsNrCESgsrOLVEcvj8Pr7jTprqQWtXPzkPkiTV7NALrqTQ7mHKdkSyiHBW02yBMnRSF5GwFEWfF9N_4QD2qD-z3EJ_z4-YRKWH4unKKqT_MiGHTFkrS69sUDBdi7ySK3cY14yKRbljsCFSpgnDKQJZUNF2DNrjlcdXjcUoabJ8N7F7Ujrgy8_EswYrQV-aXgPYvxbxws7otN7m3_Yo3QXF1EY13ligDSZgEDdSTsLNjA7QuRwyLOBc_H1l6re1T-RHmDURiQkAK4KcltY3xaPPg8j9hzwa5Kh5CNsLVJHwcBIm8dtpvccFoeyeiapPoFvU1H1Y_2o8DlTTrVc50NY_RXbQRcaYfyXpdBa-U-YWfGiqgfNaSjczkZUI24jmh-OYPSUrFpVexNeSZG_y7FCTBHw2ms17wWwEyZZ2PXm4d8jy98I3jQBg0XcYBhQ6Pyq7_-FaQyI7j6xHCkHlgeHLgkWKjbt5lRH7ewEiTlvlRSDVzypdcqUDPSGO6KiGNHETe-Dr6UQ3WYPEWNBl7mjhZTilSnpqxQDCyPP46cLZN-aqtJvo2ZYhio7fwXxbb9D42EcjeR5bFSp-F3r2KBFaY1zG91YV_WQtanS4E95CDcF8v-RR8PHlq2XVfD1XkK246PlRwtYRZIXhmdcNy0dVsPlp1IHR2M3Hl5ZiLii2hEUNU3kdPLj894DvshbkbvE3wQuhhqPS5t5XfaI8GvpxQ86qQ97Cva97JGqJi4F58QfPmDJT30jH4RoYScjhb0v-fiFaLbmfXSTNe9-KcIUcUO4e_1WdVnVx5Al2BZYGZaFcHfzO5PU3sMWZvAiiaGZ1eiKTfDedyoGnUvkq27b1qEaDp_NA83JYfAd9j-xsSkQ34Yc2nKCKIQQ2Ee_1V5igW4HuEbIR6Kx6k9WLxOLSeqMzXOIEt9fO9BgmLLGl4zivF58w5HE41PVN-vQRNEF98AZF0POamgeYPMHKF5u6YCxGjKpFJMe689ZSvUkjEb27FTPd7Vxm7xD2HLROj-HVx592_kGrHAGmyEwk5l6QclcVZAqmfZGviB_MokKOERKnOtSUxHP4Nntx-7tLTH_BE3ec51sYTG9z741IaOR3NLzZ8RK6dtzqrDR7ElAv2W8l1TPX1ecxqcCGo5_drsi0co1hIxPmHya8tG3kPJjAPJpP9V81ObWolb4UtJbVCkfFtwrLvaPsIBqQ6MDTvwJzEKcHY-UDuiFn6hXCVdvKwrW2MGlyG5EUb5f__t4zr2Uejm3GzO_Nonh6uUbvtoZwdAUgkUWytxt8edVIHpDaRFMRDKZLPfQLVnhZdXorJMzhSAa-c2wQBIBTa12vLIZ5bkfMArMIN8pI1eB73FghjRw_HLvJpyewdDbsc7gGN6p9koKvqGRWeeId4-xXfps_a3985geKh0wrPfxLFbvZGnHDenJVppEFmHupSzhG-_LgwqcB67Tw4vRgOoe3Q5xHpppVkSSLyfDogc57N7Qw6owZSD9Azja1rwOoxOxGpkax0DyXnjmVXkpmMyO0CVlyyFuSIihUCSpuWa2QjslaNLeA4qFTEW91rKYlyaBY8-eV5obHrNLZpOPlYd7iV_4GwdYUwgHn0mgP-ceXpuyxktdte6KHaUAeMKZimwb3C2uaxoqpypo4A3nW5J4Ny3ahe2BFn1B1YG63VRgyF2oCckoYjBBteEwHVLQiIPv3MMYUti7moBGhwcUIh0Yu3gbF5hgt03j2qFNqR6x9IN3qR-ArIe-eeZpDbHRtqZKIB9gxpHbQEWsoDrBwdA0ktFDd7IL57JbZ27g8lTPYhqxhACj4o6xR5UnRjkb4pJWKY4s9LY9qUDeM9wGP__efVcZOv6uMq5gRXuzGm5CL6IKo2Wib8E2vCqIzPM7WBG3sHDtjRdek0SMLaZFjShplG21kuHEHKIBcH1FSzQMqU8IO2I7wiPxuTN7H3hQz6bG_4J2Ez3Z-TCsQTJDFaHrz5G0esgyh2rDofEZPYbJTxDeJ-RpkbBk8_PCXREPesyZAi_WrYleN1bPickFwShgKlC7YIY1x3I9na5sw4Emvl9n6zYANSKulPZcUrS2Nv0VN_NqcKTUl_lCuIY0m3VxuExEqxC3qpiNpqgpIVdrZQKj-GcObOjXnaANkM4Sf4dvZiAdALsxZFkJAJIHg8z4z-PFmHRwadn239cL87gEYK0Zy6G3ND5FU-31k5QKtvbE815oNJnLcVnScQZ1tY8aS9NrMf_F_FXg8jAqe2CPbkX8IlPJXO5wbGssRMUAiwy8vxYzaXni4ge05a4u9WtAQ21YxPW28sTFbkQ6aOyfKJMhx-OlrCdP88jQ_QU0YNIes5CRIOCnWJGcR7f2gUoKkxIeW06Z9MJXXQQJfpCi8uGwdQmDo6JTYKJNzeMgv3alqsHB_r1btuS0njcyQQdyd7NZwM399B6J25es9i_55xFZ05W6clYqk9TGkFIe53WXZmknYiInaIaxB6lDXHSw_dZMLzzJz4N4hJ2tELayKHOAIM7sY8yWx51Goy9YAUBKCoZnH0jMRWp29sHvx_iR-LjI1EoBHZzXAD6-OmgpL9Nz1-n1PDcimFZ2qfzWN0Yplecat6NRX1wXVBfu0VAphaAr1bhKf7IdxjryxRBPpU7uZRh0usRCCHPuudK1irgX35q0Q7JM39mnjEVQNvP9K-_7mTL7Pl1GmfkBYonHODHZzdWmk3aQigH3Ycet3KFLL9JEW1PP3WXkXSwYybJDO2HDArkrtCQu1DN7_yCUZg9-ah7CIBspb1kMcMI7m5Up1jnhbbClHWfWmkPuyGv3mrEpbyjyRfnVCoR9su3vNze9-PgtJaTDLE7ndeSWgAkGXvSC8YbAz-9tV33l-SipvY6E8afclmteU7mnz06jasHETyiHsDzfC15S_d4Eg4jymcMWjouBfOQ5sv2ZBjePj9xs_AWDJ8inDV9SUDp-cL3X39euDrEz9QzVbzB4LnvmS8kUJAnJ1LMUjIB2PUkyBMebLWaTrjEJFR2-OsH16ctyJj7eljPRgeewKFEaakGOhTEbvsqgCa0F50Xp4BDTwsdjXnLAUM5IJJxosM4GYIpTYp_hNexC5DaZD7Yg19V462uEY6dcBvKwqw4VizTJWeLmpHKh5dPhHKvIoQjuIE7Lwm2eY25SA1K_5lpQI7A76NbVk4iM0GHLCn28XDKenC4TaoP1RrhnS0PlVSL06kbekqZXqrvQ92PKS76Wv93gkKQEf9g_wWf4EjN9YoBo0QAMXyaHoMTunjTN5ou4njbsJ2ERq3fkyLFXShcvmKftYSUnBWcyvo7lgdQdwoOa1SMsjh44n7GmSG3_KIc_S7YQ_rVI4rX53xPmv8euzqLxd7-cvZgdx5abcKSvSS-B23tzbnAdbVMONFwX2eaHY-aBHf3aM-pqILzcO1TS-FkhNqi-adKxxQ7rv_gLSKybMC9TRMSatThGRanF4l5vzgS0FasFXVryEhV-6TUkdPB_DlWS1UxDJsTUgGJhJiVY1HWtjNOcKQUyDv-X_1VaA3sWdBYgi_gVAeZX-G9SE7uLETIZyh-zajBHDlTv_0xyZza4zT47rqP4xK-xrFE2dBdnjP73GpBkje8FTX0ZgzunaTo7x4cAC_g8qkJatVMAyC74AcvNyUxh9KkDohAc86UN-ei4H-_201wM25ay642nGDVmfjpO6vmttRz2c_DsL6HoXXEvTj2WF3EZ1cmHBPmY4QZEEssTQuG_kGkGvSXDpSzE36OelKkUT9lO98H1FCPsgRQ0sSdmrKHvq5cfnY2AmVbOrV_mdeOAS465XPV_00Ro5Do5DqLoJ_XQEXnukjRSZL_vPnL6ZdreiZGReBqAprxeCZBY0HfMrM-Vfzl5qv9xrl4RE2W6M6fKuWvyigLTsyxTubJqwm4bGLLhJAyofARksX_JXviPVQl87EQUSFONZGXRtaKZmNr9c-qDZcWa5IX3QaMVWmsA_PFXAmtZZUfEoT1lrZ05l7A7-n_JbodBYUtLrQjVuL2YOUYr52pePkVlj_--LbCKrYvFN9J1kdaGmZZjELP1MjhL_DoEG9iZWkDJSCZ6gy5y4KmyoEruSWRsGB-vwFBCh7uAk9XlAQJm0tpLr99NA3ga_RiVrRZjYKL3sK3TakkJVSO2p7s-Km3R0Yj-FRjMqS_A3zwszXCrBFX4IAarjAOOdH3UddM7LGLy6mvyy5yBpo8SpNu28EvJC94FHDps6-JymEm1qejV9t2_PtjudfFal4wjzQKjXxbP6QCyftEfCGswKV97-bpQAvYKD7bk22deO6gBRVcw2Os852E_9DCFIbv__mMJe-42I3KfMdDfR01Kph_ZzDzjBC52sZUjvws_nyHXw75fOI1rfRMFAsvkY0EYZJhGjbTeSpjuaeeoe_lyBNXajaG23r35SRl_lKp6GX7iAHTu-c_X6T9L1w8TsZKLEloFlOj-bIRb1fxAAzJwLuuV1pODmGunqW82YHSabUa_aQULKKCgI8rsOeUz8XFUsMorm4mJPDp8SCFIzdFzgNtLnKz5SzuoSZhSQSQ2cPj4f2JyZGgsNuQoAKAupY3QbeSL0PIZIxwfRnQal1XbwXq-H0bYHDaiM8AcPR8CPfsvgwm3VccRlyPbhTLqfHce96vuCdwSy7CabT2pjGJh0ccYLUoW3BkbsbZ36jA0fNQ1jxnWi8oWflMu5zdOUU2LKr3qmvBSRLS2TMJlCf_qaP-U2RCVhW9OQKFvmLbKwGeUxKRmaKhP_WZ-STA66a1lDd1PCLwmZHtNWhkwBCfMyvQnxPF8MZakzjzK8Gc4SOP-FeLoSKe44Eble_tkosxSuYZhADxQuS9hizJ_DZStwmoB2aP7aq5DQQqOoO2pKS291J8hob1qsoUJsZgfvdXfXK8Fefdmzfy-ICxxaxc_SrQygtMSttUcebww4SV3szab-_UAIFwNOQlpA21gGoXtVJFi3fcdlA5NZqGAg8u3E-NeU9WAxtwBMo6JKtr9RwNBW2qWIEuERQdlN9rcd8ngj6THiz2WnHUI93_JxlEMytc_k6C3QjrMg4yOoprZwcvsRfbn7sYlHHpsC98EWS4i-lFvpzbfU4P_edY2EZL73iaowXItkau0fbgZfGjyXLB45sxoHpZfCwiv5-FVIyI3ttvS8_rvZsyx1NTnD-3eWGsUFhvdv9lXDyjmvHowtNw79chWQcTk56bXHnb_KcM22KJQPLGF2cJAVWEtdfc9nJ8jKCkoTV9ZGroT6IAL2Jf8fGK4oAArl1yMK1CCCIRKzTX0VB8zDLUIpvOSyG25VcYLWiJNnAaOmNCE3KLVudFnRrmvG0tMfHtLP-E7B7JohrwcYm0w4h-pPQwDd7PnTsWIJWQFVOgYGZZGy5Dr0Bit9Hzut9FwcbcdKEfcRZgowmhHwOIJz2maT8z8hW_ohnzMDPqB5csB5Lyq-43Z5lMb-6dzWi8i2f1LU6BoiUuwMNiIlkgdQ-fxPloYESGnqaw7PCjXjTa03GlKomFnSRz6gmCn04JGtKoXMgHxB9ccDsyGgrfQO3_PM6dMsFRF7a5TYI79wcI_4Lwib1Pw5tji-eGZoYoq9KYPf9dN2EzGC_vLTmkQGFgzlplAUg6zy2GYlwhyWZfragMoLh77u_CP9VotWaxSm9nXKbWc5A9-qb9TTSApdZ_Oikit1iqTQ4EXCJiPk-k19mMWbDoOcHQglAE9kdClkdRbGIPf56QRFeklHMhzxUXCQjkhKgqtRc7B9lgKetBBdTGz4fXM2x8hBBahAaYfXPwKt-IhHas2T1P9c0etUTU7vqknwPxcAA2zXm29ayRCqkzY3P2KCyE-XjNZtMLL0DcmMvHLWsnV72PxLdSLdeb-meazZ7MyTFQadc1ZCg5stDeB3RIbbMnTu84kW6TOubMISoaJKF0eARhm70ylIhY0l8DWBVBeMxTAIWBrGfePuauDRBFF7muyx-0VGZ6tHbE9jFrWm1OPHdYeIkM3A2znIS7z-mqSXoS4luZG_Bd0pZCq_jNeloKGdZJv2BKE6Vhl662tx8r2hYrE5VOVVI_KDmJuooGVwaWSl-8pphJpKyoo_bACYC7iJxmaaoXhwpmE1dxeyvn-gp30tKmocdP964lXdEm9WXRYnzxs4jZiUx4F7im0RuyZpSUZZh4jOiOcDHUX5XYQ_7uzAREj4IsRQy6PzhwlL2IsBOvZqZEirEem45b8A4N4U2hurKxbZ41M0f7NqktUspYiYCYQT37zOpOcIhrZgKbRhIXLTnUxkKgYLLs4haGQZCEa00Qfk0LuDfl3yWk67zFxsP3N4p1xTkMAC_wJMrGbTFRT9t8iihwi2C3_wHkIuFq2NM-LbERNgZJyxYJUdja0FYbinC--OzGyNPDme9HaoRLkna_VmjlGwG1zOCvOVuvFZ0vx8gyjndxgr9VzzTFVJV8FwM2g_44cqCttOOLjINyLCvi2BY6eBdhlirZ4jiB05vVTUYYJlX4fwNKFAnsnw7lvwy5M1rCJWUHT8PbZ0kUbK_3LGIcu62bhvVb9MSSEBoCOs3aVW6CC6ftoIaVUDiMsCP_oSu8lyYcST2O6TFyWHBkPsxwB84qshh-9mGHHV9HSpicfASTcnFRWYn2pHnROKCns5XIprAqLiyt1MQ4q2Br3MbBORFwJz6rdQbZSjdjPyv-OnvgHKz_kC9RQzukcC2NmASO49KN3sjzTfbNh0S4bXi-mU9-1PjZdJ-o2gw2AX5oRc1S6Dxl2ThFqbYpNOzJRXqvQfxCHx4us5VcA9O2XGAFPz7DZnndC4SmQhyjIJNiJXx9ll7_QUSRE2h-lJplv3ctfL8Jx6YRFPNOVWpL-cpc7E4xcvcSGoozlCwGtl-Q6_UeV9_CjOstZ6T9ZfZpuoXkn3x30TZhCMzgXLV31tTcZZ9O9u7Ng9ig4FK4BkNL0D5zrBCWz7yFLW2qWq5jtd3GnSO_F7Hky7xVfNKwga7Mv8B94Y5n4moH_scR15k2nM1zYIYucwFmGyoczngJE8-gpcPbMtcXcpWqztyRMDc890-cf749MndDTbJJMdwt58aVxb6AXbU9iF-leyV-IvDzBSEv42sVXQ2PvmzPvD7uDq5C2JcbfvBCKO79Zyju6XDOXudVVRk1uRC_C__gwuMCoUB5UmViBz-fUvS5SIqrw9oDL_t6EZEp8cHW4_MiGTGOAsKsxROC4scx83KkXMOclBMOMFt1wTu4CPS4QrdpdG6vYJadltbzVJMBef-Mj_h-ASHm_NoFhtEUoKwNAUrB3jmiSs1qweoF9G9mqRaHBrUKWVX6fFZpF0w1w065lj8FNEBfUaEQ5Tkd0O5uSHz61RgYz6IX6FvnslSczI0npC2Jsxa98G1uW35NzPYxtgXstvM3zv6ulNYrV5WPmcBf74bC7LLdMqEASe3dyqBTNyKc5yY69OroiiN7qexzaYLfS0HvFPCuae98W2zwDCbkVfpH0hhgoArenKoxEkJq8pP9tayzsgqlURxxBapqtfccI5LK8DTeZn66gX6rWkRtJbxhyn_FZo7nTrGX7jSpqhNm0nQWlLHczv0wnWO4J005NQ5dPSYalliQKfVbz3FWrknBLiCZX8zSNU1NiJoifQiEqMJbImRM3EQhPN5HuRbETB9niXnoopEQTCz8LsOqD5YU4UTrHtG61Z6RBO3MxQ5kYAkVDbVGygC5ji4jyrXmtg_UBe-508HzbSbdNJ3ELjp
+# Tekla pythonnet 创建与修改执行模式
+
+本文只在需要创建或修改 Tekla 模型时加载。所有代码都在 `python_executor` 中执行；同一任务后续调用直接复用 `tekla`、`model` 及已导入类型。
+
+## 建模前置规则
+
+### Catalog 与环境值
+
+- API 文档库说明“怎么调用”，本机 Catalog 说明“当前环境有哪些值”。截面、材质、螺栓等模型值不得从 API 文档、示例或常识猜测。
+- 凡 `Insert()` 使用环境相关取值，执行前先按当前年度 API 文档确认相应 Catalog 类型和成员，再从当前 Tekla 环境取得准确值；不得依赖固定的便捷函数或硬编码名称。
+- 用户要求的值不存在时，查询并列出当前环境的候选，再按用户意图选择并明确告知替换；不要静默采用第一个结果。
+
+### 操作返回值、提交与失败清理
+
+- 检查所有 `Insert()`、`Modify()`、`Delete()` 和 `CommitChanges()` 的布尔返回值；任何一步失败都要停止，不得宣称成功。
+- 将一项任务的改动集中后只提交一次，不要在逐对象循环中调用 `CommitChanges()`。提交后重新查询关键对象，确认数量、标识和修改字段符合任务要求。
+- 记录本次任务成功插入的对象。中途失败时逐个删除这些对象并提交清理；若任务修改既有对象，修改前记录原值，失败时逐项恢复并验证。
+
+### 单位
+
+Tekla 几何坐标和长度通常使用 mm；其他量仍以当前年度 API 对相应属性的说明为准。
+
+## 截面选择与使用
+
+所有构件最终都通过 `part.Profile.ProfileString` 使用截面。Agent 按以下优先级处理。
+
+### 1. 型钢：优先
+
+- 从当前环境的 Profile Catalog 查询并使用准确名称，如环境中实际存在的 `HEA300`、`IPE300` 或国标型钢名称。
+- 用 `LibraryProfileItem.Select(name)` 校验；不存在就返回候选，不得猜名称。
+- 型钢已包含轮廓和截面属性，Agent 只负责选择，不修改 Catalog。
+
+### 2. 参数化截面字符串：次选
+
+- 用于板厚、宽高等尺寸明确，而 Catalog 没有对应固定型钢的情况。
+- 前缀、参数顺序和分隔符由当前环境决定；不得直接拼接类似 `HI400-200-8-12` 的字符串并假定有效。
+- 应先取得当前环境的 `ParametricProfileItem`，读取 `aProfileItemParameters`，按 `Symbol` 设置 `Value`，再调用 `CreateProfileString()`；最后用 `SelectByProfileName()` 复核。
+
+### 3. 任意截面：不推荐 Agent 创建
+
+- 任意多边形、偏心或多轮廓截面应由人工、专用插件或经审核的导入文件预先写入 Profile Catalog。
+- Agent 只使用已经存在且验证通过的 `ProfileString`；不得在普通建模任务中临时绘制轮廓、修改 Catalog 或导入未知 `.lis`、`.uel` 文件。
+
+统一校验后再赋值：
+
+```python
+member.Profile.ProfileString = verified_profile_string
+```
+
+## 创建构件：梁、柱和斜杆
+
+直线梁与直线柱都使用 `Beam`；严格的柱必须通过 `Beam(Beam.BeamTypeEnum.COLUMN)` 创建，因为 `Beam.Type` 只读，而两点构造函数的默认类型是 `BEAM`。
+Tekla 没有独立的 `Brace` 类或枚举值，直线斜杆使用 `Beam.BeamTypeEnum.BEAM`，由两端不同标高的几何表达其斜向布置。
+
+下面的函数以全局坐标一次创建一根水平梁、一根柱和一根斜杆。`beam_profile`、`column_profile`、`brace_profile` 和 `material` 必须来自当前 Tekla Catalog 的查询结果；示例不硬编码环境值。
+
+```python
+from Tekla.Structures.Catalogs import LibraryProfileItem, ParametricProfileItem
+from Tekla.Structures.Geometry3d import Point
+from Tekla.Structures.Model import Beam, TransformationPlane
+
+
+def _required_catalog_value(label: str, value: str) -> str:
+    checked = value.strip()
+    if not checked:
+        raise ValueError(f"{label} 必须是当前 Tekla Catalog 中已确认的非空值")
+    return checked
+
+
+def _validated_profile_string(label: str, value: str) -> str:
+    """校验并返回当前环境可识别的规范化截面字符串。"""
+    checked = _required_catalog_value(label, value)
+
+    library_item = LibraryProfileItem()
+    if library_item.Select(checked):
+        return str(library_item.ProfileName)
+
+    parametric_item = ParametricProfileItem()
+    if parametric_item.SelectByProfileName(checked):
+        canonical = str(parametric_item.CreateProfileString()).strip()
+        if canonical:
+            return canonical
+
+    raise ValueError(f"{label} {checked!r} 不存在于当前 Tekla Profile Catalog")
+
+
+def _insert_linear_member(label, name, member_type, start, end, profile, material):
+    member = Beam(member_type)
+    member.Name = name
+    member.StartPoint = start
+    member.EndPoint = end
+    member.Profile.ProfileString = profile
+    member.Material.MaterialString = material
+    if not member.Insert():
+        raise RuntimeError(f"{label} {name!r} 创建失败：Insert() 返回 False")
+    return member
+
+
+def _point_coordinates(point):
+    return (float(point.X), float(point.Y), float(point.Z))
+
+
+def create_beam_column_and_brace(
+    beam_profile: str,
+    column_profile: str,
+    brace_profile: str,
+    material: str,
+):
+    """在全局坐标中创建 B1、C1 和 BR1，并在一次提交后重新查询验证。"""
+    if not model.GetConnectionStatus():
+        raise RuntimeError("Tekla 连接已断开")
+
+    profiles = {
+        "梁": _validated_profile_string("梁截面", beam_profile),
+        "柱": _validated_profile_string("柱截面", column_profile),
+        "斜杆": _validated_profile_string("斜杆截面", brace_profile),
+    }
+    checked_material = _required_catalog_value("材质", material)
+    created = []
+
+    try:
+        handler = model.GetWorkPlaneHandler()
+        previous_plane = handler.GetCurrentTransformationPlane()
+        try:
+            if not handler.SetCurrentTransformationPlane(TransformationPlane()):
+                raise RuntimeError("切换到全局工作平面失败")
+
+            specs = [
+                # 水平梁：API 类型为 BEAM。
+                (
+                    "梁", "B1", Beam.BeamTypeEnum.BEAM,
+                    Point(0.0, 0.0, 3000.0),
+                    Point(6000.0, 0.0, 3000.0),
+                    profiles["梁"],
+                ),
+                # 严格柱：必须在构造时指定 COLUMN，不能事后修改只读 Type。
+                (
+                    "柱", "C1", Beam.BeamTypeEnum.COLUMN,
+                    Point(0.0, 0.0, 0.0),
+                    Point(0.0, 0.0, 3000.0),
+                    profiles["柱"],
+                ),
+                # 直线斜杆：API 类型仍为 BEAM，两端 Z 坐标不同。
+                (
+                    "斜杆", "BR1", Beam.BeamTypeEnum.BEAM,
+                    Point(0.0, 0.0, 0.0),
+                    Point(6000.0, 0.0, 3000.0),
+                    profiles["斜杆"],
+                ),
+            ]
+
+            for label, name, member_type, start, end, profile in specs:
+                member = _insert_linear_member(
+                    label,
+                    name,
+                    member_type,
+                    start,
+                    end,
+                    profile,
+                    checked_material,
+                )
+                created.append((label, name, member_type, start, end, member))
+
+            if not model.CommitChanges():
+                raise RuntimeError("创建梁、柱和斜杆后 CommitChanges() 返回 False")
+
+            verified = {}
+            for label, name, member_type, start, end, member in created:
+                reloaded = model.SelectModelObject(member.Identifier)
+                if reloaded is None or not isinstance(reloaded, Beam):
+                    raise RuntimeError(f"{label} {name!r} 提交后无法按 Identifier 重查")
+                if reloaded.Type != member_type:
+                    raise RuntimeError(
+                        f"{label} {name!r} 类型验证失败：actual={reloaded.Type}"
+                    )
+                if str(reloaded.Name) != name:
+                    raise RuntimeError(
+                        f"{label} {name!r} 名称验证失败：actual={str(reloaded.Name)!r}"
+                    )
+                if _point_coordinates(reloaded.StartPoint) != _point_coordinates(start):
+                    raise RuntimeError(f"{label} {name!r} 起点验证失败")
+                if _point_coordinates(reloaded.EndPoint) != _point_coordinates(end):
+                    raise RuntimeError(f"{label} {name!r} 终点验证失败")
+                actual_profile = str(reloaded.Profile.ProfileString).strip()
+                if actual_profile.casefold() != profile.casefold():
+                    raise RuntimeError(
+                        f"{label} {name!r} 截面验证失败：actual={actual_profile!r}"
+                    )
+                actual_material = str(reloaded.Material.MaterialString).strip()
+                if actual_material.casefold() != checked_material.casefold():
+                    raise RuntimeError(
+                        f"{label} {name!r} 材质验证失败：actual={actual_material!r}"
+                    )
+                verified[label] = reloaded
+        finally:
+            if not handler.SetCurrentTransformationPlane(previous_plane):
+                raise RuntimeError("恢复原工作平面失败")
+
+        return verified
+    except Exception as task_error:
+        cleanup_failures = []
+        for label, name, _member_type, _start, _end, member in reversed(created):
+            try:
+                if not member.Delete():
+                    cleanup_failures.append(f"{label} {name}: Delete() 返回 False")
+            except Exception as cleanup_error:
+                cleanup_failures.append(f"{label} {name}: {cleanup_error}")
+
+        cleanup_commit_ok = bool(model.CommitChanges()) if created else True
+        if cleanup_failures or not cleanup_commit_ok:
+            raise RuntimeError(
+                f"创建任务失败且清理不完整："
+                f"delete_failures={cleanup_failures}, "
+                f"commit_ok={cleanup_commit_ok}"
+            ) from task_error
+        raise
+```
+
+调用时传入前面通过 Catalog 查询得到的实际字符串：
+
+```python
+members = create_beam_column_and_brace(
+    beam_profile=verified_beam_profile,
+    column_profile=verified_column_profile,
+    brace_profile=verified_brace_profile,
+    material=verified_material,
+)
+```
+
+这里的“斜杆”是结构语义，不是独立的 Open API 类型。若需要折线斜杆，应另外查询并使用 `PolyBeam`；截面朝向、偏心或旋转有要求时，还必须查询并设置 `Position`，提交后通过实体几何验证实际方向。

@@ -1,2 +1,31 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQ2-Rtd7uwllnMm5sOqrlciDrUx9K5ARYHdRNdV0CfMlbQvG-G-9jU1RAz6KeSXS6SrGLAg8Wc08PUcLwiiCuhHj6U4bSgNt-Ka4Uj81bp6bbf4pcySDDKfrX_LyceBuAl9w8N279Oapa6iOIgZ5DpCQ99sTP3Pb0JLuUnjwzF3BAc5eSaN-swQ9k400fT8yDNSZy70H9ISuYptDr5aT9djolnkTPAe3KyTcJq5A6uBkpuOE579OgYj0NvXuGHZlJi52-lD1JA5CguW03fCZC7lqEIyozF7Cts6mJVhklifgqDCAroWK7lz8LI0DpPE4mPEglfw_WkE07txPgr4LT7-qKEEv3f_crZneNAM7Taxz3wnQeVtwkbEnHzeA-NzYskcuPguyA5Ac7008cFXsiGStECSFBetUJjbtMiiclL5MpXU1lGGzw-JNlhDsio80upoe5X8HUQvaPDcVqIbLwzU1V_Ev1SdvmaH7FhcwgV2Nu85yCKgHLy7X1fUuS5d20VzvDLRYVJ2OqelbLqbhimjT0TrhVST_Q-5abUiaL1-RNGpLEZ7Ghx5UwUxY6f6qBV9uq4pHScIkwPl_Euofdes1KQNDndJCa0_n1fcaxt58G3H_2On4g1KexMTuKbvUKQWN1oN-xSw76jNlsCoeCu4X2ItGKLpnR6LK5dA-eM0fvNKqAc0EiCz-R-UGWxOId6PdfvvoXIHdylxAb58YNLKgqyiLB4uGKmjpJxdV51UkI=
+# GetCommonFloors
+
+**说明**：查询指定建筑中所有的普通层属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idBuild` | string | 是 | 建筑 ID |
+
+**调用示例**：
+
+```json
+{"idBuild":"109"}
+```
+
+# GetCommonFloor
+
+**说明**：查询单个普通层属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idComFlr` | string | 是 | 普通层 ID |
+
+**调用示例**：
+
+```json
+{"idComFlr":"112"}
+```

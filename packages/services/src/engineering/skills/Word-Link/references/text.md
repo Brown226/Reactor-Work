@@ -1,2 +1,142 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbVBAQVlc0FcalCtIPbUF_Xeh-TtD6TLLwPM_-FMQ-3A4QIQQx0XJgtPFIzH0vWFb9XYlsHw4JUEYYVz9UkRezZQanL44ZP3R3ME9fjlOmcK2RP4_3NTfAGhFpLma8cTiyJA9Lv3uPzLuVe3S49RZ-4lvBCxhzXtSHGKBe_0q0wnUiH6XygzEAyqc6FXuTjIrNqBqw283YnzeshnAc6bx2bT5ove9DkUcFhPS-Gg1R2FmgVLk1VhbxOTZed0EGQOBdy-UMtoHnOcyGy1A2R2-42i5l30D-2wMo4dk2Qnv6QlbF3E5GlzqAvisjFTwNlBiJnNMsqD0dqFaBHvkY9roHHVGk88NShNMQPi1W_VC_tIanrjfDcMgMG5y16i0iriyueIFYa-coaczRtQ6Nf1tFAuTsuPMOutcLwi6hl5SnVwT5zBLtZcD6IMIB472s1XeG_KCvQRQCRoRmRZ7Nz0BQI7rCqma2Ti5HrZuQfHjbG70L3CVrtpJMAvYwZ_SAKBQ20fRLMykeVpK1MbXyX5tka300YXLqrBUpSB1-Dn92pOrCIHoFrZS6BscbCcrya6bBNsYsAAaVd5AbvnPmpw95mwYiWUz42UCAUn4rbzyeSMydYdZlGkNvrZFBmMTBv66j6YUfeJsJZPKaHM_HgFK_2MK5q5vR9LQzx6yTkMfr0U4mL7vWdxqALPfWFdXvUaql58T6YCmFmXTADG_C08b3W0K8WDJtqI7C8pQYVsKaCHDuJupstTVN47qzw7jsZOXsip8J3XIV-Iu6U4ZzZj0KBLE8V4rauHvFQ6eVylocj7cQ0Ryt8q1DbfjIfZ3ZdlvNdsn_jdFX6hKLr1gLvlZ7GqFU-NO3YUYazYGKRp_Z7WctFQCn0QlTb9Zr4pQnisiDWd6DTc8rGelKRqYBTzfd1P90Cp6k3C5jl6wOTULS5ENDdwSXf6-EGbB7bC6W6OpGWMHLXi2hennneE9ZvkZovlxq7jT8-qjwy6zy4iMfAlYPINEQDIRnc0g0Cym_F4pciG-iNeZuaEX8n_QIQfwWZoi72tqaVNXo1BxpEa90m4QkCJ17EAVZjdwhczuz3ZUHsW38NYNOmX0rMk-nhdxUD7KNKbs0yTsLpLJm4A_VLN1VbvubFcMmDvHQAtcMY3WVHnpS7UtYGuQmt3XwSk6Y66N2czW6Z46CDjh_apcijvR-arDQXKoDuCuO5y8CAwRMltCf4YrxirqHbD1WYXPTaQyFGtTpRXI-EGiSa5ERq-ld4uYO1xHYP7w-LK880sMk8bBC4D3GU4sP19qIhW4aiQYX0B-X1Q7jF6JOeq1IrXPh6K39yp0FHQESOXbxP6p_GlC384oMsXgA5wYV7nNjDr9-CN8cYawlX1zaUsvV305726ftEy-nmRJUWEv0aLKD_xV3b1DjkaX9bSU5W6sBn4B8kUtncU7xBbBE-X-oPvv3b9vQ9XhSd-eVAuJOp0JGlT6SDUV-3O3RI6KQFR5t6c6rlV6BQRSpO-Y8FGLEZBjRKLmoamcjMgxUNV6P81PsYU7H7vAIZ9BBEJbJf-xrXt4WKQ9OnKjUsN3nb3TJ6hkd2g8U4ck1gyoXRC0kqYHCbFLb1tUv6vg9gS3ol3FuNvNzH0PuTZfC7HBkJ6Y8wLlx1_uTrVCNUFPTIqVMBOXdPDzDqi3WZbx5wyHvEJxQChWXHewxzT94m2bVZvYk59KYHE8VZXKtiZjAmDSnie4D8aVwCtDG4DpoeCoLOkdHLgTP-gtITkCadAFi_GyxjKe9dILeCIEMUtEVwEM5dSu7nKAMySPgcBWoPXc2XjOH4EizWTMqtwPKS1X0QVAzfE77I0LytoaAWO56hYYurq_ZwqE2cDsma8kRDSSpzDipJWGi8nM1B3EM0b814LaLON4ySUVoUe1_GJw6fBuZ0cDlUwaxTrYEH7TO5LNCDWqG63jg6R-2yfFnPNE6pq12slSPlGhWHAKuQIhLYTCNk2ejrlazK2oCpmxBN730gZQw1mjasPVmL4IqBlb-x7sKyh1F3JDMJYMKzUtYa-wXxbLDLzKAVa7MRN4dwIrCXFu0FLWQ3HZZI1y7-GH-vVy9_Hrl0osgqpfTsfSnQ9jVa9y20xQM5yeAXYuJFEkP6a6FOlwsKMS5E5DTc1A9bR7VgJU8KgRbzIireqRhP88M4VeuyPf75F9WmeeBQLx-9J8eHHW1rsIj-TDazHV-GTcRCv6cikM3rouqB9ebmjCp97Vcl06ijxCwgFWuVbGITeudfdO6qmpIhxNMB_42NS2AOS6ICG-Dt4yAkoIORxkKVyNvkkYtN7-HaAfT1KWbkcAJa9bBT-bO_DpUz97eVw9mcK46dYdIRD7KIZR-hHzVh6RooyDLz_8_GbUJW_zaPt26iPvMEix6RxZZQKExnUuYQu00DKL9QxWhkN_Nq6BF5ATq0ynB9ZaEX8qcdExjVKAsipKOI3WL8cowAalWMO4VNWWRvtBINsSr4Ci78p7SL20UmXPu82ME0hDxxTRb9A1AMHfrhpVarPnexb62UQWkYZFWJHwElyhl2F5YXLxEGDzaemHZcXio2eaE-eEJHxyeETcEHLYUDmJXcJc-2PH71Lf9EuLtewgnSm_yz5Jkvtr8396_Z4IJE0f_xD7suJtkd31IZ5D7LpaE1f_3G2L6p-FvY7fGpw6W7Et4mz_Ar2p-6AmNdRXFMSctOa5HF4lY48Wn0WuPxl2Vh2x9zqnHFuhW43ttAhGtsAcO4l-i0T4C6E0cmB_hGv6ou4OYw1AZfRuH8k6gWUdoNAs1GMXR06OC52ZY8mNDqnH5HgJ8KHppjgxKsdOeJJ-48ZCg6Q0nwQBKiqD8WKckymZliZFrlzRqHbM0Uf6Ao72xv7NzSM2H752JuKegzqcDcKBFPBfy0vwyfMAm0h1_XEambbzDj3bJssvqc2pGeYpVdRxbLmixe_3XyFwK7ZewOfMqVkBN4TtjXNwd2FlMr521D5eLlJhmYW8HCNqFnjFBPnRHgb81uwhB93e4thLvVLtmWx9Os241anewxaYwd7u540HveL7L2ZkqqnFwI80P0SLXo-WsLa8AuEtfZvsOb5ywD0v9rqhx_yEdOJEcZH8FTc32v-2QUp5JKzuZL60Xa4sbMnCHGebjbaNPu4yJQRjS0osHa38-Sqs4LHIE9VjH0mJS_UGqMHklNMp9UsQSWf7M1whcn5j2pu8Dxqwsel4go0ZcBjz6xCQkxRALzDi1Z3yCllx_VDi1rXSflJnXSXSwRdqM5wwM3ZYlIu2oCKmdFZx4kBeGz-LWRrypKdkMasGNHHaGV2_tnjDW-jZ4Bsx7zdWee4PSeMIfKFe1hFZLwEu0MDOjBpvBil791DF8l5ehJPR4AFQCLcrBEEPgVXA0J2RmLYMMOG6wy6EiGJ7bx7hnm-LPx0hNvxWbUsVrom7Sq983ox-6h9cSSPu8U5CXZTRHwxhTH-WeWgK-chs3PiUEkkvwDfN_m8vCoGgrfEcwiqu5qKiOGY-nTdzyA-FO4u4SVL5q6vJo5eCvyybiQGXxQ3ZdZP0R17q88yy6x0kLUBXIq9tVGdKgl3j5cd0zZ0DKZ17YmF5MEszNPgr2zlgwAuRbnmyquh_v6tBuyYFIA6MM52uQG9hZg3tUYaqIBylBMMUXqnBYqrloGuTfJnbOKOr_lKdSUlr4DNgoNrltKONyizO8m9dgNvH1PPqbnsvpD_QE4abP2y9QEoQ8iTSh_YOWUV7a6xt3oJ7zWYbRMdOJ39ypUy47zuECTiqD6IhFp-prKDm0NcUYlZTEFXZsk4yiM8eQ-ORqhgojhSr488Cb5F8EabIxmSa-F3K_z7rww0YoEZFo0glzDNd3JVNd3uKiWrW4IL2u8RbPLXEL5-zmq-9z9cM9VUhTcVsKUrmEOWVLLCGbb_QyTttMeVdVV4YfR0tds4bUJUoyZH_jgvJk96NjSM2N_rZ2xhF2j5diMqVWPccEYkVtjxMEWX7QnrbN1heEJxrEEgp57Jt4HH6pWzHMXpLIp5DIw50AxcQHKevqZzrcmqhjm049qeRfpo_WFhkxgxaK0NQ5oHVpCmGc4gIuKAjJo3n1T3vMcOMbwdMsSKEsRMg85ZpQaf9xbwf83DaWliBgwsa9DDL11g8eypDgHk5d6gLWRNf7osAd-OfReuLRjbp69uPqGBOLJ-UTr7JBj-9W3Yz8LLajEi2YtONaVbPqqtWQyqUKHdvKxHwo1I5QuKtlJLqIuavydsaAeyJk2JD17KCGkVUhe1U-oTN2eWX6p3X_mFpBe6y4QIz7Zx1ej_GcDwC8fOAjI__uJbM3rRexQ8KZgJCSAXhoDAnrcxtTEb2AHKBFYZVpYnpG5l_Bw4eLr15XkNcNWzknDHBnuW_eALSYOhWpBR74HyPVgojQumpasLLDzShR2WTiarW2CjgpYuGcwHt19NbURefdlQ-g_5MQx-znpfjn4KTqwxepuWn_ZXT7c_DMAmn3j4oHDauIA6050wosb1WKhOQ8XwGFeCKzzpeyi6MGfyczBOyncobyfjNeZDabw7fwx3NN-Zfl9B6XTgXJdRatwrA5oCVjQPJ5lL5MeF5qmvtRitBXIBpdGiNNgrCeroFaH2A-YAP_QMMBdE0hCm_5KnveJzG7bzRaBKsmRElEE2zQXS8r25axECv-xDD5P3opGRLxUktH1wmH3kkLx5gnCeyKo0Cfr3CIWeCpHrkTdw7NJIWLd7NK-lt5oSueD9g1Bo7lk7PZG_lZh7B0PU0GMnlSMRRfBc9xq0GSF7dytmCpnT3bIQdHUKZ7zap7Pb3ccEXapK9c9L54WCSKUgqJ-f8979lS_ox6pGSBJ3NXMKr8WmozYYIt1MqgMUp-58r_7iu639voxBNAB4KAOO06moEO7MtiN-Q1oFk0l6Xr0E41ZZzysla549SL4TYEiVe4PrUMFugBi1hcb2WnSOOnf1qOfesPG7smVdYVOQVE_o_RMoziOq0KNDLTqjmLcswcVsLAZA2EhFJx5fAmLguG072bYuCWl7DKWdcrL7pR9AqohNwTXV018syXLkrWvSpvOlWH7S-FsCXTbOh2hxThzhkKQW38OdFfj1DKKbGm8cP56T_Ox2YVj64kBcqhOeahJ0JQAnkdXqsQWmnMGJ8NBGFy7UVos3DXUxfMDGpSpeYpD7GL25f6B59ohVpB0mFR3_PKL9z0Gn7-38z9erNjGHr2zh-H95utzSiR8_YNfGvtXPXWnnkFNq6qRLDFZgcW-h4UddrtorLZ8bZ1fMh81BIL4flIpoY7WN73Z_PRt3SqTfXHnQEAAEKxQugU-mDbtp1FiGjuoKaAoewoUNsw0KghhQdxHxyHdCEKcYRFNKqJaYwO9u_p71R2Q8LhB7w8SNiBRXSYSfpugOWpmnQ71AaizPm4zR2-E66v6YDlEejIZPRbJ1MvoNowr6KDZM5goR5iBbU9Esp3_PWNa2xN1xpHsEc0KeDMlnQtUkGrP168hB8zQBGSRmE1UIpBlCpHMQMCWJh_YGYoRE4rLzGRD08sSYWt2UdD7gfKQ-izB2psbvK06wius6P7Y-SQGQEJQOcAbEz_swF0nSSENbj5DVW-f0D1gPepxW4rgkrZWJ3QKySfB7PW4WsSjsRuD4IIaAufOsszdoJwXpuAS9R0yYDWa9GlVYZaKt4yoHAdQ90rHeo6kmwUYGlGKMyh4sYQgEdiogMNcoWSzOTLGlhMm8LBzQxCAUFUJMHdcW50FKEXTg5JrJK_KdTQE8z4gvJA03-3wPS1-ZzfFkwcfNDMKs0W9e4VWhXWIFxg7RqsBlX1W-WSX_NZAz0CEht5YFLYpCZRrmv2IvT8rZ6t2l32pmV8kKlyz7SFzAubayxq04BE5wgKhBbFS9aRJpOL3-NASY0wtLx6FjsjqY-WDQb6-mDosgSbCdaSGl-7fa2Ke3ZDN1_gazMN4P8SbKlL6Z5kvQRngI3M7gSejFZ2ILORWLW9F2S0iIH1Vh8V27Ej_7x045K0s0x1T9oWMD3iFcpKJ10uvS1a9DQ5QH_SDsWskEuxDxNYFevFY5eZAx18IJbN_ktN6cPt5dJ_PXsdvzoJ0L-9PTPJT2rwFaoOHyRagXfAAhrhZHuuGPGQXC522aUGVDD90d0MwgS_ccVzliSnhbK4TNeWKkqst9lziHEprxsen_mZx-fYzCjwlgo4RB-zyFHZcyfHwna-a0R2D3JWIQGfEFn_iFwazGvh2oPT_eGoy5EykLas39TduM8AQVakJAAgURwfRr6DX-mV3zYJWTnZIX6uxw1hd4L1OtgoPDVwNH5IvjA8mwoA4qTWg03bcqwqC0_WcW4sZ7KRmyFtXLetg1ffyDu9vv3eg1BSsSkvJ3EkEpsJW94xXdE_nJICHsfmJ2_civPq6eWeVbzaROKrtOgwULJbb_V9EYTE_s4i523jqwhyCvCUAEDEI11kD6IaseqrEx3d9I7jPQloI5x19up7K9blaY2WCa3XYjLGKvGzCbOiP7WNeAhjsMOcfzai0S7HnowKfqWnOX6PYsA-skGD9rvD8-IIDTWnxjucUTaHdgwrxAjgf1j4MbIFfZKRO7VVvWsyMcUkdW7PajvBHq4DXlrl1fkCOQfcfSve1ZNBXATX35MUY-TOH53y81JESRswnYNCdG7wsGI1_snI97qt9zzP6zcvUr1oZFP6ZC2IkXBq2DKxXfbRAQ-t-MrCpviRWmuv13Qp6TCiXLBiZAY5d9S3qUMHjIOS5jrgxahZFmy6QNX8KQvET2kCv7Hnu1jldXI6s52G-H0-T6r7Lyew6lQDCf5ZLmIccsx7E3B6-skInC9pN-S-NpfjtfWVs7ZkPcEyo8hcgsHXa5D7KMvlVX79-hzlMP2nLhL0nzcIkohGVn_YRAj2xVCAntyvXGP4y4d8_3Uc-RANEWX41WlcXT5QPopV5bOGE4RL74tpJokv-63d8MChHTqYAJGqXxyucqNTaD-LjNkbrJs2hX0iqvgW1ol0S9vqEVrRlUkkj__LAQWVGbhE0Hcm0IHu1KFXyPYM8dBwSQNlXDsnwy_M_RulsvnN4d318jrg_nzDPYr0xTSvxGPLqlzp-DoQ4Z4Jigc6d1UX0eD3ZkQzIDvGj5WinDRae6mstJfrSIE-UDthcHlYYsdKAgF0f8UHmgQmx78mnJinol6-2Xi5JoflRglEdQPYhmfjnxhwNw1GsXa0ppxdd6B8p89Frb_CWc8NTxZLEcgObAowmuEvzE68uv4DbPcOJmp2ytHE79_OG60YMrzmqSfVazuVysvP_pUUkLh7i3bDq20F4P1Q3LtjG8PkrH2NDgE8zUARLXKv7jOFC8Az7D0gzuGrgISz_xRywCQ4ax9fl_8mKqPRJ2H1oirH6LFxBdceSbJtIJ3CMz5lSjmu9Melz-kHgo-OngOHHOnaIK5RSik9QVIfQOx2G6y0Y-qfxLYIi2mADdVcMPrmPnlx03-5h16Vk1WrjcCIw5C2QRtiOrvq2g8XCbWn0ng_F3fBPrqqF2Qu70bVc9ivPD8kbvK8g_U_bWMQMhbd14RJGDE7EGVo5MwQHL1Eee6Z-kOJ16fh1HD6f6K6ak3DzrkfvwKfZQI1qzvgTlsx-MOuDrgYss9_o7Ozc6IsBaSYN28sepb9Df_XFS7N8EFJW6oCGEXWm7e-eHKyP4nK34SxsSFlJ_atLL5pCe8GrER9ThX-yzPUCcJKgzZvEkcUse6ux6ip56BD1ILfTmElop98WGQjGDNaLk2p67VUGDpcTcjxiHgNPGl40tHjf0NIvRHCMQhRlZdc8nr26Cu_yQOPytILI1iH8u1cSi4s9yB-WNfPonphPzW2BvNB5-xpjMiJ1ig09fW2ALe8ZiLW-DtiDf0f6O8fa7R0roFxss8ABbHwbDHqBUgZfDlKEPhG_LvDbqIO6zdNetqQpaKVokz76X8LVOZ50hAo3oShuKFRg4jJqK0tkxxi13_EyH0BCtnSMrHjDKWg-bKOdsTICfyNwisCmt9tWDAyt-CjsI6wMDa-StBJgPaYl4iYQOz0SzeuvZxNgVfZaHgAdI_ULc_2QRZp4h-OcT-K3jM90VjOUvUE5vY1LK6I2Tyy5q_r_BOQfUQF0oy_5ZK7s_6jFc8Oax-9j_5NWOWslycWkcMqDzG1H6OVsl2VMMS35VkhRrbt2nmneN6XWtkR4vqDXjx3UI2WpzKGTViT-wYi4UH81I2n7gbUK7GrGoW3jJp-63ccpJfjsASbpHYi3sEci5Cil9BOT8KKUd8Du8hscPA9DqlOoQkQJa8173m1GU3GWpCgVr6N1uqo97SNLL6HJ-VsUombqCv7VeGKss_YHVovZEQWl4tcgKCwtQYmIQQoR-tMG8v4vxHJPlVFxwDtBdjgyUeN_aoO9xe5NwpvoGP4-Z5dZ_zDCS4V44H7P6xLl4t-4z4lVg1i9OO4UxOnl5pVChXA3zTWk8t0EKbbrVseyDqCJvTN0zNykjN1V4oL-mm9BKrzKBglKJE9ctvUYjhMR4vhQLusXonr-qmoPgNj0xqeF785UEHlZnne7TAJbCjAf1JGFeh04bWuPoEdudPOYxVVFWL0-rLdAK6tqp9LJ7agRcG5dsBjRoIz3Z3aYCIIEuyjwZDczVsJscNfWHpm9Oz7keNgkKNMUB4WmzHEoPF-hOzf2JRNid12QazHjx6dtXE0Qrn9WPj2qIy2G4km77YDV80J452dIYA4hgto6W64RpMcDrtZb8b01rVNzw1Hc18c7wEDqKZYmgPukYQA5I1FYXKI4lHPklkqf7r99k3CZodsTG5HNq8CIXin1KiAkcB0qZdbhfnL94hJ5WtpaOh_rnl4EwZcEGPUZ95PDO7MR37pNev9epatDHG4kZqyBLeEX6iAtUhPO58ghKHXDIcE18F8j810pXRK9GJs-2C3zHpY6AAsZHv2KHeXpZygO-ewHoBzH1LEiUcp-VbT5faYc598HnydS4VhyvCFKl2NAm7T1-II2ukBYhpCva80yf77oqXhcZxj4pNnKX-R3vFUcH2lqhKEt2f9KqNrSugkoNdCBaZASLlGxA92U4Fs70azNUAPQlHZYdIluTy3LWPpk2xMfuJrRxkkGRW8qXQvxfa2MfrYzTcPCl1QL77Du64k0TVCCZWTVhnyqCm-G1Np54GLmsiXJ4BcdHl9FVaux0s82ZsQ11V7WYJH3rBHHEEgf2wPK5NgVJ9NlaUuzYB4zRv3kJkaM9QoOKZYhB_zP3Jz7puzgmwb7Rtkjq4RxpLtd2_R8y6mwYBhiTcVw4Y2qlriKmLCf8i3L_bhVr92TvQzzLItCUiSO06puuBCkmd8VWIY5ZXmgtVc314quSxzamIvQpn-rupsootcrxC6vdnsNOyq62ecYL4xJDmu0m6BhaYVxlsxOSfBYv4u5CaXh5sHsZj0gN3sbGsf3u5ZykGpEwz28qxK1gW35kCx1eoSXLtJtlJKEMgN_Hk-BW7UF7n9SXt4X_aaDTVIsdem4XK3M8hfRv1sxo0KUWfvjvSDs9BwQMBjucaiYfkxMni_wHJ5H-xxVe0yOw01X6XjY8g75rjYwu1RfT5vCjEfdzVjZ2ATLx0hd31VCoDqilq1lw_Z2jTM-kAtdDXso2mp6igWeV7nK-k6b1pMdsnI2FdNchz_Q4eWZFXZHW2ipAOBeWkmiFpcpWOSGr5XZls2w6LkWac9P8Ybl5uHz6IGxC-jWH5KnWh7J0vI7C0kPo9wa4RtvJpE5-FdGrLnIQhteyhHn6skWs2jc8YRyT_NyoxTfhDdDQI8Kb7Ecehfz3JfOJiDIkuH6Luy6rStt_j6oQ7eteaUjONGat1r-Un4Ayr6Xvky2DtcgY4f5HcK1MHse4HtA_Hu_aKKYPxMmrkzmlqNKiIyygPcCXHhPIFgCy3cg3vPR3uUosG568spTVmOigMJ5Hs9CCjooNbWYQeDrJbGZHLB66HXu-fh8-w6Oy5IVf_yIUA7TPU9OenikPIbI9YJRl2I8yOS5-nr_OK_Kvb-Y_BRacplB_qVtZ9A9CtgPG3cXOyje4hjY-Oz0xHmU8CP3aTtLlcJSM_6V9fdpjc38MO4MtBLz9yfa2Li__5fSTlHw06KHn6R4LqmR_DCfIPpnlIdbX3NJxwTUpH4uRKLNMgqmNB0nGWXzLVotfUYgvV42EL-8dKj7dzGkuLU2AnyOuLXoIhbL3B7tOwnatGVl9waWZZN8IiWcuYgKg1tYjxrm-q8o4hPU1dbIW0VvF1CmDxTVe1PZXvsNAShUv7QaruxgCjho7e1KSRYQWp_hQ7SV076fDgictnWUFy1o3Pq7t2IC1qyBPZaCznSA3Z1RXXokjIlt-Z2uLClkieLRcnDuGnLYRQ3EDJHZ-PCZYnj7ojc-X0_5VKOiWWqrTZLwCX176rFv7eWWVZPUQ1t3XiFt0hMp3R_M82yK3939DHbUZDvDsyRMOqW3jM1z_B-JSvkvgMgU6VW8Q8HsQT9C4Q3SCZpioM3CcL1dJSj8zP6D-TYPjL7uNftnA_nCxsH_TQcx74KeB5c7qtX9BY0F4YMTxG5rI2tVNwx_PBOwWAKlDXahkz4zP3goI1PIJvFyHJ77L0vPr05y41yJ7CD_2JYKtNO-cEWyVUXUk30wN4QiBOYx2tvF7QJoUlgLVxrZVKuPtasCReVktw_WgO48DB4u-Y-SfYIucpbFBZwZrGMv-KbWnVqS5FhERu_EhDCeoJnCizNawE48VuI5dLR1pn4NjkZiFlsT8AoiY7ZxHJpcdpeWgfMLTO3LNwWevXsYMVrAEv6NvIZ3wf5-fL9VPjvoC1Iy5IA2oUTI-c7UzyeOaEx3j2bb_8tcBROGW8M8iX-aYzy_Tu7T8uUeY82-uPS7DKFBgVxmSxTT3FsqmDqVVszdzXwwDg4fQza6aUR3wdEjNW1FBmvb3ig9eAIDR1ffDWXE7iC0qHMEb656M4Imj3m1fIw6cajpYZv6sfZSxua3c9FiLItTHzFdoTFASYGFnIW5zhni-TqdRmBXLFRTSF98yJTIOQYGoNTt7X1AMCL0VT5Nz5cyfBMKcltB3vuPrMNc06KSwsIPvPYA9NeRZ7wPdQ5uWbyImQ6qT8qHo1H0T-4tMx9cjH55Xh-AlRGqQWNR66FXqQ7bic8w7uq075-4WN_XysP6GN74At9UVynWfSHUrWB7ALsnRFWf0eBLY7VkDCX4O3bYhqgi0PpBUgfqpeeGyyJCPZzAk9Fk_1jWtSZbElzoXbuGzZS6HvlwFmSmvp6Eyv8DLW2lFT6MEYVt5-_mB-Z1l31co1M5MYvuh6FxeIadDWiRAu8753qugsT2hnnJaPs8m1_w6Omg0MT0H9QbrPB9RYe6eLHY_z3BML7CDMtpFUeeJl0Qn3nQ0I59On4HCNe5DZ1DqzAV0dLY-YmXmMLI6GDof_EkEI-t4zl9N0USG4x9CsrYDFoDPQadVoW_zL0tcuA-DgMzNiOBcO80a0E59MeWpDzY3g6vZe1pq4h5rWzhZKHHVUcrMilHiGuWEUM0yrOrqRSuoE5kT7WtRSy4j5DBpAxqXEIIQeX6xy9k6nJtkksuWLvegLG7u-Vbn466uotTaVKkfj3DdVArMngxRTqa8VbIkqwz1JlX69uX7pSkUF1L5UPgIuTSi0tZ0K9cbDHKOnN3VYJxAkFyhMgkknz5tFuh6zSnb0ltzTvbtM_lKpt_T0jw_Kk49ep4uHnEI9uVSfdooWeEqanK6mJoE1GcitdVLrD2wo6KFYS8NMkwWU2VIh_H0KyWa2u8MkDquiJPctL0hfvJDtBJxqE3m4vV04DudNQnU5GqR_fMj8H9EkFczvFCuL15bTnjCt7RF5AInajKKl5H6SZgMLZ2RYThEepUuTxMncDaxHQizFjJpra7iMwyDbGyh8pqkGceRT1ullz3eqQMws0M4gKW_qpN5oZLcbPZd6gXJ1miVrcXccfeNIk_rtNABQAAgjOjg2v_5fB0eH27S8BK9bTUcNHQXbJofaNfkZonNC_hTv5z9utqmVkxQjWqczEwJH7k0AO_xyvJa4mu_scFXEI1JoZAqhQpBlw9tlHYaHeiuA-SVoyiCxlL36SGgrxsfvP7h1vT9LGR7jD7md2hVP4N-DazZ0jRh8g2hcEO5dNYR5JGlXsHpxnfxIzQAzJtsGGAMouzom7kS4m9qU72ik8ivFfi7M8MVkSYipagP1iNVjO01K4bXnOlwHiqrqOg-BXoolNfKA7Ih_ueayIy-Arwz2gOTiEnBnZkNFoXJDQPhz4sga1i5E9JuyprcmYscdWvAjqGyhQHuYB52dXbRVabN6njvZAP8_e1HbTAL7l0bo0Y4aaQd_953bXFbFv63gfA9QebaFDxdC4deXFHHyiWHrR_6jm7qT14SsvuNEB5dKH3oxacZgU9og82QkLBiIyyHgaxiJa_HO2KK6JvV1VQMDNbdRM-K9dYv0NnKiENF_GST5J98KOq-RCD6-l4gbJT_eMfq24ck_-zhWvDNgBqwm4omvNN_0FzWePkSxdiCNv1W-myr-JCgf_DBP7wFZo_FVbjgQkqmkuCfx1jz_c2B5mfC9ZUR3yGt0iOM1i8WLS5t4KbUjXJRSz9hsFlGSTxTZUkPiesjVWLcsgTbdi0MoR7vtE2lVIrGfrBc-XXq6LTm-IR5UIM6ex05wq69hKw4M_NRoNLPSmWMfRJr7cWMaKKYwNFe9HSwQHEsLI1sSgjs5APfQl8tJ5H_iQIAz-02FfZKzDdzZ0-uC1aU_gJ5zjnmA4N-EQ0tV2yThhX7pvZT4gtWZzOEcyD3cG5OG_yDL4Yein2MFq_P5w8H8EmiNu7ZMPIWFdGGcXoV2cyGtg3QXqG60ItSQcnX1h6qH_PN269G-e6Mg_whvSwC4FOAHax2VVbRavThOknfPHo7HsiU1hDKB_f0QI3IPAiaErKAZzhndf0iUn26NGe8sq22fJII-D804wo_FnRzX4u8BFeOEqDBjOKLyPtSmr85AJvwzo-4yVTC0-6SAXBH00tCJ8rOY2LKr5eYDtWcztO5qVLmQ2UH5rpe2Tew910rPqefAJ-EvqAJOpvwwjz_oYKAwk6fdRzWZJYsNSVSXjOmK2CAjMaWNwSiRIVTPlK5_VcPYb4sEjyZwe6cQTSZ0xL-jA30AxaElLl8NOj-_Y7JhMikJE05XtVDSnLH-y6o9DMaFFQeQBkZwm9JVu3bvEkgQc2lkL-x_9C0YLObg0NUK0460NcbwUqinaFh9Wn1JvghFjyanws34G88X1P_Pk3Lp7dBOVb9rI_z-9s5hd3wNtQf1UmwN_i0FhW_MrGe9qWmii5SV1I_stiiioSr1AucYA1ZglvzOQAClDdNpkX4bv9sCa1qf6jS9YxOh6u36a-udSDfny4eFvw6t2mYvtgoNfVlMz6Q5lj4MLuxIN_4qRvQ63NaehOwH5bf3stXqPEnIiDskGLOIkjKF5uxRducCovQ3kpbxC3cUqsB7wtCHeo12eQ34KJoc60BPKghINMIU_qztDTa4LxcQki-EVjnuH5RxPVEkxU8F6lvMfeibbTU4BzJe2nD0yhIJuvzHLFI_YR5qaFVEjQy-vooTOJGitAWaaKuhfMGJTIB0-qBJ4zEYbcJ_4UY5KIp0FnZfedtd6Yci04MVlBvoWTfBlCFacgjYBxHvQ0nmC61xnaQFEizIZ8OJvbpvHXs8aG2hiAEiXFD7LY7UjYImHkFlsCRoX4wEV6eXSH9nqupIhBEDQHT_xol6T2bGkMEzzHeeV_qvHkhqJPnoGIHYKEHADZacfcUYwdtDnTZ9vGOWQCQ0WIm99nonlY21Wqr80AdUBG9jiceValc5G2y-iahFbZsn_f11r82dgc4OlHTIQcjQk2m7zOGayfgN4uu8Ou-tRCCFSV8OjCQdzW_DR4hb2YeOe3izKOng-0_QyKBAJ9bUz3Sy-JtiZJXoNHOjW3S3ufdJ53SCq9N6DUcey7Uh6XOqSHA99UutfMx3TqgLm5UBesIGufG-dbsFEJnQMB2l7IohXwDUC5VpQllg4LF5nLz3yOgrDMlFw_kRgTFblEiGPXwA0MpBjtMileawx7A6UdtAvopj8Jg3yaaKjsWTazCik5UoDPNs_RMuVQhE--lOvV_1MBizkSCAdq_Fjmqf7OPNek4pvhBR1nwh3QmEEd2stft0yUa_YEJuCRkjadjmr0km4FFTPbRpy4CGoLYDLSomXCcAcpw_s_5T8D5jg-kWLowZTSLCxpqdPW3uVpz2KouLE5LkcNmCdDOYhXc_WVSASORv4__ZWb6rZTeDfLkQP7_O6oEuxvXp3lMZmx23c4YLCNE-iA04mCbBx2I-Lh_6C46B9pUAJt3dEm6rAWQYiFSel6c8S3gK4b-2zFOt2NQnl0N8Ea6yEhPOLDgeayKxjtJexxMZPmN-UWXy6wGNJrcsYpd-aiZw7aEKlIsJSQZH0_A1QIilzjwfHe61x64taYOvRnI2UtyfTQP8jYOPsM_g==
+# 文字与格式
+
+改文字、字体、段落格式、样式、标题和列表，以及整篇翻译。改格式前先用 `f.view(formats=True)` 看各段的样式和格式。
+
+## 辅助函数
+
+### 改文字
+
+**`set_text(paragraph, text, *, font=None)`** → 传入的对象
+
+- 整段改为 `text`，沿用首个文字 run 的格式，段内图片、书签保留；`text` 中的 `\n` 为段内换行。
+- `paragraph`：段落；或单元格，文字写入首段，其余段落删除。
+- `font`：西文字体名，同时设到写入的文字上。
+- 段落含超链接、域、公式、内容控件或修订时报错，改用 `replace_text`。
+
+**`replace_text(scope, old, new, *, expected=None, font=None)`** → 替换处数
+
+- `scope`：`f`（全文，含表格、页眉页脚、脚注、批注和文本框）、段落、单元格、表格，或它们的列表。
+- 可跨 run 匹配，替换结果沿用匹配处首个 run 的格式；不改域，匹配不跨超链接、域的边界。
+- `expected`：预期处数，不符时报错且不改；零命中也报错。
+- 多组替换先换长词，并确认新写入的文字不会被后面的词再次命中。
+
+**`insert_paragraph(anchor, text="", *, before=False, style=None, like=None)`** → 新段落
+
+- 在段落或表格 `anchor` 之后插入，`before=True` 时插在之前。
+- `style`：样式名或样式对象；`like`：参照段落，沿用它的段落格式和首个 run 的字体，如新表题参照已有表题。都不给时新段只带样式格式，不沿用相邻段落的格式。
+
+**`isolate(paragraph, text)`** → `[Run]`：把段中恰好出现一次的 `text` 拆成单独的 run，用于单独设格式或加批注；`text` 可跨 run，不能跨超链接、域的边界。
+
+### 字体
+
+**`set_font(target, *, latin=None, east_asia=None, size=None, bold=None, italic=None, color=None)`** → None
+
+- `target`：run、段落、单元格、表格、样式、`f`（全文），或它们的列表、字典（取值）。设段落时连同段落标记一起设，空段之后写入的文字也生效。
+- `latin` 西文字体，`east_asia` 中文字体，都会清除对应的主题字体；`size` 为磅；`color` 为 `"RRGGBB"`；`bold`、`italic` 为 True 或 False。
+- 设西文字体时，不含中文的文字同时去掉东亚提示，Φ、× 等才按西文字体显示。
+
+### 样式与列表
+
+**`heading_style(f, level)`** → 样式：标题 `level` 级（1–9）的段落样式，即“标题 N”。文档中没有时新建（加粗、与下段同页、带大纲级别，目录能识别，字体沿用正文）。WPS 新建的文档只保存用到的样式，直接写 `style="Heading 1"` 会报找不到样式，所以用它取。
+
+**`set_list(f, paragraphs, kind="bullet", *, level=0, start=1)`** → 编号定义 ID
+
+- 把段落列表设为列表：`kind` 为 `"bullet"`（项目符号）、`"decimal"`（1. 2.）、`"chinese"`（一、二、）、`"paren"`（(1) (2)）。
+- `level`：缩进级别，从 0 开始；`start`：起始编号。同一次调用的段落编号连续，再次调用另起新列表。
+
+**`use_chinese_defaults(f, *, body="宋体", latin="Times New Roman", size=12, heading="黑体", heading_sizes=(16, 14, 12), line_spacing=1.5, first_line_chars=2, apply=True)`** → 正文段落样式
+
+- “正文”样式设为 `body`/`latin` 字体、`size` 磅、单倍行距、无缩进，表格和页眉页脚沿用它。另建“正文首行缩进”样式：在正文基础上 `line_spacing` 倍行距、首行缩进 `first_line_chars` 字，即返回的样式，正文段落用它。
+- 标题 1–3 为 `heading` 字体、`heading_sizes` 磅、黑色加粗；文档标题（Title 样式）黑体二号居中。页面改为 A4（横向的节仍为横向），上下边距 2.54 厘米、左右 3.17 厘米。
+- `apply=True` 时，把正文中未设样式、有文字、未居中、不带编号的段落改用返回的样式；目录占位段和用制表符隔开几项的行（如签字栏）不动。
+
+## python-docx 直接写
+
+```python
+from docx.shared import Pt, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+```
+
+| 任务 | 写法 |
+|---|---|
+| 追加段落 | `f.doc.add_paragraph("文字", style=样式)` 加到文末；插在中间用 `insert_paragraph`。刚建的空段可以直接写文字，已有文字的段落用 `set_text` |
+| 对齐 | `p.alignment = WD_ALIGN_PARAGRAPH.CENTER`；`LEFT`、`RIGHT`、`JUSTIFY`（两端对齐） |
+| 段前段后 | `p.paragraph_format.space_before = Pt(6)`、`space_after` |
+| 行距 | 倍数 `p.paragraph_format.line_spacing = 1.5`；固定值 `line_spacing = Pt(20)`，再 `line_spacing_rule = WD_LINE_SPACING.EXACTLY` |
+| 首行缩进 | `get_or_add(p, "w:pPr/w:ind", firstLineChars=200, firstLine=None)`（2 字）；取消 `firstLineChars=0, firstLine=0` |
+| 分页控制 | `p.paragraph_format.keep_with_next = True`（与下段同页）、`keep_together`（段中不分页）、`page_break_before`（段前分页） |
+| 加粗、斜体、下划线、颜色 | `r.bold = True`、`r.italic`、`r.underline`、`r.font.color.rgb = RGBColor(0xC0, 0, 0)`；整段或多处用 `set_font` |
+| 上下标、着重号 | `r.font.superscript = True`、`r.font.subscript`；`get_or_add(r, "w:rPr/w:em", val="dot")` |
+| 改样式定义 | `st = f.doc.styles["Normal"]`（标题用 `heading_style`），再 `set_font(st, …)`、`st.paragraph_format.… = …`；用该样式的段落都随之改变 |
+| 删除段落 | `p._p.getparent().remove(p._p)` |
+
+- **字体**：`font.name` 只设西文字体，中文字体在 `w:rFonts` 的 `w:eastAsia`；`asciiTheme`、`eastAsiaTheme` 等主题字体优先于字体名，存在时改名无效。WPS 写入的文字常带东亚提示，Φ、×、“” 会按中文字体显示成全角。这些都用 `set_font` 处理。
+- **缩进与段距**：`firstLine`（缇）与 `firstLineChars`（1/100 字）是两套值，有 Chars 时以它为准，中文文档多用它，所以只设 python-docx 的 `first_line_indent` 可能不生效，两个要一起写。`left/leftChars`、`hanging/hangingChars`、`before/beforeLines`、`after/afterLines` 同理。
+- **行距**：`w:spacing` 的 `w:line` 在 `lineRule="auto"` 时为 1/240 行（360 为 1.5 倍），固定值或最小值时为缇。节设了文档网格（`w:docGrid` 的 `type="lines"`）时行高按网格取整，调小行距无效，要在段落上加 `get_or_add(p, "w:pPr/w:snapToGrid", val=0)`。
+- **开关属性**：加粗、斜体、与下段同页等，python-docx 中 `True` 开、`False` 关（覆盖样式）、`None` 沿用样式；XML 中 `<w:b/>` 开、`<w:b w:val="0"/>` 关，没有该元素为沿用。
+- **样式**：段落和 run 上的直接格式优先于样式，改了样式不生效时，查看段落和 run 上有没有直接设的格式。python-docx 按显示名取样式（`styles["Heading 1"]`），XML 中 `w:pStyle` 的值是样式 ID。
+- **自动编号**：“第1章”“1.2”“（1）”这类自动编号不在段落文字中，`view(formats=True)` 中显示为“编号N/级别”；要改就改编号定义或样式，不要在文字里再写一遍。去掉段落的编号（含样式带来的）：`get_or_add(p, "w:pPr/w:numPr/w:numId", val=0)`。
+
+## 示例
+
+按模板填写：模板中写着 `{{项目名称}}` 这类占位文字，表 2 为只留了一行空行的构件表。
+
+```python
+target = WordSession(r"C:\work\计算书模板.docx", save_as=r"C:\work\1号楼计算书.docx")
+f = DocxFile(target.path)
+for key, value in {"{{项目名称}}": "1号楼", "{{结构形式}}": "钢筋混凝土框架结构"}.items():
+    replace_text(f, key, value)                       # 没找到时报错，能发现写错的占位文字
+
+rows = [["KZ1", "C30", "12Φ25"], ["KZ2", "C30", "12Φ22"]]
+t = f.at("表2")
+insert_rows(t, 2, len(rows) - 1)                      # 照抄第 2 行的格式补足行数
+cells = table_cells(t, expand=True)
+for r, row in enumerate(rows, start=2):
+    for c, text in enumerate(row, start=1):
+        set_text(cells[r, c], text)
+print(f.save())
+```
+
+统一全文格式：正文宋体小四、1.5 倍行距、首行缩进 2 字，标题黑体。先改样式定义，再清掉正文段落上覆盖样式的直接格式。
+
+```python
+body = use_chinese_defaults(f)                        # 改样式定义，未设样式的正文段落改用正文样式
+for p in f.doc.paragraphs:
+    if p.style.name == body.name:
+        for el in p._p.xpath("./w:pPr/w:ind | ./w:pPr/w:spacing"):
+            el.getparent().remove(el)                 # 段落上直接设的缩进、段距、行距
+        set_font(p, latin="Times New Roman", east_asia="宋体", size=12)   # run 上直接设的字体、字号
+    elif p.style.name.startswith("Heading"):
+        set_font(p, latin="Times New Roman", east_asia="黑体")
+print(f.save())                                       # 摘要第一行应为“文字：未变”
+```
+
+单独标出一段文字：
+
+```python
+for r in isolate(p, "严禁"):
+    r.bold = True
+    get_or_add(r, "w:rPr/w:em", val="dot")            # 着重号
+```
+
+## 翻译
+
+**`f.translate(mapping, *, font=None)`** → 对账结果，`print` 查看
+
+- `mapping`：`{原文或标签: 译文}`。键为 view 中的段落标签（如“正文12”“表1(2,3)”）时只改该段；否则与每段全文比较，相同的都改。比较时空格、全角空格、制表符、换行都算一个空格，首尾空白忽略。
+- 整段改写，方式同 `set_text`；含超链接、域、公式的段落不改，列入 `special`。`font` 为译文的西文字体。
+- 结果的属性：`remaining` 为仍含中文的段落 `{标签: 原文}`；`special` 为没有改的段落 `[(标签, 原因, 原文)]`；`missing` 为没有命中的原文。
+
+译文另存为新文件：`target = WordSession(原路径, save_as=译文路径)`，然后：
+
+1. `todo = f.translate({}).remaining` 取得全部待译段落（不改文档），按标签逐段写译文，如 `{"正文3": "General", "表1(2,1)": "Beam"}`；多处相同的短语可用原文作键，一次改全部。
+2. `print(f.translate(映射, font="Times New Roman"))`。
+3. `special` 中的段落用 `replace_text` 分片改；`remaining` 中剩下的逐条补齐或说明原因。
+4. 图片、图表、SmartArt 中的文字不在段落里：用 `pictures(f)` 列出图片，导出原图查看，含中文的换成译后的图片或向用户说明；图表、SmartArt 在页面图中核对。
+5. 译文变长的表格用 `fit_columns` 重排列宽。
+
+## 中文字号
+
+| 初号 | 小初 | 一号 | 小一 | 二号 | 小二 | 三号 | 小三 | 四号 | 小四 | 五号 | 小五 | 六号 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 42 | 36 | 26 | 24 | 22 | 18 | 16 | 15 | 14 | 12 | 10.5 | 9 | 7.5 |

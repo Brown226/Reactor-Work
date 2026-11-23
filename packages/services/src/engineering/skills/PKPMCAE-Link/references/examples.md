@@ -1,2 +1,60 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRvKZRtNvM73ONtDL_vgSj-gWoqv2RyX-2iuetbR5n18tyMwVU5eWXJEqzKeGP-WVWEleUGlvagexN0MVsnlqu_SMcIPurMbGy09GH_RYJCPqHEd-en9Pz4SjC9tw9nI1Cts-cC7eKNqG75ofwTjZe3aps0hiTeMFAfycfi4IkADV24goXis1zTj8GwTvVghTC7hk3tZgaxQ6DCh-Y0PgonyKIvkMuO1wKk_o3PewV6FdfnifNrTjmz_GtC031BXDD_sXvUZdENMFlCgMIoNal6DafhpZTYsxxcI8spMIMGmaCLYiXaZM-RSZFQmuhwxyWIZoSEvRd7nGaJ5S0H0UWsVGYnbbp3_efnQ9xGNCWrWIv7ZDS07KbcK0MiUlQ38exdOuPR8Uks4_K2RYvliQsA6ESRlD6LjBL_WRoNftDMkfKE3cl87pLPG-MOvw44mjV3E-kZsG5T5SsrV9tTH6MyKlmVyZWoC2fj3YsNhah21CvCODDxFR89biud7UGM_RTYPBNpLOwgAAxZa9dRHOi-cj3qnXShqXi8eVqsmW72DjCL_sx9eLeUpKSa_Loi95mQ43R6WqYXUl54phtrhZkqQOa-NSykx92ItX_SnFV6ZNVTGv3wBZjT91PTIUXYXMqVTOiGNPSEuKanAoflLjviDBX-OTEeAJh04SaoYAdWAXLPFuGn9ml8HBG7yaHjus5_kxdgqGSqkceULYPVzz6TAwdrbbTPTI_5sud9YTbm-4P5Er8075eNgh7wLC4zEW-z5Diw9jeXd5QcbOZ24s1SN61poUnJZFRQemkxLSjkuNXPh39gtYFB6k7VRQx0Zc1mnxMhPs2xqg0veudE7DVS2nNnx5aDpMYRi6IaJcA-4wQG-crqpkYFhJrdsFE4hYhgciNHNfbvHRIn-qz23ehgWpR2lCFKjLkvNLDtGSL8UldbwxOHNYfeJpISZo4XDX06WQPrTOp4gRQdMY7E0i2HfqLs36lDngBZnRMd9NCLYKPdYsxq4SLORYcjc9-3ZvfTStIAAWOxKPDe3cC7XDZLbnS5TQCZ4krUNwYVmlbKJss5bXv8KdYBL5V1YmH5qGfQWFsuTjBwKYNmY28U4aEmwdr3tJasLkgv4GphCZ2HoJeodoFvHvpgwaPEiLRm_keS-1xlVlm8pxvFhl0U9XLxiR4VgHU1OkIx62MhoqwL9UZ5zR7dr6M62ZmV-2eWTp6MhWLfBMOcE1mxPU4bkSPri9zf4cl2WbDUwFHi-GSvUqs1N5Y4PtkBVKVXM2djkfq2-Zei2yM-5DMEGYEfuTAooWIHSRA7MuN2Nk-r5pgB3IKHZc2-AMTiJ_0XbUSqewlFwqKqTcSnnj8YcWvk840rN4HoShojXuaoA5HZ_r-twKR8W3uPLB291mWrUWco6r064GX-K9x-0BQkLrfh8ii5dwzHnTVOuU-sMDzdk9Qgm4KeDR7SxAjzjc5P3wbWrPTUuoTii9CBLKk2bjB5MszeAQcv-9-ToJ32Xr41yDCl7A5UNpzHI094vQ_d2DmG4hiNznMcBfDoCZVmSAzQ3tMEEJaMerdiPeigXtnMqAXLFBgIh-UjFuWsIrPJqZY-ppBvOqZLgT9mvuEm2hy8aYqZKGzLn3DKoz_51PPZhP0SRjljaW9vQFNmkJL1S9UJU5bgkBCelzSe1E7uYNQp55VvleWPPPDLWrRB4F_dLSn6yTHzvmGmu-lH_0iCzmzVuohZT9lblI8IDR7ttMyZs74ekJXqlH_ZwycftBF-xw-5CU7gAwUOcO9YALFz1vVhj3YeiNmzaH6LDeS44zjZbBfS2yYZdjM2IoMvJWfcy4fBCmI11oOxacnsYwSEKVFgqYlY2ZH-PUotajNtEJsOB2v6XAU-gM2UpZORzPdUr9f5LSWw7-dp09JurA_oyPREdNe9l6SsY7Wq0YgzQGu7F8gAeQffM-OYZevZANXGX6EtXT9NQwlWtzR-gsGnsQnfq20Z8uUiA8ytdwVpR9rRaJSYrmgfyEAaf1MuElFPia4dsUSFwonm3K4fIJyw5qoJ3uRBZUbQxptzUDZAo310I-labpwHdNl7Xpwvd0gwBcImOuO9UHA3RKLh-4qX3wFtwo7qv-UJmeXSz6cOPvvTK3rpsMW7ViCGFh6Wr-8B7442Zp7sfv_yUTQ5mv54FHwT8ZiwFhJWqEwiwsUwM2pNop3CqMH1d8nPWt0uc1S3olC6Q0daI2ua5KBbt2grC5oBoK5n2_JIlcGlbUKQRMYa19_4qwQE9O1ea-tAdfG7xvyHcmxjuqg17yJfL2cV9OSpECLix7nPwyfGpDYahJrQAEcg6iETFYCoO89vTsqxKi1Q_ty2WcA6QiQUr9aSE1MnzGBX8puL-LEb71R3rL_6tBWEZyF5B_mx9L77Tg0T4D7DY3sYMFsJwWQKWwfVjSRzRIWRJYlystA2puRanTX5WdVoq9E0Yjp0OzAv5EPlvLGXnRyC-N8wjzG10ePNgsQsg5dUJhpIyb0q53584NN_cYzaYyJd8TEhT2KONI1iHWLg6LbSyEY-H8dX4MdBSzOfZOuJglQFyw96xDkWSYQeokxi87ORgl5DGh3M6VKj12x5LISVTXvD8Orxp5w3WROYcV1naYzhUeLkM4L4IlzJKXw8sKQcDCIGEH60oTF4ETkLv6DN7DetWI4vdj_PHj7Aew0IdgBNGZaWYelcziaFCy72VDKQ6ftZkr2d-ps1cduD87xAnOasbgs0U826D2m0pmg4YkhYH3ZkZpDyXg-focOw4Izj923CLH-ZFo6xfslrYI4QLTCx9fV7WZ_IyAM4BK_6vvyaATukQ3exhWbHUfUxfQz63w3pefKgCul3LGoJmBgWl4xiGKcZumB5eX_XaMChlHax30X7OYVYLMcjfi_RvOxw9pi-emvGFXudIK8bUfT1sH2UWYnbhHLBJeIR7T7H4m5xrsXONx-7Meg9Xt69Awt99Nc_LW58gIEh4DwFN8Nsr5JIeicuh-FX7SaRAM8PTuplDDOrfSnDw5cD9rmIJ2iXk5H3MpHjLwlyubQmHZEoLpi1qchWZojGUmqd9HfYa80OIv6yhuLgly0c4iwfiitzmab2dkHVFwVHo1XyrgKSVehix9w6WwJkJbdcmeAIzo4SiccLsnem_hZmsEWchoMIPJhlxNozazj4S661_1U8CLKYOsPxQx0EzOQLOeIFcdl29ZmCK9M269ToyoOlTZ3xCK-lfwfzSS6v53sM4pcuRUwuPnv4nSDjWVS2-42_lqsPM0apRkxSXuMlAxa1U3pZ5N46GKoeWOkMXvzD1WRNb1m0kyAiFnY38lZdjNOH9WhskMi9B7zCMggxsywvkwUmT7XhQdoVmsOtO9FP1hWrwEjtU1tRkuzN7O6VZI3HHf4CKqZHObglIqXfvldsYXwD_3bVte2CMXyeluUYiIY4N5HML_Jm9zvy6mDOnAlcL2px7vr2GgY1vFQY9EL77c2pdHU6hhCsZqsGgKG3dzsAuwEoM4m_x4OVsdjeEoLKq-4IE-VbsiHY2dqidKu1nORHIgqGLVf08cXYWQLPWp92yZgksoKuQFKBVJbiISzWgEbR3xcyo6c2a-Y-OEMMHJ1U2Oah09vmn5AUvPKcm1Rd8EwVjgOaDsqFvj05hhIK4sQp91sytQvT3vhmV-JuPFbcQaP-SbMaHjFppqwGWKiJYqJiAGjrlc0zMUgpyf_I_ssRenfPzyE2HTOADcirW7Rr8B9wR5a77wMM8_R0NqQZb5c3jitAfWpU44MwUL1hSRUmO7dotI0G913jjHWOW69Wxxnve0Y_nlq9xPo3kN2ouNFpBsl7COfSwKfGjgX8NMSsyKZIKe5TBorLCz8KeEglQKJsidWMCnWXp5xVUBixjsG00_QOjyF3tUP0g6XBJTxJTfKuGt5TV6_66g0zy9Zsf42VGc6eUethJCMx2pm2eaxqyaNBZlgo3jV7GFUe7y_TEMUeW_DZXjGo18uBKPR1L-0ahtDzR9AWVic7kv4P5Wvn7tgAzd8Yujhd7Oo5eFRoell40sG3sIHQJCci7ZUhj8TRmkKg2NU858Xjl_wlkXL3LQ0jPQZsFgIV_J6GweoARYjxNc-pu-L3qMXSdv2hrSTH38SQK_vp_YHhA1WQjR4Dqfgt2vOMRVoCrioxM5cMvWcOGEXL7yQ6-Q1XrPCBT94WX4LnJhL0nP7Q7qzL3mUNSNbLNu4o8W__SLK7lsCoO1MUrz0KoSkdP5pYkHf7X3P32mAZkltQ3jDPRR4FX1sB9aWW1XHWIipwJf4CGtQcOUA3RUmB5LJ0iH5TNxMk825_LJJWEeU0y45hPh3uBeo_mqlHJhAgvRN4383_Ni_eDYy5cr3nEs-fyls9IbTuMpNqwlEO6turYL0maXHG2pO2EWF72X_HUJvcZm4Djml0u68s-R_hqyIla72_rGfdJroRreBfFDiA4E9fKo9jXPNGn-kAF1ENs2-wK6amMlEgdEsMuSTil94Nznct8qqrVh0E0qExSMEZvgKnYNhMaYl2-i29I7O6m4H5dkfbB3N3OIjDBaxpWu_o4N8RzEfT4xa6bnJqoYeWR2RU19URGj8C8-ukmiy5RNULexg5B3XuFHtzX4RpR1HZjVGPBWEDVmEgRMlH1u_aZNnz02Z3I5-qqP3fa4BRP9KQTNJkbwDM-E7HEUT818o0YitXW601LKu8i2-0PhFTNN8mwjSNrWA-s3jfgjLVfCb5DmzwFEdZVHmhsnn4ifiWYC4u4FeRt28Th-mefFFxavQPS3axlO-pYu8s5ctHYnm4-mYgkaXn_okFvCg8ZsVH7TCXCCiS5xO2RqgIAfYTbukswuoLexwh_4oRY_TH4qgw7Dl5TUmM5iv2Uiw6qaNQ3z2xAN8OaNP4BLPIzdQxpRLUPKlfBryqr7QtPCQgUYIsKJNW2geiPBmc_Iq7hDylkuEQn9yjC2ukxJPolyWDV51U7YRhPWY8AOZBJ-SB6vIvvcbFI2FtH6AQywPTBJJETWJb0N816LLjacXg4phHsjlHee_3NIabWQjg46-HC7GDPRJvqODlY3anyFgQVacrEXkt39Lim2Aln2zeBDAPyc5Qp-OmiChYGTa1MAh1CwcleaocroJbaJa8OdR5Kl7Y6emKFbEeRHrOlQLJ9KIucxiGmakpO2sg3TaoVowk_fhG1x4XPha407to_LnnI_ZKP-78HfFOzTGeVJI_Q6aw11m-3saEtP70tenj673ayOW-Bf3KKU2BQt_kxSYhXzUGSV5WITTSaMuTUOlS1IQCe0XU0GTHPkamZB6ob6cU5svk8SCiwaL1EChwdMk8nfnL7u0aqBcrAlbsIWkCLNa_psBhFpFZwZHOglSOwOEmErlQ14lqbvk4fKqTMX83JvUs9XsGeCCeo-B8LCM7FuPl1lq9bGTKYaOoQjCNMY1AiLEKdIYjEktHMZwUHJSsJhke4qaXNTG9a9hc5765KSWQ3iShh1ftPa_GniUdNSxwud54n0Rrq4Ma_x0KbNGOTSEKF0Py7Pwv8LS1ZtIIPstTZEnldwAIDP0TDwMF-R9WPZ7uVUDyzyUiLDFZoVVYWrUsp7qiXMwpx3Hn7Xr1Ft2cKdMyBz4Zpm1M19JHTMW1cSl2lrWNZmNdWIWRT4aNDqIZ_2NqDbFqRaALfqWKrgI_5236M_x4ys9bUvifmjQM7_-sZSaUHSriB3GKwmV1RegXU625WRBZD6AFJ263aPCszNm20aPA8TFRW_eWhFZ_pdDPiGWQhKbBFxhhyrN5WEDfY5XWlwFHz2twYFfgP46K3oPyBfdkcQjC0UfUjKRaSctCtSvgWY4ixLxt3Eaoio0mv1gLnjsYlud32tZOWZ2DJoHGE2djvoCJ3AesPnggoWg6Sl9Qt-acbM7Lbd7BcMajvrATQocnP1qc0njiKaeFFws5eVyLwjuSMAbx1n-PpK3I-od2zQxCAQm77BKG-Cld_ZIGvlE3Ve7Qu7s2_sLVc9wENj5WFt_w_ngZ_kpFHNeRKInIXFaVZ8_uqMTdnjTkRnXZLW0zpubtXir4plA4pn_URtCgfGJ81f7JSj-CcgIYju6VbZMSD8WH3eZzJx0jFs0vciKAOSu0EBezbu45re64ZS01joQAuZ60N1ZfYBN54jlejOCX2JLqv7cjCJYOREJHg49BIomtC74zgEbJWj5zpqEOnR-lp6NBllUd9fn5Q40-FEwRmMNCFM-stS0e1diIoFD8g_9LRDlv4yiZUiHDxehTnBTUatdYqXcl4EkAKChRQ9-CwRLwmGT_UJpb6OL4e6Cb_sKn4mQFEYXT2oJLvJFmrimgjLljAOIthXKCpoaZ1outuie7jrcdp6XSSpn-Xd5grIQGyuERJZO3PqupfuLfUPDTp3xnl3rEobnev0aQUOdqHEWqUBqKaXYse6FqU7fuzbWYZJa1GLxP6hM25LuqjJ8xwlpcdGP7k-sYg3yl6D-O-6WOfzINXu7DKo7yl2X8R4EQizLzCSA1JtwqZz983LXcJm8GbiaRwMpGfAmqm10nnXJc3bHsxGoMfD9JhwLq1ENPCXe4_tuH4QbruYaAOTyrb0s8HCZJ9GyRRXXG2edoJJIdg9Y7GmuPpKD0E_yHY2iryLn7lrr8Dphc62LjJVSjRA8ltcRsReG6sp_XHB40MyJUEaOIIXu8qvjgU_RPH8a9gzYb7f0fTDDRKGBkOA05Y-kenWtr1V3j5EUy4TlpYZlMGZB6q2cr2vbNHviXNlT1qKRUSJjuExUBMXloeS_JnHURXppFLTFdLsKK7hUgVRAYHV5hskgWmJSMb8Z-dmlgy0Kq0gdp96glbjHQMfwkuBwG4RL0glvnMTiPjmN-ibUh9HnoJRPPkXmBxd0fxNjK3VcDfjL3G_HIUrgzlULHthGDGLU-8TGjLir75dpOsn75dSWq6xN3lDIZkZYhZa5eTQkLMglidhWFZBfbsDcYYTmGOXLG85djh0XpRkFYw4GZV7mHdJxiiSFkyjou17p6pi-81lC36lm9-0AcXxs6EBf9lEPmK6wHUVn9CTdcEpPNRLzsZo4foS3-xxTHShH4up0BWP4df_P3E4RLVT0OsHB9cnYcF8JHAWO9gGH0zsfGXxwUOTF7jWS82OD4F_Rhj3Yf7HvRwpR3z5meJG7K4wJNrHUqlWkeyC1FIY3JpXmJGLA96m2M143W60ESyrjguBZUcG5aZUBFAsgnKRcgciyQ03ivZPyGlYqrfCBj61ajft4NTKBT5zq_Y5opYusWOtYLMtd-y0R4jc9eUyVtWyFniw3RPaA5z6IBUupuPu8IxQxYCEtBpz_-UVcKCU0KeQqnMdnq-2lQABKGBBBzVe-UtxrXdvf-EdE_I0bBuWmDv4Teer_4EBybNcbUIdDtopqtEESoMRSNrPMkJkPe1OLnQ5Fxdy2Tvgy6fk_Z6Op8T_m3dJ8owzXymznLKiEKsD908Nox4VKWKQv8buByxcXJhAIRVT6bR08fP4lc7gcOxLEUxMhwvMU-138Q2sQCXmefcThygwahIvKd0PufRbAcUr0vEweRWOpB2mfGPyWUegUOWTkSk1zAtJ0QER0L4X2XFqTgbk0PgZZzW4lMgNhXh0_p1cerPKyVNBOuLB-uyj2-3RgchpOcLZ5pNCVGrmTWTz9WrjAPhe54UPZ_N3AQ7Yiu6NrQEk7VcIwfrIlvUwr2A4iOniBihrqZcX78oU1XnJwLdXf6JAtzRCJpk7nBp_mwrx9B9r_8rD1rBrAoNhgd8U3PPwRDcVZsw8Vawm-b0NO14vm_BEh8v41cnr3tn-3IRrPm6FrADKprzyenNtbzkqr4I8TDvRx2YQJbTCNiRglMf_jPOthmenT3YuLMb3H-wp5hfWbrLod4_PjTsWoDO4QUo2wMg==
+# 示例索引
+
+选择与任务路线和分析类型匹配的示例，再按用户规格修改。示例中的理论值和验证注释仅在用户要求验证时使用；默认交付边界见 `references/execution_contract.md`。
+
+## 有限元路线
+
+| 文件（相对技能根目录） | 用途 |
+|---|---|
+| `examples/fem/beam_simply_supported.py` | 示例：简支梁（入门）—— FemModel 有限元模型，线性静力 |
+| `examples/fem/buckling_column.py` | 分析类型: 屈曲（线性特征值屈曲） |
+| `examples/fem/cantilever_verification.py` | 示例：悬臂梁验证算例 —— 最小规模验证模型正确性的标准做法 |
+| `examples/fem/connector_spring_series.py` | 示例：连接器（Connector）弹簧串联传力 —— 「连接器为唯一传力路径」最小验证模型 |
+| `examples/fem/construction_stage.py` | 分析类型: 静力（单元生死，两阶段施工模拟） |
+| `examples/fem/continuous_beam_bridge.py` | 示例：三跨连续梁桥 —— DL(自重) + LL(车道均布) + 包络步 |
+| `examples/fem/elastic_foundation_beam.py` | 分析类型: 静力 |
+| `examples/fem/frame_2d.py` | 示例：平面刚架 —— 两柱一梁，柱脚固结，梁跨中集中力 |
+| `examples/fem/golden_gate_suspension_bridge.py` | 示例：金门大桥悬索桥 —— 双塔双缆全桥（静力 DL/LL/包络 + 模态前 30 阶，JobManager 切换任务） |
+| `examples/fem/gravity_dam_multi_task.py` | 分析类型: 静力 + 规范谱 + 隐式动力时程 (单脚本多任务) |
+| `examples/fem/harmonic_beam.py` | 分析类型: 谐响应分析 |
+| `examples/fem/modal_frame.py` | 示例：三层框架模态分析 —— AnalySetting(anaType=MODAL, nModal=...) |
+| `examples/fem/postbuckling_column.py` | 分析类型: 极限承载力分析（POSTBUCK，几何非线性弧长类） |
+| `examples/fem/rc_plate_shell_rebar_layer.py` | 分析类型: 线性静力 |
+| `examples/fem/rc_silo_shell_rebar_layer.py` | 分析类型: 线性静力 |
+| `examples/fem/shell_plate.py` | 示例：四边简支板（壳单元）—— 面荷载 + 边界约束 |
+| `examples/fem/silo_industrial_hydrostatic_modal.py` | 分析类型: 线性静力 + 模态（同一模型内两个分析任务, CUR_TASK 开关逐任务提交） |
+| `examples/fem/sleeve_interference_contact.py` | 分析类型: 静力接触(几何非线性 + SuperElement超级接触单元) |
+| `examples/fem/solid_cantilever.py` | 分析类型: 静力 |
+| `examples/fem/spectrum_frame.py` | 分析类型: 规范谱分析（抗震反应谱） |
+| `examples/fem/tank_water_pressure.py` | 分析类型: 静力 |
+| `examples/fem/thermal_continuous_beam.py` | 分析类型: 静力（温度 + 支座沉降） |
+| `examples/fem/time_history_beam.py` | 分析类型: 隐式动力（时程分析） |
+| `examples/fem/truss_3d.py` | 分析类型: 静力 |
+| `examples/fem/tunnel_shield_excavation.py` | 分析类型: 静力施工步进(单元生死, 26步) |
+
+## 几何路线
+
+| 文件（相对技能根目录） | 用途 |
+|---|---|
+| `examples/stru/stru_cable_stayed_bridge.py` | 示例：双塔斜拉桥（StruModel，纯几何路线）—— 通用几何线/面构件搭大跨桥梁 |
+| `examples/stru/stru_industrial_silo.py` | 示例：立式圆形料仓 / 工业筒仓（StruModel，纯几何路线）—— 回转体壳 + 环向加劲肋 |
+| `examples/stru/stru_multi_story.py` | 示例：多层框架结构模型（StruModel，纯几何路线）—— 梁柱板构件 + 自动网格划分 |
+| `examples/stru/stru_open_web_truss_node.py` | 示例：空腹桁架节点（StruModel，纯几何路线）—— 多块壳板拼焊接钢节点（通用几何线/面） |
+| `examples/stru/stru_solid_geometry.py` | 示例：通用几何模型（StruModel）—— 圆柱 + 圆锥组合体（Line → Surf → Solid 拓扑）+ 自动网格 |
+| `examples/stru/cyl_shell_tripatch.py` | 示例：圆柱壳 · `SurfType.TriPatch` 三角面片离散面（壳路线最小配方，2026-10-16 实机通过） |
+| `examples/stru/sphere_tripatch_solid_uv.py` | 示例：球面 · TriPatch 面片拼闭合实体（`Solid` + 三角面片表） |
+
+## 混合路线
+
+| 文件（相对技能根目录） | 用途 |
+|---|---|
+| `examples/mixed/blade_lofted_solid_modal.py` | 示例：59 m 风电叶片气动外形实体 + 模态（混合路线 · 三角面片放样拼 Solid 的通用配方） |
+| `examples/mixed/concrete_splitting_tensile.py` | 示例：混凝土圆柱劈裂抗拉（Brazilian splitting）试验 —— 混合路线 + 刚性垫条力控制 |
+| `examples/mixed/connector_spring_series.py` | 示例：连接器（Connector）· 混合路线 —— 几何 → 自动网格 → 有限元 → 连接器 → 求解 |
+| `examples/mixed/rc_column_axial_compression.py` | 示例：钢筋混凝土柱轴压模型（混合路线 · 钢筋 Embeded 嵌入实体） |
+| `examples/mixed/silo_wholecircle_boxrib_wp.py` | 示例：钢筋混凝土工业筒仓 D18×H30（混合路线 · 整圆回转面 + 闭合矩形环撑 + 节点级储料压 + 静水压） |
+| `examples/mixed/solid_beam_simply_supported.py` | 示例：实体简支梁（混合路线）—— 规则长方体 Solid + **六面体扫掠网格** + 顶面 Ebsload 均布面压 + 线性静力 |
+| `examples/mixed/sphere_solid_selfweight.py` | 示例：实心球体自重静力（混合路线）—— 球冠面拼整球 + 实体网格 + 线性静力 |
+| `examples/mixed/steel_joint_solid_round_holes.py` | 示例：J-1 栓焊混合梁柱节点三维实体（混合路线 · 真圆弧孔 + 真圆柱螺栓 + 实体分割分区网格） |
+| `examples/mixed/stru_to_fem_mixed.py` | 示例：几何模型 → 网格划分 → 有限元计算（混合路线，同一脚本跑完全过程） |
+| `examples/mixed/cyl_shell_tripatch_mixed.py` | 示例：圆柱壳 TriPatch 面片 → 自动网格 → 有限元 → 求解（混合路线） |

@@ -1,2 +1,136 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQVYsA6arr4yOlPx8WKsRVUhIcWIP5VsTPwcE3w63_6n3ZRMkWjwGfEdNrCdRvys_lOdSNCc8aEheyfojZ_2yr5CoM1KMvu07tgmQVszo8FL_YFm2bJyQQL00tr7Fji2tyzXLbV5neWPEK0_1J8Rfz-tNYRHauvXGEcdXgtBDdLVcWUw4AZyO2reMTJJil1ZvsgnSKkCHpkNbiLuzzDVXJxEPETUAW1NalN9uDsC7TR0_KeKhx8YdeqrVAACilq2mVelK97NO2i_lQ3-iVJFvlQS81CfCYZMDDkTyt6jVTGXGZ2H0i7N3fQ82ddEZNtM_MH--k7pgsQYmcd2yLEafLWqR6y0uxf34j7vS9MZWbJ_f4sZMT3J_40yE__L4YLJs_rWBIWyRKBvi95J5WVGjeH8xMeivGNmePhWHIYNq1Sm_nBWPK_Tkt8JEAVSLn5mbGCTnThUecRFC9zHbGKoN3-X27dOa7YaCc6zCJsAWWkJdRud7ZV1Iu2YR2CO3gcoJ46tg56BdO1QdCBc1eV2fREJxb-W_S8pWNTRuYi7iMBI2v1V99s9TtLvfIF66aX9OSFFlQD2Q56G2FwCR8rOcaGRI1D4f6q1eNTCZWJLwZY-MGqMeTcRZXTnlXqr__KbOze_eSzOwgDGVv1UNTcMpiNbX-8ElBpElRJ9P1eT0af1o0E42G8Kil9jsZr61oztI98KBYjNYhdsJAt1b60ZLvnRBTtcJLxGT4ITwZVjRXaqxEQN3GGAm2IznvpcyYOMZZNXSQUjeNXk0rGsYG6GiV9AXNFOuP_jeJ1H2DQA0HB6FrHgj6bSkGgBueyqiflZT6ivEq_Ya8h2KMs97T-ThzAYEwJmy-s2vssw90p0qwQHlT0hZDP8dVkMvwkOMnLLD7Ly1xjNu4wyT3xaTWPR0U1Az81hFxVI6ICMRy5NW_Q50PZLokGHKJbTelaX-VMqEhGGVRiyCFjacrm-Ul6Sq7kDJw6Ey39B015_DIyHeSPya2dcBoimyxdlQWSK3sAFG81r6rC7TQwGmo9g53SgckOpRMfD3NTU0NCZXZo6BX2Ata4nspNU-wRP_oTwgyREDQslkc3E7j3QBILiX28Z1wGVr0Ga5hUL7tiFqJFDScDR_FMUioy03jdNYL50LLQZTXeaVDcIaqsGLnxmy0KEarnmJYKwjYWW7ytYOqYagDvnsVFrrYDDHpQpdZQC33aDbXDYIAmbE1VAI6OpIxxRk4kmItz7ow3OqdlVWl-zdGf2NHzyHuXKUsAI08DTc-NVFb6VcKcEhOgocLYKPptUehWuAl1BVLTx3bbihRC2y3JcLTqr8KfCbKvl_msU96spR6JCcbNMzxHOxK8-iLlC_OJsrlw8bK3uXfnL-UB3LRXNGeIpoqO3JSXl8AO3YAuFX5m2FyC7i8zhRAFEfESeVBa_LisJNIpxKHHP8NzJgyrby44gXiAwmNw_-HuatLx7hx2W6e87CO9wEusHbQreFcOT8xt-T-48miIGOo5QU_nPODPVOfSX9F4XdZ3Q3T_jXpdkMfS80ggwGAnVf2xA-hDJaalynd9eNL3rB3IDoEz2_vVdlsZD6QnAeoDgslErj4eyFX0tCrzs2xfr1Hkt3fZOYN2ntoKgRQD_I6S1XIg9C2u5fTIeKHACNqwrL86T0D2wpMu6_FhaEx3DSPWvXFFNg2KbPJgg31WVkC6OGdaq1aGpswFl5TpS3PU_lozFSIFN7uu861zm2rEqsCj21Tw1q0YAXp7BM6dekbo0-VQi-AMYCLBOeRWp8O5pspE89TK8M8qoiIbTVFdDcgYVXay_UVG26Xef6jfeLdIYaVRjtWDhUy23tjgn0wM5xSNBb4zFTLjEJcOYMBwr27wx35pROEb4BjJ7wQ3Mfs4NJqgJ5A5fHHum9fe6wLtfjwb8yVuTLsbchHSAX37ASw_lroqQfKdYua0tDq1uWnLYUvhHOKBnOgG85h5Q5b0FjkXn2WFfl8-foqOpjQgpD3oymZQGpYzMhIqG3J-rV9pvE7Y16tsDW5HM7PpoU0-zWgNYi7G01ejphZtCjv0RMT_6d9vBNzMW9RK8JTdF8FrUQJkWYhv7iEJSKhwILMm2h2RQhg1vIKbGMh27I6_8a5ZStapupXnpW4ams17uct4GbZxrucX_LDCPnBRZc0v3N2mX7JB9sRqvF76t7mv1SKYwbMEvulgbc85VybhCYyfPWS6mPB2N5i_tagsRWJwpqinTcqdvIr6lB1lGLpno35ONaiDhxBu-CgzmUKZWBLFvrL9HpTgQe5jJlzqxP_E5TcwJG6Y70YzwwQS_9GEB_P2D6F1CQN7PMo4o4p7pZJEeOLTgFvLIKUtPIFRcg4OoU8e5CnGeVILiCG0I4bOK4hMh2vAsw8aD9GiWZg93EArlJueywsxuwdNX6ey-qcYT_GrH5CxwecpApnF8xsFl2y-Jok9fmiP9nyeiOn2vCPK9545Xh6DwUUBkkikCgAtS30QZT5l7-pCt3o7bXDyN_Vdy9CEqXkdZQPr7zOXkjJMvg3ut4ud43w1wwtLohc8bX-Vh_PoGV1jKLnr0P-LpLxreuL9av0h4NgHHtzf6U1TgHny-Oo3YTlnHPYqJyIY0Zc3ijBqt-G95WjqQ_EYlRSHS4P_eAx_gqZ5A09eCvATFd8Bwr31MPZLH2L_WvY0VhOnN1akS7d7bA2NilZrLDaxiwHuT_EsJWWiscImC2x2CzUoOo5pAXu6_y5w1VOWub9sH_Mi3gZ9UQb8R66RHT2io0g_IZ2Kvh6do9jXUs6NxoyV6cjArz5eFfssl-n4Y47nv2Hc8ypGHuqcnWEwYrmskdN_MzO9I28y6duau60MmKqhVR2HxQ-D3fMljzxwcCLGfOQwcOPz969iluaXyFgq9GBZl5km2zWh70QvQz3hGHTNbncK3hunU_9f7HU-uR_h-3QvOBw_R7tn9V85Vx-OwRJCvtg-XPcYlj7Qmpi74w0Bv7831inCXgCmFoKbGIiGcM6tn8k-_9Dkh93pTUNSw9QoJieA5YLi74CaU2r1Tkb0rpid3d6j5Syi3KgbRufen_w5I8psIsahoMG9LsWCfdM1yW6kilco2Ho3IO5NArckw51BytzDbCNehHCc0GTRAr8PiugQRhHqanRAC1NXQ8J4KGwx1L8PiQt2suPVN278Y17LHqnIlNcWYBLe3jai1lNsU6aECji9ga0InkjouxhppfsnRxZQ3crRQC9Q8sYCScHe-aTaLVeevrzNpUaKqz5b0lY2DvOAQJ5fbVBr7BcRJKPmfEMzEZgOKEz77_2Pjuabznc0Ucwoog60YIGQc5YKA69kBiCnY-gEyxhtueia0zey_OqaCq_GHC4ixnISsJ5JRdS7VnK5BGsCwPSqd1SyuRjcp1Mg-AslJm916iVreufeIZ4oxIeGcwDMKvoNSHx1HJFdPeG-MH4RmAeU91ChYndiTeoLSD5vwq3LiX_NCEEjKMsnde5YIRE5ZS-RBymFmHJB3k4VAvw2qWSpPXKjcknrLXJDc216Tuce_aTtRbrFDK1fhwKhnhuKddQmmFUMoTkQSTKYptl5lZGmYkGIxzi1WGWPdty6y03OkkZOTVXxf0rScYWOxa8bpeUrMChkERdFbnxM73Oo9fiwEQAzOsoUumBA_98-Tcs6UhGGXuUlM7LgsWyzMYcWy0DygmcHNMoA6JQcgb1fv3tGmmMTg1Dttd_lyLjxMxTZTHMrpkHr68Piwv7Amrc80srxuXLpUUycigRvoX5NZyFCEBGNcQuNb3PX3kOYcIh_Tn9xXi24HpJGaKq3Uq169ocqClPXqVNumT6QyENrbQH3m-iQYbAMx3HaMhEc9L4GlAYmBst4bMIerow5vz5h4aO2d4h7skWGtaM7nAWJMU4lw04PFDOxBb4NGcejf5f40qcF9bHNMb2KEP9kIWqDRePA2f-IdUwz_NBAbOw4ECRTlIRoJA99rizOaHZE-pFRvxp9104j5Hr8c9fM-szuzX1bVFqoLwhECWyKOL0KjnXQqFQcUXXIY3TW8iL90ZMyFqDXQuni3abj7yN0KNFXJWTQbmES09k-w2H40Msmjvzo83AIIh2z0CrAlv_o_-BV5Q6xXAcTqZAk9niVKxqe3LrGVm_tiDCsnkuXfU2qY9JBNoDQB56Y7cBzFFbvEtN9oOkes2EDxxzFnxQhhs-qv4TNIhu-v42gtnQM84XsLsF1AOe8PPWjzJ_ftJuVm3oY902i1PRkc_I2Q0r5pXUj96arCjzHBaYX3Unl7WfrHHDbOuOSbHa3XXYHMAc7BCd4Ex9qgPDmVP-o-k5euQXYmqBNlraGzZi2-b-A2g7xwajZa0962JVQRBorG_P8HKba4BbRc3serPwGiwXPS3hQkcv5xMVqfbyIb5-Wq9LSD_PTnaqOAj92-yQ1jcbB4Tb01Rg7yJMG9tyilKTwlXp8_Kxwm6OTGHXd2Njl443WX5b0D_CiM5tBWFoTmkAsRQfAn7lOx8CrwLo6IdndxEWD96BKqkMzjHbr-u1WM3e2w1_QTb2Y1FnZ9YdnNXTpWiJp4gQVw8ULaCE_GCyMm9y0zs83n0_8YUT1MHMj0F_DBShegVSRjye3i--xmWRXtlcouiTxWo6TxlEuJP3OdGtrWATo7coL738jIZOviB4VGBp9ojkWoEBjEFu6zaVopRxhbGCQ51MXP2d4lGQYXYX5m98rOzt8s_DYexieO4QQxhver6j9kcS8B4RtF9VKuo_tVJ4p8UOXwTJBB-Z9ckZ6VQPNhmb4zKVMCzcQj-eolYJ23-UHEWeBW0x1v7OsxDZ93f_jsV4_REq057yVlyStIEsSKyRPK0Lyrgf7m9uaO8kcaZGniL6B_EpZQuc_FFSL8rAVl4q1nnsVh8Fdas_H-3eN2gchR2vg-LdiKHIwpGBqVvVc7v_yD194n2Q1nh9tC4kcvAlkYxneGXyvHNBGzCt6m3h7lEsP7Pz-1SNZ_Nx_kxmoA3LHl4b9EMoK6IlUYfMeMZ_aNbT1xYWrE-hNFXOT-Z2IpV4mvLEV5WHOlBocSZrtkOPbGS214oyxgkt3PIG-ZveyCyRBq1-yBG93imUDu9Dqikv8U9PP2Iy0MicszMTGHoOecFvRv_DVFcfdUfkikeXRnzfMQ47qb30MLSS4-pYUjik98ekE4JB92yJOi0mxYgcHUc-equ3j-YJo8wzsgXVcrVyB4OR7WjcYIjBhw_TfQuZV35BvPdETt9vZ1_srYj_gKzq7UYBsgA5cl1yHOs1IDAqTUsehzbuMyywxNTkNibWxP-yeiK21bRRbX_eZomR2VfsAzfCJBEPvI2Rl9-hGHXaJoUAFyylZ3DGryfpixtG29fSPGnPCAc3UnrE2cKxDIMn9Hzgyu1HzisyJKGjn1wkXDlBSCdKqjUPwnE=
+# AutoCalc
+
+执行一键计算（计算、统计、分析判断全流程）。自动创建 OpenFOAM 计算对话框，设置自动启动和自动关闭模式，计算完成后自动关闭对话框并返回统计分析判断结论。
+
+## 请求参数
+
+| 参数 | 必填 | 默认值 | 说明 |
+|------|------|--------|------|
+| `forceRecalc` | 否 | `false` | 是否强制所有工况重新计算。`true`-清除已有计算结果后重新计算；`false`-仅计算未完成的工况 |
+
+## 请求示例
+
+```json
+{
+  "command": "CFDAutoCalc",
+  "parameters": {}
+}
+```
+
+强制重新计算：
+```json
+{
+  "command": "CFDAutoCalc",
+  "parameters": {
+    "forceRecalc": true
+  }
+}
+```
+
+## 返回结果
+
+```json
+{
+  "code": 1000,
+  "msg": "一键计算完成",
+  "result": {
+    "workConditions": [
+      {
+        "name": "夏季-西南风",
+        "season": "夏季",
+        "windDirection": "西南",
+        "windSpeed10m": 3.0,
+        "isCaled": true,
+        "status": "正常结束",
+        "beginTime": "2026-10-20 09:00:00",
+        "endTime": "2026-10-20 10:30:00",
+        "targetJudgments": [
+          {
+            "targetName": "人行区风速",
+            "judgment": "1.5m高度处风速为2.5m/s，满足限值要求",
+            "isOk": true
+          },
+          {
+            "targetName": "风速放大系数",
+            "judgment": "风速放大系数为1.8，满足限值要求",
+            "isOk": true
+          },
+          {
+            "targetName": "建筑前后压差",
+            "judgment": "建筑迎背风面压差为1.5Pa，满足限值要求",
+            "isOk": true
+          }
+        ]
+      }
+    ],
+    "seasons": [
+      {
+        "season": "summer",
+        "groups": [
+          {
+            "isOk": true,
+            "conclusion": "夏季工况达标"
+          }
+        ]
+      }
+    ],
+    "score": 80.0,
+    "clauseNumber": "4.2.6",
+    "finalConclusion": "通过模拟分析，针对《绿色建筑评价标准》GB/T 50378-2019第4.2.6条的评判要求，本项目得分为80分。",
+    "isAllOk": true
+  }
+}
+```
+
+## 返回字段说明
+
+### result 顶层字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `workConditions` | array | 所有工况的详细达标判断数据，见下方 workConditions 说明 |
+| `seasons` | array | 季节性分组综合判断结论 |
+| `score` | number | 最终评分（仅打分制标准有值） |
+| `clauseNumber` | string | 引用的标准条款编号 |
+| `finalConclusion` | string | 最终结论文本描述 |
+| `isAllOk` | boolean | 是否全部达标 |
+
+### workConditions[] 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `name` | string | 工况名称 |
+| `season` | string | 所属季节（夏季/过渡季/冬季/春季/秋季） |
+| `windDirection` | string | 风向（中文，如"西南"、"东北"） |
+| `windSpeed10m` | number | 10m 高度处入口风速（m/s） |
+| `isCaled` | boolean | 是否已计算完成 |
+| `status` | string | 计算状态（正常结束、用户终止、异常结束等） |
+| `beginTime` | string | 计算开始时间 |
+| `endTime` | string | 计算结束时间 |
+| `targetJudgments` | array | 各项指标的达标判断结果 |
+
+### targetJudgments[] 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `targetName` | string | 指标名称（如"人行区风速"、"风速放大系数"等） |
+| `judgment` | string | 判断详细描述 |
+| `isOk` | boolean | 是否达标 |
+
+### seasons[] 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `season` | string | 季节标识 |
+| `groups` | array | 该季节下的判断分组 |
+| `groups[].isOk` | boolean | 该组是否达标 |
+| `groups[].conclusion` | string | 该组判断结论描述 |
+
+## 错误情况
+
+| 错误码 | msg 说明 |
+|--------|----------|
+| 1003 | 当前没有计算工况，请先创建工况 |
+| 1003 | Stream 内核已不再使用，仅支持 OpenFOAM 内核 |
+| 1003 | 验授权失败 |
+| 1003 | 一键计算异常: \<具体异常信息\> |

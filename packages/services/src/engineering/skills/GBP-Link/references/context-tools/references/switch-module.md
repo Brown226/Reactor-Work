@@ -1,2 +1,98 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQakOSFoHcNYS2M8HLI3Y5mqxjXkkXCAwGNH-imA5f6oyxBqw4BYBzM8Z_DscsmA7tWHuvG6gHZ3ARYrGRPT6GDZ4FaHUkSQZac9qsqkxo7BCCgY73hNo81kevzL2n873tzm_nbLakgV1gqEutTWBMtssnn3QVKlTJXI-t2sylwAGYLdcckPX0dKqaS3vyQNzZmTZuAtZLwbVeBW67Fzybk5mdPRCa3Xb9vorD9_-R8cHsN4wf6jN1CI39rRmj7QMTKb-NiQ5QbBvp-FvH4I90M8hi4GZKs9sagy75ddo7rQiCDmCP46OU58b_fFctBWi0ZzKNSfFKpl1g8GL4MtoGMqAl6hXt4G8lUIxthLM-nYPIeZxGuiVlnidQFLk115OapiKjD3jH8qiRIVcGmgKPqPIJIw3IeUpRgSsUxauuKK5p1Gh4FNWfPgXJl6NOPBz5J4yE-J1PShJCLJDkkD5K-cdYWYUfiezAxCF5FSGX-xinEeTgxvHNbkBw6vXzRSqqHDv8pFJEfcNAhb4WswIT8Wr8T7t9MpDh3eftN-ZxVVkbZusWcpanF5P2Z4c50qtKl-ipW303zWzpnuTbbJ8IG0Fmx-rvGTJBmjzAMBk6XdyqEtUjbzOcZEkbClkkrKwFVk4SE30sdosHYVr4_V_TAcxysEVYTATmLFbFFT68nLSbjg04hP6vSbNn5vZLkyqOzpviAEMes5nm2jnZtl44TJN37J7HvQvMvs41TwJ1X4azLuRTuDvRR2yJhgZjXFI1FK0vRaMABLzvgL_56T9tUfMDPfpL3s3ibUojwFnn9NSbSMpDlXCaVUBEmDfTYVeOE1Dmi565lHmnTg9tzKtCVqvE08sBaqP3U_M8Hy8Mo6WUO3SHzfLBs7JjpDbXU-MKGTaeWdUNRm-etEq_TQ0m9G0xQs_AFj6Scm8u-IX_wNtjAk7Z30OKT8WylIc3V0nRAcb9pQXe2FcpKEb7zHqICBZzo6rMNUZDVOFa_D0iLPbRq68yssVR_abu8Os-DdI1sws-W7Kowz8BXoYzB7AZ-QI1eOvaZUCalvRA3Qd5pziWuU4DvX3bWkwv6WcLrCG2Mz-ODKd-MR2fbDD5so7f1EPkFZVpCqE8SwDEv9TUnPotfl6jwRCwau2UKQcWhWiZ-fFklLNjK5PYZEtIIxQCNbws58Jno31gi63nK8vYKAdT5p5ekct_m7a545mQLFuomFUesACCycDXO6NcXrO8KLQ038OdNkBB0hDbaaYeFN-TEM5r0OjXp7Ne3do_5vcitJsDvWdrjNkSrW6NfQzaGC0E5LuOosR2RVPFlFzahyUbVkLYsU4RSzC53jePtVYfsG6jZROykRFIEJ5LY_zRtXrgbdMzun1GX_M6IQ3hhoKLQ9H9lKVTmyBl3juDxkeZdNtHqgbFz5mMt--YyqX20C77lsJqTWiuv5DZ1qBEeIZR8RsFzCjUFMg1HUg8Dg41F-KGNU_Q3zNOLpxyqJmrozr8lt_r2utLdtUPs46M9e-nen3UJXLYjsJZEeywvvBPPnCg9XjaA4KGR-XyiDj3CSXv5sIfrikN6IeRg0lOJuaV0lL1fGhmSEFxHMv0dAsswlcS40tYWKbb8makqgwaN9z0IzcW1062Bes8PFcfhSvLk8FWPXuEzHUsVIsU4DSzXFxzRQ4YIe_mMiayT8gmXvpZ7uHEhVgsa7ey2EyLr6sPXceQAPFAJSrG-BHcsz1QsDvY1gflkYFo9WeuPjilV6cPEKi4WvLLtw8Uoh8nc-IC5spZo49a2dh_voHsW2S8ePbGeZXuP1BZY7gIJi0lCiIMsYcpcmweo1Ru7YadIeZhQd6gQWWZKyFz1gRmLmjJipfy_BOQiMr4XSI8ZiLOcXImRzmy2HPswS3b2ChVzmQqsE4acTaK0lUwaXU5ZE_d-r4soyKcGfo5RukWzJyjOi14AJmH1agTtShDKxCMQEUHfL7uYiQPZojFixopS3yIUPi6NeTXhJWI-g9UboisPfQ7kJUtoTvtX7ptxKbsUDpzP39zHFeKxSImhVw-IAppJewrZSb2PK3cofbxj9ldPscjLKGq_dxLlCOaFX7U1mWANvG3R3O1Blf28uKMisJzhQfyEDWOw_UmG649W4D7o-5TT2ova2p95Uh9A654wMCj45MohdhXf0v3ZvEwDbPlqxP6KyfIGRjsdG3b4FfICtWdQI1rA9dQsM3srQQ-2-QGzQEqbbJ5QLDv35vvjAWu1kZMSwr1XOWihdggP58lKuxVh58MgvaYQXzWSiBXt3oZCW5ep4AwBikSgkpYyh-zAAkKgPQg5kOZiUbEgTySHK1F8e8mfo4W_Aqm81tKgxoFjHnoVmWv9bp4eTWthGOSitwFiEqs32Cd9LU67ub5QLL7_Y1BPU_QknViRCHbgLiybfsTn86pGQEfep29-6Ce5AL6Mnb5M4e4HXILw8v1vY35VIc0f03vdobfKh3-IsJ_phUAyocSlFML1H6KsFj0jWorrzErcAgM0f6ku6ZILx15sXFmDbd34K2KT2weMBk=
+# SwitchModule
+
+**说明**：
+
+将软件切换至指定模块界面。切换模块时需要系列和模块名称匹配，获取当前系列名称参考 [get-software-series.md](get-software-series.md)。当前软件支持以下系列及对应模块：
+
+民用系列：
+1. 单体建模
+2. 区域建模
+3. 建筑节能
+4. 能耗模拟（旧版）
+5. 超低能耗（旧版）
+6. 能效测评
+7. 高效机房
+8. 碳排放
+9. 方案碳
+10. 碳评价
+11. 采光
+12. 建筑光伏
+13. 可再生能源核算
+14. 室外风
+15. 室内风
+16. 热环境
+17. 室内热舒适
+18. 声环境
+19. 空气质量
+20. 幕墙光环境
+21. 绿材应用
+
+工业系列：
+1. 单体建模
+2. 区域建模
+3. 工业节能
+4. 工业碳排放
+5. 工业能耗
+6. 工业通风
+7. 工业采光
+8. 工业声环境
+9. 工业绿建设计评价
+10. 光伏
+
+电力系列：
+1. 单体建模
+2. 区域建模
+3. 工业节能
+4. 工业能耗
+5. 变电站碳排放
+6. 输电碳排放
+7. 电力声环境
+8. 光伏
+
+既改系列：
+1. 单体建模
+2. 区域建模
+3. 既改节能
+4. 既改采光
+5. 既改室外风
+6. 既改室内风
+7. 既改室内热舒适
+8. 既改声环境
+9. 既改空气质量
+10. 既改幕墙光环境
+
+环境仿真：
+1. 单体建模
+2. 区域建模
+3. 能耗模拟（新版）
+4. 采光
+5. 建筑光伏
+6. 室外风
+7. 室内风
+8. 热环境
+9. 室内热舒适
+10. 声环境
+11. 空气质量
+
+碳排放计算：
+1. 单体建模
+2. 区域建模
+3. 碳排放
+4. 碳评价
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `moduleName` | string | 是 | 模块名称 |
+
+**调用示例**：
+
+```json
+{"moduleName":"采光"}
+```
+
+**注意事项**：
+
+- `moduleName` 必须使用上述支持的完整模块名称。
+- 如果用户要求切换至不支持的模块，不得调用 `SwitchModule`，应告知用户该模块当前不受支持。

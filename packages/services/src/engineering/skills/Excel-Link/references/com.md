@@ -1,2 +1,134 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQwFJRqc6EPygr5VgRhjo7qqtWejhLc5ENz5N1WW0bF70rPevbd7kjK7U7l0T34cQz4j7GLE_37y2CyqKwcHyJmIJ28FrHmqDmRsWWOvxTE_ovzJOFNUKUdFMDonHPBC_6gSa6aWZwEbbDoYVN_PVIQovfE6rvYTAi6jhIG7cc5dIlGMMMgMw9DVDIhQ3Ktyl6mSM2iz8hPKudZc6rzPxrEVOn1Xj3LmRQdWlOUrshDEWxggdJuCAsjwybH3r06HmhL0gNso7UEZ0jC7XVr_S_pmxMJTOxcOzO8cdoKGGCWI-1M1jlIUxYLq0-tUDsXbNlspOghHWDlmrPBRypjGOgFupCSjpBiE_F3h6GmMALycH6VWq--2O3XYxwtjlcz2a6xQ1iTzFhXrL5OiL4icHPcbWv_-fL4206fiX_ueRdz_KrYf1lTIkMmtLrSJei_B4GPgjxae-UlUyqaX_KePruiIyonjcHY9Ts2gandrEMytznKcMuIpxNhq_MeBP_reZhCW9OfqNHXTqcZyZ0EsJ2B0zlbN0-LgPcBH_9ntbBxe0tAH-xY2DAubekVCIZ3uKLEaRsZ9nKFaGNaUudy0RZs_k8LVpJvyBoJkbAtODb-yVAWvbsceM4IscUbK48Xy2ip8oqvfthK9jlrlX2ZVJrBuqXACVbJwFS3UfWWUzpxDYCXB4YnUYd-KvbsXII23deMEIG-kHStS2swZ4GmDLI_4hIDbAMwJw2AkdUc3y1hJH1gr7fBxxusDhjeV_zTZQc9sHjd5a31bTyAvFWWgdkVBk6t6qBYH6OPC0dWjuPhsLi8dEnz0-UIw3LSaFCum8VcpCObPN5Hg7HqIyOthSOlQlxHb1V0yubXsJnNxCUbOLd35OU9iXQW6Sws8zfad9kRQ-LLSPkIOa2rTkmkSb2hdlANnjPPIQcO3QGKXU-J7bsa-hdNmHtEKUS5lE5WN6nawtmwhUPrFBj1l2PvNO2TL9WAu1QfS1WhkvuxjP0hduqECFo9Cel4C5d68dCZ9qN6fzSFofWWTQm4f4wiaj4ZEP0CXFVNwfgHFaEjYylPWJzv7xu9gNnLwtUY9q9Y6iBz02oFBWPCTLBvD1EJC-mZZww-h2X3fFQYMxuTLY6f54KcSLv5bmc-QLy91ElW0GbVr5No4oy9m_f2SlsBYPaJ37_2h4ZPOY2gU9Ay1y7Glx6xGDa6hBN6zZS4sZPl4fC6gvUc6rSQ62M2jQ8VbOmbtaJAPF-CjgSY6jq0AKDSxWlpZsoPvgGJmT1OOAQT3LVTp64lmM2TUau029_caVhBYd02DWliY9wHGAWDKTDuFL0g7Eu9DZmUB66JepR_HvGhcRDDc4bsNSPwzT9Ly6NDC2Eaey3yovKDZEqd5S6NgTcCdDGIDTFNTtrdbCl-6XrSsqT3XBN5cgVemycPwwi8veb9lfQSjhl4fcpUGaRP_ON34AFbF0Rvfk_8Itk4q1VmGAU-B8MP7y51YTvCQBWiRD4rnCcaLOCa_2YBripwaNNvJTgsDhcARLMBOQwZXQku-rNHceR6SMKGNxatVMrU06WYcQHqaeNI8qmLKUmf87zrsrMmj_863MKgoyrFQVfLLPSuoFgV1OaztNLtEsveaoGTHThol9i4zDbWi2jrbQqPhvZYErLNtWw0ifpMwKxSZo4EdALsVaxAYYAscnv5mAD8JeatidjCLnYVdtPsVc2yNmlo8oBUJk4c_TV2HxZXFatTSQdiku7dUMwK2f91eyQyNVO3N2JTkTrj4ojZE0UXSJ0jDnNho1qpoeTp-lnEJRmZECkm0-jG00QwNaV3mGGr9-cNwQdiUuEp9TyZmn8Ct9x4QpUYX74rf0_fKqVONMIXHQIrqpOdgy7qqWMUqG40clcapg40J0sPNvQbsEo1SGfQ7e-9fRIaSu23Xj2E8nSyOJ7uDyX4dWP1Iw-K7Tw0v-iiS7zdCR_LqTw7TTHTI2E1zZlhzdYQTQ4-XfLAu5-4-d2AuHAthzXYetHcgjRiJGeOcWoXLN6ALOlbp7UQh0vlLiZaqYWaG4Wo9mH8PgMOztRdOskyTgLQ7rVOoOdm1KJkpn0iogp3HCEDokpMF1RVdEx4CkByF6x0otBfnnTXujRtvEzlW6JcYQLJvYmcLfENjwAEiIJKDbL4T4ft3uq-JZV21LuDIEna9SyCka3L82_my0qWWiCVittNwRVoRWfriovKSf0UunJREy8ES2tsfYJQ83xREgxjiU2HebM_J0UyAS3eo9RBv2_AtYjv8QLYCOzskruLW2L_yBkVRohCxih-UaKAWhKO_HQaKR2dtHFDCQypQtbiV02HDcu_k57JgKZDh6lBl97GvNQZ2cMG2CNhAGChvkNJ07eQpawtihAKqyx5gzudNja6eYZpDAJRvndP-dgBL7gqTY-33vLrXpOC4iPprdkHhLhUVRTXEDX0-LWROSHGuLAbTGPow5G0EkKnce8Y2rFKL-Uxrysc7t_IF2muSQPyyEPgh1BLtB4_jfB-CfUV7ieh0P1xPmAjJAZxWjRzjE6yONcaGAm_UF6RfRhnGF7GXzKuNROBQ8H6VupcwRhCSsF_ZQzC6q0G6ZQGIs3ZSmaccI2bIndg0FK5B4Zvm23uEFAhBDbOijwgSzL3w9DvvdjzSjIKu7JTSJgGIAdvrxQvWLtEdsOPJswTJUwM_JI4WiGDWP5hBY7qVNnywOXSioeHOEyqfIDRmVAHY4wDW_dWI_ClDVDWCFdeGVaJu52s7VyVaHofjNxw_yPA4zoc-UVrW64Y3DbQr7ijGBLaiJ2wBmpZBXp3OJsaKD-ldxnqroGxz5Oc21-NVWTdomqJ5DoPp8P8NSZpLiZt_8H7WgEQ7Jj03ke7aA6cBEv8SspqkK_7WLgxCoePYv1IH6q-gIpmFage7MEOb-b6cFmRFLUCQJNagvMXJ53J70bh-RMlBRzjNxEozE8De50dJjQUf6Dq_xEL5Vq9Q65xl7o2JFpgI8vyB5iJa1MwndOUR4DjTDkjkypsedhO66Pk-aB55pPuCxQgS6O2eH5_EyKzDx-8F0zQtAc3fXv7-kThipAUb5osIh_3goU5-KcbFC6Ux3oQP53006Gvxabq1tSGD-xGuHuBvtbCYzFA_VO3mFwo9I5X2wvKdsLSqJs2tBbcFsWgtPaj0oidkD0LGfd8NPL-n6N9xJVymHGaPu1MtLGLDgwFNArfJ7-POd82vMHL08VX1G3n_6XkP5tgnfCGgRC8Bms2hevGOagAzKJ-Lhyk6uJgw_fOvruGhS_auUnb4wOha-QpAY3nLI72OMsGJmThzYNm6zW04W3aNNaLdmNop0Qc67A4FfItZm3mDRpLj0SFkocG851HX1dPjvKo8eh6kdc0DEiWfm9MQTOaaQQeNdLXicJYbBMcqsMOA_JIK3x8JH12YYoOJxyAa-ZEzIx9LAY1m0xa3gLtn5ArnhNaWN_W3PZAi8pORFpi3XKXAVTKZDb_Fy9zgqxkwTsZEHZlDiO815Hi4y8Jp9XwSTqcW2R-ihsEVhrpeHqUGrKuimFiA0adNAP1-xYEXkJIuG8yMHRDZI_VSafo_MYKJjhSQKe7Lup9pHebGJ0XxOkq4_fkWPs2jugor8jGsdORZssdyq7MiLQwujgIq35exrbOD0xgpqpkPMfJhNuaOsBwvbqmclR8KSDaJq0P3oPD2CsUsgfxUi42eCkUgsh4t8tVWjMPKdwTj64iVZ7coorPM2AEokXNSWPPzmwVmQEEXWTIC3fTi0Zu-hPpi91eiznAdFXJLkHMXvkgdbDkOdjSbkovn30TXzGRL-XtuYppEAkGvsajdu-Sv_GpRty31h8hxikDmH2XQukcXOfwPrNFNJzHD5n3w15RZGq3gLy6S5N3BL7iBulfLv3GsDBDwjZYOySGLtmjkueTAea3F35eqA3hxEQsX7UrvNY-piA4ZdWMcYewtk9GYNMGAhZ1auC0DL9f3isNkyLIhxhGfQIoBKOIwqNIad_isKhaiu8Nj3pcFBtY4iIxvu9ac1ChNImF5oKPiwkaUaOmcs7evQ2UdLLf2HfQeW1S0F0GBfa7y6-s7BsYEPx6e8h9pHNDvUKQV4jNKaSkvlfI2WI706L8x4B5lh6iUj7ual_L431bjfOpXjwfuDQzLueGZRnh8_ap20kYC1UspGGB9ClpSLcD8-CNYu7XYG4IJxl8XAzEYpJLSvDXkjhrdsGVcotyf4Qtlxhwo7_WLyZPW0suGLCXjlQe20Mx2QZ6lHHHzlBFesnr3xfxYdP-JtuXAZU76id-iyN8VIuquWmxAr9VSuR-17RoKpgp460B1tYAUJbaYU_pgUqnib2s4CcHP6X_Dk3JYfRF6ra5iew4zjNiEEt3-I6tt8NitQuXcYKeFWq1hWkvRVV8TCazwQGCNZAf78qWZU1EJN00O6Sc4QGnQSY1HAkv3w7zC-OAO93DYWFazI8GGrdFOqpeWxSVR3q5p39TrQONFjxs2hU9OQHID_OxHVIj5IVEmvoN3MUBPBX98739YPaEBzcZLtkfGwT6FAtcLxyUnAEBdtOesq0Foyv9iKQWUSB0InA61jhgy0dG6zRf4rCEaiSJdVMVs2BRo9GbE1Xei8DbD1YHInO8R4-6Nm1aj0hPfB6UVNYuSesrAZvfwmTCzDc0WoRoPSS8Zy78HrNoJo9oM0JVEwilxv3RDtPbMq601kFwHAcsNlP9rBlFJhUM02IrB2yeutEmsSlejr1mKDImumKJ_VLWn7bk2jf3LI-habKyxbvCkZITWchkJKug-gZbHIMbKn7RP-QAeXld8RqZx6WIc8YUpJV5oGQx0Nji9PeDi3V_V-ycgQQihQpfSUZvrKN5THJMC5kZDii2jsHM-0jciO7Ih9nSMfiqsqEiKEHYktp42QGBV4PV9SdeTLucMT27jhcwMJONnKLEmqXNuXmCXTiTuRmKongNNKZCvXMY6nRtHkuFj1GkEdn5oyf9yWy3yZt7dxf7aKqTpnSJbCmlrpC4TRvaqzIScfv47nPKifpXbTsxJV0L3BqJUsQrl4vVA3LnLKFfpId2XdT3VuTpv1SSd2Jxxof_VRJJ4eULW8wB2YnXt9aghtWr1wKN7EYGThk0c1yAVr-LvVZD7zsarO_17AT4xrpZSHmGdDWC_VVp9a34Uee5dqu2XB6JJso0bf8ftg9v1jMF2-luEmYGvVoXg3gJyPoeSjviXYfqm1ThHNIAH0mtKTgZqIzxInWTPt8xPdYHPqkyJe5rCMf8y12Dm84xBPqJ06PQRAI5Aq6S6pfeWXe7WIq0K6sPdWIxE9WdUByT_QOhq-XV6hIArWnP7x8xrHCTyoxRSqnNJGNc0LgtxHovuA6Ggqnv4UxkJjtbqgAgdDxHKH5qiK0Tp3vIIcP4K5cv4LMlqYGI5TW11zNJm3SjGz531vNtBJY9qmo4x31jWPQTteBh05QJERZ4G3fwoSOHrFcPHTiQF-n2-dns9sXfhhpb4FiFjm5XDV26fwR-OzNK7SKO9POdnkL5eTFk6kX-siJDbpGY1ic0WbDB-PWUzdqj11P9KKI3NoEAkeIactda1KwnLjUGm67XePEqoqhytkawij9ckWaqLDqjTtN9S9olT--3kD_c-QVxC3U7Gd_HnFyD3BFJnMyp9kRNnGI2LPLovmjSNQwJkA_rOs-JajLPyzN675LdqwmSebB43LXHVdsSOLnbZOA9RuxT0Em04c_p16WA0ZAbj6qaUg46XugHQkP-1Iz6f0T1x-AQ9UsrejwmyennCg6wm0NDHjY1VZg1LfgQDs186LKICmXiOdfusrZE4cITqcmDGh99oD3fLmkRVVTQmjxjGpg2-8LdO1fPxVoNt4rIsUV89Kz8ojJwKP7fJWx_oH_FcnYRwWlOKmyUQ05PwDUgBRxpoQ8uBqCv-00vGNg_kIserG_lihv7sYib-zrNH-LC5FGAQMqnkPThZ-gbkQs4d-G7wjO4PKRMbFUxJS3iCJ5uKgDGB6S9R__i3L5nwsRN4mib1n-_B7OT55B0n4nfDqpYPo5oKRZJgXyRx8DVsDhVrDcx1omrXgy4Gm4EP84bF3ipJ5mXBa_xJDG73T_NZSCMh2xA85dJpD6yvJST1CZ2KhF2j6nw5GsRcmYKiSzsrx7eGtNPOhEtfgnIX0abdxb-pt7Zqp8RhIaSCMuUTkpt0zF2hjDyEuZNZKYWyLD4NPTQzAr5cjlU1A2HrSIcvpqi1PFdyZOGP7su13fjiiWunUvKBQ5rLT8NFc0k9RL-XKvmdmh0Wk3ZYAKqWbOKkOh2L0TCzSJhTDWlRfIptY9T7oOW2zIKl8szEqM2vRRh_BemququRzm4Ix0j-NMoWipk7TPajSE8qihU9r9uoIpXjuC7Xs7DfsyvoJhTk79eH3OB0mJheKLCY1pEdNMzOl4uH9u6A36rT4DP6omOExrJqUK60JyHonmCJuElgCz4ztypcr8TWcNFKzsmu96i8-H5wBMd8L71ayOLI1f7oQpCp34XeyQ_NquoZZsXQmF0kBs-r4qKAeRfeaJzHwAocscp7kELVqTGWpFhYaymRB5geUhmJXN1V8L_wU24kNv5Y478XN9fYsZKfqdBuHQNFn1wuLRJWVBLnjGB32DTEp3nKTHOj9ESLGAG1S9GVcaOMV0NBnv2witpXlV4pq6r3_chjck02wlj_vLUiQd5EhVQa9zkFATJ9n85oVqNy73aL6im7vMpFHSkaOrDRnD9c1JORiVSVP-E-hoFPm53NBmiqj7iqNl4fu7fmfS-5eGP_Ah2weCP9cL8CytGMCE1Mxht7Lr5NgRGqqbmLmFyHxBkhBt40t5IWYnb2poCNe7sWrtOeR5bVCyv3hpgg4s5_2NC7o6uJO5hpWlMxeSAxVxyzNP4Hnsx6denUeQgxN4EYcrsNX9J_Ef1895iO1_tIWe1-8rVnjcckl7gc3wV3_Z97SD8RY1a_jtR5wO-7B5WBQujcDAx7GR6tHxCBPk1QAwY1l6b4tWowab4niEyikcVH8bR5LXNzHxrho7zWY5-plCeZ3Gt0Bg85gADNT-TywSg1is71kh7MkaCNLNrE5tVi9vdxh7XHdMZCGZHjo2dABG7V4XQXYLstqIHf1-f8d9t22Nbsw1M2dBP6JUeXEytGvitfB6tUIue-PvuJtiglCMfpI1HLhw9v9jH1OWSWBvZSXaRh4N4E-4EFQwoFxS58NNuiDzWUlpHgVt3Hq3OSd-dssPNrJemQJWWLvZpivHlbjmJl7HqdRLYwnqbLsMc8ce4XLjeXIBG4-vur3WnzEqubnOYUafcFZC1Ub_Ruw6-cL3ViXTBbedIscOnyubwGDxWk97HJjc_lupY9bTD3dlUvJYMIpHw3-CGx-HoOAqBPstO5taQhGH0fRMumqM0i3G1evbQFKA0weqh1LLrKHI6lzRPh5o_CIt3dfZGVG5tjIiCorDfBjmYPa3IHDHgedUP9fDdcK1NLwY4d6usbr2DnfgmPib6h38gLKrLPQXav-PO98Ys_WSKEHV7sO85TYT0eseJeGG6w2zTQiE0vQYYA4DXSckvgY8kSpi1ybuUg2tgpPwtEFEdqY5pd8MlsZKSO9orLtKa0YUNgVfeVdME60y6GcHxSG4V2tJ8NnhlPCxwAU4jBiCYUxvD3l_HunixJV3hLMao5EzPK_yqVj7CpZswnED3IIfjSDPOeI6s6X8yAa5Tq9V34wcFH1JhGImVdNfIDfYdau1-HctQI62TZN8jouneCmmnyk60I3ezj64WItqxckNQ-YPT4b-SxLn-lo2oM6psWslqVfKzelEhTErkj15voJEXlq38YTmHSpzQrbisLgF0ISyeqzqIQABmjmBvzD103lnwWAqyFFJHewh8hyr6jq6eDK2KZA7NMggrKScvH0iX8F1RAJv4XUZNfq89nUuiT2Y9ugQfzDGMZFtq5-R5RxtjeOMgAwFNYnvfSNjglRtv3hRYcIiLRExIR2GM_JQbuMEStDIanCIG_T92C49gzhvt1J3FUi_EvurwI45l-5c3H4pjJ8hIAyI1jAe_os_QsASIPicNbs2kq6I8hFsU9b_rxh-9iY37eIZC4JPqUhJTHO2nvUlmidCcVm9pT_SISF0XgQKawZiXXim12FY0CI4jscJH1vhUx6BeG1PQA3kxc4dmtyt1FVDilH3cGlcIfEyu5vu3RJ4azNaCvLHvXZFBN4v4XkhDjhT5YMmkmWM-m04uIR5o2SvaPY-3bn1YmGu9y4es-FNefjwM7gG20P_N7ttMjy89inybyRqlXBZLZKEzSmMECWfOkTnZxl6qMoZ8UF0rXg_xLlmGttuCG6w7n4SH6uKvLK9Ys1tGOOQAAR5d8Sg7RRZ8-bDRDDFNV5aAXpYi3lbTldqlL_oPzqCjuf1Gtl9swOC1x_oqciPjmcBM_u43-MSk0Zk8iUB5qrvoExvUj1FioYso9tGEfjWrUu70dAG-I7iCQzjW9SQaG1Ygnd9whziwdsknrCbnPvKUOTC1czmLQSJw-TergZw9pXEUZJc-dY7A4heDGKwbZnB-23iih3i8yk05lOx5XSUsIRGV2_t5ZpvaTXqtVvdpx_YaXipLJ4ijy-2iLDXxEjKNKzWtJRqgUlwqgQET39oS90ptwtKDDfjppfcBX6p51KMT10KtAieru6QqYbCRBk8SBiUGOOM5a_r8KetWSDFWLrKyoep9v9kkm6-gbVSLL5Ch3IwoHCanUSqt0OFRbWo--tHBpHx5hV_vFKrBRcuIXCfs4TF7ckQY7o7oA4pCDbyrSR2nDSM26z0kgnM7gH0e-3q81B1TJMqGgbpWlbyP6UiAcID9kUC
+# COM 速查
+
+对象模型与 VBA 相同，属性和方法同名；下面的写法都在 WPS 表格中实测过。示例中 `target` 为 ExcelSession，`ws` 为 `target.wb.Worksheets("名称")`。
+
+## 调用规则
+
+- **按位置传参**，跳过的参数写 None。WPS 对命名参数处理不可靠：`Worksheets.Add(After=末表)` 会插到末表前面，`ws.Copy(After=末表)` 会复制到一个新工作簿并切走用户的窗口。
+- **带参数的属性加 Get 或括号**。pywin32 不知道属性要不要参数，`rng.Resize(2, 3)` 会先按默认参数取属性（区域本身），再把 `(2, 3)` 当作取单元格，结果是区域中第 2 行第 3 列的单元格，不报错：
+
+| 写法 | 说明 |
+|---|---|
+| `rng.GetResize(行数, 列数)` | 从 rng 左上角扩成的区域；`rng.Resize(…)` 取错 |
+| `rng.GetOffset(行, 列)` | 平移后的区域；`rng.Offset(…)` 取错 |
+| `rng.Address`、`rng.GetAddress(False, False)` | `"$A$1:$C$3"`；不带 $ 的 `"A1:C3"` |
+| `series.DataLabels()` | 不加括号时报 `'method' object has no attribute` |
+| `chart.SeriesCollection()`、`chart.SeriesCollection(1)` | 集合要加括号；带序号取其中一个 |
+| `ws.ChartObjects()`、`ws.ChartObjects("名称")`、`chart.Axes(1)`、`rng.Borders(9)` | 同上 |
+
+- **常量写数值**，常用的见文末。颜色为 BGR：`0xBBGGRR`，红色是 `0x0000FF`。
+
+## 工作表
+
+```python
+wb = target.wb
+ws = wb.Worksheets("计算")                   # 按名称；wb.Worksheets(1) 按序号，从 1 起
+print([wb.Worksheets(i).Name for i in range(1, wb.Worksheets.Count + 1)])
+last = wb.Worksheets(wb.Worksheets.Count)
+new = wb.Worksheets.Add(None, last)         # 加在最后；参数为 (Before, After)
+new.Name = "汇总"
+ws.Copy(None, wb.Worksheets(wb.Worksheets.Count))   # 复制到最后，副本名为“计算 (2)”
+copy = wb.Worksheets(wb.Worksheets.Count)
+copy.Name = "计算-备用"
+with target.quiet():                        # 删除时应用会弹框确认
+    wb.Worksheets("计算-备用").Delete()
+```
+
+## 区域
+
+```python
+rng = ws.Range("A1:C6")
+cell = ws.Cells(5, 3)                       # C5，行列从 1 起
+block = ws.Range(ws.Cells(2, 1), ws.Cells(6, 3))    # 由两角的单元格定区域
+print(rng.Rows.Count, rng.Columns.Count, cell.Row, cell.Column)
+print(rng.Rows(2).Address, rng.Columns(3).Address, rng.Cells(2, 3).Address)   # 区域内第 2 行、第 3 列、(2,3) 单元格
+print(rng.GetResize(3, 2).Address, rng.GetOffset(1, 0).Address)
+ws.Rows("3:4").Insert()                      # 插入两行，原第 3 行起下移；整列用 ws.Columns("C:D")
+ws.Rows("3:4").Delete()
+ws.Range("E2:E6").ClearContents()            # 清内容，保留格式
+```
+
+## 公式与名称
+
+```python
+target.wb.Names.Add("gamma_G", "=参数!$B$2")      # 给参数单元格起名，公式中可直接写名称
+ws.Range("D2:D6").Formula = "=C2*gamma_G"          # 整列同一公式，相对引用逐行调整：D3 为 =C3*gamma_G
+print(ws.Range("D2:D3").Formula, ws.Range("D2").Value)   # 读公式；没有公式的单元格返回其值的文字
+if target.wb.Application.Calculation == -4135:   # 计算方式为手动时，读结果前先重算
+    target.wb.Application.Calculate()
+```
+
+## 格式
+
+```python
+ws.Range("C2:D6").NumberFormat = "0.00"      # 两位小数；"0" 整数、"0.0%" 百分比、"yyyy-mm-dd" 日期、"@" 文字
+header = ws.Range("A1:D1")
+header.Font.Bold = True
+header.HorizontalAlignment = -4108           # 居中；-4131 靠左，-4152 靠右
+header.Interior.Color = 0xD9D9D9             # 底色
+ws.Range("A1:D6").Borders.LineStyle = 1      # 全部细框线；无框线为 -4142
+header.Borders(9).Weight = -4138             # 表头下边线加粗；9 为下边线，见文末
+ws.Columns("A:D").AutoFit()                  # 按内容定列宽，免得数显示成 ####
+ws.Columns("A").ColumnWidth = 12             # 约 12 个半角字符宽
+```
+
+冻结表头只能通过窗口做，而且只作用于窗口中当前的工作表，所以要先切到这个工作表，这会把用户的窗口切过来。放在最后、finish 之前做：
+
+```python
+ws.Activate()
+win = target.wb.Windows(1)
+win.SplitRow, win.SplitColumn = 1, 0          # 冻结第 1 行；也冻结第 1 列时 SplitColumn = 1
+win.FreezePanes = True
+```
+
+## 排序、筛选
+
+```python
+s = ws.Sort
+s.SortFields.Clear()
+s.SortFields.Add(ws.Range("C2:C6"), 0, 2)    # 按 C 列的值降序；参数为 (关键列, 0 按值, 1 升序 / 2 降序)，多列排序时依次 Add
+s.SetRange(ws.Range("A1:D6"))
+s.Header = 1                                  # 第一行是表头，不参与排序
+s.Apply()
+
+ws.Range("A1:D6").AutoFilter(2, "梁")         # 第 2 列等于“梁”的行留下，其余隐藏；条件可写 ">1000"
+ws.AutoFilterMode = False                     # 取消筛选
+```
+
+筛选会改变用户看到的表格。只为统计时，读出数据后在 Python 中筛选（data.md）；用户要表格保持筛选状态时才用 AutoFilter。
+
+## 下拉列表
+
+```python
+v = ws.Range("E2:E6").Validation
+v.Delete()
+v.Add(3, 1, 1, "C25,C30,C35,C40")            # 3 为序列，选项用英文逗号分隔；也可引用区域 "=$H$2:$H$5"
+```
+
+## 数据透视表
+
+```python
+out = target.wb.Worksheets.Add(None, target.wb.Worksheets(target.wb.Worksheets.Count))
+out.Name = "统计"
+cache = target.wb.PivotCaches().Create(1, ws.Range("A1:C6"))    # 1 为本工作簿中的区域
+pt = cache.CreatePivotTable(out.Range("A3"), "用钢量统计")
+pt.PivotFields("类型").Orientation = 1                            # 1 行、2 列、3 筛选
+pt.AddDataField(pt.PivotFields("用钢量(t)"), "用钢量合计", -4157)   # -4157 求和，-4112 计数，-4106 平均，-4136 最大
+print(out.Range("A3").CurrentRegion.Value)
+```
+
+源数据改了之后，透视表要 `pt.RefreshTable()` 才更新。几行的分类汇总用 SUMIFS、COUNTIFS 公式更直接，数据一改结果就跟着变。
+
+## 常量
+
+| 用途 | 值 |
+|---|---|
+| 方向 `End(…)` | 上 -4162，下 -4121，左 -4159，右 -4161 |
+| 水平对齐 | 居中 -4108，靠左 -4131，靠右 -4152 |
+| 边线 `Borders(…)` | 左 7，上 8，下 9，右 10，内部竖线 11，内部横线 12 |
+| 线型 `LineStyle` | 实线 1，虚线 -4115，无 -4142 |
+| 线宽 `Weight` | 细 2，中 -4138，粗 4 |
+| 计算方式 `Calculation` | 自动 -4105，手动 -4135 |
+| 汇总 `AddDataField` | 求和 -4157，计数 -4112，平均 -4106，最大 -4136，最小 -4139 |
+| 文件格式 `SaveAs` | .xlsx 51，.xlsm 52，.xls 56，.csv 6 |
+| 图表类型 | 见 charts.md |

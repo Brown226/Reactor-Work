@@ -1,2 +1,46 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbShZT63kUfyzyw9VAsSKPEuvEBECk-kmvqFE3U-XnkfawpAer31c1DIWZ_SWul6Teu-ylBQHj5FP4MHrRG1eqCDaDrvc99bSaUxuHAuHrrQ4clIfypFgurBuW5KQWVUjLaaQlhoKy6NmY8NBHDoWJpJ71Yx4bgXhvBVGhysfobfKmFDew19R-nAnh7OPCChNjOWIZJkx-WhBS2MCC-NXIc59fwu1Qfyzs_IFomGqQU4x8U-SsdCfqn0iKhZBsVjQBgFmBww1XR_OZyxKX7zIpYyo0E39lNBNXCAbXDUyHlqeJZe6u9fR_-tuRJPi3Luq_rpb1_uiWvmrsjyUCfh92JHYjcjIqSuFyZb2AtR6bOqZ1byyTc8S9NwznTomUakiOW4wXIfRmN5ZjzsSykkbYF0a-g4oKcEl62cbRTqYF97cPzE5-Kv8_zlq0Tv-w8dC3jhOyyEgi6IbRtTON6A-61ojbAB_w7ZCvfigYhuR-aYEJLntQc1YfJ6mCwpokcFmmBJUquwjZogKfd-3MZLhXgXQopzfJSU9lQXdb0eELmoXV_CwzIOuJ_4FtVBqR6gvo82Ub8RoxhWn43mX6Q6G3A-g2ZLiHrDYayzeWuE-PB1FCTdTo07j4_MjN-sw4dWbf4yXSwMa1FSl29ltaGES-z_rQ54JgjL07MDjKp7_N1lKt4AWZRLweA3KuugaFXIPKQPHEfNaW1jwTSxOUKSZKqSOC23EdEvP7fDLNnfL4i5lGSs53MwNPk1AjkNHsL2JKgDa8ekKIrOkZLn9vBicITUJX-209qtJYv3_ejsLlgOiJ6Q5MDrstZNr4xlFIJrf8cercH_wARmddBa9POoQS42jMiOkTgMfRItJLQ7LjKTyzQERoiABwt5UB8yOwx82eILajqaBxO3WBkRmSO7QFyURGIeunZ6nd9HpM9oIF6qmWv9jlLS5LT9JoKvxcUT9LBnxj9UYzHo6s5kvxwxLAITsL34HOy2r2hH5-ds-BX_9VWZ2lPykmNPRh2zzcrWiqCNCbCs-PcJhkC2vHIHOmUoBniIUX_A3os77ykZZKSfRbIpyFF49nymz8krTpMn5GOO0PxJqSp1D32s8Ok7Dm14m6gMHTCzgoiRcrNENXj_x96i96hObBSheKrrsuBKx00CVou8viEb8_6Vwclnu1HveexpXkeb4ZWwRGkCzlsP1FG4kpxm37QHnspRH3TWyVUH26Tak7MovDwYowN8hWDYYcFuwt20mjgyF4Ur9HSc-PyuiDk1001Zdq_qTyOt6D1uZG6tcD8y8E5S2facGyl2Eq7Rpo32be_dOAOYmiOmmmLwBpYB-DGkyHShZVDV7HirtOOEEIJhmfVNZvquZVZ9mHHlRKeUmF3xxFQyiD2xaYMbE7KlbITb5HEFangLNQf2m7g8GS0GFVfTR4L7Fxy0R0Aq2-BfxeK1G58TPLOrWJCBfAoxJmuB2N9ImliUVZSNclxI2G7eKCreNhRex6kJlEavuCuvpebAZJuUJJc5RN-ITF7XfCfCD7sBAkuuXyhYN6zwmr6Jn1cy3ds7gv8vlnqs9ZLrlHYYYZ1MCThycH6xymWYoS1x0iNBuX2iZ5OKcjgv0NQwre2_OWNns4nKhjmcNgobJUyb6FdF39Y_x_3mhmMg_fXbwB8P7DcAe2CQMa1WcRE3LhkmQn67WStBTeAdJpq6Lqx4SdpT0LVl4Yf8Ni2TgDdVcwxAMwFXR17KsjcTZIiQ_PjJ8LlnGFaItw_lPceUATffNSdDiojBBn0I-YxoVtn8d6GOr2BTvdKUTfx5-sJZhTihPDjqsfh35TOd5Rz_NT5MvpzQUy_OsfHEugtUqay29kIu6OtYrSrv2bYIWiQBsq0czH6m9SchuAZ8Kc3h8gjT1aM9iReMEPZqPfU6tXVIUgmDw3EuxOuPvSuMJYQG8k9ZHx06JCKIU500tgYCjovYUxmRcy2ujDUMbG_YAXDyai5QYTd5p5YksGiwI6ue_dC5n-vMSFf_5j3cyS7NMOZ7W7FMS8uuXYgHBedWRGsOP5ID7qoZ_fwrBMkwoKJVe4M9EMDOpXVON1fsiAUd11g3X0O7w9SwZKnKJUBax0H2xEYaiLg1XhBk4MScddy7gxiMMeKJY343cwJsPs97-EQscqYjJTnfBAr2WJSVtJXOhYsnUapF3k0GBveCOjB6lEbq4RRRkNtVDgjh1O2LBUb0Zm62y0QStEvE11_pUxLgn6hYNkRUmU7BMyUqDu4KyKbC4lb9Z-B7N9rW9-aWS3RJ9q33RXl6jS6Jk3iJzGbl-t-aM5q-1B1OhxYrbHhPrfoW0reBkkDB3AvAJmz3-8fAtE0bhzc6WGH3b2cDDNPZJoOm-fzVngcWVrG_HLdFbCi6Yq8io3COvVUQD-XLH-pUmox_B3ieXf9BJW44oFIdJh1dDbMTNHMV3c34u89ggAmDprRs13gkEIO7SjtU0_9u3k8e9bzjQoy9lFF6C4tmnSCkE9WtXJe2BylX-cIPlV0QejlEecGnJ3GybDdn3-qz5GrUfe4Q-4rmL065v_YOYEkoK7HmHx7SeG85eEAXua8R6gEJeQC8PfFD1eFAqhcTsigtHiFYgkVsnLDzM4U4T8DzNLSjOUhQb0JZTwbimR9A5WxJV2sqG650TzJZUJhJwlqRsy-91hzwdVyzAI6pIlJKBQz3LuN9Lzn6a4wMQQjfGVPsYhHE2fz93WB6uEj4eyVJRd9h5-D-Ly8YC7tD8_obUafcCnePn5adqOoHx8GmC6XIma1lCpYrSA_0Ycsfev_a_PxtL46LEujHSJ5LZgOS9ZToU9ROFa62y6qya6zgPhGhBAeW74gCHbNnrAg3M4AFKAY3OCogWNLNME7fUEFByPdPbg4eRePVCdmpNrgQvyYhuRPjGmzjUCzCyFyLy2pbDuPjMuN9i030Bal7BkPmq4Z5YZHfXJHr6IIyn3jiHuzq0dyYEjQ8VhT5f03eewyWAHyfBMh9MCKPe6F27DNfiTjT6J19CtVg0LHCRLAHjonsrZxqB5yuvkaRJhbbSvk7kS8KCjZYyJpVBzmX-IVCltBcy-hFvsq3AkwH58tnmd-TV_qHEpJLagliWLbt70y7lgJOedfwrvm4_JiROlGVEKori15LVoijm9acmw89o26PobGIvfjspske5CvP51oswMpGNKtY5bpuZh8n8AoiFh8QBjlQP-8Jpm3O0NumokMp2SqeZ6qV_nic86XDmeaEeIwhVx6qMeY5O9PKUdo59_UqJD7-snDnuEmGkPNfJgH9xJKfjocHBcSMpkYgoiceGFkMtQcgfQttVfJUdMQgTuEnt9ZPvWHcHgBwsqykQtxcEk4kRiL0FS00f3ucLA2b7G3KK3iajwXDJJH-JxeblR6cI9qkyPkAHWWSYiN5BqAcyEN1xASDE_2Zxi_HsZ3vs9TXmE1pCR-ohytvVlRaSCj4Y-mnlFmz0o3BkW7WMvNObplv8vJ9fdPl4onCaRhb0m8fDo2J4LEiLq4c1pU7zuTk2Glv9iWo9dasb_gNeUiK3Wvp6mszoJ2HCHzOhOWK2Bp7ruH0Iiyjg6Rb5FEE4ahpJHpwKumwuewwT6RdmcsQbyFvD3CVQhv2NeSR3ITVUojjNj7ozGZzPZPseRJRaBNwmsYVnBH21r1F53VCH4QsIzjruPIGcOj0U905QosbFDTQG2x60iMIz-kcqcY2yK9iZXAZYD88ZjxiSIR5y8-g83klGMvOuzK4ENKAaysnJuyqdl3ZUnZeiqmcVSvjSXUkCTVd2lwOjgtOwcIx7qObfEq2KpvakcO5--g9MXlEFEXeTCY7_8EPCywOfk5s7qoFHqGjAsnhc5W5-wv1fE5_cyhn6BmG--jSJas06aN7wdgFNcM97cezZOVqPaLCj3rzn55i7mvoAfIg-g28zYm952uNUMKCc3WjFdzdT7omYtJXusEDMv-HDdiWFRh_Vcz8j3552Lfn6MjZugh6XVG-TGnQX4WHNGUvOaUIL9Q28xg4O33Vlf6Hjn43iroyoHNBDFtt4Gtlfc0RXdmapcgasc4dRBy2wWMPUXXF4EEfCxsCYGLEZTisYnelogYmEjxEFPhMK3Kwu-jhCHJRXf6kJEo6Li2JYeetbXkphDUn1nbs8wa0bteQ56EpX8jEulDYOibG5lEPmoWozvaExH3QwcYnNgRYo9602IJepAN9fo4UAOcYvGnO1QbvYBHeHzMrazv2uXsKK6Fz1oxmypPg4E2lo1fg625Ww--_MEp2K0xtTRIFfxBVgyhpQyRZUjrNh5hoPN6hj1BmXQIeLeGkLXOyta7os1WKCSDbSpHZIpUXqBFZsQd8yIRKmGL4fYXEojg6UrIM2ibzZgMwjAiaVjO9ar3eDPeNamL3VxYLY0xuhiNT3bk5Sj05ImXAJS8RuPCnNq89vecABZsxdWUNt8_6pTlthgcY3N5r-2XMPWnCZYb105k3zTwPtn_iHqkWVnpL6xFnoHlCyj50BW2SxCCrhjDPxnHnVSBYYswAGJXYCNM0bq1B5g5AD8xw9UIq7JDufBxtBfZSNQYWqIf8lmAPpDkf3BSF_55btqSnpVeu78Hx_yA1Upm8xwisHkw5Y2gsRrKOiHNA4O7VBl3pafVpCx3u6LjYPFL0K0H0tUy1hYY0_bSAhCRrFTktQbr4uERgNzrMgzPW0Np-HguSQph6q9inUvt8P7VT7z4XVtVeI4eAi1IPL28QB6f3oQ6HRFeE5q3Hi6tykEFvgpsmAF5j8lcp7q_gx5UiARLdAmk_za6xbOaFTU1BoTyOIRlFQxRDT4nnCKcWuy6n2VE0gpXJw==
+# 字体
+
+## 规则
+
+- **只用 Windows 自带的字体**，即下面“可用字体”中的字体。演示文稿里不带字体文件，换到没有该字体的电脑上，文字会被换成别的字体，西文甚至显示成乱码。用户指定的字体可以用，交付时提醒：放映的电脑上也要装这个字体。
+- **名称完全一致**：大小写、空格与下表相同，中文字体写中文名。本机没装的字体，view 开头的字体行列为“未安装”。
+- **中西文分开设**：`set_font(…, latin=西文字体, east_asia=中文字体)`，主题字体 `set_theme(…, heading=(西文, 中文))`。只设一种时，另一种文字落到默认字体上。
+- **字重**：有单独名称的字重直接写名称，如 `latin="Segoe UI Semibold"`、`east_asia="微软雅黑 Light"`；其余只有常规和 `bold=True` 两档。
+- 宋体、黑体、仿宋、楷体没有粗体字形，`bold=True` 由软件把笔画描粗，字形发糊；要粗的标题用微软雅黑，或加大字号。
+- 设计系统和场景指南中写的字体都在下表中，照用。模板或原文件中本机没有的字体，在下表中选风格相近的换上。
+- 图标字体 Segoe MDL2 Assets、Segoe UI Symbol 的用法见 graphics.md 的“图标”。
+- 不要用 Bahnschrift、Sitka、Segoe UI Variable：它们的字重和字宽在 WPS 中显示不对（字距被拉开、粗细不符）；Segoe UI Variable 在 Windows 10 上也没有。
+
+## 可用字体
+
+中文：
+
+| 字体名 | 风格 | 字重 | 适合 |
+|---|---|---|---|
+| 微软雅黑 | 黑体，字面大、清楚 | 微软雅黑 Light、常规、粗 | 默认的标题和正文 |
+| 等线 | 黑体，笔画细、字面略小 | 等线 Light、常规、粗 | 清淡、现代的版面 |
+| 黑体 | 黑体，笔画粗重 | 常规 | 公文、醒目的标题 |
+| 宋体 | 宋体 | 常规 | 人文、学术类的正文和引文 |
+| 仿宋 | 仿宋 | 常规 | 公文正文、引文、注释 |
+| 楷体 | 楷书 | 常规 | 引言、题记、有书卷气的标题 |
+
+西文：
+
+| 字体名 | 风格 | 字重 | 适合 |
+|---|---|---|---|
+| Segoe UI | 无衬线，现代、中性 | Segoe UI Light、Segoe UI Semilight、常规、Segoe UI Semibold、粗、Segoe UI Black | 默认的标题、正文和数字 |
+| Arial | 无衬线，中性 | 常规、粗；特粗用 Arial Black | 正文、数据 |
+| Calibri | 无衬线，人文、圆润 | Calibri Light、常规、粗 | 正文 |
+| Tahoma、Verdana | 无衬线，为屏幕上的小字设计；Verdana 字宽大 | 常规、粗 | 小字号的标注、表格 |
+| Franklin Gothic Medium | 无衬线，粗壮 | 常规 | 新闻式标题 |
+| Impact | 窄体特粗 | 常规 | 海报式大标题、大数字 |
+| Georgia | 衬线，稳重 | 常规、粗 | 衬线标题、正文 |
+| Palatino Linotype | 古典衬线 | 常规、粗 | 人文、典雅的标题和正文 |
+| Constantia | 衬线，清秀 | 常规、粗 | 衬线标题 |
+| Cambria | 衬线，屏幕上清楚 | 常规、粗 | 衬线正文、数据 |
+| Times New Roman | 衬线 | 常规、粗 | 学术文献、公式旁的文字 |
+| Trebuchet MS | 人文无衬线，略带个性 | 常规、粗 | 标题、编号、标签 |
+| Corbel、Candara | 人文无衬线 | Corbel Light、常规、粗 | 柔和的正文 |
+| Consolas | 等宽 | 常规、粗 | 代码、编号、仿打字机的标注 |
+
+Georgia、Constantia、Corbel、Candara 的数字高低不齐（旧式数字），适合正文，不适合大数字和表格数据；数据用 Segoe UI、Arial、Calibri、Cambria 或 Palatino Linotype。

@@ -1,2 +1,21 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQC14eV__orQiclCl8hAJoslQkfGrD_n54KdUaZYCtRS6HmeMUpkiunk2Qdgegk9GW9xsXkWrM9pTv-bdeePrXRA2FICnl4R6xevQjjpGyF8cAEE6tWqLcciXlnsQ4_5ZjxhEjQiQDls_wMoPQCdFaXLmsbGB_eVXjht8anmCA_1QTiNnouau4TRn2A42YmNZ02If3f_i-8vxY8qRT6fTop0MeAFEiUp2K93sYbY0RgSYbwAklsj6XuQ_xn9T5PFe_b74B8YrwKNHuF83VW_g9FrWHE7kJVcuJ6FMGZsQNNLn42lSRAI-Rn16R8AXoaqfUA1Vk7_VekFWRvkqZpc1qjo2VTgWwKP4GxherJgV61ozfPBHSZHSACXt-AJiC2fj1OxNHMHaR6RZfzo7PvF0Uxu_Se3MFm_-RU4NVYoag7JmnPFBUVSXA2uw8tVEyVZ77C3LgiD2YPekH_siusZBGQP5yQ2eL4PxSeKp61S1A2V47NDxiW4dXFwvIHOvE5sXGhLZG7xERh0P5Hv-f6gFSthqu-aSqaLSsGQ9rLo5renJzYWHI-6QNMk3Gy40xzELKb8fqf6HKbbCcY_wi0ZxG53tUVK_uUXTmair9EA6RQaIEoMpWgc78UbgWxjPcE11X4jeWYvOUqicuUKBbal6HPKx-rIFawUUjjDoLGrQD1N8phi9nduiaNiEuoG-M7W9DJKC2I2ANCfeo6QISC23jD55vnlcCAjJFPhlptoqPafjPzirjJg6a_bf2lK7VZ5B-inMDzmM_QMWAqdcEv6riHrvZ2pm-zh1h1stxbb1CiQQg_YVU8s1UTEUdW5p2Ot9BxR3Nz8IMJgJyHNAXX0Tf_YJn_Re49sdvWF7kI7rKtZdxBbD9nS713XY_no2TesPt6ZhECsm8JGEqT5ZSmhpSgw==
+# AutoCorrectBigCoordinate
+
+**说明**：将建筑模型整体移动到坐标原点附近，即所有标准层逐层移动，最后进行楼层组装。用于导入的外部模型坐标偏离原点太远的情况，仅适用于建筑模型。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idBuild` | string | 是 | 建筑 ID |
+
+**调用示例**：
+
+```json
+{"idBuild":"109"}
+```
+
+# AutoCorrectBigCoordinateByGIS
+
+**说明**：将区域模型整体移动到坐标原点附近。用于解决区域模型坐标偏离原点太远的问题，仅适用于区域模型。
+
+**参数**：无。

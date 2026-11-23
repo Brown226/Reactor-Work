@@ -1,2 +1,61 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQV-17TE5FLeqlJHHY6EsHytf6ZDE-UCT-ENy1lQPUpNoUnDsZH5sd4bTYpAQ7rD0T1LUcQbQjKSNduG5HSxj5UB4mKavlgj2_xZ73bdjxRj0pNGjbfQXbSVtKwoxBXkzpC6Gdc0PrtDN47CLAV6BBIRKdDptgnbypRcgNNIVAvkkaYkMfscg2YmnQW5I7GTKFE4_Z2eGm5whYqJRvTNgpZArkccCHBO5pZAaR_GGPNm9F_b8Xy-vzZXk_PNZJ8G3LtxryK8N3gk04mr8cRxJ4Md3vYuiGwYBrDUyDpqOIW_KEFgKDfTwdv2eJiNQstXyEohfhBsNTLlEv0Qa7HJvA-OuVDEvYHxdcUVEYJ1b701B06n8DkRQtf7rVobK03tI5WOXnk_TGopzayUjicbpEFznPWctRfNlBoM9mtPu29fDtrzwjXQkkskQZy0_EEc9sM8LVUUzeFx8PWo1i1XHd9qz5XPYl9YC7XfhJgPnAca54M2fiRK5SUs8_aj7deXWtGOX_AavOf2hyzuamIYPQAWE3dKDBLWpktgsfQ2k8QpehQrIINBIMk2B1KVPXRy5t41VUt6xEFYyfiFtW7N5SLDHSiUrzAkEbhg9y50cgE61-2GDv-ZWEUH-7E5r1aNSH0zKaX1taRtXGEFtORfwaSPTiVpiYXi3OCpTuISlvKXh4huiJA8nTKFXEPCr9XmdzQtoHAAWdnBWdXXpGWfNcd7vbhmcr5O7MfMJTvtMHDscgQs7Nga5anSUl5fG3_eBS5X92XxpnMh1NLs9Z0B3BmUdHhKuAcIJhTAD4nbh9O2AABpFSm_0e7FEiFw6ggJFa4iK61olzxOrTJzbkLOn1aYe5a3GgmOEgNbZiIBcTvSypdcBwwuvxx361SzPcSDn0pkuInXKtgcZCAk3V4NGhzkJQVE65V7H2Nj7OM7YcIjD7vwySmQeZjKffPH0LUezQmTZgMVwB2wVHujehjZOwzL_oO3QVc-6rE6SKLPCyVXHPEyrDBdVjr0qoVXgbR3hJxZ75OmW8s_QiEB0H5_W7zUMZbd2IL04VK7w1KVdTDqIjh7Bpf53_F6d_llE5frWVaCSV4J52ApwnXXasfEvBxWDEKVI6Onie9mG0MZ7MLBXMXAC3ta7EUZJiXOQCc4HSw9Te2JuMTz5lzqlHFMWcYZzJKKCDssPRwouNjb6d3HAvElyR2Nu15I490pw871tRL_6izhVTZbirPMfwEwDiEz9YQRluDgRraX2OIka2FGhqzSCS8wJe8YNFhfmYO93aJFfViPiXQzX1aGtnBxCrp8tQokF0dIhK-W1920sr-qJPP4gwf1ee3emNR9kXyAbgi0A49BfiGVz8VVmZfbRGIGDf6yvytHmuQkIOW45jGOOoqV1NYLMGCKamKFPWtF3u08rpmw3vfCtihj46-zsjiFlS3eRD6SGbegX55W6AAIP3Af4JRV_sywCZxl-kW6G6OAWSGftrJqy6CrNbWhDEZ3GSehK1rAcCTF0ilQrznuKGRT60K3olxr5Ic27L7ekwbskkg_4dUworbPaMn9XmQ3O-uIYLr2_qrMNSexm5ZBodc7Hu1PiSMQAJkfGtxn2wRziJ41z8LiPQx4hVwcGewEg5rZDQwjBqLbLWcqV48Ui1i97XHOhPLyvwZtXL52UgqhS6Blti3C0OjEFOYRShzrJqLw5j5F3SYPU4l0jLOJsj8eC-BrjptlaskEUc68W46Uys6jusO_XnKFfd_PMDoSErwsS3oq_1y38ihvny74_wkGsvvJlbt4WUavM-bfjnN71unuN4mDvBXD8uCtXYYJoGRGm1_PGdlgkgp6n27oWvk9wIHoaJjK8X95EZJO2VENAlwS74v9rUTYR8O4FP0A==
+# GetReportPath
+
+获取报告书文件路径，并检查报告书文件是否存在。该工具不生成报告书，仅查询已生成的报告书文件。
+
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+  "command": "CFDGetReportPath",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+报告书存在时：
+```json
+{
+  "code": 1000,
+  "msg": "报告书存在",
+  "result": {
+    "reportPath": "D:\\bdlsFileName-节能及绿建报告书汇总\\室外风环境模拟分析报告_projectName.doc",
+    "exist": true
+  }
+}
+```
+
+报告书不存在时：
+```json
+{
+  "code": 1000,
+  "msg": "报告书不存在",
+  "result": {
+    "reportPath": "D:\\bdlsFileName-节能及绿建报告书汇总\\室外风环境模拟分析报告_projectName.doc",
+    "exist": false
+  }
+}
+```
+
+## 返回字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `reportPath` | string | 报告书文件的完整路径（即使文件不存在也会返回预期路径） |
+| `exist` | boolean | 报告书文件是否真实存在于磁盘上 |
+
+## 典型使用场景
+
+1. 先用 `CFDCreateReport` 生成报告书；
+2. 再用 `GetReportPath` 获取报告书路径；
+3. 根据返回的 `reportPath` 打开或分享报告书文件。
+
+## 错误情况
+
+| 错误码 | msg 说明 |
+|--------|----------|
+| 1003 | 获取报告书路径异常: \<具体异常信息\> |

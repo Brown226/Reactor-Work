@@ -1,2 +1,25 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQ3Eui7983LvrALtNBVsen5_0UUqt8TCAY6VFz0BcZT3xkLA7QOkF821vLGJDntCDds2iwMusa6KqB-spDQqrk8Z8TT4pXKya9UT2fnt2H5gEM3keOipgYhJ87JnZ30YbSEN4wVVtBmVKU74X29o6IHREDGUf1CwX5scy8nRSbfjsME9zlziNihn9giGDQy9b4bDSctd9Jn52rb_JY9JpSohU7JKhRbE4YHzNSiMsHcweo4cOWX1VDHMJq65PSdFwxn9cQF-v9mXS9819_NN_M59qT9i20qWO11UJ9wMVIRPC8xU7wGMszAlN8Z4-TCuD4UE7X4zWBj7_hPagQTFd5CPkOf01MpqzS89uDiMrt-jGV_gN-SaHjUzxETcFQ_eF4-P2Nn2TZpMou1rTQCKyMwyU1ahuiM10vf4qA2K1dBr8bboOYF0PXRKnDWgydiHyCQ-SWbdlAEReaTpSY74v85vviL4d5g4R2f5p5fVoEB0VwxkYGSR5uQYirbUCg8hHZ-RZwWUb1A3yIC4TJyZ_ooCluCZ88U93OC5v_Fa3rFQxQiNFCBFJNtWYfFmquRlwkt0yXxYnTKkSquc-0_4-Bu1fyqrPNqtAFui1tPb7x21P2zIxVPmSY9dSDy5p4f80o-99sPUo_e9A69viZqIpN_y9Gz4AD25qJAI8cxKaUklMaHIhHjZHZZQniZzrpIgueWeLaLDxcN5IZ2BmBOMxGOjH9ZeSYBhOmNcuZo21q9Sj-kxCv5C09xvXHzihQdki7TANNTs-bX1dE0EERVQhKaA==
+# SetRoad
+
+**说明**：修改道路属性，支持批量操作。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idRoads` | string[] | 是 | 道路 ID 数组 |
+| `leftWidth` | float | 否 | 道路左宽 |
+| `rightWidth` | float | 否 | 道路右宽 |
+
+除 `idRoads` 以外，其余均为可选的修改属性。
+
+**调用示例**：
+
+```json
+{"idRoads":["109","110"],"leftWidth":1000,"rightWidth":2000}
+```
+
+# GetRoads
+
+**说明**：查询当前工程下所有道路建筑属性。
+
+**参数**：无。

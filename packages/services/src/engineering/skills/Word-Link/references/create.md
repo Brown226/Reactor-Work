@@ -1,2 +1,100 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbVlAE-9W9on0KQmVVhBHjKh-rgQUhXOWWznuFd25UNDcdr6SRwHB7qfmqJ3kU6mhYImb0mfW9UUjYojnQy-ZbMGD0ORzrJY-ORCoN1z1QZQTTTOcTAsi1dWf9FmAa5IJrp5m-BWGKcedu5jx78moGBwXLX1VG-knqXs9jNB03b3HD3v3BPhueBSHo2sYvyV2lpr_QMayEIVFmuLKVBI0tS3B8WILgK1x9gqSEDFKN2IbjHIadIlECY4ocZDLCXhlMIOjxZg_VfX8zNjCAyQgwIzZXKmVQkycvM4-cmxq3h2JdsxJJcIpyGoKYPsX4ZiwkpIM_MWjB6nqn-Wb7j6ndNTqBLSYoDMzVWQpqZQydzTzwj6QmPWsIV_fn8gSajA9xHRBe2VWv4P8_V3QS_dlevTB0tqkaPfhdBlpaVI22HSvQayiFpvrtVjCSZcS8-XcXoD8f25ngsvRqpc0CEPzLG23rLru5zHJ6UkzfhsuITKUnjDp9wSQlyMPfklrp9hy7aaTlWVj7jlBppS0C44D_R78crIG60iFKizL6Az7EbScGH0tffsisNXlilFLZ4PfSt03ztASEeDtbDQnJmS9Noah8g_fZWg0Idxp2FK54CToN2RFAgpNo_AP2KUzz3g48S5BXLqM42SYIFebz9krRp9b6z_N040QGZvMqf8pjFlmcBoovEBJV3bkEfa8c7MK34o2b8ykUa4oWuu5xHOlkPB6SKQONkwQbou4SteeCJ8fckh02BjO1m1q55J-FVG4DxLmVa_M6hSGivOtf1eQ3V1lm6idOBConAv1kx9ZYxC6FLUpj3QW-c8wGXXam-t_aSQFCzq3Uor4_QHLBALkthyVZKJSLfuNZK2eE1BZ7gPbuHzEtPW-2PSBB-8jSNQpOkXUpZuvaPPZx-rcKVxZHTIRlsyV2LUnYJsNp-MqEZbua7UOJFxPeZdS4xmmgextlT6TNQmxMnqKijLoxsq0FYRaXZLDHYcw8lW6pvcxsW8Y6mksTkOzHNe4ulWtXK9-g_Qe9aESKhKavtRfAWOXtyhgn5yRd19wX8gufdsLx1HppuG4YYGhwxikUNMtYNvhnh_XXlXnWB0bOLfzlpKTTYJjVe5_scXmS4xqnHAb0UleIV1yyN9Zol8m-lvdMWGH2DWfw5b3jVrJOunhUEqVCD321b39P-CkOF-8BRJrFTUXeVxiJWHBttIYKAWjSslvMq5Bkj8zgb7ELpURtoBfFmzYkTeZULGTe9OnhPfDHhLv3dXx-hJ0Q1XaQFCiwFVAlIFdp1i7lE8CQtwzc83AGILAPABRf9e4ej0l07or7MyPtewORTgHF6sXUl0TxNGqSs8P6ICMpKPNPzy6Dvw48YXwXm-BxCQ68r5SXlzCLhQ4PVHmJlBRqOJeupLae7a75OU2lCNgykc3kwFJgXZS-MCesaNjMSQR6zM8bvW-sYe8Io2LjiFDY_DqfJ2OZt3hnGgZnbhCL0Qzqd7vcL9oRUtMM8267ORLcaxYISgYwrwV-65VunXjoGK_HdZBbHjoUkxSt-L3myBs62yMhP0PAarczH87bsT0CHxcipDicjpFrqBosyTDp3ESKLLBng0tMNN7q8BaBY4XSg85gU0JMIVb8eW2F5r97glOQzpgAB7Bdl91cXInrqJ6m-IlsSf7drmLibH8eM7GL0p8z8dKlGDjJs88omyyvqrZyLZvAeim6PJ4WNa9h7lwRQC6qd5zM6KHgmIaA4d9FUyANFxohONJbnhVZmiGmzDvoMGoxKE4smI9s49tdCHemGnTguZUb8s4Zd_h_2l9doLafSTmQJ0xi0AagiBgyJunw4szWOPWikyp--07w4i4PbIXf2U9R0nyi3_r_9xUyT0p8LAJb1CRwMK0sT1jaKTxShTZco_D3eCk36Jw9HeBWQOjKYrzUTjdclr8fikO9d60gkRcwTyMt4AlLFhSCKsXzD9SjyS0FL79OcDMydUxyc_njEm1cvyodsYAvc68LOjgYcnPatVeuKizW-YpP5xCavBBOsbVt9a0sJpM9gML5aXCQL9F_9um6z1f4mBaCHs15K2D-qyoLYl6z_-YwmJ2mSf07DTGlCLmG17Dt4o-9nVIRRLPSyWzDE-xuUXq-vfZ6rR9McEPMpjPe0yk24CRct56McWH9qFb9cgDJ8UjGD85QO7mGRsiePgCCNeBa9OpgYyLir4W82sdTG8K8kSdiEKFPdPDAtou_DrKCSkyA_W9uXl2CaNh5aPdVDAmNnM5abvqRbhof3uKqBM_211YuNiR8L_lMKXKlu5g9RgTw-HkVrhnltfdkCx3JA6OYrrKxoQzKj65jUyAv3IwUTfwt7OwK7wq6vG-ShY9pdXxag9QHdTKuHAdWMLgoErVPvhRAyOAoAm8A1Igj6eMT92tKeWD6sam3zr64WAvcFlssVkFO7dE849lNcFcwOP99Vmks1K5eqYNeHfePYhnKb1th6K5t1v6zhPcnn2KnP1DGt6u0KTzJgynTLBU4LqOm5dewXzp9Vw4zvRFDiGn4_m63F4LYV_cm0N1Ury8iPbX5lPqbSbwTMd2tOL-eE1QKbtUziTfiBVvgD4VcYexnpAy2parfeziWZbNJsGBrh0SnhMhEeyIi0x79TV7xe3w0ShI97prxhLdWje6sU4MyFFM8BahIBc6Xh7L6L1r-MYsiy-CS7Ssnw0zLPNRofmGIsRfBvYS7I1oBPoBS5ngpl69rC60_9I9wmTfCr-yLLUfsw9RN8KOiO1PAnjkEEwQZqAIxbobjJ3swzaRx_yrvPyJKr9RAhRsvVGLvi0vka4NHDh1ovzdvqDDAPBwRmlfQEU3iE3nRWiFS6Nzpaz5dTkp6x9SjV8iBXqDKzDUDAzJJ89PkKX_ZWHYZ_k31kmLG5hp4zPCVUWnTWOCby93nlC9Dpg_9GBKq4TTPhSrSCbqQuGjf3KMOiaI7XpaFUqVChsaHghEsKK3OsT7244y-8QPisd_vraglrhXwYP2TEncde-k1848GrRwzvP6gdMoSPsXpRxocykoUtAHworWln4o7cwm8EYaRd9dlIqmtd5G6djgXaWAUP9Caj1SmKfCVQ52GMbazSQO1Y1I_xm78D-z686c33BISm-buY3smLAv5s3dYJ0jP-a9lxpxJvz8fBllO1P9qWL9NxgFhKGA7up2oInuSDRWHsuFQ7WiUcPyXafk71figC-2nYGpZum5pqzSFPxrXlX2MRJjYyBiUdMreN9YjHiAxN0XDtaorLl8xVE99ybAYxbBM2ZQ9h64Tsy6lHQxedWPvQn3KZQrwzYPeP9gAPlRlKOjMp2BQUcc-xWFs-2nsWyn72xEYcEVfINX20IlcJdOONsnMgyWDRC-0sJ4ljHud7fLgUJBZ_WwVJSirnrTnKS3XDeRZQrotZ--QB8QoSPWTYl61XBqVKsPWGtVK7EKg6Q46CmXTRpgcXwwTDbt0kCVWhFCm0Walfsq1pNm8WdF4j15xeW5NFWKG9h47LpSR3EFRwkrM3b83LCBT_lXowlimEJHIl-u1IXaT4IO5-CAwNZ3-EKF6YOZO1gbohW8uiUfRy1l0rMRCpBKqY2Gy49c7ZRjVsnVtrNur-w7SlDGqCf47EJg79V06_upZXvzVC0Oh8sadgh9LFvmW10uwu3AcNFacENIhNBI6WG7jjh6XrXUIMofFrpf_HvebBBSlE5zsQLxQGKaOU7dpdgfgARCVgaCUy08i5_aAZyNnXYTFS8kinxPW2so1OOfUvXowc5pkNQ51OFWjO37zqsD5kT5hAyUs6aNj3_ty6jVSUHjfZw0O3n6HGs9P0dArxlT39zqFy3KzSMfiHlNy8V2Cxy-19oSvj9pVF0YnebgjtvTvXYhOv2ZI3FDQFObDkDXQfrMEvmS0_a6SVgBF1PVTGR9uPyVR_iSiaUDjR2PyJnvyYB1-xQNqvRnO7ziQT9omUdikQnf99KpP6cCyvS3wlaG14nRM0HbTgQtDMarSGBuB5OMWIa65z01RvPeQqzA3feMgk79geSnWx8I_5ogAlylXul3Scdl-b3H6AxJpWQlY5fNI5mMBSGsBHYNRSiiPIsKK3I_qhSjy5QN1xA97xA61NeOHmZSvGneUglq8eXd5SJmTL7_FNWpr8kCP9_XBxVaikcUjw_ngQ4U3RNPndKedhDfQGyldsDSXbejb-ukKCJMlXYRmr-yt-GlhxsGS1eznV5NG97lzQHgguSwy0RyjESpqSw6W9QJGp0cSUEaECWdOWk4-M8SNUUy-ytVustPqvB9egZHGNx7Z_cw637KNW6eatdIJxhBjY055tjQjPrnBfd775g5ltGRaPls8udYdYuXKmezik330FCpS7pD1avOhNp78PF8Qkf_pkoqKOx8UUPHIvZJyZC7WkdU5IbZw7kQa-B8tCGorZfWoxKh2i1fqiInsxoVMseJZIje2kFcbCIo0ilXhP0Bs_FaEUHwbwNE5Ouj6z4j0VPf2R2IWpP4Y1wf_RLfMJlojCOZTuP_ggZcg98hSJllklwmvf2CmZ1rC7CDXXDz3F2aaoC0K6att3quB91-0vCBwvt8gftwIJYeQzI0msDEmfBAaScq0HBjGcvdabeRdWTo355QzIV4aJXYBAyNL_p3WDTbALdWpf53tXIttICrmEHfxknJ754zY7LTwklIQc2V-UBIcMqmjt6zeu0WOJ_0a0AZ7ZfJd63iFAu7lICpEHe7dUWoKFaHnhCXRHvIFPGPHKvur7E_PBE6vaMF7q6GFLFOgeKxfFdXw2Kz_rdXY-rZBQRNK3sZAiKkYSgePS26CU3IVKvwAtLqMglIJs_LlmVomHP2-iqKj-5WGtBth9kd26V1H_ICIKpnIzYurXSDYVtw1rWXN6MVR4YI0B7g8t6UZk2Up4UPBhPXXZWVHXf2uU5kYbcPJCZiGayxoFiWPIUn944Ct1baRd1299EYOpniMJLeopLzLDz7ChiqwegLi-1HWqQsXbr1jSxNRHkxJjvjJVsejGRxdbhBivIZ12LOSImIIltv2hMOFmBLj44coMK0xB_qkCzwImY9VBS3Im6waMpF84DD5SL610E0tiWa6Pp4KWmBmuI75SNoWSARx-aBWBZx8edCfFg-IDgFkaf6Dts3Yw7twrAkYyzu6ixn8Tw8G_mf7jjt8ssK0Ao5vsmmcv3-n7HIvIlHzYrlrw8y7Xx2_c0BNaapS5iYQHR-dYASSN5oiAirMyg1NkkBBNiYyibHO4wsf0N41y5Qzno4kiu1Zs2uuFWWVOVIKybTuO46XtlPdnck2MyU2FXa7V4akvNQB1el2qfPl7NjpZnkErg9Z5C8S_aLj5G6mib91cvsy8Usx9pOPyhrbwAWWjbIjQ1sygLSLYBdz7P6wMlbtEh88YKWwdFR6Wo_heoJxXym3rlBFw4DHvAY1YAwEs6tuW3WVFeXYh6Vgn1HcIkk1vIKmBV1wWl1adgGoFAhAwnq6wHOF0_WbL2A_riDMD8WpeBP53UhRiS5FrA8dtFWaR5j4rTs1zlTTk-QF__Uq3KBZDK04a5yQLI-QDI-_hhHoaJc_9MbwCjEOf3ybrVenSxFXDxzytqjRSFNGNZbxrUZlbKHb8sgo1xn8UwgUbu2bdrMHP6JEE6O62Bd72_3g4id7Q2cANNjU793lDWBzV1-_WThfKDv7GmXMwNiaiQwInxu5ssiC3LbKQI14TXgXiziAPOiGDlz8HUiqdKga2MQOIewC7XAXkoImTqyCXuwNmzmaOMFMZqIoqWlRec6kIqyyV1qsaFfmBAmi70mrynd6HUgmoHnkOkRLSbLfbUYBfggwret66sCdu8AYNnL-ZkgV56sLLu5s9pHS9HLCrf9kv7Bx6-H10iV7JhEzcnqBSw8ZZQ9uoGdBuYW8jPuk555_hm3BJXIPpdC69IT77gMhn5blASKsEaswwXf5tyih8p1Axk6Ujd9Mjj9zdNHr5CnvX0-5heMCy4achiU4eLgNJdzV3fzOTF65JNBxXidVOKAFwRsABfNhe-TIyYpS5--lh03wWFg-vbY1NUjRg07wc1x9rD2pWRLP7Kh_9IAj_Mkiz8qRi0ChGbTes_DChTvdo2WUsGt3jE7HaSKw2Q88UgaSlVjS6lubi-aNbGTzKiUEDfjqTPaiVt-NDxeP4WFElb9Jh82VhmlzjVBTdPmo1ePSTLHuYyNi8-PsfNefhAzjyRGwADbLHFxZQTXPQ9y7bYYJeXi41YFGyPE4Ag6GAzZ73_sEdp_9CIUxbqJ3Hdknl-3d8c789OOLVleFtrGdX_OuRBHpSLqoJwcTx1Kku30sa4vevULcq7a6HM-AIKVdNeIGnfOoGvi3ukzrWuaKbiJvGw_U_UUgUjUG6gIqf3VksNm9-uIDMA7bduZt7Aopelj_ByQJdGdRb08gAHcQe6_UPQdcYZFYEslVEMp_KD7-nRn-zkJr8MxdSZjbvFcyeh779YmMc3-YABch2kw-1SCktLEfH4kFtbv7Vt4cQOgZmjO4ILRaZ-965qth6a26UMIZj4ARxOtY55Zf6ShR5YRpDN8ZFX2_1VE3dMWFWZW-kr3fEqglQr2MO51MDNggfiV__AAiz3Ve7m3ADcYTV20qD-pYL3Q03FEsjjKDZNvMwdvKbud3TbLnSAm_hjP2VxvENtxfZEyBZtdzvR8eZKHkbBBDLKtx1t4u8Kp3-MQoxJ3EDRJufvyZv-i0nxTf03Pz3wTg_SyQndmvDDvlVdt4jK36a4qeR67WwldgVWCmKR3U_kYk4sA-uwFO-pCam2l6UyF81QJEnJM7oGWwDxjOnmhyV03DQaf6pcIbjGmigdBhrWa0cKPs4uojkKvir80oNWaTtNjZ86FxP1ZcUw6IdKTvoapijb7TognvLiNu4_J3BTrfCaorWEw_bRww-Miku53dZDccGxrpaAYkFPkgs7FHtUKr8B7kATjU6ncK1LMyAetPIBORFzI5e5jJE1ShP1WYgDV6w5OjbcpPG9RLDmcZ3ITnz8K9OFlYu4MPGop3_XAbRRHN_qDyaUe9CxL2wVCqSHx_lnby_MeEzo7C_wyUeWsmGt4aU3GM_M-MUvJJMRbbSBRdn9TFYpwQ3_QQvHWeggVVIgkjzM6JfiNWGfF96O-H8QL5TPjS7yW-7nvA09kxPnJkqAtdIgAeIl4mVXwFYNl-F
+# 新建文档
+
+## 文档结构
+
+正式文档（报告、计算书、说明书、方案）一般包含下列部分，按用户要求和内容取舍：
+
+| 部分 | 写法 |
+|---|---|
+| 封面 | 文档标题（Title 样式）、工程名称、编制单位、日期，居中；与目录同在不显示页码的第一节 |
+| 目录 | 章节较多时加，用 `insert_toc`，另起一页 |
+| 正文 | 章节标题用标题 1–3 样式（`heading_style`），目录据此生成；章节号如“2.1”写在标题文字中。正文段落用 `use_chinese_defaults` 返回的样式 |
+| 表格 | `insert_table`，0.5 磅细框线或三线表；表题在表上方，用 `add_caption` 自动编号 |
+| 图片 | 单独一段、居中；图题在图下方，用 `add_caption` |
+| 公式 | `add_equation`，需要编号时给 `number` |
+| 页眉页脚 | 页眉写文档名，页脚放页码，正文从第 1 页编起 |
+
+文字用黑色，强调用加粗；表头可加浅灰底纹。用户没有给出的信息（编制单位、日期、计算参数等）不要自己编：先问用户，或写成醒目的“【待补：编制单位】”，交付时逐项列出。
+
+## 写的顺序
+
+先设格式再写内容，写入的段落直接套用样式，不用事后逐段调整：
+
+1. `f = DocxFile.new(路径)`，`body = use_chinese_defaults(f)`：纸张改为 A4，设好常用中文格式，得到正文样式。
+2. 按阅读顺序把封面、目录、正文追加到文末：段落用 `f.doc.add_paragraph(文字, style=…)`，表格用 `insert_table(f, …)`，公式写进新加的空段。写到要分节的地方（如目录之后）就分节。
+3. 设页眉页脚和页码。
+4. `print(f.save())`，再按 SKILL.md 新建流程的第 5、6 步更新域、看页面、交付。
+
+## 常见错误
+
+| 错误 | 正确写法 |
+|---|---|
+| 不设纸张：python-docx 自带模板是 Letter 纸 | `use_chinese_defaults` 会改为 A4；不用它时设 `s.page_width, s.page_height = Mm(210), Mm(297)` |
+| 在文字中用 `\n` 分段 | `\n` 是段内换行，每段单独写一个段落 |
+| 手打“•”“1.”做列表 | 用 `set_list`，见 text.md |
+| 用空段、空格拉开间距或排位置 | 段间距用 `space_before`、`space_after`；另起一页用段前分页；同一行分开的几项用制表位（见示例中的签字栏） |
+| 用表格或一串下划线画横线 | 用段落框线：`get_or_add(p, "w:pPr/w:pBdr/w:bottom", val="single", sz=6, space=1, color="auto")` |
+| 标题用加粗放大的普通段落 | 用 `style=heading_style(f, 级别)`，否则进不了目录和导航窗格 |
+| 用 `f.doc.add_table` 新建表格 | 它建的表没有框线、列宽不固定，用 `insert_table` |
+| 目录、表图编号写成普通文字 | 用 `insert_toc`、`add_caption`，保存后更新域 |
+
+## 示例：结构计算书
+
+```python
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Cm, Pt
+
+from PKPMAgent.software_link_kit.office import *
+
+f = DocxFile.new(r"C:\work\1号楼结构计算书.docx")
+body = use_chinese_defaults(f)                          # 正文样式：宋体小四、1.5 倍行距、首行缩进 2 字
+doc = f.doc
+h1, h2 = heading_style(f, 1), heading_style(f, 2)
+
+# 封面
+title = doc.add_paragraph("1号楼结构计算书", style="Title")
+title.paragraph_format.space_before = Pt(200)           # 标题下移到页面中部
+for text in ["工程名称：某小区 1号楼", "编制单位：【待补：编制单位】", "2026 年 9 月"]:
+    doc.add_paragraph(text).alignment = WD_ALIGN_PARAGRAPH.CENTER
+sign = doc.add_paragraph("计算：\t校对：\t审核：")        # 同一行分开的几项用制表位对齐
+sign.paragraph_format.space_before = Pt(60)
+for pos in (Cm(6), Cm(12)):
+    sign.paragraph_format.tab_stops.add_tab_stop(pos)
+
+# 目录另起一页；目录后分节：封面和目录一节不显示页码，正文另起一节
+toc_title = doc.add_paragraph("目录")
+toc_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+toc_title.paragraph_format.page_break_before = True
+set_font(toc_title, east_asia="黑体", size=16)
+toc = insert_toc(toc_title, title=None)
+front, main = split_section(insert_paragraph(toc))      # 目录后的空段承载分节符
+
+# 正文
+doc.add_paragraph("1 工程概况", style=h1)
+doc.add_paragraph("本工程为地上 5 层钢筋混凝土框架结构，……", style=body)
+
+doc.add_paragraph("2 荷载", style=h1)
+doc.add_paragraph("2.1 楼面荷载", style=h2)
+doc.add_paragraph("楼面荷载标准值按下表取用。", style=body)
+t = insert_table(f, [
+    ["部位", "恒载（kN/m²）", "活载（kN/m²）"],
+    ["办公室", 5.0, 2.5],
+    ["走廊", 5.0, 3.5],
+])
+set_three_line(t, 1)
+add_caption(t, "表", "楼面荷载标准值")
+
+doc.add_paragraph("3 构件验算", style=h1)
+doc.add_paragraph("矩形截面梁正截面受弯承载力按下式计算：", style=body)
+add_equation(doc.add_paragraph(), r"M \le \alpha_1 f_{\mathrm{c}} b x \left(h_0 - \frac{x}{2}\right)", number="(3-1)")
+
+# 页眉页脚：正文节从第 1 页编页码，页眉写文档名
+get_or_add(main, "w:pgNumType", start=1)
+add_page_number(main.footer, "{PAGE}")
+main.header.is_linked_to_previous = False
+header = main.header.paragraphs[0]
+set_text(header, "1号楼结构计算书")
+header.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+print(f.save())
+```

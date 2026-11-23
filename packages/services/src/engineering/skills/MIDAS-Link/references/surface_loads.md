@@ -1,2 +1,78 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbR36FI_yitcBEincAbXW5QZPkULBwR-lA-NTRwQdNW03WZHnQn1wkXRh4Ux4t_uh-FJBisa9DkcqbpmyXtILDHt5Wj5fg3gKLBQkCtMGRCqJfzLZ-tT2pe_RcL7VE99iUlEGb9L4k3-aPkjAHSKx2zFELfJVpwV7usqcbmljSI-7SpTgYcIYxRbxVKFeICbwQ9-nUjSVokJOSfqYjsNaEg8GNVATmPTDOOYxz1J4bLiTAIhorW7eE_E0ZwSCBsS1VtPRT5L8DzJwGP3aFLEp0LHzUN5hdliXS6ira_orlwgJt2dVb1ixwfZZsbSWyJCTTTtBquiaLPwzRZnoDvuyquIE_8492XLNdfRf-kQPrDkvQJwfG7vR6Ld8y_acPFvT5xpmgfVZRh1z3i2jnicU4YUubowjwiHT-enq4v7fKzXOPy-bncBhJb-LvJJKlsX0fPvniWxgum-nL4YtEBDvJBvle4bsU1kvaMF2V6zbij9ca1cJgAh17B9Uzv9ARXUJ2sTWm0txuAZCZ5BpSB7V6U71JqNPY9-3RjCcBlohly-Lzxg64qiT2icJqRy-jltCqclEcLFO3XqVXNWX8LVppfteQF7_14iZcKdNPC-mIjFsKMZNLJ5-t9lmbBp5NfpgbG_s3UjB_rO0bxTs8gvLaV73V9_cacjpT8WvI6iO1Rkx-tt1HdRVkF9v5ocbYfcSkVRyhUo_UspXwN20j1qT5w8OG-FisMgvQRgPJAtIV_0P3o1HOXCbPI5lYdUYYAzJLCzuI4LBTqNdAriTJTpwNf9GHULF7v0RS67lhEcKiDKsHZiHIwGFzrIQx3HqTTS5ZMdQeEZ1RpzRVdZSWnTFFpJwmZRrFYlextXRhONrVapyC55UyBm8QBvy8xUulDPlIZLEGwhyvH88c12jEB3PO2VIyXG8CHwJt8z0vJgpzlwGKV78jXMF7-Zqvkh6gZ-bgTiVwOW27p1kUma7segX70k_DeQh9hQAV5ckPyy9sD-f4I4hHXfc9HJRTUvVWPP9v32WFznsSLd1B99Zbuup-MzFr61aPf5L3En8UxzRhXw3EIv4NdV2Oh1phCvx2HfQ0ymB8Ack9w5YYA2Nr30tdK6ckU6vQNM7_rSYt_BOiG-ERjbMCjaHJIiGa-ma2PFj_N_30D63vv0XRPgwdp85BuCM6XMy7aF0MpjxpCu0bdHZccg1FS3Iwc-hcxI4v9WPiqbTOW6BgUdKjhAS8DB9N-6OnkFOOiOgSFLbFZsRd4PmvLbk8jqsF2Lveq3Nd7RmROltnaQBi4C8ZPahBb5sh6FvlpWafdALv6TR3t5q_n1WfFRH6r58s1e_PPJdkQxGqr1WO2ogRPcu-PcDWmigA-j6o7na-Oc-_6gAYrGgSynKec4gZVvSea5jbadvXoqS6RDho4p2kUu2Fjqhlx8ZD81QZeCFCGcbL6If7dNmxR9Hgh79SoaHHFEIkD5ZZW84rJFU9_nPVHHSCgmZLXyT_JF5LEFxEH8d1F9FBLsrYEpHaAx6H-Yz5XzDiL9WtibgaIz9VEEgPfO14PTrmL1L1QkSpCEFSll2KuxWptHnO5DHxjVnsBBePThGseKelo6cJeWztLX75gnN-lTqw8qn55tXXhL89W_d0IpT5ummI8awE3LbcJkqBIb7oFQeLX7plAR51lzomncDw0yJg3qY47GvWZQIqKK8ktV4OrNvC-RULwd37trFarhYMFuPG8IlOjsLsSDeMLduyjb2bf9GauC03l8L8r2G50Bt3IthKCtzke80A44i2MF9t3pBAAQjALKG6n4YTJk0b_E4yLGVC-dMMUn333VpR-TK_ttMaKwsKoVPsnDxWexJfcMns_rKxhh1J_-GAPO5YjJRni3jgW-HyaFIvqBCQ39vExoRdqJYnyNjfYxrUkpLI_6pWD_0u5sAVYR7Scl8jbFlloxFJYZFY9NrliGgWMvpqWwdoZVVr9cPhGMS3_JTpOMk1R-j7oWgIcbiRJJRDlUAGEPBAZ8cATniFFOqToikyLqdzifm-ZQg_5C8STJrXDKtbU9DvKvC2-gPKbREGVjkvrmNNtF-zuqjlqF4eEpJ6WuptMVEhVHuJrDuAtpjLsL2CVRpqwE_CyhImGvAHq2lUX2oVH9AOF1ZSVUcKleW2GKhp4dWKoSEZ1PyPnjPzopimM0RPpcFSOulkg_Vb7msYXYtsHnld7I6eqZMpYT7tIgOyEzwjkETcT6mYuvIivF2CuBDTpwUbI4QZMdXoYZZ3E_AsPuyrQ4I3JbZcUDVPCyru2NgRKwkV-irKpLXTwnQp2W0Ef5RZbSUDP60CeG27kIknN3dZ-Q3eUmc8ll91AibDSIM6UaJuaSCXZZGXqGNAauO6EyLptTpj36EzdKeJs1WOZ5JzoK32H2INbbJ2d6IrtX_NkHLSST-cPzKft0L3mQIJpjeLEliEwMgJzEdZEmupQNa_rnWS6OPSVFb61YVfLsqmPLh_4FFG85oT7Q_-KKKsrTec2GHXgb50ZPd2ssYo2Ja2LE1tH1SvFrTLZyXDkSD8g7Sq4CL2PWgatUfB6PATyEwFYOnDEqdzB2XzlYOKHPxRnWxSBgHlgVzsUTDyGEqoy44vOKp5nv9Q3xPUlD6ZVNY2FEFEmmH2kgjYgWqWKeMrLKnJrhNdrZ01Y0efPZxWkDqgDeNqMQ5c_2-DESVhZEr_WZq28JG5GDmLS_lIyVQQlrFRwijmJmxaauY_o2Ei6buL5xDBI_Bv2aTxq2LLseMUNXCj-JAWDrSurc9I3XrTvSNnc1t_e80H3KzqgFgTrBF8C-eAMNBMi4SYdL8B6TWD-1ty6Im4le5DrJ87cUL5PPp38mwuAueSnNKXs8GfGkVYqWGA4HevPNsG6wNYts8V4aOlqFd5Pf_gjhoS5wn1STz9Ch2rlusx8HiKJGbn4SbXCHKJ-P5v1O40Gng798vr1XRXl4viti22puAIreAsevTUZlAenLqj2S4LQEKAglKVVmd5TFNoa6GYZ2tjSWzA9KySaJzb_Fb1O5iPWYMLtaEotc5U5uiIRuhZygj1SgII3FRQ9Kgm8xJ3w4HI7Xei1wQf1DOYmac1dzIK0MnLRDn1oqdYkLnjJTM-pMfF_F5zAGsCO6shudDJIHG8Z4p8rYGILEGIBulRMIh0kHvmajiz0_iZT9S99hDJqJ2RWDMCYk-y6UpbOnTyA0jIC7RUV467JjsAVU-jIiAEwgPHJq8BB80EYaRKq1duQ-OY52dJws_nJgaYj38Ge88EO31NKr3hMoGgCv6dNEpuQl7QjhCbfds0oq2tG7V0-TySwDlY8OP-30ZIkhDr2gd-FmkMorAG_dT5yp_b_oohsj2aEv7_hSsVF2ppi_hpnbJ3fXw2cWvQQUDhxQKIEwB4y66fqEt4TnNjyMaNUigiVJkRTJDh0MzOk46qlJK7-7HT8YTEPt7nhL6GEqC3QIIP_5qCMw_0BxKYXj6sY4kUXv7mso9UD-JJP0-gOQUG_SU4blz3P6iAYoja581Kpdw978AT3QqBWlklXE5_FPMMSdzfUN6iZ6RcjJ6nXxQBzD-JJD-mu3ke5OGjSU7Ozv35E_ZLzLP0nhCihZtg363D8PIGyvpfmk_vV-R0J219nFfrplIkubvRYRd8zml9R4ejMjBvI2THEV1WAgQ7VUiAz3uUNaZi2o6Do4vRc0UV9pyUTVXuR--rVwhauLlyuQPZywkjKWqW1rB6p9VbQBPII0sTv_M3ko5bsflz6nwuq2Br7RzBR4hhHSwLoFsFFeguOLw147lSIaOS3exEf9XkyW0m_dOHxXVM8OpUKWmOUnSdyEb_mNkxAFSxEF6rFoIHnxHmwgq9IBmNennuPqpuSpmcy_QMYahktza0ScEjWmpQgB_wsHZDaJs4YHtYyT_3qpTZKpTYn6pvr55PcBVKIaCQhG59vFA7ebCk7ntTzUZz7Q3gkDIQYrtf20HLjUm4-UkZHp5ASqaOpyrNBGK2WxPNCU6FPkD6A2zWoJbuqQkfx6hLIh3Oo6g2p-0Q1KjnwTgWSwgw12-loiv9n9nSZOVvnPFd0oTmsMlgWoTSBQWXf5ZAsravThMamBdhb2c27vClC8fCrF-CgrlwJplQNLirvm0Y0n09nDxO8GK-yR0U61mo3ASjrIP47ATSV20aBRa7mqgRWX6ce6n_heHOy9hVBU4uhAONJel_xE6JxUXdJCumUTMAKBlwOxoJ8l75KKWKoWg19nIvU72pR89t1y1ZzE5sUNxhlzo6gaTWRgibGIZ97f8O6WK5MEBnvU0RVur3GhqEgqc_4824wBRcqI5s729iI12tghpxpJ3YPfB1Dimv7q0pPxoSScLUC4k3uoeTlyPmcKWodgqyJp1n6y8U-tV2ejXu7_eqg4Qh4lKA5IIh1EnuijEpQalenHlSE6GotkmnONHlEccsfWN0GbsAGEOZPnbzNOMbcVZEo9e9SMI-mBGGTRFDpgPFNxF7J3qxwPWdcqA7ef8mHyM1u-7UzvBLWE5wGBM-9AGxgt52zpAew6iu04WH5TqmzvVn3QZ5BfA9p-Zy8niemOYpV-pvLqDVgeGTxmxn-WrkN-Xh0yaJfVV5Q94xMcOHme5PvyrwbI5cC5DXQC7DB_n12QU4GbdkdiPA5KQjr1WTWIWr-ZfYLccyOd6BxPkLVJhPt836TxXgua8R_O0CVJUVLBu5zIw1dFIGaOtZGs2Kum5obq76mr6w-nLLCivNUwclEnraKrxXfWPmiw9bC7ZQ1P3tQZfWKc4Pj1Ua94WuVld_XRKBHPiMRiKiz92FlLlq0RWjqgDhBeJoB9QCBVcjbXVvK6XeC6TGNe1WbtHlio8aajWHLDokZADfw5hzaqQ3jVtX73wELVQxNbxKvGe0AE-EJR3G6O2CUywll_9Ap0JsB4984hJKqX-1rmx8KzBfDfe2nxEsEVQwjh8lM1manr4782s2Me3wjzPzuxmhC0JPZl9TI7cUkqf3VRcaYjWCNWSDaN_bOWUuh5RoBKX9r0wOr-OLZQEndyajmJOft42dzs9AB_9RBK9Vr3YM3mXpo5JMxSZvXfMQklvBTa2bK08mKd-DlIGBdxDRYipT5qcliBR8lleYWoED53O8w5AbJZy9b7m1haUw-X0AUERzWNh0ZtcgTuL5ShYvJ3xtGxJT9Foq0rxEAQeTMCVqyBBVlCG4diDBKoUgCFSwOGIjeHGfr5PBlWzUibuUtBXK4qEZ3uE5tRzE8I99Gv1GvtQQesdWFmCxAJTLB-51xB-uBK3SQ4GbrGBrMvSqgTCAc1TOF7hiO0W7NRMlxX72yMgoX0ZqRgOkvyWZkGoE0BoYciFVQpd1Q8qFMEkoqM9bmxYLlq0VXDATwrFpRDygEkJXzGzomeA8k3cwby7ZD8b3MdgpyvIMOAaqKD7eu98u2qi1pHFJCACNUT02lW_UMi0g00b6DNMEL6gUl5iIG1Kp6dmthiChu4PN_IDjkOR4VlXrvyxRPfLKKeXrcvK8bHJkM7Yj8T2eNAWuhia_1D-jJ2-jh-6qTmYsu-txfi6T0VKA2FJTpE8oJmBAvVINGY0iFBFQqakw7bcvJbe21Vai_hasr_hI1OmDUcWjrwqtXR5Ijd3saNgY9_2e1cDsV4B4DJI6zmpVcjl21lmqUe9WRBs4SAxomSqC0w1OQTXFf3PejLHA19xgZzDRFMW1-BbFJmmBaz4ll8PqN8fZV3CUh9BE1Xv8Hc-KLJmtRwwC5UP6pfiYj0GFrEmAsI_ZVxVX19MuGyT9ze9wR5WcD3DEHq1tLIZy3Vv6ULUvyU2iLCPXPQQSVkClFFvO5ccSlEH3g0VaXF_r-XLvuFCrgrYMopaoJB4xMrtuKvGPjEEc1-1LKDZ1czPgvpwBmixc75oEGkNF_DoagtssziQViwVkCFbNpIxkQhDbPOz3UsHMo3xSEWF2BMaV-bwdE5JigNtwm4bFOTOdd0Wseu8gMKjoy15oj1l5PP-k-u5YGDqUsjoEktC2cpbEU3i4wZaDeKr-jaFEvPgds9wN4sgPD-84hDbfxcDYog7anodXp8ldkiRHMsVGckAt0xC1pTXti1aA_rCHIiVwBhRlajQEPL6nSPKnbEILfjkwjBAcQOWBVrWQBbhCSDyUEnje5uyIC-W6cBnVxsyrI7nTaEnnm8TnZsqVhcd_3_HUYGU2EatdhOUpqeJGr5xX_4wc8nqyyPpmdHbiwbOIxgq9VwvCJkTpuRk6q2Voicg4h5HbPl0ObC4P9UnHnKeuCQWJuXzO0qcwHol_etONnNo17AlLnQFTr8cZallldrREYFVN9ciaLGmv2QcETJNEnPS3CatuhpIehQM_oTWYUabC96PlQXBDnjG8bNHwhfeckIkstYuQXkQFgI54qY6sV-wvg2n_Wap8DIkZ9tKTSSlHlDGxmbEczX7PolUgfPJ5Cl5YgiEgenVYBiYPeyKFu3Xi7eAnapGivUMb-UnRpR2ibMTJsFCbZQEULt3TxKPxIQtF4A2JBUUhr1mAsL9KGfCcOL8USqZ1EHXovtSiKrRvqQdVCWCllltsjojMlfIDTI4Y5XEUPovfyxmeVWA5UTjfX9YJEzt82pbsW78HCJNZoAh_Ky-sMYN-ClxCv6MMTEYun-JKTGhVCZ9Z4uvfB2y5R1bXQbWv2Uv5X9SbWY6UQm7IHWXS2Po73-ez61hZEjvkjlVNFLpcc2H2IE5eydZvI7DFVK0t39geH-ixRQDJ_C8DYlHPSIKqbV-5DW__F_ZrTpQmWU8-8CfM1s_dEK8LHx9V5VC_Myvdx-48KpgED5zzVgonO0VwCB_w466EU_86MsnX5lY8ebB66uIaut_e9I3b3GAPiReLrb85QWC87WyLq5Z7mtDtKQ4dNRhkD2l8I5egDajtlrxxZDTW45AxyvBbWwLoChJSUZKrPSN0QbTbkYKc3jkNbMBf4k2esV4fwOxKK-7wopNhXDOCZysfjOYggPuvua-pxkTQ33oz-neesd4mZjDInS_IfxG01A6qQTDDANZ1odtx0t1dYFmJGlBHB6qrPwG21IKYYqH0UccrKVFfqKyZiZmfRQxHE5JoSEBPezdRUKnjrcyFhdvly2XzjcJawj9rsxL8wvjXOuqduUlrMUYV3FScqTFLBWVzi3iiBYEpM2hXvolNAafm9707S7hsU1WwZSDsF-L7wuhXbSHSI0U24WqJ3657cnb8ZsvrR9uM7999fx_GAU2-RVjBofAJsQLLS1l3UZQGCPmIwQNZ7d_3bm475_FupVxVCLScY7fbXdTMDiEjyRV4ylet7W2uLBLKgsluN_jtrTvVYolb_A02lgjxHdPSYwVtdfZByyhkDfZIuSqWaYvhZc2Gwx-Iu2OklIhoqVZN0zI4D1H5PYgNL3bs_SsDZ8lAAIunb3jfFqL8Q02QlVf6sjXhfUdDBRl2EhIkwdhfqQAFzKPDT2kDv6V1R9IHkr1JSs6hzED6_3dRpfKARyyhPRS6Srw6IfS-nQVXP-QniEfqQDZNSSeoOq3QITcUusVU5ETkcbfuom61ena8FLiid_WBAVLOXlls4Euv7U9o75GypwB6mOTNSRFYOSdELNIQtMzHaYddlhlB927j55C-eHfk4X72bHb2vmGGqwTxno3x18dOzou7K73xRxHObsSSx69Q5SRQUrPNc6US0C4WMLS9bcuRdiUoNSEJCQu6QNUKoAvHUofKB7eYqsg7Sgoh6smTgyL-sj4kGB6siUvO3Dd3zyvkkqWHyesisrZh-SU9vUcdvcKJ3mbP6ijkyvMNbyrYFnUVlsrwxPelfdusM0ccN-kCzWl63FRXuOYXsYYYk7M_gO6b_qNd2fl2zV5aHmJADxrf1iqkb5lRc2AV_RCqoPlXldFqTa4Ga0xYbZAFNce1ZlRdXm1IUkJvF1K0xh4vKyYP40FzDxNn_TzhxRaLn8NItfDWzJdYBZGogX9vdDF64Gn3whuxJiLPdkKby820flHGDxnpdhMOVfn6jD85Sf2gQL_RgVXV53sSGn3Zsz4_3NYj2ACZ22cTq2NJUUNN_FIY5BqK6lwNPgGjNxNkAGplxuu5lIdbvgspvRedPDkchCipKxD0icA28IxK3SZdl65BBtn-pmUkTRpBZXPpGX771_F5KMKmBogAY5YpUpWZ0y5elA8bWWuJe0AoGrDPfpAxXlKxxlRUPNXaX6uSVnqEXxqLu7wrlpZPmdnTbXO65S6V1BVVV5GY80ZMdwdYZVVkB1M5instVknHJU1mN6ZuvRSU63JiCxlw3VVYo9R_vbw8T4raQzC9I2NXxzfbFzHMEA1jpvpnb28OP17u5E0-GxGsTKFOgx5lp8BB59xbED32ZWQTM6MSHsqmexyzf2ro=
+# 面荷载与蒙皮导荷
+
+蒙皮（虚面、导荷面）用低刚度辅助板承接面压力，再将荷载传给网架或框架。常规流程为：独立零密度材料 → 面内/面外分离板厚 → PLATE → PRES → 保存分析。
+
+## 1. 常用蒙皮示例
+
+以下使用 kN–m；屋面节点 1、2、3、4 已存在并按板边界顺序排列，DL 已定义。材料和板厚 9001、板单元 801 为本次新增 ID，须先确认未占用。复用 common_examples.md §1 的 `midas` 与 `check_input`。
+
+示例采用 `T_IN=1e-6 m`、`T_OUT=5e-4 m`：以微小面内厚度减弱膜刚度，保留微小面外厚度。它们是导荷用数值厚度，不是屋面构造板厚；换长度单位时须同步换算。辅助板不用于材料、截面或板承载力设计。
+
+```python
+skin_params = {'material_id': 9001, 'thickness_id': 9001, 'element_id': 801,
+               'node_ids': [1, 2, 3, 4], 'load_case': 'DL',
+               'in_plane_m': 1e-6, 'out_plane_m': 5e-4, 'pressure_kn_m2': -1.2}
+
+def read_skin_table(name):
+    reply = midas.request('GET', '/db/'+name)
+    return {} if reply == {'message': ''} else reply[name]
+
+unit = read_skin_table('UNIT')['1']
+assert (unit['FORCE'], unit['DIST']) == ('KN', 'M')
+assert set(map(str, skin_params['node_ids'])) <= set(read_skin_table('NODE'))
+assert skin_params['load_case'] in {case['NAME'] for case in read_skin_table('STLD').values()}
+for table, key in (('MATL', 'material_id'), ('THIK', 'thickness_id'), ('ELEM', 'element_id')):
+    assert str(skin_params[key]) not in read_skin_table(table), f'{table} ID 已占用'
+
+skin_model = {
+    'MATL': {str(skin_params['material_id']): {
+        'TYPE': 'STEEL', 'NAME': 'LOAD_SKIN', 'bMASS_DENS': False,
+        'PARAM': [{'P_TYPE': 2, 'ELAST': 2.06e8, 'POISN': .3,
+                   'THERMAL': 0, 'DEN': 0, 'MASS': 0}]}},
+    'THIK': {str(skin_params['thickness_id']): {
+        'NAME': 'LOAD_SKIN_T', 'TYPE': 'VALUE', 'bINOUT': True,
+        'T_IN': skin_params['in_plane_m'], 'T_OUT': skin_params['out_plane_m']}},
+    # PLATE 的 SECT 引用板厚 THIK；STYPE=2 为薄板。
+    'ELEM': {str(skin_params['element_id']): {
+        'TYPE': 'PLATE', 'STYPE': 2, 'MATL': skin_params['material_id'],
+        'SECT': skin_params['thickness_id'], 'NODE': skin_params['node_ids'], 'ANGLE': 0}},
+    'PRES': {str(skin_params['element_id']): {'ITEMS': [{
+        'ID': 1, 'LCNAME': skin_params['load_case'], 'GROUP_NAME': '', 'CMD': 'PRES',
+        'ELEM_TYPE': 'PLATE', 'FACE_EDGE_TYPE': 'FACE', 'DIRECTION': 'GZ',
+        'OPT_PROJECTION': False, 'FORCES': [skin_params['pressure_kn_m2'], 0, 0, 0, 0]}]}},
+}
+for table, assignment in skin_model.items():
+    midas.request('POST', '/db/'+table, {'Assign': assignment})
+    check_input(read_skin_table(table), assignment)
+# 保存、分析后按工况读取所需结果，确认结果完整、数值有效及位移量级合理。
+```
+
+多片屋面复用同一蒙皮材料与板厚，每片板用独立 ELEM/PRES 外层键。相邻片共用真实结构节点，不重复建重合节点；不重复覆盖同一导荷区域。多个工况在同一板的 PRES.ITEMS 内分配不同 ID，不能每个工况都从 1 开始。
+
+- **自重和质量：** 使用独立材料，明确 DEN=0、MASS=0 及密度模式，防止 BODF 把蒙皮重量计入；不要修改真实构件材料。动力任务另查荷载转质量设置，物理屋面质量按任务单独计入。
+- **厚度：** `bINOUT=True` 才采用分离的 T_IN/T_OUT。板自重通常按面内厚度计算，T_IN=0 时可能改用面外厚度，不能靠零面内厚度排除自重。
+- **模型检查：** 核对板节点顺序、连通性、板厚引用和加载区域。辅助板保留数值刚度；分析出现奇异或位移异常时按相应节点/自由度排查，不靠它稳定原有机构。
+
+## 2. 压力方向、面积与相关字段
+
+| 项目 | 用法 |
+|---|---|
+| 方向 | PLATE+FACE 不支持 NORMAL；显式用 LX/LY/LZ/GX/GY/GZ/VECTOR。面法向用 LZ；全局向下用 GZ 配负压力。VECTOR 还须提供 VECTORS |
+| 符号 | FORCES 正负沿所选方向；局部 z 由板的节点顺序确定，反向节点顺序可能反转法向 |
+| 均布压力 | `FORCES=[q,0,0,0,0]`，量纲 F/L²；线性变化压力用 `[0,P1,P2,P3,P4]`，按实际节点位置赋值。EDGE 荷载另用 EDGE_LOADS，不能混用 |
+| 面积口径 | `OPT_PROJECTION=False` 按实际面面积；全局方向下为 True 时按垂直于该方向的投影面积。斜屋面先确认荷载指标按斜面还是水平投影给定 |
+| PRES 绑定 | 外层键是单元号，ITEMS.ID 是该单元内的荷载项序号；直接给 LCNAME/FORCES 不要求先建 PSLT |
+| PSLT 字段 | PSLT 是可复用压力类型，工况字段为 `PRESSURE_LOAD_ITEMS[*].LOADCASENAME`；原参数表的 CMD 有误，不要与 PRES 的 `CMD='PRES'` 混用 |
+| PSSF 绑定 | 外层键直接指定板单元号，ITEMS.ID 为单元内序号。GROUP_NAME 是边界组标签，空串为默认组；不是选板的结构组。PSSF 调整刚度，不取消自重/质量 |
+
+需要统计荷载总量时，按各片面积、方向和工况计算；实际面积的均布压力为 `q·A·d`，按投影面积时替换有效面积，法向压力逐片按各自法向求和。不要在同一工况叠加表示同一份屋面荷载的 PRES 与 CNLD/FBLA。
+
+## 3. 其他面荷载入口
+
+| 任务 | 官方术语与接口 | 适用范围 |
+|---|---|---|
+| 楼面向梁墙分配荷载 | Define Floor Load Type `/db/FBLD` → Assign Floor Loads `/db/FBLA` | 按一向/两向/多边形规则分配到封闭共面区域内梁墙，不默认适用于纯 TRUSS 网架 |
+| 板/实体上的局部设备等加载区域 | Define Plane Load Type `/db/PNLD` → Assign Plane Loads `/db/PNLA` | 区域可独立于网格，但仍依赖已有 PLATE/SOLID，不是创建导荷蒙皮 |
+| 任务指定的节点等效荷载 | Nodal Loads `/db/CNLD` | 分担面积/等效力按任务规则计算，写法见 common_examples.md §3 |
+
+检索用英文接口名或 REST 路径，不用 Skin/Virtual Surface 猜测接口名。压力与系数详情可直接 `detail /db/PRES`、`detail /db/PSSF`、`detail /db/PSLT`；板厚用 `detail "DB/Properties" "Thickness - Value"`。

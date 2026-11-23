@@ -1,2 +1,65 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQRqH9uIVB6Nv9ZvmfGHpDFErZxvwAZTcHLRQmBXwLFo7b9ID-2slHLrwZEhsfrRRxyz4DpUCWyG8Cx9kZefHCmYgNkPgyVMtlTKoPW0T0NOHSiKwumaza-1rB4jonjcgpf6Tv3uKz1nMys8aE0rk2RBacKbumB5nho5a5l1lDCB1uOQ5UvziAvvUJ6JJiQlFrUF53a406HtAvOIpxrVrUcqaHSoCU6-TpwTWoyWSuU0EdGqXiqTsbnHlI0nCGaSgyrjNSKFYxbKUOVZ6fEh8BhhAUl4Bp1XkSRg7CaPtb4ybkB-Rm-ZXyh8QoLqSG3kqopESuVPBGAjY_sw9tjT-WE6yRZ0Qld_OX17wNRP-ikzqZuub9AFlswJ1H65ThKqm1LvOcmISHO9ZX0LRD8m2Y0KuxATQjpocQS4KP0l_ZTcbJLPylsjGXZXHcxcw2vdlXJjio_rVKONshvm02dqjzF1SrMgZdXxBNDSWE7-EuP6oHiygErA7eNRkdvxZDMmssfIykmvB_JL9F0-ZXwkZHO_2h5sTS8u_kOQDy0IPbCGQR-i8LkiAOIRXVph9H35KWBLm1eXixf6j3HQOwp247rJGFZzbHRJKrP_vk9UPxuUdzQvnT2vRvgbvciun8EDihE3lCnoqK1HMm09oXRyIT8B7iY5WO7Vit-q0eZJgWSD9qwxEvUSIWaE0g79Ypg6ZC_fKPoNmEhz6AuMQJCJ-XZU5WIW0WDrMgsri_fZN91JEo3OXIdmBnGxjwGHPNu69nkrcgEZOV19Is0rsYAj6EeYNTXE2zFF5sC2niyheII9a_qbTwit-_O0KYgu69G6OaH-zmVqpJ7GsEvyGBFXPVyhl0vnpxYXIqHUEZ6uiiKlQYnz44mkpsti42hdkBqviwF4M7-FdowKtworZ1WrnYmoapFCEH51rWFTywH6_qB9PCp3hF0y9JBkFw-lGVaZYg7VctZ1T-IsKHxkoNPGjnAW1mTgvBWG_GOI9-5NGJfRXqVycF_EcFI0myJuZh94SUGK2pq0hP6hSFq7bDFVyD5_bIjkKMES0CICtVDfWYhG99xbmHb4nzj9bsx6kaHHV8lggBTTPfyd7lET8hTinse9csCZwX-O81jL1VK4CVf_GWZXQBM22zpWzkb1KnHDoPrIJzjHkz1Vc-euila7WK6uEWjXYi4fakR7NqZvDymeQqTT_59CBw471lws5e8JnTQ413YrIxnhk7ARL-KjXSJa0EFP5EcL6CTutJt9dkhdr4srGvGupGQociFmWaajwgnVxYUwrpNxY3zcoOVPqZLzcOoh8VWLaTTDgIRMCyv61S6caQ28t0rL35hPFgq0TIIjk_SzjT2h14n1gVUZtMb36GoULddnh0CiveaxRTiavsH2GX7BitbLBipPUcZvsfyVKzMDr0LE2RXpCCypDLQ3rGmPLiJJDIFmuA7ivYHnvpevjyn0FzYs8Ddoqbtp0lCnz9CxxzMFrEtzc25lRHUA==
+# GetResult
+
+获取统计分析判断结论。
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+  "command": "SdOutGetResult",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+```json
+{
+  "code": 1000,
+  "msg": "一键计算完成",
+  "result": {
+    "allresult": [
+      {
+        "name": "区域红线内",
+        "achievement": "满足标准要求"
+      }
+    ],
+    "name": "新项目",
+    "achievement": "满足标准要求",
+    "isAllOk": true
+  }
+}
+```
+## 返回结果
+
+```json
+{
+  "code": 1000,
+  "msg": "一键计算完成",
+  "result": {
+    "allresult": [
+      {
+        "name": "区域红线内",
+        "achievement": "满足标准要求"
+      }
+    ],
+    "name": "新项目",
+    "achievement": "满足标准要求",
+    "isAllOk": true
+  }
+}
+```
+
+## 返回字段说明
+
+### result 顶层字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `allresult` | array | 所有子项的详细达标判断数据 |、
+| `name` | string | 项目名称 |
+| `achievement` | string | 达标情况结论 |
+| `isAllOk` | boolean | 是否全部达标 |

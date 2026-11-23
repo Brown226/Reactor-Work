@@ -1,2 +1,130 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQLZCXaUcONfIG-9_uX9wGEUfJ8CPrdGBRPCdvU-96oUyMT5u6LsVrD0QxzgkYCMRGjnVche_ES4FYKSJjDd6tZ5i8o53vU8hvHWKzIJJBfn_OEC5X9aqwGjK49QAO4KzMsp39wNVBPoN9j6ACEBGay-NuMNrhkoYNAQeCidwlD32FOmSmIoXQnSn5K_wGw7b7rJTvExtfz-jhRhZlokMYiqCaAje4uprYsc3AKxUWcFCZ92Un_Huq3m3raXtaOKr4t5n_FDYJIupHNcdu5XHwz23qcl8TEnUKc7D4c_mhCDUFFjdZ00ieJWkO7cabduJiUx15qYROC8TeVs9p7lK9HzXEELn7XGCHCMegySNjfXiqTK6aBM55NsZfGJ4BkQ7YRt1NE931cKWPe5M1vV14-9Y_k-m4j1jCoNbpgbZ1thULCo1qks-ZZXBlO8T7OMraAOkvOQ7WxfaDMJkVWDw2Nqro2HGbbGDnwYmjseBOzW11ceTNRLZovJ-bG-nc8X5Y79fkyP7ZfJ6-TCKAQeUwCN6Q3UzgujvvFhV7QR5k8YshiIV45aYrOqM3VaFWmQyoAPvOwDy15n4rPfEYSETQjC1nfb7lOclPAx3qW-JK4W7SyRsyXy2n0mC42P-jzx24yHlcdl4botV4iVt0fmCcoZM8jz92JQnxJLEE9CzOCEpPj8aEz3yy7XFuLiyi3bPTHlNSNZdNSy8W9VSRIB9O2_GHLWewjSpZHt1ZvMo1qyOTNkh-VZWMIdxxGwrdTF-RlrjAYC50OYkeRHP88oewLZ-fgwpvuTpwaKOaN_U0-Q_sA1zovNhv92RcE8bkYLnJXAiRGmGGJdElAkATOwlJbHDmRCNVWxfzu-QjLpph7Sg4FEI07XCHs1bHXosBCpvOSNC_IxyCXDVs0lSfFZfCB0nNubvGjKQrJs82_hhyJLkny1OXx0SViTuXj3tRyTHvqb2HgicP2SNluPUTb6rGCuTv5lwTGoLAx2y7nVZ5aYQ8n9QPe7HQV18FkrO59r1MWsYgHX4TBGDCE-4s2-wJelnqveWV3Lb5SQgQdPR4HgKnlMDuBBh9ntiuz5UFBqyjhHCczC_zD1dKP2KhT4HYIlMeGkWBUu4KPR2lXXztdjuijpQ8arU6YPXCs8lWwwaMfFZGpu5vpYoFcaNn-C6N5ZHnPytjbWHfXDXavhNLTpRceiJ9_bXVzMAh9TFUROI-miXzS61z4FkAMFDKo4cgBpVJlzW8j_IedM9Ev6WWAqEaOA5NDc3FUr9XcK7bG9KAmLjnr9H9qQKdcTQG9b3xqT_Ij7znaQeSIEH6I4V3G6nM0uq_Z9Zu_vFKECBxOQDBoMzqLmUfdqlkgXj8M6zEXqpW09nE3tXN9QOjZI4veaQH35iM-RgQZGsPcRVeUWON348UHAX54_rSrbGgpGIpkFgAhUshH2oHO1FxcuN0J7u19Js13JVOkFyOcqo_qdQ0JVr-uYeIGgt5FSBOL_DYwReyKWs6oqxzLR6vIzj5KYLB-afNn9f9v24TZJwmUQjM7KRtw1P4DJGH_JUKndcvSBtHnJjbARsjQMHlAgAsvZbxXtde5lCVa1KPX4hqiIZieh3LWmhKFghe6z1ZP8dixpnOtikzHozIXrNCnadHOl8uaObT_m7jUrwt35mMk5JtHCXP6oDAe2Dk3ngVllBj9m5ZR7ccvu0Uj5_6OSosBBOU6k4HXcjaNVYthQSj52Qrr-C2icz_7anUNKdlWVMuBmvh8HaZv3AMEh0oJ5PbTT6X81fpm95dIPj02imV9aAIjzpxb_lkVtOPL5kBTDQwIvvhhaaLQ85HXTtu1IyzMo8OdqsGtVnKBtmpky91Qi-mr56Dpxn13y-HpH8HVObq5zS93LQv-mA14pVZJUdl73cpI6wvyYT18yr5WCgXYL8r-qWOqRkx9ExNc4IlaXzeetWzpBAUjlHcnvRCFzD79yZ53J8NNkmKlpCErK3qk_KbIlCfJ_fj6CxAzRTVedwZuYkYs_8kfHCWRGRFdFdLNe-YRv4AWtFlFAhFJqqktvK-UW9R-r0dmECXqCL47owDaqOrnitUQCfd_zeBTHTZY_fMVLqA4V3MPliDaO30at07pjuE3jzJQrNk765Uq9nWTHysXLtC33iUZl6jQk9vi7aPO1xTix5zu64B61BcM8b3YfjZ0lLizAOANZpRTu2b93_Ha43IcGeI--OkMFnGtPRZNd3LhHf-3TrDYr1qgSPXoWdvdxUuXKyborZoab0DAbrT_Bxbu4ZNgeI9zM97id_bH7Y2W-GuwRNPTXcBovcxhx36unsm8PFIiLXscINfq1ONy4kBgNAn9XGBnMS16myr-9q0r3JDDGEWF_hmIiASd_qwrRcu1ixJyVnBjTIoxWp_s9Ypv61mRZSyjczwc2Q_nLhnY9UYt-ub3dF6-E2CVpwX_5BiYCjsX-96cFbUqbiiQbr6G7MHuAnnAKx3hkYLlqMnUrq3W57DDIQbNnkeoUN_5yhwLzKZrmqkpYRltLSJs7IEEx5VwcUcReLaJr5uHypwQ_ALsHJo5BeCciFvW9OM-_R3r6JOtCTkY9eCCNCDwlQYwL3zD9cNU0n8Yzca3yYKtaKT9ELZ7bMgCGmz4uZnWePulvDPutV1DWs7_QOPUQm7JCBaXom7AbGp2t5Bx9QIoC6NwK_lU2iXjL6OyQK3itOiwplTHhV3_piY2F5DqzVgsw50um6B7w1ZIZ7_d6gjv54dyORtkW1IzqKoGb6mLdW2yHXvZzAMh7Nr4jbdzNxIzLYIytLqMWlpQLD6EhjuKR0qcz-pVJzNKWNDwsJ-DsXwgyaNG5GZSJqnE6-c6UwDrrAdU-DB83z8E_QNfg2OdyID7lJxUbFqXidmUrwfkCe3iAk3aJs3ny_II4i6BjW1pxqE-lPCkVloRBHQD6PDMdV3TDTaxuqcITHR_WEcWmVaauH0yUuMVuRrYXuuUFg7LralTKHHj4KHNcqm5yUuJYxaglltYmAqhevDkjNyU_XpU4GyBwUVHtpupa7H_yc6MEjzf8BGxHV5ScxWUAplpvpo4O3juVTGSoM5FwSITA0laoCfTtwGosRa3iT_OJJSPYN1zn-52UblEwy02NbQ-GY5tF7We0aI28_Az_oyjrLf9lK4N6NDcplVcjmt9WtZIWKf9P5AjVuvxDqGfSIP0dobTcd4LPT3Hbl2jA1upfoXLjR5FQLteoeqiBomVHCkf_UKXjDiVHphKNvS7KqbOQlLWKlbNeLZ5nWA0fMcTVQyPYjUuMaRBgWA2n34IT1IMyaJbVrN7s9tVfy_QY51Zhr8LpWVEjicPUB8NIOitkH-rPwm6vqrtA_xrfVztDUzKjWJGATHGjV0tOiP9NymM3KT7oixvf75THWbfzPAjSCpYUuPpuTb3fxamS5zywbPYeisSZSsXVBrB1q93wjCA3zFQBPyuU5FJy3Fvxvgbb5q7kxLTGGRRGnW9E0vnzsN1I6HDUZmOtUGSi7_pDw_lDcGju5in1MYt7aP9UBeR0rUWRJaOTWEvyQ4u3Q-OM44a7lP0eU7G3ZIIV-1HbU2-DJTYizIQx_c-0yCi_elM2W8pRuVDDQS13nLsR5cErnyZVE0uWV2MVCHVHXk138VVSJF5gmPTI0bst1QWzHtFeYStlppFtf0MWCrUvROuU3UzIMsXjHNDiWe4WHss3PSIJx6MiQquAEUt-SY8ftIt4e6mBvj5kalaKcV98HqfESrOcf-OWtfTgZBQoamP93MZcp5Duo9CDorGU1ejDPLoBPRx-hwzlZnS9HfQav2ZQfSa9pbQjnFeJfkQmCN9LhNgs4QSOtjhyjjGvdQnnnAcvCxJfMoGPf7_QLwAPtBBc6mcAcn41Eh66jwqRcumoxAIahF-NsuFxlsogaZsRu2dG3FKBriNzlsDI4ezttfTNP-kOIkAME3G9EvSRLusLSAzu2Mp2ipFl4HMkQ-TznBGGXCheLa2c64OeX3TxkeTpx_RORMUWk63AaQcwB5EZ2IZ8_bByypURfMZ6v_JaYDPOrJE5twQI8U-ayN6ppfPwVm9SAaVS5GyosunxuUyKVEUdDI_5Tek2V4CAD_Dt99VS27V_xn6okpu0g4zZSZjHl35QZ6NS5BKXOfrJ0TriTD7QH9HCj7N4aue0-W5AVnIYiwMg9ta594QXQ-R5tGETlLUl5r6px0asFQ1ssUgjPXYxnXWhyxcYWZN1znmJKtIj-oFbAMLinF1UsxdUdd7mcbaPgLTZbvvvI5ZwS_XfU0qipy1pSylkyBKCQfIJfj1FFIryNY65vbqpaKD2IlEtKqM8s6wy6EcvYNeRx_qkmlFxgPfeBjYcr6OKWuaLTnb4H1UJ65kqYvKdv7Aaa0tBaNS3Ce1rWCx0Hx6w_CqS9DmnkUVVuH3tLKMSkxIbzD-94a91POueU6eWdpvP98r6U2f1-8zMabWNYKKM-Jo8lU6AimkYUSoQsF_6zwESc16Zamghyvb0PmeA68eRpm9r-8M3QwXI9TluCeX4GkYgrlEOg7HOB6OEvtpkXw9oK6c4jk4ybSuquFEenz-A==
+# CreatePillar
+
+**说明**：必须先有标准层，才能创建柱。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idStdFlr` | string | 是 | 标准层 ID |
+| `rorateAngle` | float | 是 | 旋转角度 |
+| `crossSection` | object | 是 | 截面配置 |
+| `placement` | object | 是 | 放置配置 |
+
+**crossSection 结构**：
+
+- `shape` (int)：1=矩形，2=圆形，3=正三角形，4=正五边形，5=正六边形，6=正八边形，7=正十二边形，8=异形
+- `datas`：按 shape 变化
+  - shape=1：`{"length":600,"width":600}`（矩形截面长、宽）
+  - shape=2：`{"diameter":300}`（圆形截面直径）
+  - shape=3~7：`{"sideLength":500}`（多边形截面边长）
+  - shape=8：`{"outline":[{"x":4000,"y":3000},{"x":5000,"y":4000},{"x":6000,"y":3000},{"x":4000,"y":3000}]}`（异形截面轮廓点坐标）
+
+**placement 结构**：
+
+- `position`：2D 中心定位点
+- `elevation` (float), `height` (float)
+- `isInclined` (bool)：是否斜柱
+- `topPosition` (object, 可选)：斜柱时顶部 3D 定位点
+
+**调用示例**：
+
+矩形柱：
+
+```json
+{"idStdFlr":"110","rorateAngle":0,"crossSection":{"shape":1,"datas":{"length":600,"width":600}},"placement":{"position":{"x":3000,"y":3000},"elevation":0,"height":3000,"isInclined":false}}
+```
+
+圆形柱：
+
+```json
+{"idStdFlr":"110","rorateAngle":0,"crossSection":{"shape":2,"datas":{"diameter":500}},"placement":{"position":{"x":4000,"y":3000},"elevation":0,"height":3000,"isInclined":false}}
+```
+
+正多边形柱：
+
+```json
+{"idStdFlr":"110","rorateAngle":0,"crossSection":{"shape":3,"datas":{"sideLength":500}},"placement":{"position":{"x":4000,"y":3000},"elevation":0,"height":3000,"isInclined":false}}
+```
+
+异形柱：
+
+```json
+{"idStdFlr":"110","rorateAngle":0,"crossSection":{"shape":8,"datas":{"outline":[{"x":4000,"y":3000},{"x":5000,"y":4000},{"x":6000,"y":3000},{"x":4000,"y":3000}]}},"placement":{"position":{"x":4000,"y":3000},"elevation":0,"height":3000,"isInclined":false}}
+```
+
+**成功返回**：
+
+```json
+{"idPillar":"114"}
+```
+
+# DeletePillar
+
+**说明**：删除柱，支持批量操作。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idPillars` | string[] | 是 | 柱 ID 列表 |
+
+**调用示例**：
+
+```json
+{"idPillars":["113","114"]}
+```
+
+# SetPillar
+
+**说明**：修改柱的属性，支持批量操作。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idPillars` | string[] | 是 | 柱 ID 列表 |
+| `rorateAngle` | float | 否 | 旋转角度 |
+| `position` | object | 否 | 定位点 |
+| `elevation` | float | 否 | 标高 |
+| `height` | float | 否 | 高度 |
+
+除 `idPillars` 以外，其余均为可选的修改属性
+
+**调用示例**：
+
+```json
+{"idPillars":["115","116"],"rorateAngle":45,"position":{"x":200,"y":200},"elevation":0,"height":2100}
+```
+
+# GetPillars
+
+**说明**：查询指定标准层中所有柱属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idStdFlr` | string | 是 | 标准层 ID |
+
+**调用示例**：
+
+```json
+{"idStdFlr":"110"}
+```
+
+# GetPillar
+
+**说明**：查询单个柱属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idPillar` | string | 是 | 柱 ID |
+
+**调用示例**：
+
+```json
+{"idPillar":"115"}
+```

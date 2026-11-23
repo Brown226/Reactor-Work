@@ -1,2 +1,21 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQ5iwnphzvn5qef1vmi0RwMZBbuONYu0c4pLPbzhZowjuEnYmy66daIG-Ra-aQ6gO4Yf9MEKDvL4dQ5MHHbVt84cRXBCd_g0KVj2fzfg7K1PXmrckMvygnlNPll0SkbDvd5Z0Uy1LftPWu-CRx9Hap47NMAWIh6pVehxmyMwmwYEMylTWMnQwU3yb5RRB9usxDU_zFbnrc79ZxtEOsw3zvuUzzjJxT40tEOul35eB8tjOi1VcyGPriZ8A0CkJKOPMlm4Uk4UsofolIISJ7jqJrw7mjy3aEUQ0ddmpbRI3SEu5ziF_s5eA5xVC7X38nBByfctL5MlbvL5YZCaSsPdf1Mcpeq9ZTvQ_d5KmNfNfy7IoC7EYdPr5KO5uyQZDmvq97zyoUikUNILZs_uOKvOvy-BFKZSC0PYU121T7cswZfKgiL1ygE_bQweQvtFmCbLGZQzVCzc2_KuiLxyUgmwUpcARaDAcr7b9ftyvXUKlw0Da0WKj9xAVZw2JmpJrlwIG5
+# ShowResultAnalyse
+
+**工具说明**：进行结果分析界面展示。
+
+**调用工具 Json**：
+```json
+{
+    "command": "ShowResultAnalyse",
+    "parameters": {
+        "tage": "进行结果分析展示"
+    }
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已展示结果分析界面"
+}
+```

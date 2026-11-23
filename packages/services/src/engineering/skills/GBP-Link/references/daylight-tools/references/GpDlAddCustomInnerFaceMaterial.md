@@ -1,2 +1,36 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQupewuW97gpF2D7NN70eb_3cEIg0RikmQWmMCIhD3PFqmE8_XKJplWBIeJZoiudv03-54wFa-B9wB1Pf3bwtkL5LDZb5XaS6T4npG6HdmOUgG4vMcdKBy0KhVOPuYY_FxMK_2ivzMg-aFVT0HyYhnEovi-pGVXX6y4OgkUV5aJSiNEtMz6z_B7zmi7uy-Rpg_jD_omEio8REONTzXEu8byJj1_xr_j-NFs1vtdVnuYDArR3w4AW4y7ttD_iZASJje8bDGFQIlqDbH0w-ifui57KwCZ3wjoOeSVRh63HZ9p59OPmgEFMnR_hmlARLAl2X9EUVs0XsBgUBl7IYbOqKpn-99fI7u2U3BRags0gzL2OI8_by-SMcyJ29rlwqMuTndg4sRL7Lc1L0Kl44Oi_llvL49QC5Wp61FpQJbA3YTCycuNG9nMX7TDYTYoLcNtEfm50uk1XvGIc-HFfBpFYYkTTtDWT7CNgH0vlHLGcTWX3mdyiQs76LWuXnWfAtDSem8CdiJL5vLYO3_e3kFdyW7rD9fPsgh9qEQZtGg9mYnzr8GypN8d2xtI3uPqyDhtQHRlNmcMNPXXzpP30gt0HS6xgTRWJcadMpTP8OOVWc9RlQbsY2RMmogO-V7x_4KiOq_0lBPt3H8-omdQG1i_lUIv2CFWyuDiRiL9oAy8pUoAQGVrDAU3VcN54UvdfmCTin2nxSIfUstQpjqQhkJFgJkDrNnyu0GehsjfqbaHneUwKogxSv7Z0iV_cFV8upG099T0-51-0sMDsEymEZ7-EF67NFPrw3DxEOoSEAJu_97QhcJPnbJc0VGqcK0bVoEBmkSZ9qURj8RFpGf4E7DLmQSxur1j_G_NTBRNDReA6jCMyyYgSQ-7ST_SJmm3fSprlNc3hPnt1f94hB9fE9R1FsM9uVKyO8OzQKaHMDsz8CSus-y6PyKlaqOLYBz1ZYqmDTB5wTSg1jaiU1TWaLV00r52tIa9xUIk-wkILes7qaifUByEDPk-DHeOeCexHrG2EDe3zzOgEHwFCKnApltHq7RHo_QVo3rMkknZ0INhPWJ3QE=
+# GpDlAddCustomInnerFaceMaterial
+
+添加自定义内饰面材料。
+
+**请求参数**：
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| source | string | 是 | 材料来源 |
+| name | string | 是 | 材料名称 |
+| reflectance | number | 是 | 反射比，范围 [0,1] |
+
+**请求示例**：
+```json
+{
+  "command": "GpDlAddCustomInnerFaceMaterial",
+  "parameters": {
+    "source": "某图集",
+    "name": "新科技乳胶漆",
+    "reflectance": 0.95
+  }
+}
+```
+
+**返回结果**：
+```json
+{
+  "code": 1000,
+  "msg": "添加自定义内饰面材料成功！",
+  "result": {}
+}
+```
+
+| 返回字段 | 类型 | 说明 |
+|----------|------|------|
+| code | int | 状态码（1000 成功） |
+| msg | string | 提示信息 |

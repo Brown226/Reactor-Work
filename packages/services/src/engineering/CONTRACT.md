@@ -17,6 +17,9 @@
 - 安装发现按优先级命中即停：显式路径 > 环境变量 > 上次成功路径 > 注册表四路（卸载表 / 产品配置键 / 文件关联 / 安装根环境变量）。每个候选必须通过 `isValidRoot` 校验，不合格静默跳过。
 - 读注册表失败一律静默降级为空候选，不让发现环节整体失败。
 - 注入的工具函数是**一次性快照**，会话中途不变化；清单有限且可穷尽，Agent 据此判断某能力是否存在，而不是靠试错。
+- **COM 系软件的目录路径必须在注册时解析出来**：`ComSoftwareLink` 的能力清单来自本地 API 目录，`catalog.path` 为 `undefined` 时 `loadApiCatalogTools` 直接返回空数组，连接看似成功但 `function_search` 查不到任何函数。目录文件位置固定为 `<技能目录>/references/api.catalog.json`，由 `resolveApiCatalogPath` 按软件标识定位（目录名与标识大小写无关地相等，或为 `<标识>-Link`）。
+- **API 目录缺失只降级不失败**：找不到目录时连接仍然成功，`briefing` 说明「function_search 查不到函数清单」，脚本里仍可 `win32com.client.Dispatch`。能力缺失不等于连接失败。
+- **技能 references 以明文入库**：厂商加密格式（`<!--PKPM-SKILL-ENC:v1-->`）无法离线阅读，已用厂商 `skill_kit.vault` 解密后以明文替换，仓库内不得再提交该标记的密文。API 知识库只保留编译后的 `api.catalog.json`，原始 SQLite 原件不入库。
 - 注入的函数已存在于执行环境，脚本中不得 `import`；只有 `print()` 的输出返回给用户。
 - 目标软件中途关闭后，调用注入的函数必须返回连接错误，不静默失败。
 

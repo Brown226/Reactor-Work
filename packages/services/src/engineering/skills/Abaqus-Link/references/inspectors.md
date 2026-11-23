@@ -1,2 +1,47 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQHhco_7khPCJGMbOjgZhFUmLUtXGhdAqSgpOUoGFuI-DS91iV-AEfr6TrTIo2nkJEbNYQyg5EAUE4-88rOqD4k8DHpa2Y7IrLh5TCyqilopgMoM2Y9o6ieSH9WCo-aaDClDFV0D5nHQaqkVT63qHfzxWAw3O8szJ2VXQMylVkLr7MHj-MnVVei-GDIcdqkc8px3wYTBHMfyc9LBTfEar8A-o1FhgGbXJSbSojSQsrfZ1KN8ARay8FJCp9_6l3yjB049D2Mk7k3IScstjp3k0TXxS0Xgvct7Upl4_N-DjghQkHCcM5CXC39mAPUdfiJGcGoVDGMz0NUUPMN-yO7X22-IByhsI1Ovl9z4qMWeLMnFIN_kzqHK-Z_RnD5y2hKegb7kyduOuKSLfzoq3FpnnzyIFXfQm4SSPxQKz9NVWHKLj-9RhfsCr1c1WpxZk8LcHL0xbYbQiSvg5oNovt20bMTaCNdWzTR023hlxrmdtxNxBvWS35pv9WWkt3KZCNcPEmPfJKVCOQ_3sH6nOenYD5b5SVu8vSThKETOOTXSsplAYBCesBH7XOfV0cBroroTKgedNiIHZSivbXE8nRazMtsbcf-vQoGBl9UkX5J4tseHOaeK0ye0qQfjIzkRhWPjD5gjFDf4_ZDcpg7SpkZB9n8QlBPXFUBdd6JU53jcKhBKftHTClyk7KYpqdwRInvvUr-XO8jF5N6Eh4szcbSqITWghkVCl4wkoTRgxbp9vyFDjcWDUYZbPxAAlRkBInQPX9Ns-VG2cQyOQR5Rxx3C4lqQQR7BF36UKFr8j0TVl-RpDjO62pCrIIAI8IfeCCv1MSN33E6lxwloXaOkKEZz5iQWriO5JrFyibPvt0Ah6IUjbcIo7I0Yx-XI7Gd1WbSbbIQaMeVOK9Mi9RWbNM1TOaHODtTPF0o19gseKrd5FbVRaeT70cuxD18Sbig9WjNL60WWl5TDsWigQ89lzTaaFek58IZFoX5pBTYjR4hMcJ9_PrBqmz15qBARpD5W_4MuYPnlWLcv7aNdwcaC35QvFzZsf3Z58E6H9YpXUP5fBsjXxAiH6RR4hRTCVUeDSoHEbBg5jDshe4iDLimZIRsVCDWVt--xiVqCEatMoQNSW00UcnZOyxiH5tRL-QaCJU1ItEOZlsjyGALUeesYKEvExZVwamTvNTlcku6QpYPo00II69C-xFsR9RZuoUp1PkNZfwBSbdEV6dMOgnBPsKYYTvkE1lKgVLhdWYPFWAkQ-jM_StUQQ7h6l1muEtzpjNrz85noinQfrCYSEvxWdRHE4qKxGsCDZgZxhgMhOUw7NzmgTrY2FqgXw9GaQ0lXFDsO6tXCiQ2qotVFejFjRwCyh4EHMQoOcAe9twuq0jgG5rwJjjOJPys-MM7Id2YwD7KGc5YSFxT0ZOzrDSQwxjA8O_rQaplCPDPzj1FueQysloMUy3zhKKu8O78AVLjosfmBvGP07uxtI2F4A-_2JKdfQ_9zFjGs743IDPkGzMdvn38a88icOqT4hrLbvUN4zbqM74_XcP397_9nx2-9gHEyGlOz5VsKv9HYpOxI0olWP6WsNjiOpGhXEcR-Y0Q4hNaltvNSbGXSs3poMKcWamZ5k2seQGZsLwtEKmA5256WG6SPNF3Fo9HsLysHZF9b6toSP6P9f6A-BxMv8VWGQQgti5ijKGfniZnojmp2gyzqUiXM74fCNR-0AOgZkTAxJzPErsoXqRJOi0NVAu7EhUIfJ9pVCfjakT1ngp4yBvqtvMl8RW3XPyZrUi_WTSDd6LyWMi3csMG71NlAR6_eoWllxsZgLceH-XZ8eL43N5eqWdEJR5aLvwHQ3llJTH0tAUFcso1L8wqb9N_jvdcQLRaYTick5Fic3Bs8vOq7FfNI3fyJvspBcztjoAC7KQh_c8HtT_-YJCW5YUlKgAvl8jC20M5ElAqMm_MJ2brE_1Rz1nrdFNbwPQYvmgoL5AwgiAL07E03UccZlFk99sbFKVOQYcMPD75expVItR6FcdvcaQMf7vhzIKKp5m9fUnl7T5JumyeHV_aKruziyWBTN75y-V7dtsPNr_JUZc_a5L6FfE7ZbXDAOYLyWkSmiD-uVWGJEM_lcPn_CHxwSq8aPvZne88jPpWP6OICvzdA5xKT1Nmw3m1U2Lv-og8CRfHTBiQeuq2Hfh2kwwgXLAaFC_4jDyBEERVRJ7KQ0n_YdEbxHrvoRHIL8GbAhvOKcsK2PvG_bFBHFLAFrJzHoJPWo_xTg88PSE4_gy8-7oUM4SpxL47wmONuLWTlnH7suuzaKS2BOzJ1A4UlxdetmjtyQyDOk26-WTZLUJmEFLnOaL0m-1Z6zSbUnRXPCi0CdjSJNnY7uJQguREewCHdXEQOAEq9u78cNnnEkalr7hmOEjszTvpqf1XVGJKZ0_EasANHUnwEgx01ZFYlQ1LuOY0StnSkn_m02kLsT8knNmv1BYxb8Kdcde3o_CDMTaZOVALXzRVLKQMxAqnDJEHdw1cNG0d9QW0bvA3yMe1QEJsNNhkCbcPrnowjxPuWrGPsyTL47vgagqHpPp5grosZ8qeog12bP59l79zowMTBPGens2b_thQBXpyO_dlihUm9yKvfzYdHh1cDfSoYmEPyXwnE17bdsSwbh8f3tmnLz9OQxhPUxM7FvLBCJUZSUBrplFZaw3iV0AGXIlHeW67TE1U7XgEPAcvHFFL6lGgqLoXi8LMG3_DI0TgTzrxHpS9GTL5SeI9TlhxoaJZ8tBVXxDuwmwMZXh_Yn21nHD3yMW3fBw2wMNhIedlcTFPBT_2mEK_1g8Y4M6IJGXtkfx0AiGZUtmR98hOEtcztesMDSVUiail9ty5t-QnO-jPFicvv83ATIKEYCMGNM7RG9GL-JpGefd6znbGo2nrxYd2Cmc4-TubWN8JShOYXcRViYoXvtKVcdw9_ZB0IrmK2XVk0f4Ad_DHkKeWeDwBkA-IhgpXmR5Z8XrsnG-B5wruKRs2J6H9nN47pcYc2DGb9A_vXSnNFwsAGR9OO6OeUL0VvS2hNRf8YcCpQL3FvVidFT6TPP8beQfVcaKaLiZVU7QIgGAsS_9dj9CxoGtDqcfmDu2wZ0R8voLesEHY7A8LKWlYQmk0oSo5RPfiafLvayyDu6jjzyiQOvzqKTXTIINSs8kXq72xKAZOwimXbMayzxjfigqgVAN3mH94rE2eF7G7blX6n5EBT9En1fGRWuiv4FcEMAvQ-RFEI-ybnk-Jubt5QbsLkqWmk5dUxzS09ecx0B19Xc_yltTlD0oYVPxCwHGOqIf_f1uQg6vjOHshGSa6e5xc4iPps2NhTHCqeRPuQ4u1H8K7n-LuQQylbPn7vPKSjUgeyf3OHFVg-TJWlloo_cuhe1W77PNV1EczUJUlASFYln-8KiBsa0x5dC-bJ6pTS3Y2_fAOCLGneIra9WEd6VP30R0-evw32zQ7qororC-NCpd6pNgzy0Xaf1bxp3zAk34AvKXGMwv0lMJt1e126Lc1fCjzCcvV9HCPkGPAaqA7NSis-GY5YHyftv_FNZ8HEd3WNkMjcQmDxpbv1CMVLlkfLBY6uEOxm326Od9OGXE9o1aMF0LLoYMYY23y8qWSa6UJnqgI9uBhNtRHYJFVt9uzlC-eDjTcvBB13y6oFOEXgP3SSFa0U1NIxzB8tnM1VrB_p4XXFATRd5o2EhKVh9Gv6Bww_TgaWWvOTzs_exu7nsrs9jFnkZrrEC0LqyTvjhHCr83J4-wY_nI9vtJ07FS4oBMJmZkpXWUKhMu58v7QxL95pDF8IJyGuLvQPy6BWDusNWXEs8sPBI4g5KmUwm4_3qYGBpkVLIO8KPU3eIcY9OPvHNLpPePjkXH70WUKAOOUayyxgs=
+# 模型、Job 与 ODB 只读检查器
+
+需要确认 Abaqus 中的实际状态时，使用一次只读检查调用，不让大模型逐个猜仓库路径或 ODB
+字段。检查器不会写模型、等待作业、删除 `.lck` 或覆盖文件。
+
+```text
+use_skill(
+  "abaqus-link",
+  run="scripts/inspect_abaqus.py",
+  run_args='--workspace-dir "D:/work" --model "Model-1" --job "Job-1" --odb "Job-1.odb"'
+)
+```
+
+三个参数都可选：省略 `--model` 或 `--job` 时只列出可用名称；省略 `--odb` 时不打开
+ODB。相对 ODB 路径按 `--workspace-dir` 解析。只有作业已确认 `COMPLETED` 后才能在聊天
+工作流中传 `--odb`。
+
+## 返回内容
+
+- `model.available_models`：当前 mdb 的模型名。
+- `model.repositories`：材料、截面、分析步、BC、载荷、相互作用、约束、输出请求等的
+  名称、类型和创建步。
+- `model.parts` / `model.root_assembly`：几何与网格实体计数，以及每个 Set/Surface 的
+  vertices/edges/faces/cells/nodes/elements 数量。用这些计数阻止空选区静默进入作业。
+- `model.parts.items.<part>.mesh`：Part 各 Cell/Face 的实际网格控制组合、生成后的
+  `element.type` 计数和 `MeshStats` 形状计数。它用于识别“指派了 C3D8R 槽位，但仍按
+  `TET + FREE` 生成四面体”这类静默偏差；不能用 Cell 面数代替该回读。
+- `job.job_status`：当前状态的单次快照；不轮询。
+- `job.messages`：当前 Job 消息尾部。
+- `job.diagnostic_files`：同工作目录下 `.sta/.msg/.dat/.log` 的受限尾部和包含
+  ERROR/WARNING/FATAL/ABORT/TERMINAT 的诊断行。检查器不会读取或删除 `.lck`。
+- `odb.diagnostic_data`：ODB 内记录的求解终态及分析错误/警告计数（若该版本提供）。
+- `odb.steps`：每个 Step 的 frame 数、首末 frame 元数据、跨所有 frame 汇总的
+  field output、component labels、valid invariants、position 和 history region/output。
+- `odb.root_assembly`：实例节点/单元数，以及节点集、单元集和表面名称。
+
+## 使用边界
+
+- 顶层 `ok` 只说明检查脚本执行成功；业务结果还要检查内层 `result.status` 和各子项
+  `status`。`PARTIAL` 通常表示请求的模型、Job 或 ODB 不存在。
+- `truncated: true` 表示达到 `--max-items` 或日志行上限，不代表仓库只有返回的项目。
+- `mesh.element_types.truncated: true` 表示实际单元类型只扫描了前若干单元；此时不得据此
+  宣称整个 Part 的单元类型一致。
+- Set/Surface 非空只证明存在实体，不证明选区方向、物理角色或载荷方向正确；仍须与
+  `analysis_spec` 对照。
+- ODB 字段必须先从检查结果确认，再选择 invariant 和 position。不能假定 `S` 一定有
+  `MISES`，也不能假定所有 frame 拥有相同字段。

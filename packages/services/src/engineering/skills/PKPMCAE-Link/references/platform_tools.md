@@ -1,2 +1,193 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRS4Za-tKBpW6bUGktzy44MPlLV6bsLSRzK7lsAaYwBHOiCLgjJfW8X0TTuOZeJKem0lxIrcGMQYejU9sGsWT_0VKtosDzIPBvTOvZK3-qO32O7CMN68b29l3MFQO_ZjKAwzXBY1QBlqG_rb1tSVUlfQYDoTyR2wtuvVrOxbb_3AKupddFF4OyAkMnFpD2SAAPiCK9Ff9rP089h04TJG8pzzSAilDS_YlVY4fIqby7Dge5OWZj7sypW_bgU7HI0dCcKaVnjU790PTd8U2s1iT6pTJc5IYUmrb4oYb7CWNW3FAe8jsr-y3fAgNg9b_etaVsvTPg9lU5Qdi-z0XMONymbY83RclyLPEAwQ-h-fw-b0hZoHdGZJjH9N5zAnvXOuys4f6LtKTx7ZTjHSK4fqyqyRn_r7t3fxe9ZTf-CW_fQrlbThw0g3H5fxJWbCO_W9x9RbMq7kKi6qjadwFPRXzlZp6nS5pMTdzY_pLtAsESqRtA0693xUU2UKyloCepIQQI1Ly6iB91qpkyHziT0ckwyz4Vx_bT9JWxGePwk-ytVNRTokU6DW3-ll9misI-PxJto1Z0poCHoKD46IhhsnrEvnKAm5Ab-ebS-NVux6Lrzfb49nbeJqAWaLrKoFeWaw0DIVXkwKbRUo13o2Rx6GOr-IHBgUWiIe3SDZwWVljkORiWvXXHLJJgI3wKumdbFtSkBp8CH7Ra0cQvTVTTO_odGK6QA6cfHAhNOsxDzG6iCdZQvmBR4NYVeZTTG95MiV3ifgGM7AS604Xbb9xImVyfXIu87lFVZ86QSJaaxoCkjU6WEsndZU-dsdA_hoYiJer9Hx6S5NHBmmtjkTDT7enNIqiYa1wH_TyXs6-zga3Czjym4fgj0B2l8BNcRJGd6b-paulKqE8szT6X-7QGQ46nJbEKuFgwz94zFpSFBjZ6J-99cbyMKLrCw4qYE4djQldq3aDWeDiNaY9U_lfrvInjnfoogxxLhyBsrC8_v9xolLxtGNtNg2m2e3LEnZAshEaWEbwUILG1RF9FpnPSVDE8pVPqTIzmqbNL73VIzquq4KUp17TMuf5XoKQ6Klz8wlLmDgvzvce3bM0CMpM4Mo8l1AMBiApyWJo1yI1IPo194_LHvpS7XjMWLmfUMCAUrTLnozhuASvXZ8BfytbKGAw9aooDhlahF7K2Y5mPhOTeFBZcTHwrxd6VfASzpRS_uGS5z1h4IRtR1XVae8ZjGntOqwZpelO6KObO0JNF3ZM5Fzs9iQelNGdfADpo32pJESO56PdCUka_j4qN00xhawUP6rouHtQVLXnsfVeRETp1bAr1V-aVbPa5x5_8EqcYPrKv1OK1oP56P05m08ieOhe0zleide1eFCazdFlKvArNHeo_41Bwt1ptWRtmig7lIUZqX8AgdKcziuO1-_Xt9_EURnPtpaNolJGxSj__ZtolIKFvV03VQ4IUDpBlZhSt1U3UN49suarPjclcQgx-aHZZqu9Y5S6U_ADuKFZQ0vYlqT9NKS8E5A_O-bUThw1Dw8ar60us7SMXx1Gct0Mhk_6SZQDmsNL8CIPTnr1qHfb9u61ewD16jVO7dsw0SnKiamKNC9B8b3VefFsB4C3r3wh2drSxpABtTt-Chm_Fw4YgFo7TKfy4oRECff0bHr-_ejRHNvdc7BovPi_XlVK0LXfySrCMEflDZf_1Zwy9hEfcNCUHnbNnABUE9VPgWLuPcjwZ5l_nCjtTPKW_Y8F2RnefSZjRfGoeAyqps3YlrieSlZvFzfGOC56KrTVQ42b7FI8mp7Nw6iF2P3nVl1AXcoiwn0y7cArkDtgjxi0rNEno1JSJ-fUtp8QPekldqQzlIA465EnlHfVQqCj6Sne-4MycjhY7eFO50wY1DrPrJszTtUG8mRVgPllUoiRKJBwnEeYolg0Oi0E4DIzlYQ-b7c_N5Um-vtJMwvWsoEFnYLGZt1wQyzQ-P7WXWJlCxNjCzAqdswSKDr0grcvmnXefoqarskn8UjcMrlMObvYwrWfU4I2lortB62T_VfsxabtdctU5T-Rggf7TiPMGvx4C8vkGV4CoYhvO_2QsaXnZR5WZRMmx-5xihmLWOFkwVbX16PkogtfNHSSqh6fMVBjvPAGGVX-cR9DITDe2qyZ8KnNaCSYH4KQNUYXbwZ9ij0wfwCS8gptkwpt0akZIt1ax_DY8Yj3lDgw0XzIyc_a4-BMOotiXrggq-7eueoFUZe5dSFwyLiIGMDotlEGKwJ8wYmD8rVM05XPCYq5uqpT4e3plmSv5Onz0ptpfxdwgsz4N2y2jNOHZIbnGfEnRKidLnRDvoHw9z1gLfRjMwaDegjFKUXswbdORFTa1M8zjPQzcXvvfOO6UIxXt3MGr_kBkyxEbHDKl9t_YJzWsqyWqD9_vanvlFtIdmg_l_UJGBE_mx2yPIkK8MgR5BBWFppXqcP-CZD7HqVgi4c6ZT5p3Da0xtQ3DNHJDmO8aaEINfYdqTamkuIQ_ltcMWjjoh2WbZtNxfPmae0SSn1isTkte87obkF9gIP7pImIj4HQe5kpk4eLc2LzMmeiZYV_tm9loleOg0hZCd3zBGnvC-KcRAt0_WFCvOsfBGmUuwSGl0GaCdUfm2hb-AD8JPPvAMtH6fzNdcGZZBf2pTvfRP4IlJ9rh6lR8IUhJ6bBB5SkeV6WOQo8e1hSsvEJbPWQtANP_peLVHV6VHMpAMwZTMNlxYMVmW4w8tx910zpDTIHZOy0Blw3y65vVJWH3pzsoDPZ7tlAAIp9wN24TW2GX6iKTIhakGOUY4_Wd9mtw-9CA4XPTD_Soa4Du0hnbERb18W0hJ7SEjmSj2bGsf79FwFYakT4nS3wdtPZVPZbrKmffMkQUMDfpBLwy5GlAx3OUcD7_mAEfe15cF2Ge_pVJJ7lRM3ttfcBsbSjFkRMo1yJr3-wlBzAcFRWALy5giJsxRffLImP5fvCyBurJFrwZ0l8ZZCQUvK_8b4EhIAzCz3VQbfEKzW-UxCkTYT77epn2uLFOR4mvT2Ds6-9nkFBgz7QUN_yEwXPqqlVBPkeKTfGpXMrWyuHGYezQQm17PEVMk_ZmGmQnNSz-3CEbYWCcBYUidbjcgfRTpA86iZmPSWJJ9hevx_e_Ku8c7OhN7cp9q7hhJiCZ31OhbsRSL63WSjdu3_0N-Plab65JhWoP9EgJUna4-Qa4LyM_xmdGspPsR6lQqrbm9JySrU46ZlI5sW03Qts-j2eey03JTE0TQ4xE02FvsCsWbK3snfxBrUpUDRIMwE5zAaQaB2YavFVxBWeuo32bHKo6mVf5sS8fIoNs1ayf7aQTHhmYxFCABRzEaegFhelhC4ln7FVrQTa0IF6qsE3VpjhSaZtr5UqxBTPeYXaotac_AkryXtAixRnfiDJXw_rLcD_uyJKSSdgWvaH5m--zlYO1G-tC8a8pKXUODzqM5AoJaZgGZVHAA4KSPkUTGGWmrNM4XytqhF_L4F2dNIJiZILMIAuubYkbqJSBtE4DCC-k9tS065H_SWTfKFev5oXiAJt2NxOv1d7uGjyenVMvolTfRGZ_EDK-kyV_wVHP27pgEkC07IeaJK4l-94r0GAhDLXqUpVxaNZYLw53vKD6lV9rzCtVDZX3EfpQA2xwG5rGVtVI90J6Lsu03MyybtXDBhKgSsnIlhRxiWIWLAOZp9ibezEsB2EyFW-MQt0Ep5UbmMKOVPCj_pUzyUyVB4kWOCZyLoriRFPM-nnFYQQiZVGe0lJci98NIN29IHZ-55PLVtEVHv_WzsvSh2MEtJ_u9381iv4VFaIMT4TBkNXWr3vXV5kDnJzHgEfCu4XIw0qTfVzIAnjfA6Z-RgNgeBdQwFri1MzDHS0-AjwvKb0v3UkObepdQHelw1DVvi5wPHJI70Yr-8YLdXatgG5f9584KMMZpOyOxWp3-Bw6Mb4H2dhOI6dFdO9VfKqrPUnaO-rDohggRgYYc_vd9vnvko5DuA-yV3tHZUV7dgbKM0j8Cm84PjGMmDklh20dnh5X351G1tERBoDB6pAfzbukQEart21SEFmrFMjb_s79z5G_95mnXQQTKUOtt2y4AxPinXzQCFcZRWJjT53lRxbqBZWjHcEecFVRgCcBR3qs2q50OSJ0JjQwA42K_pieZpp6RA3nHu1rgFzmabyXXbh_xY1RtnqEo74xiF-KSYg3TAI0Gma_6Q8UvriMIKnnQB2slV-UZzcevuwFEL_iZ1s_U8aslFKsTrEQaphi5wcDpBG2VrULWk9IQPbDoQlZ1aYte8Ac4KbzWgi_mtcd3o9f5rdpCsU9R-3GUKAB_8x6LTTP1mB8958qvO2Usc8XvWoFy7G6DpTyNvfF8EJjykUOyOqtzCqbw7DbpM7fH4Mfdvl_KjrNa1cLgstEhDLVoD0SpS4bpFOqRRssd7YQ8v1fEVkbFL2z_6aQ9YKqyuZYymB3X7rq1AT8yQpoWrxa5nFe1nghWY9ryDTENwNMd6n2hgj5egs2EvHKQ-kZeqVmRE1YW8CU0yVm9dmKOXT-KYxMIeRfXEZd5vAN3bKjIOjzzMJXPiWtZwC6Ml9gg6uV76ZdryMe_xp2QvIR0rIURwmJJB25UalQuxoQDpFZ-kRFqW85e3EviA32mUgHSV2Hst_R1D05T-16d6IXZxDBmm7EiXhBehT6cqpPP2MkrMbL1beK104h14HDF5PxsIdEsVfET3NHff24ooZHiRrr6b_8fFOVcdnomVaj-RhDJZIDTq7NGItDH3Pc4gOGuVZZ_kZn92paGTiwyFGCXZ26ZR1Jc7T_dxq4Ph0z1oyw_TY7N7LwO5tHtzJcBM8iauLgpkRDw47boHFBUA2UG-8ndqx1qVy_WEOagDXwrixi9UvkCPDwYgc-ZP7ziHtOwcwwRbfPJEbsTsPsn79-blpOZJ8u4ss_u4bayWhE9SULN7bWh9Pfcmph25oLIiQJ6nxRqmW88Wtjz6x8pAfbSf2B4sCQ6Z72_7Q5WUcxQ1PG9tLn8TesHb5WOmvSjN_VfQEb7xtvYfzq2KbKdpCaV17Xc5iOJGZ7EUhP9ZABcE6KMXu5EekXQywxXBprq0gOloR8qtE5duRBFR13R3Y2Cz82EUhTPLF6fdxmdWKbfRRX5j0nwT1gc6yTcxXIAzrfopqsQWfiAfEIVJHxQVqz1fNz2dCJwtT2JKRJ-y6r8AygneYYq-pEmaGm8qA9wSmg_kxjhfdD6rt2ukgU5yimL-iiqskEj46HobkeqLPOErSkLh3mZHFt_LAyiDikt58i7I9AsGPtRKaU6VAPliE_nJPi9gLnXXvCWeo-QuOXTfQT0fRkYK0eealYyebOKZYlgE9Qs-PWv4A-GRJbEecAoSVqsG-wkNOfDEpa3zuACvvFviDyQtJsw572coKp1kIBElNrF7FPoEMlLePtxi1BnjAXwuGHO3RIzy-cwU9He3GsePEkmT1bYEo2FbLijlo7upHsjs1az9h753wvakxfSU2w_qDYcmlpWfwkqK1h6SWK1T3CP2gxR4lnQue5vaeyE-dErzvnDe5GlyYlCf7N5MCc75jh8XvzBSLMLyhtAp7_2ZxEkahTiG-lGtUZDkhPvfsAH4XuTHeATmWNxfOkx2kbZXZvDnHA7f8IBtV_mhqiRJf9oglDSNSN6R5nX3RQnnFdbkAnWJgZI88hGiyc_XS8UQ-6Z-EpgSEAZP5tbw082dDMU5GZ7sqKwhy8MOlUZmRvQGZtH4xbikBgk-b_6a4xOaeoH4hkFKLncYXUoNyGxzXi7gKLF1sefCChap7MaluWMSUMcZ_27X-dnuuikVzuSr10vapKVGP211awxqv6qP9v-cMMhEBkm2jle7oWew-8HyUMkcxKPQ7PaySXue_6LmvIqF9lme7wAdKvRVORVAvi8FTrDDNxxDpgcYDouzB6ETc5x6o8P78_h3kzRyWk2QshnzUkJEbz1RwVR1MpemGAJr83uu4_Ql2TupdWt4UjzoLui6qMlw2iYVEIcK9cEWDj_wNBsc6TkJ4VzeLEvmYtrPYFml73SG3688LxXeDEkbZZWSHbHl43qCkYFGbRvwpX3N0jcfoSGxPMfeh039tT19oOh1jCD8njtk1SYPaEX374ct--3BFgJdtfP71mrhzc1AoGEjwDcyC5fQGMKtcahKsn-qCDHMeDdYRTA2uOGXJ-r3DZ2ByT_rcMbUQTeah8BBTEvRMupFyUyqHv09FyQW5o3xbj2rcaPP478Pir4XeKGQ8jIYeMXxAbiPTxKWWHUGMJZ6XM__OlYpRcHYvrp77RSbMfZEctarfuh02h_VSu06Rq3uxrLrtmuuzQh2dzZn_5BlhHy-lAurISSx5Ce_9Z2Vp7BhWymT5fPcPO0cOnBxBr6oWuxcfcbkgQpyVemDJc1ddzxVS5JYFGHxqXhRsgK-ud7sZuCabUr_ifcK5Z4NczhkKMRRaHXEIIFdv44LXE07Zh9ZTmTeEteZHBZyxje893J75Yeq31PuZ_hHPsSNdZ47rWeUf-LKBhJKLyxoZLpMSMCtNyDuoQ29VXXpDCmi0OYtlefTTieNxv9lANqBopC_nOsJxP5WDNPYdR73I3uuz4puiD-vUCJEqFBeHSBTX-weXpu_Ahcgmxp2hmAUYzyiOCar5QQu_ZNNQVjRhbfp9DYnfQQG3o9JBGZdny4GkRwcuU1mxt52mZebCX9m5LjJYoD7ByY9VxiXJAz_FFIhKe4k9E7edOv0KKYeh717KHv9INU7gIVYbwS0dTMPC0rnX_zUmxO-94jrAWNEXSMpnSygeisEJlndGvR7EWVop4ruxEMMV1zKmuKUYXzco15MOg4hic3VzX_jXH7Zp2DldpKRVCjkOfGumgH1o9VvxMWdN_u2E5qdTU7sKMPiS4kX6NNFF18vy-PE98zM5ehvP5DTIozq9RAd3uMO2pvkJLmG_5WRoUVqKp1gCnMfRhnfQ24tublgUo9EDCc-nERQRDLiDnygRDe4WC2hbj7TyAcl9_EOrd5Zk9f9oAJOsidSFSfTcdJelBq34olEPN4NmhVmHEdG6_LMipjDPl6UC7ttQaOFs2iCHUeyNPRBExSU8cKdJm8q8Wunv4mQIdVgC_byTQXMohCOMBsXfkX_XFDPOA5I8qSuxTaR7eesVDOU3B8DRd_PIcLLgYkyH2UrJhRJt9EqH9QIlpbVfZ8qnXMUvfLeXlXxio83XmjcZosdaP6PoPyyio4LFfRMCkuO1p4S5fJYDk-zAcfrt9tE6XaH3mctH1jVjV5Id4-nXWVd3b73495HE0jIGQucHAiHyF2U83bJT-lS4J_-gh8dJlMQ0nAAugpSgmKETU_iI9BpPwYIaKCyeoLbUeCKOunocBZFsq-4VTu_PdFEe5IPlRYDMHtNVDEYFIYiyMEJBfnBIKPOXre41iw0XTT9_e7AT7Rqy538cTqOEi6NALgRGgF0qa2EKGN68YVuUdr50gUqc5QbynaOkCU-9QhO4yLKbwh0swk_3AhLT37zH2jhGnZ_DW9v_XU_mIxau8MyqovcaoucAq475LuZU5oNgV_Hnf641VFIlFydx24yUClVTMPwnDjyMwOHAmBQ_Q6djFVWcQDZX1YmYDHfl-aMnPnv7QO2ZVRRylR128qm1_-m_KXZMFki4cekbCA2ZLZOlITgj3haAuw_TDwXMHoEqgwtNFT-Fv_8Dv_b01oQlIjwFztDJf1M23YFIl6C1bsJ-_HUAYKR19rM2aBjTy6kKu8q0-vXgdjTjSQAPGPjbCMKKBX8GIMchGJpRhAtY7Se7a14r_h0YCwKDEZFbS4P6UezKRJYOalR4dClk-1qjUgLJskAINH5mWw3r9gCn-lbIaY7P4-Wg05d3JPCKOUiJ-eQza_8XNbN_yOA0QsWbbdzsPN3Kv-ujj4kqDO-Fy8v01HXOWP-KQa5g5NMocgz8nu2pRiTBjcj57WgOkA4ynErP6nMGi6iFfcJYUjOolnwXoztBT95XUVsqQKiy_8xbELAFBPKAKpxSF4mXRsVwEo7kJzhX6jiECwP3gF_M7QOISwVhyvK3QtOOk_JCZ7vSIk2NMd5STHV1oZ_D2QsLEHYuQ7H-ptf26-EyC5GOmACGGh1eq70ln0o-17kYFqc25_8SHEl2BzqsoYCrcspmP_AQR_nx_yamc4A_PZBRrpvgTqHZggjA2nuIxYg1BNNCCSDnbXvGMT-ZzS6B8UlMdfQlm2FFFWcrujfWVpxuiUWr6jxCUqxGorseO9onvuPo5Q0UzPmchfMnbrxAp3VRXLezMNUsosRGTdJniPEIlmvabiLTeTuEkw7vStc6Eh4eTWSWEgxSm_VQDM_6bB9iF_8iYVEr3MgQtGb35H_qeoG1tY95g8TYp1Y8pOf32dtk3UFFpwlg8sJAgtyyTmFv2O3-HWLXYhfQbQ_AHOuZIwqgMG9YBg0bys1ULvyOD-Tnm2mX9eSSa2NyCMjUX4qGUvtfbtft38LR6MJ5OIO9zfs4IBksLoJuGkrk9E5E3qCM7IiRmb0LiT8LR0wCRhf5ub2XxWdTLs3qdo1pScJQpXD9PRm849EohoPBv2skJSOKmZD53OJtzOg-3iMiJnewGG6SHbgxqyesNBf-EdjhpoCeRAKMXeKVN9Y8Kg9QjGx1IQmdquwrfYbDFLhZujez-e407YlQPp9X1aTY0ramT7kMWDSfGnRBLLWnQeoSYHpnHDyQsA5ZWyxu_a4-Z3KdGrm7fq_SQGUFQU8MnmkCG2MNTdPUBRE7GHzBxkXMsE6Cp1yF5ill-OqE995k2-f0RvIzWGqcpps3sIBirHziVNqTfk812Th_U1aMHr2c8fw1d4yKCwxxMBw8zAQAJUxsOegA_sjVG1kbkx0QLKgoWTg9vwb0cJZjqJLMFJwETtvYUjt3xH_zvV9NBxMKW6EX_v0xbN0Kqj7u0244VFcdWqEX1Grrs62OHdzzgL_SF9EyiZxrqB1j3COORBuDwnotqFYOghFaq8PcaTTBY5tcH6VrPiPcKWMI4q1s2WxkErpF0gXMfP8m_eOLV0bL2b33-QfxoyiUTpgrNKgbf6NvjVm48zfDkSsL8gTCw4-pdJQYBwaFNJj-0SjpHUx9HrZ7ai-8zr_zIYJjnek5pVhDW_qRT0a4wYx0TI0ksYVQIsLjrreIlMFHo_pXNsDdKBpN03F4IxWmihxECX7koBQIZJZ1XGr_nPNO9lvDXJ_swYY21kodW_yPktrOcDCRPGp5YKFdnF27MUk1TV4ZPOxF-5UztccvC7Yt35pw4ga5KdfwORoxCjzxy-6YSPEYhzPx4i-oU7jxUEkJcQyduNXSPPAVe4d1fK-wlvESVpz1vu-gv7C3c9-sg-lSUOIQ0sOUhIyGkHqEMGvcU6peGS84Zu11XayOAOs7nhlVDtlJ0Lw_KmpZmkJWNrV4E2NDl1gw6fF7ySAldKXO77Dhx3qeWhkRZqt--qozGc7ShGJ1weVTVjKSLt3E82ZUwlVvSHR3tsXTOME2KRGemqXa4Yb8kT0VImxjqAK3HGCwWbw5OgLscdas0tZFcfhXvV6IhF-ogT08HJfP8rUE0JM9kBJL80ctvo5vBdOBRhhtQTM98twzv3rIaaFh1QET4y-B-q_9MllTgszyYzig-QlZec9qYmidqhygOj0mXm9uziLCx-k4LVkMhVmswJ-Td8_3f5C2rovEgoHLXhfaSIGUVD1p1nz-mbmgMdItbnlqHp2lMFXRs95Wv_OxalYUYIo-htZgcwfIxVLsAUym619p3Ab-moLdUGQAQozYalLb2xkV_UUcQQ3USzQKcV3pOVJ7KP5GH_D8_eENu251HnfaVoQnYZYBizyIHsWlgrAR8bq5GGtPyzboMMPvgR7DEbHNRR3YdM6LUCT6RH17PIrNOAeCDA4RnMv3vmnck0D5bvm7JNNDJj740TwrutFNkxcC4JBCTIaviNF8j1wNerSZnjTZq3cztXy_GpBbl9hzc0bAnEg8zY4B7OmK_qfEuvQz2LzduZqYxnW9A2aFqiIwV03tFleHSEHE5si-FwfZmS_CantnLkQBhlHvaeHRhIW-imcl7gbPM1Tgp_m9rS-h-L77tGRdw8rHkIo6LemX9SMKe40L0vIrBzvLSGUTUWXx6yWWSM-DlAtLv9-4m-g-5QTxISJWtcYnMECeJhZsef4sGqLL4rJBDlq-_34u98B5AUNzQzNZm9qUOTkwLAsKHIC9R58AbZ92bgi1-YJECJC4BF2tyZ4bgJvl9VyybR3bBiBQIx5E_Z1d1dYeW1TZ_pjRYfFWHXTLAbmoGsFkbROYQhUkWmVj8KhWluLBckm1njYh2S3P3QlvZfsFHJlWVr5PQgLJt0u5MSiMQlwRY2aY16gT_MBQ-MhYwn5mhmQs3L8o3urLTQjPQMsKoan0Za4euxEOIAnAWdkN9xKPzWvJYschJj8HfI3zQHXOD8ewhFmIIjKc1UpozqPYOJPk2iJ-jv_887vooPHhn45qT7QRirkFfpxj26V0n51gKW0G40AKza_vTWZS5Zb-Gob954iY98a7Pr5JBQJj-HUlyJiCOaOC0b14ZdD7zcfTgFn37-EoiMr6DNzscYakURluiDL36GaGc-YjLTnuGQSFQ-FGx652vQE-E3J3jMctA3pcpnTitiWKQ4YMDg1SziavzRLieGgMcgoFE0hSqsCP9y703PlkOSSInyRcIa3ukXmr37bTusRMtLUBckCczSGa1rahL0b1vXsYHX4a67AhXba5ctiI6twXqd1YeoOaQNjBySPpegFCqWiThkk267bP9NigXGQi9dms20AccOCZyVyV3eWILfjpiAIqwARx5Eu7xegv4rHTjKVu6RjxZghKFjqolpPjjnUq7E7bHOM-YU6e4kCjsQsCtguM1UaoWsBqPxt2Wch3HWc0qnJPtC3qDp3hJ9rPeATBS2dvAlpJWPWcgogl78n6dFjOeCz-J8eZpHWIbUtGw52W-Vr_kR1vWt2fE14cwPg1KroKeNSbCH2DzhcQ-cMYJUp0WkBch37aUctlF9oGRjRZ16K_sLndaLWLFbRkoTt41_zM9TOyNWE7dxIep430PO8OzyhEQavqoywK6HM9gA5lJzsaaW3MJZRWpW56WMJdIDpRr2MRepgwPQaEYDAOicPS6SfquUUFbW3E0Ts0NTjJzaw_S1iKtKyz2IjpSoE9aRBEDmJSkW9nGqEjM-DLujhtMx_c8JVlBM9vRk-aoD0wzyqOFGw11c9PJMt2Atj057CynbGW1pl16oOaXpMS7JnB0f5wki3CTzXyw0oyyuZhkrriVcWHTtrAifK-L46jhwcRkYZoGIKN0ePlRaZKgGEScMnMOrH7hdpylMibrAVJ9gcleN8ZUvjXQ0wbzzDE3Tl518j6uP3Lm__FuemQeqBuoqeSZFc0RB_m-Xk6eKzVuPGXh1mXv6W3V5crwZPrAtPwKOr01E8TeSajghxb3YwGkcB0H6GgLHKOjWGmioeq5oFcXpT8cayncf-ny0oydwsSCFQkQsok0bVIWJtsEmofoclpGx3vcfAs4zdYWU0Z5spvH9-Rf-Go3e09BZPHYoBfInWdAJKhOzNQLqNWps5LxHaFmg0KV-u47TXOpIbATQA-9LFtCrMuK0vML2z6R3iEn0e8GCSV3ZZNT0KEyZRFcIHZkZk62AUTjq4VDJJ1rBzBEIu2pF9mA-1PlH--xrnaalzt2r0a2vQ0QTwUBEh2Qfsc27Oput-GuzG6Qj4ehexKIWUjBrcX1DifKzoogtuitmpMnE6_2Oy--6btUcUuLydoamjJ_XEYD8QPWSvqALz7SXzGp_8KWSPOnO6PXQ_mARvs7Y30gegfdbL4Kdm56iUe05gyZQP5yHL6VkR6qecr39kktWJEc13jC46b9fPBpIv4TXgu_728Y_pn8stDIHuW0HTgwnWPwdNDj1Ym_PcEYMNdSI8bu_-T_3uNNPebs0D4VbLvc5cCOPAY3LXhs4gcfWXTFpKjiqlx5Cx571CmRTRSUD_0XE52Ba_0DiGkIAPh00ZcIrj5SFP7VmwP0g7QWvKxtErVqKQ7wesosdNCgb3Hrpf3Ar-wd6fwafOtu6xLdBBv9AUzOSpUzEF0l32iHo6dqH01qY1UZSmTM3n9Qj_Xdb8MQAM8ICyPWZLIgAQb-5yvvj7ph6u4sfuN18k4i6nVo4F6gstBDmj_OajBe-cBNoxOfdlt8spRkF7dfD5P9Ty4jM_gMGUOGJBWRjvjwsVQzPL742bTFgnWTMmp7MdZRtrrts_HTEUBZRV6mkW81NtWcSA0z8Aa4HbjsogsiCBqKhiMofMTqL2A13Mt_VROS26333UoPSKYqQXQEq2S6ras8wuPa0ghUhi4EAKN3lO8Sgkgzey8rXduequYjlsw5p-TVZCUWSp_oHk57byt1yPnBvCJCUWuV2FXRHInpLg0S7FG2OK11g5KvmheMvUDOJaVmY6-w1H7PVXiOFftLRLDdqF15-9ev9v-XgjIE0RCordMJUXftIqStKkERwvFpyQ6bgBwLFgk5ranjyCQrHx2_uoSIuJ-0_rnllH0WrI9hkbift-iwkQpbdtQpu3yzCaBpPutSO2bZCaOK8h09eFrb4j5AlOWFL0qLIj8-uSEBN4UO4btsLHPWYfEP8yGG40rmcJXlOshYh2Su5rUO648DTf4kMSq0BKqKvOGC5rsii9ibxxQRjYONvRSP8fAvfgGhNqYQ_S1Lk7VPCOApHMfINvutwi9n1SHz6fN5mwE-Z9hoMljkWZCLf1eMuCGkQSRMXZeC3hem7gPTsv-T5pk3jcopDF7e3oD5xwaqBuIQ0WOyFSD-nX86lH6uYalSm0xIpK0M_KTat6SZmV-NivZbKzCL2UA64O9tQbs-WFLwezqhtiZxd-DiE53hiwJlobq-9TOyTUgRpZSt9JtpcDJXRXfW9LquTFuyuuoACtPWk6MAnKOm2DADZZ7meN5_Tc_hpzTsEXSZOixYtSLNdw3qxrKhEE_b_ryTYv64FMpSF2R_fjR51LrtapvsT3gYNt8CbqPFjnTuNqnU3FK7nBazMNrHVzlA1XA7LzdW13q9_7sUWZEaLciPf-g3_Rw9Tk7dDiB9KUfHCvT5Sn1ENQiCUwPfoHzzBkUq9DDm4AyabEmiITaLmW-7V6knjr582XwxhA4CUjQeFR-l7IP_-oNg-gm-UrwfE2Ory-RAG6iYkQYx7tTWl4DwpvgEO5JcBBhLWaT76HVJOZcPcru1Q_EfOZddHUKxyWckP425Y2PHVM7rUdFiRPNJfOiVet9BnOkNKByom_hf2wL2Ui5dvaOrsrPUZ1DoNdVkeNnBx8qpWAKwvhElFLEMxD8XqgavE2_w9Z7tLFyARJrrDWlFRbFhl_rDCKbJBzxTOzxQrW0ezsuMo3wBPg4vnz2A5c5TZisbQmJ2xtCDOPXT7n_NlejDRVLjSoQrfVOtVyOGX_Eu_aMlgZGvz5FEljFDT2Adb9OyrzODtIvXLWktkuBPr07xZg39R2c6iZJmy4M-krOmR3CSug-QmgFjHc4cR51hu8dFA4a6gpzB-1dgZ43JjeZdLbf-EYlbkAWa9svkxSqdoNTiSa8YCaUkD-G_q8YWUL4Uo5ZTi80qogOZcuw1N2QtQuxWweAHZMFY7SY16XVNIB9Nb_RU_xwt90Aua_wjouJaBqJXTB2NRsJxv4oiW3C59XByaBGiVA6B7CUB5oI7jMDa7TbYlJ9-CzSo-jKJX3z00IDg5KA6wrQy3X9z5oDIfgLyuBcL9Q6YUBIywHlzx9upB8ClsLmw0N0Zt625Xn0DIddoI6xOxlXm7arscCl6LlJ3vhw0prNWxItU3lEUYjZeaYvgMOqKk8eaXhANAViYeWRNmdywgeXVRxYTih8qrAoeVSvQ20GGGuoe0gAvb4adIp_JRvhzigGYmaohoB-N63ImNnPPWg9rKY9Zs58iP2OENIOolzdPOQtM7GwxNosrcT92QOfPbMdgqQttEtMVLkasMLJOoJAxfLUVXrLnWVaptHHSmUX_1nHKHWLbMXJea5I6Ex1630VATHWQ6ElmENpPOyzTD_3O4I4ruZYNkGbmbEru5LRAx7SBs9AD-DMy0VV_lbt_Y7G3n58XWPW2crLYDGQx-sFNyTFap1V_8q0n7YY5sFC2cO_YA5Y4kOjVwtalGGuS9Y5YXrTFzVTkZ4NfBBoK0bbMmBJcwdcUEh6sd8u7da34iaH2wRIon6AtVYKOb_kqP2I7WvFT7Dy-9unVLr7hrxv8EvmYukWw5dFT5MPZZmclKtVW4mpMbpRghPV7zigS3w0mV0mzl7avHrewtRTgziLDnqGvB1Bv3UsnfZWt0HZPCssceXSZPyb91bAgnkYdhw6izlCqH0W9DzS1hsiYh_QijEA8xX6KB0wRBOcz3CMjorpzRBqJ-ks2jKywFFytMdwFWk5E0WBhMbUJSH7flT82gzGDdMMaHxJtYIoXG06DGmgKMbVy_22WfJTCtxQ_V5q2-D3rRld6dsncMJyJHgtsoptnp4CV5XgZsNYNn-nUkrqEuEzaN2U1hocg8yZDRv4fSRskocS_vKhyI242WKZ_CXTXcBIewvjmFCzPJ8YxybWs7UUutomZiuQ08YD_WgEhvefJVcYyhb3CF9u9lwYcYxhh58ZP6D8jW_-rtiyCeuBoJZYb81I1MaxxOZKe-XpClWq3NF3kVzK2JWNyPVTM-zEqP2Eb4YXjceXRhV05nmU03HD42xpu2N0MeiyG3GBsMPLtzg1apUEkH_0rbTT0AT0gB22GRctxJUejQmNp6zN_CIIWeNpDuw3sq_nnhfIl7hhgUF9KS1x06-FgJOB_fULkxgd5w9qFTDpBPmbmlJdsOEuFBkMAfebQJGJCpCB183eYjK3WrIJPUjLFfr3akty4-1tqrzq8j88EKssBfDUL69JMPfl8pau-mXuGWGTxo0sY87VhFa7j97bBDFZN6sTkuVn0-qtm-RYbUV7y4FhwAOviCVlPNdwfhPPri0PHrcm4QIY9DUD3sBWzL_CVACsYj1mboZ5a-TOWh_IpzDZylTi1chqiOy4NB05PlFbACdRu03ov3M6gmeOfE--CB_TEySH4pzldBZPKPZCYylhcJAnbs-wU77Ec-VKMPkt5XmtaAAh-53tfbuASIEZLMN-S23lUhUUILlzgfNQEsG00VHxk4_NG5Vs0ie6jls9ktOBIPPN1Hb3vRdbewsxbo9SG79DYI1vGvBJjH-A3zEi4OK0OM7VzdeAZcTfPbsoL7TFmM9nr-wEW47PEOZ4m4G2uOUjPfGB_H0tCMT_zaam5c6JFmPiS-APpr9-XNE-Mn4kin0eLIu9D1myLWtjDDcbB-MKtd9iD2s6PL-xQkEISHd_iMMcoNEYOmXCg5X-5JvMc5UhS_z7gSkqaBYoHrkX1kDP5mcJ06ZLu3VKwZlRulCUdUMfLxdrGEUnOD0rPX6rOF4s3dVYxLaVwxmRJLGaPKPur2KaT89F8RtvPQYm5vWNDieh5VEM_rYnj7Whl6sYn0fz0Slzsi_Map-zw15s6MBSWHA6UHf39nHx9G5o8tbUld0PG0AQYix0aVknLUVBiugq9QFbXIQQENkfHRlPDUAWLEx3iwMvu5O8_meioFzqiJx2LC-wk7YKOvSzYa2YKWUFOUIdYUaXxiyrcQ_7aYe-QhHuHNK7XRCqg83HLoDFKSHQdJUh7cCiV-e2NXzkSaznprnqOqU0MNb1fnAgYZLZf1sVGnCbogEyFAqU56wBwIhiCZs4dHDwfkBCRcBfWt7vZjIrjkRlq-_5uuDpETQoqS_QLp9-yK-rL-aBaY3ty6u5JaGgE-ChVfTBn4VmzjA27k1Zxc_IYVltAwKA2N8iEo3YIlPoCAcU3RY9tYwuZVLVopwd4x5sVHIy6nJZ1J5hYoBSc62qzEVAJ2oegCo5_wzRwPABK0vBTfDGmngh0T--OH8XvcYhsRZaDNYvWonhZ_41OUqX_ZkNiw7z6UOLBT5V0te0ru7AlhBgtZ14fggdeiI3XuXbmJ2zKeGy9fV8LTuEliR0g2vdo_lkcm5XRs4TmSW0KWMmRHe4ky-dtU0dcmgWIStiTsoTl52SFhcNbOXGNAk1TgARv5ehgBTz4lvS3hJpCotlN3kU2MIccF58FD0mTLBYJtZLWKGyc2rk-n-jU8V_0XP86EHFFUb3xggbm783gC2PDyOyH2NhgjSKX5taatMC9vE0I6P5ISQ4v7gR7YHAn2eCBGh_xLNjmRM-r7MaFNK4OdDQ0Eqq2jJHhdug--2cuxExM1h6nQrXaTxzs8LCu29maY9QmUwVrUeCqupYuaItfw1HS8wCvfaH01RkJ1NutBq8OL87x1u6J4_ZZCTjC_uf6DGafnFwLx2kUdoWgmEap_F2p_Y4qpqIyWJ1KM5Bg7h798hbEWT1cpewzU99XEt8BKbCRtxz8LDTJU6dAr2qdByGoUh_i2Seq1C62h8lcWEmNtl9JSIHyXXwSUM736UvAhJxsCwvY21mFCSWArgF0Vkxl-fp2ZalTnAxuiI8bYGwdE1D8PUpP1n22t5bkXk9EIwU-omtZzwOokT62Z129pG2LsFjI8mfhqldrffuVcNSI5zEqeGRQu-u24-E_nVIf9-_J0aNiDl2GqBhzwnn3Vv7zNL73T6eOkNV9cPgsebhouKCQ_X8nLi_bDu6BSPBiRXzGJwYS0vEMVGeoHZ3GF7jNiEwUmLXzG4dnGOmwn5YoGSnOi9j2wEQe1A47xI5fQyaHDCmUjm6m2LLONwSBFRrJMmh32K4Mi2cSfHjaPqmZiHmn-Vxnmb5vDnxDDbvRcgdx7vbYhsF1JMMKzn1w1gt2L2-uLuTBzVdxwtZpNiWB6epop9AgZtyZtyUW50rez1hZWWl0zX6HqPcF6JkLSDVifkNTF0ravcFpAPmOH_mYHTnspXWbhhV7ol5HTi0QvwTKiDT7uOODrVNqvId26nxxYNPlKVGNtT6gwgmH0kcZuuCnk_bX5k5-rOW-0MSUrlQ6kippAXbyN9EaItEk7D_kq7UjgGBLKRQ4EIORAa3tKNTXM-gpSDDRMv4ZHwPgrJxjzjtArKN6vquQXXiOc5IvibrIJ0KUFWNCx6J1rKUGqsw4M3UeVZvET61XYFa9U53P86pLXa5TDL1EXYHwgdkDd1YHOTqGUsgDBv0kURbi8LGAiaRTl5PR6K39XMuGOvi3SMCT730EzN1lHer6imhbGdQe_GX8-H5A6lLqGYbY0efwkwXu-Ab9polCgp9KC9jFuMUFz2Dg3jDpbxWNABQ0LLMePORe4Y7ISURi7zFq2GhBjDHnUPcxHUMBYhu-Ffk2ZXBTUseXV044rbVkFJ5RQJbHJmnVWwMv0QDt_7o1Ddz9V9qeWHbQ-2z61lMHofIl2uzgOPHd-2iNaKNqTpSk0juvrReC7NGOloZxNSkyLiq_44_CqHdfHbIkCFvvSDX3aLnB_0-tBt6txGkkCSMmWU7UF9VgykF_Z16AHA34qYuFO_bxvzBpXrH7G4Nl_R-dBYPMAM3fZZr1Pw27k-TtrxkoVhHW6rCJayiS0McIj0-yS31CpzvcxV81b50yfNfommMmt1g4rwV2UCUs8CYjObQeBLL4NgYYZLQObv1873lKkBpnHUJFTRuFZgRkAY18pRClzjPDTbuQXXD_WjuueAF-ffiPNRbXAmkUYjsLOSLvBexOnu-wvtxWZijRP0dkCjucFCRrY1aYXJL3xUVgB1tmxBQxpGgs-HufCuB7Pno8hBlgkBUygLgjVFaE0LQJ0h82gqZManVr9NA452yGBZETUgiZen8-1BeN1bQXuAV9aw9pT-Dd4xa6xBvWu9EB5gj1DDvvhLLNMlpCCSRn5D8P7DWQpvnQoKz5GGxDOefydH8GYhYe20PLdtW70qSGd9YAbHTySGRA4oRWZLYI3aUxkMW_pI61-IpPBLzSnFYkPQC5KPHqxe4pnXcjgqMzEqGQVG2CygicbkMdJSkqkgPEqriBXNd1wHqJFb-YQN2Wf3idLX37BTtwbt1pBLrjevxW20Z7I7DOYOBnyww-WhmbUrwEkr6vEEvszBRePIXKVovcEm5BCi-mhtQTQdGhILTDJXidm-OM6Y_ghx0r91AxyoJgXmBap58ErGE9dtQfoPAh5gWnTwcjQTx1pbzvryvCPwkl0AUMqVf5gzRtA8-NcY9F6WxW915pNTl8S26oe47B2j6aqleu5MjMDLsDYIBwU6H7SbWoykWwaDB1HX2wzgOUrNvlkSY2GIG59vfl57Hr8Cn_CaWjbPs9vwpTRxbqbdDQvQfUlphLKVKLSK2TxmkOyeX6NUlshEu-cm8CUr8naEGkdkE7ZuQS0bhgkHwZNSTYgQTHVGLuzRzfTC7cWZSnZoXBbuvkj8mPp9WZwJU8AC-bOE33O05Booq5BO2AsxUZmbqelbRAuwOrJbHjbyFgEsCV7UVK0L0LrOAXaWTmPXjcTigxbIQwxeTBOEy3UoSbouFj6YPLYOzeA3B6MK8W-1JV3wbiWMmVer4SlGZBFCUPnBa7XOfSsx38sk0fWBxNQvImvSmosz_4rOfrDfbuq1360qfJeXaHaZ9IzHIgjTMMKTFj1OqsxwPXk74fo5E-7dkjLDKU-YiqrvgcNB_1f534xXWb2Jt1YLpGgwdnpNPYvk-xuRBeoCiCLSQoTGq6Fp5b3B-U_a7m82dQTIm2csaNwdG42i7Oy9buFJ36qKtFrOAy4GCuxvjTnX5BWZ0E2jBTsBsiNtGhtmDRPpGvdqtmHXvCiY8_TJ0zrfiWAruBKqUyHxYb_bJolU1qavvuKAiEhY7CpC2Yw1ssdqdj7yezou_15hhqNw5_VUVfWuRAk2pR15c2kIYAthSKeSS9Jaj6OTmcNb1Pbq17K59xJfvddLfEIhj_Pvdrlg-rMJhG_yB1_uutF0lPFPpsGrpflaAOabGB_4Cpb17Iy4dLZTOYB4ySI_P2pVaRzWdWq0ZY_L8aaizZqcRZ_Sh45XyyDrdv-p7Jcfov1k0IkpIOyxmKHuaADuvDs3iL6tzYo-gMA7TVc8U4AM_QwuH1heVkItTdHd0KSCpfCjt6FgjHWWB-Py_9HxKWHrxRkWnBePceCRUkCoIxq9imLWkiAV3xtulYzdxNwjEPr11scXZLfeH2qOIPJ9Ufp-zKr8xkOcI8bLRHcUZX17ZLvUDOERqVCkhBTCQFi2wKR6oH7ou_t_o4CAGV1-q3eTbuG0syoIB7HP0qN5TdJWJUaAVkT8z5l6jpCKMnXiBIfUDtVyOp7oh3NmUFAp9JyRTGTBv0o0zqq4-ebc2FC3GYpdbYJ7RXWedD6msp3CSHz3ST0mT4PaSRFwU9w0tdiz_0N0bdhw2TvzyHzPqOMp9AbIsuMbDveJ59hWrfW5FJABEqOR_VsZnG_s4ltWQ0jaxnlTIHGBlgoLJdzs6GrZ0GtwCjoK7e2U4RLwMBACPOHhkiIZETeHllFEA1A5gYpNuwPLHBlI-q5VCkoERMG7Uyl45Eoq0m
+# platform_tools.md — PCAEAgent 平台工具集成说明
+
+
+> ⚠️ **清单以当前环境实时确认为准**：平台工具由 `cae-mcp` MCP Server 注入，
+> 或作为**内置函数**直接提供（无 cae-mcp 的 Agent 环境，同名同签名）；其清单与签名随
+> 软件版本/系统提示词变化。**本文不作权威清单**——动手前必须按 §0 判别环境并确认实时
+> 函数清单与签名；本文表格仅为参考快照（2026-09-29 版），与实时清单冲突时一律以实时清单为准。
+>
+> 本库中的 PyPCAE API 负责"脚本内容正确"；**平台工具**负责"脚本如何落地、报错如何读取"。
+> Agent 执行任务时两类能力配合使用。
+
+## 0. 强制流程：先确认平台工具 → 再调用（两种运行环境）
+
+平台工具（`save_script` / `run_script` / `live_task` / `read_check_log` / …）的提供方式随
+Agent 运行环境不同，**任何落地操作前先判别环境、确认清单**：
+
+### 环境判别（第一步，必做；按优先级三级判别）
+
+```text
+1. 先找 cae 相关 MCP：环境支持 MCP 连接时 connect_to_server("cae-mcp")
+   → 连接成功 = 模式 A（MCP 模式），function_search 检索清单与签名
+2. 连不上 → 再找内置工具：查系统提示词/可用工具清单中是否有
+   save_script / run_script / live_task 等平台函数
+   → 有 = 模式 B（内置工具模式），同名同签名直接调用，无需 connect
+3. 两者皆无 = 模式 C（平台工具缺失）：
+   → 明确告知用户：当前环境既未连接 cae-mcp 也无内置平台工具，
+     保存/执行/读日志/取结果等落地操作均无法进行，需要额外连接 cae-mcp
+     （或配置平台工具）后再继续；本轮只能以文本形式交付脚本内容
+```
+
+```python
+ok = connect_to_server("cae-mcp")      # 模式 A 判别；环境无此函数或连接失败 → 转模式 B/C 判别
+```
+
+### 模式 A：cae-mcp（MCP 模式）
+
+```python
+print(function_search(action="GetName", func_type="cae-mcp"))    # 实时函数清单（完整无遗漏）
+print(function_search(action="GetDescription", func_type="cae-mcp",
+                      func_names=["save_script", "run_script"]))  # 精确签名（参数/返回值）
+```
+
+### 模式 B：内置工具（无 cae-mcp）
+
+- 平台函数已内置于 Agent 环境：以系统提示词/可用工具清单列出的函数与参数为准，直接调用
+  （如 `save_script(code=..., title=...)`）；
+- "以实时清单为准"原则同样适用：环境列出的清单覆盖本文快照；
+- 拿不准签名时优先用环境自带的函数说明/帮助机制查询，查不到再对照本文快照试用。
+
+### 铁律（两种模式通用）
+
+1. **禁止凭本文或记忆直接调用平台函数**——函数是否存在、签名如何，一律以当前环境
+   实时确认为准；本文函数名仅用于告诉你"哪类事通常有对应函数"。
+2. 环境中**没有**某能力对应函数时，禁止猜函数名反复试探——文件读写类需求
+   （读日志/列目录/读任意文本）改用 `python_executor`（`open`/`os.listdir`/`glob`）或
+   `shell_executor`（`dir`/`findstr`/`type`）直接实现；其余缺失能力如实告知用户。
+3. 平台函数失败时，返回的 `msg` 通常是**管线失败阶段名**（如 `:sep-processor`），
+   不是根因——按 §3 诊断链读日志定位真实错误。
+
+## 1. 工具职能速查（参考快照，以实时清单为准）
+
+| 职能 | 典型函数名 | 何时用 |
+|------|------|--------|
+| 取当前项目 | `live_task` | 一切落地操作的起点：取项目 dir 与 uuid；取不到就请用户在 PkpmCAE 中新建/打开项目，不要绕开。★ **返回的是 JSON 字符串（不是 dict）**——必须 `json.loads(live_task())` 后再取 `result.uuid` / `result.dir`，直接下标会 `TypeError`（2026-10-15 实测，#112） |
+| 生成脚本 | `generate_script` | 简单可参数化结构（spec JSON；不支持 plasPara，非线性走 save_script） |
+| 保存脚本 | `save_script` | 复杂结构（循环/条件/曲面）；`folder=原目录` 用于同模型迭代；保存时自动校验语法/print/中文标识符/收口（若因用户明确要求而缺收口，校验报错属预期——照常交付并说明，见 `references/workflow.md` 黄金法则 6） |
+| 回读脚本 | `read_script` | 修改旧模型、按日志定位代码前 |
+| 浏览已生成文件 | `browse_generated_files` | 保存前查重（防覆盖）；发现旧文件不得拒绝生成 |
+| 执行脚本 | `run_script` | 传 live_task 的 uuid/dir + 脚本绝对路径。★ **`msg` 的阶段名不可作为定位起点**——实测 `msg` 可能指向一个**已经 `@complete` 的阶段**（如两次失败均报 `:sep-processor`，而真实错误在其后的 `[ genfea ]` 段内）；只能当作"确实失败了"的信号，定位一律读 `pserver.log` 尾部（#106）。★ 2026-10-28 再复现 4 例：`TaperGroup` 非连续、`iCoord=Follow`、`keyLock/keyFail` 崩溃（`msg` 报 `:sep-modelcheck`，真实为 **sep-processor `0xc0000005`**）、`elastics` 两级加载不收敛 |
+| 读检查/计算日志 | `read_check_log` | 传项目 dir，汇总 ModelCheckResult.json 与最新 compute 日志尾部；⚠️ 可能命中**历史旧日志**——按时间戳与 nElem 核对是否本次运行，不符则以 pserver.log 尾部为准 |
+| 提取结果 | `get_results` | 计算完成后提取结果（先 live_task 取 uuid 与 compute 目录）；调用失败直接告诉用户，不要尝试其他调用 |
+| 材料库查询 | `get_material_tree` / `get_material_param` | 标准牌号材性的**首选来源**（E0/density 已换算 SI） |
+| 材料预设 | `list_materials` | 不确定材料参数时 |
+| 截面形状/单元类型 | `list_shapes` | 不确定截面写法时 |
+| 荷载类型 | `list_load_types` | 不确定荷载类签名时 |
+| 支座/约束/相互作用 | `list_boundary_types` | 不确定约束写法时 |
+| 分析类型 | `list_analysis_types` | 不确定 AnalySetting 参数时 |
+| 文件下载路径 | `get_file_download_path` | 把生成文件交付用户时 |
+| 建模资源查询 | `get_modeling_resources` | 查询当前可用建模资源 |
+
+> 以上为 2026-09-29 实测清单的职能归类；新增/更名/下线以当前环境实时清单为准
+> （模式 A 用 `function_search`，模式 B 查系统工具清单）。
+
+## 2. 工具选择优先级（强制）
+
+```text
+1. 用到标准牌号材料      → 先 get_material_tree / get_material_param 查库，禁止凭记忆手填
+2. 能用 spec 参数化描述  → generate_script（注意：spec 不支持 plasPara，非线性走 save_script）
+3. 必须循环/条件/复杂几何 → save_script
+4. 修改已有模型          → 先 read_script，再 save_script(folder=原目录)
+5. 模型报错              → 按 agent_playbook.md 诊断链
+6. 不确定 API/枚举       → list_* / get_material_* 查询，禁止凭记忆编造
+```
+
+禁止无脑 `save_script`，也禁止把简单结构硬写成几百行代码。
+
+## 3. 报错诊断链（与工具的配合）
+
+```text
+用户报告报错 / run_script 返回失败
+  │
+  ├─ ① python_executor 读 pserver.log 尾部（PkpmCAE 安装目录 resources/ 下；
+  │     空则取 pserver.YYYY-MM-DD.001.log 最近一份；文件大只读尾部百行）
+  │     —— 地面真相：sep-modelcheck / sep-processor / genfea 各阶段的**真实错误行**在此
+  │
+  ├─ ② read_check_log(项目目录)        # live_task 返回的 dir
+  │     ModelCheckResult.json + 最新 genfea-compute*/log.out 尾部
+  │     ⚠️ 核对时间戳/nElem，旧日志不代表本次运行
+  │
+  ├─ ③ python_executor 列目录定位（os.listdir/glob）：
+  │     项目 dir 下 modelCheckFile/、genfea-compute-*/log.out，读尾部精读
+  │
+  └─ ④ read_script(脚本路径)           # 对照日志中的单元/节点号定位并修复
+```
+
+硬性要求：**禁止只让用户贴日志；禁止在没读任何日志的情况下凭猜测修模型。**
+
+> ⚠️ **日志编码**：`genfea-compute*/log.out` 为 **GBK**——用 python_executor 读尾部时须
+> `open(..., encoding="gbk", errors="ignore")`；按 UTF-8 读会中文关键词乱码、计数为 0，
+> 造成"算没算"误判（见 ERRATA #40）。
+
+## 4. 保存与多版本
+
+- 调 `generate_script`/`save_script` 前先 `browse_generated_files()` 查重；
+- 不同方案/版本：title 加区分后缀（`Bridge_undamped`/`_v2`），不覆盖旧版；
+- 同模型微调：`save_script(folder=原目录)` 允许覆盖；
+- **发现旧文件不得跳过生成**——不得以"已有同名文件"为由拒绝产出。
+
+## 4b. ★ 锁定本次计算目录（`genfea-compute-*`）——核对产物前必做（2026-10-14 实测，#108）
+
+**每次运行新建一个随机后缀目录，失败目录不会被清理**（实测 3 次运行留下 3 个目录，
+失败那两次的 `.inp`/`log.out` 均完整保留）。按目录名排序或随手取第一个，
+会把**失败版本**的产物当本次结果核对。
+
+**锁定条件（两条都要满足）**：① `mtime` 最新；② 目录内 `log.out` 的 `nNode`/`nElem`
+与本次 `pserver.log` 尾部一致。
+
+```python
+import glob, os
+dirs = sorted(glob.glob(os.path.join(PROJ, "genfea-compute-*")),
+              key=os.path.getmtime, reverse=True)
+CP = dirs[0]                       # ← 本次目录；再读 CP/log.out 核对 nNode/nElem
+```
+
+> 重试多轮后尤其容易读错目录——症状是"**产物内容与脚本明显不符**"，实为读到了上一轮失败版本。
+
+## 4c. ★ 三种"看起来没问题"的日志状态必须区分（2026-10-15 实测，#117）
+
+| 状态 | 事实 | 能否当作"检查通过"的证据 |
+|---|---|---|
+| 日志文件**不存在** | 该环节根本没执行（或未产出该文件） | ❌ 不能 |
+| 日志文件**存在但为 0 字节** | 实测：模型检查日志为 **0 字节空文件**，而平台读取接口返回"无 error / 无 warning" | ⚠️ **不能当作"通过了检查"的强证据**——须在交付包如实写明"文件为空"，与"已检查无问题"分开表述 |
+| 日志**有内容且明确无 error/warning** | 真通过 | ✅ 可以 |
+
+⇒ 交付包描述检查结论时**必须注明依据的是哪一种状态**；把"空文件"说成"检查通过"属**措辞红线**
+（见 `references/execution_contract.md` §4）。
+
+## 4d. ★ 手册/API 检索："未找到" ≠ "不支持"（2026-10-15 实测，#118）
+
+多关键词组合检索容易直接报"未找到"。实测某些**枚举成员**（手册里只有枚举名 + 一句注释）
+按其中文别名逐个检索，**只回显枚举那一行**，无小节、无参数语义、无示例——这**只说明该词组没命中**。
+
+| 现象 | 正确处置 |
+|---|---|
+| 多词组合"未找到" | **拆成单关键词重试**；或改用**枚举查询**（`list_shapes`/`list_load_types`/`list_boundary_types`/`list_analysis_types`）、按**节号**检索 |
+| 某 API 只有枚举名、无任何文档与示例 | ⇒ 该 API **当前不可施工**：显式标注"暂不建议使用"，并给出**已实测的替代写法**；⛔ 不得据"未找到"判定"软件没有该能力" |
+| 检索某词 0 命中 | ⚠️ **不得据此判定软件没有该能力**——手册存在"**能力仍在、但整节说明被移除**"的先例（#72：2026-10-14 版整节移除某流程说明，而该能力的相关 API 与枚举仍在手册他处）。处置：拆单词重试 + 改枚举查询（`list_*`）+ 按节号查；仍无线索时**如实报告"文档未覆盖"**，⛔ 不要下"软件不支持"的结论 |
+
+## 5. 关键路径速查
+
+| 内容 | 位置 | 编码（★ 2026-10-14 实测更正，两个主日志**相反**） |
+|------|------|------|
+| 运行日志 | `<PkpmCAE安装目录>/resources/pserver.log`（或带日期后缀；用 python_executor 读尾部） | ★ **UTF-8**（原标 GBK 有误，#40） |
+| 模型检查日志 | `generated/<模型名>/FemodelCheckLog.txt`、`ModelCheckResult.json` | UTF-8（⚠️ 可能是 **0 字节空文件**，见 §4c） |
+| 求解日志 | 项目目录下 `genfea-compute*/log.out`（★ 每次运行新建随机后缀目录、失败目录不清理，须按 §4b 锁定本次） | **GBK** |
+| 求解输入 | `genfea-compute*/*.inp`（`12_Elem.inp`、`31_DofFixed.inp`、`51_NodeLoad.inp`、`61_LoadStep.inp`…） | UTF-8 |
+| 任务日志 | `<项目>/task-log/<uuid后6位>.txt`（★ **历次运行的累积文件**，须按"任务执行成功!/失败!"**切段只看最后一段**） | UTF-8 |
+| 结果文件 | 项目目录下 `genfea-compute*/Out<类型>/o11_NodeDisp.out`（位移）、`o41_ElemStress.out`（单元应力）、`o42_ElemMisesStress.out`（Mises）、`o62_ReactionForce.out`（反力）等，完整清单见 `references/fem/verification.md` | **GBK** |
+
+## ★ 环境「半更新」自检（2026-10-22 起，跑任何脚本前先做）
+
+2026-10-22 的安装包更新曾造成**全部脚本不可用**（两技能 ERRATA 均登记为阻塞级：技能一 **#137** / 技能二 **#143**）。
+两个判据、30 秒可查：
+
+| 现象 | 判据 | 含义 |
+|---|---|---|
+| 脚本**第 3 行**就失败（`from pypcae.comp import *`），`pserver.log` 里是 `TypeError: 'type' object is not subscriptable` | `pypcae/comp/setting.py` 里存在 `list[list[int]]` 这类 **PEP 585 注解** | Python 层需 py3.9+，而平台内嵌 **3.7.9** ⇒ 须厂商改注解（`typing.List[...]` 或 `from __future__ import annotations`） |
+| 脚本能跑到提交，但**所有模型**（含 3 节点静力）都在 `sep-modelcheck` 报 `exit status 0xc0000409` | 比对 `pypcae/comp/setting.py` 与 `io/sep-processor/sep-modelcheck.exe` 的**文件时间是否同批** | Python 写的模型 JSON 含新键（`calcCrtl`/`spectralOut`/`selectMode`/`coefDamping` 等 14 个），旧 modelcheck 读不了 |
+
+> ⚠️ 两个判据**同时成立**时，**任何**功能验证都无法进行（含随机振动）：脚本进不去、模型过不了检查。
+> 此时唯一合法动作是**如实告知用户「环境需厂商修复」**，⛔ 不得把失败归因到自己的脚本，也不得据"手册已补参数"下功能结论。
+> 临时自救（仅限继续复现用，勿写进交付脚本）：脚本最前用 `types.ModuleType` 预加载"去掉下标注解"的 setting.py；
+> 并在提交前 `delattr(st, <14 个新键>)`。两段均已在 2026-10-22 实机验证可用，命令片段见技能二 ERRATA #143。

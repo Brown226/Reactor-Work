@@ -1,2 +1,74 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQNPvLp_2Cm1_ywbYAV9dy6Rs4lv8IP95TUvyLCs9NMCXpBAvsp3x5_XnhTlq72Xfn8RWvCBjoNgJLzTwOKbEdGngPf5LryGDFPJHWqNUv_U6etWJ1zu-1cMV2OFjsr2mQvbTDj1a2OT42_vRCRlBdiXmn09uCWz4-NJDGBCMdX5jhwbzVALtTWNC5TeV67yv8i-sr0roG9k6QxrRl18uC-T7-7syP5nVn7T1f8e_nfBHkBsnPGN1MHIRUELmilBH7fuluCShEua5FwRjmg3FMhQqwuQmlpd6Mc78PFbUDNt88BQpvnaKvddeI_YcCY5jKX7WLvcj1miP9kM4QXjyxXimeZmw8oQGo2FOigfwUQlT615mHN5K45IzqV45sgtjXQFW035LY05wmbk7P2S15PuVKnPatxk01qe8PFkt-sdFa3hj1KF6Sl3oRruYiQnF8bQe3k3e8_RCp5Or3NZL7foq86OKtzDxPoAXs8LmNBPkDsYEDjNQ6zlzsX3E-Do6HbFS3xPPY698qyb_u5ku-ZEek7ULNGcZpZFfKnArczUajCWFrr9jRtG53GgeUlI5_2RpWbiGfr2fsvAmm9Bvc0sCwouIZitjcu-MrkDzMIvIY8hdcYRUecUqK7_t6Q6HtgK9-BkfXrfb3bJrllmW2bfY3_aESNlZwo9sABQfvMo8F2I7KhJQYrN5xZcwaY609MauQinJ5rUwAL2WwtJG5tMs0OG6TYgELctFIn3UG19quoOcqEeuRCblxAPp52R_lvcH7lW3KFIsClM7hbWftTeETrnhZPaRlptc19eFP7gPfAgsTqnLCq-JmDU2EWH1MI6hAabJJ3BRSyuHWzcg2W26Ot0xpmlK9a0AmJ5yXbxNXz9JVCsJwh_eJaONE7QQIOQLbqYPWaNrjM2dy-w-qw7DEqFAEBKZiZcFy1F_JWNLARgTAqiFVuEEoex3_17FiXnfmE5yOUugw9sncOcChORUE11E6Ja-YZ_4xF8a57xmAtRb2BxbNygzkA_ZF4YSMrcrNXznfKedhYk1HXIgVLW2EJad81JgYrYWohmcVjMoakrknmyCHKQ-g9Y-aT5mGSj0POHLi3vSogBQnaVPJaR0ho2mQWYoqqHrvf1do3TP193hkRdBKVlu-enNuNVJE7TiodcWh_F5fXoJUUyx-Kv0jrfKTFDEHKJ4TbNRvGSYOw7otQx9es3VIOWmrE738Jw5VDfWkHgrfOxuP2WRIdCYi9CJ8RwBHIS91SIE1WD4duHBW0G1R3y4to8G-Tml33tDZp6RVkBzyLdJ7AXi92HxfgeUJSsHCehYoqJA2GuZvA8auveMC7ITDGQ_lZeRPFO9smw2w69ZlZhOpS7GPz5_1SSAagsYnqNJ-Ed8J4PRALsrH1TfE-DSR15mMfrAfsFQ7RZm0lsFygY1H5JuQW3681w8gDFs2bRScvAWKQUHP3J4Ws2hX_MNc5dF9Vp_emCZ2qXD_i2KaKmhr5SZCB4yhBOD7pNPU5ZFM3wKQONdp2g9FP7EKHyF1Sj4Ycuksm0BP4TGm1ioMyK1SqINwzPmH5PAuIOGIn7PZgRj78BAzN841y7QpbZ4rrMUOz9CddV4kYaW0wr9Eu0MN24Mf6rzAM_-dlNMR_Dz9GVNL3Y1tfigBu8e5NVwGX7d9jhs_RItvnc0VXbeA6qbMYhle3ZspMEmbKrxtcqP2QfJPUbEViw4LZj-otv7q2ggZDwuZCLWsogW1kP1ku1nDZ0JBAEXkXcxDjkFIUJkHRAQB8NA28Y8tOrk8K-R1tMyvipW2bZrFK5TJ4BoFa-Cn4akCaAYx8ZKLTpgtRJCWfL16P66i-S9Ghy9VHnfJw3CjuofZhAQNPWl81Nvn0wViD2VNR47eOHoqHdO2KTKRKdm0BAvTnsEO3SU5YbCylHx6lAHyz2HBqWIQ7pd4-_RqasWs5O9eP1bmwz684XwES1YJQPv7mvlk2qqJQa5knY_hwakeSwkucJLUEEmeMIfoCWGuDzrzlGsu4igeHmluVkEEi71cc5NVSiKzUx8iP0kRCgrep7LpbNQmIGvasK2PaS6uYA6KSy3zHPI1ZKZfE812-b9gMf5cMDl0ffoVKSmMvjqb6z-cLCHsAUv4_jmH__zmSUhcBizpdeyloO1mj65Vs8ORr57jpZf9zyDzrEIqQ8CBeKQygL-jfk6-RPxCZe86hA8l70fBUoIYK9WLe9RZnv4sU5yP1NXwehjiKKDM60KigtjZ725dAdcW_LjJ0JT8SV4mczh97gBULXIxUormT1UAEnbe0hL8fh63khI6N7JK7q4dCagby5pLl6QbRLqJHusMHbMAsZF4mDPDPXFks3W7UwR9YJxuMWPXwY9xjYAI4FBNPgd_6C0r0rRt9TSO501XGk6Xnn2IYwhr-Ob2I3cBNWXSBqC7lBiCGbyvyT3YMVI4wWBubZ_N0XR6Cf5PGCZ2FuXA1MngLpRaqpzA3UajSjCGiSkH0GQzW9NFvVyHLOjiPBzY7NuWjCVqUGpbp963EZ9wxSS0-zkhBZCUicRf-kiMp2LPCnj2viboQH5pGUwbNz3t4Tsau-exi1IXQaMkUP05WXW_S-vv7g7OWc-tEmI4rjOHwje8fQqS56a1u39IWWuRhFGn8MXcaENX0OKhLYRg8-vdqk0xEHvb32noR-vQUG_fXNh-OuoukzV4UQTp2NvkWhJQ4t9E2Pto3SPg_A5lJ1EbaESprQ6gAt3go0ctTl-bNidN31lt9dL8fvhPC3F8wp3wKzib1egpNEqga4IUNidY-iWYMPBOBNBCEvH-vudqO58rfauaZIM13_NJ-IJminIEygmEvphKZxOSfFcjRVg06YqeHRznIYkuyqe0gzg08ZIujo2l4LzMrUrLL6934B5NXO6zllCDtcTyA8BpUg8xz59HQUCaGRbk88Rj0QnveFTANLR1FmLQKdbjhvpyaLOzvds0M6oIOZe-HYllU-hDBqEYQIJUxjbDrLVApnMzsCB4E36cFQh9NfXIVQptSo0trXbnBwPN5Bk1s3VaiKjCsDZKm2ggb8TgbJhnqy9uDOvBA9-BiFoZ7_cFqbvwYNqqOyDsclnl1PSE6Ug7X8t7vdy26cExwHkIYDXo6pcE8fCUSgjLYxDJmrsLmfOjFTgoRYks5Y1p4BYquasiqH_BZvSDDCZiasvRhpVSE7__50JJoPNWokfS2NXwu-2GrRoaTlu-ET-rtxccA-RJPzWT3eGWm5HB6Or8YcIATx8qaAhFk7u4iq8_VRlLAZ6KJ_UJkn922uGX1MQjXVFryDeEVLhIB3KnithoNq9HD92XDx3n-kOC0AnGKzPClO6lL_KOVj8QPKaD5xd-ZEiNIr42nJn-TPtGK3v4XoSx-HXrrMiIO8TF6R4EIZfRnG0v8E1UI5crf5FKvahctNaJb8sRvshmrIWKQSyLSlCtaJMwStGAZswApOVOLpCSfZ-9Rh3W3Bxyl29WOGU5vxOuBPV5aD0ALdJBMpHZqlG0Zgj53_D_Fvhvf1LuhGaX7v5RzOAXfTrisU_Be6xzbtpQscM7a67NBuQm735j0HcWmBVRwXk_cUSkJAcznw1tgUFjagLvPzeLCTzf_wfJMEOQ75aO4jE_zRpEIg8wyj1ZxqTvuUIDKN3t0UiK-lKfLJTA38jihJmwNoRJV8mGDCz9Snq4K3Lr_l2bTJlQzvOKMEKxbGBjPBLSwCXFKmVQzl2N_JcO2wnCU09EA3WbNfUp5e25OILBLHrJeOit8Ju0oyB_kkuq1ywLWNZ_7Wx6j01IQ6FWPiqiUFjXU6allGbHBtyR5_1rci68IPAeRUrJDrj0lveupkYdgnIwzv8pLH7JI3mjh6Q7CNUXoVVz-F4DPvc7npLfhnxb6d5z5k9ie9fzAhJL2N3585BTePHdfujlHZGLUiRjrk8u-2_OHztJgBD5UwMewsaocPeKn21IPSH9eSARz9Th7EsftN-Dl9MxqRVftujRD3IzEHkKRZZrj8icxbLCxHzwfJMUP28nXQyUSSSP7aUBir4-fwNF5TmvLarYASqGY5psyOBTkHgKF_kwZ-BtahhuFIIh2w5Z6gwZPxHLUCv7kEYzj3L-3p2PvudG-RXaUnWDRI-Z2ipkNXsIe2Y7B-N502VCs2QvUvNtBiC0bbkf_uykWks4ia3sF7htmS_zlM7abGAflsUdjigNrdKrv-lL6nfXw8qQ1Ohp7ND-W_xgYijCSXtp9vsFNUf2iiTZJlfWNcuKlhJDHOAb91l1Y--SwDN-4LVXH4myRIYAPOnIngi_SUNkcY6QjQYviGS76HjHdlZ7XmplkPPMkidaCojiW2krsnr6UB7k_qg59S4BEjcDMm4nnxG6abjsAG5g7276XdqtyL2hd-TMvlTddCNfOeD_ODjVq-P1EHCi6lgq5JWhaQr4xyVxC3L4mrfkMJn_rcvZOH9-EMrkkXYhBIYpaXrosBZBwIVMjrGBlAiJRgEXYQGV51c6a25exwtwnGtM6rwZ6GU-64Ve138mMgxS1dVyUjb_Wv8UVDAk1DO789BO4S1ye2kGgk-mpqGDBCr2GI_l2tuW6FP5ypDsxZQ9_tYqBkllI7UZxDQ7ow32FW9cXIxuJlAMNLkME3daComL_lerNndW6HiCNk9L6hePZ-k-EVCgQwyo6RNRcuoo4J_4FlzuUBBGVjNqbIu7ACezIFIgOy2zo5e8td1DeiXmTixJUgbvLXAjGVA8TtOCELxZF3JSld-zQ0SxRD9zpbqp39sgdLFJc7RtU9Jg8k1jbMDEWf40TkG1AmB85xBvXTiiiJieZ97uuLVHRdlRoaKvfmBfeYgEqSz_jhsMKVhKe_S4-iHZGXxIip6jDm5qzZSmJloRxUax4_uTJsYKvrKEfmt4iTOf1mzX5kgrlFwE3drW8k0jCO7XtSNhU39HtDHXA9uPvzSc--X69ks4_JIX4_OKaHJSacQQTJPI41_bVogyIOtNmLmT95wOYIqz1jS1lHwL7x5SR6i3R-NgGamM4IvcIpb_cgXDAwALcy39Cak=
+# GpDlSetDaylightCalcConfig
+
+设置采光计算的配置参数。
+
+**请求参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| calcScope.type | string | 是 | 计算范围：`wholeBuild`-整栋建筑，`byStandardFloors`-按标准层，`byCommonFloors`-按普通层，`byComparts`-按户型/分隔区，`byRooms`-按房间 |
+| calcScope.ids | array | 否 | 楼层/户型/分隔区/房间 ID 列表（string 类型） |
+| calcMethod.formula | bool | 否 | 是否使用公式法 |
+| calcMethod.simulate | bool | 否 | 是否使用模拟法 |
+| statMethod.gb50033 | bool | 否 | 按国标 GB50033 统计法（formula=true 时可选） |
+| statMethod.points | bool | 否 | 逐点统计法（simulate=true 时可选） |
+| statMethod.gbt5699 | bool | 否 | 绿建统计法（simulate=true 时可选） |
+| gridConfig.maxGridDist | number | 否 | 最大网格距离(mm) |
+| gridConfig.distToWall | number | 否 | 网格距墙距离(mm) |
+| gridConfig.minGridNum | int | 否 | 房间最小网格数 |
+| modelConfig.considerBalconyClosed | bool | 否 | 是否考虑封闭阳台影响 |
+| modelConfig.considerShade | bool | 否 | 是否考虑遮挡物影响 |
+| modelConfig.considerBalconyOpen | bool | 否 | 是否考虑开敞阳台影响 |
+| modelConfig.considerWinShineReduce | bool | 否 | 是否考虑窗的挡光折减 |
+| modelConfig.considerWinPolluteReduce | bool | 否 | 是否考虑窗污染折减 |
+| modelConfig.considerOtherBuilds | bool | 否 | 是否考虑周边建筑反射 |
+| modelConfig.otherBuildsShineRef | number | 否 | 周边建筑反射比 [0,1] |
+| skyConfig.skyModel | string | 否 | 天空模型：`sunny`-全晴天，`cloudy`-全阴天，`intermediate`-中间，`night`-夜间 |
+| skyConfig.defType | string | 否 | 定义方式：`angle`-按角度，`timeLocation`-按时间位置 |
+| skyConfig.altitude | number | 否 | 太阳高度角（defType=angle 时） |
+| skyConfig.azimuth | number | 否 | 太阳方位角（defType=angle 时） |
+| skyConfig.month/day/hour/minute | int | 否 | 月/日/时/分（defType=timeLocation 时） |
+| skyConfig.considerGroundShineRef | bool | 否 | 是否考虑地面反射 |
+| skyConfig.groundShineReflectance | number | 否 | 地面反射比 [0,1] |
+| radParam.accuracy | string | 否 | 计算精度：`min`-最小最快，`fast`-快速，`accurate`-精确，`veryAccurate`-非常精确，`max`-最高精度，`default`-默认，`ecotect`-Ecotect 默认 |
+| radParam.diffuseBounces | int | 否 | 地面反射次数（0=不考虑，须>0） |
+
+**请求示例**：
+```json
+{
+  "command": "GpDlSetDaylightCalcConfig",
+  "parameters": {
+    "calcScope": { "type": "wholeBuild", "ids": [] },
+    "calcMethod": { "formula": true, "simulate": true },
+    "statMethod": { "gb50033": true, "points": true, "gbt5699": false },
+    "gridConfig": { "maxGridDist": 2000.0, "distToWall": 500.0, "minGridNum": 4 },
+    "modelConfig": {
+      "considerBalconyClosed": true, "considerShade": true,
+      "considerBalconyOpen": false, "considerWinShineReduce": true,
+      "considerWinPolluteReduce": true, "considerOtherBuilds": false,
+      "otherBuildsShineRef": 0.2
+    },
+    "skyConfig": {
+      "skyModel": "cloudy", "defType": "angle",
+      "altitude": 45.0, "azimuth": 180.0,
+      "month": 9, "day": 21, "hour": 9, "minute": 0,
+      "considerGroundShineRef": true, "groundShineReflectance": 0.2
+    },
+    "radParam": { "accuracy": "accurate", "diffuseBounces": 3 }
+  }
+}
+```
+
+**返回结果**：
+```json
+{
+  "code": 1000,
+  "msg": "采光计算配置设置成功！",
+  "result": {}
+}
+```
+
+| 返回字段 | 类型 | 说明 |
+|----------|------|------|
+| code | int | 状态码（1000 成功） |
+| msg | string | 提示信息 |

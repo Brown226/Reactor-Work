@@ -1,2 +1,71 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQSNClm06DiJQ8RJqcg5JsOcyHwRK5l6bjksNQB9D8oQ3GyN5694RWV0lzW2VPkGdaviPGfM0Tg--VTVucsMCVgrMvVNYq6mKJFWumoeTV6DT_lxXEwgGhELrPdfyQerkCNssOxeR1u9n_u1aS4IccgUIPmnvObqR0TOkfM1kNI5w19cQGqwehOzlsszgQceTOKchky0dS2jwlLF74XO5uPXzi21JB_nTFgN9RGcwzH6CFT5I9S0dNik4lI2uWWz_HFgg108HfasFEiWiojMRq_UphynfyVOUpQwYPBajOkTiO-W5QUKbpuIZdCBSUDOp-ZMCSweJaKODFW9SDkWOG4sGxUd5Wa0jGe4BYxPsrbMRRkgk_2MWRbazyc2ukGcK_YmStCsPAmVqQccxVOIZ3ixApqXwMDud2avOOnSfkiDBeLISZLmuXOkQGySHPRBQQUXjQos2pNVsTZ6w2UDRPxT5QC34yspUVzA66gLTr1tdjPBMTQ7H205blNBsKi5h8zHhBoj6wqLE_PN3a0eyQl-EFUpJkxhus7UQ2uz1b8peXXIYl-t3_aL1U4EXubOnUGwxyYjTluwDRqxGHyxbNSCFSojV2ENEhKbG-lCbdYRj6dbvZ8EVHQ894fbYxeSaR8fx5FftvYx5LqPTMAwkTfEpSOktkeLeSwcsgiGUe7s8cXZVpJcaS8EEpkuWm3tqNWoSlBkJomPoZRypXonIVHA2IaspHlNcbKQYlMder7VgnMxqGh8YU_4SuABn943WDqFBe6POGBcEFMLjGHffLY_QGjUNhRD-9FDlhB980dccvfJUGiScofdAJc2RFDAT-59AccQgBNc4SC0F6j1uVOdlEYkfKGH6awQyR9W5N4iYgEov594gzwsLgz3SNDIvZcVholNKPaZIGI3AVRI_DTXBjPingq5zOUNVHQQpDzEIQuY7CQb2jsIjeLADxX4sAuqKGzL-KBzsypgYBTfdlDGmtHbM-Vu_9WNc1DdLvV1vqH4hAwwqkSUveuGjIOLg8xjGgg7IHio4M-wLWATPPjgHG_77ol2_trdHDe0wGLqHkzL5X_P-S7mesBzbe4HGRnAEyZDi01Uo9kGAvYijpSr6iADOtjb69uANu3BhcWpCjv-msGqjpO5w_VHY8WzcweSHbL_Iby92DDkYp0qjdxJyL751GjTAIX6rCdD8nLy4uDywyqhHn0GE3ETiE6FK2zcM1Ey4th9Xw0pJerJXO75-eeUJFeUKviwKBTeM6rWx9Kx1XWK9Iz0buWNBgtSQJMvrFHGLWQNmtyzHJj2CRYlcXTTV8DYeqH2wDxPC964EVT2_k9_VolPX67aje9UQb7vbOPnu0hYLY94lrhb6KJsR53WK6YjMK8_wv0HY0OFOIaGAb4ZmFcJ9_ojhiUCNHSvVWMc-2zohrw9nWATJW2d-_n9uepTdCHpIvzeKLlmr2ND0PmxbMogRFnIgdlorR8RyxjZa5gFPHKKpRgxIPZO9juhvQG7zAchZFvK3ZVlTP97I2x68U7LyigeDzJJ7n6k352U9Rt6NqpIaH51p0zVNeTJ-lwKEVWgFzyAhKwiLcDx3cbhfsaipTC2QkJv7fUgD8A6WGDacNEr7WSeUGMgYiWZpVYbPNCpmsRksPVqZWHOJ1n9MSqoT8h6Bzha9e3TeMl5dCU83XO3oe6-OqCSWgR_fo78JOA1Z7WDK2yXVtoPGukgNT8zgLZQ2GLcbN7tAnu1gyCpQuTE2Gwe88k5vq1O5mGR8Qq_xNLiv1vxERP8JdQSk2TiesYC3Kosym5DnrPJxvuGFbqGbNNn0v39WxIj-ij-evqSfQ3ihoDu3vnc3BCwwiNaFTUDitRqla5b6QguyQJw4whwQiqdzWKnjwCSOEGNeJJPL-IqcrCBvJ2v5s9Min33akxEN66wIW88gzwGN4v3wnMEf5BwxsQMHkriAKYsYMXlbZzLvzmvJrbFCewTlrmiQmGeBvJbgjzJlGvU39i5wAQRqEdx8OShYgYKO3AvGI_OuW62wkN_EPXfl64zla_N4bZ86IXPoZDcmLLQY022dl0gb87ma3pj3w9og5lkWjNTmh03JgFB_rMtc-3UsBxPR-eneFsDBEv2FG_l7wST-9ZRIte6hM6Cv5qSDx2xwTjriri0ukW2hX7r7cqXJk5Yd85Dx00gaLxQXIp5hRRnU6IOT_dHPt2c6GDW3o-9bLZGJNMPGXXmUDKRiA7Qkow-JuNbPJE9LP18q4ki5n3HX7rzKeVoUFMyGb0uj4h1elZExWhtPqQigZjI6WI6Jn9WECJ8ZUxoLTh0J3wUy5GYMKrbl4OVPnfHhXP1nuysCxHzujdDWLe9iPn_ctEQFj9nWfv-J9i_JntKfvQQoAPWZr6OjpFp5tUSHM2R3IWY-zVComjKyBqcltXHU8naGqhT5PUwVHSb9LBfK8cQ1nYyViZBkrCxuwvmHRi1PfnwqQ6dxgozc-b1jQeg_pO6PeCgYXdFVjB-8rILTzGHOiE6oyARaCZOw8oIGSA6t3uad9uo80KTJ4NGdZGNb4RYP8iKD2V5o6SOHiIOq4Ms7jI9zLUOs7wE8qIl3ke8mPTOzYUHmoioc6F8XIqPtiodpDzESfOklHxXIBC5DsGt9xSawZI2ZuSt8KaaIXDwgjm8EzfRa2ln2PMVaxeONVEvp7H107av06kjEl1GSOrJMQr6MB-7n0wIB9IjT4NLZ_4nI0_1YwjborGy1UfptLCXteVHsWprSapgakipS8qqY4n0FgtdMwiMJj8qVFQV-v7EqKu_8HHwFKfum7UhJn6gsYYxdlwfaWsOzWJ5Fkdwr0Fs89kvXDUeIrm1MOb7coPhYaFUXCfL63IP0RgO9SBP6T-tFpck5jKLqAu5eflGQ7o647-pvVsgn02eSTqQT0h61pITIVY8TVNDzvG_oYxsgY55t92pDmdqXpMqcTB10BHQYXrASdvcCr31hv5r4CcNLDsIFlAkAnAl_GxTA6bNrV0X46VFgrWKIsHITQ1zG_daCyim86BlCe728mxtL1zqYdPDJ4rCOWz-gx8y9OLvGKYJUsN2xE2OWRSdjGcSZk9JThYFY5jQnGS-LVUBymcxTlwqjBRJjySssP_r-Para1uSdy6WQysoG8ovcOVtc0G9jW3NrZxWBMPQ==
+# GpDlSetInnerFaceMaterial
+
+按房间、楼层、房间类型或整栋建筑设置内饰面反射比。若设置的材料不存在于工程中，会自动添加到用户自定义分类。
+
+**请求参数**：
+
+**scope 范围配置**：
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| scope.type | string | 是 | 范围类型：`wholeBuild`-整栋建筑，`byStandardFloors`-按标准层，`byCommonFloors`-按普通层，`byRoomTypes`-按房间类型 |
+| scope.ids | array | 否 | 楼层 ID 或房间类型 ID 列表（string）。为空时：type 为 byStandardFloors/byCommonFloors 时设置所有楼层；type 为 byRoomTypes 且 roomTypes 也为空时设置所有房间类型 |
+| scope.roomTypes | array | 否 | 房间类型名称列表（type=byRoomTypes 且 ids 为空时使用） |
+
+**components 材料配置**（每项）：
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| componentType | string | 是 | 构件类型：`wall`-墙面，`ceiling`-顶棚，`floor`-地板 |
+| material.source | string | 是 | 材料来源 |
+| material.name | string | 是 | 材料名称 |
+| material.reflectance | number | 是 | 反射比 [0,1] |
+
+**请求示例**：
+```json
+{
+  "command": "GpDlSetInnerFaceMaterial",
+  "parameters": {
+    "scope": {
+      "type": "wholeBuild",
+      "ids": ["109", "110", "111"],
+      "roomTypes": ["办公室", "走廊"]
+    },
+    "components": [
+      {
+        "componentType": "wall",
+        "material": {
+          "source": "《建筑采光设计标准》GB 5033-2013",
+          "name": "白色乳胶漆",
+          "reflectance": 0.84
+        }
+      },
+      {
+        "componentType": "ceiling",
+        "material": {
+          "source": "自定义",
+          "name": "新科技乳胶漆",
+          "reflectance": 0.95
+        }
+      }
+    ]
+  }
+}
+```
+
+**返回结果**：
+```json
+{
+  "code": 1000,
+  "msg": "内饰面材料设置成功！",
+  "result": {
+    "setCountCommonFlr": 100,
+    "setCountStdFlr": 50
+  }
+}
+```
+
+| 返回字段 | 类型 | 说明 |
+|----------|------|------|
+| code | int | 状态码（1000 成功） |
+| msg | string | 提示信息 |
+| result.setCountCommonFlr | int | 普通层中设置内饰面材料的构件次数 |
+| result.setCountStdFlr | int | 标准层中设置内饰面材料的构件次数 |

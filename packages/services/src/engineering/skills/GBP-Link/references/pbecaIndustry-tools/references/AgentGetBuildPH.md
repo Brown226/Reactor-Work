@@ -1,2 +1,22 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQWQk3Lzd-DYGz5Xg95JjIQF8eTElhozgsqlVOrPTF__3sHyVZGB9olg2mDZO5slwGRmL98fSO9zSwDxq4krFmz8eZqrmHFgXTYcngI1ImbmeR_yvm4Us_tcWSK0jh5tqD7O0kRY7ieg7OMfiugAGZuShxhiRNdaH0liGEjr1FPSioSeFV0a1cv46igpUi7il-RPtGQWM4rLzx3ygEuh8TWAKcdov4lQGatPyzCXC4A3ue1Xu23kZ7eDo3QenwmfltiOPr-d-w1rX2CBSOgZ-GqC73WAX8xJ7IxI31a84QMJp_gk9ozubjtBKdNKG5gOB3wmBvhERSaR8A_VptIsMOeh5fyIdJHq_8POTs6lDxhlSd4aLmnNn7dZ4iGvF2aRUSWZugxHuAlvtGnEmBpmqxyKy0H215LEKsqc7IpWBAjvCAdO54sQbV59VO2LdYsfHolntnhtnBEZg_yWP5GsiK26ecbyGnHq6SJshCoUqLfDg=
+# AgentGetBuildPH
+
+**工具说明**：获取公居建属性。
+
+**调用工具 Json**：
+```json
+{
+    "command": "AgentGetBuildPH",
+    "parameters": {
+        "tage": "获取公居建属性"
+    }
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已获取完成",
+  "bdlsPH":0
+}
+```

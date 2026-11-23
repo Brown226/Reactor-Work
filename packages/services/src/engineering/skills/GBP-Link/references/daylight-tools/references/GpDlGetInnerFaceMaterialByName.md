@@ -1,2 +1,39 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQ_oeiekY8JIOgTtM5vkNSG51lscOqS0O1xKzTYsqjwndC-ufSiZM1Zwlggrfd_yLq6vt40UNe3pyYVpT4A4rS1vwl43VA-Jga6jyaBfqqrZt-sUT9TY687sT5W7Wd9AQokWZj1cJ7g86yQvZpjlMNYB8Sg3lIpziqxrEPRCELjgUzjR0mcJcYKUY0P-BcB_2POKeXzWlOWvNHtNaAKe3rv218zFO2qT1tZagmfR5o0y0HFoJmRxRGpmL3PpLjy5pX54v879Up5s0rXk4TMClGqXjyk7xDMaomyNVONMHoOPl5UqjVHyRUMvOs5Qm7GI71NFhgoX3Lvw2Z0BK9T4xK5yicdwx7fWL3Ntd_RgSRPngVjDk4mVvFdd3CYAY4Z9TGt5O39OJFSDTf-DLsW-38AyVbkRqjC1JMlLUMUBUSd3DfAahhVrWldx9he4_VT9cvVP1AsGEDTPUt9lUGwGz97gFiiU51ih2LN8Nwx24lBFsYPsMxp0ZMPwZpKg6GLQej0PXuYJRPxNYneur9rEL6tDETPmMMjKwLD3lHHICS7TwtC8lkj63CSMgZ_Q4HHs9bO5VUPYoXxRJdM8hd8ipIK6r2xhrM42-qvOzQT9S2relpwcW8bNXiIUKa3CvLBIP4ttrnyHppXerHy66OZ7qgodY-kjvqe8Vfe57U0jj8bUA7XYsDWlxXAvOg7e55v9ZaRMEV550FEtW7uD7t2uW8n4VE5rQC-DsoJQ6P0z3Wbn6Nap3ATkJvn69VWFzA_kch4L4b3rXF3AU_D7aIZbCMl_MDpuHAXZ8w9SAOCyW4VYivY2NFDPTidimACSnAQjWVEvFNiC_kR0pMWSbUj3SPvBUyYnX4-OzET4WA_Ax0KsftaucUbIfHyM5UXzLnQDt3EpO7e1qvtSw-zmPonr2pHG1-tZR7OgovJPGvSlINcgyS6v8l-WoaG0Ygwx4I2m1vJ2QVCj4Q7gJQyCMLLD5W4sAgmPprpdyfy90-RorehuKpVvvBasgJrbBT3-ZGcWEmHWL7iOMSCvm7GP5GDNQ5kc7rHYMhnlzy-mV2nDmPCOZ1UMGEHhtQdYLh_Uh7OXCb58eDqproM5la5AM7QSG_bS2GMPTB759SXETgPPPMZvv47RwF3qiBWmmT5SG0yM_6cLMrj7Bz2LeVgNhxoVZ3LlYN19PJNgQ5CL3D7k35YruTvPNY3xhMZCcAIf2RX1JGaZzgLsM_brd5rWkGUXXEqj0VapuV9-JXc6JkYV7Y5lY5DSdHdObuxa6zs4AeigEtAT3TUxcFmnX1xl3MpiSfEjVdETP7cIVpMkIumIHTGrA=
+# GpDlGetInnerFaceMaterialByName
+
+根据内饰面名称查询材料全部信息。
+
+**请求参数**：
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| name | string | 是 | 内饰面名称，需在软件内饰面库中存在 |
+
+**请求示例**：
+```json
+{
+  "command": "GpDlGetInnerFaceMaterialByName",
+  "parameters": { "name": "白色乳胶漆" }
+}
+```
+
+**返回结果**：
+```json
+{
+  "code": 1000,
+  "msg": "查询内饰面材料成功！",
+  "result": {
+    "material": {
+      "source": "《建筑采光设计标准》GB 50033-2013",
+      "name": "白色乳胶漆",
+      "reflectance": 0.84
+    }
+  }
+}
+```
+
+| 返回字段 | 类型 | 说明 |
+|----------|------|------|
+| code | int | 状态码（1000 成功） |
+| msg | string | 提示信息 |
+| result.material.source | string | 材料来源 |
+| result.material.name | string | 材料名称 |
+| result.material.reflectance | number | 反射比 |

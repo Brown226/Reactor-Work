@@ -9,8 +9,11 @@
  * tools/list，Agent 能调用什么由本地 API 目录决定。
  */
 
+import { existsSync, readdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
+import { builtinEngineeringSkillsRoot } from "../skills/builtin-skills.js";
 import type { McpToolDescriptor } from "./injection.js";
 
 /** 一个本地 API 目录的定位参数。 */
@@ -32,6 +35,45 @@ interface CatalogRow {
 
 /** 缓存：同一进程内同一路径只读一次。 */
 const cache = new Map<string, McpToolDescriptor[]>();
+
+/** 技能目录里 API 目录文件的固定文件名。 */
+const CATALOG_FILE_NAME = "api.catalog.json";
+
+/**
+ * 按软件标识定位内置技能里的 API 目录文件。
+ *
+ * 为什么需要：注册表只登记了软件标识（`sap2000`、`etabs`…），而目录文件在
+ * `<技能目录>/references/api.catalog.json` 里，技能目录名是 `SAP2000-Link`。
+ * 此前 `catalog.path` 恒为 undefined，`loadApiCatalogTools` 直接返回空数组，
+ * 导致 COM 系软件注入的可用函数为 0——连接看似成功，function_search 却查不到任何函数。
+ *
+ * 匹配规则：技能目录名与标识大小写无关地相等，或等于 `<标识>-Link`。
+ * 找不到文件返回 undefined，交由上层按「无本地目录」降级，不抛异常。
+ */
+export function resolveApiCatalogPath(
+  id: string,
+  skillsRoot: string = builtinEngineeringSkillsRoot(),
+): string | undefined {
+  const target = id.trim().toLowerCase();
+  if (!target) return undefined;
+
+  let dirs: string[];
+  try {
+    dirs = readdirSync(skillsRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
+  } catch {
+    return undefined;
+  }
+
+  for (const dir of dirs) {
+    const name = dir.toLowerCase();
+    if (name !== target && name !== `${target}-link`) continue;
+    const path = join(skillsRoot, dir, "references", CATALOG_FILE_NAME);
+    if (existsSync(path)) return path;
+  }
+  return undefined;
+}
 
 /**
  * 读取一个本地 API 目录并转成工具描述。

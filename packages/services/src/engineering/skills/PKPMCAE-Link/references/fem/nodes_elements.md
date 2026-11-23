@@ -1,2 +1,147 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRcyGurGHEjI_IdOZixZVdTwjQIkNEXGkNuXqwXG0xq9Gelsp_d_rosMZanHn6fSPF2qCdK_4l5axqtED4XRLjiAviRGoy8QCatecKZ5dOhk0GXQdVopf4cvPJiCzr_tOL5-RPaQvvyvQ1n_sRWuXhU6IIcnAHXkjNfskopHXbwBubTvAryX4l7LI1Sp3ehie6ReelDIUFhqACOumvEAtXASL1FEBwk-4utrrJKZmWUKFNd2yWxeDAgIcgKusg_3wZnvPCzHVYILRi6p9SfOleMYBpRt_OhJDQvCEyCl5RcHR1Oexj8UZzF7d1nzdnR6jD8QDX1Lr1HbliFUYHHfdocNhWK4lE3bBWW45VdSfsNnQCQdcKp4PzvyL9Kw_UEYvrDW5M5FGy8IzJxvOJwIlRRoZAlmlMVs9QoyHKMUMO64IYfQqlFQaenxaOHMMxEiPS1QVfkWRAuUgmKgzz4zEqPn88tsR5m282mA-ldjMewoJ3KAvtAFt57v1Ridddj7n7EH0pCQm8hcWokUuX2L7X2zTMhE2KcXwq23yM15Xyi4gifm3zuhXCfsgd3KR3KGmEX5SMQrBV6BWm_k9Q9L5LSm6cYVQWVVK5uNsspNar7luZ-TY3rDF0GOqppx7aD9C_AQY-OJH1P1cY06aMjUWSi7axvz47I5wIcDQ-iMzeqZdA4ibI5kPFgJcfNxG4f0EWjlhjrExlgsYXgqHX81uJEGUfiPf56Lg0UYMsH_7TgmWbEg_aoMfN2YmJtzcN52CpHJ2eRu42NcnuG-aSSNxdsywzNVKH-PifVbSoaeQoJe-Hyh1wdW81-gekF1TmBe3qzCc4DXONDYWeyciW8Eaz4AHAmuM8XKQYio9BP4tMFKmJVy5OclcZCO_wuGX4xN41Zdow0f_39CiJU-t3Hqzh47s5yqaaOgsFTw6TcG9P5yqfZPjZVjGR1S_7TSQ1qGsRrVIFX-Igu5baazCBtkHXYq-i85KHnxmNc66IkbrMTYuVp0Oggytl8HY6yoOESE4POKfX8dE5E_W19UKl3_5WnXHJ_ShKLRKd6n6AP9W7-JzrtBF3iGKoGLm2OVDh1IJuWqZifjBqGoyoo2mMEMCbEPmNAvTQVTcGD0iLnyxW1JRssmVmXiNTUhSe0gGa4TKxPVXdbvr40TJVlBQFZTJanAqxupUc2QM58ab15ATOr8VfBRA3GUcFDtLIqrAsBHIGcoQv6uqJ4eiaY9dzLwbYIdsPyBvLVRjZBWHQnjASPApGo69d0w8KRBEkciRJ7fYaNbvR8ZbvmPj8O5E1FV4qMG2rNJ3i1J1LDvkfUMdt84owfUhlVan1a0HVHEoKQ9ZBkVzDG258CtLVcLPxVcxVKrY3dMmfoPPAU061H5oApg8CoemNIOzKFRzCxq7uMVF3dW9JE31U7bmadoDAKjXwQ9PTisq5jmNi6HYJu0uZWQKCCwRlQ3W1TrPNHThswFMGn1kDE0JltCgXLLgMgtnCQMNArFMT3Gm1ToxXRfHeVDX8GH3ETal74a8iA6Ovq-vSgErE80G3T-wcOCsIclUWFMCsf8udy7VszXQh20Gw2vL8IgVhQCuE6asyvSYfZI86lA6UTPUIeW-K4fY74SCY2KoYST6Wc8CduVL_mAm8PwkMfTR34xrfzRP5TJBz3FhzNmGSUMn2-JcaIMgRsy6q_uSvx8wGfz6ff4Cya0e4TQ7MK6QLPPB-_7glbR4mZINTkOxRnospFrTfd75i7KSBZvXAEncgLqRnWFbcg014w3TQJo6y4B2mFcURzL8b10OeviqKMw8hf_kZaeQQ-gpSPj9jMMDyu8nXUYwkv1vHiuLe0tBPvwttOOXT_MM62lsY284lhJVG3qZKqAI_gpuGgZVxTTfgxR_aQvPaOMT-X7nm-CO6DuYsrjfPly7VuZjU6nDU20ZfN_GC7OrDD9wScZv4rE9boI0dxPwHchSQ2VuEje8rw2SUATrXUk_Wfuts5NzDSmiDJ1X4JuALIdC_flSac8qbXXJMj5tgDYbtmuvRo2G8a4qLtk5Js-hF8SoTNAx1MFoXXY7zVeVw447Rk_RNMh8MqZZAuSinG93Y1JuYwDuMDKdM-fYStJJIwP4fRWJu8rDF1v2ZEisqDdstvR9WXrRbn2JRUjPLK2gsA0Lqbopx55ZsUGmRiy_mOsKMKo8sSqvMA1ItLdt6XvqqlzPesssS3Ox8mgXuu34790qRHMLLkXkxc5KDnpHF718AGGDr3JL97fVvhbgTuqbVOnwY0SFDNIHOu2BYAt4Mrd6h-MKTuLm0d3abbMQHYdkKet6fdyzpXr7TsKlWI-K5HSe-G5FxoCrpcLqUxYy_43wzyZhvSnmjSkjo0CJu6xFzk96dQz-WZB5luQ9fhAIf-FP-o_Tis47PQM6DZxQAe0wkNGHHwRs3y8OyvfychbSlEFee4k1pgKWPk9dV5brCdF95k0qooAnK7tBIs3wlo9wsIak6F3ritBZRv0YAreRwlULSfSm9OdGMAFNKDl14t_cCo73BZwaTBeEjDSCMRDGDNVpS1HoG0jUflcaXynyQ_vTwQ6XhDEDWgbtoH-JpjDJSxL7qnNaXP4iZyLWbsFuDU9d8rOUQ7AKlbYuDeiUl11aSQR4mcvugbJQtidbfh9hua-OjAq1a2YbGW5Epukd1B5chsMajHrViopHRliCXlXiTVE5uP61a_h-DRRqora4SF9JhYKTlV2q1b5SgugjJ7BK3J6evcdf7RP671zq6u6Ehx-D7ieovVcsRmpMriWpBb7rS8bFTOCfAKEb2qV-htUmSd71JXRszUR7JdlPTvehTBEcos2vs43dEObqLsxHghTKTp7ZzvQbfeRhfthPRQ4g7tpcjLqYzvOYORbV8kNnEkDg9yh6J1C9x0FMtOnAWQzNUkSIvXHs4AzdWLhsHa1Qu87yGVMKH0R0IGV3Wfv7qyukW796pV23pQeG7yex-xcAptIBnZ5NvFbpTqd9E2ihERyGQcFVeeZ_W6xQz_XGlytdBlvtAt5BlNcfEggxEXSe7xlTrciOQtjg6l5sUMmn6hQ7fvQiSDQqIPdrLlBhD2W1488nxJB1os6awmzDCkozeIMVO4xH0qLsdgIlS9-WulyFdQIOskPwV8Y-hZJ_P4oxLfW1CWe4w4jO1a5Aami40Eo39VTOD1E9zNNhta-JTZBaNhO1y7owhCJgRoS4w9h3wiLQp--JFCdqciwJcvZxN5CyxR8xRVnXwN3nGBFr2682AcPAYCbQ4WAFS6WfzUHQgSz_OmaJeeR9cJ9n-Z_JTybV5KuXeLB2abC-lciZKjLAGVdq3uTJbrTY5drCIVOTdCxRsGiKm6q2lKm1icWepHwuIW7YJMtQGjonE8JIzEWH1pXbkagrtDuZHyaGUBDXIueKvsZHUIcnM7NGtXUNYAsBiPE4sUTmyC57fN2pq1DS7FyBD84xzvc40i4pBnRzzMsO2Mpa5U2DLbTkN387soQ4Kh_AT3uveBvgvc4M8NMwXbBX0n8C5L5B9X9ivjRw4r0HkGOm375tK1PeE78QIPVqGscc81EayKSFnOnrT1r5AFM5Ad1LyRyKd2_t9YFmux_L-ZTfFvdn7NBXLv-nVBHv0oj_eMInGpp8-FTK_49X27MgGFCEvNdPmPs8rhHTpDP2ggm6pCpK47lQaOnoiHkonwuXHcN08APvoE3tls71IdV1FGJkkPfMn8f3yUy6Jh5-ZhL7jfno9jRmHvkfyJlTAPp7HnC4lxswxCFgofK_xILxwUwoUTbv2ga1C5PgVArmSMQIDKdS-Z9Hpihfhbc_Z9t7OH2S6rorPuU0_Q2IUN_UpWqT5CXr_JzlUDF9uC_Xx4_3NZNudxCEI1v_iOPv42rpE-c3ZQoszqTw6fXDQK_-GgewvKXwVVGyHpRwExzUzzkedXscG-PZ_A7A5QlRNY5dKfmOhU-Il-2THKihRWKzT0NeFVHxfAsE3vomGI5BeJ61jN9o6Ujs9VOw-ohAgZcf1fMO0DmgXyFB6C-W9B3WTZE1wQFfkbReWsqac1V7SkqRQ7--HibVlR1IU4eazsHEyYW3_ALZK9FH7WCbk_qIzshn3mYWNXwasirbZqaKPLzT5mO-yJ9VuM8NTihIAjLC3puj5BoIrMEzx85lJvfE_Bk1lBXaLq0DRk2opoqTbF0j5WzDnZu2ucclwr1JpnPAbrm33TgutaxkRlQ_l9uA4HY8lbNKhkM2_8F0qdssOA6UlClTdVyJCl57k2dR2oXFOYN1KHfQq7bQas5xCyuP1mLw1D353FYAIuNriwACWfOER3tgy1dt3bRA-kKs3Ib1YrLZJjBzyGbvJNxSKUbN5dnJwa3UoByfJ0fSiN_P-DcEd45EcnsphC7rmLHIs2EtS2Zzcgfqj7UNCJveXv6-5iagj2Ijrvv9AX5bzJt-SqG8rx63OdsvyAq6NbWzctZKj2rPN1JklhRnIlxStpZKQNb-FOPkWR-BVmJ90e-RzNlWdogigpDJX01mJ4DUCNcv621TsQHp4eu4iE4f5G7Upm6e3EB_7XpqKevCTrGL1q6wgeFH85rIurXP1YtI97xQCeyDycjNSB1J3pEH7r9wXgBXByB3_gn4bWNN2xIugeC4MYVQockcwsqfyLxaR_TdBB5vu_vNFZnDoRGGC_FH8r28m6iBCfDxOOFdWGbr1YYJ7LWhPl5iB1YFFhWfwTSBf0n5bUxtQAOcOXJ5iRuj-IdeowOVdD5L7xfDDP9jtfJk_jWCkYXqI5tW3zn38wNqPyP7oFirz-UUwwnmuHCDc9A_Q9e6QE5-gIt5SqWCBeduWOLTb85W8vHOLF32BmJ9HYQOcZiuhjYrDIqd9_sZhjlXrxg-6JxefmOfsJQWGiikzE_wfIm0tNfrqCO4JE_yhgaC3MoKIA-r7yd5WCae42pdfGUcs-hYYmRjJZyxA0e-aQiFl6Z-egkSeYCwPEyjElfDfwLIcBvC0FsdNfUaQnfDoIDibzGkYrxGRZHxYg_C4l09kHAUub9oJzeHZRDxr6ZLri_7l6R6-6-xaPQqgrtgWklFFaIriHtra_YZtBeqqfC9t1E_jPtY-698R8of2_MUViGEiiwo5BJHXwKcFu1UdBTGkpZAjsvHHBSbTXTzCZWkofgoBzF5m_iJtBkq--bwXju-N34_jJsWGbQHIbJ7HuRN2HDZMccpQZxGqJ7vZVQTzhXgldy7XR14Lh_N2pwOcvc661xzVDoqkppfhU4vHdMkgd4-_K0STOZFeDUogPGPg-Hyt9NqE_egMO_S3V-Dh9kZn_CHzdLpfjZN6RIRH_y3MuURBaE5i0bBFFqqz-CXHBY67c54XA4ok_AIpYgy91nGy_33UUR9WLfbmkiMuqibpPXJatRRCbdpFp43hACTUAlGaDFzp8I4dSH95s33n3ildkpDNw96KkVIHJRb_wt_5XZhiHSt4NC0M6Fc0bU3PbyM6dbSrw1lz00PvFhUhnQg-B4BMjpPlTe5M8CDKGExNqjxTNFaEGy7Nw_8q078UMh9Ce4QuqiiSZT-KDkvl_0BxfRlvC3_assUxlwPpAMuSvtI_zpLpobplb_CGDvHIKr9bHWGkM3vdSuPDVyfZlCbUlQ8Mm-qKHGFdqFZCpS-6MAxPi3onAzKIdjRLBWNjPpTG0L3iwWX4GieM3o93_nq15jlYBPWXaW9Y9fFVTkmPnKq61PmOWdw8HJrrDrbtD-0eG9-d0JaxUHdPYcriwRO-fGB5tp8izBveg4ZrLSxMkTAmkyhyvyY_oQKzwa6VF6l5A57oeGZXeufyTm0QD6zrPTEPkotSUsgsXMoWt4RrV1sTprGxjZBoL0l6L5YMDlpCStAJRv_qht8f4bpI9ExiEV9y_IBcy2bWHeNTOuY8FePPzbV_xZDmPxUImCc1vj5ODaNTkgkf1JJbSbvToarNFHzC-mHYDNMwlox9suao1zrZPOJKJ1aQvzjSTOJFrq9Ud8pIdC6VgLVqCa-4l02MKvMSEOpIjjqJnIMwxTd32kke3VBJ4ZUmXyucyQTv6c77x12sesjbyGjXHMuuEL7MXiJsTIk-SXDfVyoaFLe8SMYNKzSlaHcXnHMRmur4D0rqlMFFbKSY20ZH3MZOoih5_oddPD_jNZnYGU3fqXO1fTttzSHAB5feFdu45r9SzPT7EcUVZctMoBCGOLF1z8csJ1OGPqPDJcbIBcUozZpwhVEcG9Rng-KgmXKJyX3Irz1WpEyS7msCtSV-tw3FGlXlIBGeMaUafTomQn8l_iun6fJYYJRmjNZIcOSxYxo4OZXQkJo3tgqKtFIZKcXpavBfy8GnclVWXITQpOT7JvkMlKTIR-c3YPmrEtKC3lY0NrjXhMen6iaPOOQmm4hW1kbp7Rhqa_GFE_HbVUCJt82hVh1f3yLKDtfwPwbwqHyLvBJWCsO_edU0tYux4pOAeclFvYCvOABh5wuGcqN6y5k0aCIHu55V9OTtErmo-3X4Jr8m1xeFEnZ6aKkW38kE9PwKD3OTk9sKrvmmw0VX6DnDr_53ipD_JMYzZLbkykAZgvgcVL4B0HnjBK7JL3dQ1FI=
+# 节点、单元与工具类 — 参考文档
+
+
+
+
+## 概述
+
+覆盖 `Node` / `Element` / 集合（`Nset`/`Elset`）/ 局部坐标系（`Csys`）/
+接触单元与表面（`Contactor`/`ContactSet`）/ 曲线（`DataCurve`）。
+
+## 核心 API
+
+### 节点 Node
+
+```python
+Node(x: float, y: float, z: float)     # 坐标（默认 m；z 竖直向上）
+```
+
+- 按创建顺序自动编号（从 1 开始）；引用必须 `node.id`，禁止硬编码数字；
+- **相连构件在连接点必须共享同一个 `Node` 对象**——同坐标重复 `Node(...)` 会产生
+  零长度单元，modelcheck 报"单元法向有错"。
+
+### 单元 Element
+
+```python
+Element(nids: list[int], type: int = ElementType.Link, sid: int = -1, normal=None)
+```
+
+- `nids`：节点编号列表（2 节点梁/杆传 2 个；4 节点壳传 4 个；8 节点实体传 8 个）；
+- `sid`：截面编号 `sec.id`；
+- `normal`：梁单元为截面局部 y 方向；壳单元为面外法向（局部 z 向）。
+
+常用单元类型：
+
+| 枚举 | 用途 | nids |
+|---|---|---|
+| `Link` | 桁架杆（仅轴力） | 2 |
+| `BeamEuler` | 梁柱（弯剪扭） | 2 |
+| `BeamTimoshenko` | 深梁（计剪切变形） | 2 |
+| `BeamLink` | 梁杆 | 2 |
+| `Cable` / `CableCatenary` | 索 | 2 |
+| `Pipe` | 管 | 2 |
+| `ShellAssembled` | 组合壳（常用） | 4 |
+| `ShellDegenerated` | 退化壳 | 4 |
+| `PlateMitc` | MITC 板 | 4 |
+| `Membrane` | 膜 | 4 |
+| `Solid` | 三维实体 | 8 |
+| `PlaneClassic` | 平面应力 | 4 |
+| `PlaneStress2D` / `PlaneStrain2D` | 二维平面应力/应变 | - |
+| `Penalty` | 罚单元 | - |
+
+### 集合 Nset / Elset
+
+```python
+Nset(name: str, ids: list[int] = None)      # 节点集合
+Elset(name: str, ids: list[int] = None)     # 单元/构件集合
+```
+
+- 只接受**整数 ID 列表**，禁止传对象列表；
+- `add()` 逐个添加**单个 int**：`nset.add(node.id)` ✅；`nset.add([1,2,3])` ❌。
+
+### 局部坐标系 Csys
+
+```python
+Csys(name: str, iType: int = LOCALCSYS.Cartesian, xAxis=None, yAxis=None)
+```
+
+**三个坐标系枚举别搞混**：
+
+| 枚举 | 成员 | 用在哪 |
+|---|---|---|
+| `CSYS` | `GlobalSystem` / `LocalCoordinateSystem` | 荷载类的 `iCoord` |
+| `LOCALCSYS` | `Cartesian` / `Cylindrical` / `Spherical` | `Csys.iType` |
+| `ConnCoordType` | `Auto` / `Fixed` / `Follow` | `Connector.iCoord` |
+
+### 接触单元与表面
+
+```python
+Contactor(att: int, side: int = None, nids: list[int] = None)
+# att=附着单元号；side=附着单元表面号（面单元正1反2，四面体1~4，六面体1~6）；
+# side 缺省时用 nids 确定（面单元顺时针对应正向）
+
+ContactSet(name: str, contactors: list[Contactor] = None)   # 表面，供相互作用引用
+```
+
+### 曲线 DataCurve
+
+```python
+DataCurve(name: str, data: list[list[float]] = None)   # 材料曲线/荷载曲线/自定义截面
+```
+
+## 代码模板
+
+### 模板 1：参数化节点阵列 + 梁单元链
+
+```python
+SPAN, N = 6.0, 6          # m，6 等分
+nods = [Node(i * SPAN / N, 0.0, 0.0) for i in range(N + 1)]
+elems = [Element(nids=[nods[i].id, nods[i + 1].id],
+                 type=ElementType.BeamEuler, sid=sec.id) for i in range(N)]
+Elset("AllBeams", [e.id for e in elems])
+```
+
+### 模板 2：壳单元网格（m×n 四边形）
+
+```python
+L, B, NX, NY = 1.0, 1.0, 20, 20          # m
+nods = []
+for i in range(NX + 1):
+    for j in range(NY + 1):
+        nods.append(Node(i * L / NX, j * B / NY, 0.0))
+for i in range(NX):
+    for j in range(NY):
+        Element(nids=[nods[(NY+1)*i + j].id, nods[(NY+1)*(i+1) + j].id,
+                      nods[(NY+1)*(i+1) + j+1].id, nods[(NY+1)*i + j+1].id],
+                type=ElementType.ShellAssembled, sid=sec.id)
+```
+
+### 模板 3：8 节点实体块
+
+```python
+# n1..n8 为角点节点（先底面 4 点、后顶面 4 点）
+Element(nids=[n1.id, n2.id, n3.id, n4.id, n5.id, n6.id, n7.id, n8.id],
+        type=ElementType.Solid, sid=sec.id)
+```
+
+## 最佳实践
+
+1. 节点由循环/函数生成时，把节点对象存入 list 并建立**索引规则注释**；
+2. 连接点从同一 list 中取节点对象，天然满足"共享 Node"铁律；
+3. 集合命名语义化（`"AllBeams"`/`"TopSlab"`），后续荷载/约束按集合施加。
+
+## 常见错误
+
+| 现象 | 原因 | 修复 |
+|---|---|---|
+| modelcheck"单元法向有错/零长度单元" | 同坐标重复建 Node | 共享 Node 对象 |
+| 集合报错 | `Elset` 传了对象列表或 `add(list)` | 传 `[e.id ...]`；`add` 逐个 int |
+| 壳单元结果方向混乱 | 单元法向不一致 | 统一节点绕序（右手螺旋），必要时用 `normal` |
+| 局部坐标系不生效 | 误用 `CSYS` 枚举 | `Csys.iType` 用 `LOCALCSYS` |
+
+## 验证清单
+
+- [ ] 节点总数与参数推导一致（如 (N+1) 个、网格 (NX+1)*(NY+1) 个）
+- [ ] 连接点共享 Node
+- [ ] 集合成员为 int id
+- [ ] 壳单元绕序一致（法向统一）

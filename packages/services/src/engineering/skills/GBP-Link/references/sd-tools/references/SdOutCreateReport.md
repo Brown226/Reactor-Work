@@ -1,2 +1,30 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQGw_W4oOD4HMXgbp62mKnSmIHe0Z4iRUNtJ0g_JGvo7Qh_baxCQDA-st_0ju-8AfMymFYEXTYGnaXkfGDk9bONMhjLillf3ZmhwNukkdFoM2lIEsH0QJABnbk0UArVzTebT_GvqULWOuC2d_LHgHPpIizqUNWz-K7zw1EbI8L4juNO9seSnWChXqOlE9ux_2Y6-ooAKGGFYaKlBzwz_-5scuHzpiapUtMZt4uD93Qzt6JyaRbBYf8Mlev17TcCYnrAzk8AwrelarSdNsXUfQHpiwRlkfx9JoKicwPFshm8ZjEukC-eXWawSb41tUnLl67lsZRFlx-roEyp-IY_4A-U1i6cxp5P39FTuGSiQd2n_Vt5OO34TUEpqeQJngHwSgo_lTE3JArDmtEl3LrwlJCV5S-aF87ql3sJQJlFBn1Jp4hTkbA6JW8bjgRM2BF0gqPvjjM9WN0ROJNmMQMFpJ9OdD62RW6YuEZ7mUjH-UesWm1c20M7f4UqnkuYd20WsdGbtKdUwD_7daLu3CQpfBM5pcEvdmfh5aTYIECR_aT80FN8zib069bDgsUUFUtQ1l8GW2PgRwnLnsGyxhEeLQqpotfEGFo3-PP4k1HkbBX3IsHwG1pc19aqFUw6ivL_JQLlG8mILeg5iAv7f9zNbbax_KdY7VxRsMWLGPrgdwohN2Z4wAXkTY24V-1djUVWd214Im6YbdtByAY2ROPsxQA0R0yLm3gttEn_jpWCHEwCPPlwGKK00gJ1Gheu_XhThLB
+# CreateReport
+
+生成室外声环境模拟计算分析报告书。该工具不弹出界面，也不自动打开报告书，仅在后台执行报告书文件生成。会返回报告书路径
+
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+  "command": "SdOutCreateReport",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+```json
+{
+  "code": 1000,
+  "msg": "报告书生成成功",
+  "result": {
+    "reportPath": "D:\\新项目-节能及绿建报告书汇总\\室外声环境模拟分析报告_新项目.doc"
+  }
+}
+```
+
+

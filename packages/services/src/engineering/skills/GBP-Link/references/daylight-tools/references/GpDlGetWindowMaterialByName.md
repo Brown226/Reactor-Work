@@ -1,2 +1,49 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQXnh8wL4UvKAkbo7_SvwqRJyNfJEd2GI08TWie8lz_-HZ4IftH1ve7bkMj-ArLTbizqF6OrPOhKQeepoRPapUp1Mdo1Nxa5mA8z0U9hau0JlsFzqos78L-4jLr6KOSdOct3TOADCPMF6rwR36wJAlQqWLWtN7P8O7JB2frRLAx_omlWE7s9c5UlO46lLrHQmVxXYpx5X3EjsTWvgOUS9tbB2jQ1ZGY3cW1ZKyeA5hCY87-8fVpyE1nlNESte_o4n751vNyZXXT82lZfxiA1rriI9LtXfNdhNd78JQfRjnVG98o8VYKU1LrR_wcKDLOmzTZgqEQSYEtpZU0F_IzAPZEH_PtmFCQRz6tBEkW3xIm_sAsjGvtoc2lbENVJa16J9VvQovzpEygQ_W4NFCvU-KMNsllfo-jeuydlAoMKCOjdSm9YF05R4b6cP0L94rpQ6B1psEBqUGC-zvIJLnCxXkt0AfiLHsRATKfGSgqZ1oOrcpR5gfiZTIZ9QtU9pAB-wkZtulQluOCKRaiEXH4H99DEdZokSWsKxCwEqZTHiCQNfp2VZI8uxQPs8FtfakIsbKIfq6rSW53CGHTvB9llaKg0uo46MvwlClg2zeo_3WNp4sCZh2OOc9vkTHN_7Tz1LRjAVm_G48KPDo0i6UugXT_rs0sGyVJw6jAmqtNpUKDfSqY4gZoBhmD4DqPdu2ptNJ2B4SMuaztcxfmXHzLm6LigrDNAeIv8c9l5v02H86KruwpFbtAeGNLzVbL5kb7f_ggA_2fhU_THoqdfm_gJP3WQkHmMSuydQPtDuNhU9Fh7rppM7A-8osDFFYuE2Gr_fkoTkT9A7j8vzxjUw72mXCSI0cMo-ODn9c2r9_A0OJqaLZrwvPoyBcQBvJhgIoQZH2Sqw05_KtzpFDGXi7y88sc2EWayPbPAeV5mFizJAgKfiU7szAJxNNPD1DLbknOfqjltNmHzaRzB3YUeozJhrlE_JzIZoSH1VCv4mCToikO4r2pDnpNK5BrO66RiP-_H17Wuc7JYU8o2h2bqsQ2QtbEocORqqUXCBLv0r6kHlddtt_KwDED82AwuIaYS9Npno3fgMjwap8xBslYI4PWtoRemonGW1TOUTRxMG6tWD4Q7DI2SsD5mTL74NMhDVOu67kfr19_wa9mRkkTTiv7pPKm8UTDU8XmNcezvmPcIQUJDZ-QqpJZdWvv9mg_hX0a4qps4ixauYD89bPxHqSNTvTCbFidWZumuGDcHnChprDtvn-IIZDKKi8CAAXnJZNShKDcMfOkkHFUK5tQeYbxgitWo8OT_XBOHl42SJD2J-aVSauE8LFAjxKjUY2N_FgOymIVDN1o1q-5MZalzmqxtBhAjYmsXLFi1Srhg8HlPVcfQGyBDkHKj3k_4Kcki6V-m0DxyhGbyAhYPElq4HmwJwnWYjT6cVqCw4-PD0pBgZnHV2sEeshh4cjCTB5oruquSXcS6IDA6jIy38mhk89m0xC8fIOOxMX2c2LcYvP3c0d-CPrmywSfJ1nhEdRfdAymqzVBZjLlkYK8U8jdteMXejjg6jOb5kqkWzVBAN_wfNDOw26SoeeA4v3DV8a3xQ86rlZSxB5V5zc5Yw9RzGNOWjbNo660GaQIB8kurgYPvGETkcYPkHwPpH48JvTFs0uvS0X4hysRkPEaSGmohPUcwYfLuFc4DLK2Pa-jhLBjd505zrEwxPwp-NHreVDENVar7gisMjL8h-7zdH0caJNHDPzOOaVau_kWus1IdKeLn1_CzD90TcJ0BiCcPr3a71RM_Ij_sZaHYZ8idiK_dfc6mhjKIJXeFFxXq2UvdmkD0XCucbG1l6DvAQDjuDOSA571Gvce4rm-hBsbvOygblTklMismVAOrvFt_c3bQORtxClzOfYtz8Gnxcj_ygnl6IZrACa
+# GpDlGetWindowMaterialByName
+
+根据窗框和玻璃名称查询窗体的来源及材料属性。传入的窗框和玻璃名称组合需在窗体材料库中存在。
+
+**请求参数**：
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| frameName | string | 是 | 窗框材料名称 |
+| glassName | string | 是 | 玻璃材料名称 |
+
+**请求示例**：
+```json
+{
+  "command": "GpDlGetWindowMaterialByName",
+  "parameters": {
+    "frameName": "铝窗",
+    "glassName": "6mm普通白玻 0.89"
+  }
+}
+```
+
+**返回结果**：
+```json
+{
+  "code": 1000,
+  "msg": "查询内饰面材质成功！",
+  "result": {
+    "material": {
+      "source": "《建筑采光设计标准》GB 50033-2013",
+      "frameName": "铝窗",
+      "glassName": "6mm普通白玻 0.89",
+      "transmittance": 0.89,
+      "reflectance": 0.08,
+      "reductionRatio": 0.75
+    }
+  }
+}
+```
+
+| 返回字段 | 类型 | 说明 |
+|----------|------|------|
+| code | int | 状态码（1000 成功） |
+| msg | string | 提示信息 |
+| result.material.source | string | 来源 |
+| result.material.frameName | string | 窗框材料名称 |
+| result.material.glassName | string | 玻璃材料名称 |
+| result.material.transmittance | number | 可见光透射比 |
+| result.material.reflectance | number | 可见光反射比 |
+| result.material.reductionRatio | number | 挡光折减系数 |

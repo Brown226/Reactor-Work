@@ -1,2 +1,27 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQEpmcS4FttudgFE_278oebICIyt2w6l4pbW_IXD-uGDvxT46uAiJ1LFalPndcmwwYGKf3xdHo6X4_VZQLmYKbAhgLYu5RcjE61QBD6hrfEysTGFtjPe9LhQqsdB_O6gj_Rgk68HwBYLiCfO_801SU0CmUe_XeUvJATzz4W_7oUmv5R4R7rebQ4UvxGc9Oo1gzYDePWzwtHOePPXIIz1xSzwdDheGtp8kPcc_IrskZN9X_f3j3YUQfg3kVmvGFu30CoVhau3nY68BAsO8VYV3kE9d5JXckQ2tzQ9t1qgLX8nW40qX_mtMVtOLSdlwpt5ssr4YeizZCI8uipbeNFP9fn3jv8-_sR0Gr87lp6XW8f6vRYP5zlu5c0PjHaaI1ucx8ZcmEJWmP59jj3WpZkWTA1ckVsLHNfCaPQBiR_9W4Dg24aibilxnqgCRxB3yBOrXWBi37KDCimNwggwWvxqzC1QpMMcLLFx2rapp0-Rd4NNgqNNyI0NyGgnvYzRSFl_txNBTG6htvpeLB1Q6O-ambN1Vfhv2S_Jm1k4iNmK4LmQu7sWFDmxy150kDosa5GJSVwZedTVX20uu4xCny490EsPBn8xdAxEdnjsFx5x8PdrjtB_Dr1sxH4LdkdBoqd-9ev6qMq-AMZ8uh5uzgyw_Z5D8jV4t74AVvudJqyeh7y4c=
+# PBECACalculate
+
+**工具说明**：进行规定性指标计算或权衡计算。
+
+**调用工具 Json**：
+```json
+{
+    "command": "PBECACalculate",
+    "parameters": {
+        "CalType": 0
+    }
+}
+```
+
+**参数说明**：
+
+| 参数名 | 类型 | 说明 |
+| :--- | :--- | :--- |
+| `CalType` | int | 计算类型：0-规定性指标计算，1-权衡计算 |
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已完成计算"
+}
+```

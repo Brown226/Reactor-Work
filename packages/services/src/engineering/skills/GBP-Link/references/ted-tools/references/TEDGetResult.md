@@ -1,2 +1,78 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRpGHhFfiRPsiPGy2tBOgwanQjwsn4eb9eQrKj9CjhdGU0ggupBTkeioafYQerIW5D04UQdnNrUx0H0IZugNtaPd9X2QktOemp1ERtiwhXrEKXIEqHzT_dh8PxWYHcAr1dE70OYyZsxXe-kxXOVJzUVeVsQ2E01M801Y_KOyHk-BGp5bJxnteqj7xUf5QQ0uPFtyWFeLVkOjJh2xCA6cy_xa7A74suXebZkL7Rd3Bi5ZDoczwXElQbAcaEVBPCNidfA77oDxqMSrmg_uGC5OjjS8-6nwgtV3cZ0Kp307LgFCKurkBM1NpNfcWo3YH35zdN1JIcz3F-M-yfQkfWDoaL64ncCsyaTBwxMLYiWHLK1WBXtF0clxPHsqFe7fLLml1cc9Y8gBOOCMsvwD1WD5InMCtWVqCwBhvKyUZ8kLy73kfflJYKXXrdShKz2eGRS_7lKR-MG-Wy_oFA4iv6AZSpX97em5OT2OBDL7DIaZ7W3vlW8pLNxur4Qwg-_mAFgJeSqBrM4W4djc7VTp1i4fhYJMHUSJhO4ioscRY_LnSZZ3ZFZ3djkHm0t8g2RhUDeCrizkWPiOKo1XiltpEyRLo_I8MEQ_8JSaw97zWDXMcOkJXHKEPlwzONowXFaEQR2WqLTtkabm1aDU163t-FCiA9rcDaSbyB1mHnKIRDvpageVGc17Y6RA0y4gjCQhG6d1YS--dZHebAvf2p0CMWEUzXr_s3FOjyHzAKh2GjACsx_7yxvM9xiBHF_J7ZVMUkvfypEwpHfwNcrye4DCMmmXN-lUWgxMZ_HpiJIdVgw9RTmqLZIYjRe0TXaQzSEEQmJanUSVyqjJjRFDyx5L2ktSCAdVSmJg4fFAhPaHMR8ABrYg9ybZEF83jaUOMeJuqi5NrMi-nE8amhQShJciPkGgjVWpKj7vuHLOlt3lqRRFPoL-Ww6ujFvqL4u4wSf8oQSrqNckV2uPiFU34FBoNoCRxijWfwk_vTADCht2OSc7KYnBnuZh01ed64d1eTYFeu-WhJHLmQjSTTFbsXBq4JF8YpbtFjebibR497yWQk204itbrwPS6zmF-kF5mowMPuNEOkaNN4ZI5J2lXJgb35zjXnDWCTwF30TuOL9qeS5933GUZDmscKIQBd1LwEZcC-uFZK_o7tNyVuCIAgrl0_oRhGeWYsAKFpmYcDGIK3Pqzw0hiGiIitBBFsYfPV9glOV1Qq9Ev4k4BfIvJZdWtYrgrW_08qRGh_Ui2XaXf82re4V106DTu-fhKaLCw9sbLlxAo8DJmSaVeuBvH_LTjHuV3h7r33yy9Lq6yP-qxLk-wrAnNsAMh91e89Wa4XX_rO8iWxqnGckbkcBsJeLBMDGD-zDlZv0vNLYypI4JC4IIbNSwWSQst0caVY7r9oK-Wwv26Pk8aw4sx8No5Uh5_I8HpX9M1Twab0yCcWD-W6oj47NRoCHY1n-K8OO1Nc0AMABaDcMst87bpCRePeZ8sxu8GwD2RUcSRlQ8PURBkoJUbd0ixXiCIeJpi41wX-UQUQdxJQKWBDxVZYP2bE-wB1CIbbGo9SBVizfkXS1WiBmz7OuEBiMXBZkRWWVGxAGKw-dReATfNDaSl_BbHNPzFrQHYZ77CKDwk_1Ar1SRcoZa7wqTZSuXa2U099eH7EQBi9kRO1n8H6_CqxvEsLOLfKoB3rzvlaoT0wxsq5xWvkH3E4MgqRlubvtVBERMgUCtg5WN8ivyOzUYyl_uTg-W5HFXSg3l6Iup0WiY4YlcmY91A2gTfXlP-ekLd4KHsdiZPfZUFRQwJXQyd8wk3UrP5xb6jK2EQqkesXMZnR2LZNeMhCG9_teg-ha5eeRwABSOYj6m9lziqDrGwZkSvVBGts9JvJdM5mRq1DHip7U7nqUCPhgE-DkPudRLb9EgPAHBfw-1VSF8eM2RrrZE_gt214T9-Lnl0KTQBxK3_Ksm_Zvt7RB84kNGC5HD81j_lBJfZl1s5xW96suH8PIy2w7Q9mCgMDWFo287d-6C7pChBl-ygGaFBVSAAjKTbmR7rZNEUgWlHXuiAtSZmkGR9foM_KVDxSpF8JB4GX4BcIjZz8HnK_Sur-gplC7Ey6rmQudb5fdJJ6DD6U-1G3B6yxyVSY4dJD88jdZk0UfucfI-BZHXy7RhxhD7HF5t2KgtAX8VALTgn_eNbQwxU5sz38to5SxStcdXj87JJobLftDXcbkawZwtFcIOM_qV2OoA6lorwGEF0bT0Rfg0BzhvO4f-uddpKIJ9b9agbiOJZGRCVF6FGeY00bjEM8w99VddFzAcw8R9_SUi1ua1YvcFfwAkiCy5E-kprr5L3yYtscAytpeWDMr8Qj5QCFd6KHdIKNK8rH6CfL3NfxE4qZYayf_qqKoNxaTUodqVNwMjAiqTxBtsT6y_n9atazOoOk-HEMxcHyvdwK1xw-dm8M3n_vroqH8cxOhYpzw4fL38fB1MPXxo7WW-HIAKOF2ITLwPMxauOHlLEcR1osi3VGRjwYj5I3lH10BdAHXsUNW0zvLaOTcrvSEFRwIt722dbuqdZF5pAp3wQsEx9bFiMpUkxk0vlMY3jMU6w-l1vZLzMQmfVXSIiBZwA8yVg0Ke1yT4fqqZiYnnQnJk74dMpUAMn07FTYUY_oDu4OVmSNA_QUR4YFpVFDFy72_eQNlSMRStmO2g46u6WjXqZBWnFjZZTKcGEOR9oEaMuEnT6AdUkFoMlA9wfYLe3BZy9NuL0KRUiy-fAdAAAH0NyvJAC3pmedobCJGtHwYFJvmt8pScwYeyhgazooZ791wBF-UXGCsqNqNj3baUV4WpbCw5wesrT_liB7_ZmCFTzXBq7KWYP2xI4WIaHoO3dAQaeVC6X_1pZnRN7LhCTIrLWJwgAvS_K5g3h8BxERwfZ-wsdMiGO-etOMUhLBtJHDXQqYQy4fih1F2NcWx29V-KQ4dyruKBIGxZjbLLUWlaRcpZVkajT0PWlXEAYUc1KNhytu5knjooyDxVNzxB6NQYglDbuiUDY4dvCY0M6zKH2c21bDWr_U8cEAVWyMXWfaojhGl5fun5pTQLXbaLyBAcJq4GN-MrdgZI4_uC4ykdQdXozVBsdnjJlFs13BqV5pUUW9mKQEZmhP1ibuofsJbHNuiqPjFBtPO81YpsENjg_a90iY5VE57Ppnuc8NLpepvX5_K3pMUAJ8qhE7-OlpsQ7PE6g1iSenEKg9fQdDPcGss-k_thzXOM04ML4C5-U19brGzvag3pFIinYmXa1USfDMWJhjh0w4dIPl2MJaIg==
+# TEDGetResult
+
+获取当前计算结果与结论（不做重新计算，直接提取当前工程已有的结论数据）。返回项目综合结论、规定性设计结论、评价性设计结论和降低热岛强度结论。
+
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+  "command": "TEDGetResult",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+```json
+{
+  "code": 1000,
+  "msg": "获取结论成功",
+  "result": {
+    "projectConclusions": [
+      "通过模拟分析，住区热环境满足《绿色建筑评价标准》GB/T 50378-2019第4.2.6条的要求。",
+      "本项目得分为80分。"
+    ],
+    "standardDesignConclusions": [
+      "平均迎风面积比达标，得5分",
+      "通风架空率达标，得5分",
+      "场地遮阳覆盖率达标，得5分",
+      "渗透与蒸发措施完善，得5分",
+      "屋顶绿化率达标，得5分",
+      "叶面积指数达标，得5分"
+    ],
+    "performanceEvaluationConclusions": [
+      "湿球黑球温度（WBGT）达标，得15分",
+      "热岛强度（HII）达标，得15分"
+    ],
+    "heatIslandReductionConclusions": [
+      "降低热岛强度措施满足要求"
+    ]
+  }
+}
+```
+
+## 返回字段说明
+
+### result 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `projectConclusions` | array[string] | 项目综合结论描述列表 |
+| `standardDesignConclusions` | array[string] | 规定性设计各项指标的达标结论 |
+| `performanceEvaluationConclusions` | array[string] | 评价性设计各项指标的达标结论 |
+| `heatIslandReductionConclusions` | array[string] | 降低热岛强度措施的综合结论 |
+
+各项结论的详细含义与 [TEDCompute.md](TEDCompute.md) 中相同。
+
+## 典型使用场景
+
+1. 先调用 `TEDCompute` 执行一键计算；
+2. 再调用 `TEDGetResult` 查看计算结果（也可在计算后直接用返回的结果，无需再次调用）；
+3. 如果只需要查看已有结论而不触发重新计算，可直接调用本工具。
+
+## 注意事项
+
+- 本工具**不执行计算**，仅返回当前工程已有的结论数据。
+- 如果当前工程中没有结论数据，将返回错误。
+- 结论内容取决于当前工程选用的绿建标准，不同标准的指标项和评分规则不同。
+
+## 错误情况
+
+| 错误码 | msg 说明 |
+|--------|----------|
+| 1003 | 获取结论失败 |
+| 1003 | 获取结论异常: \<具体异常信息\> |

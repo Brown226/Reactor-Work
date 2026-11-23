@@ -1,2 +1,138 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRFUt-Fre5XlQv1mG-NMHBFdskdXb9JexrCO_dbnprBUs9IryTML4BqKVxBPzDhi4-g0qpgd5FZTTNfQRNLuWcpQK9XpsgbF_Z3pSgPwZbS0WJ94JjReWwrueFg8GtBHI1TrUETImN4zSoiGblZlXtOhBlA53poKVXM5SgmTM3xx_Eterh5i3aX_ihc43pP-STbUmS-vFikziv8hHX2U85um9Rxe32pLHD5KjltDjR6cxNDilmauKWIBnmMxi5GTOoXQt-mEIiQ3uN9JtlbXCjjMdSdr_-BGfpHMy-GBvZ2jUvUuZdjl5mJJpIr2Oc7vvRSLWjEteWo8A50V2OBI53aSTQ0_bR9xdVVyK08p1hMko9oBA-N8lp-iS65DSqOZ2mb2Fk68W8gDFPHAJ4TV_-QCfdZBehIorUZt0C10BNkoKrbHbTxRc5HQTqX0FGUndmYE3_6Jv5RTH_fdnPF06U1C4tkW8SovlfbWmMjv251Vfc5iWAoZcAiZekkSFv7NQvdkxInyn7RCA3np5wksh3FnZpFk6UOjsTwf3nOGDJ8jB1HrG2h3G7LBQ03u3tCWsa-VV8uwrdlCk0PHsKqGGg5iRw3oascZSRc9ebgW5HEQMdmcxOJNorIof_ElMsAYGJ88oJe2DCYoj4jk9Fxu8luyiAYE05wqgjru0rUNwcLB4vf5EdclJ4xKViWx-hgYslBmbxURv4V4THKo1n_S50SnuyGY8IVstOHYjTllVWk9tDihdmVia_G5_aZudoq3N-uLurP8lRKM43-H0uE4s7Fvxh7-bZxpAWtZqSw_mdWvW65sZS2gpeLb5slmRn9GFKT7kVFBoNG1i8W-ADszg6w8mooMa6lW7e4gcBojLw2EkmEsrKjyGBVSCkL3H3PEhUVf8IOdWKyqDcJYMs9YdUvHJu6JNNbTT2sMjX-xKIGbe6Mo9DT5T2uo5mB48bGOvOoVTdWHdWOR5KJTvRVvObaZz4FZNQjTRs7DBrSuJz3LUaoKm10dLFpsMyjXg9vRI_GKHOOjUfxvs-SzzYbZmsyOB3PfuUAn7NftO1h0oDf9CrMWHXs9TynR_XVbMMS_z3LSNVC1BlN692HADnbUBgaz9AzAGQoleKHZq2DC_3QZD9E9uCR6PxS79EjfPsca-aM997MVBw4Gtc12OWGdB6frq7crDn2Oj3IB0aRxOV1zuSAdC2Yn1I_0wD38wmwZoYB8xDIuesjB13_OAkzmNZ1JAuJz6HNJM9SGYF4ClrRdyHfpojQnfeapA2BRWFaxJSPoFiFo8asIpeZo9kJ16lW0crIHzHnjv-qrc3BUOW03_RFQE7Yl2t5yu2e7ZKDrOEfv2i39JdPj8DDzvjX5ciKUArb3-7MtVK4qColD_PIVHJgrnGhNpPVY8bqT6mpuZP_BanS2756yRx0Inkf3MqP2jcCHK-Zyea9fBpYR1HwhnJkoilsmKyfEcwBN-pGt6_hbKdXoY8mX8T4VBBRpPExxHYY9vfeH2N9eRnXuVh0ZhxYCRt_aLn2v77h9Ev1YtI5AROz8Y3zkklDXO3rzF4AiMvSIaFUCgF_G93gbcssY3hPa-sTLu2mFKu2KmRL38-gq-HNTy3n2RGfSeL_eGU3zsXzgwK_8By1tO8hSKlbQ94zcCLJZrKX-su0knErea6WPQ9PMyeIEAmoxGxW4fvpj-rSW7pkrJc3Y8LXdMYXkcQXYEyNcsgA0b0h9SfPlP58zpOn49nLEC2SCfdOhIBhE25_E4Nz_FZL-SJzzMCMABpSCjGcdGSLrJu5DxDyLTRsdUFMZ9WdwMPApa4K5i4JE3b_E1QTg7mZMXRlKLeAzc16tDRJksc4I581GU0i2eY1qNNYttIpMEMERqQgEtO7O2QLGTnQVu3lD3_elkylDbOIulqgVSGE7TGjAt815CiwW7IyqqUj0Nb_UEIumIrwMLzExMGtSOPDoUFBVuM2OdbtWDj3-OP-ucrOvgmtASfsi5d5xUBjr6PdRnQWx-iZJPvUiZbFQVcF2gvcv8zhltzdZejUdt69xlkW6CUxiknpm1hg4rdw261JH1gD5LSS-KoS4-ddh83KgsdI2J70lBZZHJzE1noZMH4-bTADmH7Rpn2lDIu4KN1J20c1dgRUtzTYxsZDrTv7iT1ros5ARrSaoiDaXVzkZjxbQpNrewJh4W7GUIFxH7xPAqyzzoCwqJMd3fjT2ETBtdRRIpAr8SiRKPpt0sUNfiSjAbBUQQzEQ2E3iEwCA_sZXawFWe7ZYQzoc_W8J-tdKCtnQ3v6PIImiyuPh2qq96Ugq73gXUgMn2tpN_m8pyYJ3SHyxBsAW9E_9hN-FdRYAFHw1jebJ1-ADpRhLZ2bMXMUoNtFxaeGJTiTzapsgY1hZm3oMV0YfwOcVhG86wbde2KYosgnl9e4e7mILsami8yHQGADQvRnfvyXcqTFeFUpvK80osK5OxP7iiyICVErq0dqiC26Jvo119A1-_vbQG_jfgY9SEMlNYJHya4NQU1wWp5qVDK8uw4j3BjCtAf86gd6BmZmq1aR2vvPYZZ6CsfYz_3pRjINvrk3kGkuhseaq7xbr2KdpbOzVt7yTiSvxPtKbQg7GDhrhCptj8srHu1uY6aDe4h_pPEVA8E_PKx49AdZJesEHHIhT-2c8bj5ODAb_qmqt7pyMPkeyI8rgGHXUt3KoIwoA-M8gm1kZbOk_HLR48Dl0FzgjjXEynatdF_mW_pvx0P4TDQI4csPOBXtTKkL72lUtxCJy-uMorB3-m9YrO34yEh2tpywHvCQ0bfhWpRaeHF805UML22P785Oq1SP4Vd0lEg4MV5c5L6ueJS8Gs4qEZkJTMrte_C7SPQP3HedHD-ywVcL4-vykPdFN143L4iqzl9SiXcda9kvNuNQYalbgigBQnlu-bgrgxe29bh9vca_HzocOCmkshe8TT6wc68Gi39i2VvqOHVDtrGESZon0bN338tqBMBtD024UNz70FAYP2JCkOKRGwkcU_6_NhnGeeSgBC4sBIPwH6bRQWSGjPaT1yHwXqlPROj1pzQcKRqlOquXZuN3JyivQAFCaRUsGg0oR5-HV3BitqY9VZ1HAQVcC-mEsa3TiZ2XfiRKH2B2MPOI6DwX0AbuzLbNRqBFG1ZSSvqPO8HDVw_HSIUOtIb7J1EwNzcrpZIUr0ix2ZmL5mALk-JOgbnb2Ua5fwkVvnp_i4__i9OznujjHQPH_I4mJdUFnox8TO7iD_YM2gCrPguBpV9MUx4qfS5c1fY9Kt4nkZNr1Vf0BeRAmARfEodPAURZJLUZfGOEcmQfxw8UQaVwm0KaCfomKA7Avf2UQ4YqphnveH2zlCXEEMpmfuPxrG1U21xrVZaO56kFGX9vEnLsA6531nop6lI4rc-xTG1_6BudRld2EG7RUXclZmoXJdtJHP-AvUYtqNK3Rj6SOuYPKxT7YYkdQrtjQ8cb_BYW_72xxN8EooAhhaNHr_OUkN51h4l690dREi6pVa9OvCu8Cyr0XrSvrdvZbC4Nq0DKItve0ObJrOodNnK4KQJnORaCHTk9OsJclZ8MHl4Mm7WtURoNGvNXchrUxcMyIyscbwCA_P_vr5ZMQq5smWtZ3VQdRgO3lLsakL4Oy_NZ1drFbEuPR4iExIaffetiUrvxtrDo63afZOwKBaIAyayQZb7q0U3Qp-j-diVrs8uhMl1y7iZ_otCo2pzGu8CF4NNZIIcQNR4gh9X4_z1wVeyYhGaqeNXkkPoGHDdFeyMaJcNsvOG6vzzMJhEe8E5xIqNHlUMGtyRweTZ_h-mpuQKYd0W6EnYkkkYg0HdcIt-oKzJ4MQ0HScOacBkA8Msi1U72MA03fvzzixCbiiDqwAFx1yxREZkVxbubpKOEJDpTtPowyBpR1E99Vr3DhR_hD9t2Hk0GjNlWKFyqNC9hpBTGZGvH7I84DyKDrPdm94ADSH4HJkvqqqW3ltN_2prLWe10G4zIQcDrGKJQXXcHMXDPWa7jFJstf0fQXK0_1DcmDoDyBarlZwrcq0J_XFxosml9MI4_Dl_t-kBKXoIk51_D8imv6nAgnUQA1q83pfOP-pLtCR9tn-R-BIGiwDf6tXoyqxHSXx7S41_kUjG8r4IwJjT_1vBCTLVgFkHgOIV0_Ayj3n7jQbk0iVazVgk97xDBkpqgPk47YXE2AOzKsDs53p7cTzXErOeNdC9c_CuM16k4l1KM0vIepuRsTCuYVWNmzeoVd_WqGETPNZaPuqTfUzspo_2n98FqCyiz5lgXPFtW2iwt9XgF5_jA4MC0JAHLBgpHurlnkpv-5KGSNO0Lkgg0jpOFabMFr_7gN4RmMur66wKFSeYfrHio5wjqesb_CQxuL3QWZ9iR7RfPQMvEUbTeYXQHvT7Ea0J8h0pj9md3jiz43OdOm5D69QDNi16zhNDOXfLAs1nVmajuOHa4X5xtC_G47SaZafOCzOPImr8cpf5VRkFYFZ8Ek_db5JHH0e6jooL66l_D2EfdOhA3fCDiHex4Z3rAf_UpYD7Mxzq0AQO79fXub-eSwDW-V2wBAbP2JgcBL0QLNdHZ5wVvZ8vymD8pKVLQlisFGRAaUF5cxPwF0PzcaPYcckMF7bnLD5TRJ10DUJGqO_scl1IwK7cP9V4ubHNuJn1-wEph0nPWUNFQei72YRR60uD-IpTVEnnsajoQdqrHQvfbRpL_JVXhWLV9ElCvUSqMEtUNZG1HesR156FD9krXB4IVHAp4mnAw-dQ1Xn7steu6zyf9HoPUeIgI-oNq6SBj49BJfvXbqB_W6hsVY24I8uzeEQOoHaDon4WrTpS4odDMEbDNPbfQD_V4nW_2zvSt23zU3jcN5RKyuFS8XBNFvr62nycbTC8LpSPu9FQbBUZvNuDgVoGxlnZPC2kjSi4hI9ZJjZyCQ5k4kWnJnVH3pV2borLZxSfIchkCY_iLDR42QWqBO0OW1acYka4dTO2VimtwABfZqnCFQDdyugMCzuB7jdyP0jWL5ojBEZxdwxdS6d77PXFbRPIvC_dAQhpz7M1M19ii_ryR0kKjr63Tx2n80YwJvTv4T0dBfb0XNv6X7fY37TD5HGpOMUFdIftfYoHOcChjMCzmzvy55xPv7U1-SOfS5WkyVmDir00Z-S1ow-Ui4qmTr4wLZqvwzt6xD79La19vHVzrTTuANFA7qsUVGk4zW6cq1iWni_sK44p5O36t0kFl6XsdzpDhKoxsjunmqUnx403qfDVauSpaF_C_QWKF3McXhSUwjQUyJ-upOAyhJyK3WiaxvZMfXwfaAU0G1CT-OqNZ0vIBbev3ZU0KCJUp-UlsSBiUzYGefJPj8lsoKNCJ2xkyzKIQAekiSq1SPADRupiqvVr0zk6GqZRxcPY5wi4BKLKcYuE7Ksycgv3N1XfzKUKFdlzCIdRCK5utT7U9YHT7QQSKagVer3hyeTmdJ3Yu7lenadLsman-WxYgHeh6MxmB8W_LDxWA-vBfATXVNrS9LJ3Ssqtn6ow-LBSdVEebxJYc-ojASSNW0L0ZfHtoSkWKGcMRDyZh4-5omEzo-3yTGzWqH-WvRNUhzTnKQwCMtMWXIAV4xzvTgxb1hmPa3gyfc8kYmSgP4MRCY_pDIqLLz9BVJ9ZAPegWGEuk3seyjhq9yZHfXCGldZb7Br3j2Xb34q9pMuGZxH6RmOolcsWRilFlBu_59wlnCLvmkDvr_4SdXPTGMtgQtvoj2B-calGwNOW5HkIKn6WCV7HWpumF5ojth5P9l54BfadEjh3Ye_T9oxtrxkzPWUgXkLCTavjAna30IG486R3pjW12dBVJam5aznTcahfGRALdDuH9UHMClxaJypzZ2gxQY6Z_ZbbAYGJ3kgRjL7h-w-AzzhcwRNeaF-kr7M52iWf0_3rW2csZ_fO50Wpp5wl8gXmwzSTCIgZZt7XflNVbhOZkeArdnoqGHQklrUDm3Rlg7rZsLJwHhNetYmHgpy_g7BmdsrBFV4oOfESv1Od4FTouxOvPdkFYeVHPRV2fi9VowF6TksQomSnlZder4bsSeaulWikN6Fy5UDPUboVqA8kic82IZTlHvQsV9WOEryZwfZzUaiBad-QhbNzHT_nd61z0yFRA7auZn19t4T_AlBmOv_05o6tOK1T0kG1N7VRCb0NJ5IGa2bt0fxKRvKotVwATpMbuDx3sauDj61idebhZoQ3xf3bsecI9fFnTjIfjp8-AJ-vOV-xiN0-OH82MK5TCGj_IZoS8KZ6gb2IzDI4Bcmp7uApGe1ivXsNJscVhFP4wtcDfiIU8obpa8LGJg7JBQyZOphJsO8cXm4dSe5fXriG6yZ7gsclV97T3tTIFbjmuN4ZtRQ2m10rTelC-Eg4HPdAKcTp-cXlaN9ZdJ5fh1KVpOepzDzh7xT6SK3vDx_HzQ553Ox9W1pxxWHbxl1304gIouAmw44XacMTv2wOHS4UEZ2ATI5FmykzNyIQ88AlBm0GZY50a9Yajyr1xUxhAJ_2ES21Mr-vRr3mAn4Kn-3SgcWtXeg4Jpk03gPxxdMTEqmWfedP7DMclpixgMKZT69U97XBUMohoBciyOxg3XFrYKsLLIbn4-HFx2mta_XGBFRT44f8vKk3uLORyqevQulNwMhV4ySAtX8VFCB52e7vNhZjs8g3xphw81tjcI1hh0N_LO3BB_N0dD6M485LcfPvcTN3FPPKZK-KAzYFzEf7QdnGtSXPG3LPSZ_WMli0zsxKXHgoTw5czIX83gDyAss8gYfm_JMH2A43xlcy286AuAUSVujbSgvl9CZg9Nf8QSy_hW6Bnu0wQCYMyRJNjqCvhTHBAUEqmBzGA6zV0ixwWB4af1DylkHSq1QuowSGIp0OA5OK-fYl1P248-Scb2JehR6A-sKZfeJ3-LD15QsY5IZzIwFLwouK1ICNxcln3SgKp7deQRieWRwRIzvAcbcuoTRnXYdWigiO0XBAoijFz57_v3c3xaxfvJVkxL6IZ9o2eqP_jmP06CeHjH5fcckwAqNv7HkaxsQ34Vjk1WxkLrBCBvDrJfmrNc8-yLK2Y4bi8f2OL9UKWy6OtS41YjFrfIJ5gU6fqilYqE1Ik_VPq9S8dpK2SDjfMfkfabJboOexD2xYzVHOUO98lOeP-mLhFCRxCtO4ilx23TN0ffhUUzvw-5vd7RSyQT1XEAIUaESUSlXeUKa-AjrjBLIxM0FN73qJ_Wqc6aCwOjvfA7c051YJhrQ4IlGWxUKVyNn96N0_l44LRGA1dfXeWdQ4p_iFV04OUSZ9ZdM_ob8Dqr7-KbD8BmMqm2sgZCFa3Dh6SAG3ZxMEO8KQ6sNsPEht_L94KwW8GlCVqAuMz0OaSn9LxMsQHwpo6I8KX1X82JZGlfnmIzJ6P84p4n7mqI2J4rBS7FaADGeOabgvwTPJvZXUeCk5YUgdLZ9ikJFs1cD-zd_L7wE7aIubRETvIheHZwqOBqQy7JI2bfyvAGIJthJoOZepVnEDDChBC_44zUHGqvPyrNPoMkCjzBpfDc95tVYLH0s8Uur2DpPk98yhj25M0eHpj81woABvlzqv05veDPOgY8xh8aIOT-n25KJuukOrAsQWh1ky6YmgpGgqf4n2w4_Ay-FqUSfq865IC7lRRLcnDcd_eJbPkfhh_TyVA1Vm9EbqGajEkJ42TSR8mUtmEYb8O5TSWxTdQvqSC9P5M_xKcX_jpAPBlWuglIskAmSFwJhiw0Sed5tiykax9Zet57u-cj-zzQFeVSbYKPSGwxkgoPCguO7cMHOH6o6quNDzOlqIG7mFByQRb0-aZoZsRTEybayP3mbL0KnCHScZfXakGJv5Zwjn1cW1J8_TFbLkZz3qOX6PYCZzvynO7vlCizlY4Ihv0ViEZ7voA_kYudz0qBxTcsZrSxKqtG-0dfTG3Wo-f1CPcaq-g3T_PVCvJh9jzrovhMWrLdp2uDPP4fG3cm4MqOnSNraLLeTaWRN0qNpb6p1S_RIjABzxEIE5lestS81tk9k0MX8BhpYkpgSfZ1GJS35hytTYqZaKPWvbQGxhG8FwKSXfQHfmRalyODlizDCNgvHVmkA--zbp44epHQp3TyQtLC7dydlZ7QXOnEMrOf3ryfOJ-BpDjzSM_YYjwWgJxCiqZVu3WpXbSH2LYNnaTiIz2lkpFkWBUrX5tHg-uI6Oe0OOWB5oiSwkeXvNUlqocD9QYicvdu7N-croNDjsxNJGdAvKS6fjv9U799llAyYqpi2UKodlaOoN3qMMS12ybfUIwRn_FQO6jjo1AdnufaK18qn5SqiLLpT_n4E1mFX3ZIewVOfqNdJ7gW9UytriZwWctIU7-Cdj89ID1jZERJPi0O8XRNP1kUDKIcN_DRhp5EjpKvQ4lKMfVDMfhzNFAkzAZ0MdywjvJuL-JLBGH0s165-jTO6lpqSEwETXy5dGPWHjL7Fp08UFcoKrpzZopqaC08lIC1z8zPUkQuRtW-BjVRAFXcoT2GmszrPHaxWblLIcNk0SOlTQAFmcYxEnEMGe6BEB9wi96cWy-iDuQTRHlsKD34jG537KzkvaLluGFILkU8aPxYYllSp3BMuiSLtqgdlI7Z3281tdmPIG5UWh3X8D2szqw82h-hjCl4Dp3yR4sOJE6zQ6K6LXfi9HNQtqo-icAzwsevhth9rZFneXBT006PLL9x0OvR9a9HcwUmtgMjdyfdHQynjUym6iAy3m9i0ijpuhu4RjOz4snMWES7Czo24I-Y4P65bnGmS-7k0RG-OOkWpXf3g8b3w4uxbiOR2n4TTtZ5bb-Xe3zU6KK10ryCk7PMhuR8T6lNsCRD3YtHZIybjmn6nB5Io7RkFET00e-jItMO6RQHXXt5OUgq-QOPZAucL4wFmdivuong63iNIVy9UmlTtb-gUwMMM21L51ydIyK-ZyvIzEzlgEAMWRc4EM6fdzyX-Olm7LpSeNkujfE28RiFU7YDqC5_PJyb7Wew02OhggcOzmGy6NT_4vObqWnhKONMb18eU8tfihxFYKTITCruyiumls-up-s0faeIH5fV3p7K0c5fIElYLBzegFUT7qRUTEKPJzNm4XrylP9hPuJ29mPHm42FDH5LKtpIR66JDCQSVm998f_DgDYRU266zTqo_ngNWeM3qbUfVHEGKyCF7IvlqXCbCJjunA2l3ldWHfqYHrEGrjWmQkWXvz2M33lf0dn-hbV4tt9A8sbcD2q1kJNwYtJEo1YJMKKRVaFfsBgIC2Zi1daDykqmwFvI_1zvFed6exs1oQACJanESmrGKqxjiVv41seH8c6bNm7WSra2wIDQFwvFPqhVxjBHPWvi2llYtbNOrkyExqUwGnLOeRhHasXrkaZikSoN2qdzxmma84y3wkXsNCji1DugJiWOkTv01tn8LjfH0od7IUzR82xUPC87e3xC_Q3zQZIJ4mZRKuH30PE4WF6XigmX7HUERuSf5dblRr4z-JB3tLASSga_1245hwUzd_rPLlnqbKuw39hN9rMcVc_9hysC0x2rjyWzKGX71nXHTKPfMSDroRSoJDaFlrBERIWEET8fL7M5XIqUhKnvzi3fmnvaNclBl7S5jJlhsQb0gSLCb0JsAo4t_46BE7641c9fYsq-dig2DeR83fpqJBwf4xC9WDbyAd0sGwpsqUgCqOPmMMVqyNYnIUDpEVjeiGMwRVILhK5EJTHNMUPEoGTzFAKhP_WAZxrXEcdwQvEUcjNIUE_aoNfM0BhYGBv4DwO5t0c7LVTyaNF91N4yXqFoCW8m7nySafbc5uLC5phh8kn20T_NYn9HKkNfHAElt82XVbal8Zvy-Kolp6aSdge-7Bh_LV1Fan07Z6-6s5hz_XgRmC8tHHgJBf5_OV3gFcsLY6raYhO1UdCCc9n4We8xDKFQvd2VXKThsxTcfUY3miiAroEv0ggqZjQmr_aWkNyKqP69jOnKZWm1reVvX27tHk7Zc9g4z62MW0qrlXG1gJsEFP7d2OASrRZK97YgRhkBsSs5PksIdyQMP5_mRISAERXfnA30SxikORxw1VODEhGXwtl3RU6H_4aW_xQT0kbHtwZGhh0Ilsc3XDl6yhBCJ1jOVvBzuUmM6IurofezMJ1X5Jf8lHVmOnRjqxtTe5ttMOMmITRIoKn3dSRGJBk7-2mXDCHBSjW4N9KC4yIrbf2rxOVyks2ySoskE6QdOX5razVzsROQEs4KNwd0I7E_scbx9tsJT6hpaJLlO2pZNzey054mEIvCx45eaxZHllasCU356CCdbKcxEERLsD7EA_TKp-wlb6oK_UBobDUtIfHTwOb4Z4A8Tzd35iztojzrLtezvxFJcquJ5LfX8N2_Bd4gJIGXkT7rF2OLHqMrND2A5pxPU2GQbEa7JuqkybaHYsyYakUnBI7KY9ye87Lll2qUEE93gfwTkyY-6qNdjpr32lvCnQS-hK4m6-fq04QDPFG6b7jauCA8IW5Qrtw9PxBqZAB7M5t_oReLkbL8R6RmM6NWSU-F1vbJ8H3_L4O_DZdo7Jd_2U6orVGNuX-Fn8Zg1iU9nI_vvBB16TGLdZBd_thN40L6h7-DDuFdisvyl6r8mLEakxvVhPUTvJ_BXINvnfueMXfqIhK7N_cuzTiZOv1oqtG-1w2MejMHL8iSYdETe-vOs7wv5AQqCyqA5Wjm44JXrVxGPn-4wd6s7rxcXgI3jC4GAsRpzYxsTsldJpDm0D2MLpcjwTNgO8OY1NudhO8-M1SFkUx01LejDlzX9c2wE9oVrT0QD0RcXTuC9qrY-9QJwE6GJ0mBCbdrA06Krjaj7O751EJDBn-ZvEmw4eA8hQkBlzVouajVHZ000gNDTLLEhjhRZQgQRG9QRlYNozHL5sT8yvOw6jZeSk5820ce3UjIDFK99RYp3RtR6fU7QEzyCMnirLku877WyUbOTtFNA_DjqPNkROdBz8NDwJcQBtHBaKupzLLCLkk6gWU-Oet0tc3kXPRL7-ycyWbv7iryK52FptrpHtNgPT50o9lc4QsE-6z8URTwKZbhfUItovZ3XJDj40VW09rP3U_K1WfKX_0rxpMKZcMDbWVM8WD-ge7u7ElUw-YfLTUJs5Ajckeni_YQCrmDlVpguoDvqFxh0AIFCpVoUQUrfYBaCc7DmFMQfxgOjrfPJDoPDEUU6gvHZnd1Ii1SJIEXUwX-jObhM0ydkxcmusIVkPtqHqdOZHjdm3LfO3GiVq_rufYtJpdW_4jhhmjGBMG1JceFza_LDkSvp1pzfVTJoSIyNE4SxUTYGxBj-SER7diiirQS4ogMZixCDfMqvDhSekwJkbOS_ZJ2VXLX1WSmRslJPhlt--2_uT1r53uNw6k8wYVVckde4UAmyWoDBip93Sa_lfPDjow8hfA5Cgsqy-SCWj_tAeIMuMGiQNw5UITsQ4A7GGdt7UBMGN8ZabXW6p3nhSJwlOwZXBxSwQ_bcf1aMQyqem8Hr_1gz5T84V8LoUCpRifk_yHolucD3LX-oA-Y1eyosLOsNrPUo_be6bK_2DO3Ug79DI_7BSRF8o8R2mAIfvJmZMyEMGLvSrS44rBb2DBjhdv8hEw4-BJG8m54a5FWHU11pqlneVUOeZlgjFBzYuVC2M9cnmQXJfs4l0TO1tslwGMinFtI4rUimVJkwkjzVZGmscpIy-XdvaDIO3yXq0IQbRFo1aJC5v7RTV6jYX6dgtceQ1CDQpqwTbc_eZ9RjcZ_uHXl-vdxR4AbBnJI0EwECbvroMH0_iW3HTMWYp3IJQsGMX_9nmiBynii68j8WvQvcty-SHpw5iicPgfGgT3Ex4oBWkeMO5GCRQt9PyXuvwBXJhMum5e7X8ZoQ2DKjj57ydNI9fY69nBNWLLM-i_Z00ondfKTysW8LMVuJhacf7nqhKdxeMiD5lGyO10LuWAjUg7RgGNXcCb01880Kt9tEV0R2siqbU2-3q6OrucPFCm5cK6Pf8NhsV_vPbXViLjG74sz7bDEzeoB9Oth89yfbCUzdjsdSF44m7XscQZcbJBbKnhoVnw5LV43Ge33udWGBbTVzy
+# 新建演示文稿
+
+## 规划
+
+写代码前先列出页面清单，每页写明：读者看完要明白或决定什么、标题（写结论）、版式（图文、指标、图表、表格、章节页等）、用到的图片和数据。只读标题应能连成完整的叙述；页面之间有节奏，有的一眼看完，有的值得停下细读。场景和风格的具体要求见 slides_categories.md、场景文档和所选的 design.md。
+
+## 把设计规范写成代码
+
+设计系统和场景文档用文字给出规格，先把它们翻译成常量和函数，各页共用，风格才一致：
+
+| 规格 | 写法 |
+|---|---|
+| 配色 | 每种用途一个常量，如 `INK, BODY, ACCENT = "002A12", "99AAA0", "1ECF77"`；强调色和图表系列色同时写进主题：`set_theme(f, colors=[强调色, 系列色…])`，图表默认按 accent1–6 取色 |
+| 字体 | 照 design.md 写进主题（自主设计时从 fonts.md 中选）：`set_theme(f, heading=(西文, 中文), body=(西文, 中文))`，之后新建的文字默认用正文字体 |
+| 字号 | 文档多以正文为 1x 给出倍数（如标题 2.3–2.6x、大数字 4–7x）：先定正文字号，再乘出各级，写成常量 |
+| 版面网格 | 边距、分栏比例、标题位置写成 `W`、`H` 的比例，如 `M = W * 0.02`、标题上沿 `H * 0.2`、图文分栏 38:62 |
+| 重复元素 | 页眉、页码、章节标记等写成函数，每页调用 |
+
+`set_theme` 的颜色名和主题字体的用法见其说明：
+
+**`set_theme(target, *, colors=None, heading=None, body=None)`** → None
+
+- `target`：`f` 或 python-pptx 的 Presentation；各母版的主题都改。
+- `colors`：`{名称: "RRGGBB"}`，名称为 `dk1`（深色文字）、`lt1`（浅色背景）、`dk2`、`lt2`、`accent1`–`accent6`（强调色，图表各系列依次取用）、`hlink`（超链接）、`folHlink`（访问过的超链接）；给 6 个颜色的列表时依次作为 accent1–accent6。
+- `heading`、`body`：标题、正文的主题字体，一个字体名（中西文同用）或 `(西文, 中文)`。没有单独设字体的文字都用主题字体；`set_font` 中写 `"+mj-lt"`、`"+mj-ea"`（标题字体）或 `"+mn-lt"`、`"+mn-ea"`（正文字体）即引用主题字体。
+
+## 写的顺序
+
+1. `f = PptxFile.new(路径)`；用户给了只有版式、没有内容的模板时 `PptxFile.new(路径, template=模板)`。
+2. `set_theme`，定义常量和重复元素的函数。
+3. 逐页：`s = add_slide(f)`（空白版式），从下层到上层加元素：背景和色块，图片，线条，文字。文本框设好字号、行距后用 `fit_height` 定高，接在它下方的元素按 `框.top + 框.height` 定位。同一次调用多写几页。
+4. `print(f.save())`，再按 SKILL.md 流程第 4、5 步检查、交付。
+
+## 复刻
+
+用 view_image 看原图，按 960 × 540 磅的页面估计每个元素的位置、尺寸和字号，写成常量后按上面的顺序还原；细节看不清时用 PIL 裁出局部放大再看。照片、头像、复杂插图用 PIL 从原图裁下来另存，再 `add_picture` 放到原位置；能用形状、线条画的就画出来，不要把整页截图当背景。
+
+## 常见错误
+
+| 错误 | 正确写法 |
+|---|---|
+| 用带占位符的版式排版 | 用空白版式 `add_slide(f)`，文字用 `add_text` 定位；占位符的格式来自母版，位置和字号不好控制。用模板时除外 |
+| 用 `add_textbox`、`text_frame.text` 写字 | `add_text` 新建，`set_text` 改写 |
+| 手打“•”“1.”做列表 | `set_list`，见 text.md |
+| 手算框高 | 设好字号、行距后 `fit_height(框)` |
+| 用空格、空行调位置和间距 | 直接给位置尺寸；段距用 `p.space_before`、`p.space_after` |
+| 每块内容套一个圆角矩形卡片 | 用细线、留白、字号和字重的对比分层（slides_categories.md 的禁止项） |
+| 改图片的宽高使其变形 | `add_picture` 给出框，`fit` 决定裁剪还是缩小 |
+| 数字和单位一样大、单位另起一个文本框 | 同一段中另加一个 run，单位约为数字的 0.55–0.7 倍，见示例第 3 页 |
+| 缺材料时编造数据、案例 | 写“【待补：内容】”，交付时列出 |
+
+## 示例：方案汇报（设计系统 moon-white-imagery）
+
+```python
+import tempfile
+from pathlib import Path
+
+from pptx.dml.color import RGBColor
+from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+from pptx.util import Cm, Emu, Pt
+
+from PKPMAgent.software_link_kit.ppt import *
+
+PHOTO1, PHOTO2 = r"C:\work\效果图1.jpg", r"C:\work\效果图2.jpg"     # 用户提供的效果图
+
+# 设计规格写成常量，各页共用
+INK, BODY, ACCENT, NUMBER = "002A12", "99AAA0", "1ECF77", "474F58"   # 标题、说明文字、强调、大数字
+PALE, WARM = "F2F4EF", "FDF8E0"                                       # 指标区的浅绿、暖白
+SERIES = ["3D5D48", "7D9385", "A2B2A7", "B9C8BE"]                     # 图表系列
+SANS = ("Segoe UI", "微软雅黑")                                        # 西文、中文字体
+
+f = PptxFile.new(r"C:\work\滨江文化中心方案汇报.pptx")
+set_theme(f, colors=[ACCENT, *SERIES, NUMBER], heading=SANS, body=SANS)
+W, H = f.prs.slide_width, f.prs.slide_height                           # 960 × 540 磅
+M, R = W * 0.02, W * 0.012                                             # 外边距 2%；照片圆角半径约 1.2% 页宽
+
+
+def rounded(width, height):
+    """圆角矩形的调整值：圆角半径 R ÷ 短边 × 100000。"""
+    return [round(R / min(width, height) * 100000)]
+
+
+def header(slide, section, number):
+    """内容页页眉：左为文档名，约 15% 页宽处为本节名，右端为页码；不加横线。"""
+    add_text(slide, M, H * 0.035, W * 0.12, Pt(14), "文化中心方案汇报", size=10, color=BODY)
+    add_text(slide, W * 0.15, H * 0.035, W * 0.3, Pt(14), section, size=10, color=INK)
+    add_text(slide, W - M - W * 0.1, H * 0.035, W * 0.1, Pt(14), f"{number:02d}", size=10, color=BODY, align="right")
+
+
+# 1 封面：留 2% 白边的圆角整幅照片，底部由透明渐暗，标题在左下，序号在右下
+s = add_slide(f)
+box = (M, M, W - 2 * M, H - 2 * M)
+add_picture(s, PHOTO1, *box, clip="roundRect", adjust=rounded(*box[2:]))
+shade = add_shape(s, "roundRect", *box, adjust=rounded(*box[2:]))
+set_fill(shade, [(0.45, "000000", 0), (1, "000000", 0.6)])            # 由透明到 60% 黑，压暗照片下部
+add_text(s, M * 3, H * 0.66, W * 0.6, H * 0.14, "滨江文化中心建筑方案", size=40, color="FFFFFF", anchor="bottom")
+add_text(s, M * 3, H * 0.81, W * 0.6, Pt(20), "方案设计阶段汇报｜2026 年 9 月", size=14, color="D6DDD9")
+add_text(s, W - M * 3 - W * 0.1, H * 0.81, W * 0.1, Pt(20), "01", size=14, color="FFFFFF", align="right")
+
+# 2 图文页：左 38% 为结论和说明，右 62% 为贴边照片
+s = add_slide(f)
+header(s, "总体布局", 2)
+add_text(s, M, H * 0.2, W * 0.34, H * 0.2, "三个体量沿江错落，\v把滨水步道引入场地", size=28, color=INK)
+body = add_text(s, M, H * 0.5, W * 0.32, H * 0.3,
+                "剧场、展厅与图书馆分置三个体量，之间的缝隙对准江面视廊。\n"
+                "首层架空 6 米，市民步道从城市一侧穿过场地直达江边。", size=14, color=BODY)
+for p in body.text_frame.paragraphs:
+    p.line_spacing, p.space_after = 1.4, Pt(8)
+fit_height(body)
+x = W * 0.4
+add_picture(s, PHOTO2, x, M * 2.5, W - x, H - M * 5, clip="roundRect", adjust=rounded(W - x, H - M * 5))
+
+# 3 结论与指标：上部为判断，下方一条指标带，三格用浅绿、暖白、深绿区分层级
+s = add_slide(f)
+header(s, "技术经济指标", 3)
+add_text(s, M, H * 0.2, W * 0.5, H * 0.18, "容积率控制在 1.8，\v绿地率高于规划要求 5 个百分点", size=28, color=INK)
+metrics = [("4.2", "万㎡", "总建筑面积", PALE, NUMBER), ("1.8", "", "容积率（规划上限 2.0）", WARM, NUMBER),
+           ("40", "%", "绿地率（规划要求 35%）", INK, "FFFFFF")]
+gap = Pt(12)
+cell_w, top = (W - 2 * M - 2 * gap) / 3, H * 0.56
+for i, (value, unit, label, fill, color) in enumerate(metrics):
+    left = M + i * (cell_w + gap)
+    add_shape(s, "rect", left, top, cell_w, H * 0.36, fill=fill)
+    number = add_text(s, left + Pt(20), top + Pt(24), cell_w - Pt(40), Pt(64), value, size=54, color=color)
+    run = number.text_frame.paragraphs[0].add_run()                  # 单位与数字同一段、同一基线，字号约 0.55 倍
+    run.text = unit
+    set_font(run, size=30, color=color)
+    add_text(s, left + Pt(20), top + H * 0.36 - Pt(40), cell_w - Pt(40), Pt(20), label, size=12,
+             color="D6DDD9" if fill == INK else NUMBER)
+
+print(f.save())
+target = PptSession(f.path)
+with target.open() as pres:
+    print(check_slides(pres))
+    pages = render_slides(pres, tempfile.mkdtemp())
+print(contact_sheet(pages, str(Path(pages[0]).with_name("总览.png")), columns=2))   # 用 view_image 查看
+target.finish()
+```

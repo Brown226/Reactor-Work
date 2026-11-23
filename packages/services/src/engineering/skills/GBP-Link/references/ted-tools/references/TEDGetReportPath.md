@@ -1,2 +1,63 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRvE7xQ7b6WhboT0k59XrHFBHQoL-aZGMslN7ofrnJNLMtB1sgZwH9brRlDZCAxdBSTwnQHF8RBOnZYdoyzsIyAyiaxlZiQKC1IxfX8hayv0-8dpVxOaoovbdkZO-Y9kS_oS91nveHuDI8FGSSIFggyCLi1JxvA7LXBE-8aWkuhivObFlMKeJz5QpwlLtbDblv85liqOAKtmZ3-YhWSysEP9oubcm_q1_-pwg8Ed4b3E69lpE3kH6DgwbIrpvzyfC_1wTYwmYf3Ifw4s1p60n-hcwjjdEatzjViTZVggC5wQ0HRypDm74GRX-v-xoRhnwjwVXMsUobewylP16LpGG1uPYOTZG7DD34SCvfRBhN8OnVvp9RYC-29qlTSOyzHNRHAmePXg490wvyV3boX1k0sHJwHR74McoMws3bW5T0JIZ35pK58f_Z9J6u3IzW5InkR2facydc_6QkurCTPhKVwj4Dx46Ob7r3arcuanlNUvl6nGyuk7eexks3Ook2bhQ4xwPpzPZcFaRZBx2spwzlC2csyRfGC30iGwr0pQ8fDybHdWKPhhtYyed72EtbE28L7z7Mm8jJ29EM17kQUOHsHTGI6RcB5YSPcICSgKMtpcGHbx7WE56M3NoXw_0u0nr9OcQCBZI67GcCOHwhaxKOjOZYe4uta3r4dSZyT93VPihwUuHpuh_saTLxmi8DcfFw9M7zOAWpxEHQjw87fapzaSmRVZmbBlbFekhXFHk0RHuBqg6Kbf_5xe8AoHt9Dnuz-ZIQ0SpJzJ7NA1O07btD0_VXWC4KeuZmtBC6J522P8tcBy47I0cpWCCHtpn_WiWzUixiCT--VSNyRt32oj5cgePXDDMBnQIfPaUL3k7zr6vDnSXWwvRDdG-PuWjT8ebynnFKgSEUutinKKj5IiGCF7bZnhkjfyHq_VzjBnR-ovfEPI29Ktb4IPsw1DXHmkslCIButZxCUDdkB3eLJIHX08o86sc1AY6GdcKx6LwUgR3ArnQfb4vYVlSi8QhO9ON57Zfdw_6pmG-7ZziS9PJasRCdMT8GcmVSC_1_jjwjtmAkCXz6SMy8oCtuM0jnOcBbPsgbaGnXqcl0do3KsxrprIKgMqW7AUETe-lcPUufzwJdqTQgSh1GOszAN-dWFyNSsthUiH4ShZiVQJQkp3TwOFgFYjv9UZgAn_5dEFPtVATVDQM6HpKqXx01chL6m4RjDLi4FwFmiJsQl04yfkaauhD5IEwoGi_eO3CpvST_T9CBSJz8qGDuKCSj0IHGC8SHfF29Q-fGy7siSwWMfQUIrS50SxJxN9NMpg8Ac8__h5pKW-muxWJIqpMejITeEt3l7rjATOH5WwtyWSXC5gqPraQLDP4lQ-NqF_1_R2vA_PlcZ4QVOSLorftfnlFB3vnQV_dZ8W58hJnaqLcJw-O8mJTi4W29oEZt0tvt6A-nt2wbtq3uS9Arv6kec5N3jjtT2OpefkiprASYyPq_oKFY-wjmiK0f0Oe0jKmwHDUlBE-NjOvIgKEgBOEtqSTq7B_NspiQ5TgsfffXJD4I4F861OVTABLc7GjSYvYiLbi3Zcw3_XIse1qr0WDBgJKkc4LRt3-_pfSVyVgRPakiHGvLeQcEUJvmPsHZFm_GJ3lr575hoh6d_9BgLp23XLWcn8SSdd98Q_dTxKMudR7TIfM4eOFQ2L_PmQkYDaCdgbYsbJpfMuWrQJF9No0fVO13BMWlsa5Tv95goaenUFyjpveM_Jp-R06KvGigbnR-dMENRYDH5TKPxa6yuH_Dery_dLy08UNX_nV7hRoToPVBx-ZUvPjht2TLja4c9XiT9m4UvTEasCYjMtbQre50h2kI8ksIM6ScmQSL4jtl_WTXDmMm7w==
+# TEDGetReportPath
+
+获取报告书文件路径，并检查报告书文件是否存在。该工具不生成报告书，仅查询已生成的报告书文件。
+
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+  "command": "TEDGetReportPath",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+报告书存在时：
+
+```json
+{
+  "code": 1000,
+  "msg": "报告书存在",
+  "result": {
+    "reportPath": "D:\\bdlsFileName-节能及绿建报告书汇总\\室外热环境计算分析报告_projectName.doc",
+    "exist": true
+  }
+}
+```
+
+报告书不存在时：
+
+```json
+{
+  "code": 1000,
+  "msg": "报告书不存在",
+  "result": {
+    "reportPath": "D:\\bdlsFileName-节能及绿建报告书汇总\\室外热环境计算分析报告_projectName.doc",
+    "exist": false
+  }
+}
+```
+
+## 返回字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `reportPath` | string | 报告书文件的完整路径（即使文件不存在也会返回预期路径） |
+| `exist` | boolean | 报告书文件是否真实存在于磁盘上 |
+
+## 典型使用场景
+
+1. 先用 `TEDCreateReport` 生成报告书；
+2. 再用 `TEDGetReportPath` 获取报告书路径；
+3. 根据返回的 `reportPath` 打开或分享报告书文件。
+
+## 错误情况
+
+| 错误码 | msg 说明 |
+|--------|----------|
+| 1003 | 获取报告书路径异常: \<具体异常信息\> |

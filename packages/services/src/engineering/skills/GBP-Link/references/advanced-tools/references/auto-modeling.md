@@ -1,2 +1,11 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQQyLseVVxk4c2V-eu6kTwS3R6uQtoceF4wlEiggP0sq_e1FRUS9Rpp_L5SnJfUIEnU8PGYHzjFa9QDgMt7kUaLKm5r1_bksy8FuXE9vHz3cJ8Fi41B_t6vrt1jFq3PxA_r2sQAQYfh4eaId9Jr3Fk6QFpdAEs2UYJiLOtqAr31_jP1IMqO9RnI-v57h8HMcHfJqU3All9ABRKwFWo5kG-2oOY_0CuHcxYoSDQyvIckVW0rB99jK_z9COhi5Z2Cx91GP44XDYSkloovmgi1WvsJPB7_-RTZhBVGEHPEAxIOcTZ_QZNWj-fLNjUTb3rK8CMJ4IZKarEd9AX389rUIJ8FZEwyJJdb5knkT7aF2PRj9nTWoN5NFZbrFsoEqmEZxIloLPpwdQxH4Y73XvWT4pUDfv3vnLD3ln8vymN6Sa90bmNJMbi6lSY9mz_jknGZY7c1Fsj9f1FRfAEOA6PAJ9a528BI8TUBEMtSlsBtE2zQCT1Sn_84G-ZG2qWq6PMpw1oT7IX5BSciBEuyNjjC1EqHw==
+# AutoModeling
+
+**说明**：将当前建筑中的 DWG 二维图纸自动转换为三维 BIM 模型。
+
+**参数**：无。
+
+**转模失败可能原因**：
+
+1. 未运行在 AutoCAD 或 中望CAD 平台上。
+2. 图纸版本非天正 T5 及以上图纸或斯维尔图纸。
+3. 图纸中未携带天正或斯维尔的楼层框信息和构件信息。

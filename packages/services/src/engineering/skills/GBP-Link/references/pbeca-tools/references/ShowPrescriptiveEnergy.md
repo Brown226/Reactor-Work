@@ -1,2 +1,21 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQRtLIM-vi_lT7Bae6MmB8z25a-kDQbkrto4kAeESWFHw6OWeMhJcKpqyFx5y0uJL0mzCIuwoCCe5ygZeWR6PrEIeY_eydO4-tM_QO_4BNloHOAtW7U7aGtZCNnQ0ivaZk4rgP9vW2lJ1Z6Gtoc-pnx2reO2DEp9RxoXWn3leoFm5XjgAeUrM6WHpTrRuNNROw55jXk8XOHplTZq1u-dpQrat0Pj4wyT7wQFKBXbj8hLAHPsEBVXbtBBHXyCyaCZNcmbIepdweFuCB5A0cZvYWX-NSyE5QnWzt4K6yknBrB2E7YK8jjIideC5yoeiVrSlqY7nkYBEjmEiyuYtmX5O-n5B0D8m_goheS0W_qZwB086Hnk7TZHy3-IUvRBFNHF5eFAfpmAgH0WNMz2WgmQCurr-YH-9EAUJOQ9W_nemlLJnzr2LB-FV71qmtVXJB_h903GpfNfc_q4iAZgY1-DpdiWzn1h9ud8btzipi08iJYFqTwwYe_Cccv7jD03L4Sg8Gsqsv6Z8YaHkp0MMd-7T_TwvoRy09QK63sjyaQIlCOJ4=
+# ShowPrescriptiveEnergy
+
+**工具说明**：进行规定性指标报告书生成。
+
+**调用工具 Json**：
+```json
+{
+    "command": "ShowPrescriptiveEnergy",
+    "parameters": {
+        "tage": "生成规定性指标计算报告书"
+    }
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已生成规定性指标报告书"
+}
+```

@@ -1,2 +1,73 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQSTnuAAjNZW4xRKRBekdSD7R44PRWKPvXVeFVLfOZWBO27pCyYK2sLanzYhXZ6L0N3avye-3Tz2U9mB-DA2DWMuF01jN9gRAmlSVcG-toj7DzsE8da6i8t5NIvjmPQ2LrHXUUoIHij2ryzeWwpTM5YRA3vrF2o5T8k_fWqySsRlnAU9Ul23IxrLs06Gr1ZbkIgScAl5jMXNbfueWHTM0cykrPFsLglzFI2dLXLPVfJsBrkiXjUyvioZlXldcc0sg-C8vf-gNGAolWtsVksG0zNIdFjFem3FtH8HKRDwFZ3dZ7jjKcS7PVWGMScSz0Wm_v4CE-P0e1djFy4uBYPFSnkL4aZqfCALQkCQvz91U981oq3v_ECeWbLiEdrROMUrGOzS6buDNIVwOd9-adB-MrCUeBIGSIwUyXLn9sr_eQ_qDwR2_m5YuNeqDto2tsCFD8Rrs99rTRfGwiPQjg9FxSj9Xqq6g7HLcdGFYI44xRimg7YVJPItiZfdym0I7kMVDiK61hu6omUaTm9jc7BGe4oAUeUfPZFhdYGihCXb9nDmI1n-p-G-OANEsDrG_Ec-FChfXRKJnQOKSwdtIx5FUjfpSGFlJu5jr4HFpuDfMjAiFybM62TzEdAsU9NosVgNU4z0KRjomBxal6jATG2Jkw8o9iQfgSWIRlV3Ryx5d_ZcqKWiyFLUoxRYSaVb4D5QKAzurfQr3u-w-wgaj0pgge-i6wls3gmtxr--GtZg1eFrAOyol94H5gcBoMqbQTRvAcyAqHgXFOx4DIkTBsCvHtcfqTNySrucYw-sa-qlI-Xs-mNoBn9e5H8NRS9GPhGRipAt475MRdwrBJMMHwz4sYx6P7aFeOp57vMajjBUrjYRhEmCyMNmE01CcNsjRZDjvD_VnHbQiIpp852okomhGmiOj8DmTZg7pakYx00663iu8_FpJu1h5Qw1xp7zuYSiKbTbygoCfucsJF8lk-Gn1nCNaYLury6ZHN8nqN_vM_HhdOvw3d9BjJ8RFyn5tqQ22dOy6eqANJouiTCqmr_oHfvBa_tnSE7F3rrNC-CGCEr1teIZ-ExnURMT0VK4NHXEM0EJlyM7f1RqUTrZ7QpPYQdlwi8ua290TyJEf5w578Dijjvf59NEQ02Qx_EFWVb2Y8gt52VwziNxJ87z3h99t6m7ezc3K-6FNgXlw7vS0DVVpchxdrnCedtemyjVsvt4MkvIxRWbY8mgvc-SrsitQDQO4eELzwnREeRwj4w7cJpbAHf2vnTyafeT4fIoPYYv1en4MoMjnTUaPs158R7nEe4sVgIk4pQm83N_Eg4WCvyAyso4r53an9C-KavbUGc-Cjw1nOEF0uqugWMXxoyzrFY_UcS9wYdBlXXbH3xIozVCwwXYtZ92_1oylgnTOROYuhW1uNuoYirf8MlAryDy5i98ZHGmWCf2w4mY5r6r_sDG-gp_7l8KWQc0fBpyknVaXuC5fcpNT8fqWyHI_9qN6Q446Cmz_f7l6BA4yLB9HiXLz8_ymRFa03u1yHpAjPRqNxfv_HrSPHTzLQB2cFYtrwpEl8G4fsQhOoCMSqtYZfdBsS96J9myh-Rp1Jk-BhrCEAgZUJRi3rmAf3dCLWA4wyAHk-Ux5v_rKZq3tMIJVOvIgsUSn1WomRDS5OLPcKx1uGA-hTeE33lS7yikhYeb6a-jgTqWe7waA4XbeDHoA7jA2hnQulWs3BWQO69CyPcAbEGXcqTBRBaYdevEJf-aZx-Jqi6UYoLIoiRxPrDhAC9BLkhQ4FwccmOfobBvO_FP2r3TgL4fKtl-uBuUjINKW-npHNHC4tfrKieNstA-lkrGCePwShFVBm6_BQbsbrJBm6ebgjCZgKiONDf9YXP-uQCgDnSnITuHEXiEjDFeUMVTR5Q13zwLwu1nElfQPziStMRipEINfAGuak-Y2oLI2Ij6SLeiBoiB58BgvdGUXnbbkhCWUXkWSYIMfk7k1H_hxEHNtu0EsMFFtZCtxsSIx7PbcURXqhFAmRsf9dSZmiZlAdGF7RMEkbFxwBXIEfHDzHIF_2S3vz7900N1Rmta3lPBpRQ1NaLK8wriw-QCIjLZZI-jrnxlRHLEPJ7EfJHRCibB6FWNbS74_odLf_mxw1jxB33JXVWKn6YpTo3XkQuQmkX-Fx_FFgZKFggSIy8RhbVFtoNt5lTSRssmkkRmp-Y1ua_YnTpVJ_Y2dJt6xq6OPdkUVWNRyx-qHb-QAMQTtepXcPwyFtiDPNS9G-T3PUnwyv2DIBjjCgBqhZKKFiJYM9on9uRct501vxpYwpf5p0FdFovb7OSbbTKH5d08zKckZhtIILGQZqkwULsrdu7CWB3hwwKmjdSqJrULee_blIwlcQMuFdLXZeWN5f8nBF8ZlTIXs9fV0pBhMc7EGpMZIdkXyOax5v0dmgsr8k5Z547Of4NsaWDPHH6xfPw9RhhP4ZY7cZmTU23KOKcbuFPJ1zuID8hON3Vq0MRCyJtTjQFAtwYBcQwwyS4dcM3TzftIgaAjZCpPkaOXXkOtxz_vfUlwn0LqMeqMcFOgCwIgoHd9Mvutm0OlUE3oaINM7njA==
+# CreateReport
+
+生成室外风环境 CFD 模拟计算分析报告书。该工具不弹出界面，也不自动打开报告书，仅在后台执行报告书文件生成。通过 `CFDGetReportPath` 工具可获取生成的报告书路径。
+
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+  "command": "CFDCreateReport",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+```json
+{
+  "code": 1000,
+  "msg": "报告书生成成功",
+  "result": {
+    "reportPath": "D:\\bdlsFileName-节能及绿建报告书汇总\\室外风环境模拟分析报告_projectName.doc",
+    "isProduced": true
+  }
+}
+```
+
+生成失败时：
+```json
+{
+  "code": 1003,
+  "msg": "<详细错误信息>",
+  "result": {
+    "reportPath": "",
+    "isProduced": false
+  }
+}
+```
+
+## 返回字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `reportPath` | string | 生成的报告书文件的完整路径。生成失败时可能为空字符串 |
+| `isProduced` | boolean | 报告书是否成功生成 |
+
+## 报告书内容
+
+生成的报告书包含以下章节：
+1. **封页** — 项目名称、报告标题等
+2. **一、模型概况** — 建筑模型基本信息
+3. **二、指标要求** — 引用的标准条款及限值要求
+4. **三、模拟概述** — 计算参数、工况设置、网格信息等
+5. **四、模拟计算及结果分析** — 各工况的风速云图、风压云图、达标分析等
+6. **五、结论** — 综合达标判断结论
+
+## 错误情况
+
+| 错误码 | msg 说明 |
+|--------|----------|
+| 1003 | 未检测到锁，无法生成报告 |
+| 1003 | 工况尚未计算，请先完成计算 |
+| 1003 | 没有工况数据 |
+| 1003 | 生成报告书异常: \<具体异常信息\> |
+
+## 注意
+
+- 生成报告书前需要确保所有工况已完成计算。
+- 报告书生成过程中不会弹出 UI 界面。
+- 生成的报告书格式为 Word 文档（.docx）。

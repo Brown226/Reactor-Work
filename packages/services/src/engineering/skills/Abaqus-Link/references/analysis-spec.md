@@ -1,2 +1,211 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQvnoPbBsf74RpkrbM9zUIqupJ8YMAA652q_CpTYXx2LTh8bZH8_APUgr2nwhiFRFBXq86717FCUJ80MROTBNt1fm4niEFSD77izPJ3HQn9wu1L9EgqrpaFnh3CYf3ou9m98weIxNWJTDI0PADa7rDwN-ulBUVJ5kn0VAiGc3Iw0ibKxctj7dpKR8sN1uKYF64CscRbFxo0nB1rzEXBQVWfi2XpFVuEiZhV7EWoTSCtLJmhXrueOGolpuOOU25zi4LcoJmvejJ7sZy0KwlSzLvu5RFqy5njdlC8pwz__vPDJRwY8UNVPQGZ4JpiKum64IBFjkSRlPcOCtNnx9nRn39qWtp_8bXZ9yELxg0drNF544gcSekjeGNyj6V31pD7XiPRBLt8ITz-CVnR7Mv_zVoP6_AAaUKsAmW1vlAcnhxZJJVkVJIT__z_m1fBHQMXkEuUy1lYLe42UCW-XA3-xucibu0LE2IKLG5SWoUn2yPH9pfHqniJ-fAcRqa2TgxBPqaOSDPj-PVKGkEMWPPUkrWxlIHyVtGHAzqknNxAt7bJI0ZXWeIC-yEQ4I_NE63uMs_vXW_9Wg587xPSRHm-QxZ6r0sPyvaGvjIixSKomRVsw0ZnGcqYF0D7_jr4XPLYeFOxjRG_8wesdP7uTXg78c5XB4qYHWVujnM3koHrSCUFjv48XpQUTKrZ4MVaXkZvHWcCmN-gM8-HUsMKLd_RV318q5ZxfNLMw0fdHiruDxwvhpGY_aRDfNjGRnejEBg3JFSC5YLxfzKBGO-l4V-opObXD0lhPnL0_mnykaiCavAu16tVJFEI-eEYA-xq3YEzwyz8TqZFrexKawjDLTLNOaiJ0iryIEbrDYw2GFXB6OHrjUHxtY2nAKIBn6VxrVhzZ-Gulrf8aKcRCINt_DIFnscD7ZiuQOkGG5MiCt4C2jyj0HeuO0vhD5CvUpOVm_khCbTsyEhO4j9qqxh1k8juRTsSem430Lua6cRFd4s0ZNxsGeXwLjR7u57kkXxlsQC7xIV38xfI6C0zmWN3X0PnVZJws5WQt4rAtvN_ohaUnLW2tVtnZMbZRK0H_CqE_RxywJnCM0lvMTjDa8Wju3PtcNmM4wGUy4QDu85e4zsTfJaGwK6n_2xuJyWjb1U4snY12uKgxdfJG_29IQ-5QEwsHXzsF0JAVonvu13GYw8_MhQuLmkiBczIj9nPn4RG4Bo4Yhi94VRBey4vLrlLyWL_5wrZ3gEunJ9qnQRbOzaaBOTnUVn7A1d-Xl7qb1YnBbr-AoMjGGZfZXGoXFDPFgxDeEDa6WfB2Y74_VSClbZvFuwGw4fm_-Lf9Jauqms7IUy2qeYxVvwVgUlKCbkQwLLQlBelg200VawMygqH0YyHe74Vc8pDvioJ61Kxdw_k0Ybsi4rTKHU3dCE2_gIkvRdATd9XmqtObsWBLqpOyO39W9he3Dk2S_IzfA4now0vg0_mIdy6pLjnhqB1AxVPR0noJrGQ9KeTu8423H1SsZYS3MmhI9ShjsdXpoHue7pVUMt7vGuNRbzWYMTXV6YN-ubde-M_FNkav9WFMzsUK_uRAhvoEJul_VzuQCURCFACpgekaNQ3TYyDvZVK4Ydb1pv-5podJxe28pGKLziT448dK47Iaa4_Su_gI9dxQ57DHK5ofTGLbi6jY_TKjCY8RxPSr0HRIhbywj0EnXoLM4mOpZM_CcmIuRzsFM4pDm3u1o4crRlEPcqtToULwZDGBx1bMhJgrozMnnJKBZIvuKEEioI8hHGBjM-wD04rGDexEAr2aKRDlfSTdX_SNUXYDgkXUHpeSNZFJ2yDqpDFeJJV28DLeJiHBnevt0HEWFi4WLqZxb12CaWtlMUaPJ2wYFsPqj-bA7tSOWHadla5Tp9T9LHA4TtSeLbKSll4-6SQTcJcPMgQnUetiniWoJZ_PsA-LfF2Gvh4ic7LlY0qgrg6wdn8Ldmbtc96noVq2nsAfje5bti1UhXUgqkZY1iyK5MG28P6bFV6mK-tWL58mdtN0bXJwlf2pn8fOlAlo6Qql3cD0olHBSDsb1eO7ZcNYP1tsC1eDC_ykxW6ZX70SNiwui5i8EhNNHa3NbBCzpuOaUFD_BpXmlZ7IWphx6FP85bdNlbtOkrwVDwyI0IxRpv8WUpMxmPRH-8-xigZ2PL0Uo_KuBEGEMXFFNPmSCb0TeSNPd87aF1LS0-wMd5lpfWTLiIxRfH1f0qIIDajt4gO-K5yUiDFK2b3eUUnW8_rrbcD1B7TufbE95k5tfJNEfepQLv7N4zPvZ9N5dA87b9UnKPWtnp0xPPVq_uGLqb6QtMzHsFpwbl6cfDhPOtdsVvAfSrE31LZ_pxLHvCYB-Iccq9gdEfWXuIguYbrj4OWTqu6jWuT7gtoGI3iGHREwN8Qg2U-jQ0p4fsT8vjuz91nvlEMNWNDgsBEZ9ewGyk3JaknRidhAVldImzXjhx7pWOKptnTpSSJTkqUm_fBERDXh4kBM2kscaWq65pBo0-TsX5d1BNI4Q2fI5AH-_kULA05Ic46G3vB3nAkyisyu5pYzwBN9lwAE4WIsBnf-4QX_WdiZmWtUhb3lQjVe8Duy0rxiDR6PNQfwh-vgjFCMekiPFSr-aR7GnqcmsJpKAAcOR-Q8RHqagOP0cAsanK-F74x_LJses9cry-gPrPekaUtqNKHqiejWIarBZxj3faTj8pTwPcrfNLpaRgflSD_-AWlI8B6BCPjv2e94tbpWozazDdwGGob-H6oYWjqRDbZqMbc11Ggr3vmmsPm_hixLVJAc3Jyb8z6NWvyLNbaEd2d9BStA5hUNdRNz4AlUYc7XlnNhp_wm323npOWn2Ha9UR-hsOjlhatucOmXVewCF1TUQjquT-Xyv0KcIHXJkOm5ZP-uf5iy1LKg1gdRsDbYQzJrzKvUJcUmox3QnppjESTkDHKX3vaKapAoBSX8myruYPcrpWuF_x1mswmXjab8MpNcyD5_OFHpQ_QAFZnr3pYP_kJecmY0ofxzV9S5J-j3LRw8brUUwDtV6FYo67YW5Ks5JwXmj1nV-mjeIYpIw44jwMR1NTD6hJbCrikHBGDtGXR6OQXerClfM8wiTXm1S091IVSWZ66AO6atDDPkx4wXkHMqZ5KtHcia5gaL03dWg8L67opfPSVxOdL5ReJTlhntNtEyAD-zWdazk9FWqCdT6uPPOhUg4NNgjoanD9irwzmtVnYCcDtrY3qo6nsaly_Q3EihantDI4IIH-36aL-GzWhOTi7UDjeq9tBNKHO3V0gDx7XLOEL9Jt2wrVXKkdh42dlLFiHOovp8XYECkFhicrgKinBdPIN7TgAdrxEwAlQSGpX9WIsaEdflw9uEXYr09_wYBE--UrcspQD0UaOZyKVFbjbrI5VuI0cxulXU0AlA9kO7A0yp5bgEJiLaP5_GM6bF5iqJjirxWQD8lOAMVddSDrPIJ35jVSl83tceqKXIHSHBXzDaltu_xBaD3E8GaGTFwR8jkXTE1iMFHpa8mS8kEEXCCqoefLPsGrRnDaB0XrTp05YzyVKTQgiBLi4dnKul7GRenLPm0emfoVPeggfPfjFjlZ9VsYtSaS0iT3Myf-i26kLKUS0phIbsW6AYni1E-f9NoIBDmiARLixG03XbhJBAo12DsCT6wUdjE14f73Kvg2Cvye5zsz1Z6g0BtaGfqV3x88QQjYz4Jq9D3khXjQtdgH8xiWVaMUepXhJYPaPlIzpJYuKM8huD8q5vaZFWXtU-QeiIAy3rKs7dYOGyHXPe2YeWq7EgmcP6SOlgO6UW5EbLsoW74OZRRLYHQzUKbL08E6OF7clq_NcbsLwH15FCSBgte_1T4TP4w80J614ZiLOi99KrKkkfvtRgIhOb0W2OplNOmOqRSxEvNhsh0Npl7RFiRh6q4B7VFs5DmHT5Su6YYa1gAgnVQFh5HUYapt6k7Oug4IyeJCqM27zdahxe3H386CrYnjaQ10cPB_t4SwMzN7i61vPQsBvwX7bguoWJZde4Za5uEPf6AFiNHgB1kSJ4J6LnaO0rLdXdnwB2PTI7I5Kk1cZK6C8TzTChlZ4s5aKrC2KwTTRbex50wEKJcWya6RXjiLxTWq9j_QABBwVs9Ii2jF6GJlQGanVFdw8200fyS4TxTtZcpjHpMVZ5P9o7pduS4qk5MgjHl_FTOQda8rmvmWjDNiN70HeVUJCiuylb3DWPKgpxkRSceiCqyq6KGNoEqppBx395fyD-0DnNWodskdRxz8E9ulBTmKDIzQKvEwbr3mry5-m4rXfxEL_lcPuo3r0Bis5J1ffPu7wjG3pUm64nfqUSRiT8JPWUywRtLDGp3tGiIA2PqJEgtjcThU7vdhXi_AvX3jfj5PoID36JtKasw4Tt3l0QiqCCM_pK487a7ZsvQkg7IZGSsnQCXTnOsffz1LheTjqisEZdoUD7pt_CfLq0_Ooz5j7mj95HL0n4o9P0iLMObXdeaERv-y8CBTKDRcm7vn-zuXy6FTmkH2N0dqUvpirz9vw6Ab0JSvWmF844-N5FaqtVI_UqCltAQF17rXs3GPbDQgw1LBnSroIVMnDMwB3ds5PYzBo1rphcx5E9pLv7MuYVheyILSwLZmjlK90dXRt553fA1HgRRe08Iphj7GojBPyVXr2djSjtKfO8rrwuDNtsXcl_Xy4O1qfYELp8pCuieQZ5IMgzHOTX1aKGCHZEcg8LEFbkQFUEChFQokTgphbn9IPDLrFi-GC_Bo_TlhE_aOlu22O_SAj5jndrxjhoji5TMlWflv4Xj6rNU67OzcN0TQSKUBl73VYUdTd-x4HjmtUN8Phdjs37b9G7L_Oz6snGJqfRl89uglI1c6X__qmEo2twnEwBDKISEfdNuJ0wUeT2bwuReqBhyER0bx1nts1fdn1-Nb3KQs63Jz-ufqSCAMEeZnYL2wTxcA9VHzVMKpGmGF0yI9N8qbm_NHB1WOndc8jMbVMHaGsI26-VTHziNTACVoFV3LQfZtPXXulu4EEPhOOojPuGTlEfRWel-B87ZaFrRvBweQ8cH8VEwfC0yzjBW2LUOQxEU_K_RaXSEwfla61m4wuAEi8pN21DPhGF4xM3Ut5W4n3qlBjMbZSffmgD30AI5AbayYzOgNasmSPER1KuZ2DAe3TwU-PI4KCR31BRA9H0EdmH9pJcBtS5paV8edMRhkIzQNf6ynQXAEL-G0UCgmx_LLMw2NSvs8PLiP50sUjSXmzxMcYtFe_CT6EFHBabJ--1Xi6Bzoc4ue_NWuMOwQDD0QuVxxstSenyEaqBN7Y-lAYE6ADHVdiLXbwsE79JauuknG_XK5TZFYsqyZw8KS5YALLmYePWqO6AbOWx98t45dA0Z25YcV_WWIWchPayO2UIuHxSTahXtSzgQ4lPsLIRN0LNM5b5Cp2i8tk456Ahr3ofMWDYlyqd3sHGCZrohp5A9ruSSUbaKgaypMvvJWYrZGkBojUYVn-S-ByzP8O7j0NCuLWJi32KEJh63Y7Lzc6l_5G-_hkB7uIuYSGG_F6hopoA-En3rdTz_klHz6d4c-q0bxGRjoDcL0vT1NTtHw5uPgXDKuVJhZ4lB3sBCyGr5inNR9tg0fKJ7QKV3bImj7sUgUErgXZk-_mXEHJisCsIzyENm73cPM484WSkr136cFdTcYv44vDvUpNEJtyUapp0J04UTeeEirzj4BIx3LI0Q4lPKd1gD1jQCMj0pFQY1GwO89HxhuHdJlVUG-BX1rUiQPTqXtQKjMp0oNEs0OSZUklQdd4dtcXB39Q9E8_AQ_DZ6qWC5jWfjUCefM-dZ6EiYeumEBv29OqsjqQx5BKHO0a0Dy1yIBzbbeWpiit7UMefIei3ugcsk_eVfTYUOKDk_OriJPecPgRNu45IqGWt-2Joz-sS3E_6EiKaj2ylaairsovIs1ksL9PYUy-z7lQYeQY6QGMvZ3WgO9UB9GbkFoSRbvAs6oAh2jQ6ESdZSkQKWd6RKKqb_VrJBKaRpYMWb_xcGkTmAufBnZHI4sKeqnslC6hI_1XSirGrjm7e4poXiJl1UhvL3puu2qLdcTpe-6xWprOOvSukoxfgNTZY8q1j6mMS3MAJL_5OrUmvJAExhw0oRovxT9nb7ROwrXd5qF1qsn5AeFUJdXd94FlhrZVCBN_D_fN315p-OVKz_C48S721_T_kIUcIJkBgSQwpNl2fQLhLQlyx9a-YTXAahywMRV4W00Oi4q0l8WrjCTcTBBmr7zUXvLb_EdFF2kN8K4Y0ve0EmTy71T1dPnTCIz-i4j4QivLW9eO65RCFIF5RIe5Cd7BcRK8omKvIaLkQN7B2GphIcHWfHHBSc3B7is9hXtVsTMpHf3Ph1Ow9WPTzICoZrRpEe_K5jcEdlXF9eIwYb6zptEoUgjgOd1tZ5jotCgLy9uUOJnHrrDkvvenl3d4evnk1jMqdCv_xhMIb6yshhLFywJokL_cZsobRo9rDvvqSKA7NnDapn6aAG5jjZfUzXXz317qSieeTp_mscVJUCMHWTjHR2cDNWQ_t111rWZQEhPmPn0liG0QHBcfC-oandFxggiGpKzwKZxB44QY9rZUyLS5oxLbGsFgNES2Ln5vNMk_vP8p4Gyns3Sh00Cqr-kMtyKbps8dORkfpNro9n2mwXM6BbpV71pEsrpDX5znfdG1PeNP-B297o6_sZSuiRlL3X33c5Xh24R7LDaRO-eQV0dmc2yyalM74sUfDBR5OIXv-N1v6w7Cp1UjaxA5PUZ9dT1NRIRnNiAM4eruBfo_aPw-6rYEXj4KHclcdpxtM2i5QvRQGrj5fOddbhsEMV3qiCWykp77DdJQbFDxLsksN4fWz5OvUZ5F5f3WP3wski5lgJfznxNXqOJT0bXoq77wuu2ZB8xxVMO2hv64EgnWze3P_Kxjc8GAbBYPOELeKJqNQRDm-RHgs-kYPSrAnMjYcOMOvNy0GmrerKKzJ9xUI7pMG7DjfuwvM0QotlCQzJ3bdOyRQlhi0O-cbl4qB2NaxqlsUlkuf9UT57JBFQQSY9pH4Z_LvN51Gs7NtWDCzJRs2VqWo3nODdoyYHWKkUUXOgJQX9BZhqpX-J9zsnkZfyezquXZls2rrlV46h2vaFBB3r3vaIkfnRk5addsLiAZv_o0-g5sfvQI2bOy0WQsHgVNzfrREv5O-SPMfuJ3W_aI1IN1-MNwnG4aKgtZ-PyQFfYL9JN6sl9MgzadviNY1QdJL75v-LaNZMl31ec2iKaavJ7Z5gDJYnAICzd22tk0wdEHf_Jdb0I4Da-Cb8hR_ZWJ_-9Yo3kDZXyouE2ZpJl53sHWzW8QHqxlwID3OTBS5BGbvgThl34WK9dWUnRlgSDyaED5jpWX31A9cKCj7XAoLYdnhPeNasxyPU885hcKsduuyBs_8T23OckG0-bXbhhoarXJQJtCUztkCi5VerdqyoqomgzUMfETWuIu-s3HQHtWsdGULucf5-AWJvM4zPDukbRYwQBx9LYKM8WSPgQWXBBxLin_hvKHetaf2nrz0IwxDQziw215yVHhi71UtqtZALsG-0LUZJuwXfMa0xPt-PEI88JIg7EIzvkAtWybmwVNMwU3ripstQcIDzvAR1hQ9JZkKHC163TAPbWCE36Ul0iryh2Jz0Bg11LAr67pd0Mb99-rki8eWGWsBxLx0dN-we1k69TzEDcUSlB7t9tgeYfzykSXyWDaPm1QWyrqYU2KliYn_PHf4TUNz8kgRQ9o3ofOIFsshhADoVESeIgtEipQM_XplL69v_y6bpZpUry2s2u7XpZl0UEaB5x9_nj44y25_Gca9HxIxeqac07P7ZqWrZJ1S8KEVonhHwxcaIkDuojqbeWikuKw-bD53PfDmIhIQcuDPiVmCLhooZbBh9inwxzpppiMrCDcDUWUy5h4wLTXS9z5DIskqYWC_OFTi1h3Lo12eneZCUUsIjsnYUnSpMZcd-XBrDkUnmixoYQ5lpcinjcEBP1yCXTKr9XSqh8s_WCyfRuG_styV-6u3dVzZ0KWC-3IQY_tbIl_x1LtcrRCZQCMJw0sjBy5C5F_rLj80GFFKcakrK4yn_94KD2KF4b8s9lRiiYAvi1rJKWsQfSfBgMPFc6eijN90FvcSanPGbcQf4NJYBqFbyFMFM4lHuKG6sT4Awq4BY-KZal-VH6-NXsED9kDiHSVl3w2Y-PqjeVnCZd9jRmQvKnpxDiQJ7WGed7rq1lK_JuE--gE8Wxoeilwj6wTvvSTZF0A1zFn7K-a4uBliKaCZy2pSzC5jNy9s3QacjQqR9NSN66TiXm-xSJDrsMLxog3_nonlAP-Z818hF7UXxwSZ2uVspQ5DNA-92SexLquzL_jFURHttpwbFU2AtN8trUpek7Av7C9xTjhCCNC4HaBySVGINORTqbyYfFPpYXMB5dzO07HeVlcPNq7JYn3GBzBwtbDG7-wgN5dO37A2iW-Hdgii2OG14wyTGGGVLTahmGDkusNALeRseufLmC_uNEQC81_XI_6tgFZPVWL0mT5dciOOoc6aa_RCdBFR4lJjf4fBftpuSP7Ske_Rkl4iNYMkYMZza4nxhiAUbL9eP0P0kJiHiUhkH7YRyvRCy65R5e_FIVSN2j49vrwV7Hvy6ak0qNTbATywrEbudUD5vxiqyuu6hsCRqy8zWHGGAZansa5wDzaWB_3Y5xb-7CiEZvxYTVy5TVxJ6iDsVNGCtF4CEuuO-lHxB_K1v0tMVHZDTBMjiymMWOZM-QRT7qIjS31iqiK1iN8E4z8xbrZZ8dLaSMwR85l54hZLBOgdNN5m0L_2hR19WBoxuwzRAfP6hBWgU_nyw55i6E5hYheGBQEYHW59SQq_vTOahMeyWM6rpmfZGdZBuf0im2AizGC3QEQFQxh0JzcjVxcmCA2zbZ7YIdcsMX9ieglO7C9KZnprPI8KUQen-pgkhvLiO3gP_UiSt0sWbHtqTMHjSujGIVQGBoKmB3PXmSwXC3CdnaQibn4XIL1qv0VS_AISz8CFTl0qrIRkactCkL0QISX18e44HP5_GA0KoQ_VyJXNKL3aZP0VZgmMvs5cqfwkDtbqrAiSqaTze62d-b-RRxRGswz5wQL2AXyHOLn9J0tSuRvOTZ-Wsy_RPB-AZlP7BrQn9wpMr-wj_Bl1I_NcowDvbrAcoFUU6ZSwgjIJdJvohNsnj0f6G1mM72zKe0BGSvqEocojbtGRMUpUgHEshbOxXwXETbtT6mFmfi7B2U0JAXQTJAT2UDPeTTRdC31TWrxj9D7abxG_SqIG1jkdvklkLBdVyZwfmiiBUrkCYyGuN2-GqgrBEeS_wM5_vhO3EdB72xfv1PqVqp4ui6py7ifs6LbjTeUwHWTI4x7keIS06rJyn-sOaKBW9Io7EbbZDT665ZLyf5z3zgzWp2VK7Tf4S_SwWGRJR-l0lZ_XLh9LgtPVjFBUlvcOcq_MvJMyZTfLNZKOHdTosZ9KB4xZ9Z3UNGUQhp9p9vqfefDPGnsUxrY2K8CUi02bLDGsw9it608QtSJQSM4mxfE6SMw8_LBnPF5DZw4xIPIBnff4g6VYd0A7DBv-qvqOX3Qz7cYy3WDWBby1V5A0E0Kgxm4uF8UH-Teq58p1OkXYVs_mf70Fko4RAKDZBEDa7B-CWQfeby9WjRmqQz6w2j8jyPwBfEVE6FWI5zLBeCXRkawUWvHbjdcDcJG7jG8wPOolh1T8QuJhUvc-TM2Z6p_-NcQEGgAL-QhWbtVnkuDrum4NN5m3t5IUIx-FGS7YjMpcsehIPNJA1S5BIXd_urlRwWXZXBcPFJt-Kn8-lZD0c5Y2Ske_nQM9JPLM5riZrGw27X1GzFX3pK4ugTC-ZAMYytWwvYrwjRrXYO1-3xtCYA5k9L05Z4Mpgh2Pi_GW87R2XYdLx9o9CZn0QbtQbCkum6EgK92ynetlCcQzU16BIKbt1Y2ZH1NadD5w80FmwSvP3vGq21LvcYe0AWw2RuozyZvFcCHW3DpQq8MyF77jeL_lP9sXftdGWhX9F_9emsu4SUW26jdKmNI8jAf50DIU4kJw9HsoGtMNbsdxYfIulx9oDuWx5lnHL3r8LdI6RhyLu6OJ3hZ3o2duXTwj_px9aHj5SLX961T9CNL1fRPhO7yhkgVogPVx43cxFPCSgo-_ly1dr2DwE7jRlkbFklcETteQ-1FVdOM-ncRE5Q6z0Vx7HtnWK--HeV_ukVCbPc8t64D2gaZGVOfvAp4663rFVJ5JxWH1PHDEaOTNB-fJH0aZgtMz6M0lr4qjXcYgPwN0kaOH2MZeFdFnPemd4UcdUrHREa4AhkzPZQvn3-ChwIMd_mI7btPD1AAsQcRu6KJ8yKVa28HWzDOxca2IMVWloFNPmI1Vs7I__NrZ5luF8m0PpChQTO_sXw4gUeVyKNNXP3pEB46ObZ7LLQyAr2-VoETUg3QVMGXqHmbVtxadSez_gnLfNdUeywcx6h1PujHYXFeaspkHBaM6rtcZESPoieCBVdpqUTmSGHvfcmevfk2j9FBt4jvQExbL0xoMo-wtAAdXU_KAlOzFKGYZr-WOEX8Rt_Y78EIh25YeKU33Pr6MuyX-JZ8nO5PuxjxMEk3Txj22wlvpQysTUOC8Sn0jHI-xgaEjKlcsBa0sX2-mCaQi9pUPUX1jXhChJsJfL377wPCMOyVnbFTzmVqOeK8PBX0F2BqEIvXb0ptJuBWrK1kUBaHj-Jld2dWIPtfg_sc338XfSq0pBxE45UkDbA10cBW933v4s_ZocCBa0OTY9vpDC4DEhlxds-dCVp5c1IH9vqKtDEA9zMAcJFtwb1MxFy_EQ4oJNq1KxJZNQpfxllyVOojfv9cf2mcsSbMkhgBJlHt76rcuKhQQj3PoIagTba4Tvip-D5CLqgvvjZxodcpidxwFgxwieQkqZktmNFczrAVqucdccw09Z2-rxLFPVdFpRHXDulx8Z3PqqsLO9blky31rCvx9dpyc9Dp2y4_ESQius47yC7vkJXaTSaObOcsYIhXtST02U_7sIwxp0Q-tnzyQlJtWmO1WgOKFT29pdh0M7FTPRn7ilThpIZ0Nw2X5uvHPHmHNv5_GQwFc3y8ra-R36x8p0w_bmxbnYn3AgJloqP7h80k_idthKT-XvxWqkm00nKnErKSlbGdV0ou7Yx3K2bGGNr-xaxXorF7MmfpK0v2Vy5h_y2F4bulhhQ1ny3mxYjQ5WmczJ95j1cTDZAfAXbTUmQQ_v4tw0qj7uCtTUHaM-LUzeRbFo3s5iRyn-UDkHKsAOHPABZKrIfc-4vX1n4boqVgjQqlqtBoONkvNGGzlkfsUBZCE83pG2VlybRevIay6gqiVjA8MbhQ69qMIylc16fOwMTybMoRhialuZZ6kbl7578VEI9lGt1TPkx9qjuiAno_rwNakwVqkN08SEcENlDO4H35SP3Dvm-65BkFZrcRUcBRDd4qDH4ja00kc12N-6-Gm7Wcd-FxbP3muphPctiSEjLzrEHMzTf9YyyLLeNNJhPapjcFCJ2HSewQKBvO1TrIdI9PhJ4qqD4xjTfYuRPvWbk_skEkAM1U5KEEnV-P0ksin14r3K9WIisMglgwqRU705UIxvW-SCrDjky73AuSup5nIP28Tfdfvo3lTzNUW0es3d54jAZa6E4EXvLAg==
+# `analysis_spec` 分析任务契约
+
+在创建分析步、提交 Job 或解释结果前，用一个结构化 `analysis_spec` 固定用户要求。
+它是任务契约，不是 Abaqus 输入文件，也不能代替后续的版本化 API 契约查询。
+
+## 使用时机
+
+- 纯查询、纯几何编辑或只查看模型时不强制创建。
+- 完整分析任务、提交 Job、提取并判定结果时必须创建或沿用同一份规格。
+- 不提交 Job、不宣称分析正确的独立材料、网格或载荷修改，不强制建立完整规格。
+- 信息不足时保留缺项并报告，不能自行补材料、单位、边界条件、接触、`nlgeom` 或验收阈值。
+
+机器可读约束见 `references/analysis-spec.schema.json`。将规格保存为 JSON 后运行：
+
+```text
+use_skill(
+  "abaqus-link",
+  run="scripts/validate_analysis_spec.py",
+  run_args="analysis_spec.json"
+)
+```
+
+该调用一次完成结构规范化和按分析类型的工程语义检查。分析配置完成后、首次提交 Job 前
+运行一次；规格变化后，只在下一次提交或结果判定前重新运行，不在每个建模里程碑重复运行。
+
+- `PASS`：现有规格证据通过全部规则，不表示求解结果已经验证正确。
+- `WARN`：配置可能合法，但需要用户或工程依据确认；不能自动修改。
+- `FAIL`：存在确定缺项、未知字段或内部矛盾，停止写入或提交。
+- `UNSUPPORTED`：规则集未覆盖该求解过程，不能套用相近分析类型。
+
+退出码 `0` 对应 `PASS/WARN`，退出码 `2` 对应 `FAIL/UNSUPPORTED`。判断流程状态时读取
+JSON 顶层 `status`，不能仅依赖退出码。
+
+## 顶层字段
+
+| 字段 | 含义 | 关键约束 |
+|---|---|---|
+| `schema_version` | 契约版本 | 当前固定为 `1.0` |
+| `analysis_type` | 求解过程 | 使用 schema 中的规范值 |
+| `units` | 一致单位约定 | 明确长度、力、质量、时间和温度单位 |
+| `materials` | 材料与指派意图 | 分析允许无材料时显式写 `[]`，不能省略 |
+| `geometry` | 零件/实例/现有模型引用 | 至少一项，选区写入 `regions` |
+| `steps` | 分析步及其关键参数 | 至少一项，`kind` 应对应预期求解过程 |
+| `boundary_conditions` | 约束和边界条件 | 自由模态等无约束任务显式写 `[]` |
+| `connections` | Tie、耦合、接触等 | 无连接时显式写 `[]` |
+| `loads` | 荷载、预定义场、初始条件 | 无载荷的模态分析写 `[]` |
+| `mesh` | 几何与单元库/单元类型映射 | 解析刚体可使用 `NONE` 和空单元列表 |
+| `outputs` | 所需场输出/历史输出 | 至少一项，变量名必须显式列出 |
+| `acceptance_criteria` | 可判定的验收条件 | 至少一项；最低限度可检查求解终态 |
+
+`name`、`model_name`、`job_name` 和 `metadata` 是可选追踪字段。类别对象不认识的扩展数据
+放进其 `parameters`、`properties` 或顶层 `metadata`，不要添加近似拼写的新字段。
+
+传给 Abaqus `name=` 的名称必须先满足 CAE 官方命名规范，不能因为内核 repository 暂时
+接受就视为合法：名称不得以下划线或空格开头/结尾，不得包含句点、双引号或反斜杠，
+`Assembly` 为保留名；Model/Job 的数字开头例外和额外禁用字符分别处理。Part、Model、
+Instance、Set、Surface、Feature、Job 最长 80 字符，其他对象通常最长 38 字符。普通
+Python 变量名、`mesh.id` 和验收准则 ID 不属于 Abaqus 对象名，不套用这组规则。
+
+## 分析类型
+
+规范值为：
+
+- `static`
+- `modal`
+- `dynamic_implicit`
+- `dynamic_explicit`
+- `heat_transfer_steady`
+- `heat_transfer_transient`
+- `coupled_temp_displacement`
+
+接触是分析特征，不是求解过程。接触静力问题应写 `analysis_type: "static"`，并在
+`connections` 中加入 `kind: "contact"`；不要把 `contact` 填入 `analysis_type`。
+
+## 按分析类型执行的检查
+
+| 分析类型 | 重点检查 |
+|---|---|
+| 静力 | StaticStep、Standard 单元、材料指派、本构、刚体位移控制、荷载路径 |
+| 模态 | FrequencyStep、弹性与密度、Standard 单元、自由/约束边界意图、振型输出 |
+| 隐式动力 | ImplicitDynamicsStep、密度、Standard 单元、正的事件时长和动力激励 |
+| 显式动力 | ExplicitDynamicsStep、密度、Explicit 单元、事件时长、激励、能量历史、质量缩放证据 |
+| 稳态热 | HeatTransferStep、导热系数、热单元、热边界/热源、温度输出 |
+| 瞬态热 | 稳态热检查项，再加密度、比热和正的持续时间 |
+| 温度—位移耦合 | 耦合分析步、热—力材料属性、耦合单元、热边界、力学约束、U/NT 输出 |
+| 接触附加检查 | 接触属性、接触形式、接触面角色、初始间隙、接触输出、有限滑移的 nlgeom 决策 |
+
+接触检查与主分析类型叠加。例如接触静力同时执行静力和接触规则；接触本身不是
+`analysis_type`。
+
+### 容易误判的边界
+
+- 自由—自由模态允许 `boundary_conditions: []`，但必须在 FrequencyStep 的
+  `parameters.boundary_mode` 中明确写 `free_free`。
+- 模态不要求普通外载荷；发现外载荷只给警告，不把它当成模态激励。
+- 解析/离散刚体可以没有材料和网格；混合模型只对可变形几何要求材料指派和单元。
+- 塑性或接触本身不等于必须 `nlgeom=ON`；有限滑移且关闭时给出风险警告，但不自动修改。
+- 瞬态热必须同时有密度和比热，稳态热不套用该要求。
+- 接触对采用 main/secondary 面；general contact 不强制 master/slave。
+- 校验只检查规格证据。集合是否为空、截面是否实际指派、Job 消息和 ODB 字段是否存在，
+  由后续模型、Job 和 ODB 检查器确认。
+
+## 最小示例
+
+```json
+{
+  "schema_version": "1.0",
+  "name": "cantilever-static",
+  "analysis_type": "static",
+  "units": {
+    "system": "N-mm-s-tonne-degC",
+    "length": "mm",
+    "force": "N",
+    "mass": "tonne",
+    "time": "s",
+    "temperature": "degC"
+  },
+  "materials": [
+    {
+      "id": "steel",
+      "kind": "elastic_isotropic",
+      "properties": {"youngs_modulus": 210000.0, "poisson_ratio": 0.3}
+    }
+  ],
+  "geometry": [
+    {
+      "id": "beam",
+      "kind": "solid",
+      "source": "parametric",
+      "parameters": {"length": 1000.0, "width": 50.0, "height": 100.0},
+      "regions": ["FIXED_END", "TIP"]
+    }
+  ],
+  "steps": [
+    {
+      "id": "LoadStep",
+      "kind": "StaticStep",
+      "previous": "Initial",
+      "parameters": {"nlgeom": false, "timePeriod": 1.0}
+    }
+  ],
+  "boundary_conditions": [
+    {
+      "id": "fixed-end",
+      "kind": "EncastreBC",
+      "step": "Initial",
+      "region": "FIXED_END"
+    }
+  ],
+  "connections": [],
+  "loads": [
+    {
+      "id": "tip-force",
+      "kind": "concentrated_force",
+      "step": "LoadStep",
+      "region": "TIP",
+      "components": {"cf2": -1000.0}
+    }
+  ],
+  "mesh": [
+    {
+      "id": "beam-mesh",
+      "geometry": "beam",
+      "element_library": "STANDARD",
+      "element_types": ["C3D8R"],
+      "seed": 20.0
+    }
+  ],
+  "outputs": [
+    {
+      "id": "main-field",
+      "kind": "field",
+      "variables": ["U", "S", "RF"],
+      "step": "LoadStep",
+      "region": "MODEL"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "solver-completed",
+      "metric": "solver_terminal_state",
+      "operator": "==",
+      "limit": "COMPLETED",
+      "required": true
+    },
+    {
+      "id": "tip-displacement",
+      "metric": "displacement_magnitude",
+      "operator": "<=",
+      "limit": 5.0,
+      "unit": "mm",
+      "region": "TIP",
+      "source": "design requirement",
+      "required": true
+    }
+  ]
+}
+```
+
+## 不可静默处理的细节
+
+- Abaqus 不保存或转换单位制；`system` 只是项目标签，各物理量仍须量纲自洽。
+- 材料密度、比热、导热系数等数值保留用户原值，规范化脚本不做单位换算。
+- `loads: []` 可能是合法的自由模态；`materials: []` 可能是合法的解析刚体。是否合理由
+  同一次校验中的分析类型规则判断，不能在结构规范化阶段一刀切。
+- 自由—自由模态必须把 `boundary_conditions` 明确写成 `[]`；不能因列表为空就自动补固定约束。
+- `element_library` 只接受 `STANDARD`、`EXPLICIT` 或 `NONE`。规范化器会统一大小写，
+  但不会替换单元类型。
+- `outputs` 写用户要判定的量；不能因为 Abaqus 有默认输出就省略。
+- 验收阈值必须带来源。没有设计阈值时可只保留 `solver_terminal_state`，但不能把经验值冒充
+  设计许用值。

@@ -1,2 +1,78 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQqZuwiKVicyjCxcqwhzlJJBOWjA499_q_JY_oI7P0ivVIBlD8Nv5w-j6Na_cXWID3rmT160IRBTy5kUB_jC3qTfJ9MhDob5T3Yz95CxWRZdKsa1AuZRSMC1AxN5vLbLclH9ftS6XzfN2IMhJfLJAYyLnwla-x1AtRQOh09c2TcZCwVVwGk3l4Jl3hcGAmkQ8ugtxViTzTbt2zEaeR8t_-kLNffYskv-poadm2lFGX7HaYy5WtmJ_3L3iqGe8gywc-2bGzBNRyO-4E6jQbpIMP5WkyvPMXkjlE0_yRMSPCu_iE3YBI-M8P8qxrsWWda6W2Rdrdt-wgApVyGVKOo_PJB-t2k9VEzkb7azlJRVBpPxzky9TfqqToDE9vBwXYkjv_FSVzii5nVDN8EyGOAAsNU2jxFxrIlsGCQfXNHu-yJe214IeVTbdRDeHfeh0NoG9UefUxU6690jQaVIwEbBXLV7vbbSSS4TNGwBXa4-6PYneN7THH48znk_g0eHk0Gfs6BsoBOQrY3UUK796SoSTrIK-qdAEwkw8VFoXCLK9gOike2rG6LwFo802tvUJIVjbiwRE1NWamv5Tg979vxojwEM14Gn9V_fr56DbNsMS_jWkqYsKuQMWgzq-78F72aoivcKSyuTAnll-ZKBDdj9xdhL2dY9c4mG4ppw6uD8kqdN_e1JpVDO3tYGjRHrALRM_HMDPIx-J4EQV1O3OUN9cqUVyoQh6NNaz9mXwtj8QvuHJNZJj5q3oxxWDBYYCRNkIXhHSTh2ItQ7o8hLzQ7NyVYjVeCHRfcQkbmCGfRoyhlpyswXiTqlKMl7Sm-T0cfHzPre1HXufUFJz7uj_YWw9rRzAm-bCpEoxUkylxw3zUSwg9IBVEPrx4k__xIPjyp-GOaMvifp3DFIIRYIH0v34qP4zBOm5ro9ftZVFo_6DM7oL3uBP2yF4W5jqgX1k09cEe9ZoxBKPlwkpHYOZhPSdECm1LBQUP14Bd8tMh5TbMy75MecZKYFtJiUdgAldGv-1NNayKfYzticyqROU-NRC-Y8jsbnsIg812AMXNURLUEe0LNk5SeaZUJ2uG2uEoytfcelvL_XIlZRsBc-HDZOXDjZT-a52dEF-5QvCvWsgEt6jd03cBYEmfIp4rIbyQFXhaZGk5UN48VTHe9UK-2ujPL7ZX8lNdj2iGtyqpnZS2EmF-bu_xpCq47ua6dLVhx0VAqnlID2YP2ZOr8y5ZeXcaftB6SH9qrktMSJH8ai29GEZDmEDooV71wT9093Vpg1mCxw0Y3hprmVo8P_vp0Clew-Xy6QnO-iQMGqzuChrF9AQmgoMIuuUIpS-nPIeKjs1-VCsQYqXWVO5n7azYxyLv3s4MnjQySaBAQpa1sKpUXPI6MnHekNiYg28nQZSXGFOEThFt11N2hdrHAfy2gvTbiZNYRFl40w2HFf0_mLfWt96pA8fZYYVv4izubydaWvqPLkCw7Pvu6zGoPqPcdkG_7JneySwjIJLZBG9aOIKa1Wt24YRWNntFRv4aX-8Q5qtuHTROLieknkRx98nFBtxBB5mjy64Cd2IEUoG5ldrTCikTRR2wfex45lo8qjvMQH1vDm3Aa-R5QAIXtJ_CadaON-_ed6bBBrtwzPHNn8nqTB3MuiZB0-o6v90BOu6xVV6Cim6J8V44LPFcj-QBdEKxwQ9hx_Si86ItQG5L38mcmgX2bnUx-bt8mmwr0JI4o9iVewlPkLiGJtot8LYienA28dEqITafEqdHmxwbt-snOzjsLYowlrEw7b02yzU38TZPm4Yz154qJkUteDGppy58wXrq9KKu29S-KheS9WLn7So0GJX_B_b-Snvjp9Qd_gfsLueiDVcFqE3VnqglFa5omOm4Vm-Ez6Nfabt8L4cLvZiHpRLU7iTaYOnfss2QLh5x4dvTY2bmpdXOlRrAyqS0fjakMpo2VwP8-BuXU4OnWAFxAemYt0ehREk7_7ip68ptcv0UYYKFHUoFYmlJit9B1xmwdcSVbUDYL61PIEMare3xmJJph-TMOTmtpM0GdoXsm3rZEoW6drR2VKPG-MVhlc77Sd8P_ysXDdDfE2YpkeqJ6ZYpugvydS2sXDnSqVJN-Zy0GqUSHZMuyVbeujRbvuT1b_Rdjtxv2tUg08W2A4JVg4HVloRal_W_v9fyCxEgZH_cmIm_rLCoCjaA1-YDHM6w0UbrTeRvJS9vyv6dKa0OMEBhj_an6U7AwImgQ-LG1PmHJJu040qidU0XmVY9YnFH7NpiJCfEtUiB4FPWXWS_Z9FHXr6_GhU4DnQsPzhLK-Uu5aCHhmBcHP55cYaJkDfd4IKYyKuT7kITyrCmGljIiWOc4J8Z_03F6BCAuTX4SD8ozyuvXLPkhJWgPFLepuwxGv_PSSXJW6P3oaSm2nZAeyZiGjDj69ksnmYFksm5TpvhcP5VhkMjz1-yWCOoVlbY4YV9hXG79EOv7uGVU4Ycz3GhjFmilrrBLH390iuqV-4uTsqBGSDR5gsvA5o-W4_0615mRDtet0xHq7Z41fWlSAQnvFJJfO16OlpR8QXIOjQsfh5tofhyUxeq5a2-phMeEqRQY5ld3W9_SH0xxBnWBEiSFj2u4LbFQ3Qln8ouQks1GmNSkZssX0pRwT5fdi1sRiZ6Ywk36WoHGBS58oq9tAs80yJm_0YmOCoRyCiy7QhqOqvtL0UyH2lREOxnQzDVGETz7VxiDE4lKz6pCkTeSH-c7ezqZ7tIA_cR9PnbcfxYHVk8njM23wdgEmOE7sKBNH31_NCSuLrAZY5iqJp3gKB9LMWb8ulEN4cGCgLhNJMUspaHP4AU4P0fQi8rCLrAgXxcfs71TNEGC537IH_hjcdQHMb8q6WFZDousgnOrgnqOZoPgo06UfGGGHQY8stFprBAUQcmj1j4lciIEpY242FfPvRA7Bg2dYWK6ZOXlVZv9CZm90a3qjRIO7wBq9_4R8zy0XQxa0aJatITLOD43-GqVnS-Qcw-gsUZUMm-67Yj3ZRTgHllf9M3ExhHAwVJ52Zj26NEMmPGlYRd4p58as9ETCBNo67hrmINFRucmB0xnO2FNQ6m0Xriqu5vVk9GvJVzAxirj_WL6GOYjpKZmaFfNJZ3qzTmrI5rH7i3EU1vS-mT9iOadS67ExvZE0v1AFymJoIpKYDKO8flhMpqfJuaBhahaCwPEofcTVw5ukRuoCTam9r_WDIgmryJy1m-j2ZqtUdRR8ME_nglFbh9LGV9J1OW389ZVvIzhms12qviZ1IR45BGmfSSfJVY7I4ZeYEnsc8cNOW5Z2QAGuOHDFaowwvvsvEi2qBdFm7OmrjISXwGIbcAvNwsFxUvDZMfRorMEylpf0MIDFMSkDAfBX73g1bFAbEdrkYj18UcUlFrwR-9aF2fX-ktqhHMC4pt-ebQpGP9giX4B1AfTly-mxGTVfbKkjeQbZWj2Na3fW7wAaJ2xVYbXk-gRIiBw4heEswAvJ-YTbErc7kGfiKak2JaH6Btvngzt4TvM7JLcHyaj7NrKJ0aCWTx_rHHaMAEZu4eeXLx5amYB2ycdjIHBrU6G3UdOLpvXMFBdBgY8IgeasgPgvAn3qJIf2tpw5oYSHG7jpvWKNFGWiFLiWGDrlctu15WYos6DfQWcVyzSvpAHLtAU2dutM2oOYuVJVzLJJZLNXDQ6wt2n4VUkeI6FTqoz4v49YoVGg3cuU07iwM_hFjVb2jC4csTMwk9DV_RsoM7ZgZUj8cD8mY_9cg8t0rjEQvZbTokTH4Txvd0tJ9lXN3ZYmppX7DaaEYMNplq2rUA4xFukrNKZEjDDM05OvPh97FQVGUqymlDgJ74ht6MD1QtNmra5oUhAo2IjFIPnRql1FuJc8WzSqUf60u2EEdE1JVRnizdk3dYY7pxlF_p-63DUYHEjGwJXggQW4SeKnzgDzHOA8xXny71_UdR4sEZ9LpOmtVxlGU1oRgY1tsoSGnrbAyeWboG2Hc7A5dNiv53vAB5r6g-VvyF6dcCCYeF0ViW95RIH3GRGZwvTxPwhqgkpfuKc8NhavKo1CUILY5IAuzXbsKobe8jLxynbVybfuV3Omt_-YyD0a5rse1P8DMkwsSTBzy_zvJlKjA8HU-2puHv6ndeAQ2Vtt9myvmKxqfzZfKWRvBC5rzvVqOGBWzNpTIPGzp4EgHpAUAVqz6lpT7wH2DtxRMBujz53rHEKpD9WqJC1YOcIPlpZoB81eDrmsil4LMUFxNc8-1OE9OJdJ4Kss9VGZafsaPUh2oeiowJc1KLQk1oUlOWCsN42NoPYwfSDUxXUj85EjGnFuUIEvwh6-OEvgcvyxN5bb2BA4OpXrvMvO6TOpTxAw_v_UqJr-oC0tbHPOVwATad7T-s_mwSpMVyjUt6OWu7pMXshD8ae4SEdgZqWD4MEGhcFCOfrp9mXbWP35Xhj2KKqZeSFRZkOS5vw-4WnxBu1ha1uJ9uNVr5PAEXe50w6_YPxONZ6rrVV35QnODYtwWrV5CQMG_r0UxEePw4Wr73O1SVikfeRg3jbVTF0K2LKioYNOJDRgwmaUh5Z2t5G-rG-TYTqJmgdtCYcL0546l3aYK--vZ1_TkRTjn8K-5xYJA1xfjaDQHqJFwnmv_JmZzLGmtnRXtMv8pWB-HL5g8d35vAUSlpXk2pRvP6RMAb-P466xB9Zs9IsDTcdj1L82Am2KZoODKUTSvROLYeQ_Tal7BrUHI7-9t0olWBWuwXgarfFvo7GNf3l8IexhCpaEecdwrlK1wS_kd1qD8QP9omV_tTyIfX7fbWqTpDVWJ2cwhce9c5j0-WPd7mdRnd94jqUA581QE_rHcXw62K5GxWbsWWzwXV960g5Q-g2U8oXekfW0L6LupbyabP-Sc43IJzLaCVtOwSOslQXyCbuRczgr5fUgxhUQH6ejFyngn3bh9odq2r4S3TeB6vicF6T80ZsbOeM8TiCYpmOBJQ8w7Ty6bQKcX6qAiV5qbbG3CUJTbQL9nIIPEBA6F8a5JqiMKanabb5RrTvAfyw2jnIs4QGhoUAB1eJydxGF9yBmAFCAN79lnOA_Gy60WDhNRMCyS1ZIfSxdvZJMPeCY5uvpi7zb-iMmtoRgJpd4b5b7AnFJbt-QJaXg6O3LngIYOnIIacVZ-jUW4CTsrZox4xtZir41b-OVNs8SC4z2FlpqJuDLgQ8FKLyxTOyGhEO0yhn6a55o9zByrym-OvbQ0ws2vxcZ69x8-axuw1QZQYrDutYJbTL8gMhbqkAzDJcC0Zb6LAeoFccStg71GsQdZZsQhE97HXfzP9IxlonkkUnvqGEExgYwzmwmne5_l4IVzlRLsQcTG6LJyyfEWfvvrBHHgoSvvfokC1Y4rFS04sxJMHxWKHUFNXardCy5Kp23nP1oI0km_ZiybPoMkMreNzZ7zF7yZB_9tHR-86x23yso19eAhriy6NPe6EsdvblSx9ALiilSrGjRTqKDXugMww6kbp7IBQphA93UuF06ksnKYjM5515B40OAIbsBpOVzsLwFoCZaFIj-nNdNBBJ-NUXGuqYeSoiT2qTDhtzZzheYbJCltxsC9Kk_FpGpgn-SknrLIpxwhjQ-CxwJYzBiDjpnM=
+# 长耗时计算的等待与结果轮询模板
+
+**适用**：一键计算类长耗时命令（`GpDlAutoDaylightCalc`、节能权衡计算、批量计算、碳排放一键计算 等）提交后，软件端进入长时计算。期间对 `galp_tool_invoke` 的任何调用可能返回 `MCPError: Failed to parse SSE message`（错误数据含 `OPERATION_...`，即软件端操作锁），或直接连接丢失。计算在软件端照常进行，**不要重新提交计算命令**，按以下模板轮询直至完成。
+
+## 两条硬性护栏（违反将导致执行环境重置、连接丢失）
+
+1. **单脚本预算 ≤ 240s**，且 python_executor 的 `timeout` 须 ≥ 预算 × 1.5（建议传 360）。脚本内累计 sleep 与调用耗时不得超过预算——曾因单脚本内 sleep 循环约 480s 触发 timeout 中断，执行环境被强制重置。
+2. **分层轮询**：脚本内一轮（240s）未完成时打印 `POLL_INCOMPLETE` 并正常结束，由 Agent **再次执行同一段脚本**继续轮询（python_executor 命名空间会话内持久，连接保持）；累计约 20 轮仍未完成则如实告知用户计算未结束，建议人工检查软件端状态。
+
+## 错误分类处理（禁止盲目 except 后一律重试）
+
+| 情形 | 判据 | 处理 |
+|---|---|---|
+| 软件忙（计算中） | 异常含 `OPERATION_` 或 `parse SSE` | 按递增间隔等待后重试 |
+| 连接失效 | 异常含 `closed` / `connect` | `connect_to_server("gbpmcp")` 重连一次后继续 |
+| 返回内容畸形/截断 | `json.loads` 失败或字符串截断 | 保留原文片段打印，按一次失败重试；连续 3 次解析失败则停止轮询并人工辨识原文 |
+| 业务错误 | 正常返回但 `code` 为 1001/1002/1004 | **立即停止轮询**：1002 须重查参数文档修正后重试，盲目重试无意义 |
+
+## 轮询对象
+
+有专用生成报告接口的模块（如采光的 `GpDlCreateReport`）轮询其生成报告接口；无生成报告接口的模块重试 `GetCurrentModule` 命令。
+
+## 间隔策略
+
+[10, 15, 20, 30, 45, 60] 秒递增，上限 60s——前期快速捕捉短计算，后期降低无效请求频率。
+
+## 模板代码（用 python_executor 执行，按需替换其中的生成报告命令与参数）
+
+```python
+import time, json
+
+def _call(cmd, params):
+    try:
+        raw = galp_tool_invoke(json.dumps({"command": cmd, "parameters": params}))
+        if isinstance(raw, dict):
+            return raw, None
+        try:
+            return json.loads(raw), None
+        except Exception:
+            return None, "PARSE:" + str(raw)[:200]
+    except Exception as e:
+        m = repr(e)
+        if "OPERATION_" in m or "parse SSE" in m:
+            return None, "BUSY:" + m[:150]
+        if "closed" in m.lower() or "connect" in m.lower():
+            return None, "CONN:" + m[:150]
+        return None, "OTHER:" + m[:150]
+
+intervals = [10, 15, 20, 30, 45, 60]   # 递增间隔，上限 60s
+budget = time.time() + 240              # 单脚本预算 240s，timeout 建议传 360
+n = 0
+while time.time() < budget:
+    n += 1
+    res, err = _call("GetCurrentModule", {})   # 按需替换为对应模块的生成报告命令（如有）
+    if err is None and res.get("code") == 1000:
+        print(f"第{n}次查询成功")
+        print(json.dumps(res, ensure_ascii=False)[:8000])
+        break
+    if err is None:
+        print(f"业务错误 code={res.get('code')} | {res.get('msg')}，停止轮询")
+        break
+    kind = err.split(":", 1)[0]
+    if kind == "OTHER":
+        print("未知错误，停止轮询:", err[:300]); break
+    if kind == "CONN":
+        print("连接失效，重连后继续")
+        try:
+            connect_to_server("gbpmcp")
+        except Exception as e:
+            print("重连失败:", repr(e)[:150])
+        time.sleep(10)
+        continue
+    wait = intervals[min(n - 1, len(intervals) - 1)]   # BUSY / PARSE
+    print(f"第{n}次：{'软件忙(计算中)' if kind == 'BUSY' else '返回畸形'}，{wait}s 后重试")
+    time.sleep(wait)
+else:
+    print("POLL_INCOMPLETE: 本轮预算(240s)内未完成，请再次运行本脚本继续轮询")
+```

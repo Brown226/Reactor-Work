@@ -1,2 +1,188 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQhefyeaBlwyMQQ43lPzHdFO45yTuLbC_u50cof7fVIDHB33iaDUSBqfO7tOntLkvfT8Ou_AuXRjK37vC9gDzQX6FvUhEb5SkTa9G5ojSLHfSwi58TMTf4pkocOs8iQYlPM2dqw5fR3CXmrqrc621HwBWtPuieQEtBOp_NC9TwBcLAOLhQDz_qKqirkMyyCvktpWHeSK4HHWRmzVOpbOf9zPprHT7TC-ZHISGinqeMRAmrZCRL3_U5y3bunLzjJGh0toLyB09bWFDHICebkRql05-rhHImQtudOkVdS9fMVOdZ18iQDgXUdT9sjo3rQXhFZ3hSGVrm8KpazXjIhrgYPmrYiLHL_zue4bTSuzxTRm7ytIJdC0zMCNrcTlYYSmBmCpiNgJALoSIVjN_jFnn2YFHNLclATlKW04jQw6OqJ_ts9gZ-4Uyoc1UWIBVhI5vFvbg-_dUw0KmD0clBfi-_204jp-Rj7448_YNLezFd07hGwNub_4hJ-gXR43IKEPbDCQPWzRfCpDGMNcdshyyTCO9BYiksaB7OjfQwW2yH6XkRXDvO_zTozcmMP0Sqa7Alo5sFYq5IVx55Zlpf1cYfYZLU4F7gaznbRiFtLNeHmnKLYx2BjNO29itS58gLii4v7N_cXnY9JB4raVeEtPzcbsRHaltjBAT1OlLUIxDQq9HRWvF56xjUyMYqzE9G-Ax3uUt5HOJoFf_ARdXVLTbUBh4lXlVhsAeedOjLpvneUQUY0gWXH1girqV463gQSYaECgb07woiUm3keti7olp84PmM1vYXjEuko_Rio54RSle3Zt5QbwDrxTjLzd9xlmPBferFf6QD--TwU7zErxCmHXsv2n-jCFbulartWDAS0Rh8mRQkH7wYh1iIkh9epKwYS-P90jR8yhPRzqjoMMCU01dJe1kPYbjWj1jGMLWAHQEDaNBw_fYr6rGLH1lojalqedhrTyvfw7ZQChJ-P8BMpwOZ20YB93e5qhUXmU1oasCdYN7zw5oDu_LdX2dZS8YJxPkzG0UeVIwdUOZ57vVTBs1LdYLFMZBfz6r1pI7-FBUfOLFFFzQxE4i4Ne4HLIv3gvA0h32E7SYkD5ITVcodj7VRLPeJ2b9KM2W8uEx1mAiPMgsObsz-ycPwG5pQZ28dLq7XJ49Vx02Phv5xuAybgBBaT8Oqo77ul_SKPd1hOcX_HO2nuKK9jGwT-EoOk2K3RdBa5XYT-CL8zqIopJhr2xKTtg4zbrKJTZgoTk5iAbyZcmrINA5XDc1Pbjp5xy_X0Yi806Q62pTtvuwlne68FF5Jkmj_3jwTMxCwvVxs4oCXVcII9d6mEibCp01CgByctfWNRtUpNm1zg-taGQJ22VTetpUDeSHQP7-JxVKQhBRGcDNdPlq_bJrxmsNghlKq6Th9kjmRokS8wFFuql-ODOb8NcbDCPG5eY7TJt9bcEB1KIaaX59F-D7S7wA2ZlbZhxbGhpX2bRvv7EcaGhnslGQRLSQ8C2cCh4AkWt1tSugIuu6suDEFD0ItFjnmsB9k_qZCAG2PKXpZWSEQ94qaA9wrEh7u4qFs2LRtnX1GyjslHmPxm6g2ip08iA907s6FZH2ZH935gHw5LIU3BG9P2T2mZRpfFZGk_v2ru8jwY_84apnDOh8N5SYKbCUOhSAZMdcOGRyfr-Lp5K2u61lL4LfA36kBK2JEGXW0d_jqZFnluvoEjWSIJdJ1qAYXNcnzJN6dIU-mUMDUZf9xWN5CwGS9yaOq1LddC7TvWFBtU-GxpQqUA_S79KPUneq-UbvUAP0LizNKRwC5esQuoEsnOhzZiTsa8yYsL-0EHaXWeiTOZmDIdcvE5TVbZBCA4LvwVozP25GdjN2hGaN9-H0eXGdLl-raHFjgLjd9ZOf2NnL7q-X23vTl5pkijXV9HYR7VPAkN-4mTQjAUzGtgnOX6Akiq_T4Ci1Vg-1uDXgH6w30gpO4uOkrY5PaOfw6vK4-gbzFYsO7qJ9WzLovJJeaWj1-tBjlukhvtYlkYm6NSF5FPeEZvvBL1Eppnx4z3Lx2NaUQXMPNtCPBFcx7c-rWq0lFKJ7ExdTI3EJ8kIWYaweWvsjbmXcBj0AZF2AzOdg-6gbR4GHm7Vw2TtkRpI5tL0kwCPNyQVPEp21eqW-_JsAW_wPIlNXsI_Up6aQHRIPNY38-Qq5SaIn9lcXxf6uCcAAoXXOt5cPZqaK_EaftJoEHR0XbJKudRtyPmI2_HvORI3e_y0Ht3xNE1cVWHeYKnpFJItOsDUf8f3Sl21_EQamuwZVmE3zEKevnA3WzZ9IT2vA7MRBlzGJCKvAjCNoqugi0xstQwTNlvcxbUuoL9BJizzLL62QWKVUO5FgNWbz9JIDIorg8EZyM1f4gBJrUez1HnpAkBKINBOTqSNAAEUAorfpvIev6URFSiaivF5uif4k087w2QJrJBOCrxAVK8IdFfz8bIJbqR8DJxHExTB9ZuHpzXaBvYUxbwLdZRloyHQFdueEz2gZjr_f9dN700HgF0NKqNtFSRMUlLMUgvl8oNZRj0CbFNXHN8V3KXw2E79V2PrIUAWy2sxrsXyCdwDQYU4JLa5YGRScKsBYYbLpCJi2v7AHYesgDLgutQUu4xy2lILh_Q6E68ITrrgmXb6hXgaz-pBKmfSLYxVKTfAE3JTmmxuoL2b9a77jfNhCZNzXGnOjhkmCMa0rSzCAHrNg4UPhMtrbo1PydnS-5KVDwlWxeV8_ocKkx_PDVyXfj48-L68Jf-m0Gq_Hs-FyTzpBq3yZh8061s7Y-1LFOuBrzF0mf3u68kmeMcZzEpCAWlaWEh4Fux6HkZyLlEzN3fMHS3hhahWDpGtBY_4YZ2eFbq3-0XWvcuJ1GPjUr8tOIDADBOsl8nUnkJU2hyBvZ8AYb4HZ2NXLlwID9NegoDdmwo0FNCFOR4kZGDTs72LVdV4JmGPaQ3zNoKFr3ERhj1Lf5zxIh0Yl9HXlvCk8XfGhqR_ajbeth2oNCJRBchiH70rrjsO80kT0x-zZyt7299nFVVMf8JVGlTZ84xn1GATI3QAMXmPiUp2O75ktWfJPkb3yiQBD4ib8pw2szpmPHujQim9gDk6tj7c3oABn9SD1qsq2fGYzH3lzG3vb5ffxZV8EB0OuuMo50MS5h1dYbnuPaQ_drXSghpW_ojx0Qdy971OsFaz-gwEA0-lFLp0uwXRuCZe31ioXkJteh8dT20WsAps_BRSSvyKXDlQ260jHnInPiI7zE4QazfEC_6miW0P_-G1_bGQAMyabJWUUAzU8UMCdRjaHpEJU1lxWyI1WhD2riDUslPgreZ18DDsowW8noOH24RLusx5FHH-z1nwihAcgadVDca1HnF-HDUv-4FUG8P_FYqBEH66izFT3nFOtwB_wPH7dBVwTKEidhZ-e7bpO6y7Mk2WetKksCXb8M81OI3nUn9qXkF_JsVTyGfKZU4XW4GClL8yfzNQZQtx2uhzWy5HyL0Mt1jk843rIz27zdaKzdilb-Qv2NMhxzikdOUNHK5rJlsm2zNVHUQqMNaeHLsbOlURONhnz_fVPg-kUBSlBo549NhjBBFdSRwSQTGa9fEVUP4q5JuOLLBOivoZiRTQGzF60hiHOgssxmisGBFPo83CGW2Zw-8VrZPWvnsVDrPMcK3BkhYJ450ie6kemr2wPD-j9Cpt_12WgN2s7_qOl5fU-upS13efKzs29fJBAGnUQRfmDCbr_PwE18elGAQlFpPzUn19bir4y0FNyEehve4XqF8I3_dxywSXeoKaqQnt9rUraLslKm0HH3_jAMG5Ke2TxdooWILD_I9LHuzx2LJBVgYuD6PfnFL_w3YB4TKAaCLQHy4DgFwmv70VC9RiPww0Schs6ZmmuxdB0FG2_W0UbELZ8nL5KtoWtRYeiVKCBWJr_F4icW18zhGg_OCv_CdH69s5L0f65EG3ZuRcAoEE95b2i-_6AEWJ8u9DyapLSgmdiHXmy4_862PIOLDDrFLh3EfGdPulMLSTxUrM-IWDlBjVkVGCN9Lzw0pO3ycAm8xJBcjl5oFeRoS2w0O5ShSw6kkFmOhOPesn6n-Uiz5tNaYrs6I3nW1H7DX6ubFHsaKwk-aTEYjlDubNthzCGaME-ytz9nK_eT8BuBcii4RG7jIy6gyYHMVXc8VUWORUQUD8lWKJzwduNBMMub9yJAhnJQuoa7ey9h8op4yqDkI_2h9vIaTz_fixuLsxb69X2lKCyHrGJMgxLXXWti4GhpYWxHJSGy31NnZl_WZOqvqBDoT6W8u15WkpBhhDYNH1hJIHXA1fLpryF56h8PBaV2hLWvxm5gpGPjMDzuZ1Lzd0PJQWTzHnRgDv1QbzodxiMYH1_UGq7-i9-AWxHNhKPMgSB919xc5hivqd9oenozpQFbIYSRSHUpuwGJ1_nxfc9xIJtLGbcx3A4HusjiJT-hSJAwVpACAvYiSuq7zhk_mflsAUKCXjm51u8q_Jc2bPy47ptWnQZ6oM18dA3dvYCFaFh_NvwiGxsZiEmgYvrli0PQw0iJbgPdzpz-WQYu4LC-zKKF9H01aowDyehK_YwgQdaCB3PY6A7xk_XtIPIQS4elFQB6nKDutv8p5DTT8p035y_UM-NiB2eXq8LeLp1CJdbPW3pmN2KtwKMy-mbwjeNHy2OIeGmfYvcz3tc_BJreGUAOKPQWBHFdOkb6vdEWUQFjbSt1g_uryxR6E8GLVErncE9z1WDurx2mJh2YRy2sZ06ZbSi5ig7L5Gjp0eLB9Eo8PZiUizCE4jqJKbDA84qe8Y5HT8S6Fn4b6u7yWSGFViW06avuFXJYziryxr8SSObSVwznz9j2q7hUF6l8kwDnZP_Z_GMd3uxPLPg8AqvnKDdGmzr6QKsSdZXuUjQKgRX59DGZvE3WSRGhDahrb0Drck_AoZfeGnURrfgXyouOUA3bnvhQgJC2GBpRJfsFyHrjXncYguXPRw_mlYL_Fb4Yp8G8EDOwywuQwLqtwe1__6dAjKPp-qzza4ImdsqconMkhRAY58zecNHnoWPJGzRV2O0UosScj85-yuk0xHZbCJ_UCDU1DgKUu3sfLXaXBwu5ywsrf5cPp_uUTmWBhz1luJf1R-tPjGwYNHtF2pYsrSZXWVnasgnAOELjPfhmTDLq5GCre80WxAG-yoXE3hK3ggZwOnupTlp-XdRHuZm8BOtGR8QKlgrizgsMNDBj3Ru7ZXotHzXaV7DTuEp93tMAYMILWxyjfItuKicFJKZNpTmZtvrSo4LyiHR5WWjWlb2Z6_72zhEUK5QM-cajRWsg61D2XqvVdE6cIEY1DrFVTDt1hjMQEfrWXF080kM5WuK9JANymkx9xL0JjBM4HgVsULQcbVWjQU4eY39IMQkQKJskGXIBbNtNpZgl-JetORIURF6jVkYtqzOzrdY15Ln7f1dQX_C8xE4w_WOAxya9K5RlTkfVj5BNCB6Ec99fTASIY6oi3W9r4OnW1lQegkhNwNy9ck_uPyky5ohq4B8u64m_tPusgrPSUwBQw-7ns33QNSyf_pgfIwgyYMdqZ4tiZRl3gN9SOcNxsfMldgwTuYOO0dGI5-BMeJQ2ZOze6F62RzgfApFFuHY1_jr4zNr8_pkMDi55rEdQOaJbKbZpyT55fkDcKc3bxKJrCAcXy5VZEY_le85U08voJjE0WE394wjv4JARG5vkPM7w5vBz1-x7yHn9QyTHhsBxQdK1Gzte0iAQpAH1s_8aDvHCrjQj6PHaSZxGUmL_PjaEAZFbuoAnjTZOib9wFTyHy7IdHa6YmsEWpN0HGwa7L6yq7_ZQs7o2F2mZg7ykjWWu65JcF1ezKepMQyFq8clqmdl_rd88gaYYiLq134IaLz1e5KB57D2lR8QvzAm7Qq4KUXrc7TgkkzMw7ey5DIWpmC_AocRgAnZKbZm0BVpPUeMRA5_tJLXqNaJh2cs4cxlMsI2mWVDtVWkOCFMIpSWZtLgPJOiAMWBX8F39T1b-PN5mqmo6G_xADBwmDV4AIe2EXU399zJ5WySpVUFNZzLBShKwjS3iSRgPKIgSQNkrTmJnMbBe6l5s9Uvdc6_r2Gbs6mDTBI2hivYADf-PRAPoSN7ReNZ8NlBcpl4GeGo16_SRWB133uHY9FLM1XemRyPMyu82b9emvcZQK2Ty8zovZqxZ9EZ8lrQKB_n5AjlYEXEZd9d7VeYJiFuwhAS8ej2IPlPBHEwHW1ugTniRaKwz9KS6luesZ5d_-uuEG754LsLhf9KGxp6-cB4MEYMrAh9NELatHs1MzECYUZXYN33ETr6PJo7wXIddlXBkHFfiD25jLW3G8AzrhM7Svq61hdQYdQz6QyLob2wTJo9nnKzSrWaRj9ZHpiscB_ziEQMNNYzzKHHuJGy7C5te3t0LQa1pWexO0bRDQFLd5ozptPmDmCllT0VJOi2iAhpBGCC_bf1fTIU-Z61HpSgWsOjYAJnMGFqxjehETPgsAzxJ93L-tBcYtXE1a5Q-lVWDsa3yXJr4E-mkC1n5ootDlzl3XJPJJ3aeISUI_tlkRj7LBBiBPYe1HA9zeo3fvccF4JPGEzvhOZPPoUs6tDMyRO_fQ15KRFGYl-_kfygwxZRAfQ8ly1biOVIgYXfvniD5pPz0Jwf_e_7sD02PJ4ODa9PcscbTvj12SvZqF6EKpyigKf6Of4_Q2wHKYEhpIipo2VRM2TpHn_YZcAsf00JdKzPEfNMOXFFTioMf6tfUH_3FomOJ_dw4rlfwRpdsNLOoZu329f51uBXzig133Bn06JUqXxqLihgpHnfOvPtIWd0S6cREIg-owXChGqHeIqQOFxSznMVoM4Ox5W5tyBT4eDorBHjyySrOJZMWj8fKwo-OGbBMAx5LR6qBEi9kl7Ds6G9_K_98Y70XWkJ9FQ3Wio9_mMffhpTZrPg96enKodRGM0eTfAhuHbdBXeOLPtnBxzTqZTfZA-j1MeSGCwyBHnjXkUZybgmHJkO1aMPi0lVWkSXfciAZWEJLs6uoAE9rrPbYicy7chzY-o90Ayr4u_MLTQjNfIBZ28oGLFYORj9DLULirW7f7SaBvVktu2Iu6DzOXQxlq7dbPVQ_FGgrAoKHyuZPifAc_cmLH0xn6ZsUPbdSt45sfiF76UDmsHy6ipFMQQ1kVu-6AE9rxzvZvkK1g6i68SRdazrviSXX_emgSsY9-eHndOdY4bQ58fPE8dBlNwIB5Yu6_8TWNruhUdzKs1-OKPF7_wlyRiyOLyJyrYPouiKBOjHbXgH6h56QsnRvJT0f0lGxcGl5j-K9P-bNk-PnAdU7pnFE_wyvGyUwGfLt3XTANapyxCnjC9yg4SHUbao5h-Xg-4yfYmdtBrgBojO3KKWr52SOw8L0kbZYZUDWZgHDaSkw6vxNnb5nXLyInInmyKnsem_XA_4Lzz3MmztWlTVUnOP4v16e3BgWtq9e3eJe6LMIGdnh7oP7uvmcRq7XmAzvfNwjY3BsESvS6MMQxAHsLRJxU-WgdP7kj_bK1tgia7ymyrBmsv1_IRS4wa3QI3WeLcA31reIKxtiB9pCBita3aPis2Qhs-sCa9Le-47IyBUebLh6LPdxuphhw8QncLnW995k1Sc1yJ9kciaeQ8W5Xyf9J_lP1LEyLMohTy7VZfYeVZ0IJrgzLyyue3j8-I7pWgu15svQXO4Kw7R_4aHvnb6QKr199eJWcXCv3uxS_dPu9AvOCm4G7P32BjfL8pauv0Vo-ph3crX8gyYVZ8t7LyLVqwQVKUmDvlUOTzCdW0HNU-KWAqxCFcvXsgT62R44IEdwpgamEgH1tJbO-g4sDcGGfCcFg08rf8K3rLyPPcdE0bZlBGCs-9H1XlKeLndbae-lvDoyGhPRUQE3CcBEDjm2ABK-LNPkyX8PyfLAVFoBg4MLCZPnK1rryoetbsJ3PpeULlnUBGTV85L36S3Q-OsnLsa-9M12SDM_OLgsoMPqnQWHyg4bRYFWUlZtdo-UbghdWR-aJ2EZ6yIv0NwC_m-p1Qxgp4IK1qiq5LRP1Oe6DQmK1QdrDdOk1MMLbtzLkK6yygsqluFEFSMdlliabhmEkYifMqfsrcTo8kkegcMtlazX0iW90VS8G7bVOKUKvlZu09PstLYZdiz1ZqcIbdjroD_oKvliunFu5MwgrOb-P-QC2WPqX7QmlA2rcm23L0GKolF1w8mXWUFWOjHdH_1jJOSPFg6ANoXd-b_rId_a4gglUkFQfr2LbDEaxZW2PhAZ0kGl_JiP-LcnZgko7r48WqIDnlLZJxllFzKSrV0T1m3w0sE9YUKMIsSpeKclb06kkuyvBA2RNtMfdmPG0NV4_rBm0RT6cO97lU6WnlC5V15SwTRzEiV14rIGqIdwQjDAWsWImfCETIDx2f9UExzErXDnWsz3se27NlFtZ-C1uoh3AMdeID4l2Sj_UxyIdo2H-owWVZGMcX8VMPtJk7VnHqVO9TXSj15-L32x5YXBHuR9UXHoHZirtAhnWJeSKizhD_zl6uXgOtBxeQ8G5EaRlCJHzLBSQxNSVTS9Dwqq2QRwQsNG88IJrOmfalSSaggAUgQnRSIwYyXDrbC0RxP6N8aK7st7kDMSGc56HUWodZP0kmkXfkTLBBhIeYmHOv3EQ44mzKYzHXnj99GVsG0yyf9H0IyBcsixfYTpoUJSiqL5Hf7rTht9envujXqBucJginwrkEUgKF2Gb5a9_CuPXmLpTsY35df4AwF-IGcB-cvzdwL9y7mkeZK6J_mdAd52CZOXFuLqLyTlwKIuyHdpQXKtV9KmQnyVPnMiivREXm_DxOStXto4Jo1F9aSzyoeCh75fxdB19yrw0WheKmKCGYMe69zsJECqLquFWm57rbscUkE3gLwZmGI6L3D_jjbPMWsl6tugF-FQZb9SR1Dd5LjoRYNyVGKge1zX-UPPlbn_INE6X8c6kE18UaHfDGfCAyXJABqhBPDI_DgrPystYTQuv7f_GJctG99-wjQeY4hDiZe5bbVTNYyRYQ6T44BQDyBhg6BnFLm6p_gjXMH5RYZ2-A61a7hE3ZuECx9n2wqWWjbWul1YzjjsLTg-f-hUm3ylYht2BgWGjsP0B1Ziha0Sx0NZgpXDlQV40z7PZb0QoB3twy58Appr9QQnm854JW4wnM52PaXLE3ZOwUFtVEOq0z6W-HeMpQFMkzi8xcFKRBxrHePZ6TQQJwJyRId83wBJX2YwMfz1Z7x-v3xKosuwEPzVo3WCEddjoJGUZ2xNCoDg7aEpeYdGww0l25xvs_Z7jrWVQmd_OJFvsn-d2B2f0jTGHVyYObw7gksL_hCDH0P4j6_f3lMvlHWOY_-gSsgRCbBckHIRdZj3fU6pEnfc7uasl9LwD-j97QcXs-pdgN2aU_YxzB6CkdlNe-Umi2ILeVP_RcW6NC-QMuuHmmD1qT1_A0ToZorGrW85zTPFXDpLugod4j9cAFpiHytKW88a57b40JwWtoIyZCkjGMxcWDImIlpt8i9xaJdX4dklbQE0sLGiOpPCfD9f3Coj8z9jPfZxG4nTpvQWdDZ4Z9l4XAxp0ptf3OjJCW6wcT2wTLmSAWaRDfLeYBAbVwqPK9clv6qJVpOIimYCP9NEe3xPLTmlSjHj22VmShYjulPmn1Cu5yFSySV_C6FX3uYxiNw2M79M_73vvHKsnBvkK-KdxJ1Ih7iTbPI26dR2qLE_TS5hYsYqM7Sfpha3dt61yltHvN-uZfzGoBfaKuv-TP1MDEY4Mj-w4hHhxMWennfm4deWQrO6-YqaoaPCF4gmKdLuptMr0V4XODkt-ceh_11CO9hcMdNfCD41hs2p_PQn82wS-JlHSWD-DUxKwP84Omr4CRbZmM8GcqXwv7FtvDV2JN1C9nw6hD7L4irUQfROBrGXE2M09-ZBsKJ-NgZLpKlVL5S72q66YJEkcXELA-X-vFPIzlGOapGTgqOHUpTHvRAGRie7jh9XACXys8XM3jzcQpqsCf0oK2bHJoXcFA7ARgW6j4sFja94a0EC7LHSz--xfEM1x-g8cn6boyU9FICgIv56BPKeYyR9ZWshA43iqDD_NkoAuAaw9HB4CSDmTlMFoB37KLc6K6lyAyMmh-NBEnZAiMeyv1eZittr3AajRGc2o17gfpnrX-wHzu4VpDam-aN17wFpq0MaORmd7FxAfvK4UgADrCZZrh8tBWffVVFaIO_pAdLGtuNgEX9JDv8Hvuft5piGWecZDTW310QT_k4HvdPwXOjmH1Ztdyr1vsUWyYPtHhJpfp2QPfusU1rqLaecvUG1sObt1wGaalYEa_hAkoTxQOgDnLIekTBkrK_yLNjVMCRKgOjig-ESV3GeqYvybPr8sUWRZ5l3ZTXWv__rr689rDGgJP4dai0_h5-OLTqmFBY-37ukq7pLB38trPQ50amLFPA0Hmt5LYBQOMe6HKmp5vLPgQvSRnJtdF_3x05WwZy9EKVgqvDN5HrSP8Zr6jyG0DmfXetpw7U0BGMVVGvnXdOW9sn9bzU07FW0TogvLjISVPUBZDzQe5SNoUIR2nwFixc_v7ftvkbwH49UrYIlC7bXA8B8ZfZZ7rFNKVF18-Ps2jMFTfESwunc1C_kDUZFC5nBZ8ha1zlQ8AqZPTvYwdF2n0Chvg24B_XNDDwZXGidemaL7x_V9fVXqYNVAni34R5E_BQ-Rh87FRmUS3gbRNohMwIVh3s8OZJQIdJblxdfb0l-2Urk_b33lksZr2K4mbcm0ocpZ_h33nrNCdWgoKhv2xTuOvxZlgwSs5xyiISR3FZP8Y52Z4dfLr9KR10ySeFurb1I6zj2woTBjQWv8bMv1fyDP9Z162OlGnT-vipmhmE8LPqT3jAp0YToftYebuFaol5G2W-np3K3lRnnv_squRk-VZgZ4ybGA7fH5su0ixICr7FBfvA7x6V5InT7fmjzGHUWM0_6gXXeHW93V30DtMv83YT_TMO38exo6RbCmhCitoYKgCzXm5706awFx0px8ncoIaIfl0EOkNSiuGQhfXxJ0U5w-WVBFX3vKBGgEf8NVWO0pbt8-0PrUUJ0xRo3pCecRglIPnv-UqoCcOenrTumAP4NjHbvk99m_jq7hAWw9JX2-xhxg_0E6a3mKYRyjJTcqlBt2y9OAyQgGE_gExOkFBd6mCrP1cWJ2AdZBxe8Bf6EtHuo6xs71a7H0dTbCyyPTdrftAKKkwEaJMJvlqhCrn4E4uePWRQDt9IaS3rR5ahhZQhD5rOVmIosj1NRbsg1ggP0grssEjDbkRg6uRDabyhQAlwKkQX6sHqZGUqtqVywVzuz_VUrTNEOvWU034z6OMJq636P26EheJYZOu684o-A5aOfcetUtsDTpvethLYcisT3b_3EppKO9TgTpm-E8cRoOVlv6Ig0w3PKiRNzYisIbzeQVwwXAzQYkhsoOkaBi6Dq9xtLDzTzB0_GhEHZTOazthiBj7tLr-ClHheqWLfv7i-8lOcZpSW5PJKcOwqYL45tBFj8AVrX8hoBz_dVBLahF7UrykAEmvrg-D0k1BFpNqFm_VO940NkpYjRQvsXdS0iWJebArcYWZFxvI_XHGSmzTCdCzcMY1LNBerq9upya3OZfVUvCPnqvKVSA8W3BEo7AsUTBbdkt64_tYL2T54uJqFTGfia4kchbFBCdgXXfUe8E825ZIaBqhfQWPefunjPF7Xnd59T5NKs0FUfjJIrdiIqyGcd76WNFMG8R83yROp8YekihDRyeJIR9sXvsfcnLkvakVQK2equuLqP233kxgxjfX4QdypuZkQvPUDLei2fEcfG5xHfGsmj1zzuOAPyrk3H2cVwnuiDxopjTLfGhTbIqVn_eZ8IQwLIg6B9toG3L9kGLPEpZ-RY_ydQrPWZzhZiD2MCZnloD5nDesJnHdIDvXHoOjqGI_DwGnZozP-nDRG0Td9D4fnNvECTuiSSm6LggP_hgOngjwSW-PvpuL1jPnzRnB2E-bGDHLK7GmHevLNHeV6K6Socw_3Ee6DM9vmkJ3P00x6QY5eztK9KJ7zCkXbdmGD66namudNi9efKEDJ7w7yR4uv3w1UzrY0r3i3NbJNsoDEfEMJ2jXEz0lrsy7Ch4OZtvBkSvGj4mJO_Ok1KfTyd-o5ZHGg5GbA_VPVWaGjmKSBLWQBWYsyETq2RZhlh1H0aOoS71DTDBs-Z1HmgqZAn1sqA_L8xakSbQN4SE9qqbjZWwfcEmke9SuQ1bdL4NFTfWHbO3Kq3kItaUMpDkgv130ihq3WqbLGPPohSFhuE0wXZO5JLzPJ154FjkLBnc65dcSq6T8Sa2uu4L5z6UosLdjP9xXs_SU3nd0UdGJUWKMvUe8X8aw4pz9jYujVk36ZBrG-E5_bmqW9z0Bl2FGDYRhq4mZQILp-k0JgWHQJrIj66XhuYVs3WIcHavLrsrzpJDLPXTXt4mljL1IgV6BPCmf9bOLeqoCmvvh_P4xYIcKALbeaAiBsOUtELvv8kg1ERMIvJ5BOOvdF-MOeMAtPXSN4JzNFq4BYaIj1ZgYKUsCOsZy951e2CJ-FMQHB0RahNaZxMkIakK1f0pGqeL5cVh1hDrvNzGqsuLeN8P-QgLwfMFZarh0uNdzWlzbpQwVW-A1pDrySlK32SrU-xCFPFdZ5I8D4Ip5RQvppGoOEE4yn7EJ2Fvi9ZFV5FxjwuuceMx0HScvNYN-AcwWkWAJNKuLejNCXuJcI1bOGeokn_i7He9Q77ocBZtmBtZW9rrR64moBzfBH1bldOK4ATDVtT8Y0JVCCu3mHy7IP9LFXduNTIsZyEegQpIEjVB6g4se2f9J_UT6xpKllMqVvw_SctSs-QI4GmDxBWCqDI0CScV4hJgRu9WBQLiPlgrk9NauIhc61DjbiZ8NkKqYs6DriQdUp8OLH_MeeyIplpHFUIDT7FFT3TaN_47VXA0l-LkAYkU3wPku0wpkxWT3yqG9rQBnnz4RlorYpmJ53xv_eWSQsBhVR3lbfquXH1uN9sLgTaj8ObxGY2XcaVmIrKIwD5-8z_bSxQ_YBK9Ber16tDyZvWq9eBFD8B_BqfqpPPYQ4ytPdwsiQtyN_flq1p44DsVdJvmDiGze5teV_7ioiTKqnnhY1w0aZXTyWPWf9ifs82x5khOonvptdgt2aiStLh1AST0iNU-ymWwPmlf16LRT_aLT_Yl9ZU02qWMp5VFHLS09Hktuv-71MN3sl4wqkJSTcIjs_V_M1v0U4htRuh_rm34HuzLDmGeHvH5tDXmGUQcw-nNvYlp4IXo1URdlVkGvsvrAfhMW7fQcVp4NASO_tgBipmtm9C3tEfNLGZ0-B-Q-5Am3bflI-Gu5a3g5CEB45Omg3eqNp7ZnUgOmls_ZvSfl-Sbbh1frsg6DVTgw8H2rargY6ePxOmjYwwTdB3WnkHSb3QuLAoMDk5wttYlbz1VZjYTnSjvYeT4oSLIq79yMz4_wtpnpnRa22J90Nkhah5qW37Tw0Ry16Y8PS7ulMWZUWKSvQ4HRglyX3ZHjNzVwErTXroMQGGyHMhGObX89kIpfdsYfJyCGzTkh2EheeDCp6eIaTL8r1RcAcbsjTK76Z8UNzRgP7AIxF8RTUxGXgEnLtPwnClzMOIYUg2a2bMTdt8mxZJIEFLM62kdGVxjX7uS8frasJmx-TZg5cnr2pcHx6cLh2axxqmi5WrXR4VZymtPcYF
+# 图表
+
+系列直接引用单元格区域，改数据时图表跟着变。示例中 `ws` 为数据所在的工作表：
+
+- 第 1–7 行：A 列位移(mm)，B、C 列两组荷载(kN)，第 1 行为表头。
+- 第 10–16 行：A 列楼层（数 1–6），B、C 列 X 向、Y 向层间位移角，第 10 行为表头；G11:G12 两格都是位移角限值 1/800，H11:H12 为 0 和 6.5，供画竖向限值线。
+- 第 20–25 行：A 列柱编号，B 列轴压比，C 列轴压比限值（每行都是 0.85），第 20 行为表头。
+
+图表放在 J 列以右，免得盖住数据。
+
+## 选类型
+
+| 数据 | 类型 | ChartType |
+|---|---|---|
+| 楼层指标：层间位移角、位移比、楼层剪力、刚度比等 | 散点图，楼层放纵轴，X、Y 两个方向画在一张图里 | 74 |
+| X 为数值的曲线：荷载-位移、反应谱、时程 | 散点图，带直线和标记 | 74；不要标记 75；只画点 -4169 |
+| 按类别比较：各构件、各方案 | 簇状柱形图 | 51；横向条形 57；堆积柱形 52 |
+| X 为等间距的类别：月份、施工阶段 | 折线图 | 4；带标记 65 |
+| 占比 | 饼图 | 5 |
+
+X 为数值时不要用折线图。折线图把 X 当作文字类别等距排开：X 为 0、1、2、4、8、16 时，8 到 16 与 0 到 1 画得一样宽，直线会画成弯曲线，曲线形状全错。平滑曲线（72、73）在数据点之间会冲出虚假的峰值，实测数据用直线连接。
+
+## 建图
+
+```python
+at = ws.Range("J2")                            # 图表左上角对齐的单元格
+chart = ws.Shapes.AddChart(74, at.Left, at.Top, 480, 300).Chart   # 类型, 左, 上, 宽, 高（磅）
+while chart.SeriesCollection().Count:          # Excel 可能按表上选中的区域自动加系列，先清掉
+    chart.SeriesCollection(1).Delete()
+for col in ("B", "C"):
+    s = chart.SeriesCollection().NewSeries()
+    s.Name = f"='{ws.Name}'!${col}$1"          # 名称引用表头，也可直接写文字；不给时图例显示“系列1”
+    s.XValues = ws.Range("A2:A7")
+    s.Values = ws.Range(f"{col}2:{col}7")
+chart.Parent.Name = "荷载位移曲线"             # 之后用 ws.ChartObjects("荷载位移曲线").Chart 取回
+```
+
+- 用 `AddChart`，不用 `AddChart2`：后者在 Excel 2010 和旧版 WPS 中没有。
+- 每条系列都用 `NewSeries` 给出 X、Y 区域和名称，不用 `SetSourceData`：后者要猜数据按行还是按列排、哪行是表头，猜错时系列和坐标就乱了。
+- 新系列的类型跟随整张图：在柱状图中加的系列也是柱。要画成线（限值线、趋势线），就把这条系列的 `ChartType` 改掉。
+- 数据在别的工作表时，区域照样写 `wb.Worksheets("数据").Range(…)`。
+
+## 样式
+
+应用默认的图没有标题和单位，图例挤在右侧，线粗、标记大。下面的 tidy 统一成适合工程报告的样式：
+
+- 去掉外框，只留一个方向的浅色网格。
+- 线宽 1.75 磅，标记小而空心。
+- 图例放到底部，全图用一种字体。
+
+建好系列、设好坐标轴范围后调用一次：
+
+```python
+def rgb(r, g, b):
+    return r + (g << 8) + (b << 16)                # COM 的颜色值：红在低位
+
+COLORS = [rgb(31, 78, 121), rgb(197, 90, 17), rgb(84, 130, 53), rgb(112, 48, 160)]   # 深蓝、橙、绿、紫，依次给各系列
+INK, GRID, RED = rgb(64, 64, 64), rgb(217, 217, 217), rgb(192, 0, 0)
+
+
+def tidy(chart, title, x_title, y_title):
+    chart.ChartArea.Format.Line.Visible = 0        # 去掉外框
+    chart.HasTitle = True
+    chart.ChartTitle.Text = title
+    for axis, text in ((chart.Axes(1), x_title), (chart.Axes(2), y_title)):
+        axis.HasTitle = True
+        axis.AxisTitle.Text = text
+        axis.AxisTitle.Font.Bold = False
+        axis.Format.Line.ForeColor.RGB = INK
+        axis.MajorTickMark = 3                     # 刻度线在轴外侧；内侧 2，无 -4142
+    chart.Axes(1).HasMajorGridlines = False
+    chart.Axes(2).HasMajorGridlines = True
+    chart.Axes(2).MajorGridlines.Format.Line.ForeColor.RGB = GRID
+    n = chart.SeriesCollection().Count
+    for i in range(1, n + 1):
+        s, color = chart.SeriesCollection(i), COLORS[(i - 1) % len(COLORS)]
+        if s.ChartType in (51, 52, 57, 58):        # 柱、条
+            s.Format.Fill.ForeColor.RGB = color
+        else:
+            s.Format.Line.ForeColor.RGB = color
+            s.Format.Line.Weight = 1.75
+            if s.MarkerStyle != -4142:
+                s.MarkerSize = 5
+                s.MarkerForegroundColor = color
+                s.MarkerBackgroundColor = rgb(255, 255, 255)
+    chart.HasLegend = n > 1                        # 只有一条系列时标题已说明，不要图例
+    if n > 1:
+        chart.Legend.Position = -4107              # 底部；右侧 -4152，顶部 -4160
+    chart.ChartArea.Font.Name = "微软雅黑"         # 字体最后设：在它之后才建的标题不会跟着变
+    chart.ChartArea.Font.Size = 9
+    chart.ChartArea.Font.Color = INK
+    chart.ChartTitle.Font.Size = 11
+
+
+x = chart.Axes(1)
+x.MinimumScale, x.MaximumScale, x.MajorUnit = 0, 16, 2   # 坐标范围和刻度间隔，不设时自动
+tidy(chart, "荷载-位移曲线", "位移(mm)", "荷载(kN)")
+```
+
+- 对数坐标：`chart.Axes(2).ScaleType = -4133`，改回线性为 -4132；数据中有 0 或负数时不能用。
+- 数据标签只加在要强调的点上（最大值、超限处），全加会挤成一片：`s.Points(3).HasDataLabel = True`，`s.Points(3).DataLabel.NumberFormat = "0.00"`；整条系列都加用 `s.HasDataLabels = True`，`s.DataLabels().NumberFormat = "0.0"`（DataLabels 要加括号）。
+- 柱的间距：`chart.ChartGroups(1).GapWidth = 80`，为柱宽的 80%。
+
+以下写法在 WPS 中不能用或会出错：
+
+- `chart.ChartStyle = …`、`chart.ClearToMatchStyle()`：会清掉已设的颜色和标记，标题也变成几种颜色。
+- `chart.HasLegend = False` 时访问 `chart.Legend` 报“发生意外”：先设 `HasLegend = True`。
+- 绘图区的位置和大小（`PlotArea.Left`、`Top`、`Width`、`Height` 及 `Inside…`）设了也不生效，由应用自动排布。留白多时，去掉不需要的标题和图例，或把图例放到底部。
+
+## 限值线
+
+限值写在单元格里，限值线的系列引用这些单元格，改限值时图跟着变；限值线在 tidy 之后设成红色虚线。
+
+楼层指标图中画竖线：两个点 X 相同、Y 从轴底到轴顶。下例为层间位移角，X、Y 两个方向画在一起，楼层放在纵轴；位移比、楼层剪力等换数据列和限值照此画：
+
+```python
+at = ws.Range("J24")
+chart = ws.Shapes.AddChart(74, at.Left, at.Top, 400, 420).Chart   # 楼层图竖长一些
+while chart.SeriesCollection().Count:
+    chart.SeriesCollection(1).Delete()
+for col, name in (("B", "X向"), ("C", "Y向")):
+    s = chart.SeriesCollection().NewSeries()
+    s.Name, s.XValues, s.Values = name, ws.Range(f"{col}11:{col}16"), ws.Range("A11:A16")   # X 为指标，Y 为楼层
+limit = chart.SeriesCollection().NewSeries()
+limit.Name = "限值 1/800"
+limit.XValues = ws.Range("G11:G12")            # 两格都是 1/800
+limit.Values = ws.Range("H11:H12")             # 0 和 6.5，与楼层轴的范围相同，竖线贯穿全高
+limit.ChartType = 75                           # 这条不要标记
+x, y = chart.Axes(1), chart.Axes(2)
+y.MinimumScale, y.MaximumScale, y.MajorUnit = 0, 6.5, 1   # 顶层加 0.5；楼层多时刻度间隔取 5 或 10
+x.MinimumScale = 0
+tidy(chart, "层间位移角", "层间位移角", "楼层")
+y.TickLabels.NumberFormat = '0"F";;""'         # 刻度显示为 1F、2F…，0 不显示
+x.TickLabels.NumberFormat = "0.0000"
+y.HasMajorGridlines = False                    # 这张图横向比较位移角，改用竖向网格
+x.HasMajorGridlines = True
+x.MajorGridlines.Format.Line.ForeColor.RGB = GRID
+limit.Format.Line.ForeColor.RGB = RED
+limit.Format.Line.DashStyle = 4                # 虚线
+limit.Format.Line.Weight = 1.25
+```
+
+柱状图中画横线：每个类别都给限值，这条系列改成折线：
+
+```python
+at = ws.Range("J52")
+chart = ws.Shapes.AddChart(51, at.Left, at.Top, 480, 300).Chart
+while chart.SeriesCollection().Count:
+    chart.SeriesCollection(1).Delete()
+bars = chart.SeriesCollection().NewSeries()
+bars.Name, bars.XValues, bars.Values = "轴压比", ws.Range("A21:A25"), ws.Range("B21:B25")
+limit = chart.SeriesCollection().NewSeries()
+limit.Name, limit.XValues, limit.Values = "限值 0.85", ws.Range("A21:A25"), ws.Range("C21:C25")
+limit.ChartType = 4                            # 不改就是一排柱，会盖住数据
+chart.Axes(2).MinimumScale = 0
+tidy(chart, "框架柱轴压比", "柱", "轴压比")
+chart.ChartGroups(1).GapWidth = 80
+limit.Format.Line.ForeColor.RGB = RED
+limit.Format.Line.DashStyle = 4
+limit.Format.Line.Weight = 1.25
+bars.Points(3).HasDataLabel = True             # 只标超限的 KZ3
+bars.Points(3).DataLabel.NumberFormat = "0.00"
+```
+
+## 其他
+
+- 两组量纲不同的数画在一张图上时，把其中一条系列放到右侧的次坐标轴：`s.AxisGroup = 2`，次 Y 轴为 `chart.Axes(2, 2)`；它的标题在 tidy 之后才建，要自己设 `AxisTitle.Font.Bold = False`。
+- 饼图的系列要给 XValues（各块的名称），否则各块没有标签；显示百分比用 `s.DataLabels().ShowPercentage = True`。
+
+## 导出查看
+
+```python
+import os, tempfile
+
+png = os.path.join(tempfile.mkdtemp(), "荷载位移曲线.png")
+chart = ws.ChartObjects("荷载位移曲线").Chart
+chart.Export(png)                              # WPS 中导出成功也返回 False，以文件是否生成为准
+print(os.path.exists(png))
+print([chart.SeriesCollection(i).Formula for i in range(1, chart.SeriesCollection().Count + 1)])
+```
+
+- 用 view_image 查看 png。检查：
+  - 曲线形状与数据相符；
+  - 坐标轴有标题和单位，刻度与数据点对齐；
+  - 图例名称不是“系列1”；
+  - 限值线是线而不是柱。
+- 系列的 Formula 为 `=SERIES(名称, X 区域, Y 区域, 序号)`，用来核对引用的区域。
+- 图片放在临时目录，不要放进用户的文件夹。导出的 png 中文字边缘有彩色像素，是系统的字体平滑，不是颜色设错了。

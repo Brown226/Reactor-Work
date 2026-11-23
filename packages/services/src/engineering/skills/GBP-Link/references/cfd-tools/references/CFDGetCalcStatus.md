@@ -1,2 +1,73 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQ1noKJqSqPYBpN1vKCCQY2Rx4bUntfYBmMCQsnnQHiX2Ad7mj6pWUL7mmZb59XFAOvjpjwWNZO6MDsa_sW51wH1wwmGu89XOW2dKxRxSnLYcpKVIKNNK01gBw4M-D6Uo68UHFlnDd-_2OIvZISvqUsMheFus-l3ThVv_buqCZ_oRkmqNE_aSQmRmujrU6BJvkuf615k2dr-2QBgtObJGbG-rI7jMxJfrojZmgbh2vBOnYPH6YGRfhA3BaSo_e0lDPgqmu8dH82Jc1PYhXtI-rwe0hpk1GU0uANPspf0x6OOX5_mIC83DV1GxY6VTOAsebNQsWr6unWCUFZhl85BXM4tGIPUyP0Kb-SoaZgJbxwdMYacKnBEWbP1spgOBjHn8SI3sJhXfGUzeO8-QG-uFzb8iy400Qi1LhhJ9ZaSohtb6Du2gZ-Y2mJfaEplgzzt4EHluQ26KtyD3oZFuYcIF0MffkqE3mQk1KrELvMSWA7lkFjvs43lKYDzmjier7LBVPsltcKIlGwjsrb7_WycHT_aJ4e_sNARu8HtvIMim3aHeOrEc_KO9CIxuYbrED9LjXMAUb_a1IPVAY6ebRQgYFjzS_skVrgQVEaWA-T68eOzgdfm46bZ-DswB2H_oo5ARIpRSrGNoKVaR3mnRxN82r3_FFSX2l3WcYpUo4NJuvZCJLj1d1TOBL-4ajil4dG03heCD16q-sCz1-0RF4Ca8Gz8nLYVxFjYTbAdlwWJL9YZijZBobDcYdULbRBAR_8_WjSqgYK88zsX3MVSl-mtrIoyA14SIqJ_LQODcC5VVh6cHBD-r5ZtqkkSpqJX_B0xTulqMlxjZ7qFXTCXsJW2NQd3HifTVBUzLtftq1zvWaF5A_7xNJwnA85S-wd9G4WENaAEWANa7jA8Ad1vIiVR79eNBETI8_De-QfW3NnS8ZXSfrrq-23qUN2REzaDRxyXR8yngdZ8CIIHzUkAvGdnJ6jbUulwmXpyKQa1IdFtcKbOQoBW5qwq-aLcc5hjQL-oImsN6iBy6n7RU6fu8GGhc8YbV8dTrAmH5pavZt0ZYsL1LkOu2Q8Tf1FBTtT2bf5dvc32C_07ENpwWcrDaL79HaWks02iMul3yDF3LovUvzLQ-n_OpI5Xm8-tdCbM99ncoURlHYJCO9cEWgg_5EfAY4pDSvFAABSh7k-s_DYJ_mWuhSuu1byJ-iWegMI20lhxl-rMyKSj9anL7UD6jlB96c4BZGZSDkFojrftxwYUFfneEDBkh0gOePLwL7UZzaLb1H2P69hHGKCC2lnp3lYtM3QQ5IzzJyWZoR4U1--FtOidoqk5o3E5WhJAzleNl8aDGMZJg5nAutvCF1IHvc5aa-ECIRVDzepSwzcgBBd21pcBMbrD-wmCQqcFFNQmlQukCDvZWY5XFmBM9toBT13Sld7t2nwQ4nl96CiPiGVeqsQO6Ug9q_6V8e9N034Y6x2d636YZ3n-PhUhB7imxO-WzMetyBenk6ITiQrb3K2CYW1mzzD-qmB3n2b2mCdf9Ghqhak2nb9mq5SvQJR-pYJR-UJDbQN-fWho_Ip42oPVXp6q5gv_LT3R6QEqKGU5JCqRTOYRt4t_-901QDO-zxdp-OFIbe6sDlR_jCREeMNpBZrlkwQhBoi6tbzqDZRIlKbWs3TBbVX_m0Z8tqOpok6p2PdfvWOa3r7B7U_rJ7JBk1JJnkNQ3aFj7BO33AKxOn55_IqQmUyXlN45Vaky9DbffM91OHnysJopxWNIsXzzyAXBW-najSH2MzNklwmOKPE83vZ-sFSl-RFwuCul9VeJF9TmnmCNuSG-qZTODM0sYPjyw_WHxHopUCG9JSQHJorSbQ_xh4lF7_KC_fySrAa0McLzfNmiM4s4TrYJrf0L81tz8ry2bUxVIC6IGOTLHS0AsHbED3ogqMQG7m1FCpZVpDEWm5maosBk1pJ8Wjwg3s95eNpQDCWPS-O-allAcAOMeLK26Q0SKxJ2SZlnAz8LarLoClw0ywvx7f_Pkzb7WVssA-7CiSaWVaar33q2GB_lxao6kGeo4YDU8XEYw1NNmh9vZi3SL8CsH7XVoTLDK1p_5RHP6EE727k95eAZtdsPzYdTCabCrEQ64ELHo3j451Xqc-5xe5hx6GvMk8SELQ87vjVsorH9roFm-vQyh0KzkAUjuY0WGTWDkOXQpDHGLW_0_xKElquR4Nd864iTRoS6WbB7r7hTkunY7PWHyNRzTr2tAAExa2RJCBWfy7DfbUlIGy9Rtor7oDQ5R1h4uMsJVcPYCBHB0ENNma3ojDz_BTes3a0SjkBFC2wFI67FhxgPdJfPUL7u040_NPKVPqDg91j6U-2Lq4OLBq1H8f9OLNo-vK29x20YDGHbvxKqGBBgrpa7l-QEWDn73yPVLdMewFDYkbiwK6gkifXI7q400c--rpL3F8hyelaWPwG67FKA==
+# GetCalcStatus
+
+获取所有工况的计算状态。返回每个工况的名称、季节、风向、风速、是否已计算、计算状态、开始/结束时间等信息。
+
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+  "command": "CFDGetCalcStatus",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+```json
+{
+  "code": 1000,
+  "msg": "获取工况计算状态成功",
+  "result": {
+    "workConditions": [
+      {
+        "name": "夏季-西南风",
+        "season": "夏季",
+        "windDirection": "西南",
+        "isCaled": true,
+        "status": "正常结束",
+        "beginTime": "2026-10-20 09:00:00",
+        "endTime": "2026-10-20 10:30:00"
+      },
+      {
+        "name": "冬季-东北风",
+        "season": "冬季",
+        "windDirection": "东北",
+        "isCaled": false,
+        "status": "未计算",
+        "beginTime": "--",
+        "endTime": "--"
+      }
+    ]
+  }
+}
+```
+
+## 返回字段说明
+
+### result 顶层字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `workConditions` | array | 所有工况的计算状态列表 |
+
+### workConditions[] 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `name` | string | 工况名称 |
+| `season` | string | 所属季节（夏季/过渡季/冬季/春季/秋季） |
+| `windDirection` | string | 风向（中文，如"西南"、"东北"） |
+| `isCaled` | boolean | 是否已计算完成 |
+| `status` | string | 计算状态（未计算、计算中、正常结束、异常结束、用户终止等） |
+| `beginTime` | string | 计算开始时间，未计算时返回"--" |
+| `endTime` | string | 计算结束时间，未计算时返回"--" |
+
+## 错误情况
+
+| 错误码 | msg 说明 |
+|--------|----------|
+| 1003 | 获取工况计算状态异常: \<具体异常信息\> |

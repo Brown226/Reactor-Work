@@ -1,2 +1,98 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQoqmMO2v1835le2e2EAmudzTtWQW80rsU-fWZkVZbR4eeLRHzr7FmMRdP97_x1u_AFWhi7krhvza68GvPxtwg_fT0WiW7TtblFLqvVpw9tInfRdh52t7K57hipsekPMaw58NJAfTD1QHza5FM3_2mtfSOtd7WPlTJCZt5g6XqoIbxzOdc7vbUNYhsL_iyiE0B_oBxVnEbVTv-zmzbWp_Vjc-l6veAm2HzdI9abZq7wcvROyv7Go_gnwaOedkgSCaB1lLhl9isGNT7SgsR_wh4Vfs4cgp34aIZ6NSsnI4L381q5hwAahM80Y1JMHVASrY9AmA_95X1uKvSr3TGI3z_Y0sfG3fU_DqDKivk9z8waYSjN8aWrqaAfsVPOgUs6VEpuAXofsoglvYttN0u1FEb3HKzYO_KXFVeYpaEjFnTikgI7eQ7Cy2UgO1UdH14qOF0dkdr47bFkhUPp3CF6Zt3srxnKLRxF8VAqytyoPAOv7rbbvWANnhZqwTucpxyEPNmtSPMdKIWFtRsnU6mVwPKC8hmx9K2j1YOGlC_6p46KON4gS5mjTo49nAwAuXuX2wXVQEw9Yma5xEBkBGMwVCB2K_e_VgleeLspnyXjCR-Q537TMooelD-9zq1H8qS11yDoCp8nru-Njs7D8VHI77S2fC2fd5bVrWKvDnHxSpxQqMY5Oa-yMws3YyXzlPmIlUPma_WEqfZZYajGnptontE89s3-XbxR_mYeV6mdQNXPo5tIxFupaEzFhjsOUsCuZEZWbNW05MXMBqMUM-28NhdizqhTaLu4AAhFgiQhMloWSklxA6LFtGZ27NMfuHC_5yIJqzv4yLbfGBsdrBfla-qIlHHSmPwJ1nvPTuo575amiCn7pzjYA5kFzR1S0uU8_QQyYGktx2J_fHN6dw3XGm-GpAbXc28R7YITx41HteMlSaXA5zl3jeYDKJN3npS37lSZ2CP1eLeecrxySx5lZo1qNsAwIuyV8od2C3DFwfyAjkH06pu_RBZKul4cIc5ALqxesgYbTJ_xNg4jyy6f66hbaF4TYp75chDpS8aCJe5aSJeHqRWvVnq48oswPq9VeZyblXu1_Aw3rJ3cGxC-lVfdwxL7AtvV6jDvBTSCdGYxHtMR0huQLtKzUVik6NxtNO1MP3quu9uMj1UOGEaU9Xf-H7_EbxwDJ9FiChjAT7FgPSowmgTKD-_8vqR71HdAtoT_krqIvK-kb-A77ANy9T-kQF3EJD52gDm7Nfbb01DqvF0Xcs4X9MthOrlI7SyuxTNFsjUQGiEiE8HfeS-q6Oo3tmLO3NwEYa0N4mQN5ei-9hrhzhBiejmD2p--NqNOJ2tLq3vTBKjP8hdUbv2za-FkMEvglOXy7vgLjkb_5POgV7Mcw89pSffQEgJMBehpgTz_pCd3NkLaDNbqRjOJQh3DQtO0buY4Ic_W-yPf2bt1f19fZMq_Eq6YOul4iANGt6wbhtqUt1YUCH5WwXDq9brFc7V10ui2Bo45kziITeNGGa2qg7qPiExY3zmfK5ooP69Uo3AMxpwnTkW3cfENiTcSUyjZWxwlbdPgd3xrt_9bUM0_M0xmDJrTDZbmwUEkUPL9kLkp1RxOO9UHhnnq7zrV_Mf7TBMYctGl1sAYUKxXPXvJDiUGmvWSj9z6pwDafETuUcThK4EDAoSYRqwop9hDiWEbD6AdLCvGgCGx28g25MZJ-P7PAZCexIdrbaKWb7Ki8UZQ8ELfhUOYq5eftqLCYhzyjU72NML2gF-OhVm_D60S5Q60zuOLv8lmQ1MYJVL8_F2uEKJDrKC0sqCcJGusPcpbBrG7Pz1WNWCYzADDbB207yH_51YVsWhRLy20feBDaNzj6l58or1lab3WAD3FREtpNoFrcyJq_1ENc4l0h5QyFSK2tLDjG-XwEITjGZK5THPn7YDfsESFubS09P-82oVp_aDoJ0AnvJqzI_UxmFRVSSHJaVgTHwOdPlAMElLg6SlliCpxzUzlLINKB2WMnvtPukOGjsfus4lsRy1ZMjKXgxDI-rPdK7x6ks8bj4g8gR5ZH-CRi0hE9ADOVmKF3cwlSC5SyJU4uzQgVJI1Rkv63NMKpdd9pn3IOIcGBocHbadrCPRnhFRxLZml_4YoStxvmTF1aC05F9JCVWO5PkoNfd83xs5_ikEJvGMGxMpPbWmprsAEHrkCfehGvQd4xnwE8mMLo7TLV46vpGqcNZQTMkCHqCM2VQp621XRbyv9k_Ydt1osvqZFLDj1wUIqUw6KbAZh5hTQniYjHreZydlmCL4ni5ZtONybLldoT5hQN9aVea6MLEtSLyWLzO-fL305Cm_CC8zFlXvNBOupUoq_dHHY8SfErDB8vQWiPdGHNeEVQO9pA0__zDYlWXUTcmjYjmtj8U7evCKwNelaXJGQOEL6mD-_m8OwTkJ4Gg8l38WigJN_HmMvY5Wbo8Efdr_xS9DrX8KQKa7evf0_mX8YvM44MUjqWsc-uFQVImSCcOPm0Y7ynF3Fhtul0ryzgw3Yw5_enaxDOYoIvbSiKJ_Q5fakWGE5T6qKROjk7elZhZfKm7aSknOwoV4LTyY6cT3y3fjkOl3hajxcCW4sNVBxOXM0ikAUJlWkb51ot5F7IJjzOLvRLXR-X2Fgju-dlKQ7KHh40ZFC2JP02IRV1URdRWOF48I5RMO85qCKBcLjbdAko3IE7Zf9ALbcRNH1ApzxLHLWn_iKWs9TiR5K5jXTl4xiXgLmOeVgiGnkM7Cl4LpsOjBuDSRkAIjnFPMB8Upg3BBPEBU9bGEbmBQkKO7dhy1BMEO7E9vi7P-XYgzXOmMk_F-9ImDxjH_MlhzBn5HcqaKSpTx82k53azxjVu6i2U5Q5hNh4A6kFPYhUi6YxLNExalHclCu-sicNckNQQK24SrPj_wrcpDQORkTLb8sjOmZ_RKsruDoZSK8svEM39l1eFXILEArPyZkk2FhEA4rr96Ekl9A8VVMsdrqXFb30X37fTjejvRy2cAyWFw5QM3BODpvDakPlqwMbZHvHxmPMehV5BO5IZrH3JCOKTWDBIaYzmd6F6kytpd0Lsmn2OgUj57_bvA1wCp7V8ZTvaTS6nSMFSG-IQ0qFMcoeqNvo95yqQ-HgaSvXJKhKJXeKGyHGlvPGABLjS8he5shqhrgz_S1pBwP_xDKYrwAQYuKRXfTsrD--2YXl5ID7uc080AOoWnZm3IbmDk7-W1r2CsYQtxkyLjtjJl182ZXF3K9kLSA6upzcCXjl8TKKMmFYagDNA7SaMcVFPb7cJA36bZqYtJJ8xsdu0DUscGSAM0omKzJzZERv-Nier9tapqoFuJIAA6AkfPHHkgz3N55sMEDyIQeHbo7Xi4rWaJtM09cT9_U26tQvc2Pad6NFwf6kUt78T33wsXMZoa2WuQR2aXNcBT43KPuSqbDzXEsBOUywRKTtNA-NZnGIibhsCTs_uwx3VqdxpQW1kmV238JLbirEa3D4HoyPxELbxTZMXpiZNekQ6Sa13D5MoOzglgXlcaft3DsYyBX8VewCN6stEIvf7tuwSKDJKFi8xdyxAQy_SNQdTdLQPfZgBl6j4iP8EbP2vkK_H0y0zNwFARYAphbKGYnONuP-vhYnsh01O7xVdsXnk3etJip54yMhB9-YEHtjCBB6s3IF-Lpc5hafttAmsIO5qWFj0QgJuJ4hj5TldmIlzoplrxs9qqDIqwYhKyOj8s49bBLxUR4RX-boYS-SF7V5fX1uajAqgVw4Ks5V_3y4qndZnTMCRPjVLQQsL1uiXXpdq_eA298GykUesxEDs8sHxuMu8n2IMmAa2eh23M03KZVHbRm1r7WvrRJXACOC03yiiW8CmSqjVBA3d58flVOdDhdYAWh9VWThn0cXNybjkMw4Dca2q26ujo_wKX8J02W-9AjrNHDyHaGjss8JVpw4UVyv10MG6a_oW6d4C-eER7frKqqUdylnJZtii5Wpt7C-tpvKg9DN-ljovUpYOpbYrfYaERdd3YO1hxT4AmetM57ASt2rxho3w4kIQja0bBweBbTvQfYCrib63e5V-h8IOALsyXFr_jvnsrgKMwu-r_5vaT2NvOTyKR6im-0wXEqVIaB-TaZ_iblhN7r_l5K9iINROo7Yw0I0jlhaRVMRmFs5IGWohhZmfWx9o6ZKkmFqmohxevCTyQmiLbibOoHGPS27UwFlgOp6vrBMirE1Rhqdr07xTPQPpxfH4ng8mfKvvaAhrc-vYAqcBrBrZC0Kzjla9jc5yuyf-v5J7IGGwfhvnwsBgZGjXNMhzVFq3rjfbTFBsERFj6jhzmZ9LPQ-v3hYPFO1rEEOxu9cR_nLzcmQeo-zibYw_o9YVRa_u1Odr9FJ4-YgHMwS9TlpZ7JkHjVLqEPFfNaJPbLW1Kj-3VBLeO640H8heSlXs78Zy0m1-bI5dXMPPMhdSuWG_1FCT-NYS5Cv8u5ILhY7XMCF_d8MlvNstn5FuhYFpg-n5x3FmKl8l1Y8TqCXiReDT0S_6VB7Qiehw9ZYPBgkxkG75ZEt3CoT4QHzr_dvW3LiRG1uNp9qKZZ9uFgzmNrri2m-Kb00RMILPAVh-Ja-fENXgjrbgIedrrmQaUIyFShTWYwjHDS1nTZ9tqlDm2jnxX9akOFOy5f8u3adwTKKg8YvvZS260oien1k7_ZNKEqfz2YfM1nmKM3fRf7nAJQ1oyEPhRoT0zyp--eNazMEaXSh7Q6duhdd2Zlk2nnC9wVuoe9ehPVQaIbQ9jsv8yFeMWLiJ2b7vMB6AtB9bW3B_G_2EXU4PFb0w7OACAji14R2AwnkqFCO35WfLPzPI9OvWE7CSrzabAYTBVKxfQsIYSea6g9z2bJguVknI7zTF9TOLEHta_tDRd9FXOYVUSDD18aq50Qw141W5jzLXgUol5ta_ryCnpPKDIPPGhDCArzPvvzcfdtCXd1YWn59JcoIsgfmHoWicxM1eZ5ip4lAFuHIMaMyR5-MX8uQ2OLL8ziHTOboTfS3r3jZE9Cl_cfVbaFuOp9VGy8vqQbjkL9-7Bw_cPLjbMF9_aYGmVqtrXq2_fGue1430WvFoQfz98tGQjVnauqEYCUjLaFm-27f-ZKC0Bhaprpu_21NcLmFCtdIaBzl0DKsRcFKEcqAJj9-65btvxrLhj3ZMCwQ6IhIxRIw9XMOQughRk1xOzh3Lky35G_DIUQx1-5_Bwf9su5gG2vxumoa6am-LvYPUUjAv8h6KRTpxphq8WNafJX71Lk7Rc6-3hcA1NTcrbzuub3Z6JKsfIVbh_qOWKzvUO_xXrvgBWTe-R2hH-3t-ZRBWRSGh8eCql48-cwHn4Jw==
+# 读取与统计数据
+
+## 读入
+
+表格在应用中开着，或要读用户未保存的修改时，经 ExcelSession 读：
+
+```python
+target = ExcelSession(r"C:\work\构件用钢量.xlsx")
+ws = target.wb.Worksheets("明细")
+rows = values(data_range(ws))
+header, data = rows[0], rows[1:]
+print(header, len(data))
+```
+
+要分组、筛选、比对时转成 pandas 的 DataFrame：
+
+```python
+import pandas as pd
+
+df = pd.DataFrame(data, columns=header)
+```
+
+pandas 可能没装：import 报 ModuleNotFoundError 时，用 shell 执行 `pip install pandas`，装好后继续。读 .xlsx 文件还要 openpyxl，缺时同样安装。
+
+没在应用中开着的文件直接读磁盘，不必打开应用：
+
+```python
+sheets = pd.read_excel(r"C:\work\构件用钢量.xlsx", sheet_name=None)   # {表名: DataFrame}；只要一张表时写表名
+detail = sheets["明细"]
+```
+
+- 公式单元格读到的是上次保存时的计算结果。文件在应用中开着、有未保存的修改时，磁盘上还是旧内容：改用 ExcelSession 读，或请用户先保存。
+- .xls 要 xlrd，没装时用 ExcelSession 读。
+- .csv：`pd.read_csv(路径, encoding="utf-8-sig")`，报 UnicodeDecodeError 时改用 `encoding="gbk"`（国内软件导出的多为 GBK）。
+- 不要用 pandas 的 `to_excel` 或 openpyxl 的 `save` 写回已有的表格：前者整个文件重写，后者会丢掉图表、图片和形状。写回用 write（见下）。
+
+## 清洗
+
+表格常见的问题：表头不在第一行、多行表头、中间夹着空行和小计行、数存成了文字。先看清再处理：
+
+```python
+print(rows[:5])                                            # 看表头在哪一行、有没有多行表头
+df = df.dropna(how="all")                                  # 去掉整行为空的行
+df = df[~df["构件"].astype(str).str.contains("小计|合计")]   # 去掉小计、合计行
+df["用钢量(t)"] = pd.to_numeric(df["用钢量(t)"], errors="coerce")   # 文字转成数，转不了的成为 NaN
+print(df[df["用钢量(t)"].isna()])                          # 转不了的行打印出来核对，不要悄悄丢掉
+```
+
+多行表头多是合并单元格，值只在左上角：先把上一行的值向右补齐，再与下一行拼成列名，如“梁 / 用钢量(t)”。
+
+## 统计
+
+```python
+summary = df.groupby("类型")["用钢量(t)"].agg(["count", "sum", "max"]).reset_index()
+summary.columns = ["类型", "构件数", "用钢量合计(t)", "单件最大(t)"]
+print(summary)
+```
+
+## 写回
+
+结果写回表格时，能用公式的写公式：数据一改结果就跟着变，别人也能核对。
+
+```python
+out = target.wb.Worksheets.Add(None, target.wb.Worksheets(target.wb.Worksheets.Count))
+out.Name = "汇总"
+kinds = sorted(df["类型"].unique())
+write(out.Range("A1"), [["类型", "构件数", "用钢量合计(t)"]] + [[k] for k in kinds])
+n = len(kinds) + 1
+out.Range(f"B2:B{n}").Formula = "=COUNTIFS(明细!$B:$B,A2)"
+out.Range(f"C2:C{n}").Formula = "=SUMIFS(明细!$C:$C,明细!$B:$B,A2)"
+print(values(out.Range(f"A1:C{n}")))
+print(check_formulas(target.wb))
+```
+
+公式难以表达的结果，把 DataFrame 整块写入：
+
+```python
+write(out.Range("E1"), [list(summary.columns)] + summary.values.tolist())
+```
+
+## 多个文件
+
+```python
+from pathlib import Path
+
+frames = []
+for p in sorted(Path(r"C:\work\各楼用钢量").glob("*.xlsx")):
+    if p.name.startswith("~$"):                  # 应用打开文件时生成的临时文件
+        continue
+    one = pd.read_excel(p, sheet_name="明细")
+    one.insert(0, "楼号", p.stem)
+    frames.append(one)
+total = pd.concat(frames, ignore_index=True)
+print(total.groupby("楼号")["用钢量(t)"].sum())
+```
+
+- 读之前先打印各文件的表名和表头，确认格式一致；不一致的单独处理，交付时说明。
+- 汇总结果按“写回”写入目标工作簿：用 `ExcelSession.new` 新建，或用 ExcelSession 打开已有的汇总表。

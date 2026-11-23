@@ -1,2 +1,39 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQgx6KA0NUI6Gl5msopho28ZuFJO2i7ivnyp_iWFwuU8pKN59GLoLmzbPK-b7HGmGGysmAxO2XoecrQm4_nysFmGOf17zUIhxHLa8pE9qj0QXr0tqq7wSc1eGLkoX2NbIl5exnMjrhl9VT-yL9OVJziXZXmGl7wwK4XEatOOdQsTw5SG29CO8xGgYe1N6DRb6raTbc8JTUhHNgG0OLTulN9mRcEM2mNzZddVUFLcNKe4gfEiY9GZ3t1CXitSmYWpb_F5TVlyG_oQ1DG7U8Nm1WiD3RzLlcrYtaeUxtC5abG4Neau2chnOdmSE04P2bRFBcuHlOX2XzxXvsy7CXVr15dzOJ9qXqK58apu7oXjyYLGL8c3eRK07DAigqEJz2pziouT0R1K0DhP4yvyvOsmjJmDpr3KJ5BLfYs-uA-F8bf36ABX7EHG6E2A0Sm65_W7sJXPdcMW_szrL-Hcyin-TdxkAQkFVHrxy4AElxNofKd70M4qMX00FQeKJ9jip0MJYIgfDBNfZ_ucHB7rP6oZf9x3l7F8yUgYOQuFTuu84ZaxeGZnRN9Z-LfW1PdbXzqe9A1iuTyEBx5GOBQRE0HEPkzngIMH7aZks_4x12V_spIfLN27AERdBYAra6jOuN0Gyf2oXf-CrdY_BBL0qodhvrA432Xl4QH9qbWQA2jI1lzxlOiO6ZyOjEuMXm9aqgGOGC7wBqoQzp3cxhmZmxjKAQvv_TkNnMPrWER0PqInyBN-xiEdRnGlbnBT--5hX0mXKQJ9DqtcvTi2RAao0ZxTPkCLh4Qg1GZHNmyj_OkmNTf48hpMdqA-Spp_NCsaQ6WbCb0E3FM1t9oJHOOJIapblUJ2oClOVoVCQssc_ViCo2-erXQ1wsN16zO0vZM5NMAXtojXyXjvcAXgjIg_LXLCkYrhenJOcKDbXnktHnKzs9CWnh9vM1BzTQZaEWc76oNAshqItDcceLHs8g3xHA2EA_nFWYWNoPARBXCEIGlqNqkH3hK4jIoEwcszV1zzFVTB68v37WRItXJipCCn7YSV3sxV3iBXXt3CbQcifLwCJBNyuq6KPW9ypohvOHPhUQcu9PbkrahWLBJ-HwAl0LzlsN0OQSC4_o51CH1Ld4BNpGtV2UDhIo5A2RSa3LAnNoo12eKL3KqfWSvw0xCxJOgQgrD-gEvtZGv2TBCH-bPRzpVPwpqF3a4g-yq38zMWMO1Qno1vSjbLWvwR_HgEymNRtzGe-c-qpSQaEN0wXYX-hRC0nCWmJKy32ynOD-AvdBIqpr68iMkUZpsLdBjnOnxw5z5N3DBF63xC3Kf8XbfrOMUIIgrr75GTPzsQNu13_r5G8xX-65jqr5NV-AGnvcGyBDWcaNnj1uXlq2TiVOBXnwG50BSRfc5vz4cIalstGKVOEIkDhddV6-74TqYpae4lr2eBqsWpbYmdbUmLEOQqikrJ0Jl6rFIZL5Nk2LceYU3PnG8s2oZrLouzNg9os7E7Qn00Ca2zMJH56erCiBnqby55UGw-zjIq-rdZBoqBtRodH9iLlxflA-o31XvKTeK3XTXbNsNubyo-V6FuTUcthTUFX__okxT3d31Aa2WldcCz3cKaPr9O_J9qzUw6LNf5yL6zKVLryTMG7nM41WxssSLom60MP9Nwi0Z5sATiZAcxXjUc0KWK9NNVDdHPwiOka2pJNZHZA_Yq-8j-nRGGKuxOqr5QlzoKKt208SnqH2CSChfdDut34PlvrwTSGUOo4EJ2WrbPlPmbaCbuZ9HkbmQX7bcOmGcmHoA3CQ9bb-hd7r
+# GpDlRoomTypeAutoMatch
+
+**工具说明**：房间类型智能匹配工具。根据其他模块已经设置过的房间类型（默认节能模块）自动匹配房间类型，如果没有模块设置过房间类型，和图纸上提取到的房间名称进行匹配。比如，房间名称为"办公室"的房间自动匹配为办公建筑的"办公室"类型）。匹配完成后返回当前建筑中所有房间类型的分配情况。无需传参。
+
+**请求示例**：
+```json
+{
+  "command": "GpDlRoomTypeAutoMatch",
+  "parameters": {}
+}
+```
+
+**返回结果**：
+```json
+{
+  "code": 1000,
+  "msg": "房间类型智能匹配成功！",
+  "result": {
+    "types": [
+      {
+        "buildingType": "办公",
+        "roomTypes": [
+          { "id": "2001", "name": "办公室" },
+          { "id": "2002", "name": "走廊" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+| 返回字段 | 类型 | 说明 |
+|----------|------|------|
+| code | int | 状态码（1000 成功） |
+| msg | string | 提示信息 |
+| result.types | array | 按建筑类型分组的房间类型列表（同 GpDlGetAllRoomTypes 返回格式） |
+| types[].buildingType | string | 建筑类型名称 |
+| types[].roomTypes[].id | string | 房间类型 ID |
+| types[].roomTypes[].name | string | 房间类型名称 |

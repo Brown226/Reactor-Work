@@ -1,2 +1,30 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQRZKiTbowxZejChIQspq6YzHhXZ1acf2swRmzUpd6pv4M8YFXq8HKMLi95mOn1Sk8-4qFDPr9oi2EMqd2y4g5AIiUrO797H2SHS5AGPJd4t62aANx214NkjciHlCNsqHub-RttsTDHLNt10El4eDKRDviJfZ2bYzWPws3NrKjWTV2z2jpWuIsVGeNkjrDnxvpOrTviduKGYPk3FR1ZkAVorbotkLM97X0FkPuFOs6D7p4a8wtkmnA_LDc7XlUtv0OPgWYZv9vTdLDFr0AXW4QoiCpWA87tB_oq_O0GVo_HxybE81wD1CmGzCjfAEVfCtSxBM-ODDuMXddCWbSQ7BWJbaoDzpkHr9MX2IDB6ntJo_tF0qdfjE-HPZpeKh8dwZli2vWCuaF6spZRCOfTMXL-l-EYOdB9pbtVEtnyKLej3r4pmtIzq9vmdDi46kC9wcu477BhjbAvFmDxFvTlJCRoDpqxvVXaJ2sRMckzovwzCDRoS9ls2o5-lfD7Cwf6-RPyCl3X1ThEeLIDZOLBsFsjenzw46IjHNuvbAGOO7D16eMA-00i5QETQto8MrJJ2oWOB5ePJRtIXKiRrLkA6hMR2qSOaW7sHDm6l3DfuQsZdoC5URaOmgh5N0ZWSmt8Fcg5cOMryY99XNT7v497NKqsMgffX92zCCuyOvhD4atLvQQ6N-J18DKJGH1C8TetYrtjic9o5m5D_60J2RXn2FU9-d9oIxC9IP01xu8hXtUyAdKdT-t1WXwOICU4MPrLjW_UXFqxUm27TTiK2iey1UmkfROiYYEUyp0eyQ0BZZ2AOdO7cJF83wIesHL1r8mlj8Y_XWMfCVO8cPV0oedYCLe01VVxsoM_aBTXoQOfiC0p80A_yk4A4SlHWBNkDg5DPoevk-rov7l7PoJOxGBRHob5iZ-SH0AAgivG15MqQBxdnYgZKQ8bngPvUZ4qsEn1nboJBGsgaTwZ8MG8hUhQMzFj2ZzTv8qGXqWbl8BivHlQNF8HNwc-4SslPbogANPbTq6zoj4NTdaJoC0RK04r_pBd9N6HgSXKoZ9XuRNtLgDtC49Gcp-L2Maf3xdJrSWr9LCMAGqTXS_vHND4doyGfKs5N0LJDGEgEBPxjvK8lSnGbODmcVc6gO7bc8ooSVa8LeM189lWXFWVMnZBoWwZXSl_ANxIO7WbAEUsMIZ2VnLwPaAocy07nIefpiWJWnD8kZrsvRIiWq7HG9e78pYhZTKQeEBECD9_V-5v-lzvytCNb9_8leSneFewJ-jwDPVcuXG8q73M2Cp1b2Q8RWWazJBzXdhS5feEOUEeJIRua5Rcn4=
+# GpDlCreateReport
+
+**工具说明**：生成采光及眩光计算分析报告书。该工具执行后**不会弹出对话框阻塞进程**，执行完成后不会打开报告书，直接返回生成的报告书路径列表。报告书默认放在"bdls所在路径\\$bdlsFileName-节能及绿建报告书汇总\\"文件夹下。
+
+**请求示例**：
+```json
+{
+  "command": "GpDlCreateReport",
+  "parameters": {}
+}
+```
+
+**返回结果**：
+```json
+{
+  "code": 1000,
+  "msg": "生成报告书成功，共生成 1 份报告书。",
+  "result": {
+    "reportPaths": [
+      "D:\\bdlsFileName-节能及绿建报告书汇总\\采光及眩光计算分析报告书_办公楼A.docx"
+    ]
+  }
+}
+```
+
+| 返回字段 | 类型 | 说明 |
+|----------|------|------|
+| code | int | 状态码（1000 成功） |
+| msg | string | 提示信息，含生成报告数量 |
+| result.reportPaths | array | 生成的报告书文件路径列表（string 数组） |

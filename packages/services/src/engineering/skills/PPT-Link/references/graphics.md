@@ -1,2 +1,253 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbS6zfJw1zFJytXCI4WGaDk4oBtS2Jmyk2PZ3zJTXS77xSqB-1a-Hum26qk9S53w63vjBk7PIBiY5KocnhuLA9GZjz_8w20lRbEsnJxQZTODwJFZg5cZUOmkrPmBVe3QhnLqXthecj2XYcKE9RbeEzUcVf7sDNljRya1MEyiDJ7XzCf7IsOzOAXJlHdIK-vWHEfi3UXIOKuokM9nXDCm0k0Hy9PAPsGOZ3ROn6OCSezMpbbBKpjjLRHF-Kezk_uijZ8wNGzvIslHuZ6s5Dz17GqbyZW_FHk3dlp1Z0PVxPZ3E3JTt5f3FPqtj2H79z6U2PmiTbmeyhYkhcCPfNgoWzEbYIyG6jXgCUOGgubb_k-Hhaa-23OFgBfUvpMNyueZwH9CjmProBk5YdiVhihd4gsKGIe4R8j0UMKra4ps0EndfbhybaZhiE-cHACZqE9ntoUbQFNekQ1HK31lJPuKt9pbHbVwp5JCyvHa2KSF9MUacxAbuSnuUUlU1wMxYHcuR1nmW-pIOBV1ekD_QaSavvl4hWC9-WO8HrdgLweQv93799U_PPjDqjXgouEcYvVO7mnkAj9-uhWtU5rNscdZQum_VZfbTC5xHS9xt7_TQjk4nX0EQVlJznHAs5qj6xp1-cRedcy9aqdHDxd5veEjiup7_ui5KA6F5yz5NqWffDAXHdQFNCfXV4IMvIQeTEeqmAd3hs0QafPW2OAi7UFLXrM8R763OetpH7ROrVcpKHGJ2rpZtQpReomYruUNL0eMSUXDic8HQv0rUdgP4WGbwKN0-WQn21LWjHSatOeEqIJ_b4TKGvwajhJ3ldD09TqCj_rlW538vYuH-VplInBF36MIGG8lqfZp1xM7yn9_25WCbR-_XFUTEEav5SiEVvCQHJ-M2XYWvXDupmywDxj-52kMUFjcZKTxwgYixn7RQU8mpPm43Q1xde48CTXThUyHQxwWx_H4Y-GEP7rb43UPMDQH0m94BSv9TP721z-m03GHnxPSo2TKUXKzqRYn_9ibeYJEMM27v_fP6tcXlo_pOcgGe5dlG9x41uqBxp79ZeGoyezkrAqCXD2MjqH5q6K0avMGjPB5FJnnjWDYDUz9JuuFU2KV1Nkd3xxdoIedIPYB7pts5tJvHBP78tuLO3skzIf-ZZJnFf3xou-9CbbIyDka9zPIyCKrBgUOeucRb6h2QpU2gXhXZm0oN8SJbhZbAA-3LmvFGKRu7UP2-osAjJA2HouxQGzJVUlgvkhg8x53RkfH-cXOw3LVrHX69XFo_smqgAxIJC_kFvik6iCoTaoqhUQwrO4_aZ0KvDpSEafsejWwW8X83ckrt-NMLurm8kPKTseIciRIfFA9-toP7IdSawrirZg48rDc0n7cKCNptOaZP_nIW_GtUbY0d0oHVkxeWGyY2UyayrNUQc4dMn2453i97eT0X27BcQrQiKaP8WQ8nfIjxsTmMaPmypvQJwMvCpPd998oA8n6zOLN_U4s1nsPUvdXkDfpRBM2s5hOtFkslBN6aMkiZyfMQ4uIcm-FM3BpXa7OW8dxPbVi3v8vobhtptDuwgceu67CnngKeUaDG7LwICdoZ8nl_q5jJh-X7YJMJ0tv-9NN4daSMKegoPP_FO8XlcJqhl1pgNCth123hlP8jV6pVNa2DFmbjTHEHh0yX93QBNind8qyE4WkbmFhjlfPUOxEesGR1eVzGr6y_ChUiia158Aoc4EVz0MFcglU-ipAh6_YeZfwe4HMVaadWY_MGquIwpXv1110zHmVAelp8oM6Wq3El1fwYbaWqmCleaTXxMT4auAv1PLGh3z75I_0yxPEUdzSKmNhgtihZfqP_BkiFm9yrOSygFjj8cfCmr1UnfO9ClkWx5egSRUvZM7h3fewcjnFVsHxRmeObWZCEy7ssrKuOtYJvQ5Uf0PUnQa6MoIj36WQEWI0DW4IfCjO3Gz829HNmHVbT7NR9g2By5mVSbP6qVmEgikt1I16tnOg5iD52T-5kI15fMFHBhTW8hfsi6_AkBZv6mL1C6tUzsuZ98cfxOiwk1TXT4u7exmdxDutPSx-_H39fThWGGyazhWXrRYvCihwQ1W2LzIepjfxk_I66roQCWMbihQ37GrM_MxZsTzeCGKZkOkCfGQki46H4cphZlZAOHvFIbLre35Uj4DdHonjBLuPNNHaZ56PqjD4kPjR18aZbD7TeASwR_Y_ls6E1geVWxb9dzO2J4s1PLbocTKCqofePvFiSWgqj-djDaM4TiawMFd2Xx22ieCjra2Hr47YG-2-QmCMxEmIL4QkGCLfHh_N_yef9DRVhTcB2kh_Tk8_xGMI2kW56SK0VGLkzcWTOXKqv-nsxMDg1cadzpzF4trz6rSPd_yebb0PjdClwgrNrQiftLO6bHHC4s8UsHkDYbp8gBEe9Qix8SOI_aq2RYDdob1yuEzVguJ_7TUtn-pdrJrUN6hrRZTlTsWxu7tZcSxIwK-mPOJNfilTl_Uj-zVVRjygI8jKuerkJ7ITKzEf1vgkLQyGt6KtwdV5EkmPF4ydf9_dybYMc4_D00yHEsZdjoAIfOzYF6KWRMBNBDsrRjchIgh26DK728TUnv-0aGUl4JwshfzMZpr2WcV7bR9FwudJlM2TdViGDQyRDZkFEtbyPg908SlF3rF7PsOdAp7PdwkGvfQ419XUVjZO5_E-WoNmuimXSt9M72g_7xGZYLdeDp5pekzdyynyp4aFJ78BH3sQ5jYkWuXf8FLfOPf4MZZQ8j4yrucHGIhObZrx38cjx6UsUhheBZcboI3up0JJYseQivZUId0XC_IVG7RCCJxyQe_k-7vjIpWmLsvxwDT6u3TIEIzFPhXbLB18GneAC-QcyrdlEFnbephPAxc5AGjxnbTBw93uxew-M9TggOlwGeqLbkn0ycMHtCmcJe_kiiSQEmHpPIKU7gkOcMjXy_PkpfEIuB4OQekKh63etqx2OdTYPylZs3zxoooYw1C6lm3eyrQH347cwmTbOhlGzQREnHFSvaLboOm-sMFdWqTyFJlLqKzCrSu5q28a67Zl6Fyu62VzHgH0HCtmHCkDG_8EvCD6Gnj-Rjuk57qiFnB_x-idSWmD2ZaGEH6zieZw-gvcyrMAwQbpeEqWGgE-if5QuK117nZ9OKIpD14OBhhTCXrHVgNY4i1n04oDYt1295KEUqe00AufRP0Tt2DWD7UFI_3a4zUoK8wnREVIM2rNiCwM09m5hTiRJCY5OXdzOPTNFjUdXnqwnJ1lpC8_U9Hsc-nCQmRFcOUoJhMXiNy_mjcRS8OZXH4JxE5TaZYTUGICHwrmmaL4XbDPumhHZ9wpPsXLYoybpUHqN3JjGpN9p5cchwi3_i_FaaaO3AtDCRUb75FzX5Ht-Z4jhS1mTRf7_5HVINNWGHVB_KleNd-OeGayJT5eAvDKaDhv8RMglVqhPvG5pfSKnKyqiI8PYHuougltj3fhkCvLF43CbyOAlYSJineHAN8lJofHMq0U4UGu9rqlJJdPZ9xEcjAZ9Z5p1YZv2xQiI4_uenO_R2RL0Ltgr111dIont2gM8Vy7V50e8dqkP8sTVKmR2TDCPkdu-B-6Ps5V5UsZ57lFp8m8sVqrXw39Xgsa2tP8cidBHwZfzLTd4cWZOxSZ_dHGp6iif3uKDcHqEUrZRYZrjCa6j8eLuKFOeryG2EeY3VEs-RZhzxR3vLAuVThUuC0ND8_pw8r5G1to656dKDSTqrv7awnAK8qlmFBvu9jb0XLrfukrPdQvvNhDc7IDrZ-B3AFuWsrk-G2JAKrqLo3aSCHAxO61iGeAKhdaVqqBlhRLOJOd-P48ew7qeVThT8p6SrEKH9WT1OXCNGrrlRPbcH9r2Q2IT7io-18H-D9zebDktGkuzseHVf4KloYvjaJZmtzhmNvkewopS92LeOROrQFL52VWMxVad4aRkGr8_DUVJHYteN7Ju5xZFj3O5z76S4dW-jsLYm8ojkjry0WFSLq-DZCrLN3DETK10IdxjQjtGyAh0mZOiWp290wHuinlAAnHDAloWkSjwuFWOiamyQ9Py7lQUGP6OsalH9yDX3bqwQGZOsTpB1T4YIjQ6nvW6n3wBxDD9dyhEoXGwZiLyBb0yKYPZC55j3kr3YYZyVSc-yoXsfq-owRzXSs8Zi5lFhawSUI-eV_OL7BxGJKXgUom97A2ljbVqLWOkD1rHFxWEGoqvFORTKkGpLUgVQthC8m9ZzZXBewJqqibhoIhciuA2HQS_CdjW1HUhXxuFpVnQ5Dye33vEMVgjqNkEF1C3Xvg1rYoog9ZcGV69aWWPiai704V0ltMi5L0Z71iQNIwF6fS-qWWPt6NIqVFR5ruWOdKDpgNekgDNxDIgErz2Llk3O81I6oKC0TtMr8rjn5QbgBqHFf6C1tstVa0bOMEhtVlaS7KU7iQbU2FbG47YwhxuwCqJABtuNdPMTqgYrIbljzkn9SlWkWm_GYmHexH7iLcbjE0CEQGzYQBquEN1QWWASJPCcxC1EbIFUhBqera6wtdlYqEGZ4QArIEyiQF1TTKgk-A3MUKCD2nfGwjnTgtaRsw53HnK_YTeelQwzlGmW3D393AzaJR9zkhrj__oG3HuU8DpiVTxRT-Y20Uxey9QKzkmIgXHt2Zl62X38OQ-O1ElQKyY1bdZfkvS3O9A5SVaS2ft60WOgLhNlr717-9Nk9NEzb57DRD6dRkKWgPTCQwKh1apAspIypmKNQ6X94aK9St7HPZpT17vo8ZnNR4JMGT0MvciQVob-PS5B8Z96nGAOF-NymNov-162mnMsVCo9U6UGFBUAuUC6fDH1w4LKYjoXlLgq-KmrLV3CBztfLdbYjsBcBBlC3NLI8gVnWktcaKtMRLOdI3kUT2hD0VL-jcbUQdx0KEZoe5D1dXMJGb5dhe63RhXA2cUE_kgXsd3K66JaIYdqcVKAV9ClAVXMe9b21x8za1CaWgl-1uJ12mxEzj3zs14eKx4ihmWetkVM0tmR8YX6vqEpdLUV-eyUGwdEJy532grn5LLvc1AJ9UHM-eQaVNVd-cp21aLZpMLEfk0PaMD9tIflSknIxe97U0z9mKc4C-5-8Rrt0CE78qwjBLP8HQiLeyygkGpbBcIKFBj3PtzYMsep6qCBD-w9LsNgTxwemoWT0oD-Cne3N-c-VOyfbHtsRz_zFLPOyXwGxDxs-AmIBzaYIcujzQA4HNsHNyNCoVj-uTLOneznrgDhqNu8ldA0qh8zTWCZg1TpG9Swld2DBxJq2AcVEgzcdkH3x6myApSzcVx3Ks2vtHFDTB7Eb8i9Ygo0Yl_a39G-CDPYSIbCscDeBuPu4fJBksYES1x3wTjTBIWblXA5k9M-hflgnIGpxIEWuyUTpc8sR6ybSUbL3xexxoSYWGH1f3CWZBTmscTrTi7L46z9IRGcEmziOIQBu3-NuUEmp_iQKD8d3HUPXu57YPkDoDUEZztFis_xQzwXDkQizVXv7dNgzfRPHrC84CotVr1NIV4C63erM0PBX1pZz_wNVb13p95KEIZN9ELc4xltlPNpjBOELE2iI-ihyUMQclKaxOxutbNFS10IYxtOIO9xBhpt_QyogYtjevDlSkgsGemuHeMvVwkZlId-XyWKV1wDWHivr4Mc6POm-ScgV9C_vKpOuN-cuRJRxB2BhzqdUiAs5tmPil5bTEYuXtPdigUHlFsulCnNOgMoBBj0GDp2Pt_xGB4GgEIXmtHHXLo8Py34GXOFExbkDK390zx5Ska8iYjzI0xe1-lYmQ14EnSwywePXJrAQn5HqS-j1-8uEEHjMs8bVgkBS9qNPux_wa9s3v115_i55QVCCg1LluFt3ZCFAN58KJziBDF9MfhhtHGcAk2zzgIShgueSUvHbDUK6Guo813cJAJwbXsjNFAVuJmGF88_UimtJ1jjoq4J2nzQYa2uItLsEHxd_NJQMfKXX0VfSrBTkRwpsjtuomzOkA_bwC0MgrP7Klrx_TDv2s6G91NADw_0k7EzeCRVba8ec62e7qq91IePvM-FYVJi0U-6PU8Dy1on2xGOCcrAE_lTttGPgwGgDilkIhYqf6kSWnURFUIjrYw5-pDix_8vXJMC88wfOpIGIoR6PizTkkMxdMblj7qOqSk1OXGMgKpQVkrE13vSGWz-B8srC0a6tXJYl4wW8fxMQCb3E8SLiKnLA8A93ZLHCWLtwiPck4EM-VSG9XxWN-r9ga_1yhZmUm_od9FcR0l4cI-VcxDI94RvUH-sX8NjAnNZ7ioBy7AWGoaN1C6fXXPGfah4Y3njYsSKQ89jZPO8augW-pCm0thTrlLeQRvuHvaUWpAtCg75Yb16qpI0rQkNdaqbtBs2A9oSO8PUl_ylHPQyDyX1nvh6LarghoxpkFZrMO3NwrCnT5OK3Q1b2JRlfyChwN11arZpmOjn21cpiUhz2bqBOWm38DTfKhsISQm5EF9wVce9YN3Ig0HtmNrXd79F3pwuQpPmP2qGuq8MLSL9h9etrUcokMBDpS8zxkPZeJLYDwXm8YOedtdkbS-iU3EZ7gKEpgEk78nRjas7BE8HKIWaK948EbzdNa5qn4kU7GV6xLKECa629DvUIlbLOuNyp0Y0J2V7Z5hVh5X-slknofbMxvhLuVrMhnjEXS2pFXQJvigiMzuZgAP4HGvl5dW7lqXHwRuYy_l8EIIZlaTR5fXrvnaHZzWbHZhtOIy9DLI4zQVxPKgRFGPSvBDSn5m3BPVfFCsfOmZ3kaNbV6K2sXMP7MA1_1dTq4XyZGP7UqFgRH8f7p4hDsQlmBwN3H23gZRVVzERmqkqRxqKKSNYEED7Sit0VRlhNVjAQWrxmvcmwPMmFlLssA4RPty3gZsh9N5INXn8IhgeInPaRw-gOHxsoafVKk6WeSGZNH8iC2YGoc4fKXS05F9wksobbgCC81qPYvUamzCEQVWJEqi502rd6Cm0u4Mudzbtnb7VF1X6-eWSCpou7HUiVAFtaj_LaArOBHPiEPdi_H4IP8SnBLQ-PHGogMbnMGGjp45znm235eSpfp_IeGzA6VnsuQ5L8d0M0Nz1lTbl4TJ-cEifv74cFXegGXsinwm97N7aUSK2fVvspxl-Kalo-kWGgCidk270VHRvVVzdFNm8yHiK_N8LO-mQWjaYIVQcZNWmkiUiBIGtx4INd8DJYip0-mYhExSz5GVz7ih1AZzjANcof-2XdfUoGTIDzLO-slUfFDzWZfqTp3KzqeHWUZmWLdmr7UcnR4ZLjlvR-Qt6sgXGnTqFhITP0FL3-uS5lg5ywPoXNjGGY_3T3NTBhz-pY37evHIUMnRzwIVX3uOyOOTwmVWW-fS-L8OWcC1XhDx7c3ZDXMkRfWWwKutJDfV3fBchUSfmC7FkpOn_2RTzdd7BMlj72nW7w7LTpxFMMaywf2r36J-MSM-HWLpQK7bOgwZe-uBD3Yz36uO5YfFsH09jT79ZG0nhpMm_ESjJ2K1rl2l_ID3f_j8Zy-xmMwtAVrFUItHWNau_IAfXlrAA_LXRVu3v0O01dDIX90JGXZphIIE1UxBsrrwP_nQ5B_pguCUtxhrG8tBM-rueaqdTTMzQlWPNeF0gGzVu-9elrrA897T7mpzNovbXoo6-zOHJKvfbxfISgSfY6eUipstYFVbETCFSRYGWr31Mw7oEuaMrXS45VpJqRD0Yjn155SEkLs4Rxt1IOTHy0MXQEKHdFQu6ZdNM5HueOzu_dT7EFeJ-mZW-91qQWfbG3texU_Urz6aPAJG4aKuuA0EdeN95Y3dUL9QO6CBqSxjA6IvrSAEQxAJ-GdEbSkJx0cVE7DXxoMAZRYq4B3DpqOQtV4524HiWxTyoM8vTG4ji2zys3tWXWVpB_vAkmdWNras3MNOvsnaMakfYrmFeZIuT99GixIVwIpUoX_GOv7LNOO5BiQ7ENwSQR5vkW8LWGBfZ0XaQaLeR_a5odq_mNqtlm3Jlp9ppKmEjjyoJdY8zvVlKgoFNn_p3o97lJo28XS6QU1eaM3qvMjbGwSI9I1nCe4f30o5sHkcgYN6qI8k5d5CWZkv7-u2AvgfITBNQWMYx0aOlSVMjepYA7l_PXD0yZME4zgWVAEfI3dapTEBPeEjmX-3NJB5IMoAeM66zyw2NbvV-AiWYxG1ASshQQEn8j6cGjamnhHcDhDS0Efd0imIqBP24mAGnrl-IUjHmO4891mFhBZ4R7f9vaXWx6OwY75LoHu6FKTNK7_kkOtDdpAeW7bqaX42bjfYWbFZ0AYrYVdtWtMU97O03AjkP3do_nF0iXgBUYtlNfL11H9V-Fu7TDmjlebuwfxh4wH94xoS1NtTrjLbOGzq8j_EgJf2mRdYFTgJuPjEKJNUQe9rdxA4iZNhpdoXqb8wA30NXW5N1OsrFCGr0WuZ-sMYdzCbO08341s5P-JxS2I__NzkUIkADpD9zAHloMSoj4QTcVnckl9HZg6rGbL1u0UPcRHt463M8dO0SNg-5h_Gtd2KPFbvNchNxRgVNp0HQRJP8ncG2gh0jNosBKSxLPPw7y-o0lioD3g-thc4VrlWtyVX26MELmSsa0aSQST9PaqiGNCzQsTdqt28aPYjXMq2AdwAyvlcP5DPCRA3m7nVjiDU7L2lqgKeQlsRu5ZGf-ixO5e4hrNpUmCVQi_eEKCP3EuHeQh8c_x7w3miowVo7LPUZMMC0rkLCYRrV5YqcdwFOfx5L8DtrXQCiTwV_ukgZvN0kc8EXCPn43qbqjrEwW77hRp64jXg07nm7UV1xbEZv-bxKewKqlmCNPeLH02AfUlI0RTmHCWB9o40Co6Q1umAQwjShKOPsQ8DB_WZANpzlkrzeUkGGwPZlqPeSvDYt1EoV-Gr9PNRcc7s0GGKQfY35Jw11mzqf8xjAVE9Jr1tpcHlFHpAR_8f8v6AkQAPq-FpfRsJ6pBlH7kW48pvLTvqiy2Dxny8syAGIUwx8ydS2HuYu8CG8ebB0ytm69wQHnp1bJDKPxl2Je_OGIyn6erkfhYO2kZLCJSlWEGdZkMev7HClH_7uzKNaKobZKjlr8Vag1NL6jh69SVC8Yw4g4OjKYYfpiUSUHXFwARM8_-UG539fGJhyi7L4z8WAZq-FhgdnTnIJeMj25-vjz_Po7eQR1WZG8rhpq00KPs0vacIXStACT92mZEs_joXizEvmyqYupFB-Yf1N2ayszG_N06ybcsWCbMoTsMU5nEa8wYfGLJRptI4-k8ud9STYus6tvsdNu0YjiwtRWwe_ISAX6rBGvOdQ6PUNtmrkHKkFFj0yJkKskOfpjWE0Cb2to2rG__hqoSQznYPZNQubVpLbHWk4RaEV6vLKi8POBvRjhlTur-mztMp3--3aoOXS7GaoSs49TgPmkb6QO9f4ybVkZXoGNFScl66jdfsfh2vcEtxtuy13sMQoembSr3JyeFq65CYza1CG4tjvhYm4k8y5acI9QiJhvmAOfcykak3fDN6PUeuDFQuhezcqEoLVCSvxQaNk1VyI2LQP7R109qUxzDnv3UsIMNgGyV-8wz3A-5jGWab5a9tsgO7T8HKDinN1tBVHJ6YEuY912-XgQ1b_tkieseLlOwgZjSjwckyzXbhzesEBlJlRTV3fHmN7Bjbo6TYrCerHjcLxVBZjUcIG7QMnc4uNYHuDGd_-g8G7MxmlQozTI82z8R4VKeNb44sOp53jHQ_NOfl5KQbECNuNts1BkhwQXGD8q9FEskcu-ONmQEpv5jWPlHRoK2-mV3wN8C9PFaiqOyJH_UABqvSZ2bQ_c0Wxy2a_2lEoYHJNt24OKNUhqCpNGa1KU5EoHnnYRbIELNp9iGMsCsIQc671AStroNUPwyiJDR4K2MTpiFaBI6BbmFyyWwl1XYvOZlBhpYVKoW_jg_oI6-HA_CrD7KdBm7ZIDUtaR633IgyDI4DB6hpR1UpV_sb7RUIgW4Ro-T4RLHETAsLRtLWCCbE-kja_4fWQ6Rbm4a4DFQKwtM1Z-jaAjanHg4eMJSOxX9P40BvaWckYO5SOnH9TgEFfYa8sPpRt5pA1X2lcs_B92g0lRnyyZnU9mRa_0ZPOgXnBEzjliudvidJFA2MmzkJRcjJGVQ-W0zFXnkj-1M7ApEYaSs-Xvxu6K--8uShpvOcAGEK0NZAUpO_yguMPtE8G0eRbOG6di62MtyfVUXugWaCU3CDvEddPCiIB4m6NRzkvu895tgAIrhRQJC6_3xXKKnF1Na5ryW9jGtRw9g-lcbJyoaFPRmp_qboJ5TKpZkD-hL3MeM2eC-1mhfp6nyXa2jKh8OZoHVD-Wmpfu0iXjguTMuL9yQlsR91RihbZ-mO2hIjOLg918QzEGmLAm0O6gDRMqTy0IindchN7Fp2Pma7t3gULaI842PrHWZIy8ohtv4JK1Q-K1bI-EFY826ngXy8R2KFmA6nn9IW-KaaGimBmU_xeilpOYKa9YpkkDVfqi1MxF8TegVlD1LYVbJ69RRYXTaP_Wea1PU1rjjWPYMeASGGuKt97x6AQRsxJg5GTm6uKVCRe-r-tbmznR5jsZlUyugAbeDh47akl4nhDziZJbZJ-GgqNkr3ERrGFgmUFgtiVKahE1hwH7oLiDnMiqmZevlhFpWrlLuJtdlyFca-QVkxstlMFHAhDPstuxQbS70BncU7-bJ133ya8YZCwBKdcvELquKxUFxZ6TfavBr0iwBzq1aPRULRMoImK-PXUbMmswkU69B8PMX1JYBAz-WaMMMXRmp0M1cTYQsIUyUM-0qjnpZrYdQKgOQt5DS2BWAW_BV2PCGVKN0v7yi6EGLhZjPVMu2SMycpkG-zySpxWomeC1Y4NPXH-RiB9n94GkngmTu2KYbOqMy699_wumubRKI8HxI-a2eAVyO1ZFno7DzVcmebYj3EVbr6cSXiALk55iyVNW4jc5PVmMGCPbCX4tmYl9NtLGnJuCKPT_3oWUSik85pG9IblVQ8EZLLkTahx2F33VTj8NwiWd6cHM5Qdjqeby-9Wr4N0Xw8R6fl-ThuDcrxCvQcynkyPyjR-cou_VltUFoURwpjxg0eMRXThy6OI2yPz6VlCLEYnfLvig0QLJYZKJPF0MfBI8ltqMXrJ8VE7cCpWvdTJ5BPUAZxf8eH_mKjBYE23byD0POkLj4T56YJYjvuSDEk_2-dh08WBJyY-Niqnkv4gujc_ZkP95wLnzQtPj2KTnTo4tsYroakFjw0NfnB1HJVG2qYAvsMamKKlLuzmNmJH-lkjzbY-9Xt3GTJGI0PoLW-d2mCIO-3nZO7dYmP_tkeQXSZMZsrzJv2IVWi3O149Cu87kQ3Wui4z5qzthwjobhA1d_yimatBmWyN0C4iTeyEbvZU454HD-V9jd2reunWEdW3jJx9gpLwEY-vrerHrMlOsfQlzGDxtQYptxinA45DZHuS3a50fMEEZBJuqxbwp25pfoUIB0lxwSY2kruMwGfVZyqsaqsNBM0xAhVMn-D4uQ4-V87PSm1fZyvMhIWqFiixqt2LXQ7yjpK7HuOz7X9guWhV78fBA17pIv1M2248gIye64Dm3Kf6EOpmyUeD2foMI6Y4L8ccdNc58lwikHfJA6YACmhFpISq5Q9d8Tqb2dJh_6P2UmRRXzEYTTZoFWgoeEYSPIs2Ihtx07dMLUBTxvELrlmm52ojDlK-O-Mwo3L2FKc9oPycuUjMEI1z1w6uShs5-r0S-t8wDrXeJHnzyKPaohARxOIlLmdrOYaJaLn7YlWnoYgBEGuALv1LxP6RMO2O-jW2sfUd7tC64IH8dWCmQChX-_10wwOBmZ3Iw8iZWv8ZJVRKG8sLMohre8d-7tu-LDzq62l7z7yd3VSGaNgjEPzB1oBtHDou8Mj_ZNcLOPJtLEFRX1VJ1wn2ZZ5T8TzzDGplvRh4-YJXFT_xoz6Dmfz0NQK8PukQFrlpGNjmZr_WSmfrlzqSUPtybe5rvFXWN0hv4A3h_Tmx4YZPPeWaL0HgQ7ch2joFJkMpE_Q8JTh230Mariz1IKRZl-menQuK_pFWbt7E3qFMLEK-oxutkBZLvKZWULKEGiBGh5cJMXK_U96rppUr18b_wQVl2LTUshPbkNXnRPKprZeDiQuFuS9dLqoAo00iOJbor9leecxKrRM82Gcph0x2pwPXjKOcoDXFk86bkngQ-RGy_Gf3nuoMG4nq0dBItbYYuFoI305o18ar-jRRvQ_45Bf1Wu531eAGdsJv5fFLvaryACc9pQucufCEF5sNxxuxD1as-nZeiu53CROQikKff8gAFsDISH1byYF8PRN4BAkjOzlkNYJYKKFfWZOj_Ts7edl8DSN5yrR1XzTPWA2pvtFBMTxueVWv8eObCWUdUW81W3Ka3CXmkQRV89KSKFZRxoXGkyhRWaCXGZnRGnNiuQWiwLqAmVeGMiC4Lc0naL5zUohLXh0-HuI8i6QbZDLPl4a8K8bd8YNDklJ3f3A8s77vYTs3QQYBkZmAE3tSaOJEvbnGxEyLKJCxrDzx-lUPWH7bv-G21CDLFvJ8xpGBgeCxBhbxJdy-kpkIqHwyGam46miRSxjK6irwlyPhJr96lpHr0cd2QX-B3BPe6C6lzbaBkz1-84UnRdOu76uwR6WyefMCiLSUpYQW2Wms7EiY3OhmgER0LP7gE5obSX6XEtHEmdFZmoVymxU5Snk99Mtdgu7mZIjOWEJ9kFmai-SBsk_7kpWeUFTkyLcyHyc4d-O2mBNCOY0TXy-WTV7AXXm31a2mHai-zUKNL9fi19cKqJnSSLZCiNi84deguF42-24cOBRVZLLJTzQJuIn7JkPnB5GZzw2LTTkjep5s0hcHb9Yl2u_QCoM93tlQPhZTrynq1pwa2MmOGCiLnrKz_B1NnjYwFgk2T-QQ8Z697NVRSOnKDVZyoeb9_5vx-M4ZmQg9ujRJ6ho1SYcp5EGQDckLO19Dx3cCGZ4uV4ItDrCDlKbO99aDOrYaxoOBSLQJpFBDivoKLe2OiGy0cHpCnthVdN38gxN4yujfPU_Rev1qgv-Ijz0xYMxGhcMd0qjwbjSZL7bAjc-VnprKMPRfdNn8sFn0dwFg2exf1_fyQDVmeZnOjl15nUb7EuXTRZpf1RxaJDR85kzwbbgh5c4M5VykHF_ySimbDOQVNtD0BKnh6uTBUb6EoleO4MbnQusUFi0uZ3yHCCmUsNCYwTAcOC3LFKEx9SKl7HM3lGVikjF4n06yKNppT3fETxGCCF30zbRcEOByGYzHC7L7gP4WP9uBpo_aHbK9Nvmi0TtXX17jYiVSFVnpNufH4TJmVT7mSkPuBn-57A-JZUwaDR4nc41RYz7YXxz6iUm4ozInGeV21ViZSjx1ZU3MWhhwBhKDpuK3_garKPkXJfDJUiZmnYL4lsfhVdQfVTp72IhKhuDY1qBR9ym3bfurogWQVV7-oRl5IWGFJDnCwdD7cj5YPKmU97PsPndhY6kk-WETlUBEr1Muippvi1n3sKdFBs74p478SAzAJizcV2XseiTi4MZjHiLfHbts_J7EUApsudNQ9x421lplTwtMI6EAreIrMFmB5L6EK4T9RfgxffmseNTw9KiZyUko4rbjl79AT1CnjR79jOjbMMbjDQx41IYpxuyj-WJDDqpMhEremgiqyrtmdvwBC9Z8a-8lR708PLKqur82YV7XbfmIYVr5QjG0qHuXch3Y4gbHm8MfB09UH5jPtEYu7u9FgpzCpl4IXW8KMLXnHN_7Ru3fNAcZIFpApSYLuCAFyQox8nypzNS_5xMAvxonXo2NTgAnDHhySFHUdNhvRYDmGzuZvKbJV_sVf5GHl6h9eZBmoJgevbsprrqrmu_S2026XkzIgKsdkDpIxB5RfMF-j4h97lOnQlsOqrTVKz9dIClVOnvppqwa9o7lBWdINtOEEriabJOaLkXeLo0jTQvF7OaoJokvVWhOc9zcwq3YWAmErKfDY9pVHUAobEiho_1JBNebdlBQTem9Iob7a4OefsiDVZBEC83WJB1ANWrjmhDwjss1HQf23YiuC1Z-QyYrGpQqpYjASMBaeDRVEBRGzEgFpxYbtuA0ADwUS5UVlelxHtHxnix4sSCCA64g_KodZsN7t-sfUbxI1oXffXXwyOq9dCRJ-_RH78wM4jII_bl6rwlQjXMkpXpMn9giWrUjesxasIEh6T-W87ri6HoLW2YZtVPQVyHVMQXPp3ak1VPTtBfTGoq-aztjamAEVInaIJpVccnuIm0G08HxlAGgw5ZWCbL0UsNfX6glQAjHLk5jd4of8D9ePwANC2d4TWmSHzBT8Y_qBdOJW0qbdYy74F0ljxUblzAXUE0XAW46-Br9l5hHV4a3jZXU2CIO6w7tHElcva0NiBHmw12VEtloFboNwrkXJDtQVFNr3bGkkQpDop1wEPd5GTFCf-VNp0bDb41kU2ELRkcIrycqEO4N54TqyDPTFNCh929eTLeaopPuieIp62TXaamCbqMlBaeZxdJrNeikyzQ4H8N4GY-vxjYXtr8DNFq-DT2UPdfYx5RVHe8xLKikut9BICIv2A49VdlPTbalGYWSGIHkXu2-6WIjsz7LmI0SY-Ql5UJ_fy437z-WR2_KK7mekmQ0qEPxW1iAAXnlpgMwgPGNfrsBk4t1AarolwP9H9UcJAQJSWiyss0xT65vVHNLBBQL5OLn0hibduJgHPJv5Pi6LYuzepFkG1WxfUFJNaXGAnvu4vxPTR3scQ4HcELOrHiOKlusx18sjPOSB3Gtimkr_A2zsRt87xm_PGa56Ku8xyIOvc2G1Y5wBPV7RU6jzpKV0Jc1a0tMIDMy5_OhUWZY9r_RpkhhR45UxoiMDXIszosNJohmMwHSamBPa7VU5qnP-qzn3I7SkX96SFUoUqet4M-N5WkZo2AWMU3YXNszkOld1Mhv9JksetR-x8J0BzH_0rXlen_wSMpK9_EWyhV7KKBDmMLCnqWRsFKlf6TsuUYrn_XE_ixHmHl6kcpQlPMF9X0RrdIWtR2lRCUECkP6_ADBRC5Bomx3MkljovyYBQtyYHIv2ecIzyGUSpalConkW_K0F7bZJ--KwW1u_--pRluxad8GpBfyHLQitvY8A3FmNLEb8bdYKaHSIrKCSxWO79v5dCWENgRu1RDQ9ml02_3aZBKH54SF0xnavPipBWFAycLr6WZVbWZFdB3dKz0OWMNVX3UOe154zI0ASw86T2CleKwpnDA2zxMA51wsy5HHgk1cKC9JRCGcVgvu7Cbz0laNXI4XJRF_6hPAXnPY4b2GtKPiZyoJ36cN9WaDJt7Oi1vLmwF3IdKQdhmEZSsuHIn5ovMn6yQntD5D0ujo5wSowsVwwXQaOy8i7M1xfFy2vp7pdv0Z9Mpi9qCewQJJn3zpeCb0mNF---eiierMCUaDFgg2yT5mbGhdf8w2lI6oYQTyE_zvhwFl9XFXjpIAnsNxHPnhlz46qn_MxkdzIjvckLAUocAQ5Pq9_ZqtEz4n-sh7VxXzvVYnPEcdGF4yOPr2olOhBuLc5XBCVE_KNgfge6vbDa2BfkuZLBvgbBas_vVijxceodicYg3oX0NTzeY1zNbJiCf4mKRAcxeY0LM4kBMy-8DFnS8pCDc_PtOwUs-ii-jCaAt-BP_yS0KIXXcBZsNyItVBYYRQ1wbZcIJVCG3IFlS-uRx3aFn2Y-c0MvSZqaI_CJxexpR2pKohTLf-irGSjqNVANMK3ObEP80RDadew1yaAunwRvO_xMn2ppxqxoNkK3QBSofA5EBgqIweka5ryaf1hMr0E-jtHj1MOHZyyHeOHYnYnDBgBcvzrkQf86mCAIcAJt_WRX4W7FmfEr8Rn7SMRJMLxRx1hAwk053M9R-7_6TU7pmndCwtR6aCA2HQY8er-Kwg4u1m3p_IUR8HQlBRcpK4t875qfT8zUpwCWTBH2mzk7q51JixRJAP4cOzyMzNB19UvVFHnUjxOmMGhHmc_XA-xVMFYAZkD7eieD90V9QSEDqiKk3yFxRveESJMP3p6T7tSgPDhoWRiSYEalzWuf-865bStvuEtyNWf0fpZh1_f2fzUXqmCBgeK85zIY9c_hTfGZKh4S5M1TpBAqN7XeTaSF5vvVT76kCc4sWQEYDjuw9iBlI6ObDTiTTVRn34pQdjEFgBxmZqIFhiej9opotEnIdZFqsc7_YgCDEtZfHC9d41MBWre60t7culnxnc9p1Z-tae_AoLh7dzLEccbLq4XygbCeX_tg-Xh0tC3_sF6JyVG7hWXpcKLZtcV0kygFN3Zp9or2TxAEmMIWVVWsq8oz6mRhZ1vCs2C7cHIL1HygQat9MpE4FMB_GIzcdLxYqoHYhf6UB4W64gvx89cIhyO1a5gz8YGPEUPKXVDxfq1kDhi6stV4rQwwhJHiDT5Cgs0O4TU6gz7-GNyExQjUY3SK5Ur7YNRkkrh0beo-5h3xdNmUwIP6E6_dS6oRewaACk5MinQxpw7Jy4rOiWdxalo9hBaF9ZU71sGAE_9LQNkm4KqKAGAZOuEOtioZd8vLkjKtEdTOFc8doZMI5l_f7Hi4Fj6hyAlPSK13KQksvg3YR3fSbvaYC8nsJf7KgmLj4ZtjmLRHN8nEIlLOMBTg9-Q3u-8y1HR2tuFOzRKJDAMrFfQgxGMkpKcoKeSIBF_-nhld3iSWPrpN1-6z2NcYAUa8OZJ0xqlLocqqNVzok8yr8JMY3-UVtY4tC95avgv28EiHGlEq0vNL1y1YJElSh_i169py7GtZEBDpiYmwSwCgdYxHQyqMUP4HfyKfP9fM1g9X3-t2KLok_3srDHp29WFOFJA3XtPDbeNIhUa1KEa4oTSUl2PGROqKeMhvx37sNCRM-u_Lzk1ucq8oNG_jvOzOpTi4up_zbDImh8ALbalw-2ho13djDtQoH0lDseqzuPmK50YaSNBg4Co_Do4Rd_HalaJZFDGPXm_L1KAjRVylaittsrwA_b9xeklzkIWf0kSoFcW58owSHQZb-r-mfP_tMY-JwfHaysJlA0EsVZkCKU3-E5IUfFvsgkY3hJVs5fCxqJ8wKPz4OuzH_vIWYGCNUpHr9w7Fyy4NWWno3KM2qvBvKUAC8-M6_NSRrkF64QjZsEicty-G8FhJZVJ_-wma8H4Yr3P0JhPBZEDKrE_8-7G3TEBf29JWu8pbxQ8ykWAMeKNvbqpYrGxidUAR2sUpj93LOvBayWv1v7SOy2kXLljsLjSEgiPQxb0IjBA5_-t4jtutZWB3tuTY41NqRrNoIOhw17I7psa1hL0HOnU451fmyfcTvwb-Ep_NMl1XIK_GbF3sRUZCAOesTUvLRi2TiM4cxwgZaEoqKQv5wTUTjWVzb1wPBYUcP1UjMTbuaxvsqL3baxKX3wplsy6XGHqDvGssyRyFJeCogCLC20Va8bo0ElT-EA_mZYWpG1vf1ZX_ypz4EUdI23Jc5deOj1vKB297yD4YqUSfDtPrzKYzuBDIQYkodqd_CJ0Z1x8Y1A1zL4i491UlWjo7cJdjfEfzNILyKMfwg1vBcRNJtFTJsOs1bR9GqWzKMlMa-sNPezMAS_b7kfFoU0wZC9tEf-eqU0DnetPHEewyWpM9SQR1q5wbYGuKSE2ioI9a1Nb5hcSMH6cGtgxFL_1EfuDpajSwf8Exx5ULja4aQ1wAfr5JhIcHMaxw6l9KUV6VFSVr-MC17Q-DLCkqBx_3ZbNGTs0uarM9qxJ0lB3JDxvXzQjXz-JUu5Mo2ifEPHkLPS84c3wqWGRI1MIjK-aWpBmdf_exeWKUNhIeMv8bhfonQw_vEV_ybUCFZTo7sFIo1WkkpHvZxMd-CfrfGGht8mGCIcBU4JGF2Z7Pe8qa5GKnbZsJ5woe4XY5estcWdBBV93OdqKIIKFemJ8COHSCrgNKBSz7jsr_uaz2TCI5PsICNNfeFLkN1muI39221StNg3ov-hW4xmLkjQiFBMpMvV5yTDiS-bL1XNmu0rIN6ZSSPKx96ILZoVhso0PqlMAGCRKqpmXKuN_GYY0IJTOEjhliiLI8mEO6TnoOfDpIyhcYY4HBpuQQcf5H2S8xYPitfV7gOf_x3q8Qkdu4lkcHWTTzWNKYRc5SEd9dNwddGiZ1IX8Eej6S_L4GlnZoiiZ_8aLKQ3zjQIr-i3k0-IjEhH1Fu9FxwXPWzmzTK6UP7MQPIzxaO0xhTS1ba0jTz05cffF4HSG4WWwfD956JELsUlE2C4fIG6SkmhFxMLsKjwmrbU1TsaCoOwZKkV6JpGvcNWSp1P1EH7Ga6zkdzfvLKrK5Bpeh5r3on-mkCjKdzIqjKy68IR-aN1mUfGo-6xh0_gObsGhgNwKO0waROIVtW1QfdvjgHsJa9uupouSctV7aDijOIVvuO3xkqe1BxW-D4-1RBAi9qNvstFYSKRTlC5-tAO2f8dkgFfyq4WDpLhEHI4LUBp2-ejkgH0S16H3fwWkwxyFH6_XtYvaUESgZnDcthZTUxjggk_RW2bGQtTmgaXybsj5n4ptxQyX6MK157K3KzIx-bNZFyjtzFA85dt8OTcUBp8aBGPVnnV1juMV-kfJfKRC9tovroNyBLNS2lE0nNYDfS_EOvyS7m2l6j_x8FRH32jTsmJgJS-KfId9rM0TXy-iGxwxIxQ-qUUSou6smVVzEXtO-FElVnUOB94ASIsOLB5qRHyy8SXq31ypVxYVGJU0FOruC6JiMXwMpmRUWuoN7XEzmVt5YThHHUnuFg9487iG3KM90BgFHkhExnpj0FR85jd7N7tDyO_6l29O0z-wuYkTO0IxcURo3lwoZU9lZhnYU-ZeuBCG5sjx9HAT7WR2HIeOkYQu0Audhw7TC9ofjjEjHpXRxtV0mmoqdvwKiNB_H3VY16ufWqaMi3kTzSNgoVa4M0R03fpI1qhclKFN1uzFe7n0MJejoEdwzkscD-udFifGFRViXj4kMVyzDg-bZWNrU_4W5Dh-DbZPfWRbPlc9Z9soTrJKULvoCuC4QcwA-FPvQ3YcZvP8Hvemf35oL-6X7YfgL3rB7yMMwIH0-HLoT9YIxjNO0pk3asVm8L0VXSKas-H-_dqPFWmmbVbSTWWpLAl3r9E6GpDAdfoC0AcjWYZzI6KbKSw_lx4FxFC5N-ODFd5g6J5nbWhimQtEdUMTIBbkmAJT2W-nMYw1CVNkFifB0PtaoVPtDrtITTkOstQTcDJipwvpGQpZcWE7qZJdsE8Drko_kiHtgmRU3euPNl-ficNU22Q1-ynn6zKDotYsUXEu8xMuPRJGWUQYvLHSHCk2hzWNRs4yhN6tKzH79odjtaN_yhVlx3LLunS_IFc-vsHRDL-AWtab52ctltPbFKVbaoIplA7yjyVDE-mO2rmrKB4gkXWuq2Pk4JUM_g_Ww5PUUXzlUegk3TP96i6Jl0DUsn_b4YDeMo24Kzx7rB6xpAzfhSRAsITPfR2uGOdqIHvkZbNjAXpL1sWHmsy_krrNkzY6vkcACChs-b1MSpD0k_Lq3nMSDem5gu13_pG3VgyjbTe5AEGJ8kt3lzHBPU65DhF8uPsysIU-WfmB_y1B5lyvWH03kUGpOyWhRq9eNOAwfsEFPdhKXIJEYOaDFpMsAZJyDK4sEocXaPgNoZum44JgVxjUu92yGOfTGzwsKmAg4-oVR0mXeXdlHRoy2_oz8YRr_EL4_cSTxvz9aNEbk2Ec7QvxA_IlLh2rMN20fie0CxB3qLH8ZNrvJJjhAFD8TwwuT9lBtmXjd2UPhFrnRHIl9xhwdacGbluzQEcICw4Mim14YXnvMSw7vHKs7cNXezcQQ9vgFfJuBE4zGqz7tF11rynjbze97vrXviQ3f-fX5Xqm9oGPCspau2vOxLAOp-8w2e_lVHN7EXypJv2HEJZCMalceFSoPkskUOZOBmHptQS328KO704nKmfWt_lGUcg7qM8y_Hlkzrf7aFhFNujSDWRkjYErG8MQNrcOCYlmIFU3k8Pxb9s06ALtOqjAl49yg4mgtUQIeRAhszwPdbfdKv4m_TwqR8WRJrNiNLZ29zl-DW7urskXAvJnBPbjJYuA3xJnmzvHpbGjUtdUpcqk8IyQSazlaMFKLkfCwg2UbhPvIsG8c-yKU4_eiMK8lfFuuDSnpAl13HFx5uflfDMmxmWa9G_ol_rTmsAJWWAmeYHruP_pOopfRjhangbsbkXLXlYWWguDp8nBRw_J6GWiJ-EB7MPQTldF6L3p5-61Htt6sJI--SLCpnaANYwQq2DTiAYN4xw-AbKJ29VTra-2neJy-qidEBT6Qm_4H1epAhyr1m99LhlqMkO--vVzgb6HBdLesa86vOUIzJGtn_u-UgrM-jU7BfyYYDmLI0UYTzVJwv32rH7rtgligccvhtLPGLQNj4xvWw8w5DhUHaq_t2yTdQk5iUzGUkMqTWo_7I8qVCYAq7VfjFgA6fRaDdtWMIHY5jF9lTdCihv5kYHnzMkkIS87cfNXoQVPumzurlg9WXy64HKvYgARRjyr2MQ030rSG-1boSdTr1P05uPVevrFEnxnjpj2TEF3MhT1hdE0Eb3I0Ce9rD2qXnvtLX_SvXIe16zNXe5LoI5RrghfJ4jqTqjDsiYeIocgTWrW6dviOFAp9D3xD8wiiStEBMUZxvK7k2_aEcQPcUY5QWzzYIlh6dMmfYECMPQCXKt5p9Nq-zkUjd6nAnPnBRnWou6hecY6gmN21KBnirtbF9mmr6aT_gEATc9T6qGGO6v3yucxSUWXphFvUXDCYRIIktBUCAnifGI3G_tEOpVaTl26TyFvZO52cPlvdRMUmqTqn7w4yalb2KgnNUJ_rCFMZUFbjbYNOzzem7PiywHSqAPT3nS3zY5ekc9uTNe2JhFHWxYeXauZ1d5GHy7wQpP_u11sLIHoKDUPaFhd7Lm1LLmEICwKYEukujnI4Ebx6aunDq5m1bjnLWz_Jlv2YrK08iuVFhIV2ruUeqb1fbWXjmQ44wo1IKYFkK0u97LtzyR6CANnbyC8uvSjg8Y3xeTRRFhSU06QS3b_eBqIvLyplTdu04gHvgzJLngioVe1ZwhDYEC-f1QPhCdf8vLs17f8WtlprrD9c82-LD-jlXeqA8y_2QgZmS9wcW-1yrj5caVCRY3BhXx_t7zT4a-nAR_rrkNIBfnqwmEoD7BqDr8FnVMUuLM74l6GolNbzToYQ4Qpn3JSqUVwqCpBWQ9eBYQpZukRyqVUBROh52oLBFeMLSS_kGsAMEvPlQgRXp4JNSWbf3e7Gs0PdI-kdyT33EJwHiA6IT-5Yp3e1FBWdzyLnb6ONM1Qbe5kV8SWl3mEN_JhdgA5RmbC3TVsfL9rbVn-pPXS-NsLKOfaKYglmFXCJJUevGCg1rX140iLVhqMuGiW4Mx9aAD-dzy1O4gfoeJW2RKTd3uDU8FNlz8QMgtcEkGAsj-S5qb8Pu0y9_OLqJIciXgNrKvBDSgkSiqyftNfiAOWxamJImVaHJ3U6K19D51F1pKoMg==
+# 形状、图片与结构图
+
+## 辅助函数
+
+**`add_shape(slide, kind, left, top, width, height, *, fill=None, line=None, line_width=1, adjust=None)`** → 形状
+
+- `kind`：shapes.md 中的形状名，如 `"rect"`、`"roundRect"`、`"ellipse"`、`"triangle"`、`"rightArrow"`、`"chevron"`；名称写错时报错并提示相近的名称。
+- `adjust`：调整值列表，个数、含义和默认值见 shapes.md，省略时用默认值。如圆角矩形为 `[圆角半径 ÷ 短边 × 100000]`。
+- `fill`：填充颜色 `"RRGGBB"`；`line`：边线颜色，`line_width` 为边线磅数；两者为 None 时无填充、无边线。
+- 新形状没有阴影、渐变等主题效果。python-pptx 的 `add_shape` 会套用主题样式（主题色填充、深色边线、白字），不要用。
+
+**`add_line(slide, *points, color="000000", width=1, dash=None, arrows=None)`** → 线条形状
+
+- `points`：依次经过的点 `(x, y)`；两个点为直线，更多为折线（如结构图中的直角连线）。
+- `color`、`width`（磅）、`dash`、`arrows` 同 `set_line`。
+
+**`set_fill(target, value, *, alpha=None, angle=90, radial=False)`** → None
+
+- `target`：形状、单元格、表格行、表格（全部单元格）、幻灯片（即页面背景），或它们的列表。
+- `value`：颜色 `"RRGGBB"`，None 为无填充；列表为渐变，各项为颜色（均匀分布）、`(位置 0–1, 颜色)` 或 `(位置, 颜色, 不透明度)`，如 `[(0, "000000", 0), (1, "000000", 0.6)]` 为由透明到 60% 黑的遮罩，盖在照片上让文字清楚。
+- `alpha`：不透明度 0–1，渐变时用于没有单独给出的色标；`angle`：线性渐变的方向，90 为从上到下，0 为从左到右；`radial=True`：从中心向外的径向渐变。
+
+**`set_line(target, color, width=None, *, dash=None, alpha=None, arrows=None)`** → None
+
+- `target`：形状、线条、图片或它们的列表；表格的线用 `set_borders` 等。
+- `color`：`"RRGGBB"`，None 为无线；`width`：磅。
+- `dash`：`"dash"`、`"sysDash"`、`"sysDot"`、`"lgDash"`、`"dashDot"` 等，省略为实线。
+- `arrows`：`(起点, 终点)` 的箭头样式，各取 `"triangle"`、`"stealth"`、`"arrow"`、`"diamond"`、`"oval"` 或 None，如 `(None, "triangle")`。
+
+**`add_picture(slide, path, left, top, width, height, *, fit="cover", clip=None, adjust=None)`** → 图片形状
+
+- 图片按原比例放进给定的框，不变形。
+- `fit`：`"cover"` 填满框、裁去多出的部分（照片）；`"contain"` 完整显示，缩小后在框内居中（图纸、分析图、截图，不能裁掉内容）；`"fill"` 拉伸，只用于本来就同比例的图。
+- `clip`：裁剪外形，取 shapes.md 中的形状名，如 `"roundRect"`（圆角）、`"ellipse"`（圆形），`adjust` 为其调整值。
+
+**`replace_picture(picture, path, *, fit="cover")`** → picture
+
+- 换掉图片，位置、大小、裁剪外形和边框不变；`fit="contain"` 时在原框内缩小居中。
+- `picture`：图片形状，或以图片填充的形状（模板中常见，只能 `"cover"`、`"fill"`）。
+
+**`add_formula(slide, latex, left, top, *, size=24, color="000000")`** → 图片形状
+
+- 把 LaTeX 公式渲染成透明底的图片，按字号 `size` 磅的实际大小放在 `(left, top)`。
+- `latex` 不带 `$`，如 `r"\sigma = \frac{N}{A} + \frac{M}{W}"`；支持上下标、分式、根号、积分、求和、希腊字母和常用符号，不支持矩阵、多行对齐和中文。公式中的中文说明另用 `add_text` 写在旁边。
+
+## python-pptx 直接写
+
+| 任务 | 写法 |
+|---|---|
+| 形状中写字 | `set_text(shape, "…")`、`set_font(shape, …)`；内边距 `shape.text_frame.margin_left = Pt(6)` 等。排版为主的文字用 `add_text` 另建文本框，便于对齐 |
+| 名称 | `shape.name = "封面照片"`，view 和 `check_slides` 中按名称显示 |
+| 旋转、翻转 | `shape.rotation = 45`（顺时针，度）；水平翻转 `get_or_add(shape._element.spPr, "a:xfrm", flipH=1)` |
+| 叠放次序 | 后加的在上层。移到最底层：`el = shape._element; tree = slide.shapes._spTree; tree.remove(el); tree.insert(2, el)`；移到最上层：`tree.append(el)` |
+| 组合 | `slide.shapes.add_group_shape([a, b, c])`，组内的形状在 view 中为 `页N/K/J` |
+| 删除 | `el = shape._element; el.getparent().remove(el)` |
+| 去掉已有形状的阴影 | `shape.shadow.inherit = False` |
+| 图片半透明 | `get_or_add(pic._element.blipFill, "a:blip/a:alphaModFix", amt=60000)`（不透明度 60%） |
+| 图片的裁剪位置 | `add_picture` 的 cover 从中间裁；要保留上部时，`pic.crop_top = 0`，`pic.crop_bottom = 原 crop_top + 原 crop_bottom`（比例 0–1） |
+| 图片边框 | `set_line(pic, "FFFFFF", 4)` |
+| 点击跳转网址 | `shape.click_action.hyperlink.address = "https://…"` |
+
+## 图片
+
+- **来源**：用户给的图片；用户文件中的图：docx 的图在 `Document(路径).part.rels` 中（`"image" in rel.reltype` 的 `rel.target_part.blob`），pptx 的图为图片形状的 `shape.image.blob`，PDF 的图用 pypdf：`for img in PdfReader(路径).pages[i].images: img.image.save(…)`；分析图用 matplotlib 画。取出的图存到临时目录，用 view_image 看过再用。
+- **清晰度**：图片的像素宽度宜不低于显示宽度（磅）的 2 倍，整页宽（960 磅）的图约 2000 像素；太小的图不要放大铺满，改为小图配文字，或向用户要原图。像素宽高用 `PIL.Image.open(路径).size` 查看。
+- **效果**：压暗用 `set_fill` 的半透明遮罩盖在照片上，半透明用 `a:alphaModFix`（上表），裁成圆形、圆角用 `add_picture` 的 `clip`；灰度、双色调、网点、模糊用 PIL 处理后另存到临时目录，再插入，见下方示例。
+- **缺图时留图框**：按设计的比例留框并写明内容，交付时列出。图框是形状，拿到图后删去图框，用 `add_picture` 放在原位置。
+
+```python
+from pptx.enum.text import PP_ALIGN
+
+def picture_slot(slide, left, top, width, height, note):
+    """待补图片的图框：浅灰底、虚线边，中间写明要放什么图。"""
+    slot = add_shape(slide, "rect", left, top, width, height, fill="F2F2F2", line="BFBFBF", line_width=0.75)
+    set_line(slot, "BFBFBF", 0.75, dash="dash")
+    slot.name = "图片待补"
+    set_text(slot, f"图片待补：{note}")
+    set_font(slot, size=12, color="7F7F7F")
+    slot.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+    return slot
+
+picture_slot(s, M, H * 0.2, W * 0.45, W * 0.45 * 2 / 3, "项目区位的航拍照片（横向 3:2）")
+```
+
+照片的灰度、双色调、网点、模糊：
+
+```python
+import tempfile
+from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from pptx.util import Pt
+
+photo = Image.open(r"C:\work\效果图1.jpg").convert("RGB")
+tmp = Path(tempfile.mkdtemp())
+gray = ImageOps.autocontrast(ImageOps.grayscale(photo), cutoff=1)             # 高对比灰度
+gray.save(tmp / "灰度.jpg")
+ImageOps.colorize(gray, black="#1B2A52", white="#F5F0E6").save(tmp / "双色调.jpg")  # 暗部藏青、亮部米白
+photo.filter(ImageFilter.GaussianBlur(photo.width / 100)).save(tmp / "模糊.jpg")
+
+
+def halftone(image, cell=12, ink="#1A1A1A", paper="#F7F5EF"):
+    """网点：每 cell 像素一个圆点，越暗的地方点越大。"""
+    small = ImageOps.grayscale(image).resize((image.width // cell, image.height // cell))
+    out = Image.new("RGB", (small.width * cell, small.height * cell), paper)
+    draw = ImageDraw.Draw(out)
+    for y in range(small.height):
+        for x in range(small.width):
+            r = cell * 0.72 * (1 - small.getpixel((x, y)) / 255) ** 0.5
+            cx, cy = (x + 0.5) * cell, (y + 0.5) * cell
+            draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=ink)
+    return out
+
+
+halftone(photo).save(tmp / "网点.png")
+for i, name in enumerate(["灰度.jpg", "双色调.jpg", "网点.png", "模糊.jpg"]):
+    add_picture(s, str(tmp / name), M + i * (W - 2 * M) / 4, H * 0.3, (W - 2 * M) / 4 - Pt(8), H * 0.4)
+```
+
+## 图标
+
+没有图标库。线描图标用 Windows 自带的图标字体 Segoe MDL2 Assets：一个字符就是一个图标，随字号缩放、按文字颜色着色，编码见下表。
+
+```python
+from pptx.util import Pt
+
+ICON_FONT = "Segoe MDL2 Assets"
+
+
+def add_icon(slide, code, left, top, size, color):
+    """图标：code 为下表中的编码，图标占 (left, top) 起边长 size 磅的正方形。
+    字体的行高为字号的 1.2 倍，文本框相应加高、上移，免得检查时报文字超框。"""
+    box = add_text(slide, left, top - Pt(size * 0.1), Pt(size), Pt(size * 1.2), chr(code), size=size, color=color,
+                   align="center", anchor="middle")
+    set_font(box, latin=ICON_FONT, east_asia=ICON_FONT)
+    return box
+
+
+facts = [(0xE825, "建设单位", "市城投集团"), (0xE716, "设计团队", "建筑、结构、机电 42 人"),
+         (0xE787, "设计周期", "2026.03—2026.12"), (0xE707, "项目地点", "滨江新区 B-07 地块")]
+col = (W - 2 * M) / len(facts)
+for i, (code, name, value) in enumerate(facts):
+    x = M + i * col
+    add_icon(s, code, x, H * 0.3, 28, ACCENT)
+    add_text(s, x + Pt(40), H * 0.3 - Pt(2), col - Pt(48), Pt(16), name, size=12, color=BODY)
+    add_text(s, x + Pt(40), H * 0.3 + Pt(16), col - Pt(48), Pt(20), value, size=15, bold=True, color=INK)
+
+well = Pt(56)                                                   # 圆形底上的反白图标
+add_shape(s, "ellipse", M, H * 0.55, well, well, fill=ACCENT)
+add_icon(s, 0xE82F, M + (well - Pt(28)) / 2, H * 0.55 + (well - Pt(28)) / 2, 28, "FFFFFF")
+```
+
+| 类别 | 图标与编码 |
+|---|---|
+| 人与机构 | 人 E77B、多人 E716、机构 E825、教育 E7BE、公文包 E821、证书 EB95 |
+| 场所与交通 | 住宅 E80F、地点 E707、地球 E909、网络 E774、汽车 E804、轨道交通 E7C0、飞机 E709、云 E753 |
+| 文件与数据 | 文件 E8A5、报表 E9F9、面积图 E9D2、列表 E8FD、文件夹 E8B7、图层 E81E、网格 E80A、图片 EB9F、日历 E787 |
+| 状态 | 对 E73E、错 E711、警告 E7BA、信息 E946、疑问 E9CE、星 E734、心 EB51、旗 E7C1、标签 E8EC、盾牌 EA18、锁 E72E |
+| 事务 | 设置 E713、邮件 E715、电话 E717、搜索 E721、筛选 E71C、链接 E71B、计时 E916、时钟 E823、历史 E81C、循环 E72C、箭头 E72A、下载 E896、上传 E898、想法 E82F、能源 E945、集成 EA86、维修 E90F、监测 E9D9、速度 EC4A、温度 E9CA、太阳 E706、月亮 E708 |
+| 设备 | 显示器 E7F4、笔记本 E7F8、相机 E722、计算器 E1D0、信号塔 EC05 |
+
+- 同一套演示文稿的图标风格一致：同一页的图标同色、同大小；需要实心图标时改用 Segoe UI Symbol 和标准 Unicode 编码，如人 0x1F464、齿轮 0x2699、房屋 0x1F3E0、图表 0x1F4CA、警告 0x26A0，两种不混用。
+- 不要用 Segoe Fluent Icons（只有 Windows 11 有）和彩色 emoji。
+
+## 结构图
+
+流程、层级、时间轴、矩阵等结构图用形状、线条和文字画，SmartArt 做不了。
+
+- **先定网格再画**：节点数、节点宽、间距写成变量，位置由循环算出，节点多少变了只改数据。
+- **少用卡片**：用编号、细线、圆点、留白和字号、字重的对比区分节点和层级，不要给每个节点都套一个带边框或底色的圆角矩形（slides_categories.md 的禁止项）；需要色块时只给要强调的那一个。
+- **连线**：`add_line` 两点为直线，多点为直角折线；有方向的用 `arrows=(None, "triangle")`。线从节点边缘出发，不要穿过文字。
+- 画完用 `check_slides` 检查文字是否超框、被线压住。
+
+1 横向流程：大号编号和细线串起各步，每步一句说明。
+
+```python
+from pptx.util import Pt
+
+steps = [("现状调研", "踏勘场地，整理规划条件和用户需求"), ("概念方案", "比选三种布局，确定总体策略"),
+         ("方案深化", "推敲体量、立面和主要空间"), ("报批报建", "完成方案文本，提交规划审查")]
+add_text(s, M, H * 0.1, W * 0.8, Pt(36), "方案阶段分四步推进，约 16 周", size=24, bold=True, color=INK)
+gap = Pt(24)
+step_w = (W - 2 * M - gap * (len(steps) - 1)) / len(steps)
+top = H * 0.4
+for i, (name, note) in enumerate(steps):
+    x = M + i * (step_w + gap)
+    add_text(s, x, top, step_w, Pt(48), f"{i + 1:02d}", size=40, color=ACCENT)
+    add_line(s, (x, top + Pt(60)), (x + step_w, top + Pt(60)), color=ACCENT if i == 0 else GRAY, width=2)
+    add_text(s, x, top + Pt(76), step_w, Pt(24), name, size=18, bold=True, color=INK)
+    add_text(s, x, top + Pt(106), step_w, Pt(44), note, size=13, color=BODY)
+```
+
+2 层级图：上级居中，下级等分排开，用一组直角折线相连；只给顶层节点底色。
+
+```python
+from pptx.enum.text import PP_ALIGN
+from pptx.util import Pt
+
+root, children = "项目总负责人", ["建筑专业", "结构专业", "机电专业", "造价咨询"]
+box_w, box_h = W * 0.16, Pt(40)
+top, level_gap = H * 0.2, Pt(70)
+root_x = (W - box_w) / 2
+head = add_shape(s, "rect", root_x, top, box_w, box_h, fill=INK)
+set_text(head, root)
+set_font(head, size=15, bold=True, color="FFFFFF")
+head.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+
+child_top = top + box_h + level_gap
+span = (W - 2 * M) / len(children)
+mid_y = top + box_h + level_gap / 2
+centers = [M + span * (i + 0.5) for i in range(len(children))]
+add_line(s, (W / 2, top + box_h), (W / 2, mid_y), color=GRAY, width=1)
+add_line(s, (centers[0], mid_y), (centers[-1], mid_y), color=GRAY, width=1)
+for cx, name in zip(centers, children):
+    add_line(s, (cx, mid_y), (cx, child_top), color=GRAY, width=1)
+    add_text(s, cx - box_w / 2, child_top, box_w, box_h, name, size=15, bold=True, color=INK, align="center", anchor="middle")
+    add_line(s, (cx - box_w / 2, child_top + box_h), (cx + box_w / 2, child_top + box_h), color=INK, width=1.5)
+```
+
+3 时间轴：一条横线，各节点为圆点，当前时间用虚线标出。
+
+```python
+from pptx.util import Pt
+
+events = [("2026.03", "方案批复"), ("2026.09", "施工图完成"), ("2027.03", "主体结构封顶"), ("2027.12", "竣工验收")]
+now = 1.5                                          # 当前位于第 2、3 个节点之间
+axis_y, x0, x1 = H * 0.55, M, W - M
+step = (x1 - x0) / (len(events) - 1)
+add_line(s, (x0, axis_y), (x1, axis_y), color=GRAY, width=1.5)
+dot = Pt(12)
+for i, (date, name) in enumerate(events):
+    x = x0 + i * step
+    done = i <= now
+    add_shape(s, "ellipse", x - dot / 2, axis_y - dot / 2, dot, dot, fill=ACCENT if done else "FFFFFF",
+              line=ACCENT if done else GRAY, line_width=1.5)
+    align = "left" if i == 0 else "right" if i == len(events) - 1 else "center"
+    tx = x if align == "left" else x - step * 0.8 if align == "right" else x - step * 0.4
+    add_text(s, tx, axis_y - Pt(52), step * 0.8, Pt(22), date, size=16, bold=True, color=INK, align=align)
+    add_text(s, tx, axis_y + Pt(18), step * 0.8, Pt(20), name, size=13, color=BODY, align=align)
+nx = x0 + now * step
+add_line(s, (nx, axis_y - Pt(80)), (nx, axis_y + Pt(60)), color=ACCENT, width=1, dash="dash")
+add_text(s, nx + Pt(4), axis_y - Pt(80), Pt(60), Pt(16), "今日", size=11, color=ACCENT)
+```
+
+其他结构：
+
+| 结构 | 画法 |
+|---|---|
+| 2×2 矩阵 | 两条带箭头的轴线 `add_line(…, arrows=(None, "triangle"))` 十字相交，轴端写维度名，四个象限写标签；要突出的象限加浅底色 |
+| 循环 | 节点沿圆周均布（角度 `2π·i/n`），相邻节点间用 `"arc"` 形状或带箭头的线相连 |
+| 对比（两栏） | 中间一条竖线分隔，两侧同样的字号层级，差异用强调色标出 |
+| 金字塔、漏斗 | `"triangle"`、`"trapezoid"` 按层堆叠，或逐层变宽、变窄的矩形 |
+| 总分（一个结论带几条支撑） | 左侧结论，右侧几条要点，中间用一条折线或花括号 `"rightBrace"` 连接 |

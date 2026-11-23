@@ -1,2 +1,104 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRVI7MDKKVEY-muo1s041_J7IcxOWqPfT1XiDGAyPwk6WJc-pGfH2FHbCr38AMyWeIkFkartOcKeVGwVvYlCXAdBYwM08_RXZzNMvlu9jdvlVXW_082hl1_2HacXdMIPy5MWZY8ZrSmASam7CzXdolqdiZoR7ETbPEf9h88KRV7s3YrDJ7lxJMC73IV8Ajy_fb1Fv2Tb8ZlPEa-ecrGdJljaoB-G1gXqQlw6S1gvIYxbkCusS0TLB73rkS7JUe9yvV40-eHXk6hFftDqB5doiu7-T9L4KsEbXjhwhs5cILD4U-J-xOmC0E31RaqiWIQUBo3vrugsDSr9TP5RzigbCvMfiExWrMkWqVcsw2AWUnBnw2Hfid7fmy0xHXdLFHlUiVPflHPy_VRUK13JoYhDrkWEhErE8J5MjLnTIge41LKLUOkVCS6rqCKXRqH5r8GD5wNfJMXNFCsFqKL4Y96dGmtJ4wK7sf3r4A5YkVydJDPIboBuO9DJ01zNWcLl9vf9NhxuNLxJUXDH6HLPCB62gKQFadp9QnrCFbkwSwmUDkWsH2XbbwjJ5YKbPEPuyYgxdeO-7NbB7npVfuktz6J0eXDlz2K5BLtZJCKw3jKijJ-3BMxvOs9M_zXyRakIypHpvEWr4QeQpUS8YRyms9LXKctJ2ykKgLkpNezzyWn4c1MubtlxIVXMHSzxUilGvoO1Pu8ipQDHUy8Ufx4VztjJJg_B1x4vL_d90h63ap2d63CXsZNu1zXqytUkK_l_bCxd1fZaRJs_6KefLAIogVN398VaumnMHhKBIdWfno7KtSst8JzVbVXQXwVFVRPwLl-mp42hDJztnTW70Vy3aiktk5WBZ0VDkI0hvsZVnpXSySNGoYRGm1NLTMUviNWXDwzbSj9RJcvGpZH8eOZ1soQ90KaOV6vqeM1IkqxJg1wcqz6FyiOUSoF0m6dg339XguhpqXdkP57Ar4o0uWdl_SC_pWTYjgUINSf8YxLn8OiCCjuQOFqZsppu48e-j4Lb5RplSmq7ph_3-NPZRJU2N1IH5FjeIWAcK0llr8BNtVtzPOYMhEk1oj3vKBv9QRc8pnWDWGLcUxvAjvtOk7RRcJ8B8jYdf726iedcETWrlWLkSsSAh_7yKRTzErf9XjbbFU0yQ_T5AKuUsW0RU0S1mCVRzPXsMJyqxQV-GD_iDR64W4xFm82JCltFU_EI9p2stePWNGyXCd7VbKU7-K27AF2fXB4fO1oXA07EMIE7Y5AR6MtT43eGrPgsSFnypOiG1ldE4QyD2qBgsX5yOaU4L56tVM4pnFMzGLCLKfAocdlhKsSSfh_C_2lpWl8DG7CAYcllvvSiudSoaChLkVMIWb05qgCY40EoB2VU6_MK4558-9iG3CGHvzYZngzNCF_kNl3Fb0wvJt_MW4v-8qyKwjnRn8Zto-won8P6LmW9QDzpDHMfQ3Mtknwv1DWXCS0TZH7LWlpsAV5j6kTBecrXb3wN5SvfjJP2lU1ldyrx-qdHqYHuKFAh9WMmIAx7x4iUFp1nPnkDPJVvYnZRnwFvXsdQUGXgcpx5RHok5raIv_ZQN6yHtUZbK1d5abz7DHCZfdpYps5NnzgpZ_5XELDUdesYVzxp-8VrsqHAVDMTnJ3f4bb7In3hczu-koV1Nce79NLwYSAQ0KT-Fr6lYto7LpFVwsyxRvmnbI3hsWXEDkqC81M_AdRedtj7D0gWtWzkkpiXZaIzGV-oXIxmsMpEqrxhkxMWpkiofwFQ7tYrrAf0uUptxDEm7CLFJca27EZQXP5VFDpHmNmOdsWMPOPLpeVyeLeiakaWNHk3_dmb6Y7P63Xi1t9R0D0z12hmG_qBDjkISwFB2B_KOt4OW7sG885SLbaXH3iqyq_i1Cx8AWgtyk6kyHUL1Rr4Ge6vr7_fFrS6fc8g_TImpJDrtNniG_I97Z3bsHvZCx3QOYAuZuZlfuFdQrpWs7y_vquXfsWQBUdfsh2z9YdDdTGfE-ltFvLfdPc9Q69jYBiOK_N2daT511gcME7ohEUozx4Bt0qLQso9kXgtgotwYiMLFiEsCfSxtBcmkOKd-ZUwbheWJmTrSCktJ70E-I8rsDiBqeHyztKugvirmxCffO_Kx0QcKPAoDLxG_DwuIzS1m5veXsanUypAV3D2e9fxgEwkhbTeqT974WJTz41y009unxRqQuC-i6JU6CTMuPz8pkJgpwvPVQQsecsnNb8cE9qrvScdbuX2VMwWmCusgzPD8jBvceYXOsIsFhC5Phyzrt0AVp2F3Qw2h2TY_0m1lz3rmPG3LccS45FTbIld6WLyglkOwo6HcpPwKFcCO9sBOJ2VTwFRB8z7ZBBz_sNGJTMgoZIF878ihPym94_md6iSoXKu8USoKi_IFN5pI08OT231c_pskC2_wZyUtlQV1JMi13GQ8U7ybvJiHR9LFaQWIGEzBdq6SJKERVHFMmMJjEs7TwfVoKOxSBSMmm0LP7IYQsyvICATT8CUl0xt4NGtQUCIX68uUegkDy8WlEI_GwmbD9N4LVZ6poeDgXqR1RS9rquKE8MSifMaR3K1NrA7H4vPnQg7gsIWmfsH-C64iX-lpHeV0BUrFVOB5XMcCnWNxQ980Xq3qNTUGNDdyYk3HsuGhl6a7KQleYj3Hjin5Zu8VHSc_YaVtf_Hzh33h8Qt78IkaDEMkY-L3YhlyjveSql6qQxtr4h9toc66In6TymcLuH84jbLfLI-aZumABP6b6LZbF10tcLgqVFAlmlCRf9vKVTKzcjzduE0YTd80vYd8MQnnm5hFgz1x7-4g4wK7Gykz8kmf5m0yUlmsdpg7QwcZXOAqz6eFVnTHOJQQFc2NCDgleQe1pc-_g-sYl69X8HJ-qsBSWffle9P1axJjHNGMWqfav9pERNwufKXcXnd-aXA4tYWHWihn-ODjEA_xKobrjV_k-CAjk6HzAl26DUgBS1WgBZSS9eX_XFQGreLJ8wmTweAcxB4IC371TlvnSgfRfRUI_SUKByXbsAVwQdEGBU_QYWnwM05maNr7Xe0yBC15c2BqtpYbs3iz_jcTQGGw8IpaI8sppk31iTOqIib7KM-pJGLqEsN1m9TtlKprme-NJP40aHQWozgjVtg12OFGN4WIqHK79GpMcDOhXhUwvW0I1IZL4HH91AMhJUVRjmlcTCix7agF98viWJeZnUOLW-mAoDnALLC8IJ7uU4FCeHj1MRkeNsZ-0W6k7OuzANo9WEVqu183WiRJO4cVg0bk5HRaIUkKXxpHW0R6BH59nF4UjX-k-tqqHB1IyqNXfOhKN8T-2im08auvqdgBHdthyBwyCyPvaE3Zv0sLk9qnkUAM78y2c8FD9-NRw7U_b3UTZnP4mziocmFAuprjGZiBOlW0hiXikEwmQolHO5tuwZt7HZDRICqUMWG344onEqPF4j3QFcrYn2nCCxiFXQMesAmD_oswmR4vpuHjSk5lrepqlzjTrxeQzQPPwHFwXxmi14EH1me2MNeibfDjQbE3apcMmeCDkqCmbpPqcLxG8TeuDGJSzdNRpsntEwd_yOqrxEnhfEPt8mgcX9nCWO1w1RfxIvzZTdTNmuUzdxwzu1G1W78kdGRJHQPPX0xrpTf79muvbcEQaZXmr2pnhEvT1Rza9rAZwiYYDQSeWNqeN0thbZ2sfLGQOdwx2I9snpGLP96-fTh6m_byX84gx8jSqX4mYEukJKb_tEg7zIzt6m0cdUHU2jcKD9CcuzvlPNX9sMIc6PyQOZdQh4yH76VrzSG48uYlX10OJzSTrXWcmAQSMvoO_v-O_5RkcfRjAWoUU8Nytn3zrqm7uWHl4oy9QK83zEAVYkwVDg6YfR9pFhyb5j__qTdTT5FeSW2cvyi4I11IO1uGm90pStrgnkbCosJI_PIoo9w_NgANzRewNxX2Bv1w4a8NIOHMfFnBLMMaf-LNpsLp4kGOavDg33d7Tex_b5h9UjpUmCb7IS7IjZMkge6gOeYLc0AoplLUmDtKFMCcTLyX7RttlGJKWzlyWtw8_fnuPWObqJI_1vtX0T7ZrN2qvcGx9RnsaXFPblptTfKiSlWbStFIJ4t1YVui4cXJeCI5PTW2rXEdOfVSGnvqRQNUrDdkfQxFdr9x6S-fULbN2O8ToWl8DsnEx6ceQ67WLlu3Qjepj9cmZo6dQxt5yhnRiKiFLpclm57J6KeK5RB05V279OiPAs4JZReAuG7woOHhCenS4a9EUeslCZodzb9WI92hmHvxRM54BZBMLUGNwy6oKxQ7Mc2rNPk2OwFvLHelBRJ1BltWdRywgZuSWrmJfCEhuLFBGUJE681jJqdAntiZ6FiRGfTbeFvKNvGt-xwpc9Bf8CovEWOGvTUMyQgIeGRUiK8HI-P3E3qGKI2x3WhFUVHO7YMtmKxj2bnNjmcXIrXRcjX_080XUOVJ3xEK5e0mLKQE-AUJsJ7KbnaYj9wiC6ZwYrOEHvsFQIKmgQUXrC_oIocABKdiAJ_EYaYmbLfMWSFX4N_GKKycs-4Ft6Fsv4t9z77xj6DJTMY_Bs6KJmi7rJ5UbSKsSCg6yTqLxje5uaJ-oOBWc9WCiJ_4gnOcM56j6RIQBQ4MW9Opm7VNtacIXnk1xgJBtNrfdXkNVY_nyUe3bAvGOjvgCYoL_f_7GnjMLDe33jVDKS7TTeyu2sV_Ycd1pX7XWDMg723K6NBRjQolKEkKYdqBOY35-sgazykvTIVYMO29mUxIymMwbzMrMB_R1YeKHZG7sR99sksayuRrEm9JbIwsF5-t0NFvWmFoeQJyvXLOHQYGqNtJQdLl3VsDNp5qnrjmHvpjNhD-eq2Oh5bfgPpVjkUeM_J_z6AMbnqF6K9i7KSOms-O-_zDt0XmvDVzkN4XeiCis0_doH2ozNMkx7V02kn58PS_R8O-aMDJLQQDst6ZW4FyTPLA26ikani7J3Zhz9Jh_N-V5KobEi3-CusdEZ0E6qYkvZkchOzSMF94fPVEKqizJHy9hy4VP3RIbg-RJoNwi1VuOMolJEGbQLbTYrrTzZDz1GgMAkyr2e4xG0tfEcVvRMnT49q3oOej6Gf6jawLTcrX8SBcoxdzaQGTIy9iUda97uY9F61SmTtTadmGr-uxz4V3ZQr2r2au8T8DRTk4NWAWUPQPREW7OHypYnroowP89-P7AhDi7j8aovbcSIBsGxePNj5gx3_0kUnq57KOd-QJJS9Sp0HZe0gEaRLIwj-fr-Q_Gs5tPNhKiyENMc7ma0D2f31scdOt-eLhiNOkUxWW1XD9KaWIq8dGpBEcuL2A1Lq5v8gPewTCUgRLGXME8Xni1hQ7QxpdbOwU8ddYIQydMKDkE4VyeJRJFnFdgyFQmYKNF0tB7glo3Gdo6ePIGfklB72gcT7sWHW5HemD4bt83aEmMC57xJHCAj3w2dFp7GmrOt8qEIuWz2LdMsEGUxxliP3InyPWXciM0G0kbVgvBF7jWuKpX5L_mT9mzC5KZM_55hk_9Ltih042mRXRcphnVZ8UIrw5FIf8lMXZmuy1jDBLfZmoY9r2LyN9xxIt_PPNc79mMRyJdiAtLTbozBgS46vQU8wDzZzAZ8rVE4tsbn4gQtLPUqVsNiOmivTxhj0NXqckeVcQ5RDBkWD-M4-RZ5dX11LWCrOPpWNswRHI3Gr7wEqlXaptopserUvyHAPP3Vwel3W6HL0huxzdKbMbGK1SSubU6sel0G0AwKtsmDK4w74KxGXN3EWIM1U6PI7Rr9ORuoNqYJmv5JsZXwpTBBZcvVz3lvmkOmDrEqnBhuBCstR4kNqTpgj4iOjwgME9SeXbaf5g_or8QMQC1Ean-GZwFaE5e3wY6lAhNmg2qMcTqGJxMKilf-rSJArjvE_Ge84wGkb1NdkTfksxgrpY9Kde90YX1e33gUUzUICtN7PkZBsZIwl3KKWc=
+# 模型修正 — 参考文档
+
+
+
+
+## 概述
+
+模型修正类用于在不改几何的前提下调整计算模型：附加质量、节点铰接、偏移/偏心、
+单元抑制、变截面组等。**全部是对既有节点/单元的"修正"，必须在相应节点单元创建之后调用。**
+
+## 核心 API
+
+### 质量与铰接
+
+```python
+NodeMass(gnids=None, mass=0)          # 节点附加质量（动力分析常用，kg）
+ElemMass(geids=None, mass=0)          # 单元附加质量
+NodeJoint(gnids=None, type=JointType.Sphere, geids=None)
+# 节点铰接：type=Sphere 球铰 / BeamEnd 杆端铰；geids 为作用单元号
+```
+
+### 偏移与偏心
+
+```python
+NodeOffset(gnids=None, type=OffsetType.Translation, offset=None,
+           sita=0, axisStart=None, axisEnd=None)
+# type=Translation 平移（offset=[dx,dy,dz]）/ Rotation 绕轴旋转（sita 角度 + 转轴起终点）
+
+ElemNodeOffcenter(geid, offCenter=None)     # 单元节点偏心（该单元各节点 xyz 偏心值）
+ElemSectOffcenter(geids=None, iType=OffcenterType.Beam,
+                  vType=OffcenterDir.Value, value=None)
+# 截面偏心：iType=Node/Beam/Shell；vType=Value 自定义或 TopCenter 等 9 种方位
+
+ElemNormal(normal=None, geids=None)         # 梁单元截面法向修正
+ElemPenalCoef(coef=None, geids=None)        # 罚单元系数：[弹性模量, 墙厚度, 梁高度, 保留系数]
+```
+
+### 单元抑制
+
+```python
+ElemSuppress(geids)    # 被抑制单元不参与划分与计算（唯一必填参数 geids）
+```
+
+### 梁变截面组
+
+```python
+TaperShapeChange(pType=0, exp=2.0, SP=1, dist=0.0)
+# pType: 0 线性 / 1 多项式；exp: 多项式指数；SP: 对称面位置(1起点/2终点)；dist: 距对称面距离
+
+TaperGroup(name="", geids=None, iSec=-1, jSec=-1, eccDir=-1,
+           yAxisShape=None, zAxisShape=None)
+# ★ 首参是 name；关键字是 jSec（大写 S）。写法见 references/fem/known_issues.md #128
+# geids 组内单元号必须【连续】；iSec/jSec 起止截面号；eccDir 偏心位置
+# 连续性已做反例实测（2026-10-28，#147）：非连续组会让 genfea 报
+#   **Error:读取变截面组出错:*taperGroupCoefs:1（exit 0xffffff9c），
+#   且 12_TaperGroups.inp 的 *taperGroupCoefs 数据段为空
+```
+
+## 代码模板
+
+### 模板 1：顶部设备附加质量
+
+```python
+NodeMass(gnids=[n_top.id], mass=500.0)        # kg，设备质量附加到柱顶
+```
+
+### 模板 2：梁端铰接（释放转动）
+
+```python
+NodeJoint(gnids=[n_beam_end.id], type=JointType.BeamEnd, geids=[e_beam.id])
+```
+
+### 模板 3：梁截面顶中偏心（梁顶与板顶齐平）
+
+```python
+ElemSectOffcenter(geids=[e.id for e in beams],
+                  iType=OffcenterType.Beam, vType=OffcenterDir.TopCenter)
+```
+
+### 模板 4：变截面梁组
+
+```python
+TaperGroup(name="TG1", geids=taper_beam_ids, iSec=sec_small.id, jSec=sec_big.id,
+           yAxisShape=TaperShapeChange(pType=0), zAxisShape=TaperShapeChange(pType=0))
+```
+
+## 常见错误
+
+| 现象 | 原因 | 修复 |
+|---|---|---|
+| 附加质量不生效 | 静力分析中质量无意义 | 附加质量仅对动力/模态/谱分析生效 |
+| 铰接后奇异 | 铰接释放过多形成机构 | 检查该节点剩余约束；球铰 vs 杆端铰别选错 |
+| 变截面组报错 `TypeError: __init__() got an unexpected keyword argument 'jsec'` | 照抄了手册/旧文档的小写 `jsec`、或漏了首参 `name` | 用 `TaperGroup(name=..., geids=..., iSec=..., jSec=...)`（#128） |
+| `**Error:读取变截面组出错:*taperGroupCoefs:1`（genfea，`exit status 0xffffff9c`） | `geids` 里的单元号**不连续**（如 `[1,2,4]` 跳过 3） | 组内单元号必须连续；不连续就拆成多个 `TaperGroup`（2026-10-28 实测 #147） |
+| 偏心方向错 | vType 方位与截面朝向不匹配 | 结合 normal 推导截面局部系后再定方位 |
+| 抑制后荷载丢失 | 荷载加在被抑制单元上 | 抑制前检查荷载/边界的作用对象 |
+
+## 验证清单
+
+- [ ] 修正对象（gnids/geids）确实存在且编号正确
+- [ ] 附加质量单位与项目单位制一致（SI 为 kg）
+- [ ] 铰接/抑制后结构无机构、无刚体模态（可模态分析验证前 6 阶）
+- [ ] 变截面组内单元连续，起止截面已定义
+- [ ] `TaperGroup` 用 `name=`/`jSec=`（不是 `jsec`），且 `geids` 编号无跳号（跳号 → genfea `读取变截面组出错`）

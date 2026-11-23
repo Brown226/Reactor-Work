@@ -1,2 +1,28 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQCjoERmsDRhTlPJarj-SKnRN4cffExBJt-1ORsP-wF7Yp98HISiExf5PouaMlUZG9vbttlIE2YtpeHujd09US70Q9pe8nCN0QMOn3la8m97KwgYN9YpulVe7zPkzc9RnG1IUdyVQbIC73MRi3n-uP8z9JsEhgr0ZQMnJ-wtbyymbsp6NdpEx6bMsUfk20Pc7efvLAJAcKxHCsPIVjJZ0EOgh-FzgwGFdtZwv9Ii6eNT-hQSIJM6mo3zX8ds6rj5M3xT9iB8-kWjAgX-nRJcJRzEuKZlcKOpZ6XMKJnQ2gI721jdpDUd25jn_Spmiu3l-uWfVBYmvcuOP4FGWxbhQhwfZsJf3kn6A_XOrGUawkn5TgweaHnLPlZztRl5XZwRBlXymASKFlADhoXelS6uTUx7Hhk-1oTmhRVaNRDcAcP3h15cwJxMihVJIbrd-zymDmheX84KPSw-eBje8hQgn8CeXu7dq5D7XpZRP8-vyyZMGTyKn25VD5M-WDWhLQAdmO4ElyD_qJsH3n0gJFXaN7A4giVR-yOMgTONGGbCT7PzHEmrnZ8T6GnKbn1VjGiY_vpZsYwwGmo4Jfli5wfne9velyr9YIYhIfAn69xAnPX3RIHZ2l8DT3pnDBxeFTO0k8paL5XT6mnWSHUGpaetS1ChFZaWAdLbSt2hvG5mmpBE1MNiQ4MU8Ia3pnpzEYev6Qeq58GZl6xpTdEz4h_OrCZH7EG97pZpD3Fjh_Nyk2kdgllmb9U3xjsvI0C80XFBt3tw_xI7HTWYYGVd-XuvfEya2ppsGF8xt2sYshh9JHvejxBQsUmmhxMCCug8QsBJl3mzAN0oQONuyqdELOEQUdVHtkqPj6QTvg0xK6x45JH6wRz7eWL9Oi7wmEx7rbV9YS8LFOWX0ATKY30RjNAJaX11LAALge5uN7_KIqFzwU_Y_kPB77oPV6EekAOwoESE5f6hjzdFDKtXBHydaXhDC72Z5WAZ8cVyOKv2TvcUrRJ91DNuKMb6EiRkvJewOeceGXxz5Iwco_7h0w3fuRNEBhgVvp1ztBl8iTU3or5UxG4xuRoT1dhAzeZOMGhPZBzy3DztyTgS79-wtEWAhq4qXTjKtdEaapyRNL-l6MSB5GMTe0pHqjaoXv6yGr-RzB3tHtPSEW9O9k-7GRUGFV_Mk5RiCOHgduP9Ra3oL2e_376G0cOqTmtkhbvbnoTg3KzKi9YFhH47sO7NfqfQcEH3jAf-Bn7iUWn9lmiHULDjBLa_vHaje2p-LfZhd3RWV_nQnRFY0URZvWAe7JLVBap4-JP7zgAlvWw9q9luy7daciQlmWBPr420mhp85WtbPA0Evp65IbssjaMQKYo1e5mSOaCfAnZNZqcEwjjHuFPVVOvUSFQPPJHnn0-dYY2HtK5bBis9icxFGGa_jiqyFAM4vPyMUA1Onbcd_pz94XVYmh0nLjvxjM6Eaa561RHXvBIMvp27QwGhQcjidKUsunU1LwH32Ov5KFAl9nrWKzXGn6cRmyDdEgB8xLGFIW-zAzfNTuuNWM7iFz3NBruA7TEeI5OvJnSekmCGMNLj7Vcbxw4i7sXmO-ZyJtrEQUckzsAxu6MI7nWzQrNmgh1hwCLSCIObljhJ-E3-NgXQOmfd5d5zyMDNI-5FGMIpEKOswzk7fZMXVEwuLyhNlqP78q4H0A-gLWmcAybXYeLBNZff47KzZIlZsPNYLRxoGwoa4kBXezLv_8aA8BQEhGmKfMKKym6nPh3BCfHgktfyPCs-E8-Gscp_g-Mv-jW3kjYFfuyU-ix7UhpjyPpj20WuGf4DxAYWXGTAtsIVUeE7oLp5hjSnU=
+# GetCurrentModelView
+
+**说明**：获取当前正在浏览的模型视图信息，用于确定当前所处的模型层级及对应对象 ID。
+
+**参数**：无。
+
+**成功返回**：
+
+当前模型视图仅支持以下四种类型：
+
+| 视图类型 | 返回字段 | 说明 |
+|----------|----------|------|
+| 区域模型 | `idGIS` | 当前区域模型 ID |
+| 建筑模型 | `idBuild` | 当前建筑模型 ID |
+| 标准层视图 | `idBuild`、`idStdFlr` | 当前建筑模型 ID 和标准层 ID |
+| 普通层（楼层）视图 | `idBuild`、`idComFlr` | 当前建筑模型 ID 和楼层 ID |
+
+四种视图类型返回示例：
+
+1. 区域模型 → `{"idGIS":"xxx"}`
+2. 建筑模型 → `{"idBuild":"xxx"}`
+3. 标准层视图 → `{"idBuild":"xxx","idStdFlr":"xxx"}`
+4. 普通楼层视图 → `{"idBuild":"xxx","idComFlr":"xxx"}`
+
+**强制规则**：
+
+1. 时效性：本工具返回的是调用瞬间的运行时状态，仅**当前请求轮次内有效**。每次新请求涉及实时环境时必须重新调用，禁止复用任何历史返回结果。
+2. 字段提取规则：该工具返回结果可能包含附加信息，只保留用户指令明确需要的字段，其余附带字段直接丢弃。例如，用户问建筑就只用 `idBuild`，问标准层就只用 `idStdFlr`，严禁输出多余信息。

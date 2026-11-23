@@ -1,2 +1,202 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbS01L7Ksse7ZID83gWlhAtI-O40c_womnL0ZlakAS2mzYVcM0AhYos0aC0KRCeRb8liDFB36-C6g1EjIy2DiDMm-DoaVipp0Q15JkayMPlZTmAJnkoSpvNOXaZ8F8ETkghYnMN8xIZ3Ghv5QkCBc1O9suH-nug8W0JL_wwSI8pENsocYHVmMLMLMKJ-hoWTQ37PzLateTopE7ocl0o9QJizlSzTUdKcG91aTKWFK5IrkUQ1MCX3L4h9Yc4hi5whENOvghO_LRTw_sRjdWZCk71GcquHcwdf-CNzMOluxHZH7fJtYpAvLl_89yuGROyPsXyTashaYbIGMjjY4ESpiQm3rHGcyggEpefLqZRET0yP58S_g-HSV3Xr7lSgv-6_MnjolLBBov2bgBmyn8mottStUw3I4rYYYvngc60EQ0Z9PDrwk42jGcDHz_jznA-p6D_nWAGIISYZhSih6OxEq5cn0ZSiG1rrPn8Dq41LcFLUqyCKJXFrDkAcdYJwWiNyQlvlrv9oeFV6a8Z69_ZpXHRhmp_uBMdlWxtve9QDPz3EZP294HSDdv4JnoSPX7T_y9LKLI2YRzX0iH68ZKckTntrwhGR3VGoNOjYoJeyvpwX4wP62qm7mwtXtEJ9u8XkmvTVUU2qwXK5IObgRPcXR2eqSgIcf2m-qjkZsBywdab1-MOvtSXE0-SfgXUYLcmrRFAfF1_H2f8TQTk1ZkIUNsaSmOqHz4FsffdCDu3DafCtGIn4dRpZtplWQMWr9NqOZQezSwYhBssJvdeWE96M29VHAc3rJsIWaWV7muG2Fvqhq1QC_1cAx-3ACiKZ2TtuCJkf8FRUX8ABOVJcvRl7ZbJ2LX0hJyJL2qsZSrYvOuK2wSMJMwECkuO21fsCD1xk5R7SeArtMXQuQZQFToE6kru4SkPKOWtxv33PHNUE5jNphsZYmCwHlG10hRNKZA_Rrq1CTiPBpN2wMya10RQNfUS_AsquS7-nB27NUb8GRJEF13janLOS1KJEcNO0rDxNbSrv-pO6JYSwfybkaEMtQbskiipmXIUlD465pkU5tZYMkaO39GbcMbi3uDwPhK64QEGD42votRszdOu_HOKwcDwoteyjeFn1K6BgLCgNnqmN4uPOqCamcoIDpq61_GD8fC_9c4dbikUbX65tjbIpbqel1Ll-mjjEK6R9RuTrDaV-eGuSfSVt1bgAp9NfCaFaB3WxLe9HdgEMuYViBBXpw9jBHGCKTnr2QBCZs3lp4L3x0O1AnAn6y3TMIC0RjaP8WtgeDO51kJQFFZ5dzPsa25yNAFm9ipT-yT2mWQkdMuRZVmHSYIGcEa30OmtEuR9nUCFqlQcJd0OumCmNojEjnhzAl0dYq_jGnMa_qYDgmbRgd1tFeNchvKh8FpWcxvkiiP9RYMtqgJ04I4bkEXndcVtYAKXR9bHPRODyvk8YL2CH3fi3upfwZmED79dsKhPqm6IHQA8D-6-EVaxflqRlKEfdSTf1_DFuRYvHoF4MtFEIMSQfsYoucttXgaxV3LIoL8v163yDqyLQHlIoZYmPTOO8UghpqlM7yCJfrKK7Q_oy30ToKIit9kPjhv3XnNx-ZAhU2Wx9FH1iMpWfxQweLC-vYwPAhUmM7AJ0lwo2R1IA8A4R8CT9NVFAUv2hHouN4Eh_4L9PRegvtC6NeoffZP2M8U9oZbb38-sjWClLBrgm3UPSKQeSZVSCQUT7wc-jUPEbDOMe6Ze3GP0qgaBUPqdn1RUIVKKVtL3aCXHBsGIzQoxmyIwvF4ysRgJgJWnpVaMenoskqBMmPsFcNYo-LTQIbwJfhWM1WUWyOqri4K3G9MR8ganjQMpviy9Hx5-1BnCcjP0hf8z74RVMXTr_Wq68x7d2pT74kRqV-e5xTooH9uudOsUcElZhE83z2nRfi6QWpM45TbUAHoMMf-kEl4N-7S7UT2UXO3m5WyelwJ_-dJPVmmWnc8t7SuI-CYNCxEjQJWFb87smOmwDG68EF3jT8TPzqnNbnlIgUXUNUdzEPVnaF7bEg71XfD7Nhs3lqEvxlgRsCsiUnBMJTFZfEAQIsFFBcEjYIqYMVWF6ceEZtFofuwzegNXnJUXxVC3cGEsf4_Tvdj79p2B3zvagPF-xCOzoMgSqeCx1Q7WaFeT420oEhkBwaqjhKeYHh1JZOxIRNlq8UiyJWeXdtQWn_nCJEk1VOxLLQOsDBVIONc-PA22_dqlpJeoUmFKzjICE2HN5j_mxN8Y8FOy5P6PWF8DceKyUupQ1UNHZuq7EsHwkx5PoySrbxS00Ud23MK71FNGV--xroi-CByviOdQ9Q_FIjq1byyAQLniUZkF_0A1n_ZdyVkKEfPAb-W_JLbc-oA_b2QUYlu6_H_2UnP-xop24GfDhjkGKmx6Qfko4OqAra59LyQDWCKG7wyZaYKpn06F4S9-JTvqdX-MNcWqPrcfM2YAwFHxKbG5yDjSLEyDYpiOx4R91pDIcuo1S-NEh2wFDHjHH17Vpu76wRX5nZi3OhgN_h1ZR_M0L-XXs2DHg4Wen1oLod8h_TgTZLusKAkDf3PM8Zm85DBIyAekzbn3-ZJBIVLQj03Fm306v_X8ZKYjfsLYYjA0zYVH5a3wRZoV9ycGnwIlW_5K03TR9a6k8E7bhDUA6uXV_TfT2Q9WFILb5olTIJVHKvS4-qjnDJid-ldrq2b7OU_oe0dDrk_paXW-hXgfL0IK4P1N8MiJjNWKM960lRHJ_JP7jrKtSVyaK0rR9F22hh4IvdgDkWAHpNrbu4yESjE6hAtqKFds8iSWy1HoEkEJJhKHLngJi0FUVgzkggJuoF7keFGJdwTvF8e6YZXG3_CwqhFITZa-BVToH0FzRA4_i7QIGnUSVbf8_bIdTWxawrs_Jz2RPfofO12gfkFpAocZk5bAmUX7gM5I38kL1ke30ArJvtMoF4lnwiY9p5I6bLEs0lfnl2Fynb9itaHegGC1kHCdSOUAzd7fQJiYNzQLNw55jCB6FYxozDP1a6xHGpBJ9Q89vUgzmloeZ2-su2701mcRUYp2yWgF_qn13jqElWJCTK_z_J2k9Tqx3GtmwBO1xDy7hWXX-kxw7ron3Nbc4p0ZNv2GfzMa1N1bFaDCFiFB6C4LzS6ColyxmA6yA8UNGMClfnIaCSV7Bzbh6evvvAd2xGkW5j7hD-Fk-ov9uIz4TlHLl_z32CWv4w-bbHj3yTlp41DAn9Ab3A7MB1ABjw4kfsaHOpLuHUcjReIwO0MPcm9lZ1tzcYUo8Pnb9YIgr4jjgUXcpMOGyslf7xCodVV1Doh3P9TfizYT_o08fsGQ00HHd7P9sBg5DrSu1l7WfDVpT7MkiTQy6c55yXnnTmUHTOK9SQLZ1kxEhWBg1h7NTlfYlMrR08WQ9IkG5sUsXx_amanwXP6sBCVPjM3xlw3Xive6Gx71W8JdSKOmmNW3yeJNx2UH37CvguYDyCZVdFw2F4iZclkMAkUux2OlravjBjQR7RriIcy4t3hKFNP3TEmn0zAqScG7ROeAzFYOjF6GJpl7siR1tUVyYZnQtZRSFIHUbUc6U4JYEZ-Hy-z4URHEK6DCBBTFmpf3CvbsGcCN69XySS6XCBnTRx7OHXXYIuuCywjF8GgHnDAn1GaIF9hJ6jNhw2xZAvmr9J-vu1USD3Ve-1HpqgZR2R-tUaqwmxzezx3wyNqmLlMoec0yr1NZ_dWXMs5yCbKvEB5q0DIikRbN4XGK7mleCdSNtTucFoZNc3rI7GuaY_csFF2s4v5kjwdTCyiuv2c_72c3ucDwPREgCpb2rLKg-Pqqpw3euKSZ6mu-oxBDNI9ZF68pBVOSJVbOeMJnBBu1evzn1ybkE3GcJs_WkGxKNg350fNRlDw-AuxhByMJOXsQjfII_lzq-4TaUv4FAHph6mH-0XHIGH8GK1pM28LAPkp0jMSwS9mS5-wglxnW79wZZMsmoKcXKb604axuQiMsGrAnjmkXMCqkq8NbnkvrZoQLNkrqoto6FEFlVHYZ7-heHAl8UKydxWzh7mQWoYKb6RLNvd7g3NKUHKR_hjSMyTbwePhnzBcprbnZ-ZgEp7jYdpzPsn41pl5H6DJgNLmgsE4NLWQszc1NAPyLlm82FPz1MEBlrpz9ZwlRrHV5oiXT8fXn_WzavPeZxCGeGNMjjg4FHvxcKrBHEyi4LwXScZnXSy5j2pkFFd0CFVEr7qGSpviLWanM75loY7R30EdEf_bM8RzTW6etI5RASBuOrUsyhf5oRWf6uViUDW_N-o6FeIPGxRcybb9tCTa4QjoEntM8U9sPwIZvnopJcMbvR-bPm3x7o0fKxl4J49ftt2-LvwjW7tYipYCbPvEV_lGAB9dJGa3td7aFGmV1v6DBQ3_Ca2Vc__KWaOMWtHoKUMfu3hamXlEUwvzii4tu1bojRa3K165DlkUu-wxzF084InPBysN9pzCPNn5a64Y-976sPBfNbzqxrhmPVF2SGmh53bGuUjxrqSIL03ui-xrzDpFS4HSaknuZiOmL6uVoeMRY86C5b-iO4gZJ9df4Xv1Ez75e-EPoexLNEeOyiD7SjRAt26XUrGZdk5YG7Imvq1thneYa2P_Tz4EZLiX1sJ87NwKb7uX5UOwpHaNv4sv0AJ28wQj70Qi8afNQJmGeb1qUIp_Rj3aX5pB_3IkV_jxroGoo6Xvlz0BS2vu61rsw87f8i3eZd_rSvTXYnOIPOdzs-reL7Csz6JycPqbmgjQGeG3qIMC4Mu7mCpU5Ssq2KDkLcGQQXDFov9Yyu-nYpcuHHz2458fEk5cO7K5rJHr-dImdY1qL5WfPGFjCv7dwTAQClVd1TJL-LY4RV_qLvYWSDcOE0Gw4PgCul33AwgioxW5yC5hsNioaqrkUJWAzitygsEtWd1wOj_pdmkDg1fXAeWc-135FtxBzeYFH_TFOYYTrPk1EKGJe1C1Zg57-LGQHNmNmZtReJtvr-n8OhBFusbkjbYdIlJ0--NO3XXX2gXkpJ5dfuyzFS90vunLArTp40xU8AxY0MLUziFIVI9WwmOO456Bp2tZGYqiFMkbt8QGBo3lQ_TpnK2DsO9uELqyifD9IX9CjEfqr3NzLIY0ch2PI9ig5s5tW7Mo6qZqUOgNqYh_p-pYqN44zx6w23n--JNRPAVOgefnil3CcD8jnnX4bpIYXY_VGCMFBWQ6BgE3FuRC2DbxNn-n5lIv_tHAxc0uphiTGXXdh5VeZBc6KKv0QxusZs9e6jtQUacxEiAxvjV41d4KLg1Pr2CaQHll5yOz80y4ophmyLfyjNkYsmyGwK9TpPmi0QSF1c9VVLS-K-10PPoE4K2C2agKRhWs7xAeO4noZTT7l5TbRXW4YhtdIXuRs3PXa_C-ztCKjMRgIA4-HP-NmOqxQiUc2l5WegI3hrQlIg3vzKqDLf6r1jFMYF1Bn0HCNO85NC8yBLqcpfmusokSdFf-b_X1vExZiIURkgiBggU52zzq2BP9SiLc0ZajzrNiMtizi2PoeQzP1WmKsrfz2N5BH_5Epy9BAeqfAXOpxfn2uSy-ZTb0c-bLgw-ohRGgmxraGGlGN7c3Q-ti7sl1VD2F_YGs09dJjmoQ8Y7LvotAIF-VZyTtHue9U43lhaxvu5fYh19vFUH9Ynf4DnGw925HtxS3ARUlhSDEp7a_6yX4jPkKw2tVQySug6YbvUxMHBf66X79cn1Ia2WDH8uPzGQy_YVCxUZ22sSw28EzOc-3QMzCqUmUEOOA6SZX819RmzLDS2x2QsvNDFz2NP8Ss-cMhW7HK8b0R0UWagXMiCcqajBvDDiYmrq_iDShC6pO0kSegViEhOCH4s_cg40CIhdb4l_4K3llu_wIFJc9x50kWuF-zmOz5_kcQPP6nC-BGG2Yr6PxnQse1ZxC3cyL222Ar2nggnL49dO-WBK-LprOIjfbwiR6MKazQ1_HcManiuSvt7oTgWlmB4utFTTxB-ii70CIcbSVpgdSKB9NVgenwBm72wS5URfu_oEdCkbsiWnVqzzJGp7rbykpYGnrLtHENLwrh3fFRnI-mYYpdEkad9lXJ10Ci3d2q4o17C2fWaCXzw7R_j1U4ow2fu-3t4QgKqt8W0jeCBFzgD-8P2BLXVc58pbDPFouNWWmCsFaOioLBcFEYlRjT-RrcGc2kV0P0PqJOkxrMEb3FhqePAv69ro7-jbUBR7TYOpp-avtH4gx1nYpfQFpEuW23tvH2HgJQu_cILKpPjjWoGnVilPcQrIht14L8btyZnPBCumjGVc5T_gWjKoeXfntfPhE3fjRRXxhYV6VKS1ic2SLYh3leJY1bdEe4ZbtxrJfrwvNr8Z1h3NX2lDjTtqxu2rRttfsik9Sdg6tsl4V3WrM83Z1g2PkEAdR3RV1cUASOe6zqKki5uKQQDcdA39uQyYJnf5xqz9WIg9NMFqQgeybvhv1V41p6fJ9dnF-xL92xevzu_PIF1-fZIiIS5_Ve0pLVvgdspc_YHbOKuvnOwkDQfo7LwLnfnSPLw_kc7Vkm04c68BeQMKkFmIj0l3uFNRd0crALtofOroVX-ncEo3AmkGWmQpAxzMvCV3aEG5iL9VyehmfwRwkmnreyODBl_WLweVUUsesO5H7zTJVRjt4jutFCM6L9fX-13tOmF1p03pY-XRkHkJMmB6NrKxg4NLNqU9_iva_Hsuv1k3FOcw2K98pI25r6KmY4n1DsGpi3qDxiFoxdt8vBFglUjgLdfCxH0G_BPMdJOJehPcraLMdwwYuOocVEBJGYeXcvortBj2IE-_sKhi9F6EaI155ZSjHS9WHLo40bxNZvANKKE16bA3XSViQKGgYar82Oaz4We6BdSKcykYuuZNdZR65m9P0WA5SSjS3gEYQ77UuMhsyNsOetX4qDv9ieHDCGX4wFrNOSUNkiIHbN4af4ARk9x2M00nE62bthokgX57dyxelaSNQ_nDoVfdP-0Kr1iE2Gz7X1tPS-Sdb2IDSl57osvICY7QyCEqEeDVIE7XBge33yBKT9ORyVjO3g2LxP367VjjMLESmchbVZzQV_rKc-S9Un2-GX1WXMOfq1qOKJAatXp66-EUz6eHExkdiSHassgHfX3grG3sGnxe0JabBB0xEcvlngUq0PqAJjBHN-lNOrVn91apvKJeIBNHhIMbpz2bLS4rZTZFCWuApwEEYDIL7SAuNSCLSWQbnADxxrmMH5ZI9ZvBbCMUWu9h4-tqy5q-KhheFlYLM2rJeP462bv2p13AQCD_EMur9Ma6TN-9WImuY_bfcKA1OlMYgBkj5Po2zg_WYDjX4oavW3RRQIskgC_aajpcGzXrJkabM8sPfwkKdOwdEtSJVKGE12btU2-uA_g5s75hDIOWX2MKiCKzKCWEs0wlqwZYSwgrLixpv0bs9k6oybQNMMgQrn_xOqYiOgo0VCnavS9hGeg3gg7ZZha8n07Oa360f7vxfTxBszYR1fwohJMVm5z5gVb6CqX7VXRndva7x7pznZxtpjURsURhN9qNAXNahDkJNF3S_usqDxV1L3APu0XNN2ci38FZ3sJGvquSgTDLxXMS2bu7raC8ZXUQZ-FBrvDns3PTbYYqaJXdbWcu3eBq7Wos6H7BEJNwt4TrWZkpohPAlOb1LsCDGcRGzgsrJJxE6DkLyZufuWO_6AHrIG14J31iFwY4ysT2n9P-Y0bEchrNfnW6nqc51vKqNhB_VKZoRRO_6PlcWADERTJM-V9BCA0IESGQ4EU9Of4HVTNsfdt5iL9ZPiIxyudwIvvrjRkxJwK-r6EPty6FO0RqOQ5Y-tfvbv-j_j8BUKuupTv3dCuJX1rQ6wMxvtpO57Z-ILQcmRuzyqBtFH96aNoUYyJqJscaFo3idFHzzUeHC3Rwq9dsywyg3y-SnMbQ95e3BtDPk6qv2Fbo8SQiXTqnaflli4SFb7vBZC1wTspg2QjJgVE-RvyEZpSZ5kvrqdzsHLVpoHfGbyZucc_7JoU9qu-LycSuoAxqsvgm225_mhNvYi34e0J3O2PnU0-qZ3AeXbZPk7LfyWF-Eb9qYm0a-enva9dxCwgxdBFSWLbhgS8QEXULdsc25MOZte71jL4gs7Eb98vHOjUH6LswovXmhA-39FeK8fZojZ3C-s57wVEABJyRIYDBTlTax1wzpwNHAIVnUNyzM3kzynsTr0NTXqQr2Edu-oIYGFokTn6wOUNUMwdYO4iz96g2Xst9mpP0JLuyXRUrZqIiRtsaeHCpzgEBrNvR9du0V9wRiwkZDuxrJdi5XgIa12RCQaNH864RhtJFII4ZeZS66fBAMeZ83wXfXTeEusderZB4eRrMTArR0LkbjzN0C38yFir135iyawdU5nxMRGiJVXr7Ry1be28HYCKzrkLmmJA2J-ID6jzEkykdUTjuYQRWq6z-0N2nDBQJ9tixpPHYPoEFX6mEyocddTXh7Rsq1riV051mDBDIUcprMkuSZLYRswVXMBdRIcvKw8gaGUFg-XWyA9bHmC4zcjAyf2MHM12HjDapk-Gz9fzoXaR5vKx9n0VN2AftmYc0V_l9EVcZHaphmkRHOV2GzERz9cz9UrR_g7H1hYTWs0Qa0uzRdCSG5jHnc5VtewWIn7hNCHDg8FSo_L95xZeUWbwQpD7IyYBz7UX7pev2VCOEDyvGh9MTbFpw1Cz6EVGr-RiZtmu16xY-BJvs3aWK6_ZCRPtD9sBQ1EHMWwnSb60menNF8athm8WOm4A1tCSjo1IJQWKR50F6-Xp4MYubJmoDv2anc2LOfhf1subFzsNl5EsNmuTOBOS6O7pfN_X0L8SGxgOhYxSj_S_-E6BWQtwNZXJhmX7MVCzd1wCLxqkMZuMPb_OgteQuDFrW2-lOSoMxaRtBBola3aQagadt1RMZTusF_SViW34oZ1Oi2qeUA5ehKKkEZL9lESHKnmkORF2Qmd4KLtawZDVyNdsZFJE_xdW0evYuU7jbelwtrrJRhqcMJGusgl3315QVBVYDvcZdjMaPtJbBR2Pw6gqDSavt0qqurET7XWC43J2YHdfV5SR7OocmTqIAREqsHw6tFispm9dwAAYJeWaj_LWI1s3oNzZ9VFVTnZleLKokErjbqqlArttIHM6w_1AiHoCcWmkKbyIR4MHun0IcD2oaLlnUeWgs8YE1zd-5IyMS_05fhF8gb6c9ST7eLDJg8A3dWfV8g90uKIXrEt24Osc_pxMyM0gsojslok7uVHKm3pJrtuIh8ESg3HJbGJrm9BDLVf2F30CW4jE98OiA2Mc7YM91gqGwsYPt1pEDanuhQDwiWVWNhmm6rMHBqtuPqZ7KFHEz-bl4rjVpknleL7Hg_5wUI_JeBolFjdRczEGRNy_jnaa9CHU1LJKOEmrRIz6JGrX5ySyAKfm9gcAZ1tS1ewPv-tAAGbofJJedLrtqr1u7sd36qoX2F4bnWmVUHSQPinEegyP7CLu_3GnzNPkH7W5RLfnUqjTCEEY38tGBi2zE0yAuLNvlTtKvBwP8peEr83exQqujlkXhXpCeSTeiavfdOo6jqbmBVz9FkwW_Fg4ApleRqlo5yKU5Hc4eGwU_i6W_btZ5zQlfA7d7LQH7OimFby6uk9SMlKEoW2XaPlmSSOw_KnMpCh9QDhY3gRTReXIqeTj3AyOgDqk7D1zuHcjg6hKG6h-a_6MHCh4JT6oPGBmoc9Mc-eRUKZGi9nDAfVwrT9hz0h5fMeeWeMn1dbpa2fMM-_Ubmz2Xo2nBiQgdZq0pUsQB_v_11SGiBLvxNsI3f08tRz687oueKcxynxRuw2qjLs1pGz4BPm1gvk4GxyRszGqAkCmJDxvN4SKpI_QiVM1xPM0lIzlh6ewy6-WlGpDZSqN5imgcCLShe4aqBygp8UPM0EeW6gyA-JYYquu9eE-UXojMn6-C-e7xZAO058H6YLSMZ0ntWgGKneZxvEcI41XtYL2wfXuTmtF4-s_SYWAvt9yuYL4hWJpt1FZ_3rIRdXFKM1jmGFVNWRDH6eDac9me9dwOqe-WsAivy8flLPBW7L8DNT4WwS6N2PiJuNiN4I6EYBuqXnEoqfPnMsS-3JtWaqM9vhrdpjuzBHfHR5WjsWMWc57LxDqB2tUno6QUdRTgYqY3YhDTCvJlB9Z1LP-3ldXtOpGEhrPCH3dmUPQgXRxQiSi1m44__fT3AXuXRpkQlAhaSUdN7NIayxQYunUZcu6OEoSOkWGbjWORaBC0i5adfpfwsqDbKBZ40g3BQHuVaHqsBzdLfpK2vwA-YdY-RV4mAFN5_ktdSOeTDAhD8hwh96rD-WR15SLx-sUdoLvwZ2I-3Lph5PpLrZr6qW6Hsz6VfH1Tr8FSOw2Jny1ncw7FYNXPSw8Mdbce91B5VpWxl8zsSc7w_wAsEMM-97vZAqvE2wUXK8nnZQRqN7x7epl3TcxcqNJJP7Ey_UYplTAyotiSMH__yY_VJwGtKT1dhAjS7WrhqRg3_ae_gHqLlOTcQU7pV1rxXlxjYY8XK7-RUXTa-hATS_vfnKC3XoN7ai3zTJ-3Yl0vW6s6P5p86Ozie1_TNvF2Q2BFdCKaUP0I8dhzzHn3jvZGHpZT4WRVK6IwjCbm0BCOc8PK1MI6WTQr-Sfr8SfR6xdpHD9gNfztNBOQdNiwLnmHg8yrywqC8FF6itR3PrtzA46zC_dvEenX3YHwhaqGNMPcssHDAzJla-meiPWxiDLeBffy8d6RSTKZ0DjRUqbG1EkCLhef9Xsp5GWIFmjhYslt7e8mv56N8RJt2bH1TSVhaif4-zfqCv9yia0Dq8hteIW7QqQUZjOY3ps7bfmslqxL0u9ltLDKuSnxvtoFgTQgX_MSdK4P-dTUjwO16jd8NgYYZxvvLA4nG7eUg0xAKYsD_d6rL2kZQWpVuuuK5Hx4OA5SJDQusb7AJV5Z0b3LhhpszRJWp4k17R1O_PRc25X0R0uJdU7mftCmFKWN-s_-kHLrNuDZcjxYt5t7ZLlDcqiyl6snHBI-252_Ud81Wl-FwJv_giWkEIzWDhFgiRHyVXUGPH718wbxIoSt5vt41ERGRn972GwGjMpFQDUHAPSFiEl9tn9kAyFJ7qv_XZqI1j6yFkXQCWQaLfzJaygg3jahyOvQ3oG3h71Z1jkV4xF6INTTR92yqtx6h8cFXSOcCyQbXoJHUf7caAgnOx4iadf4_zE2OSTk2K2QgrcLb4ztStGINGL_KkSg_GjJzOeGHEw1UnAinK2gLcMroNpATpbbjnv87U6TyC6N2HIN91hcrlqBR4fvAQmqaRJwBOGCYXvmC8lrM3Gtg4VPD1fDdnjiDeRh-Kwr0LXyvWO4kD68wpdWEJWagN62LYrgw67yVKMP7_L3_UBkT_NN1LgIgYUd-PMqnseviFJDfj8CyNoXkuEnjHH73fjbpu7sKWsIi8yrAHpPSvk7P8d1zaugwHNsOi2CrSkB46KGpeLLNWqQDJsp8SsU3pSCOImnJ1N4LnK23eoqHHX2r54U4oc1mBztAwQJzNnR2ascE1-0Zos6gJmaE3AfPsw3BshbV88y7k0YMZnIgZJzbDYYjsyjpYkruQoxLpJyLi5mM-ivvhdPAz5XixL6xNJeL96O0AWDNxiZvsSHUfCFhTLSzdL1zaucWX7QiaqBnPZXZYKXF9MkVDoAD-5JcoJpFz0bhPT1UW527VwfJpFkBt3GODsqT1hiqkG8nIMzzXMNp0ayhADPVZVbVAA8OY_OqzlBIFIJ0Q3U0CiqeJogpgtEJtVv0og_BZWZ7HrmZTOqfLm5k6Dteznz3dOqpcCzQDWI9ZXKtuBB_EwU8AodXQmSidm4O_Yb5bEhNyZd0kuVriVq7Gd7qUXXpJnvOJH_tFgFc11MKaSwoO3DJmJxy1ACwDET3CWeSonShOzB0G_rAt3K0D34FQeNrIPixkLdnp6Ue4WzdyiMkJLGegsPIoB-ZhJd9NcXlOu-eO9ERfhA3VfOnxB_yxj5JC8z8DfdNvF-Lg6fXoBh4PURhFoJ1Bc0EGcPXQr2lckferXX8NOlEhpdz40QbGzkeSwzUciJlqoR8AQzUHni3CZhGn6Stx3gMnE5uQyuKr-BsRNVp6OqluQAz7MLJtNQEDIXQb2Uobve5nB_1jxBzm-2qqiltO9CqhW8ncA7mtNtnojbmweF955Nx_m2ujcyUOJxfT1EIFoNduuV2oGX5V02xTCx4wR1af7V2uxyEOdskF6ecm3ReIYnGsz8TpvcNs-b3JWOAybV7u5baSvCDXg-kR1Sb5s3SkNQ77qw7GGzQ_qzVCNxv5gqt6l2rMD_4LOBXIR98S18FcYM2S5AY611prpECxdoAaVG6ftbLWgGSLyur37SyStgmprUR2NDH5D-X3wkmYAsISqIVJo9gIiuMhhLogYY3EIYHmwVwpd9ETpmSJEmPBo6WINGQ9Kutk6amyf59WpC3nziL6bWRzgxNimBnUt9-DAMN5tvatIANn56M0GbHPWRy65mYMCTqNBqFcijQPzpORXSfxE9zZOvZ734OEyxJSIOid0RTq9pMiUcD2PlkBmvH8ZlgfFZjto6eATV_IsN0_o-DxI063CO5uqssn_6b-bnBKjOIMp2UZexCpTyNpHOlgt7SSDfpXHaGup9Bm81rFs5CqY4ryxuCLqCjtdHm7XUa4z6yncGIuyfKttD6BO7v_96e8sPI4SBtpvkZXa8hr-sJl1CiHl9PCLVlRJu4FuuB-1mHyfXWeY1j3o21frncsGPcg3a8cZ65CBBd4_nWs9gwa9hyDptbk2tkv-5Qmyz-1jAO1inNtNPc-rMXIz1Rt8k9RXapcz-Pc5OsNH8aIxeGFnBItEJ5Pf2LW0T09WlkVpc1r9WGwvjCyRpc0BWRJtakHPB7HnvZp5IfxxZ0JG5bFhKtihWauD1E3yRRa7U0eDTKTYXCdM5dVxbJprjt_LDJpeVlSmiFNlAv8BULf6cm4hjdsgax3KjfI0qtSiCCkDkKGHgb_aXkX9HXfah2EqpNW1Ej6B3rHe7BozzJiw6IsNieku8B0lk0F2g7YQmS-Fn8Rus0ey_OVFUjmVWHqImYOhdLgXGfgcq91PcI-cLb52fhxsa-fKyOt3SMlDqkxMD-hflTCsHQVtTHKYe9Izzt1S6XLu7wTaHyGa6uPZeT5Qzxo3LEY50Abgz4ox-kNLd6aQNnzn4Z0jRdBpEMYskXQWyNtQg9_HzRgPbh-pOrqQQLR0k9avtHKhRhsNs71Q2oC56HT9WAxpSSYMqgWsXaOlBmDZGPc_EcHkiG7t50ySnKNknyounfiRgbfM_nA_4Rhwfpk1kgi4eIR3jV4ra50lUlh70_DiTXkZJcNh-Adr0bSp5p4r1DmOI85cnYEBh6ZBHrwTqoEuxM4Zu0701gLBqgR6MwDAen1ZsA-wce_md32FL-KQe5krKsIw8BD02bWqGdYjTNTT7NhZ4s-E2E_jt7oDzUwgk12H4D-HCJy4DC1NyzY_bQ6_m7iSAigfq8Gy08q0XLOPD5gm_a7t4b4VfecqQ_VwlS76KLMXEUeXpY6gKBzuspm6bXsXocvqe4rZQONzTuIRgUFpwQfIVPOiJTCLU_vVRra6IMm-uoln-6VAcBa4THh58IH9bMIz0hXbQt35RMBNUbkDxa4E6pPvJyuYAw213iTRGBssvq__dDxbcpfymSN7j7wehD8tzfli3_nDf9WX8jzVqU0ry7gGGiVNHiEdtMEtwrljRhcl4YRcwS-oTOZbYsg12u8x2JWBUrdWp11WJtNe6mMB7JrV2SqF6MjqHNn6abPX6bM7q_ne_94FF_-Hh1vgs3jXASCcr5-2EPyW4GKFaWtlqwR7c8PVqw8TiJ5q5nH5wjrLavv35P8xzdsrTFAx3rQ1zjNrd5jLhTooWD8yZYQnDr2yICYYOKZ_z9t1iiIlZPm8lenL8y25f84sBJ_0SGEVHwb2RLyU3sqh2RiEfw02wy7qLlvK85ofXJ4tRo8rltQNE11V-nyMz7Q1ams5XPvHGSA597Zq6hataTzwjIZMkpwWtaVJGThovTssqsj43CjJxAKN3L70vAoWQ_THue4S-qMZLqeCqsaaiR0pKdRsLtkZH-RHcBU9DY01TcDlTxcnReH4BfT0iaH61jx6PgXPmzaq_rx6NMu_XZUiEbQCREIDLp5P7EuZXfuWIOtUGL6HYtJC86zdPWEHDKLEtOgZ5q5JGvrmhBCJgu78qymz0ZHKjlCA8_oei5R02gR1lUF7e4DQQj1YMty2qXnQ1s8AIMAfnnX3wozpXWuojw1wacHksYNLjoAEfkiNvRpxDY7bPNhxRx95TYjrajONrqbFNpdVncZDEVN_apOnAUK5Tgw0ias0GO4YWhL8DpWiIneKIXflX0l-7Tblm-8drVAECFbzTq75jo7Wo9bvTT7Jof_56FWTh8jpW5VUOoV9GdYqydJPt3eCyzQUSjI4KAQlBofwVDXmhK3ld6TejZgOtARNEHqGY8GRiKwNez5dqlqu-03d8JeEM5S7INDwiIS3a29ghw7UfS1NAc3PQ2rnjdpGAU4PZ2IS39ZCKCz9KqOSbkl6tlwaWjtBLoEYVoxq5dNzannULMRGg_6VaKWbVtvBCePrniFGp0E5mPILVUpAFsyGrpTGjaA7cUganZ3TCK7NH30TrgS1UjKcRJQhFtWYUJBlFaOuhBFZGW8uByPthqYHqfEa4ZTCBNFF9bgoQI9Jh46Y1VaMIvfx0yLU87f-Z_t-YHemLZjNwZwPADJtzSzuPKXibqsuK90LZX6FzvbR4HEx_0kaT5vOuh-BKCVEKvX0u7xp8fO9y6HFw_EfpKap2_Nj6W0HXEfVKl6YlDyF3opIWCi6BVNjDgGeDwK7TRZFIZOg2GjPF5hE2Vnh6P_SeF_ru0hLZmC93SMZ6aC-pVBQ_dTdk2MTqGtyG6l_l6B-DZu4Z7Yjjr1ieK7Lsg54wVBQoIuVJH5DP1otX2tnQ02X0t7mKOGpcC3rox0MqWeAuGPyewuYj0TpY9lPHrBu_6p2H89hxOBBfYupHAAikO7-_idmcF5bRgTOVSFA4EDBXkS5ryEtQzku34IgvugGmIQFz_09jGa3SDJo7XI00HF_Q3XrxgvBLyj-H7TTiYw7EII07hkS64GjXGXgdNA2N3RLHcSMjva4yPi2XsMi4mOObhK-r-EiPQtGspxgDI5JXFp0qVHAK7cyTjPYq9XcZz43hGpRpVqZDOyaUhKwSr5T2SwXloEyyS1ZU8hdXnEUieETJpeQqltt34nAO6J1_iBZoFeRKGVpbjlvPm_dZrJU7v27IioFT349eLppLVtDBjc3Wn3VT4rzaekPUblLFIoBUngOxzATRvb_eVtrv1TgjKQjWJEVRs98o_stZQTFwcNJsZ62cj5Y_wUIBNNXAk7E_TcdEDSnlLtrIAESZd-1CedZkwlzC65TS40Nlibed9pyv8Xg1Ak5nt4Fpg6F_rG6GBRTlv73fwkNNWMCq0UUB6SzeIJjO3rPRA1eTtQjO_HLs1O1NWCZbdhvlshS3BiCZsz2rG4HFQfLK52VPKZ4zrU5p3aPScBBcNi8VOyjGVOZmLMhqEwQ1O5iaQP42W87XLeU0hzjtQEQVNCemdTM9MOF3z4L2CGD2rK-Y6742T6fJpMcayIOxDmZfQq7kMITFmd7Ukq53EDTEFqCuXMGusaoK55LOXt6uW7eA8FErkPRIRKLLLUq1t_K845gGfLPS9rbDR1IrEy33H7RXVs1LFyMefglSRuTo9jbpzfxj9MFZHg789oYYDF29uUEHgR7MdY3EAWogZqkr3gF6p3My5BUnXlbZsrSBt6-Md43bxYus0kjwZC34gfpUdT9Gb2KIOARWaLu08mdo_dr-JRHF8q3jpq3rsp8DpW6ZYq3hR7lvcOV91BkXXamoy1hJO2ZdC-KJLvSfFktemiyl4AaOJkrLc6P_U5C4BWKwYbFRC-Yx5O5O0EC8K_4ojSrbHcaN7Fkp2AoxJkVGVNtrAgsN2IWOCbSvolMaZBgut90qD1eXPO__IxvGie1q5kQZK7Ku6j1ChzcJameGNlDz_Z5_4tE0WWyiIYQ60GdDNHV7t7vHJvtj4ng_1u3x1RfLknKpalJZqS-UKMIEX-JO9F0FbaEBSoourT8L7y_Rpy9yTzVlUHOZSJFm8TTZz0SQTQTXrEoqUbcXvdfemMkGuZBLBLh8TptlKh00zMDB-dip209tP02q3dlSPN-DyMefBvrKh6sn0XvywPwOMcJ1WLtJqxJajFm2cdc_KpdNSelVExqFvQd423tbF3v1gJ3dhZhEUIwRLcX0u-pm-BYlVECqzMdJWR19hsBet2gM5WwsEbpHGwmxohhLwaeFm4NOOPeiH7yAWCd50AV7BIofEpFjg0iEjlFNemZFsLJQZ7kJjgc6TLIE3sSyhJ-tnXVq7Gcb79PbFFh9D3Z_pTKDCZpoH9wOAOhORKOL2r9W91Fwxy3ejeE40Ms0zSIlPVFht68iB9hTmbzm6cFPFJLS6QgGh9AAbpgSZOA3fjrJPg1NvsiQv8DrGfzku4Bx7EISLB_LUyE3ZUmPAnWqlMpSHS8jCbmOTrINR-gnsAR_6FjWBIGpieAgrOiTR6NRWe_3V8B1FFcU4tLsmWDoubswmfAqitZMX4Z3LdHgSjGmOtTpFToWrpymiw-0kRM8WjUWlBwtKc2dqGVIBzvJqI5noDym1NZ2_PfVlhCwd8R3YSYsGqmSKk00YDJvtdBTypQtMAtqZQfYeUObgi8pn7Un8K2t8xsPUcS0mB4OCDgPm4Qmnkk25stbfY6zpo51cA0o5FzBYI0NjdTAdKlkq4vZKq8rhdMk45y4OnovRMItEB6a5V0wbFwWUqd7N6yjMEEoa1OPfbkp2cY2nm3nrTkTp06J3pcLxme87cHASsvX6ywrHb_khY_6_Y0hrNwRhFVtSzAUF1oddrXBREu1eLE9tcRTYBNlMV8NGIMyjIbW-a6zsmmoOx3EemAITYjwg1NxljU6jj1feeOPF9PcGe-wDgKSa6RfddTPZ1rcMwCYBz1vqRKOjcOa91A1BJdp9S4ADPd0wN7R2hjBwdxz0wtayDdxUJ9idD0Or0boESEka4fNIUDRRZux9YpYv5awmzkzJ-kHJXxDg-8_txbXhxYeb25HX8udxBxvpjSjkOKS2zblLbGnii9Rkl0x1Sx8OeNFwkzF6lRRNY-_x_AQR6fc5CXn3k0hYFpdtCcefu6cbcVcJRZhSEymd4jUXFKgdCUSVDJjvcBEBwQmw-Yov9byXW2XiXXq2Do5q5vP00T8RgOB8ce1Gk3BQBtpjkxbkH_B5dxI05ZQCwJeIcJrnh1XGy8dFPXfmhGOiLjPg43LrbwzdJYr0MsYI_mj49L8nz94bu1EZkcjRNzAAk79mONYNUUPKT5SYCeiU72XR56OERIhimDZoLBsR98VBJDGF8vz1sh4Kolh4enCkfZQaBEY0GHxxiFEthfZpEeuEbVtETM5PhmQIedjiy2mzGG2Nw-9yqQ3Qi9x1ppMqrhFyWnfQouusE3K_iYBZgydl9FC8rFx9Dkrrf8R_JEmP8BjSQV4lEJPOfMbm6X7T8i3jOu97imnmzMV0VmUAqVw4x_bX-wZr1_oClWVX2eozVo6uNLCm0qlXeWjzqlxv2JD24Wd_tfHPcN6XydndWoFIa6-A14ReiRyOHRZBhvPi5X0k9rKSaG_bYMiGpBTSNWDH-K-DUWGEgGgOvtVuAJ8JgUYEqBi7k2TkRZLDAK6-r7uyLrphzLw2xlcebpgCpnpZESNHWjNQA9KwO7N-CyotZ7T4L0bOUZ2r8YR9dorN4-a0fLTgVs9JqRORJULNYoFZACgYmLghwd0NjFk_4TrNt9IBA3iw33cNGOwwdCJE6qazWfMcpCfixcBqOV1CaY4AoyivpqKaVWyQoV_uq251fD_rfyFS0gmiLnHs-zbBfvw3QHRCLX3AeqcdU9pveLDejCegSGOE97PCx9Olb4VdExcxZHhaKFYf1Dg_YQB-DlEODlM1xsj2jOzw_NniKMYMkpihuXmIcz3IOMFdGf-WyQT6dXHdOVrhBu59KuAn_dYQ-c2jLMT7xBXrPU9nEzC04Rcx3h1cT-LjVpBJCwZOr7VZqK35wfooZb9bPI7c9NMbzZ1yjdTk7x4Y6vbKvrqJ8Fa3DHzb5Fx11KqgAiC8atLoMLRiWx-5Qrhdqn5Ja0YltGHkdVezfR81RmUrNPjwIz3IsPJ-Mr96acVn0uTZ78LrCdfhyfqWU0V9N-jwtOyEYp8Scy_Rf0TZ0Zpx-6uWax0ZHgPuMGf6eZt0WHcr9XuyAvyno9okbmJ7b9rpHHBxq7WzTdrHel3zqVCbLCIxRD5q83pWt9GUG5o4BCVKd8UiS3smwWxhRE-CuMy3DSkjSVou3lSxz1NNbLWcPCkRWugs-scdfMVkoo2WqRFUYmK2fC6HC7gZk2BvWLxyRUt9igocVisH4Lge1e-XSDbJqYh1h-MkHjc33bf5WsT1k3YmuHIeM1pouvp3L6eDPHHl7oYiINDQ1iiGw4XmDmfl8zXFlImKqYGbQar2VlnoaYE5I0qaCg7dhE_qNNe9KdsZEdfPiOzC6KuEHQc_qHYHzD1YJECYWwARNFfxi2eT_H_HZ1zGGi8xy39Yl9q1OAUuw97dM3ZAqc8KiYrfOKAARnyPmYV3e40Afvw_4Ma3HBY7qbUSDBDshaH-wYo80a9qBqz0OhnSmo--pRdrU5aywn8ifHEhnXt5_yyxObkKrFzTyW5Lxd4VsNZ55FM3JdqY9OQg1DISpcAHrxvHrVrSZ8p5vyJ_eQ5Bk4sQbFoLAmUzcd2id3VqJtFBqW4I_K7svZVaVrj9YKXUhumjn0Ge5xTTaTPhymQE_5_7I-H2-h3CJr2MukI9SxSvpq_leaeUyW9DUP0OV73Lreg1ieAN9LSV-vU4J_Jgbe0KpesD9_bzESppBbcOIpsDvleeeQ_ukZ0zyxK-nB1kesAgQV_Az0GcykvwJTnjJhjWAJUG2STcubcB47ehk1Sls-X2NsL6UfZlRRe73TnxbMlrB6M4XGqRA4Ly9oGBG42KFjGJ-6u0GzG3V7BZgc70PT9uDx90xga06Mb4zOWHiiOldiZcZxr1j90d1fmnYrJnSJo4wTDe1vzB3J4fAriB3RCRICQRq2i3qsjXQZNMRl88GUwMXZ9wcpkcgABYmmr-oZV9Fx1Yek0_QiI8N4yNPpaeZFkjOzju552EuNe84UtjR9JI_dOT_DtOu4dY45akCMPGOOIGN-hZt66gAgM39tJh5xTC7TlKWihyWP2L3PsM1D7ClypEijC206AIXRJPg94G_YLjtbqmUv3OvxjhvuAJyWnyFRB25FErW5WGEg3J-efExRhTkEi5gDqkGSMzTF4Ki8qddlqFiNZ6eRz1Ccsza6cKOhpgT4k6yw0YGl8yPPQvYuhd8MTw6435vqST93d3xej-l6MBzyx_jcQOW1HNZXci2mZUgOPDDpApqNwGn0BaA0xFWV4GhrKxfQicRhXOAAjhzsdKyPrjgTYd5RtMFDqUntKBlGG0qdG7OJJobpzZYhyeMxpaOPLS8q3X8d_Qek_rbZL4dPvWjIWbLff5UJzU0xWdTYKMtHMATKbdt4kMEtUJXC6cPQ96KlDuqhZgUojwxTsPoIbVITsmY6Q47blR4CTThNf_qV1wZ_0PxoCjVArswi8ugy0FgtNnSoawrxRTtgvsoAwD4zYB-09MXOjotoWiyA3anSjxegwnErruF5-70g7ZeeoQSbmfbpGyQ3DbnbAfW2AYxjcNNgDRvhGxCUxsL6jx3ibLppzmH0a0udadWdF0nCrmad7IsqtHE1Y5h0VETAT-ZhBhtu8wt63Y5RLX0Ivp7q5HtBT3OOj37sce-zhhfiUICNTsT07RGePYIIxW2rNO4R9qNOGqcuSnTc70JNStzdEw9FNeJmhBYAjAdDjzGC5QX11h85IK_9gbjP0VAIeH2IwxGzL737r7UkevWfGLOPU1q4xS7Z0Bt_Kz-4iaBvhfUl1gOgQAIMnfYrFuX-pk1t_qOCjhZy-dP-wa_iQhOoIpfJAUqW6IiLsg5ZamPlCqFp9ha_aWPrkwyt5RjtcDARzAuSirN0W-OCES7UY1XO8g__VPTwh0y4nFZs8zLp3SVzniR77Yl1fAFMKIFECOOGDoOzUf0REJJxBEf-hRixrqu3Zi-mDJDOCDpww8KJ2yVcrQ8_ZDAaieFkKXf7dN0Sih7pjk1v47BKiBKH-hvQWFrm3EKflwHQWJF35IWh6fmCPjznTOKflf6KQSVvUxbAyaVfidpyFP5oXjC3alCIjxqpFz4Qu_Q8tKSeJy8oKu-BN6OfUQISXnn8JCCwAGIAkHJJ7ESELQuMHzbOgsl3ZpPC3Ff2uaxzNSXVUQRqrctGR8aGhrXGtiShZgpMvtjLPVEbZ4lBex5U972TBJ9LPRQTHAYNx51iG-rx70BiJuP_0hQjcClh1DayLdM9gApT-v7Nvoj8DD5sHyta2LkBAqi5uXLtBtH7fAJVaXwzCxx-_D9KDg12BxQPi34r9t-qg7Pe27E_yXhcoPDr49-TTEnuvdrUvwAyw7_uu7FuWHArritSWp3YnvzYi4L7x5HdYmB8aelSXnqMYxtmdFOXA9IljJ7-nm9eOFB7y8OrA_rPXIrevV2zsakRGGFHml2ep014_kN1OMRoA==
+# Brand / Creative Showcase
+
+**Benchmark references**: top magazines such as Monocle, Wallpaper, and Vogue; international design agencies such as Pentagram; and outstanding brand annual reports, brand books, and creative proposals.
+
+## Goals
+
+### Identify the subject; build a deck whose subject is recognizable at a glance
+If the presentation's subject is a specific brand, product, company, person, city, building, event, or IP, first extract the subject's identifying features:
+- Extract visual identifiers such as icons and the brand concept from the user's uploaded reference materials.
+- Study the user's materials (and official sources when a web tool is available): official websites, officially published annual reports, creative manuals, and icons. Do not just read the text — rely more on referencing and studying the pages' visual effects to help understand the style.
+Even if all text content were removed, the association with the subject should still be found through other visual features.
+
+### Take the essence, discard the dross
+Not every subject has an aesthetic aligned with top magazines like Monocle, Wallpaper, or Vogue. When extracting the subject's style, accurately identify which items may be referenced and which are prohibited. Designs that fail to meet the benchmark's standard must be explicitly forbidden. If the brand itself lacks design quality, you may keep only the brand's primary color as the theme or accent color, or keep icons as decoration.
+
+### Build a top-tier visual experience
+Use strong font-size contrast and extreme asymmetric layouts to build an exaggerated style and a top-tier visual experience. Reject every safe, mediocre, conservative option: better ugly than mediocre.
+1. **Make extreme choices**: oversized type, giant images, intense whitespace, high-density multi-columns, a single vivid color, or heavy lines. Build an ultimate style: old-newspaper front page, Memphis, Constructivism, Swiss style...
+2. **Vary the pages**: cover, opinion, data, and image pages each have different compositions. There is no need to strictly follow one identical "page skeleton," but the deck's consistency should still be recognizable through palette, typeface, font sizes, same-style decorative elements, and the same grid alignment.
+3. **Have a visual rationale**: the visual language must come from the deck's subject, brand, industry, era, or material, and must help the audience understand the content.
+
+## Prohibitions
+1. **No cards by default**: unless the user explicitly requests it, strictly forbid using rounded rectangles or rectangular cards to build hierarchy or alignment: line segments, whitespace, and font/size differences are better solutions.
+2. **No evenly divided compositions**: unless no other layout is available, do not default to one-third splits, four-way splits, or 2×2 matrices — including three-part formulas such as "three columns + title + conclusion."
+3. **No mediocre, common, or AI-typical color schemes**: strictly forbid any blue-and-white pairing, blue-purple gradients, cyan-purple neon, rainbow flares, glassmorphism cards, or glowing borders — unless the user explicitly requests them.
+4. **No elements that clash with the overall style**: no styles from outside the chosen style may appear, such as using rounded icons or rounded rectangles within a sharp style.
+
+## Visual References
+
+Visual references are only "references": they show you something good so you know what good looks like — they are not directly usable. You should design visuals according to the user's actual needs, not directly apply templates.
+
+### Klein Blue Swiss Posters
+
+**Core visual**: the whole deck reads like a set of modernist exhibition posters. Strict left alignment, a twelve-column grid, extreme font-size differences, giant numerals, and large areas of whitespace. The picture uses only paper white, near-black, and Klein blue.
+
+**Palette**:
+- Background: warm paper white #F7F5EF, roughly 70%–85%.
+- Text: near-black #101010.
+- Accent: Klein blue #0038B8, occupying 5%–12% on ordinary pages; section pages may use a blue block occupying 30%–40% of the picture.
+- Auxiliary gray: #D8D7D2, only for gridlines and secondary information.
+- No gradients and no second accent color.
+
+**Type**:
+- Cover title: ultra-heavy sans-serif (latin "Segoe UI Black", east_asia "微软雅黑" bold), 112–136 pt, line height 0.85–0.95, and may be slightly cropped by the canvas edge.
+- Content-page titles: 48–64 pt.
+- Body text: 17–20 pt.
+- Page numbers, sources, and labels: 9–11 pt, with widened letter spacing.
+- Everything left-aligned, using a single sans-serif family only (latin "Segoe UI Light", "Segoe UI", "Segoe UI Semibold", "Segoe UI Black"; east_asia "微软雅黑 Light", "微软雅黑", "微软雅黑" bold), building hierarchy through weight changes.
+
+**Grid and geometry**:
+- Left and right margins equal 5% of the canvas width; use a twelve-column grid.
+- Main compositions use 2:8, 3:7, or full-page whitespace.
+- Use only right-angle rectangles, true circles, 0.5 pt thin lines, and 4 pt thick lines.
+- No rounded corners, shadows, outlined icons, or floating cards.
+
+**Image treatment**:
+- Product screenshots all go into a fixed 16:10 slot.
+- Photography is uniformly high-contrast black and white; a blue color surface may only be overlaid locally.
+- At most one main image per page; no photo collages.
+
+**Page grammar**:
+1. Cover: the title occupies the left 65%; a blue color surface running the full height sits on the right; at the top, only one line of 10 pt meta-information.
+2. Section pages: the whole page holds only the section numeral and one title line; the numeral is 120 pt blue.
+3. Opinion page: one 64–88 pt conclusion, with a tiny annotation in the bottom-right corner.
+4. Data page: a 110 pt numeral occupies the left third; a simplified chart sits on the right.
+5. Architecture page: all nodes align to the twelve-column grid; connecting lines are uniformly 1 pt; only the core nodes are blue.
+6. Closing page: return to the cover's blue color surface and giant title, closing the loop.
+
+**Recurring motif**: a blue vertical line and a two-digit section number fixed at the top-left corner of every page.
+
+**Prohibitions**: rounded cards, three evenly divided columns, colorful small icons, multi-colored charts, gradients, soft shadows, centered titles.
+
+### Stencil-Printed Indie Magazine
+
+**Core visual**: the whole deck feels like a hand-trimmed, scanned, and bound indie magazine. Heavy poster type, two-color overprint effects built from overlapping semi-transparent flats, halftone images, cut-and-paste blocks, and slight tilts. Preserve paper and printing imperfections rather than chasing the slickness of a digital interface.
+
+**Palette**:
+- Paper: warm beige #F1E2C2.
+- Primary ink: cobalt blue #1646B8.
+- Second spot color: fluorescent pink #FF4F87.
+- Text and rules: ink black #171512.
+- Orange-yellow #F1A51B may appear on only one or two section pages, within 5% of the area.
+- No transparent gradients; colors appear only as flats, semi-transparent overlaps, and halftones.
+
+**Type**:
+- Cover title: ultra-heavy condensed poster type, latin "Impact", east_asia "微软雅黑" bold, 88–120 pt, allowed to rotate -3 degrees and cross the canvas edge.
+- Page titles: 42–58 pt, may be reversed white on a black ground.
+- Body text: 14–17 pt, in a clear sans-serif (latin "Segoe UI", east_asia "微软雅黑") or serif (latin "Georgia", east_asia "宋体") face.
+- Annotations: 10–12 pt monospaced, latin "Consolas", east_asia "微软雅黑", mimicking typewriter labels.
+
+**Grid and geometry**:
+- Use unequal-width two and three columns and cut-and-paste modules.
+- Images and text blocks may rotate from -4 to +4 degrees.
+- Main rules 2–3 pt; crop marks 0.75 pt.
+- Color blocks stay right-angled; local overruns and mutual overlaps are allowed.
+
+**Image treatment**:
+- All photos are first converted to high-contrast black and white, then given either a blue or a pink halftone treatment.
+- Halftone dot size stays consistent; color misregistration of 2–4 pt is allowed.
+- People and buildings may be cropped brutally, but never past the point of losing the recognizable subject.
+- Never drop full-color photos in directly.
+
+**Page grammar**:
+1. Cover: the title occupies more than half the picture; at the bottom, a blue-and-pink duotone photo of a printing press or bookshop; a tilted small label is pasted at the top-right corner.
+2. Contents page: five colored paper strips, each holding only a section number and a short title.
+3. History page: the timeline looks like tickets clipped onto paper; years use 40–56 pt bold type.
+4. Craft page: five steps spread horizontally, each containing a halftone image, a number, and one line of explanation.
+5. City-case page: one large image occupies 60%; text presses against the image's side like a newspaper sidebar.
+6. Map page: the map stays as black line art; key cities are marked with solid pink circles.
+7. Closing page: four large numbered circles present the action steps; a black manifesto line sits at the bottom.
+
+**Recurring motif**: misregistered blue-and-pink semi-transparent overlaps, the crop line at the top-left corner, and a fixed volume/issue number.
+
+**Prohibitions**: glassmorphism, soft shadows, slick gradients, refined rounded corners, full-color photography, business clip icons, and perfectly symmetrical grids.
+
+### Brutalist Newspaper
+
+**Core visual**: the whole deck reads like a special-edition newspaper about an industry turning point. Giant mastheads, narrow margins, unequal-width multi-columns, thick-and-thin rules, high-density body text, and black-and-white halftone photos. Red is used only for the most critical data and warnings.
+
+**Palette**:
+- Newsprint white: #F5F1E8.
+- Ink black: #111111.
+- News red: #C8102E, kept within 3%–8% of a page's area.
+- Sidebar paper yellow: #E7DDCA.
+- Secondary text: #55514A.
+- No blue-purple gradients and no colored status blocks.
+
+**Type**:
+- Masthead: ultra-heavy sans-serif, latin "Arial Black", east_asia "微软雅黑" bold, 72–100 pt, all caps where supported or otherwise set as ultra-bold short text.
+- Headlines: 44–72 pt, tight leading.
+- Body text: 11–14 pt serif, latin "Georgia", east_asia "宋体", line spacing 1.25–1.4.
+- Data and labels: monospaced, latin "Consolas", east_asia "微软雅黑", 10–14 pt.
+- Pull quotes: 28–40 pt serif italic or bold, latin "Georgia", east_asia "宋体" (宋体 has no bold or italic; the size carries the emphasis).
+
+**Grid and geometry**:
+- Margins are 3.5%–4% of the canvas width.
+- Content pages use three to five unequal-width columns.
+- Lines come in four grades: 0.5 pt, 1 pt, 3 pt, and 5 pt.
+- All modules are right-angled, organized by rules; no floating cards.
+
+**Image treatment**:
+- Photography is uniformly converted to high-contrast black-and-white halftone, keeping visible grain.
+- Every image carries a 9–10 pt caption and source.
+- You may mark an image with a red circle, red underline, or red stamp — choose only one of these mark types per page.
+
+**Page grammar**:
+1. Cover: a 5 pt red line at the top, a masthead spanning the full page below it; the main headline uses 80–96 pt; three short news briefs at the bottom.
+2. Overview page: four large numbers in a row, each 64–88 pt, with three columns of observations below.
+3. Ranking page: a black-and-white halftone photo in the left third; horizontal bar charts in the right two-thirds.
+4. Cost page: a full-width server-room banner across the middle, with a line chart and a narrow annotation column below.
+5. Policy page: a black-and-white landscape image at the top; below, a dense three-column table compares different regions.
+6. Timeline page: one thick black main line with six red nodes; event descriptions distributed above and below.
+7. Closing page: only one 64 pt conclusion and a red full stop.
+
+**Recurring motif**: the top red line, the fixed masthead, black column rules, and edition information at the bottom-right corner.
+
+**Prohibitions**: rounded corners, shadows, illustrated icons, colored cards, loose business layouts, default table styles, and unsourced data.
+
+### Memphis Pop Posters
+
+**Core visual**: the whole deck uses thick black outlines, giant poster type, checkerboards, lightning bolts, waves, dots, and geometric shapes that break the frame. The picture is lively while text areas stay clean — like a blend of eighties pop posters and contemporary youth-event visuals.
+
+**Palette**:
+- Background: cream white #FFF3D8.
+- Ink: deep black-purple #151427.
+- Fluorescent pink #FF3EA5.
+- Bright yellow #FFD63D.
+- Lake blue #05C7E8.
+- Mint green #23D6A2.
+- At most three high-saturation colors per page; deep black-purple must be used for outlines and body text to steady the picture.
+
+**Type**:
+- Cover title: ultra-heavy display type, latin "Arial Black", east_asia "微软雅黑" bold, 92–128 pt, with a 3–5 pt dark outline and a hard-offset color block.
+- Section words: 80–110 pt, all caps where supported or a single giant character.
+- Page titles: 36–48 pt.
+- Body text: 15–18 pt neutral sans-serif, latin "Segoe UI", east_asia "微软雅黑"; no script faces.
+- Numbers: 72–100 pt, in heavy black type, latin "Arial Black", east_asia "微软雅黑" bold.
+
+**Grid and geometry**:
+- Compositions are clearly asymmetric; main objects may rotate from -6 to +6 degrees.
+- Geometric shapes use 3–5 pt dark outlines.
+- Each page carries one geometric shape breaking the frame, occupying 20%–40% of the picture.
+- Decoration concentrates in corners and edges, never covering body text.
+
+**Image treatment**:
+- People are uniformly rendered as flat illustrations with thick black outlines (when the user supplies them) or with a high-saturation screen-print effect.
+- Multi-person pages use a four-panel series, with busts of consistent size and viewing angle.
+- Venue maps use hand-drawn icons, but route and schedule information stays clear.
+
+**Page grammar**:
+1. Cover: the title fills the upper half; crowd silhouettes and the stage sit at the bottom; checkerboards, lightning bolts, and dots occupy the four corners, while the center stays clear.
+2. Section pages: one giant word or character, against a background of one frame-breaking circle and one wave.
+3. Numbers page: four numbers in a row, each on a different background color, all with the same thick outline.
+4. Lineup page: a four-person panel series in the upper half; names, styles, and set times in the lower half.
+5. Venue map: a radial map in the center, with colored labels around it marking stages and facilities.
+6. Schedule page: the timeline stays horizontal and regular, colors distinguish the stages, and decoration retreats to the edges.
+7. Ticket-pricing page: three tiers as hard-edged poster blocks, prices 64–80 pt, no floating shadows.
+8. Closing page: a full-bleed sunset illustration built from shapes (gradient sky, half-disc sun, stripes) with an 88 pt handwritten-feel line on top (latin "Palatino Linotype" italic, east_asia "楷体"), repeating the cover's checkerboard corners.
+
+**Recurring motif**: checkerboard at the top-right corner, pink lightning bolts, and thick black outlines — the checkerboard must appear on at least five pages.
+
+**Prohibitions**: soft shadows, low-contrast text, all colors appearing at once, script body text, decoration covering data, and ordinary business icons.

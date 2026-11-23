@@ -1,2 +1,121 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQfpQkQf0rH3oKfZQWylcnsvDFWsXAvP9YgKA1NzuFYLPxC2thgfglc4PE8LU1K-m5AqOp9zxhk03nEiKrRroaazK_kPbRB1EgUOM5cjne3DfdwPEsrQY6OH74nUAbaS9f2a7dnUZNcxZjGRUuCOwZCtU2SXd9u1AZ-xV7cZ1bx742eIuRChnFgpVdEmHC8EBVgN-P3-L9RCslC_B1M1-xMwQ2AJ0ER3eerUVGE2L_XYHGaSZAtpyQEEeFMwEDx-XV6E1HinMHTWv65IQ0fXPYMU5IdxB_pxkwHPjcLbxxWYsB9CVMQWncPUNuQzf3ot4cTyzauttHkPz4r1OitN7kMz7yqsgz1jRqXeuF8L98fk6PJi7MMlTab6hAUjeBtBCB3uN-okzRgPmeQ76mdn8pRxwgYll5HyHvQOZrOaZ2EI6sWNiWELhoiVirwfue4_8_wTC66ZzbTQGsbvDeBL9oUbgqH4bDz3yZ7rHBLCUNwlYDgvHhJp7ybsErioBIIa38t66J9-xvz34goe-DFMSsOyt8fJoN7Bhb7LEF5EUYDRcYD7o2RpprR697yUGa6GkIjZVzUAqUHfVqm1UyR_ONmLfgnLW4o1maEJLbU0y6myMe2hwx7JiurnBdnxXrPGf8iik5PL56Re5zJyWxaxc10I90vpzdP6W_vhQmKHJ3H7lu_rX1BdP7-MtE5A4CtskZpQ9NCaLBSpgklWqnXUVdEJf9eDrfJz2QcgwTbOU0pMYXcKdfwsYZKg5_ICcBx2n-o3FZoYm9FXAOvMUuDnDW09P5SVhzbpBTNqU3_e8av_wDx6fNKcqbpS7wFqkjPYXH4hDwQJAF-vfoO8BYlkw9SKK70yuHqJK_V2A-BgoX4o0zh5aDVv7DxdBA9PQUJOAg3QYwVjI2CxWlI5ME0aDQZPK7HDjoPHCKfT5nimNLSd_MwW8gBzmy7O2rru7BclQ1BCDeTeuDVSBXf8jo-YJTwOOM8B9weTee-KjiMJFfsxzvbYgUol-P8GwJhLLqtwN4JQoUtRtHIVbXMjj3Dc4w3VwPT6rrRF6RgRANxn72D-BhSn3wrrj18bRDj-9EyssuFDjlCJQ7ru7X9mEfR1e_E49oMBIBXqM0YPSk18aYqILE50K06g4y91k2pBFACYGfsy2zpGE3AVsRbG5pWs93TbWbDQrJ08vWCI9bVE9UwugqgVpSw8lvSBbhtFBmB3tlCHR-Ivl4ZLVg3xsmB5RuEPi3NCltCHUnqejSLx_5BnHPCVYeQjF0YAshLm7JgzbhkZk02jHxrZccEriEGW-yEkF1guApLRJGGy4Ot2HlFrMO4o-SaY7kOLhKQIBBojHp-NM4aNy-vgFlZbdRskz6VZ0V2nX6pUGBGkYHuXYJ5W4bCWgCSACc77BHS9GQfslwIRCopsAZWvcKBN8EZKsH3bM8K6qm8d_CJo2RIHoegPvZDZdcpesMiouI9l8H1D1iaL3M6DQYp0mRyG0hOZfYrBJDSZgu7lT0n2WbprFzETeNVxZ4jNtTvItWJqinBqH6asP1o9c_jVQtyiKqDujYQwV1ijPPO26G8tmjHdpTamRd9_Oz3zgEmIYM8kK5g0PvhdMJJHquYOlGVI7PyzwK3AIBxf-2_SGFWp4baV-gmefVo0fV6POMzFeHdXzYTgNrYDON6l2pjXBOuGlH1wPzMp_yR2qF3EVVsUzIIOAx5jItDiLKQ-Vi_dpNn9CHyDItdX0ftkecwI0j-iDqhGUIi3fMC5F0LrRVbVtcTxTWTQlj1OKHL7A0AMd_N_xpRdq7YRaOONX_-_Vx5FOzsbjf56sumjhlYe4LK0A2r9S2MsY3791t5THS_5YRfFFYBp8Ge04UDbhZ9Mkg19VxY6c5VJma1ND6JobKpZLsRylH1eDhFgAavDzRf92CvLW0R8m4TyG7YiBH_-kGRQaT1Z9yC9GePVZiep6DGVLgsD6dkCIAd-Zr_JXRzSsFcCPd0-_TyfB3iyxOlqOVU0J6xhxAIcRdiOqfhFrjsLbmLE59jD2gbPT1yoAeh-Acrp9mqJ0ha9-iDqQUkxUrwbXmU_6axcFEFKqC7lbpqIDCc3VmFPWSihwzfJCx0cMcuBwcUL5scz0mHh8TVhM16pSxl6ogJfsyZsOpl-bjtGYRAhZ_earGPGxeeNJ2JBjUcAKgbrW8jEgzkNRBexRtYTkUWPX0g7oCrbtZOqTXnrZmIFkIg8lphJBnvtslHvU48KqqasAbV9eCr4HH4O6vhT_gaEomfQYQhv7oTSFYqKkxre4C6ObRfxnqClbw5T_B8-ECnT4-6j16oDUNqrmqnPLzI8o6b3f_KL7agfRai8LluEtO_UDrJta2xSYBdeJkOePXH9As1U-qFrZMx8C_ns4svIRe0LGUiGe1d2TQgUedl6COHzDMudqI9cw8Jb6yq_iWOibAlV34HdoPwxOilNqpARQwMleGyycavphY3muFr9qDFSawTf4LQ0d_F1sAlDT7_LslIp1SRMLWUkfIZARH4HrtRrJIUJg3lOwv73E9--xm_IC-m1zokl1T7yEAMB1kp6gBAFr1aB_yGa6wIz3hbGmbtAd5fnjt8xtwVMtrOfPyq_CXcHprZP_IfSYYQFMHGuOQsa4cO0Lbyt2my0UtWlAwrF9gIz3d5CLJeX61RHU_lIDm3w6niUbFljyUN-LKvWT9al3vS7uqq0yuo5dd9JNuv0CZgj1FNSbddYO65uSOSrSd0IlODWTkBMj-8CEKv8sJqrJ-I4pvGA-zGfFrIPyyGZIJftSeQ7TVXd4e9phUozP7hyPvBPkREYHiTuBNZruP__Sopmha50bL5euFKjtklET58ZYXy9IP1mndR_ICmH4LnjCpJCDPR-Fa9NOtuljmpzk7XDiSG4c2QLVMkb8LDTUJsFP0QV1BoVGBWUzGI-t5a6tsK3QFdWwkwGjKpcuCC7CPjIpKSeyFfxXVndejrGuV6MjBS7CPNbUgnJ_QbZmtbwA5R654uvcsFVmnfo8MXfAElVdjHqqbGFVdd9FaHHF_7M9_7eSeh6ydchTsy7jdSHILPsCuQ-c7wZySPBMteKye7jsTMHDQxRawMQM5VEpFslO2yEt10CuYLvrEkL9_daGjmXrK0QNEijwszRW5duwzc6lnjASdu2jv_b3Uv-1CASOnzT2UEDb3oMiOu-gGIL1F3lyBetwP77ycAGjv-6HjcZ8NM1uLsvWgz91I0T2Dz-VEt6BcHa10JLsMbDsLAdmlHUzjeviz7cSze9Zz2ITbKMymKQ3e7xW5HViPqGBKJ-cYYP-Dep40HcBwmkF6-L65SWHga-4PXeqDCXn0eacSoU7dYYGBPCUXm4cb_jEdG-s7gIqUCz6_cf2Dy5KxK35gxpArZewOv3nZCeJUJ1AUZj5_49NHGsqnvVK1sOMOjpaXJ75q5VPZIbCyZ4G97OkIVAHRzWTThoI4OtN-9Xmv71btpvNEgZNHteD5C9_Rpz0SZslquBg6tL0Fs8IEixgF5_eXX6wkbugPH_7aXwvywqGZZd-2ycfgnMaz8rvu_qfm83Kai_KAgY5HjCGOLBpXFcPYrvwIV0-TGZOHYHQd5ehEaHRmU9L6AyyR48FPAhFcUUDiRsmEqAq-Xo72SGYFKhDVDIXj7TsbE1Er758sqlzx18UeXyFp_1DeaKObNdQ5SSPsB_n8NN2Z6_UQB76Sd4CBpxfZI2A8LNOoeZNc9AM4wpjvvNm1M-E253R4ZEdNc4eJzo7TSQcZYlxgYI3Q7--VQQ7ZCTNpVE2eh3CuoeafyFe_V5VZQztM3n3BWh7vBWbSCNppgzhdnLykPgfd_pcHtkFWvv_c1I9HI1A-gMHSKf-rLdvaLlJJvYZfpsXtT6u0skgQFDgWmqYLLnaxS2YcdlqcPgqm_im_fY626YotShATAk361RbAHMvKTIKyAbINcS1Y8MmNXPQO4MLbISGyi3VFcTwUdde4DNsOKPiMeQrx1EwZFZpS82qin0C1lZlzv2j0TJY8Gg1HGHCr8azK0Wum3FlDiIPZquXOx0Ie0piBHzTIQP4S9mEQdFOOj0Cwv_ZekYMTaCrP4CdZM1K_nHPzIk-09vauxCxRXx03DnJgZI__aSkMpfgwLckC6cgKCBM3xjse-1TPDDhpuSvgtPuHQ2-Kyv-RCUGIMYT_BFKOqEYztwAKoYnijQXt972_9ay3M8tgarGVaAg1hQ8lBH8iJ3QrE0R8EYp5uB768P0tuEZVIla3CF0Upga3KOfx9eO0bVzOtdF-F2sg527R060WW3AV160FH7wiccjmpy2nY7aH6RPIHbsu89nlw7NNr6mINm0y9GbZbr777Jrm0MpHJG_MdNv5DGUaJBH0gq28qSIanZhf_xGsKshIjiLikaIks62XHMU9wS34nC9fVq8O4NZIvGoc6rwkLXQMlfKxwkGIMQSCEacDX8eIgFqacTpXjBNK37D4sgi2n3v9GLA62M9jSWHKjyNyhgov1TNzDogjVMDCsqMExzfF6oVji7zt_5BIRDiqq8w4cOX1YUityjWrwgdHCp8SMynHhlBpsq7YdhHfT69DnPbSOuOhjFflEAYti1itUsJfBGd326yWy9BXOCzDl7yNVnGLXqZFL1EFyMUM_CCh5AlucwNrw2K-MRdTkTnk4h_OrE99wg8OtZVFsgpwEeuZSqgQNmiDwHv5RU9LNXr8ZnIhuq9ZDQKt98wGoJp5065D-RoDC-BdR0S0L2KP243svkCSNlKrqmhg1KQtkFt4QSmU-FdcC44Em4kODbA1_7kNNvXWQtLMUkNsmh0f5qfCrGPcALK5JS4118MLnr48Tg0Wyd6Oa0CROGSIqqm4Eq68eSvHKg5d9V_SEgIckkMtw-kW4OZUivWcViQlQVzrvgMwK6bNDv4ek-VgF3up1LICpG6N_Jgp1TLkH3QR5ho3OXPY4VfEnlHJfva3b1yX0mwXWbUnz9Q94M6fN8yNuFHDxUtNtPjmcUOBuxR2cuDEUBX3OAsrtf6-R328tB1jOL6OtDae64Ey2Oq8JRJQbUtLGVGVLTHnAuCHvLennEtd21OiEd5ky-_3VLlS6KCmzjNK5TV2gw4B-PUmIH0d_95si0yexQs1eInVPoUmoX1btGYXgxtp3-I_dbNXN9Tly3D6XoBr2mnQMg2of63gYPFVMms5wWNnk3RIz4LHr37E79oR52L2wHs2WQrPo1L3V01Lg0Mcb8mBNc-tzxLSNftdu2jm0wAKbH74ZSXlap8CNRzfEXq0EgAUQHvK_qbGWAjCI8uCmD-ELw72fUKtqvVSgr5MQoqvY0Opf6Ks37ytqULfWJeWyna0uWY4x-9tauc-YUZVVC7RxNHJ_xaYUwedryvMn6bNkhgKeHfp5M7tRj6ZYGz13g9pnbUqFt60R3ierq_niv3UvpsYzjq9yTJyd7L60J3K14s8A2z8nF8Tj0fQPdgvGYoUV5syYeRFsLJJw48LocUgQLEI01uMJRfMT_bZq8eR9yQwzh5AFGD3xhKYLEzL2j4JNmxv7plGc5qUbVrrT5jw8tIlazhrkvejkT5NB88MuP8uOAo9oJcdM-B6EADzbqZrbNxuAHZDSygEYn-a17auXDrJDXSGZYubeTTxD9O3QJEeZmdbtqqd7dNXgQ3hWItgqEdsZIam-zrlsZIhbXmTUfd4lIfLMSLJFD231mL4ZuE7xDwlWyIkFwV4qwhCeIEfsq0tSwnhzTVg3JulOezCWKa4p-gTSqOldyY_tvkKsE_ZysaQTI-aS7XlGm6p7drCBupONhp65LbxrsCR7AvYoAx0llv2_pqzY5OThyt_tZwlH4lknmgL56ybkWo22yZt79sYdpLIjZ0X_nKkMHBLVm-ctVHfTzxV6SmBcBJC1Z27Px99
+# Abaqus 网格划分参考
+
+## 单元类型速查
+
+| 问题 | 推荐单元 | 积分方式 |
+|------|----------|----------|
+| 通用 3D 线弹性 | C3D8R | 减积分 (沙漏控制) |
+| 3D 高精度弯曲 | C3D20R | 二次+减积分 |
+| 3D 不可压缩 | C3D8H | 杂交元 |
+| 壳 通用 | S4R | 4节点减积分 |
+| 梁 Timoshenko | B31 | 剪切变形 |
+| 平面应变 | CPE4R / CPE8R | — |
+| 四面体 | C3D10 | 二次（比C3D4好得多） |
+
+## Abaqus Python API
+
+### 基本网格流程
+
+```python
+from abaqus import mdb
+from abaqusConstants import *
+from mesh import ElemType
+
+part = mdb.models['Model-1'].parts['Beam']
+
+# 1. 设网格种子（全局尺寸）
+part.seedPart(size=5.0)
+# 局部种子应先通过命名 Set 或边界盒获得目标 edges，再调用 seedEdgeBySize。
+
+# 2. 先按分析意图设置网格形状和技术；不能只指定单元类型。
+part.setMeshControls(regions=part.cells,
+                     elemShape=HEX, technique=STRUCTURED)
+
+# 3. 再设与目标形状对应的单元类型
+part.setElementType(regions=(part.cells,), elemTypes=(
+    ElemType(elemCode=C3D8R, elemLibrary=STANDARD),
+))
+
+# 4. 生成网格
+part.generateMesh()
+```
+
+`setElementType` 只给适用的形状槽位指定单元代码，不会把当前 `TET + FREE` 网格控制
+改成六面体。若 `analysis_spec.mesh` 要求全六面体，必须先设置 `HEX + STRUCTURED`
+（CAE 中可能回读为 `HEX_DOMINATED + STRUCTURED`），再重新划分。
+
+### 结构化六面体网格
+
+```python
+# 结构化 HEX 只适用于可映射的几何；设置单元类型本身不会改变网格技术。
+part.setMeshControls(regions=part.cells,
+                     elemShape=HEX, technique=STRUCTURED)
+part.setElementType(regions=(part.cells,), elemTypes=(
+    ElemType(elemCode=C3D8R, elemLibrary=STANDARD),
+))
+part.generateMesh()
+```
+
+不要根据 Cell 的面数、边数或“看起来像四面体”来断言不能划六面体。对已分区几何，
+先让 Abaqus 实际尝试结构化六面体；只有 `STRUCTURED` 不可用、划分失败，或生成后的
+质量/类型不符合验收标准时，才继续增加分区或评估 `SWEEP`。用户明确要求全六面体时，
+不得静默回退到 `TET + FREE`。
+
+### 生成后回读（强制）
+
+网格写入成功不等于意图已实现。应在同一次 Abaqus 脚本中返回最小回读结果：
+
+```python
+controls = []
+for cell in part.cells:
+    controls.append({
+        'elem_shape': str(part.getMeshControl(region=cell, attribute=ELEM_SHAPE)),
+        'technique': str(part.getMeshControl(region=cell, attribute=TECHNIQUE)),
+    })
+
+stats = part.getMeshStats(regions=(part.cells,))
+actual_types = {}
+for element in part.elements:
+    actual_types[element.type] = actual_types.get(element.type, 0) + 1
+
+result = {
+    'controls': controls,
+    'element_types': actual_types,
+    'num_hex': stats.numHexElems,
+    'num_wedge': stats.numWedgeElems,
+    'num_pyramid': stats.numPyramidElems,
+    'num_tet': stats.numTetElems,
+}
+```
+
+全六面体意图至少要求：所有目标区域的技术为 `STRUCTURED`（或规格允许的 `SWEEP`）、
+实际单元类型只有目标 HEX 代码、`numHexElems == len(part.elements)`，且 wedge/pyramid/tet
+均为 0。`getElementType` 只能说明槽位指派，不能替代对已生成 `element.type` 的检查。
+
+### 局部加密
+
+```python
+# 孔/槽附近加密
+edges_near_hole = part.edges.getByBoundingBox(
+    xMin=x_min, yMin=y_min, zMin=z_min,
+    xMax=x_max, yMax=y_max, zMax=z_max,
+)
+if not edges_near_hole:
+    raise ValueError('局部加密边选区为空')
+part.seedEdgeBySize(edges=edges_near_hole, size=1.0)
+```
+
+## 网格质量验收
+
+网格形状正确不等于质量合格。宽高比、扭曲/翘曲、Jacobian、稳定时间增量、厚度方向
+单元数及关键响应的网格收敛阈值应来自 `analysis_spec.acceptance_criteria`、项目规范或
+经确认的求解策略；Skill 不用一组无来源的通用数字替代项目验收标准。
+
+## 验证清单
+
+- [ ] 单元尺寸是否适合几何特征（孔、槽、薄壁）
+- [ ] 通过厚度的单元数是否足够
+- [ ] 单元类型是否匹配分析类型（Standard vs Explicit）
+- [ ] 实际网格控制、`element.type` 和 `MeshStats` 是否与网格意图一致
+- [ ] 全 HEX 要求下是否确认 wedge/pyramid/tet 均为 0
+- [ ] 应力集中区是否已加密

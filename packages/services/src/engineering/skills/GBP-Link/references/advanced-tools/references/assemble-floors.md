@@ -1,2 +1,49 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQ4VmYP-TLtYyL1TcGiuR41aVTReMJanv-gmu8T3BfpAgrRk7Nkv_cCcTkCs8pZM7BKCQiAnTxGzyQ3hYxBr0GI8PGWQdvGlxMpeyKqDNjVC1UN_s3zhYsh_lAFa9-IE9A25DN6RElZJswmuZ1XzWQLiVwv5n7eJf8EuYMBiizare0Ul-dSembfESffdYO2wsDhP_CsNnTQFhoxm4vdNUmV74VrfNGuJFcQw_1_R0Uo4MTkriZSSxsivOMeOgmcmZTq9FtnvnRXhPk_-S_adex8LM9Enxw8fm0NBZFedMrIve9cP3oJA2Ims8GoLQcCLpNcD5WzabRrG4EA06pjLRXr5DLDc3P-NiR-HMEYrVt2JVwd9IRUKUYdzcymAp2uwQrRv4BNSSUi26a6Pb4VlBNnejlpau0XewughYsMYcl6bei4QDbZkOcLA_Zh_iZUuzTF2R6Y39NCsXJQ5AZeMqQ149EpJ6z3HOvBvdWFIrnsmrmVOEX3n1A-SeVLjL0CO6ASrs_J8QMngRoajngGf7U-qPMhSzpnMKwWU_IiHDlNvpP4cW1A31wy47MqNwpqwZ_a2s-_CVuOcYYsN-isMS4VAZsarbjR4OnGq657iUDFz_KFi25mf77m5AHF8k8dOmRwKzjwB-_9h-h4ok-3hwhNV4Qk8BSmQ-9D0z8bItj5iz-Gbxo-bDNcBXrhCqpkU-IVU_9v_EddoT8sGu2Q1PPglmFwe7GVRXymfQV9LgXs_KKqazeox_IreXu18wOvpBEgwx01MfLT3CYlnQ03n94U6nhdVdgymRBOTUEhTUX2i167hc9jOPHSLj0_tFZSTyd4_SOqVYaNkAg0YvS9_faH-RezTsZ0dHMT08mlZR8oyk8l71kpezyPSv7koIcPiYvwq7dds4rmtZA0RsByxLLtj32GCYQ-i1stW7XfXHQtlHRsEj4xG-hwWnaBPOlWSG6Mkh1JZg8w3yl1G5Ewjgrk9sfV60lV852elaUwYNKeuqPTj_a7NuGvRxFY8gcPonIGpO9D8dfBKWze0Y_MEOvv29XdCIVVUVv7fBhToh7ApcShN_AgvpLpULE84DTCd3U3AoA-bsBFwpsT4_qo0RHl5_rRXr6o07kW2I0gQXX9nX0bj75VN-2XUWKQtwu8JIH2u8Y7EOPVB8U09RMF_KMfQd2dVBVZgNnsR8Zl1kBq4gWw65xJ99EGfpqt7KbCkorN3drzO9XcHOuiT-sK5-BQ_YHx8mDQCwN8rQ4fnEkXHVcW0GroEpkEjEcUknU5uG2TSFCZvmHlzC0w_WF0LdTxvCcdLR4dtsZHJtjPs-YrmWPSoseXiebpp-yGerbNs4zomT8I2cB7rOsW1ti0BLy5ap79hv6P5YP5htwrrlK5PPIWDPU5_0vul5DHKrRV1vN5k4_TS-O0yEKW9ZUiibS-iVCh7SPiJiGY4khjs9hlxd_RD5F0qVtKjHf9qri4tLL86RgEgu857_3x4mhhCQileCjpSufD274PCbWXlXC16OGbTPj1ikvAq97oKZhM0iKBUpsKJ25J0Q_zLyG_iXP0kV2lKKx8h96bVCfKUmrZHmui2ySRLfjcTxAOeQgic6Va09l1MnVEPXDAXqj-NdW7yM9ka3ZdzPNL3Bw6jb33sMKfvhPzfOmOohEtg3_nlgdNOneQVGGgkW_Qdvli6edxABzuHII6aFLDEbPsJf0CvfsAte03qARwHbnHeS7NgEut-Tc3CAaoJVP6QB-xmBU6Oe6dxhDBBqI9aEoSWYf8-9ADm_gFNMkAFJdRIIE0qkV6nRDQw1zrsCPFfcsoq_8PZUzLCDoQIkr2bFB1OocofO8hKJNlNUuvipPQj8Y-7CoZ_ZjyfXH_MhXTtWkCtGr-eLCy4jSAh1J5FLd1RC0-JyH8LDM6Jg40NqoQpHvjhB-O9tJrHPORQxoVMnHFNRVdMzJU22xfeKpwCX4xmeZ4_bNgOnpFxkVyGk9KkabajjpQ5VB8IiyTAsUXzEg1tF2OfnIO-D1tDYLdZEnagpLjpA-77n0X5M7bs6P_ZiLgqAEIbxDyHv0xzgS66t4KR0ICqFEHu2hl5jqmBJQn--yE5vuqL_R-MDLN8AxIDnG0Q4D1mr5IXjMXpPSG7ZrjY2-pTYtmeG0KyhAsDVDYVTe8UD7jfvJuF3YXvjotVw4-jfNGTW0XGcop_gl85dfUpqXe1d9SGBaUXxE2hlWCu7BnYtGK-in4EQqe7KCPSb6BThb
+# AssembleFloors
+
+**说明**：
+
+- 组装模式选择：
+  - 当用户明确表达“手动组装”、“自主组装楼层”、“打开楼层组装面板”等操作意图时，使用手动组装模式。
+  - 其他情况默认使用自动组装模式。
+
+- 标准层与楼层映射规则：
+  - 若标准层名称中包含明确的楼层范围或楼层编号，则按照名称中的标识生成对应楼层。
+    - 示例：
+      - `标准层1(1~3层)`：表示该标准层用于生成第 1 至第 3 层。
+      - `标准层2(4层)`：表示该标准层用于生成第 4 层。
+  - 若用户明确指定标准层与楼层的对应关系，则按照用户指定关系组装。
+  - 若用户未指定对应关系，且标准层名称不包含楼层标识，则按照标准层创建顺序，每个标准层默认组装一层。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `type` | int | 是 | 0=自动组装，1=手动组装 |
+| `floorList` | array | 是 | 楼层列表 |
+
+**floorList 每项**：
+
+- `idStdFlrs` (string[])：使用的标准层 ID 列表
+- `elevation` (float)：该层标高
+
+**调用示例**：
+
+手动组装：
+
+```json
+{"type":1,"floorList":[]}
+```
+
+自动组装：
+
+```json
+{"type":0,"floorList":[{"idStdFlrs":["110","111"],"elevation":0},{"idStdFlrs":["110","111"],"elevation":3300},{"idStdFlrs":["110","111"],"elevation":6600}]}
+```
+
+**成功返回**：
+
+```json
+{"idCommonFlrs":["122","123","124"]}
+```
+
+> 楼层列表必须包含整栋建筑的所有楼层，不能只提交增量。如果用户只描述了部分楼层，先查询现有楼层再合并。

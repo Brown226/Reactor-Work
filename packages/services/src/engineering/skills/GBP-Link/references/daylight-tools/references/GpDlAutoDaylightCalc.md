@@ -1,2 +1,50 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQGESLbL7tSTx-e9WD5YEymTwX-dP0UDM0e4m75znfCurTTnSxm4a4yAGWXnCtQ4FVvAUTIgKBQATNJ4zr-m0jcNFb_rAN7Lqlg4xe5DcVQtWLZ0X8OC8DNY6hj1ZnS3zAVWomY7GmDpdrTmt9VL7-EB_WOSbR7v0ancJtd0kANwaIS_IGl96JwRfkODdv7vYH2Kap40bdpDQ5eYl_oht1Z_NwytB93NFGUHTN6pSqcUKazYMtsFzv0KroZrTI48dJaJOz-ny3rLoBhWYH3pke-EAOldPhXXF1z-Wgl_-JJ2MxuquDO_I7I6CFAugEaginhkINyGuOyUvGE06ggVJ7XXG_G4Fn4-3iSm6KfAaAOdCCeSOtXHOYavCgXdaahyM1zP7ArmICSWrYIkhkI0UZftESEDx777MK8VlqsHRcFUBxeiIAiS9VlJqx7o-X7FIxiQasvt5nGgQ-cX-4tpHKd5lvTjwvUhdY3vcqQy4o9Fg-g2MiKc-_j828XpdMVk-Hy5vtFASbVgmgBiAoH_uOONINgstboPG8Z3fJCQp6FL42xTjOG8r5gp5qiPMTxMunMiyvVfxXxATDm8yF2SjVfllSl4kCYTNl8Bla3HYdCC_0biIjUf6kS8CqtFD9J3Zsuy7nR1BA5VrEe--Vj2PUT1cD90rphb7jV4eNxUYJbKWU0jce8nOmA4CkKtBAZRUvVx5mCrZ0eksxx-bDvAz2IInSGFOxfseGN3UNf3YQ06PUOJVOTQAUef6GRMpAbmvXcUDDq-nzsoNU0zUD6DykN6HgIUxFeOMyuXxIGb45bTE7SYxYMyOdqFWWGZrL72wyMlC6C9HAZM83oCDg9Wnmhkh7B3W243xLu1cNRriIZJOVS3TOppY5z3xFu3rBoMH911_YL3aWurG2oLDqM3YcBo49VWTiL-L_Nw9wpmrIbpOt_4nxOqniPydjbqN2l6lhkVcCdW39kAygJX8ZC0B8uoXD8EjeGTBUC1jS6wlpa0JM3N4p3ATXneEr1fLkYWksA60ADLBwBR6E7PTZgeXJHa4pf1EaKbnIpKiAoEJitgJw5OYa1w-HczEHvuInQlaYjMu4fHNkbqwyM9MG4fAMsPogUTy1z2j9lkEmb7vB2E3iQScXRj95Fsp5esEDbKJU1rt_yrhUj8qWjC4bazj35NaSTA4EA4c4NNjy-bmBDmmz3e3CJWPizYXahuw8XJnmHDRHq1xhR6GPolLI_C6sM6_rAWh-EdIZ13kn7BEKbn7HLmBblY5YPAImWxXQPxkW-CGM8Bcfgb8sOVXAFdIq0F7Dr5RQSDqiuXJIvduO_wEiHe9-n9KfSY0E1tOwjuAQPtkWW1YLkZNGeqOA9u5QWcLPmZJEcCTI9YQZAOPeazqf2tjn1BVsOm6oOTgeG-sEoEW0Zg4RV6pNE6nwObuECc5RWrCyM1s-AIyf6bCh4s5qAg9qll5FSudSeGsuJFxoIpve8oaFclA99FvGTdqVL0KuHtvYfXlHNP2Xt5ZwsjOzOfq5bFBDKwKGbgKqQWMUOnlep_JmowQrJr2odyXBJ-ERlz3Ng5mf6SqFO07WvGD5ZykeBPx0kSzlWOhjfBEYzGNi9ykQkZWulNDgYaxzDxguxoapu994ub5E7K2hU2Fw2l3giQxss_7-zq5P9pDLg5rqC_zwF-FjMF78j5EDTOJ0L-8DHys_65SMjz22LfoBbqPjbpFf9bA5XPk8ki_vgRHUlreDIi53qjKl77iyuuHsYz4DSEQAEpgLP_FEhLHQbqtprtRfPFqx8gApFc95vgadAwZBKSInsXFH7Tac-E90ghQXBJJ2MSScDQpA_4sksRqWOAmNpWE6owXqorqXMqWM1B0EcrsgPO8DyRvVFUZ2pTq2YCqsn_K6Mc3fZ5ndNX4NuzeTJ8yAS5tBI0tLvqFVbvKi7ZAsosBBQkGwV_NDSrht-HR7r9Ie48u7OUmCt6Y-Cx8ix8konwZVT8GrWZHGoDzruTr2qrZ11P8vP_FqRSAJrj1sMV1cfWpaXVEbA9DKejHMl-R806JCQsCOJQxF7oKD32HZdm8ygi-pk2maXV8albvubNFkvrptworl8ufuf359FBtEPlUOykf_-r26pqevP9d5AVX8iLu7JoIJDA-aGvOADO002jqucgcZ8W9TQQYvhP9p6D1X70psW__BzNeZv8siMj4SAXT4vF2_fz7RC9nRJeSjNqOndWIvc3UBG1hngCutDrz-myVemyIj1OGvGZu36qVxoVC4RSqGo4mstCyn6iWyPykOAgq617m6iNsSz0xi7gOzV3_PLTZXqAb2eCx1PBNcBW-JFZ93zLvOqygGxiqG8Wz1QGCqI44Qtt_5JGnzSeMjPotX9kUXpCzOkswnQUMViYd25YGr-srn1mIB5l469CQ0-vCUzf-vlJ8_XlWu5uhim70h6i8NstQzdkCdorIAJ5YJ5s_yOP3v-JwZlhjSHtag5JQ3uKVpK-0ZvqjBDabPuTMGpq_cI0mawkyVlMEg_M6042qbgje6jTxG3Ztk97yMBnw_uP91i0Gj_pJnP22HfZrDCoFmgKdx6k1W4pZTHmzonRXWBFNzSzQcRnbSFVMPu7_7-jwuzobNwIvfdASc03hlQOi087az6f-C5cpoC0WSOhA8f71cwmVaHP003SZTzj3lAhFzCvTzjePq22t9YuetiYrbY7dOYj4T5feoh6ndsKS5A3oV7AGNBcR5ze4r3CFGiFvu3xAje9wtVBwwTf-h3HtZTsfo4VMCZPqXrS933O45hyBBquf-pn9iLwmcgH_oG6PDxSvNLeohwuLrQLDi6rhjX2PqSsP7eOUqm06CxME5YKpFxKHoC37FTacP5Veimp_ErCpfp0Vs7CbAkHW_x9aTULwNw-7Jp2oHUNFG1Bd2igPQf-g3GagbHJjKrfFftiiM4pvPzl5oo77m7AAT1OWVKCjefiGwtsyEHkBi-6XFAaL1OapUQBqSoHjDMIsqUJmEy5aGRzf4y-8atfrWTKPZBzOy1qrljkHWs2uAqGSvVWICM-JjAWPceaN5g9NHQBhobdSOWV1bkISsMWRU54GN4Z-9Jm852VAs2UXK7qJYvbwSgqyCpLMBZBZPDvIYHH1WGdYPkTVb_ejifD4-Xr-mWYFHJNxBOf5xtZVQlXSTSf_ciVp2AaF-h2kRlACmUZKgJqW0aFkLfhDYNX8SoRZqOe0qUncbYlyEupIWY0Y4zHosdZEfbuWLOfq-Jko=
+# GpDlAutoDaylightCalc / GpDlAutoDaylightCalc_Formula / GpDlAutoDaylightCalc_Simulate
+
+三个一键采光计算工具**共用本文档**。三者的请求参数、调用方式与返回结构完全一致，仅自动应用的计算配置不同（见下表）。
+
+## 三个工具的差异
+
+| 工具 | 自动设置的计算配置 | 适用场景 |
+|------|--------------------|----------|
+| `GpDlAutoDaylightCalc` | 不修改配置，按项目当前设置计算 | 常规一键计算 |
+| `GpDlAutoDaylightCalc_Formula` | 仅公式法：calcMethod.formula=true、calcMethod.simulate=false；统计方法仅勾选 gb50033 | 方案阶段快速计算 |
+| `GpDlAutoDaylightCalc_Simulate` | 仅模拟法：calcMethod.simulate=true；统计方法按绿建统计法（gbt5699=true） | 详细采光分析 |
+
+## 共同行为
+
+- 仅执行采光计算（模拟法会同时进行稳态 + 全年动态计算，不含眩光）
+- 如果当前项目没有设置计算范围，默认按全楼计算
+- 如果没有进行房间类型设置（没有主要功能房间），会自动进行房间类型智能匹配
+- 计算完成后默认返回统计分析结果（与调用 `GpDlGetCalcResult` 返回格式一致，summary 级别）
+- 计算结束后不生成报告书。若需生成报告书，调用`GpDlCreateReport`，接口说明详见references/GpDlCreateReport.md。
+
+## 请求参数
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| returnResult | bool | 否 | 是否在计算完成后直接返回计算结果。默认 true。true 时返回与 GetCalcResult 一致的格式；false 时仅返回计算状态 |
+
+**请求示例**（三个工具仅 `command` 值不同，参数均为空对象）：
+```json
+{
+  "command": "GpDlAutoDaylightCalc",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+**returnResult=true（默认）**：与 `GpDlGetCalcResult` 接口一致（summary 级别），详细字段说明参考 [GpDlGetCalcResult.md](GpDlGetCalcResult.md)。各工具返回的统计方法：
+
+- `GpDlAutoDaylightCalc`：按用户界面勾选的统计方法输出
+- `GpDlAutoDaylightCalc_Formula`：返回 `gb50033`（国标公式法统计）结果
+- `GpDlAutoDaylightCalc_Simulate`：返回 `gbt5699`（绿建统计法）结果
+
+**returnResult=false 时**：
+```json
+{
+  "code": 1000,
+  "msg": "成功完成计算任务。",
+  "result": { "status": "计算完成" }
+}
+```

@@ -9,6 +9,7 @@
 
 import type { BaseMCPLink } from "./base.js";
 import type { ConnectResult, DiscoveryOverrides } from "./types.js";
+import { resolveApiCatalogPath } from "./api-catalog.js";
 import { BimBaseLink } from "./links/bimbase.js";
 import { ComSoftwareLink } from "./links/com-software.js";
 
@@ -118,7 +119,9 @@ const FACTORIES: Record<string, LinkFactory> = {
           featurePaths: [],
           windowsOnly: true,
           progId: spec.progId,
-          catalog: { id: spec.catalogId },
+          // 目录路径必须在这里解析出来：只传 id 会让 loadApiCatalogTools 因 path 缺失
+          // 直接返回空数组，COM 系软件的 function_search 永远查不到函数。
+          catalog: { id: spec.catalogId, path: resolveApiCatalogPath(spec.catalogId) },
         }),
     ]),
   ),
@@ -180,9 +183,7 @@ export function getActiveLinks(): Record<string, BaseMCPLink> {
 
 /** 取全部已连接的 server name。 */
 export function getConnectedServers(): string[] {
-  return [...activeLinks.entries()]
-    .filter(([, link]) => link.isConnected())
-    .map(([name]) => name);
+  return [...activeLinks.entries()].filter(([, link]) => link.isConnected()).map(([name]) => name);
 }
 
 /** 进程退出或切换工程时清空全部连接。 */

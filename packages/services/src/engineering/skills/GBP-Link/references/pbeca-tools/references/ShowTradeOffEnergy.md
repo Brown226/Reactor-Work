@@ -1,2 +1,21 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQVDtGN6TVjF27VItQVvs6cFgdwgZ85NSwQIJDjvZCRTff6Kp4PWQFMTCI0nttL4v8IefWdtN7NBgdFwI984zfcw2dq_KI2m7f8c3KdKXkn6-SHkDvpoINgy8T27lSOwCTFMxE1AcJH64WtbZKsYqAtHbOYadFUuuvjsioMRb2wVb-i8Klg26uLOqiCkr3Y1u8a2qDtkCZx7IuHofGkl0ggCejzpxSdFYPTIbabSBwqQijtqHSB754uulhPb_TwIdwrbWwEh6FKN4FgzCRrEq_2IF02uMacOVQWNOOJKDCYrnwxGDW-PAOhQDoNxHj--qAoWHNGhtVoiljikTey02MxjdsLd_pcuZOyXWKkcFKNlE-JufCQvUJojmt21PMAum_XVh1sBpUWe3TbtzbyX3FHmkM6GLeMRjQuipbbiCwGOU-QpzWgMJpI2KE0Jcdf8KuHl0M63DZ6bGF9GlvuQajPyTf0lruqUW18GU5uflwcEfXMT0XxypzuZg3jCnjPMKokYya0s3A8DdPv5H2KLMEpg==
+# ShowTradeOffEnergy
+
+**工具说明**：进行权衡计算报告书生成。
+
+**调用工具 Json**：
+```json
+{
+    "command": "ShowTradeOffEnergy",
+    "parameters": {
+        "tage": "生成权衡计算报告书"
+    }
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已生成权衡计算报告书"
+}
+```

@@ -1,2 +1,101 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbR5QRc0uTF6CQzjcNs4FxmeQJYpMSaew8nWFl2qwxufkmXOKum2rSuOKQ_T8yDMB2YxZFN_K1rY6Lg3coH3UEIw3qPBY8nuM54Ta7eXMmCG46hOndHn0RHdSCm4d80v7pi3GL4MhIJXXEVTQ58Zre_-Y2loZW3CW_3ZbbeaX2j63apkJYVX-nfeC9zPOS1HUWTnYYv6pZeAZx9GbaKlhaEEF3Rx_xZPHR7do64ENY7ITUTYU1Edb0WCSHe2Tm9-cyl1hcCQMDrNkT7t2RIZpuJWoJEa2oTvAijBwXCqm-xE1u8Wwkimr16WlCWCxdf-VRdkhiZAxmnATmbEaqKIYNBnjEI18Y12PIE908vvCyEEKmVqmQp1CKJUibKs6XtK81rRmS-YZiKNDHiEADZyVjwPOpRf_XWSPfTAtbtQ3DbX3nBtHxRCVttqaClFwH5nzQmr5A-dr-gm50vpUu--EiOxNIIpzIrWqVb9v-PUbzlFPONzqzRvbKTfhw8TduK6rK5PYqPnq7sTrTVj80DkgYIuaz7x3tqWPTs2j6kIzKDxqUM6EJzLjDEOL-FAAYU5XUbpGg2iAuFLNVz8jBUpMbnDVeBRY1IVog7Yvt5cX9q8mDyz8pZqIHv-F-Exr6GWgGjHYCAtOMyo11gq2xseBifu8RH3YaVOuPtpaaaB8JovBdllLtIANM1krOz3gXPryvo0TB5qLxqt5DCNt-yWOWasFYzSnXI8NwYFXSKTQkELphRZ5FLehDIqNey9KAkz1XN8I84E9u53YKYoYVZTYncO79jJJ1m2cdEpvAHbxvgXeSTgX70egBEjxBZNXSGneqgWD-_oYKCEGOoNkOa8cvg1QQxGLHjwkGcD3JkbNFvTLCC4_J8ZI__PhrKSYys1Qf6d5rntivd9IpfTQKUNXOQhWZBwsQx_jeT0O2yWJp6Ublv19wkLuu1fIPVfsmESFeUSuv16XA0UvmmACs1XZ9cLPQnLECaRuFKp2WhyUB9KDlM6r9XJ3ixM9xFgfA-sdpg7_Onsk6PIk_Gzqffb1c9GOmSvUx8tE2nHZ1ueDK8JksMr7AftirBhw-dFMsH5C0J0ZgWaZtc4iksPQJp_XS86V1biNyCBcWazL2e63rRaWndEZzvv8-M4ri1g1UmEbU2LYoYRloRno_tBsRN0OLqfzLkxgMpVniz0fp5IeAKLcMjNAhBBKM3FdBUf4ypBGpfh5Jpxrtg1utZ9HDPpBh4rBvuMJ_cyXoB2H6uD-Jm0M5SPoz2GBWiw9yzFso6pvy51VMC3sEHBFWxGTs6mzoDADfPzvODND9uSlrQ70adkiCLZEPnwU67eM7wBZOQ1x4nTi9iwkZVfusugQoVy85CcucG3IqvJwiyg4Be0myt9J2HwD9XMhxJJ8SyR1CX1c56SwtLZsGHi7EdVtfEjRBspHbphqCtYDkBxITZwiYBExHBm0-de1hSSormGWCJN4dKU1FManCzaEt60eHKmMXoEijpS_wxRzacmfo8aUd6emj7xKurQoADUXfT-vmVUYG8aAmNbNFpZPrvhpOsDxIdbQ8jEFUmiRobpo3Cr3xegKyXSAejRy09oZuRg2rusQ3gMYQyjboeHULQ64uzrdoY7UfHcWpj0gbgGWSGjSM1py2XjdRarPowpoZmqEjv0_zNlkOBiUi6YhYNkcJiUOysaoGlDkcPbDbXw644mcxNsQ55okZY8l4WvSAKhEW-0stx5h8BzelIOqgaRju_TMG9krLJ-14UBDYtiQNwSUcWCaYt5u-KOUyp9MpxhSXUruN9M3T7TiSiFPC3FhdwXW5D1j2x2QIsB6LbvcDf-ASmUq_J7OAYfWdd-SxaYNYN0ZlrcIQzL3T6pinXOlt9CzKa-8fKTI55f_gYNZAaTnb5rHtqmgYY0BePx5huSBDbLJMbFi3yfbLSY29l2bhEJ2Pi1b16vIWKuLFcO4T_5gq4R9gieZbtAU9Dno1KWLZoQbBcr3uYWNBQWaRSKjqOx3s0AqZZ1KfAOV6gYbmi0pxmSkv9AXyJWLHLYZSwbkpqHry8Dr1-sWadjHe93DQ-KpsqPnFX6k3a5sL99wT1Lw5Z4HKEUg4fKJ-cE5pzfhIy3TMoLb5hH89CWXN9l28A-OOTh_rP7_egX8ZhSR71kL79BbgZQe7188zYAc2dEVzFoOEBU66Z9ey00-p7XYHqnm_3rODEq6ds6SmaXXdizbo41dVjr8iDWUgqIVZ5iRuKCRuXUtueKCPGivKzGk5UAaR0YouQXcHGqkiGUZ0EVHG1-26tklDCqdpnIxF_3n5LCIHFs_bU-ANiHcVlrDfbOf7QFREwBrINk8TL9Nms4tE4SC0DIdrIXs0dYEYiSBVtLfcXIfJhAljhj2BQyb7e0CHlX1dX0uNUD__TMsctE5eHwM4FiDoEe1m0mSo3ZS2LgV1gIelRwRIJk-avT54sraoyizXb7oyYwzOobzji47OxZzjWgZDjAghcJuCR4CRELvtKDm7-uvGVEJV-nKBqS2orlU5ULiXNFyg0aqHk7j1NaYiovSn3HI8GMAk3OEtsS_6QLIQKDizeaOoGypl1Q7DylWUwp40ruS0wCf_6VBFGzlwkt6TRA7RcH6QQ3faKxcPpGfZdyxVPaL3kr-_5UgCZnoNT0SloZAr2LbK_XM-4j-qpDoWNzo2SeufU_cGy8ENV2Trp_a8mQgaDI47sNEYbC_NO-gK3YVWDrH2PSUTt1dH6pIVuK_Zzzg1zT_rm97ax9IX3JMRsafVF-BlMsfjO76D_xfjDfoXRrNx1QX17tADC5HfbeHrhh4N-Uk7Nd_KdPON9xIh6O_R8FzaJA64vDOkbdRQ01X8-XUdDtkfICAnQqTgjVKBs0jD-ONqZJbiyb6jMCsoMjj5okSLvcW68rgCeU0CPiIDot43sdj9mqxejpYn-AGyasxbasVBFJYNdsHQdPX3MO8PnW0R7SjZAmdR5t-d9qT6Rf2wKgl-BPHssPUP3KLNerxjP5kbFAGSePCH1PMysgcQwOUaqVStmk0pKmT5Q9cS8ySiV-dt6QZzrc_oFdXHjtLNEyHREf3JYIupHs2sAeb-EuzJh5jdJkA4JQMhH-MzqSHehZDMTthsZv3hckaT11B70Hb_LZhqn_jGtappQwOebbgK9p-k1el5wn-kJ7uCXirdwvQ42-M8GbTna6jdNIUs3ybR0inSt-C38LuqO2KLJDndA3P5WctSY8j9udmxfeDrI8VNkxtymdv_5OM9iT1cVhH92dAhPfR10s121pcLrdVp1MlVF9NQodYbrwBpK_ZTiZmSnT1hCJU6rGKc7ITQKHyftxd041FjOEL3kxStbeh3iXEMzbwKIa7Mtpsg9emcV3gbLNRSl03aH38hM_-JP1ww3r0SJzYUrFhOMv2V6kNYV4m3r1HxwWaLITBQtNxNnf71O52O_nCaAQwBU4eL4TfqETmepKkNndBkeMhxDvjyc0unBnUJcEq713bwrDZG7k_MPcEr4oTUeJ9iDcGTKGI4I9CsqbBYpHbQ3sTEk5EuD_P8NL0Gsf5Hhp9n5q843XRV-AuYi47weEhF9af8qmkAXWC4LmDMKwthn5C3Lj_MLmrlOf7xoL1Scp6GRaDUqrCAAkNrvR8R2T_AMfLstzwgBaO_AS4sVJN8Uo_3HfRpIwUT6HKERB3FNvlJU1U_HN1KO-uluOxUvxF6tAgc4rMfb48LICt4CT7iT3idCsKh3KB1Fu_92KEwKc7hIsc8q26J-czdXZK9_QIkOnJowYyaNfgCfaWBQ1a2rT7sgE_eClxlHirjWw-sO1CQI7RJe81mJeMncuTA7LUuqXg9lMzMbEkCyp9tL6bY52SQP3YZFkHVaOUfWrO36XrWZB39TRZMLi6qN6hz4iS5EcCMtXjf9QVhKABe17hIPWlZI1sdqThHD0YShNqzhftvE2O64L6CCVMAf5zxsYQOMFQ5lM8VWfx_N7vG1_RK3EswpFeDKGDatr-t1Chac0y7wWx3cQcOW7UqoAVWDXpseYdl6TTwd8hqBmv8nwnjCix1f3yJxxT0px3pyMbf3NOZPqRev3YqFeVJad4zTTDaLt4pkh7SVFh_wvuOVnzq2S_LF9c-J-SRxuQ2Veg-VoE5aEtM_gwP0I2dSuoI0W0jGWXvylvpN2d7EoEkdhz2ZQyFK4zCDpY9IBqckY-sjB4aObW50DQKMfWs9sSi2oHZJ2kpiqrg1pAA2b-rrYdmf7_tVyB5zZmK3n4naQguK9CYyHwrDaPrFmVxJxm157hFRswgIB4XmrnGyclwC32y5NJWzPuU8IyP_gGJ0ULv3M88dQzPPBoo1x3w4KRU-yxXcYSRRA2e2uKaJ_03skhq9gXb5bT_oMaEeAi6o53UoPpXiON6PdTVwVY4ZFm6elIjRxZeL3ie2GvaSroCyDsUctOY3jzQeRCGG1pgy99bISChYUTGHP1qesvOQobZ-aWDCbE3WzOcAcaM4tw8KELSIHVUkLdAQQ7TUookfv4gAWs7iBlCzSeGejec19uMcAZPjli1ANSKTC5fi_JIlD2Ngrke_w4bzFnIx0-EqoVu3oc70AuWOiH6a8lXZJ4ISG18HBsvsNWHstKUbj32gZ01Yfb1-JnuowXCdlpuOn24mpc4plugoi6rlj9_f9tLIAmX7KAfAXJT8nha3Ds65nn6ZIY6D3MTm6WMrwRBqHiJCxS1U6xv02or7Xr2FBvmEc9L77bCrecHYEbBq_4d-tx3yY-HxCCw2RDmInyGKB-kfJPHJp8scy41S6ZrV08llaOdctVyxcEpy02JmGgXfQUOMd4BTQgsu7bopCzSXk11ceh-UVJPEqvjVQZKp-04MUc3-3dngQgoCMmAoNSpNjqVqgAKvQiUpV3CfgzEOGabyIesaSwpVnNmGbY14HlgDd-6xLWGL9rtH4qUL1M2XN3moadQ_q0LgTSWeRl1uxzSGq9q6RVcD0t321fJHIgCTxTkd1e6ZSQwpBCxzyWKm1O68TxriWwa9GV34o9omTMlY1L6dv2zSqbGKqGyJEHFsPg8DhtkwjcgiV3jf7MCTarY4yFTH3zbul3-0lZ9exImgM1uylJ3cRAOobqn4N6BSFR9i4RCj_ocvWZEz05p6VjK4PIdmlxY7j5TbVJUfU-gpQJYK-IdF_GqkswzJd-edKXhW9Z9wA16SzrvW96oLLxPQgNtx_7SS41_6A8hAd0Yp2UjbDDFmD9FY9sMHzljwCIEC0fGov0JhXkH_7qvj3rbs7wMugFdUypBhVTBHPqwXXTWc_LcHbD2ZjH4R8C-qqReTElkBbUtYgZL3HtRlUJmq1WuGQ434CZn5K3Sof420u-YvqtTl7Q-dU_iIemA_mzGVaHOqsurs_PZDYbuKnliGnoOCdJQ7boMdgVexWNLdK8rgrLe82mAnCTH87KsTNvStDtiz0PyYz84HkrL3xq9qWr0oeihlHCJNCC42Kovz4FHHxFPgMAiJX8eWSnwixRezEFX5WhkhRLmO9Puc9eKc0tui2c10jbx8IoHyHTuSaFg7zeYLJ5hq7oDOfAN-Q9BYGxwH_AKKyfwazFyWonKI2sJCkowNyVrWaIZkg04AVZi2RhXCwkn4AKbmhdTAxta6DODHTQf5VJKTQegrWUIuKPsb5aoXHGUYjtHoRlEx6J_oGJNeIW-B0DeWfFYmRQbLMDAbWuzIJRctQyoT_NPMaciosgCaRcvP4kjdYz9_gbyyfP2NM8okI9MLI-7cC294w40i-54HyMTvpl7EKV5js9AhTRUYQWbNuAn5B1Bvv5YPgpoNI4DUtf3p_oDZTQx8g4Vq0UAgWbkMljXZsvGs6RMZqtHTjlAgAUcokhZ7z_gEkjWtsU4vHyDgW7RaAze6nxlu-MeY1TJFD6Q4Z2SQQsuiWp7ShiNEPjybyycSwtmz5Hx321ai2MWxQpX6eMaaNbTo7oTSuxnemzW_cgdaTwOTZIUIbGwBUD3qnozU6dPUmUszt9MPuUE_BqDHQkKoJUf2pT8ZJLm0qEm2piX9Sxxm2XSdtaCgBOkRIsiTUW3Ewil-H0CF2CBjWHBT08omAAKGCt_327EU2yWKVl-Fp7Dp9slgd7asUnEtg1o5h-B-ddH4VDIXWITkNDmrk8IS3xAG0oQlsB3Q8yOwMYLBwelWeHv517XQaOY0NNN1Dlr6Tu0kJnkqyJz3y69HeV7ctcfg5iFchnuxe0P6TtgmxiMY-S_lRSNUr0i-B1TgV52OYg1u_CpyIetdU9KS0GU3ElcB8yJozu9W5uaGqrXRfUtRJpIE7j4SQEfoTXsQGQDhiEfHOWmQ5YwrMsgtogpHZtDRsD7TD48L6GEHB3BPbLoMvWtMX3fHCuECigX6HNiMJLYSl03Lyx50rBw3RYA2ziSNWxamS8Ri9-6MbIag_2U2g-v6LBCI4mJHLiEa1tFWxG4qqUiK-mPZMidfz3bKmq1NgHfivLZsDgkwIEc9G5NpJ8PutIC0jwNmuVtcSOtVDp3BWu-ULJUbzKNSLXQq2hCsB_54ZiwCVBZmGXDeroUkyNaHEl6AMa6BXqbMgIZl5YfWx5UbwsORtcssMKjvCh6_rs7InA25HWI6PTt5ZDYmO8kWwbR6hpnqT4lr3Uz4SbHAowznqMCTMz5qKveL4pvUZ--y0Mx8Py8JcnuH9j1H_xdURMB-NqCf4r4wCwrWr36Dlh2Ic0RqC6BIKXPXw1xTFRFTH2UZ_mFHo_icihPstiHdluiZdeE0lQ6hpENBUY6kgDHjutUU-jIZrR_iNbDkpN9k-7L2tajzll2Q02OdCANFbLOMkYZmOfiboGaaayCRVv_NO88IrMgqkSP7-gc_5RaLLtkpdyGY3R5dwHSHluj8PJRYNT_Tjp5Kqc7eiLl6nqeZzJ7ZKi7n2DQ9ZN7obW41JlZGCzWxaQ5ubL5iUjs3Dxasl838DNh0UNfSAEqXn9cS4xvFQu1hXRoo0IPOn2Bniu_00l-NcVdJH0Tm4LorztUXmwA4StGpR7pFufIiaFEqjtXC_SNyNoawO28hLF9zafaJtFdw8FbQOS9gRUnrHLg97qPb7DxrO34exyoq7Fkf5k-MRqssIrq541gEnw0815e6xQyfcijtxzM-pf7nt8wXmLdYl05Q-RhcybU_12mlvjDqiSp32IA60kEnMhBEbVOCDnnVz-AW6NffeCq4lZGcFvjnUZ968UT9hYCMs-AXcBp479BbpPBbRn5qdcg1mvCWOEWYAhktIYl3Z1GMTHBu-zVC6--TOw5qSJc6vPfkucrJqTehas11LPjm_9R5ZE353z_ebRUW8_mO9OqzqmaOhz22GIOIqjN8PLlj_ouvZ8QTCY2gfVKp_69ySghynT74nXzTCJH9TbS9cICjM12EWVxQoU6oeZGOpmESdUl8tNgGWXxOSP1TgZcEZtosSjiS24ZoTnwHYKVYlWt1iPsZ7OOG8TOdPm7vb3srfCujEVJdEZdZ3CI6GAwECt2WtIFsVoRU6pFeAflRBUQwpwMgI6mOb1OjW8o_p6XCxUXY2IlyZiKW4CMIJuLPIIaWSBpZLUGIAJ2RBP0IQqEC2D_pv3KBZphYmmCI6NqAN_CL9HQYh7pYJvRzGJd5zEU2yIVfuZYskPxxxgtvMtqyFC-6DOcxBbmW9J4Jljtx3X20pqrWmv2ibXtGDaPjK7etZK3_kEOL4sqlgY-Wurgwb4SiKj1baD5JuJfO3zh_Sl4OJiXr6rYVntFldphcKAqirwmhxDnFjQhc78Wc2XiCaJsiLMC4ySN0RbZIhhmZl2H0DRA_bk4hq0VKto-aXdvexX52mX1fg_Ul2V0W_I46_Aj4q9HwEftiiMjjBWKMYlFbgiO9HQJpBimR6jZQ-RX3w-Vhdzptd_Ho0v_p-pGg1dBnqoSh_c9UGioKp-rjj6csKqxbQ2MPmkyLM9ijGlTE8-RBGcSh4YO2mRn5nNzdeDPzLsK2Irw5ok1-x-NY6G_E5K7voFsT9efoWuZp134wpoUivQ4Mnwvr_yLzQ50bvO4fOEIw6kR-Kj4M30MFIhHzpkiMWswSRks5WRSRhl3MBpopiq6etf3tjuMTudxXabqUmEXTQOwaPFGSnIcCW62km63SqUEIneYltvlQaGOMgp97q60rH5n1GqZMhKZoTb-22PLOZJOJMrPGnl_ljPQnkTgm3T1OcyLWVP53pupolG3PahIE37t_U-3dL9T3TmnvdLyJ0rYHMvYfJHHfCgMwG1vwmSWegK52R9uSf14IQiNkTBsm5x0f69DJI6S-P93jhLEjt2A9-6LTn7ti1iYAj8zRoCZzQl1jgT_-luKRXogIKQ8GeXzZFtE5nvpSjmPC5md_W8BCR4GKXdjn7NSafdS8nyPaunS6QJiUNVvAgp55WpeC4FnfMHQbPq8FVlhRVsGeAt81NIgG9gH4wrHVCE-bz4cDvy7GudT6iiqtI4SDjaNrViDxupQhIlyR2YafO2x_SgdG5l0SY5199l9ek-lA6ZqRSMs-FzH8arDPq-Lqywgtxzw58TJfPHkAhNYOTjghsPEz06-JRP49Bci9q7EVcKxpxf4h-OEaW4NP6Ow9tRAzugP1Wx07OUF_0dBQWI5PZW7pcYBU4scYcWeumIy4nKqz84TycV04cNEOOgIb44qMhYn9OtQ5ezLkam3z6TXOxE6Z9eOCgpmom7fIE5B7Sz3_d2rxtxmMbcalPuYS1JBKAs3dmq8_MYzNCTbk_TvAgiF688kCkSdy0CztvRKJp95C9oqwixMHMx0Xril4jUyMvYqSe7jyK0XqSqtpD2uqOPqzv35jUz2q6LkFyCxA2xOz8ZY_3ez_31mRTyxLXtw-HgCz1ZxKV1bCVlX5n65QAmWqkmwiSPQev3xZHXLjBjyv1wFjN8eVX0vhTJq5YcU-LqGCgHF74JX2B7drDAutn30OtnfSbt3bnsD8ZjU2sbYFJ9VIr4l3ycDQ9pHvdDdpbWhSwqYP-sr9Y1q70Wfir7jTroXlFtYPIkY1g4rY-jHSolAOpG8Ux0dZnNaxqVIEA2zH5SmSTmXBM6kp_6r07zLnPl7veuhrInvVVGG4I4nYDkdjJl-E76CZf3dv6XbFZZoBG42Z4BAYQEecxhOeBIZ0jzXAZ2b5oA1tR5tAdC83ruZlRjBIT_-MUTYOn4uIL_s2FUfrrf12FLYJW37yiqrKa4-Fh70sokcxNESw8Zrc86kSSozLeErporwxcuLGl7WDSqYIEHT8SReQzH9d3nlD2bM4r2muZxcc04rVHbgq8BDiIwcbVSYH9Hx53ddKWyVNl-9efYtbFuTVB4Y2FDeccPW8H9jxq5LP-XHkzJjLXriLwwyOtQ-o_PSJWbRMQxJYfZbta5XCQaGbkaLF7ffqlIsi2mn7slRYjXM-VJ7ID23WgPkSW7IcV_IBgXLo_86gCqefKp4u3YzvvYkbedjk3tPXAnKbd7T4WJNOT3pHZ4VT_ifw8AGN_Hyr8sQ7YIH0FvupUJQ-QfNHz-3RFvQyuaVXEQOFhPvyUCc4MKPcHwTRpYf4za72gNp0lkpNXqhqi9nopbMEDxhFcf8LH5uv6K_Ss14RYn0ZChOQ-T-gAX-dKGkdBlCOlv-2ukf6HgW6MfXTdgWz2v71el3apVSl_6oUliO5-mzjnWahczv_pCY2M8fODz-p17nPwJNDi-UiLer_9XCn6YAcDsKGQgqNigIcY448ckR0KmQDiPq_3cgchfNuLYQKO3c3XtlnZ5QWI0aLmmeXHIAOJWFR6rrcSTvXiHZJvxEXOUaj50K1PKYUhQER6K_na3LkdbGRRK1Nkw-zRa7vIGLc087dzX0Gb41rcKGmpjD2a0qqhCF4ztJakWbLHYDlLE-N0LM0s5dQWEotT68JMJb1YMyj54ZTZoHFmPXqxSRkciyEDHq3DPeN_ujEOo_LnxErjEEs66Vscryxq3cwaE44aDRa7sVfQhcpB9dAC3QPwTJNtPhItNb_Tp7StT8GQ3knAXpOsZK0EFjNtFrcvoBo_3tTbAWJslAGOzhBbUu2WVlinyyUI9_wSBHu3ScVtKpGYx-SaH2VUHWlTPQsWWoWwmtXKxNem-3AadAP9EQCAe6f--mTVU35oBqr_N4oI1gxA55sQvuQpQmaa3T7z9tUvcKM7b8wGg18aHRFKJ5SkzgoIvOKxnk3XsQMpNTLc1VRZYhwJs3u4Lt-TR2j5d-pzfUblWWMC1xVTulenlCeWvQlD6AkIV4vL6yidaJEYyQSZMz77CYWmp9BMpK50ZMRSIx2INPR9X1W-lgNYNioj9-Ff6o-u-t-GSeNupqaXy_ZdTf4p6owplR8_0dNg09MklJHV8qW7XZ_3pWYjARtGFoEqRq03XPGKjPzdSM2o202zKA2SuB8w4XI_zmwQbAmo9TAVXfHM5JYUXgRhfNaCTmTu7vRuwJs_UH0YA939ZGPg9Fi4pm0qblLWpYKIsSqPWdGjAT28cbe5T9kkgnNavtBtTLqCm208i1bLqKJhsfc4CHxhuJgSkh4UzYGDxWViymNGAnQvyzgfaMrzOwtY-kNloASWH1GHqzCeiQRM81n15AyH7ck2gnKeuUB7TEzwYSjAte6SP1FVmIlA6v3XAnMx_c0r9ipSdTomk9ZgQU_yo_vywFfZP3w5H6Z9mVMbQ6f0otVERavucRpi3Ugp7u54Hz7cVx3VHnezo3BqQLNP9YzCJYkMs0StUxd9g-TI7cGzTUdumS5N5gUR_WFlyOaN4P0cKpAqy14tYF8EkM2a9exoTXjuslm8vM9cHTxn6eEsjT9GTDEND962K-xsd0aUm1qEIQKgQxaiZOhE85WCKEZzV62-vC02Q1YrT59gAeXyBNINtTw-fk71-Sbh0Ruz_v_srCUBoYdSPvrI-lpZX79D1IF101DPhOQqe3px6G1i2i_7-h9Ludb7mkk8VLksf68grfRhoDm47UsrLvFAjfU03mJsbJxTqdsH8FVKaEoMsj5uHPDGs3dFlUQ8arJ6xcgmMVekAPOYukVg0bL7WBWq0ONA6C0z6QffpMr24xTnnOumlviWxTYMhLlY6To7gn8y2vmNjNTM4O7v5CDEtWjv4A437WvYgxZDH2Vrj-B9xfgkTp7zAlWJH6BeUFq_X_Ofmu8MZ1wO84S6lwQEIejGc2f3QqHAQtB3pzYDuXnMOIQag6IcyRwABVPwQsX7WaBgQHwbqqudU8DOxmH5ABEvpkIQFaUmF4s0kWWi5x35epZoQJdAlwz3acH41iYgNqT3gd9QrWcEo-jrPCYj9Ae2lGbCViFqAflVSImgOJ1zE3jvXzNC47PBv53HNi6a930FlMjYsqkqwOFfZ5Cr4ZUH8RycFjDO4IGIxCKyoZcmIfU93Z8a2MB7StOiOY-izfpGFQuS_qPhZoLPcCF8hKgJHJPg51XoFJwMlspk0qITyorewb9gKXiXNTt7Ba7vozHYOfuAwbknGdmBJaEn5WAnvXRDSAR8jr0SDevFnULTc4OLXjRXVAA0i3ubL68taytXWCqTOSgIbp8k4HIxN2XHu0At2ruqtRX9vQMzv6Fry5N0h53iXIAQUmhmTBoSzWrnyQTZUG7rVpWvb5KnEbo9NjPcdVYdG3um5la0t74ziw4w4DlZKhh3VuN27NrzOL9gDDLlzl5vibS4Zc_M4JFOSUuw31MUXnF_iMucQGwRObv-0HA1yB5kHnMuZNpepeV7__aMv-K7HFb5PcqNxl1PQZyv7szUneR7UaY4Zu3Ffqj-OQgqqVASlAGld58Iy1Hfiq8W1-O1Zu1ErubSQLoq714wDx9QBkpcTamKw==
+# 路线选择
+
+### ★ 判据 0：先看目标形状能否被几何原语表达，**再谈路线**
+
+对自由曲面体，先判断目标形状能否由所选路线表达，再决定建模方式：
+
+- **有限元路线（A）**：几何由脚本自己算，**能表达任意形状**（代价是要自己布点、自己控制单元）；
+- **几何 / 混合路线（B/C）**：几何必须由**平台几何原语**表达，**有硬边界**：
+  只有 平面 / 圆柱圆台 / 圆锥 / 球冠 / 球环 可直接表达；
+  **一般放样面 / 直纹面 / Coons 面 / NURBS 曲面一律无原语**——但 `SurfType.TriPatch`
+  **已实机破解可用**（2026-10-16 起：单面 + `patches` 三角面片表，壳/实体/混合路线均通过，
+  见 `references/stru/stru_model.md` §5 与 `examples/stru/cyl_shell_tripatch.py`、
+  `examples/stru/sphere_tripatch_solid_uv.py`、`examples/mixed/cyl_shell_tripatch_mixed.py`）
+  ⇒ 自由曲面体在 B/C 路线的代价**显著降低**，但仍属高脚本量路径。
+
+**⇒ 判据**：目标形状若属于**自由曲面 / 放样体 / 变截面扭转体**
+（风机叶片、船体、机翼、双曲屋面、拱坝、蜗壳，以及任意“沿一条路径扫掠 + 变截面 + 扭转”的实体），则：
+
+| 事实 | 后果 |
+|---|---|
+| B/C 路线的几何面原语**不能直接放样**，必须离散为**三角面片**拼接（`Plane` + 3 条边线） | 脚本量与几何校验风险陡增 |
+| 面片数量随分辨率上升（实测 **59 m 风机叶片用了 706 个面片 / 1072 条边线**） | 属**高风险路径**：几何校验、`Solid` 闭合性、网格划分都可能失败 |
+| 有限元路线（A）可自行布点成六面体/四面体 | ★ **往往更稳、更可控**，且产物**同样是“有限元模型”** |
+
+**因此问路线时，选项说明里必须如实写出“该形状在该路线下要付出什么代价”，并在推荐项上给出理由；
+⛔ 不要让用户在一个“表达不了目标形状”的选项上做选择。**
+
+**★ 附加要求：提问前先做一次「低成本可行性侦查」**（查几何面类型清单、查手册能不能放样），
+把侦查结论**写进选项描述**再提问。
+
+> 侦查手段（成本极低）：`list_shapes()` 看截面/几何原语清单；
+> `references/stru/enums.md`「构件与几何」看 `SurfType` 成员；
+> `scripts/manual_search.py` 检索目标曲面类型（★ **“未找到” ≠ “不支持”**，多词组合易 0 命中，
+> 须拆单词重试或改枚举查询）。
+> 已实测可用的替代配方（三角面片拼闭合实体）见 `references/stru/stru_model.md` §5。
+
+### 三条路线对照
+
+| 代号 | 路线 | 参考资料 | 建模对象 | 产物 | 脚本内求解 | 典型信号 |
+|---|---|---|---|---|---|---|
+| **A** | 有限元路线 | `references/fem/guide.md` | `Node` + `Element`（脚本手工布点、手工指定单元类型与网格密度） | 有限元模型 | ✅ `FemModel.submitAndSolve()` | 杆系/桁架/框架/索/梁；板壳与实体的**手工**网格；用户用"节点、单元、划分成 N 段"这类有限元语言 |
+| **B** | 结构（几何）路线 | `references/stru/guide.md`（结构） | `Component`（梁柱撑/墙/楼板/线·面·体） | 几何模型（+ 自动网格） | ❌ 求解在界面提交 | 用户只要"模型/几何/构件"，或要在界面里继续编辑、转图、自己划网格 |
+| **C** | 混合路线 | `references/stru/guide.md`（混合） | 先 `Component` → 自动网格 → `Element` | 几何模型 + **有限元模型** | ✅ 五步时序 | 构件/几何复杂（墙、板、实体、曲面、开洞、回转体）需软件自动网格，且要在脚本内拿到结果 |
+
+### 关键认知（最容易错的一条）
+
+> **"要一个有限元模型" ≠ "必须走有限元路线（A）"。**
+> 混合路线（C）的产物**同样是有限元模型**（几何 → 自动网格 → 有限元 → 求解），
+> 区别只在单元是软件自动生成还是脚本手工布置。所以用户说"帮我生成有限元模型 / 建个模型算一下"时，
+> A 与 C 都可能是正确答案 —— **判不准就问用户选哪条，不要替他决定。**
+> 同理，"要个模型"也不等于要几何模型：B 不在脚本内求解，用户若其实要结果，B 交付不了。
+
+### 可直接判定（不必问）
+
+```text
+用户明说"节点+单元 / 手工划分 / 杆系有限元脚本 / 按单元建模"        → A
+用户明说"几何模型 / 结构模型 / 构件建模 / 只要模型不要结果 / 界面里自己算"  → B
+用户明说"先建几何再划网格后算 / 几何转有限元 / 自动网格+计算结果 / init_ctx" → C
+用户给了现成脚本（含报错求助）                                     → 读脚本首行 import 判定
+                                                                    （pypcae.fem→A；pypcae.stru→B/C）
+纯杆系结构（桁架/框架/索/梁）且要计算结果                            → A（绕 C 反而多一层几何与网格）
+```
+
+### 必须先问（不得猜、不得先建了再说）
+
+1. 只说"建个模型 / 算一下 / 做个分析"，未指明构件级还是单元级；
+2. 说"生成有限元模型"，但结构含**墙 / 楼板 / 实体 / 曲面 / 开洞 / 回转体**等更适合自动网格的部分（A 与 C 都能做，代价与产物不同）；
+3. 说"要计算结果"，同时提到构件、几何、自动网格（B 满足不了"要结果"，剩 A/C 之争）；
+4. 结构主体可按杆系描述、但局部需实体/壳细分（节点区、锚固区、开孔区）；
+5. 用户上一轮走的是某条路线，本轮诉求可能已变（从"要模型"变成"要结果"，或反之）；
+6. 报错求助但看不出脚本属哪条路线（也无脚本可读）；
+7. ★ 目标形状属**自由曲面 / 放样体 / 变截面扭转体**（风机叶片、船体、机翼、双曲屋面、拱坝、蜗壳…）——
+   此时**必须先做判据 0 的可行性侦查**，把“B/C 需三角面片离散（实测 706 面片量级）、A 更可控”如实写进选项，
+   再让用户选；⛔ 不得在用户选完后才告知该路线表达不了目标形状。
+
+### 问法模板（一次问清：三选项 + 推荐 + 授权口径）
+
+> 请确认按哪条路线建模（三条路线的**产物与工作量不同**，选定后我不再自行切换）：
+> 1. **有限元路线**：脚本直接用节点 + 单元建模，单元类型与网格密度由脚本控制，末尾直接提交计算——适合杆系/桁架/框架，或您希望自己控制单元；
+> 2. **结构（几何）路线**：按构件（梁柱撑/墙/板/线面体）建几何模型、由软件自动划分网格，**脚本内不求解**，求解在界面提交——适合只要模型、要在界面继续编辑；
+> 3. **混合路线**：同一脚本跑完「构件几何 → 自动网格 → 有限元 → 提交计算」，产物同样是**有限元模型 + 计算结果**——适合含墙/板/实体/曲面等需自动网格、又要在脚本内拿结果。
+>
+> 我的建议：**<按结构特征给一条推荐 + 一句理由>**。请回复序号；若您回复"你决定"，
+> 我按推荐执行，并在「建模规格核对表」第 1 行把路线来源标注为 `[Agent 推荐，用户授权]`。
+>
+> ★ **目标形状属自由曲面 / 放样体时，问法必须补一段代价说明（判据 0）**，示例措辞：
+> “您要的 <叶片 / 船体 / 双曲屋面> 属自由曲面体：路线 2、3 的几何原语**不能直接放样**，
+> 须离散为**三角面片**拼接（同尺度模型实测约 **700 个面片 / 1000 余条边线**），
+> 几何闭合性校验与网格划分风险较高；路线 1 由脚本自行布点，**更可控**，
+> 产物同样是有限元模型。据此我建议 **路线 1**，理由：<一句>。”
+
+### 四条禁令
+
+- **不明确不开工**：路线未定就先生成脚本，等用户发现产物不对再返工；
+- **不静默切换**：执行中发现路线选错 → 停下告知用户并重新问；已生成的脚本/模型如实交付或说明作废，不偷偷改路线；
+- **不降格交付**：用户要的是可按构件编辑的几何模型时，不得用有限元路线"顶替"（产物里没有几何模型）；
+- **不无谓绕路**：常规杆系硬走混合路线会多一层几何与自动网格，规模与耗时不可控——除非用户要求自动网格。
+
+> 问完并选定后：A → `references/fem/guide.md`；B/C → `references/stru/guide.md`（按已选定的 B 或 C 执行）。
+> 选定路线必须写进该参考资料的「建模规格核对表」第 1 行（来源＝用户指定 / Agent 推荐经授权），见各参考资料
+> `references/execution_contract.md` §2。

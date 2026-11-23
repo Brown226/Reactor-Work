@@ -1,2 +1,22 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQNGj4glMlPzZyyVmvHrPXhrwTUaj_EAZak0pRSsv2wl_ZqaKnpvwsof_OBMUibfXVjgfnClQKeS0mb6FLRFYrLobh9BG8bA0KGCZN387F-zCa5_9DCQe_uu15xkbT-F7lnbMYNo5ApK_BMjvSYOaoENiGINieTDNKRu6yigen0PAB-D-NXShEkGCrlmBHuzDSxsBP6eJHYzcZXsU486NRejaemW42J8QUogn1q46OsaPkaTpwR2r1SZwNb0Mizy0b_4WbyAZ5Jcetuh0cZyxKTibCQbUzq4ZZ7RJFP8Vea8NVTFmPFzPvssitdUlKS2P7p6Atzx-mmtfJkk0DTeQk5GbDOG3-BiItZPKuJUhOXPUgms5DXTZJocsxkKFN202R_n6BClCBT9isKkp5v-1XFQiVYlmjuHrAxmUuyVi7ZyWG4rqLog7JoAU2el0d6pNtUS9e9sPQooMzQCx1GEbuKy4ekZPdH_9kHeMTNNB0WHYvs9rJ5FbXDfd1_02s5xbM
+# CalcEnergyFunIndustry
+
+**工具说明**：进行权衡计算。
+
+**调用工具 Json**：
+```json
+{
+    "command": "CalcEnergyFunIndustry",
+    "parameters": {
+        "tage": "调用权衡计算"
+    }
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已完成权衡计算",
+  "bdlsCUR":0
+}
+```

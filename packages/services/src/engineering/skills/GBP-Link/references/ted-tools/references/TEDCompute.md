@@ -1,2 +1,65 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbR828AFJCtG5KCFx1EnSqEvk59s7DsrIU9x0u8xpt62HgWlIntcEBiuRPI-le-Ktqh4f9gNiAtpCL8E8sXXPvaJY4i4F1MqVEYwawym3XilY5kTfRFKLhDCQ4fT_VmKMd-GtkNoURzi2vDCH3hBu54yZKPTPUyvNees8j9Sa5x9J5JWcinWh87lfPp2vfdr5SMychth2SzIy0I21Uj7FJh0H9tuO7Z6a3Cwp8X_W2zbY6M_UUyhQDe3EuFj9q1wpZWgvkTcn6HpDXeCz-Stq6toSjruRcV8p6PR1-2btlGlsK66QaRARJiXeEzY5qcGRlUYeBrpdqSR2FEsZFGn_vSOYupsYb_ONON5pr_uICGbCbuJzyaajJz2pi5cFeJXppsqB0J4tIwWK2PkLeqU8TmQWk4V_6mw-b_nLyEzWITm7mr_9I7bzMnpX2Moi286CsBbu-Z7e4coxA8xxAlVX4S2YkvQnnmboE9NDfNmvs51TmoFuNUSbx7lgLaRqpoHk7B_H6zWwkykBhwNNOZe2UAR_iuDrzMdgnSiWhuyV-475Gb92uaF9GKeN24PsZ6yMUnqfgCrYzbS1Ecg6wvlDyQf3IxkYAxK0MmVdqaQlB2813Z0co_hsHNi2VB3lm-LxH5yczS3r8uE3Rk3wKRAywaN7gc2FF3K1PZA_nmOyStQ6USR7hvh4fA4_NP2LNoYY4iFic4p7cdsNT1fRrTnagG_MohadYRs0V2q7UiqbKY5-vvRl2Ua9FFR-zU7sA7WkAS8chg2RoiAoNALaRorImqTjnI3ewE3yDMezyPn3dGigXnzvog3gaD6T2GUCAPhJMgRA-dHPM64k0uAj-wuhEr70Hk8EpeUdR3YMy2tsjRkPia-C_iHj0jSubXWBpTttW4HI5udo2Dj-6vyMmFU008ifq9b7908YnkMYAgp0lM8V2NT0UUE3tr4FxOqWGPkc71G3MUP7H3sT0qs3rLXDYNqlmYTaqcIzmmGG1Zw3eopzfjfWpLQkA0T6oGp0A98TxffYHwtEpbWol_5ZUgiWkQDDWgKos9iQWN4GVMd4659jXq3F4CjcGMBneS5AEth7BKicqdTPgKMBXkjdMh056ZSbxvhugPzMm7yHcKwjVkkdWnesTncQpX1Yn9KbsvQO9P05eQPiZ_mP7g7K6a_opXGGq0JI-jKrFuAcIG-qlV5z3y0GQ7lPWE0GZbtze-8cki3eqosn6o-XL6gcK8G-Odu_gF825_h6J15_25dZ3CsgEaNupjvJfAYXfWwa8rpfZBJ2eyzZApzVyUD3ufYgsO9bTvZXWGhf17G81wR5hgoa4dtaB0RGmE5lYNJEhG3JIDAaIEyBsQsSP_ZKrCJ9w-Ggby_JwdP6BBfbWxfJ0inC3l3vxF5cj_IB_IkcebdLtw9EGt6dnrWF-Q_lgdlqCU1AwYYEbXGnLXlSSlpnkhgaR46sAJhqfMcX63eh5k9ugpnq-QzMKExR5MmbjxiQpOC0YsguQ_MNb1qcdJUaKaO_TC30TNMrtda-R2313RSuLYDIPHFvy8PNv2PDXgc1D3VFeIr4YEczXFef5hJ2t8yWqfGt5zyV7ew8j_KUI4CfmYtY_dA5Qk_9gcKNlO3uWXIP2Ltn_TPlRZFX6n18as_6G3qvWCgcyHgrYDkmARAPXwbfkTVIW0HLjbw-Ygh_e9BSTqp2Q2AweUJuSxw0mvN6hUvXHoz4yo__47rEgWWGEcyJwnYBv9i4m4Mgq6nBuGstWdddZ2rNFoqE-dGQxFb8INwaCXWKbiFvqmYihFAiB8UAJtTxeSfRpwkqI7ObVhtRmBtNMGIC_MgFrN-snYyYxhHd-spkNssZkmm8Bo8DGShmreB44Ma0y9uOox2Tbl_XumFfwQ2pi1JORYmPtVDL5xLoM-hyFZpCxWCbGOCY2O6h_AtyviFTaPvjzjACiNNZ8i-idZyEjQXiKGQjFSkCyUmXmngr9mLBSKu9_DPD66VAI7hCLPSuTkPeofT1B6v3xG9tiAh8oAlbSgHpKXMXVL60K7svNGqScHUSdoUfBwPxVsTc-T3g2PM6iCeK7bPtIQ5nnCktTfCa31eWgDKbMGOg-N3IFwhyQkYaQ7rUxZiauOg6LcxRBgNWmmyuRPl5EstE1wpZr0aojg3DVNQWPtwkuTwrDIVsXrGO6TJK5z8_z5TXcRHjoV0OG-y2HKKCPUNcHJonoEHaXgXoe86iLGliDLaM_aEArOt3ULEwE-OxTIK6zgBeXQxpFyTBBVe0z5rz0qqESgbzUN6cNC5gOvmRucEQ5aM1gri2-LKD2hyCHeYbNX4p2dTkq2xpmlttMHZXX50WAx2ZDn_jXkamtxTFcv6UG3EamlGS9uTGf-o5Yvxg0wXjomOtD5Y6mh_AFCHev3spWtj5euqwldkjNktmoQoG7fxVebu_yE5mwjR_2qu3SM3hRKjcHA7CrmIiFTVgWzbjBjvunYeJatRcbNdwd3LyUse4ZLrcbve8pigeFqi2xaJt1cy_cHJvREJG8lj2O7pFBhYYXxrJJCzq0KtI8oYb1f_huB7RdCAv6j6U5Zv-S1Rgf-ifwy4N5bxw5ba4WXL4fbdS7BIgvAZRiUptgCquWBEllY83-qwpft127iIkg2_dGPY20xdf9XOgIRkgaE3a2KqFjjF-eq4Y09GSlVdelJk2fX_0-6M2AROB03B_0QZFA4_BJiikeg7vACuLkZjTlWsAfG9XNwgy5TLkO-uQpnGZRge_8XA3p5BiZY6K9ZbNzm_6JuxU5PkEdRup-R9-th3pDMe6rIRGir1s_6dSOExiu-oWV7WnFZtlfh7b1r-_4faA3qWYQlLRsevvPKUSxH8b_sdC6PuQPqomGUpxbjBOd_utT2SHHqLTT3QqW_q7Zdj1SKhtTP4dPBNJegJVz-vKMiyQlBnMU5TYS2SNiRJ4NomdEk-rCAGvNAzEH9Ug9bhZ9IGSINBmrIvCsUyiIx_ZQbary4OZ1X0a4fGKKFoaqvqbpAMJ6fX_jAztRb2dXK6OGjVCIrE0JJauWSRdTThGusdIY92pcjvHBpjLrSMuLr674xoTqKs1KgbFZbJgw1QpHk2GryCRQsXSOiJoM1R2Gp4DUPEBR7iFj-vFG0vEl4tnB9j2HuUpnXUeA8hCdyeHqVBb8YezrkNHZOs9ddzJYQy9VwPok6rtYrfYPO48kO0_pqCcZahe6IjH7i9KgsZoHQrkPiqo9W75cDpsTy77XG1ZGgj5Cj946b_3dVVD4jlsOegjL8dBXlNxJdHY_lZ0x8162v-ty1N4J5VHkSlcDoon-h56B-2-jxXnPkP8gIFq0ayd6Mpa-pbuVhI05Fi5JdlhlfRWm3zKlN1MJT1PlRiJ4E8tuvlob5QwUvsUT-TALvl2q8XTAiNsO9oXYGl5OdToGjERt-qp4XrnRORiDog5Y-ikTlHwhUzmJBI-y0vUq4zX7hepRGKKxACD-Y_LZjF99Fty-NnLupClrWA9bjjcDboazo-bOjkWyEECtEXuwq1eXk8oWlnEU2E2osg6WOB0I3VHzjDPHRyPKgk0ZOA6qg2xpe9i6drZkcZOpfmb4aMdplSlpkbPqtyIKOc8pBEJ27_VWNsIHJNCmePJ1fhTv8JNE=
+# TEDCompute
+
+执行计算（自动完成规定性设计SD、评价性设计PE、降低热岛强度RHII的全部指标计算，并返回达标结论）。计算完成后自动返回各项指标的达标判定、得分和综合结论。
+
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+  "command": "TEDCompute",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+```json
+{
+    "code": 1000,
+    "msg": "计算完成",
+    "result": {
+        "projectConclusions": [
+            "室外热环境不符合《城市居住区热环境设计标准》JGJ 286-2013的要求。"
+        ],
+        "standardDesignConclusions": [
+            "居住区的夏季平均迎风面积比为0.95，大于0.85，不符合4.1.1条文规定。",
+            "建筑底层的通风架空率符合4.1.4条文规定。",
+            "居住区夏季户外活动场地的遮阳覆盖率符合4.2.1条文规定。",
+            "广场场地或人行道路渗透面积比例不满足限值，不符合4.3.1条文规定。",
+            "居住区的建筑屋面的绿化面积符合4.4.2条文规定。"
+        ],
+        "performanceEvaluationConclusions": [
+            "居住区夏季逐时湿球黑球温度最大值为28.51℃，小于33.00℃，符合3.3.1条文规定。",
+            "居住区夏季平均热岛强度为2.08℃，大于1.50℃，不符合3.3.1条文规定。"
+        ],
+        "heatIslandReductionConclusions": [
+            "场地中处于建筑阴影区域外的步道、游憩场、庭院、广场等室外活动场地的遮阳覆盖率为49.21%，得2分。",
+            "场地中没有处于建筑阴影区外的机动车道，得3分。",
+            "屋顶的绿化面积、太阳能板水平投影面积以及太阳辐射反射系数不小于0.4的屋面面积合计达到77.03%，得4分。"
+        ]
+    }
+}
+```
+
+## 返回字段说明
+
+### result 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `projectConclusions` | array[string] | 项目综合结论描述列表（包含最终评分或达标情况） |
+| `standardDesignConclusions` | array[string] | 规定性设计各项指标的达标结论列表（平均迎风面积比、通风架空率、遮阳覆盖率等） |
+| `performanceEvaluationConclusions` | array[string] | 评价性设计各项指标的达标结论列表（WBGT、热岛强度） |
+| `heatIslandReductionConclusions` | array[string] | 降低热岛强度措施的综合结论列表 |
+
+## 错误情况
+
+| 错误码 | msg 说明 |
+|--------|----------|
+| 1003 | 授权验证失败（未检测到锁） |
+| 1003 | 本标准对室外热环境无要求，无需计算 |
+| 1003 | 计算异常: \<具体异常信息\> |

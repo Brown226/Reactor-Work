@@ -1,2 +1,48 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQg7bIAv6Cc8qGDNBtCA9GOcPf53KKXXsgdUrN6ETf4tsskBzuS67EBcQCFzCk9Tu12haj8mhNlii1-QH8fFqzOxDwnzpC_mfE3iyeXFrEhQhbbibklkMLeiaKA7YFjMi9-Yl5jW8Lg53lh_niVVLDpK68cjsoDZs1avGe9ZaqFuNTn5qSjkipo4MJCC8QG5tKlVcC24NIp5sama5WrOZMio1fBsgAt3u2dyFUQSBFzEUjnu7yJPiDfs4FRl2co44oiK3jpafMxQdVRkxOudTG2uAzrXV7chP1mwWLFQQLZxoBQbcprmu4hu8XOilp7czitDXvbD13PMZqm9iizI7gYRMPtGY4UumX5zWPaPKXOzWTDWxJtiIUvqkRsHtRhhcfO6JEi1xNZjaO5CxpxJQ9tGcVrZdUB1y45R5OPVyCLs0PPIa57PtRjv4iP0G9s28_luaWUsVixLA9ofd7HTAg-9jYAJNvO27_fqlFMTf84L_sMqLlxCAk7eVLS_sS0fRFv3kiAIatzgsfItaYA9Tw_AyrzwDPRJJpKN1XOO-oi-dpKiySEODPFXbDkFEZvy7tTEFQMqJvFKuRzy1I3h_fp_o3_iwnXfaD6McG4rIv5oPeysAP0nwmFx0irlDEHG9cOifMovm22eIh1BCtvN19UKundAo8vaTf-L9MeNPynyK02csxoDEK3S-3zSp5MHn8cqDSt1cdTND_ER3fY35-UGSMo1TmIQ_-lUlPdR97lsNzxr-v1gyGwIj_lZ95FjKaaQYSSFG1gl8nVB7EGd46NbyfDJE9FoIGtO-mlDgtGs2CM5G1PdanE1m5pDHMHSb9sb1M6IbGWejEPbi40mjIr_vxpZ_btNudA_u1rktJZs9tcf4gYj5lfzDDQeezIUy3IW22cyfJnv8OugggBsLARGBVbbdCBjW5p8mGBD_-fqcQKxyWAiTvL0PatgLZPF1jGQw6xo3VT3xT75qxfzTWF8JGhsXOKFD3hjs7BX644903kLYv5RetGqbTnM-O6poEmwRbEgSSkDVOwXqUhzw4TscJZX0dTuVEokgbNK_B8IWoFBRSDVEC1XOq9g3AIl8_gmhfk-9RAIcyok2QEdID015lt5KVGM0Kr6ED87koZVUSygcod3UPC0cjKCWwoQDZg2kFGeA7WUUa23-AJpmy7Gw_kicFqrl7NmoaXpGGnzEkqUjGABoPh1KrNvbMeHjXFYVHj23HnnTL2EzNhDTm1nh5hbr4tS4PTs7K1nPyddUf6qCzVovdlmdueQdb750pGd6sPBzTYFlS45wF6-ccWrrVZwV3I2p8Uz5fCAznUVJfMwWO_mtn-MUHnLZmqhnl0QzwP-x5DIOfrn-p5OTpeNdOv2-AzgGE77X7x44KJTc-Wlkoyj3uIoeuQbaDe_0QxUv8wwRsYEPHUqmVuVuH-JZKYlVyyJCW7BBtfYPJOrAte413k9Ifhuya-jt1dOxgrv-s79j08LORvDSUTaqg0HiPU0PBPWas23PfwA5350b-HK_BoIv6BsQu0Ss4DsbgKwApy91_4mxdU_MYAK3XOQ3tL19iPtcvojI9qrAx0S8gfQbEbONOF54uYlZUdhv62qc3Nxf9pVTTu_J0cQ4vlrd19mxS7tcV1DpafASsbsCk9WQZa_-JbvQCsbstrBGyS12Iv-NX1T1e5Uz1D76b7Yc4KALPhM5hP4NUBfmVJ4Sym_CDrqb_NjHsBBsAtml4kBgT62ARjOijcN3hQix4ipn-kw_rXjL2tiZ1xWWDu1A0ROcabiM0SBben--5CG2Ne9LeVR2oGyqJyGV8XRddNeSkyaRY_hCt7-Zsf12Gfpy-ChqwgMp1es5eTVqS1LDnm4zjKTSFVTfwV_CqwRQ3Ey_PWsFhg7E0wgKoE5n1o-SEKq0Vq5eqXZ72FufYSL9a9dL5eKNHzOeXKkYjJ04J6ftHmOMVa0rC_NjJMxlKhdlWouOhEv-cQ51VDkRekBE3K4nx7HajSDD68z_W8H2lnt1KMJjQv7X_gRq-6H53UrMeq1o21S9vIjg05Ru7eHewoX9mt8g585qMbOWmZwU3evfpzuRQePA8BtkxDdjtGCYCxPgFYVqXEiNrQht4gdwnhMPX2xWCDNMWTxCGbuGJlEejPmJ3Fd_RQdi9bxIcOexWczlSMs2XvDNXnZxa2VYUTI-V79kzzyQuj_hcOcqRrk88CHJmxcVNTnkOjremm_BxdfpP2HL4wfRK-07lOSRCiEXVwCUjDdSRvomcLFbTEb9yfZ-yrRETeyKoTokMfH4Gim5ce1eJVqQyzQzPwhtOQDLaYQKNTToRdkGgFl5Tt1eR2qk8pkUHDtK_MdOLzD-5ns1rTH6Hue8TSPkEGsYa2t-llNst3NeJh1TOXa62mX0WzNtRKiiXvXkjd0ZvP2-qyha174g15KKmQCC-vATXMQgTvLLLTxAEIDim73d9hY9UCSKfedNzRhZErHp21FkFZ92Rn7-CLkPuCQBp_cJZUAcP3xK499BS7MBUbbV15fIkfvUTe_ASidplt1hzX6z5JjeSjC4AUa0fxQJSF23sCdy-75TPORn7fQ6XUrmG7d04eV8XOSqgxFtvl2kVEtTRiEcyYjfzgDYibvpTeIScYgpE0n91CVl3MMF4y3cyuoqq_NdZbohE-MVaeyvxdP_2AuytLoFZO4FZT1P9XTxfWVxkoXlsMJdI0-ifGH1R4VrQ2YGmxB_vYxBMmO5MC703VjUjnbg6seYckDcnaA3I0wJe3Cc2J3h_fu6QzRlBmt2txkjzUc7689S8uiYPJQgGpUCFUctyh7I_VIr1Wn4Wez6tUpoPs4JfgvwfIPaY2mh98CwKPr1hMzS9-3ZO08QeT9gn6nV9MKwsQlezV-_GJfNtSE8dQ59x6H1Gzl7FpjETPw9TZ8ywPcxiCNDbW8nFEsHXgNq7iZjg4fQVCWGoP5CeoeKXfVbHA85kcUQCeQ==
+# SetNorthArrow
+
+**说明**：修改指北针的属性。若用户指令中未明确需调整指北针的目标类型，则应根据当前模型视图结果确定。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+| ------ | ------ | ------ | ------ |
+| `isGis` | bool | 是 | 指定本次指北针设置的目标类型。true 表示设置区域模型的指北针，false 表示设置建筑单体的指北针 |
+| `idBuild` | string | 否 | 目标建筑单体的唯一标识。当 isGis = false 时必须传入；当 isGis = true 时无需传入 |
+| `direction` | string | 是 | 指北针的方向描述。支持明确方位（如 "东"、"南"、"西"、"北"、"东北"、"东南"、"西北"、"西南"），以及需要指定偏转角度的方向（如 "北偏东"、"北偏西"、"南偏东"、"南偏西"） |
+| `angle` | float | 否 | 方向偏转角度，单位为度（°）。当 direction 为 "东"、"南"、"西"、"北"、"东北"、"东南"、"西北" 或 "西南" 时，无需传入；当 direction 为 "北偏东"、"北偏西"、"南偏东" 或 "南偏西" 等需要指定具体偏转角度的方向时，必须传入 |
+
+**调用示例**：
+
+1. 区域模型的指北针方向调整成东偏南60°
+
+```json
+{"isGis":true,"direction":"东偏南","angle":60}
+```
+
+2. 指定建筑单体模型的指北针方向调整成正西
+
+```json
+{"isGis":false,"idBuild":"109","direction":"西"}
+```
+
+# GetNorthArrow
+
+**说明**：查询指北针的属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+| ------ | ------ | ------ | ------ |
+| `isGis` | bool | 是 | 指定本次查询指北针的目标类型。true 表示查询区域模型的指北针，false 表示查询建筑单体的指北针 |
+| `idBuild` | string | 否 | 目标建筑单体的唯一标识。当 isGis = false 时必须传入；当 isGis = true 时无需传入 |
+
+**成功返回**：
+
+```json
+{"direction":"西", "angle":270}
+```
+
+返回 JSON 字段说明：
+
+- "direction"：指北针方向描述，如 "西"、"东偏南" 等。
+- "angle"：绝对方位角，以正北为基准，顺时针增加，0° = 北，90° = 东，180° = 南，270° = 西，依次类推。

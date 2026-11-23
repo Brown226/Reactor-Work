@@ -1,2 +1,95 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQn7mes2lzmMoSyihPFAMoaEEELAtt438ZvvZ-1xQMpxVzAAXDC32etraw-Lme2juxxH8TQhGk5hF6jqMAWAryuhL2ko0DRDm-7RETnHvvABcdF4eNlFusx7hKPRSDhNPChCHqsNkGsw35RdXaeQ5HX9jJhPPZ6k0dKMp1ONJapMLhVqps39g36MfsM31fya7cEx_SmBdpiOYLj-lyMQltZ17k7tfjL8vzxvDrp5MEiwuJNl2qMZnkYvjf2psVwrGE2nu3eC83Te9hrGEKNhQ1HUk9hlfbQv_ZGEtvjM30juWG05X6GD2QuBH_jQulkA3qCDon_sYZTQbxirufaTsaiv-QeVKc1f9roiW1aoFnDRehuDrPryMjn8fqzOG6igjqq8Uhn0o-kFUD7LIeZiEodEb9ansvFvQEPt6FYbZBYwnYvsLMNoVGhKiyfkkaQ82PQbRz2-X0IWamhUsjoWRnzoBmH17slol0cGWS2g4f8dGHOLe5Qcc8txSyafMqCVCpA482b7B0glAgmyR-fnHAGYVbhXsgSOGo2rwcQUsESIk_fwnaCYM3qFMeu27pRQHMk-EilTbIWibZLslV5dgTqMVBxPDPYUtz3GgwhEhBOhYisvFQkS2N8QaIQgXa4tBHW8ocV_wkeaFVIJF7qRz5yS7-VN3-YogAsg4GM-upOpBVN-MXj9zd3wC5AGqNu7ItwPDItGjPXdpK5-fSTKH2tW4CDVMr7dMWGTyG3z57Ma3WgBcVIUfU_RB0cpa2l3du0-qzpUmHTJKbimAEHcyqdD8hESz-21oZKM9N35fvQjVj6khPWXcpTcNvkmrnZPjy4gdmDYrLeONEPj3eyIDduC_G2r3Fl1NGm_FNbC79Wey5FpW80c2bC3HAcqI743N147Q3aRuc2JcdKC5Ulm1ZLDWDvzHIxcG27HX-AytwFlnt4klmkoj39M83ZI4P6akKEUqhfzM8mW9gqD0V745c_KOhZoQOHq48cuvJZWQohz-fO8eL5ITKn-An2BcUej1IVNCwWItK9NymhilfWyqrHDuQGV4zNR0F8LVneTZckbZrSyR4FzPiSrGlKMUd7SSIM2QnXeSbu1V2VD6Tr_sZ7kPV4gjuVunmdRB_pjdeG_9khy8YfLOsxA9BrzTjkJHqpl2xkElICiZ8PNgWMRUW9z3IHu5sycXvQjAtD9v2gPBlPii4jfJkb1c7peV5dqBmPCcmx1YHVmfKDAfdycz72xtDhBcG8YlEVGpRtRf0V3zaM7YyPPlL_7NM2cFLRqox1KnWLnW1iy6tOtU_Z4d-TpcQNXpQxtR8XQ_uyAYdBr4FfiHDxFpRlNYOPRBNBccLK-k4oZnUZINwh9IqAoTDf5K0z2ZnBmHD02zMV0JDbjqOyaZSjtuAYNXKuZWLG-Mi1XzbuqM8kk25O4rKmwGBmPP0NbzVNCGOu5kl__DvO-7-9VGozXZg7PNC3475rSqFZA1usOprLI5w1cgOH2pe9TeT1JHMCPwBzddZoqA-jmIVy_gjetI-f3iegXgYDOKUYq_UNUWk6nqTKaeTwgvVa2HZoIzbQDR_eZpPeb_qk9gmUQtcHzv6e2m2SUjKjrxZ9mbf-Ed_tbvW6EiA_IfRy9E0Pt3XQ3JLXDphP5tsxtRrZp8HzFNveOhvxQj_OPeD1dM9jBFwqVbHiIouysHgeV_ykOtHVyYMagqKMZdCOJAU5DwDoiryYesG6bdDM24AyW_GDCeBkNbhVbhiVEHYZIeMilZObwaQzIuDPJAc_1nOwmQRJ3r4K9tNeoYv81agIE-1L9Em-AqVO25tPrWpT-DSgNzJgEwMhUvJdxoHUtj8rjOVzxuXnQ4DDHQHKg5JSTMltJ9mS9ESinnuyRV5N143yyT7dKQHufcm3WdKcm_1WRtmf_nX7mQidhEKT3imAd3v9YwTTzTcY1bPjG0R2G8H0Eb6K6FRXXIyDAGrjSQHKgSo9BL5oDMpICJwk171lAAwkAzj2A9-2jBmjVt8njPFUe42ayEFarlWtnkxoPPucnCudYIelb0-6oy1KboNb22vILrwggjLDdkYV-HGcxa8yfkj7IvYzYJSfUa7N6Bb6RNhNlmZHyk14QbSWjC7a6hSR36H7JMIM-3NRHiUdNDvSUjn5CN2z4aol-Uhp0PEe4xkMCBAcrO7ZjC0-UpcdUa_NojBeEWCnlTIYIgcKy4fFWVXYRYY2OwucKkRusJXU4gJN5SdP_nr40HjFVq4f8ryUfgJP7-3UgzU_QdxHwlT65uKpSf-jORcYPFbot41XOmjVj_AJjKd_HuBINtnGG84gm_e_caucexHeJZF1gFEh0urrxuQwT-kqOguApBVZg5z2DyvhsxGEeJ2IomEDg4CXgc9ni_qDkzl8Wg4WBDRwouUxXR7Myvt_x_NPpqLPIyeX6ytlbe8M_wNAKdyrM_NYhzWs99l6eqPc-9XBLLB8RJf-PAIog8MVjx0KU44VGnrEO1UGiJj11V-0DYklkTggsalHQRHsiCxeBj5Z7d_PLVc5jOQNLx0ATYaki2jv5rtlaX7gEl0dSQ-VuNjItQLIML8XPU-7x6Ww8llc6a3pvugYAWgJvAfRONIs27rxK_Ur2wSrnBfyG-lLdsAX0YSfItkBsjRCV1O-sEIv7TGjphtJ0yhhgtDIMqzdkcXLD2kdLjqRZD8Yg8QOyhb-2LR_5Ei6_9K8A48OOYEIWHlu9V9LWrbqxjicqU495XgHLDX2gNTsZQR7fY_NN3e7Q3I6Ya4NDvqlkc9IPdgrgfYXOITK6igMOPRZRlWX7k=
+# CreateDoor
+
+**说明**：创建门时必须指定所属墙体（如普通墙、幕墙等），门不能独立存在。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idWall` | string | 是 | 依附墙体 ID |
+| `width` | float | 是 | 门宽 |
+| `height` | float | 是 | 门高 |
+| `position` | object | 是 | 3D 中心定位点 `{"x":0,"y":0,"z":0}` |
+| `seriesName` | string | 是 | 样式名称为空时，系统使用默认门样式；传入样式名称时，必须为 `GetComponentSeriesNames` 返回列表中的有效值 |
+
+**调用示例**：
+
+```json
+{"idWall":"111","width":900,"height":2100,"position":{"x":1000,"y":0,"z":0},"seriesName":"<门样式名称>"}
+```
+
+**成功返回**：
+
+```json
+{"idDoor":"112"}
+```
+
+# DeleteDoor
+
+**说明**：删除门，支持批量操作。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idDoors` | string[] | 是 | 门 ID 列表 |
+
+**调用示例**：
+
+```json
+{"idDoors":["113","114"]}
+```
+
+# SetDoor
+
+**说明**：修改门的属性，支持批量操作。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idDoors` | string[] | 是 | 门 ID 列表 |
+| `width` | float | 否 | 门宽 |
+| `height` | float | 否 | 门高 |
+| `sillHeight` | float | 否 | 门槛高 |
+| `seriesName` | string | 否 | 门样式名称 |
+
+除 `idDoors` 以外，其余均为可选的修改属性
+
+**调用示例**：
+
+```json
+{"idDoors":["115"],"width":1000,"height":2100,"sillHeight":0, "seriesName":"<门样式名称>"}
+```
+
+# GetDoors
+
+**说明**：查询指定标准层中所有门属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idStdFlr` | string | 是 | 标准层 ID |
+
+**调用示例**：
+
+```json
+{"idStdFlr":"110"}
+```
+
+# GetDoor
+
+**说明**：查询单个门属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idDoor` | string | 是 | 门 ID |
+
+**调用示例**：
+
+```json
+{"idDoor":"115"}
+```

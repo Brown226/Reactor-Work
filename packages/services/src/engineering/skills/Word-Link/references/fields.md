@@ -1,2 +1,48 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbVQhQzD9hgCEB2wDDmUz4diVv0-IP5Hs3T52Qy_64_QytxOvEbdD6oxFpnRa89YfYv9DFdl1io4V3M0no_uXPEY3ny_1zyhjTorNGNANeAPMBNeBLSoy4sbotYEpEOqikApx2DxTAJaF_deLRsqi6fBZg6hVePydMTTStrcK89llpJhBA58gzncKIrrQWkbgxIcEvPBTOKarIJCZYTrTWj3baZIytXNstM0fKKd3yi8ozmjfHsWalu6pzqjExyjswAYmZuxGdlO99c5nNJWo4ezezUJUp9sGeVdGEtJFwsVftxV17ZeOua0au7bQ7udzZEjleJmX-lLfRVOG95-p1N9eBaG_7Y4GYAaGCBuNNmjy1pZuicWnmvWJv76PP_LKqiz3hI4GfbHwkMIj5KUujdQZLPRcSzVknEZRTXlcbCpYmxE1B-_1mVpmaWaGuk9KUZTDLhnbwV_qdS8_LnVbyRjw09QTDGLQL09u8t1Gl4GJp3llSJOBaZwCrs-bS1I1Rs1sNlkE6f0zA6mygiCh7BtFKaho507SzrOyqwF0-L5yKa1iAjWet06uYgGTuTrtFbBj0qOcHV5hpj0nGJpBk_NaracOVbViL69LolJsBuN3wc6bzLdhZNqL5TjnqO4KsXNL2PtbeSrsUIsmNNhXcpb2an0RDiHz_XlZXLRGPrLFJGKUJ3u1F-Vf5iQ5s0Hz2RjIShEv8uCplo0kWL73tS7sT1RHc16axbnu5ewnaZ9XSudnwIEMsvy9hbGzS_kqKxxcsJZo_gsYF3Tp0Qhyp_3aujxIhj0nvii9z7DyX0oCt_GIyajS0BgIEepOi7jmAvpeD9lSNlC7HG7IbRh4OQ1NxBiJleCBTT65bOEMmLRFYBbR5HmFCyld4pqzNZ5B-pecOotvlCyDSbO9Nhp7mKtAAPKp78AZa0QStBP6ER7LAqFjfnyZ58A8QGvQxgRaM5O48uIprQVPjejkIRxMMRcIfr-JvBDZAnmjEM78GHg9znubkKrSmJrfOU3kZingPlRoLMRbrA8DRKRByrK6d-Qlt_Bo0qhMmEIkKmNHl_NS4pESjQ8s8zxNGlpdRFVn_bpCIioSXZpJSXSJSfxih-t_yKk03oOS7a0g7jIngbD6S83lXmJmMBeZKMbedp-RsGTTtzF9eVXvXKgbmOLui3vkMmDcnbxZlqUQRm48yfxYwC_ShR-FB9B_B22s7qXK9epC8g4tcQitS4tM2OV15HXpe9iTSLre_nrsWOL_BtBmWjVhTX6ZWL_TsHMwSnwjnPvirAq1QJWT7AaSQgUHgF9VxBikmo_InynnGTdzEesRPP6BsAcpYHqPtB1115ay6b3Al3UmhE5wc0vZszzd7zJR7_8sZivDAeMqW9VlB_GRYRumEt4iL7EFXF6Z_rN5pjbEAtRJQs6Ou0OwqeEzRAsKTqqbXjRa8-IMxV-25-JGrMJ1BVG-qwKsMfPUQYecjgnuefc-B0lAosN-wiGze67DSdRIdrrqfYm3vnIxi0sdP6N32dkN-cMq0uk7XX_bIew5X4QQWsIpv4PNhbV271wZEBPGsqKdHYKSMBZQ5JBuYZo04oMPL06lNO-ITXSnf1Hwye8RidMMamItzzH5oq1NAXJPPIbXoO-2APb9agxSTgrAl2nEbcZmCSDDHdXJ6tK8xYZAn_MjkeisN1QJ9R2s7eskQbXkbsWwxucyHezvm9JC10WfzobXT5AvjfFI5Wi5hntt_pyakoMoBg_Oamq3e8_X-jENrKTlzHxy5avVDXUQaESRa7XETBDDj-61htqjhLK2u1loU8oZUMhQ4fAHXx7SlU8sHxjBMcWW8CcGQZl8GmMC5iu81TxyFjPgUAczkS3T3wq_TwW56DPOjXeW3vEVJ_HUVy_CopZvhTnEqKS6jSWlAqBAviAUpkQyepdc1bMXR3sNSdRlSsTwaFhkDu8N8G3Jr-ymfXcu7w2Xg9XWn4FPMkpGtyTO1ZnNCcbJqfSuT3g8g9dWmpaoRT82oFBjieVC8HKzpL1nnanh1qUS4l6NBRe5QXnR9ABFEqriAgepBLn1ILVh_v3tFvcd0pyfT9gXSXMzSxYH-URCaM9bYkzgVqf60motQHtR8jVhuHL6zFstB54BpwDYokIaEdNOd4_mvXmtkjIeAjSN4a_3XBWrmtlQTwRXTkjrBpix54tc9dTaNScWd1AeMlTAOukEkVmE0eOAnW5TA8IIhXJTjrzpkcaeCI280Fa27-067bEMbjtKvJHOC_s1LkT9963R4AtrRipCCYv9Y6QGzYCLUDDJO-RiChTqvn_tLLdZxMhv1CSuvl8JTZfiVCcGUc_w5DMH6mF__bYZVafksb5yp6PDO55RDe3hDxA0Wx3tj_SYMJAg-ThILO7TVYnqDkHlj7sCVnWNvRGZoqMrapNmf_tG5Vn6p2Jn_9BE-Lr5HwfDe_L3RwYyhFAqbCc2vq8rRPZnT3-PVa2PbrnNiaAjuA2fwWO_MIXrZvZvbkWF60t4eqjuLt-MRYuBGOkZM_ReddhC2pRXopVra22gpwTmDVKxj2zWG041Cr1L2l8MMd8_wKikcozDnA6xJauTFB8LdoZwebEUTy7JIPVTPID3GSl9sRg9NY5A0F8BwTS3XR1wo_nkyC9YyxwI95t2X6_XjzcwlPE4MdIXrA3XlJybCmsv3h2k2K8Bm-p5wiwQ0_i-i0Ea-WYv3-x0CrES9zHu6keGu7L8gX4kBj1VjpBAtRF0fl4OSzuYQlOkVQxRzGnWl8b40wncADczvTYkwrijNQi9sr1ke1Tcvcdk0jbY-kRBU3wm9QyEh3YTAjPsZyBdjKgTQ805CRr0ycAADgxS6LbZsDRhYAfZuWM90bhIzdSf0wJHCkXucGs9wxd6X3Iji163UwQAWLftLE2UzhLNTTdUXs8WRwUhQeU1gEhm8SIPfPHgs0TCSDn7pK5h-yQZoNE-DwV5N4zxLGdMPaySFxIVAgZcNkvTb6bB_ZxGpNNMk6ICXlE7ORMUHpo7Tap7pXiunljny8Ocv3fpnLxxuJ1Uf5WMUJQNuxgwyiJSlH7Xk-o2O0H366KxB549CcxBfXHU-xOotwJzxzu8n_0Z1sQwIHoVq1DoTjY45D12Mm39AEOhjgkA-51FsVmF0lZgYJrne-XNSAPrsCSlwD354lFYOrZL3D0KjJYmmiWlCS3HbbaMhJsA7AzXTxJiecAt47SK1dFsWqfjIlZvOHD9JzpzlPi5SbnjIJPb_B-ymqKLxLA9su55O2mCST-E-wleklVnUldRigMGUhh-VKjMR7rwSTCYypCPmHv5BvZ0JxZTYBiECSQRL3nXr3YS5YFPK2kDjCg2ZEDcr62U8MwwjvszEHCWX2YuufTnehowrl6jHrkDo243XQobr_aYKdpGtY2r7Bxp288eN2Z-BcQoPd9erXBK2Ed5tGsjxhAWoSfKy9o1lL7I1oLb-eH9hcD1gre9xhTWNu2QHtRRLfOwHbBh5IsK0e4F6EigVGC4yPL9z36ddGwTUIIRA5tSAZFaNweQIH0lFPgj5YulabQtknf1fBws66-5K1HCwBE70MGVKSdLXU707bMbHLvk0cY0wMxKfjDlNKGdO6UF6tNyHDdws3INqyoxHNCnBpA57qN7esF3WeXyOaBpPULvkjbdDsLwg4wOUt8B5_4W6UjY8-vtbYsyWI8Sk8O_KKryXSVi85KoidNkUacfemGj4mj1JPQoO1keWIl0VWmdIY-B0ggt5_09ZtEuL_S6nckQFaBfrkT5JC6lZP7xCLmVC95RrLfhjD4noE43foVP9mveKvQfjEyfWNYe65iue7lcLHsrjWda-vwin_dFGSuXrbmgQhLVTPfUzCL1YgrbeGQBSvEIkDRQggy18BxG35XOKLTvG7uZlhp1XACEdyFuK1u_KGTKbfeYgBNtEqIRpPR2dPfH3C1R_pQ24dSgkrFf0oPzGvqbtBQ1wDy1s2m2RMWey7rqqDXjWnxMn3NwDmeHjbUK9PQMRDc77Vg-FhNcG_llxOdQUEuRfOTv7OBrLuiouzwNB0xiISjrjmKST1URk51NmFscF6eEsbnuRu9AUO-rbBC2Oplr20qTxghwm1whnTPaDT6L-GJvFvGTO6NynthPSvNSlDTfEcO5uXHkPMnIONERMwxyjdp_py0x6DaQ_DOKGFa3ghxw977gJAT3a9muJ3vxobjLFE8U9BCMvUfolThBq77fj1cM8V7juZ6MdryhF-RTSg-5H1V4Ji11HGEE15as0yKPOvJFuC6IddJ33uYSVC4vQuVNIuHLeHrm6kzbuPqWpQ5GX4YeBfNEx5F2rU1IkxDcD94rQ-H92U-coEqrhm8INUP-5TnAwrrsY1JakyF2erfer_srjl2V_fr8xxYxyExgG2DQ4jTB91LpmZf3wSXKi-XqaAQhR3sUGX9Y25svQTGNgJJiEBJ-LcMXbbnKTeHV1FJ3ZhJSzdkpJTbf48G_h48K3Zasr7BHqhz-H3A3mD6wHGcFncHmpDBqc-VbPKGks3bXGtPOH6m1VmZ76smr5WxKdq2FMSTOs1g6zVon7abfBxq-n0WJ0BPrPRzoaf0R07IwS4TlleHY2slSOaqtYSrNBHbHUKEaG4CB8AjCPTOqVIQSBzLvKrP0jMnuRxfy37nzawe63LUhNRlsDJoi08uFWjwbOwtqaFg4PcuV-5_CuQpMs1J9fiHTmBYem_j6tBlWuwZNulqEeWuWZOvh-JZ_ECKKNooRn6A0cls8gLs_qq3B2JocpAyF10QfSPWC1PUR8jErmzcVBmXzdpVBWzMyfRbmVQitjhy6tSwwXT5WB0MJiGYcjygEgj1sqz2n-8rf4EifMmN4SeXrlP4fYIu5Ww
+# 目录、题注与引用
+
+目录、题注编号、页码、交叉引用都是域：文件中写入域代码和一个临时结果，再在 `with target.open() as doc:` 中 `refresh_fields(doc)`，由应用按实际版面算出结果。view 中域显示为 `{域 代码}结果{/域}`，书签为 `{书签 名称}`，超链接为 `{链接 地址}文字{/链接}`。
+
+## 辅助函数
+
+**`insert_toc(anchor, *, levels="1-3", title="目录", before=False, placeholder="（打开文档后更新目录）")`** → 目录段落
+
+- 在段落或表格 `anchor` 之后（`before=True` 时之前）插入目录标题和目录域；`title` 为 None 时不加标题。
+- `levels`：收录的标题级别，如 `"1-2"`；条目来自标题样式或大纲级别，更新域后生成。
+
+**`add_caption(anchor, label, text, *, before=True, like=None)`** → 题注段落
+
+- 在表格或图片段落 `anchor` 之前（`before=False` 时之后）插入题注“标签 编号  文字”，编号为 SEQ 域。
+- `label`：如 `"表"`、`"图"`、`"Table"`；同一标签的全部题注随即按文中顺序重新编号，不更新域也显示正确。
+- `like`：参照段落（如已有题注），沿用其格式；省略时居中。题注与表格或图片排在同一页。
+
+**`add_field(paragraph, code, result="", *, after_text=None)`** → 段落：在段末（或 `after_text` 所在 run 之后）插入域；`code` 为域代码，`result` 为更新前显示的结果。沿用段落首个 run 的字体。
+
+**`add_bookmark(paragraph, name)`** → 段落：给整段加书签；`name` 以字母或汉字开头，只含字母、数字、下划线和汉字，不超过 40 字符。
+
+**`add_hyperlink(paragraph, text, *, url=None, bookmark=None)`** → 段落：在段末加入显示为 `text` 的超链接；`url` 为外部地址，`bookmark` 为文档内的书签名，两者给一个。
+
+**`add_footnote(f, paragraph, text, *, after_text=None)`** → 脚注编号：在段末（或 `after_text` 之后）加脚注，内容为 `text`。
+
+## 示例
+
+```python
+insert_toc(f.at("正文3"))                                   # 在正文3之后插入目录；只收两级 levels="1-2"
+add_caption(f.at("表2"), "表", "框架柱配筋")                  # 表题在表上方
+add_caption(f.at("正文15"), "图", "结构平面布置", before=False)  # 图题在图片段落下方
+
+add_bookmark(f.at("正文40"), "sec_load")                     # 交叉引用：先给目标段落加书签
+p = f.at("正文52")
+add_field(p, r"REF sec_load \h", "4.2 荷载", after_text="见")  # 显示书签处的文字
+add_field(p, r"PAGEREF sec_load \h", "12")                  # 显示书签所在的页码
+
+add_hyperlink(p, "规范原文", url="https://…")                 # 外部链接；链到书签用 bookmark="sec_load"
+add_footnote(f, p, "数据取自 2024 年现场检测报告。", after_text="实测值")
+add_field(p, "NUMPAGES")                                    # 总页数；页码用 layout.md 的 add_page_number
+add_field(p, r'DATE \@ "yyyy年M月d日"')                      # 日期
+```
+
+## 注意
+
+- 目录条目、题注编号、引用文字不要直接改：改标题、题注正文或书签处的内容，再更新域。
+- 书签所在的段落用 `set_text` 整段改写时书签保留；删除该段则书签一起删除，引用它的域更新后显示“未定义书签”的错误，交付前在页面图或 `doc.Content.Text` 中查找这类提示。
+- 正文中手写的“见表 3”“如图 2 所示”不是域，表图增删后要逐个核对改正；新写的引用用 REF 域。

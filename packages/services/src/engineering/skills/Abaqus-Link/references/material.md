@@ -1,2 +1,114 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQpsE6Ka2bq1h2HvwUdy6XwMotOWpwwv0ubdvH3Pg-dNzIO5OaQMbU7tMiNZZgYrl_f6eHc4W7ZNOTXfI6ELHZyssjb3Cb6TWzbegiSpRIrqS3NtY1qFzq3jlvaSN_p_rM6wsl2T4Opol1cORUUsa8MVDCWtkVsItKcJMFLJM08MUhvueMkuBl6_20jDkzrxY0X2jnV_bZnBm0_OG77ESFnMzpyJVplRR-vYs799niSbR4QR3a6hDXeoxjM_iXGwrU8ZJnMO_Wjb4XB-Oxhi6MPYz_rKTnogw2pGXqWK1D6QY25ZNgmIiMXlgrYQlJSNINzyd4ER2rsPjE7XcU8S7kqa7Sw44w7CDdGTlVXlNKA43svaxBnn_Rsty2LnZ9_gIcpF8fDB8EMfvugvcyADPLJdK39BbTUpZksFzNz0ybFfqrDyFhyvVg_UIAWbCro93lNUP2cmq94yLLm6eV89tt-XW-5foS_dflPKI8ic3Aq2FLcepqmvnxXWoUlauVDpcL7t6AmokeGXI8_xOtXVf_uU4YYwol84ok2kgBw0q6Bi60njFGTDaN2TzcNwV9ErVNaBrxZcgmw-0Gcu0gfOsWIGHMTp3ONoiqq7XAu1HXzmEH04Ras_cDTS0JzQm9dgfg6Pnl1Smr-gwo03Ba0hOp3tmt3WpCxP6xDxvZpLqyunobJ3d8cOyfkhEyUaEfxrbn4fOVsa9x2i-gnhACL1LsnJ4NbsasMiqKGgCoNmXgggB8hBGSPzthpJ0NXrA7TZnV-gylWkN2gNsjIhj27B-Ak5o6IjetIm0dPm_Kl7uyn51sXsNcyHm0xAi-r_fqxNnkFLa32GfhJuzFuXDqVwSTRrqAdRg3kkyh4AMr6dBH91r2VeJbaY_A-7eJE2hFKM41F0dqfSxkFVKgh21bU5--83ok5s_pJOO2DLi0D_M5zEwLQEy6JSlXnbZwR7k3mmQ-pITwGm1FrJ-51ruf6DRklNwkJrpRRlRb3mzln_sdwUT5bKSGEHiCjMrTg1rof6TefLkamaHzYygdsH1oGuTRlnoO1BkZxQLMg4RM7dFX54nmmcawx1cBROo2cd2jGCX3ha71nNUzYP6FznF13FtVTwWta73eUczmGVttGGTqE48w-HwokHZ-C5rhtppJnZBvsaPY8WIZIr7NaWQL6GScK8P3xgw1mR55hBtp2ERd_wtM0exARQXQVHafkXCvlhtQuLKgMvi93zvgCufFfXRmGqOdyqFnKXlqQmH8D2PnoTllaqVVQpzAxrVesq9UQ3IKOgQHkT0C3Yz2bOXVsj4WI37m9blIOt_96qtR3BxAP1ramAKeEHD2qxDGS_N-uvtxjiv4RwbtDnduyybFH9r0axk3U7-jB25y-RQWdLmZ3cqSoV9ET7VkH4G8uODU-yzXFxOhARptUJetUo2u8IlVW_Y84VO2Djb9ltpOIRh8L7sT5XuEe4xyR6h3LPyEZQ9krPCF-tkkgG6qmF_I_pkl1ejA900robIIsF272s1O1q4hgOO7KiSAyrelRdPvG6XbGcYPEMhP4WuGpakwsiT0oRrmSGt5PIbh9rDkYSnEJeqoZ96lL0_C7akI73YnlEiCl2K--n8gkzWWmaPs85909IFGTndhfKUAucNqKwxt-dGOpq5iNred3DWEml3npPZg__O65caq0spNVr5wkNSPfUYW3hAMDtME6GeHL0p8K9IWafmYpNCQFEFJPvuOqFNVy5mXCAehNI7E1IDB3FvY78URyRCHnHz-lcSQy1xy5aRDCeIzMS3kJxDo1npk69rzDf-62pW2Jx6oAFCZ_QlfpnECEFvjpLieJ40GTZChKUuI0nyqjo-LPmA4xogm5uu5FL54LIxgzkSWRBkrVlOjHANJF9dVTNR_O0JUoLMYz9rhzHtTiRJg_Pu9lo7QWVg1_6egfEHdmah0Ww_KeBSJ-6yn9NNeqZ33csPwTlmicJOHpf85i6QF0fBGy1gU_Yci0JYwZHIYKODL2QBSHYlIhU7fdSe-Y_dhQrJo1ZLMZPGFAcjGQ2IVol1NUzsiLxSTiI01lo3QUSHJtsNX_bv2YMYyLhIKfMDR0lR5f6vyH0UZNZt4u1hldUzLd2kO77GudrKTM1QKdUCd5ujhy0RHf3FsHXZ9WdS-ARLZT9dmzHyL5urjzb5_YN7Kgk47vq54Nzy-2OTThFBSt6vICyIpa2V8xaUHf1sv-sytE_nqjW7tst9y2FZcwRPwIvMz7SkgGQDicuvF6kigEvbT062HUfcjlgHcDfij2TkdL1ou5kb1DO_fZECnEt2q4Dd_SB16QoHZ6Z-YOaCvC4oQ3ctYWatY-VrA68lbmMkM6Yt4Uq1ZtFFIdjt4uInfSQF7pyMQ6i2qzXRWOxKMV6e2OSlCUJj60BnZIHQ90kcPvR95Sou6jNIppRXl1-HYJT5CTFj_cbkQgv6tAOb_wikXuatVjWeKSOTFkm7oQP0Pk4pg1o2bSpogxcnsfZBG-rzyxC3oqm9IyPjVjpTk1Zr7dEZgueZhgbJybz4__BePSye_pzvOg90zZFIeR9HEZdcakYr6DrC2H1VG6pubzaOVffp3qr4cpRFnVPXb6vvo3hd_djHA7ruJTfICcAFPKEKS-bUPUH10_V7gjD4UhwdN3oOiaM1IGU6qp1CvNdGIeZ-hdGgjPfRgW7_Ls4S-u1mihnmHWH8j0pC290pyDkJOwXhDWUYce7w2VkVjmCZe4pi2gVN5anm-Omy5wZe2eUAFqlqR7Blmu-7GI0iym_v5Hqmfv-kR-cTt-nUHcmVEAwaqe2cOxfVbn97HgbCcW9SGHG1jwMYDjpVe639vu4D0jLoVoUpH7gpoZ_CPfsHVW34A-VqT5UpL4fo5bVUj1B68Ki_JQoET_wDXg3cTr0agfAgFXTN6XdtGXpRLB2bTlqpqItVOU812Icsd2h3aDkcdhXbu-QFnYUjHXioLYaFoQUrOqt_J_gx0rj6hNTEmCi90dAVrM7-z4rjPMao2olGjOnG5s8aHU2S0E7emAb6GvTXtOBodWeXRjpU4uruqu58UmpnOlp_1onUv7I2BNc2HF-8w-ff8n98SM43T4JSFMTgYhU00GB08JHTE3oSRjy-4pnsM-aD4rqjM-8gEgAi54KLXeeqAlcDepTdGMxKe72wMnRygcUSvHtDXSSDWPsbmZ5LI1QnPp0TdVqwTDF4InnVHVcfHJ6__Lt5zAasLIJxROgYiww92dOYyUsmCqr4-MpC-2-RxdAbwm9mBJT4QoPYgs65ZLfpDrCx8PDo8T8hVa3n6AIf7bx3VCGKmVFvy8Py_DbnEO2gEx4uvZOzdJotoKIHcj_LoOkiy4HIMJnmDJIYlYF_eE-9m5-Jzsj34RPSDTeUhl6cFsS6ahRCNxfdb5d6zDNQd16ArHGBf7SlAunhh7PEBehpANTzYQiYkx77Qs2iu3gKEpP8WtbIvE11Tjd4NTE97LNaPPWb78BasCcEVpk4al3Hd8hUUHkMYcX4Xn2l0L2Z23ZOXGNFiCXsFba2eKV1QzL3_NGXohu0w887Q4pyLLBRaL06rLX3NaHuoE9BO_-F_2n8jyMqFUB_CJ94xubtFFvTW2niIWi56ADOo_cXhozFLdH25x3EZ9qiAqoOCEqsg42AQhZC6JbNz_x3cHg3LllmWflX5wWWP3QH_EX0XrB3nTk_4A4dQLQAe7eFG7VLWhcFUaSVnONS79Wp83aGP-KFGSNsl8wZU56fDiuNFQurN_rS85gKbl9ffhxvhjJSjm3WiaxFdKRzv-G4QjvZRR_Sd_RjqCO9on5dP80Hw_x6x5m9_BiWJCCyn64R3bvvzlKH2a4O0XbcFgOCGGqUBh2gkx8dYX2St0xpcsxXucNSsAD93RFZng5BIaQ-aMs3Owk56hY2HC968YMJt-FDJbtrnmBByh--g68Q8GZNzMlT2BH_LyHX4z1TQOIpccgAxRp9gIv-jtDzc_dXCtbZioUdnjFrziXRrt0J2O3KUikww0UW2HgDaw8KSC2qtqgAppXtOdnJotOon4TmBZHZtn_2tO6rw_D0Fv5ijgYMJGV6Ogq9XYaC7p-TePmiVrXQscX_m1VhnOGEGL7xsQwbGjFEvLGniwo3Cov3C1Z4drIm8WwCx4Gk3rcbYIS0zzLl_IzHTDWEWeIr97hqfCO7qqhm1c1rLwtlojQ9IdvL_gLRuR66siaZN46gml3GPP9RRPt0KXCVlm0th93iMQxT6sDRz1gXJcePTzmjen6Kzy1fLhZPBVQKjGP7WfNEPxkiaVCH0mSUawrTpKC4_gB9ukbPBJQTfHJ5gvdMsPyfIxUbXw9b_Jt2rAayiMZLacq7pSHMnI_PDGgCByv8inBS6LrhizTm1Tihz_kHHrmwfVAbMhi94jCVOPSlm8Q7rLGzHdOU8d2nLplFN49nVFJ7rzI7RBEpYqjE8FL5aNjVTED7H2SZMB5VPgQExEpQ3sUbB_BfD0J9FXOinSrmWEqmZalTTxH_0Auxffes0Q7O4agpEXbrSPr8eMUTViTdBK_4VE2mji91ttQ85Q6ZcQUFDYFGhZez1g1IKV_gpVGFGDl_T_QuGyEZixQniBhKy4fE13GjzNSlszLck5f3KSwvCwRz_ceMpTrpcpKAaQqGwIYR_1ZXVTPiWiC8ervDcnEGe5tV9oW-pXlFLbMuSAbUnf8QmmlUFb1HuSZeCOeVvo2ohMxlQH03M1Y-_bdS-EBweogxGORb6OcdBZ4H15zYiKwrh-PEl4riNefXjEhb7CUJSCHSpQPCLWewIYOx91N5j4-h3TMrvYoAaphRKHTETOmntudPfMrqcjPCZpV2o8IazUTID-ayON-Xt2S_7wOcVfEXwhiLRpFDhbEf7d4C_1i-u4kQXnX6muhAKfQjKKMonEKg0N-LCPMzuKamcUpNXvicKMOw52Mz--XXbnkwXOcmdcgbMloWekSH314QXH4BfDp39k_9eNtqncokt07iXH1WkIcLEUvTtaTrueuJUhh9hXPCA_sI42y85f7UI5l_3e0aB68AuAax60DnTQF0KVv-78N6_no0hcDdOsesEkd-j2m5-z1N4mXS8cVanoKuWJSyf3BQ-8RUBlIrtntFDf4FvZ5UROvGG1HSRaXvPpWT0MUNt3D5Z13UZJTocA9O2gZd_6XtW-f0srVEDhxUpt-OH3HWBdD1zoQ4cOzLSxGcW6JrhaJNNKJbd1Y5a3LXQyfL7brL2z002Y2uhDi5q68G-aZYfnv2cdIlF3B9ytbIs5FqJzYQPy-wfDtFWoilM6wdKWXd0Oor2rvr44o0NjdPysJHiSIF8LVqYiVd5Co9zC0gI6OVwB9serEaZXpyPuU_RMfNz30i5EnHVSA2Io-KBxTUrigRbQevXKJI6udDOVWsq0zV9AnfbzCvM4dnV9VwAzp8iOkGcjI17rrH8MzG-fRBBVAHmnNcy8rgyIvFqbu0030o1IreqplZMk9CTSTzC9kHa7QsND7DXaHQJszq0SeJXDfuuLF3xiv2n2fHVZdLbNhJ8Dy3QAFKfo1x4TGywSrBvZSNlQa8UmNDJGR3iE_wYvtjhMVEQtb2nADG_WD-vlROV6VDOlEDNyZZG1HiyGg_rpt-EM3rTVkzaAEM5quytT8viaxy-DCRt5QqZaSuldABnk_-9mSjAgRvGKLOq787kUgc=
+# Abaqus 材料定义参考
+
+## 材料属性需求按分析类型
+
+| 分析类型 | 需要的材料属性 |
+|----------|---------------|
+| 静力线弹性 | E, ν |
+| 静力弹塑性 | E, ν, σy (屈服应力), 塑性应力-应变数据 |
+| 模态分析 | E, ν, ρ (密度) |
+| 热传导 | k (导热系数), c (比热容), ρ |
+| 热-力耦合 | 弹性属性 + 热属性 + 热膨胀系数 α |
+| 显式动力学 | E, ν, ρ, 塑性数据, 可能需要损伤参数 |
+| 疲劳分析 | 弹性属性 + S-N曲线数据 |
+
+## 截面类型选择
+
+| 部件类型 | 截面类型 | 示例 |
+|----------|----------|------|
+| 3D 实体 | HomogeneousSolidSection | 通用金属/塑料零件 |
+| 壳体 | HomogeneousShellSection | 薄板、压力容器 |
+| 梁 | BeamSection (需指定Profile) | 框架结构、桁架 |
+| 复合材料 | CompositeShellSection | 碳纤维层合板 |
+| 桁架 (只受拉压) | TrussSection | 二力杆 |
+
+## Abaqus Python API 模式
+
+### 创建材料
+
+```python
+from abaqus import mdb
+from abaqusConstants import *
+
+model = mdb.models['Model-1']
+
+# 线弹性
+mat = model.Material(name='Steel')
+mat.Elastic(table=((210000.0, 0.3),))       # E=210GPa, ν=0.30
+mat.Density(table=((7.85e-9,),))            # ρ=7850 kg/m³ → 7.85e-9 tonne/mm³
+
+# 弹塑性（多线性各向同性硬化）
+plastic_mat = model.Material(name='Steel-Plastic')
+plastic_mat.Elastic(table=((210000.0, 0.3),))
+plastic_mat.Plastic(table=((235.0, 0.0),     # 屈服点
+                           (300.0, 0.02),    # 2%塑性应变
+                           (350.0, 0.05)))   # 5%塑性应变
+
+# 超弹性 (橡胶-like)
+mat = model.Material(name='Rubber')
+mat.Hyperelastic(type=MOONEY_RIVLIN,
+                 testData=OFF,
+                 table=((0.5, 0.1, 0.01),))
+```
+
+使用超弹性材料的分析通常还需要在相应 Step 中启用 `nlgeom=ON`；不要把
+仅用于说明 API 的材料定义混入无关的线性验证模型。
+
+### 创建截面
+
+```python
+# 以下片段假设引用的材料和 BeamProfile 已在当前 model 中创建。
+# 实体截面
+model.HomogeneousSolidSection(name='SolidSection',
+                               material='Steel')
+
+# 壳截面 (厚度=2mm)
+model.HomogeneousShellSection(name='ShellSection',
+                               material='Aluminum',
+                               thickness=2.0)
+
+# 梁截面 (用预定义Profile)
+model.BeamSection(name='BeamSection',
+                   profile='BeamProfile',
+                   material='Steel',
+                   integration=DURING_ANALYSIS)
+```
+
+### 截面指派
+
+```python
+# 使用命名Set（推荐，稳定）
+part.SectionAssignment(region=part.sets['Set-Beam'],
+                       sectionName='BeamSection')
+
+# `region` 必须是与截面维度匹配的 Set：实体用 cells，壳用 faces，梁/桁架用 edges。
+# 不要把原始 `part.cells[0:1]` 直接作为 region。
+```
+
+## 验证清单
+
+截面指派后验证：
+- [ ] 材料名拼写正确（区分大小写）
+- [ ] 单位制一致（E, ν, σy 是否用了正确的单位）
+- [ ] 密度是否包含了（模态或动力学分析必需）
+- [ ] 截面是否用命名 Set 指派（而非直接引用 cells）
+- [ ] 在脚本的 `result` 中返回 material/section 名称，或用独立只读脚本确认
+
+## 常见材料问题的中文参考值 (mm-N-MPa)
+
+以下仅为示例量级，不能替代用户指定的牌号、标准、温度和试验数据，也不应
+自动覆盖已有模型中的材料定义。
+
+| 材料 | E | ν | ρ (tonne/mm³) | σy | 线膨胀系数 α |
+|------|---|---|---------------|-----|-------------|
+| Q235钢 | 206000 | 0.3 | 7.85e-9 | 235 | 1.2e-5 |
+| Q345钢 | 206000 | 0.3 | 7.85e-9 | 345 | 1.2e-5 |
+| 45钢 | 209000 | 0.3 | 7.85e-9 | 355 | 1.17e-5 |
+| 304不锈钢 | 193000 | 0.31 | 7.93e-9 | 215 | 1.73e-5 |
+| 6061-T6铝 | 69000 | 0.33 | 2.70e-9 | 276 | 2.36e-5 |
+| 7075-T6铝 | 72000 | 0.33 | 2.81e-9 | 505 | 2.36e-5 |
+| TC4钛合金 | 110000 | 0.34 | 4.43e-9 | 880 | 8.6e-6 |
+| C30混凝土 | 30000 | 0.20 | 2.40e-9 | — | 1.0e-5 |
+| HT200铸铁 | 120000 | 0.25 | 7.20e-9 | — | 1.04e-5 |
+| 尼龙6 | 2500 | 0.39 | 1.14e-9 | 55 | 9.0e-5 |
+| PMMA (有机玻璃) | 3000 | 0.35 | 1.19e-9 | 70 | 7.0e-5 |

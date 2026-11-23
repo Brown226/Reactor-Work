@@ -1,2 +1,22 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQ4fUEbawnvhsOfvJtKRkyP3Kwr7iZN2PFdTx5pHlms_hqlhbldFPsCJ0GPhH-zLZMnzMyYgwgCdwkWTY0Z1lo46C5wSWL0OAMPOoD9rQVQGXrP_sa5jefMLp6cLS1VM9zRY8hbRdoD_UZAZNt0HF9juX9Mkhkr9DvHcaiIA6RkFq4NSKindZ0H2iBuYXUC3_-IIg9hPc91X4790hifVK2KLbcWhfgBNwDZ194nFmLawK8nPKFxYw9GR6SdXwC-1xtQzhSUMdDYsWjINGCKYFkL0xm8LIAVTEQhwqLJv3AZhEm5Y9nhTIfwHEGb8riz8N-IMgq-d22AgrxoAFZKDt_clNBuWcKkUOZAqcal_ZRM8vslIeMi0SEJA9urVjS4MZLhjb4woks-d4GfsIxaEu99prGgt61rv8sgKe6Rl5YYgBaRftYJ6_aOMpVqj1JRLMEDVrphdh22n26ms5fncLuwbtOVca7eAkJyFxCY3IyyQ6_dc8PDUt_Wcu0QJ_JhG-gpJcA7ZZQIsmOXYe1nk9hOxvOUFYV6-Z924CaSSM7wbI2ZPY8A57f0Qj3IYcIu2w4eu7sQYQ86U-C9H8FhuJ0tRGpMs9JXa4McDLZ3rUT7Ze1xPmsbBry5C0dQ679Fu4_XMhU2IhVEgte4MhkojEtIQ==
+# MatchMaterialSolution
+
+**工具说明**：材料设置。
+
+**调用工具 Json**：
+```json
+{
+    "command": "MatchMaterialSolution",
+    "parameters": {
+      "bdlsPH": 0,  //需要设置哪种建筑类型的材料，公建或者居建0-公建1-居建
+      "calType":0   //规定性指标还是强条0-规定性1-权衡强条
+    }
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已完成材料设置"
+}
+```

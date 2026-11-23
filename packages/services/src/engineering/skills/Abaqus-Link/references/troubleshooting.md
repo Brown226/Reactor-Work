@@ -1,2 +1,67 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQFnhJFgrkWEfdBz45kHGqmVAgnw-y1q6Zj6ZBFp2qvMNnCELBeOdJWw4Wy-w8XYZChkqW4TWk5N0vFgJvIjEMiwbpSsQ24MuS55OapY27uRe4olRYaWPJX2JvBkas_qkiyQ4OJLo-ymb6WBOh91DlEeiI0o75F7TKD4LuDkakrVrdw5NHWUk6BUYHCuGbQ3cTpL1-kGq4bJx5ELsddHU87VjDF3gRnVmrtPBnVCnu_8MgIj6eIoPn_lg0xeueFQ7ePfxmFBrMBtfkwDC9yhv3hK7An2GsOw6bFdEx4b_D6ANSimmWfEz3j1lcAqjQY778sXK63MqeF3t0pB7JJ_kyzk0ROTezNY4JXh0f1iMNMIZCnpv6s7kakNgQk7ewymcSFrhr0VraHoNUV-DqbpW0oC7MOODIAyfIFeaeuha981b7W_QugSOxwIUjjNKyZdyapiU1-ho7dMlM22FxoWql2b0U8wGoLWYCV6tKgyrWiFwm-avgD_FhKb2NW0EKy5oRgtdZhUg6KdXblL-BhVJj9YquP2UOdpqWPPvQT5wZuQbtH48AHGhjw1kAY965FTYwZs--BntNnpHalVxEVoiu2SGLRrL3fx246WN7J-vWTOg1-7eJadXfj2CgCyEUB1-CZFa05oZQIfQD8laRqnF51I3h9zDtRHUGuJHY-F6ailH8mlqsfqOYVKxvCd1-Eie6fj7rtVvALAzeR9M_r_uOcaABgZOUuXxz02WQJEmjgHfaW7TGMVbsY1lf2vTcXusCuFAF31zXMcXlJxDcCXU3Eu0d-D5_EdqzxPhsq5uz2GBTQDQS3tqGK9Sqph8MPRp6s9TY9-RynzCL33Gq3BYD2pnditiZTP1c8INquSubjt_wWmuCz9XXdC8O7oQqhMIJFBFjE8CaS-xC-iuyHmFDgcI50xaPM2Amjp1MBP2E3DqUigsLQLl01aSISgt1yOBbePLoIDO0q2xP3HX2oSWrXI5I--z3fqoe5YvtP0VVBtpd36KLe3NcJJo2dMQC4idb-2jMc7_p5LUeBNK-5LJMSJee6dlJ6N9wfjmymPyuXHXqiyc1WCA1XvmjReL2r_Knw_dRDgA-4sdMMu_ClBkJXaj4yB6BpcTjZaONMFdEsKJoM_WCSHsAOHetnAiEj9Y6v9Sw0e1699XgOZsZzK322FpcbZuCIgyLyhZwiSacV0xTLUbvoZWsc257lawUU70Q3oELKu_1rBqsjrP6Y-H2L0r6osF86wGIOAX1SHOcneRS1Veo66r3qzx5Cus3_O4Ltt1lK3CllI4g9X7d44Hi3yRext0BK8HFQg8kUsuJpQgS8T-9nsvDzZ5q2j1LzP3wTOqOVF6jT91Y-RQhs-MzKMF08pId-RUMVsEtxx8zbN53jbyhrexO9cxqbIAmXZiWgcsoUz_9zA3-k1_Ed0v2VmUkGvJefd-eKetRsEDwUkdiH7NdWQ7B0ckPZpnFi2wuPHMAFK-wb2SMnfVhEIsrvua0-mXWeq2fyhYmrY_PX-zaSMx2W0s-mRJRWw3tTSApNXqN3x39slAmkr1FtuMglwcx9teuDp_AMX27ASfFQjR4yphEk2Ut_av6xlqBFzev22B1IwLAFeKEqaAeklQSrOPdq35Fz6gOnz7U8FFUHAZ9VF5grw_f9zH986GVDqynpzEB9SCQWsXl5_m3q4R3Kipvo3xbzDrygYFTXsDGgj6ZuJo24SAX0CaVtFiWHYOTEvDWc8G5UpEimpxmnH0VrnrpF9Z8L3rAHOU1wEnL0GHRuJx6e8JTEMmv9WKJsHto6f5h8X3mabVoYkgodZ8hiPKQNJtA2G3Zj51xWRehZnS0UQ2q_IQ0mvPH0GDkWLNWjCfSdrpBziCOx2mea5Z3NayrClcM_lAnd2mtlpZii5lS7CTBdQEuVXVMD8XHRY9IXi7C11o-VRrAyQtlRxmX7sVDbj1QK4z7RWIOVED1iuhTXh71ZT216XIqzG-LVwOYr3E91FWGpYKA8E2jGigN1ruyuo4xb5UWsQbGANCmCjIUHnX2Cm2ptX4ZOpnqSJRLvcj8Ix4HH7CRTP3GXBwyhikLxdMsqjAHom7vdmvBrawWTi_w8_5bzXAXZgyVrk9s3jUTfHMyxUdSqDDK6qgcgK9VtyCUpSAEuQMgiFnslh5i-yFr5ZqI52ZNJrfwJfrRMnEsGXK5sdumwUV4Zi6E8iJcC1HW9jMlUrCulydiW1ICNZJ8jwWQ6A5Xs7cpaNRXyfhqVlEK6p4ujUz_kKp3Spui2uGrEyk_sBlNKGmPw-J1b-ncxjp4aqwch3T8lOPMFr-Hw4LFa5KOJqxS4pLWTTEHx8P4QgTimLC1E-JahxC529YcZJvN7ex6I-1a1Y_-NQIj-FKqyHJWLG04UMv70keFhEZPeyqzaAOUbrkiQqKSt95_gJcBsN7WtaZG9zmh2YZ25X4emTbJ7v9yBtHMlGxsPYemHET_O05Mqm5Z_fcvtQT8RMwnVFy4mRHdwqHx385NqY4Rvbu_zCAxTSK2mRomdg7gK8nPYFDEpeGzn4UbdYS51GcdYibtkDoaAPWjvcYvM_HETJnXWTJF3rMoalZikTs5hV7tjelnJi01ulBi7cLuHFyLj5OT4EW05ZJwiIlZb9UUArRuUxVLxXn2cIEwi-kUzMtgJkkjErkg1nc9XlemYaei7h6NxjBTTMdwZfFL49XBK5zgTBjSzTbTkRJ_SiYwudbaJ3MGNPTl1qH20ttJalFrxFgG7SnwbyM-1tdLoe4zScHThIHbCRnFO0WB9_RGKngheIRr3mWw3M88zfg_t8R9ff3jRjKkUi3__yMgeh3gyehh3tGJuV6rXfd0zquRTeG9RrLp2dcHWPp1HbIYLusG8xtW7t3V2mLnymqc_9AOAK2nWRJVEtU6dkw7i7tH1ckwNswY8ASNGShdaNDDryH1vxLTOhjHsnsIrQ9aYkwiLfos2VS6BVRahAf8aF6BKio_wmE4XDkhGU_HaUjgJdNru185JhbSkro94juuTD2jV9pyyTquLuRNP24f1cr5SmCTGDKivRv2awSDbOlUqjJuEO3-QNjUOi-EOEPviXEg2-GL9oD2fDU_IeisP6HxUwaYusD_po530sbeZTEbS9ygcTU5RD__N0GbGHwbDF0AJWsap44osR-VcZfwVVo6CJTdCwN7J734B872Bl3Wx0VqokLekOboVhYT__bBO83jARb5mrhe4p9IPK4IiCZEGT_MsMxZxBGSAndxQDftw2vYxUY2OCPFCwEsW5YzEoQuoctP7sdXjsYhEA0qJWCFUzOoxvv__wdQiB91EU7NFuyVpN7GfmQIGUWVZ7Q8Y_bvn4JCLJuzhIXMzu-2ggX7DeY2Yig37tvlo8ofo_SKLim406zlfwsdlk_1h9acZK0dFpQJdQttoP_C6ONv2OjAPKaDVuaaEFJqxfUQvALYr3yF4-Rbjih7HFGf424iSFvQYSUlRuMKsGI9k1SePeoosnoi1pyruJerIBDxDfbEtH0QpBZpkbMjjns6nVpgoSnee20bPggltu8fIfozxwKNqlwZlf7Pw7e3dNlpTwIqmKTh9ElHszU8iNU1j58SSAjli9yFJqmOc1DCLbJUjQsMk-IiBH9J9S7dZu17wAEihvmP8P-S063goDVvF5_MPXToxsJs_33uLPffrSJCnSuWUSFgkL83xU-MKpYpKqtMxmW4y13yGvE86lqhq7iIxgUOx74EIw1pbf8xCRuVgYMIiCvnrGJlLGPABB1n91i5JiBiVxs_eNoFBGF9onoHb1SEGBsfcZm8in-yA9ccVuFgiLMlJSBAVAjlqwlYI2hgCCsLkTG2sociWIcQTTYy-EkrMWMrP5AWV5HFEP3NhzIqzg7dnnh_A2VRyXIbw0Tg96Ex0s_ATJ1SnXe3m04v0A5IFLhar0vHJFQFY01HA56irEa-_DllLKTDMO1ZR8u_xs4GhnLvK0_-KKuKGXxAQ1kGAZlxGVMR96uLjERF02vrti5MzMTbBczY9Fc1RzFZWTccwZuwJGZV4T7eFhdISDLtU4k495HEgy5PiLjzxkH3Uhtuo26ecYdUnyj2TvWyHzEFfFFG8YEE12Qy1g6bhQ-np35HrQ9_9o0d4fKXeLm20-0ngiefONqmHgSX8aVeGEsahnz8WPn9xPcdcdBM-hZLsE9ZM3pIhtFflARyVUxXYgi1o55vH_itdjxEbHnxU4QaVWh--MueQJP2lxDCk6o9OnNJteqx3lcxlhx1bKk0QCuqJKO9HiIJ4wmMAHBMcxbvYtY919yZDwiJTb1he54Pfo7HSEKxmJfv9C5V141pTRPw5zmdt94xd743g5acVRerqWdZD8IyjZMiv640GI55ckt9T9PbxlaCCH5j7zJMo6TmCNNbsD42a1HMb5Gv0G7XNR3RadDAEt_mnHnsNmppK4M24RGh2t1byALJ2Sqni51OD3V19sm0C0RBfWlQ2pKr0xLsczgESpLHETfTZiA4jUchSh3WUxDLZvQShSCZhjIo-cMRiNAQ2NTUVCZpFLhZqisHOgi13PgyVyJm9croRh6PkboT7jUXo89uHCok8IuI4_D2pfUbQrDI1ZepDOP9wkGNMwnBW9qi8HYEL_l4TlCwq21sK_k_ccqt3McObYhKtsB6hI1nu_-yHw2BmudHPqOqt2EDwFrvWykY9YxDe3a52YWRr9j9IhQ8hXC8TEgVpfoJ6WA9Nq2fNMw1gBcbRBOIGXoDtc7o3YmXrZl-ixTkO3hhRg_yEju4plApht8YH6701frswhRrdmsJteMr91ee82Ry4CiCjqzxQiQEGYLUU3JH1uENxN5tHOdy_mOgd5uX3H-_PDnf7aLUbqrTTUqCFLnZ2CoDr9uXUIoHstMVv0vuCUoF5pFJ1RQVARRKWhIiIPLwu8M5INwWCqdcj_5w6YCpxUwwmehlDjqeY6j03bLwM7_15grGj6BmvjmmKIuplHzUn4SdNoEJe23RFxUDan6bXZju
+# Abaqus 常见错误排查
+
+## 连接错误
+
+| 错误 | 原因 | 解决 |
+|------|------|------|
+| "未找到Abaqus安装" | Abaqus 未安装或PATH中找不到 | 安装Abaqus，或设置 `ABAQUS_COMMAND` 环境变量 |
+| Abaqus 启动或连接失败 | 安装、许可证或进程状态异常 | 保留原始错误；不要反复启动 Abaqus，修复原因后再重试 |
+| 检测到已运行的 Abaqus/CAE | 当前会话无法确定目标实例 | 关闭不需要的 Abaqus/CAE 后重试 |
+| "request did not complete" | 本次请求超时 | 记录 `request_id`；先检查模型状态，不要盲目重放写脚本 |
+
+## Python API 常见错误
+
+### KeyError — 键不存在
+
+```
+KeyError: 'badKey'
+```
+→ 根据错误返回的可用键和相似键检查对象名称
+
+### AttributeError — 属性/方法不存在
+
+```
+AttributeError: 'Material' object has no attribute 'Elestic'
+```
+→ 先读取顶层 `error.recovery` 返回的真实对象类型和 `possible_members`。已知规范名称时用 `--call` 或 `--member` 精确查询；名称未知时才把原始操作拆成一个原子 `--need`，只从数据库返回的真实候选中重新选择
+
+### NameError — 未导入模块
+
+```
+NameError: name 'THREE_D' is not defined
+```
+→ 在 Abaqus 脚本中添加：`from abaqusConstants import *`
+
+### TypeError — 参数错误
+
+```
+TypeError: unexpected keyword argument 'E'
+```
+→ 立即停止猜参；先读取 `error.recovery` 的 `callable_signature` 和 `possible_keywords`。如果仍缺少完整重载，已知规范名称时用 `get_api_detail.py --call Receiver.method` 精确查询，名称未知时才提交一个原子 `--need`
+
+## 不收敛问题
+
+| 症状 | 可能原因 | 解决 |
+|------|----------|------|
+| Too many increment attempts | 增量过大或强非线性 | 减小 initialInc；增大 maxNumInc |
+| 刚体位移 (numerical singularity) | 约束不足 | 添加额外约束；检查是否有未连接的部件 |
+| 负特征值 | 局部失稳或约束不足 | 添加稳定化 (stabilization)；检查接触 |
+| 局部塑性应变过大 | 网格过粗或荷载过大 | 加密网格；分步施加荷载 |
+
+## 建模常见错误
+
+| 错误 | 解决 |
+|------|------|
+| 忘记指派截面 | `part.SectionAssignment(region=..., sectionName=...)` |
+| 材料缺少密度（模态分析） | `mat.Density(table=((7.85e-9,),))` |
+| 作业未创建就提交 | 先 `mdb.Job(name=..., model=...)` |
+| 提交后 ODB 尚无结果帧 | 作业仍在 SUBMITTED/RUNNING，或已 ABORTED/TERMINATED | 用后续短调用查询一次 `job.status`；只有 `COMPLETED` 才读取 ODB，失败时查看 `.dat/.msg/.sta` |
+| 单位制混乱 | Abaqus 没有内建单位开关；沿用现有工程约定，或在材料/荷载/时间进入任务时明确一套自洽单位 |
+| 坐标硬编码 | 用 `part.sets['MySet']` 代替 `findAt((x,y,z))` |
+
+## 应遵循的调试原则
+
+1. **错误不是 API 文档**：诊断信息只用于定位失败；方法名、参数数量和类型以 Skill 离线数据库的精确详情为准
+2. **按里程碑执行**：复杂模型分阶段创建；对已有模型先用独立的只读脚本查询目标状态
+3. **生成前取上下文**：把当前里程碑的全部写入、结果和诊断 needs 一次交给 `retrieve_api_bundle.py`；数据库不能证明 Region、几何选取和求解流程正确，复杂任务仍要拆成可观察的里程碑
+4. **API 错误停止重试**：遇到 `KeyError`、`AttributeError`、`TypeError` 或参数错误时，先使用 `error.recovery` 的运行时证据；证据不足时只做一次精确符号查询或原子操作检索，不凭报错猜下一个名称或参数，也不自动重复执行

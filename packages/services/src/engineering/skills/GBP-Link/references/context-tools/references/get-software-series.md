@@ -1,2 +1,11 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQKRYlBECadamyQeSStqH4RvsdGDIKx44hyjBWnyibGhtNeC74p6wxbNdhND1lSuYksWgPcSb2G8eC2TblFdWjrH0nPZDlf04uNCG312WICEWgbGmfyDE4UAbWss8niXIaODReAlt10fM6_pUdSvO5mkVr3qbToJB_fF3OfiHtHpn5HSwnjtnAIPPDKmBEHbgHnjPVtc1mFO69h2CrUBA5WYyHx3GnfZ6hGxiL6XDHl6mkgD-dCMSmmyhBCATWV7VbRdV-P9sYnfFkR41K-ZWoXR-UzUXgbnSAAG3MCXt1xcb9N4UQ6eklcTHWrj9oKntf
+# GetSoftwareSeries
+
+**说明**：获取当前打开软件所属的系列名称。
+
+**参数**：无。
+
+**成功返回**：
+
+```json
+{"softwareSeriesName":"民用系列"}
+```

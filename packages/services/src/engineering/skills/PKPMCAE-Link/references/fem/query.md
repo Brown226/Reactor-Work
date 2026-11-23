@@ -1,2 +1,81 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRxbzgc3GdkkG5-QAHarCroNRo961kFMPn49WZvOGBSy_q-N97_I9U5dWOEEJYBHYhCRkAwZiF5Ps6R7cgCoaWP2DnSam8nbukWqw1XtlXGXgFLKyLST8jpvIyS8mf4aOemxOHc07jl-XsfLhbIJJWFCQsZk9z7Q3k3HcFW4wC7yP-IIaLihk1enCq8Q1PLhSwkhZvvAlWbDgWxIgA2Cz35U8B8bVD7Wd4AZ7cHdThpEB2SzsF3Zomybe3bSf6klpfO4LQ5R2ovLqxYGoDiMYN_CwA6H6Z7GiVRH1tb8nIFzjsA8vhZpTEuWQ2lUh1tGWVFEgAGVlcyoCk7p1v62pI4i_TbnbfcMYIKEWOY9wYnycMZh99zbDMK23otQdsldhAQYW6e9SDcBEdsRbuZvVxcz28HePLjm_haFWNu6Shu6StUZCqy0vGAB1UGNv9Y_11LM3YX6HRV8dyDj6MBHH0d9PWUZYK9Pb5h7M_Rl0zbRrgi6XmWwtt3aoH3MR91cEesxQwGVgWWV63kDfW6GrRErtcaoDpxlYAfKSuX7phvRcPB6PY_wr2m_HSUspqUbK-0urGRXVicS8g1ZnLbkOC0q3Vl-1w1b2_0HsGWvvXvt1Tqo2UxfiwSeBegGydLfe00jHRbdaVYuKK0Cua2yXCp3Wd2znxZOKRSX615atv5ZpSyF4pTmOHMvmFw4VfT3biO0llyGNiqODeNHiRBABC9WX7UgCQVPVOKBGaXlASR1v1mEjssw2imgNnpX3IqXTAfq_dhdXokgbk3etUW26OI8cejXWPHwTG23RTN7-grdGMItmARbae8wwRq3DEZc0VB7L_npvbhi_Gncsl5lRGnP_jAjNKcVWU21RdhxNuPeITsM9gLLlq9JON34vQoVvT93HAd5is_e4IzEd-rzSOlbbVRTg4TvtNQwDUk8zttqVFJwRCjIp7IzxMgjKrAGzF5OicDKD8eML6935O0S_oPYtGaxa4VU3BCHi0mhg0NGwBFG_E5FqqagdANHyZXntx8Fr0dOYkby535znSdGu_DlnH8h9z2KJ1Aw_-E2B7ftfhtlbwoQxqdlsTJJWB_on3tRVX_SxvrKtKFKPMlu1I7rrcuZajF0wNvL9sy3w-M9pgGGaH2t-NyVSNYePQ9IvY-6VCI4fJpeWLY8yPI-rdZrf5Kta4wtGNECGDwXN4XcC2PN_Dyrp_-7nrNqKoF-7g_KI0FWW8rCRGMnRgddOFyySFJDwDllQXIDuMQKPFwZRUq9bAKjmtB3jK8ayee_1XrQjem_jR1iAgFs4E_G-C4QWcZw4_yO8ezn9otbFGRbqO1dWfUrROVEmw5vkb9fSfA99qiGxmb1x3NeQemK6yawDgfq6A9Q8KdHra6N729eysTS7RdNP7KyzcBV-3jquqCJU-MByd_iDTjCGjpk2iBLCZh5iQ2HnsJceZgn2gNkhCQAU-loKyfFuenbEW4zoZ-cpowEJ8HWrJLl77fbXioiyLW5FqN7fqyNjY2OrR9sVEdtW5TZoT4GGYVJWuEOWlvY3HuvKa51RVigf6AXFMkQVMpKrvQZWNjaMCfEaeF_KnQica7SMWZtZWnS_Bn7VzIAQKGL6_0hBD6K9LRA6jQxd95fgHMGcmuOfJ84c1M4p3KM_NMsLucLHWxmI1KMPtuJ2uNERr8bGCXmPdPT9zO-roLJZFX0jwZ3toL3M9BuyK3MLYfVSOGN92M_LzKhusnv2Y3fTMzgYpc6TeNzf8nRa__M3Xl1o9Nw29vDk3ybrTPboSFigFjWUAKBYU2Dn4OkZPMnw5kxn03blzHEvmUaKFsAbifw77d7R3wKBKgVYyIY5t4W3J4zBUe6j04fmusXsPT5GCjVA-fwtyy9musuaHGidQvbckRAO0VW5MzmbprJuNO1s-F4k1m_lfp3rWvr7WcMrM1ucCuAguEH9TOkgmbQ11ww7sb3Rn1Vkoy87Xyh550iDpFYCEaPczyJZd2TA_ZOy6yYvtgdWiAqSuftG5kqTIVZWq2Qqhv2V7eZBRnlcNL4LAfTZJXWk4hIyJu32D6U9RKtfUpKxbKM05MZTNiESmufgWag_aFCM_Eu_OoXr7UHw3gh1LzaTgX06PMJYsmCl19qpA00RxXE5zJlM0iLXcX6Sqxcrzm49ybX73DoEvcbnEYRhwOkXIqJmicMvKRsAAA2qYYERGzRgbush5nIYItCLJjzOaEcXCTdRvA-EkZaMpReHIJ_GYk35BGGt_1wgSxg3oceVIWu52a_y8Q8in1Z87XAzjvK9Xi6FTZqcrO_6lc7GKrL33l-b7EvbpiWDSO4fPGkblCMu8OXgr47dG0mGVbg8dOLABQMm-syTQl-Z6EqgdCxYyYKN1aIA6Mx9ZMIJL2HoP0KHzSWBCqokIWAH9cU9zeKuEt-bT_a3ZDBBgc3bme-ygi6yqTrGbQVFGTDd99Eb2axOThI2S6-H41MDGwtwWL4rBw7rKQ9XvTTW-cSTJY9uNH1-yvRX3yMljMFq9wgr7Rlbyv5DRvt_t8icalMwPcH47l466vPUMaxCRxLejX2trzQ_s9I7ibsCZDPb2stDlbc_qsfRJzbaTYkn6FvH4hGMHDjn0g_M0Q0Z-gdY4R3lTsbS8SODux4DxuyS7AToxOviJF0oS_amic1ZnGd64xUuxDhlhry2Fo1N7YN_r9m1qMeZ42JEgsFXbfQ1_98IZM5BMXZ4oyln4kuq7NEJxhC6ZeW76roM5HuU0Gu4-8-816apA9wrvXjyzbp28Uf8Hn8nHydX8f_DiBN-dO9S0gNTe5ly_sRRZt5SfAvG8czO2XIZBud0FQBAVtfpJK3VWW-3Qkho0ZONMY2bFdst7Y2al3p3CL25MbP0NUR2nR5gDwAlay7xtjZYGH8pxLat8pIzkFjAkeBfYBj138h2QUhyGynzpVG08DzDzG3jZYwIVR8K6A99YgkcpLF5R4k2PC93df_0RiPJyOhjJlg1nPNfVD7sV3dPranUAZ2nEivsBN3m5FMzzv2rQmqcbuA3B1HHe60vuYTp2hu2HtGtaNJskkl1M2DTgnyEqN6J0su2DhBPzXcSjLtOnXiMteCdIsmiPAErfPzzXfn9DsRSTdxjKt27GpAKPs-9pExdvlwQ9RQs0PS7RUfqCNIOA8cEm5xgLAEkqt7Zio9S35TbeGXZ_KsRZjxDAmSPCnERMUqJ1sF5lULhX7pe7yHHPUTRom4T2FypOJG1wHfi3P-BxsNZ3fEcKMKqGiEERWsYHdJbjB55sB0YB8h5snhcik0TriRoChznTLhOgUn9ugt4CTsFdSdRrNyjSo_TUgBEa6CEjoZZOzsjQPscQJbO9E7bWlRDMmZP3HJbail4TtbDBZyAywitKBrVk3xa-2fXS9DqYHYoIpDSzgD2LOhhoi6vMduGJOxWMK2pm74zgecCqk1SXpacIqnQRVh8pN_isJbS1q7elW8BJ5g1fxsJp7zZj2SI-b0U8LDbe7il0tHjTcSqg82g_L5QFDHnlUxXr5O8g-UpG
+# 条件查询（试验功能）— 参考文档
+
+
+
+
+## 概述
+
+按属性/坐标/名称筛选材料、截面、节点、单元，聚合为临时集合，支持并/交/差运算。
+**官方标注为试验功能**：生产脚本优先用 `Nset`/`Elset` 显式分组；查询作兜底，用前先验证。
+
+## 核心 API
+
+```python
+from pypcae.query import *        # ⚠️ 查询类在独立模块，comp 三件套不导出（否则 NameError）
+
+# 查询实体（scope = 元素或 id 列表，默认全部）
+MaterialQuery(scope=None)
+SectionQuery(scope=None)
+NodeQuery(scope=None)
+ElemQuery(scope=None)
+
+# 取结果
+.one / .items      # 单个 / 多个元素
+.id  / .ids        # 单个 / 多个编号
+
+# 筛选比较器（k=属性名字符串，tol=容差；可链式）
+.eq(k, v, tol=None)   # 等于（唯一支持 tol 的比较器）
+.gt(k, v)             # 大于（无 tol！）
+.ge(k, v)             # 大于等于（无 tol！）
+.lt(k, v)             # 小于（无 tol！）
+.le(k, v)             # 小于等于（无 tol！）
+.min(k, tol)          # 属性最小的元素（tol 必传位置参数）
+.max(k, tol)          # 属性最大的元素（tol 必传位置参数）
+
+# 集合运算
+.union(query)         # 并
+.intersection(query)  # 交
+.difference(query)    # 差
+
+# 拓扑关联
+NodeQuery().elems(elems)   # 这些单元包含的节点
+ElemQuery().nodes(nodes)   # 这些节点从属的单元
+```
+
+## 代码模板
+
+```python
+# 1. 按坐标范围选节点（0 ≤ x ≤ 10）
+sel = NodeQuery().ge("x", 0.0).le("x", 10.0).ids
+
+# 2. 顶面节点（z = H，容差 1e-6）
+top_ids = NodeQuery().eq("z", H, tol=1e-6).ids
+
+# 3. 交集：顶面且 x>0
+q = NodeQuery().eq("z", H, tol=1e-6).intersection(NodeQuery().gt("x", 0.0))
+corner_ids = q.ids
+
+# 4. 施加到查询结果
+Fixed(gnids=NodeQuery().eq("z", 0.0, tol=1e-6).ids, dof=[Dof.All])
+```
+
+## 最佳实践
+
+- 用查询选**面**（如"z=0 全部节点"）比手工维护列表更稳；
+- tol 别省：浮点坐标用 `tol=1e-6` 防漏选；
+- 查询结果先打印核对数量（调试期），确认后删除调试代码（禁止 print 上生产脚本——
+  可在开发环境用，交付前删除）。
+
+## 常见错误
+
+| 现象 | 原因 | 修复 |
+|---|---|---|
+| 查不到元素 | 属性名拼写错（x/y/z 小写） | 核对属性名 |
+| 边界漏选 | 没给容差 | eq/ge/le 加 tol |
+| 结果为空集后用错 | 未判空 | 先 `if ids:` 再施加 |
+
+## 验证清单
+
+- [ ] tol 已设置
+- [ ] 查询结果数量符合预期（与几何推导一致）
+- [ ] 关键分组优先用 Nset/Elset 显式定义

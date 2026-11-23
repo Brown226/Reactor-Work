@@ -1,2 +1,168 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbRuFDsyeS2Nkql3bUB2fGGodjwVrzcKoAwrNzkn7yHyv7Xl3cHyYut4quHQGmXb59xjtR7SqykHANT0rxrEm8pSzpn7vKYQmxsAPadMv-bq68LR-sQ0n5awFUqA33phq2vC7kAkaAPE7SG4_4Qrx5-_noI-w8n9fq0atEY_fRvAEl4C6qGHdtSDqyWbhQ8HK4UeGmdjQHft8dxvfmPwEjNT3tzMbmAGrxRFUGJcjwVJegysAxc0jvsgbGkiunR9XTcy2CBnBSL_iQ-5GI1Y18BfIa9oVNAWycxlGIga36t75wUpFQhc1uytrIwqBusi3Cjrlxei1-AURD4tERav17veT_lV9einlaVLHvLzy9POdQB8uAlGrMv2Z3Iz70ADi2nQzzUWALjzO6GSgTlgh-_9pw3bOw4r9rUdnnEtxdu75P0l52-AI7Z-gPTqflrMxUkhQg4QqwRLpwMb8HZFmf9G3UvabTn2nkznefqSGDNijCCPIOo6rMgl6152Nz8I-u8rW5d38HvtRbGKaIQcK68UCi_nVhHJ2lbWQt9Dt0m-pEZKMFFi9fD77ixAqJzELGQbo_MErevOctY1Vb9mLIfV_vqf5XGj9dKF4Sz4wy5DDdw0xdVDCVip3xeIzLxUG104rjC9bfm5UnojJyqLNJFN4XPXafboKZAqTzYKW9-u3WBddMV6mtPIS3EpmwzkcwebEOUMBqN_oNMjqi0K7HXb8mWg86LyjZ2UjIsWbVwbuDilo9eAa3Laz6zhLEjuevHE-Dtz0sQCOG7OKR4imc3rhpcMCQEhXfEkdfpsAnPQssGifZYi_gMoC1iQwUQ8A29tAAdePAS-0F-WKopd1NvRJjHiscaDFyqkA4heEBLqLbelQI6-Gghe7p448bzDSX1AryJUUJfDhZvuqPcoWBJELgHhKPQAofPFySMC6xbwHpx_eWAXgbvdJV2pm0wIxz5tHh3SH3dfx7obdCve0QDUkg8NSezOIMeoA-FkvXSgVYtRvyDwOrao9T0s2XSDio8E3tm5mAlvyC_ruD5uulm-KOFlOsC7UdtXoxeZEczZUS58odhgY_8NEX3MoHYSQ1Q1YAhQWx32dVV5UCv2L8Ey8gx1Q2ogGXHm5afxpVR8lZluWiD2hAHZTHx0rzIFqgcPXyeSl9Hp5pOacoVtnUixZO9GBol7bFRztt95h7UgqMgTF4hkhoBPPeYBBh-q3b9ttk2SC5opUixFpDau5GPCmMsCCI11LZ_Kn9wHxF9tjaQfVaBgGb_bmnisMXSSY6DXp59yxCQ5qtSfCu0xznBIx4dmIOOT3U8TQaCLcsip9Y8js3gtgRaBhM-WMRlv1xaQbYvOnUJ3oC1D1Bp2XL0r-sgF32dikt3NoBYPGrpxr3kVebUlK0YE9ZRk78Fpahhxd4rL1uojEcMOeS-CeJd7p_akfTkVE5bV80HW7DIiN5DaPHp88X_CR-OF77_kL1XovvB1R1ofkE0HY2ggfm00t1OKJQ6tSZav0QH9U8lQkzsJun8GB72Y-wWCe4C-mRqZFj93_PLLpGq0GkCvtHwrxSXHy_uT3nJoRBlrnEn-vumkSEHu3I7P3KzvkeYENUf0e63rVTTigJe7Kj3BC05E2uIwbr3Tqnnli1Fs2QTyy8frI6_UhuStG5TORqV8z7TU44yqABExvWe-gDkJL95CFq9DJWv8iK4F6PIQm2J16ZaQFrhp2xcGfI5v9tbUC0GmdMp07SQ_K93SNpiZf1CHukyw5jVH-kt6b5Gd6WqgyJ_fe2WSK9EZ5BuLF2gbfnBz6hTJnDfoh2xINOvIB7_KLk6BNqWZWjupSqtfPbuWBmBIHBlNv635hOlH2FVUQ4EVAUPrhUo7V7nFDWSvvPZ91EHsM2TYRKnekWu6gMgpce0NZr8zWQGGcFBxBZzaTLcOhMUJytXFk7P0I17SNtaNzUWUvFR6pkjUJHQvxhXyxji9ZoG3rk9ekvqLQMoILyImlLRGQedexka3kAjB8zQApQqRYU6wt6vuE1rMlMDN4dF3bffg9JXV5jmiaaZ23CnoWJXdkmGZMcEcn8heEERdHzUUDD8VIXaImm0IaBCB3f2hDAZPH-j052mC3HzD38qei6T2f0yN16KC31j4TLeN-DdRbiFGEg2Zc8SfQ3rVRqTPq8BppmoLtjqiSXhBG8PUlraGHuO60ks8cVQ0tpz0-TxeNUwGSFr1__gXlo4M67iLpNamNNkaXaomJwWxTbAL8JGA0zJzoFw0qaNGI8I4gwHNpRCdI6lJkoIRbP-fLqRRsw8SxnzMrGVEWISIzcHNtqC5a6-mqt4lnQGqoGnLZ-KrHWn02S5IvFNuhLM1M_9mCyjlkfabJBp6Pxm7Iq-N96xP4XA3R8G1bdK2Dgiw-AF9jN1nljie5cgeVR99bcDgMXjKqTvMwxj0r0WlEfAbnbJJ4_RkzH3UeWatssQb5g8oOPPa1TE3LShBiwhvbtTKzoiFGcWHlV1T_Oe1b8HFrkrT14f_XFzJmezRrtTsWz6zJDXB9YAa32VividmKY8ZtmqAoYZEPqbWKEHIB8FRSd3jqSleTeN-tLHOLSaa2wOjG4R0kfa1hyGEvsYHblmJjR5nrQCz71Kcx5FRbJ6y9dkJsBDfT94v806sWquIzQVHuLOHpaz6FfWs7xzksW-6B-0DUNPDq5ZOXHUf5fmrhCY8MYOyI1Nal5WnaJqAgXNmv22Pm1zaTMMo9WnLsV-nzeH2RSbb4zcUVY8uLLeLrxeZNsuXPGAKiHicXanXsjny8cyf4ohqLsrKrZp6I45qyjytYuv7JAa1JrwiSv9ouEhPNNhFmXuapmkShxbUcRxIALpYCcbEVqoyYL0xqYLb07RHnKgWKcI40NYwGTMPSq-rgWxdHHyia3iX-OSkgSvyiqI_NUKZLppTjD5p7MPJiCY-PyHWiYM8IkIWqL36CP6106U7NbnGWjPzdKsk6elVFEv50uZA4ewOc_T13MpDCHxsnwMoVcL7E5wu5rt8Mwiq76RsNqOxxC22-MELiiitWCLD_i4-H-tFxOo73xcF48wQ47GLo-Ou-n4XR3hEY6hf0cJqGo_oYJxy6ujd29mG50wsEyhnRo5xfug-VY1Um-dqVe6iMoZlbt0O2ySgwRln6n3Vy4sEXGC4ybkasCjw9ETI5yXcIFkB6K1SPT7c5hIRWzb_S-lZ3ypZDOVE-uat2XnJ5mMZzdD0JYJK8QESBdT764Sn9vV0AYA08LE1v9rvkGfWZ9qShwekgGXqL0EvDhiy_Z1By4IdB6_Hk-GQfSOtLCjp0gKLVm4S5Z5B9XkJBYbumFvnnnaBC0T0Bp-4VXdpf_Zd3rc1toLA-gReulktECXD_uMHuSORofERvfn1-mr8EvbXeSiGi1POT6G3BpV8qh869PAaWZHWu7uqA2izgz7Vn9_QK43LKTXdeo4-oOUfUulXjrsCFPs3Yob5B7-3ExmlG9tnij_J38IaQCtI_YL-pDVgppzgju6nW9Lg9ubJOo95SQpkQn1uxO1PUomhht6gxs2COYWrY6omSgBedZ-sTtjIEpKDWWM8tdXbMfDsJ8XrUfmnoT_SNPBoXGxpYBDMGKxjzsse6jBX-sZx_T092BEmYDLjapSFHvT65zmM7apqWFJl_Wb8ev_AkyTh1BV_Jl4ETaDy02ZwFXoCAl6DXAoYu0ryGFdCmWRbAF94VL9AhrJRFJY6MyBVJb1iL5qT-qMDR0Fxqnl9FTWppTrY13ZJMH0zFijj0VL2kC_nfxjSW-un8zRhRZhEf1ah3W8n7WdYPXGhuwbfFOStOVxjOB-_sspwXZtqXZSt17a2jM6aj8TU_mYlWxc6c9hsyE-UKDtZxHROvUvP_qibLdTWtc86FMI3Wp6W9MtFefFaQjkbn1VjFYAsoRYHEclwhcmjgmRuoH6LOHei_u6H0FuuTfCm6rUG_PvhTvdSoSOa3u5PGkuvf0pijMGSXOosKP6-M2Yvq9Qc4fMx8oh3r4XPGezDIcNeOVhiw5AxQhRnXeh0z6Fv--ZMQPgKnaxVHM1vXFbWV6hm4FjMALjtHyCaN_iZNzC64o3m5n2ZVjLrlkVeGnuICDY6UOxGM6KJtmpacxhrL1mgQ8SRW9fZD5GM9s9NWjpktlmOKoR3oNmQ3ciRsTEmavXm8cwqPiDd8c2u7MvFI82tBHH3HKPb0Jzwm8FjUYeIctGTUB0OpqVud7BCZp4iqC57Y2kcURhGhM_wK2mstyAr4Dcv7WQmpkPg3GnM32f_hzUJIzqczHI0H24_XelaXzN7h9WJ824M0R89R1R73M5iic_sHpSzWtRF_zZdPAEZ1qAd-v8hMELU8IFegLWQU44dN6_CK-GC5eO4M2bNjqFS1GAGcnBsCwFoPSoYLLV59g4bm5eRODtpP44F3zPz6goZE1ff8malN_2sEuX1BwqA3K-bOKmfNU_td7cfg6qSVc614jVVYL62NWR2YiMxCuvw2HKQsxHLJEgGWtfEQFiTqxaNZQs0FhM_yJOW7Zw5iXHAX7ARJlZtpOuuixIF9H--D0SQmunMcuj1jjiRcYj_B9bCpelbVbRc4eFMK9ia4WAnjSt4OFlc33-TSp19iV1OkXE4I5LiKB04L3g1iKNNVpALgOUwU6sI1FxFb-K5P2LCx_umZSLlXvbjCYoHdgK15b4UqP3AyyWFQYEWBjrA6bkeqjZxFqHXYVVZkq8g6C0YXFmlfZ0m8XWrhCIa7v-UKr6hyXVAOeZ6FfuiihpBgDdnBlHKPJosESECQ4JpcoC9EkwUymXy5NDzzTKE1rcRGv9mrQXSh7jUXwx-T_BsL31ZA3QeBeEf5WmZD6MNsPSL7qI4ZqmgmJ3ZyXC-w7W9L6g562xvAg3v0cIeGnVRtDoaGJYiXKDYMOADzb4pvcsWunP3-vKWx63AJ8esAUPyUhFKuAq0xGHTuoGN8OBRgcWHEg1ssKGPlc8vxwV7RYpsjpzyQjP-piYUEJVXLL8DS6d_j_k4auzQpInVWjR1oJZqBo_Z1loWzkJ4qPmRrtAQz_mgAbi-Xwf0cCsXy5dzKhWCoYQIpVz_qpWUNvNlrQzvrgjC45Zm_dbESiAjuDT_BOzQxtWRH6vKNAQ3gYROQZV238A1p5g0gZpBE-bQsX1gKvRbdDjFwVW4IdpnXJ-bqPb2ZbzW0ulJev6tBvOt0EjxvxlwDVXFWiFow25C-PKXWii5Gq_FYxv42UqEBGQ8WDPFEube11zFIXxyvP20b_6tcQKHQU8XH2QJz4TyoFiVQwxUmrUUvM1iGv44vsWJj3GO1Q4LNt5fFZHieeR1qEuACj6Kt6QdkWVReQQxdCQ_01BqY6Ropyok2cutlgJGHf2NJU7XK9mWihlAn3Shrm5YGiuZOZZFoS5eWo-FKG0SNsLuR1vj8mepu0ORt0anVka7jqNE4ur2n0L8gaGSci0yZ6NvVc7M2DVUlsg0YKZcvekCngZJVfe8UVRZ5usDLJNJnztf_YxjP87eKdRzwTAyZGnghkaFzx9Qbj_ylmWb01SDJDVi664XrLLIKwjO2W0PbLH0S_rj8tX7u2HzcXafcXLhIY-bp_nQdmgTSnyqmcWGc_5VCygLfPYueiSt58TzGdpWa44VYzWlTHZk2x9XRiDqYEkq2F-l5PtCt6LkR9XnEKtWfARhdtvq7yNWf8LHtnAmykEgwWqUi8R_7ft5FO2NfuDxRAwMksd9M5gqX201v9zS4ydq8pI1DiIkQGUeKyO24YPV_tk5gJMGRnRmo3v8DmND0uTy4F0tEQC5PvMC-KWjpGLbX2DHyBHfFC_uJ5LEgBoKczRlwKavddLFQmB5dlkXjahSzN_yB8brU-3FGzw51dGTWSPgQUBtAz35OwwA6JZi0ZnLLUr_U04iUEUJpM8LsLhVBxoZAG7j5_zRuGAZ61HT0SlpGUHYX12x-FjdKn1dnewfXy4dm6_BhieSG5nyKRufTBpA1CG4DweLM9oIM_z9SEWCvygb6Bo3HLYdJe66sWfICSj7G8KDAyzrVQG663tQJuNBStY-cO852NvY2oBrP2D1J-nkSVfJ9CIh1jZBW4SgYP8_Spn-E0ocJGOL_85QBpIOA85EOEa3EwdgLYN3h8erG0ihxYi4hFSRfPUnFNLfOQPSZNpl7mOXZwlJDGnXwj73OT8fI3_T0ZwRMBsBieBNpMROU3t4klOEK2NzCP-5vXKt0yt3zNeUPAVl-9eTE2nEtav5yRewvZA8ewdggaozMrOVxO8dyfAdFVzCQ1QIJnjGdU49IYH2fEe5X_SE7S6oGwuH45--KFoqDgQLS16a_M2PUhOrn98CEUo-SQZLgEGl-eu3uRpNDpLintilHymWZppCXbSJ_0SSL7JmguuzQuMt-az-h9K2KtN_edhWOAaJnEvZ34FiUOz8dmlUWpM3Oci_hgeaHtI1zVNUtYq9x4A_uDDeMDe1XUgIfLV3iJJ0NVDvJ3qLNdPEaCAQRPaB1OOZPvfpvX9W25qY4eNJdD2iOtlHDkclKFoZNNpitsagxOkM5BlxuYAgWx2QZIy_rK8SWEpDlJ4y4t2L5MOwh-WGGoaZIXNgb2DD00Zv0zIEm_aXzy65U9XsCRhzeRg0Rt26DXeIiGBfUrOBhbxi9jwlxJ5Bx9BPFO0iP415bpNmEIxAgowZvpEdE5CBPuj9od23g11EuHHYmS_eWKIRuXdkR74HNv_k3xBUAXKqYJ3zyUoxvQD0tBk8_10JWOkjPxi8BOKyREhvBL1kgKPM8AjQpDiNq__IQR5277rZqXl2eUuDgdfqCMoYi6YiyGUgOEqn1T6WhS2Lwft7zk367cumopmHc0_yzA007_rGBXloIgGCrE-N-f1p9ekoK3DCXOWTi4A9kLPiE63q49-mmLUVmPENBKe3b5ZFCqQxIeSCWEfmGXSLrlhvqz-Y-2oSewFoDg81tItChRzWwt1xU_v7CqWSPbKigzq_Ee-jDteibQE4KGNVM00nb_IGYLxMZhLG99HXDWsz3hen-yDvl2oMldq0PO5vzAjtzNMbvMwF36Sxuu_I8QcbHRwyZbKdo-PMtlOnXhrGnXxlJBYUo5Wk6HF_5UcXROVRXC5r9b20wTYNdaeZAkW6OQA0KWoHUX-VkHB66-1c9UtD0V5w_Ei6PKixSBiAB4ea1AQPRQkpVd9Y9pRVsXHsAOU_brVrwX1Gpy8IoavGicD7hDoZ2fcY14XvN9kcNGAgzk-ukcIx7RDFecDaaZOh3ztduRhGBuFdnxpj9emc9aI5UjG6a8vanJ3oHN0I9sW33IZAqoi
+# MulCkdata SQLite 精简解析参考
+
+## 核心目标
+
+仅服务设计师快速查看：项目图纸、图纸基本信息、审查意见、构件数量、指定构件图纸识别/配筋和构件级意见。默认不输出原始字段。
+
+## 表关系
+
+| 目标 | 主表 | 关联/说明 |
+| --- | --- | --- |
+| 项目与图纸 | `DwgInfo` | `ProjectName`、`CutName`、`DrwKind`、`CutID` |
+| 图纸信息 | `DrawInfo` / `WpjInfo` | 通过 `DrwCutID/WpjCutID` 与 `CutID` 对应；按 `Kind` 解读图名、类型、外框 |
+| 图纸级审查意见 | `SElesTable` | 通过 `DrwCutID` 对应图纸；`eleName` 对应构件名 |
+| 梁构件 | `CheckDataBeamTable` | `nNoDrwDataBeam -> DrwDataBeamTable.iNo`；`nNoBaseCheckData -> CheckBaseDataTable.iNo` |
+| 柱构件 | `CheckDataColTable` | `nNoDrwDataCol -> DrwDataColTable.iNo`；`nNoBaseCheckData -> CheckBaseDataTable.iNo` |
+| 构件级意见 | `CheckBaseDataTable` | 一个构件可有多条意见；详情字段用 `;+;` 分隔 |
+
+## 图纸信息
+
+### DwgInfo
+
+常用字段：
+
+- `ProjectName`：项目名
+- `CutName`：切分图纸名
+- `DrwKind`：0 施工图，1 配筋简图
+- `CutID`：图纸 ID
+
+### DrawInfo / WpjInfo
+
+按 `Kind` 解析 `Content`：
+
+| Kind | DrawInfo 含义 | WpjInfo 含义 |
+| ---: | --- | --- |
+| 0 | 图纸类型代码 | 配筋简图类型代码 |
+| 3 | CAD 外框四角点 | CAD 外框四角点 |
+| 4 | 图纸名称 | 来源 DWG 名 |
+| 5 | 楼层关键字 | 图纸名称 |
+| 6 | 图纸类型关键字 |  |
+
+图纸文本只展示：图纸名称、类型、校审意见数量。
+
+图纸 CAD 使用 `Kind=3` 的外框点绘制矩形，并在左上角写单行文字。
+
+## 图纸级审查意见：SElesTable
+
+常用字段：
+
+- `DrwCutID`：图纸 ID
+- `iNo`：意见序号
+- `OV_type`：规范条文 ID
+- `iOG`：规范/意见类型位值
+- `OV_str_Detail` / `OV_str` / `cContent` / `cPropertyloss`：意见内容，按优先级取第一个非空值；默认按 SQLite 原文输出，不改写、不概括、不截断
+- `eleName`：构件名
+- `MarkPoint` / `leftPoint` / `rightPoint`：CAD 定位点
+
+排序规则：
+
+1. 默认 `--sort spec`：强条、应、宜、其他；同一规范 ID 相邻。
+2. `--sort component`：同一构件放在一起。
+3. `--sort raw`：按原始序号。
+
+级别筛选：
+
+| 参数 | 含义 |
+| --- | --- |
+| `--level strong` | 强条 |
+| `--level ying` | 应 |
+| `--level yi` | 宜 |
+| `--level other` | 其他 |
+
+## 构件统计与构件信息
+
+默认只统计总数：
+
+- 梁数量：`CheckDataBeamTable` 中当前 `DrwCutID` 行数
+- 柱数量：`CheckDataColTable` 中当前 `DrwCutID` 行数
+
+指定构件时再展示：构件名、截面尺寸、PMID、配筋字符串、构件级意见数量、首条构件级意见原文。
+
+## 梁图纸识别/配筋
+
+链路：`CheckDataBeamTable -> DrwDataBeamTable -> CheckBaseDataTable`。
+
+`DrwDataBeamTable` 常用字段：
+
+- `scMergeName`：构件名
+- `scSectSize`：截面尺寸
+- `siPmids`：PMID 集合
+- `sBeamintData`：梁整型属性；其中 `m_bN=1` 表示受扭腰筋，输出前缀 `N`，否则输出 `G`
+- `sMainBar`：梁纵筋数组
+
+梁 `sMainBar` 按 `[5][7][2]` 解读：5 排、7 个位置、每排每位置最多 2 种规格。
+
+7 个原始位置：
+
+1. 上部通长筋
+2. 左支座
+3. 右支座
+4. 架立筋
+5. 下部入支座筋
+6. 不入支座筋
+7. 腰筋
+
+展示时输出 6 类：上通、左支座、右支座、架立、底筋、腰筋。
+
+- 底筋 = 下部入支座筋 + 不入支座筋合并。
+- 腰筋根据 `m_bN` 自动加 `G` 或 `N`。
+
+## 柱图纸识别/配筋
+
+链路：`CheckDataColTable -> DrwDataColTable -> CheckBaseDataTable`。
+
+`DrwDataColTable` 常用字段：
+
+- `scMergeName`：构件名
+- `scSectSize`：截面尺寸
+- `siPmids`：PMID 集合
+- `sDrwintData.m_iSectType`：截面类型，优先用于判断柱类型
+- `sColintData.m_bCicle`、`siSect`、`sPlx/sPly`、`sikindType/sisectType/sistruc`：截面判断辅助信息
+- `sMainBar`：柱纵筋数组
+
+柱 `sMainBar` 按 `[5][3][2]` 解读：5 排、3 个位置、每排每位置最多 2 种规格。
+
+柱截面输出：
+
+| 截面 | 输出 |
+| --- | --- |
+| 矩形柱 | 角筋、B边、H边 |
+| 圆形柱 | 全截面 |
+| 异形柱 | 按截面/非空肢输出第 1～3 肢 |
+
+截面类型常用值：1 矩形，3 圆形，4 L形，5 T形，6 Z形，7 十字形。
+
+## 钢筋字符串
+
+钢筋等级字母：
+
+| 等级 | 字母 |
+| ---: | --- |
+| 1 | F |
+| 2 | B |
+| 3 | C |
+| 4 | C |
+| 5 | A |
+| 6 | D |
+| 7 | E |
+| 8 | G |
+| 9 | H |
+| 10 | I |
+
+格式示例：`2D22` 表示 2 根 D 级、直径 22 的钢筋。
+
+## 构件级意见：CheckBaseDataTable
+
+常用字段：
+
+- `DrwCutID`：图纸 ID
+- `iNo`：被 `CheckData*Table.nNoBaseCheckData` 引用
+- `iCheckComPonent`：构件类别，0 梁、1 柱、2 墙身、3 边缘构件、4 墙梁、5 板、6 板支座
+- `scSele_Details`：意见详情，多条用 `;+;` 分隔；分隔后的每条意见默认保留原文内容，不做摘要或截断
+- `scSele_Titles`、`siCodeIdSs`、`sbDeletes`、`sbShows`、`siOG`、`siTitle_Colors`：与详情按顺序对应
+
+## 输出约束
+
+- 默认不展示原始字段、结构体展开和中间表。
+- JSON 也保持精简，只保留可直接回答用户的字段；其中意见文本保留 SQLite 原文。
+- CAD 绘制只使用外框点、意见定位点和意见文本；意见文本默认保留 SQLite 原文，用户要求简化时才压缩。

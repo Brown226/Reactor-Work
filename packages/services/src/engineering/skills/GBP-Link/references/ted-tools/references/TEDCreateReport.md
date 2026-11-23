@@ -1,2 +1,79 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbR42zB5p9362lR4NfjkzvtInc2olL_5byobZhU9l-msikW5yIOlw95QH565MD3opu5A70Mtuj1_pSpEdFj_dD_mRKulYZ5Sj9dsPKnvBAZiqTXbjslfbQxKycqAPIBiYy1Bq1EboWGKgDFhDYkJGaFaLhx15e_D3kNFbhaMf-8JcQfG5srJFsiosadF9CS-pdHgDxDOJV3GeO2yozp8D3Ac__xJ4OFKvgvQ8o4tGP918KlBfzxIefJ5TrXvJEXeXpEwSTpU-MEJFxBX0QFZWtIpzBIVpQcISLW47bwYqs3dtzpw7LDxDgzL5giqgZJ60sSHzGbSAg56YCtDCy3Wia7qiRflPVBv6csHbGAtx1ULVlysaE3KHS9Sstvc-M0vuhL5b-3WOTRJQ3vz-JRqrBU4IvDSbG3g0jqY9GoaJQBEZPOwGHei6cQD2lPsgMb6OPXyOXCkHk_d7knHEC8o_Rp7dT1123aTm3VtvzLq9jhsPtqG6dThI-XWpG3UkangoP-c3886SoZayK018oMWnE_L_zNPfG5uZ0jEBfHVXXCkpuFi5V_ztXl9UKyDrWt_Kdfz8CaxOpDRYxlHLhMRpnxiJI9S6amSWUxg5IWsGLjEfjFS2UpCFYnGJgnKuSpM4EvSCuuCAwIAE6HkScVE13NOaeyeSOLlaI0_OuLyMuma_hWuzRc72l21-3OIqYfpPwDxkb30xVdEZzHYjztMobd2ZAU9vTFua-KaTRxBzgqTXBfAupGX4CCwqRRhxHlFCWNQh_lzAHgMVBgH8VzEQydevzXq-0F2N79VAWdYq24dkyKsTC6Hh4jP6u_CoIW9nepA-iJM3oEZ59k_aHtP_VVvSSaAdb_rU0gPQKikx0AmD_TOqzwmAovfN1UfWG5uW167w1QE13rStJ6a_MotYtQd1G4_HT47z1oEJbQ1xlsJXtQFQjpFg2r54nb3R7oHCbuDcyssH-VbBqEa5iHyY4oDHuGie7Pmj5beV6uncF8-_FBc0QsVuOvKRZyfqTm3EpOVYEt62-ym2fTeS5Qknih4k9rz8VXXYSUoPluc9lReL8xmnLCdn_kQCPrktPiQOJael50Sga81EipAcmB43xSuiLyJ6-kc638DatLC4Y4lDQK5j81EMtaia8gmuhYuXvO3c1rMC-IIobW7UIZ8XwC2uIqsQ8CJZsB7ojezyQULHRqarH0pv-42ofPD2KZ4RcPQqzdIprbouNI4ruoQblGtJRzk5cTTGrj7XlVpUKWldk99wQyV-gcNqRZLUCZj01xrce_hYM7x5tD4AfgDQh7A4_plW8e9C9qHbpAT7ZF0vrjFxSNgwVaRGtjcvjYxl9YGbr0__ZdJRxRD7nrfIYlO-k-Es-PwH32-OUSQjZZ9wsxYbGOGjsM74V1jl0Zj1Ob_yo7d_xMrku5LlEZVlGRYzHTNchGZsm9QRy39luvRBXC4vnstg7XBaFgInyk2Ru85T_J8U_CZ1TaVqUYAhMnFeA1ECJeXVv3bnAMmkixBQJMGWtngmd0_1R0M3qH5lYa66a9P0rxJHM9xTNGRId-0Ir6TeY8tfMYO2_xYgAJkWMRNb7oRX4u9dtwlErH3-2Wbo1bmOAwZVdI-i8nI5eFREXTuKe_EWnwuVeIVgX1kvlfiZnXOYfD8kHoa3snomx4iawDGACMENXeDFhk9HwJfenSvWJvjgRgEq5lfwMEwh_-cocwR62bdqSgl6UCAGTYIWUfCZWFriDyl5uUf4IAOckn3AKzui5Qprn7nfI417RKGvHFL_PmYWgnfKMKA6gZOEbbWW70abOq_V87df4SGtSqwa7olQnL-CznEnt-VAAIxl1P3Fc9CBKokWdkTySXzGcO8W1dF0e2f0-IErm0rMUbHM2sRz60scQFDM4_opTQvDRyhLOyKzF9ENzC9WKG_4YbvAzuKQes68dvbE9hytaIIeoIFz_4BQGwn41U9EnRG8f_kJoHfiopFFyqyoLExuRaBPqW3jmXEGbL6ZKQYPhOEJi53nDj1AoZOpr-5YGCAYdra2pY3nhETR9t-J3SB9KRsb9Z_35ercUhCiTqL4BYxY69sEAZW22dagUjgnSG5iVGNEY91JwdmnGF-9XhQ0sCeFAXRjvEBslpx-w_bUmkJIqXgdT8TAOzU7QnLhfHE_S33ujqekrlFMQPeZjDG4zDBwrxGXEsXpGHrLsRcGEAXzbMWHUY_a-QwxLiEGr828BLqB4K5_6t_AUgmX8ffEV_lRH7LVmA6o2GZOL6eef9xXf01c_LwFQIOyTiCJW8LVyhsZ-w1Zc3s-_mfPpRIqP79L6eNb7sF-whB4nJV5YtWeKyREqV9Eu9avR5934PY28Y6Cji3vrqIlRoUBLtuCs-mlsFXqza3lvsiaYwiONOdoI2XW-2GVig6u-D9G4OsC5fgSe-cAUsEQWe1tF6IQ4kn_IHtQ_-SdQ9h6VVFB6EUNH-R5H_M0jDznOiYaQRZ3pR64yL6ViZnwBYPpNwq0k8MosbKEQHLDQytqmHREJIOCaBvcn_1buYE9qXFNuswn6LQWUlDXXzjD2g_13XSKcIzRTVKrnLRCAiQVNKVC2Pj6-cH5nSPJ3XhX5TZUACGtA9etxiD8fye26qAcjY44MSGTTayZUV9var5goXN9obOMR2KBfMrxA5OwqlAOWuHiUb3TsE6BLHsyteEIOteIW0MsApZ4GrrYZkDp7T7shAA7Eul12zWdd1ri3jN8x6YMW8p0F-GtLsGLsTCiPAEAm0314VJ1BXPyzPHMiaIIF4ND7EATKIUtYROMe9iK6xcMV5W0m5W_GoKunptL4vHI5kHIUHZ9ic2Bg3HnNnIutM-DOAD-m2gvA4TJtMueuFwZReUaQjDbSEmB5q-pgWTJLbB0tVwIbcSbmCXes9EWvzQLU0T1YtIvG8-bziya5k7WXR7fyKxbdMdf8Bpubt-3f3ukJqBPReH-xjwh_n4J8eP-pdp4GmbeNVmkgDvEw=
+# TEDCreateReport
+
+生成住区热环境设计分析报告书。该工具不自动打开报告书，仅在后台执行报告书文件生成。通过 `TEDGetReportPath` 工具可获取生成的报告书路径。
+
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+  "command": "TEDCreateReport",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+生成成功时：
+
+```json
+{
+  "code": 1000,
+  "msg": "报告书生成成功",
+  "result": {
+    "reportPath": "D:\\bdlsFileName-节能及绿建报告书汇总\\室外热环境计算分析报告_projectName.doc",
+    "isProduced": true
+  }
+}
+```
+
+生成失败时：
+
+```json
+{
+  "code": 1003,
+  "msg": "<详细错误信息>",
+  "result": {
+    "error": "具体错误描述",
+    "reportPath": "",
+    "isProduced": false
+  }
+}
+```
+
+## 返回字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `reportPath` | string | 生成的报告书文件的完整路径。生成失败时可能为空字符串 |
+| `isProduced` | boolean | 报告书是否成功生成 |
+| `error` | string | （仅失败时出现）错误详细描述 |
+
+## 报告书内容
+
+生成的报告书为 Word 文档（.docx），包含以下典型章节（内容因选用的绿建标准不同而有所差异）：
+1. **封页** — 项目名称、报告标题、软件版本等
+2. **工程概况** — 项目基本信息
+3. **评价标准及指标要求** — 引用的标准条款及限值要求
+4. **参数设置** — 专业参数设置、工况信息等
+5. **指标计算及达标分析** — 各项指标的计算结果与达标判定
+6. **降低热岛强度措施** — 道路、屋顶、场地等措施的评估
+7. **分析结论与建议** — 综合达标判断结论
+
+## 注意事项
+
+- 生成报告书前需要确保已完成计算（可先调用 `TEDCompute`）。
+- 试用版本不允许生成报告书。
+- 生成的报告书格式为 DOC 文档（.doc）。
+
+## 错误情况
+
+| 错误码 | msg 说明 |
+|--------|----------|
+| 1003 | 当前为试用版本，无法生成报告书 |
+| 1003 | 授权验证失败（未检测到锁） |
+| 1003 | 报告书生成失败: \<具体错误信息\> |
+| 1003 | 生成报告书异常: \<具体异常信息\> |

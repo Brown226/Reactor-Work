@@ -1,2 +1,222 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbS8N9YM-YPadXv4dySP5xZ6SOpfbr-1WceakGF0qrnKSCrQMsAl98I1rQ0F-r5IPKjLO-KzrxhSZgPNLCyvQvT5OCqO6mp4jEfeBN0U29nHRKoYpF4s5_ot56-TciGxkxxeQfZphvjWqr6cP3rfr2LNxgsCKOr5zMxaJ1bZcA8--X3oGC3Dy94G-ZyGtHh56fiV2gYDmnlvSJ71VGlbiNhyvR6g4qLt94ksnX51tj4IwdWw9azD1pzabfrGcwgaXYjspjM7_EU-Iu_Fbf6rdzLsdKVQUul14GHPxOkjrF23BgYpvZIXlmOWxjolVgJWlVRtHdrAtOyWCDdxASZ0c6E23ZrDXnYkTAgjO97gNfHmRWVK1-zONljpFT3gElCV-GxxIHfbaqm_KXyU7K1VNUViYZh5D-Ya08daDc1kC0f_L8IPM6njLKxkR2Egjcz1P44L30tGM5OZmx-YEyghh4KBYH_WmLNHQc6QIvDQLtFSeUYqeepK2tE9adbGcysyLNTvFAdQLTCA47gAAvaPUs9ZPgLj6pL0EmtNiTCShHI1FWq4Mb6kEKZu7_ItClAs0YXH1CW4cfb8faVAlm2EcvDvJus0nNljEZPB5pIqZPoErANaEuQeZeG93w5EHgd1hHiYtDAYitXFqegAeIyfNJzkI8_bdRe0-wx74mB0LE_s1o5_ppZ2fjbobMv1hmm7Y_4VVa6sdJTRXyHowpjrLiG5eVErJaH0ATPWfMZ1IO1z3Um3fonK62iGDLdv9XBM-G3AU0MobEAOVwUWsDo2bpFD5vfzUmU2VkugRY2fzfpS4jSznebOSCA-dNp1JgzQjb0sKhHPA2TVtwB1auiskIWGifH4DSvxkTZ9KW-G0a6ktlLgx4ttpZyGdEPJtADwbQvTRN6eZbUSs4fzH65IVtqRg1MXx9lTx3m1zplkY8v_dPz4j2sp1groOJ0hqaOWchJ-2oj188_0tNPLFMhtxtGaIP-utOR0Qv63IWSG8DXJnOmgKBOCwSLT0rrnrqGbYJBsmZ3yodOEcngjunBHpnLJRzfqm18F4kEZHd5zZcKOt5z4-1MPWC2qv9T1R1pSmDrmMZS80T-ED-V90W2inmzgOhlMwHsKrRkfGNu9-A9y-KgAIgAfPTLuyKh90LCPTvDnzt3dB88LZsIFljWwoOL0RoVXSmQL5sanjBqbYT3RrBJa8JgsN5ZMoa8-xvaPmkux-CIhn4EC_mUFOvudJsjQDq0MQb-x4akYw5fEKw0zWXscmQRS69jq4FYR5a413DdCci981F1ACNyNlw-9cd4ytNIPtuUHVtcYkGYMi4V7NC-O2X5Pnz0cZbpVNRjXlbMCZGJB_6TS9hIOsE2WLfsZd-M_xd0fOh5CYdbp9jhZ0incQgdRbVi0oaZF2qwcZXFv4CJjRVv6L3ks0RRdo-rBXsW8CLMaMez12T06uTbAinZ6gjl8ovPAt66JIKKIUJTBSq8Nw71iiQfF5RiqSvH8Z3rGQnbCmqZkV9r1EaNGclZzrWny4xbzYCZbAnbnALF1x6pgPtmcZ6lDeCnx_GQttOAUd7mIeP8HFLU26A8gOvQW-nOwfB89r3IatO9AuFvq9qwgpmhBywzuUlTY-yIm-U__1EfGIsXiExZOKYt4DlhWVz7i2pYoeS3Bf3zm87drvMfSuX4ArbkHav3ZK4A1qa1b2Ot9aI6j3tB5XQPf0BQ-1znnFUxfVWggFA7DYv59tfnu3tmcuA_OU4Guh5BNzJ9MmJI53G2EIcEzC4U2bEjdt85ew0yCG83l02P0h1IwY3yx8UmWPBHGI9hTJQmt6BkWW67Slt1YcJE3IpOqgkSIeb6Bdi4nTOkFNSRR0TPf5s-G-KkTvQeTst1GiyWxQkjDGgWjcINRdDbqiIhCkQoq37uLUDCm5GMHu1IL-6nBRhUTsa3-4tuhaezBg9kKCAvJqn3m1AdlpXHk32YRdnFjj7FyZUMu5lT2rsYbtYolLGx7MDg1RegUzYmDQmqhrSizpTrJVtlnRU826EWofboqGBX8vMDTaaKVM7NFBgcoXNLA3S_X6Je65nOZJWAXYVovSQGMEJZoqNHsvlQuuEZ-Cc8QW9d5p6n4sJzjMkZWrMwVK96B-JoJVaiUNHrPmd3w-raqZZYFBPXEHW6zgOzQpwyDosVzPY5uULuBlRmYRdp04LMqlDSi4wLpJtq9fIeXGU0hgIcE34ynBDFcN-ar-U93VG-fllcRkko3bH9zXZZ-QG1yft0yXA1RKYfS5VMeU3gdjNNCK9y8EBoUJwH9HbcomDRb4sHHuk7Hq5zOaIZcqm2PdK8PZTll93I5C_aUKkqJhTZ8UlTHNZH4VCHQIlO7RhirDWWhBkT0_DLM-Fd7oKeMZYAo4TiG26by4rakNJ81wko7DzD7rkzk5yAVkmnKD38WPtmYx65wQKqZp8Ymf40BIwqKe8-GZM7ew_PTJJCH8R0gDR5zG5Yv0Yt7fRlnriJTQv2sYy_xI20QKxh8BfcqmZmOEHwmYiyV0S-gA-dJo5aHklrw71xajpur5gPLqcCneCtL07jLSDZ2LrjPqvy-NOipCqjD2F-LpPxpjPsj9WB0UOAhfeR8yO091S8wXRwRDmBcPxqS9o8YabDiRPr2bq_dD5h6-uWWGWcqslf-2N21zqzSWy6XZDs3ugL-hidEPHt_DUS3gHVyId8GDIZq1UbmgTDRJ9fp5dns5OG49pjFvoc_z9-mOZja4GzDvBZB4yshogstEEd1aOSBD0Z9K2jIP67-6cdOEfcWIQoSpivQS2bs6bRucvnNMJndubV3vM02fCLeOPYkZ8lJg1ZSQsrqwOg3FQ_pJPbzP8jd5XS0T8AeX-OXO6bp54XV0Q5V7vwEljtTZ0pc_y2B6qtwV8HUGvQfhRstco6w3M7GhLhqPWRdx7L1oq0qDt551xDwRt-KWpUQVl99p2lXcRC87RlLwesgMAED4HkTUbPTACtktLdMkRPGBmkiT9QtkeepS7fB9AkEEIZs_vdBawdHVMlQDLO1lYQzkPaAw1Ztfi_4dYjL4Gm8_JVOkgoe_h_xEmRUPSd4nTwcaQPWYmbPpU8UcrmBR6VWYbJ3hAm9OvcYzEhTfbJGeqClo-G_O_Uv6Dq4lx30OxstDGhDeVlUd0lIU2IZ83rwsLOxp9xGk5HQIVMbZA_tzDKSY9ZvwXrcom7YaV7Hu_34bclZToSy3nkj7iF3Ym2NZqBLPRN70m-Nid3MOorA6aDyla8itwdYQ00wXD_vLz9z1mCAzHBp4WDIs7CbOwCo0ArBf6IJ-uSQGrYmVPpzcotx3ojug7GWI7COKYtt1ZYI8-OK0Up9BpevcG6PwFVbK84YAnPuFsjIEm6IcMSWIPwXZ3GbwHEEbqKWjN1qxZAs_M4GCtSnJ-hFxARNbc1q2hm0DTRsVrmRXV255EgofdPE9pH6WAey73eLrtr9BajWFx0hh3xn0M_6o-ztpxQpDiRmIttEktDvmfV49tMD_o8qqb7Mm-9H2_srg_js4GQZHNGUZMhJaSPXaott0LAYp6aSwdxbhu-V7jfZTyTmJtdYrxYCbBcbsJJAqFp4EW_fKNeIY2DUAvK5fPPBWgxhOdkhLhqrDGNNRj_3YY3WDWsp1Oeh-7Uj2PdfA7IV6WLTBfJ0N9-XTZNPRv4PAlWPcxjuX8jpt-G9sqwaBtfqw7WaBnkGjhndpZnlxSqNGYJBAu7iatw-DiOW1Edy5ioRJLC01nLGDnxbd-slFW4Z5vps7SwdKhnmYbtv2ozPE1ZtvmNq3JIqFeTM0nzqZ2MehqaQIltAiOCvjiPWC5vvEXiHwGULMlnYHp6lDRsmyZAAIiUwevmNx548qxHGj0liUg2ZQBldEEz5QugEOe0WQ1SpSH-6ALvoFuY8U4WkE-FfbBGNaxA58TOe8-I9fYObxNUQO-19-SQo-01Pwm8WXmKvwgTLQKGfW6Y9jOzcT0MJx9c-oW3KCAz0VJONPZp5xnXPQhEWeAnaKbt5MwDz4uCkq0fjnptYjZZywBFolQw1phWqA_cgskX4BD3SiaRLvYkM2hAlCV_ZL8LfJ3ztrSePYBwB9xojmlAXKQa2pbCsOYsk4YTxIc-RVce7Iw72JqjFzbdPhFlke2CewRUG3V0RDEavJewTa007ggY2EuJoTWbmr1Iw2M-imrmxxAh-UZbMZa5hGBSxLL9zy6e4Mgg_LVKYzveSx7oKD0AMw0A49X16A8B2mkktFHG8VwC_LPLwj4oToiSroU1G73ddMFPPUmrMHfEDHK8F7ZtQjhKNhv3vBScKfI_XOMUKIH1zx5-L9Lw6TtjLZCj4TFXoGr45USslbnFCZxIDAX_ht-H7wvPRsLfwA9SnMWavvB_8N_ss6q-peLJDLAsyeHtmMhnwFbu1jIlPORjbzyWaL77WXFzucNLIYAzvkx63R2VUokZuP1ol7nNqGLGpBR4aKSWnGdw916dZugaYdzZj2xYk6ZaWfawPxSUuEHbSUcq-0Kh9YzkY6xWSzdYEEJIfrqvhDrWhBasTxJF5JTbVvFpkVx3vb8SEnxee6d14aj7ObX_25bbYIG-n94ebcb4-3j12atCt97o6AfplUOl_NfJ77M2BYHa3lTwRXSRAo44SnU9b69nTRvF1QZxGi4foQujr6IKWMQdniuNgt0ZbHAi3NrOHRaD3gesF2DCkxWOQ5f0Ax00mla5cvzjv-2YjTXHP77JOjZ_MJ4Ba6Up08T3YtuRbaYptfh8DVebkrqW2BMhRnQPvowQxeMFp0bOx9vbCQFgjHa6isnH4jTkgTXq-qomjcZVRoe5LPxKTAjkk7Uiv-RwYWDVAxb7sI1RyYkN972V8RJ3-v560pNoTLwC9lh4sKv-f6jGLvA5mjXfBJ3_mfczeAquIZFhb4EiwRboTmp_Ipob6es-egvcz9dTu7Mq4wM41RsVLI9Xz45V9qGRXhaEYEEKNU0wlLY3Bmo7GZcWCXRFu7C5RzBKuDHnRzLM_LUXmRx3U9kKcuuUZM2m2_CK4UkhCYx3kLrqaXHj0GBemDIEkPCw97yAFBt-rncDOEqKe-nzBFv1rpn8G2nvhCpLTA8FQoz2IJGR8gi1pJBoXFT0A0YY47LNQ5J4ArfDOAZqgAUf-A3cmZ-7cJ3Uy2oW0kzYxpnvTMbOpmMXKmADU6jdR0hPLuGEMoGxAZGnzEn4nNTs1pwhTytv2HLAOdciPUfquznymkJ0Zf3g0XSzJNZRausFvHdFYGC8D9UG6_dfZ9iCMowb1ZKeaSRDZN15QhGmVQ9Jb9M8FQmolOat3ZvWeC0hlG8690fqzZVN-kjIFaCXUHv5IGHs4cEPTdgVJCaky9wgllABPFs5yb5_9OIwx7DiZwOhptQZiCeOroEJj5CT6Z928DLd57och4H-NiJO-2f0eHlQHxTEHCHuc5O6l94_AtY198Eho1HTQRJ5NiQt8V1nhRQ3WxvFLrqaMSPbV7PIkBp0Z-bU6oilRhpDBFhoOLrBKp8GiN1qaP0mxFghJk2f23OfcIKgmHy2MWmyLMjcbpr6pYGidcOLlC99MyAI8Wb7j0ae9qmEVlWKdVVpo80zdtdqNILM8Pd00Pc7QZLKzAUBYgSQsVwff8NO0ErCuv2wXqOhYHQ3dUyljoZhx4z5zOAR0B1eQQlwOhmt4DG3QsgYQEw5BecVsnKCmQFTnTJDTM5_pDMxMNDD81sUUSx9209_X2e6H910qLZpR9MM-dVDsN5CmCLuGEh9Eo09eK7IwSwUfJmmXo48PLPTTYITtNjRof2vNQgqLAHHnNgm9NZZthjLJ8noaQBUjvghqveIT1_o93DQFE4nE9LzcSAb8SmKefZisTRfeZzMXyT73p2bFk2XpbJ4jyjROXHNlwDrTSVLDmMqxCzmnMAVy8SKC1-cbDab9Qj8pJ5UfdO-5T6ttOj8oVR7wty977nGk2SZerw_AnQ6zFZMAn1YXWfwwe3j5FxkwBuTVXnx8b0vdQbnNgTtE1hvhI7ezEbEUPKNRAU406qchpa0cdiLq1cqD9CuPCeeoxwpRIyxkLOcCc_pM__dcpR6RZPr_oBdgypFam06keMUe3x3vJgB6xRXWNLR9hELTtCAZJDKI3dryvLY76Yw2dOM3AVKsJimdogv6rHD6LZwr1IKmcWz1CYGTkLR-q6_wg2Rzrz4cvRPYEef_covuvGqsZRQu083RF08KUtWQHqkXScrjo_LKINnUeq_SkWQ_irawinoS4XxM2WKlW8hE-aPitMBepURnJgRAEx92eS1GreiisJ07qxrnUzDNT8cUS1R5EqntV-5fChKK3MMPaO-Xlw-dEYXYsBwcX5aaeu-sYIICfSej0yL8liSG_AdVVQeK7jfFyzBUW74I5cJTMcJT-z8sLkg5k0eT-eq5a7yEg3esdjMv4YUj16RPoLTUJtSLPQzRt0vOpUIT7mzleb1IUukpXwGlb3Xp5NBoH0RgaYeJ6IwgejEwZf3mcWqrDV6CHnA3xXrypfOek1BX8zfz58mBiGzW-1FiGGntVWM6eRAbwJc_si-G9Y_TED5B2ygKBvezr1ru3vM-KrhrcwLS-yzsEegw42APHDs5_zLvdAxLY7KdaIPCc3gl2NGBp9pqgHYHYQb273Wsnj38MjuJUjbweoO_YI5w6G6q7ICZiBQvbNq0lrlpNzMTw5hvdbenvErqOuOnDQUFccPWMvB_68SN9A13aCHOOGBGGJViyNBG8oJkN9HSIpUWvLKP90rwSiMVNeMlBugeg47EHmk-s05hESoHekec37W5cWbkuSEBVVvRDylkrTe00HEmfqSQSJwUVwuYWHeZg59Yp4yIAMfUzUMdI1zBjOO8nczt-gDpbnVVh5qYvovArub2vKJuTjhqWcofsmlcbz993ItmeSVQxZ2C75S0UmpOFMpFpIkJooEvRqeLSrbRNlsRWcEButZfEIQHSoa8ci3nX-5XElTtmyVOV41y4scq91df-mck2NiNwBiMMwF8bdFnSoCHxRuCGfu_IJcL44-NCi4fkyYW6q8_YX0DR6wtG_4-UboI5afz9ruIQ9R2nnp9bWpzoDsbdJZA2k18vy-fmGT3W_gsx5qFd8jqZ1_nEv0l28J1xO2Rvtq1Fn3ExrJOFkbQkU2S6iRLxIdKVsKNiAd068AnmF7pp3k8P0zgPf9FF4o_5NYB_9BP7RAursfhYmPwsXCX-yYAt6ebX18SskKjogAor8AwYXIkPAtQjbBYEU5nxHhxx1Gf_InlZfdh0ntGK5BQ8I-Yp8Vp0g0KLknP4BSyLF_jSJMCqTXzoH6FfqdKg-wuMWYLMVBsihJoWwLpKYqYmdN1PXQtZ9nwR7Nx2vaawgtFcmBYHCPGI5YzmZ5crGDxW6ICPBsdvfLKacttW4aZs5W1EundEQMYqmdcOI40KcaNqO55l2LSc7aiFS8M5FdOcE6zKArKbGcDI37ZrqbiwI2-3vjhgEDi9eTE-SIHHpJliOOhoyYh7PZVS5_yA9_Bv39_KvynOUM_2BlmPPwBdLxFi3MTwYUUvT99XPjWYzTgsX-MgN2wuEWcvE2kNDqR8LEBQcWTgh3NYuzJXIeS7IzrwQZKJREMd0Tu5uUtVWpVRwKj_vZSYZGsXsqaGVl9tsoCYx_jx4AEn8p1GmUXZtjpatB7niaAgmXIhEbU9Lebepu9EEeteeAPbUncp1pTlRKhZ1bKbfWAxynSO1oRTEnAMwe92Fssh8MxEcOrKmbnve4Hqcr2BTgpwEOgS4TyBYhSja3S8WuI_R96k9hcWQS6HFw8Bd3owm1LrlrgMoP1JWc1uIEKEiEvcY4rdI0VTF0NYXfgrbciOMK6DqSkygZCmY-80ZRppIPb4FFt0zbxnbAEQKgfQq0QuhC3MIibpd56aJao-CPM6LzbQAAYY1tQjAdgdk-DMc56GSUpaUMh9eMdqfpA15scXB7nBIoDCSXsoycQd9WUZ8Rk7HP8gVRNwC8tWSb0mt9ZHxg5ACPZRYqQbwe-8xY_1BC17GJ0WEs9jgrXRO9TjSkDaVhDhjWp1eWzzBj-vWbPggI_RPdHTtDqGV5QP7yFHbdBtsBGuAJpEoik7w6buXz-8Ukqd5vcj4sNFIqTE6zyE6HFxZsFdoupkUoOqLmwH2sm4TB8HteRRskrVIFAbe9Zhz79v9rfjdAKqCgR0rHRhCx50-YWqz-kfmK8BAMjvqOeyHw1fXeOPDjmvzzohLouUDAFpYpM029dyE0ByaA8ZTSaAE1eVXAPmuteqL6dDEzSavG-tLrbFTJ31I92Wzomn08CJwmVSMGeTig7lCNOy3F25lQwUQKT7KHl0a3MJU6g4tqmdEG48Y6ZyBtKQlpx2B54-KIYz2nFUTEqzS9CGWlpO1CGpJ1DXVqhrrr7tCwx5qJMxNroqzCzd-voHVnXLRSmP-_o2Gpfb428NW2OAb0UEw51h81_rqI6zr68JSRGB9U6ErdVi5QOiseOgfZJTT6VMIQDaRqtFQqP1UhIVtX_l8FUyaMW_7yCob1hcW_4cHSyb-Hd3kiSgWOMdZ20MjPtQVGdTq5el88jbBhf9iggBOovnqtcrkjpGA04WFOxWFiDOI8Ksf2mNaVbxxW0glbGgT0qCL33fyVNx3kYqou__G22Cl_DG1tzrDH7GYYxy0tQzsC5Fpi6QsZjjGQXrb_plbDDS_F1Yj1fgofBbZdVu8vlY6m5f_pz_0R7xmg6XHTgmHqUcmLvj7J68dtADAS_43H-TGokviIIIKGVN38rrb_BATPqbdUEowZg9eBwdA_nXOjadHXoCxazqwl11WyaHBsrhKZla8ZqdPEXXcw-jU-VFSTMBz6J9A9gAk_lEeBTos_nZnDoSZaRA7-1sPGiBKOAvUvszVSO5zQOZvgJbbSLNSIEEEeruwH_6msqrUzWSIEWSL8jaG0bXDH_NQ79hhGTv83_q80XftoBLd-yxIPwWRCy_eE2iWVBEfH5Qc-3fABKRFpepkDuEx7XPSJMmppWn5tTSqQpUP9PxOUVU1vd9Yj09STZqcIUUfPkqAxLVb2LaRV5uLTF-Tl0SCDpSJFTtIIniIDKgJrcdEVo46DbfLtm9xe9TMtCQxGKDYI7dlvkebnkK92G6Ucym-jPe9b2S1_6vdCo3v-jEkcmUa-yRbE7OaQi0r_Ak6XmR0iZtSD_bHF3eEDea0MagCRe-S7jmnvQnZLTsPDOgV0VOFqAymaC187OHxtEWILR9cKgUin4nYgYE_hKYE03JtcCj8xbukSm_22UFx6pClALp0qBxrPAqwFMKpYwP3HZSo2n0IO4tEoblio55gDt5XCwVNZvtoC_CSgggNZtnS76qiYq1MIOHDnBzG6zS-ZqNmuS9S6UeFudtQas5bequTIry_h_80A3YdS7c94aF4AL2-Kox6MYKK_kfNke3CmfYVEuDyQCXpGWbKRNt8UuDTVACjN7QO5p_gdmtCbq5dyGOIFCPRr-AsIH-PcWIw4g0B_Q8lTuSzSPYmwyHXX1loGg8mkL7JauAfnUfHvWVO83JTMuJtmd80NU9d9fK07Vv5UQKy1r8omZoBeJ5rz9Ylu_nS1IBGaiX1RhuQ6j1Mtp6SLkkFxIm5TwSStpcc0Awp4xS7Kk7xq2-CiwwGoiWnCtPEhVxrXUtZuGayju6JtmKRHYAxYTtLPOIfB3fHihm3CFGlRGAafCaCm-804XEocMUNPBzSlhaFNknjYFdUY9IiVWmiIMGBRV9WNVB36gLeayk7nX9f4OKXFTui3dZWfyP8QOKiujAh_by8TFVhq7rgk3-r_QwXoz_qd7fu2JHES4O_bfewhyir46Nq2iYKmGgjpL-yT1ywo9ksqVM_m3KKgiq6W1CJvifhqGnYZf2pQubZJFH328X59dBbUb9VhVdftvDCEIYNCKmVJNH_I5m1DQh5mOWI4uDiQDtx4bDd_kUKHyU80VUqa5nr2w56JKFa3XbqhHA3OB4ARFOB014O45bpfg1fqwpStAY1IVehL-xxiF2UixWdlILBksOEOC2Bt4RFV01ZsHIXUl5yw0Hi2GGtgWyBFmNwSMdzAKU7WVchXK6qSY2p5_Je0f2kX9-iDpobo3D6HCT_LeooXJyHSd7OiY1iXQF43RmIco9xzIdC_p98p83Z28kOMzv4YHR1xwYS-Qvy_x_XvbSk8ExryeCJ4q7ZkENIIAGvz0ai_zzKcs-T6xCfVkihz1GmJpay-oKr5fZNO_3azazRvEg3IcGq3aKB93Gw0k4DUqt_fzuGEQ0P5mvc2fOjHFV8hdWpsTVaKSz5WeWXD8QLwf0wPRNlAhzznOkZxgmLPFkqqEMkv3DBWbuzSWT7AIuKJh3Z1J_v7n5XLU4Q1Fluoma9zpqF5di7qX1firMrBlVQz2zjcNcuAJBm0KBiVlK0csW79CHlo1qyC3LI_AAUMENFTUtgWEb0ljwgSmJZyBy1B9HhhbipbDybOpMsr5DI4oKByTaM8ct1XG2sGHenKqTmDJ5nhmh-t2Q_EzD5ddra9r-t8NWitrVgx5K63HbRe2SZJBAXteMi6s6UFBXbJj49YN1CkJtZ98SmekRzYttpxp7Pv6Otwb3B83vRmF_VrFRBgxEB0LaqP1M9ciTx5opfzF5qp7xnD6vTe9XvlYa1ECm8H4uo_GFTAw7TmX8Gxb7cDBWY7m-IaE_jcbbluIWlZq_bTWhNkeFs8vOP-U3Rox5Vf6Qf_JH56ISmeAC-9LAm526I9AGg0AaPAE_Lx7GpodDQrlvogAVH1UyE_oIOABebmDlSEfqQIsy0A9cW7yjPWEDp57DtVQQeB3HejUWMtABdqQQeqfyVUEyZu37TGiMqVOaDfcCYPnN7XXDn8yo93Cnw38WvNd0GFwC9RnJ7DtSCh80kHyrMokjOhjj3KhIA_zFJ35-L_mEhzfAU-HKYWdX6iV9Djs5mvlAyAksF33U0E-12l1cqdY18YNbbTKgVsP6X2TRnh_JOa6EtQFrma5M_lE--zBql7-PqJFNP3Cw5rLynC4KRlA5mOU-UKk4mBoLE_3lUGuNGRuUZdY55E3SSu9SVY4K4ix5Z9bJwMeQVZ_CbDJMSX261vFpL9h0zsPQYmdPbbAu2Nr2ao155Va7rF_c3HQZds92ClPrKtibdqvw7WRuQUaC655wMXqwycHFrmtTBIJBF34jtGmMd7wA6Cu5N46NOwjS4AGmAmtpGfnOGFeQC0GY9Un9O6yyGFQp_IDYwSqHJXhrHRtxiSUgRdUMYNhJFZu3k4sBSeeYThIhqwY2eMU5zv6PvJmrJXA-dlsuAeUewhEffTid5JGzVoChhbqoD3yS70hzCOYELS3hQxVpRl0bxAhGXm_374gqAzPJMcJVAbvAipRHT-H_Sm8TVOWqcFS1aD_yE5oXz4M1lLY5WmVen7frJz-ZIT_R-1Qjj_njayt9dt4tC1dOdrvxme6E3pNIl1cKhVxwtud5nJikVKGJ3ay88xEnIdgyIj_ND6rQm-9sF4h8jNN7Pb7P_qr3Ya6pcBQXm_6xitscz9g4YSBRvBk8__5W__60s1mlzPJELs9ngI6LstnfKcwYFcKCqpFOBy6gY5muGDLOhcc3TcK1oApiTWV6seSNfjR7dJtAQtlYSDuG6l3Cw8a7cB3vLzsnwC113HoZ0Ih4bqEZT1Op1Eu0m8ZjZiQ2-t6eIVtk2FpNMqmFBdl8uhENfKWzXCdYwkgtpR9cbwBwTENnxHtDi32fvj27ZPwVBCFWx3mQMZ1mpd_ya-2rCANVMze6AEDKXQTyunLHE8tIL1DxuyICzLw9TOgrm9LJxmMfJ-aweqHPI5XV9alx070Z5EcHQjpVlLroo5UYZ_09C2-YZYJW7xHlILQEnzX03sZjjEpZ0GDWkjZofKhhVO_RI-LrZcF5TNM4FA8m6gJ1DXfEjtZBZR2BpUv2V-r96GWIAi_givm3hzZ28_nw1_b_t-1k1oKeFgLBgZWgu95PBKQF1Ls5n1zi0MVi3AZNmfIAnuapMANl4I2286Vhw9aIWvWDrHTZl2CMc_Ac49odksu2jrqWGq6CqpmftbVuBB_KFeYPyQ9OM6pmygagnx8dr7t1Z6_cHrUZ17tSajUW5pPYllJbB9803zkqPvUXfqra9YOPiFL16o9zD2cVdjEJUg_os9lRej8eURQxZ41FWcn8iHrcuNL99zBVYF_E_8gkyPZSXgroEGVRv6fN58OL3Gw0oqa2x_V2ShhzMdkHVyOo-u95cLKqwtul8jL2X6dQbs7WU1JaSI4wt71SIhZw-2vRSO_EwruDMeklcdwA_3lEJC0WcdFXdL6Um8OC0UpvAefqYqrhSNFXIhrJt3vuqsOWY9C-3YUdcBCm6jvae0W9hG2jv0EInYLTFR6pYhf52-0rk8Il6FmNJCTyy39aQAd4FhngdkgblTd8YPGPdpg3GjoRDbzNIqbB0Hik7X9ceEk18P8eITdfyt4LeAxY1AyOSPZ1CK9ROVmWfl_899PX-KZBAoI9R53N7Ndk5mXy28U31HOZrNNXKlXIXV5OJbb0H2gw1ckSEAbPpRSeKbRY0qUYAcF0ZMlQ5HgtiNPKnv99Xmk2Q9Tg6-OBqd85SClZoxCMB2ef1rzjLL6BuK55EOnIGD2tEyNldbSkVvGLeavn8ueTChDdxJ_GPCjPIhwkUO6m4g7livEkQHL4YAcXf23tQ7K9kK-f6VUj0ysXJ_bUK59nE-HwPQ1OxSyEs3vIJfkMzP_F8tLcE9tUJgJKzZe4h2pUk_yAuazPKdhfz0PC0oRD3t3s7JD4YiSY5qNg_78nEO0Z9CafMEzm68b-FaAVGr8JbjGXof6L28UJ34AzH3l8W57rJJ_rLuC1PjjraQxsh-yHMxbUZVCUKy
+# 常用操作示例(已校验)
+
+高频操作的最小示例。其它 API 写代码前用 `get_function_detail.py` 查清楚。
+
+所有示例默认已执行过下面的准备代码,`rs` 即 `get_rhino()` 返回的 script(IRhinoScript)接口:
+
+```python
+from PKPMAgent.software_link_kit.rhino import get_rhino, to_nested_variant_r8, to_nested_variant_i4, to_flat_variant_r8, to_flat_variant_i4, rgb
+
+rhino, script, version = get_rhino()
+rs = script
+```
+
+## 基础图元(单点参数,不需要转换)
+
+```python
+rs.AddPoint([0, 0, 0])
+rs.AddLine([0, 0, 0], [100, 0, 0])
+rs.AddCircle([0, 0, 0], 50)                  # 圆心 + 半径,默认 WorldXY 平面
+rs.AddSphere([0, 0, 0], 50)
+rs.AddCylinder([0, 0, 0], [0, 0, 100], 25)   # 底心、顶心、半径
+rs.AddCone([0, 0, 0], [0, 0, 100], 25)       # 底心、顶点、底半径
+```
+
+## 长方体(8 个角点,逆时针,先底后顶)
+
+```python
+box_id = rs.AddBox(to_nested_variant_r8(
+    (0, 0, 0), (10, 0, 0), (10, 10, 0), (0, 10, 0),    # 底面
+    (0, 0, 5), (10, 0, 5), (10, 10, 5), (0, 10, 5),    # 顶面
+))
+```
+
+## 折线 / 插值曲线 / NURBS(点数组用 to_nested_variant_r8)
+
+```python
+points = [(0, 0, 0), (50, 50, 0), (100, 0, 0), (150, 50, 0)]
+
+rs.AddPolyline(to_nested_variant_r8(points))
+rs.AddInterpCurve(to_nested_variant_r8(points))                  # 默认 degree=3
+rs.AddInterpCurve(to_nested_variant_r8(points), 5)               # degree=5
+
+# NURBS：控制点(点数组) → to_nested_variant_r8
+#        节点(纯数字平铺) → to_flat_variant_r8
+knots = [0, 0, 0, 0.5, 1, 1, 1]                   # len = len(points) + degree - 1
+rs.AddNurbsCurve(to_nested_variant_r8(points), to_flat_variant_r8(knots), 3)
+```
+
+## 网格(AddMesh — 嵌套数组参数)
+
+```python
+verts = [(0,0,0), (10,0,0), (10,10,0), (0,10,0)]
+faces = [[0,1,2,2], [0,2,3,3]]  # 三角面: 最后两个索引相同; 四边面: 4 个不同索引
+
+mesh_id = rs.AddMesh(
+    to_nested_variant_r8(verts),   # arrVertices: 浮点数组
+    to_nested_variant_i4(faces),   # arrFaceVertices: 整数数组
+)
+```
+
+## 平面构造与使用
+
+平面在 VB 中是 `Array(Array(原点), Array(X轴), Array(Y轴), Array(Z轴))`，用 `to_nested_variant_r8`。
+`WorldXYPlane()` 等函数返回的 tuple of tuples 不能直接回传，必须重新包装。
+
+```python
+import math
+
+# 在 Z=5000 处创建一个绕 Z 轴旋转 30° 的平面
+rad = math.radians(30)
+plane = to_nested_variant_r8(
+    (0.0, 0.0, 5000.0),                          # 原点
+    (math.cos(rad), math.sin(rad), 0.0),          # X 轴
+    (-math.sin(rad), math.cos(rad), 0.0),         # Y 轴
+    (0.0, 0.0, 1.0),                              # Z 轴
+)
+rs.AddEllipse(plane, 12000, 8000)
+
+# ❌ 错误：WorldXYPlane() 返回值直接传
+# base = rs.WorldXYPlane()
+# rs.AddEllipse(base, 12000, 8000)  → Type mismatch
+
+# ✅ 正确：重新包装
+base = rs.WorldXYPlane()  # ((0,0,0),(1,0,0),(0,1,0),(0,0,1))
+rs.AddEllipse(to_nested_variant_r8(*base), 12000, 8000)
+```
+
+## 曲面操作
+
+```python
+# 放样:多条曲线 ID 列表(纯字符串,直接 list 即可)
+rs.AddLoftSrf([curve1_id, curve2_id, curve3_id])
+
+# 沿路径挤出:被挤出曲线 ID + 路径曲线 ID,两个都是字符串
+rs.ExtrudeCurve(profile_curve_id, path_curve_id)
+
+# 旋转成面:profile 曲线 ID + 旋转轴(两个端点,点数组) + 起止角(度)
+rs.AddRevSrf(profile_id, to_nested_variant_r8((0,0,0), (0,0,1)), 0, 360)
+
+# 布尔运算:两组对象 ID 列表(字符串列表,直接 list 即可)
+rs.BooleanDifference([target_id], [tool_id])      # 第一个参数是被减集
+rs.BooleanUnion([id1, id2, id3])
+rs.BooleanIntersection([a_id], [b_id])
+```
+
+## 图层
+
+```python
+rs.AddLayer("Walls", rgb(255, 0, 0))
+rs.CurrentLayer("Walls")
+rs.ObjectLayer(obj_id, "Walls")
+rs.LayerVisible("Walls", False)
+rs.LayerLocked("Walls", True)
+```
+
+## 对象变换
+
+```python
+rs.MoveObject(obj_id, [0, 0, 0], [100, 100, 0])    # 起点 → 终点
+rs.CopyObject(obj_id, [0, 0, 0], [100, 100, 0])
+rs.RotateObject(obj_id, [0, 0, 0], 45)             # 中心 + 度
+rs.ScaleObject(obj_id, [0, 0, 0], [2, 2, 2])       # 缩放因子是 list,不是 3 个独立参数
+rs.MirrorObject(obj_id, [0, 0, 0], [1, 0, 0])      # 镜像线两端
+rs.DeleteObject(obj_id)
+```
+
+## 对象选择与查询
+
+```python
+all_ids = rs.AllObjects()                          # tuple 或 None
+all_ids = list(all_ids) if all_ids else []
+curves = rs.ObjectsByType(4)                       # 4=曲线 8=曲面 16=网格 32=多曲面
+rs.SelectObject(obj_id)                            # 程序化选中(高亮),非交互,可用
+
+bbox = rs.BoundingBox(obj_id)                      # tuple of 8 角点
+otype = rs.ObjectType(obj_id)
+layer = rs.ObjectLayer(obj_id)
+```
+
+### 用户预选:用"读"不用"等"
+
+用户经常先在 Rhino 里选中若干对象再向 agent 发指令("把选中的这些…")。正确接法是非阻塞地**读取**已有选择;当前没有选择时结束执行、在回复中请用户先选好,**严禁**改用 `GetObject` / `GetObjects` 原地等待——它们即使带预选参数,没有预选时也会转入阻塞等待用户点选,python_executor 就卡死了。
+
+```python
+selected = rs.SelectedObjects()                    # 非阻塞读取用户已选对象,tuple 或 None
+ids = list(selected) if selected else []
+if not ids:
+    print("用户当前未选中任何对象")   # 就此结束本轮,在回复中请用户先在 Rhino 中选好对象
+```
+
+## 文档:打开 / 保存 / 新建(⚠️ 只能走 Command,绝不允许弹对话框)
+
+RhinoScript **没有** `OpenFile` / `SaveFile` / `NewDocument` 这类 API,文档级操作只能用 `rs.Command()` 执行脚本化命令。三条铁律:
+
+1. 命令名用 `_-` 前缀:`_` 保证英文命令名,`-` 抑制对话框。**漏掉 `-` 会弹出文件对话框**,执行被卡死,用户还得手动处理。
+2. 保存/导入/导出**必须在命令串里给出完整绝对路径**,路径包在双引号里(防路径含空格)。**输出文件默认放进会话工作目录**:python_executor 已注入变量 `WORKSPACE_DIR`,用 `os.path.join(WORKSPACE_DIR, 文件名)` 拼路径——Rhino 是独立进程,相对路径不会落到工作目录。绝不允许弹对话框让用户选路径。
+3. `SaveFileName` / `OpenFileName` / `BrowseForFolder` 是 **User_Interface_Methods 里的对话框函数**:只弹窗让用户挑一个文件名,**并不真正保存/打开任何文件**。执行中一切交互调用均被禁止(完整规则见 SKILL.md 第 7 节第 4 条),文件对话框只是最常见的踩坑点。
+
+```python
+import os
+
+save_dir = globals().get("WORKSPACE_DIR") or os.getcwd()  # 会话工作目录(python_executor 已注入)
+
+# 保存:_-SaveAs + 完整绝对路径
+path = os.path.join(save_dir, "model_v1.3dm")
+rs.Command(f'_-SaveAs "{path}" _Enter')
+print(rs.LastCommandResult())              # 0=成功 1=用户取消 3=失败 4=未知命令
+print(rs.DocumentPath(), rs.DocumentName())  # 验证当前文档的落盘位置
+
+# 打开:用户提供的现有文件,用其原始绝对路径;先清"已修改"标记,否则会弹 "是否保存当前更改?" 对话框
+rs.DocumentModified(False)
+rs.Command('_-Open "C:/models/test.3dm" _Enter')
+
+# 新建:同样先清修改标记;_None 表示不使用模板
+rs.DocumentModified(False)
+rs.Command('_-New _None')
+
+# 导入 / 导出同理:显式路径 + _Enter 确认
+stl_path = os.path.join(save_dir, "output.stl")
+rs.Command(f'_-Export "{stl_path}" _Enter _Enter')
+rs.Command('_-Import "C:/data/input.igs" _Enter')
+```
+
+- `Command()` 一次只能执行**一条**命令,不要把多条命令拼进同一个字符串。
+- **命令串里严禁 `_Pause`**;命令一旦缺输入,Rhino 会就地转入交互等待(等点选/拉框),python_executor 随之永久卡死——所有输入必须一次性给全。
+- 成败判断:`Command()` 返回 True/False,更细的原因看 `rs.LastCommandResult()`(0 才是成功)。
+- 用户明确指定了工作目录以外的保存路径时,先 `os.makedirs(目录, exist_ok=True)` 确保目录存在(工作目录本身始终存在,不用建)。
+
+## 视图截图(CreatePreviewImage,无对话框)
+
+截图用 `Document_Methods/CreatePreviewImage`,把当前模型渲染成图片文件。格式由扩展名决定(png / jpg / bmp / tif / tga / pcx)。**strFile 必须给完整绝对路径,默认拼在会话工作目录 `WORKSPACE_DIR` 下**——传裸文件名会落到不可预知的目录。RhinoScript 没有 ViewCaptureToFile 这类 API,不要发明。
+
+```python
+import os
+
+save_dir = globals().get("WORKSPACE_DIR") or os.getcwd()  # 会话工作目录(python_executor 已注入)
+shot = os.path.join(save_dir, "rhino_view.png")
+
+rs.ZoomExtents()                                 # 先把模型收进画面再截
+ok = rs.CreatePreviewImage(shot)                 # 当前激活视图,默认尺寸
+ok = rs.CreatePreviewImage(shot, "Perspective",  # 指定视图 + 分辨率
+                           to_flat_variant_i4(900, 1600))
+ok = rs.CreatePreviewImage(shot, "Top",
+                           to_flat_variant_i4(1600, 900), 2, True)  # 2=画工作平面, True=线框
+print("截图成功:" + shot if ok else "截图失败")
+```
+
+- `arrSize` 是两个整数的平铺数组 → 用 `to_flat_variant_i4(width, height)` 包装。可以自行确定使用横板还是竖版。
+- `intFlags` 可按位组合:1=保留高亮 2=绘制工作平面 4=ghosted 着色。
+- 返回 False 常见原因:视图名不存在、目标目录不存在。
+
+## 视图与单位
+
+```python
+rs.Redraw()
+rs.ZoomExtents()
+rs.ZoomSelected()
+
+rs.UnitSystem(2) # 2=mm 4=m 5=in 8=cm
+rs.AbsoluteTolerance(0.01)
+rs.AngleTolerance(1.0)
+```

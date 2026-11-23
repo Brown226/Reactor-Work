@@ -1,2 +1,21 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQij7sfnYEIpDJtblonDQKxma91gIOvcKlPd2FZLS_Fj2STRKqMayXFjUYp2Xy6QJkb_QNOwyusmZag6twQLQi2c1gtt2MkLcJG5ZyRVtvnpLwpHQcOTcSBNrBbHA8b_eBoMdHyCtUxPMPMFnJPJNQlPNNrGpG4k9qD0YIwOBXD9xTiEfD3oYyVgeTlCa95bCvXaFaannRtFlzcPofDeUDDtYjgqMFyb3j-b3ZzcFZ1gW3pwQ5v0NLLAlEnflUgFRUm8NhO6-ajUdOuiydyvn6_q7KGspM8hZdOnUL7sWdDnjiPMplz5yLHq0o-kqTvRFKhccYK9cPES1ze2DzY525ar9iWtUWzQyfQouTZbzrd-XdKaUV6mzlpHEvjjAgekcKkhrLyu7siyu4z9R5PQ0uOHAJmOUd9P-AtxmTHrYftP-t1UUAHMxadkVcOzawBc_UB-Pp7j7Qz01UDdOlibz5zg3nxrD-cVmnWH31u-vDOmUBVjRF9PzIi_tZTHJUruxo8RyoijlWBw55X-rzjfFKePKutcv8K3A9SH8oGo_5lbOMjONWYGM4ZF86FzXDEWUbcCnzlIMHs309yEeUoBTwAPgY3V1cip-u6eyxBI-5dwzkExBWjstWkGf_8KRJs9Te1xYOYuGgOTw2bXfhatj6i0AdOh6wtC9IdzIhOrYGJXc=
+# GetSelectedComponentIds
+
+**说明**：根据指定的构件类型，获取当前模型中用户选中的所有该类型构件的唯一标识 ID 列表。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `category` | int | 是 | 构件类型，1=普通墙 2=幕墙 3=门，4=窗 5=柱 6=房间 7=遮阳 |
+
+**调用示例**：
+
+```json
+{"category":1}
+```
+
+**成功返回**：
+
+```json
+{"ids":["122","123","124",...]}
+```

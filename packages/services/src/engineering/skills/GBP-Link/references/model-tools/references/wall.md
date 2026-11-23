@@ -1,2 +1,118 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQCVKxu3DtTshoAWqqXBRC4l59T0qyrdw9QlVsv6HG2152aOI_cLeVI-CFDXRcrHo8UzXCLakWlRyKDXaHWwGd2KlAZlNSSO-jBXJJw3tYqjDMorMyn_6N-oxAwZE1p4MCQyhDqAQmOLvxJxeuNUc2KVGkT0yLk8zbKoB3qnau_vBqhz1NecI6ZLz_WQIw6lpT371QY-0KSliYqK-PFMUN0tLOuqgOqPu4AKBZl7Ju486cWqXD_dOAWf6aTWlZGLl-MFnRkLEW79lmrgwoROcwn6YWTM5UPbl7ULpLsTOZGS4Vht7Zy3eoohm1Snms3Bx7y2qS-2DJRNHhWTb2zdfspwy2s2BzO-GEVzZRq_E-fCczlgljhGAFIQKekCeIB0MWDACTD7yQkJ8PUkL4OlxnmqlUg7f68nw3_tkOSkHgATOZvQ4hKkZwrYD4UQun8AjkPAexoRyI5iTgGrqUNYNkyyiWuSW2G0WvK9G4TfhEGBfueM2YYNfu91nkIHsVrXxqnuhGM6BLerQRyvYGQCJZIXV0fUx11IFSIwaZdtLj1NeVFHD1nFsdmplKI7tXUzlj6hzphKTW00gTQfEMw2oUw9wPR4g1LH3B80VK9X0oj2Bjo4wZJ2QsCVslGt0uKh5Y0J-6Nsh0YGwLATW88iBrNLpF_XS6XihOlWaI9jyx3t7zi1rVHFHJi_kCd7Br49MpSxy3gSoa8c4-WvDXryGlgEoYWRjjrw__3uSh41m3mGDWBY794PghwufZUkV9QKlUkVUPlC9h3RC21sF1c2aKHsQoSn8lE5HwK8hzijDzbLRK782L5cjLVYTgwGVAphO94f49xjdZOh0Ag9DNNlx44LS3EjLvfFurNhvSYAemxLamgyXRZ7ITvP8AGXi-3dmtVOCpT1rHBEiWbOdcyhkZmi7sXwHGKw3t3An7Jmypn94WMZ3DGGE6ShWcFyvYgbrTB-7CaUJVVVW5QPegycM-Fb_t2gJ5eEfgbGPjU42xkef2HpUQjWOoubSnnGHmuCb8vZDBdfNwi7Yivw-bbraYkKmkmesClY5F2Ute2zkqZfqzHZX53WeDNmimUZBw_nSFEbod7nZerfEQgjgoiXWaj27Mc4WooKghU57DHofKNq36NFEHKil0ZBDZB4GoawWASkX0jNIXnvrsEXxCBSqqbdZaVV9u-nV-R-2ziu1pgPh03S-SpX0p5UDFnXt-G8lYapfzedXEfpiZKReYz1Fb-PgnAWfpdBuUUyYsWE-yDULZTPM6-CKJPaHwbfWZ-ScmhFcBIHx0kppIopE2XGK9jS1SpXyisejCghin6hTRIWN3GzAT9Jb1gmwiYqKmY6b_UcHaaU5pUwKVSv5lc2uN9ORxD49nfyFZ4alZkz2OzwN_tZJoIkR4Y-gpjzMN_mIUuUKupRICTX5pdO-NdquPBN7vmc00c4yJvNEePfDx_xuBcl47cUEMn1Zwhx3lm4fTIAPVI-UnnJB_dVG2-hv38zFC0SZnB1rI2EsyaIyxri60FOhB-EFMRUDvdtsFVoiOekcPq2d9DYorHQ5negpnvVKQyIjbEs0zekN8E2-gUeoW68TdCbQlgC67baQwNlqn5gSzSWM_gyMZ-jrIE5vEdM0E6C-WZKgU5wlYb_NJz6eDY707zaXQExjHhQg9LfvxRPUMlAIWeUE7TBlogVaVN3YNhWM6Z8jTZVNT6jE5LNvQJqvLOHaWIJOlV8owYLKjWJUTGv3jrf3J2SSwkhSQiegvZPAffSXRJ2UvbPc5RRrJ56JEltWEdU_9yeeNnba4TB6545mKtUSh7y6iTW2ijypfLjF-rLIKKuF-hDir0Hxk1UeQflSnnJvunYhDlPwYqrJToibuNYxoFlwJV_v-AU7IkcqNrBABeVog-QrE1hEXzdIAn8eSAs17G6_QAFlfxmyNA0TTOs5t618HtcqHQLyBg_p8INRz4CEHeC2szzVyukRXZoXZGJoi3ovwQk6G4GgtyOd1ReJ_FhHyZop1T_hMi6EPPdDl8QhLGDvLjmjN0PsSUwvx4UEqJlEs5QF5qI6H1L93jvCqqmfjwZoA5t3m7JMojexUxJIXbMQQVVJlWHkBLdJh5mdiGonks6Bpb61XZ2ynNe0kWrfqt6a71cAPELHinm7J3dkpeFeeyEcw-B6EsM1O0eojUss-A0i_V62e6bXSZWQ-xKhn4mQaG-bPdNjZzAEAI-JWHjf4P4A_FdAsh8FWJwi60AR4Nrwkpsl64ildpuQBlACYPCe0mI0Zdlc6Lk8ZOAO0TNMhxnhwhE8qulMLWcdttDBP5A1YEtVie4-fdBnPcgA45I9Bl7gZUBqBf_Nlw_6Uir0GkHZ-yV0B98mVDCRj76AWh_27WzllX6V4Z1AjgjBCfw6aUPv_rragQs08VscGjhADFpb7vD5QQUWBrvRfWNm8p3Jfq1A9MAifb5G0zWVoXmEWbeJLd1qkW3wwjNJ6r7iyEnY40JYlFcB3c7IOqtPUz4WBnUetcWGiGN7ydlQ51RwcsIHQteGfQ1Jzy5yYcDHqv-90JhmTWdjt4UybMDIT8nIszWSw3Mft0gogt1OoWPi5OrI8pOUBcLtGJwll6Xnqe-4UYBfN8sDz8CGROWGUD75pDt5gj6gMSeb4rpg36RCRL8PnfU50jgvqns_mc8wZLzrvnOr35DU2y5ZtymV0Q7DH0GGH-Np_3WjvbcmEtpX8jis4dNMu0PsN3yo5Aw2SPvwmy8bnwerOv0Ek73t15GEuObAElV92TpHb7YyfuxTFEN_CtUWR7OFxK8hBth6mc5vyYQW3l7ogiATAv5eFQlDpHWszel_pqyTqln2pTHA92pVAoMb0yuNwJFYMq4nyo8PH1aDZvJ39ZJuvX-Q7_X7qATfd-jlsdjitV3rZEb8AyG3vMwoJBc_dMu6Wq-usphRsFY0YtOvwHXvJGJauxRWJS1ycHEUqKa-0qICXo9bxlUJiw_bUW33T5E1o1_COg58L23dZRydPGVBMWJb75Mi_VvtVj61IoFSc8KJkdlNJI6Ohq4mQC-hm6YX82H43ZGxyjlcoGXIW-hOR_8lObWY-NUtlvV0PdUU4HqDieQ4XbVRJFBgaHzpOnRwO9_aSea0LchoxXARbEprs6W5Yy53ZugmPSA6KlaHpeacJv3UeZyCoHlrQZQoj7gVQyrKEBWkxJjkUfXIs2J5sDB2Ew2eSu0I7iKfVKUBAVvcueXNQStvZnepWjPRF8wN4UymEh_m-2qjslhI67cztHM9UwfjhqDEKWCNnVmIQMpw-px4hvBkVyEMOnixhkvs9c50oMB-JUwD4F9fNJyzX8HYQkRqC3bPf3_gT7_EJ8s6rczvyVLd07RhglD-eE2DlxwlFM5RN1um6hwZYjK19yB0av28j-Dvmj0JccEWiFaiizlo49eaEsc3FmGrxCz922WZxGN7Os17rGk_b2mE5sq2eAJJ7XdYQTy0TWFowWmn8BTJyE4kuN_655Qp4seKCRZEka2h-0oJWZRQzp3bcMJIJiL8j487GFnVyAXnTZlpQtH4mT2iX0mnkoyI2Nuie1sb0QrKD0ZSWTE39DzCeKZYIHPWLmWLXzheC6NqCHj4Q4i2tEJmPqYalsNa9UtUmI69sUpn02WO-2HvpDTVHTH00rLL-Gdr72fMRQUHTAf5MUUA-zTI6kuQ-7urThFsVZKZ1_MN_h9y0xBJlLJoRp59WYsFLhOp_o-pcSez3FNhGJfz9He8MsS2Q_fOTgU2fkfi85w8RGQW49liz7sIdDDdrcyPguGf1llImeC2VknI1qv8jrQ9DIDMDU0t4VFyFY3bu-pZjp07XXJ4vSLNrSn1SeKXhDo0cu-Rtx0Soq_gjOillM8yW4m8DYoDExfSFjz16fPbe5SlDVGtynm8KpYfgWFokf7-8MNXBbW9gFZGWLnPx40IfsgIHQSsU7kuuCnsm-x1hiGqV999_iqGk1G1RQ3OeiwQKSK3Ga0wB0SSU1404hplMgqynObas0ytJIPf2x8a_uEtGT8y9L_ml1UFCqCFl
+# CreateWall
+
+**说明**：必须先有标准层才能创建墙，当前仅支持直线墙和弧形墙。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idStdFlr` | string | 是 | 标准层 ID |
+| `wallType` | string | 是 | `linear`=线性墙，其余类型暂不支持 |
+| `linearData` | object | 是 | 线性数据（见下方） |
+| `isShear` | bool | 是 | 是否为剪力墙 |
+| `thickness` | float | 否 | 墙厚，默认 200mm |
+| `placement` | object | 是 | 布置数据（见下方）|
+
+**linearData 结构**：
+
+- `baseCurve.type`：`"line"`=直线，`"arc"`=弧线
+- **直线** datas：`startPoint`, `endPoint`（2D 坐标）
+- **弧线** datas：`center`, `radius`, `startAngle`, `endAngle`, `isClockwise`
+- `slantAngle`：倾斜角，正常墙为 90
+  
+**placement 结构**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `elevation` | float | 是 | 墙体底部标高，相对于标准层局部坐标系 |
+| `height` | float | 是 | 墙体高度 |
+
+**调用示例**：
+
+直线墙：
+
+```json
+{"idStdFlr":"110","wallType":"linear","linearData":{"baseCurve":{"type":"line","datas":{"startPoint":{"x":0,"y":0},"endPoint":{"x":5000,"y":0}}},"slantAngle":90},"isShear":false,"thickness":200,"placement":{"elevation":0,"height":3300}}
+```
+
+弧形墙：
+
+```json
+{"idStdFlr":"110","wallType":"linear","linearData":{"baseCurve":{"type":"arc","datas":{"center":{"x":2500,"y":0},"radius":2500,"startAngle":0,"endAngle":180,"isClockwise":false}},"slantAngle":90},"isShear":false,"thickness":200,"placement":{"elevation":0,"height":3300}}
+```
+
+**成功返回**：
+
+```json
+{"idWall":"111"}
+```
+
+# DeleteWall
+
+**说明**：删除普通墙，支持批量操作。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idWalls` | string[] | 是 | 普通墙 ID 列表 |
+
+**调用示例**：
+
+```json
+{"idWalls":["113","114"]}
+```
+
+# SetWall
+
+**说明**：修改普通墙的属性，支持批量操作。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idWalls` | string[] | 是 | 普通墙 ID 列表 |
+| `thickness` | float | 否 | 墙厚 |
+| `elevation` | float | 否 | 标高 |
+| `height` | float | 否 | 高度 |
+| `isShear` | bool | 否 | 是否为剪力墙 |
+
+除 `idWalls` 以外，其余均为可选的修改属性。
+
+**调用示例**：
+
+```json
+{"idWalls":["111","112"],"thickness":200,"elevation":0,"height":3300,"isShear":true}
+```
+
+# GetWalls
+
+**说明**：查询指定标准层下所有普通墙属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idStdFlr` | string | 是 | 标准层 ID |
+
+**调用示例**：
+
+```json
+{"idStdFlr":"110"}
+```
+
+# GetWall
+
+**说明**：查询单个普通墙属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idWall` | string | 是 | 普通墙 ID |
+
+**调用示例**：
+
+```json
+{"idWall":"115"}
+```

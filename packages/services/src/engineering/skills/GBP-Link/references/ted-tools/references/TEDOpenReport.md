@@ -1,2 +1,39 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbR0-sEIJWtTQ0LzjEisP0bbxtWu5xePt5BU6XeFuLpLlVJz6itfq78nzZfiBEHXZPLQItbe_i7lRw6nOkNf7Q5GOAwODtB6bvB3uHO1Q9F5nsji58mpR44HnmZzqeAzlFDaTszttH8ZPCJqL2bPHHa57bDyouVSLIEeBRaOIvLrnTHQNCXoKDzkre_O2Uv7kVdGNO-XAUc6vDyJAdGjrW-XfN7HyGN2RpuGFkoSbkrUikLvEK7z-1yufuw-iI5Has8pmhqZKfh8rIZAJ9XaWW2mTT_vA0-8MG7hNWrTjIyoPzr6DhsZJWYGq6Gt2nNK4yt1RPQeviN9NQdVt2SJ_BGMkdmTxQsE4_N4JR4Dwi2mZj7DTHzYvSgXSwl1VTU3J4z800BSNtrXQBboc4XWcGK1hGsP9MtYjGIySyLEYpo1HhrN7-Ko71imAUIFLqhoAs8RDJlUPoiSsWyZDPBhcUqBZj84kqKcMJ_oxY4MCkaR0V6rX2u2g3M800Cc2ZrWd_kIBOqRjtzt1_vuQpllSRyQHgpicHxZtxLLTRM3FZtnrZiPUYchxH2uRBBPr1xyQbZKA6eFl8b7vWj8FhAwtbrlUP8jP4Hyv1_4A2nrcXIj75X02eL3v2tHk3HQ6yIAd1f0GmujV_p8Gn42WXiogP5p-fV4UcJOgzBQEyjyJ41dLoPaQ_kz1KvaUBJSoeufTJrpAB2dYGub1zlUI6dyP1HGvpxaLaZ0U1mrESwXd-QZdJryrdz2ftfrHiAf_wrkr8jkQ3xf8tc2HkXVaFU1TkouNmrbgjA6Ey-8vCOK3EchlVLKeNHfPJcdK8mei5r-AhBy-iypTHeKYhTNzSIB4PmKbNI65J0K8XFErFLk7YTtrumIxJa93X4yKD38rAm7pkQtH-6wldEg7-M1KKJJbYjFSRc4EkU0ejbZ8h-jRVRPZQQ3YOgjYyCamNHSq4DerOZ9xxvegKvbbfuycZz48rniAnvMXhfpDfXqcfkU5DnbFAic3zIrFqzR7lcXolwd1Bs7YAkcpCBz32hWY4vYCwpB6botFHCtqrHr5Q4JttBZCk3Y-NF8VhPm7sn0TQ344ostVgcg2Y2b_H-7gg1NFgz0oAw4vjl1A4kWPopnxYF189HwNMkBPiKP83MZrGbOlUOZ1YBzXvip60NpFT64wTo6MPoO1ZrCRleZzCYqmM4PwJbqejAbc5t7wS7RpwJ4OVH
+# TEDOpenReport
+
+打开现有报告书文件。检查报告书文件是否存在，存在则直接使用系统默认程序打开（通常为 Word）。
+
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+  "command": "TEDOpenReport",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+```json
+{
+  "code": 1000,
+  "msg": "报告书已打开"
+}
+```
+
+## 说明
+
+- 该工具会检查报告书文件是否真实存在于磁盘上；
+- 如果不存在，会返回错误信息，提示用户先生成报告书；
+- 打开操作使用 `GpExt::ReportFile::OpenReport` 接口，不会弹出额外提示框；
+- 典型的完整流程为：`TEDCompute` → `TEDCreateReport` → `TEDOpenReport`。
+
+## 错误情况
+
+| 错误码 | msg 说明 |
+|--------|----------|
+| 1003 | 报告书不存在，请先生成报告书 |
+| 1003 | 打开报告书异常: \<具体异常信息\> |

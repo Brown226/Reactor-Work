@@ -1,2 +1,146 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbR7ZH83CZHZcfFCcfqrIhS4JXum7ri-4Q1IoPgWpegDp5f8V6PO1howwMFUBTBhwpRG44RZ3PF0mzEun1Syme-YMKHiaJwkxfVCNW8CBatQqiLvqs0zV7G73_ycLcS_aZyHiO2dkZu25A_fcOrUF5CDlR0qWWODDX_RtQ3nJXcXg0sEgSpKiON-012rfC_wmuy7dR-1hLEUAWrqsBJfywV2Nioy9EVlj8vN6bZZog15VAr9rfiM26l4LeTNJr77vfV6qBpiZZIMRHdj91jPdqP2TzTo0Pgj4VgiC6K58uBToUd6Dk522ENW5eZW1MxwuHI-_3UFgRtW3NgHyI39GZGL3LUyi9e-5rYmtRgLep-MX7kUGE2RR_-8-Tn5RNvHsS7pOAjaF-8iFQdXuGVyhNCrsK0Sqm6TRqTToe67-VrFWoCtnjYivu0PJzbiSr6NgDa5eeBtfPTRhSIoVkSPTcP2iqVLhMG2JWBLPp7tfKK0j85ddNNtCb5fijfSbA9kmU1k1El0Lww9n67T1RU_-gJbptTrO6tvPKY4Ye-Ma2xYOnbYh5_xG0emG5kcsRWdkvDVc_KYGAM9QXDIocS2o-34MSqQ5WwIjbpYnElHrgswCML41tdaWPqa0vvuCm-W3uGDRBQfD4IPmVoiS9gag6z0O71lNk8e4Vq59xTGXBy36E5CySxWDe4XBNxeStAYGNx11J9NkTQV3hEX33eZcOK4ZWLhUaE7Vg24QBTb_E_vBeysjRI-nv9T6NYy5A4IAn5bir0lmPEeE3Ls2lL5sfbwUtBI1-oE55k-y1wZInx1d3K2criP3ZkEIC99Ow2PKHGcxSLKXLCJxjZzhr32KQALWqIwGdN8Ca6af53fnvbRDypNTJmZ_vC-RK1uz9rC_QS7L2euKaC6H7TQo_TmIZlbmB81WE_PPr2RgVZMEMlIbNzxMx1OZW_BOgJ2HJDTCb32e_JElFcti_d6mO0VCPdU3Q93fSeuKV5L1bhJnA1CLgcEK3Z9pIgJ_3OJQeCdLG7HhsxjDqu2g2avhJ8UEPkZq_xgriT5pQW5uSJf9KnUQiV558_lT7nxbHmJoTweeY32km5L-nmuPsVM72PbtPlpjdmoDklXhh7NTxp_Rsepbp1QK42kYxKKeT_c4tQJlAry34IfeDXCbDqLEb0_nHJw6XfM94JXefTKcuMFDHYs7sqf1Zzrg7d4IX2qd4QQiBQc_hQjMAz1uEG2UtZPjHG2rGCjc5y4N4Jwi57yR6Qy-WiAC99D1UjlEX_gMctq4YGNr2o2iC5_M9GftGAiMFarVOaNzNqydXBXRbzTkGkc4rGZRpRmgiV_mQoV6evBq-3f_3y4GkRNqnEKSAne4ngnXRBHvGS87Of2q93XHteHTj9tH-gSngVA0tZqLTj0rxuNBaXTrQbAJ8SOGm8p6gvm4fHn7k6WvKQQZ-Ohnbz6RhKo2a-EBqQEGQi8wCOS4M-tU-DtbVbb6wL88x9eVsHvCdmVeXQQ-mbW_JD6c_3sGIttNghW9wnBsbsRZrh71nSa3zJ8vgqSP8hoB1wd4lWwP26olKs2KVnGnM-DxeFWFHs6usWQ0T3nlufMNR-CQkyIxY2e3yTVZ9BPV6EgZi5Xi4khivHr2uhQ-nlRuSITcVIMZn92xbXSJEEuPQ8nDX_ErmgGG_VJit80oYXdyz-hGiYhd2xsN6YXAWS3XtL9Ymk5hvX2NaQPFxt6W6aH1xEnXQ8p0D42sraBcCEWY-tHSFGDPzl9KwykzLS2HTc-drDuTH1sHakPUcAo8aK3PrWeRd5w__apPqnU81FY0efkvfYPdk0QzSuVeKE5NntfiNxqQLOKEzIgrPnPPyfg9yem-WZYhrIsDyRzFbnACylaXSL5HGjF-176K4nqBflkBLRD5etNtN7_JnsE5BmHxwK3_nwB8qwTqNyblSTJDdY5iEoV0bC3e9uSvzbApMDuUT0HH4KBBB0AVdXetActsKHv4s-vhBL6TOEzPK1OTrE5EjETXUU501AOuGWErMmCa1C4rmjJixsc7UqCA2Sa7BO-4Fyh6zbgVQickG354hMWWGBZPlmRb8sw1GD2e5NvJWj-kUcc2FfVZItb47KnN_m_hiv5ALxTQnzEw8ryISTXAQhZrDrERQVPuiXasDGkhsNf-FQ6NJw-P9BOMDm-VncAb9aoMZeoLTghwnzO03JKG4C-nuq19BbqDPIcfSYNS_GQyBPzwDFe5hqpJ9ppaU9rS5QaszBpYe1Ndp3RWqf5N7xTVNvWB2KBZIyEh3uxhTVXnPqdUCJ_hSpkX9wsO5DCswdtAtVNJPKF2KG3v6HIRP3qkve3PyymLO60KbQu9mlsKhKUYGVCBKAWGEpj1LAdYZJgV0XxYdVoln93EUlHA-WDns7Is9xgTEF8wwU-dWlQyyI4WX7-8fAhfs0VL5XAWt57TVsskzdczj3vr_wPOTZ_HcRElLxgClfMclb2Nc6l6tVXjCy0nhorRR1RixgUU4o95d2quY-Odbu99CvmRgJhHF1dB3rMgKUrTlGrTM-WPT2PUa2SRoTiKQeG4xpiMasiEkyRVlIElOZAvE1KZx1F_SbiTN_Mz4Wnniv92SE_Er0uY75hxEFuhss95xULRn8vsxLOdIQS5voGe70xryS80i9xzSvlbJuEqzcHlDx-zT7_Jt3XYvMGWtFYTtz_V4ryjaYzCGXzDXh6MsguAwDIPVfhX3Sv_tsqIVKNJzNY7Ig5X7HyPzDOn7GH5oZdSQQDQA-jr40-tm6iPa06d5mMgrPqGbnoAu8kipo2oQ2IoA8gC6VMcrUvJ0-CZA1hVafrol6nNyEIbjrFuUyRZm53kHfyOTGbqgujLQVbGta6p11G9yhP5_xZuFY9m4Mh7eHjcvf84haZkVMWAW1T-2v5TEWCrXYljFIerhesxXlLGpCp7MD6-1WC2tm2VkjKfNWxvL2_L7BKa5ene1OAiDAhG1F2fugcYjVNjStdhBC6p1-u8bZx-8XbnN-B57Z99Ticgzym8uM6rtoXQHq8mn_B0mtMSePygvxQuoMekKkH-11hC0R9FJEMD-no05sHUPBmeIe9iLT7axUjdcBcEWMIzz9fB5yddmQZhJ1q2jzTJ8IC8VakyZ09pefXbMZcTil7j2_C3jGqtD67sKqXTb14Y0wJsSPpzQQGTT9kgh-mTV8SiymX0HSIImXcEZK7nOKW19Ib7O46YK7H569UDPYOgBwkA3hWBVVO2rN9dpSNsYwnx3uD97dz2ssF8q6R25_sEsJ6TqDrpmUTYErYpBjd9NS9gkHyDJVLbaguEqugsOH5rxPTBV0PfqAyngzv3ilbqll4Dyv3Ath0NvG_30_Pt8HWVcyM6GELzCZjOewpLEmIEz1HwAeGltsUPxIEEGtnp-dS6JOWW3mlGTeofVyDkA2tkPCastHJRxy4YBx2I7MPUlX9XZXB-5EQFVKDdcaukNxyU4GZxVC_xR-ujjP-lNtnX7uqipmda2Byqik4vcLaWSdFFRkRPcvkePzlcK9ZySZpvBWNaEWgT0MVoN2QrridgStnUK5LqpfuCmkYFU1dKi6Ttvs1qvsMDNnruCsDoYQEv9n9RGYyHC2wZUSByPkau-0mS7HoyGZ08yDFx8aAzRZiKnUgtWgp03ZbpnMItWvK3Xzr2S76PfaBACmiefu7FH2cDtoGZ59XlsE8W_Mm0RdthnNlAxiURXZV98AkKYJ0hEyVHjwUwJf86UlwHu-JY-cHYsUJUY_eHNsNrtImAsY9KhOeeK0TxSAW0gpT8NE5hx2qho2ZqBwOK7PQuodX0vvh-PPKx8GDrkfWgN9Pd4fw5JPvyAvTkmpshoVb5dheBLXs0dmdF3NpfP9frnFm9SdSDS_oQ5cSwhvXQEvmLxaCPYoKsnP36n1O8yzuF8u1ZCsHxNYT7r09bJ0FG9ZLPkdhwLNSXRzwekisG5QLMSZ5iVVBN_jZEa40U0rF8BY8E8VTfevkA8yVUj3GkqyA2bergTGIYuLy5COlU1CvBoI24R2UteycdpojnABhXk5smd3hwnuVNecLj906OSLsM_DFEuei587X1X6PHesTYnqXmglc8H8NcDqdLG-ek4YCVlCIfUXPP5xb7svO7_7nSwy0gD_xtOohv8MS6hz37DA6BlIRs_rEsNFWYEl7WZlOCe9d3Slao31PXa9KZCwNmffWiM94E1mvUEn-FOLKNyp7PZNxFGZIQS4taiKcOv4I8MpaHRbsHmgycj-SBZ4-rxkehUuy1vSF6SYCgXRzPKT627JSMejImpiABGSnlZQ4xlXOVF-yFzhv_BfqZ283MpRTiU3LvqXsdf5k_XmhC9AiEBn1que-2xzufhAOztImgIIQviFuUrzQGIaKGk0wv6rfW0qbYr8IOxt8_UM8SBrQreY_1_PJ0KcTidzuhL6MnhUEz_5HDt8QwzOnceyZrKoFSiQaTLVKo2pWWlsO3jbITEeFJYdiZh5xLpFnpLpSjWi4fdAZy2WVAFQIlekbi9oq-F4oWouETJoqXBPwvjtiZhP4rmMXaJ9ogWd9kpY6jo_ihkuk_HEb76E4TPrGCWnIS0lnKhMXadsBtR8-pMyw6CCMQGNSvg2Qxcb8A2DiPkqrqiV2wbrWFEWS9trDzjJu_Z5PGINYqvXpGIDUxDnfb3eAXXzrZi3TEC9gur-VEZvP-nxcW-je6_64uWRCEq2BpFVUG98GhWri4AAJFdOCExyxj_G9qYdeoDlI0EANEhFcJGAN7UkKb9Yfoc8rwADe4YotiveCHVKMQDwg-MYkcZVt_NwlDx8pnVQVm0ft9xwKVl_2J9T_HxBWRAvVQMCXCiP246AT-28wxWFSJMm0eS12NDgUdrznetPm0BQ8S_j0YQx1F-r-BDKo1qyReccQ2iB6FlDSY0m9gfz4iBmoagNUPvel-fX7jnO0VOAaUnhRkM59ueNosrqV7Uk0OCfsiMn0rz18iCcAe2fH24BvuZR8ZJA0gWKA2pAnOGnpVg5VZTjIYfa0MHxqp_6yrUFvC9aLtr7Uu9qDBS0nzDHgvFYNkin48yQRraMouCju7LwawUShYlCQPLVyA4dfOpRRIvsPqBqdMUssu91uA90Kj0O5NYssnDRr0DCnLyHS-2u_hI5nTvK9_sZtk9QqiqVu5ByWH8hG42ILTxZMrKBjn5qzHh6LYUcMQ32pEry2pC_4QYeMIkjz4CqikvJMPG9X3e_hGOnhKjEhAMt8_x_fLcP5plTnsshgi4QgvZtzi2gBQPElsgvoQr6Tbzx7-F1gg1OkKwhqI71rg-scnbEBQPFgKYhuTDTqh0tHoaao7getAWSLUqHQ1jQPOc54vQtsZXBU-ViPLXKh9Djch_cYPRfgO-nxutXnQd9zTOQ8E1zyykOKa5eDYXF_e3dNbfxvYLmzTuqAx0lmKqINcKvmgL4ibyMyiYjOBxtU1UfVAgUsfYFiQgMrEiuFNlC49J-npJ9Wd0xeSI40WB69o5AQJiJ59jqy6Cb75v6gXPUxV_kpyNRbRBTS-phI_EkJn0aOi-t1ZBjCO3vzWqxOInGiEGuCMEDA9eML9Enj4RT95oKgzuycYcUGlsFBRYnmPkk9JaPAW5as3YHvaRz0tJDV4g8g3ai9fwUL_v7zQz0_Gmp8ovbAhXdzItMRu1k3GV2PbqpPob4s5CHtxkSkG2tIuVJBm1XFrAKX0zDqndLsaRuTqSE2Irvhl78RZzQ-YtX5kRQQMgIwr1c8bndkLUrVCf3dAFjdKo9nP1b6y1zVLiFhkCLne0vaBpnsY7pEYjMyZa-0ozNPDu1htPhM4_NwQbW0xWEqBMnk_KZm4anedjSFFx5cQu0VtjKLbA7-xZ6JO-54E1x31IZGfHXrr4W69nvfKHPwJ2-GHAiIzuu6I4qh5tWCavyscTBrW24sc_AZV4i7IUdToTxcnYx56kbWa8PptDepwNCfws33fr-XZQlaKcHpV0TjieB1hx9wBYKQDlxYGaPITJdYyM3cXA79dVSUMb1bItnXdXUbrbPGSOUqLsZShWOwpXdZ6s8IEM-41vp_u6adxlSXqL77yKmJA9jnWVYmtdDHu4xUejDh21CFmNBXlmzf-nQCulwhL0jqO78TtZOCDqezcg3bCbXTfC7YefuDJ_o_BkHVktrxGwIgqv8_NpEvAy9Leqwdf5P9BvNUtuVp-uuEcm2-DoUl_l2R70fDfTwuvB2YDFDpGRiToEztom1lmFOQ4B5AYDWGiHT_WSRlsniPceZ85u3TjsXHy-5MiqflQIBf0_oUkVp6YPh0c8Atdk8MvHHzqOjNHwleSZvwnkchYGNfPRDh96YOpW_ZsxHTvnKA8obFpE80bHf38Ko0u81GkG9xxwcorVedihG0F3jweEHD18FJdwORF7foeaxShWP7J94mlF0r3qlXovjz6SnAV1otenUohU5rIE8qrBhaDZTSH4-DlUXnwAX6q6_5bOyLHAqeQm1l5wzj8KXvPW7wcmnsANa-2AJdLpRGh0jXBjh8IC7gd2LACOfPwSWjm3HzijY2sZJGlLT6I3OofdkQ5y9f2LU8ThcLqkWbZavv-XJdoPP3D4TFeHMkOvJDDeXsgqtZao6Lb8tuMHxSxup-EHPUHwFyoWSjueQ-iA1mXzUr35KysJFUqia7U1e_KZQXMIPBblv9wJkUDkR1MsLWVdMUNtlE6vYZp-Mf8hikWL0wfBbqd4EAwQ7l2y1888efX1US0usCXrV_zfuKw==
+# 动态截面插件完整示例
+
+这是可独立运行的纯计算插件：选择矩形时显示宽、高，选择圆形时只显示直径。
+三个文件齐备，无需工程软件或软件接口。这里只演示分支输入与面积计算；
+其他截面的公式与限制由具体业务决定，不照搬未验证的 API。
+
+## SKILL.md
+
+```markdown
+---
+name: 截面面积
+description: 计算矩形或圆形截面的面积，尺寸单位为 mm。
+plugin:
+  entry: scripts/main.py
+  params:
+    - {key: section_type, label: 截面类型, type: enum, default: 矩形, options: [矩形, 圆形]}
+    - {key: rect_b, label: 宽 b, type: float, unit: mm, default: 200, min: 1, group: 矩形截面}
+    - {key: rect_h, label: 高 h, type: float, unit: mm, default: 400, min: 1, group: 矩形截面}
+    - {key: circle_D, label: 直径 D, type: float, unit: mm, default: 300, min: 1, group: 圆形截面}
+---
+
+# 截面面积
+
+先选择截面类型，再填写当前分支的尺寸。尺寸为正数，输出面积的单位为 mm²。
+切换类型保留此前输入，隐藏分支不参与本次计算。纯计算，不写入工程或文件。
+```
+
+## ui.json
+
+条件按字段 key 配置，分组只负责布局。新类型增加自己的参数和条件即可，
+不需要把所有分支同时显示。示例分组默认整行、数值字段占两档，为标签和输入留出空间；
+若用户要求紧凑排布，再按实际内容缩窄，宽度换算与选择见 `references/ui-schema.md`。
+
+```json
+{
+  "version": 1,
+  "fields": {
+    "rect_b": {
+      "when": {
+        "mode": "all",
+        "rules": [{"param": "section_type", "op": "eq", "value": "矩形"}]
+      }
+    },
+    "rect_h": {
+      "when": {
+        "mode": "all",
+        "rules": [{"param": "section_type", "op": "eq", "value": "矩形"}]
+      }
+    },
+    "circle_D": {
+      "when": {
+        "mode": "all",
+        "rules": [{"param": "section_type", "op": "eq", "value": "圆形"}]
+      }
+    }
+  },
+  "sections": [
+    {
+      "id": "selector",
+      "title": "",
+      "items": [{"id": "field:section_type", "type": "field", "key": "section_type", "width": "full"}]
+    },
+    {
+      "id": "rectangle",
+      "title": "矩形截面",
+      "collapsible": true,
+      "items": [
+        {"id": "field:rect_b", "type": "field", "key": "rect_b", "width": 2},
+        {"id": "field:rect_h", "type": "field", "key": "rect_h", "width": 2}
+      ]
+    },
+    {
+      "id": "circle",
+      "title": "圆形截面",
+      "collapsible": true,
+      "items": [{"id": "field:circle_D", "type": "field", "key": "circle_D", "width": 2}]
+    }
+  ]
+}
+```
+
+## scripts/main.py
+
+条件参数均有默认值，且不设置 `required=True`。
+进入业务分支后才校验该分支的尺寸；直接运行时使用清单里的默认值。
+
+```python
+import argparse
+import math
+
+_p = argparse.ArgumentParser(description="计算矩形或圆形截面面积")
+_p.add_argument("--section_type", type=str, choices=["矩形", "圆形"], default="矩形")
+_p.add_argument("--rect_b", type=float, default=200, help="矩形宽度，mm")
+_p.add_argument("--rect_h", type=float, default=400, help="矩形高度，mm")
+_p.add_argument("--circle_D", type=float, default=300, help="圆形直径，mm")
+_a = _p.parse_args()
+
+
+def require_positive(*values):
+    if any(not math.isfinite(value) or value <= 0 for value in values):
+        _p.error("当前截面的尺寸须为有限正数")
+
+
+if _a.section_type == "矩形":
+    require_positive(_a.rect_b, _a.rect_h)
+    area = _a.rect_b * _a.rect_h
+else:
+    require_positive(_a.circle_D)
+    area = math.pi * _a.circle_D ** 2 / 4
+
+print(f"{_a.section_type}截面面积：{area:.2f} mm²")
+```
+
+## 验证方式
+
+生成文件后运行本技能的 `validate_plugin.py`，再用 `python_executor` 分别传入：
+
+| args | 预期输出 |
+| --- | --- |
+| `[]` | 矩形截面面积：80000.00 mm² |
+| `["--section_type=矩形", "--rect_b=100", "--rect_h=200"]` | 矩形截面面积：20000.00 mm² |
+| `["--section_type=圆形", "--circle_D=300"]` | 圆形截面面积：70685.83 mm² |
+
+在插件页切换类型，确认只显示对应字段。把矩形尺寸清空后切到圆形，
+运行仍应成功；切回矩形应保留空值，并在运行前提示需要填写。
+这里的空值只留在完整表单状态中，不把它拼进圆形分支的命令行。
+
+不需要动态界面的插件可省略 `ui.json`，清单和 argparse 契约相同。
+
+## 需要拆模块时
+
+按独立职责拆分，入口仍只解析一次参数。业务模块通过函数入参拿数据，
+不依赖入口的 `_a`、会话全局变量或另一次 `parse_args()`：
+
+```python
+# scripts/areas.py
+import math
+
+
+def circle_area(diameter):
+    return math.pi * diameter ** 2 / 4
+```
+
+入口用 `from areas import circle_area` 后传入已校验的尺寸。
+软件插件的模块同样显式接收已取得的模型/客户端或所需接口函数；
+入口注入的函数不会自动成为导入模块的全局变量。

@@ -1,2 +1,107 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQggl_uBkdlU4la2h1f7xNPjcnSHaXlQcCmvSm7VrSP523Y_4q_9OeJ32NN7dH2ajmkHbMZDFo1PAraUVkw9JzHmcCY2NXTU1o0Gs3nv3nPgssW3rvRTeqogUDWH_85FfeE9vFWZiKz-5DgTf1SmFYAImcKfhsh-89uloRv8656lpRmKRrn4j-BsfujQ7p5Z3CH0lCqXuD3ZE92qURRRqa5JatX9_wUbearFDckQbeFaYFRcEecSV3fHQg-H4asuO2nYzPiN0LzeUapSAQzU3G7NZZUQmNVpI2tGlLJAwHvE-8cB4Sda9IM871gTmj13iDXl-yW0vhPilLLQkjZGPUXqnAohIZu-WUjjC1LX3-YQcyP5Pacp6anX7Uvz_CkTqIID7gBufseKHC3dBLh8AjRkuetG_hZMFSudWQMr91yju0UaIUQ2bHbBN8Mkp_XatdA9Lhi-TChcsOL4fd8_SKV0j52FBu-lHqbHMtyCCmhy9aHBDV7KKMJJ2zA1rDA3TFpa4RRVc3vN9OcgnpMmGwh5waC2rANGm8jEqagLOFXgt9llL7k4nid3vybKgABGvF833lJYwLKdwxsvKU674spt4H_-_oRBCEFg6qevnBSTI-isvhz-PYNdGFokrEOErdR57wVFWaeUOpqZDOqNBXrIP6zVeWSJ3ibUd81MyhzjXeeiqADUMqtsR7hR8v4sK-hr1MzCGECOdd96aOLcT_Yq28tEQKaIXGnneE7xevlGXx32x144r3szEy7AeosEsk0WGKmI112KePvgc4xxluOqqWJFkhma7G5HZl0hOUP5krMCgWmG8ypEHZYYntwu2hohdMrgqXSxTVOb7hwNnLajxMvDM1Y0ou6tPV0i8bSWVgEXcvp2BCz7xOsvZRP-wJl97UQZGJIPH5cp0I1CKZbO5-2Wh9Vxs6W56-L8AZvkJ7ZDzca7cLeuAmfeSrKA1sC5gVA-MvAVLLzWnlOSwnzTtElu3YFxrlfWlxrg_NYQKevAUR6iSGb4cEPrQnnYnPbBRQBa_gtR0VVa8fstStnp0jASSAwfQsvrdIKJ1xshuNQiI2XERyHI63w2tYmmsGUF-An8rrfVIMkN_-Az6SKoP50cAA0f23d__ZidPYdNah7KwLEwCySPSxSYQj6l_h-bvcJR1zXLgQJlI_nBZFgQgla6lrGynM6D0-QXC2GRqRkbkebdySj6bLxa-0NiHCK66rWfJhaTpCyRqlgph-oL9yCuSKgbVUk7TBztNCCgjsbIpj2q1dxLbx7zJa_14IK5TwAdIr-xwVR8rBS2KVPBrbmoaE0CmVvClEmahyJVVHzVUJiwYXkLRfJetdqlz3AzmiefwpTPA7hPM0QjjfzBFfrDn8ARZSsDTDP1OGTx3tQxd9K8cmBBTdRIV6KA7nUbTsUOlv2b_YXgw8AD04vBZkVEG0366_jcV3oTo7uzUOSIjZgEAKQ5EN_YKAaRqz7rr7wbjrOIhOJM_w0HX2hQgK9eNxigI2j-avRDKV4PSHGIS5SjzGoRNOhuT_hvEaGXt65bUSbrge3Lbm_8YDYqfHtbLiJ1ypW9viJHG_-ZoXxrkPRZcoFNAlqtiELUAiwWlYffFeAvNiV3lhSz6GlAeMNBgUx1g7kZSx03RpKJlO89xxEEfEm5mHcBtcCy8RVsq0ErimR0j-NxduAJzRxtN7ydQwFCjvgSG_EW2M46OaPGb3yuAp--lyQ5N0yE6oXlnu2l6x6KydlcIFUqPTQJTB3vtN7KLhZRfr4LLoGfrWjFV41zYbH5bxez4gSf9bQ0FjKTCL2Iyb8ZuEqaHqS9DlV1-s830X8Vp2aIMUKycbBCVxkiVRmKFjcqnPFXi9NVYh3v7OT34Wv-zpfPBjD8InR3yb-YqAaw4TSb566NPfl71x0Zm6_Tn7AIEbDmahvuWyI20gQCv7jFlJGlNCE81sA_OULFkTWwSc6K6fB8PS2ZIE7wc79DdSyXLHrvNtZZGTywWV51F6NEF4Kb640nvFfC2-rYwngcTPypmWo9FWlANtpDlERbZ0eOuJ51Pd-cDAFbjzGbnJXbE4BEgXwjmrHlj639WcAUfwC6YGgu2YBha2mZMVGK4uhiy7nd_dLakScJ4guwVfVRUB2wR07lMi62iZEjRBKF6Oe3SkxyFlPG_FlbC2dCD6xPevbJHo5O9min5GYHKbX9nbN0-4DGw2sjerHBUaF__0bdhU5U4_VtQR2S1W2RRMxTNdMRfhyZ8cy7I_50WojCpO8sjGIURQny7o2ypGDoec05hif5T3rPKz3NNI4eo0ZbKQsvlzDuqiraQGcultrQCFcXq_rJuQdlUbopFvSpRl-CN0U4r_yl3eDDs4pfSZsOx2rXSg2n24_APseF9whQBFV5gpUXBXj4GTlqLlQLwLSbV3hGrQc9TS1MAmRHj88n_bKm_spwhgPsKMgAdHCxHOIMyIVcE1AmY00hc4VsS4YqKpa2dCg4NcTPDdznSu7CblCPB8qgHp0yd-P9xKfY51uP6YZnzJ-gFUFLHAbCgm-bnVQgOb_uGQaCrvp9x-qEC_MYrfIZ2OIZNlhr0dG95A6n3_EnSufP4UAiWhFEnpnnJ6rIDvcTn6fafOk47EQfHyas-1hweFHjFSktlogHgiWD5az4KzAnKfWd33WSVjDu5j5SWbzFzV_HGYl101SVqEHYnbZAnFiMwEyT-L-etWebtJb3hmKJ0IcJfLzgVCsF_mFCr1aNNtswetCu3IoXvsfy319EaCRj9JmOGeloLqlMT1AwPekzBC41-ZsGfTogbLRMlXLRVal78cLka7eZ2kRXNuGmiVlLA_63_MG5-sYS_Z887SHX3imhPth8te84WG6d7A_3Vl65CEj19AO5dSlroyVXayDvEPD0BmN1a9piV7YwUyWHNZtOdmxXDaVJGJyg9AW4JVaQ-YFzGV_DAJ4dg_JPwnty3CJe6JzIWmnRViknDGfXNxXsiO1Eqpg3-QxX432MPnqxNLZxwrgjQfSTDOIQk_VAyQA1wL_wKPTyfuSgwFDVFq-NEGt3_LZ2GBIzvyzNI3G1aUZ3VmypOY9U_ofKVyRTDPVTSwCWhFm2SS-4CbYtsPnS9gbMOQs8D4luDeXOtCYnFry-QS6_PsHYAykszjaA7IaC30T45sfpTh-FusUlTOHFIspVETNssvSzmJfqX3xwdljJKzoyrHJnIzjebz3XxBUDbJOhljDMTX5BihXyJ6oSl3TCHoBOt3Cy55mf1FKMktFqDdjnpTUWXlOOwSDTbdkbj44bSdJIdJRhhudN02YdelHn1ezTOD4xiJLHyZFALt1wv9cYpZFpwpk9me7_Ft5BGTfmrn80ezh_IdRPMA9woaJZ1_DR1rfwJQ-kGN622UAIdeiM6QubKktGK9eXS0bo8cPDSLecdbOqjgfihVIg8W04hmeJi6Z4_R5KGSlj4_TcbzdOmL0AagxD-qeLJKgGflZazJEXqzDfChGOoT6IuTrAw8CWT6gd1QmxaFxm3IbZ6Uf9fh0yeBTTmIYr3bH9dOAt5ZuJheZOexzG9MTej8485NylJYLvy1w6M-YkvEEJnNcf64khZzv3-ra-5eLPUBc7G5zLWoWoxx6k6ChKEFE5314yFjHA0=
+# CreateStandardFloor
+
+**说明**：必须先有建筑才能创建标准层，后续墙、门、窗、柱等构件均创建在标准层上。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idBuild` | string | 是 | 所属建筑 ID |
+| `name` | string | 是 | 标准层名称 |
+| `basePoint` | object | 是 | 基点坐标 2D |
+| `elevation` | float | 是 | 标高，默认 0mm |
+| `height` | float | 是 | 高度，默认 3300mm |
+
+**调用示例**：
+
+```json
+{"idBuild":"109","name":"标准层1","basePoint":{"x":100,"y":100},"elevation":0,"height":3300}
+```
+
+**成功返回**：
+
+```json
+{"idStdFlr":"112"}
+```
+
+**标准层标高说明**：
+
+标准层标高与实际楼层标高属于不同坐标概念，不可混用。
+
+- 标准层标高：表示标准层自身局部坐标系中的基准高度，用于描述标准层内部构件的相对位置，通常设置为 0mm。
+- 实际楼层标高：表示该楼层在整栋建筑整体坐标系中的实际高度位置，由楼层组装或建筑层级关系确定。
+
+创建标准层时，`elevation` 仅用于定义标准层自身坐标基准，不代表建筑中的实际楼层高度。
+
+# DeleteStandardFloor
+
+**说明**：
+
+- 删除标准层前，必须确认该标准层未被任何楼层关联使用。仅当不存在关联楼层时，才允许执行删除操作。
+- 支持批量删除多个标准层。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idStdFlrs` | string[] | 是 | 标准层 ID 列表 |
+
+**调用示例**：
+
+```json
+{"idStdFlrs":["110","111"]}
+```
+
+# SetStandardFloor
+
+**说明**：修改标准层的属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idStdFlr` | string | 是 | 标准层 ID |
+| `name` | string | 否 | 标准层名称 |
+| `basePoint` | object | 否 | 基点 |
+| `elevation` | float | 否 | 标准层标高 |
+| `height` | float | 否 | 层高 |
+
+除 `idStdFlr` 以外，其余均为可选的修改属性。
+
+**调用示例**：
+
+```json
+{"idStdFlr":"112","name":"标准层2","basePoint":{"x":100,"y":100},"elevation":0,"height":3300}
+```
+
+# GetStandardFloors
+
+**说明**：查询指定建筑中所有标准层属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idBuild` | string | 是 | 建筑 ID |
+
+**调用示例**：
+
+```json
+{"idBuild":"109"}
+```
+
+# GetStandardFloor
+
+**说明**：查询单个标准层属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idStdFlr` | string | 是 | 标准层 ID |
+
+**调用示例**：
+
+```json
+{"idStdFlr":"110"}
+```

@@ -1,2 +1,37 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQ-v_gXdrSTXYmZzP-NfiEz-sx7Mx1JDm7xSsYPiqwPdpji7seB_p91Eg8ET7ETeFaxGH6y9m8NV8woK5YhWEabguQ_cEd2NZAoApFqEmtbJk9Lgk4MES_v2YJnKAJ1nLlCpzomxcYPn-aSf1RHqdTDFDXzmAxOOpfLh5X-UbVHAxjfpJK48JwXblyyY1pMMkM0xCYMYxaME1rZaPH7ANR1RhLlmUaQ3MpXxFKy0Z9cjrdW6wQR7Z0WOl4EdQmQzF1odWpr0Ha4Y7luGDMZcz0gfxuWXBrOwS-sTBiCEDJwfSYHSGGzfF-D9zgS_kwJtbpm9b5Y9mwYBdClrelNhSuOfuYsuxXXBPYOBpGNtLJ9Lv5DNijnIyQLCD1pY6rxOFG2pIHasvBa8CNrzORz3X3soz6areltpXkt8Fn8kS1igVd2S_d-zUVfLb-Fp4n71NxXlDxPVGUYL2NeSM0lo0o-dRoOnZyB3iVMbCPHuJywucUaFfFZ8RoYTJw1XwHZ1RjKlqpFqJI8xyrRCZmko5_dL17aHx88bABNetp5l_6l3NKnFR-urG0nWhxauiptu259ARD5e6i3wqC2ZzpOIt-LH6LqpNecYu66Ao10b33c46MC0Mg7Ky6qEvXse7XKZQdmpWVHTpcdTt2hRdVQYh-5JDWC8iB6PkA3B3-eYMB3yTU04NahLKz-D_jc5GHtyvoAAFyMyn_8i5-2cRIOp-GDrnCFrhtvOaZfjYDAIX5rEqTYlfzCFTzeJ5bh_IH33n6GOev4_4IRiWwY1mOnr8miTDldjc4skSd3DA9QNNsiGR-gkY_Rkw6OxLpWn07zaWV6qwGD5qahrCHzpHTrFlHiN9z13cSK2LLr5daBok0ABpRDYb-CcfJLOVttZUeLkgq9zFXLOAq0lfvJUldEgSvK2GiyZajo0xfvM_i2wuDPmFBnIEaAXB3t8_OLGrDEJfRJpoYzRFzYGX1tZyOO0N2Q80CE84Xo9FuXnflJp66_V4RKpTx1RnPnX6tZU4T9JmklRWcxvHZXH8XZD8yoBe9WVsH5v9YUPCLE9RCOrBiDijPTpYzX8d6RA20sPbwxGWMoElARGxiCeB5JRf5Mh8rf72ywHKin9Z4c6aaJsMw14yfPtDBFqZxiijlpaapVVOELnnLGYOZQCZv34lIJf6sGXEW_kKflITITnGslH0sD597KBKKtg76kYfyPS9sYfmcD0tkNmNR7lbn9OpOJLlgZUB7tvKgDSZGQb1NmWvYRczKB9hCTq7X55Jwherd5g7VJp64yMK0Btjswb4aOtMq4oov0aohBKu2T7kL7l3afrFL6YAuvfFzueXmD0RaZMrfxHvstLooDfcUbtPzyv739p0nQQCG5UmfLxjr-LT4FTswUPYUADbPpRB6pIRZGcO-Zk3nAeqpdI-1pjKsvRkHwR1SiyxrUVcj4mFNml5GvFRqPI9JNOFfHAJbQAyF3Ai_Rimi9Ls_dXfnDUXmJLnPczbEUOhWKmrNYmn3kXF3KzRegcsWACDSWigF4pf6bj_mQiKbx2xcEgLhEM0Ay6Pu5iiYSBBQbEhnHHcvXaKnm6PGRdFhOP4GmnkRpVIvHe1OC8hkalLxqijHLneOFAUfC-DtucUMX2r02r2mPOhjF2jiOJg5utUInaCmknPNmW-8H08jb6b8JPyz3f7j0iAqQ5SROcnS6ItXHsjxSO2VaxzcO5aFhf_3ItG16zp-q8kjehnVldD7vdbZL0MgrjvO25f_f-Pk0Ba8zr2qE1rW7mzPj915v5vJ-jv6BsSPrESv
+# GpDlGetDefaultInnerFaceMaterial
+
+查询构件默认的内饰面材料。
+
+**请求参数**：
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| componentType | string | 否 | 构件类型：`wall`-墙面，`ceiling`-顶棚，`floor`-地板。不传则返回所有类型。 |
+
+**请求示例**：
+```json
+{
+  "command": "GpDlGetDefaultInnerFaceMaterial",
+  "parameters": { "componentType": "wall" }
+}
+```
+
+**返回结果**：
+```json
+{
+  "code": 1000,
+  "msg": "查询构件默认的内饰面材料成功！",
+  "result": {
+    "materials": {
+      "wall":    { "source": "《建筑采光设计标准》GB 50033-2013", "name": "绿建新国标推荐值：墙面", "reflectance": 0.6 },
+      "ceiling": { "source": "《建筑采光设计标准》GB 50033-2013", "name": "绿建新国标推荐值：顶棚", "reflectance": 0.75 },
+      "floor":   { "source": "《建筑采光设计标准》GB 50033-2013", "name": "绿建新国标推荐值：地板", "reflectance": 0.3 }
+    }
+  }
+}
+```
+
+| 返回字段 | 类型 | 说明 |
+|----------|------|------|
+| code | int | 状态码（1000 成功） |
+| msg | string | 提示信息 |
+| result.materials | object | 各构件的默认内饰面材料，键为构件类型，值为材料信息（source/name/reflectance） |

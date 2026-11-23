@@ -1,2 +1,33 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQ74CutwbZTTPqAxz3aqTdCvBcMuJFVBxaIVyrQM_56vBx5aKPQKt7EB7LtEuBca3SuY11CwQELt49R7e8Ne24aWaARd1cLxyxB2GVxnvIQLzQnKBA9v9_Bsf8R8J1o7KRjcKDlPnnjZz1mVblbQmELj9-7MVevRoNpjkPKjYxl0kv93RGtW4Gk-GlgyteclSkdjLuq8hJM5ZtNOT4zKkmyTEWdfI_TWY-aiuZzXYnnEWpyS23xSCUSfN_fNj6oisgqEvecAp2fRFS6Qhh2SySammpWfXMKdGJDob3YIwqaGH4wsIfkNPuHnyg2al-G--Z4geGrEdJUZiH0k_WmebFCtt8fU5OJNKxpAJSTpN7k2Dipaeu1e0r3xYkYLJizpmcjIF19SmMau8--OfRWKDXFfr72TzcJmP0IbkS0BmhZMtfDuQUjc5vUHn7yZk0dXDsk9Jxv6UGRjg2r4H_eL9ivvI0tst6eLPimM6VUJVfJNUZ2ovrnJsvsTePlfFzzlKEjmYwHymgCKLxNqbclzp76MEYKl9DIc0LEVrvu686471xVmAAQ5lm-ELvfOtu_xh64SFiBB-9RUTrpDw2LXGlJeomtoz6v2iu0N5He9mCjBr33wBSx4VsESXt-8ecaXD80t2XPXnzuUxinGQESpmbO9FQ0OUURAOiaNTP-Wqmbl7B6wPMg8wrjEEEPncOcPF5fLJVoOvkC_kyP4x-Z_G-3vESk4yirIgJxMm6k8kftgVX_3WlQP7FnTa_C5HPmbG7
+# CFDShowReport
+
+打开(查看)已生成的室外风环境 CFD 模拟分析报告书。该工具不生成报告书，仅打开已存在的报告书文件供用户查看。
+
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+    "command":"CFDshowReport",
+    "parameters":{}
+}
+```
+
+## 返回结果
+
+成功时:
+```json
+{
+    "code": 1000,
+    "msg": "报告书已打开",
+    "result": {}
+}
+
+```
+
+## 典型使用场景
+
+1.先用`CFDCreateReport`生成报告书;
+2.再用`CFDShowReport`打开报告书供用户查看。

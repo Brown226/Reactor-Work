@@ -1,2 +1,122 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQkQAsI0ibi8MzOi2PYYKtgnY-Sv5R_gRYghsEn57t9f98NO1ofANs3rmNcIj59rh6fR-_ulQvnWghIBycVDpmXfrYgbAJQRMGJshKw_8S6o73IIl_RN07oslOPJDZv5KkU9dPblpcWTMBCvkoqEbPXNNWH2ctERGcuIf-H2Ua9JeIFS6-zOkPQZG9v_f6Buv2n6x1k-LArszb7lbQ_wU8VidGN6tYPqgbb1IHPR2Iz_bcIIXG_LNjxNxBiWiegz7QfZ82fnmEB-JoqaoWWwaVDvcRDxuJiBArWEpFkxVwoYv99Wszna6CproDoQDee-0DdFnbuaPDYXmy1Q3jiPIlQe5M2FJjshHckkOhvhirmU5HDpzxZLEmeEnodv0_qweq8wL52ypqTNoOv4gtu6ZibeKtHZg9YHT_pfJ-Yz4thzEQx0FkZB28QMWnJv4RS9M5t6SNnntL6Y8qB9UAdvKnhfQ9NglP6wmhO8u_0KgStxjV9hvw384z1o7wBHcnNXgq3M9g4BKQpAwxZVGRgJ1Gzs9jqHkom3F2DmF3RiLAgc3JjnHCUlcycdd3ynMh3PIvlrUAR3NX80tO5_n7LmcBB18eh1m-wR_x33iiRD0GaDFs0MeWkO01S7nn-daf7Lg0zkNNHnobWkIfgKAaOsolfaJm64MBfPPCUjl8QsPHuT8_5BuLU2m08UswT16wMwkHeanKPlh2Wgdgyh4OAu--fap-ldvq_bx8BfVufc5s28rr3h8wbY4fGe2COsjme5AW7UQLSSLTacAnOEuoxWzO7EV1SVX2nq_8LEP-vVQRnpjRMXyccnUAD6cUoCUgFNy6HM9YNNlqPuFHGp_vphwJluFicOl77Ti7o95musvQKStHWQTodVBmug-03JZMdme5s-lxsE2kNDTDMvVEgbVIDJ3bKgPNrvpznGzj28xNekiOkXwPd4bAg1YtR6pVBopwoXNvzs5XhgruEdMpYonlzh7FOaiKFAT_T66XmuLBMQzCGtEbY6uzorJduKfqmBd9i9xPSgYjLUDEMmBhX2CB0HCfRpQxcDKqwHcYWJtJZ0yuX3IfqKj1J5cph-I9JGTpFlk2siE_fusFGNisl1aHxcd6bw1OtOt8zsluM7e-0C1ulWUnA_KcNATIdZddV3e1yJW2HgPAv0SyMl5x82qQWL_kDA5q9iwfgFUBM53b7dHcSSYOHFfWfZRN97y9sly5Z5urkP_SSuZxaPXgikiiO7QqjREnLuLfOQ5UjzphZ7RDev0QPsUVuwYat2Cjbc0UXyfccZ3bsoNuJZsrAbZKrQrfTVPYbr9Yn3I-qmu2q1vf2yAawQ3ILtXv61jEHRRJ6BCDQ85h3UQ6I0H3dWXoRWrSLO5x2Z7L8gnOJU-7GKSaiRcNK6-5Us3LYolJ8kP11wGW-J0VYvnDi77awBez0-Y268dLiBpJmuPT8RMrujdUJIC-aQAg1dxVjn4U_A4a0p0dk0sIX_QdKcZW_iqQ23C8W0-_sw41GQ8iBT2gHFAaWUr_U4MBj03-Gqj7fVzaFN0kJuBGnbJADV9_7t-_2ZntjVKv8O9pQ8o7VFQfZ0qTXinES4vUv_pE_kGFA5RwCXs9OmVbNYHmTIRTdXja5UCZRit5RhY1OwBZkIvK9OLyLeVsAyOJN5ACWAzB3TNii8J57M44cTJDXt2O1nkKqY6eJIyD1N9S3Ew1PA_w7-aRhdpWCtpVxnLrolTfX9rb22yjJFVcmMXYlAazwV6pCvYnPZaxoNjoQ5J2jtEydNVuqtd-4nZ1FCuX_8HUqDFnY7qC9fTk0X3XL9dFjtWhwNDGrGct-HLXTnk7hw9J7DS6uSReGXjVdE-DJoQY3IMgXasmk4Td9jKYA8AC7crLU25MBgF6ENoP5C3nd76kGqoBjIFu3gITwEmwG-M_bH1uQ-GaBzPIqfgl6Ekz5JdWDiLpmJy7Ii2ZVZC8MoNH9TZB_PwyRBpGc53QeA83N-r7GVukIhw16WXBh5afXtq6a2ag1aRFUrwTEq4QwCDtVub8iRtiQgVpTD5rpbb4uQivhEkVhCfpfXEIGuRnNZRnsBHqS9C4yNd9PY0jeNGlXHCu78XErcO26CKHYOGZ2rrPs1VzfMlEVUS5P5kzZxsDPoFIDbnag7wf2Y-S5GF4Tpkmls8jexaLH4Scas2NWAthcUjSmxMdQHP97Ng3vq4-YjoLKCOk9dmLhmYyR6n2s_ncwNDQ7lEAWUc4uzUMfJnN_lvEzo9-0I8eGANR2HyfpHi3atGtvNPdFoP-mCjVTVMlVr8laf5yDvKyQUMwL4ZMtQ1uM_llW2WsG-c7-vSk2uU1TBhHI4ofHj_CzFtLx37rJNuBKxXEN2eI2OqmsZTmtZO8bd0Bqnl9nm4rf_xZkE_8LiD8Yd3Sg5yIJQf9KpAzUH-xbd7hPYofqhWSA1NyrLq4cUacgY-6DIbR5ThXhDwq9FYMkYZatnFzjMI43OQHFjX_XJeR2-9WMMiRreNnULfMgmTtEJLmbaDUvQ9YMkBVXdzhdD80_xdxnxETo_IbhSJ7nLX7dbS479mrTX-3WWq5C4ZlefBGGmh6LhsZ1AksRMavfR-MAee-fgiezeyw8HysuTG4q1l4OeqZ02gykzNCw95Hov0qUKlNYWicSwzMzdmtnUfh7AbQ8UsPU0Gcd0aRvs38J-GpXB2v2rvUSFprturdam3npJhrYqZgoGTtpXOn-WWIDbbBXSvPviN2m4jcTD8NVsTTtNr0gNiSokFbD5uis_tKUYVrnwY_Ynugf2ncfcEXgXCvqEiL28hZEI4RO-9zHsOxH3nmq7I5cFwTh2v5xS3CUEHFKrTuNCcEIXRkTTD9fYiicr7SzU2sbhWl5RV3syrgGjEg6ys8Kru0umHi06e6hGxeGg4Kvee4T3b6v7fBjb3loJ2TCH-T8kwk8y0Wrd-8cLKeyhJjeZIjRf0WHxra1Ue7FfYnX-e0EQeJvdMBAaPIr-PtcOHIs6xFCNIDBM-q0gPYIOe0xSKx8WMfUbLsqk1D1nF-UmqjF_17y-IERZ4WF4bxULHrGFvYk-7z-glbvogGJfFJAd4hr8fzJHdXIy8olCcZQ_lfD4-CcEb-4X2kF2qYV2dFjlrSsB27-nVSKJtrhAwJUJqii6DvXzyGc7auuWQ3TppGCLOiE9XZHTDZwMXVBkhODZalczXXRIydy-bWngU0b16UnitgY9Ebsc_sLQJJOjvY5mqlauVbQtQ9516YbRy5hjvAUnwd1i_eJmyQMoHWbpub2ey4KemTg34Xl-_JY6QQfbau7944hJ5oW8UcX5kEje6SvM6PXMF-vAWF1h0CzEARYqAwspf6mMhdTyxqAhImIqCqj2VKiQXWHXUd4kTAHDMvX2GkTfMzbj2EmspjFzKNV2xq99rZ8hd6wFiZfMGbiuFMG5p31LbzvVAnBtODOpGDo5RaZ7nIopyfeNQay2fBWSTh4ttMOSVDQMWxuWVk5oijwbKIRQKWSF2zehHYLfabj88ivmAdoz8ujmhrLW57_sYfgbFCF2cYjelfFw7lGFt6n014YMBLwnsekOcl7pN_W6D5CawsyI8IGnEXA1x67H9yFI1QsN3E8Y2CIAQYWTWTwQQsIh7x0bmY83hF8dAEkBT5bhtZ60bKugFV
+# CreateShading
+
+**说明**：创建遮阳时必须依附某个实体。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idHost` | string | 是 | 遮阳依附的实体 ID |
+| `type` | int | 是 | 1=外遮阳 2=百叶遮阳 3=活动遮阳 |
+| `datas` | object | 是 | 具体遮阳参数 |
+
+**datas 结构**：
+
+`datas` 由两部分组成：
+
+1. 公共参数：所有遮阳类型均必须提供。
+2. 类型参数：根据 type 类型不同填写对应参数。
+
+公共参数（所有 type 必填）：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| lightPass | double | 是 | 遮阳透射比，0：完全不透光 1：完全透光 |
+
+**外遮阳（type=1）**：
+
+`datas` 类型参数如下：
+
+- `horizontalWidth` (double)：水平挡板深度
+- `verticalDistance` (double)：水平挡板与依附实体的垂直距离
+- `verticalWidth` (double)：垂直挡板深度
+- `horizontalDistance` (double)：垂直挡板与依附实体的水平距离
+- `height` (double)：挑出挡板的高度
+
+调用示例：
+
+```json
+{"idHost":"111","type":1,"datas":{"horizontalWidth":1000,"verticalDistance":200,"verticalWidth":1000,"horizontalDistance":200,"height":1000,"lightPass":0.4}}
+```
+
+**百叶遮阳（type=2）**：
+
+`datas` 类型参数如下：
+
+- `style` (int)：百叶样式，0=水平，1=垂直
+- `distance` (double)：百叶间距
+- `width` (double)：百叶宽度
+- `angle` (double)：百叶角度
+
+调用示例：
+
+```json
+{"idHost":"111","type":2,"datas":{"style":0,"distance":200,"width":200,"angle":90,"lightPass":0.4}}
+```
+
+**活动遮阳（type=3）**：
+
+`datas` 类型参数如下：
+
+- `summerSC` (double)：夏季遮阳系数
+- `winterSC` (double)：冬季遮阳系数
+
+调用示例：
+
+```json
+{"idHost":"111","type":3,"datas":{"summerSC":0.4,"winterSC":0.8,"lightPass":0.4}}
+```
+
+**成功返回**：
+
+```json
+{"idShadings":["113","114"]}
+```
+
+# DeleteShading
+
+**说明**：删除遮阳，支持批量操作。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idShadings` | string[] | 是 | 遮阳 ID 列表 |
+
+**调用示例**：
+
+```json
+{"idShadings":["113","114"]}
+```
+
+# GetShadings
+
+**说明**：查询某个实体中所有遮阳属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idHost` | string | 是 | 依附实体 ID |
+
+**调用示例**：
+
+```json
+{"idHost":"115"}
+```
+
+# GetShading
+
+**说明**：查询单个遮阳属性。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idShading` | string | 是 | 遮阳 ID |
+
+**调用示例**：
+
+```json
+{"idShading":"115"}
+```

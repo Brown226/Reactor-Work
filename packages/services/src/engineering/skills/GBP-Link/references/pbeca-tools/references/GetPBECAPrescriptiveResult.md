@@ -1,2 +1,20 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQmUU4d0Qc8alTXkdKl7CAxD58qzhNIcPgsKiiKQYuyazS8vskyzxNKDBMhtfXyHBt18PjkRYTwtk62y_W4Tph2KrTT49tZP5UvUqwfu63FrnM-UwiolxUFvE6etZ_moQGqk6ayvr69EDbmy-KUWmxQQRUJQHrGOPYp5lBgpPL_FwYuISjk4ZrMBVFpjfDhcPUpsKuE1ZqS2mDXd8L_k9m5u-v6I_jbYtbBbEUNM9eLk2_3V6xxmL-U99bOso4kbNz1TWDXRVzwEZlZbM0YndLNxRIWrD8a-WAbOczxvegIeHEFKUPi2ft2eW9usXqSYcFxPzILq-B4tKLJXcibb__J6WZNH5UW018gQl0kMX_FzFLQxqRKGw2rh1cfOhCwyJr6MeV_1b1mEJi-wqj0d9aiYbJVZ4S4qIkoKR_z8bTNjzOv3Uj1Ot8nS8K8V2AxWl1RUIPd0EvLdSROq9l2yjOC6ThOQlaQyS2rJSNrptNuJ8=
+# GetPBECAEnergyResult
+
+**工具说明**：获取规定值指标计算后的结果。
+
+**调用工具 Json**：
+```json
+{
+    "command": "GetPBECAPrescriptiveResult",
+    "parameters": {}
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已获取规定性计算结果",
+  "result": {}
+}
+```

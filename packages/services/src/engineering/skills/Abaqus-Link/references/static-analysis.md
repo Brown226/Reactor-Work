@@ -1,2 +1,183 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQwKRSUtXxxJHq657OQD-TZkWWYPfYWxi9gronFYa56fS9DjgJmTb6HXpcTqsyWyYKXZR2xntQEMkrM_iI4mTLvZUXPqYibT08cdtEE2lOBtLe7M7TTs9O8VSwSL5XmLUHmeJb8wqGefvLOvADlevR3FbUYgOeJ7-AkcTC2uEwngHzyvs14DDHZuNLVigoBNqbkbZOucTKHQXz0OLUTtNx-mHrzImwELoQlB2aU3SrQG1tI3xxFPzwZQrOq3Is0UFLNoV8PKhC2aPr-KucfUwsycpI_-kK2JXB-tUWftdebaUyer05BuWpmw5m6-RMfcb31lYBdiXMalp4It5jO2qEbvL13b8O3xeGOIz4UHsIsdA_2xuSBZrc4uAhK1XgJgf_c6EA_LsGbgRQQworuE93LdfJZvFo30cee8Z00Hwe8mJq9CLFmPjBbtQXla1HWyotjCsLajmjbM7O6JWbVWKjUXhaz50WfJ2uCjfktq1Pltp1L-K0380bSOBman-J6bAx6l8uuzVFYpY7WMmQA2TSuEWruJFnPz1bdImNr_4W2lO6cuEm-sL-js8hVKeHePYL2JhP4Mc4qObNd7IyCxAV5eB4EIOPomPpqdYGHpSMoTSpfw-6ps3FpWwmnhVrDAw1AyFepT5oZuWr6fAmbtK3TnhyJARCYPLzsOfAwOPvxYnDtPg8S0tqvIUgyY2UYpVOuBLcxewAXlMiI7WVAkxFavx7O7za-11EGlpborAIeuRgF2zSLuOIm_92C-yfB0sretR-5f7gThWsw08K1SHQRzcG2soJDk5jh8onE40Rgm6lp61oVbVW3oRCpXD5JfZ5IN7iRFOtgR7f73czeor6v_WcFVEFcdwAwFiirqux67rAHr5c-7kgc-bD89zdnOF_yeS8cSy_OA9VIry94ZQc5nFBAlS-Feuk19qhuinh3nV0IhtjXudTP1x3WusOZOYiOrvVQa1n0sCP4PCloPELsPP4q3vb0D3Zfb1FgdYhDnnhl5yMpHUjq3YxRAnoWVH8x2CyyniuqYp7YRiDEab1G6J0B5vhJm-eehRXfm3I0wYHxHnmw07-5qcy6k_3XVM0gE77cbLodelm4jE5a9wPQxpQm2irYmlR7MN2uolSQJm5hnkmjj1wajIS3EVqhQ33oc-JINj1fCiMSLM6ziDE8jJBJSr552RQIHEYhLWEiTzl4wLrKfmgptOke3tIYw_NvlvBPMiitQU5i1rpHwT615Qsvt3j4MCaSyayRfe8WEev3qG0_EP6oHMe1n4x527EbiOAz_w_xB0P1IlnYrwYr8300QhRpggjEv_a4VrMEgueD4DUmMFMgWYYpRCTrPNtv571hPw0GB9D110-6i_vmnWk5edU-0NrfgAFB3R8_CM4z5vbCVrjO8Xp45UQ_Q0WXPhq3gNms9v4jy1rbfuOjT8wUL__c4vNVlU1wQpkBJzyT4dZNDi-RkYNkJ07qARyGaYl2ivr6khpMxJJSLxp3W1VKdnGTi7QLdnwLikEneBM15fozQdNjvc0xx3J7IhjVfqEyUlMo0_KQ30VPORgr7JuW4kK5n8spoPSAne8B1TIIdjKmkd9VuHrHUxzLynwZyDgb1dL8gjclaXmqO9VVmDc8Xw-dhygaBjWUwFSBQ6ylS4VodZbOsEyTC0mJzr6vOwVGCxRhZobKBqId1zKAse0Uoizok4ckcAuL7rSs77KCpaQHBDF9QlX5VWuzsM86s3OlXStLNvRuFwUVLRDmS5OPs33DBbAs7c2J-1ygEW-6jtfqRN3ecAob0SKiVY1ujr_qAl7AXuzbtH4OfIaBI5cCTIgVipVyXfn6oDVfPd8ifAYN5B2UG51CzEiHaXAwSu7Ihhm2mV170GjpAmSpfpWRbMeNmAfj7HD8IzBFSwFliK2qWJDrB8lC8m7y4nuuGzWL9Z8UMsNmw0uYP3aJH-24ni5ki0RxRjfLNXR7PoZcFi6afEuz_9ghU-2WTsbeJ2x5wtA9qQl4e-viio3_IQDl-QR30fg0_1fyc1sBqmZyR9t-y8ezdRMmLaEiR8E8sfjQAuP_75JOecxQ1-30Uf2UoDK4kxQFhm9Qy76kxpT4KWVDPN0OIM_r9l7qWpHiNbnArt0mBhoYYw8U6JbduQY9FH9QBL85p3DphiFk36WcKlbScUW7oEf10empi37VYXzUwE4hcwMWOIv4P-Vw2BUxH2MdZIjCA_OPNLu9r8Z5ym4Qu33wNTskXi-alMa61dslAMFnT6rVqrbcHIhSSf7YilteZxFBP3QvORgI5TzOmIbcspt6rOl5-PJyRzsKXEJIi8W59JaciH2U1sb51s2-Ll55mQn6HGycKreba9y0FGjKUWiLXaXyjf-n6xWgaSQDfQGSWYHq7hzeilD-AXVf78rZpPK_5Acxco1GO_jYMQmeKDZlY5rX2TeMvgAFUO3hR2TpSETrDucOKVlarHzoB6Zlv8vnCNKeTKk-tBDeu82ofD9gjjrh7G_EIEvXJwlCNh8IHqGxYeczFP_vhm975d2ta_w_D0_36u9CMhX_IjK4e0367DwWYR0W4j57EJmneetU47dnwUPi8Kkgzk1wjhlug-iyvdNGummTYGIv-0WTLuCCdQrr9TiDm6RLCbP_fthKJwQM9rhsDO7exXyfdkkzv3vTlLnbPhqtvBWr0oq4HqtXQu2cwZ7ewaJjlbbyRF0VWknXRHMCoqewy-RBYTxQwa9FM9dmYaVqh-nfco-S1Cm-02s1hCe_EzJinlLjTegkJpQ3JEm5BI9hE6F0qqLyTs1XDy_EbMLqe-JI5GVzb9EpWyF0aKFzf_Z218PObHpx-CY_cFu7BchZ5btF49WweH0mCPf8boj6U-iC27OyzRdz9nP4rGbWFMgalP2neH7DcP84WJSkIcE5q6OX1QFTqomkfa_Oqn3FKgwSM9bZlekxp2iYdJsqXGp4YH4Ocm6yfivvd7hWqPiquTT0QmMvKYfz1DFBIjzpmMpjESMHXIHEWUu0Q6XujpyjjYBnTTdT2vFYzpdtH5lwLz8TBYcBmBse5D9CTRicwWVWm5bMvGC3butTB79yUVD54iMc8XqhDqhxFviz59lhNr38L-1q1x0hV6UpBVYyAAatZ-gXyLNG8_UIFeUtL5FbyclmBtWFDoZK8xntMQiyS7vZuj3kJaFn8YLXQlBkwe7iRSS745lWLqlyyO2hMFdCiqfVDB5YoIGq123IiAi9kWu0mjv-KyLzlKusOMLeFB5GB5kkajQzutZsvrPkm9KcN8sg_nLLDwXHnBBUckKCC2upMcNTKrTxH1wqLTefD4XZCkpUwwwGrs4AUC-CV7XLCe6LGOXemRy4pdGpQNKxGbBRUPRp0J09AOOf-Mk-h7ZT7ky2foAaH9xj9rtMCfmzzIGwBk-NiEbTSs8Kuxe6GlqN9K43uqzjCo5H92zXd-OqIXC58VQjTtj8fbBXZP0i5Gbm9hC3OoNGnJr85OQ4Yo3SJNBauPJIeWS7HvzUSDMzYPbB8toXP1NzlpP3pwQinMVQs3WPiQglI2c22V_AVIFbroiown9RI-zRceEBCqd5_K5wTfFRMw9lPHxBVBKmi_xvvITTWnbutkSaZMaogw_B12U-M173Tg66IS_NbdXPflMQ86YUHhIKHzuQ5uypT_aARb5ztSGNKZ7DAb_3pnsZKYXkXIUznfQvC9lRDl_ISpf0--vEBmDmB0s5rZKXJfguoyGj4GsK31Ksn_aNrVs8mUoCRCJtIvofWCnC9Jil04B0KylG4tHBsT-cX7qjiEyJ3oaT6qjjAYIQkpq4BNiJlO9xup_pqyKE8o3dXDI8gpvcFhYptPKdSbO314t5GIpqr_a2BnNttEmdShRcbLmH3oa54OC0AZnD2auEpipNA08zN8HrqFNet4EHqPjsylz_fgaCp_bbNPVSrquuidYmDkTPN_ljl1jE74hoNBSVfVPjNjy8Du8YYvmBHgZ5Xc1_kv6YzotMjMlGfcQFfpWNfXBjqb0OUgPTZJkHQCFpFuTSqYEMCrWEpHkcfQfxWQ81SNukQ7ifiPfAz1VtDbOPIFlGaYC-ct29tJ0OklNYfeFgX5qdsvEO_pt0XG9SAmWIHoz7B2BXORa23g3tSW2o4L7rpuD159UW0tMgw9mqpmTlivkEd1CILGVsPCrMA1Dp99QZwCRAXAUJczOtgSqCz9Nd9ebEbXRVr24RfZs8IR38yB01GlxHoajBe1Ugr7Q-oDpod6GgKfRHRGsMPHH0EXWsZKKlr6NgbRuI2V7WK-nAu0gLzzYgtAGc6v3uIxY9WJUS1jhjZ0nQiUVv6E23YhMFQWyze6AWpoq8feVcWjlech8qIYjjI5I4oSRQmRKcQSmtKz_mlSBg2s_gLshVhqSs2EXJaeWeeCLGT8iu45RBdAqIOHNS05T_khNk_WJxYZKBt3wLsQ2gzCxLfxZoNH4_6Ky4JI_kB-pfyA0LsZMR3DB9mFcjcUBkQvY-jCIw-waqG4gD5pUN6SM60fMkhbJZCs2aZUJll-ABEAKc2qF0GL0btrXxF5jPtluOU-POsqNKg4x1uuGuAy6In4XqurSnUkYsGQPI4h6PjlrkihzY7rwSje2_xe6bVoF_SR7lbDHJ1HfpveKFSxKD5vTNOIvt3-t-IQOyhjDnBDekqfFgSSoeBdsv-DiO8i1RQ-bexJko_i4oLiISGUymiaP-M0QpXuUjZB7yhcEkOQHc_efAuSrQV-EWKkKJyyYwsKuG5m-Jsj7LBv61cvBTbzg2Hub42adO78WH1jQO9ksVyaZ5XtBnGb0uPTuG59zaEPB6m1yn1FcepjahGXeSsMIdKcD8-K_bQMW45kmt1KN-8I3Ipeh0ltK59ucjY7OTnn9hW2b8fdNNpE__bgIKheKhVSCfb27UBhI2MhPEeC5LSXAXitJkjSE3yWbPsVUABeQxB_1Vtm7eORkxR3o_9-OwE5FoR9gsro6XiNAGs5doo7t7-qIRMMj2hGfaYcxEq5udF-WQ1sWRfS4DPsNm1wUbLPwdptBBXY7r7G0RGVA1pG8KKfT5VT6XDpWpKKV1wJotfTd519JUY3Zj6vfWiWxmc8QksAGiZfv1NE-BOvDJfMzg6j6uDRRfYp8luuneR4Whq6TjHrv8EaZkxOumm8OAT83rHhPdDXUE-9d1cBMefS5b0Erp7sZ4sObUaVQwsj2n0BdnnbFwUdB8p2NcmPMvT-KtSh0grLW6w3dfDRRXbfjFRY18GNEBC9C7WoRWhj-qngre_1NlBbq86goYRv6fLhBkCsNCKvrQ9BUvL-Ocv3DYMBobMccQp_KDFeTkQLCO3IYtm1LkxtiRccAUvNL40OWQi4vpcjDQniN_ZzndE_GdhrKfQEKgSV6Tc3g32k_-tQovjpgD5JdKr2gVMhXAZh5nVgRozCPFrUfvwZ95wv7t1Avd9vSPsStDX6wpM8rti9S2DJ1px03FbnJLeuYXLopygNcTLm9KKfx13nymohkS8BBKn8kVV9HeOQ24-MLNQWVfFtwuZ3MREkAGYF33ioUno36Qtk6oOveUOJ9B9nETdK8cJcIyymfo6f_QDmqzhLBCPkawF6iQZb-_OHJI0R4wZijZkVAi6Yrej_kSyacBgqev-L_VbphHELDI7LUvM6sU09PjJfsVNJz8QxU0c7oismcLLc-I-CVFGPHDWrvsvS0iwABn8NYqJyNY-NO4-Gjgvfgn5fUi64kU5k78pMKC09htbTzjz9pF4iIEyTyvAYwqbMzrm3FhQtkilYqJmq_WTGxyE8q5d0mqYntLVZd594clgbPnl2HtxPEkNq0nIACtgtYqFes_uvLZNboRLKE2iveFNdT0fOwg6rtT05mLGh_YWmFJGyqTEe8qdC1dm4UO-G-K63Y4x-XSYOws0kDtjc5cvsOsPzJ25uCKHv8iOX5Nvgl3_ZHfATYK_NTbZppOaANKWHoibJS3oiFwCGY2BUpsSZBhiQApzPpZFXJrmSLqIFBYTvQifhSqgYfNyK5odX0MHnJjWwM4p6vpAGn_TJbvQd1lpaF1ssq8zYDMSH3rmmLOS2vewGw1DVcVCDXzlQVThn9MAWrAdK6HBvaH8KFFB32Ak2Ni3dBgMh5Sp1iDh39Wx4Uam4DEXcLIEpqg4kHQAU_0BpHeaYXPQQP7fOeH7EXMo_-cWh6JF3urP9a9vgTQfQyRi-r0RujBJmZLs4ruLW_soV7U7D04XarpQ3JT_Jm-1YwW22KTgKtkuA3L7EQ5jC9bspnzSc7-MvA2uEsglopkaOzVGzC04RLyj1NDW3o_Wf8NOVg8DMoWLyEdH8kSODLcZQEGpE5Aomf0Du9iabO9Xniy-QRe_f7NfPoK9F7ODFv691JopJ410NEXbiCsRn3M2_m6RF6saUTcTPRe1UA7oF14wZh2rTc7GuudFQMfrr7HuBJ6TsJMLUiYZqqus390BmJ9fMbpfQQijKACEhLLpQaa8zrPMJVCHsWdLEc_jsKVHAZItG7MbcrWlEnsPzoErh8uYlPyRzK9SnR3Nsxm4sqWa_gSzFb6PqERYTQAAMi4tJcThvSI1DVkf3aQYGwvptrvnTGMcWY8Is7k_Po7nr3FqhggWxGDD1KO3gNn09PCN96WnemhwKr1bX_jK1bUmkfE8pfKWjBj484CNN_W94UEY0WiaJmsbVylmGc1NGoiznBMXEMkZvzt9VQcuutDrz_JLVC8qWe8XqbfYSNnu4fLwibx_H_XPCjTXwcZgj7zYbYLjmqGrOv2ZCD8EEfW8gDVOWLFeLid_Mbj4zMWQ3lNyfUG5yB6tWg-G0ogCZqDpyVmDfxgEYTLLDguLzDO9vw-VbH9DWBTsynJ9t5WcbXOvOL57rKXMi7or_YGmb6UvBjUX4v-dJfWWofF9WgxzolNayxtEKr_zLtB5h2K2GHOY4tAvAu2Vn-ANgHipHbLYlwVxcgnPjdOBPxC98ir_1poZtKthHbs2Ygycgnl8kQYbh55fW8KSP9Un_e0Ut73tGgosteYDOJvZjqwPF0oMXTh74H9HgH6y8Umx2AH-7kDZvMV9D3gqofm2_qi2PGVDbfsIReBZEpnaD0PycotS8=
+# Abaqus 静力分析完整工作流
+
+## 流程总览
+
+```
+1. 几何建模 → 2. 材料+截面 → 3. 装配 → 4. 分析步 → 5. BC+荷载 → 6. 网格 → 7. 提交并返回 → 8. 查询状态 → 9. 后处理
+```
+
+## 步骤详解
+
+### 1. 几何建模
+
+```python
+from abaqus import mdb
+from abaqusConstants import *
+
+model_name = 'PKPM-Static-Example'
+job_name = 'PKPM-Static-Job'
+if model_name in mdb.models or job_name in mdb.jobs:
+    raise ValueError('示例模型或作业已存在，拒绝覆盖')
+
+model = mdb.Model(name=model_name)
+
+# 方式A：在Abaqus中创建
+sketch = model.ConstrainedSketch(name='BeamProfile', sheetSize=200.0)
+sketch.rectangle(point1=(0.0, 0.0), point2=(10.0, 10.0))
+part = model.Part(name='Block', dimensionality=THREE_D, type=DEFORMABLE_BODY)
+part.BaseSolidExtrude(sketch=sketch, depth=100.0)
+
+# 拉伸方向为 Z；创建与实体截面、固定端和受压端匹配的区域。
+tol = 1.0e-6
+part.Set(cells=part.cells, name='AllCells')
+fixed_faces = part.faces.getByBoundingBox(
+    xMin=-tol, yMin=-tol, zMin=-tol,
+    xMax=10.0 + tol, yMax=10.0 + tol, zMax=tol,
+)
+loaded_faces = part.faces.getByBoundingBox(
+    xMin=-tol, yMin=-tol, zMin=100.0 - tol,
+    xMax=10.0 + tol, yMax=10.0 + tol, zMax=100.0 + tol,
+)
+if len(fixed_faces) != 1 or len(loaded_faces) != 1:
+    raise ValueError('端面选取失败')
+part.Set(faces=fixed_faces, name='FixedEnd')
+part.Surface(side1Faces=loaded_faces, name='LoadSurface')
+
+# 方式B：导入CAD（如有step/iges文件）
+# geometry = mdb.openStep(fileName=r'D:\model.step', scale=1.0)
+# part = model.PartFromGeometryFile(
+#     name='Imported', geometryFile=geometry,
+#     combine=False, dimensionality=THREE_D, type=DEFORMABLE_BODY)
+```
+
+### 2. 材料 + 截面
+
+```python
+# 材料
+mat = model.Material(name='Steel')
+mat.Elastic(table=((210000.0, 0.3),))
+
+# 截面
+model.HomogeneousSolidSection(name='BeamSection', material='Steel')
+
+# 实体截面必须指派给 cell Set，而不是 face Set。
+part.SectionAssignment(region=part.sets['AllCells'],
+                       sectionName='BeamSection')
+```
+
+### 3. 装配
+
+```python
+assembly = model.rootAssembly
+instance = assembly.Instance(name='Block-1', part=part, dependent=ON)
+```
+
+### 4. 分析步
+
+```python
+model.StaticStep(name='LoadStep', previous='Initial',
+                 nlgeom=OFF, timePeriod=1.0,
+                 initialInc=0.1, maxNumInc=100)
+```
+
+### 5. BC + 荷载
+
+```python
+# 固定 Z=0 端面
+model.EncastreBC(name='FixLeft', createStepName='Initial',
+                 region=instance.sets['FixedEnd'])
+
+# 在 Z=100 端面施加 1 MPa 向内压力。
+model.Pressure(name='EndPressure', createStepName='LoadStep',
+               region=instance.surfaces['LoadSurface'], magnitude=1.0)
+```
+
+### 6. 网格
+
+```python
+from mesh import ElemType
+
+part.seedPart(size=5.0)
+part.setMeshControls(regions=part.cells,
+                     elemShape=HEX, technique=STRUCTURED)
+part.setElementType(regions=(part.cells,), elemTypes=(
+    ElemType(elemCode=C3D8R, elemLibrary=STANDARD),
+))
+part.generateMesh()
+```
+
+### 7. 提交并立即返回
+
+```python
+import os
+
+job = mdb.Job(name=job_name, model=model_name)
+job.submit()
+result = {
+    'job_name': job_name,
+    'status': str(job.status),
+    'odb_path': os.path.abspath(job_name + '.odb'),
+}
+```
+
+此调用到此结束，同时结束当前聊天回复。不要调用 `waitForCompletion()`，也不要
+紧接着自动查询或在同一脚本中循环查询。
+
+### 8. 后续独立调用：查询一次状态
+
+```python
+from abaqus import mdb
+from abaqusConstants import COMPLETED
+
+job_name = 'PKPM-Static-Job'
+if job_name not in mdb.jobs:
+    raise KeyError('当前受管 CAE 中不存在作业: %s' % job_name)
+job = mdb.jobs[job_name]
+result = {
+    'job_name': job_name,
+    'status': str(job.status),
+    'ready': job.status == COMPLETED,
+}
+```
+
+若状态不是 `COMPLETED`，报告当前状态并停止；不要在聊天调用中等待或自动重查。
+后续 `abaqus.execute` 调用应继续传入提交时相同的 `workspace_dir`。
+
+### 9. 后续独立调用：完成后读取 ODB
+
+```python
+from abaqus import mdb
+from abaqusConstants import COMPLETED
+from odbAccess import openOdb
+import os
+
+job_name = 'PKPM-Static-Job'
+odb_path = os.path.abspath(job_name + '.odb')  # 使用与提交时相同的 workspace_dir
+job = mdb.jobs[job_name]
+if job.status != COMPLETED:
+    result = {'job_name': job_name, 'status': str(job.status), 'ready': False}
+else:
+    odb = openOdb(odb_path, readOnly=True)
+    try:
+        last_frame = odb.steps['LoadStep'].frames[-1]
+        disp = last_frame.fieldOutputs['U']
+        stress = last_frame.fieldOutputs['S']
+        result = {
+            'job_name': job_name,
+            'status': str(job.status),
+            'ready': True,
+            'max_displacement': max(v.magnitude for v in disp.values),
+            'max_vonMises': max(v.mises for v in stress.values),
+        }
+    finally:
+        odb.close()
+```
+
+## 验证清单
+
+- [ ] 材料参数单位一致（mm-N-MPa）
+- [ ] 约束充分（消除刚体位移）
+- [ ] 荷载施加在正确的面和方向上
+- [ ] 网格密度合理（至少 2 层单元通过厚度）
+- [ ] 分析步为 StaticStep（非动力）
+- [ ] 作业名唯一（不重复）

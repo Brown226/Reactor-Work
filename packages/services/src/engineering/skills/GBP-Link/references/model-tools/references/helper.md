@@ -1,2 +1,15 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQHbt9b4gmBVMlLdfd6Knn-Utr8L1__W-Na8tRlcx7mb4LiIP1ZyjOnEzVshLuBhcqNCzsh2T0K5UjM36K6wlSEVCXegivkXmZJ3P2nHvrfxzGC8gDe2RJWM4X7ogFZWPU9WqjVuNwrpSalwG3K4EKEFZCiCZYZBoZNqINv6rAP-GB5CJOy4Wi0i59p3OWrXbScnamzp9kTYyA0sIGmF57fwDidm0KkN9XZkHt1rclMbDaxAFAWrwc8ZY_9Bc0w6317o04D0L1S6_gAlf2IGWovOsobUjCVfM80ASzxi5_4px8I6YXLAizv7tlKG9B7L8-8fCF2v94VomwEzoWZ9ipNaIhQKrQbft3985z6ULVAUseEqlRFQaoVmZ8SCm3Yfea6Q9nBWkI9XYHdJRtc0K9UKTTww-X_YIEJQnrPoiscDAiEbODR7cO3q01yaEGe_JRYNYIQ-VQHGgg4WrLJRvJ_lbOS-sIX2MLmuUbQ4-5xzasM3RLZn5qX5T8HMGv3wZ90uFAVBPSBhK6YzIBybUH_paBaHAuP333IgKP0td6bIU=
+# GetComponentSeriesNames
+
+**说明**：根据构件类型查询可用样式名称，用于后续创建或修改构件时指定样式。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `category` | int | 是 | 构件类型，1=门 2=普通窗 3=凸窗，4=转角窗 |
+
+**调用示例**：
+
+```json
+{"category":1}
+```

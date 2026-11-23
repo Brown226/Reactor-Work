@@ -1,2 +1,30 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQxvflJLLijoqKBNE2CANk_UtCfvkMr9JSZkRC1xJMbHaGa-5l91dBHwT2FAwHtJeohvL2xG3j4l-1h66q5G9v84dkKtJdD8SCNnEjlrWw9dKBsgYAlrNuHhT_3WTzHnVyMeo-A0HmDWruZ3qwpyvQKnpg6R2TNRr4fg3lo2-Nt-oyJIIwfZTka-Xh0qKBn8anYkLO-DymCW9yvhEtvIVsfFar10Doyy1yJO80ZAYL0ce31ixtP0YyDDhXIN3b3xlF52_o93Mf8v0o2Z9MwrSHxF4Lh121wmhbD5qDbjQY4QUmlweDoHZgeUIV0WlZSkFReG-dQ6LMjf9XRtxRMX8ptFVFQM3o1t9DEWul0nfGBVY_stYShHS0KI_FSNH9qrdl_VXpfIGyE7yq72_zbqLMhjJtDiaaHMY2L3arHEkySxWZmwexMKj21pyh5rdEVBx-cV39zFPg4TP1eR3xwL5RZrAPRNPwArIc9kG7sS21Em7wnVr2AD5scM4b0oyjLQD3qo0_tACnnLJgsTSmIdNXyKL0PrJmBZ7HKn3HkH-dy7Gxh8IDWJLt7V7Nor9U2--mJG0PMNALG7bpD5YexA0QrceOKxbkALOkQXzJr9nPSKa3DuecAjIDk-JDQrXPED6wRNcJf0so2-XaQWKJl2uab591f4liuw2OdspQA894GouXZgZHkLgk5DGfddXvBzF2J52ags7LiLm8046HRHp5sZlE8NYbAxrzdhIwRgFqXB8=
+# GetCurStandard
+
+**工具说明**：获取当前选择标准。
+
+**调用工具 Json**：
+```json
+{
+    "command": "GetCurStandard",
+}
+```
+
+**参数说明**：
+
+| 参数名 | 类型 | 说明 |
+| :--- | :--- | :--- |
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "获取当前选择标准成功"
+  "result": {
+	"bdlsPH": 2,//0是公建，1是居建，2是商住，3是工业
+	"StandardName": [
+		{"当前公建选择标准": "xxx"},
+		{"当前居建选择标准": "xxx"}
+	]
+  }
+}
+```

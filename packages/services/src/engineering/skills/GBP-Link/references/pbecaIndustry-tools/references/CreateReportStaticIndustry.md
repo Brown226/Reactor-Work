@@ -1,2 +1,21 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQhVhQo4gWCDdYiaDtd17qeR8v9Y5DAK08CR-ImxrAE7DLsEuZSc2r-2q-LrUN6Tx9a6W_RrzCwKjAwV22xtvgGsJPhb1LcwwYTqmJyCxBpcrniRa72BfjdA7wMMacUSkFlyZW4BRM-7oeEtC76X_uqunI7M5jTcMXoCaUN4ippJ6xIkOF-R6xSXOwKCC5mTkFq4NOH1sJsA0Z2N42yB6e0KF9WrOq4jbkbSrwKgCxGD74F-ZfdyKRq69NwUFwc8Tjs8wzI1WTZuw7gMHwL84qOjtkkWORkZLl8WL5Mw1cyBay2Zxr3DH6FsYWptP-RbntpuHoHwpzXoHxrnRtuK_p3Ht86__CWSGByJsdMxVfv-mMRummaq-BwOTfET9ECZTGZvlWsjmZ1l_lKH0gchRUO0MeEAt25JxB-L8IMBZy536etIwsVHFS60ji1wL0Km_2vA-nN8Rg3uvJvB8Nsnz8NEbvMDjVEwRL1dCc_QaoT5Gy36CffGD92CXu8I6-PWdWwZRWkhj1d0G7aBHfN5V38Wx1z94syBJP91KY3hcmAPizEf9XY7u2VobsmZtlqiUR
+# CreateReportStaticIndustry
+
+**工具说明**：进行规定性指标报告书生成。
+
+**调用工具 Json**：
+```json
+{
+    "command": "CreateReportStaticIndustry",
+    "parameters": {
+        "tage": "生成规定性指标计算报告书"
+    }
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已生成规定性指标报告书"
+}
+```

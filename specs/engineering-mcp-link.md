@@ -117,6 +117,15 @@ MCP 端口不解析厂商配置文件：配置格式随厂商版本变化，且�
 
 **防幻觉约定**：函数清单是有限且可穷尽的。`GetDescription` 查不到某函数时，必须明确告知「清单完整、找不到就是不存在」，并引导改用 `GetName` 确认实际函数名，**不得**建议改拼写重试。区分「函数存在但参数错」与「函数不存在」是后续排错的前提。
 
+## 本地 API 目录
+
+COM 系软件（SAP2000 / ETABS / Rhino 等）不提供运行时 `tools/list`，Agent 能调用什么由**随包分发的本地 API 目录**决定。目录文件位置固定为 `<技能目录>/references/api.catalog.json`，由厂商加密 SQLite 库（Abaqus / ETABS / MIDAS / Rhino / SAP2000 / SketchUp / STAADPro / Tekla 共 10 个）编译而来，去重后约 1.66 万条记录。
+
+- **注册时必须解析出目录路径**：`registry.ts` 创建 `ComSoftwareLink` 时调用 `resolveApiCatalogPath(catalogId)`，按标识定位目录文件——技能目录名与标识大小写无关地相等，或为 `<标识>-Link`。只传 `id` 而不传 `path` 时 `loadApiCatalogTools` 直接返回空数组，连接看似成功但 `function_search` 查不到任何函数。
+- **目录缺失只降级不失败**：找不到目录文件时连接仍然成功，简报说明「未找到本地 API 目录，function_search 查不到函数清单」，脚本里仍可 `win32com.client.Dispatch` 直接调用。能力缺失不等于连接失败。
+- **目录文件是编译产物，原始 SQLite 不入库**：编译脚本从各库的主表（`functions` / `methods` / `endpoints` / `symbols`）取 `name` / `purpose`(或 `summary`) / `syntax` / `parameters` / `module`，单条文本截断到 300 字符；10 个库合计约 4.5 MB JSON。原始 103 MB SQLite 留在构建机/制品库，需要时重新编译。
+- **技能 references 以明文入库**：厂商密文（`<!--PKPM-SKILL-ENC:v1-->`）无法离线阅读，已用厂商 `skill_kit.vault` 的 `fernet()` 解密（剥掉标记行、拼接 token 再解密）后以明文替换，共 216 个 Markdown（约 1.74 MB）。
+
 ## Python 执行器
 
 工程软件的可编程接口几乎只有 Python（COM 绑定、内嵌解释器、厂商 SDK），所以连接层需要一个会话可复用的 Python 执行通道。
@@ -212,3 +221,7 @@ MCP 端口不解析厂商配置文件：配置格式随厂商版本变化，且�
 35. 计算成功但无验收标准时不可交付。
 36. 门禁不通过时不可交付，且 `review` 项使整体不通过。
 37. 全部通过时预检的 `WARN` 仍出现在结论里。
+38. COM 系软件连接成功后，`function_search` 能查到本地 API 目录里的函数（SAP2000/ETABS/Rhino 均非空），不会因 `catalog.path` 缺失而恒为空。
+39. `resolveApiCatalogPath` 对标识大小写不敏感，接受 `<标识>-Link` 与同名目录两种布局；目录存在但缺 `api.catalog.json`、标识未知、技能根不存在时返回 `undefined`，不抛异常。
+40. 本地 API 目录缺失时连接仍成功，简报明确说明「查不到函数清单」，脚本仍可 `Dispatch`。
+41. 技能 references 目录内不再存在 `<!--PKPM-SKILL-ENC` 密文；构建产物（`dist/engineering/skills`）随包含明文 references 与 `api.catalog.json`。

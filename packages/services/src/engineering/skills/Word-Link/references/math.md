@@ -1,2 +1,32 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbVoRD5D3PCkTpzuPTz2F8EO9b_KlV61OZSYrlPToaBU2d-z4BsOCdmNPswD75zPKm0S94iAiZKC6EQZ73GgAz2XKbFVIhwn3SAth3FRlQhpwGi4_mUT7V1on7swSugQwyRyL3T-HVhTINYMgccViyICuPS5soEOUMDMM8uJ4tZyGtEDdJgHV-5IC_i9rnJva3iMpwKSuqwLQcOqQuojytQbKPt_Aag2SVKPovF8vMlii7QacZPTxFEM_Sk0lOSzfDiPizKNtplM6erXKh-9yIn0G_MRiCAIxb4NxQbMxSA3zLmFhd4wDlfwcJ7Cv66xNE8yKhUMnILtx08chVyFauuyAnUTIYcSDncajF8J2OWZShucJSCv7oW0NVNhlwN9krjv9Q2SHylW4R_wdMN5sSZnUuZ6p-5fKbQh6z8X0TMNccik0Jy0Zu7A1jTL0mKheOEhU6M6d-ieSlRiuWLlfRuTQ8JaxnqrYt83yYgwaIwvM8pxGUy8w6LcfUvoGK5o9dMschoEpJ9J62dWLbz2Ow-GjPveR0EOiCkGCwea9OWpOYNc-5b79N_m48RZW7iJWcwsvmRdspoP1SlIOwlBtdmlS0jvso4YLEDbKVQ7aM7Hg0LMfiiY53HpHJ8JS6q-ST_IAQYiJtYfCTqCsrA8URilYwduYXdp5Gb3uiO5VWje9aVIGiWzjZX3Vj05nvYaiSRXfZEv6xhd9jVPENyH4F0KpkwzzdFC8pYYB_z5pajRgfrl_wQTYMkytiR4q45KAzXF_IhAWQhsrBQ4K9V9m6S7vwEUUk_TL055lLpbZqzgvKdAdk0TDV4bg5DkBeiCjP30PJwGcEvtAZer0sV6amxnK92R7cC8Sa3E_LQrSap9j33Krugb_L_yDiOmDPfYgXttq5Q89JUSz3oSK8k0pUpFagzaXKhCYyOae-rbO_oi06zKN3BqMQTAdVekP_fk-cFF1-qQMfjYSCVzVv6Bp0RYuFeOw5Varkrj2aa8l0s4oK_khdL3r898t-olDllqRBorsCSohrORKLkTwqPXgHma2JwpInYsAv-FjIWe2zK0kUqydwspJZOfO0V9WVXQhXRsNqSsnr99_lQIV7bAsgODOXqFIbQTrg_ojOuspCBeUZ-Gmc-wpK3E2TMnwoRUYOXyl6EGn21lDXorHTM7Qv37PHdc6ac4LuU008aHLdSY0-sZ2EjX505MgEYMEbuI1LieiyUrQSQl4Srd36VhubJaDI31ktzbW4l762F6XKYvhna_dP9IHbodIeS9MzgGbfynbeUrbFCJwVepRRUGA0VKuWzcDKFNEQrLmDM_WloEi99hbb_royEdeZv_w2YvUwqWslgoDaoY7_Vx2Yx41v8UT3EeLvCOKUEXb4HmE2UYLduTpi8OHaey--sYXPZAuuvKTGh6fL9idcLazrmmD2eQzdi385b2NYtEjnFW0lyC14Nn77jgd_rKTEjkPxGfEd1L1fwA8Ne5NxqMs7MO3A9k1Jbwk8GsCXFoBZZyAFyTx5MH4pOZuPHTQAIYEBg3j3Oz29R8yWnvMD7htZuIoCg54xUpAPQ1rnYJTP7E5p3M_MdYEheIoAlMNv7GF9-rc4sPEkDcpmFkfPL3UJp7ucVrAivxkc-q4X6RXOEMcve_X5-Ih24HyAc_iT5u_llkyhO_L35WIrws19Rqg0W_IzFd_ErXDC_9YbQq7Z72TnYuzBqESG0H7LLVD_m4wJ692qZIrqAPt06u0kr4DKmKaw7jNbJPn8tdENP_TI63rRdn-P6z3cyUIoQT_SX0RZ6QQEgJQu0-EedOUbZ2NsGDZA34I4pauNP5rEmQJPxJpWabHXUlEtz5DCmSyMjA5gb2FNRzSYq3KQeJaSw0KhHMTir64w6VoMHzr4_8g0Yzy5jqUFDNjltHdoZFidl2DALmeMwjdrwHOilliHjjUvBkun95pDXYcMp1IL7excP0EvUO3pUgBhPnbDRm_6FDa0TWhNny0ZG1FHpGKk0BPsiaOUuDEZdctyYYOYWjOy5-jybolEfvJW0pHsrmsU6PJ-q4Nb4IMnI5R0hFWo0Gvs9vsy4JujFmtLjEs0irun9ScgaCTPsU66p17GsCkecI-ub12aPOOT5Fss-N3_J9B7XbiJoiHFkVeis-z-LY9-JgfTERTvAWBLhtPsSXCCuBqSiy7jQw3OMfMzLufYBSF2Jxm4y4Ma9ID2j3CDvtymcZE1-dphVwe_YML2UrHCJXWA1_Z9aILRK3UaujebA2LxuocS2K4HspP0y7BO3ZexFCDD_Vm4MI191yABRYe1jMzx_3Oyn0CSC0bU36rQDYz63WeYIDETqc8JzLwdcZBjbp2Xoc8-q00EDhqTyAR8--P6zReMFanUHQnwdFlKDS8EBPMKtgRLdiwENrwAvTdqqObIJc31VoRrYz2j3UPzHv1ZYDKh95kV1ql3uaPbOkQH0-JvRoBvgROGVRJQBdXWFglyfvr1WKXoS32a7wL38QDIsJsE8rraJuT1GmnigUQYLYRuCSpyeg3xFpD5towo7fDkVEQP95pIvR9wMxrZvsRzIoAi_cOAIiUUSwTn_kGZeK7AjFNqQgDT_uyot6TWmBx3TZPUqCJSebPKZh2hKG5-e3wHLG7N1EEkzt1ZYVeuiKQD1B9cQJhy908kUj5OpfIVftLQAc2CjXtWBM_7RVKMFsyMY2s1uNfV44u4np_wrmfN70Y00zC5UcrE124v0sfyEAH_GIJAq1xxb66O2wtSXw1UiPlUM4YEkTOJmGZOZMv8oKY3_y8e6XeIT3b9cBb6OlbVjjmmfPTFA5gfMIbwQZ4JA93VsylL7E7noAbN-ynLkrA==
+# 公式
+
+公式用 LaTeX 写，转为 Word 原生公式，Word 与 WPS 都能显示和再编辑。view 中公式显示为 `{公式 …}`。
+
+## 辅助函数
+
+**`add_equation(paragraph, latex, *, display=True, number=None)`** → 段落；带编号时为表格
+
+- `display=True`：`paragraph` 应为空段，公式独占一段并居中。`display=False`：行内公式，接在段落已有文字之后。
+- `number`：编号文字，如 `"(6.2.10-1)"`；给出时在该空段处生成无框的 1×3 表格，公式居中、编号右对齐，返回该表格。编号不要直接接在段中公式后面：那样公式会变成行内公式，分式按小号显示。
+- 支持：`\frac` 分式，`_` `^` 上下标，`\sqrt`、`\sqrt[3]` 根式，`\sum` `\prod` `\int` `\oint` 及其上下限，`\lim` `\max` 下方的条件，`\left( … \right)` 等伸缩括号，`pmatrix` `bmatrix` `vmatrix` 矩阵，`cases` 分段，`aligned` 多行对齐（`&` 对齐、`\\` 换行），希腊字母，`\hat` `\bar` `\vec` `\dot` `\tilde` 上标记号，`\overline`，`\text{…}` `\mathrm{…}` 正体文字，`\le` `\ge` `\ne` `\approx` `\pm` `\times` `\cdot` 等符号。
+
+## 示例
+
+```python
+p = insert_paragraph(f.at("正文20"))                  # 独立公式放在新插入的空段中
+add_equation(p, r"M_u = \alpha_1 f_{\mathrm{c}} b x \left(h_0 - \frac{x}{2}\right)")
+
+add_equation(f.at("正文21"), r"\gamma_0 S_{\mathrm{d}}", display=False)    # 行内公式接在段落文字之后
+
+p = insert_paragraph(f.at("正文22"))
+t = add_equation(p, r"\sigma = \frac{N}{A} \le f", number="(6.2.10-1)")   # 带编号，返回表格
+
+p = f.at("正文30")                                    # 改已有公式：删掉原公式再加入
+for m in p._p.xpath("./m:oMathPara | ./m:oMath"):
+    p._p.remove(m)
+add_equation(p, r"N \le 0.9 \varphi f_{\mathrm{c}} A")
+```
+
+## 注意
+
+- 变量为斜体；数字、`\text` 与 `\mathrm` 中的文字、`\sin` `\max` 等函数名为正体。单位和下标中表示含义的字母（如 `f_{\mathrm{c}}` 中表示混凝土的 c）用 `\mathrm`。

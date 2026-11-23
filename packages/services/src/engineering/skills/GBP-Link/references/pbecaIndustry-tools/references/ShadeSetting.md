@@ -1,2 +1,19 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQ8pQUdLtKQN9E6ZFajObbclApJaLRw5FSmduZ7MEsYlZ0UdZFdX7h7yGZyOBDfQqiCg3pzrN_Jpe-gpsRb4FDTNjVfYmVlx9pV_sKqaoSm95TIO4UyNU23ce7geRmMw0hMxCHrd_SblK8wCT_n3UM-WcI_Iyg6qzVN-dmvC1Grw9OGm9d4PdxCXRW2MKVBaKx5vsf6Cnf_FTDLurqhoMJNxdYlbtQPlKoC89QZzekXXX-AHKjoTsDLexID9VFzwMeHmmOdq3X_EyvgV4TTstHG-yq-tVi6wIGFNoWjVIhkMcojiwzuw4A-qK2iZ72E5S_vVV0YyLwjSEowjuir7srjoK-UisdZ5pPj-VjSTvPL0rKYnVvXcOsmPb67A9u4H0wxpAI6g26SG9MH35RrWFFFw==
+# ShadeSetting
+
+**工具说明**：进行遮阳设置。
+
+**调用工具 Json**：
+```json
+{
+    "command": "ShadeSetting",
+    "parameters": {}
+}
+```
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "已完成遮阳设置"
+}
+```

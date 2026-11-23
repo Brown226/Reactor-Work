@@ -1,2 +1,29 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQN6VPXUksFnPudMIsoy3q5noB_YsVMSmjunqroXiN0QFqSMiLL6lpIOP0gYq4BWfn7qcA068606H9m_CDcCZAEKWCm5TZ0YBqhRgnseM2N-bu4HgtjzYFN6zghFzskXEj6oF4E0A1yWrurD_a4I9PBtXaw5at-B99dAJV9S11RRJrjliAF4-JZXnmKhL3HHM7pPld9KoExkc0cLOP0KSJ33fXSxA55azrq6yuURFLliqZDeipokhkM9MJdo5eUg-WmVLrwjMWgbrouFmHP_CsjiPD2kHRMYq6buLI7dkHoqDLcsibaJi8K6m7VvqqLH3fdejlyCHquNs4y8Lgx5sVGGqrKAcZSomVtuH5FK8sn7eLt5Be5O43SUbVU-o1xIjI1pykU3hAc7SE5W6cwWVKSu1GjIMSUoaRosmvqJRiORDwRtzi7HIcNDQ-ZcwyXBtddWXjbdnushrUtrYatY3je-OdwXEPk-ArqE6vXI3qnY7sV-AEFr4w-JV3RZnOnSHh7xJIeNMkE0QqQjye1AnU5u0HNfsxkH9tVmMMuVEa57Iok1SPaSZ3QYxX0jx9NeTR4x56eN207muzRgwRAcfxXIfeoE38d_VZ9MGN3ASpAuvs-1WolpPlbFnlCdwx1UERBOKZzJ0dVAjKzNtLrfjAXCjnRiWmH5rQsT-DvSpoxljC7OK15znrzABHqTHghDck8Fj-ctsLnfRYW_4-gLgNtg==
+# SetStandard
+
+**工具说明**：依据入参设置对应节能标准。
+
+**调用工具 Json**：
+```json
+{
+    "command": "SetStandard",
+    "parameters": {
+        "公建标准": "xxxx",
+		"居建标准": "xxxx"
+    }
+}
+```
+
+**参数说明**：
+
+| 参数名 | 类型 | 说明 |
+| :--- | :--- | :--- |
+| `公建标准` | string | 标准名称 |
+| `居建标准` | string | 标准名称 |
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "标准设置成功"
+}
+```

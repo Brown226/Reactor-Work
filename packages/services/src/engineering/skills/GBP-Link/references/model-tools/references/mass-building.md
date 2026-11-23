@@ -1,2 +1,25 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQuVXIt8qYzB7OEo_WbM2HbFq4TRmcbY_iAJdp5IWFYs5wg9SVecnCI1-_xKy1sYzLXl44vIB1M77FBzhm_z8MWU4mPff4C8XEJ2YOMJa8OSHXcuGHBSlEysIxO6yIfwVeGF4kr86SmNAhJf-KgFfzwaowM_ZKov4BR9DiQDQI8sz6czsMHSq1kH6MVphHaDlpofSvEeNni4H4wyg2iIPW8xtE-b774IH2-5JUNj17cWbcfUAx8ejRzMfEL2GmfXWcF-HcGbCYRL3z1WFANE4oJtyo1MT3ew2jIZ2qyNlE0g2pPnsupwud0BxLJrGO25whqhJXInU6t-0hPOIkrHF2fRuc8p-KhNz1Pi2_40DMpubUzCsO-5z_MH_T2w06x1fvI2kIbkV1m7CFTesNwO9NzPTEDWGmwAfQUBFw4C1jQ7IDdpmacr6xAQy1lZCGFIOCDpFy0VDy6vfbCCAXcKdl05r4-NGqvTHTE9GAMOUTBsda1h657LE0Hd9oc6qPswzwhDr6E0uVEFBJUzihLZmDmBFo6lfCFLGYupxpSILfSXzXfbOaSkYiO1pvHLjOFfGwtw5h-cPEs5o-RzbqGAwwAqFZAK2H2SdT80dcndpqlvyMIUMoKFcg5ZDg4Hpv03dS0XBm-G3NWkQFP3NZK_plIQy3d3W0mwCmLGL3Ro3vg97_JyiMuKfudVI0FGU78V1DSB_NxUs7KhHX4OmNQK9cEvTq4wZIQT-yNXEBahPIh6VIGa5zl8kXpbx_u4ktZ77xoFC785_OO1oH_C5AEnH3hTFQFEVkSoI9k2Py1RgCm5o=
+# SetBuildingMass
+
+**说明**：修改体量建筑属性，支持批量操作。
+
+**参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `idBuilds` | string[] | 是 | 体量建筑 ID 数组|
+| `elevation` | float | 否 | 标高 |
+| `height` | float | 否 | 高度 |
+
+除 `idBuilds` 以外，其余均为可选的修改属性。
+
+**调用示例**：
+
+```json
+{"idBuilds":["109","110"],"elevation":1000,"height":3000}
+```
+
+# GetBuildingMasses
+
+**说明**：查询当前工程下所有体量建筑属性。
+
+**参数**：无。

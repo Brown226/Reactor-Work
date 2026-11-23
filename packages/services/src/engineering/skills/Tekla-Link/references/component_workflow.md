@@ -1,2 +1,235 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbSVk8nHlXBkii_Q7OJjfSRTO_1hQ6fs4My_oWIk3fgKhvCmB29dYV5NBYm-Sc7lTUjXQUmIiwtvNYjacak091K2WSwWSU6LkOLcbHMQEyXUOsiH1uoTlDRYD5MVoI4qgjrEijQSwTlk0RUIyjyyfSJy9tu3QW6oy3oETSYa8H8xJdJWUwnsinI9tgXX9vIU8olt6xNMAGakbmjLxWYGpWlV9QnchT7xx2zAukvEaz3QLZ68rxUsTkZEkUAUmBBI1BDV6NmqrmhmsuVXc6Y9jgJxzXw_qGw-Vc3y44N8iJ5K7PIm1j0LwVz1Twom3lS-MG7uYAQ6Fs39gUx4hg_zxHZjLlMY6z1_rZYQygII49REPs133lBwFEzYzgpTZwHY1ogLJzdNeqzpoz7x8Qkw3K9E6SXgMR-6T9tZXk6Arb7HhvEmHdcKKKc4EvaSF2J9vWGX8uJ3BEFwQfVnUO2wDdwn0ZfNqXik0B7wMjkricMBLwZbSAsCYCe1CnXCUYxS_xJgxuhs7LVPnHfhw65e-boCywpu427jqTi8DN7uqEbmqDolWtcws5EQoVzGWGyCTzmfngafZvYiyQer9nGEnTom-cQLyDy-YhWLMfDmfh1zT39_rNgg-7pL-RgRR_Gp7kkBts3Nzrfhh89RFokaP1ZqI0rwsJE7dOYUHyiqvRnUJGfraU11uxbHlqfHWK8xzuXA37guqBQcumd8jEYoqAMwm134P5QSFOUwNVge128fZrBfsbtXJiHVEQax7_EzFmpqLprAEHqGrSfOQ--TDnW4_BWYNpfOc-gAm8GLtYzh-CY3wOXDGOKeVhbMABqBygMnKwGehy0QGrmMK3YRz3GH632hesLJBMar9MGcmWTxbdqejKHeRV0q83TToZq81wJzNk7MF4Lp1N4cf0lrXt8Jk_hDEyG_cA-SB0fshpQJeRc0R5oRSflUIvGi0_cDDOwtEfFtnosTSQsHYz10TCwOGghhcfgb8Yfx-baGGOCyqx5Dmy9n_r5Tbi3_Nsw_ztWrmwY5LGrB8E050y5QEK__rdxNhdTqYiC7HvfJX0dgAKHek5qMXs3p5DfCUw64eld5AXyRKuYPwUFPsg6l0voMxQWdfdaGsPUT3BU0OHiFCxW6U2SznkBOdh8BbPEaqtqpZ-rXBh4LAyrNWj7RszuA-AfCL93egmvjuigZbU-Sgit38Upc163lH4jTXMsveX3m_Edpi4GnHKQLB2xcele2iqpwwtRKDQEVp5djexZy9LjtmhzWU3xI2baj2ZTefpMXwp0gFda3Ms21r5DI9taDMvBoailEg6upLYTk09XN2INdOBu7-xAvkr_QRpApOK3PCgblHgqL_Qq0KUrc_DdINw2jiqF-JsOQTomeIf6GFr1U6zokI5BX7i3kKxoQ2jz7YRjK-Z3qKNYHKTZ3HGt6_yrXiT2GaNV3YIefeYWj73mgU9zVyAjqklRx29_BrOcStoUj6Jt--ekOux1lN344SX80axNXvPdJPEhUTK62q_8zkBzN7nGNOuO1Kv2gWiZoj5RJ6hYhWvXpXGmXnEPosfsRzUouQvhBUfFx3mogA4pVH_bapzt52Ko-vFXXwv000Bd13SDn0GWwv4tpdcPmYpl-jKtE1cu4n4F8QLhoTdhbazQWoiSlShuZ_Ykw56_amj0ldvsYo3L-75kc9N4gHVB2DvlmbkPulT4pF3nFCSBmF29aeXL0p69WiBr4UaoBVSEhVRdyPs9oqnxOYOVAhk5n2b7f7OfI0hPt6b26yVGjYvqhhX8A1Xtp1yansdxLRc5jDZBdfT3pmd657Pa1fYqzQy2c93aZwNTWeCti8Wf5NWd3GM8ZIr6eDEeSKiVajV_4XmlEG93c7obs_LMjptTBklv_oaOw_4FVmnYlTwjT2rM2dl0Wp4Q-_7W4delZPYQSa5gTCMBTrSWrPCEQ1tsq37BThTmUz-yWCp7TVTbaXP6dIF4g3IEY2IYsFVylrjdZHEXWnRAZS3eoiEm9CiO6WaTr4ZG-82KLQ24Dlx4XvMVWi5Rd3qiwEXrXtJEbmj6W1srt6Nr5yOSf3ZcYuCaboZEt0vij7F90VPi8JcbvOvdjfH2Y2MEBZ8Hc0m7bX0HLEUOaiNTyW19Yz6ncTjyJ7i04VO8BJl5HufIajLB3LVmM1_7wiOCizRe-CBvOUkqxBP7jAJIc_A8FQ769gThF9dkjLnxZUGFBewOWcRd5qxlvGGT8zeSr_RRQTaH1wLJWPrfod1xsy6-C11cUb8rLOFV_KBzGuVreFsJ7kZ9dcvmUeglI_4Giob9hj3jrMFuqMw-wUD3pcTltIDzmkNcVIPTrq1Pz8xwFLhfHSgnpNKz5OtsSUDhrY1azGHedCEZ7SwWzbf7MAuKvR1YRiXR4A7pOQsLE7KYZQcwsE7zzlYbyU936KzcqosoKZxfPJulQckrme6X2iWL6i9iCecCXJ0rtg0Tu3domOvV2UgwxV0iCOCYtHfdnJdP4ULXbjSMVVSToWjVWKFbapG85Y2IdiBnwPHZmD7Sz-2arUQf9T0v3uRREuqivb-3In4Tis0MOur8KKZ0dk1WREnQK9M4ZHbUg-MMtZ2nys4jjr2uWVTwRuhlkIQrCUHup-0PhLB0000AaQlZ5lHDiUMK_WLkx_mjJxHIRQexepeyb_hBFClw-fzHByubRcmfxWNAgp_agIVFvgZDvC5G_sBMg-yiQ5v_aZhhaiXGwvA6ymXw2ytEIv-fTfpK16wKL4nbB1KBs6vlNvCHeEWRoqHXFesVzbE9pbjk5fn_Mu8Shw5sx9yz234XldPoWZt2N7_B-QlVyoXRZkYu3N2ufg49-4ylQkdMpENTWPS0aL0VMdjWSS6kys6k7XjNau37x4-S6CkOKRVNOXCV8jQhA-Gt7xmENV0tQTpR9OU_d3yo6FI25a_cglIHDUjBuXuvzsFa7nmbw6PY67BFRMUbneglIvs1x7hBaVRtUvRvow-4byp5VouhufqFMmn517Wx_YPc3dDWEBGg-Nl_9C4NiRFcdS605nQYETm8metZAUuFGIPxxIJAQbgHqSNanyqAMXYBQFTicgn320Kz2tK2CdyBbzfITEndoaR8SWFXzUOqoiw16bhRNaQhuKoLFmQzLEfw-mw7dek-IsihamEZOnBmEXHO4Z0WioaZ48g0X_egscZ-1sexiN7v7ASoE65WsMRMycQPqxq3bus5wz6ilh7wyHR-ZsMZ_ILJvyXhlr74hUdDSI6VBwrB6tl4Sf_uQqI1ArEN4sIvI65bXn_TyGZW4bZP2NvXmq6OpqEFV0CpJaRrHe2D2GVbWFCCfq_YLye9gKsCpsRmgy213Pk-ODLTs8G9uuUjyj3ZmcOM_4MBk_US2prvTI1P3euX-IHWTYyThxJzC8c-D44QAsiPkDvB_eVFOQqVojIxDPmB9wj3esb5I8pqJACWwlyF5RwueDRUIelxrx0g1r5NiNEGSugcBWrOgQToVRQpY8aQ_jFgF_zxUhv8a8tqmpPdJM9x-i2wlRTnA5Nww0bxmCuJfoySlS5HzW-PLAUUTY5AC3AYltkgNQ-6rbWj1CzOojS9jfH4crVyztciD2kN_kaCTyWJzr0cGwJFoxHEQLwhCcVRRUWaUZYVXn7m1yePSXXJul2ST5hKYkN_8hCJj3yFL21fJ94X2OdODcLCCcCMDbdacCCZ4FK3h6AhMI8LNRgrB03bxLLsLaFqR_dRBXbLJYTN2Kvv1wrMnMheu9pgO4d0UH64GcFLuoMu1dlNeGADk380pRgRgnTxmGJH-tmBcChAlPzguL8NfmkJetPtOugqnk_63AHUoN0cEK5c9W6cQCBcH3q7f4MpTJRXHObhWoGRoEbmpvn8Qhycx4h2GHGjKE_nOHf8eYsDJeyUpBQPcuqH41DZOvAS67Gn8jMvReLurJqx56Q1i0NQF1YrRlBflb8pXlxto1JUfd_AuBDJLB2MQBGdyqDsrdF4Uf1Ot44ySiFI4CbOPwrkvhV0MT1DWurAWYFoEMkoizO5PnKduWx1RlIoQIuJL3DnnzAYIOrzfLsW7OG9Vq3NVREUipCtCZpYXzjpVtU7oRNPT7_pfVR6sINKr_ooE_j-w1WjSAMyOB1XCB5TPK8l6fLYkyirAAd_8tjqPQAv6-_ZK-dwA-DhAkR4sT8RsnKWzVe_khnqMu2Aeasa2xv-ZaVd2R_9rnlwSotgx9WGsd0THXgRxRRfsGSzmcU1zY2MYyOnvZCcULuWJV8QXvxende9I_3hQknLHNolbNu0z4PhRW1tpAG9KCY6G6QQEZZm-armvdNUWkL_cv7oszgcBFRAkZ2sYUBfTMBHmnVILXdVIlhBEi6hK_sE0PeCwhCQjG8BBGxta3brBGQq9DMuizlcKitvdCDZsYKn8n4NKWw4JxtpzT8OXO5DtOMsucg_biVCBPgkO55RLgkAXDQHwt_4lFhsTdBEtKpc-LKqqSX4Eyjczq3pfAdNeMr4a-FjLaW1kpbb_BYhVvtjhPg6ivhH8T29Ny56K1_s81NSgtznpZ5AxbfDKaez-mkoCQW1bJzheXClntMO9LoAa9CYyIKscVwIttQCOTsR5aZs4KjChxsZJIaRRgWwSxtN2XJnf0Io2i2L-_K5WL2v8Q3iM8e85yaprBfnti_OWreAzh_YbYMs96lg3DsyyBN03lsXeW6T1kUfemDlrfX9gmWtd0JE1svyRGcpRZxjyktVJK2wmdKPdt9yIieB7SoOeBDrJWO-GODf_ugx4tRkCNqznWEiYu1cPxMDMdRhqsbayJbZ_PwG5n8J-tkdnXkzm-Ko8g7lkn5jdx2TzYsmWIq9_0d_YsOI5LXmS6Dq4WkckscUL0I1B_g1lehP2YIUTq1Y_omLjTNefgQitBQ7o3rkVQWRqLxTYap0HN6KE8xxIhok_H85z18b1pmd1S6-qmegoOMYq3Worpa3CZc5j1EOl2_cbMto1AUF_GJ4rjtJMcqJ97D9WNfDs_tOCslLPBQFrQ8Eayd7Z_AQEcNx1zP_kUttxP5ns1SG5G3riuRgyAvL28YnTbyfHSgRvA-t-qKZe10iIzXdpKx4W4NE8deUtPvM41cbLg1oXr8OQ4Bb6xaNH8R3J4Jo9jteSZ-DKCCuDZJJCT2MXo35YoLPErJWIWh4XqU78F7MXTKcLLKkw-6xA2tV9XwYwoKl8C8piOVpngjyKhzlbt44fjBEGsm24Rl43JuoWZftUqx3UlhgChG9htDnthwlTSk5E_vp9GD18NVaxyPwrN74pjwU7sRyConOxo8Lqlr1j_UiM-Erpb6WPgK8RMZIKGKIA4ZeoPdPBnr7LC8HNsqpZ5s7kN0l71YkAGYmDmCC9vmyIQ1vFTsHGiduN7FSsFK3W5_qGQ8WMO-aI4H2CGgR0wN_MVNPEsETw12sVGTuUDGSey4q5QvfSP1IYdWyVkK4EieisdX5vkln1U_9xMgAq4WIBeJWYwGeVjhv10J8vst5nhZsXXNrHEbf21G05IjSwAXPGXhA5jzjmWiY4hiYA0pEQqRY6J_MgGm84nHLTVLRgjjIe9ZH8LEszXnvMFglgXZBtZQzgUim48rUPue6vz0JZSKhs1_t_uBnPLnG06bsTpkMXRYTps6O7Xg8mu14T16UIDgeswMKsy2n-BAkcIOaPJpv4ctovBD0yWL7o6KaYiekmeo-HKUlXCTke50Jf4zhZtxhw-fYPXIIEdNm7OqDtGO15MgY2ldRlltnMpcR2r-XUlK1xzcWrcZsG0gMUHGkXt4x3ekMmXiTukHJ3QdaRYsBOoCyjTDBcaxjvNMmNNV0zw1ZTiVr9HP-HYbFN0dEwRwoos03nbJ_3oU_5qqcRAdvPpazCTknzDauYbv4Vf2M6pt5xTJaTuGC3d3hicyUTC2LIG7tGFeuHsN-X3_4KCpBBRi4kzHOHNe14eKHtz6pok-UNszA-KrWeb2nGVIG4PVUjkwIFxgmYYbS_I4roOvokesPWUZQFgEPTkh1z_HjTx2f9qE2Din8IXRVcwFPy_zcO19BgXr2fWoa5tD4UkGU3z-aJOMpTnpMHHvbor1WY8RBj8uJQw3WdJUHSeVqKv9LnZgntluA5-89gcmF73y52NMGBTx33t5IhYSzQDsyefawH5durVzuwmA1WgYAWvpJqSsWvDockw6tJENaOpooS3e5wlwSv6jh4OeZlbPPDAXKrNo5vnUthCuIC7JllTzXiZa_7KRF1J30Q2s2-14jXkd2hc9rkDZ08O-hF6429_UxWygcTgzkFLIY8VO04exrUUbG7ItHhzSHeFyImFT-dsXfHNm1WV0MRJ5uzHxQuCNogr-gahfwJEr7QePiYbaCOj5HPJySp3uXbicV2Xtq-Q__8uWK9ZJ5dKppDOiopklunrmryQLlo5sY6ykvGPIF1NdZqcltfxP1KrjqyhfPZWTNpY61QVrDnUm-qTZNnL9_jUfCRpw4td-ShFF1GEw9T3ivQ4fYwoOXyzb9wIH3tGrt4j_4O8DGAUDhI0_FxaNxi2YrNo1RKNziss4e3GQQxXbNYhr2myU1-oSsnBjLQQoAfShJA2lQPxKUe5lwWVstggh7qte0lMukssKUE-v73G1THUsPkoJhZ_UazZMVoMN-OwGPLMoNDSOjXkgTHMdvoa9ql-IsJ5_Pmwcp-nk9m9MDnnKm2Tl5vzft4MRHH5qLQ3oudruHYFd74Z4PQ94w-y_iDWS2SNBmsLX8TJQ6vMCTH-8VPNaOb8iiDQwzzS1yPSKv9W5OwhosTgN3bXryuvxWpZtPDjv8N2Oac7hC_5VtWWoLVqGU_YIY6FD5CsiiSPM1-UTaKWZDuMVk5m89UYxs3u-jhiz0TJcR0wh7zXTg6S3ScETxGwu0hL3pl3IH1h9CvYmOEJqfzAbURI1_p-qInIsfQoqasERjvb2dedqOGwhkBEyMyS9EKoA7CE6GDCKKDFu2AyuuPjgA117QxVLoZ88mb1sGwPhsRINkPnEUrjag78Cgvj8AEDh0cgFYm5ICBngXNldr4T6CcY-97OsvoNd2AcCKGCoFDAypQu1vsYQUBK3x3ZeFIaCvxsz_vFanlvZ0HMRhtE0x-kKD9PLXmlwjMsKiAqx9XB5WVAnqFQ56_b94E3n15_RV1UM5wAj9-wzxcQINGxfNLfvO1RAaeTYEaGDTj7UvrpLya1pBBJSt77XLyBD3cztI_xEse_jt5VxkFUVVG_hJpZsN_DnQjlBk1Z3ibmCpB7ezZJDN2H45e-oLyiJ6xQVlaxD-mI1D8qXUocA-IiLj7yJDVPz8pKxN0ngMtJospwDR1A81beLyy-PF3K9R98a0NAASXkblj9_V2XBlAkbt44CDzY6N1UMhAJFOuIK7dKFJgU6JfiYzBE1uFWNUZMp8Tvhon3XZJ8SwVhjo5CDJXrcGFa8EQdAJxtZubCcbDpJ9uJHY1X3RH5M_-a9oKZLuqbUQBxKmea5RzfRV2UFmzzWYnz_YR03ulxPDqcgYgffzSmlgLvfwd4pE-CC9LTLSnAwF9KSkOluKYO0ppWXBzz9zMMIHl_uD91D3SdGso2jlZGdUgOcMnGgs1H3iIzLAmwBBpMwcOEUVsRzsQ09iwk8Xa9XhApVWXsrsrXgBc3D8Z-A_OyUAgHItrkEhMsDiYn7xv3Gouj4U_tqc1tsWXd1j2ctihPteOM3QaVnzw3MU99ruQbJzZ9w2-wsy4UaYSLs9Fa9zb2VeOgw4a13TFeqhaZ1TKaS47xbgc_Zo4GKiGfsYfU1ThO2eGUoLeABsyW7iv2kwgDTbpxwrrYfmEjug2wPdmOKcG-P1Qu0LAn0LYcvo0fm9znxeH9Q1Uy69AyhRkcv1_uX6K4HJ0BTMQsAETw0zsnvbwRm5fGBQ8UweU1Qivi4ZGXbvAE4O6lMo0H0U3WKz1eRcUlj60cAthW18losgvO7TIZkIihRseBmmWdbjFgle1NZ3Er9m4ld2k9YB_fRJAtBP6a_KVAmLoGj0aeHRfEJHYc7Pb7WyFa8QWgv2l7PCUHSGdmQVKZZGxD8_cRQpjypsnaMPKUOgwmPLbbrR5eM0oLo9tB09V_Zr7sfUyoDvJYca2NANTb_-8Fc7zvjI9Vc2TWmmxlsCji3HsW7cg27e_oC24sy9kv_ZO_NKvNui00toc8i7gvx8_drtLTUNCd8R7J3IyB9Q8Prj53lpwBM4fE0J2GJiPpmSpJN4PtxFwn4POXMUSPpWO7a9o33G4v0FMnr1gamuOD4-MnWzKgNtXzaWMNecdRXPLVPM0mnvu76eQ25csQsAMDMtDyPSk4S5QTCga8MYKeFC-h54L6JUg4Xvri4CC_sMC6bYtkLHVp4uvhZIpEHZwd76bSTlbajdD8N_x7UOPjyR4WsfAOfAj9K-c-9LVi7pJDwnV2uE152zd_d6qoLUdN_3vlW6Xar4pym4LzAa4qxwhiC3HvnMgP9Di5KGesgwMQ0_meBDJZiMPTmh6YfCnuZn6imK0kz22EBboMJlVdnH2I2ekWbQkiIT6Jfa74QxnkPxTiZQiYO8KxS3EaTzAB2Hh1AyeswrqVh-VeBXj4ZMVihsMd3BA3MJe6OZ6aCNa04bvsIq8EC_RVPjSQdC1YFmey-BWRZoHbV87oGnTslg9pmiAERCoSWMpaXwaElTijtPyWmXO9LJuNRzo9RKAUaJZlQ9hUKqexM44g30epx3fNkHFPxx2e3YBNhu87zkBbrvfrdCwWf-HMx_Pvg_aXBP3OJI3zJfTLz2-DfTDEoCBFeMxRPaHPtlBWEoF_TCrsry8PkjvZIBf7KT1f5MwGSkYz3ee4Mlmuy94kEMyKNn_HsnlIaMiPQ1PbIv6duUpkLGThz9CG7tvXflxikJnR7gXZ22Z3QFf9MJzPDUS_iTO3jYA1ajAaiEi9IdGCWQyjd-FNi22UUM4VO6HXBThUZCHifA1S69il6Gt6Jw4YLHejTigYTd3xOpulmTZYxFBVfQOOXDUlemc-f9ZXjOsl6xsvICbrw=
+# Tekla 官方组件调用工作流
+
+用于 Agent 调用当前 Tekla 中已安装的组件。只负责**选组件、传输入、加载参数、插入并验收**；不替代结构节点设计。
+
+## 核心原则
+
+创建前必须同时取得：
+
+1. **当前年度 API 文档**：确认类、成员和调用顺序；
+2. **当前 Tekla 组件目录**：确认组件实际存在及其 `Name / Number / Type`；
+3. **当前项目属性模板**：确认组件参数。
+
+禁止凭界面文字、其他版本或历史经验猜编号、类型和属性键。
+
+## 组件体系
+
+```text
+BaseComponent
+├── Connection   主构件 + 次构件，典型：梁柱节点
+├── Detail       主构件 + 参考点，典型：柱脚、端部细部
+├── Component    ComponentInput，典型：通用宏、钢筋组件
+└── Seam         主构件 + 次构件 + 边界，典型：沿边连接
+```
+
+共同流程：
+
+```text
+确定 Name/Number → LoadAttributesFromFile → SetAttribute 覆盖
+→ 设置输入与方向 → Insert → CommitChanges → 重新查询验收
+```
+
+`SetAttribute()` 覆盖属性文件中的同名值。
+
+## 查询当前组件目录
+
+```python
+from Tekla.Structures.Catalogs import CatalogHandler
+
+def find_components(query="", component_type=None, limit=50):
+    catalog = CatalogHandler()
+    if not catalog.GetConnectionStatus():
+        raise RuntimeError("无法连接 Tekla component catalog")
+
+    needle = query.strip().casefold()
+    wanted = component_type.strip().upper() if component_type else ""
+    items, result = catalog.GetComponentItems(), []
+
+    while items.MoveNext():
+        item = items.Current
+        row = {
+            "ui_name": str(item.UIName or "").strip(),
+            "name": str(item.Name or "").strip(),
+            "number": int(item.Number),
+            "type": str(item.Type).strip().upper(),
+            "attribute_extension": str(item.AttributeFileExtension or "").strip(),
+        }
+        text = f"{row['ui_name']} {row['name']} {row['number']}".casefold()
+        if needle and needle not in text:
+            continue
+        if wanted and row["type"] != wanted:
+            continue
+        result.append(row)
+        if limit and len(result) >= limit:
+            break
+
+    return result
+```
+
+零结果时停止；多结果且会改变建模结果时，列出候选让用户确认。
+
+## 按目录类型路由
+
+| `ComponentItem.Type` | 模型 API | 必要输入 |
+|---|---|---|
+| `CONNECTION` | `Model.Connection` | 主构件、一个或多个次构件 |
+| `DETAIL` | `Model.Detail` | 主构件、参考点 |
+| `COMPONENT` | `Model.Component` | `ComponentInput` |
+| `SEAM` | `Model.Seam` | 主次构件、起终点或多边形 |
+| `CUSTOM_PART` | `Model.CustomPart` | 按定义要求 |
+
+`UIName` 只用于搜索和展示；创建时使用目录返回的内部 `Name / Number / Type`。
+
+## 官方调用范式
+
+> 下列编号和属性键来自 Tekla 2026 官方示例，只用于说明调用顺序。实际执行必须以当前组件目录和项目模板为准。
+
+### Connection：梁柱节点
+
+```csharp
+Connection c = new Connection
+{
+    Name = "Test End Plate",
+    Number = 144,
+    UpVector = new Vector(0, 0, 1000),
+    PositionType = PositionTypeEnum.COLLISION_PLANE,
+    AutoDirectionType = AutoDirectionTypeEnum.AUTODIR_FROM_ATTRIBUTE_FILE
+};
+
+c.LoadAttributesFromFile("standard");
+c.SetPrimaryObject(column);
+c.SetSecondaryObject(beam);
+c.SetAttribute("e1", 10.0);
+c.SetAttribute("e2", 10.0);
+bool ok = c.Insert();
+```
+
+多个次构件使用 `SetSecondaryObjects()`。
+
+
+### Detail：柱脚或端部细部
+
+```csharp
+Detail d = new Detail
+{
+    Name = "Test End Plate Detail",
+    Number = 1002,
+    PositionType = PositionTypeEnum.MIDDLE_PLANE,
+    AutoDirectionType = AutoDirectionTypeEnum.AUTODIR_DETAIL,
+    DetailType = DetailTypeEnum.END
+};
+
+d.LoadAttributesFromFile("standard");
+d.SetPrimaryObject(column);
+d.SetReferencePoint(referencePoint);
+bool ok = d.Insert();
+```
+
+
+### Component：通用组件
+
+```csharp
+ComponentInput input = new ComponentInput();
+input.AddInputObject(beam);
+
+Component c = new Component
+{
+    Name = "Beam Reinforcement",
+    Number = 30000063
+};
+
+c.SetComponentInput(input);
+c.LoadAttributesFromFile("standard");
+c.SetAttribute("side_bar_space", 333.0);
+bool ok = c.Insert();
+```
+
+`ComponentInput` 可包含对象、点或多边形。
+
+
+### Seam：沿边连接
+
+```csharp
+Seam s = new Seam
+{
+    Name = catalogName,
+    Number = catalogNumber,
+    AutoDirectionType = AutoDirectionTypeEnum.AUTODIR_BASIC,
+    AutoPosition = true
+};
+
+s.LoadAttributesFromFile("standard");
+s.SetPrimaryObject(mainPart);
+s.SetSecondaryObject(secondaryPart);
+s.SetInputPositions(startPoint, endPoint);
+bool ok = s.Insert();
+```
+
+复杂边界使用 `SetInputPolygon()`。
+
+
+## 属性规则
+
+- 优先加载项目中已验证的命名模板：
+
+  ```python
+  component.LoadAttributesFromFile("project_component_preset")
+  ```
+
+- 只对已确认的内部属性键调用 `SetAttribute()`。
+- 对话框标签、翻译文字和其他组件的字段不能作为属性键证据。
+- 没有模板且参数会改变工程结果时，修改模型前请求确认。
+
+## 最小执行闭环
+
+首次使用某组件时只处理一个目标：
+
+1. 查询目录，确认唯一组件及 `Type`；
+2. 按 `Type` 选择 API 类；
+3. 加载已验证属性模板；
+4. 设置主次构件、参考点、边界或 `ComponentInput`；
+5. 设置方向与定位；
+6. 检查所有布尔返回值；
+7. `Insert()`，成功后 `CommitChanges()`；
+8. 按组件标识重新查询组件及子对象；
+9. 验收通过后才批量执行。
+
+## 验收
+
+`Insert() == true` 只表示 Tekla 接受了对象，不表示节点正确。至少验证：
+
+- 组件类型、编号及输入对象正确；
+- 主次构件、参考点、方向和局部坐标正确；
+- 生成板件、螺栓、焊缝和切割的数量、尺寸及位置正确；
+- 应接触处贴合，应留缝处净距正确；
+- 螺栓和焊缝实际连接了预期对象。
+
+## 失败处理
+
+失败时依次检查：
+
+1. 组件是否存在于当前目录；
+2. `Type` 与 API 类是否一致；
+3. 输入对象和位置是否满足组件要求；
+4. 方向、定位和局部坐标是否正确；
+5. 属性模板及属性键是否有效；
+6. 是否留下部分结果。
+
+不得换名称变体、猜属性键或批量重试。只清理本次操作新增对象。
+
+## 返回给 Agent
+
+```json
+{
+  "success": true,
+  "component_id": 123456,
+  "type": "CONNECTION",
+  "name": "End plate",
+  "number": 144,
+  "primary_guid": "...",
+  "secondary_guids": ["..."],
+  "warnings": []
+}
+```
+
+失败时返回失败阶段、错误信息、输入 GUID 和参数摘要，不只返回 `false`。

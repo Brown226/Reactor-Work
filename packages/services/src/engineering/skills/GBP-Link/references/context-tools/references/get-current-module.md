@@ -1,2 +1,11 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQFZTEc6VRdpzYAvDrf5mCbVhUbF1T24mc8IOImulkcDTe25nscUjdSoVb8fWjzrivoE2i-ub9nkLucaf-uGT5Jt1Av6z2g1GEv8nGzAYyU_DB2WGYMJ7TYslNJmMKgx5OMc1thg2t8kBRmB0fv7I00COqfu0eI5MWrtKQWsnSRcTf5EkzdH7zhza0OhGJz22rEtsgKkvpTWJgnRY9Ww3QICnbia_W8qDZNYypiFDmJ6yi00Hx90x0CpMQkmXCpuR6xiG6G3SEIQnHjMfCpwoPLIwrkKlOHG3lWNK8egugtig=
+# GetCurrentModule
+
+**说明**：获取当前软件界面所处的模块名称。
+
+**参数**：无。
+
+**成功返回**：
+
+```json
+{"moduleName":"单体建模"}
+```

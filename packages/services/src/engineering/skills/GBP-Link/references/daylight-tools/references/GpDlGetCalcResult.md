@@ -1,2 +1,167 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQeS7o8SSaOfcGLp_zQWxR0Br_wgH9MesGWHY0W2b5AIACsgESmOTzLXM3DKcL9VUD-FkmXyFWAEgVWg5gpVmjwDkUKfe8gp01MONWtvzaa9XpimwnkXkimL95u9T_BPtF74ICPABUF9HfXA07VNxqhmpTvAEpTRhCD9LVHq4EAvlEB_KMYhChLY27lbVs_BpkwxlY0x4CBBTdnI8AMzQ_GvEhEB1ScWmMQfzG5d5SSdU3hR5wezfgK8DxNcICLKnWXp2yyA1d30U9aknETgIYMHaYJeTV3SqrwvB0vhUCykqJuBezjnKtTiyTZ3l1XeQwSi9Z9I-mTO9QhOzf4IJS4YNdr4AFZGeOT_RrsAMBRgtfyH5HDdjoU6jhvAnntTktKwzTxnmQxr7U2KL2MJHtd942spExQiXTU2KlOCQh1va7hUOmQcLz6ECMhvINzB66vYIPaS-x7T-6ACks1qHZpMmAxKd3wJ5GkfIAsK_gcOwi4qfNubFDoSGEWUGG8xDg5Y30IzbmKBu4u9Lnsk0NsC21VUNN811pNvoZrOH74_BeP2SypUuyJ8yE5CFAifaQ4wmfRiPcmTv04euDGX17yfeyG0sQ5MTN8fSNiYX1K_NM8U-SLoWNXORvCGELO33Yxs631zsvWOc4UEL1mpjhOSv1RL31EFd2KU8VpuxxtuuojPzhW3vcYuMA-W97JIf3QI8Qz62Q3EPaAjZMuVze4Wm2LDG_OP_VtCE3aHPEu1e-4cpJrPXU0qs1t_ts0XyBo8diFZCMmn5W9uq4AU6MRsPvFCNSO9LTBJhoLKCAVDNDgEr4xUQ6BPZOMTxABWAAIhvzko7s7P8-EQ0aDiJ0YK21G5UnZgyjU0qfES_3cD_4XmKV9WFFpxSile1oTtfi-pwKymQgjO-woJ5pfiuXjtWsAmrlSwmDZnPT13pxiMF72pRxjFN6McN9zb0SejtE0J8YWa8f1cjadTq-2utmuMCUf3QEydM2JDDgXarQN-UPzBzRzqQMyHGUSrJPEx06P3bSRia3FQr2cJo7DckY20kR4XfTYnlmjyrajuqJug5EKY-UD_a97ArdvIqrxQDLrK0nWxUgEHm5nv-sJF70YjzKOvFR9NikfLYIakl6il_P58A8P56FlVoKZPeW3CCluXCRJaJ7KxZpQFaTGwgvPwJ1kw6Nb6H3uilFFlWPWnScFU5KpqALDtKzo_bRcFxb8-Tkz1AsFxcIWqoffaUZF_34dDeqKcmzgufKzKlKTTQ8KA-fCFbd_T76S7u9tEoOHovR9yYeyy6ysYlqd_3iiBEailSenat6x7DSXrRqZxX2IsxPJplrAi2MdPoymk6rjqtZXoh3zDSptl_fasvsgBr8dCY6xs-B_nSpSP0us0IHqjaNiEFN-tNkUZoGtKq4eiulJumokKXb3Eqy4khIK6h3D4YmNIT2Kb2rNKYAKKp2YFFuGE2BFo4iZfhRHArQAnfQ4KS6sB1gnSGo-6gri9TaQvo4fSiOZIgnkRMayJO6gWo5R5FGtFz9qC_nWl4Ut8aA2Gc8dvhn5h7MDIcFLL0JxQRJIy24iBXAuv5Jpwlg-WMIn8HO1F_G1hD0wkfF42R4Xvpqhfnnhl41ALGHnvrwKjlhytnJ8eZ0GlWwbD1p8xVBYAzcBWr2bK71iseVEOuQGIlIUtYxD6-TIXy8t1IS9E6XSzhCQELSA31tB2gALciNJEspcDQFcz5afaGxz0FMgNhc94CrLDSC7c1uuux2WhJmqr4uIF3xPULm1mZXepnO5lFd7AFY88OnjVch_ZT556CUe83x4GKG9uJYDnNVxOi3QWkPnqK_8e-3F-fgwNX2JSUMwxb0i22Cpr_Os90zmMYGkW8NtbaOhfy8PMbmJxCsuijRWSUNwJDLyXiqm6J9LxLJLsRac0a_mr7I8DbKLysdh4fD8FwO1S1SxgcMHPUow9ocXaHxWcP1KrtKwXWGHsz5kUgbqKRTr0KvcQBdl15Ui0g8Q6KjtVqyRh3ofJhIPaJnNsU2u6bd1Hr8QqtH9zsMG5VRFJ_R7ANZDs1VOQImPscVZNojb6japHGLEcL75L-dhW3gX7BxoqjZrIbE562jm3FVdKrIBQD7zBM19HhDkXWvhidT3jgvUd5InKajsimCOqryzqfUjfQIwq82amC2JtGwsUUMGCViGsQcS2ljUK_0z91vYQymjkpbMIoSajPETWYANAFgnARSlCfn_vpZI4xDI--DZsATrzZtwkQywLyOoebdRF_qAr0-D4gSgumDFPtU8kUul1ST2aAKPKtlAMkX0inmDKhdnOtXs_wHOT_kyl__sHblL5JTb2Srgcci2Uiky0FOGvU7_j7kI-1sRoNKQUabQZ7U3CBQquPWs80gQfqjJ4dTlQyerIQP1h0qL2IpSW10ttjxmZvt6KGfjySbC1ldvS0jijLQuKZeAE9PgYpuoat4XodpaQWwla5VFwE2yqz9PSWnFX27BVEHvQs-013hsvFl5xWXPkIWsw76g7Bifl5lyzywzcDbAlIW28ZwKnE_ROPQzakRlDjTmlMs-wGylsJ_VAEfyKm1CDLZ3U8akMl6cQIQf6YdL43hnqOscrl-y2Cm_UHOBTldd_8_WZh-OP5Sap9NwZ0DIRnR0A-CzWyT8BNMDuqd0FGTDyLQ0JspNh75jkHxY2xKReqM7IuizCYbKEG6rk7PbNtL8UtfNfWNgDfWj_ZbX2e38WXBuiVoRd2hrYrZS5KAoVdc3gKgZ2OhHcHF1EL2xLOXBPtbpjMF8nSnHZYPqBiuyD9iGPG4gEWAmV79305te6ktp6oT--tFHruolTWeXOP5osLcUBYkDp7RqE1zp1p8p7cMmr9QglDJminN-rAKkMqJzwqyaKLz1exj3o2X2ZncF5J6X5k0wvk0gFoR0M17WX_z-b7XBplyApJpWny2XYmqwb3TwUBQg55j3BZhZkAsSbR27Kotnfdssssbr2NJHJeU6tf-WO8GeOUGbvPoRlm7iFhmCtVucmKG2DRjkncHeZ5f9nwfXVX_2siB_WVh_nFDoxvLKy0gS8yGcJpUWaZpVQZhtbojhf-mbf43jO7nNc5ySmo0lcm2-KUqU0ST5dfw1bVIggzLzOqgQ9eY2PIdqV0s5zd5C4eXKcKeSFLqOlA3BJSdnlyFNn-qSPdYQUjoPV41obor0Qyjl3jlHi9_jERNOxQtz6ij9YQ-CX1omPDlquBHT2HIA04R8yDa9smYLk6K_cDAaS_FQQqlfO_QwV1aTaRI_MaEPdR_6PqVqW64ZSOxAlyM-HrJqPsteHLPhMcasNO-5V4fgoL3W0l1f2Etb8LyFeyV3Enmas8dumf-ISd-MDYT3VXQFrUol6zdddyBTIKwueehN31Y4x_TTqJ4fXy7kbGyTW7BI7XOKQwD3fqJyR3da9OVjE5UmwlmNHisGI95Hk5P1xvJ7XOOnDWeQzynGtCF8iqmW2mqYxrt7E3fLEr3NPKuGEp_1Lj4Q8u9UIZtHVVfWh6FAintkfZMcVSiSzJHGiwRLBctuyodII4LnN2lLCna6vBLaDO6XH7bm7_8Vnl_L0q-rkcqS_amr2EJvlrjM6FdE8exmFJayWmIKEUIFAnS9M52ECg-57hi2Hm6LPNh9Ccazjk4UoARd09wf7XQPYkJ6aZbRQdhWrboiuBsdwoUqUSFAcO1YZzcnjY8q6mOBeewdDUrMI7JN0cTV2NUBnhFy3Ao-YjOASUnF4l26n1aKtUwew-G-RhLNkbNABsvdFGxBueRdex0Ayj5zBp4tF2kgMef9mcZc-ccYZt8h913XVoW--Q0O7N0Ks-2ZoDYFsj0PCbHmMZDOFlTplILb_Cw_oas_syDhA8z_zEurCOHfGKRlmk5A02OyhuDmxOWczHICw0Qlm51fKdgu4DBpTdiHRNd13n3u_oxWz_L6gfUW7-H1MK9goJHqUXcBZ2Z7p-CiEy-D_G_sLnE8vgbBjY5X6GrBTYmYiM9KtifFJZztd-xVuOFjs4CmaQY_txYgtLpESaVWzjyCEIc2Nt6ymQvIQRLkgS-NQaQ2a5oGS4mqwc_dJGfnzXR9aM0iyhcsrEXqF_YGX0J1C0JR0bpNEaf6wC4FJl6ebjsqKrJWdY3kmUzlaODyEplirug7RtH7uAZSzWzrCEw8AkBaYUK4RZxonIB15x2ngS_S6_MxEW2jR17dyWDmr4A7-vKRO-5SSHRMwN7q-JXALO1VklQjk7D89FxUUjH_y2il05pUkobbfLKwdA4yqKoc4llzn8J8c-LC0k7bXaffJXaIomCT470sIJfz32qSWa_1AirR_c944BYbZlwpUsl8m1OLCjhuxjVgNOeET0DmjpyTDH4tcXnTLZ-8v_snQHoYjR0ChXPduDspveaT7qDrSNybDXLm6udNJlhU4cbl6_8eiOljXxjhE8fDbSmhWXI_E3KL4ewjXpEdDZFfI-mXIHuLiFsbzfUjSKWLijHIzw8IbF4ClYZveiPz1R5ApcmA6jUmwp3XJDbPyqb4E07Ljp2lw3lmAFKatie-NRW_NYBN0tJblBmTa2NcMIyOMWDbx8vv9M4hspLIp0OiUsQI05ZcJR5GfQvN5f0EVK0EzoAS6GpjEAI4sK1sd2bZ_iZbvnNlYpM7TqKIYlsfPHfJYWHpSxCwqhO8IkDqJ9OuHCkAOlOw9MIsLteVQiqy3xFqphFouhvy_foJJQM6RSwR9wAkq2kpq3Tb_OTAimqyMEXJBbx2N3xOfDooD9O-QXYEefO48rN3My0ftEQ09aBVKgNwdmfqOiERSYfQWU_YCkZDqwNmvPEKWbQtmfsCpwYutVXOydf8HiXnCU-Ln-DerHw7ppLvGf-n6Aq-jCuERAheRbL74BwK_-gnhZsylw2_HHeMaYexA8wqgCghkWimOBKCvhA80IqbBKrkFEu7k_DEOer1C5rlzUCuCi6ZTpWHp1rDTIGpDCNWMSVsxtKDNjAoLWsAhM2WNBK6aXy4gOyw2rJKZMzGcS7AK15OAD8tFwAkECxs2ZdW2UhvO8a_aAoYcdW0VQbi2qw1-829GIhSYoUYIu0E986vuODyxbEoCAOut_2kcErEYb2rw8HNqjkIAFyRsSe9fj8aQI1ZedOmRo6k5iREt3_EkCLGB_bIPV5uyNUN5H6B2SqiKxK7-F1b00pQKsKy2M957LAGvsELnJEVzuWya3tApIUiGxnWHyQ152Ts0CyrwAejilQufGqcGuF38bZgb9bCfdPAj4n3pAGv2yF981ZfttjSt9c65XAOoYMz3QqNcTblBxlldF_VC8o7wFeuR42CBEz0IHi-_evkrM3VDqmxaYmsLUDb-VpP_t0EpV4POqLeyTgKKQTgovOcQplkEeUvzYk6FboKzc2xe6Qnk6ufCi2FibD9zEQoWuAPN86tIfHV_XOWlgIDqMqNxvv7Z7p3nA0EOIHCZMIUSSnSzIiyXIftW6K4StD9Rf6qbXpBKo4oAqYr-8VJIamwHth2Qpr8COpcM4r1Zu0sE2qVSMgQnYFSvJGcBDRTaNHScnabipC6HuFR4az6vtik-GJFOhYV-DW3BkUUvJrlphxa8C0FXs_HTLmzDHsf592aRLkEduyat7XS2mGanIY4mkCF23Ad-1tfJ1xw0cxziF9IMIWxHZr8_92F3vU5OUZ7_-imwbl685O2DX_zOLk5rw0VLXIHBLzcJrjX2KdEg67gupYjl0oZuNz8LxmSsHi3h05JqwBzH0YhF3P1rAzCPZy0P11pg_hw4hRXq_6FSNgZ_DFHfq8YCQ-NAZNiigME2ANokgUfIwwTfdVOhIcGbOlK_vg2VJcC-S6KV6BYAklBR-e6OujmQgBMT7yw9DxX0QlTqH5Zuc_jyu05BtUg6dD0SKLjXqeE2xSO0walJeETpS2cYx3JaU9w_DY6NnrCAHcnP6lyHgRlnjD8S1fv0pmvhi74xxCp-9zOAsou_lzFdAR8HfihVoZh7ylQFUrekbMbvKd93JhbyCVfXG-VsExgpU2on6q1hkZ8ZcvsYEFDmzHJ1gl3pErYdlMOU_7FHQnRAPgl1CHFlljtpjsFplKKV5CbJQ0moCQlwg4F_J0jb4Qtu9O4X9Et5IzX95Lu5ZGd63zkMP7Wr--sPjjN1E-oZs-sj1LCHIpTMFDrq_F205b7MqtibcZHZ-q8lxbalEFXo34XuVo1-o07sNX1YPUzAzPq5x_oMiuml1Obb193dTgWNAJEh3SSgaFAAmY5Q-dMdfBDH_AFddJnsfI_kN1PQKdR_ozxeV0XkKM7GDIUj3kX8kdzEcLL9W-cWLt-J9k73A8szp0ujHV7uv0OO1pRxir08KQ21yr08PZGmhegfwjLsmHDSmcfwf-uQoqgRhsVeUyGsplsskDCiYsyV4wXBuxYYVVWsYTBDPyFQwLjuQux7OWHqADziYZkwxSBw0u-dXuGaR56kkSPmjGVWGweLDLSvBrRW2c989wkwz2mV27lKl305vy2cmX4tOEY48Mj6FydTiLTInitkI_IT0gYsxR9CZ7Mk_8yU7k2JcnwyOKp6qtp3VQjaYAqhIIyFpXHzIFyXTi76pjwDDwksS8um-_PYVHEU6nOk9nvvlcZzOkilUHEgYG5TLg9OlYomnXIoVLPGCbDdDylEwetgCL1lWgbr39pGH6PPXrfgSPGhX6Scm4zNFNaykcAxTqqV5evIKj3yfFU0vmWLC49epSAXr3CDAoJQJDo9vTkr13R86Cn5jn7brxCBycrFq-wL9TzCGoWURRCISVp_3WIuOqItP0JCaSmEc_jmodgmTG0gsbjzBsvZsYr_PJFMHGl8taMIX7TGSK-aC47ZqeAh0NV2r1D7vtOOP7IKtLQj4ENIWLI16PK4JFq2G1_mmf2A7ykj_INs5MSeqFrwIW5Nnzvujo13TAC9IjI2DxPeIGhTltPsw-Hg27oxDQYhBRDkWgvacsKM1tOMkUf-Eidep2aHme95wyywycdqT1rde2LtYWVorirhCtwnJPENgWMbzMtLdnju9ZJyVu9D5B9XaNCGuhYGJuK3nBP_IIKQYPyfmxA0tjZsfyKjDUR9IjiEE54XJ8qpv-yC6aHV37rYQZERcnyoqRHGzFUyq59OmJ7u1vt6EJO48uFyWX1j_OECtWJglsrMCqvuo2JeRWUd6bZasYoENU20bEHnQw6t5MUX7K9LPCm0WrSdm0zB2BB_DcS7uapWHU1GcZ_mw4gu1SikHQH9OHUx1qwo_XUxbiiCC0tEu_KgGdpuDpDhyeN-39gEYTZIJMZjL6R7UDRd91N1IcLcp_D74FRf41FTXSgqfPR7kLGcE6bdA_RP_d-h4OnbYPqHtW6nVH5iPwGTBodiJpkz_daJ8A320HqyTH7Bz-yrWOTbh4d7BXPKwAPp9MKOsa7V0y4ugy63gK0oGZSwUpWml-vE-srtYydagzBad79PS-9cpoaf2Jit5m_9m0UNVkG5G0HzSdXrzmPUiziXVCrCKrlXxnD2FHFco8b7AryBI6x7ZCLIvsEb6ypKcKWNftrr94QlaZD6M8ujF26wUAUMgkqvCPJvlN00gt4nBICk66a_Nh7veevnPSrbKRhU3zjnH-CPPvGVjsPuqCeWMmGShdwXqSfVrpc-zHn6yVgKlJNRaxJfAwQRqBpSdVDT32numw0BlK-XF8zPCfQy_M2aDnO5fQlm5mjTaXgsnnqSbqTr0cQoe6BvmCZYx_Wnr0DrcIgA7pzVYyL13rN_3MOwDYtzhFxO0nNxdWf04wtav8LAqeTqgZvFCgYxzgg7T5o97neqm6Ak8fls-QOjBh1dlba8wcH4X7ScC54SHynilOZR27xS08xatGqPQzK7yTSJrV5p7rGZw1u6QrYMr4sSOkhAAuNv1sPwAjGUJI4j5_JsK8bQ6vmAVBi0nTEx7P52gDbJsbz9QrsttuL1X2tnz1sXaoWED6xc4gQFFrSaAgHKbV0Lmp3eGfOp3w-1LT5C-3bEzVxED1axp68BiQ64tzSy1ega163vrro33pWKqsdozIYDDdXcySlNBzsyWcUm5pgbRVCm1OEWzBAHKdYbeyoZONzY_SgYlSycC-l8VQMa6Nbz4B9nfD6UdmAlqT3h0cN-FyMnIYymVDRnwhALtnJ-Ar5zrdCcQgd2WF-jOqeUe7kwj4s9NcozJAQ0PkHy7OZzcV0pfA8_i8X9dSELtmSr9mjPbC0WOqtoXsmjoz4xAor4tZYDDeDg276BCo81eZ5nqxprqifV0VCFzgzYKxPKTrzSH9v9aQ-LgFXPSQGfiN4U5h0DTqcVxp75M3CVMr7hToAnJTIdr2ypvd9ASb6joNtjN_Pw6syerF0mZ_RDn4mEJEwmyyt1r7KIslWi1sGlK-adUHLh_PikH4YhpTnYjekhaYrubZTlZz_Z3nQmpIJyumFgnLYCZoaVyp0Yj3kidD65nK1PWPj5UDTP4QSHL1UmA5oq75wDOpf-HSi0cnQ1r23O3ah-YK-Y_XW9v4Wo54D1CKYDyHzjlbUoI8jv7SF4UXDfa9-VldpGdlhiunml9FonWj6IKtqNXPrUKTrXpGjBHRpEg6q511UijSgZ9HFHE39-FPyhkS-ppprRG6-Ser3lMRdSt-JzmA2zhfWZm-vhjTjGzk9YQucZT-RmHSoJibYLFc-bgult_nOXWa3HNEg6eZ_5uE_JZ2C1hH_QIE6yKJuZmqCzypm19Grw1-2PJMTsNW48vwPpbd4Np5BdA54f6Ri0eLWV8X1rs3D9BiKLaiqUj2Z0B1Qwn3B1o4f4qUXmrFp3hHBrIbqE_uSuRR0p40YEjz6NhMKTbFG8CJYhIgUWNPLuXQMhIcae-2aUreoxkQ5G80akuOvewpu7I9ujS21J91nkLitzR_8WV9eE7YgR5fCCNw70lztCWMRrgcVC8S5QGJVpNvb5G_t1q28NDN9Puo170fhJUB4ZH5iNeGbaNmAsfpEc2L2dSGgr5HfOQZ0ibXYYvnvWndPkZzWMn0nS4_r4KwaAnaiVN98nkWZ1069j8d2pM0YfnoPNoLkV6gp2NqxAwychnq1zi52r2EIbEsE11ymHr2xOy_AUE84wCsONFjhpX1cphURzeeOmWeKs649p2BAHUxWFOs5Z4pL3FbJXRf6AoUZliX-0qKe7LQ2S3ASsQs5tiEOVeg5rqHdwzsZhKy-HGW-gxH5Wz98XsfLW-e1URrjHENviE9P1qQJ1sJjAi7lcsl_HI4w1dFPsRzZ4LaYmuD4r8TeeCuabEoB58CoEkCMys2QjGfvNvT33bQLJiXqzk5BZIeGv9l_IpYD0FPn6WRWRIH8D2URUZcuj8UAKU2I0xLn1RajqwJxyJ38P-ZwaM53Y3zRmTxY-htnlCq6_gZKdVCBqWHJF2DH-shunCN0s6zqaCZuk4_zQ-E_5VxBiVTIdtkOlEs5pXCwkHBM89x5tciC1vGP25wM7hC-zUPQKWmP08NH5P7vjhiSTx1JhrZSkYDncXP4xTbRyn4QHRhlaWl6ZdBBofQfhz6VN0ndafTinZkYLuqLymGK395ASwMkEPxQJlnlfhDKbNsQJc0EhDWFvLwOG-GBe0sL2DvoppMlMiTr1fzbFc1914ZKCMLuikGgsfNHOtRYoEMWaI_yhiKG8HymIUBQmQL4LP3gWhfai3LW6cT-7IMFqqyiGn5Gba6L4eBm_YQ9MhA5Pzew-XJr8CJOYm84L8nYb3HHD3kkNnaimuwIWcDPbFxbnfKFUMa3NNb4fJqtdEHDqdda-nxHU9rAGjKuQwACVzgpXUI0jH_kTR0rTyqnGovfb4wdoqbsBjdmeAdehsQRhe9GZjAhSQ96eAomqeNPRuHtaIumCQtHYR7Ns5YkZeXMDxKVCRxZMtO5ZI32LgXMjeeS0UZsZOMAGy18hs41QLQEqyJoD34eirz6_J9lHEfetLMvfW5M-010YxZAk-UaBPXHDT0EgGTe8oiojlVtKs5t3bMS-tz7YLsScmRy583KB9r5zoKETsl_z5Lm1nxcSwsxUWg6MW-KXb4zroVJ0nKVDDfjkdt9C4vzKBGVsxKM_1XWqxiE1Db_XlZ1b5BXUYn44m93sfVGFdWIPL_c_nwkEDyq4L9oioABUnczwT71IJjWXMtf65lmpdK-KAuzOooJBuTfmbZ82ll4q_bfBC5CVugsyS5bL1WOHKx0wZp9tg6eqCyTKsDFZxYBrinDn8NMyHzxclPkSmXmaMLY9a5kVL8puE_BmLWR4jVIbIt2rQ8cwukRvK4r5Y7zDBYoF_5n-VzvVgyGP-eNj2XfNKFs2Rn9Q0VzrHT-Uc6Nu3HUn8znqNJmm2muVMFVSphetVrBvzCzkxhkO51mcjykM59NlBLmRiQzj628PDqYqnGvYv2k1J7h_h9cChH3dNi3-X16zP1fnoIjZmJRgEW7-SEsFSbDxxXb2CxhzU_ddfZsV3WiGPYbqiAiLR1h0MyOAkQDlEHJsI7EN1nF2nH4soiP_xg98bvDBTU8yqI9hhHYdoUlQi7ZVNkAC_rviGP-TgTdpmdncKQvYX14OKVVyv-Mdtns8WuSLxfFlx_TGOWSqQmnC88YYO4ewF_F5B012s3FN1nAnPKXtGiOHUtFEQ-_tEVe5LEvpZhNSs6ZNPxKFBeSBoX60H15B83jiTAJfEgw6wTPBvBQrP7SBnsSSlOKF_KYglrAh6pB1owYQfB27Ak4M6A9G4d7840IOXkCaBfVhuEybzNorKrUKyG1Rxhxyy8Iiav4NcZtr7GXSNAMVsgFmdE1KzChNwIGIdrkc3a-l4DqjSQjHBBef_DRuirUlXzqtAyVTiZmyYFZs7ph_OvhSYluGhOymXjLEWoNKpDbtALPVcGlxd1T5pNm503RL4lbLeuwzRCWGMse3djLsf2PIdfXiHKiBdApq0ZYVMPxfk_DSxzdsucizuj6gGqXlguzMPVwOpUAYWDdY51GK1UeR97flwkVhtWHRDCFZ17e42Ltlhrn08nt0fy_z6cYvSU6bwkUP7b1OkO0IyKQJdTdGZ5PDdvO7Z7ZuFz_PWeycuiceH7pFPnXTSarxKZEgSPZhjPk9gaeyPsVVjZbQI6P19cLmefy8Ym0uV7wjYTTLTiQYEljorRfpLs5dz-OYS83tzYbmMg_19hQG4THup_fJcGHhF94l09D2VaAygubr6E_HwSJRNnnK2DL_nxQJPAecMUQJZMS9h2A4YE3VAz
+# GpDlGetCalcResult
+
+**工具说明**：查询当前建筑采光计算结果，含采光系数、年度动态采光、窗地面积比等。
+
+**特别说明**：resultType为detail时，若statMethod为gb50033，结果包含每间房间的数据，数据量可能会很大。由于 python_executor 环境是持久化的，可以在同一个脚本中直接处理数据，在单个脚本内完成"调用 → 解析 → 统计 → 只打印统计摘要"的全流程，避免打印整个 JSON。**如果本工具返回的字符串本身在MCP层已经被截断，则改用summary结果类型，不要再尝试detail类型了。**
+
+**调用参数**：
+
+| 参数 | 必填 | 默认值 | 说明 |
+|------|------|--------|------|
+| `resultType` | 否 | `summary` | `summary`-仅返回建筑级统计结果；`detail`-含楼层明细 |
+| `statMethod` | 否 | 按用户界面勾选的统计方法输出 | 指定统计方法：<br>`gb50033` / `national`-国标公式法统计（统计每间房间的公式法采光系数）；<br>`gbt5699` / `lvjian`-绿建统计法，《采光测量方法》GB/T 5699 中推荐的统计方法（详见 GBT5699-2017-7.2.md）；<br>`points`-逐点统计法，按每个网格点是否达标进行统计。<br>**不传时默认按用户在界面上勾选的统计方法输出**；如果用户界面也未勾选任何统计方法，默认输出国标统计法（gb50033） |
+
+**工具执行完返回 Json**：
+```json
+{
+  "code": 1000,
+  "msg": "查询计算结果成功。",
+  "result": {
+    "public": {
+      "name": "办公楼A",
+      "type": "公建",
+      "cav": {
+        "gb50033": {
+          "building": {
+            "formula_conclusion": {
+              "is_ok": false,
+              "text": "采光计算结果不满足《建筑环境通用规范》GB 55016-2021的要求"
+            }
+          },
+          "floors": [
+            {
+              "idFloor": "101",
+              "name": "1层",
+              "areas": [
+                {
+                  "name": "办公区",
+                  "rooms": [
+                    {
+                      "name": "办公室1",
+                      "room_type": "办公室",
+                      "formula": {
+                        "dl_type": 1,
+                        "cav_side": 2.5,
+                        "cav_limit_side": 2.0,
+                        "cav_top": 0,
+                        "cav_limit_top": 0,
+                        "is_ok": true,
+                        "is_force": false
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gbt5699": {
+          "building": {
+            "illuminance": {
+              "totalArea": 5000.0,
+              "areaOk": 4200.0,
+              "areaOkRatio": 84.0,
+              "meshCount": 5000,
+              "cavMean": 2.5,
+              "specialCavMean": 2.2,
+              "conclusion": { "is_ok": true, "score": 10, "text": "达标" }
+            },
+            "illuminanceInner": {
+              "totalArea": 2000.0,
+              "areaOk": 1200.0,
+              "areaOkRatio": 60.0,
+              "meshCount": 2000,
+              "cavMean": 1.2,
+              "specialCavMean": 1.0,
+              "conclusion": { "is_ok": true, "score": 8, "text": "达标" }
+            },
+            "annual": {
+              "totalArea": 5000.0,
+              "aveLumHours": 2850.5,
+              "aveLumHoursTotal": 24954375.0,
+              "areaOk": [4200.0, 3800.0, 3200.0],
+              "areaOkRatio": [84.0, 76.0, 64.0],
+              "areaOkASE1000Gt250": 3800.0,
+              "areaOkASE1000Gt250Ratio": 76.0,
+              "conclusion": { "is_ok": true, "score": 12, "text": "达标" }
+            }
+          },
+          "floors": [
+            {
+              "idFloor": "101",
+              "name": "1层",
+              "illuminance": {
+                "totalArea": 1000.0,
+                "areaOk": 900.0,
+                "areaOkRatio": 90.0,
+                "meshCount": 1000,
+                "cavMean": 3.0,
+                "specialCavMean": 2.8
+              },
+              "annual": {
+                "totalArea": 1000.0,
+                "aveLumHours": 3100.0,
+                "aveLumHoursTotal": 3100000.0,
+                "areaOk": [900.0, 850.0, 750.0],
+                "areaOkRatio": [90.0, 85.0, 75.0],
+                "areaOkASE1000Gt250": 850.0,
+                "areaOkASE1000Gt250Ratio": 85.0
+              }
+            }
+          ]
+        },
+        "points": { "building": { "illuminance": {}, "annual": {} } }
+      }
+    }
+  }
+}
+```
+
+**字段说明**：
+
+| 路径 | 字段名 | 类型 | 说明 |
+|------|--------|------|------|
+| `result` | `{type}` | object | 建筑类型根节点，键为 `public`（公建）/ `residential`（居建）/ `industrial`（工业），根据项目实际类型返回 |
+| `result.{type}` | `name` | string | 建筑名称 |
+| `result.{type}` | `type` | string | 建筑类型显示名称（如：公建、居建） |
+| `result.{type}` | `cav` | object | 采光系数统计区域 |
+| `cav` | `gbt5699` | object | 绿建统计法结果，结构同 `points` |
+| `cav` | `points` | object | 逐点统计法结果，结构同 `gbt5699` |
+| `cav` | `gb50033` | object | 国标公式法统计结果 |
+| `cav.{method}` | `building` | object | 建筑级别统计汇总数据（始终返回）；包含 `illuminance`（全区域采光数据）、`illuminanceInner`（内区采光数据）、`annual`（全年动态采光数据） |
+| `cav.{method}` | `floors` | array | 楼层级别详细数据（`resultType=detail` 时返回），每项结构与 `building` 同级字段一致，但**不含 `conclusion`** |
+| `illuminance` / `illuminanceInner` | `totalArea` | number | 总计算面积（㎡） |
+| | `areaOk` | number | 达标面积（㎡） |
+| | `areaOkRatio` | number | 达标面积比例（%） |
+| | `meshCount` | int | 计算网格数量 |
+| | `cavMean` | number | 平均采光系数（%） |
+| | `specialCavMean` | number | 房间向内偏移1.1米后的平均采光系数（%），对应 GB55015-2021 中普通教室采光均匀度计算要求 |
+| `annual` | `aveLumHours` | number | 每天平均达标小时数（按网格面积加权） |
+| | `aveLumHoursTotal` | number | 全年达标小时总和（按网格面积加权） |
+| | `areaOk` | array | 各阈值达标面积数组，具体阈值因采用标准而异 |
+| | `areaOkRatio` | array | 各阈值达标比例数组（%），阈值因标准而异 |
+| | `areaOkASE1000Gt250` | number | ASE1000（照度>1000lx）时数多于250h/a的区域面积（㎡） |
+| | `areaOkASE1000Gt250Ratio` | number | ASE1000 达标面积比例（%） |
+| | `conclusion` | object | 结论信息（**仅 `building` 层级包含**） |
+| `conclusion` | `is_ok` | boolean | 是否达标 |
+| | `score` | number | 得分 |
+| | `text` | string | 结论文本描述 |
+
+**gb50033 国标公式法特有字段说明**：
+
+| 路径 | 字段名 | 类型 | 说明 |
+|------|--------|------|------|
+| `cav.gb50033.building` | `formula_conclusion` | object | 国标统计法整体结论 |
+| `formula_conclusion` | `is_ok` | boolean | 国标统计法是否全部达标（所有标记了"强制达标"的房间均满足公式法要求） |
+| `formula_conclusion` | `text` | string | 国标统计法结论文本 |
+| `cav.gb50033.floors[]` | `areas` | array | 区域列表（gb50033 detail模式下直接嵌套 areas→rooms→formula） |
+| `areas[].rooms[]` | `name` | string | 房间名称 |
+| `areas[].rooms[]` | `room_type` | string | 房间功能类型 |
+| `areas[].rooms[]` | `formula` | object | 公式法采光系数结果 |
+| `formula` | `dl_type` | int | 采光类型：0=无采光，1=侧面采光，2=顶部采光，3=侧面+顶部采光，4=间接采光（对于房间有采光，但是不存在窗的情况，比如天井） |
+| | `cav_side` | number | 侧面采光系数平均值（公式法，%） |
+| | `cav_limit_side` | number | 侧面采光系数限值（%） |
+| | `cav_top` | number | 顶部采光系数平均值（公式法，%） |
+| | `cav_limit_top` | number | 顶部采光系数限值（%） |
+| | `is_ok` | boolean | 该房间公式法是否达标 |
+| | `is_force` | boolean | 是否强制达标。用户勾选了"强制达标"的房间，如果公式法不满足，则整体公式法结论 is_ok 为 false |

@@ -1,2 +1,178 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbQX_sm0ifO_bQVf5-mSrJlB6S2BxMtjGh_Xx0n6Nho6qNC3C4Lod2WXFm3KGfsXfo9ZD9TXmdXbAvP6iWx9hypXuGcRnpk_Sek9fnliTMHr2NSLEasJbu-PfH_tAEz96REi5ti9sOrvz6blTL9ZHOxKK4XacpRQWw4w1DKI2XwCs3bv7Yi4RyfBAJBjqmNb7k9Php2kxcfwcZLVMTvgXWTy16_VvHh36cyTJk1agepa1htnrLO8uWCHQ6K7ltQtNai_pOfh-5yaCQXe_liZDRcQM16oI7-VolxOPcn7LZbSldzRDLQT5HQGBGRdW0JXEdezhJccpq_r2CtudyWehofAcq_e3aWTOE4enLJJD-vr6megVECdTtOra0D3m8JbtfN3Mr9AcuGFyxKwniMJO6EIOqqWFN7ZFwqMjqGfkQqNhpDzJGqoDlI1-mfzLCiiHJzvtgArauezNwUEozzo8wKQBH8BgJH8uv94mu5yR-pRETMTxgwbOKwoJRQYjZjnvNmz7Z-kV9fyfC_sWuemv74oxHH6IvAphl9NCVWrZlUWbjh1NXmHBC8l1qMgdn4Lf7dEk0eUYx3RqyjtxLTxBVpDoTnIR8tGBmF-o4u-IVaSsRWikvJgBHi-NexKFegaaAsbS1ebOx2XB-1bWFw4TGaI52BuDBGmqk5kNtnTNkhOAJDf_R_JqwH91dL1UW_4iLd9gjvmvi3HMKqwDuS8O6cq6JzZ0AFB-cNZXtDaaI0sPKrWcQdcNBJrActI7dJFgaUzYVr-r_eAtwk65o_ysuaKmOCXpOySGC3bUt4_iA-OA0-a9RXkbAmqswX83ZxUaqdbrWpwJ21rnLnhDO7OS-okz6Muqa_r8rpTsbCr4KRfzjD3Wqar7lF7jQwxIm4QIy3JxkbBiz-2fw-mun8heuEPJjU3GgUwBGgBA1Lljq08y3s74KRmAGTpZcOAla6pqhZdJaWqgPXEE1W0dFkrXZr8MB2CxnfM5cdlKDKQ401xGMNRnHCDHozV4y2SKE-fp4c4rGo7YedvPKksdSYQ7Unggc3jJsgngnAADnr_Q3Q--2D_7ZWCsnsV53h1ti_eL9V0KZezdsdXecLZVa3UdLkK2JgTdFGfvsWAsKwVONgZ6IDDNMEjxELGPJ8TyO48i5D3brBoMFH7T5C53A7Oo3IRpfBmeK0zJqBzUOSN62rfJdR5UJgIHHSMedu2rQlETOxWx5Z1HUi0sutTfV_KnNVkj9PP4ZCmVJylx9dmogb_z26LpzI6CD5HIDymr3EB4zKzL6JJ7phJX_XDfX5Pz7Rk3BuW_25Wnm4jXGKS3oYiMmE5kgpPaIsjeBKGTSKE0KTIrBY7DnPwnOUVhmnBweMmeEi8FHrUgECG1BEO0sEmScuCme5uTco2heB-aw3v6VUISIo2AhPOzWLh9Z5-Mvx3KOGQsEzBCP7H9mZ7qeStRfy-FBo4br-QlXZdGA91j4vaEFdy7WVpAPmPbzFwunt32Ug9gUGW-Bwg8qAiyPXcjDUYQpIiWrktwIPo_LigXTOoBA7PCaww6HHmvRqBB01gFlA-svL10T_m-__j5TZ4dkeUzavKTFbRHHthnVgp6GJIn-2Dp52fz7PMWrouaueHfEXw2JLPWPofogxj5c199mBPw_o_9ltjgxFR4ObeULwgOcg_CmowVOc5CIrqv05kdjqIHFYkyGtZM8XUaX024XdXAIB126m5DK-g78DDXPA14vI4kHXgvSU2XMWlA2pVoOmr1HEJ1Xodmlq4SA0Hd0Ev9Xen8m2vraIBCE_L5KncAbw7OnQxxR_J-aPS3tvKGt4AhkwtuwmHHQXCZFhhEG3hP1haF5UNnc6zt5Fwv8CK2g9lkboOEJ6binXKAbcy202EVOjCKWasWWCVYWPbE5axpHys8C9E2KLt9pybU389XIlw6YaPob3RWbEwCGdJM7DjAgyeJCHGT-klMf9wJ6NRiXH-gUsOuORjpjJ6awrhhPYUFnAaWGA1vpiz8w9adTD-glItGFmbG-jpupCKDgpPeJGC1eZtQ6X1Cg3sid-VAJFX5DmWJuXy20GnoKiaoJiR36aLBBwhLIFsbToejH213DMm6ty4lJwCq_yNExgNWeFE1Sk10fRFdbuWz1azwYbodvDBEyF0PxU1QOUlSsfFmUPol6OLdYkLaeJPT__iizELTfCo7ODwnVyxEh2lCOGCPP8Qr8ozlwXIAs_Bs80673zExnyMEE0ehtG_d0I6xnUxTBLzmAmAZXj-uUxiho31M4x5JWTpMyZHnKphxa9pwvF934Tmu_HNi2co-Se1GvnJn59Ugk4cFX0EQYJdhJav7lIvRObh3Rf06Rn6MckY9Uh9aIdCKBx68P5w7-UqFBI01cX8Hrz8TSr4ePN6aGM32q6vP2nWZALuIzkdXaa-4OCN-_PXR7DZqJ5AhSte418icuuKayp5cdd52kRIvSGV_QmIR7fcSpnH4OorIs6cZFAfFzNfZsQpYgTg8HTPwNRx-ZIHXC9pa44qxpM2iJhuB0FBm3BvPgrWhWkZLhKb83XCnHkj0f_-P_T_mtTFSl9JAaWO8HbdWMI1MU7AknbaZjDXKBO_YgzFQXW8b-e1aToFyWOEMrulfJWMkammmyEFOyqoazR2IMGzriSAbxCERVu4I4mVqtd4bVg6bHo2UuVf2xsraHUDr3Bznu8ZGuW9qH8jakXVjIn8kccfc__lnDanTVaBsB74HFtafJkP1tYStHH1RATqGf88zti7NQZrTvh98r1nazERF6pkrZWCsnlPRUlvPs4fwSJkm4r2rDRIx3KSOathzm7paDrSgHYHJjsd_lR65qjYnRYVPHnkXi68PZ0FH6f9_lgE8AFevgD6xaxgZ1AE0Y6lUgAq2R7NDJ69Da4_MEHTtefLlnHoW_0cW59Ne8RZ_8tT0x5HTNcM_hvudEKUIzVfXv-GRds4Tq3QF35XGin6blgfuPsLa8rSDyGrLmwbUCR4QPCNLGWEJc0VsTtZeQDiH_65E4GkRMWAhNQA9Mqmc90Lf4KyBnRefglxfV7WJk3Pfc9gVwWtn8QYdvMrropyhkCkpfWZXPee6ky-cI_4qxokvnROS7v43g7XOrrRKEoOcvngYXRJlfKMxRVpLgq8f6LiE1S1tysa5XVjpEg3WeRv6aN5aeFV4AEpl-WrqRM6O7hbFkqSSRmP2xrbGoOzgIAV8bFxh1mnwrnDxKjb-6wie7SdeN4cReU-Djt74hE6Dz8EvtYslwHrFX8NpZULPRa9eSN_6Fl4uYtU-qmVg3yGpFs7IvaSX__O6GM7qKNtzZL3WkwpO3rolXwcN6Vqt3nwSVh7is7h-JPrOGNwtifyk7Rq6TVIwy0pbG661k6-5s1Yp286OkvNXjuoQUwX5hnHp_6rShL5wicQRW8BeGTBXB6ME7WEvfvQHsXRtbzajzSvBdGb4rddSvAm-KzNQKT_9nGDu41EvcsZR12MHYG0Y_8RMOev1h8ZotJ0JzbMP5MpC1eoNfXGCjnULp4HTWQ_rHnNIMZAqVWc61Ln2VvpacUWDq_4MRlKqOxtHGSIAFd9Hv5Ny21fvNC8j-ZEybNg8y_2BcoaEDg1tOmYj3ifNpEWGiXEHb4CfcGDKfY0d8fQaXcajhc1fKNCUWruM89CgJbTH1WNyZqWLjvgXLJt-EDIJwtet86yyLsYa5TTFCja7FBw5ChdvbbZ40AvkbBWaRs00lekSFYCu9vRovrp-bXGgcLjR_Z3sE8UQzgQt7_pja1H1q0a9BHbgXBS8gFzc9wK0YCtKFRSnqQyn2DqivYF3fdNgKUBEsiFa9RHZXNCsGhfs6qz4YbP1qhGYKaUvKpajdnl5memh_PrMCe6AmIjIN_wRWbNJTyVl-3PMi-JA8xbBVXGLUa-CxJnFkfmHznaqxJwYuz0JdzWLNN3O2sY8xtkhn0W42RgvnDOh5CgQ4Yn3jtAEQ8AZ9vN74yYp1FOR-XNpk2wE5HBVYFq-b0khbC4HSQJtQwuYgOGGeqP-JsK8WmJhs5FBhETlK1A8aHnpLSPm5Gu90UcvFGtETgbb0q2-WNdUWXZ9HClkuU6Wjc8usyPXVPETzL_dpA01AckXpbMZusVCxg863LT0w8jRiPwY0Be9RkUc2jZd2xie_E7C7C8jPp5aXEUDQfwWc7MOWY2hwdFe2W0b_z923BYuMjeXIk9m30KhRVV9shdOJ1O4w0OSHGU422tREKqrTYlbzagC2ARrfcxqL9VPeeU5fTU00nTea1JySj1yW2p8RzM8LQM0t7IsXEMe9OqYYYktfe8aNwTicyR5tYysxI9xrte-ILukhT8RBuQn1djrEzP6La8yP9UCtMq5shqOD2AgoAvljl8eyy3T-zg32q7ua01vTaEm0alOiVudjZl1xghzvBZkMndWPnfuZpL9kMsUclGUsnclOYiqQXcEQK0n9SRXHD_6bNCUDFQlHqLqQyxMA4nmd8bxHhVVFHhPf4DGVnmesQ3-PIvA-rWvHGH_5T3dOBQbZZaaB_8LoZ0rOj_WYxPTlHdhHdbfS9GEcqlUsb_wZfTH001GmC90kbJmXQneQATKIA5aAYxbRRmBa9TihIB2NjZxRQ_eztfjO1BfYadTJTFTJqcGxzk8t4vMC2wZROLcQk_psWe0jG32RzufYqSMi6tAatvnC0alRoR4bNCg2N8PcjqB6QgOobLQTF1bBiVEcOxhi0pj4JNrDU9VHYOkmqtUUoE7ZmyMS76TvK9ZYzRMJkMdcV_AbXSfD0ztSZ-PzNj4cHgHmuRPqQL9KXSQfW3q4niu3GVnxk0Y6r_U1MkFxCi6bhPbLRew1HubW3avKrr9rqj7AS23cxE1g_cSSQLsmKvGLQvZWH9dyQYW7n-fQmN2RkW-F_mG00AAEicxQCFDH5uvKOaoqmKSib2pdA68OSMENUpO52fjkvp20HKsIpJyEgha0mVe_rnPDAWPJCBTpyuVekCB_3tlp0aQDnOxaio7yNNfbuerEnJZ1kN4piWif9YYjjm5Be4xnBVG9v7FyYfixHFjoiBK3am8nFYlnLqYGBZphpd70nu_trqjeC9mMES32_yjViaRk_BjuorRSbCM_BvIvns3T4ilTVNd57rZ1-TGnFi09CUurErTLy8WBbh1geCqDbKAGWm401D0edWAcfsTauVTmDmfp4MWy3I2Fl0qdBTNmzs5oo4CQJzqYZVDKCjBR6g782NkJ2NFhXLJ1oFablCUD_7QWh_dfoPyjyUa8Os-Qa3ICS3ZsyyXIrNggdXityKvRFyXUry7u-TCWb9fO3xt29Exp0YwZ7eT5Fa_PX35VXtCF6m2J_IAlt7TBzAouy7QZzYMhCmqylWixBkDVhe65DklzbMWnGfMNQyJxBFIIFPcqQlAOpWhjJEBe449WqrZq8KMEkIWNfudhoP6VAuqRQNCPBRTddrZzzfVo3P9KHI-Ikf2IdnLx_gzRF_vBwpS0JJh7zy2pAEHp7VXlsvnNV9fH_SwF36vH47Jz9flNrDZrdgm-U2hgrErW89zw9q8Frng_dieCip5YWiP8ObyTOjL0_BHnrm953MZyhBrLi6XSNdjLkMwfcuEU0bKYehSHuUSULXFLhF9yhaUy4O3qFqrEYv5CgrWovFoVzYHCf3WZyRgRATL64-F_CMx6q1-aSKiSlt1ihbn0PqW5Sz3Zo3GYCMKh7YAkcdbP19qXs9dDTCRL845fpSYDwxiwBl744r6QoBtGjvq5q8fBPmYOvC5thsXTiJ97FpXkxwRCgeSLhAXoKvQYAaFtbVuOmGgRVTvc5pAHm3zcY65rf-3xpZnCbeUXm4rQRTBX6DKv7TrluypUpa_TH90MxfscsV5fJpXmwxTaFsjoe8f3hPPMWMnFEF-bS2ydc6OJln9-o_M_sTqikXKJA7Opd_1L-PYDxxHKeD9uhHBwBdeKEudrkFL-SoGtRq0d4i-aiBj_uiPl1aw783DGbiUX6cB8zxXvj2dQjeMgMJxVBOdGu2pYbn9KwrFMp0cRpXDgIlBbDaoyIw_engvb7bqt0rJ63X5og395-Y-Totjetg02UPrL4sZR0gvcg2N58yVWpGHybqvyIS5WvYUPv7VDiv-nHBn1PyXzi1RZwOxcKEoQ_xwoGtgRKGXZxLSTjsGlNX021XV4vuXDnUiFTfi_ynCPrJXH9HaizFG9hWv0ggTmwVux7Rke-WRcKFBbNn8GbQvk1C55Ljdvbydw9RkvX9Tyc8HFZ_scpZPSdYIXNvKVKcoUCfmKpGVe_LsUJtqFG_jCDPgBrUHfO5CdDk2E-zpxA9OrsCMs7JL_Gu5tvBu1Afez_KaOGoNDhbxRwFMeCnel67AefTqvJT2l-d3aD0nrTFluOxC1b2Qw8l8yLJNpzLwtgLgE4jtLCh5vifOXt9g2KrTtdtkq4rYMXPLWYvoscz8QvYaCOuwWMd4Iq34UutOTq4zqKiAXo9sMz9qPeqQF2chu3ombroci50l4nSy3c7s8dFrjqlds15ZS4BQhK0odI1C-kOuuHlPMf88tEs7jSS-YwyyeFALyr8h4-wK0GOVVqucIo7lzXmhKJCiL50FYs-oU-o2goGSpZc7_TwPCruQoJqP8JfhF9qnZ0IGyKdg20IFnJsuAd485UL8gyP9O-YIQJ23X1fyfq4-4Prp_KmOUh0kQsPWMW5JK_-AffB1bSOJM7r6GlftCEMuCVwStwpdAbqyLC1mC7xp3_DJUX8SCz6s3dpi3IP5vGkiOXlPfHI_52AdWIiXV1wHg8MiXGUFZnPJXl_Jkkh-BV0F8hRGRoyM0jy_rXG9LYL2st0v858eU8a7Pa3qNxF7cgHVyTa7O6FzUPHBSzjhEMYkFnyXMe1rX30ZXFxCEbivcvbrg2EnvSp0D1DSz42bEYHB59MQV3Gr3x3N5niqNqgS0dk_dyq00ySsqeZFQB4ZK39JXcRQaEzxc1JP_A2rZurutsQHOJd9yboUWgd2KeQnjEpcbJFsibGSAGnmNXNTyrTDalOuhx8V1zu2Eai0CVm3mU6TPoP7hsojM1fDE9ZWJ5bgsxE6wWICFht015bE9HXo_fmcAwjFDnzvBu0ed_Ji8lB_8gSytvbARk1jZhnEGGwCyjp63F8G8xPDDEp21qWKDXkotYTYBd7N5IvCGMi5UXzdTklvwYvAfQQnAMYiMNqY6D5442pD5_o1-q7O-iCIUML78DUt6FmvHUp80iHZCOlxXyU5xwvCY06WccU7sBq4OiXiHBysH4zDTJKK3VwggXKdcMsj60XRZ4tsbd240fOX4G35_qxnUnTAiDBMPaePunTMDpLU6Bk4eK0wZfLIwsta6Q_Ldcn1DXM6h-XoyMaIVN02yJ5BglPl0UEDoKRRC87mozbNRkrIlX9yc3HokFOHz_54R4P88uGxwHEz8Mlh7En3l_OnSuiVsEPYpAXwcW25I8q0rOS-jrgY2LX-6k5Ztwe7Z5kXIrwuWNl6sNBTMpgV8gYpOvp6AaWPXM0ADETTbchO_G85ezYXWkRVUqWVj_LJZM1U-769mRyHoW7MsczspVqTyPFvTEsiVbRp7pSp8n3756BQzR-R8u2-ZjQCcu39md8QmUiTNvUcW2bfH9q7TcXz_I
+# GetResult
+
+获取统计分析判断结论。返回每个工况的各项指标达标判断、季节性分组综合判断结论、评分和最终结论。该工具会自动完成达标判断（`AnalyseAllWorkCondition`），如果已计算过则直接返回已有结论。
+
+## 请求参数
+
+无参数。
+
+## 请求示例
+
+```json
+{
+  "command": "CFDGetResult",
+  "parameters": {}
+}
+```
+
+## 返回结果
+
+```json
+{
+  "code": 1000,
+  "msg": "获取结论成功",
+  "result": {
+    "workConditions": [
+      {
+        "name": "夏季-西南风",
+        "season": "夏季",
+        "windDirection": "西南",
+        "windSpeed10m": 3.0,
+        "isCaled": true,
+        "status": "正常结束",
+        "beginTime": "2026-10-20 09:00:00",
+        "endTime": "2026-10-20 10:30:00",
+        "targetJudgments": [
+          {
+            "targetName": "人行区风速",
+            "judgment": "1.5m高度处风速为2.5m/s，满足限值要求",
+            "isOk": true
+          },
+          {
+            "targetName": "风速放大系数",
+            "judgment": "风速放大系数为1.8，满足限值要求",
+            "isOk": true
+          },
+          {
+            "targetName": "建筑前后压差",
+            "judgment": "建筑迎背风面压差为1.5Pa，满足限值要求",
+            "isOk": true
+          },
+          {
+            "targetName": "涡旋",
+            "judgment": "无明显涡旋区域",
+            "isOk": true
+          },
+          {
+            "targetName": "无风区",
+            "judgment": "无风区面积占比5%，满足限值要求",
+            "isOk": true
+          },
+          {
+            "targetName": "外窗压力差",
+            "judgment": "外窗压力差满足要求",
+            "isOk": true
+          }
+        ]
+      },
+      {
+        "name": "冬季-东北风",
+        "season": "冬季",
+        "windDirection": "东北",
+        "windSpeed10m": 3.5,
+        "isCaled": true,
+        "status": "正常结束",
+        "beginTime": "2026-10-20 10:30:00",
+        "endTime": "2026-10-20 12:00:00",
+        "targetJudgments": [
+          {
+            "targetName": "人行区风速",
+            "judgment": "1.5m高度处风速为2.8m/s，满足限值要求",
+            "isOk": true
+          },
+          {
+            "targetName": "风速放大系数",
+            "judgment": "风速放大系数为2.0，满足限值要求",
+            "isOk": true
+          },
+          {
+            "targetName": "建筑前后压差",
+            "judgment": "建筑迎背风面压差为2.0Pa，满足限值要求",
+            "isOk": true
+          }
+        ]
+      }
+    ],
+    "seasons": [
+      {
+        "season": "summer",
+        "groups": [
+          {
+            "isOk": true,
+            "conclusion": "夏季工况风速、风速放大系数、建筑前后压差、涡旋、无风区、外窗压力差均达标"
+          }
+        ]
+      },
+      {
+        "season": "winter",
+        "groups": [
+          {
+            "isOk": true,
+            "conclusion": "冬季工况风速、风速放大系数、建筑前后压差均达标"
+          }
+        ]
+      }
+    ],
+    "score": 80.0,
+    "clauseNumber": "4.2.6",
+    "finalConclusion": "通过模拟分析，针对《绿色建筑评价标准》GB/T 50378-2019第4.2.6条的评判要求，本项目得分为80分。",
+    "isAllOk": true
+  }
+}
+```
+
+## 返回字段说明
+
+### result 顶层字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `workConditions` | array | 所有工况的详细达标判断数据 |
+| `seasons` | array | 季节性分组综合判断结论 |
+| `score` | number | 最终评分（仅打分制标准有值，否则为0） |
+| `clauseNumber` | string | 引用的标准条款编号 |
+| `finalConclusion` | string | 最终结论文本描述 |
+| `isAllOk` | boolean | 是否全部达标 |
+
+### workConditions[] 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `name` | string | 工况名称 |
+| `season` | string | 所属季节（夏季/过渡季/冬季/春季/秋季） |
+| `windDirection` | string | 风向（中文，如"西南"、"东北"） |
+| `windSpeed10m` | number | 10m 高度处入口风速（m/s） |
+| `isCaled` | boolean | 是否已计算完成 |
+| `status` | string | 计算状态（未计算、计算中、正常结束、异常结束、用户终止等） |
+| `beginTime` | string | 计算开始时间 |
+| `endTime` | string | 计算结束时间 |
+| `targetJudgments` | array | 各项指标的达标判断结果 |
+
+### targetJudgments[] 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `targetName` | string | 指标名称（如"人行区风速"、"风速放大系数"、"建筑前后压差"、"涡旋"、"无风区"、"外窗压力差"等） |
+| `judgment` | string | 判断详细描述 |
+| `isOk` | boolean | 是否达标 |
+
+### seasons[] 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `season` | string | 季节标识（如 summer, winter, transition 等） |
+| `groups` | array | 该季节下的判断分组 |
+| `groups[].isOk` | boolean | 该组是否达标 |
+| `groups[].conclusion` | string | 该组判断结论描述 |
+
+### finalConclusion 说明
+
+- **打分制标准**（如 GB/T 50378-2019）：返回"通过模拟分析，针对《标准名称》第X.X.X条的评判要求，本项目得分为XX分。"
+- **非打分制标准**：返回"通过模拟分析，场地内的风环境满足/不满足《标准名称》第X.X.X条的要求。"
+
+## 错误情况
+
+| 错误码 | msg 说明 |
+|--------|----------|
+| 1003 | 重新统计失败: \<具体错误信息\> |
+| 1003 | 获取结论异常: \<具体异常信息\> |

@@ -1,2 +1,62 @@
-<!--PKPM-SKILL-ENC:v1-->
-gAAAAABq6YbV4pRe72Uqn00Z4Z5fWHrxJhOl-GB0Rg-lqu5VWZcf1UOU2Kwae12p7Cusys7m1zVkauPq9d7YIC9e0MPhab-wlcgF1-Yyt8A_mNsQhKgMqx_Au6h5P6C2KVWCcwlN6iQf_b0ZCPewfPdNQ76QWafCH2bKlAP3XqLXDUYgN7HpIEquap8cYvdpx8a4iHHqPXMBan4oTbINY54SLcFEdnu4HCSyQaBYvuY7M-Srw2PuV0AHb8kg3vRlQ1FN5CCPuxS5VHpLrJmKRGT4hz7Kghhh1Thuz_Eyj4q51NpbWPq42MeIJLIhKoRvj1NRoVtYqKWo2B6tAKoKWB5O3GzFoHt3SwDq2DL1AlvczBM2nYy-0GWxtwHovd4YE_wIL6e9FUzNCrXymM_l1f4XLAgDtv46zGeGySKAsT3OQ3491HmRk95Pkhc6xQEWtAbSV5cbTxBaVuybvO0UIaKbqQcCC4Elk6G6J9BMhY7BSRm88Atxk4i6MXb8iTBbTCqxKUAX7GQiY6QoMplJ-HOU2MMlJrpUUg0qeB-NhUx7v-TJ4jyMn3xz_yUvkDDpiug6Irl8kZt2w4pq0zYLOppZqk7nzCnDYtm0RHZFkG1jtn2ekpqFcS-uUqIRn1h_vo2oaHRWsxwpPQ6purLaWpt9I87vuAJwsj00vFEx8JRBdmqGVrYAfF22joYUimnb-RK5tjl8-k4qGtihipppLe72FVYE6AfC5pE_oJgml7Pcx4NwjBhqOOb0hckqFB8bUs0wmCfVDb2dJDiRH4NLcI9xDnI01srAb8c5aMdLcRmIsmUE_SaafndC1YyQJ1asKPFwqIQPsFktZpXBqTNMtU6XhB6YnlyedYbD7p44Z4uwGx9QtZBEO0VARVizakpB9ucdlb8Ge-EFSxVh_WnCI_cfJ1IwO0Xp7sEHGLvjLcJNPMry-vOaUGlSmzJo-9oK_5ARiSBsvz4q8-iZDsPG8sVo3Q0Rzgnu6HvUtK63b2cwuzi2QiAvgQUbNrUi5UzuXidEbChYKQ9rMOHRlhPfIHHtuoug6ucrfmzXZtbHD0irKzqA0IYWL5R_Qom6ufYIhOsGcJGC0TRkkfGfHiTYHhWoLPntb9NN5WIX8y0-KSo6H0LcoNs5A6dKqDKoSxnYH7faly5cjlKXRjH9H2rf8st3pWUSB4e2xNG4nQpiuUWyJT5vfEvUUP1tOMHmBa5hMBqt3NzuKXZR910FIvOBoISUo45AXlsXC7ezYQTX6MIsITcfLBeEPeic-3SYAvh9wrdSaxy7lD6dQeJuOvf1AI5y5SywLEOUBIgy7MWtIdU70R4BIMzuOEwvBWieYMq4nCpInraPxF4ZxszFByIwSIG7TbBXEWmJvH2JNAI88yNr3vHw_EomZLY58IhQKTPm_BcpdMxoLZmI3720Sjba-YU7_SbAjwDh0SIeK3pwovF5m6rSzNA8shIk3SDGz17Cb9YQ84OaCBDDOjYXSMg8PyDweyl0eRIKeC_G4LvZdTlFH0O7CcUeM3v__nQZhGFLmMcADtpOnw43jOHaeHIfPVbTmv-WrtzjTs3v7HHZuHbuPUC_TKJf4dLkNMuzEVinwJ6p7JPt5dO98zfRLfQ8HWcXjnyE528ayIbY99XbLh3kOZqlHZl9H6jExVunCZoPduaHISKluheyEELpdGDQQMIMSqI-VejcJOKxffDgaXHgcU4EyeFz2glPTA6amrkwkL09V_mCMcSZe9_7vO8Z6HpCHW6ITuKss5rcVJPkSi_lsXaRBlNNCBRtfGeekJxnNXAQni8quQxDW1-cEthXDYQ4DgCtSgl6iAlFzMscfpVO2JymDilGTYkjGnYeQc5UZNxfRgH9jO7oswUXBU5h2z_lqo8q_fH_6yREXk2msCh496D6RDqpM0QKgdu8dDKbrhE3aeACY3YdlqGLs1RiDQOJA1Lsqiayj1eJb8i8h0eYvf0pjiia48SQtPFOU41rA6mb383Yu-4eYB1MbSmMYC7u-w0-dUXohKxcnfzPe8W8F7cL290vhJQPNSnZ0OFIhsKj-FsAG0ePcxFK6lSSaiFYUl0303u59w6KAehjCROhxuoh2Jzm81tpPYqWDxTQnM_EyQf4S8koLZiRzaNVltpk74eT__cE0_ppIBve4TA1Rt82SXLRiS48FIce_vNEPzFYhOcGagcunD3zIYtfhOEDS1ER2Kk40gGrRGRrqtOTeUWXfpkpYiqUxKnN11Z7otkm_XU13Svi7tv8syQnIlowK6tlrdRAp1UrFqEzPIGzHWZWq3hnU9qopS6P1PCC0a6xjwx72wf4QhpgxZ7st2EkcPj1UJXeUfvVw0_8hinz6qg8HbHfG4sOMxLjFWia8zc23r9d_f69OS5DcpxjZZzguCE3gqBTwadf6E1J17snYXeT6jaMVKEhzzSn4UUjVWoi12BUtC9d6yrOj3Oqf7xRzy0I4MrXsh0Cxl_4pv9101nwCxTrpyFiTH7bDjt8ygpQzFqlWz-hHkaW4MHryG21p7fvzdlvlPzffPhzha2Vw3owSe9tjLbfLs7rNbqBqVix5jMdwatOz6mD-AtmIuBcg43giIFGMetUVGzNCt4zGZ2c1H1EHbd1UqL4msyZDG8jopVk3lxINsKkIGg2xBBWwPTnDWrQ04PEVrwjT7bfcKwdzRXg_tvnAnBXVVE-M-qUvvoiC6effd4IftUMX7MDzeNJll3QnFak2biVqjsjP6bwqcir1H-k4dolplk91KcZaYt6VIR64NwhFUgra6tA2JhGcAkV8LwSZRdT2DGZXKQGoMgvCQRg-wnbumC_c0tfEz50iUCO0B-EJe9TDMS3XZsQeRX01b7kG87RhAlBADaI018CsczPJqxljo5seG5stlxqHX6QiTu-KmpgMT5iaexMq3FZht8i6kIBTMXPFoCLXeZIu8XAsJNz5e9vhVZjWapDWO7EgQQT3JXdB8wXUMRzSFs2ENYfvkn6JvKZvKi1vlIz8n5QotY_GoLzGFgvS9dSN9Kz2e8eAvf9OGHgPyc5rD_702L977pyAB3yBxon-4fLs-29woi7maIFq8m4bCdbzYRIDonZYXf87Ss2yCZ0xkDDZgKxSB-UcsNnIkxxnGWRKb6ARuQxmRsDIFQ8zqZOGLGShuD9tCP-09d4DL48zV4wReyr_YB0PVvk8SYzbOcRWeKLJi5xnyQPbgsP6cAt07V5XIHv2g_bvT3mEXvondU-uMH4KKS9RxnLNqPE21KR08DKsj5OPtXi1z1QvCbPXqYkYMg37h4GwptF-THulf9LE6uWzaWjyAdzV2-gjAEAgvSzAtFOdQbSOWao4jtywqoV28U-pMNPKOcx4tt_5S31u0dSO5kuo4WPFyz-fw4MuWMJqCkZatrSvUOx2fVpsGSSYE5I65MCAk6rN3WPbNq_WInHFJEnGOP594xPybH04KuL8hzW0ErHDcMZ3tNTuQ9rz7hqWYeePoALkE2YwNcBIDY_v36DTUx7G6Eu4irRDWjKp8n4bKL-nr-C6A59CzwNRteq_vBOsqemPyHlGrPJGbZS3zrZiYqzJVHahUYznDSHaNa0QOeknMyGtMChGDG3KAxYrGfu_Tijkd58jCDyChsC4tZ3nn-0PlPczEWu2ELmjTHKrmfisJnLMx4YtTvrrw2cgksXLMshHiBIhcjKpIAfFyah81dTUA5wDRW2KkKnfyy7XYGjjeoeQc-lorVSpRkGYCBQKgtgxT9EUOAXsV0ieMXhCBXHLuYzey3_h9phRXv0ImjJqY6Pa-ZbWmR5fowPUW97282Zd98YJA7mSv_uqBm8QEkJ2KGI6Q1SQfALbPChrUmbIL1MwxKc9pOgTnwaa6zcS-gevCdGux-mTA==
+# 图片
+
+view 中图片显示为 `{图片N 宽×高磅 “替代文字”}`，浮动图片前加“浮动”。
+
+## 辅助函数
+
+**`pictures(f)`** → `[Picture]`：全部图片，编号与 view 中的 `{图片N}` 一致，`pictures(f)[N - 1]` 为图片 N。每项的属性：
+
+- `index`：编号，从 1 开始；`where`：所在段落的位置标签；`floating`：是否浮动；
+- `width`、`height`：显示尺寸（磅），旧式 VML 图片为 None；
+- `alt`：替代文字，可直接赋值修改；
+- `rid`、`part`：图片数据为 `pic.part.related_parts[pic.rid]`；`element`：XML 元素（`w:drawing` 或 `w:pict`）；
+- `pic.resize(width=None, height=None)` → 新的 `(宽, 高)`（磅）：只给一项时另一项按原比例。
+
+**`replace_picture(f, index, path, *, keep="width", alt=None)`** → 新的 `(宽, 高)`（磅）
+
+- 用 `path` 的图片替换图片 `index`，位置和环绕方式不变。
+- `keep="width"` 保持原宽度、高度按新图比例；`"height"` 保持高度；`"size"` 保持原宽高（会拉伸变形，一般不用）。
+- `alt`：新的替代文字，省略时保留原文字。
+
+## python-docx 直接写
+
+| 任务 | 写法 |
+|---|---|
+| 插入 | `p.add_run().add_picture(图片路径, width=Cm(14))`；只给宽度时高度按比例 |
+| 导出原图 | `img = pic.part.related_parts[pic.rid]`，`Path(r"C:\temp\图N" + img.partname.ext).write_bytes(img.blob)`，再用 view_image 查看 |
+| 删除 | 删除图片所在的 run：`r = pic.element.getparent()`，`r.getparent().remove(r)`；图片独占的段落连同题注一起删 |
+
+## 示例
+
+在正文15之后插入图片并加图题：
+
+```python
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Cm
+
+p = insert_paragraph(f.at("正文15"))
+p.add_run().add_picture(r"C:\work\平面图.png", width=Cm(14))
+p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+get_or_add(p, "w:pPr/w:ind", firstLineChars=0, firstLine=0)   # 去掉首行缩进，图片才真正居中
+add_caption(p, "图", "结构平面布置", before=False)
+```
+
+替换多张图片：先按 view 把编号与新图逐一对应好，再逐个替换，替换后导出页面图核对。
+
+```python
+for index, path in {3: r"C:\work\新图3.png", 5: r"C:\work\新图5.png"}.items():
+    replace_picture(f, index, path)
+```
+
+浮动与文字环绕要在应用中设置：
+
+```python
+with target.open() as doc:
+    shape = doc.InlineShapes(1).ConvertToShape()
+    shape.WrapFormat.Type = 0                    # 0 四周型，1 紧密型，3 浮于文字上方，4 上下型，5 衬于文字下方
+    shape.Left, shape.Top = 100, 50              # 位置（磅），改后看页面图核对
+```
+
+## 注意
+
+- 应用中的 `InlineShapes` 只计正文中的内联图片，编号从 1 开始，与 `pictures` 的编号不一定对应，先按页面图核对。
