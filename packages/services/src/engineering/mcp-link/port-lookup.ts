@@ -43,11 +43,7 @@ export interface ListeningPort {
 }
 
 /** 外部命令执行器；测试可注入替身，避免真的调用系统命令。 */
-export type CommandRunner = (
-  command: string,
-  args: string[],
-  timeoutMs: number,
-) => Promise<string>;
+export type CommandRunner = (command: string, args: string[], timeoutMs: number) => Promise<string>;
 
 export interface PortLookupOptions {
   /** 单条系统命令的超时。 */
@@ -150,8 +146,7 @@ export function parseNetTcpConnection(output: string): ListeningPort[] {
     const record = item as Record<string, unknown>;
     const port = typeof record.LocalPort === "number" ? record.LocalPort : undefined;
     if (!port) continue;
-    const address =
-      typeof record.LocalAddress === "string" ? record.LocalAddress : undefined;
+    const address = typeof record.LocalAddress === "string" ? record.LocalAddress : undefined;
     ports.push({ port, address });
   }
   return ports;
@@ -326,7 +321,8 @@ export async function findMcpPortByPid(
   const ports = rankCandidatePorts(await findListeningPortsByPid(pid, options));
   const host = options.host ?? "127.0.0.1";
   const probe =
-    options.probe ?? ((port: number, target: string) => isPortOpen(port, target, options.probeTimeoutMs));
+    options.probe ??
+    ((port: number, target: string) => isPortOpen(port, target, options.probeTimeoutMs));
 
   for (const candidate of ports) {
     if (await probe(candidate.port, host)) {
