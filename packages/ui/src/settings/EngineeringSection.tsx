@@ -162,7 +162,12 @@ export function EngineeringSection({ isDesktop, loadReport }: EngineeringSection
         ? t("settings.engineering.summaryHealthy")
         : t("settings.engineering.summaryUnhealthy")
       : t("settings.engineering.summaryPending");
-  const capabilities = state.status === "ready" ? state.report.capabilities : [];
+  // 桌面端主进程自带一份 @zcode/services 构建产物，可能与当前 UI 包不同版本：
+  // 旧版 diagnose() 不返回 capabilities/supported/checks，直接读 length 会抛
+  // "Cannot read properties of undefined"，把整个设置页打进错误边界。这里统一兜底为空数组。
+  const capabilities = state.status === "ready" ? (state.report.capabilities ?? []) : [];
+  const supported = state.status === "ready" ? (state.report.supported ?? []) : [];
+  const checks = state.status === "ready" ? (state.report.checks ?? []) : [];
 
   return (
     <div className="space-y-6">
@@ -195,9 +200,9 @@ export function EngineeringSection({ isDesktop, loadReport }: EngineeringSection
           <div className="flex items-center justify-between gap-4 px-6 py-4">
             <div className="min-w-0 space-y-1">
               <div className="text-ui-base font-medium text-foreground">{summary}</div>
-              {state.status === "ready" && state.report.supported.length > 0 ? (
+              {supported.length > 0 ? (
                 <div className="break-words text-ui-caption text-foreground-subtle">
-                  {state.report.supported.join(" · ")}
+                  {supported.join(" · ")}
                 </div>
               ) : null}
             </div>
@@ -230,7 +235,7 @@ export function EngineeringSection({ isDesktop, loadReport }: EngineeringSection
           ) : null}
 
           {state.status === "ready"
-            ? state.report.checks.map((check) => (
+            ? checks.map((check) => (
                 <div
                   key={check.name}
                   className="flex items-start gap-3 border-t border-border px-6 py-3"
