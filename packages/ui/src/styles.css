@@ -209,6 +209,8 @@ body {
  * 中日韩汉字共用码位，字形由字体决定：--font-mono 为中文在 monospace 前写死了 SC 字体，
  * 日文/韩文界面会因此显示中文字形（如「直」「骨」）。<html lang> 由 ZCodeIntlProvider 跟随界面语言写入，
  * 这里按 lang 把对应语言的字体排到 SC 前面；无衬线正文走 system-ui，浏览器会按 lang 自动选日/韩字形。
+ * 日文界面例外：汉字先交给下方的 ZCode Han JP / SC 字体，再回到 system-ui，
+ * 见下方「ZCode Han」规则与 docs/ui/ja-locale-han-font-pairing.md。
  */
 :root:lang(ja) {
   --font-mono:
@@ -222,6 +224,66 @@ body {
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR", "Noto Sans KR",
     "Microsoft YaHei UI", "PingFang SC", monospace;
+}
+
+/*
+ * Bugfix: macOS 日文界面（lang=ja）下显示中文内容时，同一句话被两种字体混排：日文字体里有的汉字用
+ * Hiragino，缺的简体字（这、问、题……）回退到苹方。两者字面大小和字重档位不同，font-weight: 500 时
+ * Hiragino 按 W3、苹方按 Medium 渲染，看起来像字号不一致。system-ui 的回退链由系统决定，
+ * 写在它后面的字体不会生效，所以用带 unicode-range 的 @font-face 只接管汉字和 CJK 标点：
+ * 日文汉字仍用 Hiragino Sans（保持日文字形），缺的简体字用同家族的 Hiragino Sans GB 补，
+ * 西文和假名不在 unicode-range 内，仍走原有系统字体。只引用本地字体，Windows / Linux 上找不到时
+ * 自动失效并回到原有回退。见 docs/ui/ja-locale-han-font-pairing.md。
+ */
+@font-face {
+  font-family: "ZCode Han JP";
+  font-weight: 400;
+  src: local("HiraginoSans-W3"), local("Hiragino Sans W3");
+  unicode-range: U+2E80-2FDF, U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
+}
+
+@font-face {
+  font-family: "ZCode Han JP";
+  font-weight: 700;
+  src: local("HiraginoSans-W6"), local("Hiragino Sans W6");
+  unicode-range: U+2E80-2FDF, U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
+}
+
+@font-face {
+  font-family: "ZCode Han SC";
+  font-weight: 400;
+  src: local("HiraginoSansGB-W3"), local("Hiragino Sans GB W3");
+  unicode-range: U+2E80-2FDF, U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
+}
+
+@font-face {
+  font-family: "ZCode Han SC";
+  font-weight: 700;
+  src: local("HiraginoSansGB-W6"), local("Hiragino Sans GB W6");
+  unicode-range: U+2E80-2FDF, U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
+}
+
+:root:lang(ja) {
+  --font-sans:
+    "ZCode Han JP", "ZCode Han SC", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --default-font-family: var(--font-sans);
+}
+
+/*
+ * 日文界面里显式标了其他语言的局部元素（如语言选择列表里 lang="zh-CN" 的「简体中文」）
+ * 是特意要按本语言显示字形的，不能被上面的 Hiragino 字体栈接管，这里恢复默认字体栈，
+ * 让浏览器按元素自身的 lang 选字形。放在 base 层是为了不压过 font-mono 等工具类
+ * （不分层的规则优先级高于所有 @layer，会把等宽字体也改掉）。
+ */
+@layer base {
+  :root:lang(ja) [lang]:not(:lang(ja)) {
+    --font-sans:
+      ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+      "Segoe UI Symbol", "Noto Color Emoji";
+    --default-font-family: var(--font-sans);
+    font-family: var(--font-sans);
+  }
 }
 
 /* === 主题变量 === */
