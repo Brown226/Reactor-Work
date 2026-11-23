@@ -247,7 +247,7 @@ review     → stage=gate，永不自动通过 ✅
 
 - `diagnose()` 扩展到全部 COM 系软件，实测 AutoCAD 正确识别，其余如实报未安装
 - `setPortResolver` 现在由 `registry.ts:46` 调用，可插拔生效
-- `packages/services/scripts/probe-engineering-port.mjs`：实机端口探测脚本
+- `packages/services/scripts/probe-engineering-port.mts`：实机端口探测脚本（直接复用 `port-lookup.ts` 的解析与排序，探测结果与连接层一致）
 
 ### 3.6 AutoCAD 全链路（本任务最有价值的验证）
 
@@ -301,7 +301,7 @@ review     → stage=gate，永不自动通过 ✅
 
 ### 第 2 优先：PKPM/BIMBase 端口反查（唯一硬阻塞，**必须在装了 PKPM 的机器上做**）✅ 已完成（`abc1b92a`，实机待复验）
 
-> **实现结果（2026-11-23）**：新增 `packages/services/src/engineering/mcp-link/port-lookup.ts`，按 PID 取该进程 TCP 监听端口（Windows `Get-NetTCPConnection`→`netstat` 回退；Linux `ss`→`lsof`；其它 POSIX `lsof`），候选按「回环优先→非特权端口优先→端口号升序」排序后逐个连通确认，`waitForMcpPortByPid` 轮询等待（默认 100s，与逆向出的 `wait_local_mcp_ready(port, timeout=100)` 对齐）。`BimBaseLink` 已把「找到进程」与「拿到端口」分开表达：已运行但端口未开时等该 PID，不再退化成再启动一个实例。本机无 PKPM/BIMBase，**实机连通仍需在装有软件的机器上复验**（跑 `node packages/services/scripts/probe-engineering-port.mjs BIMBase` 对照输出即可）。下方为交接时的原始分析，保留备查。
+> **实现结果（2026-11-23）**：新增 `packages/services/src/engineering/mcp-link/port-lookup.ts`，按 PID 取该进程 TCP 监听端口（Windows `Get-NetTCPConnection`→`netstat` 回退；Linux `ss`→`lsof`；其它 POSIX `lsof`），候选按「回环优先→非特权端口优先→端口号升序」排序后逐个连通确认，`waitForMcpPortByPid` 轮询等待（默认 100s，与逆向出的 `wait_local_mcp_ready(port, timeout=100)` 对齐）。`BimBaseLink` 已把「找到进程」与「拿到端口」分开表达：已运行但端口未开时等该 PID，不再退化成再启动一个实例。本机无 PKPM/BIMBase，**实机连通仍需在装有软件的机器上复验**（跑 `npx tsx packages/services/scripts/probe-engineering-port.mts BIMBase` 对照输出即可）。下方为交接时的原始分析，保留备查。
 
 实测现状：
 
@@ -321,7 +321,7 @@ return undefined;
 **接手方法**：
 
 ```bash
-node packages/services/scripts/probe-engineering-port.mjs BIMBase
+npx tsx packages/services/scripts/probe-engineering-port.mts BIMBase
 ```
 
 输出会直接告诉你「哪个 PID 的哪个端口可连接」，然后注入一条 `setPortResolver` 即可。本机已验证该脚本能正确识别 node 进程的 4 个端口。
@@ -496,7 +496,7 @@ npx oxlint packages/ui/src/settings/EngineeringSection.tsx packages/ui/src/Setti
    └─ channel / platform 端口 / preload / main handler / renderer 组装 + SettingsPage 传 loadReport
 
 4. 端口反查 — ✅ 已实现并提交 abc1b92a（本机无 PKPM，实机连通待复验）
-   └─ 待办：在装了 PKPM/BIMBase 的机器上跑 probe-engineering-port.mjs 对照端口
+   └─ 待办：在装了 PKPM/BIMBase 的机器上跑 probe-engineering-port.mts 对照端口
 
 5. 产品决策：98MB API 库怎么入库、加密 references 怎么提供
 ```
