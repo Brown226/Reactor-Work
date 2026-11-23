@@ -163,6 +163,7 @@
   "packages/server/test/tsupConfig.test.ts",
   "packages/services/test/engineeringPortLookup.test.ts",
   "packages/services/test/engineeringApiCatalog.test.ts",
+  "packages/services/test/engineeringDesktopServers.test.ts",
   "packages/web/test/viteConfigLoad.test.ts",
   "packages/zcode-server-cli/test/packaging.test.ts",
   "packages/zcode-server-cli/test/stageRemoteAssetsCli.test.ts",

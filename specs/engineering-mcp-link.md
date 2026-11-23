@@ -2,7 +2,7 @@
 
 ## Product rules
 
-- Reactor 能连接并驱动本机已安装的工程软件（BIMBase/PKPM、SAP2000、AutoCAD、Rhino、Office）。
+- Reactor 能连接并驱动本机已安装的工程软件（BIMBase/PKPM、SAP2000、ETABS、AutoCAD、Rhino、Office、Tekla Structures、MIDAS Civil、SketchUp、STAAD.Pro、Abaqus）。
 - 连接方式为 **API 直连**，不是屏幕镜像：Agent 下发指令，软件在自己的图形内核里执行并渲染，Agent 读取结构化数据（节点坐标、构件 ID、截面参数）。不采集屏幕、不嵌入软件窗口。
 - 连接成功后，目标软件暴露的工具函数被注入 Python 执行环境，Agent 可以写脚本批量调用，而不是逐个工具调用。
 - 一次连接后，目标软件的全部工具函数与数据结构对当前会话可用；重复连接是幂等的。
@@ -17,16 +17,13 @@
 | 文件 | 职责 |
 | --- | --- |
 | `base.ts` | `BaseMCPLink` 抽象：`connect` 流程为「启动服务 → (MCP 系) 等端口 → 握手」，子类只实现 `startMcpServer` 与 `connectMcp` |
-| `registry.ts` | 按 server name 管理连接实例，提供 connect/disconnect/isConnected/getActiveLink 等入口 |
+| `registry.ts` | 按 server name 管理连接实例，提供 connect/disconnect/isConnected/getActiveLink 等入口；同时登记每个软件的 exe 名、环境变量与桥接方式（`COM_SERVER_SPECS` / `LOCAL_API_SERVER_SPECS`） |
 | `discovery.ts` | 安装位置发现：显式路径 > 环境变量 > 上次成功路径 > 自动发现（注册表四路） |
 | `common.ts` | 端口探测（`isPortOpen`）、等待服务就绪（`waitForPort`） |
 | `port-lookup.ts` | PID 反查端口：按 PID 取该进程的 TCP 监听端口，排序后逐个连通确认，并支持轮询等待 |
 | `briefing.ts` | 连接成功后生成「你能用什么」简报 |
 | `links/bimbase.ts` | BIMBase/PKPM 子类，实现安装发现与启动 |
-| `links/sap2000.ts` | SAP2000 子类，走 COM |
-| `links/autocad.ts` | AutoCAD 子类，走 COM（兼容浩辰/中望） |
-| `links/rhino.ts` | Rhino 子类，走 COM |
-| `links/office.ts` | Office/WPS 子类，走 COM |
+| `links/com-software.ts` | 桌面软件通用连接基类：发现安装位置与运行进程，握手阶段只确认可用并载入本地 API 目录（不建立 HTTP 会话）。适用于 COM、.NET、本地 HTTP、Ruby 插件、自带 Python 各类软件的差异由 `bridge` 字段表达 |
 
 `BaseMCPLink` 持有 `port`/`host`/`connected`；子类持有目标软件特有的启动参数（exe 路径、工程路径、版本）。连接实例不持久化到磁盘，进程重启后重新建立。
 
@@ -125,6 +122,15 @@ COM 系软件（SAP2000 / ETABS / Rhino 等）不提供运行时 `tools/list`，
 - **目录缺失只降级不失败**：找不到目录文件时连接仍然成功，简报说明「未找到本地 API 目录，function_search 查不到函数清单」，脚本里仍可 `win32com.client.Dispatch` 直接调用。能力缺失不等于连接失败。
 - **目录文件是编译产物，原始 SQLite 不入库**：编译脚本从各库的主表（`functions` / `methods` / `endpoints` / `symbols`）取 `name` / `purpose`(或 `summary`) / `syntax` / `parameters` / `module`，单条文本截断到 300 字符；10 个库合计约 4.5 MB JSON。原始 103 MB SQLite 留在构建机/制品库，需要时重新编译。
 - **技能 references 以明文入库**：厂商密文（`<!--PKPM-SKILL-ENC:v1-->`）无法离线阅读，已用厂商 `skill_kit.vault` 的 `fernet()` 解密（剥掉标记行、拼接 token 再解密）后以明文替换，共 216 个 Markdown（约 1.74 MB）。
+
+**支持的软件与桥接方式**
+
+`registry.ts` 用 `DesktopServerSpec` 描述每个软件：`productName` / `exeName` / `catalogId` / 可选 `progId` / `featurePaths` / `exeEnvVars` / `rootEnvVars` / `bridge` / `note`。分两张表登记：`COM_SERVER_SPECS`（SAP2000、ETABS、AutoCAD、Rhino，`bridge: "com"`，有 `progId` 兜底）与 `LOCAL_API_SERVER_SPECS`（Tekla、MIDAS、SketchUp、STAAD.Pro、Abaqus，无 `progId`，只能靠 exe 名与环境变量定位）。
+
+- **`bridge` 必须说真话**：各产品的调用方式并不相同——Tekla 走 .NET 程序集（`Tekla.Structures.*.dll` 经 CLR）、MIDAS 走本地 HTTP API（软件内配置 Base URL + MAPI-Key）、SketchUp 走 Ruby 插件桥、STAAD.Pro 走 OpenSTAAD COM、Abaqus 用自带 Python。简报、平台限制文案与诊断建议都按 `bridge` 生成，不得统一硬写成「COM」或「用 `win32com.client.Dispatch`」。
+- **拿不到 ProgID 就不编**：这五个产品的连接库随各自专业安装包分发，本机无厂商 `software_link_kit` 源码可反查 ProgID，因此登记为「exe 名 + 环境变量 + 连接时传 `exePath`」，并在 `note` 写明使用前提（例如 MIDAS 需先在软件内开启 API、SketchUp 已开着时需重启才能装插件）。
+- **AutoCAD 没有本地 API 目录**：它走脚本/`sendCommand`，不依赖注入目录，因此登记表中允许其 `catalogId` 解析不到目录；其余登记项缺目录一律视为登记错误（有回归测试拦截）。
+- **非 COM 软件的诊断检查是「安装位置」而不是「COM 注册」**：`diagnose` 对无 `progId` 的登记项检查可执行文件能否按 exe 名与环境变量找到，命中时显示来源路径；不出现「COM 注册」检查项。
 
 ## Python 执行器
 
@@ -225,3 +231,8 @@ COM 系软件（SAP2000 / ETABS / Rhino 等）不提供运行时 `tools/list`，
 39. `resolveApiCatalogPath` 对标识大小写不敏感，接受 `<标识>-Link` 与同名目录两种布局；目录存在但缺 `api.catalog.json`、标识未知、技能根不存在时返回 `undefined`，不抛异常。
 40. 本地 API 目录缺失时连接仍成功，简报明确说明「查不到函数清单」，脚本仍可 `Dispatch`。
 41. 技能 references 目录内不再存在 `<!--PKPM-SKILL-ENC` 密文；构建产物（`dist/engineering/skills`）随包含明文 references 与 `api.catalog.json`。
+42. Tekla / MIDAS / SketchUp / STAAD.Pro / Abaqus 全部登记在 `LOCAL_API_SERVER_SPECS` 中，`listSupportedServers()` 覆盖且无重复（含 `bimbase`、`pkpmmcp`）。
+43. 除 AutoCAD 外，每个已登记软件的 `catalogId` 都能在真实技能目录中解析到 `api.catalog.json`；缺目录视为登记错误，由回归测试拦截。
+44. 非 COM 登记项没有 `progId` 但必须有 `exeEnvVars`；`diagnose({ server })` 对它们只报「安装位置」检查，不报「COM 注册」。
+45. 连接失败文案与简报按 `bridge` 说明真实调用方式（.NET / 本地 HTTP / Ruby 插件 / COM / 自带 Python），不出现与实际不符的「用 `win32com` Dispatch」。
+46. 显式传入不存在的 `exePath` 时返回「可执行文件不存在」并保持未连接状态，不抛异常、不残留连接。

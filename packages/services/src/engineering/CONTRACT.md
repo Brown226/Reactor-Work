@@ -1,6 +1,6 @@
 # engineering-mcp-link 模块契约
 
-工程软件 MCP 连接层：把本机已安装的工程软件（BIMBase/PKPM、SAP2000、AutoCAD、Rhino、Office）连成一个可由 Agent 驱动的执行环境。spec 见 `specs/engineering-mcp-link.md`。
+工程软件 MCP 连接层：把本机已安装的工程软件（BIMBase/PKPM、SAP2000、ETABS、AutoCAD、Rhino、Office、Tekla Structures、MIDAS Civil、SketchUp、STAAD.Pro、Abaqus）连成一个可由 Agent 驱动的执行环境。spec 见 `specs/engineering-mcp-link.md`。
 
 设计来源是 PKPM Agent 的连接层逆向还原（`software_link_kit` + `mcp_link`）。
 
@@ -20,6 +20,9 @@
 - **COM 系软件的目录路径必须在注册时解析出来**：`ComSoftwareLink` 的能力清单来自本地 API 目录，`catalog.path` 为 `undefined` 时 `loadApiCatalogTools` 直接返回空数组，连接看似成功但 `function_search` 查不到任何函数。目录文件位置固定为 `<技能目录>/references/api.catalog.json`，由 `resolveApiCatalogPath` 按软件标识定位（目录名与标识大小写无关地相等，或为 `<标识>-Link`）。
 - **API 目录缺失只降级不失败**：找不到目录时连接仍然成功，`briefing` 说明「function_search 查不到函数清单」，脚本里仍可 `win32com.client.Dispatch`。能力缺失不等于连接失败。
 - **技能 references 以明文入库**：厂商加密格式（`<!--PKPM-SKILL-ENC:v1-->`）无法离线阅读，已用厂商 `skill_kit.vault` 解密后以明文替换，仓库内不得再提交该标记的密文。API 知识库只保留编译后的 `api.catalog.json`，原始 SQLite 原件不入库。
+- **一个连接类覆盖所有桌面软件，桥接方式必须如实表达**：`ComSoftwareLink` 只做「安装/进程发现 + 本地 API 目录注入」，与是否 COM 无关。每个软件的调用方式（COM / .NET 程序集 / 本地 HTTP API / Ruby 插件 / 自带 Python）记在 `DesktopServerSpec.bridge` 上，简报、平台限制文案与诊断建议都按它生成；不得把非 COM 软件说成 COM，也不得在提示里让用户用 `win32com.client.Dispatch` 去调 .NET 或 Ruby 接口。
+- **没有 ProgID 就不编造**：Tekla / MIDAS / SketchUp / STAAD.Pro / Abaqus 的连接库随各自专业安装包分发，无法在本仓库反查到 ProgID，因此登记为「exe 名 + 环境变量 + 连接时传 `exePath`」，并在 `note` 写明使用前提。诊断为它们检查「安装位置」而非「COM 注册」。
+- **登记项必须能解析到 API 目录，AutoCAD 例外**：除 AutoCAD（走脚本/`sendCommand`，不依赖注入目录）外，任何登记项的 `catalogId` 解析不到 `api.catalog.json` 都视为登记错误，由回归测试拦截。
 - 注入的函数已存在于执行环境，脚本中不得 `import`；只有 `print()` 的输出返回给用户。
 - 目标软件中途关闭后，调用注入的函数必须返回连接错误，不静默失败。
 

@@ -10,10 +10,11 @@
 import { existsSync } from "node:fs";
 
 import { isPortOpen } from "./common.js";
-import { candidateRoots, isValidRoot } from "./discovery.js";
+import { candidateRoots, isValidRoot, resolveExecutable } from "./discovery.js";
 import { findMcpPortByPid } from "./port-lookup.js";
 import { findProcessesByExecutable } from "./process-discovery.js";
-import { getConnectedServers, listComServerSpecs, listSupportedServers } from "./registry.js";
+import { getConnectedServers, listDesktopServerSpecs, listSupportedServers } from "./registry.js";
+import type { DesktopServerSpec } from "./registry.js";
 import { isComProgIdRegistered, resolveComProgIdExe } from "./win-registry.js";
 
 /** 单项检查结果。 */
@@ -64,14 +65,14 @@ export async function diagnose(options: DiagnoseOptions = {}): Promise<Diagnosti
   if (options.server === "bimbase" || options.server === "pkpmmcp") {
     checks.push(...(await bimbaseChecks()));
   } else if (options.server) {
-    const spec = listComServerSpecs().find((item) => item.serverName === options.server);
-    if (spec) checks.push(await comServerCheck(spec));
+    const spec = listDesktopServerSpecs().find((item) => item.serverName === options.server);
+    if (spec) checks.push(await desktopServerCheck(spec));
   } else {
-    // 未指定目标：先核对 BIMBase/PKPM（建模内核，不走 COM），再逐个核对 COM 系软件。
+    // 未指定目标：先核对 BIMBase/PKPM（建模内核，不走 COM），再逐个核对桌面软件。
     // 这是「界面上能看到装了什么」的数据来源，不需要建立连接。
     checks.push(...(await bimbaseChecks()));
-    for (const spec of listComServerSpecs()) {
-      checks.push(await comServerCheck(spec));
+    for (const spec of listDesktopServerSpecs()) {
+      checks.push(await desktopServerCheck(spec));
     }
   }
 
@@ -126,6 +127,61 @@ function explicitExeCheck(exePath: string): DiagnosticCheck {
     ok: exists,
     detail: exists ? `存在：${exePath}` : `不存在：${exePath}`,
     suggestion: exists ? undefined : "请确认路径与文件名，注意 Windows 路径分隔符。",
+  };
+}
+
+/**
+ * 单个桌面软件的检查：有 ProgID 的走 COM 注册检查，其余走安装位置检查。
+ */
+async function desktopServerCheck(
+  spec: { serverName: string } & DesktopServerSpec,
+): Promise<DiagnosticCheck> {
+  if (spec.progId) {
+    return comServerCheck({
+      serverName: spec.serverName,
+      productName: spec.productName,
+      progId: spec.progId,
+    });
+  }
+  return localApiServerCheck(spec);
+}
+
+/**
+ * 非 COM 桌面软件的安装检查。
+ *
+ * 这类产品没有可查的 ProgID，只能核对「能否解析到可执行文件」：显式路径 >
+ * 环境变量 > 上次成功路径。解析不到不代表未安装（可能装在未登记的位置），
+ * 因此文案只说「未找到」，并给出环境变量与 exePath 两条补救路径。
+ */
+async function localApiServerCheck(
+  spec: { serverName: string } & DesktopServerSpec,
+): Promise<DiagnosticCheck> {
+  const featurePaths = spec.featurePaths ?? [];
+  const resolved = await resolveExecutable(
+    {},
+    {
+      productName: spec.productName,
+      exeName: spec.exeName,
+      featurePaths,
+      exeEnvVars: spec.exeEnvVars,
+      rootEnvVars: spec.rootEnvVars,
+    },
+  );
+
+  const remedy = spec.exeEnvVars?.length
+    ? `设置环境变量 ${spec.exeEnvVars.join(" / ")}，或连接时传入 exePath`
+    : "连接时传入 exePath";
+
+  return {
+    name: `安装位置 · ${spec.productName}`,
+    ok: resolved !== undefined,
+    detail: resolved
+      ? `找到可执行文件：${resolved.path}（来源：${resolved.source}）` +
+        (spec.note ? `；${spec.note}` : "")
+      : `按 exe 名 ${spec.exeName} 与环境变量探测，未找到安装位置。`,
+    suggestion: resolved
+      ? undefined
+      : `安装 ${spec.productName} 后${remedy}，再重试；该软件经${spec.bridge}调用。`,
   };
 }
 

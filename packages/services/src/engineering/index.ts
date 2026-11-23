@@ -8,6 +8,8 @@
 export * from "./contract.js";
 
 export {
+  COM_SERVER_SPECS,
+  LOCAL_API_SERVER_SPECS,
   connectToServer,
   disconnectAll,
   disconnectServer,
@@ -17,10 +19,15 @@ export {
   hasEngineeringPortResolver,
   isServerConnected,
   listComServerSpecs,
+  listDesktopServerSpecs,
   listSupportedServers,
   setEngineeringPortResolver,
 } from "./mcp-link/registry.js";
-export type { ComServerSpec, EngineeringPortResolver } from "./mcp-link/registry.js";
+export type {
+  ComServerSpec,
+  DesktopServerSpec,
+  EngineeringPortResolver,
+} from "./mcp-link/registry.js";
 
 export { BimBaseLink } from "./mcp-link/links/bimbase.js";
 
