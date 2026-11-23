@@ -3,8 +3,8 @@
  *
  * 逆向自 PKPM Agent 的 mcp_link/common_tools：
  *   is_local_port_opened(port) / pid_to_mcp_port(pid) / wait_local_mcp_ready(port, timeout)
- * 这里只实现跨平台可用的部分；PID 反查端口依赖目标软件自身的约定，
- * 由各子类通过 startMcpServer 返回值提供，不放公共层。
+ * 其中 is_local_port_opened 与 wait_local_mcp_ready 在本文件；
+ * pid_to_mcp_port 需要平台进程/端口命令，见同目录 port-lookup.ts。
  */
 
 import { createConnection } from "node:net";

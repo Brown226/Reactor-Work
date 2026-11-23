@@ -161,6 +161,7 @@
   "packages/plugin-api/test/version.test.ts",
   "packages/server/test/remoteOfficialPluginAssets.test.ts",
   "packages/server/test/tsupConfig.test.ts",
+  "packages/services/test/engineeringPortLookup.test.ts",
   "packages/web/test/viteConfigLoad.test.ts",
   "packages/zcode-server-cli/test/packaging.test.ts",
   "packages/zcode-server-cli/test/stageRemoteAssetsCli.test.ts",

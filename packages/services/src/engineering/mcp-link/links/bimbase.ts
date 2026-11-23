@@ -20,6 +20,7 @@ import type { DiscoveryOverrides, InjectionResult } from "../types.js";
 import { resolveExecutable, type CandidateRoot, type DiscoverySource } from "../discovery.js";
 import { openMcpSession, type McpSession } from "../session.js";
 import { findProcessesByExecutable } from "../process-discovery.js";
+import { findMcpPortByPid, waitForMcpPortByPid } from "../port-lookup.js";
 import { spawn } from "node:child_process";
 import { copyFile, mkdir } from "node:fs/promises";
 import { dirname, join as joinPath } from "node:path";
@@ -60,13 +61,23 @@ export class BimBaseLink extends BaseMCPLink {
     this.verifiedExePath = resolved.path;
 
     // 已有运行实例时优先复用，不重复启动。
-    const runningPort = await this.findRunningInstancePort(resolved.path);
-    if (runningPort !== undefined) {
-      return runningPort;
+    // 逆向依据：原厂 `_find_running_plants` 命中后走 `_wait_for_mcp_ready(pid)`，
+    // 即「找到就等它自己就绪」，不另起一个实例。
+    const running = await this.findRunningInstance(resolved.path);
+    if (running.running) {
+      if (running.port !== undefined) return running.port;
+      if (this.runningPid !== undefined) {
+        const waited = await waitForMcpPortByPid(this.runningPid, { host: this.host });
+        if (waited !== undefined) return waited;
+      }
+      return (
+        "已检测到 BIMBase 正在运行，但未能取得 MCP 服务端口。" +
+        "请确认软件已进入工程主界面（启动画面阶段不会监听），" +
+        "以及内嵌 MCP 脚本已加载后重试。"
+      );
     }
 
-    // 未运行：需要拉起进程。此处不猜测端口，交由 MCP 服务启动后回报，
-    // 由子类在 connectMcp 中确认。返回 true 表示端口将在握手阶段确定。
+    // 未运行：拉起进程，端口由 PID 反查补齐。
     const project = await this.resolveProjectPath(options, resolved.path);
     if (project === undefined) {
       return "未能准备可用的工程文件：请先手动打开一个工程，或指定 projectPath。";
@@ -75,8 +86,6 @@ export class BimBaseLink extends BaseMCPLink {
     const launchError = await this.launch(resolved.path, project);
     if (launchError) return launchError;
 
-    // 启动后端口由软件写入自身的 MCP 配置，这里先占位，
-    // 真实端口在 waitForPort 前由 resolveRunningPort 补齐。
     const port = await this.resolveMcpPortAfterLaunch(resolved.path);
     if (port === undefined) {
       return "已启动 BIMBase，但未能在约定时间内取得 MCP 服务端口。";
@@ -134,29 +143,34 @@ export class BimBaseLink extends BaseMCPLink {
   }
 
   /**
-   * 查找已运行实例。
+   * 查找已运行实例的 MCP 端口。
    *
-   * 复用已启动的软件比新起一个更符合用户预期（模型可能已经在里面）。
-   * 端口从实例的 MCP 配置反查；拿不到端口时返回 undefined 走启动分支。
+   * 复用已启动的软件比新起一个更符合用户预期（模型可能已经在里面），
+   * 所以「找到了进程」与「拿到了端口」必须分开表达：
+   * 找到进程但端口没开（软件还停在启动画面/未进入工程主界面）时，
+   * 不能退化成再启动一个实例——那会出现两个软件抢同一份工程。
    */
-  private async findRunningInstancePort(exePath: string): Promise<number | undefined> {
+  private async findRunningInstance(
+    exePath: string,
+  ): Promise<{ running: boolean; port?: number }> {
     const processes = await findProcessesByExecutable(exePath);
-    if (processes.length === 0) return undefined;
+    if (processes.length === 0) return { running: false };
     const first = processes[0];
-    if (!first) return undefined;
+    if (!first) return { running: false };
     this.runningPid = first.pid;
-    return this.readMcpPortForPid(first.pid);
+    return { running: true, port: await this.readMcpPortForPid(first.pid) };
   }
 
   /**
    * 从运行实例反查 MCP 端口。
    *
-   * 逆向上的做法是根据 PID 查软件写入的 MCP 配置文件；这里保留同一思路，
-   * 但具体文件格式随厂商版本变化，无法在无实机的情况下确定。
-   * 因此返回 undefined，由调用方走「启动新实例」并等待端口。
+   * 逆向结论：原厂 `common_tools.pid_to_mcp_port(pid)` 是以 PID 为键向实例要端口，
+   * 不是解析厂商配置文件（配置格式随版本变化，PID 才稳定）。
+   * 所以这里按 PID 列出该进程的监听端口并做连通确认。
+   * 拿不到时返回 undefined，由调用方决定是轮询等待还是报错。
    */
-  private readMcpPortForPid(_pid: number): number | undefined {
-    return undefined;
+  private async readMcpPortForPid(pid: number): Promise<number | undefined> {
+    return await findMcpPortByPid(pid, { host: this.host });
   }
 
   /**
@@ -215,13 +229,18 @@ export class BimBaseLink extends BaseMCPLink {
   /**
    * 启动后取 MCP 端口。
    *
-   * 端口由软件在启动时写入自身配置，具体位置随版本变化。
-   * 这里给一个可被调用方覆盖的钩子：子类或配置可注入端口解析器。
-   * 未注入时返回 undefined，让上层给出「已启动但未取得端口」的明确提示，
+   * 优先级：调用方注入的解析器（可按实际版本/端口约定覆盖）> PID 反查。
+   * 冷启动时内嵌 MCP 脚本要等软件进入工程主界面才开始监听，
+   * 因此 PID 反查要轮询等待，而不是只查一次。
+   * 两条路径都拿不到时返回 undefined，让上层给出「已启动但未取得端口」的明确提示，
    * 而不是假装连上。
    */
   private async resolveMcpPortAfterLaunch(_exePath: string): Promise<number | undefined> {
-    return this.portResolver?.(this.launchedPid);
+    const injected = this.portResolver?.(this.launchedPid);
+    if (injected !== undefined) return injected;
+
+    if (this.launchedPid === undefined) return undefined;
+    return await waitForMcpPortByPid(this.launchedPid, { host: this.host });
   }
 
   /** 注入端口解析器；便于按实际版本对接。 */

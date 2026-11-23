@@ -117,6 +117,25 @@ export { findProcessesByExecutable, normalizePath, samePath, isProcessAlive } fr
 export type { MatchedProcess } from "./mcp-link/process-discovery.js";
 
 export {
+  findListeningPortsByPid,
+  findMcpPortByPid,
+  waitForMcpPortByPid,
+  rankCandidatePorts,
+  isLoopbackAddress,
+  parseNetTcpConnection,
+  parseWindowsNetstat,
+  parsePosixSs,
+  parseLsof,
+} from "./mcp-link/port-lookup.js";
+export type {
+  ListeningPort,
+  PortLookupOptions,
+  McpPortLookupOptions,
+  McpPortWaitOptions,
+  CommandRunner,
+} from "./mcp-link/port-lookup.js";
+
+export {
   ENGINEERING_TOOLS,
   invokeEngineeringTool,
 } from "./agent-tools.js";
