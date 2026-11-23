@@ -2886,6 +2886,11 @@ export function createLocalServices(options: {
   const zcodeTaskIndexSyncer = createZCodeTaskIndexSyncer({
     agentService: zcodeAgentService,
     taskIndexRepo,
+    // v4 会话只从精准的执行事实推算活动数：退出保护的唯一权威是会话状态，不走 RPC 回溯。
+    reportActiveSessionCount: options?.taskRuntimeReporter?.onActiveSessionCountChanged
+      ? (runningTaskCount) =>
+          options.taskRuntimeReporter?.onActiveSessionCountChanged?.({ runningTaskCount })
+      : undefined,
   });
   // 自动归档只由这里的定时扫描触发（启动首轮 + 每小时 + 设置变更补扫）；readTree 与任务点击
   // 都不再执行 archiveInactive。判据仍排除 syncer 观察到的非终态会话，不为扫描启动 CLI。
