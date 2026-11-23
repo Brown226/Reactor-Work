@@ -67,8 +67,9 @@ export async function diagnose(options: DiagnoseOptions = {}): Promise<Diagnosti
     const spec = listComServerSpecs().find((item) => item.serverName === options.server);
     if (spec) checks.push(await comServerCheck(spec));
   } else {
-    // 未指定目标：逐个核对已登记的 COM 系软件是否已安装。
+    // 未指定目标：先核对 BIMBase/PKPM（建模内核，不走 COM），再逐个核对 COM 系软件。
     // 这是「界面上能看到装了什么」的数据来源，不需要建立连接。
+    checks.push(...(await bimbaseChecks()));
     for (const spec of listComServerSpecs()) {
       checks.push(await comServerCheck(spec));
     }
