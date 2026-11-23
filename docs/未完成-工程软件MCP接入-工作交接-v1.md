@@ -357,10 +357,15 @@ npx tsx packages/services/scripts/probe-engineering-port.mts BIMBase
 
 ### 第 5 优先：工程化收尾
 
+> **实现结果（2026-11-23）**：跑 `node packages/desktop/scripts/prepare-agent-node-bundle.mjs` 验证打包链。**工程能力这一个环节已通过**：`buildEngineeringRuntime()` 实跑成功（`[engineering-skills] 资源已拷贝到 dist/engineering/skills`，26 个技能目录），`stageEngineeringRuntime()` 的产物齐全（`packages/desktop/bundled-agents/win32-x64/glm/packages/engineering/` 下有 `mcp-server-main.js` + `skills/`），从该暂存路径直接启动 MCP server 实测 `initialize` 正常、`tools/list` 返回 5 个工具。
+>
+> **整条打包命令仍在最后一步失败**，但故障点与本任务无关，属「插件 seed 降级修复」那条开发线的未提交改动：`stageOfficialPlugins()` 报 `missing staged official plugin seed asset: ...\packages\mimosa-plugin\payload\.mcp.json`。根因——工作区未跟踪的 `packages/desktop/scripts/vendored-official-plugin-packages.generated.mjs` 里 mimosa 条目要求 `payload/.mcp.json` 却**没有**声明 `runtimeTopLevelPaths: ["payload"]`，而 `includedOfficialPluginTopLevelPaths`（`prepare-agent-node-bundle.mjs:391`）不含 `payload`，所以永远不会被拷贝。该脚本的 +10/-1 改动（引入上述 generated 文件、新增 `runtimeTopLevelPaths` 支持）与插件的 `mimosa-plugin/`、`scripts/vendor-bundled-official-plugins.mjs` 在本分支均为未跟踪/未提交状态，**不要在本任务里修**。
+>
+> 「`copy-engineering-skills` 未进 services build」一条不再成立：`buildEngineeringRuntime()`（`prepare-agent-node-bundle.mjs:568-586`）已同时执行 `tsc -b packages/services/tsconfig.json` 与 `copy-engineering-skills.mjs`，两步都在 stage 前跑完。
+
 | 缺口 | 说明 |
 |---|---|
-| `copy-engineering-skills` 未进 services build | `packages/services/package.json` 的 scripts 只有 `lint` / `lint:fix`，靠打包脚本调用 |
-| 完整打包未跑 | 只做了「模拟同样目录结构 + 实际启动 MCP」的等价验证 |
+| 整条打包被 mimosa seed 资产阻塞 | 见上，属插件 seed 线未提交改动，非本任务 |
 | `output/`（9.5M） | 未跟踪，内容 `enbx-export`，不是本任务产物 |
 
 ---
