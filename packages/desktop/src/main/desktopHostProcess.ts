@@ -22,6 +22,8 @@ import {
   type RemoteTarget,
   type TaskRealtimeHostDeliveryKind,
   type WorkspacePurpose,
+  CREDENTIAL_KEY_SHARE_UNAVAILABLE_ERROR_CODE,
+  USER_DATA_DIR_NAME,
   formatZCodeHostProcessName,
   HostMessageTypes,
   hostResponseMessageSchema,
@@ -45,7 +47,7 @@ import {
   MessageChannelMain,
 } from "electron";
 import { randomUUID } from "node:crypto";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 import { BroadcastHub } from "./broadcastHub.js";
 import { bindDatabaseStartupRelay } from "./databaseStartupRelay.js";
 import { getMainLaunchPartialMarks } from "./desktopLaunchMarks.js";
@@ -341,6 +343,39 @@ export function spawnHostProcess(
         })
         .catch(() => {
           // Host 已退出时只能放弃回包；任何凭据输入/结果都不得进入日志。
+        });
+      return;
+    }
+
+    if (result.data.type === HostResponseTypes.CredentialKeyShareRequest) {
+      const { requestId, targetBaseDir } = result.data;
+      // 修复原因（ZCT-2120723935487688704）：切换数据存储路径只复制凭据文件，新根缺少
+      // 系统条目，重启后掉登录且无法重新登录。Host 只提供数据根；凭据路径由 Main 按
+      // copyDataDirectory 的目标布局推导，密钥不离开 Main，也不开放对目标目录的加解密。
+      const share = isAbsolute(targetBaseDir)
+        ? credentialCipher.shareKeyWithCopiedCredentials(
+            // [红线] 用户数据目录名必须走 USER_DATA_DIR_NAME（=".reactor"），
+            // 不能照抄上游硬编码的 ".zcode"，否则密钥登记到错误目录。
+            join(targetBaseDir, USER_DATA_DIR_NAME, "v2", "credentials.json"),
+          )
+        : Promise.reject(new Error("Data root must be absolute"));
+      void share
+        .then(
+          () => ({ ok: true as const }),
+          () => ({ ok: false as const, errorCode: CREDENTIAL_KEY_SHARE_UNAVAILABLE_ERROR_CODE }),
+        )
+        .then((reply) => {
+          dependencies.logger.info(`[credential-key-share] ${reply.ok ? "completed" : "failed"}`);
+          if (!exitedHostProcesses.has(child)) {
+            child.postMessage({
+              type: HostMessageTypes.CredentialKeyShareResult,
+              requestId,
+              ...reply,
+            });
+          }
+        })
+        .catch(() => {
+          // Host 已退出时只能放弃回包；原生异常不进入日志，避免泄露系统细节。
         });
       return;
     }

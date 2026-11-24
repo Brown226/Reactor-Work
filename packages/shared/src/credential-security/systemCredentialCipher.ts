@@ -41,6 +41,56 @@ function keyCacheFor(store?: CredentialKeyStore): Map<string, Promise<KeyMateria
 function digest(value: string | Buffer): Buffer {
   return createHash("sha256").update(value).digest();
 }
+
+// 数据根复制后登记密钥用：与 encrypt 产出的 `enc:v2:os:<fingerprint>:...` 同格式，
+// 只比对指纹，不读出或返回任何密钥材料。
+const OS_CIPHERTEXT_PREFIX = `${SYSTEM_PREFIX}os:`;
+const KEY_FINGERPRINT_PATTERN = /^[a-f0-9]{24}$/;
+const ENCODED_KEY_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+
+function keyFingerprint(key: Buffer): string {
+  return digest(key).toString("hex").slice(0, 24);
+}
+
+/** 系统条目中编码密钥的指纹；格式不合法时返回 null。 */
+function encodedKeyFingerprint(encoded: string): string | null {
+  return ENCODED_KEY_PATTERN.test(encoded)
+    ? keyFingerprint(Buffer.from(encoded, "base64url"))
+    : null;
+}
+
+/** 读凭据容器中 os 来源密文的密钥指纹；文件缺失或无法解析时视为没有。 */
+async function readOsKeyFingerprints(filePath: string): Promise<Set<string>> {
+  const raw = await readFile(filePath, "utf8").catch((error: NodeJS.ErrnoException) => {
+    if (error.code === "ENOENT") return "";
+    throw error;
+  });
+  const fingerprints = new Set<string>();
+  let record: unknown;
+  try {
+    record = JSON.parse(raw || "{}");
+  } catch {
+    return fingerprints;
+  }
+  if (!record || typeof record !== "object") return fingerprints;
+  for (const value of Object.values(record)) {
+    if (typeof value !== "string" || !value.startsWith(OS_CIPHERTEXT_PREFIX)) continue;
+    const fingerprint = value.slice(OS_CIPHERTEXT_PREFIX.length).split(":")[0];
+    if (fingerprint && KEY_FINGERPRINT_PATTERN.test(fingerprint)) fingerprints.add(fingerprint);
+  }
+  return fingerprints;
+}
+
+/** 凭据文件同目录的 credential-source 是否为 os 标记。 */
+async function isOsSourcePinned(filePath: string): Promise<boolean> {
+  const marker = await readFile(join(dirname(filePath), "credential-source"), "utf8").catch(
+    (error: NodeJS.ErrnoException) => {
+      if (error.code === "ENOENT") return null;
+      throw error;
+    },
+  );
+  return marker === "os\n";
+}
 function decryptError(): Error {
   return Object.assign(
     new Error(`${CREDENTIAL_DECRYPT_ERROR_PREFIX}Invalid encrypted credential`),
@@ -246,6 +296,68 @@ export function createSystemCredentialCipher(
   return {
     async initialize() {
       await getKey(true);
+    },
+    async shareKeyWithCopiedCredentials(targetFilePath, targetKeyStore) {
+      // 修复原因（ZCT-2120723935487688704）：系统条目按凭据文件路径区分，切换数据存储路径
+      // 只复制 credentials.json 与 credential-source；新根没有条目，来源又固定为 os，
+      // 启动后既解不开原凭据也不能生成新密钥，用户掉登录且无法重新登录。
+      // 这里由密钥 owner 把同一把密钥登记到目标路径，密文和指纹无需改写。
+      const target = resolve(targetFilePath);
+      if (target === filePath) return;
+      const [sourcePrints, targetPrints, sourcePinned, targetPinned] = await Promise.all([
+        readOsKeyFingerprints(filePath),
+        readOsKeyFingerprints(target),
+        isOsSourcePinned(filePath),
+        isOsSourcePinned(target),
+      ]);
+      let requiredFingerprint: string | null;
+      if (targetPrints.size === 1) {
+        const [fingerprint] = targetPrints;
+        // 密文不来自本目录（目标自有凭据未被覆盖）：没有数据依赖本目录密钥。
+        if (!fingerprint || !sourcePrints.has(fingerprint)) return;
+        requiredFingerprint = fingerprint;
+      } else if (targetPrints.size === 0 && targetPinned && sourcePinned) {
+        // 源已固定 os 但没有 os 密文（只用过 API Key 后删光等），复制把来源标记带到新根；
+        // 新根没有条目时 getKey 按“密钥丢失”拒绝生成新密钥，重新登录失败。
+        // 标记依赖的是“目标路径有条目”，不依赖某把具体密钥。
+        requiredFingerprint = null;
+      } else {
+        // 从未建过密钥、托管密钥等：不访问系统库，也不加载本目录密钥——
+        // 空目录加载失败会缓存到进程退出，阻断之后的首次登录。
+        return;
+      }
+      const targetStore = targetKeyStore ?? systemKeyStore(target);
+      // 目标条目指纹已匹配时直接成功，不加载本目录密钥：已受影响的根补救切回原路径时，
+      // Main 绑定的本目录可能没有密钥，先加载会中止切换，把用户困在受影响的根。
+      const registered = await targetStore.get().catch(() => {
+        throw unavailable();
+      });
+      const registeredFingerprint = registered === null ? null : encodedKeyFingerprint(registered);
+      if (
+        registeredFingerprint !== null &&
+        (requiredFingerprint === null || registeredFingerprint === requiredFingerprint)
+      )
+        return;
+      const { key, source } = await getKey(false);
+      if (
+        source !== "os" ||
+        (requiredFingerprint !== null && keyFingerprint(key) !== requiredFingerprint)
+      )
+        return;
+      const encoded = key.toString("base64url");
+      // 与 getKey 使用同一把目标 keyring 锁，避免与目标路径上的首次创建竞争。
+      await withFileLock(`${target}.keyring`, async () => {
+        try {
+          const existing = await targetStore.get();
+          if (existing === encoded) return;
+          // 目标路径已有另一把密钥时可能仍有数据依赖它，不能覆盖；明确失败让调用方中止切换。
+          if (existing !== null) throw unavailable();
+          await targetStore.set(encoded);
+          if ((await targetStore.get()) !== encoded) throw unavailable();
+        } catch {
+          throw unavailable();
+        }
+      });
     },
     needsMigration: (value) => !value.startsWith(SYSTEM_PREFIX),
     async encrypt(value) {

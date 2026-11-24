@@ -117,6 +117,7 @@ import {
   resolveOffPeakDispatchKind,
 } from "./offPeakDispatchPlan.js";
 import {
+  CREDENTIAL_KEY_SHARE_UNAVAILABLE_ERROR_CODE,
   HostMessageTypes,
   HostResponseTypes,
   formatLogPrefix,
@@ -278,6 +279,35 @@ const credentialCipherBridge = createCredentialCipherBridge((request) => {
   if (!parentPort) throw new Error("parentPort unavailable");
   parentPort.postMessage({ type: HostResponseTypes.CredentialCipherRequest, ...request });
 });
+
+interface PendingCredentialKeyShare {
+  resolve: () => void;
+  reject: (error: Error) => void;
+}
+const pendingCredentialKeyShares = new Map<string, PendingCredentialKeyShare>();
+
+/**
+ * 数据存储路径切换复制完成后，请求 Main 把当前系统密钥登记到目标数据根。
+ * 只有 Main 访问系统库；失败时 reject，由设置服务中止切换（见系统安全存储规格）。
+ */
+function shareCredentialKeyWithDataRoot(targetBaseDir: string): Promise<void> {
+  if (!parentPort) return Promise.reject(new Error("parentPort unavailable"));
+  const requestId = randomUUID();
+  return new Promise<void>((resolve, reject) => {
+    pendingCredentialKeyShares.set(requestId, { resolve, reject });
+    try {
+      parentPort.postMessage({
+        type: HostResponseTypes.CredentialKeyShareRequest,
+        requestId,
+        targetBaseDir,
+      });
+    } catch (error) {
+      pendingCredentialKeyShares.delete(requestId);
+      reject(error instanceof Error ? error : new Error(String(error)));
+    }
+  });
+}
+
 const hostNetworkCapture = createHostNetworkCapture(parentPort);
 
 // 进程检索体验优化：host 由 utilityProcess 拉起时外壳仍是 Electron Helper，
@@ -3171,6 +3201,21 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
     credentialCipherBridge.receive(reply);
     return;
   }
+  if (e.data?.type === HostMessageTypes.CredentialKeyShareResult) {
+    const pending = pendingCredentialKeyShares.get(e.data.requestId);
+    if (!pending) return;
+    pendingCredentialKeyShares.delete(e.data.requestId);
+    if (e.data.ok) {
+      pending.resolve();
+      return;
+    }
+    pending.reject(
+      Object.assign(new Error("System credential storage is unavailable"), {
+        code: e.data.errorCode ?? CREDENTIAL_KEY_SHARE_UNAVAILABLE_ERROR_CODE,
+      }),
+    );
+    return;
+  }
   const navigation = appNavigationResultMessageSchema.safeParse(e.data);
   if (navigation.success) {
     appControlNavigation.receive(navigation.data);
@@ -3996,7 +4041,7 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
           service: settingService,
           prepareLegacyAccountConnections,
           setWorkspaceProjection,
-        } = createSettingServiceWithMigrations();
+        } = createSettingServiceWithMigrations({ shareCredentialKeyWithDataRoot });
         // 不阻塞启动：读到持久化语言后作为 X-Client-Language 的兜底。
         void settingService.get().then(
           (settings) => {
