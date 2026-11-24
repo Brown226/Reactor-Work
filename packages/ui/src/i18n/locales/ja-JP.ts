@@ -2260,6 +2260,7 @@ const jaJP: Record<string, string> = {
   "fileManager.hideNavigation": "ファイルナビゲーションを非表示",
   "fileManager.empty": "ナビゲーションからファイルを選択してください",
   "codeViewer.title": "コードビューアー",
+  "documentEditor.title": "ドキュメントエディター",
   "codeViewer.close": "コードビューアーを閉じる",
   "codeViewer.loadingFile": "ファイルを読み込み中...",
   "codeViewer.loadingImage": "画像プレビューを読み込み中...",
@@ -2526,6 +2527,9 @@ const jaJP: Record<string, string> = {
     "ページのエラーは捕捉されたため、アプリが空白画面になることはありません。まず再試行し、問題が続く場合はアプリを再読み込みしてください。",
   "appError.retry": "再試行",
   "appError.reload": "アプリを再読み込み",
+  "appError.restart": "アプリを再起動",
+  "appError.restartHint":
+    "再起動するとすべてのアプリウィンドウが閉じ、未保存の内容が失われる場合があります。",
   "appError.hint": "調査のため診断情報を記録しました。",
   "appError.details": "コンポーネントスタックを表示",
   "appError.unknown": "不明なエラー",

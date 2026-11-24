@@ -2233,6 +2233,7 @@ const ruRU: Record<string, string> = {
   "fileManager.hideNavigation": "Скрыть навигацию по файлам",
   "fileManager.empty": "Выберите файл в навигации",
   "codeViewer.title": "Просмотр кода",
+  "documentEditor.title": "Редактор документов",
   "codeViewer.close": "Закрыть просмотр кода",
   "codeViewer.loadingFile": "Загрузка файла...",
   "codeViewer.loadingImage": "Загрузка предпросмотра изображения...",
@@ -2497,6 +2498,9 @@ const ruRU: Record<string, string> = {
     "Ошибка страницы перехвачена, поэтому приложение не показывает пустой экран. Сначала попробуйте ещё раз, а если проблема повторяется, перезагрузите приложение.",
   "appError.retry": "Повторить",
   "appError.reload": "Перезагрузить приложение",
+  "appError.restart": "Перезапустить приложение",
+  "appError.restartHint":
+    "При перезапуске все окна приложения закроются. Несохранённые изменения могут быть потеряны.",
   "appError.hint": "Диагностические сведения записаны для расследования.",
   "appError.details": "Показать стек компонентов",
   "appError.unknown": "Неизвестная ошибка",

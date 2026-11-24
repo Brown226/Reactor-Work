@@ -2195,6 +2195,7 @@ const koKR: Record<string, string> = {
   "fileManager.hideNavigation": "파일 탐색 숨기기",
   "fileManager.empty": "탐색에서 파일을 선택하세요",
   "codeViewer.title": "코드 뷰어",
+  "documentEditor.title": "문서 편집기",
   "codeViewer.close": "코드 뷰어 닫기",
   "codeViewer.loadingFile": "파일 로드 중...",
   "codeViewer.loadingImage": "이미지 미리 보기 로드 중...",
@@ -2455,6 +2456,9 @@ const koKR: Record<string, string> = {
     "페이지 오류를 포착했으므로 앱이 빈 화면으로 전환될 필요는 없습니다. 먼저 다시 시도하고, 문제가 계속되면 앱을 새로고침하세요.",
   "appError.retry": "다시 시도",
   "appError.reload": "앱 다시 로드",
+  "appError.restart": "앱 다시 시작",
+  "appError.restartHint":
+    "다시 시작하면 모든 앱 창이 닫히며 저장하지 않은 내용이 손실될 수 있습니다.",
   "appError.hint": "조사에 도움이 되도록 진단 정보가 기록되었습니다.",
   "appError.details": "컴포넌트 스택 보기",
   "appError.unknown": "알 수 없는 오류",
