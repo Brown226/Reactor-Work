@@ -164,7 +164,7 @@ import {
   resolveSystemApplicationLocale,
   updateZCodeStdioTapDevMenuState,
 } from "./desktopApplicationMenu.js";
-import { applyAppIcon } from "./desktopWindowChrome.js";
+import { applyAppIcon, guardWindowNavigation } from "./desktopWindowChrome.js";
 import { resolveWindowsAppUserModelIdForFlavor } from "../../scripts/desktop-product-identity.mjs";
 import type { DesktopWindowSize } from "./desktopWindowSize.js";
 import { maybeWarnArchitectureMismatch } from "./desktopArchitectureGuard.js";
@@ -2005,6 +2005,8 @@ function openUpdateStatusWindow() {
       `[auto-update] update status window shown visible=${win.isVisible()} focused=${win.isFocused()} bounds=${JSON.stringify(win.getBounds())}`,
     );
   };
+  // 更新状态窗口同样挂载了 window.zcode preload，导航守卫与主窗口共用同一判定。
+  guardWindowNavigation(win.webContents, logger);
   win.webContents.on("dom-ready", () => {
     logger.info("[auto-update] update status window dom-ready");
     syncAutoUpdaterStateToWindow(win);
