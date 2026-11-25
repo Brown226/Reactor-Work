@@ -7881,11 +7881,22 @@ const enUS: Record<string, string> = {
   "voiceInput.button.recognizing": "Recognizing…",
   "voiceInput.action.openPrivacySettings": "Open System Settings",
   "voiceInput.action.openSoundSettings": "Open Sound Settings",
-  "voiceInput.error.permissionDenied.mac": "Reactor cannot use the microphone. Allow Reactor in System Settings › Privacy & Security › Microphone. On some macOS versions, restart the app after you change it.",
-  "voiceInput.error.permissionDenied.windows": 'Reactor cannot use the microphone. In Settings › Privacy & security › Microphone, turn on both "Microphone access" and "Let desktop apps access your microphone".',
+  "voiceInput.permission.title": "Microphone access needed",
+  "voiceInput.permission.description.mac":
+    'Click "Request again", then choose "Allow" in the system dialog. You can also turn on Reactor in System Settings › Privacy & Security › Microphone.',
+  "voiceInput.permission.reauthorize": "Request again",
+  "voiceInput.permission.restartTitle": "Restart Reactor",
+  "voiceInput.permission.restartDescription":
+    'The microphone permission was reset. Restart Reactor, click the microphone, then choose "Allow" in the system dialog.',
+  "voiceInput.permission.relaunch": "Restart Reactor",
+  "voiceInput.permission.granted":
+    "Microphone access is on. Click the microphone to start voice input.",
+  "voiceInput.permission.description.windows":
+    'In Settings › Privacy & security › Microphone, turn on both "Microphone access" and "Let desktop apps access your microphone".',
   "voiceInput.error.permissionDenied.linux": "Cannot access the microphone. Check the system microphone permission and the PulseAudio / PipeWire input device.",
   "voiceInput.error.silent": "No sound came from the microphone. Usually the system microphone permission is off or the wrong input device is selected.",
   "voiceInput.error.silent.linux": "No sound came from the microphone. Check the PulseAudio / PipeWire input device and volume.",
+
   "voiceInput.error.noDevice": "No microphone found. Connect a microphone and try again.",
   "voiceInput.error.noDevice.linux": "No microphone found. Connect a microphone and check the PulseAudio / PipeWire input device.",
   "voiceInput.error.deviceBusy": "The microphone cannot be used. Another app may be using it.",

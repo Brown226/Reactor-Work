@@ -7997,11 +7997,21 @@ const zhCN: Record<string, string> = {
   "voiceInput.button.recognizing": "正在识别…",
   "voiceInput.action.openPrivacySettings": "打开系统设置",
   "voiceInput.action.openSoundSettings": "打开声音设置",
-  "voiceInput.error.permissionDenied.mac": "Reactor 没有麦克风权限。请在「系统设置 › 隐私与安全性 › 麦克风」中允许 Reactor，部分系统版本需要重启应用后生效。",
-  "voiceInput.error.permissionDenied.windows": "Reactor 没有麦克风权限。请在「设置 › 隐私和安全性 › 麦克风」中同时打开「麦克风访问权限」和「允许桌面应用访问麦克风」。",
+  "voiceInput.permission.title": "需要麦克风权限",
+  "voiceInput.permission.description.mac":
+    "点击「重新授权」，然后在系统弹框中选择「允许」。也可以在「系统设置 › 隐私与安全性 › 麦克风」中打开 Reactor。",
+  "voiceInput.permission.reauthorize": "重新授权",
+  "voiceInput.permission.restartTitle": "需要重启 Reactor",
+  "voiceInput.permission.restartDescription":
+    "已重置麦克风授权。重启 Reactor 后点击麦克风，在系统弹框中选择「允许」。",
+  "voiceInput.permission.relaunch": "重启 Reactor",
+  "voiceInput.permission.granted": "已开启麦克风权限，点击麦克风开始语音输入。",
+  "voiceInput.permission.description.windows":
+    "请在「设置 › 隐私和安全性 › 麦克风」中同时打开「麦克风访问权限」和「允许桌面应用访问麦克风」。",
   "voiceInput.error.permissionDenied.linux": "无法访问麦克风。请检查系统的麦克风权限和 PulseAudio / PipeWire 输入设备。",
   "voiceInput.error.silent": "没有收到麦克风声音。通常是系统麦克风权限未开启或选错了输入设备。",
   "voiceInput.error.silent.linux": "没有收到麦克风声音。请检查 PulseAudio / PipeWire 的输入设备和音量。",
+
   "voiceInput.error.noDevice": "未检测到麦克风，请连接麦克风后重试。",
   "voiceInput.error.noDevice.linux": "未检测到麦克风。请连接麦克风，并检查 PulseAudio / PipeWire 输入设备。",
   "voiceInput.error.deviceBusy": "麦克风无法使用，可能被其他应用占用。",
