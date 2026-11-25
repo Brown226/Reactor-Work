@@ -3341,6 +3341,12 @@ const zhCN: Record<string, string> = {
   "settings.toolSearch.off": "关闭",
   "settings.nativeSearchEnhancements": "增强 Find 和 Grep",
   "settings.nativeSearchEnhancementsDescription": "在新建会话或应用重启后恢复的会话中使用增强 Find 和 Grep。当前会话保持现有设置；Windows 的 Find 保持不变。",
+  "settings.replyLanguage": "回复语言",
+  "settings.replyLanguageDescription": "Agent 用这个语言回复。留空时跟随对话语言。",
+  "settings.replyLanguagePlaceholder": "例如：简体中文、English、日本語",
+  "settings.replyLanguageSaveError": "保存回复语言失败",
+  "settings.replyLanguageLocalOnly":
+    "回复语言仅支持在本地桌面端设置，请前往本地桌面端的“行为与工具”设置。",
   "settings.memory": "记忆",
   "settings.knowledge.title": "知识库",
   "settings.knowledge.loading": "正在读取知识库设置…",

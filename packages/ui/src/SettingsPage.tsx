@@ -1954,6 +1954,7 @@ export function SettingsPage({
                           onModelIoFullRetentionEnabledChange={
                             handleModelIoFullRetentionEnabledChange
                           }
+                          replyLanguage={sharedSettings?.replyLanguage}
                         />
                       ) : activeSection === "dataSync" ? (
                         isDesktop ? (

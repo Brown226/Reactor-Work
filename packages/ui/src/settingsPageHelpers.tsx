@@ -784,6 +784,75 @@ export function GeneralSectionContent({
   );
 }
 
+/**
+ * Agent 回复语言（docs/i18n/agent-reply-language.md）。值由 Main 持有：经 platform.setReplyLanguage
+ * 写入，Main 写盘后广播 settings-changed，`value` 随本机设置快照刷新。失焦或回车保存，Esc 恢复。
+ * Web 远控没有这个平台方法，不写本机设置，只显示本机提示。
+ */
+function ReplyLanguageSetting({ value = "" }: { value?: string }) {
+  const { intl } = useZCodeIntl();
+  const platform = usePlatform();
+  const [draft, setDraft] = useState(value);
+  // 已保存的值变化（保存成功后的快照刷新、其他窗口修改）时，草稿跟上。
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  const label = intl.formatMessage({ id: "settings.replyLanguage" });
+
+  const commit = async () => {
+    const next = draft.trim();
+    setDraft(next);
+    if (next === value) return;
+    try {
+      await platform.setReplyLanguage?.(next);
+    } catch (error) {
+      setDraft(value);
+      logger.warn("[settings] 保存回复语言失败", { error: String(error) });
+      toast(intl.formatMessage({ id: "settings.replyLanguageSaveError" }));
+    }
+  };
+
+  // 不包外层元素：SettingsRow 靠 first:border-t-0 画行间分隔线，包一层会让它变成首行而丢掉上边框。
+  return (
+    <SettingsRow
+      searchId="settings.replyLanguage"
+      label={label}
+      description={intl.formatMessage({ id: "settings.replyLanguageDescription" })}
+      controlLayout="wide"
+      control={
+        platform.setReplyLanguage ? (
+          <Input
+            size="lg"
+            value={draft}
+            maxLength={REPLY_LANGUAGE_MAX_LENGTH}
+            spellCheck={false}
+            placeholder={intl.formatMessage({ id: "settings.replyLanguagePlaceholder" })}
+            aria-label={label}
+            data-testid={TID_SETTINGS_REPLY_LANGUAGE_INPUT}
+            onChange={(event) => setDraft(event.currentTarget.value)}
+            onBlur={() => void commit()}
+            onKeyDown={(event) => {
+              if (isImeComposingKeyEvent(event)) return;
+              if (event.key === "Enter") {
+                event.currentTarget.blur();
+              } else if (event.key === "Escape") {
+                event.preventDefault();
+                setDraft(value);
+              }
+            }}
+            className="w-full"
+          />
+        ) : (
+          <p className="text-ui-sm leading-5 text-foreground-subtle">
+            {intl.formatMessage({ id: "settings.replyLanguageLocalOnly" })}
+          </p>
+        )
+      }
+    />
+  );
+}
+
 export function AgentBehaviorSectionContent({
   toolSearchMode = DEFAULT_APP_TOOL_SEARCH_MODE,
   onToolSearchModeChange,
@@ -799,6 +868,7 @@ export function AgentBehaviorSectionContent({
   onZCodeInteractionBehaviorChange,
   onAskUserQuestionAutoResolutionEnabledChange = async () => {},
   onModelIoFullRetentionEnabledChange = async () => {},
+  replyLanguage,
 }: {
   toolSearchMode?: AppToolSearchMode;
   onToolSearchModeChange: (mode: AppToolSearchMode) => Promise<void>;
@@ -814,6 +884,8 @@ export function AgentBehaviorSectionContent({
   onZCodeInteractionBehaviorChange: (behavior: ZCodeInteractionBehavior) => Promise<void>;
   onAskUserQuestionAutoResolutionEnabledChange?: (enabled: boolean) => Promise<void>;
   onModelIoFullRetentionEnabledChange?: (enabled: boolean) => Promise<void>;
+  /** 本机设置快照里的 Agent 回复语言；写入走 Main（见 ReplyLanguageSetting）。 */
+  replyLanguage?: string;
 }) {
   const { intl } = useZCodeIntl();
   const hasServices = Boolean(useOptionalServices());
@@ -882,9 +954,11 @@ export function AgentBehaviorSectionContent({
       </SettingsGroupCard>
 
       <SettingsGroupCard>
+        <ReplyLanguageSetting value={replyLanguage} />
         <SettingsRow
           searchId="settings.zcodeInteractionBehavior"
           label={intl.formatMessage({ id: "settings.zcodeInteractionBehavior" })}
+
           description={intl.formatMessage({
             id: "settings.zcodeInteractionBehaviorDescription",
           })}

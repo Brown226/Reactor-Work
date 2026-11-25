@@ -3324,6 +3324,13 @@ const enUS: Record<string, string> = {
   "settings.toolSearch.off": "Off",
   "settings.nativeSearchEnhancements": "Enhanced Find and Grep",
   "settings.nativeSearchEnhancementsDescription": "Use enhanced Find and Grep in new sessions and sessions restored after an app restart. Active sessions keep their current setting; Find remains unchanged on Windows.",
+  "settings.replyLanguage": "Reply language",
+  "settings.replyLanguageDescription":
+    "The agent replies in this language. Leave empty to follow the conversation language.",
+  "settings.replyLanguagePlaceholder": "For example: English, 简体中文, 日本語",
+  "settings.replyLanguageSaveError": "Could not save the reply language",
+  "settings.replyLanguageLocalOnly":
+    "The reply language can only be set on the local desktop. Open Settings → Behavior and tools in the desktop app.",
   "settings.memory": "Memory",
   "settings.knowledge.title": "Knowledge Base",
   "settings.knowledge.loading": "Loading knowledge settings…",

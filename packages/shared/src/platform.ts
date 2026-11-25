@@ -1449,6 +1449,12 @@ export interface IPlatformService {
   /** 同步应用菜单语言，驱动 main 进程重建原生菜单 */
   setApplicationLocale(locale: Locale): Promise<void>;
 
+  /**
+   * 保存 Agent 回复语言（空串清除）；Main 写盘后推送给各窗口 Host。
+   * 只有桌面端实现：Web 远控不写本机设置，设置页按方法缺失显示本机提示。
+   */
+  setReplyLanguage?(language: string): Promise<void>;
+
   /** 同步桌面标题栏亮/暗色，驱动原生窗口控制按钮配色 */
   setTitleBarTheme(theme: DesktopTitleBarTheme): Promise<void>;
 
