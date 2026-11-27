@@ -1,0 +1,377 @@
+-- name: ListGroups :many
+SELECT
+    jsonb_build_object('id', id, 'parent_id', parent_id, 'name', name)
+FROM
+    GROUPS
+WHERE
+    deleted_at IS NULL
+ORDER BY
+    name,
+    id;
+
+-- name: ListUsers :many
+SELECT
+    jsonb_build_object('id', id, 'name', name, 'email', email)
+FROM
+    users
+WHERE
+    deleted_at IS NULL
+    AND status = 'active'
+ORDER BY
+    name,
+    id;
+
+-- name: ListTags :many
+SELECT
+    jsonb_build_object('id', id, 'name', name)
+FROM
+    tags
+WHERE
+    deleted_at IS NULL
+ORDER BY
+    lower(name),
+    id;
+
+-- name: ResourceTags :many
+SELECT jsonb_build_object('id', t.id, 'name', t.name)
+FROM tags t JOIN resource_tags rt ON rt.tag_id = t.id
+WHERE rt.resource_type = $1 AND rt.resource_id = $2 AND t.deleted_at IS NULL
+ORDER BY lower(t.name), t.id;
+
+-- name: RemoveResourceTags :exec
+DELETE FROM resource_tags WHERE resource_type = $1 AND resource_id = $2;
+
+-- name: AddResourceTag :execresult
+INSERT INTO resource_tags (resource_type, resource_id, tag_id, assigned_by_user_id)
+SELECT sqlc.arg(resource_type), sqlc.arg(resource_id), t.id, sqlc.arg(actor_id)::uuid
+FROM tags t WHERE t.id = sqlc.arg(tag_id)::uuid AND t.deleted_at IS NULL;
+
+-- name: CreateTag :one
+INSERT INTO tags (name, created_by_user_id)
+    VALUES ($1, $2)
+RETURNING
+    jsonb_build_object('id', id, 'name', name);
+
+-- name: UpdateTag :one
+UPDATE
+    tags
+SET
+    name = $2,
+    updated_at = now()
+WHERE
+    id = $1
+    AND deleted_at IS NULL
+RETURNING
+    jsonb_build_object('id', id, 'name', name);
+
+-- name: DeleteTag :one
+UPDATE
+    tags
+SET
+    deleted_at = now(),
+    updated_at = now()
+WHERE
+    id = $1
+    AND deleted_at IS NULL
+RETURNING
+    jsonb_build_object('id', id);
+
+-- name: LockRecipients :many
+SELECT
+    id
+FROM
+    users
+WHERE
+    id::text = ANY ($1::text[])
+    AND deleted_at IS NULL
+    AND status = 'active'
+ORDER BY
+    id FOR SHARE;
+
+-- name: LockShareGroups :many
+SELECT id FROM groups
+WHERE id::text = ANY (sqlc.arg(group_ids)::text[]) AND deleted_at IS NULL
+ORDER BY id FOR SHARE;
+
+-- name: RevokeGroupShares :execresult
+DELETE FROM resource_access_grants
+WHERE resource_type = sqlc.arg(resource_type)
+    AND resource_id = sqlc.arg(resource_id)
+    AND group_id::text = ANY (sqlc.arg(group_ids)::text[]);
+
+-- name: CreateGroupShares :execresult
+INSERT INTO resource_access_grants (resource_type, resource_id, group_id, access_level, granted_by_user_id)
+SELECT sqlc.arg(resource_type), sqlc.arg(resource_id), g.id, 'read_only', sqlc.arg(granted_by_user_id)
+FROM groups g
+WHERE g.id::text = ANY (sqlc.arg(group_ids)::text[]) AND g.deleted_at IS NULL
+ON CONFLICT (resource_type, resource_id, group_id) WHERE group_id IS NOT NULL DO NOTHING;
+
+-- name: RevokeAllShares :execresult
+DELETE FROM resource_access_grants
+WHERE resource_type = sqlc.arg(resource_type)
+    AND resource_id = sqlc.arg(resource_id)
+    AND all_users;
+
+-- name: CreateAllShares :execresult
+INSERT INTO resource_access_grants (resource_type, resource_id, all_users, access_level, granted_by_user_id)
+VALUES (sqlc.arg(resource_type), sqlc.arg(resource_id), true, 'read_only', sqlc.arg(granted_by_user_id))
+ON CONFLICT (resource_type, resource_id) WHERE all_users DO NOTHING;
+
+-- name: RevokeShares :execresult
+DELETE FROM resource_access_grants
+WHERE resource_type = sqlc.arg(resource_type)
+    AND resource_id = sqlc.arg(resource_id)
+    AND user_id::text = ANY (sqlc.arg(user_ids)::text[]);
+
+-- name: CreateShares :execresult
+INSERT INTO resource_access_grants (resource_type, resource_id, user_id, access_level, granted_by_user_id)
+SELECT
+    sqlc.arg(resource_type),
+    sqlc.arg(resource_id),
+    u.id,
+    'read_only',
+    sqlc.arg(granted_by_user_id)
+FROM
+    users u
+WHERE
+    u.id::text = ANY (sqlc.arg(user_ids)::text[])
+ON CONFLICT (resource_type,
+    resource_id,
+    user_id)
+WHERE
+    user_id IS NOT NULL
+        DO NOTHING;
+
+-- name: UnshareableExpertKnowledge :many
+SELECT DISTINCT jsonb_build_object('id', k.id, 'name', k.name, 'enabled', k.enabled,
+    'ownership_type', k.ownership_type, 'owner_user_id', k.owner_user_id) AS kb
+FROM expert_knowledge_bases x JOIN knowledge_bases k ON k.id = x.kb_id
+JOIN experts e ON e.id = x.expert_id
+WHERE x.expert_id::text = ANY(sqlc.arg(expert_ids)::text[])
+    AND NOT (k.ownership_type = 'user' AND k.owner_user_id = e.owner_user_id)
+ORDER BY kb;
+
+-- name: HasAccess :one
+WITH RECURSIVE user_groups (
+    group_id
+) AS (
+    SELECT
+        id
+    FROM
+        GROUPS
+    WHERE
+        deleted_at IS NULL
+        AND id IN (
+            SELECT
+                group_id
+            FROM
+                group_users
+            WHERE
+                user_id = sqlc.narg(user_id)
+                AND removed_at IS NULL)
+        UNION
+        SELECT
+            parent.id
+        FROM
+            GROUPS g
+            JOIN user_groups ug ON ug.group_id = g.id
+            JOIN GROUPS parent ON parent.id = g.parent_id
+        WHERE
+            g.deleted_at IS NULL
+            AND parent.deleted_at IS NULL
+)
+SELECT
+    EXISTS (
+        SELECT
+            1
+        FROM
+            effective_resource_grants rag
+        WHERE
+            rag.resource_type = sqlc.arg(resource_type)
+            AND rag.resource_id = sqlc.arg(resource_id)
+            AND ((rag.all_users AND EXISTS (
+                    SELECT 1 FROM users u WHERE u.id = sqlc.narg(user_id) AND u.status = 'active' AND u.deleted_at IS NULL
+                ))
+                OR rag.user_id = sqlc.narg(user_id)
+                OR rag.group_id IN (
+                    SELECT
+                        group_id
+                    FROM
+                        user_groups)));
+
+-- name: HasExpertSkillAccess :one
+WITH RECURSIVE user_groups(group_id) AS (
+    SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id
+    WHERE gu.user_id = sqlc.arg(user_id)::uuid AND gu.removed_at IS NULL AND g.deleted_at IS NULL
+    UNION
+    SELECT parent.id FROM groups g
+    JOIN user_groups ug ON ug.group_id = g.id
+    JOIN groups parent ON parent.id = g.parent_id
+    WHERE g.deleted_at IS NULL AND parent.deleted_at IS NULL
+)
+SELECT EXISTS (
+    SELECT 1 FROM experts e
+    JOIN expert_skills x ON x.expert_id = e.id
+    JOIN skills d ON d.id = x.skill_id
+    JOIN resource_access_grants rag ON rag.resource_type = 'expert' AND rag.resource_id = e.id
+    WHERE d.id = sqlc.arg(resource_id)::uuid
+        AND e.ownership_type = 'user' AND e.enabled AND e.deleted_at IS NULL
+        AND d.ownership_type = 'user' AND d.owner_user_id = e.owner_user_id
+        AND d.enabled AND d.deleted_at IS NULL
+        AND (rag.user_id = sqlc.arg(user_id)::uuid
+            OR rag.group_id IN (SELECT group_id FROM user_groups)
+            OR (rag.all_users AND EXISTS (
+                SELECT 1 FROM users u
+                WHERE u.id = sqlc.arg(user_id)::uuid AND u.status = 'active' AND u.deleted_at IS NULL
+            )))
+);
+
+-- name: HasExpertConnectorAccess :one
+WITH RECURSIVE user_groups(group_id) AS (
+    SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id
+    WHERE gu.user_id = sqlc.arg(user_id)::uuid AND gu.removed_at IS NULL AND g.deleted_at IS NULL
+    UNION
+    SELECT parent.id FROM groups g
+    JOIN user_groups ug ON ug.group_id = g.id
+    JOIN groups parent ON parent.id = g.parent_id
+    WHERE g.deleted_at IS NULL AND parent.deleted_at IS NULL
+)
+SELECT EXISTS (
+    SELECT 1 FROM experts e
+    JOIN expert_connectors x ON x.expert_id = e.id
+    JOIN connectors d ON d.id = x.connector_id
+    JOIN resource_access_grants rag ON rag.resource_type = 'expert' AND rag.resource_id = e.id
+    WHERE d.id = sqlc.arg(resource_id)::uuid
+        AND e.ownership_type = 'user' AND e.enabled AND e.deleted_at IS NULL
+        AND d.ownership_type = 'user' AND d.owner_user_id = e.owner_user_id
+        AND d.enabled AND d.deleted_at IS NULL
+        AND (rag.user_id = sqlc.arg(user_id)::uuid
+            OR rag.group_id IN (SELECT group_id FROM user_groups)
+            OR (rag.all_users AND EXISTS (
+                SELECT 1 FROM users u
+                WHERE u.id = sqlc.arg(user_id)::uuid AND u.status = 'active' AND u.deleted_at IS NULL
+            )))
+);
+
+-- name: GetResourceImport :one
+SELECT publisher, slug, retired_at IS NOT NULL AS retired
+FROM resource_import_bindings
+WHERE resource_type = sqlc.arg(resource_type) AND resource_id = sqlc.arg(resource_id);
+
+-- name: LockResourceImport :one
+SELECT retired_at IS NOT NULL AS retired
+FROM resource_import_bindings
+WHERE resource_type = sqlc.arg(resource_type) AND resource_id = sqlc.arg(resource_id)
+FOR UPDATE;
+
+-- name: ListGrants :many
+SELECT
+    jsonb_build_object('id', rag.id, 'access_level', rag.access_level, 'created_at', rag.created_at, 'updated_at', rag.updated_at, 'user_id', rag.user_id, 'group_id', rag.group_id, 'all_users', rag.all_users, 'usage_requirement', rag.usage_requirement,
+        'user', CASE WHEN u.id IS NOT NULL THEN jsonb_build_object('id', u.id, 'name', u.name, 'email', u.email) END,
+        'group', CASE
+            WHEN rag.all_users THEN jsonb_build_object('id', '00000000-0000-0000-0000-000000000000',
+                'name', 'Monkey AI', 'parent_id', NULL)
+            WHEN g.id IS NOT NULL THEN jsonb_build_object('id', g.id, 'name', g.name, 'parent_id', COALESCE(g.parent_id::text, '00000000-0000-0000-0000-000000000000')) END)
+FROM
+    resource_access_grants rag
+    LEFT JOIN users u ON u.id = rag.user_id AND u.deleted_at IS NULL
+    LEFT JOIN groups g ON g.id = rag.group_id AND g.deleted_at IS NULL
+WHERE
+    rag.resource_type = $1
+    AND rag.resource_id = $2
+ORDER BY
+    rag.group_id,
+    rag.user_id;
+
+-- name: ListSharedUsers :many
+SELECT
+    rag.resource_id,
+    u.id,
+    u.name,
+    u.email
+FROM
+    resource_access_grants rag
+    JOIN users u ON u.id = rag.user_id AND u.deleted_at IS NULL
+WHERE
+    rag.resource_type = sqlc.arg(resource_type)
+    AND rag.resource_id::text = ANY (sqlc.arg(resource_ids)::text[])
+ORDER BY
+    rag.resource_id,
+    u.id;
+
+-- name: ListSharedGroups :many
+SELECT rag.resource_id,
+    COALESCE(g.id, '00000000-0000-0000-0000-000000000000'::uuid) AS id,
+    (CASE WHEN rag.all_users THEN
+        'Monkey AI'
+        ELSE g.name END)::text AS name,
+    COALESCE(g.parent_id, '00000000-0000-0000-0000-000000000000'::uuid) AS parent_id
+FROM resource_access_grants rag
+LEFT JOIN groups g ON g.id = rag.group_id AND g.deleted_at IS NULL
+WHERE rag.resource_type = sqlc.arg(resource_type)
+    AND rag.resource_id::text = ANY (sqlc.arg(resource_ids)::text[])
+    AND (rag.all_users OR g.id IS NOT NULL)
+ORDER BY rag.resource_id, COALESCE(g.id, '00000000-0000-0000-0000-000000000000'::uuid);
+
+-- name: DeleteGrants :execresult
+DELETE FROM resource_access_grants
+WHERE resource_type = $1
+    AND resource_id = $2;
+
+-- name: SubjectExists :one
+SELECT
+    EXISTS (
+        SELECT
+            1
+        FROM
+            users
+        WHERE
+            id = NULLIF (sqlc.arg(user_id)::text, '')::uuid
+            AND deleted_at IS NULL
+            AND status = 'active'
+        UNION ALL
+        SELECT
+            1
+        FROM
+            GROUPS
+        WHERE
+            id = NULLIF (sqlc.arg(group_id)::text, '')::uuid
+            AND deleted_at IS NULL);
+
+-- name: CreateGrant :execresult
+INSERT INTO resource_access_grants (resource_type, resource_id, user_id, group_id, all_users, access_level, usage_requirement,
+    granted_by_user_id)
+    VALUES (sqlc.arg(resource_type), sqlc.arg(resource_id), NULLIF (sqlc.arg(user_id)::text,
+	'')::UUID,NULLIF(sqlc.arg(group_id)::text,'')::uuid, sqlc.arg(all_users), 'read_only', sqlc.arg(usage_requirement), sqlc.arg(granted_by_user_id));
+
+-- name: ListOwners :many
+SELECT
+    id, name, email
+FROM
+    users
+WHERE
+    id::text = ANY ($1::text[]);
+
+-- name: CanUseSystem :one
+SELECT EXISTS (
+    SELECT 1 FROM users u
+    WHERE u.id = $1 AND u.status = 'active' AND u.deleted_at IS NULL
+        AND (NOT EXISTS (
+            SELECT 1 FROM settings WHERE key = 'billing' AND value->>'charging_mode' = 'remote'
+        ) OR EXISTS (
+            SELECT 1 FROM user_identities i
+            WHERE i.user_id = u.id AND i.provider = 'baizhiyun' AND i.deleted_at IS NULL
+        ))
+)::boolean;
+
+-- name: UpdateKbGrant :exec
+UPDATE resource_access_grants SET access_level = $2, updated_at = now()
+WHERE id = $1 AND resource_type = 'kb' AND access_level IS DISTINCT FROM $2;
+
+-- name: DeleteKbGrant :exec
+DELETE FROM resource_access_grants WHERE id = $1 AND resource_type = 'kb';
+
+-- name: CreateKbGrant :exec
+INSERT INTO resource_access_grants (resource_type, resource_id, user_id, group_id, all_users, access_level, usage_requirement, granted_by_user_id)
+VALUES ('kb', sqlc.arg(resource_id), NULLIF(sqlc.arg(user_id)::text,'')::uuid, NULLIF(sqlc.arg(group_id)::text,'')::uuid,
+ sqlc.arg(all_users), sqlc.arg(access_level), 'optional', sqlc.arg(actor)::uuid);

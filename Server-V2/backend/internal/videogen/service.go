@@ -1,0 +1,619 @@
+package videogen
+
+import (
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/netpolicy"
+
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"log/slog"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/billing"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/model"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/proxy"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/videogen/sqlc"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+const (
+	maxPollFailures = 10
+	taskTimeout     = 30 * time.Minute
+)
+
+type ModelReader interface {
+	Get(context.Context, string) (model.Model, error)
+}
+
+type ProxyResolver interface {
+	ProxyURL(context.Context, string) (string, error)
+}
+
+type Service struct {
+	network netpolicy.Reader
+	proxies ProxyResolver
+	pool    *pgxpool.Pool
+	storage resource.Storage
+	billing *billing.Service
+	models  ModelReader
+	client  *http.Client
+	jobs    sync.WaitGroup
+}
+
+func NewService(pool *pgxpool.Pool, storage resource.Storage, bills *billing.Service, models ModelReader) *Service {
+	return &Service{pool: pool, storage: storage, billing: bills, models: models, client: providerClient()}
+}
+
+func (s *Service) WithNetworkSettings(read netpolicy.Reader) *Service { s.network = read; return s }
+
+func (s *Service) WithProxyResolver(proxies ProxyResolver) *Service {
+	s.proxies = proxies
+	return s
+}
+
+type pricingSnapshot struct {
+	Resolution       string `json:"resolution"`
+	CreditsPerSecond string `json:"credits_per_second"`
+	ReservedCredits  string `json:"reserved_credits"`
+	MaxDurationMs    int64  `json:"max_duration_ms"`
+}
+
+type Task struct {
+	ID      string          `json:"id"`
+	Model   string          `json:"model"`
+	Mode    model.VideoMode `json:"mode"`
+	Status  string          `json:"status"`
+	Pricing *struct {
+		ReservedCredits string `json:"reserved_credits"`
+	} `json:"pricing,omitempty"`
+	Output *VideoOutput `json:"output,omitempty"`
+	Usage  *struct {
+		Resolution       string `json:"resolution"`
+		OutputDurationMs int64  `json:"output_duration_ms"`
+		Credits          string `json:"credits"`
+	} `json:"usage,omitempty"`
+	ErrorCode   string     `json:"error_code,omitempty"`
+	CreatedAt   time.Time  `json:"created_at"`
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+}
+
+func (s *Service) Submit(ctx context.Context, target proxy.Target, input GenerateInput, key string) (Task, error) {
+	if target.UserID == "" || target.Protocol != string(model.ProtocolVideo) || target.ModelID == "" ||
+		key != "" && len(key) > 128 {
+		return Task{}, resource.Invalid("视频凭据、模型或幂等键无效")
+	}
+	item, err := s.models.Get(ctx, target.ModelID)
+	if err != nil {
+		return Task{}, err
+	}
+	if item.Kind != model.KindVideo || item.VideoConfig == nil || item.VideoPricing == nil || item.ModelID != target.UpstreamModel {
+		return Task{}, resource.Invalid("视频模型配置无效")
+	}
+	cap, err := model.VideoCapabilitiesFor(item.Provider, item.ModelID)
+	if err != nil || model.ValidateVideoCapabilities(item, cap) != nil {
+		if err != nil {
+			slog.WarnContext(ctx, "操作失败", "module", "videogen", "operation", "Submit", "error", err)
+		}
+		return Task{}, resource.Invalid("视频模型能力不可用")
+	}
+	values, err := model.NormalizeVideoParams(item.VideoConfig, cap, input.Mode, input.Params)
+	if err != nil {
+		return Task{}, resource.Invalid(err.Error())
+	}
+	input.Params = values
+	input.Prompt = strings.TrimSpace(input.Prompt)
+	if len([]rune(input.Prompt)) > int(cap.PromptMaxCharacters) || model.VideoPromptRequired(cap, input.Mode, values) && input.Prompt == "" {
+		return Task{}, resource.Invalid("视频提示词无效")
+	}
+	if _, err := model.VideoDuration(values); err != nil {
+		return Task{}, resource.Invalid(err.Error())
+	}
+	if err := validateReferences(input.Mode, input.References, cap); err != nil {
+		return Task{}, err
+	}
+	loaded := make([]Reference, 0, len(input.References))
+	totalBytes := 0
+	for _, ref := range input.References {
+		for _, spec := range cap.References {
+			if spec.Role == ref.Role {
+				value, err := s.loadInput(ctx, target.UserID, ref, spec)
+				if err != nil {
+					return Task{}, err
+				}
+				totalBytes += len(value.Data)
+				if totalBytes > 24<<20 {
+					return Task{}, resource.Invalid("视频参考图总大小超过 24 MiB")
+				}
+				loaded = append(loaded, value)
+				break
+			}
+		}
+	}
+	resolution := model.VideoResolution(values)
+	rate, err := model.VideoRateFor(item.VideoPricing, resolution)
+	if err != nil {
+		return Task{}, resource.Invalid(err.Error())
+	}
+	maxSeconds, err := model.VideoMaxDuration(cap)
+	if err != nil {
+		return Task{}, resource.Invalid(err.Error())
+	}
+	maxMs := maxSeconds * 1000
+	reserve, err := billing.QuoteVideo(rate, maxMs)
+	if err != nil {
+		return Task{}, resource.Invalid(err.Error())
+	}
+	if item.OwnershipType == "user" {
+		reserve = 0
+	}
+	price := pricingSnapshot{Resolution: resolution, CreditsPerSecond: rate.String(), ReservedCredits: reserve.String(), MaxDurationMs: maxMs}
+	input.Model = item.ModelID + "@" + item.ID
+	canonical, err := json.Marshal(struct {
+		GenerateInput
+		SessionID string `json:"session_id"`
+	}{input, target.SessionID})
+	if err != nil {
+		return Task{}, err
+	}
+	hash := sha256.Sum256(canonical)
+	requestHash := hex.EncodeToString(hash[:])
+	if key != "" {
+		existing, err := s.idempotent(ctx, target.UserID, key, requestHash)
+		if err != nil {
+			return Task{}, err
+		}
+		if existing != "" {
+			return s.GetTask(ctx, target.UserID, existing)
+		}
+	}
+	reservation, err := s.billing.Begin(ctx, billing.Request{
+		UserID: target.UserID, ResourceID: item.ID, SessionID: target.SessionID,
+		Category: "video", VideoUnitPrice: rate, VideoMaxDurationMs: maxMs,
+		IdempotencyKey: key, RequestHash: requestHash,
+	})
+	if err != nil {
+		if key != "" {
+			existing, lookupErr := s.idempotent(ctx, target.UserID, key, requestHash)
+			if lookupErr != nil {
+				return Task{}, errors.Join(err, lookupErr)
+			}
+			if existing != "" {
+				return s.GetTask(ctx, target.UserID, existing)
+			}
+		}
+		return Task{}, err
+	}
+	jobID := resource.ID()
+	priceJSON, err := json.Marshal(price)
+	if err != nil {
+		return Task{}, errors.Join(err, s.billing.Release(context.WithoutCancel(ctx), reservation.ID, "task_encode_failed"))
+	}
+	err = sqlc.New(s.pool).InsertVideoJob(ctx, sqlc.InsertVideoJobParams{
+		ID: jobID, UserID: target.UserID, ModelID: item.ID, SessionID: target.SessionID,
+		Provider: string(item.Provider), Mode: string(input.Mode), RequestHash: requestHash,
+		IdempotencyKey: key, RequestConfig: canonical, PricingSnapshot: priceJSON,
+		BillingTransactionID: reservation.ID,
+	})
+	if err != nil {
+		if err := s.billing.Release(context.WithoutCancel(ctx), reservation.ID, "task_create_failed"); err != nil {
+			slog.Error("释放计费预留失败", "module", "videogen", "operation", "Submit", "error", err)
+		}
+		return Task{}, err
+	}
+	for ordinal, ref := range loaded {
+		if err = sqlc.New(s.pool).InsertVideoJobInput(ctx, sqlc.InsertVideoJobInputParams{
+			JobID: jobID, InputID: ref.FileID, Ordinal: int32(ordinal), Role: ref.Role,
+		}); err != nil {
+			s.fail(context.WithoutCancel(ctx), jobID, reservation.ID, "input_record_failed")
+			return Task{}, err
+		}
+	}
+	logging.Bind(ctx, slog.String("job_id", jobID), slog.String("transaction_id", reservation.ID), slog.String("model_id", item.ID))
+	logging.Event(ctx, slog.Default(), slog.LevelInfo, "video.job.accepted", "视频任务已受理", "job_id", jobID, "transaction_id", reservation.ID)
+	s.jobs.Add(1)
+	go func() {
+		defer s.jobs.Done()
+		s.dispatch(context.WithoutCancel(ctx), target, jobID, reservation.ID, inputWithData(input, loaded))
+	}()
+	return s.GetTask(ctx, target.UserID, jobID)
+}
+
+func inputWithData(input GenerateInput, loaded []Reference) GenerateInput {
+	input.References = loaded
+	return input
+}
+
+func validateReferences(mode model.VideoMode, refs []Reference, cap model.VideoCapabilities) error {
+	var rule *model.VideoModeReferences
+	for index := range cap.ReferenceModes {
+		if cap.ReferenceModes[index].Mode == mode {
+			rule = &cap.ReferenceModes[index]
+			break
+		}
+	}
+	if rule == nil {
+		return resource.Invalid("参考图模式不受支持")
+	}
+	counts := make(map[string]int)
+	for _, ref := range refs {
+		if !stringIn(rule.RequiredRoles, ref.Role) && !stringIn(rule.OptionalRoles, ref.Role) {
+			return resource.Invalid("参考图角色不属于当前模式")
+		}
+		counts[ref.Role]++
+	}
+	for _, role := range rule.RequiredRoles {
+		if counts[role] == 0 {
+			return resource.Invalid("缺少必需的参考图")
+		}
+	}
+	for _, spec := range cap.References {
+		if counts[spec.Role] > int(spec.MaxCount) {
+			return resource.Invalid("参考图数量超出模型限制")
+		}
+	}
+	return nil
+}
+
+func (s *Service) idempotent(ctx context.Context, userID, key, hash string) (string, error) {
+	row, err := sqlc.New(s.pool).IdempotentVideoJob(ctx, sqlc.IdempotentVideoJobParams{UserID: userID, IdempotencyKey: &key})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	if hash != row.RequestHash {
+		return "", &resource.Error{Status: 409, Code: "idempotency_conflict", Message: "幂等键对应不同的视频请求"}
+	}
+	return row.ID, nil
+}
+
+func (s *Service) GetTask(ctx context.Context, userID, id string) (Task, error) {
+	if !fileIDPattern.MatchString(id) {
+		return Task{}, resource.NotFound
+	}
+	row, err := sqlc.New(s.pool).VideoTaskOwned(ctx, sqlc.VideoTaskOwnedParams{ID: id, UserID: userID})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Task{}, resource.NotFound
+	}
+	if err != nil {
+		return Task{}, err
+	}
+	task := Task{ID: id, Mode: model.VideoMode(row.Mode), Status: row.Status,
+		CreatedAt: row.CreatedAt, CompletedAt: row.CompletedAt}
+	var input GenerateInput
+	var price pricingSnapshot
+	if json.Unmarshal(row.RequestConfig, &input) != nil || json.Unmarshal(row.PricingSnapshot, &price) != nil {
+		return Task{}, errors.New("视频任务快照无效")
+	}
+	task.Model = input.Model
+	if row.ErrorCode != nil {
+		task.ErrorCode = *row.ErrorCode
+	}
+	if task.Status == "created" || task.Status == "reserved" || task.Status == "submitted" {
+		task.Status = "pending"
+	}
+	if task.Status == "pending" || task.Status == "running" || task.Status == "unknown" {
+		task.Pricing = &struct {
+			ReservedCredits string `json:"reserved_credits"`
+		}{price.ReservedCredits}
+	}
+	if row.OutputID != nil && row.ExpiresAt != nil && time.Now().After(*row.ExpiresAt) && task.Status == "succeeded" {
+		task.Status = "expired"
+	}
+	if row.OutputID != nil && task.Status == "succeeded" {
+		task.Output = &VideoOutput{FileID: *row.OutputID, URL: "/v1/videos/outputs/" + *row.OutputID, MIMEType: *row.MimeType,
+			Width: int(*row.Width), Height: int(*row.Height), DurationMs: *row.DurationMs, ByteSize: *row.ByteSize}
+	}
+	if row.OutputDurationMs != nil && (task.Status == "succeeded" || task.Status == "expired") {
+		credit := "0"
+		if row.BillingTransactionID != nil {
+			amount, err := s.billing.VideoCharge(ctx, *row.BillingTransactionID, userID)
+			if err != nil {
+				return Task{}, err
+			}
+			credit = amount.String()
+		}
+		task.Usage = &struct {
+			Resolution       string `json:"resolution"`
+			OutputDurationMs int64  `json:"output_duration_ms"`
+			Credits          string `json:"credits"`
+		}{price.Resolution, *row.OutputDurationMs, credit}
+	}
+	return task, nil
+}
+
+func (s *Service) fail(ctx context.Context, id, transactionID, reason string) {
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+	defer cancel()
+	if err := s.billing.Release(ctx, transactionID, reason); err != nil {
+		logging.Event(ctx, slog.Default(), slog.LevelError, "videogen.operation.error", "释放视频计费预留失败", "module", "videogen", "operation", "fail", "job_id", id, "error", err)
+		code := "billing_unknown"
+		if err := sqlc.New(s.pool).MarkVideoJobUnknown(ctx, sqlc.MarkVideoJobUnknownParams{ID: id, ErrorCode: &code}); err != nil {
+			slog.Error("更新视频任务状态失败", "module", "videogen", "operation", "fail", "error", err)
+		}
+		return
+	}
+	if err := sqlc.New(s.pool).MarkVideoJobFailed(ctx, sqlc.MarkVideoJobFailedParams{ID: id, ErrorCode: &reason}); err != nil {
+		slog.Error("更新视频任务状态失败", "module", "videogen", "operation", "fail", "error", err)
+	}
+}
+
+func (s *Service) dispatch(ctx context.Context, target proxy.Target, jobID, reservationID string, input GenerateInput) {
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
+	defer cancel()
+	if err := s.billing.Start(ctx, reservationID); err != nil {
+		logging.Diagnostic(ctx, slog.Default(), slog.LevelError, "billing.start.failed", err, slog.String("job_id", jobID), slog.String("transaction_id", reservationID))
+		s.fail(ctx, jobID, reservationID, "billing_start_failed")
+		return
+	}
+	providerID, err := submitProvider(ctx, s.clientFor(target.ProxyURL), target, input)
+	if err != nil {
+		if code := netpolicy.ModelErrorCode(err); code != "" {
+			s.fail(ctx, jobID, reservationID, code)
+			return
+		}
+		var rejected providerRejected
+		if errors.As(err, &rejected) {
+			logging.Diagnostic(ctx, slog.Default(), slog.LevelWarn, "video.provider.rejected", err, slog.String("job_id", jobID))
+			s.fail(ctx, jobID, reservationID, "provider_rejected")
+			return
+		}
+		logging.Event(ctx, slog.Default(), slog.LevelWarn, "videogen.operation.warn", "视频上游受理结果未知", "module", "videogen", "operation", "dispatch", "job_id", jobID, "error", err)
+		code := "provider_submit_unknown"
+		if err := sqlc.New(s.pool).MarkVideoJobUnknown(ctx, sqlc.MarkVideoJobUnknownParams{ID: jobID, ErrorCode: &code}); err != nil {
+			slog.Error("更新视频任务状态失败", "module", "videogen", "operation", "dispatch", "error", err)
+		}
+		return
+	}
+	if affected, e := sqlc.New(s.pool).MarkVideoJobSubmitted(ctx, sqlc.MarkVideoJobSubmittedParams{ID: jobID, ProviderJobID: &providerID}); e != nil || affected != 1 {
+		err = e
+		if err == nil {
+			err = errors.New("视频任务状态已变化，未登记上游任务")
+		}
+		logging.Event(ctx, slog.Default(), slog.LevelError, "videogen.operation.error", "登记视频上游任务失败", "module", "videogen", "operation", "dispatch", "job_id", jobID, "error", err)
+		code := "provider_job_unknown"
+		if err := sqlc.New(s.pool).MarkVideoJobUnknown(ctx, sqlc.MarkVideoJobUnknownParams{ID: jobID, ErrorCode: &code}); err != nil {
+			slog.Error("更新视频任务状态失败", "module", "videogen", "operation", "dispatch", "error", err)
+		}
+	}
+}
+
+func (s *Service) Wait(ctx context.Context) error {
+	done := make(chan struct{})
+	go func() { s.jobs.Wait(); close(done) }()
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func (s *Service) Run(ctx context.Context) {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+	lastCleanup := time.Time{}
+	cleanup := logging.NewWorker(slog.Default(), "videogen", "cleanup_files", "object_storage")
+	polling := logging.NewWorker(slog.Default(), "videogen", "poll_jobs", "database")
+	for {
+		if time.Since(lastCleanup) > time.Hour {
+			cleanup.Report(ctx, s.Cleanup(ctx))
+			lastCleanup = time.Now()
+		}
+		polling.Report(ctx, s.poll(ctx))
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
+}
+
+func (s *Service) poll(ctx context.Context) error {
+	queries := sqlc.New(s.pool)
+	if err := queries.MarkAbandonedVideoJobs(ctx); err != nil {
+		return err
+	}
+	ids, err := queries.PollableVideoJobs(ctx)
+	if err != nil {
+		return err
+	}
+	for _, id := range ids {
+		claim, err := queries.ClaimVideoJobPoll(ctx, id)
+		if errors.Is(err, pgx.ErrNoRows) {
+			continue
+		}
+		if err != nil {
+			return err
+		}
+		if claim.ProviderJobID == nil || claim.BillingTransactionID == nil {
+			return errors.New("视频任务缺少供应商或计费 ID")
+		}
+		deadline := claim.CreatedAt.Add(taskTimeout)
+		reason := ""
+		if !time.Now().Before(deadline) {
+			reason = "provider_poll_timeout"
+		} else if claim.PollFailures >= maxPollFailures {
+			reason = "provider_poll_exhausted"
+		}
+		if reason != "" {
+			if err := s.stopPoll(ctx, id, *claim.BillingTransactionID, reason); err != nil {
+				return err
+			}
+			continue
+		}
+		pollCtx, cancel := context.WithDeadline(ctx, deadline)
+		err = s.process(pollCtx, id, claim.ModelID, *claim.ProviderJobID, *claim.BillingTransactionID, claim.UserID)
+		cancel()
+		if err == nil {
+			continue
+		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		if charge, ok := errors.AsType[*billing.VideoChargeError](err); ok && charge.Status == "unknown" {
+			logPollFailure(ctx, "video.job.stopped", "视频计费需要核查，停止自动轮询", id, claim.PollFailures, err)
+			code := charge.DiagnosticCode()
+			if err := queries.MarkVideoJobUnknown(ctx, sqlc.MarkVideoJobUnknownParams{ID: id, ErrorCode: &code}); err != nil {
+				return err
+			}
+			continue
+		}
+		delay := min(30*time.Second<<min(claim.PollFailures, 4), 5*time.Minute)
+		retryAt := time.Now().Add(delay)
+		if retryAt.After(deadline) {
+			retryAt = deadline
+		}
+		failures, retryErr := queries.RetryVideoJobPoll(ctx, sqlc.RetryVideoJobPollParams{ID: id, PollAfter: retryAt})
+		if errors.Is(retryErr, pgx.ErrNoRows) {
+			continue
+		}
+		if retryErr != nil {
+			return retryErr
+		}
+		if !time.Now().Before(deadline) {
+			reason = "provider_poll_timeout"
+		} else if failures >= maxPollFailures {
+			reason = "provider_poll_exhausted"
+		}
+		if reason != "" {
+			logPollFailure(ctx, "video.job.stopped", "视频任务轮询达到限制", id, failures, err)
+			if err := s.stopPoll(ctx, id, *claim.BillingTransactionID, reason); err != nil {
+				return err
+			}
+			continue
+		}
+		logPollFailure(ctx, "video.job.retry", "处理视频任务失败，等待重试", id, failures, err, "max_failures", maxPollFailures, "retry_at", retryAt)
+	}
+	return nil
+}
+
+func (s *Service) stopPoll(ctx context.Context, id, transactionID, reason string) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if err := s.billing.Finish(ctx, transactionID, billing.Usage{Result: "failed", Known: false, ErrorCode: reason}); err != nil {
+		return err
+	}
+	if err := sqlc.New(s.pool).MarkVideoJobUnknown(ctx, sqlc.MarkVideoJobUnknownParams{ID: id, ErrorCode: &reason}); err != nil {
+		return err
+	}
+	logging.Event(ctx, slog.Default(), slog.LevelWarn, "video.job.stopped", "停止视频任务自动轮询，等待核查", "module", "videogen", "operation", "stopPoll", "job_id", id, "reason", reason)
+	return nil
+}
+
+// processFailure records where a poll attempt failed and whether it used the
+// system proxy, so retry logs can identify the failing path.
+type processFailure struct {
+	phase string
+	proxy bool
+	err   error
+}
+
+func (e *processFailure) Error() string { return e.err.Error() }
+func (e *processFailure) Unwrap() error { return e.err }
+
+// 解开阶段包装，保留原始错误分类和安全的诊断字段。
+func pollFailureArgs(err error) (error, []any) {
+	var args []any
+	if failure, ok := errors.AsType[*processFailure](err); ok {
+		args = append(args, "phase", failure.phase, "proxy_used", failure.proxy)
+		err = failure.err
+	}
+	if failure, ok := errors.AsType[*outputFailure](err); ok {
+		args = append(args, slog.Group("output", "phase", failure.phase,
+			"expected_bytes", failure.expected, "received_bytes", failure.received))
+		err = failure.err
+	}
+	if response, ok := errors.AsType[*mediaResponseError](err); ok {
+		args = append(args, "upstream_status", response.status, "expected_bytes", response.expected)
+	}
+	return err, args
+}
+
+func logPollFailure(ctx context.Context, event, message, id string, failures int32, err error, extra ...any) {
+	err, diagnostics := pollFailureArgs(err)
+	args := []any{"module", "videogen", "operation", "poll", "job_id", id, "failures", failures}
+	args = append(args, diagnostics...)
+	args = append(args, extra...)
+	args = append(args, "error", err)
+	logging.Event(ctx, slog.Default(), slog.LevelWarn, event, message, args...)
+}
+
+func (s *Service) process(ctx context.Context, id, modelID, providerID, transactionID, userID string) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, 4*time.Minute)
+	defer cancel()
+	phase, proxyUsed := "get_model", false
+	defer func() {
+		if err != nil {
+			err = &processFailure{phase: phase, proxy: proxyUsed, err: err}
+		}
+	}()
+	item, err := s.models.Get(ctx, modelID)
+	if err != nil {
+		return err
+	}
+	proxyURL := ""
+	if item.ProxyID != "" {
+		phase = "resolve_proxy"
+		if s.proxies == nil {
+			return errProxyUnavailable
+		}
+		proxyURL, err = s.proxies.ProxyURL(ctx, item.ProxyID)
+		if err != nil {
+			return err
+		}
+		proxyUsed = proxyURL != ""
+	}
+	client := s.clientFor(proxyURL)
+	target := proxy.Target{UpstreamModel: item.ModelID, BaseURL: item.BaseURL, APIKey: item.APIKey, ProxyURL: proxyURL}
+	phase = "query_provider"
+	result, err := queryProvider(ctx, client, target, providerID)
+	if err != nil {
+		return err
+	}
+	if result.Status == "failed" {
+		s.fail(ctx, id, transactionID, "provider_failed")
+		return nil
+	}
+	if result.Status != "succeeded" {
+		phase = "mark_running"
+		return sqlc.New(s.pool).MarkVideoJobRunning(ctx, id)
+	}
+	phase = "load_output_duration"
+	_, err = sqlc.New(s.pool).VideoJobOutputDuration(ctx, id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		phase = "save_output"
+		_, err := s.saveOutput(ctx, client, id, result.URL, result.DurationMs)
+		if err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+	// 计费采用供应商确认的时长，MP4 时长仅用于文件元数据。
+	duration := result.DurationMs
+	phase = "billing_finish"
+	if err := s.billing.Finish(ctx, transactionID, billing.Usage{Result: "succeeded", Known: true, VideoDurationMs: duration}); err != nil {
+		return err
+	}
+	phase = "billing_settle"
+	if err := s.billing.Settle(ctx, transactionID); err != nil {
+		return err
+	}
+	phase = "billing_charge"
+	if _, err := s.billing.VideoCharge(ctx, transactionID, userID); err != nil {
+		return err
+	}
+	phase = "mark_succeeded"
+	return sqlc.New(s.pool).MarkVideoJobSucceeded(ctx, sqlc.MarkVideoJobSucceededParams{ID: id, OutputDurationMs: &duration})
+}

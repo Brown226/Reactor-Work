@@ -1,0 +1,271 @@
+package expert
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"log/slog"
+	"net/http"
+	"strings"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/expert/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/identity"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
+)
+
+type Service struct {
+	CRUD    *resource.CRUD
+	Store   *resource.Store
+	storage resource.Storage
+}
+
+func (s *Service) WithStorage(storage resource.Storage) *Service {
+	s.storage = storage
+	return s
+}
+
+func NewService(store *resource.Store) *Service {
+	s := &Service{Store: store}
+	s.CRUD = resource.NewCRUD(store, resource.Definition{Kind: "expert", Repository: func(q resource.Queryer) resource.Repository { return sqlc.New(q) }, Path: "/experts", Fields: []string{"name", "description", "prompt", "enabled"}, UserFields: []string{"name", "description", "prompt", "rule_ids", "skill_ids", "knowledge_base_ids", "connectors", "tag_ids", avatarChangeKey}, UserDecorate: func(o resource.Object) {
+		if path := o.String("avatar_path"); path != "" {
+			o["avatar_path"] = strings.Replace(path, "/api/admin/v1/", "/api/v1/", 1)
+		}
+	}, OverrideFields: []string{"name", "description"}, AllowImportedEnabled: true, Hidden: []string{"avatar_s3_key"}, Validate: s.validate, Persist: s.links, Decorate: s.decorate})
+	return s
+}
+func (s *Service) validate(ctx context.Context, tx pgx.Tx, in, old resource.Object) error {
+	if avatar, ok := in[avatarChangeKey].(*avatarChange); ok {
+		avatar.old = old.String("avatar_s3_key")
+	}
+	if _, exists := in["providers"]; exists {
+		return resource.InvalidCode("expert_dependencies_invalid", "专家依赖请使用 connectors")
+	}
+	if raw, exists := in["connectors"]; exists {
+		b, err := json.Marshal(raw)
+		var links []struct {
+			ConnectorID string   `json:"connector_id"`
+			Required    *bool    `json:"required"`
+			Allow       []string `json:"tool_allowlist"`
+			Deny        []string `json:"tool_denylist"`
+		}
+		if err != nil || string(b) == "null" || json.Unmarshal(b, &links) != nil {
+			if err != nil {
+				slog.WarnContext(ctx, "操作失败", "module", "expert", "operation", "validate", "error", err)
+			}
+			return resource.InvalidCode("expert_dependencies_invalid", "连接依赖格式无效")
+		}
+		for _, link := range links {
+			if link.ConnectorID == "" {
+				return resource.InvalidCode("expert_dependencies_invalid", "连接依赖必须包含 connector_id")
+			}
+		}
+	}
+	personal := in.String("ownership_type") == "user"
+	if personal {
+		for _, key := range []string{"description", "prompt"} {
+			if _, ok := in[key]; !ok {
+				in[key] = old.String(key)
+			}
+		}
+	}
+	if strings.TrimSpace(in.String("prompt")) == "" {
+		return resource.InvalidCode("expert_prompt_required", "专家 Prompt 不能为空")
+	}
+	queries := sqlc.New(tx)
+	if raw, ok := in["knowledge_base_ids"]; ok {
+		ids, err := knowledgeIDs(raw)
+		if err != nil {
+			return err
+		}
+		in["knowledge_base_ids"] = ids
+	}
+	for _, link := range []struct {
+		key, kind string
+		lock      func(context.Context, string) ([]byte, error)
+	}{{"rule_ids", "rule", queries.LockRule}, {"skill_ids", "skill", queries.LockSkill}, {"connectors", "connector", queries.LockConnector}, {"knowledge_base_ids", "kb", queries.LockKnowledgeBase}} {
+		ids := resource.Strings(in[link.key])
+		if link.kind == "connector" {
+			ids = nil
+			for _, p := range connectorLinks(in[link.key]) {
+				ids = append(ids, p.String("connector_id"))
+			}
+		}
+		seen := map[string]bool{}
+		for _, id := range ids {
+			if seen[id] {
+				return resource.InvalidCode("expert_dependency_duplicate", "专家关联重复")
+			}
+			seen[id] = true
+			o, err := resource.DecodeObject(link.lock(ctx, id))
+			if err != nil {
+				if errors.Is(err, pgx.ErrNoRows) {
+					return resource.InvalidCode("expert_dependency_unavailable", "专家关联资源不存在或不可用")
+				}
+				return err
+			}
+			ok := o.String("ownership_type") == "system" && (link.kind != "kb" || o.Bool("enabled"))
+			if personal {
+				ok, err = resource.Accessible(ctx, tx, link.kind, o, in.String("actor_id"))
+				if err != nil {
+					return err
+				}
+			}
+			if !ok {
+				return resource.InvalidCode("expert_dependency_unavailable", "专家关联资源不存在或不可用")
+			}
+		}
+	}
+	return nil
+}
+
+func (s *Service) RegisterAgent(r chi.Router) {
+	s.CRUD.RegisterAgent(r)
+	r.Get("/experts/knowledge-support", func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Cache-Control", "private, no-store")
+		resource.JSON(req.Context(), w, http.StatusOK, resource.Object{"version": 1, "available": true})
+	})
+	r.Get("/experts/avatar-support", func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Cache-Control", "private, no-store")
+		resource.JSON(req.Context(), w, http.StatusOK, resource.Object{"version": 1, "available": s.storage != nil})
+	})
+	r.Post("/experts", s.saveUserExpert)
+	r.Put("/experts/{id}", s.saveUserExpert)
+	if s.storage != nil {
+		r.Get("/experts/{id}/avatar", func(w http.ResponseWriter, req *http.Request) { s.serveAvatar(w, req, false) })
+	}
+}
+
+func connectorLinks(v any) []resource.Object {
+	b, err := json.Marshal(v)
+	if err != nil {
+		logging.Event(context.Background(), slog.Default(), slog.LevelError, "expert.operation.error", "专家连接依赖编码失败", "module", "expert", "operation", "connectorLinks", "error", err)
+		return nil
+	}
+	out := []resource.Object{}
+	if err := json.Unmarshal(b, &out); err != nil {
+		logging.Event(context.Background(), slog.Default(), slog.LevelError, "expert.operation.error", "专家连接依赖解码失败", "module", "expert", "operation", "connectorLinks", "error", err)
+		return nil
+	}
+	return out
+}
+
+func (s *Service) links(ctx context.Context, tx pgx.Tx, in resource.Object) error {
+	queries := sqlc.New(tx)
+	if avatar, ok := in[avatarChangeKey].(*avatarChange); ok {
+		if err := queries.SetAvatar(ctx, sqlc.SetAvatarParams{ID: in.String("id"), AvatarS3Key: avatar.key}); err != nil {
+			return err
+		}
+	}
+	if ids, ok := in["knowledge_base_ids"].([]string); ok {
+		if err := queries.DeleteKnowledgeLinks(ctx, in.String("id")); err != nil {
+			return err
+		}
+		if err := queries.CreateKnowledgeLinks(ctx, sqlc.CreateKnowledgeLinksParams{ExpertID: in.String("id"), KbIds: ids}); err != nil {
+			return err
+		}
+	}
+	if raw, ok := in["rule_ids"]; ok {
+		if err := queries.DeleteRuleLinks(ctx, in.String("id")); err != nil {
+			return err
+		}
+		for _, id := range resource.Strings(raw) {
+			if err := queries.CreateRuleLink(ctx, sqlc.CreateRuleLinkParams{ExpertID: in.String("id"), RuleID: id}); err != nil {
+				return err
+			}
+		}
+	}
+	if raw, ok := in["skill_ids"]; ok {
+		if err := queries.DeleteSkillLinks(ctx, in.String("id")); err != nil {
+			return err
+		}
+		for _, id := range resource.Strings(raw) {
+			if err := queries.CreateSkillLink(ctx, sqlc.CreateSkillLinkParams{ExpertID: in.String("id"), SkillID: id}); err != nil {
+				return err
+			}
+		}
+	}
+	if _, ok := in["connectors"]; ok {
+		if _, err := sqlc.New(tx).DeleteConnectorLinks(ctx, in.String("id")); err != nil {
+			return err
+		}
+		for _, p := range connectorLinks(in["connectors"]) {
+			required := true
+			if v, ok := p["required"].(bool); ok {
+				required = v
+			}
+			if _, err := sqlc.New(tx).CreateConnectorLink(ctx, sqlc.CreateConnectorLinkParams{
+				ExpertID:      in.String("id"),
+				ConnectorID:   p.String("connector_id"),
+				Required:      required,
+				ToolAllowlist: resource.Strings(p["tool_allowlist"]),
+				ToolDenylist:  resource.Strings(p["tool_denylist"]),
+			}); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+func (s *Service) decorate(ctx context.Context, q resource.Queryer, o resource.Object) error {
+	queries := sqlc.New(q)
+	rules, err := queries.ListRuleIDs(ctx, o.String("id"))
+	if err != nil {
+		return err
+	}
+	skills, err := queries.ListSkillIDs(ctx, o.String("id"))
+	if err != nil {
+		return err
+	}
+	o["rule_ids"], o["skill_ids"] = rules, skills
+	books, err := queries.ListKnowledgeIDs(ctx, o.String("id"))
+	if err != nil {
+		return err
+	}
+	o["knowledge_base_ids"] = books
+	if key := o.String("avatar_s3_key"); key != "" {
+		o["avatar_path"] = "/api/admin/v1/experts/" + o.String("id") + "/avatar?v=" + resource.Hash(key)
+	}
+	p, err := resource.DecodeObjects(sqlc.New(q).ListConnectorLinks(ctx, o.String("id")))
+	o["connectors"] = p
+	return err
+}
+func (s *Service) RegisterAdmin(r chi.Router) {
+	s.CRUD.Register(r)
+	// Replace only the save handlers; JSON clients retain the same contract.
+	r.Post("/experts", s.saveExpert)
+	r.Put("/experts/{id}", s.saveExpert)
+	if s.storage != nil {
+		r.Get("/experts/{id}/avatar", func(w http.ResponseWriter, req *http.Request) { s.serveAvatar(w, req, true) })
+	}
+	r.Post("/experts/{id}/copy", func(w http.ResponseWriter, r *http.Request) {
+		o, err := s.CRUD.Get(r.Context(), s.Store.Pool, chi.URLParam(r, "id"))
+		if err != nil {
+			resource.Fail(r.Context(), w, err)
+			return
+		}
+		if o.String("ownership_type") == "user" {
+			resource.Fail(r.Context(), w, resource.Invalid("个人资源仅允许治理删除"))
+			return
+		}
+		var in resource.Object
+		if err = resource.Decode(w, r, &in); err != nil {
+			resource.Fail(r.Context(), w, err)
+			return
+		}
+		o["name"] = in.String("name")
+		o["enabled"] = false
+		o["grants"] = []any{}
+		u, _ := identity.UserFromContext(r.Context())
+		out, err := s.CRUD.Save(r.Context(), u.ID, "", "", o)
+		if err != nil {
+			resource.Fail(r.Context(), w, err)
+			return
+		}
+		resource.JSON(r.Context(), w, 200, out)
+	})
+}

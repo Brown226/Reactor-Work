@@ -1,0 +1,203 @@
+package feedback
+
+import (
+	"errors"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/memberscope"
+	"io"
+	"log/slog"
+	"net/http"
+	"slices"
+	"strconv"
+	"strings"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/feedback/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+func (s *Service) RegisterAdmin(router chi.Router, get memberscope.Get) {
+	get("/feedback", s.list)
+	router.Get("/feedback/{id}", s.detail)
+	router.Get("/feedback/{id}/attachments/{attachmentID}", s.download)
+	router.Patch("/feedback/{id}", s.patch)
+}
+
+func (s *Service) list(w http.ResponseWriter, r *http.Request, scope memberscope.Scope) {
+	page, size, err := resource.PageParamsWithLimit(r, 500)
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	category, state, err := feedbackFilters(r)
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	w.Header().Set("Cache-Control", "private, no-store")
+	var userID *string
+	if v := strings.TrimSpace(r.URL.Query().Get("user_id")); v != "" {
+		var id pgtype.UUID
+		if err := id.Scan(v); err != nil || !id.Valid {
+			resource.Fail(r.Context(), w, resource.Invalid("用户 ID 无效"))
+			return
+		}
+		userID = &v
+	}
+	q := sqlc.New(s.pool)
+	items, err := q.ListFeedbacks(r.Context(), sqlc.ListFeedbacksParams{
+		UserID: userID, VisibleUsers: scope.IDs(), Category: category, State: state, PageLimit: int32(size), PageOffset: int32((page - 1) * size),
+	})
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	total, err := q.CountFeedbacks(r.Context(), sqlc.CountFeedbacksParams{UserID: userID, VisibleUsers: scope.IDs(), Category: category, State: state})
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	userIDs := make([]string, 0, len(items))
+	for _, item := range items {
+		userIDs = append(userIDs, item.UserID)
+	}
+	usersByID := make(map[string]sqlc.FeedbackUsersRow)
+	if len(userIDs) > 0 {
+		users, err := q.FeedbackUsers(r.Context(), userIDs)
+		if err != nil {
+			resource.Fail(r.Context(), w, err)
+			return
+		}
+		for _, user := range users {
+			usersByID[user.ID] = user
+		}
+	}
+	out := make([]Feedback, 0, len(items))
+	for _, item := range items {
+		feedback := summary(item)
+		if user, ok := usersByID[item.UserID]; ok {
+			feedback.UserName = user.Name
+			feedback.UserEmail = user.Email
+			if avatar := strings.TrimSpace(user.AvatarUrl); avatar != "" {
+				feedback.UserAvatarURL = &avatar
+			}
+		}
+		out = append(out, feedback)
+	}
+	resource.JSON(r.Context(), w, http.StatusOK, map[string]any{"items": out, "total": total, "page": page, "page_size": size})
+}
+
+func feedbackFilters(r *http.Request) (string, string, error) {
+	category := strings.TrimSpace(r.URL.Query().Get("category"))
+	if category != "" && !slices.Contains(categories, category) {
+		return "", "", resource.Invalid("category 无效")
+	}
+	state := strings.TrimSpace(r.URL.Query().Get("state"))
+	if state != "" && !slices.Contains(states, state) {
+		return "", "", resource.Invalid("state 无效")
+	}
+	return category, state, nil
+}
+
+func (s *Service) detail(w http.ResponseWriter, r *http.Request) {
+	row, err := sqlc.New(s.pool).FeedbackByID(r.Context(), chi.URLParam(r, "id"))
+	if errors.Is(err, pgx.ErrNoRows) {
+		resource.Fail(r.Context(), w, resource.NotFound)
+		return
+	}
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	out, err := s.read(r.Context(), row)
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	resource.JSON(r.Context(), w, http.StatusOK, out)
+}
+
+func (s *Service) patch(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		State string `json:"state"`
+	}
+	if err := resource.Decode(w, r, &in); err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	if !slices.Contains(patchStates, in.State) {
+		resource.Fail(r.Context(), w, resource.Invalid("反馈状态无效"))
+		return
+	}
+	row, err := sqlc.New(s.pool).UpdateFeedbackState(r.Context(), sqlc.UpdateFeedbackStateParams{ID: chi.URLParam(r, "id"), State: in.State})
+	if errors.Is(err, pgx.ErrNoRows) {
+		resource.Fail(r.Context(), w, resource.NotFound)
+		return
+	}
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	out, err := s.read(r.Context(), row)
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	resource.JSON(r.Context(), w, http.StatusOK, out)
+}
+
+func (s *Service) download(w http.ResponseWriter, r *http.Request) {
+	row, err := sqlc.New(s.pool).AttachmentForDownload(r.Context(), sqlc.AttachmentForDownloadParams{
+		FeedbackID: chi.URLParam(r, "id"), AttachmentID: chi.URLParam(r, "attachmentID"),
+	})
+	if errors.Is(err, pgx.ErrNoRows) {
+		resource.Fail(r.Context(), w, resource.NotFound)
+		return
+	}
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	body, err := s.storage.Get(r.Context(), row.ObjectKey)
+	if err != nil {
+		slog.WarnContext(r.Context(), "操作失败", "module", "feedback", "operation", "download", "error", err)
+		resource.Fail(r.Context(), w, storageFailure())
+		return
+	}
+	defer func() {
+		if closeErr := body.Close(); closeErr != nil && r.Context().Err() == nil {
+			logging.Event(r.Context(), slog.Default(), slog.LevelWarn, "feedback.operation.warn", "关闭反馈附件读取流失败", "module", "feedback", "operation", "download", "feedback_id", row.FeedbackID, "attachment_id", row.ID, "error_type", errorType(closeErr))
+		}
+	}()
+	w.Header().Set("Content-Type", row.MimeType)
+	w.Header().Set("Content-Length", strconv.FormatInt(row.ByteSize, 10))
+	w.Header().Set("Content-Disposition", "inline; filename=feedback-attachment."+extension(row.MimeType))
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Cache-Control", "private, no-store")
+	w.Header().Set("ETag", `"`+row.Sha256+`"`)
+	if _, err := io.Copy(w, body); err != nil {
+		logging.Event(r.Context(), slog.Default(), slog.LevelWarn, "feedback.operation.warn", "传输反馈附件失败", "module", "feedback", "operation", "download", "feedback_id", row.FeedbackID, "attachment_id", row.ID, "error_type", errorType(err))
+	}
+}
+
+func summary(row sqlc.Feedback) Feedback {
+	return Feedback{
+		ID: row.ID, UserID: row.UserID, Category: row.Category, Content: row.Content, Rating: row.Rating,
+		Platform: row.Platform, ClientVersion: row.ClientVersion, State: row.State, RequestID: row.RequestID,
+		CreatedAt: row.CreatedAt, UpdatedAt: row.UpdatedAt, Attachments: []Attachment{},
+	}
+}
+
+func extension(mime string) string {
+	switch mime {
+	case "image/jpeg":
+		return "jpeg"
+	case "image/webp":
+		return "webp"
+	default:
+		return "png"
+	}
+}

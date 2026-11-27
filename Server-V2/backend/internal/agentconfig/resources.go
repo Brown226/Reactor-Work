@@ -1,0 +1,913 @@
+package agentconfig
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+	"log/slog"
+	"maps"
+	"net/http"
+	"slices"
+	"strings"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/agentconfig/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/httpapi"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/identity"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/kb"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/mcp"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/skill"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
+)
+
+type Resources struct {
+	store  *resource.Store
+	mcp    *mcp.Service
+	skills *skill.Service
+}
+
+const knowledgeBaseConnectorID = "c7b5d0e2-4a1f-4f3e-9b2a-0d6e8c5f1a73"
+
+func NewResources(store *resource.Store, m *mcp.Service, s *skill.Service) *Resources {
+	return &Resources{store: store, mcp: m, skills: s}
+}
+
+type catalog struct {
+	rules, skills, experts, connectors map[string]resource.Object
+	grants                             map[string]bool
+	required                           map[string]bool
+	links                              map[string][]resource.Object
+	connectorDTOs                      map[string]resource.Object
+	bindings                           map[string]string
+	snapshot                           bool
+	summaries                          map[string]connectorSummary
+}
+
+func (r *Resources) load(ctx context.Context, q resource.Queryer, user, kind string) (catalog, error) {
+	return r.loadSelected(ctx, q, user, kind, nil)
+}
+
+func (r *Resources) loadSelected(ctx context.Context, q resource.Queryer, user, kind string, ids []string) (catalog, error) {
+	return r.loadCatalog(ctx, q, user, kind, ids, false)
+}
+
+func (r *Resources) loadCatalog(ctx context.Context, q resource.Queryer, user, kind string, ids []string, summary bool) (catalog, error) {
+	c := catalog{summaries: map[string]connectorSummary{}, grants: map[string]bool{}, required: map[string]bool{}, links: map[string][]resource.Object{}, connectorDTOs: map[string]resource.Object{}}
+	systemAccess, err := resource.CanUseSystem(ctx, q, user)
+	if err != nil {
+		return c, err
+	}
+	queries := sqlc.New(q)
+	all := ids == nil
+	dependencies := map[string][]string{}
+	var experts []string
+	if kind == "experts" {
+		experts = ids
+	}
+	if kind == "" || kind == "experts" {
+		for _, link := range []struct {
+			table string
+			kind  string
+			id    string
+			read  func(context.Context) ([][]byte, error)
+		}{
+			{"expert_rules", "rules", "rule_id", func(ctx context.Context) ([][]byte, error) {
+				return queries.CatalogRuleLinks(ctx, sqlc.CatalogRuleLinksParams{AllResources: all, ExpertIds: experts})
+			}},
+			{"expert_knowledge_bases", "kb", "id", func(ctx context.Context) ([][]byte, error) {
+				return queries.CatalogKnowledgeLinks(ctx, sqlc.CatalogKnowledgeLinksParams{AllResources: all, ExpertIds: experts, SystemAccess: systemAccess})
+			}},
+			{"expert_skills", "skills", "skill_id", func(ctx context.Context) ([][]byte, error) {
+				return queries.CatalogSkillLinks(ctx, sqlc.CatalogSkillLinksParams{AllResources: all, ExpertIds: experts})
+			}},
+			{"expert_connectors", "connectors", "connector_id", func(ctx context.Context) ([][]byte, error) {
+				return queries.CatalogConnectorLinks(ctx, sqlc.CatalogConnectorLinksParams{AllResources: all, ExpertIds: experts})
+			}},
+		} {
+			out, err := resource.DecodeObjects(link.read(ctx))
+			if err != nil {
+				return c, err
+			}
+			for _, o := range out {
+				if !all {
+					dependencies[link.kind] = append(dependencies[link.kind], o.String(link.id))
+				}
+				c.links[o.String("expert_id")+":"+link.table] = append(c.links[o.String("expert_id")+":"+link.table], o)
+			}
+		}
+	}
+	selected := func(table string) []string {
+		if table == kind {
+			return ids
+		}
+		return dependencies[table]
+	}
+	targets := []struct {
+		table string
+		out   *map[string]resource.Object
+		read  func(context.Context) ([][]byte, error)
+	}{
+		{"rules", &c.rules, func(ctx context.Context) ([][]byte, error) {
+			return queries.CatalogRules(ctx, sqlc.CatalogRulesParams{SummaryOnly: summary, AllResources: all, ResourceIds: selected("rules")})
+		}},
+		{"skills", &c.skills, func(ctx context.Context) ([][]byte, error) {
+			return queries.CatalogSkills(ctx, sqlc.CatalogSkillsParams{AllResources: all, ResourceIds: selected("skills")})
+		}},
+		{"experts", &c.experts, func(ctx context.Context) ([][]byte, error) {
+			return queries.CatalogExperts(ctx, sqlc.CatalogExpertsParams{SummaryOnly: summary, AllResources: all, ResourceIds: experts})
+		}},
+		{"connectors", &c.connectors, func(ctx context.Context) ([][]byte, error) {
+			return queries.CatalogConnectors(ctx, sqlc.CatalogConnectorsParams{AllResources: all, ResourceIds: selected("connectors")})
+		}},
+	}
+	for _, t := range targets {
+		if (kind == "rules" || kind == "skills") && t.table != kind {
+			continue
+		}
+		if kind == "connectors" && t.table != "connectors" {
+			continue
+		}
+		out, err := resource.DecodeObjects(t.read(ctx))
+		if err != nil {
+			return c, err
+		}
+		*t.out = map[string]resource.Object{}
+		for _, o := range out {
+			if !systemAccess && o.String("ownership_type") == "system" {
+				continue
+			}
+			(*t.out)[o.String("id")] = o
+		}
+	}
+	if user != "" && c.connectors != nil && (all || slices.Contains(selected("connectors"), knowledgeBaseConnectorID)) {
+		c.connectors[knowledgeBaseConnectorID] = knowledgeBaseConnector(user)
+	}
+	g, err := r.grants(ctx, q, user, kind)
+	if err != nil {
+		return c, err
+	}
+	for _, o := range g {
+		if o.String("kind") == "rule" {
+			rule := c.rules[o.String("id")]
+			if rule == nil {
+				continue
+			}
+		}
+		c.grants[o.String("kind")+":"+o.String("id")] = true
+		if o.Bool("required") && (o.String("kind") != "rule" || c.rules[o.String("id")].String("ownership_type") == "system") {
+			c.required[o.String("id")] = true
+		}
+	}
+	return c, nil
+}
+func (r *Resources) grants(ctx context.Context, q resource.Queryer, user, kind string) ([]resource.Object, error) {
+	queries := sqlc.New(q)
+	grants, err := resource.DecodeObjects(queries.ListGrants(ctx, new(user)))
+	if err != nil || kind == "rules" {
+		return grants, err
+	}
+	experts := []string{}
+	for _, grant := range grants {
+		if grant.String("kind") == "expert" {
+			experts = append(experts, grant.String("id"))
+		}
+	}
+	if len(experts) == 0 {
+		return grants, nil
+	}
+	for _, dependency := range []struct {
+		kind string
+		read func(context.Context, []string) ([][]byte, error)
+	}{
+		{"skills", queries.ListSharedExpertSkills},
+		{"connectors", queries.ListSharedExpertConnectors},
+	} {
+		if kind != "" && kind != "experts" && kind != dependency.kind {
+			continue
+		}
+		inherited, err := resource.DecodeObjects(dependency.read(ctx, experts))
+		if err != nil {
+			return nil, err
+		}
+		grants = append(grants, inherited...)
+	}
+	return grants, nil
+}
+
+func (c catalog) allowed(kind string, o resource.Object, user string) bool {
+	if o == nil {
+		return false
+	}
+	if v, ok := o["enabled"].(bool); ok && !v {
+		return false
+	}
+	return (o.String("ownership_type") == "user" && o.String("owner_user_id") == user) || c.grants[kind+":"+o.String("id")]
+}
+func ruleDTO(o resource.Object, required bool) resource.Object {
+	return resource.Object{"id": o["id"], "name": o["name"], "description": o["description"], "name_i18n": o["name_i18n"], "description_i18n": o["description_i18n"], "content": o["content"], "sha256": resource.Hash(o["content"]), "required": required}
+}
+func skillDTO(o resource.Object, expert string) resource.Object {
+	path := "/api/v1/skills/" + o.String("id") + "/package"
+	if expert != "" {
+		path = "/api/v1/experts/" + expert + "/skills/" + o.String("id") + "/package"
+	}
+	return resource.Object{"id": o["id"], "name": o["name"], "description": o["description"], "name_i18n": o["name_i18n"], "description_i18n": o["description_i18n"], "package_size_bytes": o["package_size_bytes"], "package_sha256": o["package_sha256"], "file_count": o["file_count"], "download_path": path + "?sha256=" + o.String("package_sha256")}
+}
+func (r *Resources) connectorDTO(ctx context.Context, q resource.Queryer, c catalog, o resource.Object, user string) (resource.Object, error) {
+	if o.String("id") == knowledgeBaseConnectorID {
+		return r.knowledgeBaseConnectorDTO(o), nil
+	}
+	id := o.String("id")
+	dto, ok := c.connectorDTOs[id]
+	if !ok {
+		var err error
+		if c.bindings != nil {
+			dto, err = r.mcp.ResolveEntry(ctx, q, o, user, c.bindings[id])
+		} else if c.snapshot {
+			dto, err = r.mcp.ExpertSnapshot(ctx, q, o, user)
+		} else {
+			dto, err = r.mcp.Catalog(ctx, q, o, user)
+		}
+		if err != nil {
+			return nil, err
+		}
+		if c.connectorDTOs != nil {
+			c.connectorDTOs[id] = dto
+		}
+	}
+	return cloneConnector(dto), nil
+}
+
+func knowledgeBaseConnectorTools() []resource.Object {
+	tools := []resource.Object{}
+	for _, tool := range kb.MCPTools() {
+		tools = append(tools, resource.Object{
+			"id":               tool["name"],
+			"name":             tool["name"],
+			"description":      tool["description"],
+			"input_schema":     tool["inputSchema"],
+			"enabled":          true,
+			"credits_per_call": int64(0),
+		})
+	}
+	return tools
+}
+
+func cloneConnector(dto resource.Object) resource.Object {
+	out := maps.Clone(dto)
+	if credentials, ok := dto["credentials"].([]resource.Object); ok {
+		cloned := make([]resource.Object, len(credentials))
+		for i, credential := range credentials {
+			cloned[i] = maps.Clone(credential)
+		}
+		out["credentials"] = cloned
+	}
+	return out
+}
+
+func knowledgeBaseConnector(user string) resource.Object {
+	return resource.Object{
+		"id":                 knowledgeBaseConnectorID,
+		"name":               "知识库",
+		"description":        "检索当前用户可访问的知识库文档",
+		"name_i18n":          map[string]any{"zh-CN": "知识库", "en-US": "Knowledge Base"},
+		"description_i18n":   map[string]any{"zh-CN": "检索当前用户可访问的知识库文档", "en-US": "Search documents in knowledge bases available to the current user"},
+		"authorization_mode": "none",
+		"enabled":            true,
+		"ownership_type":     "user",
+		"owner_user_id":      user,
+		"revision":           int64(1),
+		"config_revision":    int64(1),
+	}
+}
+
+func (r *Resources) knowledgeBaseConnectorDTO(o resource.Object) resource.Object {
+	tools := knowledgeBaseConnectorTools()
+	return resource.Object{
+		"id":                   o["id"],
+		"name":                 o["name"],
+		"description":          o["description"],
+		"name_i18n":            o["name_i18n"],
+		"description_i18n":     o["description_i18n"],
+		"authorization_mode":   "none",
+		"authorization_method": nil,
+		"auth_header_name":     "",
+		"icon_path":            "",
+		"capabilities":         []string{"catalog", "invoke"},
+		"authorization_status": "not_required",
+		"connection_status":    "connected",
+		"tools":                tools,
+		"tools_version":        resource.Hash(tools),
+		"mcp_gateway": resource.Object{
+			"url":            r.mcp.PublicURL + "/mcp/kb",
+			"transport":      "streamable_http",
+			"authentication": "api_key",
+			"required_scope": "mcp:invoke",
+		},
+	}
+}
+
+func filterTools(dto, link resource.Object) {
+	filter := func(target resource.Object) {
+		tools, _ := target["tools"].([]resource.Object)
+		filtered := []resource.Object{}
+		allow, deny := resource.Strings(link["tool_allowlist"]), resource.Strings(link["tool_denylist"])
+		for _, tool := range tools {
+			if (len(allow) == 0 || slices.Contains(allow, tool.String("name"))) && !slices.Contains(deny, tool.String("name")) {
+				filtered = append(filtered, tool)
+			}
+		}
+		target["tools"], target["tools_version"] = filtered, resource.Hash(filtered)
+	}
+	if dto.String("authorization_mode") == "independent" {
+		for _, credential := range dto["credentials"].([]resource.Object) {
+			filter(credential)
+		}
+	} else {
+		filter(dto)
+	}
+}
+
+func connectorReady(dto resource.Object) bool {
+	if dto.String("authorization_mode") != "independent" {
+		return dto.String("authorization_status") != "authorization_required"
+	}
+	for _, credential := range dto["credentials"].([]resource.Object) {
+		if credential.String("authorization_status") == "authorized" {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Resources) manifest(ctx context.Context, q resource.Queryer, c catalog, expert, user string) (resource.Object, error) {
+	e := c.experts[expert]
+	if !c.allowed("expert", e, user) {
+		return nil, resource.NotFound
+	}
+	rules, skills, connectors, issues := []resource.Object{}, []resource.Object{}, []resource.Object{}, []resource.Object{}
+	for _, link := range c.links[expert+":expert_rules"] {
+		o := c.rules[link.String("rule_id")]
+		if o == nil || !o.Bool("enabled") || (e.String("ownership_type") == "user" && !c.allowed("rule", o, user)) {
+			issues = append(issues, resource.Object{"code": "rule_missing", "blocking": true})
+			continue
+		}
+		rules = append(rules, ruleDTO(o, c.required[o.String("id")]))
+	}
+	for _, link := range c.links[expert+":expert_skills"] {
+		o := c.skills[link.String("skill_id")]
+		if o == nil || !o.Bool("enabled") || (e.String("ownership_type") == "user" && !c.allowed("skill", o, user)) {
+			issues = append(issues, resource.Object{"code": "skill_disabled", "blocking": true})
+			continue
+		}
+		skills = append(skills, skillDTO(o, expert))
+	}
+	for _, link := range c.links[expert+":expert_connectors"] {
+		o := c.connectors[link.String("connector_id")]
+		if !c.allowed("connector", o, user) {
+			issues = append(issues, resource.Object{"code": "missing_connector", "connector_id": link["connector_id"], "blocking": link.Bool("required")})
+			continue
+		}
+		dto, err := r.connectorDTO(ctx, q, c, o, user)
+		if err != nil {
+			return nil, err
+		}
+		dto["required"], dto["tool_allowlist"], dto["tool_denylist"] = link["required"], link["tool_allowlist"], link["tool_denylist"]
+		filterTools(dto, link)
+		if !connectorReady(dto) {
+			issues = append(issues, resource.Object{"code": "authorization_required", "connector_id": link["connector_id"], "blocking": link.Bool("required")})
+		}
+		connectors = append(connectors, dto)
+	}
+
+	resource.Stable(rules)
+	resource.Stable(skills)
+	resource.Stable(connectors)
+	books, missing := c.expertKnowledge(expert, user)
+	if missing {
+		issues = append(issues, missingKnowledgeIssue())
+	}
+	slices.SortFunc(issues, func(a, b resource.Object) int { return strings.Compare(resource.Hash(a), resource.Hash(b)) })
+	out := resource.Object{"expert_id": expert, "name": e["name"], "description": e["description"], "name_i18n": e["name_i18n"], "description_i18n": e["description_i18n"], "prompt": e["prompt"], "rules": rules, "skills": skills, "connectors": connectors, "issues": issues, "available": true}
+	out["knowledge_base_ids"] = books
+	if key := e.String("avatar_s3_key"); key != "" {
+		out["avatar_path"] = "/api/v1/experts/" + expert + "/avatar?v=" + resource.Hash(key)
+	}
+	for _, issue := range issues {
+		if issue.Bool("blocking") {
+			out["available"] = false
+		}
+	}
+	out["version"] = resource.Hash(out)
+	return out, nil
+}
+func searchable(o resource.Object) (string, string) {
+	name, description := o.String("name"), o.String("description")
+	if translated, ok := o["name_i18n"].(map[string]any); ok {
+		for _, key := range slices.Sorted(maps.Keys(translated)) {
+			if text, ok := translated[key].(string); ok {
+				name += " " + text
+			}
+		}
+	}
+	if translated, ok := o["description_i18n"].(map[string]any); ok {
+		for _, key := range slices.Sorted(maps.Keys(translated)) {
+			if text, ok := translated[key].(string); ok {
+				description += " " + text
+			}
+		}
+	}
+	return name, description
+}
+
+func (r *Resources) list(ctx context.Context, q resource.Queryer, user, kind string, filter resource.CatalogFilter, ids []string) ([]resource.Object, error) {
+	c, err := r.loadCatalog(ctx, q, user, kind, ids, kind == "experts")
+	if err != nil {
+		return nil, err
+	}
+	var items map[string]resource.Object
+	var resourceType string
+	switch kind {
+	case "rules":
+		items, resourceType = c.rules, "rule"
+	case "skills":
+		items, resourceType = c.skills, "skill"
+	case "experts":
+		items, resourceType = c.experts, "expert"
+	case "connectors":
+		items, resourceType = c.connectors, "connector"
+	default:
+		return nil, resource.NotFound
+	}
+	tags := map[string][]resource.Object{}
+	if kind != "rules" {
+		resourceIDs := make([]string, 0, len(items))
+		for id := range items {
+			resourceIDs = append(resourceIDs, id)
+		}
+		tags, err = r.tags(ctx, q, kind, resourceIDs)
+		if err != nil {
+			return nil, err
+		}
+	}
+	out := []resource.Object{}
+	owned := []string{}
+	owners := []string{}
+	ownerIDs := map[string]string{}
+	for id, o := range items {
+		name, description := searchable(o)
+		if !c.allowed(resourceType, o, user) || !filter.Matches(o.String("ownership_type"), o.String("owner_user_id"), user, name, description) {
+			continue
+		}
+		var dto resource.Object
+		switch kind {
+		case "rules":
+			dto = ruleDTO(o, c.required[id])
+		case "skills":
+			dto = skillDTO(o, "")
+			dto["tags"] = tags[id]
+		case "experts":
+			var summary resource.Object
+			summary, err = r.expertSummary(ctx, q, c, id, user)
+			if err == nil {
+				dto = resource.Object{"id": id, "name": o["name"], "version": summary["version"], "manifest_path": "/api/v1/experts/" + id + "/manifest", "available": summary["available"], "issues": summary["issues"]}
+				if description := o.String("description"); description != "" {
+					dto["description"] = description
+				}
+				for _, key := range []string{"name_i18n", "description_i18n"} {
+					if translations, _ := o[key].(map[string]any); len(translations) > 0 {
+						dto[key] = translations
+					}
+				}
+				if path := summary.String("avatar_path"); path != "" {
+					dto["avatar_path"] = path
+				}
+			}
+		case "connectors":
+			if id == knowledgeBaseConnectorID {
+				dto = r.knowledgeBaseConnectorDTO(o)
+				dto["tools"] = []resource.Object{}
+				dto["tools_version"] = resource.Hash(dto["tools"])
+			} else {
+				dto, err = r.mcp.ListEntry(ctx, q, o, user)
+			}
+		}
+		if err != nil {
+			return nil, err
+		}
+		if kind == "experts" || kind == "connectors" {
+			dto["tags"] = tags[id]
+		}
+		dto["ownership_type"] = o["ownership_type"]
+		owners = append(owners, o.String("owner_user_id"))
+		ownerIDs[id] = o.String("owner_user_id")
+		dto["revision"] = o["revision"]
+		if o.String("ownership_type") == "user" && o.String("owner_user_id") == user {
+			owned = append(owned, id)
+		}
+		out = append(out, dto)
+	}
+	people, err := resource.Users(ctx, q, owners)
+	if err != nil {
+		return nil, err
+	}
+	users, err := resource.SharedUsers(ctx, q, resourceType, owned)
+	if err != nil {
+		return nil, err
+	}
+	groups, err := resource.SharedGroups(ctx, q, resourceType, owned)
+	if err != nil {
+		return nil, err
+	}
+	for _, dto := range out {
+		dto["user"] = people[ownerIDs[dto.String("id")]]
+		if shared, ok := users[dto.String("id")]; ok {
+			dto["shared_users"] = shared
+			dto["shared_groups"] = groups[dto.String("id")]
+		}
+	}
+	resource.Stable(out)
+	return out, nil
+}
+
+func rollbackCatalog(ctx context.Context, tx pgx.Tx, operation, user string) {
+	if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+		logging.Event(ctx, slog.Default(), slog.LevelError, "agentconfig.operation.error", "回滚 Agent 配置事务失败", "module", "agentconfig", "operation", "rollbackCatalog", "operation", operation, "user_id", user, "error", err)
+	}
+}
+
+func (r *Resources) getList(w http.ResponseWriter, req *http.Request, kind string) {
+	page, size, err := resource.PageParams(req)
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	filter, err := resource.ParseCatalogFilter(req)
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	u, _ := identity.UserFromContext(req.Context())
+	tx, err := r.transaction(req.Context())
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	defer func() { rollbackCatalog(req.Context(), tx, "catalog_read", u.ID) }()
+	selected, err := r.page(req.Context(), tx, u.ID, kind, filter, resource.QueryTagIDs(req), page, size)
+	items := []resource.Object{}
+	if err == nil {
+		if selected.ResourceIds == nil {
+			selected.ResourceIds = []string{}
+		}
+		items, err = r.list(req.Context(), tx, u.ID, kind, filter, selected.ResourceIds)
+	}
+	if err == nil {
+		err = httpapi.CachedJSON(w, req, map[string]any{kind: items, "total_count": selected.TotalCount, "page": page, "page_size": size})
+	}
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+	}
+}
+
+func (r *Resources) getTags(w http.ResponseWriter, req *http.Request, kind string) {
+	u, _ := identity.UserFromContext(req.Context())
+	tx, err := r.transaction(req.Context())
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	defer func() { rollbackCatalog(req.Context(), tx, "catalog_read", u.ID) }()
+	selected, err := r.page(req.Context(), tx, u.ID, kind, resource.CatalogFilter{}, nil, 1, 2147483647)
+	var tags map[string][]resource.Object
+	if err == nil {
+		tags, err = r.tags(req.Context(), tx, kind, selected.ResourceIds)
+	}
+	if err == nil {
+		all := []resource.Object{}
+		for _, resourceTags := range tags {
+			all = append(all, resourceTags...)
+		}
+		err = httpapi.CachedJSON(w, req, map[string]any{"tags": resource.CollectTags([]resource.Object{{"tags": all}})})
+	}
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+	}
+}
+
+func (r *Resources) transaction(ctx context.Context) (pgx.Tx, error) {
+	return r.store.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
+}
+func (r *Resources) RegisterAgent(router chi.Router) {
+	for _, kind := range []string{"rules", "skills", "experts", "connectors"} {
+		router.Get("/"+kind, func(w http.ResponseWriter, req *http.Request) { r.getList(w, req, kind) })
+		if kind != "rules" {
+			router.Get("/"+kind+"/tags", func(w http.ResponseWriter, req *http.Request) { r.getTags(w, req, kind) })
+		}
+	}
+	router.Get("/experts/{id}/manifest", r.getManifest)
+	router.Post("/resources/resolve", r.resolve)
+	router.Get("/skills/{id}/package", func(w http.ResponseWriter, req *http.Request) { r.download(w, req, false) })
+	router.Get("/experts/{id}/skills/{skillID}/package", func(w http.ResponseWriter, req *http.Request) { r.download(w, req, true) })
+}
+func (r *Resources) getManifest(w http.ResponseWriter, req *http.Request) {
+	u, _ := identity.UserFromContext(req.Context())
+	tx, err := r.transaction(req.Context())
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	defer func() { rollbackCatalog(req.Context(), tx, "catalog_read", u.ID) }()
+	id := chi.URLParam(req, "id")
+	c, err := r.loadSelected(req.Context(), tx, u.ID, "experts", []string{id})
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	summary, err := r.expertSummary(req.Context(), tx, c, id, u.ID)
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	etag := fmt.Sprintf(`"%s"`, summary.String("version"))
+	w.Header().Set("ETag", etag)
+	w.Header().Set("Cache-Control", "private, no-cache")
+	if req.Header.Get("If-None-Match") == etag {
+		w.WriteHeader(304)
+		return
+	}
+	c.snapshot = true
+	out, err := r.manifest(req.Context(), tx, c, id, u.ID)
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	out["version"] = summary["version"]
+	resource.JSON(req.Context(), w, 200, out)
+}
+func (r *Resources) download(w http.ResponseWriter, req *http.Request, delegated bool) {
+	u, _ := identity.UserFromContext(req.Context())
+	tx, err := r.transaction(req.Context())
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	defer func() { rollbackCatalog(context.WithoutCancel(req.Context()), tx, "download", u.ID) }()
+	c, err := r.load(req.Context(), tx, u.ID, "")
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	id := chi.URLParam(req, "id")
+	allowed := false
+	if delegated {
+		expert := id
+		id = chi.URLParam(req, "skillID")
+		e := c.experts[expert]
+		if c.allowed("expert", e, u.ID) && c.skills[id] != nil && c.skills[id].Bool("enabled") && (e.String("ownership_type") == "system" || c.allowed("skill", c.skills[id], u.ID)) {
+			for _, l := range c.links[expert+":expert_skills"] {
+				if l.String("skill_id") == id {
+					allowed = true
+				}
+			}
+		}
+	} else {
+		allowed = c.allowed("skill", c.skills[id], u.ID)
+	}
+	if !allowed {
+		resource.Fail(req.Context(), w, resource.NotFound)
+		return
+	}
+	if err := tx.Commit(req.Context()); err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	r.skills.ServePackage(w, req, c.skills[id])
+}
+func (r *Resources) resolve(w http.ResponseWriter, req *http.Request) {
+	var in resource.Object
+	if err := resource.Decode(w, req, &in); err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	u, _ := identity.UserFromContext(req.Context())
+	out, err := r.Resolve(req.Context(), u.ID, in)
+	if err != nil {
+		resource.Fail(req.Context(), w, err)
+		return
+	}
+	resource.JSON(req.Context(), w, 200, out)
+}
+func uniqueIDs(items []resource.Object) []resource.Object {
+	result := make([]resource.Object, 0, len(items))
+	seen := map[string]bool{}
+	for _, item := range items {
+		id := item.String("id")
+		if seen[id] {
+			continue
+		}
+		seen[id] = true
+		result = append(result, item)
+	}
+	return result
+}
+
+func (r *Resources) Resolve(ctx context.Context, user string, in resource.Object) (resource.Object, error) {
+	tx, err := r.transaction(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { rollbackCatalog(ctx, tx, "resolve", user) }()
+	c, err := r.load(ctx, tx, user, "")
+	if err != nil {
+		return nil, err
+	}
+	c.bindings = map[string]string{}
+	if raw, exists := in["connector_bindings"]; exists {
+		values, ok := raw.(map[string]any)
+		if !ok {
+			return nil, resource.InvalidCode("credential_binding_invalid", "凭证绑定必须为连接 ID 到凭证 ID 的对象")
+		}
+		for id, value := range values {
+			credential, ok := value.(string)
+			if !ok || credential == "" {
+				return nil, resource.InvalidCode("credential_binding_invalid", "凭证绑定无效，必须先选择连接")
+			}
+			c.bindings[id] = credential
+		}
+	}
+	out := resource.Object{"expert_id": "", "prompt": "", "rules": []resource.Object{}, "skills": []resource.Object{}, "connectors": []resource.Object{}, "issues": []resource.Object{}, "available": true}
+	if id := in.String("expert_id"); id != "" {
+		out, err = r.manifest(ctx, tx, c, id, user)
+		if err != nil {
+			return nil, err
+		}
+	}
+	rules := []resource.Object{}
+	for id, o := range c.rules {
+		if c.required[id] && c.allowed("rule", o, user) {
+			rules = append(rules, ruleDTO(o, true))
+		}
+	}
+	resource.Stable(rules)
+	rules = append(rules, out["rules"].([]resource.Object)...)
+	selected := []resource.Object{}
+	for _, id := range resource.Strings(in["rule_ids"]) {
+		o := c.rules[id]
+		if !c.allowed("rule", o, user) {
+			return nil, resource.NotFound
+		}
+		selected = append(selected, o)
+	}
+	slices.SortFunc(selected, func(a, b resource.Object) int {
+		if a.String("ownership_type") != b.String("ownership_type") {
+			return strings.Compare(a.String("ownership_type"), b.String("ownership_type"))
+		}
+		return strings.Compare(a.String("id"), b.String("id"))
+	})
+	for _, o := range selected {
+		rules = append(rules, ruleDTO(o, c.required[o.String("id")]))
+	}
+	skills := out["skills"].([]resource.Object)
+	selected = []resource.Object{}
+	for _, id := range resource.Strings(in["skill_ids"]) {
+		o := c.skills[id]
+		if !c.allowed("skill", o, user) {
+			return nil, resource.NotFound
+		}
+		selected = append(selected, o)
+	}
+	slices.SortFunc(selected, func(a, b resource.Object) int {
+		if a.String("ownership_type") != b.String("ownership_type") {
+			return strings.Compare(b.String("ownership_type"), a.String("ownership_type"))
+		}
+		return strings.Compare(a.String("id"), b.String("id"))
+	})
+	for _, o := range selected {
+		skills = append(skills, skillDTO(o, ""))
+	}
+	out["rules"] = uniqueIDs(rules)
+	out["skills"] = uniqueIDs(skills)
+	selectedConnectors := out["connectors"].([]resource.Object)
+	seenConnectors := map[string]bool{}
+	for _, conn := range selectedConnectors {
+		seenConnectors[conn.String("id")] = true
+	}
+	for _, id := range resource.Strings(in["connector_ids"]) {
+		o := c.connectors[id]
+		if !c.allowed("connector", o, user) {
+			return nil, resource.NotFound
+		}
+		if seenConnectors[id] {
+			for _, conn := range selectedConnectors {
+				if conn.String("id") == id {
+					conn["required"] = true
+				}
+			}
+			continue
+		}
+		dto, err := r.connectorDTO(ctx, tx, c, o, user)
+		if err != nil {
+			return nil, err
+		}
+		dto["required"] = true
+		selectedConnectors = append(selectedConnectors, dto)
+		seenConnectors[id] = true
+	}
+	for id := range c.bindings {
+		if !seenConnectors[id] {
+			return nil, resource.InvalidCode("credential_binding_invalid", "凭证绑定无效，必须先选择连接")
+		}
+	}
+	resolved := []resource.Object{}
+	issue := func(code string, conn resource.Object) {
+		for _, existing := range out["issues"].([]resource.Object) {
+			if existing.String("connector_id") == conn.String("id") && existing.String("code") == code {
+				if conn.Bool("required") {
+					existing["blocking"] = true
+					out["available"] = false
+				}
+				return
+			}
+		}
+		out["issues"] = append(out["issues"].([]resource.Object), resource.Object{"code": code, "connector_id": conn["id"], "blocking": conn.Bool("required")})
+		if conn.Bool("required") {
+			out["available"] = false
+		}
+	}
+	for _, conn := range selectedConnectors {
+		id := conn.String("id")
+		selected := c.bindings[id]
+		if conn.String("authorization_mode") != "independent" {
+			if selected != "" {
+				return nil, resource.InvalidCode("credential_binding_unsupported", "此连接不使用独立凭证绑定")
+			}
+			if !connectorReady(conn) {
+				issue("authorization_required", conn)
+				continue
+			}
+			resolved = append(resolved, conn)
+			continue
+		}
+		credentials := conn["credentials"].([]resource.Object)
+		var chosen resource.Object
+		ready := []resource.Object{}
+		for _, credential := range credentials {
+			if credential.String("id") == selected {
+				chosen = credential
+			}
+			if credential.String("authorization_status") == "authorized" {
+				ready = append(ready, credential)
+			}
+		}
+		if selected != "" {
+			if chosen == nil {
+				return nil, resource.NotFound
+			}
+			if chosen.String("authorization_status") != "authorized" {
+				return nil, &resource.Error{Status: 403, Code: "authorization_required", Message: "所选凭证需要认证"}
+			}
+		} else if len(ready) == 1 {
+			chosen = ready[0]
+		} else {
+			code := "credential_selection_required"
+			if len(ready) == 0 {
+				code = "authorization_required"
+			}
+			issue(code, conn)
+			continue
+		}
+		conn["credential_id"] = chosen["id"]
+		for _, key := range []string{"authorization_status", "connection_status", "tools", "tools_version", "mcp_gateway"} {
+			conn[key] = chosen[key]
+		}
+		delete(conn, "credentials")
+		resolved = append(resolved, conn)
+	}
+
+	resource.Stable(resolved)
+	out["connectors"] = resolved
+	delete(out, "version")
+	out["version"] = resource.Hash(out)
+	return out, nil
+}
+func (r *Resources) RegisterAdmin(router chi.Router) {
+	router.Post("/experts/{id}/preview", func(w http.ResponseWriter, req *http.Request) {
+		var in resource.Object
+		if err := resource.Decode(w, req, &in); err != nil {
+			resource.Fail(req.Context(), w, err)
+			return
+		}
+		user := in.String("user_id")
+		in["expert_id"] = chi.URLParam(req, "id")
+		out, err := r.Resolve(req.Context(), user, in)
+		if err != nil {
+			resource.Fail(req.Context(), w, err)
+			return
+		}
+		resource.JSON(req.Context(), w, 200, out)
+	})
+}

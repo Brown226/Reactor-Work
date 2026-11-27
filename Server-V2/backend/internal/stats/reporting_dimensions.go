@@ -1,0 +1,123 @@
+package stats
+
+import (
+	"context"
+	"encoding/json"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/memberscope"
+	"net/http"
+	"strings"
+	"time"
+	"unicode/utf8"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/stats/sqlc"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+func groupedPage(ctx context.Context, f reportingFilter, fetch func(context.Context, []byte) ([][]byte, error)) (resource.Object, error) {
+	cursor, err := f.decodeCursor()
+	if err != nil {
+		return nil, err
+	}
+	items, err := resource.DecodeObjects(fetch(ctx, f.sqlParams(cursor, "")))
+	if err != nil {
+		return nil, err
+	}
+	return groupedItems(f, items), nil
+}
+
+func groupedItems(f reportingFilter, items []resource.Object) resource.Object {
+	out := resource.Object{"items": items, "next_cursor": nil, "pagination": "cursor"}
+	if len(items) > f.limit {
+		items = items[:f.limit]
+		out["items"] = items
+		out["next_cursor"] = f.encodeCursor(reportCursor{Key: items[len(items)-1]["sort_key"].(string)})
+	}
+	return out
+}
+
+func (s *Service) reportingFreshness(ctx context.Context, tx pgx.Tx, f reportingFilter) (any, error) {
+	value, err := sqlc.New(tx).ReportingFreshness(ctx, f.sqlParams(reportCursor{}, ""))
+	if err != nil || value == nil {
+		return nil, err
+	}
+	var at time.Time
+	switch v := value.(type) {
+	case time.Time:
+		at = v
+	case *time.Time:
+		if v != nil {
+			at = *v
+		}
+	case pgtype.Timestamptz:
+		if v.Valid {
+			at = v.Time
+		}
+	}
+	if at.IsZero() {
+		return nil, nil
+	}
+	return max(0, s.now().Sub(at).Seconds()), nil
+}
+
+func (s *Service) reportingResources(w http.ResponseWriter, r *http.Request, scope memberscope.Scope) {
+	w.Header().Set("Cache-Control", "private, no-store")
+	userQuery := strings.TrimSpace(r.URL.Query().Get("user"))
+	kind := strings.TrimSpace(r.URL.Query().Get("kind"))
+	if len(kind) > 128 {
+		resource.Fail(r.Context(), w, resource.Invalid("kind 过长"))
+		return
+	}
+	if utf8.RuneCountInString(userQuery) > 200 {
+		resource.Fail(r.Context(), w, resource.Invalid("user 搜索条件过长"))
+		return
+	}
+	s.reportingRead(false, 500, func(ctx context.Context, tx pgx.Tx, f reportingFilter) (resource.Object, error) {
+		f.userQuery, f.resourceKind = userQuery, kind
+		// Reject cursors issued before resources were grouped by user.
+		f.fingerprint += ":resource-users-v1"
+		if viewer := scope.Viewer(); viewer != "" {
+			f.fingerprint += ":" + viewer
+		}
+		cursor, err := f.decodeCursor()
+		if err != nil {
+			return nil, err
+		}
+		data, err := sqlc.New(tx).ReportingResources(ctx, sqlc.ReportingResourcesParams{VisibleUsers: scope.IDs(),
+			Filters:   f.sqlParams(cursor, ""),
+			FromTime:  f.from.Format(time.RFC3339Nano),
+			UntilTime: f.until.Format(time.RFC3339Nano),
+		})
+		if err != nil {
+			return nil, err
+		}
+		var page struct {
+			Items          []resource.Object `json:"items"`
+			LastReceivedAt *string           `json:"last_received_at"`
+		}
+		if err := json.Unmarshal(data, &page); err != nil {
+			return nil, err
+		}
+		out := groupedItems(f, page.Items)
+		out["data_freshness_seconds"] = nil
+		if page.LastReceivedAt != nil {
+			// Keep freshness metadata optional, including PostgreSQL infinity values.
+			if at, err := time.Parse(time.RFC3339Nano, *page.LastReceivedAt); err == nil && !at.IsZero() {
+				out["data_freshness_seconds"] = max(0, s.now().Sub(at).Seconds())
+			}
+		}
+		return out, nil
+	})(w, r)
+}
+
+func (s *Service) reportingClients(w http.ResponseWriter, r *http.Request) {
+	s.reportingRead(false, 500, func(ctx context.Context, tx pgx.Tx, f reportingFilter) (resource.Object, error) {
+		out, err := groupedPage(ctx, f, sqlc.New(tx).ReportingClients)
+		if err != nil {
+			return nil, err
+		}
+		out["data_freshness_seconds"], err = s.reportingFreshness(ctx, tx, f)
+		return out, err
+	})(w, r)
+}

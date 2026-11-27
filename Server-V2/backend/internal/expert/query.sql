@@ -1,0 +1,249 @@
+-- name: LockConnector :one
+SELECT
+    to_jsonb (p)
+FROM
+    connectors p
+WHERE
+    id = $1
+    AND deleted_at IS NULL AND enabled FOR SHARE;
+
+-- name: DeleteConnectorLinks :execresult
+DELETE FROM expert_connectors
+WHERE expert_id = $1;
+
+-- name: CreateConnectorLink :execresult
+INSERT INTO expert_connectors (expert_id, connector_id, required, tool_allowlist, tool_denylist)
+    VALUES ($1, $2, $3, $4, $5);
+
+-- name: ListConnectorLinks :many
+SELECT
+    to_jsonb (x)
+FROM
+    expert_connectors x
+WHERE
+    expert_id = $1
+ORDER BY
+    connector_id;
+
+-- name: GetResource :one
+SELECT
+    to_jsonb (t)
+FROM
+    experts t
+WHERE
+    id = $1
+    AND deleted_at IS NULL;
+
+-- name: LockResource :one
+SELECT
+    to_jsonb (t)
+FROM
+    experts t
+WHERE
+    id = $1
+    AND deleted_at IS NULL
+FOR UPDATE;
+
+-- name: ListResources :many
+SELECT
+    to_jsonb (t)
+FROM
+    experts t
+WHERE
+    deleted_at IS NULL
+ORDER BY
+    lower(name),
+    id;
+
+-- name: PageResources :many
+SELECT
+    to_jsonb (t)
+FROM
+    experts t
+WHERE
+    deleted_at IS NULL
+    AND (sqlc.arg(filter)::jsonb ->> 'ownership' = ''
+        OR t.ownership_type = sqlc.arg(filter)::jsonb ->> 'ownership')
+    AND (strpos(lower(name), lower(sqlc.arg(filter)::jsonb ->> 'search')) > 0
+        OR strpos(lower(description), lower(sqlc.arg(filter)::jsonb ->> 'search')) > 0
+        OR strpos(lower(prompt), lower(sqlc.arg(filter)::jsonb ->> 'search')) > 0)
+    AND (sqlc.arg(filter)::jsonb ->> 'cursor' = ''
+        OR (t.origin = 'package', t.id) > (
+            SELECT cursor_resource.origin = 'package', cursor_resource.id
+            FROM experts cursor_resource
+            WHERE cursor_resource.id::text = sqlc.arg(filter)::jsonb ->> 'cursor'))
+ORDER BY
+    (t.origin = 'package'),
+    t.id
+LIMIT (sqlc.arg(filter)::jsonb ->> 'limit')::integer;
+
+-- name: CreateResource :exec
+INSERT INTO experts (name, description, prompt, enabled, id, created_by_user_id, owner_user_id, ownership_type)
+    VALUES (
+        CASE WHEN sqlc.arg(DATA)::jsonb ? 'name' THEN
+            (sqlc.arg(DATA)::jsonb ->> 'name')::text
+        ELSE
+            NULL
+        END, CASE WHEN sqlc.arg(DATA)::jsonb ? 'description' THEN
+            (sqlc.arg(DATA)::jsonb ->> 'description')::text
+        ELSE
+            NULL
+        END, CASE WHEN sqlc.arg(DATA)::jsonb ? 'prompt' THEN
+            (sqlc.arg(DATA)::jsonb ->> 'prompt')::text
+        ELSE
+            NULL
+        END, CASE WHEN sqlc.arg(DATA)::jsonb ? 'enabled' THEN
+            (sqlc.arg(DATA)::jsonb ->> 'enabled')::boolean
+        ELSE
+            TRUE
+        END, (sqlc.arg(DATA)::jsonb ->> 'id')::uuid, (sqlc.arg(DATA)::jsonb ->> 'actor_id')::uuid,
+        (sqlc.arg(DATA)::jsonb ->> 'actor_id')::uuid, COALESCE(sqlc.arg(DATA)::jsonb ->> 'ownership_type', 'system'));
+
+-- name: UpdateResource :exec
+UPDATE
+    experts
+SET
+    name = CASE WHEN sqlc.arg(DATA)::jsonb ? 'name' THEN
+        (sqlc.arg(DATA)::jsonb ->> 'name')::text
+    ELSE
+        name
+    END,
+    description = CASE WHEN sqlc.arg(DATA)::jsonb ? 'description' THEN
+        (sqlc.arg(DATA)::jsonb ->> 'description')::text
+    ELSE
+        description
+    END,
+    name_i18n = CASE WHEN sqlc.arg(DATA)::jsonb ? 'name_i18n' THEN
+        NULLIF(sqlc.arg(DATA)::jsonb -> 'name_i18n', 'null'::jsonb)
+    ELSE
+        name_i18n
+    END,
+    description_i18n = CASE WHEN sqlc.arg(DATA)::jsonb ? 'description_i18n' THEN
+        NULLIF(sqlc.arg(DATA)::jsonb -> 'description_i18n', 'null'::jsonb)
+    ELSE
+        description_i18n
+    END,
+    prompt = CASE WHEN sqlc.arg(DATA)::jsonb ? 'prompt' THEN
+        (sqlc.arg(DATA)::jsonb ->> 'prompt')::text
+    ELSE
+        prompt
+    END,
+    enabled = CASE WHEN sqlc.arg(DATA)::jsonb ? 'enabled' THEN
+        (sqlc.arg(DATA)::jsonb ->> 'enabled')::boolean
+    ELSE
+        enabled
+    END,
+    admin_overrides = CASE WHEN sqlc.arg(DATA)::jsonb ? 'admin_overrides' THEN
+        NULLIF(sqlc.arg(DATA)::jsonb -> 'admin_overrides', 'null'::jsonb)
+    ELSE
+        admin_overrides
+    END,
+    revision = revision + 1,
+    updated_at = now()
+WHERE
+    id = (sqlc.arg(DATA)::jsonb ->> 'id')::uuid;
+
+-- name: DeleteResource :exec
+UPDATE
+    experts
+SET
+    deleted_at = now(),
+    updated_at = now(),
+    revision = revision + 1
+WHERE
+    id = $1;
+
+-- name: TouchResource :exec
+UPDATE
+    experts
+SET
+    updated_at = now(),
+    revision = revision + 1
+WHERE
+    id = $1;
+
+-- name: SetResourceEnabled :exec
+UPDATE
+    experts
+SET
+    enabled = (sqlc.arg(DATA)::jsonb ->> 'enabled')::boolean,
+    admin_overrides = CASE WHEN sqlc.arg(DATA)::jsonb ? 'admin_overrides' THEN
+        sqlc.arg(DATA)::jsonb -> 'admin_overrides'
+    ELSE admin_overrides END,
+    updated_at = now(),
+    revision = revision + 1
+WHERE
+    id = (sqlc.arg(DATA)::jsonb ->> 'id')::uuid;
+
+-- name: SetAvatar :exec
+UPDATE experts SET avatar_s3_key = $2 WHERE id = $1;
+
+-- name: AvatarReferenced :one
+SELECT EXISTS (SELECT 1 FROM experts WHERE avatar_s3_key = $1);
+
+-- name: LockRule :one
+SELECT
+    to_jsonb(t)
+FROM
+    rules t
+WHERE
+    id = $1
+    AND deleted_at IS NULL FOR SHARE;
+
+-- name: DeleteRuleLinks :exec
+DELETE FROM expert_rules
+WHERE expert_id = $1;
+
+-- name: CreateRuleLink :exec
+INSERT INTO expert_rules (expert_id, rule_id)
+    VALUES ($1, $2);
+
+-- name: ListRuleIDs :many
+SELECT
+    rule_id::text
+FROM
+    expert_rules
+WHERE
+    expert_id = $1
+ORDER BY
+    rule_id;
+
+-- name: LockSkill :one
+SELECT
+    to_jsonb(t)
+FROM
+    skills t
+WHERE
+    id = $1
+    AND deleted_at IS NULL FOR SHARE;
+
+-- name: LockKnowledgeBase :one
+SELECT to_jsonb(k) FROM knowledge_bases k WHERE id = $1 FOR SHARE;
+
+-- name: DeleteKnowledgeLinks :exec
+DELETE FROM expert_knowledge_bases WHERE expert_id = $1;
+
+-- name: CreateKnowledgeLinks :exec
+INSERT INTO expert_knowledge_bases (expert_id, kb_id)
+SELECT sqlc.arg(expert_id)::uuid, unnest(sqlc.arg(kb_ids)::text[])::uuid;
+
+-- name: ListKnowledgeIDs :many
+SELECT kb_id::text FROM expert_knowledge_bases WHERE expert_id = $1 ORDER BY kb_id;
+
+-- name: DeleteSkillLinks :exec
+DELETE FROM expert_skills
+WHERE expert_id = $1;
+
+-- name: CreateSkillLink :exec
+INSERT INTO expert_skills (expert_id, skill_id)
+    VALUES ($1, $2);
+
+-- name: ListSkillIDs :many
+SELECT
+    skill_id::text
+FROM
+    expert_skills
+WHERE
+    expert_id = $1
+ORDER BY
+    skill_id;

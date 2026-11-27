@@ -1,0 +1,775 @@
+-- name: ListHistory :many
+SELECT
+    jsonb_build_object('id', s.id, 'title', s.title, 'title_source', s.title_source, 'user_id', s.owner_user_id, 'user_name', u.name, 'user_email', u.email,
+        'user_avatar_url', coalesce(nullif(btrim(u.custom_avatar_url), ''), nullif(btrim(u.avatar_url), '')),
+        'started_at', s.started_at, 'last_active_at', s.last_active_at, 'turn_count', CASE WHEN s.turn_count_verified THEN s.turn_count ELSE NULL END)
+FROM
+    sessions s
+    JOIN users u ON u.id = s.owner_user_id
+WHERE
+    (sqlc.arg(visible_users)::uuid[] IS NULL OR s.owner_user_id = ANY(sqlc.arg(visible_users)::uuid[])) AND s.deleted_at IS NULL
+    AND s.purged_at IS NULL
+    AND s.reporting_enabled_at IS NOT NULL
+    AND s.placeholder = false
+    AND s.parent_session_id IS NULL
+    AND (sqlc.arg(title_query)::text = ''
+        OR strpos(lower(s.title), lower(sqlc.arg(title_query)::text)) > 0
+        OR strpos(s.id::text, lower(sqlc.arg(title_query)::text)) > 0)
+    AND (sqlc.arg(user_query)::text = ''
+        OR strpos(lower(u.name), lower(sqlc.arg(user_query)::text)) > 0
+        OR strpos(lower(u.email), lower(sqlc.arg(user_query)::text)) > 0)
+    AND (sqlc.narg(user_id)::uuid IS NULL
+        OR s.owner_user_id = sqlc.narg(user_id)::uuid)
+    AND (sqlc.narg(from_time)::timestamptz IS NULL
+        OR s.started_at >= sqlc.narg(from_time))
+    AND (sqlc.narg(until_time)::timestamptz IS NULL
+        OR s.started_at < sqlc.narg(until_time))
+ORDER BY
+    s.started_at DESC,
+    s.id DESC
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
+
+-- name: ListConversations :many
+SELECT jsonb_build_object(
+    'session_id', s.id, 'turn_index', t.turn_index, 'task_title', s.title,
+    'user_id', u.id, 'user_name', u.name, 'user_email', u.email,
+    'user_avatar_url', coalesce(nullif(btrim(u.custom_avatar_url), ''), nullif(btrim(u.avatar_url), '')),
+    'started_at', t.started_at, 'ended_at', t.ended_at,
+    'duration_seconds', extract(epoch FROM (t.ended_at - t.started_at)),
+    'input_text', t.input_text, 'input_text_truncated', t.input_text_truncated, 'input_kind', t.input_kind,
+    'input_tokens', t.input_tokens, 'output_tokens', t.output_tokens,
+    'outcome', t.stop_reason, 'error_code', t.error_code,
+    'is_completed', CASE WHEN t.stop_reason = 'unknown' THEN NULL ELSE t.stop_reason = 'complete' END)
+FROM session_turns t
+JOIN sessions s ON s.id = t.session_id
+JOIN users u ON u.id = s.owner_user_id
+WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR s.owner_user_id = ANY(sqlc.arg(visible_users)::uuid[])) AND s.deleted_at IS NULL AND s.purged_at IS NULL
+    AND s.reporting_enabled_at IS NOT NULL AND s.placeholder = false
+    AND s.parent_session_id IS NULL
+    AND (sqlc.narg(user_id)::uuid IS NULL OR s.owner_user_id = sqlc.narg(user_id)::uuid)
+    AND (sqlc.arg(task_id)::text = '' OR s.id = nullif(sqlc.arg(task_id)::text, '')::uuid)
+    AND (sqlc.arg(title_query)::text = '' OR strpos(lower(s.title), lower(sqlc.arg(title_query)::text)) > 0)
+    AND (sqlc.arg(user_query)::text = ''
+        OR strpos(lower(u.name), lower(sqlc.arg(user_query)::text)) > 0
+        OR strpos(lower(u.email), lower(sqlc.arg(user_query)::text)) > 0)
+    AND (sqlc.arg(content_query)::text = '' OR strpos(lower(t.input_text), lower(sqlc.arg(content_query)::text)) > 0)
+    AND (sqlc.narg(from_time)::timestamptz IS NULL OR t.started_at >= sqlc.narg(from_time))
+    AND (sqlc.narg(until_time)::timestamptz IS NULL OR t.started_at < sqlc.narg(until_time))
+ORDER BY t.started_at DESC, s.id DESC, t.turn_index DESC
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
+
+-- name: ListTaskConversations :many
+SELECT jsonb_build_object(
+    'session_id', s.id, 'turn_index', t.turn_index, 'task_title', s.title,
+    'user_id', u.id, 'user_name', u.name, 'user_email', u.email,
+    'user_avatar_url', coalesce(nullif(btrim(u.custom_avatar_url), ''), nullif(btrim(u.avatar_url), '')),
+    'started_at', t.started_at, 'ended_at', t.ended_at,
+    'duration_seconds', extract(epoch FROM (t.ended_at - t.started_at)),
+    'input_text', t.input_text, 'input_text_truncated', t.input_text_truncated, 'input_kind', t.input_kind,
+    'input_tokens', t.input_tokens, 'output_tokens', t.output_tokens,
+    'outcome', t.stop_reason, 'error_code', t.error_code,
+    'is_completed', CASE WHEN t.stop_reason = 'unknown' THEN NULL ELSE t.stop_reason = 'complete' END)
+FROM session_turns t
+JOIN sessions s ON s.id = t.session_id
+JOIN users u ON u.id = s.owner_user_id
+WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR s.owner_user_id = ANY(sqlc.arg(visible_users)::uuid[])) AND t.session_id = nullif(sqlc.arg(task_id)::text, '')::uuid
+    AND (sqlc.narg(user_id)::uuid IS NULL OR s.owner_user_id = sqlc.narg(user_id)::uuid)
+    AND (sqlc.narg(first_turn_time)::timestamptz IS NULL OR t.started_at >= sqlc.narg(first_turn_time))
+    AND (sqlc.narg(last_turn_time)::timestamptz IS NULL OR t.started_at <= sqlc.narg(last_turn_time))
+    AND s.deleted_at IS NULL AND s.purged_at IS NULL
+    AND s.reporting_enabled_at IS NOT NULL AND s.placeholder = false
+    AND s.parent_session_id IS NULL
+    AND (sqlc.arg(task_id)::text = '' OR s.id = nullif(sqlc.arg(task_id)::text, '')::uuid)
+    AND (sqlc.arg(title_query)::text = '' OR strpos(lower(s.title), lower(sqlc.arg(title_query)::text)) > 0)
+    AND (sqlc.arg(user_query)::text = ''
+        OR strpos(lower(u.name), lower(sqlc.arg(user_query)::text)) > 0
+        OR strpos(lower(u.email), lower(sqlc.arg(user_query)::text)) > 0)
+    AND (sqlc.arg(content_query)::text = '' OR strpos(lower(t.input_text), lower(sqlc.arg(content_query)::text)) > 0)
+    AND (sqlc.narg(from_time)::timestamptz IS NULL OR t.started_at >= sqlc.narg(from_time))
+    AND (sqlc.narg(until_time)::timestamptz IS NULL OR t.started_at < sqlc.narg(until_time))
+ORDER BY t.started_at DESC, s.id DESC, t.turn_index DESC
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
+
+-- name: LockConversationTurns :exec
+LOCK TABLE ONLY session_turns IN ACCESS SHARE MODE;
+
+-- name: IsManagedTask :one
+SELECT EXISTS (SELECT 1 FROM sessions WHERE id=sqlc.arg(task_id)::uuid AND owner_user_id=ANY(sqlc.arg(visible_users)::uuid[]));
+
+-- name: TaskTurnBounds :one
+SELECT jsonb_build_object('backfilling',session_turns_backfilling(),'first_at',b.first_at,'last_at',b.last_at)
+FROM session_turn_bounds(sqlc.arg(session_id)::uuid) AS b(first_at,last_at);
+
+-- name: ReportingRealtime :one
+WITH calls AS (
+    SELECT c.* FROM model_calls c WHERE c.completed_at >= sqlc.arg(from_time)::timestamptz AND c.completed_at < sqlc.arg(until_time)::timestamptz
+), activity AS (
+    SELECT session_id FROM model_calls WHERE session_id IS NOT NULL AND (completed_at >= sqlc.arg(from_time)::timestamptz AND completed_at < sqlc.arg(until_time)::timestamptz OR status = 'running' AND started_at >= sqlc.arg(from_time)::timestamptz AND started_at < sqlc.arg(until_time)::timestamptz)
+    UNION SELECT session_id FROM mcp_tool_calls WHERE session_id IS NOT NULL AND (completed_at >= sqlc.arg(from_time)::timestamptz AND completed_at < sqlc.arg(until_time)::timestamptz OR status = 'running' AND started_at >= sqlc.arg(from_time)::timestamptz AND started_at < sqlc.arg(until_time)::timestamptz)
+    UNION SELECT session_id FROM image_calls WHERE session_id IS NOT NULL AND completed_at >= sqlc.arg(from_time)::timestamptz AND completed_at < sqlc.arg(until_time)::timestamptz
+    UNION SELECT session_id FROM billing_transactions WHERE session_id IS NOT NULL AND status IN ('created','reserved','running','settling') AND started_at >= sqlc.arg(from_time)::timestamptz AND started_at < sqlc.arg(until_time)::timestamptz
+    UNION SELECT session_id FROM image_jobs WHERE session_id IS NOT NULL AND status IN ('created','reserved','submitted','running') AND created_at >= sqlc.arg(from_time)::timestamptz AND created_at < sqlc.arg(until_time)::timestamptz
+), active_tasks AS (
+    SELECT DISTINCT coalesce(s.parent_session_id,s.id) AS root FROM activity a JOIN sessions s ON s.id = a.session_id
+    JOIN sessions root ON root.id = coalesce(s.parent_session_id,s.id)
+    WHERE s.reporting_enabled_at IS NOT NULL AND s.placeholder = false AND s.deleted_at IS NULL AND s.purged_at IS NULL
+        AND root.reporting_enabled_at IS NOT NULL AND root.placeholder = false AND root.deleted_at IS NULL AND root.purged_at IS NULL
+), active_users AS (
+    SELECT user_id FROM calls UNION SELECT user_id FROM mcp_tool_calls WHERE completed_at >= sqlc.arg(from_time)::timestamptz AND completed_at < sqlc.arg(until_time)::timestamptz
+    UNION SELECT s.owner_user_id FROM active_tasks a JOIN sessions s ON s.id = a.root
+    UNION SELECT user_id FROM billing_transactions WHERE status = 'running' AND started_at >= sqlc.arg(from_time)::timestamptz AND started_at < sqlc.arg(until_time)::timestamptz
+)
+SELECT jsonb_build_object(
+    'model_consumption', (SELECT coalesce(-sum(credit_delta),0)::text FROM credit_ledger_entries WHERE occurred_at >= sqlc.arg(from_time)::timestamptz AND occurred_at < sqlc.arg(until_time)::timestamptz AND category = 'model' AND entry_type IN ('charge','refund')),
+    'p95_response_time', (SELECT percentile_cont(0.95) WITHIN GROUP (ORDER BY coalesce(response_duration_ms,extract(epoch FROM (completed_at-started_at))*1000)) FROM calls WHERE status <> 'running'),
+    'model_success_rate', (SELECT 100.0*count(*) FILTER (WHERE status = 'succeeded')/NULLIF(count(*) FILTER (WHERE status <> 'running'),0) FROM calls),
+    'model_calls', (SELECT count(*) FROM calls),
+    'tpm', (SELECT coalesce(sum(input_tokens+output_tokens) FILTER (WHERE usage_known),0) FROM calls)/sqlc.arg(window_minutes)::text::numeric,
+    'rpm', (SELECT count(*) FROM calls)/sqlc.arg(window_minutes)::text::numeric,
+    'input_tokens', (SELECT coalesce(sum(input_tokens) FILTER (WHERE usage_known),0) FROM calls),
+    'output_tokens', (SELECT coalesce(sum(output_tokens) FILTER (WHERE usage_known),0) FROM calls),
+    'total_users', (SELECT count(*) FROM users WHERE deleted_at IS NULL),
+    'active_users', (SELECT count(*) FROM active_users),
+    'active_tasks', (SELECT count(*) FROM active_tasks),
+    'new_tasks', (SELECT count(*) FROM sessions WHERE started_at >= sqlc.arg(from_time)::timestamptz AND started_at < sqlc.arg(until_time)::timestamptz AND parent_session_id IS NULL AND reporting_enabled_at IS NOT NULL AND placeholder = false AND deleted_at IS NULL AND purged_at IS NULL));
+
+-- name: ReportingModelsOverview :one
+WITH bounds AS NOT MATERIALIZED (
+    SELECT sqlc.arg(at)::timestamptz AS now_at,
+           date_trunc('hour', sqlc.arg(at)::timestamptz, 'UTC') AS hour_at,
+           (sqlc.arg(at)::timestamptz AT TIME ZONE 'Asia/Shanghai')::date AS today
+), days AS (
+    SELECT d.day::date AS day
+    FROM bounds b CROSS JOIN LATERAL generate_series((b.today - 89)::timestamp, b.today::timestamp, interval '1 day') AS d(day)
+), detail_calls AS MATERIALIZED (
+    -- Only the current hour, last 30 minutes, and the two rolling-window edge hours.
+    SELECT c.completed_at, c.status, c.input_tokens, c.output_tokens, c.cache_hit,
+           c.response_duration_ms, c.first_token_duration_ms, c.started_at, c.usage_known
+    FROM model_calls c
+    WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR c.user_id = ANY(sqlc.arg(visible_users)::uuid[])) AND c.status <> 'running' AND (
+        (c.completed_at >= least(date_trunc('hour', sqlc.arg(at)::timestamptz, 'UTC'), sqlc.arg(at)::timestamptz - interval '30 minutes')
+            AND c.completed_at < sqlc.arg(at)::timestamptz)
+        OR (c.completed_at >= date_trunc('hour', sqlc.arg(at)::timestamptz, 'UTC') - interval '24 hours'
+            AND c.completed_at < date_trunc('hour', sqlc.arg(at)::timestamptz, 'UTC') - interval '23 hours')
+        OR (c.completed_at >= sqlc.arg(at)::timestamptz - interval '48 hours'
+            AND c.completed_at < date_trunc('hour', sqlc.arg(at)::timestamptz, 'UTC') - interval '47 hours')
+    )
+), successful_calls AS (
+    SELECT c.* FROM detail_calls c
+    WHERE c.completed_at >= sqlc.arg(at)::timestamptz - interval '30 minutes' AND c.status = 'succeeded'
+), duration_samples AS (
+    SELECT 'response'::text AS metric,
+           coalesce(response_duration_ms, extract(epoch FROM (completed_at - started_at)) * 1000) AS duration_ms
+    FROM successful_calls
+    UNION ALL
+    SELECT 'first_token'::text AS metric, first_token_duration_ms::numeric AS duration_ms
+    FROM successful_calls WHERE first_token_duration_ms IS NOT NULL
+), ranked_durations AS (
+    SELECT metric, duration_ms,
+           row_number() OVER (PARTITION BY metric ORDER BY duration_ms) AS sample_index,
+           count(*) OVER (PARTITION BY metric) AS sample_count
+    FROM duration_samples
+), trimmed_durations AS (
+    SELECT metric, avg(duration_ms) AS duration_ms FROM ranked_durations
+    WHERE sample_index <= sample_count - floor(sample_count * 0.05)
+    GROUP BY metric
+), windows AS (
+    SELECT 'last_24h'::text AS name, now_at - interval '24 hours' AS from_at, now_at AS until_at FROM bounds
+    UNION ALL
+    SELECT 'previous_24h', now_at - interval '48 hours', now_at - interval '24 hours' FROM bounds
+), window_bounds AS (
+    SELECT *, date_trunc('hour', from_at, 'UTC') +
+        CASE WHEN from_at = date_trunc('hour', from_at, 'UTC') THEN interval '0' ELSE interval '1 hour' END AS full_from,
+        date_trunc('hour', until_at, 'UTC') AS full_until
+    FROM windows
+), window_parts AS (
+    SELECT w.name, coalesce(sum(h.calls), 0) AS calls,
+        coalesce(sum(h.input_tokens), 0) AS input_tokens, coalesce(sum(h.output_tokens), 0) AS output_tokens
+    FROM window_bounds w LEFT JOIN stats_model_hourly h ON h.hour_start >= w.full_from AND h.hour_start < w.full_until
+        AND (sqlc.arg(visible_users)::uuid[] IS NULL OR h.user_id = ANY(sqlc.arg(visible_users)::uuid[]))
+    GROUP BY w.name
+    UNION ALL
+    SELECT w.name, count(c.completed_at),
+        coalesce(sum(c.input_tokens) FILTER (WHERE c.usage_known), 0),
+        coalesce(sum(c.output_tokens) FILTER (WHERE c.usage_known), 0)
+    FROM window_bounds w LEFT JOIN detail_calls c ON c.completed_at >= w.from_at AND c.completed_at < w.until_at
+        AND (c.completed_at < w.full_from OR c.completed_at >= w.full_until)
+    GROUP BY w.name
+), window_totals AS (
+    SELECT name, sum(calls) AS calls, sum(input_tokens) AS input_tokens, sum(output_tokens) AS output_tokens
+    FROM window_parts GROUP BY name
+), daily_call_parts AS (
+    SELECT (h.hour_start AT TIME ZONE 'Asia/Shanghai')::date AS day,
+        sum(h.calls) AS calls, sum(h.input_tokens) AS input_tokens, sum(h.output_tokens) AS output_tokens
+    FROM stats_model_hourly h CROSS JOIN bounds b
+    WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR h.user_id = ANY(sqlc.arg(visible_users)::uuid[]))
+      AND h.hour_start >= ((b.today - 89)::timestamp AT TIME ZONE 'Asia/Shanghai') AND h.hour_start < b.hour_at
+    GROUP BY 1
+    UNION ALL
+    SELECT (completed_at AT TIME ZONE 'Asia/Shanghai')::date, count(*),
+        coalesce(sum(input_tokens) FILTER (WHERE usage_known), 0), coalesce(sum(output_tokens) FILTER (WHERE usage_known), 0)
+    FROM detail_calls CROSS JOIN bounds b WHERE completed_at >= b.hour_at GROUP BY 1
+), calls_by_day AS (
+    SELECT day, sum(calls) AS calls, sum(input_tokens) AS input_tokens, sum(output_tokens) AS output_tokens
+    FROM daily_call_parts GROUP BY day
+), daily_credit_parts AS (
+    SELECT (h.hour_start AT TIME ZONE 'Asia/Shanghai')::date AS day, sum(h.credits) AS credits
+    FROM stats_model_credit_hourly h CROSS JOIN bounds b
+    WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR h.user_id = ANY(sqlc.arg(visible_users)::uuid[]))
+      AND h.hour_start >= ((b.today - 89)::timestamp AT TIME ZONE 'Asia/Shanghai') AND h.hour_start < b.hour_at GROUP BY 1
+    UNION ALL
+    SELECT (e.occurred_at AT TIME ZONE 'Asia/Shanghai')::date, -sum(e.credit_delta)
+    FROM credit_ledger_entries e CROSS JOIN bounds b
+    WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR e.user_id = ANY(sqlc.arg(visible_users)::uuid[]))
+      AND e.occurred_at >= b.hour_at AND e.occurred_at < b.now_at
+        AND e.category = 'model' AND e.entry_type IN ('charge', 'refund') GROUP BY 1
+), credits_by_day AS (
+    SELECT day, sum(credits) AS credits FROM daily_credit_parts GROUP BY day
+), message_models AS (
+    SELECT t.model_id, count(*) AS messages
+    FROM session_turns t JOIN sessions s ON s.id = t.session_id CROSS JOIN bounds b
+    WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR s.owner_user_id = ANY(sqlc.arg(visible_users)::uuid[]))
+      AND s.parent_session_id IS NULL AND s.reporting_enabled_at IS NOT NULL
+      AND NOT s.placeholder AND s.deleted_at IS NULL AND s.purged_at IS NULL AND s.started_at < b.now_at
+      AND t.started_at >= b.now_at - interval '24 hours' AND t.started_at < b.now_at
+    GROUP BY t.model_id
+)
+SELECT jsonb_build_object(
+    'timezone', 'Asia/Shanghai', 'generated_at', (SELECT now_at FROM bounds),
+    'last_24h', (SELECT jsonb_build_object('model_calls', calls, 'input_tokens', input_tokens, 'output_tokens', output_tokens)
+        FROM window_totals WHERE name = 'last_24h'),
+    'previous_24h', (SELECT jsonb_build_object('model_calls', calls, 'input_tokens', input_tokens, 'output_tokens', output_tokens)
+        FROM window_totals WHERE name = 'previous_24h'),
+    'last_30m', (SELECT jsonb_build_object(
+        'tpm', coalesce(sum(input_tokens + output_tokens) FILTER (WHERE usage_known),0) / 30.0,
+        'rpm', count(*) / 30.0,
+        'cache_hit_rate', 100.0 * count(*) FILTER (WHERE cache_hit) / nullif(count(*),0),
+        'model_success_rate', 100.0 * count(*) FILTER (WHERE status = 'succeeded') / nullif(count(*),0),
+        'avg_response_time', (SELECT duration_ms FROM trimmed_durations WHERE metric = 'response'),
+        'avg_first_token_time', (SELECT duration_ms FROM trimmed_durations WHERE metric = 'first_token'))
+        FROM detail_calls WHERE completed_at >= sqlc.arg(at)::timestamptz - interval '30 minutes'),
+    'message_distribution', jsonb_build_object(
+        'from', (SELECT now_at - interval '24 hours' FROM bounds), 'until', (SELECT now_at FROM bounds),
+        'total_messages', (SELECT coalesce(sum(messages), 0) FROM message_models),
+        'models', coalesce((SELECT jsonb_agg(jsonb_build_object('id', p.model_id,
+            'name', coalesce(nullif(btrim(m.display_name), ''), nullif(btrim(m.model_id), '')), 'messages', p.messages)
+            ORDER BY p.messages DESC, p.model_id NULLS LAST)
+            FROM message_models p LEFT JOIN models m ON m.id = p.model_id), '[]'::jsonb)),
+    'days', (SELECT jsonb_agg(jsonb_build_object('date', d.day::text,
+        'model_calls', coalesce(c.calls,0), 'input_tokens', coalesce(c.input_tokens,0),
+        'output_tokens', coalesce(c.output_tokens,0), 'credits', coalesce(e.credits,0)::text) ORDER BY d.day)
+        FROM days d LEFT JOIN calls_by_day c ON c.day = d.day LEFT JOIN credits_by_day e ON e.day = d.day)
+);
+
+-- name: ReportingSessionOverview :one
+WITH bounds AS (
+    SELECT sqlc.arg(at)::timestamptz AS now_at,
+           (sqlc.arg(at)::timestamptz AT TIME ZONE 'Asia/Shanghai')::date AS today
+), roots AS MATERIALIZED (
+    SELECT s.id, s.started_at FROM sessions s CROSS JOIN bounds b
+    WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR s.owner_user_id = ANY(sqlc.arg(visible_users)::uuid[]))
+      AND s.parent_session_id IS NULL AND s.reporting_enabled_at IS NOT NULL
+      AND NOT s.placeholder AND s.deleted_at IS NULL AND s.purged_at IS NULL AND s.started_at < b.now_at
+), days AS (
+    SELECT d.day::date AS day FROM bounds b CROSS JOIN LATERAL
+        generate_series((b.today - 89)::timestamp, b.today::timestamp, interval '1 day') d(day)
+), new_by_day AS (
+    SELECT (s.started_at AT TIME ZONE 'Asia/Shanghai')::date AS day, count(*) AS total
+    FROM roots s CROSS JOIN bounds b
+    WHERE s.started_at >= ((b.today - 89)::timestamp AT TIME ZONE 'Asia/Shanghai') GROUP BY 1
+), activity_by_day AS (
+    SELECT (t.started_at AT TIME ZONE 'Asia/Shanghai')::date AS day,
+           count(*) AS messages, count(DISTINCT t.session_id) AS active_sessions
+    FROM session_turns t JOIN roots s ON s.id = t.session_id CROSS JOIN bounds b
+    WHERE t.started_at >= ((b.today - 89)::timestamp AT TIME ZONE 'Asia/Shanghai') AND t.started_at < b.now_at GROUP BY 1
+), recent AS MATERIALIZED (
+    SELECT t.session_id, t.model_id, t.stop_reason, extract(epoch FROM (t.ended_at - t.started_at))::double precision AS seconds
+    FROM session_turns t JOIN roots s ON s.id = t.session_id CROSS JOIN bounds b
+    WHERE t.started_at >= b.now_at - interval '24 hours' AND t.started_at < b.now_at
+), per_session AS (
+    SELECT session_id, count(*) AS messages FROM recent GROUP BY session_id
+), per_model AS (
+    SELECT model_id, count(*) AS messages FROM recent GROUP BY model_id
+), recent_summary AS (
+    SELECT count(*) AS messages,
+        jsonb_build_object(
+            'complete', count(*) FILTER (WHERE stop_reason = 'complete'),
+            'error', count(*) FILTER (WHERE stop_reason = 'error'),
+            'interrupted', count(*) FILTER (WHERE stop_reason = 'interrupted'),
+            'max_turns', count(*) FILTER (WHERE stop_reason = 'max_turns'),
+            'output_limit', count(*) FILTER (WHERE stop_reason = 'output_limit'),
+            'unknown', count(*) FILTER (WHERE stop_reason = 'unknown')) AS outcomes,
+        jsonb_build_object('average', avg(seconds),
+            'p10', percentile_disc(0.1) WITHIN GROUP (ORDER BY seconds),
+            'p90', percentile_disc(0.9) WITHIN GROUP (ORDER BY seconds)) AS duration_seconds
+    FROM recent
+), message_counts AS (
+    SELECT count(*) AS sessions, jsonb_build_object('average', avg(messages),
+        'p10', percentile_disc(0.1) WITHIN GROUP (ORDER BY messages),
+        'p90', percentile_disc(0.9) WITHIN GROUP (ORDER BY messages)) AS distribution FROM per_session
+)
+SELECT jsonb_build_object(
+    'timezone', 'Asia/Shanghai', 'generated_at', b.now_at,
+    'total_sessions', (SELECT count(*) FROM roots),
+    'new_sessions_24h', (SELECT count(*) FROM roots WHERE started_at >= b.now_at - interval '24 hours'),
+    'active_sessions_24h', c.sessions,
+    'total_messages', (SELECT count(*) FROM session_turns t JOIN roots s ON s.id = t.session_id WHERE t.started_at < b.now_at),
+    'last_24h', jsonb_build_object('from', b.now_at - interval '24 hours', 'until', b.now_at,
+        'messages', r.messages, 'outcomes', r.outcomes, 'duration_seconds', r.duration_seconds,
+        'messages_per_session', c.distribution,
+        'models', coalesce((SELECT jsonb_agg(jsonb_build_object('id', p.model_id,
+            'name', coalesce(nullif(btrim(m.display_name), ''), nullif(btrim(m.model_id), '')), 'messages', p.messages)
+            ORDER BY p.messages DESC, p.model_id NULLS LAST)
+            FROM per_model p LEFT JOIN models m ON m.id = p.model_id), '[]'::jsonb)),
+    'days', (SELECT jsonb_agg(jsonb_build_object('date', d.day::text, 'new_sessions', coalesce(n.total, 0),
+        'active_sessions', coalesce(a.active_sessions, 0), 'messages', coalesce(a.messages, 0)) ORDER BY d.day)
+        FROM days d LEFT JOIN new_by_day n ON n.day = d.day LEFT JOIN activity_by_day a ON a.day = d.day)
+) FROM bounds b CROSS JOIN recent_summary r CROSS JOIN message_counts c;
+
+-- name: ReportingMembersOverview :one
+WITH bounds AS (
+    SELECT sqlc.arg(at)::timestamptz AS now_at,
+           (sqlc.arg(at)::timestamptz AT TIME ZONE 'Asia/Shanghai')::date AS today
+), members AS MATERIALIZED (
+    SELECT id, created_at FROM users WHERE deleted_at IS NULL
+      AND (sqlc.arg(visible_users)::uuid[] IS NULL OR id = ANY(sqlc.arg(visible_users)::uuid[]))
+), days AS (
+    SELECT d.day::date AS day
+    FROM bounds b CROSS JOIN LATERAL generate_series((b.today - 89)::timestamp, b.today::timestamp, interval '1 day') AS d(day)
+), activity AS MATERIALIZED (
+    SELECT s.owner_user_id, (t.started_at AT TIME ZONE 'Asia/Shanghai')::date AS day,
+           count(*) FILTER (WHERE t.started_at >= b.now_at - interval '168 hours'
+               AND s.parent_session_id IS NULL AND s.reporting_enabled_at IS NOT NULL AND NOT s.placeholder
+               AND s.deleted_at IS NULL AND s.purged_at IS NULL AND s.started_at < b.now_at) AS sent_messages,
+           bool_or(t.started_at >= b.now_at - interval '168 hours') AS last_7d,
+           bool_or(t.started_at >= b.now_at - interval '336 hours' AND t.started_at < b.now_at - interval '168 hours') AS previous_7d,
+           bool_or(t.started_at >= b.now_at - interval '24 hours') AS last_24h,
+           bool_or(t.started_at >= b.now_at - interval '48 hours' AND t.started_at < b.now_at - interval '24 hours') AS previous_24h
+    FROM session_turns t JOIN sessions s ON s.id = t.session_id
+        JOIN members m ON m.id = s.owner_user_id CROSS JOIN bounds b
+    WHERE t.started_at >= ((b.today - 89)::timestamp AT TIME ZONE 'Asia/Shanghai') AND t.started_at < b.now_at
+    GROUP BY s.owner_user_id, (t.started_at AT TIME ZONE 'Asia/Shanghai')::date
+), summary AS (
+    SELECT count(DISTINCT owner_user_id) FILTER (WHERE last_7d) AS last_7d,
+           count(DISTINCT owner_user_id) FILTER (WHERE previous_7d) AS previous_7d,
+           count(DISTINCT owner_user_id) FILTER (WHERE last_24h) AS last_24h,
+           count(DISTINCT owner_user_id) FILTER (WHERE previous_24h) AS previous_24h
+    FROM activity
+), new_by_day AS (
+    SELECT (m.created_at AT TIME ZONE 'Asia/Shanghai')::date AS day, count(*) AS total
+    FROM members m CROSS JOIN bounds b
+    WHERE m.created_at >= ((b.today - 89)::timestamp AT TIME ZONE 'Asia/Shanghai') AND m.created_at < b.now_at
+    GROUP BY 1
+), active_by_day AS (
+    SELECT day, count(*) AS total FROM activity GROUP BY day
+), member_counts AS MATERIALIZED (
+    SELECT m.id, coalesce(sum(a.sent_messages), 0)::bigint AS messages
+    FROM members m LEFT JOIN activity a ON a.owner_user_id = m.id GROUP BY m.id
+), ordered_counts AS (
+    SELECT array_agg(messages ORDER BY messages) AS counts, count(*) AS n FROM member_counts
+), leaders AS (
+    SELECT id, messages FROM member_counts WHERE messages > 0 ORDER BY messages DESC, id LIMIT 15
+)
+SELECT jsonb_build_object(
+    'message_depth', jsonb_build_object(
+        'percentiles', coalesce((SELECT jsonb_agg(o.counts[greatest(1, (p.rank * o.n + 99) / 100)::int] ORDER BY p.rank)
+            FROM ordered_counts o CROSS JOIN generate_series(0, 100) AS p(rank) WHERE o.n > 0), '[]'::jsonb),
+        'top_members', coalesce((SELECT jsonb_agg(jsonb_build_object('id', u.id, 'name', u.name, 'email', u.email,
+            'avatar_url', coalesce(nullif(btrim(u.custom_avatar_url), ''), nullif(btrim(u.avatar_url), '')), 'messages', l.messages)
+            ORDER BY l.messages DESC, l.id) FROM leaders l JOIN users u ON u.id = l.id), '[]'::jsonb)),
+    'total_members', (SELECT count(*) FROM members),
+    'last_7d', jsonb_build_object('active_members', summary.last_7d),
+    'previous_7d', jsonb_build_object('active_members', summary.previous_7d),
+    'last_24h', jsonb_build_object('active_members', summary.last_24h),
+    'previous_24h', jsonb_build_object('active_members', summary.previous_24h),
+    'timezone', 'Asia/Shanghai', 'generated_at', (SELECT now_at FROM bounds),
+    'days', (SELECT jsonb_agg(jsonb_build_object('date', d.day::text, 'new_members', coalesce(n.total, 0), 'active_members', coalesce(a.total, 0)) ORDER BY d.day)
+             FROM days d LEFT JOIN new_by_day n ON n.day = d.day LEFT JOIN active_by_day a ON a.day = d.day)
+) FROM summary;
+
+-- name: ReportingMemberAnalysis :one
+WITH bounds AS (
+    SELECT sqlc.arg(at)::timestamptz AS now_at,
+           (sqlc.arg(at)::timestamptz AT TIME ZONE 'Asia/Shanghai')::date AS today
+), dates AS (
+    SELECT *, (today - interval '1 year' + interval '1 day')::date AS first_day,
+           ((today - 29)::timestamp AT TIME ZONE 'Asia/Shanghai') AS summary_from
+    FROM bounds
+), member AS (
+    SELECT id, name, email, status,
+           coalesce(nullif(btrim(custom_avatar_url), ''), nullif(btrim(avatar_url), '')) AS avatar_url
+    FROM users WHERE id = sqlc.arg(user_id)::uuid AND deleted_at IS NULL
+      AND (sqlc.arg(visible_users)::uuid[] IS NULL OR id = ANY(sqlc.arg(visible_users)::uuid[]))
+), roots AS MATERIALIZED (
+    SELECT s.id, s.title, s.started_at, s.last_active_at,
+           CASE WHEN s.turn_count_verified THEN s.turn_count ELSE NULL END AS turn_count
+    FROM sessions s JOIN member m ON m.id = s.owner_user_id CROSS JOIN dates b
+    WHERE s.parent_session_id IS NULL AND s.reporting_enabled_at IS NOT NULL
+      AND NOT s.placeholder AND s.deleted_at IS NULL AND s.purged_at IS NULL AND s.started_at < b.now_at
+), activity AS (
+    SELECT (t.started_at AT TIME ZONE 'Asia/Shanghai')::date AS day, count(*) AS conversations,
+           count(*) FILTER (WHERE t.started_at >= b.summary_from) AS recent_conversations
+    FROM session_turns t JOIN roots s ON s.id = t.session_id CROSS JOIN dates b
+    WHERE t.started_at >= (b.first_day::timestamp AT TIME ZONE 'Asia/Shanghai') AND t.started_at < b.now_at
+    GROUP BY 1
+), days AS (
+    SELECT d.day::date AS day FROM dates b CROSS JOIN LATERAL
+        generate_series(b.first_day::timestamp, b.today::timestamp, interval '1 day') d(day)
+), recent AS (
+    SELECT * FROM roots ORDER BY started_at DESC, id DESC LIMIT 10
+)
+SELECT jsonb_build_object(
+    'timezone', 'Asia/Shanghai', 'generated_at', b.now_at,
+    'member', jsonb_build_object('id', m.id, 'name', m.name, 'email', m.email, 'status', m.status, 'avatar_url', m.avatar_url,
+        'groups', coalesce((SELECT jsonb_agg(jsonb_build_object('id', g.id, 'name', g.name) ORDER BY g.created_at, g.id)
+            FROM groups g WHERE g.deleted_at IS NULL AND EXISTS (
+                SELECT 1 FROM group_users gu WHERE gu.group_id = g.id AND gu.user_id = m.id AND gu.removed_at IS NULL)), '[]'::jsonb)),
+    'summary', jsonb_build_object('from', b.summary_from, 'until', b.now_at,
+        'tasks', (SELECT count(*) FROM roots WHERE started_at >= b.summary_from),
+        'conversations', (SELECT coalesce(sum(recent_conversations), 0) FROM activity),
+        'credits', (SELECT coalesce(-sum(e.credit_delta), 0)::text FROM credit_ledger_entries e
+            WHERE e.user_id = m.id AND e.entry_type IN ('charge', 'refund') AND e.occurred_at >= b.summary_from AND e.occurred_at < b.now_at)),
+    'created_resources', jsonb_build_object(
+        'models', (SELECT count(*) FROM models WHERE owner_user_id = m.id AND deleted_at IS NULL),
+        'knowledge_bases', NULL,
+        'skills', (SELECT count(*) FROM skills WHERE owner_user_id = m.id AND origin = 'local' AND deleted_at IS NULL),
+        'experts', (SELECT count(*) FROM experts WHERE created_by_user_id = m.id AND origin = 'local' AND deleted_at IS NULL),
+        'connectors', (SELECT count(*) FROM connectors WHERE owner_user_id = m.id AND origin = 'local' AND deleted_at IS NULL),
+        'rules', (SELECT count(*) FROM rules WHERE owner_user_id = m.id AND origin = 'local' AND deleted_at IS NULL)),
+    'activity', jsonb_build_object('from', b.first_day::text, 'until', b.today::text,
+        'days', (SELECT jsonb_agg(jsonb_build_object('date', d.day::text, 'conversations', coalesce(a.conversations, 0)) ORDER BY d.day)
+            FROM days d LEFT JOIN activity a ON a.day = d.day)),
+    'recent_tasks', coalesce((SELECT jsonb_agg(jsonb_build_object('id', id, 'title', title, 'turn_count', turn_count,
+        'started_at', started_at, 'last_active_at', last_active_at) ORDER BY started_at DESC, id DESC) FROM recent), '[]'::jsonb)
+) FROM member m CROSS JOIN dates b;
+
+-- name: ReportingSessionStatus :one
+SELECT jsonb_build_object('id',id,'owner_user_id',owner_user_id,'purged_at',purged_at,'tombstone',purged_at IS NOT NULL)
+FROM sessions WHERE id = sqlc.arg(session_id)::uuid;
+
+-- name: ReportingDetail :one
+WITH opts AS (SELECT sqlc.arg(filters)::jsonb AS f),
+cohort AS (
+    SELECT s.* FROM sessions s CROSS JOIN opts p
+    WHERE s.id = (p.f->>'session_id')::uuid AND s.reporting_enabled_at IS NOT NULL AND s.deleted_at IS NULL AND s.purged_at IS NULL
+        AND (s.placeholder = false OR (p.f->>'include_placeholders')::boolean)
+        AND s.started_at >= (p.f->>'from')::timestamptz AND s.started_at < (p.f->>'until')::timestamptz
+        AND (p.f->>'group_id' IS NULL OR s.group_id = (p.f->>'group_id')::uuid)
+        AND (p.f->>'user_id' IS NULL OR s.owner_user_id = (p.f->>'user_id')::uuid)
+        AND (p.f->>'expert_id' IS NULL OR s.expert_id = (p.f->>'expert_id')::uuid)
+        AND (p.f->>'client_type' IS NULL OR s.client_type = p.f->>'client_type')
+        AND (p.f->>'platform' IS NULL OR EXISTS (SELECT 1 FROM endpoints ep WHERE ep.user_id = s.owner_user_id AND ep.machine_id::text = s.device_id AND ep.platform = p.f->>'platform'))
+        AND (p.f->>'model_id' IS NULL OR s.model_id = (p.f->>'model_id')::uuid OR EXISTS (SELECT 1 FROM session_turns mt WHERE mt.session_id = s.id AND mt.model_id = (p.f->>'model_id')::uuid AND mt.started_at >= (p.f->>'from')::timestamptz AND mt.started_at < (p.f->>'until')::timestamptz))
+        AND (p.f->>'outcome' IS NULL OR EXISTS (SELECT 1 FROM session_turns ot WHERE ot.session_id = s.id AND ot.stop_reason = p.f->>'outcome' AND ot.started_at >= (p.f->>'from')::timestamptz AND ot.started_at < (p.f->>'until')::timestamptz))
+        AND (p.f->>'resource_id' IS NULL AND p.f->>'resource_version' IS NULL OR EXISTS (
+            SELECT 1 FROM session_turns rt JOIN session_resource_snapshot_items ri ON ri.session_id = rt.session_id AND ri.snapshot_id = rt.resources_snapshot_id
+            WHERE rt.session_id = s.id AND rt.started_at >= (p.f->>'from')::timestamptz AND rt.started_at < (p.f->>'until')::timestamptz
+                AND (p.f->>'resource_id' IS NULL OR ri.resource_id = p.f->>'resource_id') AND (p.f->>'resource_version' IS NULL OR ri.version = p.f->>'resource_version')))
+)
+SELECT jsonb_build_object('id',s.id,'owner_user_id',s.owner_user_id,
+    'group_id',s.group_id,'title',s.title,'title_source',s.title_source,'expert_id',s.expert_id,'parent_session_id',s.parent_session_id,
+    'model_id',s.model_id,'client_type',s.client_type,'client_version',s.client_version,
+    'engine_version',s.engine_version,'runtime_version',s.runtime_version,
+    'started_at',s.started_at,'last_active_at',s.last_active_at,'ended_at',s.ended_at,
+    'updated_at',s.updated_at,'active_seconds',s.active_seconds,'clock_suspect',s.clock_suspect,
+    'placeholder',s.placeholder,'last_outcome',s.last_stop_reason,'tombstone',false,
+    'turns', (SELECT coalesce(jsonb_agg(v.item ORDER BY v.turn_index),'[]'::jsonb) FROM (
+        SELECT t.turn_index,jsonb_build_object('turn_index',t.turn_index,'started_at',t.started_at,'ended_at',t.ended_at,
+            'duration_seconds',extract(epoch FROM (t.ended_at-t.started_at)),'outcome',t.stop_reason,
+            'error_code',t.error_code,'model_id',t.model_id,'input_kind',t.input_kind,
+            'input_text',t.input_text,'input_text_truncated',t.input_text_truncated,
+            'title',t.title,'title_source',t.title_source,
+            'input_tokens',t.input_tokens,'output_tokens',t.output_tokens,'recovered',t.recovered,
+            'resources_snapshot_id',t.resources_snapshot_id,
+            'tools',(SELECT count(*) FROM session_turn_tools v WHERE v.session_id = t.session_id AND v.turn_index = t.turn_index),
+            'skills',(SELECT count(*) FROM session_skill_events e WHERE e.session_id = t.session_id AND e.turn_index = t.turn_index)) AS item
+        FROM session_turns t WHERE t.session_id = s.id AND t.started_at >= (p.f->>'from')::timestamptz AND t.started_at < (p.f->>'until')::timestamptz
+        ORDER BY t.turn_index LIMIT (sqlc.arg(filters)::jsonb->>'limit')::integer) v),
+    'tools', (SELECT coalesce(jsonb_agg(v.item ORDER BY v.turn_index,v.category,v.resource_id),'[]'::jsonb) FROM (
+        SELECT v.turn_index,v.category,v.resource_id,jsonb_build_object('turn_index',v.turn_index,'category',v.category,
+            'resource_id',v.resource_id,'resource_version',v.resource_version,'calls',sum(v.calls),'failed',sum(v.failed),'duration_ms',sum(v.duration_ms)) AS item
+        FROM session_turn_tools v JOIN session_turns t ON t.session_id = v.session_id AND t.turn_index = v.turn_index
+        WHERE v.session_id = s.id AND t.started_at >= (p.f->>'from')::timestamptz AND t.started_at < (p.f->>'until')::timestamptz
+        GROUP BY v.turn_index,v.category,v.resource_id,v.resource_version ORDER BY v.turn_index,v.category,v.resource_id LIMIT (sqlc.arg(filters)::jsonb->>'limit')::integer) v),
+    'skills', (SELECT coalesce(jsonb_agg(v.item ORDER BY v.turn_index,v.skill_id),'[]'::jsonb) FROM (
+        SELECT e.turn_index,e.skill_id,jsonb_build_object('turn_index',e.turn_index,'skill_id',e.skill_id,'version',e.version,
+            'trigger',e.trigger,'events',count(*),'succeeded',count(*) FILTER (WHERE e.ok)) AS item
+        FROM session_skill_events e JOIN session_turns t ON t.session_id = e.session_id AND t.turn_index = e.turn_index
+        WHERE e.session_id = s.id AND t.started_at >= (p.f->>'from')::timestamptz AND t.started_at < (p.f->>'until')::timestamptz
+        GROUP BY e.turn_index,e.skill_id,e.version,e.trigger ORDER BY e.turn_index,e.skill_id LIMIT (sqlc.arg(filters)::jsonb->>'limit')::integer) v),
+    'resources', (SELECT coalesce(jsonb_agg(v.item ORDER BY v.resource_id,v.version),'[]'::jsonb) FROM (
+        SELECT i.resource_id,i.version,jsonb_build_object('resource_id',i.resource_id,'kind',i.kind,'version',i.version,
+            'enabled',bool_or(i.enabled),'available',bool_or(i.available),'snapshots',count(DISTINCT i.snapshot_id)) AS item
+        FROM session_resource_snapshot_items i JOIN session_turns t ON t.session_id = i.session_id AND t.resources_snapshot_id = i.snapshot_id
+        WHERE i.session_id = s.id AND t.started_at >= (p.f->>'from')::timestamptz AND t.started_at < (p.f->>'until')::timestamptz
+        GROUP BY i.resource_id,i.kind,i.version ORDER BY i.resource_id,i.version LIMIT (sqlc.arg(filters)::jsonb->>'limit')::integer) v),
+    'calls', (SELECT coalesce(jsonb_agg(v.item ORDER BY v.kind,v.status),'[]'::jsonb) FROM (
+        SELECT kind,status,jsonb_build_object('kind',kind,'status',status,'calls',count(*),
+            'input_tokens',sum(input_tokens),'output_tokens',sum(output_tokens)) AS item
+        FROM (SELECT 'model' AS kind,status,input_tokens,output_tokens FROM model_calls WHERE session_id = s.id AND started_at >= (p.f->>'from')::timestamptz AND started_at < (p.f->>'until')::timestamptz
+            UNION ALL SELECT 'mcp',status,0::bigint,0::bigint FROM mcp_tool_calls WHERE session_id = s.id AND started_at >= (p.f->>'from')::timestamptz AND started_at < (p.f->>'until')::timestamptz
+            UNION ALL SELECT 'image',status,0::bigint,0::bigint FROM image_calls WHERE session_id = s.id AND started_at >= (p.f->>'from')::timestamptz AND started_at < (p.f->>'until')::timestamptz) c
+        GROUP BY kind,status ORDER BY kind,status) v),
+    'subsessions', (SELECT coalesce(jsonb_agg(v.item ORDER BY v.started_at,v.id),'[]'::jsonb) FROM (
+        SELECT child.started_at,child.id,jsonb_build_object('id',child.id,'parent_session_id',child.parent_session_id,
+            'started_at',child.started_at,'turns',(SELECT count(*) FROM session_turns t WHERE t.session_id = child.id AND t.started_at >= (p.f->>'from')::timestamptz AND t.started_at < (p.f->>'until')::timestamptz),
+            'last_outcome',child.last_stop_reason,'active_seconds',child.active_seconds) AS item
+        FROM sessions child WHERE child.parent_session_id = s.id AND child.reporting_enabled_at IS NOT NULL
+            AND child.deleted_at IS NULL AND child.purged_at IS NULL AND child.placeholder = false
+        ORDER BY child.started_at,child.id LIMIT (sqlc.arg(filters)::jsonb->>'limit')::integer) v),
+    'credits', (SELECT coalesce(-sum(credit_delta),0)::text FROM credit_ledger_entries
+        WHERE session_id IN (SELECT id FROM sessions WHERE id = s.id OR parent_session_id = s.id) AND entry_type IN ('charge','refund')),
+    'detail_limit',(p.f->>'limit')::integer)
+FROM cohort s CROSS JOIN opts p;
+
+-- name: ReportingFreshness :one
+WITH opts AS (SELECT sqlc.arg(filters)::jsonb AS f)
+SELECT max(t.received_at) FROM session_turns t JOIN sessions s ON s.id = t.session_id CROSS JOIN opts p
+WHERE s.reporting_enabled_at IS NOT NULL AND s.deleted_at IS NULL AND s.purged_at IS NULL
+    AND (p.f->>'user' IS NULL OR EXISTS (SELECT 1 FROM users u WHERE u.id = s.owner_user_id
+        AND strpos(lower(u.name || ' ' || u.email || ' ' || u.id::text), lower(p.f->>'user')) > 0))
+    AND (p.f->>'kind' IS NULL
+        OR EXISTS (SELECT 1 FROM session_resource_snapshot_items i WHERE i.session_id = t.session_id AND i.snapshot_id = t.resources_snapshot_id AND i.kind = p.f->>'kind')
+        OR EXISTS (SELECT 1 FROM session_turn_tools v WHERE v.session_id = t.session_id AND v.turn_index = t.turn_index AND v.category = p.f->>'kind')
+        OR (p.f->>'kind' = 'skill' AND EXISTS (SELECT 1 FROM session_skill_events e WHERE e.session_id = t.session_id AND e.turn_index = t.turn_index))
+        OR (p.f->>'kind' = 'connector' AND EXISTS (SELECT 1 FROM mcp_tool_calls c WHERE c.session_id = t.session_id
+            AND c.started_at >= (p.f->>'from')::timestamptz AND c.started_at < (p.f->>'until')::timestamptz)))
+    AND (s.placeholder = false OR (p.f->>'include_placeholders')::boolean)
+    AND (p.f->>'group_id' IS NULL OR s.group_id = (p.f->>'group_id')::uuid)
+    AND (p.f->>'user_id' IS NULL OR s.owner_user_id = (p.f->>'user_id')::uuid)
+    AND (p.f->>'expert_id' IS NULL OR s.expert_id = (p.f->>'expert_id')::uuid)
+    AND (p.f->>'client_type' IS NULL OR s.client_type = p.f->>'client_type')
+    AND (p.f->>'platform' IS NULL OR EXISTS (SELECT 1 FROM endpoints ep WHERE ep.user_id = s.owner_user_id AND ep.machine_id::text = s.device_id AND ep.platform = p.f->>'platform'))
+    AND (p.f->>'model_id' IS NULL OR t.model_id = (p.f->>'model_id')::uuid)
+    AND (p.f->>'outcome' IS NULL OR t.stop_reason = p.f->>'outcome')
+    AND t.started_at >= (p.f->>'from')::timestamptz AND t.started_at < (p.f->>'until')::timestamptz
+    AND (p.f->>'resource_id' IS NULL AND p.f->>'resource_version' IS NULL OR EXISTS (
+        SELECT 1 FROM session_resource_snapshot_items ri WHERE ri.session_id = t.session_id AND ri.snapshot_id = t.resources_snapshot_id
+            AND (p.f->>'resource_id' IS NULL OR ri.resource_id = p.f->>'resource_id') AND (p.f->>'resource_version' IS NULL OR ri.version = p.f->>'resource_version')));
+
+-- name: ReportingResources :one
+-- Inline session filters so time-bounded facts can drive the joins instead of
+-- materializing every historical session. Bind RFC3339 bounds independently
+-- of the JSON filters for partition pruning and preserve PostgreSQL rounding.
+WITH opts AS NOT MATERIALIZED (SELECT sqlc.arg(filters)::jsonb AS f),
+cohort AS NOT MATERIALIZED (
+    SELECT s.id,s.owner_user_id,s.model_id FROM sessions s JOIN users u ON u.id = s.owner_user_id CROSS JOIN opts p
+    WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR s.owner_user_id = ANY(sqlc.arg(visible_users)::uuid[])) AND s.reporting_enabled_at IS NOT NULL AND s.deleted_at IS NULL AND s.purged_at IS NULL
+        AND (s.placeholder = false OR (p.f->>'include_placeholders')::boolean)
+        AND (p.f->>'group_id' IS NULL OR s.group_id = (p.f->>'group_id')::uuid)
+        AND (p.f->>'user_id' IS NULL OR s.owner_user_id = (p.f->>'user_id')::uuid)
+        AND (p.f->>'user' IS NULL OR strpos(lower(u.name || ' ' || u.email || ' ' || u.id::text), lower(p.f->>'user')) > 0)
+        AND (p.f->>'expert_id' IS NULL OR s.expert_id = (p.f->>'expert_id')::uuid)
+        AND (p.f->>'client_type' IS NULL OR s.client_type = p.f->>'client_type')
+        AND (p.f->>'platform' IS NULL OR EXISTS (SELECT 1 FROM endpoints ep WHERE ep.user_id = s.owner_user_id AND ep.machine_id::text = s.device_id AND ep.platform = p.f->>'platform'))
+), turns AS MATERIALIZED (
+    -- Exact turn filters imply the corresponding session-level existence checks.
+    SELECT t.session_id,t.turn_index,t.resources_snapshot_id,t.started_at,t.received_at,s.owner_user_id AS user_id
+    FROM session_turns t JOIN cohort s ON s.id = t.session_id CROSS JOIN opts p
+    WHERE t.started_at >= sqlc.arg(from_time)::text::timestamptz AND t.started_at < sqlc.arg(until_time)::text::timestamptz
+        AND (p.f->>'model_id' IS NULL OR t.model_id = (p.f->>'model_id')::uuid)
+        AND (p.f->>'outcome' IS NULL OR t.stop_reason = p.f->>'outcome')
+), snapshots AS MATERIALIZED (
+    -- A snapshot may be reused by thousands of turns. Expand its items once;
+    -- its latest matching turn also preserves reported-name ordering.
+    SELECT DISTINCT ON (t.session_id,t.resources_snapshot_id)
+        t.user_id,t.session_id,t.resources_snapshot_id,t.started_at,t.turn_index
+    FROM turns t
+    ORDER BY t.session_id,t.resources_snapshot_id,t.started_at DESC,t.turn_index DESC
+), facts AS MATERIALIZED (
+    SELECT t.user_id,t.session_id,i.kind,i.resource_id,i.version,
+        true AS is_enabled,i.available AS is_available,false AS is_used,0::bigint AS calls,0::bigint AS failed
+    FROM snapshots t JOIN session_resource_snapshot_items i ON i.session_id = t.session_id AND i.snapshot_id = t.resources_snapshot_id
+    CROSS JOIN opts p
+    WHERE i.enabled
+        AND (p.f->>'kind' IS NULL OR i.kind = p.f->>'kind')
+        AND (p.f->>'resource_id' IS NULL OR i.resource_id = p.f->>'resource_id')
+        AND (p.f->>'resource_version' IS NULL OR i.version = p.f->>'resource_version')
+    -- Usage sources are disjoint by kind: skill and connector tool summaries
+    -- must not duplicate skill events or gateway calls.
+    UNION ALL
+    SELECT t.user_id,v.session_id,v.category,v.resource_id,v.resource_version,
+        false,false,true,v.calls::bigint,v.failed::bigint
+    FROM session_turn_tools v JOIN turns t ON t.session_id = v.session_id AND t.turn_index = v.turn_index CROSS JOIN opts p
+    WHERE v.resource_id IS NOT NULL AND v.category NOT IN ('connector','skill')
+        AND (p.f->>'kind' IS NULL OR v.category = p.f->>'kind')
+        AND (p.f->>'resource_id' IS NULL OR v.resource_id = p.f->>'resource_id')
+        AND (p.f->>'resource_version' IS NULL OR v.resource_version = p.f->>'resource_version')
+    UNION ALL
+    SELECT t.user_id,e.session_id,'skill',e.skill_id,e.version,
+        false,false,true,1::bigint,CASE WHEN e.ok THEN 0 ELSE 1 END::bigint
+    FROM session_skill_events e JOIN turns t ON t.session_id = e.session_id AND t.turn_index = e.turn_index CROSS JOIN opts p
+    WHERE e.skill_id IS NOT NULL
+        AND (p.f->>'kind' IS NULL OR p.f->>'kind' = 'skill')
+        AND (p.f->>'resource_id' IS NULL OR e.skill_id = p.f->>'resource_id')
+        AND (p.f->>'resource_version' IS NULL OR e.version = p.f->>'resource_version')
+    UNION ALL
+    SELECT s.owner_user_id,c.session_id,'connector',c.connector_id::text,NULL::text,
+        false,false,true,1::bigint,CASE WHEN c.status = 'failed' THEN 1 ELSE 0 END::bigint
+    FROM mcp_tool_calls c JOIN cohort s ON s.id = c.session_id CROSS JOIN opts p
+    WHERE c.started_at >= sqlc.arg(from_time)::text::timestamptz AND c.started_at < sqlc.arg(until_time)::text::timestamptz
+        -- Gateway facts have no turn-level model/outcome. Only this branch needs
+        -- session-level checks; matching model and outcome may be different turns.
+        AND (p.f->>'model_id' IS NULL OR s.model_id = (p.f->>'model_id')::uuid OR EXISTS (SELECT 1 FROM session_turns mt WHERE mt.session_id = s.id AND mt.model_id = (p.f->>'model_id')::uuid AND mt.started_at >= sqlc.arg(from_time)::text::timestamptz AND mt.started_at < sqlc.arg(until_time)::text::timestamptz))
+        AND (p.f->>'outcome' IS NULL OR EXISTS (SELECT 1 FROM session_turns ot WHERE ot.session_id = s.id AND ot.stop_reason = p.f->>'outcome' AND ot.started_at >= sqlc.arg(from_time)::text::timestamptz AND ot.started_at < sqlc.arg(until_time)::text::timestamptz))
+        AND (p.f->>'kind' IS NULL OR p.f->>'kind' = 'connector')
+        AND (p.f->>'resource_id' IS NULL OR c.connector_id::text = p.f->>'resource_id')
+        AND p.f->>'resource_version' IS NULL
+), resource_keys AS (
+    SELECT DISTINCT user_id,kind,resource_id,version FROM facts
+), ordered AS (
+    SELECT k.*,jsonb_build_array(k.kind,k.resource_id,k.version,k.user_id)::text AS sort_key
+    FROM resource_keys k
+), paged AS MATERIALIZED (
+    SELECT o.*,CASE WHEN o.resource_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        THEN o.resource_id::uuid END AS catalog_id
+    FROM ordered o CROSS JOIN opts p
+    WHERE o.sort_key > coalesce(p.f->>'cursor_key','')
+    ORDER BY o.sort_key LIMIT (sqlc.arg(filters)::jsonb->>'limit')::integer + 1
+), totals AS (
+    -- Determine the page before doing distinct-session counts and call sums.
+    SELECT p.user_id,p.kind,p.resource_id,p.version,
+        count(DISTINCT f.session_id) FILTER (WHERE f.is_enabled) AS enabled_sessions,
+        count(DISTINCT f.session_id) FILTER (WHERE f.is_enabled AND f.is_available) AS available_sessions,
+        count(DISTINCT f.session_id) FILTER (WHERE f.is_used) AS used_sessions,
+        sum(f.calls) AS calls,sum(f.failed) AS failed
+    FROM paged p JOIN facts f ON f.user_id = p.user_id AND f.kind = p.kind AND f.resource_id = p.resource_id
+        AND f.version IS NOT DISTINCT FROM p.version
+    GROUP BY p.user_id,p.kind,p.resource_id,p.version
+), catalog_names AS MATERIALIZED (
+    SELECT p.*,coalesce(nullif(btrim(m.display_name),''),nullif(btrim(r.name),''),nullif(btrim(sk.name),''),
+        nullif(btrim(ex.name),''),nullif(btrim(cn.name),'')) AS catalog_name
+    FROM paged p
+    LEFT JOIN models m ON p.kind = 'model' AND m.id = p.catalog_id AND m.deleted_at IS NULL
+    LEFT JOIN rules r ON p.kind = 'rule' AND r.id = p.catalog_id AND r.deleted_at IS NULL
+    LEFT JOIN skills sk ON p.kind = 'skill' AND sk.id = p.catalog_id AND sk.deleted_at IS NULL
+    LEFT JOIN experts ex ON p.kind = 'expert' AND ex.id = p.catalog_id AND ex.deleted_at IS NULL
+    LEFT JOIN connectors cn ON p.kind = 'connector' AND cn.id = p.catalog_id AND cn.deleted_at IS NULL
+), missing_names AS MATERIALIZED (
+    SELECT user_id,kind,resource_id,version FROM catalog_names
+    WHERE kind <> 'builtin' AND catalog_name IS NULL
+), reported_names AS (
+    SELECT DISTINCT ON (n.user_id,n.kind,n.resource_id,n.version)
+        n.user_id,n.kind,n.resource_id,n.version,n.name
+    FROM (
+        SELECT p.user_id,p.kind,p.resource_id,p.version,nullif(btrim(i.name),'') AS name,
+            t.started_at,t.session_id,t.turn_index,0 AS source_priority,0 AS ordinal
+        FROM missing_names p JOIN snapshots t ON t.user_id = p.user_id
+        JOIN session_resource_snapshot_items i ON i.session_id = t.session_id AND i.snapshot_id = t.resources_snapshot_id
+            AND i.kind = p.kind AND i.resource_id = p.resource_id AND i.version IS NOT DISTINCT FROM p.version
+        WHERE nullif(btrim(i.name),'') IS NOT NULL
+        UNION ALL
+        SELECT p.user_id,p.kind,p.resource_id,p.version,nullif(btrim(v.name),''),
+            t.started_at,t.session_id,t.turn_index,2,v.ordinal
+        FROM missing_names p JOIN turns t ON t.user_id = p.user_id
+        JOIN session_turn_tools v ON v.session_id = t.session_id AND v.turn_index = t.turn_index
+            AND v.category = p.kind AND v.resource_id = p.resource_id AND v.resource_version IS NOT DISTINCT FROM p.version
+        WHERE nullif(btrim(v.name),'') IS NOT NULL
+        UNION ALL
+        SELECT p.user_id,p.kind,p.resource_id,p.version,nullif(btrim(e.name),''),
+            t.started_at,t.session_id,t.turn_index,1,e.ordinal
+        FROM missing_names p JOIN turns t ON t.user_id = p.user_id
+        JOIN session_skill_events e ON e.session_id = t.session_id AND e.turn_index = t.turn_index
+            AND p.kind = 'skill' AND e.skill_id = p.resource_id AND e.version IS NOT DISTINCT FROM p.version
+        WHERE nullif(btrim(e.name),'') IS NOT NULL
+    ) n
+    ORDER BY n.user_id,n.kind,n.resource_id,n.version,n.started_at DESC,n.session_id DESC,n.turn_index DESC,n.source_priority,n.ordinal DESC
+), freshness AS (
+    -- Freshness covers the entire filtered window, independently of the page.
+    -- Its existing kind/resource semantics include disabled snapshot items.
+    SELECT max(t.received_at) AS last_received_at FROM turns t CROSS JOIN opts p
+    WHERE (p.f->>'kind' IS NULL
+        OR EXISTS (SELECT 1 FROM session_resource_snapshot_items i WHERE i.session_id = t.session_id AND i.snapshot_id = t.resources_snapshot_id AND i.kind = p.f->>'kind')
+        OR EXISTS (SELECT 1 FROM session_turn_tools v WHERE v.session_id = t.session_id AND v.turn_index = t.turn_index AND v.category = p.f->>'kind')
+        OR (p.f->>'kind' = 'skill' AND EXISTS (SELECT 1 FROM session_skill_events e WHERE e.session_id = t.session_id AND e.turn_index = t.turn_index))
+        OR (p.f->>'kind' = 'connector' AND EXISTS (SELECT 1 FROM mcp_tool_calls c WHERE c.session_id = t.session_id
+            AND c.started_at >= sqlc.arg(from_time)::text::timestamptz AND c.started_at < sqlc.arg(until_time)::text::timestamptz)))
+        AND (p.f->>'resource_id' IS NULL AND p.f->>'resource_version' IS NULL OR EXISTS (
+            SELECT 1 FROM session_resource_snapshot_items ri WHERE ri.session_id = t.session_id AND ri.snapshot_id = t.resources_snapshot_id
+                AND (p.f->>'resource_id' IS NULL OR ri.resource_id = p.f->>'resource_id')
+                AND (p.f->>'resource_version' IS NULL OR ri.version = p.f->>'resource_version')))
+)
+SELECT jsonb_build_object(
+    'items',coalesce((SELECT jsonb_agg(jsonb_build_object(
+        'kind',p.kind,'resource_id',p.resource_id,'version',p.version,'sort_key',p.sort_key,
+        'resource_name',CASE WHEN p.kind = 'builtin' THEN p.resource_id ELSE coalesce(p.catalog_name,n.name,p.resource_id) END,
+        'user_id',p.user_id,'user_name',u.name,'user_email',u.email,'user_avatar_url',coalesce(nullif(btrim(u.custom_avatar_url),''), nullif(btrim(u.avatar_url),'')),
+        'enabled_sessions',a.enabled_sessions,'available_sessions',a.available_sessions,'used_sessions',a.used_sessions,
+        'calls',a.calls,'failed',a.failed,'failure_rate',100.0*a.failed/NULLIF(a.calls,0)) ORDER BY p.sort_key)
+        FROM catalog_names p JOIN users u ON u.id = p.user_id
+        JOIN totals a ON a.user_id = p.user_id AND a.kind = p.kind AND a.resource_id = p.resource_id AND a.version IS NOT DISTINCT FROM p.version
+        LEFT JOIN reported_names n ON n.user_id = p.user_id AND n.kind = p.kind AND n.resource_id = p.resource_id AND n.version IS NOT DISTINCT FROM p.version),'[]'::jsonb),
+    'last_received_at',(SELECT last_received_at FROM freshness));
+
+-- name: ReportingClients :many
+WITH opts AS (SELECT sqlc.arg(filters)::jsonb AS f), facts AS (
+    SELECT s.id,t.stop_reason,t.started_at,t.ended_at,s.client_type,ep.platform,ep.os_version,ep.locale,ep.timezone,
+        t.client_version,t.engine_version,ep.runtime_version FROM session_turns t
+    JOIN sessions s ON s.id = t.session_id
+    LEFT JOIN endpoints ep ON ep.user_id = s.owner_user_id AND ep.machine_id::text = s.device_id CROSS JOIN opts p
+    WHERE s.reporting_enabled_at IS NOT NULL AND s.deleted_at IS NULL AND s.purged_at IS NULL
+        AND (s.placeholder = false OR (p.f->>'include_placeholders')::boolean)
+        AND (p.f->>'group_id' IS NULL OR s.group_id = (p.f->>'group_id')::uuid)
+        AND (p.f->>'user_id' IS NULL OR s.owner_user_id = (p.f->>'user_id')::uuid)
+        AND (p.f->>'expert_id' IS NULL OR s.expert_id = (p.f->>'expert_id')::uuid)
+        AND (p.f->>'client_type' IS NULL OR s.client_type = p.f->>'client_type')
+        AND (p.f->>'platform' IS NULL OR ep.platform = p.f->>'platform')
+        AND (p.f->>'model_id' IS NULL OR t.model_id = (p.f->>'model_id')::uuid)
+        AND (p.f->>'outcome' IS NULL OR t.stop_reason = p.f->>'outcome')
+        AND t.started_at >= (p.f->>'from')::timestamptz AND t.started_at < (p.f->>'until')::timestamptz
+        AND (p.f->>'resource_id' IS NULL AND p.f->>'resource_version' IS NULL OR EXISTS (
+            SELECT 1 FROM session_resource_snapshot_items ri WHERE ri.session_id = t.session_id AND ri.snapshot_id = t.resources_snapshot_id
+                AND (p.f->>'resource_id' IS NULL OR ri.resource_id = p.f->>'resource_id') AND (p.f->>'resource_version' IS NULL OR ri.version = p.f->>'resource_version')))
+), grouped AS (
+    SELECT client_type,platform,os_version,locale,timezone,client_version,engine_version,runtime_version,
+        count(DISTINCT id) AS sessions,count(*) AS turns,
+        count(*) FILTER (WHERE stop_reason = 'interrupted') AS interrupted,
+        100.0*count(*) FILTER (WHERE stop_reason = 'complete')/NULLIF(count(*) FILTER (WHERE stop_reason <> 'unknown'),0) AS completion_rate,
+        100.0*count(*) FILTER (WHERE stop_reason IN ('error','max_turns','output_limit'))/NULLIF(count(*) FILTER (WHERE stop_reason <> 'unknown'),0) AS anomaly_rate,
+        percentile_cont(0.95) WITHIN GROUP (ORDER BY extract(epoch FROM (ended_at-started_at))) AS p95_duration_seconds,
+        max(ended_at) AS last_active_at FROM facts GROUP BY 1,2,3,4,5,6,7,8
+), ordered AS (
+    SELECT *,jsonb_build_array(client_type,platform,os_version,locale,timezone,client_version,engine_version,runtime_version)::text AS sort_key FROM grouped
+)
+SELECT jsonb_build_object('client_type',client_type,'platform',platform,'os_version',os_version,
+    'locale',locale,'timezone',timezone,'client_version',client_version,'engine_version',engine_version,
+    'runtime_version',runtime_version,'sessions',sessions,'turns',turns,'interrupted',interrupted,
+    'completion_rate',completion_rate,'anomaly_rate',anomaly_rate,'p95_duration_seconds',p95_duration_seconds,
+    'last_active_at',last_active_at,'sort_key',sort_key)
+FROM ordered CROSS JOIN opts p WHERE sort_key > coalesce(p.f->>'cursor_key','')
+ORDER BY sort_key LIMIT (sqlc.arg(filters)::jsonb->>'limit')::integer + 1;
+
+-- name: ReportingClientsOverview :one
+WITH opts AS (SELECT sqlc.arg(filters)::jsonb AS f), facts AS (
+    SELECT s.id,t.turn_index,t.started_at,t.received_at,s.client_type,ep.platform,
+        nullif(btrim(t.client_version),'') AS client_version FROM session_turns t
+    JOIN sessions s ON s.id = t.session_id
+    LEFT JOIN endpoints ep ON ep.user_id = s.owner_user_id AND ep.machine_id::text = s.device_id CROSS JOIN opts p
+    WHERE s.reporting_enabled_at IS NOT NULL AND s.deleted_at IS NULL AND s.purged_at IS NULL
+        AND (s.placeholder = false OR (p.f->>'include_placeholders')::boolean)
+        AND (p.f->>'group_id' IS NULL OR s.group_id = (p.f->>'group_id')::uuid)
+        AND (p.f->>'user_id' IS NULL OR s.owner_user_id = (p.f->>'user_id')::uuid)
+        AND (p.f->>'expert_id' IS NULL OR s.expert_id = (p.f->>'expert_id')::uuid)
+        AND (p.f->>'client_type' IS NULL OR s.client_type = p.f->>'client_type')
+        AND (p.f->>'platform' IS NULL OR ep.platform = p.f->>'platform')
+        AND (p.f->>'model_id' IS NULL OR t.model_id = (p.f->>'model_id')::uuid)
+        AND (p.f->>'outcome' IS NULL OR t.stop_reason = p.f->>'outcome')
+        AND t.started_at >= (p.f->>'from')::timestamptz AND t.started_at < (p.f->>'until')::timestamptz
+        AND (p.f->>'resource_id' IS NULL AND p.f->>'resource_version' IS NULL OR EXISTS (
+            SELECT 1 FROM session_resource_snapshot_items ri WHERE ri.session_id = t.session_id AND ri.snapshot_id = t.resources_snapshot_id
+                AND (p.f->>'resource_id' IS NULL OR ri.resource_id = p.f->>'resource_id') AND (p.f->>'resource_version' IS NULL OR ri.version = p.f->>'resource_version')))
+), latest AS (
+    SELECT DISTINCT ON (id) id,client_type,platform,client_version FROM facts
+    ORDER BY id,started_at DESC,turn_index DESC
+), counts AS (
+    SELECT 'client_type'::text AS dimension,client_type AS value,count(*) AS count FROM latest GROUP BY client_type
+    UNION ALL SELECT 'platform',platform,count(*) FROM latest GROUP BY platform
+    UNION ALL SELECT 'client_version',client_version,count(*) FROM latest GROUP BY client_version
+)
+SELECT jsonb_build_object('metric','sessions','total',(SELECT count(*) FROM latest),
+    'last_received_at',(SELECT max(received_at) FROM facts),
+    'distributions',jsonb_build_object(
+        'client_type',coalesce((SELECT jsonb_agg(jsonb_build_object('value',value,'count',count) ORDER BY count DESC,value COLLATE "C" ASC NULLS LAST) FROM counts WHERE dimension='client_type'),'[]'::jsonb),
+        'platform',coalesce((SELECT jsonb_agg(jsonb_build_object('value',value,'count',count) ORDER BY count DESC,value COLLATE "C" ASC NULLS LAST) FROM counts WHERE dimension='platform'),'[]'::jsonb),
+        'client_version',coalesce((SELECT jsonb_agg(jsonb_build_object('value',value,'count',count) ORDER BY count DESC,value COLLATE "C" ASC NULLS LAST) FROM counts WHERE dimension='client_version'),'[]'::jsonb)
+    ));

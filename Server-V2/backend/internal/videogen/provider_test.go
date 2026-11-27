@@ -1,0 +1,120 @@
+package videogen
+
+import (
+	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/model"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/proxy"
+)
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+func TestDownloadClientTimeout(t *testing.T) {
+	client := &http.Client{Timeout: 45 * time.Second}
+	if got := downloadClient(client).Timeout; got != outputDownloadTimeout {
+		t.Fatalf("视频下载超时未延长: got=%s want=%s", got, outputDownloadTimeout)
+	}
+	if client.Timeout != 45*time.Second {
+		t.Fatalf("不应修改原始客户端超时: %s", client.Timeout)
+	}
+	long := &http.Client{Timeout: 15 * time.Minute}
+	if got := downloadClient(long).Timeout; got != long.Timeout {
+		t.Fatalf("不应缩短已有下载超时: got=%s want=%s", got, long.Timeout)
+	}
+}
+
+func TestProviderURLHTTP(t *testing.T) {
+	for _, base := range []string{"http://provider.example/v1", "https://provider.example/v1"} {
+		address, err := providerURL(base, "/videos/generations")
+		if err != nil || address != base+"/videos/generations" {
+			t.Fatalf("上游地址 %q: %q, %v", base, address, err)
+		}
+	}
+	for _, base := range []string{"http://provider.example/v1?token=secret", "http://provider.example/v1#part", "ftp://provider.example/v1"} {
+		if _, err := providerURL(base, "/videos/generations"); err == nil {
+			t.Fatalf("不应允许上游地址 %q", base)
+		}
+	}
+	client := &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		if r.URL.Scheme != "http" || r.URL.Path != "/v1/videos/generations" || r.Header.Get("Authorization") != "Bearer secret" {
+			t.Fatalf("HTTP 视频请求无效: %s", r.URL)
+		}
+		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader(`{}`)), Header: http.Header{}}, nil
+	})}
+	if _, _, err := providerJSON(t.Context(), client, http.MethodPost, "http://provider.example/v1", "/videos/generations", "secret", nil); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestProviderQuery(t *testing.T) {
+	for _, tc := range []struct {
+		model, path, body string
+	}{
+		{"grok-imagine-video-1.5", "/v1/videos/request-123", `{"status":"done","video":{"url":"https://assets.example/video.mp4","duration":6}}`},
+		{"MiniMax-H3", "/v2/query/video_generation/request-123", `{"task":{"status":"succeeded","content":{"url":"https://assets.example/video.mp4"},"duration":6}}`},
+	} {
+		t.Run(tc.model, func(t *testing.T) {
+			client := &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+				if r.URL.Path != tc.path {
+					t.Fatalf("错误的上游查询路径: %s", r.URL.Path)
+				}
+				return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(tc.body)), Header: http.Header{}}, nil
+			})}
+			result, err := queryProvider(context.Background(), client,
+				proxy.Target{UpstreamModel: tc.model, BaseURL: "https://provider.example", APIKey: "secret"}, "request-123")
+			if err != nil || result.Status != "succeeded" || result.DurationMs != 6000 {
+				t.Fatalf("查询结果: %+v, err=%v", result, err)
+			}
+		})
+	}
+}
+
+func TestProviderSubmission(t *testing.T) {
+	for _, tc := range []struct {
+		name, path string
+		response   string
+	}{
+		{"grok-imagine-video-1.5", "/v1/videos/generations", `{"request_id":"request-123"}`},
+		{"MiniMax-H3", "/v2/video_generation", `{"task_id":"task-123"}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+				if r.URL.Path != tc.path || r.Header.Get("Authorization") != "Bearer secret" {
+					t.Fatalf("错误的上游路径或鉴权: %s", r.URL)
+				}
+				var body map[string]any
+				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+					t.Fatal(err)
+				}
+				if body["resolution"] != "720p" {
+					t.Fatalf("错误的清晰度: %v", body)
+				}
+				if tc.name == "MiniMax-H3" {
+					items, ok := body["content"].([]any)
+					if !ok || len(items) != 2 || items[1].(map[string]any)["role"] != "first_frame" {
+						t.Fatalf("MiniMax 参考图角色无效: %v", body)
+					}
+				} else if _, ok := body["aspect_ratio"]; ok {
+					t.Fatal("Grok 首帧模式不应发送被忽略的比例")
+				}
+				return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(tc.response)), Header: http.Header{}}, nil
+			})}
+			input := GenerateInput{Mode: model.VideoImageToVideo, Prompt: "海边",
+				Params:     map[string]json.RawMessage{"resolution": json.RawMessage(`"720p"`), "duration_seconds": json.RawMessage(`6`), "aspect_ratio": json.RawMessage(`"adaptive"`)},
+				References: []Reference{{Role: "first_frame", MIMEType: "image/png", Data: []byte("image")}}}
+			id, err := submitProvider(context.Background(), client,
+				proxy.Target{UpstreamModel: tc.name, BaseURL: "https://provider.example", APIKey: "secret"}, input)
+			if err != nil || id == "" {
+				t.Fatalf("受理失败: id=%s err=%v", id, err)
+			}
+		})
+	}
+}
