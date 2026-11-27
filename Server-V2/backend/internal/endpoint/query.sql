@@ -1,0 +1,163 @@
+-- name: TakeDeviceRegistrationRateLimit :one
+INSERT INTO session_reporting_rate_limits (user_id, kind, bucket_start, request_count)
+VALUES (sqlc.arg(user_id)::uuid, 'endpoints', sqlc.arg(bucket_start)::timestamptz, 1)
+ON CONFLICT (user_id, kind) DO UPDATE SET
+    request_count = CASE
+        WHEN session_reporting_rate_limits.bucket_start = EXCLUDED.bucket_start
+            THEN session_reporting_rate_limits.request_count + 1
+        ELSE 1
+    END,
+    bucket_start = EXCLUDED.bucket_start
+RETURNING request_count;
+
+-- name: LockUser :one
+SELECT id FROM users WHERE id = $1 AND status = 'active' AND deleted_at IS NULL FOR UPDATE;
+
+-- name: Active :many
+SELECT * FROM endpoints WHERE user_id = $1 AND status = 'active' ORDER BY machine_id;
+
+-- name: Get :one
+SELECT * FROM endpoints WHERE user_id = $1 AND machine_id = $2;
+
+-- name: Page :many
+SELECT * FROM endpoints WHERE user_id = $1 ORDER BY created_at DESC, id DESC
+LIMIT sqlc.arg(page_size)::integer OFFSET sqlc.arg(page_offset)::integer;
+
+-- name: Count :one
+SELECT count(*) FROM endpoints WHERE user_id = $1;
+
+-- name: Register :one
+INSERT INTO endpoints (user_id, machine_id, device_name, platform, os_version, arch, client_version, protocol_version, last_seen_at)
+VALUES ($1,$2,$3,$4,$5,$6,$7,1,now())
+ON CONFLICT (user_id, machine_id) DO UPDATE SET
+    device_name = EXCLUDED.device_name, platform = EXCLUDED.platform,
+    os_version = EXCLUDED.os_version, arch = EXCLUDED.arch, client_version = EXCLUDED.client_version,
+    protocol_version = 1, last_seen_at = now(), updated_at = now()
+WHERE endpoints.status = 'active'
+RETURNING *;
+
+-- name: RegisterDevice :one
+INSERT INTO endpoints (
+    user_id, machine_id, device_name, platform, os_version, arch, client_version,
+    protocol_version, client_type, client_name, channel, locale, system_locale,
+    timezone, runtime_version, engine_version, electron_version, last_reported_at
+) VALUES (
+    sqlc.arg(user_id)::uuid, sqlc.arg(machine_id)::uuid, sqlc.arg(device_name)::text,
+    sqlc.arg(platform)::text, sqlc.arg(os_version)::text, sqlc.arg(arch)::text,
+    sqlc.arg(client_version)::text, sqlc.narg(protocol_version)::integer,
+    sqlc.narg(client_type)::text, sqlc.narg(client_name)::text, sqlc.narg(channel)::text,
+    sqlc.narg(locale)::text, sqlc.narg(system_locale)::text, sqlc.narg(timezone)::text,
+    sqlc.narg(runtime_version)::text, sqlc.narg(engine_version)::text,
+    sqlc.narg(electron_version)::text, now()
+)
+ON CONFLICT (user_id, machine_id) DO UPDATE SET
+    device_name = EXCLUDED.device_name, platform = EXCLUDED.platform,
+    os_version = EXCLUDED.os_version, arch = EXCLUDED.arch,
+    client_version = EXCLUDED.client_version, protocol_version = EXCLUDED.protocol_version,
+    client_type = EXCLUDED.client_type, client_name = EXCLUDED.client_name,
+    channel = EXCLUDED.channel, locale = EXCLUDED.locale,
+    system_locale = EXCLUDED.system_locale, timezone = EXCLUDED.timezone,
+    runtime_version = EXCLUDED.runtime_version, engine_version = EXCLUDED.engine_version,
+    electron_version = EXCLUDED.electron_version, last_reported_at = now(), updated_at = now()
+WHERE endpoints.status = 'active'
+RETURNING *;
+
+-- name: Rename :one
+UPDATE endpoints SET alias = sqlc.narg(alias)::text, updated_at = now()
+WHERE user_id = $1 AND machine_id = $2 RETURNING *;
+
+-- name: Status :one
+UPDATE endpoints SET status = sqlc.arg(status)::text,
+    revoked_at = CASE WHEN sqlc.arg(status)::text = 'revoked' THEN now() ELSE NULL END,
+    updated_at = now()
+WHERE user_id = $1 AND machine_id = $2 RETURNING *;
+
+-- name: Touch :exec
+UPDATE endpoints SET last_seen_at = greatest(last_seen_at, sqlc.arg(seen_at)::timestamptz)
+WHERE user_id = $1 AND machine_id = $2;
+
+-- name: EnsureExecutionEndpoint :exec
+INSERT INTO endpoints(user_id,machine_id,device_name,platform,os_version,arch,client_version)
+VALUES ($1,$2,$3,$4,'unknown',$5,'unknown')
+ON CONFLICT (user_id,machine_id) DO NOTHING;
+
+-- name: SetExecutionIdentity :one
+UPDATE endpoints SET execution_public_key = $3, key_id = $4,
+    registration_version = registration_version + CASE WHEN execution_public_key IS NULL THEN 1 ELSE 0 END,
+    updated_at = now()
+WHERE user_id = $1 AND machine_id = $2 AND registration_version = $5
+RETURNING *;
+
+-- name: EnableExecution :one
+UPDATE endpoints SET remote_access_state = 'enabled', active_grant_id = $3, deployment_mode = $4,
+    execution_protocols=$5, runtime_version=$6,engine_version=$7,
+    registration_version = registration_version + CASE WHEN remote_access_state = 'revoked' THEN 1 ELSE 0 END,
+    grant_version = grant_version + CASE WHEN remote_access_state <> 'enabled' OR active_grant_id IS DISTINCT FROM $3 THEN 1 ELSE 0 END,
+    lease_epoch = lease_epoch + 1, last_seen_at = now(), updated_at = now()
+WHERE user_id = $1 AND machine_id = $2 RETURNING *;
+
+-- name: RevokeExecution :one
+UPDATE endpoints SET remote_access_state = 'revoked',
+    registration_version = registration_version + CASE WHEN remote_access_state <> 'revoked' THEN 1 ELSE 0 END,
+    grant_version = grant_version + CASE WHEN remote_access_state <> 'revoked' THEN 1 ELSE 0 END,
+    updated_at = now()
+WHERE user_id = $1 AND machine_id = $2 RETURNING *;
+
+-- name: ListExecutions :many
+SELECT * FROM endpoints WHERE user_id = $1
+    AND (NOT sqlc.arg(execute_only)::boolean OR execution_public_key IS NOT NULL)
+ORDER BY created_at DESC, id DESC;
+
+-- name: AdminDevices :many
+WITH opts AS (SELECT sqlc.arg(filters)::jsonb AS f), devices AS (
+ SELECT e.*,u.name AS user_name,u.email AS user_email,coalesce(nullif(btrim(u.custom_avatar_url),''), nullif(btrim(u.avatar_url),'')) AS user_avatar_url,
+  u.deleted_at IS NOT NULL AS user_deleted,greatest(e.last_seen_at,e.last_reported_at) AS last_active_at
+ FROM endpoints e LEFT JOIN users u ON u.id=e.user_id CROSS JOIN opts p
+ WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR e.user_id = ANY(sqlc.arg(visible_users)::uuid[])) AND (p.f->>'query' IS NULL OR strpos(lower(concat_ws(' ',u.name,u.email,e.device_name,e.alias,e.client_name,e.machine_id::text)),lower(p.f->>'query'))>0)
+ AND (p.f->>'user_id' IS NULL OR e.user_id=(p.f->>'user_id')::uuid)
+ AND (p.f->>'platform' IS NULL OR lower(e.platform)=lower(p.f->>'platform'))
+ AND (p.f->>'client_type' IS NULL OR lower(coalesce(nullif(btrim(e.client_type),''),'unknown'))=lower(p.f->>'client_type'))
+ AND (p.f->>'client_version' IS NULL OR e.client_version=p.f->>'client_version')
+ AND (p.f->>'arch' IS NULL OR lower(e.arch)=lower(p.f->>'arch'))
+ AND (p.f->>'status' IS NULL OR e.status=p.f->>'status')
+ AND (p.f->>'from' IS NULL OR greatest(e.last_seen_at,e.last_reported_at)>=(p.f->>'from')::timestamptz)
+ AND (p.f->>'until' IS NULL OR greatest(e.last_seen_at,e.last_reported_at)<(p.f->>'until')::timestamptz)
+)
+SELECT jsonb_build_object(
+ 'id',id,'user_id',user_id,'machine_id',machine_id,'user_name',user_name,'user_email',user_email,'user_avatar_url',user_avatar_url,'user_deleted',user_deleted,
+ 'device_name',device_name,'alias',alias,'platform',platform,'os_version',os_version,'arch',arch,
+ 'client_type',client_type,'client_name',client_name,'client_version',client_version,
+ 'locale',locale,'system_locale',system_locale,'timezone',timezone,'runtime_version',runtime_version,'engine_version',engine_version,
+ 'status',status,'created_at',created_at,'updated_at',updated_at,'last_seen_at',last_seen_at,'last_reported_at',last_reported_at,'last_active_at',last_active_at)
+FROM devices ORDER BY last_active_at DESC NULLS LAST,created_at DESC,id DESC
+LIMIT sqlc.arg(page_limit)::integer OFFSET sqlc.arg(page_offset)::integer;
+
+-- name: AdminDeviceOverview :one
+WITH opts AS (SELECT sqlc.arg(filters)::jsonb AS f), devices AS (
+ SELECT e.*,u.name AS user_name,u.email AS user_email,coalesce(nullif(btrim(u.custom_avatar_url),''), nullif(btrim(u.avatar_url),'')) AS user_avatar_url,
+  u.deleted_at IS NOT NULL AS user_deleted,greatest(e.last_seen_at,e.last_reported_at) AS last_active_at
+ FROM endpoints e LEFT JOIN users u ON u.id=e.user_id CROSS JOIN opts p
+ WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR e.user_id = ANY(sqlc.arg(visible_users)::uuid[])) AND (p.f->>'query' IS NULL OR strpos(lower(concat_ws(' ',u.name,u.email,e.device_name,e.alias,e.client_name,e.machine_id::text)),lower(p.f->>'query'))>0)
+ AND (p.f->>'user_id' IS NULL OR e.user_id=(p.f->>'user_id')::uuid)
+ AND (p.f->>'platform' IS NULL OR lower(e.platform)=lower(p.f->>'platform'))
+ AND (p.f->>'client_type' IS NULL OR lower(coalesce(nullif(btrim(e.client_type),''),'unknown'))=lower(p.f->>'client_type'))
+ AND (p.f->>'client_version' IS NULL OR e.client_version=p.f->>'client_version')
+ AND (p.f->>'arch' IS NULL OR lower(e.arch)=lower(p.f->>'arch'))
+ AND (p.f->>'status' IS NULL OR e.status=p.f->>'status')
+ AND (p.f->>'from' IS NULL OR greatest(e.last_seen_at,e.last_reported_at)>=(p.f->>'from')::timestamptz)
+ AND (p.f->>'until' IS NULL OR greatest(e.last_seen_at,e.last_reported_at)<(p.f->>'until')::timestamptz)
+)
+, normalized AS (
+ SELECT coalesce(nullif(btrim(client_type),''),'unknown') AS client_type,
+ CASE WHEN lower(btrim(platform)) IN ('windows','macos','linux','web','android','ios') THEN lower(btrim(platform)) ELSE nullif(btrim(platform),'') END AS platform,
+ nullif(btrim(client_version),'') AS client_version FROM devices
+), counts AS (
+ SELECT 'client_type'::text AS dimension,client_type AS value,count(*) AS count FROM normalized GROUP BY client_type
+ UNION ALL SELECT 'platform',platform,count(*) FROM normalized GROUP BY platform
+ UNION ALL SELECT 'client_version',client_version,count(*) FROM normalized GROUP BY client_version
+)
+SELECT jsonb_build_object('metric','devices','total',(SELECT count(*) FROM devices),'users',(SELECT count(DISTINCT user_id) FROM devices),
+ 'distributions',jsonb_build_object(
+ 'client_type',coalesce((SELECT jsonb_agg(jsonb_build_object('value',value,'count',count) ORDER BY count DESC,value COLLATE "C" ASC NULLS LAST) FROM counts WHERE dimension='client_type'),'[]'::jsonb),
+ 'platform',coalesce((SELECT jsonb_agg(jsonb_build_object('value',value,'count',count) ORDER BY count DESC,value COLLATE "C" ASC NULLS LAST) FROM counts WHERE dimension='platform'),'[]'::jsonb),
+ 'client_version',coalesce((SELECT jsonb_agg(jsonb_build_object('value',value,'count',count) ORDER BY count DESC,value COLLATE "C" ASC NULLS LAST) FROM counts WHERE dimension='client_version'),'[]'::jsonb)));

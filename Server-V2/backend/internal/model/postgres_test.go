@@ -1,0 +1,416 @@
+package model
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/rootgroup"
+	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+func TestResolveModelName(t *testing.T) {
+	dsn := os.Getenv("MONKEYAI_TEST_DATABASE_URL")
+	if dsn == "" {
+		t.Skip("设置 MONKEYAI_TEST_DATABASE_URL 运行模型解析集成测试")
+	}
+	ctx := t.Context()
+	root, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(root.Close)
+	schema := "test_model_" + strings.ReplaceAll(resource.ID(), "-", "")
+	if _, err := root.Exec(ctx, "CREATE SCHEMA "+schema); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if _, err := root.Exec(context.Background(), "DROP SCHEMA "+schema+" CASCADE"); err != nil {
+			t.Error(err)
+		}
+	})
+	config, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config.ConnConfig.RuntimeParams["search_path"] = schema
+	pool, err := pgxpool.NewWithConfig(ctx, config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(pool.Close)
+	exec := func(query string, args ...any) {
+		t.Helper()
+		if _, err := pool.Exec(ctx, query, args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	paths, err := filepath.Glob("../../migrations/*.up.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range paths {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		exec(string(data))
+	}
+	owner, user, admin := resource.ID(), resource.ID(), resource.ID()
+	exec(`INSERT INTO users(id,name,email,role) VALUES($1,'所有者','owner@example.com','user'),($2,'调用者','user@example.com','user'),($3,'管理员','admin@example.com','admin')`, owner, user, admin)
+	repo := NewPostgres(pool)
+	t.Run("authorization subjects return current normalized avatars", func(t *testing.T) {
+		router := chi.NewRouter()
+		NewService(repo).RegisterAdmin(router)
+		for _, tc := range []struct {
+			name   string
+			stored any
+			want   string
+		}{
+			{name: "missing", stored: nil},
+			{name: "blank", stored: "   "},
+			{name: "trimmed", stored: " https://example.com/avatar.webp ", want: "https://example.com/avatar.webp"},
+			{name: "changed", stored: "https://example.com/new-avatar.webp", want: "https://example.com/new-avatar.webp"},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				exec(`UPDATE users SET avatar_url=$2 WHERE id=$1`, owner, tc.stored)
+				response := httptest.NewRecorder()
+				router.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/models/authorization-subjects", nil))
+				if response.Code != http.StatusOK {
+					t.Fatalf("subjects: %d %s", response.Code, response.Body.String())
+				}
+				var subjects struct{ Groups, Users []map[string]any }
+				if err := json.Unmarshal(response.Body.Bytes(), &subjects); err != nil {
+					t.Fatal(err)
+				}
+				found := false
+				for _, subject := range subjects.Users {
+					if subject["id"] != owner {
+						continue
+					}
+					found = true
+					if tc.want == "" {
+						if _, present := subject["avatar_url"]; present {
+							t.Fatalf("empty avatar should be omitted: %v", subject)
+						}
+					} else if subject["avatar_url"] != tc.want {
+						t.Fatalf("avatar = %v, want %q", subject["avatar_url"], tc.want)
+					}
+					if subject["group_id"] != rootgroup.ID {
+						t.Fatalf("root membership changed: %v", subject)
+					}
+				}
+				if !found {
+					t.Fatal("owner missing from authorization subjects")
+				}
+				for _, group := range subjects.Groups {
+					if _, present := group["avatar_url"]; present {
+						t.Fatalf("group has user avatar: %v", group)
+					}
+				}
+			})
+		}
+	})
+	create := func(name, ownership string) Model {
+		t.Helper()
+		item, err := repo.Create(ctx, Model{
+			OwnerUserID: owner, OwnershipType: ownership, ModelID: name, DisplayName: name,
+			Protocol: ProtocolOpenAIChat, BaseURL: "https://example.com/v1", APIKey: "test-key",
+			AdvancedConfig: AdvancedConfig{ContextWindowTokens: 32000, MaxOutputTokens: 4096}, CreditMultiplier: 1,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return item
+	}
+	shared := create("provider/chat-model", "system")
+	exec(`INSERT INTO resource_access_grants(resource_type,resource_id,user_id,access_level,granted_by_user_id) VALUES('model',$1,$2,'read_only',$3)`, shared.ID, user, owner)
+	private := create("private-model", "user")
+	disabled := create("disabled-model", "system")
+	exec(`UPDATE models SET enabled=false WHERE id=$1`, disabled.ID)
+	deleted := create("deleted-model", "system")
+	exec(`UPDATE models SET deleted_at=now() WHERE id=$1`, deleted.ID)
+	uuidName := create(resource.ID(), "user")
+	create(shared.ID, "user")
+	duplicate := create(shared.ModelID, "system")
+	exec(`INSERT INTO resource_access_grants(resource_type,resource_id,user_id,access_level,granted_by_user_id) VALUES('model',$1,$3,'read_only',$3),('model',$2,$3,'read_only',$3)`, shared.ID, duplicate.ID, owner)
+	atName := create("provider/model@version", "user")
+	collision := create(shared.ModelID+"@"+shared.ID, "user")
+	exec(`UPDATE models SET created_at=created_at - interval '1 day' WHERE id=$1`, collision.ID)
+	groupModel := create("group-model", "system")
+	parent, child := resource.ID(), resource.ID()
+	exec(`INSERT INTO groups(id,name,parent_id) VALUES($1,'父组',NULL),($2,'子组',$1)`, parent, child)
+	exec(`INSERT INTO group_users(group_id,user_id,assigned_by_user_id) VALUES($1,$2,$3)`, child, user, owner)
+	exec(`INSERT INTO resource_access_grants(resource_type,resource_id,group_id,access_level,granted_by_user_id) VALUES('model',$1,$2,'read_only',$3)`, groupModel.ID, parent, owner)
+
+	for _, tc := range []struct {
+		name, user, requested, want string
+	}{
+		{"模型名", user, shared.ModelID, shared.ID},
+		{"下发标识", user, shared.ModelID + "@" + shared.ID, shared.ID},
+		{"同名模型精确选择", owner, duplicate.ModelID + "@" + duplicate.ID, duplicate.ID},
+		{"下发标识优先于模型名", owner, shared.ModelID + "@" + shared.ID, shared.ID},
+		{"含分隔符的模型名", owner, atName.ModelID, atName.ID},
+		{"含分隔符的下发标识", owner, atName.ModelID + "@" + atName.ID, atName.ID},
+		{"下发标识名称不匹配", owner, "wrong-name@" + shared.ID, ""},
+		{"下发标识未授权", user, private.ModelID + "@" + private.ID, ""},
+		{"下发标识已停用", admin, disabled.ModelID + "@" + disabled.ID, ""},
+		{"下发标识已删除", admin, deleted.ModelID + "@" + deleted.ID, ""},
+		{"主键", user, shared.ID, shared.ID},
+		{"主键优先", owner, shared.ID, shared.ID},
+		{"同名稳定选择", owner, shared.ModelID, shared.ID},
+		{"UUID格式模型名", owner, uuidName.ModelID, uuidName.ID},
+		{"自有模型", owner, private.ModelID, private.ID},
+		{"父组授权", user, groupModel.ModelID, groupModel.ID},
+		{"管理员未授权系统模型", admin, shared.ModelID, ""},
+		{"未授权", user, private.ModelID, ""},
+		{"管理员无权使用他人私有模型", admin, private.ModelID, ""},
+		{"已停用", admin, disabled.ModelID, ""},
+		{"已删除", admin, deleted.ModelID, ""},
+		{"不存在", user, "missing-model", ""},
+		{"空模型名", user, "", ""},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			service := NewService(repo).WithKeyAuthenticator(keyAuthenticatorStub{userID: tc.user})
+			target, err := service.Resolve(ctx, "test-key", tc.requested)
+			if tc.want == "" {
+				if !errors.Is(err, ErrUnauthorized) {
+					t.Fatalf("应拒绝调用，实际错误: %v", err)
+				}
+				return
+			}
+			if err != nil || target.ID != tc.want || target.UserID != tc.user || target.UpstreamModelID == "" || target.APIKey != "test-key" {
+				t.Fatalf("模型解析错误: %+v, %v", target, err)
+			}
+			if tc.name == "自有模型" && target.OwnershipType != "user" || tc.name == "模型名" && target.OwnershipType != "system" {
+				t.Fatalf("模型归属类型未传递: %+v", target)
+			}
+		})
+	}
+	t.Run("自配模型独立记录用量", func(t *testing.T) {
+		firstToken := int32(420)
+		call := Call{ModelID: private.ID, UserID: owner, RequestID: "own_response", Status: "succeeded",
+			InputTokens: 11, CachedInputTokens: 5, OutputTokens: 7, FirstTokenDurationMs: &firstToken,
+			StartedAt: time.Now().Add(-time.Second), CompletedAt: time.Now()}
+		if err := repo.RecordCall(ctx, call); err != nil {
+			t.Fatal(err)
+		}
+		var count, input, cached, output, firstTokenDuration int
+		if err := pool.QueryRow(ctx, `SELECT count(*),sum(input_tokens),sum(cached_input_tokens),sum(output_tokens),max(first_token_duration_ms) FROM model_calls WHERE model_id=$1`, private.ID).Scan(&count, &input, &cached, &output, &firstTokenDuration); err != nil || count != 1 || input != 11 || cached != 5 || output != 7 || firstTokenDuration != 420 {
+			t.Fatalf("独立用量记录不正确: %d %d %d %d %d, %v", count, input, cached, output, firstTokenDuration, err)
+		}
+		var transactions int
+		if err := pool.QueryRow(ctx, `SELECT count(*) FROM billing_transactions WHERE resource_id=$1`, private.ID).Scan(&transactions); err != nil || transactions != 0 {
+			t.Fatalf("自配模型不应有计费交易: %d, %v", transactions, err)
+		}
+		call.ModelID = shared.ID
+		if !errors.Is(repo.RecordCall(ctx, call), ErrNotFound) {
+			t.Fatal("系统模型不应由独立用量写入器记录")
+		}
+	})
+	models, err := NewService(repo).AgentModels(ctx, user)
+	if err != nil || len(models) != 2 {
+		t.Fatalf("下发模型目录错误: %+v, %v", models, err)
+	}
+	for _, entry := range models {
+		item, err := repo.Resolve(ctx, user, entry.Model)
+		if err != nil || item.ID != entry.ID || item.ModelID+"@"+item.ID != entry.Model {
+			t.Fatalf("下发模型无法解析: %+v, %v", entry, err)
+		}
+	}
+	t.Run("管理员与普通用户统一按授权使用模型", func(t *testing.T) {
+		actor := resource.ID()
+		exec(`INSERT INTO users(id,name,email,role) VALUES($1,'授权测试管理员','model-authorization@example.com','admin')`, actor)
+		service := NewService(repo).WithKeyAuthenticator(keyAuthenticatorStub{userID: actor})
+		input := validInput()
+		input.ModelID = "authorization-owned-system"
+		input.Authorization = Authorization{UserIDs: []string{owner}}
+		ownedSystem, err := service.Create(ctx, actor, input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		otherSystem := create("authorization-other-system", "system")
+		personal, err := repo.Create(ctx, Model{
+			OwnerUserID: actor, OwnershipType: "user", ModelID: "authorization-personal", DisplayName: "自建模型",
+			Protocol: ProtocolOpenAIChat, BaseURL: "https://example.com/v1", APIKey: "test-key",
+			AdvancedConfig: AdvancedConfig{ContextWindowTokens: 32000, MaxOutputTokens: 4096}, CreditMultiplier: 1,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		systems := []Model{ownedSystem, otherSystem}
+		assertAccess := func(t *testing.T, allowed bool) {
+			t.Helper()
+			for _, role := range []string{"admin", "user"} {
+				exec(`UPDATE users SET role=$2 WHERE id=$1`, actor, role)
+				models, err := service.AgentModels(ctx, actor)
+				if err != nil {
+					t.Fatal(err)
+				}
+				visible := map[string]bool{}
+				for _, model := range models {
+					visible[model.ID] = true
+				}
+				for _, model := range append([]Model{personal, private}, systems...) {
+					want := allowed
+					if model.OwnershipType == "user" {
+						want = model.OwnerUserID == actor
+					}
+					if visible[model.ID] != want {
+						t.Fatalf("模型目录权限错误 role=%s model=%s: 可见=%v，预期=%v", role, model.ModelID, visible[model.ID], want)
+					}
+					for _, requested := range []string{model.ID, model.ModelID, model.ModelID + "@" + model.ID} {
+						target, err := service.Resolve(ctx, "test-key", requested)
+						if want && (err != nil || target.ID != model.ID) || !want && !errors.Is(err, ErrUnauthorized) {
+							t.Fatalf("模型调用权限错误 role=%s model=%s allowed=%v: %+v, %v", role, requested, want, target, err)
+						}
+					}
+				}
+			}
+		}
+		t.Run("未授权与创建者均不可使用系统模型", func(t *testing.T) { assertAccess(t, false) })
+		for _, model := range systems {
+			exec(`INSERT INTO resource_access_grants(resource_type,resource_id,user_id,access_level,granted_by_user_id) VALUES('model',$1,$2,'read_only',$3)`, model.ID, actor, owner)
+		}
+		t.Run("直接授权后可使用", func(t *testing.T) { assertAccess(t, true) })
+		exec(`DELETE FROM resource_access_grants WHERE resource_type='model' AND user_id=$1`, actor)
+		t.Run("撤销直接授权后不可使用", func(t *testing.T) { assertAccess(t, false) })
+		for _, model := range systems {
+			exec(`INSERT INTO resource_access_grants(resource_type,resource_id,group_id,access_level,granted_by_user_id) VALUES('model',$1,$2,'read_only',$3)`, model.ID, parent, owner)
+		}
+		t.Run("不在授权分组中不可使用", func(t *testing.T) { assertAccess(t, false) })
+		exec(`INSERT INTO group_users(group_id,user_id,assigned_by_user_id) VALUES($1,$2,$3)`, child, actor, owner)
+		t.Run("继承父组授权后可使用", func(t *testing.T) { assertAccess(t, true) })
+		exec(`UPDATE group_users SET removed_at=now() WHERE user_id=$1`, actor)
+		t.Run("退出分组后不可使用", func(t *testing.T) { assertAccess(t, false) })
+		for _, model := range systems {
+			exec(`INSERT INTO resource_access_grants(resource_type,resource_id,all_users,access_level,granted_by_user_id) VALUES('model',$1,true,'read_only',$2)`, model.ID, owner)
+		}
+		t.Run("全员授权后可使用", func(t *testing.T) { assertAccess(t, true) })
+		for _, model := range systems {
+			exec(`DELETE FROM resource_access_grants WHERE resource_type='model' AND resource_id=$1 AND all_users`, model.ID)
+		}
+		t.Run("撤销全员授权后不可使用", func(t *testing.T) { assertAccess(t, false) })
+	})
+	t.Run("全员授权覆盖新增用户并可撤销", func(t *testing.T) {
+		input := validInput()
+		input.ModelID = "all-users-model"
+		input.Authorization = Authorization{GroupIDs: []string{rootgroup.ID}}
+		service := NewService(repo)
+		item, err := service.Create(ctx, admin, input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		stored, err := repo.Get(ctx, item.ID)
+		if err != nil || !stored.Authorization.AllUsers || len(stored.Authorization.GroupIDs)+len(stored.Authorization.UserIDs) != 0 {
+			t.Fatalf("全员授权回读错误: %+v, %v", stored.Authorization, err)
+		}
+		newUser := resource.ID()
+		exec(`INSERT INTO users(id,name,email) VALUES($1,'新增用户','new@example.com')`, newUser)
+		for _, person := range []string{user, newUser} {
+			resolved, err := repo.Resolve(ctx, person, item.ID)
+			if err != nil || resolved.ID != item.ID {
+				t.Fatalf("用户未获得全员模型授权: %s, %v", person, err)
+			}
+			available, err := repo.ListAvailable(ctx, person)
+			if err != nil {
+				t.Fatal(err)
+			}
+			found := false
+			for _, model := range available {
+				found = found || model.ID == item.ID
+			}
+			if !found {
+				t.Fatal("全员模型未出现在可用列表")
+			}
+		}
+		exec(`UPDATE users SET status='disabled',disabled_at=now() WHERE id=$1`, newUser)
+		if _, err := repo.Resolve(ctx, newUser, item.ID); !errors.Is(err, ErrUnauthorized) {
+			t.Fatalf("停用用户仍获得全员授权: %v", err)
+		}
+		exec(`UPDATE users SET status='active',disabled_at=NULL WHERE id=$1`, newUser)
+		input.Authorization = Authorization{UserIDs: []string{user}}
+		if _, err := service.Update(ctx, item.ID, admin, input); err != nil {
+			t.Fatal(err)
+		}
+		stored, err = repo.Get(ctx, item.ID)
+		if err != nil || stored.Authorization.AllUsers {
+			t.Fatalf("撤销后仍回显全员授权: %+v, %v", stored.Authorization, err)
+		}
+		if _, err := repo.Resolve(ctx, newUser, item.ID); !errors.Is(err, ErrUnauthorized) {
+			t.Fatalf("全员授权撤销未生效: %v", err)
+		}
+		if _, err := repo.Resolve(ctx, user, item.ID); err != nil {
+			t.Fatalf("显式用户授权受影响: %v", err)
+		}
+	})
+	t.Run("生图模型配置持久化", func(t *testing.T) {
+		service := NewService(repo).WithKeyAuthenticator(keyAuthenticatorStub{userID: user})
+		input := imageInput()
+		item, err := service.Create(ctx, admin, input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		stored, err := repo.Get(ctx, item.ID)
+		if err != nil || stored.Kind != KindImage || stored.Provider != ProviderOpenAIImages || stored.ImageConfig == nil || stored.ImagePricing == nil {
+			t.Fatalf("生图模型未完整回读: %+v, %v", stored, err)
+		}
+		input.ImageConfig.DefaultQuality = "1K"
+		input.ImagePricing.BaseCreditsPerImage = "12.5"
+		if _, err := service.Update(ctx, item.ID, admin, input); err != nil {
+			t.Fatal(err)
+		}
+		stored, err = repo.Get(ctx, item.ID)
+		if err != nil || stored.ImageConfig.DefaultQuality != "1K" || stored.ImagePricing.BaseCreditsPerImage != "12.5" {
+			t.Fatalf("生图模型未保存修改: %+v, %v", stored, err)
+		}
+		input.ImagePricing = &ImagePricing{Rates: []ImageRate{
+			{Quality: "1K", CreditsPerImage: "0"},
+			{Quality: "2K", CreditsPerImage: "7.123456"},
+			{Quality: "4K", CreditsPerImage: "19"},
+		}}
+		if _, err := service.Update(ctx, item.ID, admin, input); err != nil {
+			t.Fatal(err)
+		}
+		stored, err = repo.Get(ctx, item.ID)
+		if err != nil || len(stored.ImagePricing.Rates) != 3 || stored.ImagePricing.Rates[0].CreditsPerImage != "0" || stored.ImagePricing.Rates[1].CreditsPerImage != "7.123456" || stored.ImagePricing.BaseCreditsPerImage != "" {
+			t.Fatalf("独立单张价格未完整保存: %+v, %v", stored.ImagePricing, err)
+		}
+		target, err := service.Resolve(ctx, "invoke-key", item.ID)
+		if err != nil || target.Kind != KindImage || target.Provider != ProviderOpenAIImages {
+			t.Fatalf("生图目标未解析: %+v, %v", target, err)
+		}
+	})
+	t.Run("向量模型配置持久化", func(t *testing.T) {
+		dimension := 3072
+		service := NewService(repo).WithEmbeddingDimensionProbe(func(context.Context, Model) (int, error) {
+			return dimension, nil
+		})
+		input := embeddingInput()
+		item, err := service.Create(ctx, admin, input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		stored, err := repo.Get(ctx, item.ID)
+		if err != nil || stored.Kind != KindEmbedding || stored.EmbeddingConfig == nil || stored.EmbeddingConfig.Dimension != 3072 {
+			t.Fatalf("向量模型未完整回读: %+v, %v", stored, err)
+		}
+		dimension = 1536
+		if _, err := service.Update(ctx, item.ID, admin, input); err != nil {
+			t.Fatal(err)
+		}
+		stored, err = repo.Get(ctx, item.ID)
+		if err != nil || stored.EmbeddingConfig == nil || stored.EmbeddingConfig.Dimension != 1536 {
+			t.Fatalf("向量模型未保存修改: %+v, %v", stored, err)
+		}
+	})
+}

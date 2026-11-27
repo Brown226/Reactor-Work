@@ -1,0 +1,189 @@
+package endpoint
+
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"strings"
+	"testing"
+
+	"uuid"
+)
+
+const deviceBody = `{"device_name":"电脑","platform":"web","os_version":"15","arch":"arm64","client_version":"1","protocol_version":null,"client_type":"web","client_name":"浏览器","channel":"stable","locale":"zh-CN","system_locale":"en-US","timezone":"Asia/Shanghai","runtime_version":"1.2","engine_version":"2.3","electron_version":"3.4"}`
+
+func TestRegistrationValidation(t *testing.T) {
+	if r, err := registration([]byte(deviceBody)); err != nil || r.Platform != "web" || r.ProtocolVersion != nil || r.ClientName == nil {
+		t.Fatalf("合法登记未解码: %+v %v", r, err)
+	}
+	for _, body := range []string{
+		`{}`, `{"device_name":"电脑","device_name":"其它"}`,
+		strings.Replace(deviceBody, `"device_name"`, `"Device_Name"`, 1),
+		strings.Replace(deviceBody, `"protocol_version":null`, `"protocol_version":0`, 1),
+		strings.Replace(deviceBody, `"protocol_version":null`, `"protocol_version":2147483648`, 1),
+		strings.Replace(deviceBody, `"client_type":"web"`, `"client_type":""`, 1),
+		strings.Replace(deviceBody, `"timezone":"Asia/Shanghai"`, `"timezone":"\n"`, 1),
+		strings.Replace(deviceBody, `"device_name":"电脑"`, `"device_name":"`+strings.Repeat("x", 129)+`"`, 1),
+		strings.TrimSuffix(deviceBody, "}") + `,"machine_id":"` + machineA + `"}`,
+		strings.TrimSuffix(deviceBody, "}") + `,"access_token":"secret"}`,
+		deviceBody + `{}`,
+	} {
+		if _, err := registration([]byte(body)); err == nil {
+			t.Fatalf("非法登记被接受: %s", body)
+		}
+	}
+}
+
+func TestPlatformValidation(t *testing.T) {
+	for _, test := range []struct {
+		platform string
+		valid    bool
+	}{
+		{"macos", true}, {"web", true}, {"HarmonyOS", true}, {"harmonyos", true}, {"future-os", true},
+		{strings.Repeat("x", 64), true}, {strings.Repeat("鸿", 21), true},
+		{"", false}, {"   ", false}, {"HarmonyOS\n", false},
+		{strings.Repeat("x", 65), false}, {strings.Repeat("鸿", 22), false},
+	} {
+		t.Run(test.platform, func(t *testing.T) {
+			platform, err := json.Marshal(test.platform)
+			if err != nil {
+				t.Fatal(err)
+			}
+			body := strings.Replace(deviceBody, `"platform":"web"`, `"platform":`+string(platform), 1)
+			r, err := registration([]byte(body))
+			if (err == nil) != test.valid || (test.valid && r.Platform != test.platform) {
+				t.Fatalf("设备登记平台校验错误: platform=%q err=%v", test.platform, err)
+			}
+			data, err := json.Marshal(Hello{Type: "hello", Versions: []int{1}, MachineID: machineA,
+				Profile: Profile{"电脑", test.platform, "6.0.1.125", "arm64", "1"}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			h, err := hello(data)
+			if (err == nil) != test.valid || (test.valid && h.Profile.Platform != test.platform) {
+				t.Fatalf("WebSocket 平台校验错误: platform=%q err=%v", test.platform, err)
+			}
+		})
+	}
+}
+
+func TestDeviceRegistrationCustomPlatform(t *testing.T) {
+	f := newFixture(t)
+	for _, platform := range []string{"HarmonyOS", "future-os", strings.Repeat("x", 64)} {
+		t.Run(platform, func(t *testing.T) {
+			machine := uuid.New().String()
+			body := strings.Replace(deviceBody, `"platform":"web"`, `"platform":"`+platform+`"`, 1)
+			body = strings.Replace(body, `"os_version":"15"`, `"os_version":"6.0.1.125"`, 1)
+			for _, method := range []string{"PUT", "GET"} {
+				code, data := call(t, f, method, "/endpoints/"+machine, body, "owner")
+				var out struct {
+					Platform  string `json:"platform"`
+					OSVersion string `json:"os_version"`
+				}
+				if code != 200 || json.Unmarshal(data, &out) != nil || out.Platform != platform || out.OSVersion != "6.0.1.125" {
+					t.Fatalf("%s 未保留客户端平台和系统版本: %d %s", method, code, data)
+				}
+			}
+		})
+	}
+	for _, platform := range []string{"", strings.Repeat("x", 65)} {
+		_, err := f.pool.Exec(t.Context(), `INSERT INTO endpoints(user_id,machine_id,device_name,platform,os_version,arch,client_version,protocol_version)
+			VALUES($1,$2,'test',$3,'test','arm64','1',1)`, f.user, uuid.New().String(), platform)
+		if err == nil {
+			t.Fatalf("数据库未拒绝无效平台: %q", platform)
+		}
+	}
+}
+
+func TestDeviceRegistration(t *testing.T) {
+	f := newFixture(t)
+	if code, _ := call(t, f, "PUT", "/endpoints/"+machineA, deviceBody, ""); code != 401 {
+		t.Fatalf("未鉴权登记: %d", code)
+	}
+	observer := dial(t, f, machineB, "owner")
+	code, data := call(t, f, "PUT", "/endpoints/"+machineA, deviceBody, "owner")
+	if code != 200 || !bytes.Contains(data, []byte(`"protocol_version":null`)) || !bytes.Contains(data, []byte(`"last_reported_at":`)) || !bytes.Contains(data, []byte(`"online":false`)) {
+		t.Fatalf("设备登记失败: %d %s", code, data)
+	}
+	snapshot := readWS(t, observer, "directory.snapshot")
+	if !bytes.Contains(snapshot["endpoints"], []byte(`"machine_id":"`+machineA+`"`)) || !bytes.Contains(snapshot["endpoints"], []byte(`"client_name":"浏览器"`)) {
+		t.Fatalf("目录未广播登记: %s", snapshot)
+	}
+	code, data = call(t, f, "GET", "/endpoints/"+machineA, "", "owner")
+	if code != 200 || !bytes.Contains(data, []byte(`"last_seen_at":null`)) || !bytes.Contains(data, []byte(`"platform":"web"`)) {
+		t.Fatalf("登记内容不正确: %d %s", code, data)
+	}
+	if code, _ = call(t, f, "GET", "/endpoints/"+machineA, "", "other"); code != 404 {
+		t.Fatalf("跨用户获取登记: %d", code)
+	}
+	if code, _ = call(t, f, "PATCH", "/endpoints/"+machineA, `{"alias":"常用电脑"}`, "owner"); code != 200 {
+		t.Fatal(code)
+	}
+	readWS(t, observer, "directory.snapshot")
+	code, data = call(t, f, "PUT", "/endpoints/"+machineA, strings.Replace(deviceBody, `"device_name":"电脑"`, `"device_name":"新电脑"`, 1), "owner")
+	if code != 200 || !bytes.Contains(data, []byte(`"display_name":"常用电脑"`)) || !bytes.Contains(data, []byte(`"device_name":"新电脑"`)) {
+		t.Fatalf("重复登记覆盖别名: %d %s", code, data)
+	}
+	readWS(t, observer, "directory.snapshot")
+	if code, _ = call(t, f, "PUT", "/endpoints/"+machineA, strings.TrimSuffix(deviceBody, "}")+`,"last_reported_at":123}`, "owner"); code != 400 {
+		t.Fatalf("客户端伪造报告时间: %d", code)
+	}
+	if code, _ = call(t, f, "PUT", "/endpoints/"+machineA, deviceBody+strings.Repeat(" ", 4096), "owner"); code != 400 {
+		t.Fatalf("超长请求未拒绝: %d", code)
+	}
+	if code, _ = call(t, f, "POST", "/endpoints/"+machineA+"/revoke", "", "owner"); code != 200 {
+		t.Fatal(code)
+	}
+	readWS(t, observer, "directory.snapshot")
+	code, data = call(t, f, "PUT", "/endpoints/"+machineA, deviceBody, "owner")
+	if code != 409 || !bytes.Contains(data, []byte("endpoint_revoked")) {
+		t.Fatalf("撤销设备被自动恢复: %d %s", code, data)
+	}
+}
+
+func TestDeviceRegistrationRateLimit(t *testing.T) {
+	f := newFixture(t)
+	for range 100 {
+		code, data := call(t, f, "PUT", "/endpoints/"+machineA, deviceBody, "owner")
+		if code != 200 {
+			t.Fatalf("一百次登记以内不应限速: %d %s", code, data)
+		}
+	}
+	req, err := http.NewRequestWithContext(t.Context(), "PUT", f.server.URL+"/endpoints/"+machineA, strings.NewReader(deviceBody))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer owner")
+	resp, err := f.server.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 429 || resp.Header.Get("Retry-After") == "" {
+		t.Fatalf("第一百零一次登记应限速并给出等待时间: %d %s", resp.StatusCode, resp.Header.Get("Retry-After"))
+	}
+}
+
+func TestDeviceRegistrationWithoutCountLimit(t *testing.T) {
+	f := newFixture(t)
+	if _, err := f.pool.Exec(t.Context(), `INSERT INTO endpoints(user_id,machine_id,device_name,platform,os_version,arch,client_version,protocol_version)
+SELECT $1,gen_random_uuid(),'电脑','macos','15','arm64','1',1 FROM generate_series(1,19)`, f.user); err != nil {
+		t.Fatal(err)
+	}
+	code, data := call(t, f, "PUT", "/endpoints/"+uuid.New().String(), deviceBody, "owner")
+	if code != 200 {
+		t.Fatalf("登记第 20 台设备失败: %d %s", code, data)
+	}
+	code, data = call(t, f, "PUT", "/endpoints/"+uuid.New().String(), deviceBody, "owner")
+	if code != 200 {
+		t.Fatalf("登记第 21 台设备失败: %d %s", code, data)
+	}
+	code, data = call(t, f, "GET", "/endpoints", "", "owner")
+	if code != 200 {
+		t.Fatalf("读取端点列表失败: %d %s", code, data)
+	}
+	var page Page
+	if err := json.Unmarshal(data, &page); err != nil || page.Total != 21 {
+		t.Fatalf("设备数错误: %s %v", data, err)
+	}
+}

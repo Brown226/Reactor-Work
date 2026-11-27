@@ -1,0 +1,440 @@
+package proxy
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"io"
+	"log/slog"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
+	sessionreporting "github.com/chaitin/MonkeyCode/monkeyai/backend/internal/session"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+	"github.com/go-chi/chi/v5"
+)
+
+func newProxyRequest(method, path string, body io.Reader) *http.Request {
+	r := httptest.NewRequest(method, path, body)
+	r.Header.Set("User-Agent", "client/pre-ohmyagent-post")
+	return r
+}
+
+func TestProxyRejectsUserAgentLikeInvalidKey(t *testing.T) {
+	for _, endpoint := range endpoints {
+		t.Run(endpoint.path, func(t *testing.T) {
+			var resolved int
+			var logs bytes.Buffer
+			p := NewProxy(ResolverFunc(func(context.Context, string, string) (Target, error) {
+				resolved++
+				return Target{}, errors.New("invalid key")
+			}), logging.New(&logs, slog.LevelWarn)).WithRejectedUserLookup(func(_ context.Context, key string) (string, error) {
+				if key == "test-key" {
+					return "user-1", nil
+				}
+				return "", errors.New("invalid key")
+			})
+			call := func(ua, key string) *httptest.ResponseRecorder {
+				r := httptest.NewRequest(http.MethodPost, endpoint.path, strings.NewReader("{}"))
+				if ua != "" {
+					r.Header.Set("User-Agent", ua)
+				}
+				r.Header.Set("X-Api-Key", key)
+				r.RemoteAddr = "172.18.0.5:1234"
+				r.Header.Set("X-Real-IP", "2001:db8::1")
+				w := httptest.NewRecorder()
+				p.ServeHTTP(w, r)
+				return w
+			}
+			denied := call("client/pre-ohmyagent-post", "invalid")
+			if denied.Code != http.StatusUnauthorized || resolved != 1 {
+				t.Fatal("命中子串后仍须校验 API Key")
+			}
+			for _, ua := range []string{"", "other-client/1.0 (Linux; x86_64) " + strings.Repeat("x", 128), "OhMyAgent"} {
+				logs.Reset()
+				w := call(ua, "test-key")
+				var event map[string]any
+				if err := json.Unmarshal(logs.Bytes(), &event); err != nil || event["event"] != "proxy.user_agent.rejected" || event["user_agent"] != ua {
+					t.Errorf("拒绝日志未保留原始 UA %q: %s", ua, logs.Bytes())
+				}
+				if event["user_id"] != "user-1" || event["client_ip"] != "2001:db8::1" {
+					t.Errorf("拒绝日志未记录密钥所属用户或来源 IP: %s", logs.Bytes())
+				}
+				if w.Code != denied.Code || w.Body.String() != denied.Body.String() || resolved != 1 {
+					t.Errorf("UA %q 应在模型解析前返回与无效密钥相同的响应，实际为 %d %q", ua, w.Code, w.Body.String())
+				}
+			}
+		})
+	}
+}
+
+func TestProxyForwardsRequest(t *testing.T) {
+	var gotPath, gotQuery, gotAuthorization, gotAPIKey, gotXForwardedFor, gotBody string
+	var gotHeaders http.Header
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotHeaders = r.Header.Clone()
+		gotPath = r.URL.Path
+		gotQuery = r.URL.RawQuery
+		gotAuthorization = r.Header.Get("Authorization")
+		gotAPIKey = r.Header.Get("X-Api-Key")
+		gotXForwardedFor = r.Header.Get("X-Forwarded-For")
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		gotBody = string(body)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"id":"chat_test","choices":[]}`)
+	}))
+	t.Cleanup(upstream.Close)
+
+	var gotCredential, gotModel string
+	resolver := ResolverFunc(func(_ context.Context, credential, requestedModel string) (Target, error) {
+		gotCredential = credential
+		gotModel = requestedModel
+		return testTarget(upstream.URL + "/gateway/v1?api-version=2026-09-01"), nil
+	})
+	proxy := NewProxy(resolver, discardLogger())
+	body := `{"model":"gpt-5","messages":[{"role":"user","content":"hi"}]}`
+	req := newProxyRequest(http.MethodPost, "/v1/chat/completions?trace=1", strings.NewReader(body))
+	req.Header.Set("Authorization", "Bearer runtime-secret")
+	req.Header.Set("X-Forwarded-For", "203.0.113.10")
+	forwardedHeaders := map[string]string{
+		"X-Request-ID": "request-id",
+		"X-Session-ID": "legacy-session-id",
+		"Session-Id":   "session-id",
+	}
+	for header, value := range forwardedHeaders {
+		req.Header.Set(header, value)
+	}
+	recorder := httptest.NewRecorder()
+
+	proxy.ServeHTTP(recorder, req)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, body = %s", recorder.Code, recorder.Body.String())
+	}
+	if gotCredential != "runtime-secret" || gotModel != "gpt-5" {
+		t.Fatalf("resolve = credential:%q model:%q", gotCredential, gotModel)
+	}
+	if gotPath != "/gateway/v1/chat/completions" {
+		t.Fatalf("upstream path = %q", gotPath)
+	}
+	if gotQuery != "api-version=2026-09-01&trace=1" {
+		t.Fatalf("upstream query = %q", gotQuery)
+	}
+	if gotAuthorization != "Bearer upstream-secret" || gotAPIKey != "upstream-secret" {
+		t.Fatalf("upstream credentials = authorization:%q x-api-key:%q", gotAuthorization, gotAPIKey)
+	}
+	if gotXForwardedFor != "" {
+		t.Fatalf("upstream x-forwarded-for = %q", gotXForwardedFor)
+	}
+	for header, want := range forwardedHeaders {
+		if got := gotHeaders.Get(header); got != want {
+			t.Errorf("upstream %s = %q, want %q", header, got, want)
+		}
+	}
+	if gotBody != body {
+		t.Fatalf("upstream body = %q", gotBody)
+	}
+}
+
+type disabledSessionResolver struct{}
+
+func (disabledSessionResolver) EnsureSession(context.Context, string, string, string, string) error {
+	return sessionreporting.ErrReportingDisabled
+}
+
+func TestProxyIgnoresSessionWhenReportingDisabled(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-MAI-Session-ID") != "" {
+			t.Error("内部会话请求头不得透传上游")
+		}
+		if got := r.Header.Get("X-Session-ID"); got != "forwarded-session" {
+			t.Errorf("关闭上报不应剥离 X-Session-ID: %q", got)
+		}
+		_, _ = io.WriteString(w, `{"id":"chat_usage","usage":{"prompt_tokens":1}}`)
+	}))
+	t.Cleanup(upstream.Close)
+	usage := &usageRecorderStub{calls: make(chan Call, 1)}
+	gateway := NewProxy(ResolverFunc(func(context.Context, string, string) (Target, error) {
+		return testTarget(upstream.URL + "/v1"), nil
+	}), discardLogger()).WithSessionResolver(disabledSessionResolver{}).WithUsageRecorder(usage)
+	req := newProxyRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{"model":"gpt-5"}`))
+	req.Header.Set("Authorization", "Bearer runtime-secret")
+	req.Header.Set("X-MAI-Session-ID", "11111111-1111-4111-8111-111111111111")
+	req.Header.Set("X-Session-ID", "forwarded-session")
+	w := httptest.NewRecorder()
+	gateway.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("关闭上报不应阻断模型调用: %d %s", w.Code, w.Body.String())
+	}
+	select {
+	case call := <-usage.calls:
+		if call.SessionID != "" {
+			t.Fatalf("关闭上报不应写入会话归属: %q", call.SessionID)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("未收到模型用量")
+	}
+}
+
+func TestProxyRecordsUsage(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = io.WriteString(w, `{
+			"id":"chat_usage",
+			"usage":{
+				"prompt_tokens":11,
+				"completion_tokens":7,
+				"prompt_tokens_details":{"cached_tokens":5},
+				"completion_tokens_details":{"reasoning_tokens":3}
+			}
+		}`)
+	}))
+	t.Cleanup(upstream.Close)
+
+	usage := &usageRecorderStub{calls: make(chan Call, 1)}
+	proxy := NewProxy(ResolverFunc(func(context.Context, string, string) (Target, error) {
+		return testTarget(upstream.URL + "/v1"), nil
+	}), discardLogger()).WithUsageRecorder(usage)
+	req := newProxyRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{"model":"gpt-5"}`))
+	req.Header.Set("Authorization", "Bearer runtime-secret")
+	recorder := httptest.NewRecorder()
+
+	proxy.ServeHTTP(recorder, req)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, body = %s", recorder.Code, recorder.Body.String())
+	}
+	select {
+	case call := <-usage.calls:
+		if call.ModelID != "model-1" || call.UserID != "user-1" || call.SessionID != "session-1" {
+			t.Fatalf("call identity = %#v", call)
+		}
+		if call.RequestID != "chat_usage" || call.InputTokens != 11 || call.OutputTokens != 7 || call.CachedInputTokens != 5 {
+			t.Fatalf("call usage = %#v", call)
+		}
+		if call.StartedAt.IsZero() || call.CompletedAt.Before(call.StartedAt) {
+			t.Fatalf("call time = %s - %s", call.StartedAt, call.CompletedAt)
+		}
+		if call.FirstTokenDurationMs != nil {
+			t.Fatalf("非流式调用不应推算首字耗时: %d", *call.FirstTokenDurationMs)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("未收到模型调用用量")
+	}
+}
+
+func TestProxyRejectsInvalidRequests(t *testing.T) {
+	tests := []struct {
+		name       string
+		method     string
+		path       string
+		body       string
+		credential string
+		resolver   Resolver
+		want       int
+	}{
+		{name: "method", method: http.MethodGet, path: "/v1/responses", want: http.StatusMethodNotAllowed},
+		{name: "path", method: http.MethodPost, path: "/v1/unknown", want: http.StatusNotFound},
+		{name: "credential", method: http.MethodPost, path: "/v1/responses", body: `{}`, want: http.StatusUnauthorized},
+		{name: "body", method: http.MethodPost, path: "/v1/responses", body: `{`, credential: "key", want: http.StatusBadRequest},
+		{name: "null body", method: http.MethodPost, path: "/v1/responses", body: `null`, credential: "key", want: http.StatusBadRequest},
+		{
+			name:       "unauthorized",
+			method:     http.MethodPost,
+			path:       "/v1/responses",
+			body:       `{"model":"gpt-5"}`,
+			credential: "key",
+			resolver: ResolverFunc(func(context.Context, string, string) (Target, error) {
+				return Target{}, errors.New("not found")
+			}),
+			want: http.StatusUnauthorized,
+		},
+		{
+			name:       "invalid upstream",
+			method:     http.MethodPost,
+			path:       "/v1/responses",
+			body:       `{"model":"gpt-5"}`,
+			credential: "key",
+			resolver: ResolverFunc(func(context.Context, string, string) (Target, error) {
+				return testTarget("file:///etc/passwd"), nil
+			}),
+			want: http.StatusBadGateway,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			proxy := NewProxy(test.resolver, discardLogger())
+			req := newProxyRequest(test.method, test.path, strings.NewReader(test.body))
+			if test.credential != "" {
+				req.Header.Set("Authorization", "Bearer "+test.credential)
+			}
+			recorder := httptest.NewRecorder()
+			proxy.ServeHTTP(recorder, req)
+			if recorder.Code != test.want {
+				t.Fatalf("status = %d, want %d, body = %s", recorder.Code, test.want, recorder.Body.String())
+			}
+		})
+	}
+}
+
+func TestProxyRewritesModelAndRejectsProtocolMismatch(t *testing.T) {
+	var gotBody string
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		gotBody = string(body)
+		_, _ = io.WriteString(w, `{}`)
+	}))
+	t.Cleanup(upstream.Close)
+
+	resolver := ResolverFunc(func(context.Context, string, string) (Target, error) {
+		target := testTarget(upstream.URL + "/v1")
+		target.UpstreamModel = "gpt-5"
+		target.Protocol = "openai_responses"
+		return target, nil
+	})
+	p := NewProxy(resolver, discardLogger())
+	recorder := httptest.NewRecorder()
+	request := newProxyRequest(http.MethodPost, "/v1/responses", strings.NewReader(`{"model":"model-uuid","input":"hi"}`))
+	request.Header.Set("Authorization", "Bearer mk_secret")
+	p.ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusOK || !strings.Contains(gotBody, `"model":"gpt-5"`) {
+		t.Fatalf("status = %d, body = %q", recorder.Code, gotBody)
+	}
+
+	recorder = httptest.NewRecorder()
+	request = newProxyRequest(http.MethodPost, "/v1/messages", strings.NewReader(`{"model":"model-uuid"}`))
+	request.Header.Set("Authorization", "Bearer mk_secret")
+	p.ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d", recorder.Code)
+	}
+}
+
+func TestProxyRegister(t *testing.T) {
+	proxy := NewProxy(nil, discardLogger())
+	router := chi.NewRouter()
+	proxy.Register(router)
+	for _, endpoint := range endpoints {
+		req := newProxyRequest(http.MethodPost, endpoint.path, strings.NewReader(`{}`))
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, req)
+		if recorder.Code != http.StatusUnauthorized {
+			t.Fatalf("route %s status = %d", endpoint.path, recorder.Code)
+		}
+	}
+}
+
+func TestModelTransportsIgnoreEnvironmentProxy(t *testing.T) {
+	t.Setenv("HTTP_PROXY", "http://127.0.0.1:1")
+	t.Setenv("HTTPS_PROXY", "http://127.0.0.1:1")
+	for _, transport := range []*http.Transport{
+		NewProxy(nil, discardLogger()).reverse.Transport.(timeoutTransport).base.(outboundTransport).direct.(*http.Transport),
+		NewResponseReconciler().client.Transport.(*http.Transport),
+		DirectTransport(),
+	} {
+		if transport.Proxy != nil || transport == http.DefaultTransport {
+			t.Fatal("模型和图片上游不应使用环境代理或共享默认传输层")
+		}
+	}
+}
+
+func TestProxyDoesNotReuseConnections(t *testing.T) {
+	for _, proxied := range []bool{false, true} {
+		name := "直连"
+		if proxied {
+			name = "系统代理"
+		}
+		t.Run(name, func(t *testing.T) {
+			addresses := make(chan string, 2)
+			upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				addresses <- r.RemoteAddr
+				if !r.Close {
+					t.Error("上游请求未关闭连接复用")
+				}
+				io.WriteString(w, `{"usage":{"prompt_tokens":1,"completion_tokens":1}}`)
+			}))
+			defer upstream.Close()
+			p := NewProxy(ResolverFunc(func(context.Context, string, string) (Target, error) {
+				target := testTarget(upstream.URL)
+				if proxied {
+					target.BaseURL = "http://upstream.invalid/v1"
+					target.ProxyURL = upstream.URL
+				}
+				return target, nil
+			}), discardLogger())
+			for range 2 {
+				r := newProxyRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{"model":"test"}`))
+				r.Header.Set("Authorization", "Bearer test")
+				w := httptest.NewRecorder()
+				p.ServeHTTP(w, r)
+				if w.Code != http.StatusOK {
+					t.Fatalf("请求失败: %d %s", w.Code, w.Body.String())
+				}
+			}
+			if err := p.Wait(t.Context()); err != nil {
+				t.Fatal(err)
+			}
+			if first, second := <-addresses, <-addresses; first == second {
+				t.Fatalf("两次请求复用了连接: %s", first)
+			}
+		})
+	}
+}
+
+func TestProxyChainConfiguration(t *testing.T) {
+	proxy := NewProxy(nil, discardLogger())
+	recorder := &usageRecorderStub{calls: make(chan Call, 1)}
+	transport := http.DefaultTransport
+	if got := proxy.WithUsageRecorder(recorder).WithTransport(transport); got != proxy {
+		t.Fatal("链式调用未返回原 Proxy")
+	}
+	if proxy.recorder != recorder || proxy.reverse.Transport.(timeoutTransport).base != transport {
+		t.Fatal("链式配置未生效")
+	}
+}
+
+func testTarget(baseURL string) Target {
+	return Target{
+		ModelID:   "model-1",
+		UserID:    "user-1",
+		SessionID: "session-1",
+		BaseURL:   baseURL,
+		APIKey:    "upstream-secret",
+	}
+}
+
+func discardLogger() *slog.Logger {
+	return slog.New(slog.NewTextHandler(io.Discard, nil))
+}
+
+type usageRecorderStub struct {
+	calls chan Call
+}
+
+func (r *usageRecorderStub) Record(_ context.Context, call Call) error {
+	r.calls <- call
+	return nil
+}
+
+func TestProxyErrorHandlerLogsUpstreamError(t *testing.T) {
+	var logs bytes.Buffer
+	proxy := NewProxy(nil, slog.New(slog.NewTextHandler(&logs, nil)))
+	pc := &proxyContext{target: Target{ModelID: "model-1"}, reservation: Reservation{ID: "transaction-1"}}
+	req := newProxyRequest(http.MethodPost, "/v1/responses", nil)
+	req = req.WithContext(context.WithValue(req.Context(), proxyContextKey{}, pc))
+	recorder := httptest.NewRecorder()
+	proxy.errorHandler(recorder, req, errors.New("upstream-token-and-private-response"))
+	if recorder.Code != http.StatusBadGateway || recorder.Body.String() != upstreamFailureMessage {
+		t.Fatalf("代理错误响应不正确: %d %q", recorder.Code, recorder.Body.String())
+	}
+	text := logs.String()
+	if !strings.Contains(text, "model-1") || !strings.Contains(text, "transaction-1") || !strings.Contains(text, "proxy_request") || !strings.Contains(text, "upstream-token-and-private-response") {
+		t.Fatalf("代理日志缺少上下文或原始错误: %s", text)
+	}
+}

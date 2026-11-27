@@ -1,0 +1,220 @@
+package model
+
+import (
+	"context"
+	"errors"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+	"log/slog"
+	"net/http"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/httpapi"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/identity"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+	"github.com/go-chi/chi/v5"
+)
+
+func (s *Service) CreateUser(ctx context.Context, userID string, input UserInput) (Model, error) {
+	item, err := userModelFromInput(input)
+	if err != nil {
+		return Model{}, err
+	}
+	if item.APIKey == "" {
+		return Model{}, resource.InvalidCode("model_key_required", "api_key 不能为空")
+	}
+	if err := s.applyEmbeddingDimension(ctx, &item); err != nil {
+		return Model{}, resource.InvalidCode("model_capability_invalid", err.Error())
+	}
+	if err := s.validateImageCapability(item); err != nil {
+		return Model{}, resource.InvalidCode("model_capability_invalid", err.Error())
+	}
+	if err := s.validateVideoCapability(item); err != nil {
+		return Model{}, resource.InvalidCode("model_capability_invalid", err.Error())
+	}
+	item.OwnershipType = "user"
+	item.OwnerUserID = userID
+	item.Enabled = true
+	return s.repository.Create(ctx, item)
+}
+
+func (s *Service) GetUser(ctx context.Context, id, userID string) (Model, error) {
+	item, err := s.repository.Get(ctx, id)
+	if err != nil {
+		return Model{}, err
+	}
+	if item.OwnershipType != "user" || item.OwnerUserID != userID {
+		return Model{}, ErrNotFound
+	}
+	return item, nil
+}
+
+func (s *Service) UpdateUser(ctx context.Context, id, userID string, input UserInput) (Model, error) {
+	existing, err := s.GetUser(ctx, id, userID)
+	if err != nil {
+		return Model{}, err
+	}
+	item, err := userModelFromInput(input)
+	if err != nil {
+		return Model{}, err
+	}
+	if err := s.validateImageCapability(item); err != nil {
+		return Model{}, resource.InvalidCode("model_capability_invalid", err.Error())
+	}
+	if err := s.validateVideoCapability(item); err != nil {
+		return Model{}, resource.InvalidCode("model_capability_invalid", err.Error())
+	}
+	item.ID = id
+	item.OwnershipType = "user"
+	item.OwnerUserID = userID
+	item.Enabled = existing.Enabled
+	item.Authorization = existing.Authorization
+	item.CreditMultiplier = existing.CreditMultiplier
+	if input.TagIDs == nil {
+		item.TagIDs = tagIDs(existing.Tags)
+	}
+	if item.APIKey == "" {
+		item.APIKey = existing.APIKey
+	}
+	if err := s.prepareEmbeddingUpdate(existing, &item); err != nil {
+		return Model{}, resource.InvalidCode("model_capability_invalid", err.Error())
+	}
+	return s.repository.UpdateUser(ctx, item)
+}
+
+func userModelFromInput(input UserInput) (Model, error) {
+	item, err := modelFromInput(SaveInput{
+		ModelID: input.ModelID, DisplayName: input.DisplayName, Protocol: input.Protocol,
+		Kind: input.Kind, Provider: input.Provider, ImageConfig: input.ImageConfig,
+		VideoConfig: input.VideoConfig,
+		BaseURL:     input.BaseURL, APIKey: input.APIKey, AdvancedConfig: input.AdvancedConfig,
+		ImagePricing:     userImagePricing(input.Kind),
+		VideoPricing:     userVideoPricing(input.Kind, input.Provider, input.ModelID, input.VideoConfig),
+		CreditMultiplier: 1, TagIDs: input.TagIDs,
+	})
+	if err != nil {
+		return Model{}, resource.InvalidCode("model_config_invalid", err.Error())
+	}
+	return item, nil
+}
+
+func (s *Service) RegisterAgent(router chi.Router) {
+	router.Get("/models", func(w http.ResponseWriter, r *http.Request) {
+		page, size, err := resource.PageParams(r)
+		if err != nil {
+			userModelError(r.Context(), w, err)
+			return
+		}
+		filter, err := resource.ParseCatalogFilter(r)
+		if err != nil {
+			userModelError(r.Context(), w, err)
+			return
+		}
+		user, _ := identity.UserFromContext(r.Context())
+		items, err := s.AgentModels(r.Context(), user.ID)
+		if err != nil {
+			userModelError(r.Context(), w, err)
+			return
+		}
+		items = filterModelTags(items, resource.QueryTagIDs(r))
+		items = filterModelCatalog(items, filter, user.ID)
+		if err = httpapi.CachedJSON(w, r, map[string]any{
+			"models":      resource.PageSlice(items, page, size),
+			"total_count": len(items), "page": page, "page_size": size,
+			"model_gateway": map[string]string{"base_url": s.gatewayURL, "authentication": "api_key"},
+		}); err != nil {
+			logging.Event(r.Context(), slog.Default(), slog.LevelError, "model.operation.error", "写入模型目录缓存响应失败", "module", "model", "operation", "RegisterAgent", "user_id", user.ID, "error", err)
+		}
+	})
+	router.Get("/models/tags", func(w http.ResponseWriter, r *http.Request) {
+		user, _ := identity.UserFromContext(r.Context())
+		items, err := s.AgentModels(r.Context(), user.ID)
+		if err != nil {
+			userModelError(r.Context(), w, err)
+			return
+		}
+		rows := make([]resource.Object, 0, len(items))
+		for _, item := range items {
+			rows = append(rows, resource.Object{"tags": item.Tags})
+		}
+		if err := httpapi.CachedJSON(w, r, map[string]any{"tags": resource.CollectTags(rows)}); err != nil {
+			logging.Event(r.Context(), slog.Default(), slog.LevelError, "model.operation.error", "写入模型标签缓存响应失败", "module", "model", "operation", "RegisterAgent", "user_id", user.ID, "error", err)
+		}
+	})
+	router.Get("/models/{modelID}", func(w http.ResponseWriter, r *http.Request) {
+		user, _ := identity.UserFromContext(r.Context())
+		item, err := s.GetUser(r.Context(), chi.URLParam(r, "modelID"), user.ID)
+		if err != nil {
+			userModelError(r.Context(), w, err)
+			return
+		}
+		modelJSON(w, http.StatusOK, presentModel(item))
+	})
+	save := func(w http.ResponseWriter, r *http.Request) {
+		var input UserInput
+		if err := resource.Decode(w, r, &input); err != nil {
+			userModelError(r.Context(), w, err)
+			return
+		}
+		user, _ := identity.UserFromContext(r.Context())
+		var item Model
+		var err error
+		status := http.StatusOK
+		if r.Method == http.MethodPost {
+			item, err = s.CreateUser(r.Context(), user.ID, input)
+			status = http.StatusCreated
+		} else {
+			item, err = s.UpdateUser(r.Context(), chi.URLParam(r, "modelID"), user.ID, input)
+		}
+		if err != nil {
+			userModelError(r.Context(), w, err)
+			return
+		}
+		modelJSON(w, status, presentModel(item))
+	}
+	router.Post("/models", save)
+	router.Put("/models/{modelID}", save)
+	router.Delete("/models/{modelID}", func(w http.ResponseWriter, r *http.Request) {
+		user, _ := identity.UserFromContext(r.Context())
+		if err := s.repository.DeleteUser(r.Context(), chi.URLParam(r, "modelID"), user.ID); err != nil {
+			userModelError(r.Context(), w, err)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	})
+}
+
+func filterModelCatalog(items []AgentModel, filter resource.CatalogFilter, user string) []AgentModel {
+	out := make([]AgentModel, 0, len(items))
+	for _, item := range items {
+		if filter.Matches(item.OwnershipType, item.User.ID, user, item.DisplayName, "") {
+			out = append(out, item)
+		}
+	}
+	return out
+}
+
+func filterModelTags(items []AgentModel, ids []string) []AgentModel {
+	if len(ids) == 0 {
+		return items
+	}
+	wanted := make(map[string]bool, len(ids))
+	for _, id := range ids {
+		wanted[id] = true
+	}
+	filtered := make([]AgentModel, 0)
+	for _, item := range items {
+		for _, tag := range item.Tags {
+			if wanted[tag.String("id")] {
+				filtered = append(filtered, item)
+				break
+			}
+		}
+	}
+	return filtered
+}
+
+func userModelError(ctx context.Context, w http.ResponseWriter, err error) {
+	if errors.Is(err, ErrNotFound) {
+		err = resource.NotFound
+	}
+	resource.Fail(ctx, w, err)
+}

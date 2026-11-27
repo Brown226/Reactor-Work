@@ -1,0 +1,751 @@
+package proxy
+
+import (
+	"bufio"
+	"bytes"
+	"compress/gzip"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+	"io"
+	"log/slog"
+	"net/http"
+	"strings"
+	"time"
+)
+
+type Call struct {
+	ModelID              string
+	UserID               string
+	SessionID            string
+	RequestID            string
+	Known                bool
+	Stream               bool
+	Result               string
+	ErrorCode            string
+	TerminalEvent        string
+	InputTokens          uint64
+	OutputTokens         uint64
+	CachedInputTokens    uint64
+	InputSource          string
+	OutputSource         string
+	FirstTokenDurationMs *int32
+	StartedAt            time.Time
+	CompletedAt          time.Time
+}
+
+type usageResult struct {
+	inputKnown, outputKnown     bool
+	InputSource                 string
+	OutputSource                string
+	InputTokens                 uint64
+	OutputTokens                uint64
+	CacheReadInputTokens        uint64
+	CachedTokens                uint64
+	ResponseID                  string
+	CacheCreationInputTokens    uint64
+	Known                       bool
+	Result                      string
+	ErrorCode                   string
+	TerminalEvent               string
+	FirstTokenDurationMs        *int32
+	ObservedResult, FailureCode string
+	ParseErrorCount             uint64
+	ReadErrorCount              uint64
+	ParseErrorType              string
+	ParseErrorOffset            int64
+	ParseEvent                  string
+	FailureAttrs                []slog.Attr
+}
+
+func (r usageResult) totalTokens() uint64 {
+	return r.InputTokens + r.OutputTokens + r.CacheReadInputTokens + r.CacheCreationInputTokens
+}
+
+func (r usageResult) hasTokens() bool {
+	return r.totalTokens() > 0
+}
+
+type usageCaptureContext struct {
+	ctx      context.Context
+	path     string
+	encoding string
+	stream   bool
+	proxyCtx *proxyContext
+	proxy    *Proxy
+}
+
+type usageCapture struct {
+	logger           *slog.Logger
+	src              io.ReadCloser
+	ctx              usageCaptureContext
+	reader           io.ReadCloser
+	writer           *io.PipeWriter
+	copyFailed       bool
+	parseErrors      uint64
+	readErrors       uint64
+	parseErrorType   string
+	parseErrorOffset int64
+	parseEvent       string
+	eventType        string
+}
+
+var _ io.ReadCloser = (*usageCapture)(nil)
+
+func newUsageCapture(logger *slog.Logger, src io.ReadCloser, ctx usageCaptureContext) *usageCapture {
+	reader, writer := io.Pipe()
+	capture := &usageCapture{
+		logger: logger,
+		src:    src,
+		ctx:    ctx,
+		reader: reader,
+		writer: writer,
+	}
+	ctx.proxy.captures.Go(capture.handleShadow)
+	return capture
+}
+
+func (p *Proxy) modifyResponse(response *http.Response) error {
+	if response == nil || response.Body == nil {
+		return nil
+	}
+	pc, ok := response.Request.Context().Value(proxyContextKey{}).(*proxyContext)
+	if !ok || pc == nil {
+		return nil
+	}
+	pc.upstreamStatus = response.StatusCode
+	pc.upstreamRequestID = response.Header.Get("X-Request-ID")
+	if id := logging.RequestID(response.Request.Context()); id != "" {
+		response.Header.Set("X-Request-ID", id)
+	}
+	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+		if pc, ok := response.Request.Context().Value(proxyContextKey{}).(*proxyContext); ok {
+			call := Call{Known: response.StatusCode >= 400 && response.StatusCode < 500, Stream: pc.stream, Result: "failed", ErrorCode: "upstream_http_error"}
+			response.Body = p.captureRejection(response, pc, call)
+			p.finish(response.Request.Context(), pc, call)
+		}
+		return nil
+	}
+	ctx, ok := response.Request.Context().Value(proxyContextKey{}).(*proxyContext)
+	if !ok || ctx == nil {
+		return nil
+	}
+	response.Body = newUsageCapture(p.logger, response.Body, usageCaptureContext{
+		ctx:      response.Request.Context(),
+		path:     normalizeUsagePath(response.Request.URL.Path),
+		encoding: response.Header.Get("Content-Encoding"),
+		stream:   ctx.stream,
+		proxyCtx: ctx,
+		proxy:    p,
+	})
+	return nil
+}
+
+func normalizeUsagePath(path string) string {
+	switch {
+	case strings.HasSuffix(path, "/chat/completions"):
+		return "/v1/chat/completions"
+	case strings.HasSuffix(path, "/responses"):
+		return "/v1/responses"
+	case strings.HasSuffix(path, "/messages"):
+		return "/v1/messages"
+	default:
+		return path
+	}
+}
+
+func (p *Proxy) recordUsage(ctx context.Context, proxyCtx *proxyContext, result usageResult) {
+	if proxyCtx == nil {
+		return
+	}
+	target := proxyCtx.target
+	completedAt := time.Now()
+	call := Call{
+		ModelID:   target.ModelID,
+		UserID:    target.UserID,
+		SessionID: target.SessionID,
+		RequestID: result.ResponseID,
+		Known:     result.Known, Stream: proxyCtx.stream, Result: result.Result,
+		ErrorCode:            result.ErrorCode,
+		TerminalEvent:        result.TerminalEvent,
+		InputTokens:          result.InputTokens + result.CacheReadInputTokens + result.CacheCreationInputTokens,
+		OutputTokens:         result.OutputTokens,
+		CachedInputTokens:    result.CacheReadInputTokens + result.CachedTokens,
+		InputSource:          result.InputSource,
+		OutputSource:         result.OutputSource,
+		FirstTokenDurationMs: result.FirstTokenDurationMs,
+		StartedAt:            proxyCtx.startedAt,
+		CompletedAt:          completedAt,
+	}
+	if call.Result == "" {
+		call.Result = "succeeded"
+	}
+	if !call.Known && call.ErrorCode == "" {
+		call.ErrorCode = "usage_unknown"
+	}
+	logCall := call
+	if result.ObservedResult != "" {
+		logCall.Result = result.ObservedResult
+	}
+	logCall.ErrorCode = result.FailureCode
+	p.logCall(ctx, proxyCtx, logCall, nil, result.FailureAttrs...)
+	usageAttrs := []any{"module", "proxy", "operation", "recordUsage", "transaction_id", proxyCtx.reservation.ID,
+		"model_id", target.ModelID, "protocol", target.Protocol, "stream", proxyCtx.stream, "response_id", result.ResponseID,
+		"terminal_event", result.TerminalEvent, "usage_known", call.Known, "reason", call.ErrorCode,
+		"parse_error_count", result.ParseErrorCount, "read_error_count", result.ReadErrorCount,
+		"parse_error_type", result.ParseErrorType, "parse_error_offset", result.ParseErrorOffset, "parse_event", result.ParseEvent}
+	if !call.Known {
+		logging.Event(ctx, p.logger, slog.LevelWarn, "model.usage.failed", "模型用量无法确定", usageAttrs...)
+	} else if result.ParseErrorCount > 0 {
+		logging.Event(ctx, p.logger, slog.LevelDebug, "model.usage.parse.recovered", "模型用量解析异常后已恢复", usageAttrs...)
+	}
+	if call.InputSource != "" || call.OutputSource != "" {
+		logging.Event(ctx, p.logger, slog.LevelInfo, "proxy.operation.info", "模型用量已本地估算", "module", "proxy", "operation", "recordUsage", "model_id", target.ModelID, "transaction_id", proxyCtx.reservation.ID, "input_source", call.InputSource, "output_source", call.OutputSource, "known", call.Known)
+	}
+	p.finish(ctx, proxyCtx, call)
+	if target.OwnershipType == "user" || p.billing != nil || p.recorder == nil || !result.hasTokens() {
+		return
+	}
+	if err := p.recorder.Record(context.WithoutCancel(ctx), call); err != nil {
+		logging.Event(ctx, p.logger, slog.LevelWarn, "model.usage.persist.failed", "记录模型调用用量失败", "module", "proxy", "operation", "recordUsage", "model_id", target.ModelID, "error", err)
+	}
+}
+
+func (c *usageCapture) handleShadow() {
+	reader := c.reader
+	var result usageResult
+	defer func() {
+		if err := reader.Close(); err != nil {
+			c.logPipeError("close_usage_reader", err)
+		}
+		if c.ctx.proxy != nil {
+			result.ParseErrorCount = c.parseErrors
+			result.ReadErrorCount = c.readErrors
+			result.ParseErrorType, result.ParseErrorOffset, result.ParseEvent = c.parseErrorType, c.parseErrorOffset, c.parseEvent
+			c.ctx.proxy.recordUsage(c.ctx.ctx, c.ctx.proxyCtx, result)
+		}
+	}()
+	if strings.EqualFold(strings.TrimSpace(c.ctx.encoding), "gzip") {
+		decoded, err := gzip.NewReader(reader)
+		if err != nil {
+			c.logPipeError("decode_usage_gzip", err)
+			result = usageResult{Result: "failed", ErrorCode: "usage_read_failed"}
+			return
+		}
+		defer func() {
+			if err := decoded.Close(); err != nil {
+				c.logPipeError("close_usage_decoder", err)
+			}
+		}()
+		c.reader = decoded
+	}
+	if c.ctx.stream {
+		result = c.handleStream()
+	} else {
+		result = c.handleNonStream()
+	}
+}
+
+func (c *usageCapture) handleStream() (result usageResult) {
+	estimate := newTokenEstimate(c.ctx.proxyCtx)
+	defer func() { result = estimate.apply(result) }()
+	var terminal, usageSeen bool
+	decoder := newSSEDecoder(c.reader)
+	transactionID := ""
+	if c.ctx.proxyCtx != nil {
+		transactionID = c.ctx.proxyCtx.reservation.ID
+	}
+	logger := c.logger.With("path", c.ctx.path, "transaction_id", transactionID)
+	for decoder.Next() {
+		event := decoder.Event()
+		c.eventType = event.Type
+		object := readEvent(event.Data)
+		estimate.event(c.ctx.path, event, object)
+		if result.FirstTokenDurationMs == nil && c.ctx.proxyCtx != nil && object.firstOutput(c.ctx.path, event) {
+			elapsed := time.Since(c.ctx.proxyCtx.startedAt).Milliseconds()
+			if elapsed >= 0 && elapsed <= 1<<31-1 {
+				measured := int32(elapsed)
+				result.FirstTokenDurationMs = &measured
+			}
+		}
+		switch event.Type {
+		case "response.created", "response.in_progress", "response.completed", "response.failed", "response.incomplete":
+			isTerminal := event.Type == "response.completed" || event.Type == "response.failed" || event.Type == "response.incomplete"
+			if isTerminal {
+				terminal = true
+				result.TerminalEvent = event.Type
+			}
+			if event.Type != "response.completed" {
+				if isTerminal {
+					result.Result = "failed"
+					result.ObservedResult, result.FailureCode = "failed", "upstream_failed"
+				}
+			}
+			response, err := object.responses()
+			if err != nil {
+				c.parseFailure(logger, "解析 Responses 流式事件失败", err)
+				if isTerminal {
+					result.ErrorCode = "usage_parse_failed"
+				}
+				continue
+			}
+			if response.ID != "" {
+				result.ResponseID = response.ID
+			}
+			if response.IncompleteDetails != nil {
+				result.FailureAttrs = append(result.FailureAttrs, slog.String("incomplete_reason", response.IncompleteDetails.Reason))
+				if event.Type == "response.incomplete" && response.IncompleteDetails.Reason == "max_output_tokens" {
+					result.FailureCode = "output_limit_reached"
+				}
+			}
+			if !isTerminal {
+				continue
+			}
+			if response.Usage == nil {
+				continue
+			}
+			usageSeen = true
+			result.Known = response.Usage.inputKnown && response.Usage.outputKnown
+			result.inputKnown, result.outputKnown = response.Usage.inputKnown, response.Usage.outputKnown
+			result.InputTokens = response.Usage.InputTokens
+			result.OutputTokens = response.Usage.OutputTokens
+			result.CachedTokens = response.Usage.InputTokensDetails.CachedTokens
+		case "done":
+			terminal = true
+			if result.TerminalEvent == "" {
+				result.TerminalEvent = "done"
+			}
+		case "", "message":
+			response, err := object.chat()
+			if err != nil {
+				c.parseFailure(logger, "解析 Chat Completions 流式用量失败", err)
+				result.ErrorCode = "usage_parse_failed"
+				continue
+			}
+			if response.ID != "" {
+				result.ResponseID = response.ID
+			}
+			if response.Usage == nil {
+				continue
+			}
+			usageSeen = true
+			if response.Usage.inputKnown {
+				result.inputKnown = true
+				result.InputTokens = response.Usage.PromptTokens
+				result.CachedTokens = response.Usage.PromptTokensDetails.CachedTokens
+			} else if response.Usage.PromptTokensDetails.CachedTokens > 0 {
+				result.CachedTokens = response.Usage.PromptTokensDetails.CachedTokens
+			}
+			if response.Usage.outputKnown {
+				result.outputKnown = true
+				result.OutputTokens = response.Usage.CompletionTokens
+			}
+			result.Known = result.inputKnown && result.outputKnown
+		case "message_start":
+			response, err := object.anthropic()
+			if err != nil {
+				c.parseFailure(logger, "解析 Anthropic message_start 用量失败", err)
+				result.ErrorCode = "usage_parse_failed"
+				continue
+			}
+			result.ResponseID = response.Message.ID
+			if response.Message.Usage == nil {
+				continue
+			}
+			usageSeen = true
+			result.inputKnown = response.Message.Usage.inputKnown
+			result.CacheCreationInputTokens = response.Message.Usage.CacheCreationInputTokens
+			result.InputTokens = response.Message.Usage.InputTokens
+			result.CacheReadInputTokens = response.Message.Usage.CacheReadInputTokens
+		case "message_delta":
+			response, err := object.anthropic()
+			if err != nil {
+				c.parseFailure(logger, "解析 Anthropic message_delta 用量失败", err)
+				result.ErrorCode = "usage_parse_failed"
+				continue
+			}
+			if response.Usage == nil {
+				continue
+			}
+			usageSeen = true
+			if response.Usage.inputKnown {
+				result.inputKnown = true
+				result.InputTokens = response.Usage.InputTokens
+			}
+			if response.Usage.outputKnown {
+				result.outputKnown = true
+				result.OutputTokens = response.Usage.OutputTokens
+			}
+			if response.Usage.CacheReadInputTokens > 0 {
+				result.CacheReadInputTokens = response.Usage.CacheReadInputTokens
+			}
+		case "message_stop":
+			terminal = true
+			result.TerminalEvent = event.Type
+			result.Known = result.inputKnown && result.outputKnown
+		case "error":
+			terminal = true
+			result.Result = "failed"
+			result.Known = false
+			result.ErrorCode = "upstream_error_event"
+			result.ObservedResult, result.FailureCode = "failed", "upstream_error_event"
+			result.TerminalEvent = event.Type
+		}
+	}
+	if err := decoder.Err(); err != nil {
+		result.Result = "failed"
+		result.ErrorCode = "stream_interrupted"
+		result.ObservedResult, result.FailureCode = "failed", "stream_interrupted"
+		result.FailureAttrs = append(result.FailureAttrs, logging.ErrorAttrs(err)...)
+		c.readErrors++
+		logging.Event(c.ctx.ctx, logger, slog.LevelDebug, "model.usage.read.failed", "读取模型流式响应失败", "error", err)
+	}
+	if !terminal && result.ObservedResult == "" {
+		result.ObservedResult, result.FailureCode = "failed", "stream_terminal_missing"
+	}
+	if result.Known {
+		result.ErrorCode = ""
+	} else if result.ErrorCode == "" {
+		switch {
+		case usageSeen:
+			result.ErrorCode = "usage_incomplete"
+		case terminal:
+			result.ErrorCode = "usage_missing"
+		default:
+			result.ErrorCode = "usage_terminal_event_missing"
+		}
+	}
+	return result
+}
+
+func (c *usageCapture) handleNonStream() (result usageResult) {
+	estimate := newTokenEstimate(c.ctx.proxyCtx)
+	defer func() { result = estimate.apply(result) }()
+	transactionID := ""
+	if c.ctx.proxyCtx != nil {
+		transactionID = c.ctx.proxyCtx.reservation.ID
+	}
+	logger := c.logger.With("path", c.ctx.path, "transaction_id", transactionID)
+	data, err := io.ReadAll(io.LimitReader(c.reader, maxEstimateBytes+1))
+	if err != nil || len(data) > maxEstimateBytes {
+		c.readErrors++
+		logging.Event(c.ctx.ctx, logger, slog.LevelDebug, "model.usage.read.failed", "读取模型响应副本失败", "error", err)
+		result.Result = "failed"
+		result.ErrorCode = "usage_read_failed"
+		result.ObservedResult, result.FailureCode = "failed", "upstream_read_failed"
+		result.FailureAttrs = append(result.FailureAttrs, logging.ErrorAttrs(err)...)
+		return result
+	}
+	defer func() {
+		if !result.Known {
+			estimate.response(c.ctx.path, data)
+		}
+	}()
+	switch c.ctx.path {
+	case "/v1/responses":
+		response, err := parseOpenAIResponse(data)
+		if err != nil {
+			c.parseFailure(logger, "解析 Responses 用量失败", err)
+			result.ErrorCode = "usage_parse_failed"
+			return result
+		}
+		result.ResponseID = response.ID
+		result.TerminalEvent = response.Status
+		if response.IncompleteDetails != nil {
+			result.FailureAttrs = append(result.FailureAttrs, slog.String("incomplete_reason", response.IncompleteDetails.Reason))
+			if response.Status == "incomplete" && response.IncompleteDetails.Reason == "max_output_tokens" {
+				result.FailureCode = "output_limit_reached"
+			}
+		}
+		if response.Usage == nil {
+			result.ErrorCode = "usage_missing"
+			if response.Status == "failed" || response.Status == "incomplete" {
+				result.Result = "failed"
+			}
+			return result
+		}
+		result.Known = response.Usage.inputKnown && response.Usage.outputKnown
+		result.inputKnown, result.outputKnown = response.Usage.inputKnown, response.Usage.outputKnown
+		if response.Status == "failed" || response.Status == "incomplete" {
+			result.Result = "failed"
+		}
+		result.InputTokens = response.Usage.InputTokens
+		result.OutputTokens = response.Usage.OutputTokens
+		result.CachedTokens = response.Usage.InputTokensDetails.CachedTokens
+	case "/v1/chat/completions":
+		response, err := parseChatCompletion(data)
+		if err != nil {
+			c.parseFailure(logger, "解析 Chat Completions 用量失败", err)
+			result.ErrorCode = "usage_parse_failed"
+			return result
+		}
+		result.ResponseID = response.ID
+		if response.Usage == nil {
+			result.ErrorCode = "usage_missing"
+			return result
+		}
+		result.Known = response.Usage.inputKnown && response.Usage.outputKnown
+		result.inputKnown, result.outputKnown = response.Usage.inputKnown, response.Usage.outputKnown
+		result.InputTokens = response.Usage.PromptTokens
+		result.OutputTokens = response.Usage.CompletionTokens
+		result.CachedTokens = response.Usage.PromptTokensDetails.CachedTokens
+	case "/v1/messages":
+		response, err := parseAnthropicResponse(data)
+		if err != nil {
+			c.parseFailure(logger, "解析 Anthropic 用量失败", err)
+			result.ErrorCode = "usage_parse_failed"
+			return result
+		}
+		result.ResponseID = response.ID
+		if response.Usage == nil {
+			result.ErrorCode = "usage_missing"
+			return result
+		}
+		result.Known = response.Usage.inputKnown && response.Usage.outputKnown
+		result.inputKnown, result.outputKnown = response.Usage.inputKnown, response.Usage.outputKnown
+		result.InputTokens = response.Usage.InputTokens
+		result.OutputTokens = response.Usage.OutputTokens
+		result.CacheReadInputTokens = response.Usage.CacheReadInputTokens
+		result.CacheCreationInputTokens = response.Usage.CacheCreationInputTokens
+	}
+	if result.Known {
+		result.ErrorCode = ""
+	} else if result.ErrorCode == "" {
+		result.ErrorCode = "usage_incomplete"
+	}
+	return result
+}
+
+func (c *usageCapture) parseFailure(logger *slog.Logger, message string, err error) {
+	c.parseErrors++
+	if c.parseErrorType == "" {
+		c.parseErrorType = "invalid_json"
+		c.parseEvent = c.eventType
+		var syntax *json.SyntaxError
+		var mismatch *json.UnmarshalTypeError
+		switch {
+		case errors.As(err, &syntax):
+			c.parseErrorType, c.parseErrorOffset = "syntax_error", syntax.Offset
+		case errors.As(err, &mismatch):
+			c.parseErrorType, c.parseErrorOffset = "type_error", mismatch.Offset
+		}
+	}
+	logging.Event(c.ctx.ctx, logger, slog.LevelDebug, "model.usage.parse.failed", message, "parse_error_type", c.parseErrorType, "parse_error_offset", c.parseErrorOffset, "parse_event", c.parseEvent)
+}
+
+func (c *usageCapture) logPipeError(operation string, err error) {
+	if errors.Is(err, io.ErrClosedPipe) || errors.Is(err, context.Canceled) || (c.ctx.ctx != nil && c.ctx.ctx.Err() != nil) {
+		return
+	}
+	transactionID, modelID := "", ""
+	if c.ctx.proxyCtx != nil {
+		transactionID = c.ctx.proxyCtx.reservation.ID
+		modelID = c.ctx.proxyCtx.target.ModelID
+	}
+	logging.Event(c.ctx.ctx, c.logger, slog.LevelWarn, "proxy.operation.warn", "转发模型用量副本失败", "module", "proxy", "operation", "logPipeError", "transaction_id", transactionID, "model_id", modelID, "operation", operation, "path", c.ctx.path, "error", err)
+}
+
+func (c *usageCapture) Close() error {
+	if err := c.writer.CloseWithError(io.ErrUnexpectedEOF); err != nil && !errors.Is(err, io.ErrClosedPipe) {
+		c.logPipeError("close_usage_pipe", err)
+	}
+	if err := c.src.Close(); err != nil {
+		// 上游 Body 可由自定义 Transport 提供，Close 错误文本未必可安全记录。
+		if !errors.Is(err, io.ErrClosedPipe) && !errors.Is(err, context.Canceled) {
+			c.logPipeError("close_upstream_response", fmt.Errorf("上游响应关闭错误类型 %T", err))
+		}
+		return fmt.Errorf("关闭上游响应: %w", err)
+	}
+	return nil
+}
+
+func (c *usageCapture) Read(buffer []byte) (int, error) {
+	n, err := c.src.Read(buffer)
+	if n > 0 && !c.copyFailed {
+		if _, writeErr := c.writer.Write(bytes.Clone(buffer[:n])); writeErr != nil {
+			c.copyFailed = true
+			if c.ctx.ctx.Err() == nil {
+				c.logPipeError("write_usage_pipe", writeErr)
+			}
+		}
+	}
+	if err != nil {
+		if closeErr := c.writer.CloseWithError(err); closeErr != nil && !errors.Is(closeErr, io.ErrClosedPipe) {
+			c.logPipeError("close_usage_pipe", closeErr)
+		}
+	}
+	return n, err
+}
+
+type openAIResponseEvent struct {
+	Response openAIResponse `json:"response"`
+}
+
+type openAIResponse struct {
+	ID                string      `json:"id"`
+	Status            string      `json:"status"`
+	Usage             *tokenUsage `json:"usage"`
+	IncompleteDetails *struct {
+		Reason string `json:"reason"`
+	} `json:"incomplete_details"`
+}
+
+type tokenUsage struct {
+	inputKnown, outputKnown  bool
+	InputTokens              uint64       `json:"input_tokens"`
+	CacheCreationInputTokens uint64       `json:"cache_creation_input_tokens"`
+	OutputTokens             uint64       `json:"output_tokens"`
+	CacheReadInputTokens     uint64       `json:"cache_read_input_tokens"`
+	InputTokensDetails       tokenDetails `json:"input_tokens_details"`
+}
+
+type tokenDetails struct {
+	CachedTokens uint64 `json:"cached_tokens"`
+}
+
+type chatCompletion struct {
+	ID    string     `json:"id"`
+	Usage *chatUsage `json:"usage"`
+}
+type chatUsage struct {
+	PromptTokens            uint64       `json:"prompt_tokens"`
+	CompletionTokens        uint64       `json:"completion_tokens"`
+	PromptTokensDetails     tokenDetails `json:"prompt_tokens_details"`
+	inputKnown, outputKnown bool
+}
+
+func (u *chatUsage) UnmarshalJSON(data []byte) error {
+	type plain chatUsage
+	if err := json.Unmarshal(data, (*plain)(u)); err != nil {
+		return err
+	}
+	u.inputKnown = usageField(data, "prompt_tokens")
+	u.outputKnown = usageField(data, "completion_tokens")
+	return nil
+}
+func (u *tokenUsage) UnmarshalJSON(data []byte) error {
+	type plain tokenUsage
+	if err := json.Unmarshal(data, (*plain)(u)); err != nil {
+		return err
+	}
+	u.inputKnown = usageField(data, "input_tokens")
+	u.outputKnown = usageField(data, "output_tokens")
+	return nil
+}
+func usageField(data []byte, key string) bool {
+	var raw map[string]json.RawMessage
+	if json.Unmarshal(data, &raw) != nil {
+		return false
+	}
+	v, ok := raw[key]
+	return ok && string(v) != "null"
+}
+
+type anthropicResponse struct {
+	ID      string           `json:"id"`
+	Usage   *tokenUsage      `json:"usage"`
+	Message anthropicMessage `json:"message"`
+}
+
+type anthropicMessage struct {
+	ID     string      `json:"id"`
+	Status string      `json:"status"`
+	Usage  *tokenUsage `json:"usage"`
+}
+
+func parseOpenAIResponseEvent(data []byte) (openAIResponse, error) {
+	var event openAIResponseEvent
+	err := json.Unmarshal(data, &event)
+	return event.Response, err
+}
+
+func parseOpenAIResponse(data []byte) (openAIResponse, error) {
+	var response openAIResponse
+	if err := json.Unmarshal(data, &response); err != nil {
+		return openAIResponse{}, err
+	}
+	if response.ID != "" {
+		return response, nil
+	}
+	return parseOpenAIResponseEvent(data)
+}
+
+func parseChatCompletion(data []byte) (chatCompletion, error) {
+	var response chatCompletion
+	err := json.Unmarshal(data, &response)
+	return response, err
+}
+
+func parseAnthropicResponse(data []byte) (anthropicResponse, error) {
+	var response anthropicResponse
+	err := json.Unmarshal(data, &response)
+	return response, err
+}
+
+type sseEvent struct {
+	Type string
+	Data []byte
+}
+
+type sseDecoder struct {
+	scanner *bufio.Scanner
+	current sseEvent
+	done    bool
+}
+
+func newSSEDecoder(reader io.Reader) *sseDecoder {
+	scanner := bufio.NewScanner(reader)
+	scanner.Buffer(make([]byte, 64<<10), 4<<20)
+	return &sseDecoder{scanner: scanner}
+}
+
+func (d *sseDecoder) Next() bool {
+	if d.done {
+		return false
+	}
+	var eventType string
+	var data bytes.Buffer
+	for d.scanner.Scan() {
+		line := d.scanner.Text()
+		if line == "" {
+			if eventType == "" && data.Len() == 0 {
+				continue
+			}
+			return d.setEvent(eventType, data.Bytes())
+		}
+		if value, ok := strings.CutPrefix(line, "event:"); ok {
+			eventType = strings.TrimSpace(value)
+			continue
+		}
+		if value, ok := strings.CutPrefix(line, "data:"); ok {
+			chunk := strings.TrimSpace(value)
+			if chunk == "[DONE]" {
+				d.current = sseEvent{Type: "done"}
+				d.done = true
+				return true
+			}
+			data.WriteString(chunk)
+			data.WriteByte('\n')
+		}
+	}
+	if eventType != "" || data.Len() > 0 {
+		return d.setEvent(eventType, data.Bytes())
+	}
+	return false
+}
+
+func (d *sseDecoder) setEvent(eventType string, data []byte) bool {
+	data = bytes.TrimSuffix(data, []byte("\n"))
+	d.current = sseEvent{Type: eventType, Data: bytes.Clone(data)}
+	return true
+}
+
+func (d *sseDecoder) Event() sseEvent {
+	return d.current
+}
+
+func (d *sseDecoder) Err() error {
+	return d.scanner.Err()
+}

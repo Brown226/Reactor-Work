@@ -1,0 +1,571 @@
+package model
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+	"log/slog"
+	"slices"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/database"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/model/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/rootgroup"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type Postgres struct {
+	pool *pgxpool.Pool
+}
+
+func NewPostgres(pool *pgxpool.Pool) *Postgres {
+	return &Postgres{pool: pool}
+}
+
+func (p *Postgres) List(ctx context.Context, ownership string) ([]Model, error) {
+	rows, err := sqlc.New(database.Reader(ctx, p.pool)).ListModels(ctx, ownership)
+	if err != nil {
+		return nil, fmt.Errorf("查询模型: %w", err)
+	}
+	models, err := readModels(rows)
+	if err != nil {
+		return nil, err
+	}
+	if err := p.loadGrants(ctx, models); err != nil {
+		return nil, err
+	}
+	if err := p.loadTags(ctx, models); err != nil {
+		return nil, err
+	}
+	return models, nil
+}
+
+func (p *Postgres) Get(ctx context.Context, id string) (Model, error) {
+	item, err := readModel(sqlc.New(database.Reader(ctx, p.pool)).GetModel(ctx, id))
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Model{}, ErrNotFound
+	}
+	if err != nil {
+		return Model{}, err
+	}
+	models := []Model{item}
+	if err := p.loadGrants(ctx, models); err != nil {
+		return Model{}, err
+	}
+	if err := p.loadTags(ctx, models); err != nil {
+		return Model{}, err
+	}
+	return models[0], nil
+}
+
+func (p *Postgres) Create(ctx context.Context, item Model) (Model, error) {
+	if item.Kind == "" {
+		item.Kind = KindText
+	}
+	if item.Provider == "" && item.Kind == KindText {
+		item.Provider = ProviderPassthrough
+	}
+	tx, err := p.pool.Begin(ctx)
+	if err != nil {
+		return Model{}, err
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) && ctx.Err() == nil {
+			logging.Event(ctx, slog.Default(), slog.LevelError, "model.operation.error", "回滚创建模型事务失败", "module", "model", "operation", "Create", "model_id", item.ID, "error", err)
+		}
+	}()
+	advanced, err := json.Marshal(item.AdvancedConfig)
+	if err != nil {
+		return Model{}, err
+	}
+	if item.Kind == KindImage || item.Kind == KindVideo || item.Kind == KindEmbedding {
+		advanced = []byte("{}")
+	}
+	options, config, pricing, err := marshalImageFields(item)
+	if err != nil {
+		return Model{}, err
+	}
+	videoConfig, videoPricing, err := marshalVideoFields(item)
+	if err != nil {
+		return Model{}, err
+	}
+	embeddingConfig, err := marshalEmbeddingConfig(item)
+	if err != nil {
+		return Model{}, err
+	}
+	authorization, tagIDs := item.Authorization, item.TagIDs
+	item, err = readModel(sqlc.New(tx).CreateModel(ctx, sqlc.CreateModelParams{
+		OwnershipType:    item.OwnershipType,
+		OwnerUserID:      item.OwnerUserID,
+		ModelID:          item.ModelID,
+		DisplayName:      item.DisplayName,
+		Protocol:         string(item.Protocol),
+		BaseUrl:          item.BaseURL,
+		ApiKey:           item.APIKey,
+		AdvancedConfig:   advanced,
+		CreditMultiplier: float64(item.CreditMultiplier),
+		Kind:             string(item.Kind),
+		Provider:         string(item.Provider),
+		ProviderOptions:  options,
+		ImageConfig:      config,
+		ImagePricing:     pricing,
+		VideoConfig:      videoConfig,
+		VideoPricing:     videoPricing,
+		EmbeddingConfig:  embeddingConfig,
+		ProxyID:          item.ProxyID,
+	}))
+	if err != nil {
+		return Model{}, fmt.Errorf("创建模型: %w", err)
+	}
+	item.Authorization = normalizeAuthorization(authorization)
+	if err := replaceGrants(ctx, tx, item); err != nil {
+		return Model{}, err
+	}
+	if tagIDs != nil {
+		if err := resource.SaveTags(ctx, tx, "model", item.ID, item.OwnerUserID, tagIDs); err != nil {
+			return Model{}, err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return Model{}, err
+	}
+	return p.Get(ctx, item.ID)
+}
+
+func (p *Postgres) Update(ctx context.Context, item Model) (Model, error) {
+	return p.update(ctx, item, "system")
+}
+
+func (p *Postgres) UpdateUser(ctx context.Context, item Model) (Model, error) {
+	return p.update(ctx, item, "user")
+}
+
+func (p *Postgres) update(ctx context.Context, item Model, ownership string) (Model, error) {
+	tx, err := p.pool.Begin(ctx)
+	if err != nil {
+		return Model{}, err
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) && ctx.Err() == nil {
+			logging.Event(ctx, slog.Default(), slog.LevelError, "model.operation.error", "回滚更新模型事务失败", "module", "model", "operation", "update", "model_id", item.ID, "error", err)
+		}
+	}()
+	advanced, err := json.Marshal(item.AdvancedConfig)
+	if err != nil {
+		return Model{}, err
+	}
+	if item.Kind == KindImage || item.Kind == KindVideo || item.Kind == KindEmbedding {
+		advanced = []byte("{}")
+	}
+	options, config, pricing, err := marshalImageFields(item)
+	if err != nil {
+		return Model{}, err
+	}
+	videoConfig, videoPricing, err := marshalVideoFields(item)
+	if err != nil {
+		return Model{}, err
+	}
+	embeddingConfig, err := marshalEmbeddingConfig(item)
+	if err != nil {
+		return Model{}, err
+	}
+	authorization := item.Authorization
+	grantorUserID, tagIDs := item.GrantorUserID, item.TagIDs
+	item, err = readModel(sqlc.New(tx).UpdateModel(ctx, sqlc.UpdateModelParams{
+		ID:               item.ID,
+		ModelID:          item.ModelID,
+		DisplayName:      item.DisplayName,
+		Protocol:         string(item.Protocol),
+		BaseUrl:          item.BaseURL,
+		ApiKey:           item.APIKey,
+		AdvancedConfig:   advanced,
+		CreditMultiplier: float64(item.CreditMultiplier),
+		Kind:             string(item.Kind),
+		Provider:         string(item.Provider),
+		ProviderOptions:  options,
+		ImageConfig:      config,
+		ImagePricing:     pricing,
+		VideoConfig:      videoConfig,
+		VideoPricing:     videoPricing,
+		EmbeddingConfig:  embeddingConfig,
+		ProxyID:          item.ProxyID,
+		OwnershipType:    ownership,
+		OwnerUserID:      item.OwnerUserID,
+	}))
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Model{}, ErrNotFound
+	}
+	if err != nil {
+		return Model{}, fmt.Errorf("更新模型: %w", err)
+	}
+	item.Authorization = normalizeAuthorization(authorization)
+	item.GrantorUserID = grantorUserID
+	if ownership == "system" {
+		if err := replaceGrants(ctx, tx, item); err != nil {
+			return Model{}, err
+		}
+	}
+	if tagIDs != nil {
+		actor := item.OwnerUserID
+		if item.GrantorUserID != "" {
+			actor = item.GrantorUserID
+		}
+		if err := resource.SaveTags(ctx, tx, "model", item.ID, actor, tagIDs); err != nil {
+			return Model{}, err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return Model{}, err
+	}
+	return p.Get(ctx, item.ID)
+}
+
+func (p *Postgres) SetEnabled(ctx context.Context, id string, enabled bool) (Model, error) {
+	item, err := readModel(sqlc.New(database.Reader(ctx, p.pool)).SetEnabled(ctx, sqlc.SetEnabledParams{ID: id, Enabled: enabled}))
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Model{}, ErrNotFound
+	}
+	if err != nil {
+		return Model{}, err
+	}
+	models := []Model{item}
+	if err := p.loadGrants(ctx, models); err != nil {
+		return Model{}, err
+	}
+	if err := p.loadTags(ctx, models); err != nil {
+		return Model{}, err
+	}
+	return models[0], nil
+}
+
+func (p *Postgres) Delete(ctx context.Context, id string) error {
+	return p.delete(ctx, id, "system", "")
+}
+
+func (p *Postgres) DeleteUser(ctx context.Context, id, userID string) error {
+	return p.delete(ctx, id, "user", userID)
+}
+
+func (p *Postgres) delete(ctx context.Context, id, ownership, userID string) error {
+	tx, err := p.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) && ctx.Err() == nil {
+			logging.Event(ctx, slog.Default(), slog.LevelError, "model.operation.error", "回滚删除模型事务失败", "module", "model", "operation", "delete", "model_id", id, "error", err)
+		}
+	}()
+	result, err := sqlc.New(tx).DeleteModel(ctx, sqlc.DeleteModelParams{ID: id, OwnershipType: ownership, OwnerUserID: userID})
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() != 1 {
+		return ErrNotFound
+	}
+	if _, err := sqlc.New(tx).DeleteGrants(ctx, id); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func (p *Postgres) ListAvailable(ctx context.Context, userID string) ([]Model, error) {
+	q := database.Reader(ctx, p.pool)
+	allowed, err := resource.CanUseSystem(ctx, q, userID)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := sqlc.New(q).ListAvailable(ctx, sqlc.ListAvailableParams{OwnerUserID: userID, SystemAccess: allowed})
+	if err != nil {
+		return nil, fmt.Errorf("查询可用模型: %w", err)
+	}
+	models, err := readModels(rows)
+	if err != nil {
+		return nil, err
+	}
+	if err := p.loadPeople(ctx, models, userID); err != nil {
+		return nil, err
+	}
+	if err := p.loadTags(ctx, models); err != nil {
+		return nil, err
+	}
+	return models, nil
+}
+
+func (p *Postgres) Resolve(ctx context.Context, userID, requestedModel string) (Model, error) {
+	q := database.Reader(ctx, p.pool)
+	allowed, err := resource.CanUseSystem(ctx, q, userID)
+	if err != nil {
+		return Model{}, err
+	}
+	item, err := readModel(sqlc.New(q).ResolveModel(ctx, sqlc.ResolveModelParams{UserID: userID, RequestedModel: requestedModel, SystemAccess: allowed}))
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Model{}, ErrUnauthorized
+	}
+	return item, err
+}
+
+func (p *Postgres) Subjects(ctx context.Context) (Subjects, error) {
+	result := Subjects{Groups: make([]Subject, 0), Users: make([]Subject, 0)}
+	groupRows, err := sqlc.New(database.Reader(ctx, p.pool)).ListGroups(ctx)
+	if err != nil {
+		return Subjects{}, err
+	}
+	name, err := rootgroup.Name(ctx, p.pool)
+	if err != nil {
+		return Subjects{}, err
+	}
+	result.Groups = append(result.Groups, Subject{ID: rootgroup.ID, Name: name})
+	for _, row := range groupRows {
+		var subject Subject
+		subject.ID, subject.ParentID, subject.Name = row.ID, rootgroup.ParentID(row.ParentID), row.Name
+		result.Groups = append(result.Groups, subject)
+	}
+
+	userRows, err := sqlc.New(database.Reader(ctx, p.pool)).ListUsers(ctx)
+	if err != nil {
+		return Subjects{}, err
+	}
+	memberships, err := rootgroup.UserGroups(ctx, p.pool)
+	if err != nil {
+		return Subjects{}, err
+	}
+	for _, row := range userRows {
+		var subject Subject
+		subject.ID, subject.Name, subject.Email, subject.GroupID = row.ID, row.Name, row.Email, memberships[row.ID]
+		subject.AvatarURL = row.AvatarUrl
+		result.Users = append(result.Users, subject)
+	}
+	return result, nil
+}
+
+func readModel(row sqlc.Model, err error) (Model, error) {
+	if err != nil {
+		return Model{}, err
+	}
+	item := Model{ID: row.ID, OwnershipType: row.OwnershipType, OwnerUserID: row.OwnerUserID,
+		ModelID: row.ModelID, DisplayName: row.DisplayName, Protocol: Protocol(row.Protocol),
+		Kind: Kind(row.Kind), Provider: Provider(row.Provider), ProviderOptions: row.ProviderOptions,
+		BaseURL: row.BaseUrl, ProxyID: row.ProxyID, APIKey: row.ApiKey, APIKeyConfigured: row.ApiKey != "",
+		CreditMultiplier: row.CreditMultiplier, Enabled: row.Enabled, CreatedAt: row.CreatedAt, UpdatedAt: row.UpdatedAt}
+	if err := json.Unmarshal(row.AdvancedConfig, &item.AdvancedConfig); err != nil {
+		return Model{}, fmt.Errorf("解析模型高级配置: %w", err)
+	}
+	if len(row.ImageConfig) != 0 {
+		if err := json.Unmarshal(row.ImageConfig, &item.ImageConfig); err != nil {
+			return Model{}, fmt.Errorf("解析生图配置: %w", err)
+		}
+	}
+	if len(row.ImagePricing) != 0 {
+		if err := json.Unmarshal(row.ImagePricing, &item.ImagePricing); err != nil {
+			return Model{}, fmt.Errorf("解析生图积分: %w", err)
+		}
+	}
+	if len(row.VideoConfig) != 0 {
+		if err := json.Unmarshal(row.VideoConfig, &item.VideoConfig); err != nil {
+			return Model{}, fmt.Errorf("解析视频配置: %w", err)
+		}
+	}
+	if len(row.VideoPricing) != 0 {
+		if err := json.Unmarshal(row.VideoPricing, &item.VideoPricing); err != nil {
+			return Model{}, fmt.Errorf("解析视频积分: %w", err)
+		}
+	}
+	if len(row.EmbeddingConfig) != 0 {
+		if err := json.Unmarshal(row.EmbeddingConfig, &item.EmbeddingConfig); err != nil {
+			return Model{}, fmt.Errorf("解析向量配置: %w", err)
+		}
+	}
+	return item, nil
+}
+
+func readModels(rows []sqlc.Model) ([]Model, error) {
+	models := make([]Model, 0, len(rows))
+	for _, row := range rows {
+		item, err := readModel(row, nil)
+		if err != nil {
+			return nil, err
+		}
+		models = append(models, item)
+	}
+	return models, nil
+}
+
+func (p *Postgres) loadTags(ctx context.Context, models []Model) error {
+	q := database.Reader(ctx, p.pool)
+	for i := range models {
+		tags, err := resource.Tags(ctx, q, "model", models[i].ID)
+		if err != nil {
+			return err
+		}
+		models[i].Tags = tags
+	}
+	return nil
+}
+
+func (p *Postgres) loadGrants(ctx context.Context, models []Model) error {
+	if len(models) == 0 {
+		return nil
+	}
+	if err := p.loadUsers(ctx, models); err != nil {
+		return err
+	}
+	ids := make([]string, 0, len(models))
+	byID := make(map[string]*Model, len(models))
+	for index := range models {
+		models[index].Authorization = normalizeAuthorization(models[index].Authorization)
+		ids = append(ids, models[index].ID)
+		byID[models[index].ID] = &models[index]
+	}
+	rows, err := sqlc.New(database.Reader(ctx, p.pool)).ListGrants(ctx, ids)
+	if err != nil {
+		return err
+	}
+
+	for _, row := range rows {
+		var resourceID string
+		var userID, groupID *string
+		resourceID, userID, groupID = row.ResourceID, row.UserID, row.GroupID
+		item := byID[resourceID]
+		item.Authorization.AllUsers = item.Authorization.AllUsers || row.AllUsers
+		if userID != nil {
+			item.Authorization.UserIDs = append(item.Authorization.UserIDs, *userID)
+		}
+		if groupID != nil {
+			item.Authorization.GroupIDs = append(item.Authorization.GroupIDs, *groupID)
+		}
+	}
+	personal := []string{}
+	for _, item := range models {
+		if item.OwnershipType == "user" {
+			personal = append(personal, item.ID)
+		}
+	}
+	groups, err := resource.SharedGroups(ctx, database.Reader(ctx, p.pool), "model", personal)
+	if err != nil {
+		return err
+	}
+	for id, shared := range groups {
+		byID[id].SharedGroups = &shared
+	}
+	return nil
+}
+
+func replaceGrants(ctx context.Context, tx pgx.Tx, item Model) error {
+	grantorUserID := item.GrantorUserID
+	if grantorUserID == "" {
+		grantorUserID = item.OwnerUserID
+	}
+	if _, err := sqlc.New(tx).DeleteGrants(ctx, item.ID); err != nil {
+		return err
+	}
+	if item.Authorization.AllUsers {
+		_, err := sqlc.New(tx).GrantAllUsers(ctx, sqlc.GrantAllUsersParams{ResourceID: item.ID, GrantedByUserID: grantorUserID})
+		return err
+	}
+	for _, userID := range item.Authorization.UserIDs {
+		if _, err := sqlc.New(tx).GrantUser(ctx, sqlc.GrantUserParams{ResourceID: item.ID, UserID: new(userID), GrantedByUserID: grantorUserID}); err != nil {
+			return fmt.Errorf("保存用户授权: %w", err)
+		}
+	}
+	for _, groupID := range item.Authorization.GroupIDs {
+		if _, err := sqlc.New(tx).GrantGroup(ctx, sqlc.GrantGroupParams{ResourceID: item.ID, GroupID: new(groupID), GrantedByUserID: grantorUserID}); err != nil {
+			return fmt.Errorf("保存分组授权: %w", err)
+		}
+	}
+	return nil
+}
+
+func normalizeAuthorization(value Authorization) Authorization {
+	if value.AllUsers {
+		return Authorization{AllUsers: true, UserIDs: []string{}, GroupIDs: []string{}}
+	}
+	if slices.Contains(value.GroupIDs, rootgroup.ID) {
+		return Authorization{AllUsers: true, UserIDs: []string{}, GroupIDs: []string{}}
+	}
+	value.UserIDs = unique(value.UserIDs)
+	value.GroupIDs = unique(value.GroupIDs)
+	return value
+}
+
+// 与分享、删除使用同一模型行锁，避免删除后仍写入授权。
+func (p *Postgres) LockOwned(ctx context.Context, tx pgx.Tx, id, actor string) error {
+	_, err := sqlc.New(tx).LockOwned(ctx, sqlc.LockOwnedParams{ID: id, OwnerUserID: actor})
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return resource.NotFound
+	}
+	return err
+}
+
+func (p *Postgres) TouchShared(ctx context.Context, tx pgx.Tx, id string) error {
+	_, err := sqlc.New(tx).TouchModel(ctx, id)
+	return err
+}
+
+func (p *Postgres) loadPeople(ctx context.Context, models []Model, actor string) error {
+	if err := p.loadUsers(ctx, models); err != nil {
+		return err
+	}
+	ids := make([]string, 0, len(models))
+	byID := make(map[string]*Model, len(models))
+	for i := range models {
+		if models[i].OwnershipType != "user" {
+			continue
+		}
+		ids = append(ids, models[i].ID)
+		byID[models[i].ID] = &models[i]
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	rows, err := sqlc.New(database.Reader(ctx, p.pool)).ListPeople(ctx, sqlc.ListPeopleParams{ModelIds: ids, OwnerUserID: actor})
+	if err != nil {
+		return err
+	}
+
+	for _, row := range rows {
+		var id string
+		var person Subject
+		var creator bool
+		id, person.ID, person.Name, person.Email, creator = row.ModelID, row.UserID, row.Name, row.Email, row.Creator
+		if creator {
+			byID[id].Creator = &person
+		} else {
+			byID[id].SharedUsers = append(byID[id].SharedUsers, person)
+		}
+	}
+	owned := []string{}
+	for _, item := range models {
+		if item.OwnershipType == "user" && item.OwnerUserID == actor {
+			owned = append(owned, item.ID)
+		}
+	}
+	groups, err := resource.SharedGroups(ctx, database.Reader(ctx, p.pool), "model", owned)
+	if err != nil {
+		return err
+	}
+	for id, shared := range groups {
+		byID[id].SharedGroups = &shared
+	}
+	return nil
+}
+
+func (p *Postgres) loadUsers(ctx context.Context, models []Model) error {
+	ids := make([]string, 0, len(models))
+	for _, item := range models {
+		ids = append(ids, item.OwnerUserID)
+	}
+	users, err := resource.Users(ctx, database.Reader(ctx, p.pool), ids)
+	if err != nil {
+		return err
+	}
+	for i := range models {
+		models[i].User = users[models[i].OwnerUserID]
+	}
+	return nil
+}

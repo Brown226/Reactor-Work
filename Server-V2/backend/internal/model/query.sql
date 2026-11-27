@@ -1,0 +1,319 @@
+-- name: ListModels :many
+SELECT
+    *
+FROM
+    models
+WHERE
+    deleted_at IS NULL
+    AND ($1::text = ''
+        OR ownership_type = $1::text)
+ORDER BY
+    created_at DESC;
+
+-- name: PageModels :many
+SELECT *
+FROM models
+WHERE deleted_at IS NULL
+    AND (sqlc.arg(filter)::jsonb ->> 'ownership' = ''
+        OR ownership_type = sqlc.arg(filter)::jsonb ->> 'ownership')
+    AND (strpos(lower(display_name), lower(sqlc.arg(filter)::jsonb ->> 'search')) > 0
+        OR strpos(lower(model_id), lower(sqlc.arg(filter)::jsonb ->> 'search')) > 0
+        OR strpos(lower(base_url), lower(sqlc.arg(filter)::jsonb ->> 'search')) > 0)
+    AND id::text > sqlc.arg(filter)::jsonb ->> 'cursor'
+ORDER BY id
+LIMIT (sqlc.arg(filter)::jsonb ->> 'limit')::integer;
+
+-- name: GetModel :one
+SELECT
+    *
+FROM
+    models
+WHERE
+    id = $1
+    AND deleted_at IS NULL;
+
+-- name: CreateModel :one
+INSERT INTO models (ownership_type, owner_user_id, model_id, display_name, protocol, base_url, api_key,
+    advanced_config, credit_multiplier, kind, provider, provider_options, image_config, image_pricing,
+    video_config, video_pricing, embedding_config, proxy_id, enabled)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, TRUE)
+RETURNING
+    *;
+
+-- name: UpdateModel :one
+UPDATE
+    models
+SET
+    model_id = $2,
+    display_name = $3,
+    protocol = $4,
+    base_url = $5,
+    api_key = $6,
+    advanced_config = $7,
+    credit_multiplier = $8,
+    kind = $11,
+    provider = $12,
+    provider_options = $13,
+    image_config = $14,
+    image_pricing = $15,
+    video_config = $16,
+    video_pricing = $17,
+    embedding_config = $18,
+    proxy_id = $19,
+    updated_at = now()
+WHERE
+    id = $1
+    AND ownership_type = $9
+    AND owner_user_id = $10
+    AND deleted_at IS NULL
+RETURNING
+    *;
+
+-- name: SetEnabled :one
+UPDATE
+    models
+SET
+    enabled = $2,
+    updated_at = now()
+WHERE
+    id = $1
+    AND ownership_type = 'system'
+    AND deleted_at IS NULL
+RETURNING
+    *;
+
+-- name: DeleteModel :execresult
+UPDATE
+    models
+SET
+    deleted_at = now(),
+    enabled = FALSE,
+    updated_at = now()
+WHERE
+    id = sqlc.arg(id)
+    AND ownership_type = sqlc.arg(ownership_type)
+    AND (sqlc.arg(ownership_type) = 'system'
+        OR owner_user_id = NULLIF (sqlc.arg(owner_user_id)::text, '')::uuid)
+    AND deleted_at IS NULL;
+
+-- name: DeleteGrants :execresult
+DELETE FROM resource_access_grants
+WHERE resource_type = 'model'
+    AND resource_id = $1;
+
+-- name: ListAvailable :many
+WITH RECURSIVE user_groups (
+    group_id
+) AS (
+    SELECT
+        id
+    FROM
+        GROUPS
+    WHERE
+        deleted_at IS NULL
+        AND id IN (
+            SELECT
+                group_id
+            FROM
+                group_users
+            WHERE
+                user_id = sqlc.arg(owner_user_id)
+                AND removed_at IS NULL)
+        UNION
+        SELECT
+            parent.id
+        FROM
+            GROUPS g
+            JOIN user_groups ug ON ug.group_id = g.id
+            JOIN GROUPS parent ON parent.id = g.parent_id
+        WHERE
+            parent.deleted_at IS NULL
+            AND g.deleted_at IS NULL
+)
+SELECT
+    m.*
+FROM
+    models m
+WHERE
+    m.enabled
+    AND m.deleted_at IS NULL
+    AND (m.ownership_type = 'user' OR sqlc.arg(system_access)::boolean)
+    AND ((m.ownership_type = 'user' AND m.owner_user_id = sqlc.arg(owner_user_id))
+        OR EXISTS (
+            SELECT
+                1
+            FROM
+                resource_access_grants rag
+            WHERE
+                rag.resource_type = 'model'
+                AND rag.resource_id = m.id
+                AND ((rag.all_users AND EXISTS (
+                        SELECT 1 FROM users u WHERE u.id = sqlc.arg(owner_user_id) AND u.status = 'active' AND u.deleted_at IS NULL
+                    ))
+                    OR rag.user_id = sqlc.arg(owner_user_id)
+                    OR rag.group_id IN (
+                        SELECT
+                            group_id
+                        FROM
+                            user_groups))))
+    ORDER BY
+        m.display_name,
+        m.id;
+
+-- name: ResolveModel :one
+WITH RECURSIVE user_groups(group_id) AS (
+    SELECT id
+    FROM groups
+    WHERE deleted_at IS NULL
+        AND id IN (
+            SELECT group_id FROM group_users
+            WHERE user_id = sqlc.arg(user_id) AND removed_at IS NULL
+        )
+    UNION
+    SELECT parent.id
+    FROM groups g
+    JOIN user_groups ug ON ug.group_id = g.id
+    JOIN groups parent ON parent.id = g.parent_id
+    WHERE parent.deleted_at IS NULL AND g.deleted_at IS NULL
+)
+SELECT m.*
+FROM models m
+JOIN users u ON u.id = sqlc.arg(user_id)
+WHERE (m.model_id || '@' || m.id::text = sqlc.arg(requested_model)::text
+        OR m.id::text = sqlc.arg(requested_model)::text
+        OR m.model_id = sqlc.arg(requested_model)::text)
+    AND m.enabled AND m.deleted_at IS NULL
+    AND (m.ownership_type = 'user' OR sqlc.arg(system_access)::boolean)
+    AND (
+        (m.ownership_type = 'user' AND m.owner_user_id = sqlc.arg(user_id))
+        OR EXISTS (
+            SELECT 1 FROM resource_access_grants rag
+            WHERE rag.resource_type = 'model' AND rag.resource_id = m.id
+                AND ((rag.all_users AND u.status = 'active' AND u.deleted_at IS NULL)
+                    OR rag.user_id = sqlc.arg(user_id) OR rag.group_id IN (SELECT group_id FROM user_groups))
+        )
+    )
+ORDER BY (m.model_id || '@' || m.id::text = sqlc.arg(requested_model)::text) DESC,
+    (m.id::text = sqlc.arg(requested_model)::text) DESC, m.created_at, m.id
+LIMIT 1;
+
+-- name: ListGroups :many
+SELECT
+    id,
+    parent_id,
+    name
+FROM
+    GROUPS
+WHERE
+    deleted_at IS NULL
+ORDER BY
+    name,
+    id;
+
+-- name: ListUsers :many
+SELECT
+    id,
+    name,
+    email,
+    coalesce(nullif(btrim(custom_avatar_url), ''), nullif(btrim(avatar_url), ''), '')::text AS avatar_url
+FROM
+    users
+WHERE
+    status = 'active'
+    AND deleted_at IS NULL
+ORDER BY
+    name,
+    id;
+
+-- name: ListGrants :many
+SELECT
+    resource_id,
+    user_id,
+    group_id,
+    all_users
+FROM
+    resource_access_grants
+WHERE
+    resource_type = 'model'
+    AND resource_id::text = ANY ($1::text[])
+ORDER BY
+    resource_id,
+    id;
+
+-- name: GrantUser :execresult
+INSERT INTO resource_access_grants (resource_type, resource_id, user_id, access_level, granted_by_user_id)
+    VALUES ('model', $1, $2, 'read_only', $3);
+
+-- name: GrantGroup :execresult
+INSERT INTO resource_access_grants (resource_type, resource_id, group_id, access_level, granted_by_user_id)
+    VALUES ('model', $1, $2, 'read_only', $3);
+
+-- name: GrantAllUsers :execresult
+INSERT INTO resource_access_grants (resource_type, resource_id, all_users, access_level, granted_by_user_id)
+    VALUES ('model', $1, true, 'read_only', $2);
+
+-- name: LockOwned :one
+SELECT
+    id
+FROM
+    models
+WHERE
+    id = $1
+    AND owner_user_id = $2
+    AND ownership_type = 'user'
+    AND deleted_at IS NULL
+FOR UPDATE;
+
+-- name: TouchModel :execresult
+UPDATE
+    models
+SET
+    updated_at = now()
+WHERE
+    id = $1;
+
+-- name: ListPeople :many
+SELECT
+    m.id AS model_id,
+    u.id AS user_id,
+    u.name,
+    u.email,
+    TRUE AS creator
+FROM
+    models m
+    JOIN users u ON u.id = m.owner_user_id
+WHERE
+    m.id::text = ANY (sqlc.arg(model_ids)::text[])
+    AND m.owner_user_id <> sqlc.arg(owner_user_id)
+UNION ALL
+SELECT
+    m.id AS model_id,
+    u.id AS user_id,
+    u.name,
+    u.email,
+    FALSE AS creator
+FROM
+    models m
+    JOIN resource_access_grants g ON g.resource_type = 'model'
+        AND g.resource_id = m.id
+    JOIN users u ON u.id = g.user_id
+WHERE
+    m.id::text = ANY (sqlc.arg(model_ids)::text[])
+    AND m.owner_user_id = sqlc.arg(owner_user_id)
+    AND u.id <> sqlc.arg(owner_user_id)
+    AND u.deleted_at IS NULL
+ORDER BY
+    1,
+    3,
+    2;
+
+-- name: RecordModelCall :execresult
+INSERT INTO model_calls (session_id, user_id, model_id, request_id, status, input_tokens, cached_input_tokens,
+    output_tokens, cache_hit, error_code, started_at, completed_at, first_token_duration_ms)
+SELECT NULLIF(sqlc.arg(session_id)::text, '')::uuid, sqlc.arg(user_id)::uuid, m.id, NULLIF(sqlc.arg(request_id)::text, ''),
+    sqlc.arg(status)::text, sqlc.arg(input_tokens)::bigint, sqlc.arg(cached_input_tokens)::bigint,
+    sqlc.arg(output_tokens)::bigint, sqlc.arg(cached_input_tokens)::bigint > 0,
+    NULLIF(sqlc.arg(error_code)::text, ''), sqlc.arg(started_at)::timestamptz,
+    sqlc.arg(completed_at)::timestamptz, sqlc.narg(first_token_duration_ms)::integer
+FROM models m
+WHERE m.id = sqlc.arg(model_id)::uuid AND m.ownership_type = 'user';
