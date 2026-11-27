@@ -1,0 +1,391 @@
+import { useEffect, useId, useMemo, useRef, useState } from "react"
+import { Combobox } from "@base-ui/react/combobox"
+import {
+  Cancel01Icon,
+  Loading03Icon,
+  UnfoldMoreIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useTranslation } from "react-i18next"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { UserAvatar } from "@/components/user-avatar"
+import { useAuth } from "@/hooks/use-auth"
+import { api } from "@/lib/api"
+import { cn } from "@/lib/utils"
+
+type User = {
+  id: string
+  name: string
+  email: string
+  avatar_url?: string | null
+  deleted: boolean
+}
+type Result = { items: User[]; has_next: boolean }
+
+export type UserSearchProps = {
+  userID: string
+  query: string
+  onChange: (value: { userID: string; query: string }) => void
+  id?: string
+  className?: string
+  placeholder?: string
+  selectionOnly?: boolean
+  searchInPopup?: boolean
+  searchPlaceholder?: string
+  managed?: boolean
+  includeDeleted?: boolean
+  /** Local options; omitting this keeps the paginated user lookup. */
+  users?: readonly User[]
+}
+
+export function UserSearch({
+  userID,
+  query,
+  onChange,
+  id,
+  className,
+  placeholder,
+  selectionOnly = false,
+  searchInPopup = false,
+  searchPlaceholder,
+  managed = false,
+  includeDeleted = false,
+  users,
+}: UserSearchProps) {
+  const { t } = useTranslation()
+  const { user } = useAuth()
+  const showDeleted = includeDeleted && user?.role === "admin"
+  const lookupParams =
+    (managed ? "&scope=managed" : "") +
+    (showDeleted ? "&include_deleted=true" : "")
+  const lookupKey = JSON.stringify([user?.id, user?.role, lookupParams])
+  const generatedID = useId()
+  const inputPlaceholder =
+    placeholder ?? t("pages.billingDetails.filters.userPlaceholder")
+  const needsSelection =
+    !searchInPopup && selectionOnly && !userID && Boolean(query.trim())
+  const anchor = useRef<HTMLInputElement>(null)
+  const trigger = useRef<HTMLButtonElement>(null)
+  const [popupQuery, setPopupQuery] = useState("")
+  const [open, setOpen] = useState(false)
+  const [generation, setGeneration] = useState(0)
+  const [retry, setRetry] = useState(0)
+  const [resolved, setResolved] = useState<{ user: User; key: string } | null>(
+    null
+  )
+  const [result, setResult] = useState<
+    (Result & { key: string; error?: string }) | null
+  >(null)
+  const term = searchInPopup ? popupQuery.trim() : userID ? "" : query.trim()
+  const requestKey = JSON.stringify([term, generation, retry, lookupKey])
+  const resolvedUser = resolved?.key === lookupKey ? resolved.user : null
+  const selected = useMemo(
+    () =>
+      users
+        ? (users.find((user) => user.id === userID) ?? null)
+        : resolvedUser?.id === userID
+          ? resolvedUser
+          : userID
+            ? { id: userID, name: userID, email: "", deleted: false }
+            : null,
+    [resolvedUser, userID, users]
+  )
+
+  useEffect(() => {
+    anchor.current?.setCustomValidity(
+      needsSelection ? t("pages.billingDetails.filters.selectUserRequired") : ""
+    )
+  }, [needsSelection, t])
+
+  useEffect(() => {
+    if (users || !userID || resolvedUser?.id === userID) return
+    const controller = new AbortController()
+    void api<Result>(
+      `/api/admin/v1/users?id=${encodeURIComponent(userID)}${lookupParams}`,
+      { signal: controller.signal }
+    )
+      .then((data) => {
+        if (!controller.signal.aborted && data.items[0])
+          setResolved({ user: data.items[0], key: lookupKey })
+      })
+      .catch(() => {
+        /* The UUID remains usable if its display lookup fails. */
+      })
+    return () => controller.abort()
+  }, [userID, resolvedUser?.id, users, lookupParams, lookupKey])
+
+  useEffect(() => {
+    if (users || !open) return
+    const controller = new AbortController()
+    const timer = window.setTimeout(() => {
+      void api<Result>(
+        `/api/admin/v1/users?q=${encodeURIComponent(term)}&limit=20${lookupParams}`,
+        { signal: controller.signal }
+      )
+        .then((data) => {
+          if (!controller.signal.aborted)
+            setResult({ ...data, key: requestKey })
+        })
+        .catch((error: Error) => {
+          if (!controller.signal.aborted)
+            setResult({
+              key: requestKey,
+              items: [],
+              has_next: false,
+              error: error.message,
+            })
+        })
+    }, 250)
+    return () => {
+      window.clearTimeout(timer)
+      controller.abort()
+    }
+  }, [open, term, requestKey, users, lookupParams])
+
+  const current = users
+    ? {
+        key: requestKey,
+        items: users.filter((user) =>
+          `${user.name} ${user.email} ${user.id}`
+            .toLocaleLowerCase()
+            .includes(term.toLocaleLowerCase())
+        ),
+        has_next: false,
+        error: undefined,
+      }
+    : result?.key === requestKey
+      ? result
+      : null
+  const items =
+    selected && !searchInPopup
+      ? [
+          selected,
+          ...(current?.items ?? []).filter((user) => user.id !== selected.id),
+        ]
+      : (current?.items ?? [])
+  const visibleItems = showDeleted
+    ? items
+    : items.filter((user) => !user.deleted)
+  return (
+    <Combobox.Root<User>
+      items={visibleItems}
+      filter={null}
+      autoHighlight={searchInPopup}
+      openOnInputClick
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next)
+        if (searchInPopup) setPopupQuery("")
+        if (next) setGeneration((value) => value + 1)
+      }}
+      value={selected}
+      inputValue={
+        searchInPopup
+          ? popupQuery
+          : selected
+            ? selected.name || selected.email || selected.id
+            : query
+      }
+      itemToStringLabel={(user) => user.name || user.email || user.id}
+      isItemEqualToValue={(a, b) => a.id === b.id}
+      onInputValueChange={(value, details) => {
+        if (
+          details.reason === "input-change" ||
+          details.reason === "input-clear" ||
+          details.reason === "clear-press"
+        ) {
+          if (searchInPopup) setPopupQuery(value)
+          else onChange({ userID: "", query: value })
+        }
+      }}
+      onValueChange={(user, details) => {
+        if (user && details.reason === "item-press") {
+          setResolved({ user, key: lookupKey })
+          onChange({ userID: user.id, query: "" })
+        } else if (!user && details.reason === "clear-press")
+          onChange({ userID: "", query: "" })
+      }}
+    >
+      <div
+        className={cn(
+          "relative",
+          searchInPopup ? "ms-auto w-48 max-w-full shrink-0" : "w-32",
+          className
+        )}
+      >
+        {searchInPopup ? (
+          <Combobox.Trigger
+            ref={trigger}
+            id={id ?? generatedID}
+            aria-label={inputPlaceholder}
+            title={
+              selected
+                ? `${selected.name} ${selected.email} ${selected.id}`
+                : undefined
+            }
+            render={
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 w-full min-w-0 justify-between gap-1.5 px-2.5 font-normal"
+              />
+            }
+          >
+            {selected && (
+              <UserAvatar
+                src={selected.avatar_url}
+                className="data-[size=sm]:size-5"
+              />
+            )}
+            <span
+              className={cn(
+                "min-w-0 flex-1 truncate text-start",
+                !selected && "text-muted-foreground"
+              )}
+            >
+              {selected
+                ? selected.name || selected.email || selected.id
+                : inputPlaceholder}
+            </span>
+            <HugeiconsIcon
+              icon={UnfoldMoreIcon}
+              className="size-4 shrink-0 text-muted-foreground"
+              strokeWidth={2}
+            />
+          </Combobox.Trigger>
+        ) : (
+          <Combobox.Input
+            ref={anchor}
+            render={<Input id={id ?? generatedID} className="w-32 pe-7" />}
+            placeholder={inputPlaceholder}
+            aria-label={inputPlaceholder}
+            title={
+              selected
+                ? `${selected.name} ${selected.email} ${selected.id}`
+                : undefined
+            }
+            onInvalid={() => {
+              if (selectionOnly) setOpen(true)
+            }}
+            onKeyDownCapture={(event) => {
+              if (
+                event.key === "Enter" &&
+                !event.nativeEvent.isComposing &&
+                !event.currentTarget.getAttribute("aria-activedescendant")
+              ) {
+                event.preventDefault()
+                event.stopPropagation()
+                if (needsSelection) {
+                  setOpen(true)
+                  event.currentTarget.reportValidity()
+                  return
+                }
+                setOpen(false)
+                event.currentTarget.closest("form")?.requestSubmit()
+              }
+            }}
+          />
+        )}
+        {!searchInPopup && (userID || query) && (
+          <Combobox.Clear
+            render={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                className="absolute end-1 top-1 size-7"
+                aria-label={t("pages.billingDetails.filters.clearUser")}
+              />
+            }
+          >
+            <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" />
+          </Combobox.Clear>
+        )}
+      </div>
+      <Combobox.Portal>
+        <Combobox.Positioner
+          anchor={searchInPopup ? trigger : anchor}
+          align={searchInPopup ? "end" : "start"}
+          sideOffset={4}
+          className="z-50"
+        >
+          <Combobox.Popup
+            className={cn(
+              "max-w-[calc(100vw-2rem)] rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10",
+              searchInPopup ? "w-[var(--anchor-width)]" : "w-48"
+            )}
+            initialFocus={searchInPopup ? anchor : undefined}
+          >
+            {searchInPopup && (
+              <div className="border-b p-2">
+                <Combobox.Input
+                  ref={anchor}
+                  render={<Input />}
+                  placeholder={searchPlaceholder ?? inputPlaceholder}
+                  aria-label={searchPlaceholder ?? inputPlaceholder}
+                />
+              </div>
+            )}
+            {!current ? (
+              <div
+                role="status"
+                aria-label={t("resources.tableLoading")}
+                className="flex h-10 items-center justify-center"
+              >
+                <HugeiconsIcon
+                  icon={Loading03Icon}
+                  className="size-4 animate-spin motion-reduce:animate-none"
+                />
+              </div>
+            ) : current.error ? (
+              <div role="alert" className="p-2 text-sm text-destructive">
+                {current.error}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setRetry((value) => value + 1)}
+                >
+                  {t("statistics.retry")}
+                </Button>
+              </div>
+            ) : null}
+            <ScrollArea
+              className="[&_[data-slot=scroll-area-viewport]]:h-auto [&_[data-slot=scroll-area-viewport]]:max-h-[min(16rem,var(--available-height,100vh))]"
+              data-billing-user-options=""
+            >
+              <Combobox.List className="p-1 empty:hidden">
+                {(user: User) => (
+                  <Combobox.Item
+                    key={user.id}
+                    value={user}
+                    className="data-highlighted:bg-accent data-highlighted:text-accent-foreground flex cursor-default items-center gap-2 rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                    title={`${user.name} ${user.email} ${user.id}`}
+                  >
+                    <UserAvatar
+                      src={user.avatar_url}
+                      className="data-[size=sm]:size-5"
+                    />
+                    <span className="min-w-0 flex-1 truncate">
+                      {user.name || user.id}
+                      {user.deleted
+                        ? ` · ${t("pages.billingDetails.filters.deletedUser")}`
+                        : ""}
+                    </span>
+                  </Combobox.Item>
+                )}
+              </Combobox.List>
+            </ScrollArea>
+            {current && !current.error && visibleItems.length === 0 && (
+              <p className="p-2 text-sm text-muted-foreground">
+                {t("pages.billingDetails.filters.usersEmpty")}
+              </p>
+            )}
+          </Combobox.Popup>
+        </Combobox.Positioner>
+      </Combobox.Portal>
+    </Combobox.Root>
+  )
+}

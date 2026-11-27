@@ -1,0 +1,438 @@
+import { useSubjects } from "@/lib/resources"
+import { useRef, useState, type ChangeEvent } from "react"
+import { Upload04Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useTranslation } from "react-i18next"
+
+import { useAppToast } from "@/components/animated-toast-provider"
+import { AuthorizationSelect } from "@/components/authorization-select"
+import { SkillTagSelect } from "@/components/skill-tag-select"
+import type { SkillTag } from "@/lib/skill-tags"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  DialogClose,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemTitle,
+} from "@/components/ui/item"
+import type { AuthorizationSelection } from "@/lib/authorization-groups"
+import {
+  inspectSkillArchive,
+  SkillPackageError,
+  type SkillPackageAnalysis,
+} from "@/lib/skill-package"
+
+type WizardStep = "source" | "select"
+
+type ImportSource = {
+  files: File[]
+}
+
+type ImportCandidate = {
+  id: string
+  sourceName: string
+  analysis: SkillPackageAnalysis
+}
+
+type SkillImportValue = {
+  packageFile: File
+  analysis: SkillPackageAnalysis
+  sourceName: string
+  tagIds: string[]
+  authorization: AuthorizationSelection
+}
+
+export function SkillImportWizard({
+  availableTags,
+  onImport,
+  onComplete,
+}: {
+  onComplete: () => void
+  availableTags: SkillTag[]
+  onImport: (values: SkillImportValue[]) => Promise<void>
+}) {
+  const { t } = useTranslation()
+  const { showToast } = useAppToast()
+  const subjects = useSubjects()
+  const [importing, setImporting] = useState(false)
+  const [step, setStep] = useState<WizardStep>("source")
+  const [source, setSource] = useState<ImportSource | null>(null)
+  const [candidates, setCandidates] = useState<ImportCandidate[]>([])
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [sourceError, setSourceError] = useState("")
+  const [scanWarnings, setScanWarnings] = useState<string[]>([])
+  const [scanning, setScanning] = useState(false)
+  const [tagsOpen, setTagsOpen] = useState(false)
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
+  const [authorizationOverride, setAuthorization] =
+    useState<AuthorizationSelection | null>(null)
+  const authorization: AuthorizationSelection = authorizationOverride ?? {
+    groupIds: subjects.groups.slice(0, 1).map((group) => group.value),
+    memberIds: [],
+  }
+  const requestId = useRef(0)
+  const archiveInputRef = useRef<HTMLInputElement | null>(null)
+
+  const getErrorMessage = (error: unknown) => {
+    const errorKey =
+      error instanceof SkillPackageError ? error.code : "invalidZip"
+    return t(`pages.skills.packageErrors.${errorKey}`)
+  }
+
+  const applyScanResults = (
+    analyses: Array<{ sourceName: string; analysis: SkillPackageAnalysis }>,
+    warnings: string[]
+  ) => {
+    const nextCandidates = analyses.map(({ sourceName, analysis }, index) => ({
+      id: `${sourceName}-${analysis.entryPath}-${index}`,
+      sourceName,
+      analysis,
+    }))
+
+    if (nextCandidates.length === 0) {
+      setSourceError(warnings[0] ?? t("pages.skills.batchImport.noSkillsFound"))
+      setScanWarnings([])
+      return
+    }
+
+    setCandidates(nextCandidates)
+    setSelectedIds(nextCandidates.map((candidate) => candidate.id))
+    setSourceError("")
+    setScanWarnings(warnings)
+    setStep("select")
+  }
+
+  const resetScanResults = () => {
+    requestId.current += 1
+    setCandidates([])
+    setSelectedIds([])
+    setScanWarnings([])
+    setSourceError("")
+  }
+
+  const handleArchiveChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.currentTarget.files ?? [])
+    if (files.length === 0) {
+      resetScanResults()
+      setSource(null)
+      return
+    }
+
+    resetScanResults()
+    setSource({ files })
+  }
+
+  const handleNext = async () => {
+    if (!source) {
+      return
+    }
+
+    const currentRequestId = requestId.current + 1
+    requestId.current = currentRequestId
+    setScanning(true)
+    setSourceError("")
+
+    const validFiles = source.files.filter((file) =>
+      file.name.toLocaleLowerCase().endsWith(".zip")
+    )
+    const warnings = source.files
+      .filter((file) => !validFiles.includes(file))
+      .map(
+        (file) => `${file.name}: ${t("pages.skills.packageErrors.invalidZip")}`
+      )
+    const settledResults = await Promise.allSettled(
+      validFiles.map(async (file) => ({
+        file,
+        analyses: await inspectSkillArchive(file),
+      }))
+    )
+
+    if (currentRequestId !== requestId.current) {
+      return
+    }
+
+    const analyses: Array<{
+      sourceName: string
+      analysis: SkillPackageAnalysis
+    }> = []
+    settledResults.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        analyses.push(
+          ...result.value.analyses.map((analysis) => ({
+            sourceName: result.value.file.name,
+            analysis,
+          }))
+        )
+      } else {
+        warnings.push(
+          `${validFiles[index].name}: ${getErrorMessage(result.reason)}`
+        )
+      }
+    })
+
+    if (currentRequestId === requestId.current) {
+      applyScanResults(analyses, warnings)
+      setScanning(false)
+    }
+  }
+
+  const selectedCandidates = candidates.filter((candidate) =>
+    selectedIds.includes(candidate.id)
+  )
+  const sourceName = source?.files.map((file) => file.name).join(", ") ?? ""
+
+  const setCandidateChecked = (candidateId: string, checked: boolean) => {
+    setSelectedIds((currentIds) =>
+      checked
+        ? [...currentIds, candidateId]
+        : currentIds.filter((id) => id !== candidateId)
+    )
+  }
+
+  const handleImport = async () => {
+    if (!source || importing || selectedCandidates.length === 0) return
+    setImporting(true)
+    setSourceError("")
+    try {
+      const { default: JSZip } = await import("jszip")
+      for (const candidate of selectedCandidates) {
+        const zip = new JSZip()
+        const prefix = candidate.analysis.rootPath
+          ? candidate.analysis.rootPath + "/"
+          : ""
+        const otherRoots = candidates
+          .filter(
+            (c) =>
+              c.id !== candidate.id && c.sourceName === candidate.sourceName
+          )
+          .map((c) => c.analysis.rootPath + "/")
+          .filter((root) => root.startsWith(prefix))
+        const inside = (path: string) =>
+          path.startsWith(prefix) &&
+          !otherRoots.some((root) => path.startsWith(root))
+        const file = source.files.find((f) => f.name === candidate.sourceName)
+        if (!file) throw new Error("源文件不存在")
+        const archive = await JSZip.loadAsync(await file.arrayBuffer())
+        for (const [path, entry] of Object.entries(archive.files)) {
+          if (!entry.dir && inside(path))
+            zip.file(path.slice(prefix.length), await entry.async("uint8array"))
+        }
+        const blob = await zip.generateAsync({
+          type: "blob",
+          compression: "DEFLATE",
+        })
+        await onImport([
+          {
+            analysis: candidate.analysis,
+            sourceName: candidate.sourceName,
+            tagIds: selectedTagIds,
+            authorization,
+            packageFile: new File([blob], candidate.analysis.name + ".zip", {
+              type: "application/zip",
+            }),
+          },
+        ])
+        setCandidates((current) => current.filter((c) => c.id !== candidate.id))
+        setSelectedIds((current) => current.filter((id) => id !== candidate.id))
+      }
+      showToast({
+        status: "success",
+        title: t("resources.operationCompleted"),
+      })
+      onComplete()
+    } catch (error) {
+      showToast({
+        status: "error",
+        title: error instanceof Error ? error.message : "导入失败",
+      })
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-6" aria-busy={importing}>
+      <>
+        {sourceError && step === "select" && (
+          <p role="alert" className="text-sm text-destructive">
+            {sourceError}
+          </p>
+        )}
+      </>
+      <DialogHeader>
+        <DialogTitle>{t("pages.skills.dialogTitle")}</DialogTitle>
+      </DialogHeader>
+
+      {step === "source" ? (
+        <div>
+          <FieldGroup className="gap-4">
+            <Field data-invalid={Boolean(sourceError)}>
+              <Input
+                accept=".zip,application/zip"
+                aria-invalid={Boolean(sourceError)}
+                className="hidden"
+                disabled={scanning}
+                id="skill-archives"
+                multiple
+                ref={archiveInputRef}
+                type="file"
+                onChange={handleArchiveChange}
+              />
+              <Item variant="outline">
+                <ItemContent className="min-w-0">
+                  <ItemTitle>
+                    {t("pages.skills.batchImport.choosePackage")}
+                  </ItemTitle>
+                  <ItemDescription>
+                    {t("pages.skills.batchImport.archivesHint")}
+                  </ItemDescription>
+                </ItemContent>
+                <ItemActions>
+                  <Button
+                    className="max-w-32 sm:max-w-48"
+                    disabled={scanning}
+                    title={sourceName || undefined}
+                    type="button"
+                    variant="outline"
+                    onClick={() => archiveInputRef.current?.click()}
+                  >
+                    <HugeiconsIcon
+                      data-icon="inline-start"
+                      icon={Upload04Icon}
+                    />
+                    <span className="min-w-0 truncate">
+                      {sourceName || t("pages.skills.batchImport.sourceStep")}
+                    </span>
+                  </Button>
+                </ItemActions>
+              </Item>
+              <FieldError>{sourceError}</FieldError>
+            </Field>
+          </FieldGroup>
+          <DialogFooter className="mt-6">
+            <DialogClose render={<Button type="button" variant="outline" />}>
+              {t("pages.skills.cancel")}
+            </DialogClose>
+            <Button
+              disabled={!source || scanning}
+              loading={scanning}
+              type="button"
+              onClick={handleNext}
+            >
+              {t("pages.skills.batchImport.next")}
+            </Button>
+          </DialogFooter>
+        </div>
+      ) : (
+        <div>
+          <FieldGroup className="gap-4">
+            <Field data-invalid={scanWarnings.length > 0}>
+              <ItemGroup className="max-h-80 overflow-y-auto">
+                {candidates.map((candidate) => {
+                  const checkboxId = `import-${candidate.id}`
+                  return (
+                    <Item key={candidate.id} size="sm" variant="outline">
+                      <ItemMedia>
+                        <Checkbox
+                          checked={selectedIds.includes(candidate.id)}
+                          id={checkboxId}
+                          onCheckedChange={(checked) =>
+                            setCandidateChecked(candidate.id, checked)
+                          }
+                        />
+                      </ItemMedia>
+                      <ItemContent className="min-w-0">
+                        <ItemTitle>
+                          <label
+                            className="cursor-pointer"
+                            htmlFor={checkboxId}
+                          >
+                            {candidate.analysis.name}
+                          </label>
+                        </ItemTitle>
+                        <ItemDescription title={candidate.analysis.description}>
+                          {candidate.analysis.description}
+                        </ItemDescription>
+                        <ItemDescription title={candidate.analysis.entryPath}>
+                          {candidate.sourceName} ·{" "}
+                          {candidate.analysis.entryPath}
+                        </ItemDescription>
+                      </ItemContent>
+                    </Item>
+                  )
+                })}
+              </ItemGroup>
+              <FieldError>{scanWarnings.join("\n")}</FieldError>
+            </Field>
+            <div className="grid min-w-0 grid-cols-2 gap-4">
+              <Field className="min-w-0">
+                <FieldLabel htmlFor="batch-skill-tags">
+                  {t("pages.skills.tags")}
+                </FieldLabel>
+                <SkillTagSelect
+                  id="batch-skill-tags"
+                  open={tagsOpen}
+                  options={availableTags}
+                  placeholder={t("pages.skills.tagsPlaceholder")}
+                  value={selectedTagIds}
+                  onOpenChange={setTagsOpen}
+                  onValueChange={setSelectedTagIds}
+                />
+              </Field>
+              <Field className="min-w-0">
+                <FieldLabel htmlFor="batch-skill-authorized-users">
+                  {t("pages.models.authorizedScope")}
+                </FieldLabel>
+                <AuthorizationSelect
+                  groups={subjects.groups}
+                  members={subjects.members}
+                  id="batch-skill-authorized-users"
+                  disabled={importing}
+                  value={authorization}
+                  onValueChange={setAuthorization}
+                />
+              </Field>
+            </div>
+          </FieldGroup>
+          <DialogFooter className="mt-6">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={importing}
+              onClick={() => setStep("source")}
+            >
+              {t("pages.skills.batchImport.previous")}
+            </Button>
+            <Button
+              disabled={importing || selectedCandidates.length === 0}
+              loading={importing}
+              type="button"
+              onClick={handleImport}
+            >
+              {t("pages.skills.batchImport.import", {
+                count: selectedCandidates.length,
+              })}
+            </Button>
+          </DialogFooter>
+        </div>
+      )}
+    </div>
+  )
+}

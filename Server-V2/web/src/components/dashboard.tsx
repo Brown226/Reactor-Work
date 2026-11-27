@@ -1,0 +1,140 @@
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { NavLink, Outlet, useLocation, useMatch, useNavigate } from "react-router-dom"
+
+import { useAppToast } from "@/components/animated-toast-provider"
+import { AppSidebar } from "@/components/app-sidebar"
+import { LanguageToggle } from "@/components/language-toggle"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { VersionProvider } from "@/components/version-provider"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import { useAuth } from "@/hooks/use-auth"
+import { useBranding } from "@/hooks/use-branding"
+import { api } from "@/lib/api"
+import { base } from "@/lib/resources"
+import {
+  CONSOLE_PAGES,
+  CONSOLE_ROUTES,
+  DEFAULT_CONSOLE_PATH,
+  getConsolePage,
+  LOGIN_PATH,
+} from "@/lib/routes"
+
+export function Dashboard() {
+  return (
+    <VersionProvider>
+      <DashboardContent />
+    </VersionProvider>
+  )
+}
+
+function DashboardContent() {
+  const { t } = useTranslation()
+  const { showToast } = useAppToast()
+  const { logout } = useAuth()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const currentPage = getConsolePage(location.pathname) ?? CONSOLE_PAGES[0]
+  const { branding } = useBranding()
+  const productName = branding.product_name
+  const kbId = useMatch(`${CONSOLE_ROUTES.kb}/:kbId/*`)?.params.kbId
+  const [kbName, setKbName] = useState("")
+
+  useEffect(() => {
+    if (!kbId) {
+      setKbName("")
+      return
+    }
+    const controller = new AbortController()
+    api<{ name: string }>(`${base}/kb/${kbId}`, { signal: controller.signal })
+      .then((item) => {
+        if (!controller.signal.aborted) setKbName(item.name)
+      })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [kbId])
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      navigate(LOGIN_PATH, { replace: true })
+    } catch (error) {
+      showToast({
+        status: "error",
+        title: error instanceof Error ? error.message : "退出登录失败",
+      })
+    }
+  }
+
+  return (
+    <SidebarProvider>
+      <AppSidebar onLogout={handleLogout} productName={productName} />
+      <SidebarInset className="min-w-0">
+        <header className="flex h-16 shrink-0 items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2 px-4">
+            <SidebarTrigger className="-ms-1" />
+            <Separator
+              orientation="vertical"
+              className="me-2 data-vertical:h-4 data-vertical:self-auto"
+            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink
+                    className="block max-w-40 truncate lg:max-w-52"
+                    render={<NavLink to={DEFAULT_CONSOLE_PATH} />}
+                    title={productName}
+                  >
+                    {productName}
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink
+                    render={<NavLink to={currentPage.sectionPath} />}
+                  >
+                    {t(currentPage.sectionKey)}
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                {location.pathname.startsWith(`${CONSOLE_ROUTES.kb}/`) && (
+                  <>
+                    <BreadcrumbItem className="hidden md:block">
+                      <BreadcrumbLink
+                        render={<NavLink to={CONSOLE_ROUTES.kb} />}
+                      >
+                        {t("pages.knowledgeBases.title")}
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator className="hidden md:block" />
+                  </>
+                )}
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{kbId ? kbName || t(currentPage.titleKey) : t(currentPage.titleKey)}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+          <div className="ms-auto flex shrink-0 items-center gap-2 px-4">
+            <LanguageToggle variant="ghost" size="icon-sm" />
+            <ThemeToggle variant="ghost" size="icon-sm" />
+          </div>
+        </header>
+        <Outlet />
+      </SidebarInset>
+    </SidebarProvider>
+  )
+}
