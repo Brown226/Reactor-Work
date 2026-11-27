@@ -1,0 +1,376 @@
+package group
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"log/slog"
+	"slices"
+	"strings"
+	"unicode/utf8"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/group/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/rootgroup"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/member"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type Group struct {
+	ID              string   `json:"id"`
+	ParentID        *string  `json:"parent_id"`
+	Name            string   `json:"name"`
+	MemberIDs       []string `json:"member_ids"`
+	SupervisorIDs   []string `json:"supervisor_ids"`
+	Actions         []string `json:"actions"`
+	AllowAddMembers bool     `json:"allow_add_members"`
+}
+
+type Input struct {
+	Name     *string         `json:"name"`
+	ParentID json.RawMessage `json:"parent_id"`
+}
+
+type AccountPreserver interface {
+	PreserveAccounts(context.Context, pgx.Tx) error
+}
+
+type Service struct {
+	pool     *pgxpool.Pool
+	accounts AccountPreserver
+	members  member.GroupWriter
+}
+
+func (s *Service) WithMemberWriter(writer member.GroupWriter) *Service {
+	if writer == nil {
+		writer = member.EmptyGroupWriter{}
+	}
+	s.members = writer
+	return s
+}
+
+func (s *Service) WithAccountPreserver(accounts AccountPreserver) *Service {
+	s.accounts = accounts
+	return s
+}
+
+func NewService(pool *pgxpool.Pool) *Service {
+	return &Service{pool: pool, members: member.EmptyGroupWriter{}}
+}
+
+func present(group Group) Group {
+	group.ParentID = rootgroup.ParentID(group.ParentID)
+	group.Actions = []string{"add-subgroup", "rename", "adjust-members", "set-supervisors", "move", "delete"}
+	group.AllowAddMembers = true
+	return group
+}
+
+func (s *Service) List(ctx context.Context) ([]Group, error) {
+	rows, err := sqlc.New(s.pool).ListGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	name, err := rootgroup.Name(ctx, s.pool)
+	if err != nil {
+		return nil, err
+	}
+	members, err := rootgroup.DirectMemberIDs(ctx, s.pool)
+	if err != nil {
+		return nil, err
+	}
+	groups := []Group{{ID: rootgroup.ID, Name: name, MemberIDs: members, SupervisorIDs: []string{}, Actions: []string{"add-subgroup"}}}
+	for _, row := range rows {
+		var group Group
+		group.ID, group.ParentID, group.Name, group.MemberIDs = row.ID, rootgroup.ParentID(row.ParentID), row.Name, row.MemberIds
+		group.SupervisorIDs = row.SupervisorIds
+		groups = append(groups, present(group))
+	}
+	return groups, nil
+}
+
+func get(ctx context.Context, tx pgx.Tx, id string) (Group, error) {
+	var group Group
+	record, err := sqlc.New(tx).GetGroup(ctx, id)
+	if err == nil {
+		group.ID, group.ParentID, group.Name, group.MemberIDs = record.ID, record.ParentID, record.Name, record.MemberIds
+		group.SupervisorIDs = record.SupervisorIds
+	}
+
+	return group, err
+}
+
+func (s *Service) beginGroupTx(ctx context.Context) (pgx.Tx, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// 串行化分组写入，避免并发移动绕过祖先校验形成环。
+	if _, err = sqlc.New(tx).LockGroups(ctx); err != nil {
+		rollbackGroup(ctx, tx, "初始化分组事务", "")
+		return nil, err
+	}
+	return tx, nil
+}
+
+func (s *Service) begin(ctx context.Context) (pgx.Tx, error) {
+	tx, err := s.beginGroupTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if s.accounts != nil {
+		if err = s.accounts.PreserveAccounts(ctx, tx); err != nil {
+			rollbackGroup(ctx, tx, "保全分组关联账户", "")
+			return nil, err
+		}
+	}
+	return tx, nil
+}
+
+func conflict(message string) error {
+	return &resource.Error{Status: 409, Code: "group_conflict", Message: message}
+}
+
+func (s *Service) Save(ctx context.Context, actor, id string, in Input) (Group, error) {
+	if in.Name == nil && len(in.ParentID) == 0 {
+		return Group{}, resource.Invalid("请指定分组名称或上级分组")
+	}
+	if in.Name != nil {
+		*in.Name = strings.TrimSpace(*in.Name)
+		if *in.Name == "" || utf8.RuneCountInString(*in.Name) > 100 {
+			return Group{}, resource.Invalid("分组名称须为 1—100 个字符")
+		}
+	}
+	var parentID *string
+	if len(in.ParentID) > 0 {
+		if err := json.Unmarshal(in.ParentID, &parentID); err != nil {
+			slog.WarnContext(ctx, "操作失败", "module", "group", "operation", "Save", "error", err)
+			return Group{}, resource.Invalid("parent_id 必须是分组 ID 或 null")
+		}
+		if parentID != nil && *parentID == rootgroup.ID {
+			parentID = nil
+		}
+	}
+	create := id == ""
+	if create && in.Name == nil {
+		return Group{}, resource.Invalid("创建分组需要名称")
+	}
+	tx, err := s.begin(ctx)
+	if err != nil {
+		return Group{}, err
+	}
+	defer rollbackGroup(ctx, tx, "保存分组", id)
+	var group Group
+	if !create {
+		group, err = get(ctx, tx, id)
+		if err != nil {
+			return Group{}, err
+		}
+	}
+	if parentID != nil {
+		parent, err := get(ctx, tx, *parentID)
+		if err != nil {
+			return Group{}, err
+		}
+		var cycle bool
+		cycle, err = sqlc.New(tx).WouldCreateCycle(ctx, sqlc.WouldCreateCycleParams{ID: parent.ID, GroupID: id})
+
+		if err != nil {
+			return Group{}, err
+		}
+		if cycle {
+			return Group{}, conflict("不能移动到自身或子分组中")
+		}
+	}
+	if len(in.ParentID) > 0 {
+		group.ParentID = parentID
+	}
+	if in.Name != nil {
+		group.Name = *in.Name
+	}
+	var duplicate bool
+	duplicate, err = sqlc.New(tx).NameExists(ctx, sqlc.NameExistsParams{ParentID: group.ParentID, Name: group.Name, GroupID: id})
+
+	if err != nil {
+		return Group{}, err
+	}
+	if duplicate {
+		return Group{}, conflict("同一上级分组下已存在该名称")
+	}
+	action := "update"
+	if create {
+		action = "create"
+
+		id, err = sqlc.New(tx).CreateGroup(ctx, sqlc.CreateGroupParams{ParentID: group.ParentID, Name: group.Name, CreatedByUserID: new(actor)})
+	} else {
+		_, err = sqlc.New(tx).UpdateGroup(ctx, sqlc.UpdateGroupParams{ID: id, ParentID: group.ParentID, Name: group.Name})
+	}
+	if err != nil {
+		return Group{}, err
+	}
+	group, err = get(ctx, tx, id)
+	if err != nil {
+		return Group{}, err
+	}
+	group = present(group)
+	if err = resource.Audit(ctx, tx, actor, "group", id, action); err != nil {
+		return Group{}, err
+	}
+	return group, tx.Commit(ctx)
+}
+
+func (s *Service) SetMembers(ctx context.Context, actor, id string, ids []string) (Group, error) {
+	if ids == nil || len(ids) > 10000 {
+		return Group{}, resource.Invalid("member_ids 必须是数组，最多包含 10000 个成员")
+	}
+	slices.Sort(ids)
+	ids = slices.Compact(ids)
+	tx, err := s.begin(ctx)
+	if err != nil {
+		return Group{}, err
+	}
+	defer rollbackGroup(ctx, tx, "更新分组成员", id)
+	group, err := get(ctx, tx, id)
+	if err != nil {
+		return Group{}, err
+	}
+	rows, err := sqlc.New(tx).LockMembers(ctx, ids)
+	if err != nil {
+		return Group{}, err
+	}
+	count := len(rows)
+	if count != len(ids) {
+		return Group{}, resource.Invalid("所选成员不存在或已删除")
+	}
+	err = s.members.SetMembers(ctx, tx, member.GroupMembers{ActorID: actor, GroupID: id, UserIDs: ids})
+	if err != nil {
+		return Group{}, err
+	}
+	if _, err = sqlc.New(tx).TouchGroup(ctx, id); err != nil {
+		return Group{}, err
+	}
+	group, err = get(ctx, tx, id)
+	if err != nil {
+		return Group{}, err
+	}
+	group = present(group)
+	if err = resource.Audit(ctx, tx, actor, "group", id, "members"); err != nil {
+		return Group{}, err
+	}
+	return group, tx.Commit(ctx)
+}
+
+func (s *Service) SetSupervisors(ctx context.Context, actor, id string, ids []string) (Group, error) {
+	if !validMoveID(id) {
+		return Group{}, resource.Invalid("分组 ID 无效")
+	}
+	if id == rootgroup.ID {
+		return Group{}, resource.NotFound
+	}
+	if ids == nil || len(ids) > 10000 {
+		return Group{}, resource.Invalid("supervisor_ids 必须是数组，最多包含 10000 个成员")
+	}
+	for i, raw := range ids {
+		var uid pgtype.UUID
+		if err := uid.Scan(raw); err != nil || !uid.Valid {
+			return Group{}, resource.Invalid("主管 ID 无效")
+		}
+		ids[i] = uid.String()
+	}
+	slices.Sort(ids)
+	ids = slices.Compact(ids)
+	tx, err := s.beginGroupTx(ctx)
+	if err != nil {
+		return Group{}, err
+	}
+	defer rollbackGroup(ctx, tx, "设置分组主管", id)
+	group, err := get(ctx, tx, id)
+	if err != nil {
+		return Group{}, err
+	}
+	q := sqlc.New(tx)
+	members, err := q.LockSupervisorCandidates(ctx, sqlc.LockSupervisorCandidatesParams{GroupID: id, UserIds: ids})
+	if err != nil {
+		return Group{}, err
+	}
+	if len(members) != len(ids) {
+		return Group{}, conflict("所选用户不是当前分组的直属成员，请刷新后重试")
+	}
+	if err := q.SetSupervisors(ctx, sqlc.SetSupervisorsParams{GroupID: id, UserIds: ids}); err != nil {
+		return Group{}, err
+	}
+	if _, err := q.TouchGroup(ctx, id); err != nil {
+		return Group{}, err
+	}
+	if err := resource.Audit(ctx, tx, actor, "group", id, "supervisors"); err != nil {
+		return Group{}, err
+	}
+	group.SupervisorIDs = ids
+	return present(group), tx.Commit(ctx)
+}
+
+func (s *Service) Delete(ctx context.Context, actor, id string) error {
+	tx, err := s.begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollbackGroup(ctx, tx, "删除分组", id)
+	if _, err := get(ctx, tx, id); err != nil {
+		return err
+	}
+	var children bool
+	children, err = sqlc.New(tx).HasChildren(ctx, new(id))
+	if err != nil {
+		return err
+	}
+
+	if children {
+		return conflict("请先移动或删除子分组")
+	}
+	if _, err = sqlc.New(tx).DeleteGroup(ctx, id); err != nil {
+		return err
+	}
+	err = s.members.RemoveAllMembers(ctx, tx, id)
+	if err != nil {
+		return err
+	}
+	if err = touchShared(ctx, tx, id); err != nil {
+		return err
+	}
+	if _, err = sqlc.New(tx).DeleteGrants(ctx, new(id)); err != nil {
+		return err
+	}
+	if err = resource.Audit(ctx, tx, actor, "group", id, "delete"); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func touchShared(ctx context.Context, tx pgx.Tx, groupID string) error {
+	q := sqlc.New(tx)
+	if _, err := q.TouchGrantedModels(ctx, new(groupID)); err != nil {
+		return err
+	}
+	if _, err := q.TouchGrantedRules(ctx, new(groupID)); err != nil {
+		return err
+	}
+	if _, err := q.TouchGrantedSkills(ctx, new(groupID)); err != nil {
+		return err
+	}
+	if _, err := q.TouchGrantedConnectors(ctx, new(groupID)); err != nil {
+		return err
+	}
+	_, err := q.TouchGrantedExperts(ctx, new(groupID))
+	return err
+}
+
+func rollbackGroup(ctx context.Context, tx pgx.Tx, operation, id string) {
+	if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) && ctx.Err() == nil {
+		logging.Event(ctx, slog.Default(), slog.LevelError, "group.operation.error", "回滚分组事务失败", "module", "group", "operation", "rollbackGroup", "operation", operation, "group_id", id, "error", err)
+	}
+}

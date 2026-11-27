@@ -1,0 +1,592 @@
+-- name: LockInitialAdmin :execresult
+SELECT
+    pg_advisory_xact_lock(hashtext('monkeyai:initial-admin'));
+
+-- name: CountUsers :one
+SELECT
+    count(*)
+FROM
+    users
+WHERE
+    deleted_at IS NULL;
+
+-- name: CreateInitialAdmin :execresult
+INSERT INTO users (name, email, password_hash, ROLE, status)
+    VALUES ($1, $2, $3, 'admin', 'active');
+
+-- name: GetPasswordUser :one
+SELECT
+    id,
+    name,
+    email,
+    coalesce(nullif(btrim(custom_avatar_url), ''), nullif(btrim(avatar_url), ''), '')::text AS avatar_url,
+    ROLE,
+    status,
+    joined_at,
+    last_login_at,
+    password_hash
+FROM
+    users
+WHERE
+    lower(email) = $1
+    AND (NOT sqlc.arg(admin_only)::boolean OR ROLE = 'admin')
+    AND status = 'active'
+    AND deleted_at IS NULL
+    AND password_hash IS NOT NULL;
+
+-- name: TouchLogin :execresult
+UPDATE
+    users
+SET
+    last_login_at = now(),
+    updated_at = now()
+WHERE
+    id = $1;
+
+-- name: CreateAuthorizationRequest :one
+INSERT INTO oauth_authorization_requests (client_id, redirect_uri, state, code_challenge, code_challenge_method, expires_at, scopes, audience)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING
+    id;
+
+-- name: GetAuthorizationRequest :one
+SELECT
+    id,
+    client_id,
+    redirect_uri,
+    state,
+    code_challenge,
+    code_challenge_method,
+    expires_at,
+    completed_at,
+    scopes,
+    audience
+FROM
+    oauth_authorization_requests
+WHERE
+    id = $1;
+
+-- name: CompleteAuthorizationRequest :execresult
+UPDATE
+    oauth_authorization_requests
+SET
+    completed_at = now()
+WHERE
+    id = $1
+    AND completed_at IS NULL
+    AND expires_at > now();
+
+-- name: CreateAuthorizationCode :execresult
+INSERT INTO oauth_authorization_codes (code_hash, authorization_request_id, user_id, client_id, redirect_uri,
+    code_challenge, expires_at, scopes, audience)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+
+-- name: GetAuthorizationCode :one
+SELECT
+    id,
+    user_id,
+    client_id,
+    redirect_uri,
+    code_challenge,
+    expires_at,
+    redeemed_at,
+    scopes,
+    audience
+FROM
+    oauth_authorization_codes
+WHERE
+    code_hash = $1;
+
+-- name: RedeemAuthorizationCode :execresult
+UPDATE
+    oauth_authorization_codes
+SET
+    redeemed_at = now()
+WHERE
+    id = $1
+    AND redeemed_at IS NULL
+    AND expires_at > now();
+
+-- name: CreateToken :execresult
+INSERT INTO oauth_tokens (user_id, client_id, access_token_hash, refresh_token_hash, access_expires_at, refresh_expires_at, grant_id, parent_id)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+
+-- name: CreateGrant :one
+INSERT INTO oauth_grants(user_id, client_id, scopes, audience, expires_at)
+VALUES ($1, $2, $3, $4, $5) RETURNING *;
+
+-- name: GetRefreshToken :one
+SELECT * FROM oauth_tokens WHERE refresh_token_hash = $1 AND client_id = $2;
+
+-- name: LockGrant :one
+SELECT g.*, u.status AS user_status, u.deleted_at AS user_deleted_at
+FROM oauth_grants g JOIN users u ON u.id = g.user_id
+WHERE g.id = $1 FOR UPDATE OF g;
+
+-- name: GetGrant :one
+SELECT g.* FROM oauth_grants g JOIN users u ON u.id = g.user_id
+WHERE g.id = $1 AND g.revoked_at IS NULL AND g.expires_at > now()
+    AND u.status = 'active' AND u.deleted_at IS NULL;
+
+-- name: RotateToken :execrows
+UPDATE oauth_tokens SET rotated_at = now(), revoked_at = now()
+WHERE id = $1 AND rotated_at IS NULL AND revoked_at IS NULL AND refresh_expires_at > now();
+
+-- name: ExtendGrant :exec
+UPDATE oauth_grants SET expires_at = $2 WHERE id = $1 AND revoked_at IS NULL;
+
+-- name: RevokeGrant :exec
+UPDATE oauth_grants SET revoked_at = now(), revoke_reason = $2,
+    revocation_version = revocation_version + 1
+WHERE id = $1 AND revoked_at IS NULL;
+
+-- name: RevokeGrantTokens :exec
+UPDATE oauth_tokens SET revoked_at = coalesce(revoked_at, now()) WHERE grant_id = $1;
+
+-- name: FindTokenGrant :one
+SELECT grant_id FROM oauth_tokens
+WHERE client_id = $2 AND (access_token_hash = $1 OR refresh_token_hash = $1);
+
+-- name: CreateLoginState :execresult
+INSERT INTO oauth_login_states (state_hash, connection_id, authorization_request_id, purpose, expires_at,device_request_id)
+    VALUES (sqlc.arg(state_hash), sqlc.arg(connection_id), NULLIF (sqlc.arg(authorization_request_id)::text, '')::uuid,
+	sqlc.arg(purpose), sqlc.arg(expires_at),NULLIF(sqlc.arg(device_request_id)::text,'')::uuid);
+
+-- name: ConsumeLoginState :one
+UPDATE
+    oauth_login_states
+SET
+    consumed_at = now()
+WHERE
+    state_hash = $1
+    AND consumed_at IS NULL
+    AND expires_at > now()
+RETURNING
+    connection_id,
+    coalesce(authorization_request_id::text, '')::text AS authorization_request_id,
+    purpose,
+    coalesce(device_request_id::text,'')::text AS device_request_id;
+
+-- name: CreateBrowserSession :execresult
+INSERT INTO browser_sessions (token_hash, user_id, authentication_method, expires_at)
+    VALUES ($1, $2, $3, $4);
+
+-- name: GetBrowserUser :one
+SELECT
+    u.id,
+    u.name,
+    u.email,
+    coalesce(nullif(btrim(u.custom_avatar_url), ''), nullif(btrim(u.avatar_url), ''), '')::text AS avatar_url,
+    u.role,
+    u.status,
+    u.joined_at,
+    u.last_login_at,
+    s.authentication_method
+FROM
+    browser_sessions s
+    JOIN users u ON u.id = s.user_id
+WHERE
+    s.token_hash = $1
+    AND s.revoked_at IS NULL
+    AND s.expires_at > now()
+    AND u.status = 'active'
+    AND u.deleted_at IS NULL;
+
+-- name: GetTokenUser :one
+SELECT
+    u.id,
+    u.name,
+    u.email,
+    coalesce(nullif(btrim(u.custom_avatar_url), ''), nullif(btrim(u.avatar_url), ''), '')::text AS avatar_url,
+    u.role,
+    u.status,
+    u.joined_at,
+    u.last_login_at,
+    t.access_expires_at,
+    g.id AS grant_id,
+    t.client_id,
+    g.scopes,
+    g.audience,
+    g.purpose,
+    g.machine_id,
+    g.requested_machine_id,
+    g.key_id,
+    g.revocation_version
+FROM
+    oauth_tokens t
+    JOIN users u ON u.id = t.user_id
+    JOIN oauth_grants g ON g.id = t.grant_id
+WHERE
+    t.access_token_hash = $1
+    AND t.revoked_at IS NULL
+    AND t.access_expires_at > now()
+    AND g.revoked_at IS NULL AND g.expires_at > now()
+    AND u.status = 'active'
+    AND u.deleted_at IS NULL;
+
+-- name: GetAccessCredential :one
+SELECT t.access_expires_at, t.user_id, g.id AS grant_id, t.client_id,
+    g.scopes, g.audience, g.purpose, g.machine_id, g.key_id, g.revocation_version
+FROM oauth_tokens t
+JOIN users u ON u.id = t.user_id
+JOIN oauth_grants g ON g.id = t.grant_id
+WHERE t.access_token_hash = $1
+    AND t.revoked_at IS NULL AND t.access_expires_at > now()
+    AND g.revoked_at IS NULL AND g.expires_at > now()
+    AND u.status = 'active' AND u.deleted_at IS NULL;
+
+-- name: RevokeBrowserSession :execresult
+UPDATE
+    browser_sessions
+SET
+    revoked_at = now()
+WHERE
+    token_hash = $1
+    AND revoked_at IS NULL;
+
+-- name: RevokeToken :execresult
+UPDATE
+    oauth_tokens
+SET
+    revoked_at = now()
+WHERE
+    client_id = $2
+    AND revoked_at IS NULL
+    AND (access_token_hash = $1
+        OR refresh_token_hash = $1);
+
+-- name: SearchAdminUserCandidates :many
+SELECT jsonb_build_object('id',u.id,'name',u.name,'email',u.email,
+ 'avatar_url',coalesce(nullif(btrim(u.custom_avatar_url),''), nullif(btrim(u.avatar_url),'')),'deleted',u.deleted_at IS NOT NULL)
+FROM users u
+WHERE (sqlc.arg(visible_users)::uuid[] IS NULL OR u.id = ANY(sqlc.arg(visible_users)::uuid[]))
+ AND (sqlc.arg(include_deleted)::boolean OR u.deleted_at IS NULL)
+ AND (sqlc.arg(user_id)::text = '' OR u.id = nullif(sqlc.arg(user_id)::text,'')::uuid)
+ AND (sqlc.arg(query)::text = '' OR strpos(lower(u.name),lower(sqlc.arg(query)::text))>0
+      OR strpos(lower(u.email),lower(sqlc.arg(query)::text))>0
+      OR strpos(u.id::text,lower(sqlc.arg(query)::text))>0)
+ORDER BY lower(u.name),lower(u.email),u.id
+LIMIT sqlc.arg(result_limit);
+
+-- name: ListUsers :many
+SELECT u.id, u.name, u.email,
+    coalesce(nullif(btrim(u.custom_avatar_url), ''), nullif(btrim(u.avatar_url), ''), '')::text AS avatar_url,
+    u.role, u.status, u.joined_at, u.last_login_at,
+    coalesce(s.groups, '[]'::jsonb)::jsonb AS supervised_groups
+FROM users u
+LEFT JOIN (
+    SELECT gu.user_id, jsonb_agg(jsonb_build_object('id', g.id, 'name', g.name)
+        ORDER BY g.name, g.id) AS groups
+    FROM group_users gu
+    JOIN groups g ON g.id = gu.group_id AND g.deleted_at IS NULL
+    WHERE gu.is_supervisor AND gu.removed_at IS NULL
+    GROUP BY gu.user_id
+) s ON s.user_id = u.id
+WHERE u.deleted_at IS NULL
+ORDER BY u.joined_at DESC;
+
+-- name: ManagedMemberIDs :many
+WITH RECURSIVE managed(id) AS (
+    SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id
+    WHERE gu.user_id = sqlc.arg(supervisor_id)::uuid AND gu.is_supervisor
+      AND gu.removed_at IS NULL AND g.deleted_at IS NULL
+    UNION
+    SELECT g.id FROM groups g JOIN managed parent ON g.parent_id = parent.id
+    WHERE g.deleted_at IS NULL
+)
+SELECT DISTINCT u.id FROM managed g
+JOIN group_users gu ON gu.group_id = g.id AND gu.removed_at IS NULL
+JOIN users u ON u.id = gu.user_id AND u.deleted_at IS NULL;
+
+-- name: GetUserSupervisedGroups :many
+SELECT g.id, g.name
+FROM group_users gu
+JOIN groups g ON g.id = gu.group_id AND g.deleted_at IS NULL
+WHERE gu.user_id = $1 AND gu.is_supervisor AND gu.removed_at IS NULL
+ORDER BY g.name, g.id;
+
+-- name: LockUserCreationGroups :exec
+-- Same advisory lock as group writes, including membership replacement and deletion.
+SELECT pg_advisory_xact_lock(741209);
+
+-- name: GetUserCreationGroups :many
+SELECT id
+FROM groups
+WHERE id = ANY ($1::uuid[]) AND deleted_at IS NULL
+ORDER BY id
+FOR SHARE;
+
+-- name: AssignCreatedUserGroups :exec
+INSERT INTO group_users (group_id, user_id, assigned_by_user_id)
+SELECT unnest(sqlc.arg(group_ids)::uuid[]), sqlc.arg(user_id), sqlc.arg(actor_id);
+
+-- name: TouchUserCreationGroups :exec
+UPDATE groups SET updated_at = now() WHERE id = ANY ($1::uuid[]);
+
+-- name: CreateUser :one
+INSERT INTO users (name, email, ROLE, password_hash)
+    VALUES ($1, $2, $3, $4)
+RETURNING
+    id, name, email, coalesce(nullif(btrim(custom_avatar_url), ''), nullif(btrim(avatar_url), ''), '')::text AS avatar_url, ROLE, status, joined_at, last_login_at;
+
+-- name: GetUser :one
+SELECT
+    id,
+    name,
+    email,
+    coalesce(nullif(btrim(custom_avatar_url), ''), nullif(btrim(avatar_url), ''), '')::text AS avatar_url,
+    ROLE,
+    status,
+    joined_at,
+    last_login_at
+FROM
+    users
+WHERE
+    id = $1
+    AND deleted_at IS NULL;
+
+-- name: LockActiveAdmin :one
+SELECT id FROM users
+WHERE id = $1 AND role = 'admin' AND status = 'active' AND deleted_at IS NULL
+FOR SHARE;
+
+-- name: MarkUserDeleted :one
+UPDATE users SET deleted_at = now(), updated_at = now(), password_hash = NULL
+WHERE id = $1 AND deleted_at IS NULL
+RETURNING lower(email)::text;
+
+-- name: MarkUserIdentitiesDeleted :exec
+UPDATE user_identities SET deleted_at = now(), updated_at = now()
+WHERE user_id = $1 AND deleted_at IS NULL;
+
+-- name: RemoveDeletedUserGroups :exec
+WITH removed AS (
+    UPDATE group_users SET removed_at = now()
+    WHERE user_id = $1 AND removed_at IS NULL
+    RETURNING group_id
+)
+UPDATE groups SET updated_at = now()
+WHERE id IN (SELECT group_id FROM removed) AND deleted_at IS NULL;
+
+-- name: UpdateUser :one
+UPDATE
+    users
+SET
+    name = sqlc.arg(name),
+    ROLE = sqlc.arg(role),
+    status = sqlc.arg(status),
+    disabled_at = sqlc.arg(disabled_at),
+    password_hash = CASE WHEN sqlc.arg(password_hash)::text = '' THEN
+        password_hash
+    ELSE
+        sqlc.arg(password_hash)::text
+    END,
+    updated_at = now()
+WHERE
+    id = sqlc.arg(id)
+    AND deleted_at IS NULL
+RETURNING
+    id,
+    name,
+    email,
+    coalesce(nullif(btrim(custom_avatar_url), ''), nullif(btrim(avatar_url), ''), '')::text AS avatar_url,
+    ROLE,
+    status,
+    joined_at,
+    last_login_at;
+
+-- name: GetIdentityUser :one
+SELECT
+    u.id,
+    u.name,
+    u.email,
+    coalesce(nullif(btrim(u.custom_avatar_url), ''), nullif(btrim(u.avatar_url), ''), '')::text AS avatar_url,
+    u.role,
+    u.status,
+    u.joined_at,
+    u.last_login_at
+FROM
+    user_identities i
+    JOIN users u ON u.id = i.user_id
+WHERE
+    i.provider = $1
+    AND i.issuer = $2
+    AND i.provider_subject = $3
+    AND i.deleted_at IS NULL
+    AND u.deleted_at IS NULL;
+
+-- name: UpdateBaizhiyunEmail :exec
+WITH identity AS (
+    UPDATE user_identities
+    SET email = sqlc.arg(email)::text
+    WHERE user_id = sqlc.arg(user_id)
+        AND provider = 'baizhiyun'
+        AND issuer = sqlc.arg(issuer)
+        AND provider_subject = sqlc.arg(provider_subject)
+        AND deleted_at IS NULL
+    RETURNING user_id, provider_subject
+)
+UPDATE users u
+SET email = sqlc.arg(email)::text, updated_at = now()
+FROM identity i
+WHERE u.id = i.user_id
+    AND u.email = i.provider_subject || '@baizhiyun.oauth.local'
+    AND NOT EXISTS (
+        SELECT 1 FROM users existing
+        WHERE lower(existing.email) = lower(sqlc.arg(email)::text)
+            AND existing.deleted_at IS NULL
+    );
+
+-- name: UpdateIdentityUser :one
+UPDATE
+    users
+SET
+    name = sqlc.arg(name),
+    avatar_url = NULLIF (sqlc.arg(avatar_url)::text, ''),
+    last_login_at = now(),
+    updated_at = now()
+WHERE
+    id = sqlc.arg(id)
+RETURNING
+    id,
+    name,
+    email,
+    coalesce(nullif(btrim(custom_avatar_url), ''), nullif(btrim(avatar_url), ''), '')::text AS avatar_url,
+    ROLE,
+    status,
+    joined_at,
+    last_login_at;
+
+-- name: GetUserByEmail :one
+SELECT
+    id,
+    name,
+    email,
+    coalesce(nullif(btrim(custom_avatar_url), ''), nullif(btrim(avatar_url), ''), '')::text AS avatar_url,
+    ROLE,
+    status,
+    joined_at,
+    last_login_at
+FROM
+    users
+WHERE
+    lower(email) = lower($1)
+    AND deleted_at IS NULL;
+
+-- name: CreateEmailUser :exec
+INSERT INTO users (name, email, ROLE)
+    VALUES ($1, $2, 'user')
+ON CONFLICT (lower(email)) WHERE deleted_at IS NULL DO NOTHING;
+
+-- name: CreateIdentityUser :one
+INSERT INTO users (name, email, avatar_url, ROLE, last_login_at)
+    VALUES (sqlc.arg(name), sqlc.arg(email), NULLIF (sqlc.arg(avatar_url)::text, ''),
+	'user', now())
+ON CONFLICT (lower(email))
+WHERE
+    deleted_at IS NULL
+        DO UPDATE SET
+            name = EXCLUDED.name,
+            avatar_url = EXCLUDED.avatar_url,
+            last_login_at = now(),
+            updated_at = now()
+        WHERE
+            users.status = 'active'
+        RETURNING
+            id,
+            name,
+            email,
+            coalesce(nullif(btrim(custom_avatar_url), ''), nullif(btrim(avatar_url), ''), '')::text AS avatar_url,
+            ROLE,
+            status,
+            joined_at,
+            last_login_at;
+
+-- name: UpsertIdentity :execresult
+INSERT INTO user_identities (user_id, provider, issuer, provider_subject, username, email, avatar_url)
+    VALUES (sqlc.arg(user_id), sqlc.arg(provider), sqlc.arg(issuer), sqlc.arg(provider_subject),
+	NULLIF (sqlc.arg(provider_username)::text, ''), NULLIF(sqlc.arg(provider_email)::text,''), NULLIF (sqlc.arg(provider_avatar_url)::text, ''));
+
+-- name: SearchUsers :many
+SELECT
+    id,
+    name,
+    email
+FROM
+    users
+WHERE
+    status = 'active'
+    AND deleted_at IS NULL
+    AND id <> $1
+    AND (strpos(lower(name), lower($2)) > 0
+        OR strpos(lower(email), lower($2)) > 0)
+ORDER BY
+    lower(name),
+    id
+LIMIT $3;
+
+-- name: LockEmailDelivery :exec
+SELECT pg_advisory_xact_lock(741210);
+
+-- name: CleanEmailDeliveries :exec
+DELETE FROM email_code_deliveries WHERE created_at < now() - interval '1 hour';
+
+-- name: CleanEmailCodes :exec
+DELETE FROM email_codes WHERE expires_at < now();
+
+-- name: EmailDeliveryLimited :one
+SELECT (count(*) FILTER (WHERE email = sqlc.arg(email)) >= 10
+ OR count(*) FILTER (WHERE ip_hash = sqlc.arg(ip_hash)) >= 30
+ OR count(*) FILTER (WHERE email = sqlc.arg(email) AND created_at > now() - interval '30 seconds') > 0)::boolean AS limited
+FROM email_code_deliveries;
+
+-- name: RecordEmailDelivery :exec
+INSERT INTO email_code_deliveries (email, ip_hash) VALUES ($1, $2);
+
+-- name: SaveEmailCode :exec
+INSERT INTO email_codes (email, purpose, code_hash, expires_at) VALUES ($1, $2, $3, $4)
+ON CONFLICT (email, purpose) DO UPDATE SET code_hash = EXCLUDED.code_hash, expires_at = EXCLUDED.expires_at, attempts = 0, ready = false;
+
+-- name: ReadyEmailCode :exec
+UPDATE email_codes SET ready = true WHERE email = $1 AND purpose = $2 AND code_hash = $3;
+
+-- name: GetEmailCode :one
+SELECT code_hash, attempts FROM email_codes WHERE email = $1 AND purpose = $2 AND ready AND expires_at > now() FOR UPDATE;
+
+-- name: FailEmailCode :exec
+UPDATE email_codes SET attempts = attempts + 1 WHERE email = $1 AND purpose = $2;
+
+-- name: DeleteEmailCode :exec
+DELETE FROM email_codes WHERE email = $1 AND purpose = $2;
+
+-- name: ResetPassword :one
+UPDATE users SET password_hash = $2, updated_at = now()
+WHERE lower(email) = $1 AND deleted_at IS NULL AND status = 'active' RETURNING id;
+
+-- name: ResetAdminPassword :one
+UPDATE users SET password_hash = sqlc.arg(password_hash), updated_at = now()
+WHERE lower(email) = sqlc.arg(email) AND role = 'admin' AND deleted_at IS NULL
+RETURNING id, email;
+
+-- name: ResetUserPassword :one
+UPDATE users SET password_hash = $2, updated_at = now()
+WHERE id = $1 AND deleted_at IS NULL RETURNING id;
+
+-- name: RevokeUserSessions :exec
+UPDATE browser_sessions SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL;
+
+-- name: RevokeUserTokens :exec
+WITH grants AS (
+    UPDATE oauth_grants AS g SET revoked_at = now(), revoke_reason = 'user_revocation',
+        revocation_version = g.revocation_version + 1
+    WHERE g.user_id = $1 AND g.revoked_at IS NULL
+)
+UPDATE oauth_tokens AS t SET revoked_at = now() WHERE t.user_id = $1 AND t.revoked_at IS NULL;
+
+-- name: RevokeUserCodes :exec
+UPDATE oauth_authorization_codes SET redeemed_at = now() WHERE user_id = $1 AND redeemed_at IS NULL;
+
+-- name: BindGrant :execrows
+UPDATE oauth_grants SET machine_id = $2, key_id = $3
+WHERE id = $1 AND revoked_at IS NULL AND expires_at > now()
+    AND (machine_id IS NULL OR (machine_id = $2 AND key_id = $3));

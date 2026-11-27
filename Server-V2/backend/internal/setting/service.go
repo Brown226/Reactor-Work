@@ -1,0 +1,453 @@
+package setting
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log/slog"
+	"slices"
+	"time"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+)
+
+var Keys = []string{"branding", "authentication", "email", "billing", "session_reporting", "proxies", "mcp", "model_network"}
+
+var defaultSessionReporting = json.RawMessage(`{"enabled":true,"level":"stats"}`)
+
+type Record struct {
+	Key             string          `json:"key"`
+	Value           json.RawMessage `json:"value"`
+	SchemaVersion   int             `json:"schema_version"`
+	UpdatedByUserID string          `json:"updated_by_user_id"`
+	UpdatedAt       time.Time       `json:"updated_at"`
+}
+
+type Config struct {
+	Version   int64                      `json:"version"`
+	UpdatedAt time.Time                  `json:"updated_at"`
+	Settings  map[string]json.RawMessage `json:"settings"`
+}
+
+type Store interface {
+	Get(context.Context, string) (Record, error)
+	List(context.Context) ([]Record, error)
+	Put(context.Context, Record) (Record, error)
+}
+
+type Service struct {
+	store    Store
+	branding BrandingReader
+}
+
+func NewService(store Store) *Service {
+	return &Service{store: store}
+}
+
+func (s *Service) Get(ctx context.Context, key string) (Record, error) {
+	if !slices.Contains(Keys, key) {
+		return Record{}, ErrUnknownKey
+	}
+	return s.store.Get(ctx, key)
+}
+
+func (s *Service) GetValue(ctx context.Context, key string) (json.RawMessage, error) {
+	if key == "branding" {
+		return s.brandingValue(ctx)
+	}
+	record, err := s.Get(ctx, key)
+	if errors.Is(err, ErrNotFound) {
+		switch key {
+		case "branding", "authentication":
+			return json.RawMessage(`{}`), nil
+		case "mcp", "model_network":
+			return json.RawMessage(`{"blocked_cidrs":[]}`), nil
+		case "session_reporting":
+			return append(json.RawMessage(nil), defaultSessionReporting...), nil
+		}
+	}
+	return record.Value, err
+}
+
+func (s *Service) List(ctx context.Context) ([]Record, error) {
+	return s.store.List(ctx)
+}
+
+func (s *Service) Put(ctx context.Context, key string, value json.RawMessage, schemaVersion int, userID string) (Record, error) {
+	if key == "branding" {
+		return Record{}, ErrUnknownKey
+	}
+	if !slices.Contains(Keys, key) {
+		return Record{}, ErrUnknownKey
+	}
+	if key == "billing" {
+		return Record{}, errors.New("请通过计费管理专用接口修改配置")
+	}
+	if schemaVersion < 1 {
+		return Record{}, errors.New("schema_version 必须大于 0")
+	}
+	var object map[string]json.RawMessage
+	if err := json.Unmarshal(value, &object); err != nil || object == nil {
+		if err != nil {
+			slog.WarnContext(ctx, "操作失败", "module", "setting", "operation", "Put", "error", err)
+		}
+		return Record{}, errors.New("value 必须是 JSON 对象")
+	}
+	if key == "authentication" {
+		if raw, ok := object["oauth_connections"]; ok {
+			var connections []map[string]json.RawMessage
+			if json.Unmarshal(raw, &connections) != nil {
+				return Record{}, errors.New("oauth_connections 格式无效")
+			}
+			for _, connection := range connections {
+				if connection == nil {
+					return Record{}, errors.New("oauth_connections 格式无效")
+				}
+				id, ok := connection["id"]
+				if !ok || string(id) == `""` {
+					encoded, err := json.Marshal(resource.ID())
+					if err != nil {
+						return Record{}, fmt.Errorf("生成 OAuth 连接标识: %w", err)
+					}
+					connection["id"] = encoded
+				}
+			}
+			encoded, err := json.Marshal(connections)
+			if err != nil {
+				return Record{}, fmt.Errorf("编码 OAuth 连接配置: %w", err)
+			}
+			object["oauth_connections"] = encoded
+			value, err = json.Marshal(object)
+			if err != nil {
+				return Record{}, fmt.Errorf("编码认证设置: %w", err)
+			}
+		}
+	}
+	if key == "proxies" {
+		var proxies []map[string]json.RawMessage
+		if err := json.Unmarshal(object["proxies"], &proxies); err != nil || proxies == nil {
+			if err != nil {
+				slog.WarnContext(ctx, "操作失败", "module", "setting", "operation", "Put", "error", err)
+			}
+			return Record{}, errors.New("proxies 必须是数组")
+		}
+		for _, proxy := range proxies {
+			if proxy == nil {
+				return Record{}, errors.New("代理配置无效")
+			}
+			if rawString(proxy["id"]) == "" {
+				encoded, encodeErr := json.Marshal(resource.ID())
+				if encodeErr != nil {
+					return Record{}, encodeErr
+				}
+				proxy["id"] = encoded
+			}
+		}
+		encoded, encodeErr := json.Marshal(proxies)
+		if encodeErr != nil {
+			return Record{}, encodeErr
+		}
+		object["proxies"] = encoded
+		encoded, encodeErr = json.Marshal(object)
+		if encodeErr != nil {
+			return Record{}, encodeErr
+		}
+		value = encoded
+	}
+	value, err := s.mergeSecrets(ctx, key, value)
+	if err != nil {
+		return Record{}, err
+	}
+	if err := json.Unmarshal(value, &object); err != nil {
+		slog.WarnContext(ctx, "操作失败", "module", "setting", "operation", "Put", "error", err)
+		return Record{}, errors.New("value 必须是 JSON 对象")
+	}
+	if err := validate(key, object); err != nil {
+		return Record{}, err
+	}
+	if key == "proxies" {
+		if checker, ok := s.store.(interface {
+			CheckProxyRemoval(context.Context, json.RawMessage) error
+		}); ok {
+			if err := checker.CheckProxyRemoval(ctx, value); err != nil {
+				return Record{}, err
+			}
+		}
+	}
+
+	record, err := s.store.Put(ctx, Record{
+		Key:             key,
+		Value:           value,
+		SchemaVersion:   schemaVersion,
+		UpdatedByUserID: userID,
+	})
+	if err != nil {
+		return Record{}, err
+	}
+	return record, nil
+}
+
+func (s *Service) AdminGet(ctx context.Context, key string) (Record, error) {
+	record, err := s.Get(ctx, key)
+	if err != nil {
+		return Record{}, err
+	}
+	return s.adminRecord(ctx, record)
+}
+
+func (s *Service) AdminList(ctx context.Context) ([]Record, error) {
+	records, err := s.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for index := range records {
+		records[index], err = s.adminRecord(ctx, records[index])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return records, nil
+}
+
+func (s *Service) AgentConfig(ctx context.Context) (Config, error) {
+	records, err := s.store.List(ctx)
+	if err != nil {
+		return Config{}, err
+	}
+
+	config := Config{Settings: make(map[string]json.RawMessage)}
+	seenSessionReporting := false
+	for _, record := range records {
+		if record.Key == "branding" || record.Key == "proxies" || record.Key == "mcp" || record.Key == "model_network" {
+			continue
+		}
+		value, err := redact(record.Key, record.Value)
+		if err != nil {
+			return Config{}, fmt.Errorf("过滤 %s 配置: %w", record.Key, err)
+		}
+		if record.Key == "billing" {
+			var all map[string]json.RawMessage
+			if err := json.Unmarshal(value, &all); err != nil {
+				return Config{}, fmt.Errorf("读取计费设置: %w", err)
+			}
+			safe := map[string]json.RawMessage{}
+			for _, key := range []string{"input_credits_per_million_tokens", "cached_input_credits_per_million_tokens", "output_credits_per_million_tokens", "charging_mode", "enabled", "quota_refresh_cycle"} {
+				if v, ok := all[key]; ok {
+					safe[key] = v
+				}
+			}
+			value, err = json.Marshal(safe)
+			if err != nil {
+				return Config{}, fmt.Errorf("编码计费设置: %w", err)
+			}
+		}
+		if record.Key == "session_reporting" {
+			var setting struct {
+				Enabled bool `json:"enabled"`
+			}
+			if err := json.Unmarshal(value, &setting); err != nil {
+				return Config{}, fmt.Errorf("读取会话上报设置: %w", err)
+			}
+			value, err = json.Marshal(struct {
+				Enabled bool   `json:"enabled"`
+				Level   string `json:"level"`
+			}{setting.Enabled, "stats"})
+			if err != nil {
+				return Config{}, err
+			}
+			seenSessionReporting = true
+		}
+		config.Settings[record.Key] = value
+		if record.UpdatedAt.After(config.UpdatedAt) {
+			config.UpdatedAt = record.UpdatedAt
+		}
+	}
+	if !seenSessionReporting {
+		config.Settings["session_reporting"] = append(json.RawMessage(nil), defaultSessionReporting...)
+	}
+	branding, err := s.brandingValue(ctx)
+	if err != nil {
+		return Config{}, err
+	}
+	config.Settings["branding"] = branding
+	config.Version = config.UpdatedAt.UnixMilli()
+	return config, nil
+}
+
+func redact(key string, value json.RawMessage) (json.RawMessage, error) {
+	var object map[string]any
+	if err := json.Unmarshal(value, &object); err != nil {
+		return nil, err
+	}
+	switch key {
+	case "authentication":
+		connections, _ := object["oauth_connections"].([]any)
+		for _, item := range connections {
+			if connection, ok := item.(map[string]any); ok {
+				delete(connection, "client_secret")
+			}
+		}
+	case "email":
+		delete(object, "smtp_password")
+	case "billing":
+		delete(object, "remote_billing_api_key")
+		delete(object, "wallet")
+	case "proxies":
+		for _, entry := range anySlice(object["proxies"]) {
+			if proxy, ok := entry.(map[string]any); ok {
+				delete(proxy, "password")
+			}
+		}
+	}
+	return json.Marshal(object)
+}
+
+func (s *Service) mergeSecrets(ctx context.Context, key string, value json.RawMessage) (json.RawMessage, error) {
+	existing, err := s.store.Get(ctx, key)
+	if errors.Is(err, ErrNotFound) {
+		return value, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var next, previous map[string]any
+	if err := json.Unmarshal(value, &next); err != nil {
+		slog.WarnContext(ctx, "操作失败", "module", "setting", "operation", "mergeSecrets", "error", err)
+		return nil, errors.New("value 必须是 JSON 对象")
+	}
+	if err := json.Unmarshal(existing.Value, &previous); err != nil {
+		return nil, fmt.Errorf("解析已有 %s 设置: %w", key, err)
+	}
+	switch key {
+	case "authentication":
+		previousByID := make(map[string]map[string]any)
+		for _, item := range anySlice(previous["oauth_connections"]) {
+			connection, _ := item.(map[string]any)
+			previousByID[stringAny(connection["id"])] = connection
+		}
+		for _, item := range anySlice(next["oauth_connections"]) {
+			connection, _ := item.(map[string]any)
+			if stringAny(connection["client_secret"]) == "" {
+				connection["client_secret"] = previousByID[stringAny(connection["id"])]["client_secret"]
+			}
+		}
+	case "email":
+		if stringAny(next["smtp_password"]) == "" {
+			next["smtp_password"] = previous["smtp_password"]
+		}
+	case "billing":
+		if stringAny(next["remote_billing_api_key"]) == "" {
+			next["remote_billing_api_key"] = previous["remote_billing_api_key"]
+		}
+	case "proxies":
+		byID := map[string]map[string]any{}
+		for _, entry := range anySlice(previous["proxies"]) {
+			proxy, _ := entry.(map[string]any)
+			byID[stringAny(proxy["id"])] = proxy
+		}
+		for _, entry := range anySlice(next["proxies"]) {
+			proxy, _ := entry.(map[string]any)
+			if stringAny(proxy["password"]) == "" {
+				proxy["password"] = byID[stringAny(proxy["id"])]["password"]
+			}
+		}
+	}
+	return json.Marshal(next)
+}
+
+func validate(key string, value map[string]json.RawMessage) error {
+	switch key {
+	case "mcp", "model_network":
+		_, err := parseBlockedCIDRs(value["blocked_cidrs"])
+		return err
+	case "proxies":
+		return validateProxies(value["proxies"])
+	case "session_reporting":
+		enabled, ok := value["enabled"]
+		if !ok || (string(enabled) != "true" && string(enabled) != "false") {
+			return errors.New("session_reporting.enabled 必须为布尔值")
+		}
+		level := rawString(value["level"])
+		if level != "stats" && level != "full" {
+			return errors.New("session_reporting.level 必须为 stats 或 full")
+		}
+	case "authentication":
+		for _, key := range []string{"password_enabled", "email_code_enabled", "email_code_auto_registration_enabled"} {
+			if raw, ok := value[key]; ok && string(raw) != "true" && string(raw) != "false" {
+				return fmt.Errorf("%s 必须为布尔值", key)
+			}
+		}
+		var connections []struct {
+			ID                      string `json:"id"`
+			Provider                string `json:"provider"`
+			Name                    string `json:"name"`
+			ClientID                string `json:"client_id"`
+			ClientSecret            string `json:"client_secret"`
+			IssuerURL               string `json:"issuer_url"`
+			IDField                 string `json:"id_field"`
+			UsernameField           string `json:"username_field"`
+			AvatarField             string `json:"avatar_field"`
+			EmailField              string `json:"email_field"`
+			AutoRegistrationEnabled *bool  `json:"auto_registration_enabled"`
+		}
+		if raw, ok := value["oauth_connections"]; ok && json.Unmarshal(raw, &connections) != nil {
+			return errors.New("oauth_connections 格式无效")
+		}
+		seen := make(map[string]bool)
+		for _, connection := range connections {
+			if connection.ID == "" || seen[connection.ID] || connection.Name == "" || connection.ClientID == "" || connection.ClientSecret == "" {
+				return errors.New("OAuth 配置缺少必填字段或 ID 重复")
+			}
+			seen[connection.ID] = true
+			if !slices.Contains([]string{"github", "google", "microsoft", "gitlab", "oidc", "baizhiyun"}, connection.Provider) {
+				return errors.New("OAuth provider 无效")
+			}
+			if (connection.Provider == "oidc" || connection.Provider == "baizhiyun") && connection.IssuerURL == "" {
+				return errors.New("OIDC issuer_url 不能为空")
+			}
+		}
+	case "email":
+		data, err := json.Marshal(value)
+		if err != nil {
+			slog.Warn("操作失败", "module", "setting", "operation", "validate", "error", err)
+			return errors.New("邮件配置格式无效")
+		}
+		var config emailConfig
+		if json.Unmarshal(data, &config) != nil {
+			return errors.New("邮件配置格式无效")
+		}
+		return config.validate()
+	case "billing":
+		cycle := rawString(value["quota_refresh_cycle"])
+		mode := rawString(value["charging_mode"])
+		if cycle != "" && !slices.Contains([]string{"daily", "weekly", "monthly"}, cycle) {
+			return errors.New("quota_refresh_cycle 无效")
+		}
+		if mode != "" && !slices.Contains([]string{"local", "remote"}, mode) {
+			return errors.New("charging_mode 无效")
+		}
+	}
+	return nil
+}
+
+func rawString(value json.RawMessage) string {
+	var result string
+	if err := json.Unmarshal(value, &result); err != nil {
+		slog.Warn("操作失败", "module", "setting", "operation", "rawString", "error", err)
+		return ""
+	}
+	return result
+}
+
+func anySlice(value any) []any {
+	result, _ := value.([]any)
+	return result
+}
+
+func stringAny(value any) string {
+	result, _ := value.(string)
+	return result
+}
+
+var ErrUnknownKey = errors.New("未知设置域")

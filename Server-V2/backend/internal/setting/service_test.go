@@ -1,0 +1,266 @@
+package setting
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"strings"
+	"testing"
+	"time"
+)
+
+type memoryStore struct {
+	records map[string]Record
+	err     error
+}
+
+func (m *memoryStore) Get(_ context.Context, key string) (Record, error) {
+	if m.err != nil {
+		return Record{}, m.err
+	}
+	record, ok := m.records[key]
+	if !ok {
+		return Record{}, ErrNotFound
+	}
+	return record, nil
+}
+
+func (m *memoryStore) List(context.Context) ([]Record, error) {
+	records := make([]Record, 0, len(m.records))
+	for _, record := range m.records {
+		records = append(records, record)
+	}
+	return records, nil
+}
+
+func (m *memoryStore) Put(_ context.Context, record Record) (Record, error) {
+	record.UpdatedAt = time.Now()
+	m.records[record.Key] = record
+	return record, nil
+}
+
+func TestBrandingDefaultsWithoutCommercialProvider(t *testing.T) {
+	configured := json.RawMessage(`{"workspace_name":"Custom team","product_name":"Custom product","logo_s3_key":"private/key"}`)
+	for _, store := range []*memoryStore{{}, {records: map[string]Record{"branding": {Key: "branding", Value: configured}}}, {err: errors.New("unavailable")}} {
+		service := NewService(store)
+		value, err := service.GetValue(t.Context(), "branding")
+		if err != nil || string(value) != string(defaultBranding) {
+			t.Fatalf("默认品牌=%s，错误=%v", value, err)
+		}
+		if _, err = service.Put(t.Context(), "branding", configured, 1, "admin"); !errors.Is(err, ErrUnknownKey) {
+			t.Fatal("通用设置允许写入自定义品牌", err)
+		}
+	}
+}
+
+func TestAgentConfigRedactsSecrets(t *testing.T) {
+	store := &memoryStore{records: map[string]Record{
+		"authentication": {
+			Key:       "authentication",
+			Value:     json.RawMessage(`{"oauth_connections":[{"id":"github","client_id":"client","client_secret":"secret"}]}`),
+			UpdatedAt: time.Now(),
+		},
+		"email": {
+			Key: "email", Value: json.RawMessage(`{"smtp_host":"smtp.example.com","smtp_password":"secret"}`), UpdatedAt: time.Now(),
+		},
+	}}
+	service := NewService(store)
+	config, err := service.AgentConfig(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	encoded, _ := json.Marshal(config)
+	if string(encoded) == "" || strings.Contains(string(encoded), "secret") {
+		t.Fatalf("Agent 配置泄漏密钥: %s", encoded)
+	}
+}
+
+func TestProxySettingRedactsAndResolves(t *testing.T) {
+	store := &memoryStore{records: map[string]Record{}}
+	s := NewService(store)
+	for _, address := range []string{"http://proxy.example:8080", "https://proxy.example:8443", "socks5://proxy.example:1080"} {
+		record, err := s.Put(t.Context(), "proxies", json.RawMessage(`{"proxies":[{"name":"outbound","url":"`+address+`","username":"user","password":"secret"}]}`), 1, "admin")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var config struct {
+			Proxies []outboundProxy `json:"proxies"`
+		}
+		if err := json.Unmarshal(record.Value, &config); err != nil {
+			t.Fatal(err)
+		}
+		id := config.Proxies[0].ID
+		got, err := s.ProxyURL(t.Context(), id)
+		if err != nil || got != strings.Replace(address, "://", "://user:secret@", 1) {
+			t.Fatalf("代理解析错误: %s %v", got, err)
+		}
+		admin, err := s.AdminGet(t.Context(), "proxies")
+		if err != nil || strings.Contains(string(admin.Value), "secret") {
+			t.Fatalf("管理员响应泄露密码: %s %v", admin.Value, err)
+		}
+		if _, err := s.Put(t.Context(), "proxies", json.RawMessage(`{"proxies":[{"id":"`+id+`","name":"outbound","url":"`+address+`","username":"user"}]}`), 1, "admin"); err != nil {
+			t.Fatal(err)
+		}
+		if got, err := s.ProxyURL(t.Context(), id); err != nil || !strings.Contains(got, "secret@") {
+			t.Fatalf("更新时丢失密码: %s %v", got, err)
+		}
+	}
+	if _, err := s.Put(t.Context(), "proxies", json.RawMessage(`{"proxies":[{"name":"invalid","url":"http://localhost:8080/path"}]}`), 1, "admin"); err == nil {
+		t.Fatal("不应接受带路径的代理地址")
+	}
+	if _, err := s.ProxyURL(t.Context(), "missing"); err == nil {
+		t.Fatal("失效代理不得回退直连")
+	}
+	config, err := s.AgentConfig(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := config.Settings["proxies"]; ok {
+		t.Fatal("不应向 Agent 下发代理凭据")
+	}
+}
+
+func TestSessionReportingSwitchRequiresExplicitBoolean(t *testing.T) {
+	service := NewService(&memoryStore{records: map[string]Record{}})
+	value, err := service.GetValue(t.Context(), "session_reporting")
+	if err != nil || !strings.Contains(string(value), `"enabled":true`) {
+		t.Fatalf("新服务端默认启用统计上报: %s %v", value, err)
+	}
+	if _, err := service.Put(t.Context(), "session_reporting", json.RawMessage(`{"level":"stats"}`), 1, "admin"); err == nil {
+		t.Fatal("缺少 enabled 不得误关闭上报")
+	}
+	if _, err := service.Put(t.Context(), "session_reporting", json.RawMessage(`{"enabled":false,"level":"stats"}`), 1, "admin"); err != nil {
+		t.Fatal(err)
+	}
+	value, err = service.GetValue(t.Context(), "session_reporting")
+	if err != nil || !strings.Contains(string(value), `"enabled":false`) {
+		t.Fatalf("配置变更应立即生效: %s %v", value, err)
+	}
+	if _, err := service.Put(t.Context(), "session_reporting", json.RawMessage(`{"enabled":true,"level":"full"}`), 1, "admin"); err != nil {
+		t.Fatal(err)
+	}
+	config, err := service.AgentConfig(t.Context())
+	if err != nil || string(config.Settings["session_reporting"]) != `{"enabled":true,"level":"stats"}` {
+		t.Fatalf("一期只能向客户端下发 stats: %s %v", config.Settings["session_reporting"], err)
+	}
+}
+
+func TestPutRejectsBrokenStoredSecrets(t *testing.T) {
+	broken := json.RawMessage(`{"smtp_password":"secret"`)
+	store := &memoryStore{records: map[string]Record{
+		"email": {Key: "email", Value: broken},
+	}}
+	service := NewService(store)
+	_, err := service.Put(t.Context(), "email", json.RawMessage(`{"smtp_host":"smtp.example.com","smtp_port":587,"smtp_encryption":"starttls","sender_email":"sender@example.com"}`), 1, "admin")
+	if err == nil {
+		t.Fatal("已保存的密钥损坏时不应覆盖现有配置")
+	}
+	if string(store.records["email"].Value) != string(broken) {
+		t.Fatal("损坏的已有配置被覆盖")
+	}
+}
+
+func TestPutPreservesRedactedSecret(t *testing.T) {
+	store := &memoryStore{records: map[string]Record{
+		"authentication": {Key: "authentication", Value: json.RawMessage(`{"oauth_connections":[{"id":"github","provider":"github","name":"GitHub","client_id":"client","client_secret":"secret","enabled":true}]}`)},
+	}}
+	service := NewService(store)
+	_, err := service.Put(t.Context(), "authentication", json.RawMessage(`{"oauth_connections":[{"id":"github","provider":"github","name":"GitHub","client_id":"client","enabled":true}]}`), 1, "user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(store.records["authentication"].Value), "secret") {
+		t.Fatalf("密钥未被保留: %s", store.records["authentication"].Value)
+	}
+}
+
+func TestOAuthIDs(t *testing.T) {
+	store := &memoryStore{records: map[string]Record{}}
+	service := NewService(store)
+	input := json.RawMessage(`{"oauth_connections":[{"provider":"github","name":"GitHub","client_id":"github-client","client_secret":"github-secret","enabled":true},{"id":"","provider":"gitlab","name":"GitLab","client_id":"gitlab-client","client_secret":"gitlab-secret","enabled":true}]}`)
+	if _, err := service.Put(t.Context(), "authentication", input, 1, "user"); err != nil {
+		t.Fatal(err)
+	}
+	read := func() []map[string]any {
+		t.Helper()
+		record, err := service.AdminGet(t.Context(), "authentication")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var value struct {
+			Connections []map[string]any `json:"oauth_connections"`
+		}
+		if err := json.Unmarshal(record.Value, &value); err != nil {
+			t.Fatal(err)
+		}
+		return value.Connections
+	}
+	connections := read()
+	first, second := stringAny(connections[0]["id"]), stringAny(connections[1]["id"])
+	if first == "" || second == "" || first == second {
+		t.Fatalf("服务端应为每个新连接生成独立标识: %v", connections)
+	}
+	for _, connection := range connections {
+		if _, ok := connection["client_secret"]; ok {
+			t.Fatal("响应不应包含密钥")
+		}
+	}
+	connections[0]["enabled"] = false
+	connections[0]["name"] = "更新后的 GitHub"
+	update, _ := json.Marshal(map[string]any{"oauth_connections": connections})
+	if _, err := service.Put(t.Context(), "authentication", update, 1, "user"); err != nil {
+		t.Fatal(err)
+	}
+	connections = read()
+	if connections[0]["id"] != first || connections[1]["id"] != second || connections[0]["enabled"] != false {
+		t.Fatalf("更新应保留已有标识: %v", connections)
+	}
+	stored := string(store.records["authentication"].Value)
+	if !strings.Contains(stored, "github-secret") || !strings.Contains(stored, "gitlab-secret") {
+		t.Fatal("使用服务端标识更新时应保留原有密钥")
+	}
+	for _, raw := range []string{`[null]`, `[{"id":3}]`, `[{"id":null}]`, `[{"id":"github","provider":"github","name":"GitHub","client_id":"client","client_secret":"secret","auto_registration_enabled":"true"}]`} {
+		if _, err := service.Put(t.Context(), "authentication", json.RawMessage(`{"oauth_connections":`+raw+`}`), 1, "user"); err == nil {
+			t.Fatalf("无效连接应被拒绝: %s", raw)
+		}
+	}
+}
+
+func TestOIDCUserInfoFields(t *testing.T) {
+	store := &memoryStore{records: map[string]Record{}}
+	service := NewService(store)
+	value := json.RawMessage(`{"oauth_connections":[{"provider":"oidc","name":"OIDC","client_id":"client","client_secret":"secret","issuer_url":"https://identity.example","id_field":"id","username_field":"name","avatar_field":"picture","email_field":"email","scopes":["profile"],"enabled":true}]}`)
+	if _, err := service.Put(t.Context(), "authentication", value, 1, "user"); err != nil {
+		t.Fatal(err)
+	}
+	record, err := service.AdminGet(t.Context(), "authentication")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := service.Put(t.Context(), "authentication", record.Value, 1, "user"); err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range []string{`"id_field":"id"`, `"username_field":"name"`, `"avatar_field":"picture"`, `"email_field":"email"`, `"scopes":["profile"]`} {
+		if !strings.Contains(string(store.records["authentication"].Value), field) {
+			t.Fatalf("OIDC 字段映射未保留: %s", store.records["authentication"].Value)
+		}
+	}
+	invalid := json.RawMessage(`{"oauth_connections":[{"provider":"oidc","name":"OIDC","client_id":"client","client_secret":"secret","issuer_url":"https://identity.example","id_field":42}]}`)
+	if _, err := service.Put(t.Context(), "authentication", invalid, 1, "user"); err == nil {
+		t.Fatal("字段名必须是字符串")
+	}
+}
+
+func TestBaizhiyunConnection(t *testing.T) {
+	for _, issuer := range []string{"", "https://identity.example"} {
+		t.Run(issuer, func(t *testing.T) {
+			store := &memoryStore{records: map[string]Record{}}
+			service := NewService(store)
+			value, _ := json.Marshal(map[string]any{"oauth_connections": []map[string]any{{"provider": "baizhiyun", "name": "百智云", "client_id": "client", "client_secret": "secret", "issuer_url": issuer, "enabled": true}}})
+			_, err := service.Put(t.Context(), "authentication", value, 1, "user")
+			if (err != nil) != (issuer == "") {
+				t.Fatalf("百智云 Issuer 校验错误: %v", err)
+			}
+		})
+	}
+}

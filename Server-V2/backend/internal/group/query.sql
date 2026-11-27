@@ -1,0 +1,293 @@
+-- name: ListGroups :many
+SELECT
+    g.id,
+    g.parent_id,
+    g.name,
+    ARRAY (
+        SELECT
+            gu.user_id::text
+        FROM
+            group_users gu
+            JOIN users u ON u.id = gu.user_id
+        WHERE
+            gu.group_id = g.id
+            AND gu.removed_at IS NULL
+            AND u.deleted_at IS NULL
+        ORDER BY
+            gu.user_id)::text[] AS member_ids,
+    ARRAY (
+        SELECT gu.user_id::text FROM group_users gu
+        JOIN users u ON u.id = gu.user_id AND u.deleted_at IS NULL
+        WHERE gu.group_id = g.id AND gu.removed_at IS NULL AND gu.is_supervisor
+        ORDER BY gu.user_id)::text[] AS supervisor_ids
+    FROM
+        GROUPS g
+    WHERE
+        g.deleted_at IS NULL
+    ORDER BY
+        g.created_at,
+        g.id;
+
+-- name: ListGroupSummaries :many
+SELECT
+    g.id,
+    g.name,
+    g.parent_id
+FROM
+    groups g
+WHERE
+    g.deleted_at IS NULL
+ORDER BY
+    g.created_at,
+    g.id;
+
+-- name: SearchGroups :many
+SELECT
+    g.id,
+    g.name,
+    g.parent_id
+FROM
+    groups g
+WHERE
+    g.deleted_at IS NULL
+    AND g.id <> sqlc.arg(root_id)::uuid
+    AND strpos(lower(g.name), lower(sqlc.arg(name_query)::text)) > 0
+ORDER BY
+    lower(g.name),
+    g.id
+LIMIT sqlc.arg(result_limit)::int;
+
+-- name: GetGroup :one
+SELECT
+    g.id,
+    g.parent_id,
+    g.name,
+    ARRAY (
+        SELECT
+            gu.user_id::text
+        FROM
+            group_users gu
+            JOIN users u ON u.id = gu.user_id
+        WHERE
+            gu.group_id = g.id
+            AND gu.removed_at IS NULL
+            AND u.deleted_at IS NULL
+        ORDER BY
+            gu.user_id)::text[] AS member_ids,
+    ARRAY (
+        SELECT gu.user_id::text FROM group_users gu
+        JOIN users u ON u.id = gu.user_id AND u.deleted_at IS NULL
+        WHERE gu.group_id = g.id AND gu.removed_at IS NULL AND gu.is_supervisor
+        ORDER BY gu.user_id)::text[] AS supervisor_ids
+    FROM
+        GROUPS g
+    WHERE
+        g.deleted_at IS NULL
+        AND g.id = $1;
+
+-- name: LockGroups :execresult
+SELECT
+    pg_advisory_xact_lock(741209);
+
+-- name: WouldCreateCycle :one
+WITH RECURSIVE ancestors (
+    id,
+    parent_id
+) AS (
+    SELECT
+        g.id,
+        g.parent_id
+    FROM
+        GROUPS g
+    WHERE
+        g.id = sqlc.arg(id)
+        AND g.deleted_at IS NULL
+    UNION
+    SELECT
+        g.id,
+        g.parent_id
+    FROM
+        GROUPS g
+        JOIN ancestors a ON g.id = a.parent_id
+    WHERE
+        g.deleted_at IS NULL
+)
+SELECT
+    EXISTS (
+        SELECT
+            1
+        FROM
+            ancestors
+        WHERE
+            id = NULLIF (sqlc.arg(group_id)::text, '')::uuid);
+
+-- name: NameExists :one
+SELECT
+    EXISTS (
+        SELECT
+            1
+        FROM
+            GROUPS
+        WHERE
+            deleted_at IS NULL
+            AND parent_id IS NOT DISTINCT FROM sqlc.narg(parent_id)::uuid
+            AND lower(name) = lower(sqlc.arg(name))
+            AND id IS DISTINCT FROM NULLIF (sqlc.arg(group_id)::text, '')::uuid);
+
+-- name: CreateGroup :one
+INSERT INTO GROUPS (parent_id, name, created_by_user_id)
+    VALUES ($1, $2, $3)
+RETURNING
+    id;
+
+-- name: UpdateGroup :execresult
+UPDATE
+    GROUPS
+SET
+    parent_id = $2,
+    name = $3,
+    updated_at = now()
+WHERE
+    id = $1;
+
+-- name: LockMembers :many
+SELECT
+    id
+FROM
+    users
+WHERE
+    id = ANY ($1::uuid[])
+    AND deleted_at IS NULL FOR SHARE;
+
+-- name: RemoveMembers :execresult
+UPDATE
+    group_users
+SET
+    removed_at = now()
+WHERE
+    group_id = sqlc.arg(group_id)
+    AND removed_at IS NULL
+    AND NOT (user_id = ANY (sqlc.arg(user_ids)::uuid[]));
+
+-- name: AddMembers :execresult
+INSERT INTO group_users (group_id, user_id, assigned_by_user_id)
+SELECT
+    sqlc.arg(group_id),
+    unnest(sqlc.arg(user_ids)::uuid[]),
+    sqlc.arg(assigned_by_user_id)
+ON CONFLICT (group_id,
+    user_id)
+WHERE
+    removed_at IS NULL
+        DO NOTHING;
+
+-- name: LockSupervisorCandidates :many
+SELECT gu.user_id FROM group_users gu
+JOIN users u ON u.id = gu.user_id AND u.deleted_at IS NULL
+WHERE gu.group_id = sqlc.arg(group_id) AND gu.removed_at IS NULL
+  AND gu.user_id = ANY(sqlc.arg(user_ids)::uuid[])
+ORDER BY gu.user_id FOR UPDATE OF gu FOR SHARE OF u;
+
+-- name: SetSupervisors :exec
+UPDATE group_users SET is_supervisor = (user_id = ANY(sqlc.arg(user_ids)::uuid[]))
+WHERE group_id = sqlc.arg(group_id) AND removed_at IS NULL
+  AND is_supervisor <> (user_id = ANY(sqlc.arg(user_ids)::uuid[]));
+
+-- name: TouchGroup :execresult
+UPDATE
+    GROUPS
+SET
+    updated_at = now()
+WHERE
+    id = $1;
+
+-- name: HasChildren :one
+SELECT
+    EXISTS (
+        SELECT
+            1
+        FROM
+            GROUPS
+        WHERE
+            parent_id = $1
+            AND deleted_at IS NULL);
+
+-- name: DeleteGroup :execresult
+UPDATE
+    GROUPS
+SET
+    deleted_at = now(),
+    updated_at = now()
+WHERE
+    id = $1;
+
+-- name: RemoveAllMembers :execresult
+UPDATE
+    group_users
+SET
+    removed_at = now()
+WHERE
+    group_id = $1
+    AND removed_at IS NULL;
+
+-- name: TouchGrantedModels :execresult
+UPDATE models SET updated_at = now()
+WHERE id IN (SELECT resource_id FROM resource_access_grants WHERE group_id = $1 AND resource_type = 'model');
+
+-- name: TouchGrantedRules :execresult
+UPDATE rules SET updated_at = now(), revision = revision + 1
+WHERE id IN (SELECT resource_id FROM resource_access_grants WHERE group_id = $1 AND resource_type = 'rule');
+
+-- name: TouchGrantedSkills :execresult
+UPDATE skills SET updated_at = now(), revision = revision + 1
+WHERE id IN (SELECT resource_id FROM resource_access_grants WHERE group_id = $1 AND resource_type = 'skill');
+
+-- name: TouchGrantedConnectors :execresult
+UPDATE connectors SET updated_at = now(), revision = revision + 1
+WHERE id IN (SELECT resource_id FROM resource_access_grants WHERE group_id = $1 AND resource_type = 'connector');
+
+-- name: TouchGrantedExperts :execresult
+UPDATE experts SET updated_at = now(), revision = revision + 1
+WHERE id IN (SELECT resource_id FROM resource_access_grants WHERE group_id = $1 AND resource_type = 'expert');
+
+-- name: DeleteGrants :execresult
+DELETE FROM resource_access_grants
+WHERE group_id = $1;
+
+-- name: RootName :one
+SELECT 'Monkey AI'::text;
+
+-- name: RootDirectMemberIDs :many
+SELECT u.id::text FROM users u
+WHERE u.deleted_at IS NULL AND NOT EXISTS (
+    SELECT 1 FROM group_users gu JOIN groups g ON g.id = gu.group_id AND g.deleted_at IS NULL
+    WHERE gu.user_id = u.id AND gu.removed_at IS NULL
+)
+ORDER BY u.id;
+
+-- name: RootUserGroups :many
+SELECT u.id::text AS user_id, COALESCE((
+    SELECT g.id::text FROM group_users gu JOIN groups g ON g.id = gu.group_id AND g.deleted_at IS NULL
+    WHERE gu.user_id = u.id AND gu.removed_at IS NULL ORDER BY g.created_at, g.id LIMIT 1
+), sqlc.arg(root_id)::text)::text AS group_id
+FROM users u WHERE u.deleted_at IS NULL;
+
+-- name: HasUserInActiveGroup :one
+SELECT EXISTS (
+    SELECT 1 FROM group_users gu JOIN groups g ON g.id = gu.group_id AND g.deleted_at IS NULL
+    WHERE gu.user_id = $1 AND gu.removed_at IS NULL
+);
+
+-- name: HasActiveMember :one
+SELECT EXISTS (
+    SELECT 1 FROM group_users WHERE group_id = sqlc.arg(group_id) AND user_id = sqlc.arg(user_id) AND removed_at IS NULL
+);
+
+-- name: RemoveMember :execresult
+UPDATE group_users SET removed_at = now()
+WHERE group_id = sqlc.arg(group_id) AND user_id = sqlc.arg(user_id) AND removed_at IS NULL;
+
+-- name: AddMember :execresult
+INSERT INTO group_users(group_id, user_id, assigned_by_user_id)
+VALUES (sqlc.arg(group_id), sqlc.arg(user_id), sqlc.arg(assigned_by_user_id))
+ON CONFLICT (group_id, user_id) WHERE removed_at IS NULL DO NOTHING;

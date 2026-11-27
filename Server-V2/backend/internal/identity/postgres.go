@@ -1,0 +1,327 @@
+package identity
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+	"log/slog"
+	"time"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/identity/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/member"
+
+	"github.com/jackc/pgx/v5"
+)
+
+func (s *Service) createAuthorizationRequest(ctx context.Context, request *AuthorizationRequest) error {
+	row, queryErr := sqlc.New(s.db).CreateAuthorizationRequest(ctx, sqlc.CreateAuthorizationRequestParams{
+		ClientID:            request.ClientID,
+		RedirectUri:         request.RedirectURI,
+		State:               request.State,
+		CodeChallenge:       request.CodeChallenge,
+		CodeChallengeMethod: request.CodeChallengeMethod,
+		ExpiresAt:           request.ExpiresAt,
+		Scopes:              request.Scopes,
+		Audience:            request.Audience,
+	})
+	if queryErr != nil {
+		return queryErr
+	}
+	request.ID = row
+	return nil
+}
+
+func (s *Service) authorizationRequest(ctx context.Context, id string) (AuthorizationRequest, error) {
+	var request AuthorizationRequest
+	record, err := sqlc.New(s.db).GetAuthorizationRequest(ctx, id)
+	if err == nil {
+		request.ID, request.ClientID, request.RedirectURI, request.State, request.CodeChallenge, request.CodeChallengeMethod, request.ExpiresAt, request.CompletedAt = record.ID, record.ClientID, record.RedirectUri, record.State, record.CodeChallenge, record.CodeChallengeMethod, record.ExpiresAt, record.CompletedAt
+		request.Scopes, request.Audience = record.Scopes, record.Audience
+	}
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return AuthorizationRequest{}, ErrNotFound
+	}
+	return request, err
+}
+
+func (s *Service) storeAuthorizationCode(ctx context.Context, request AuthorizationRequest, userID, codeHash string, expiresAt time.Time) error {
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) && ctx.Err() == nil {
+			logging.Event(ctx, slog.Default(), slog.LevelError, "identity.request.failed", "回滚授权请求事务失败", "module", "identity", "operation", "storeAuthorizationCode", "request_id", request.ID, "error", err)
+		}
+	}()
+
+	q := sqlc.New(tx)
+	if _, err = q.LockProfileCredentials(ctx, userID); err != nil {
+		return err
+	}
+	if hash, ok := ctx.Value(browserSessionContextKey{}).(string); ok {
+		if _, err = q.LockProfileBrowserSession(ctx, sqlc.LockProfileBrowserSessionParams{UserID: userID, TokenHash: hash}); err != nil {
+			return err
+		}
+	}
+	result, err := q.CompleteAuthorizationRequest(ctx, request.ID)
+	if err != nil {
+		return fmt.Errorf("完成授权请求 %s: %w", request.ID, err)
+	}
+	if result.RowsAffected() != 1 {
+		return errors.New("授权请求已完成或已过期")
+	}
+	_, err = q.CreateAuthorizationCode(ctx, sqlc.CreateAuthorizationCodeParams{
+		CodeHash:               codeHash,
+		AuthorizationRequestID: request.ID,
+		UserID:                 userID,
+		ClientID:               request.ClientID,
+		RedirectUri:            request.RedirectURI,
+		CodeChallenge:          request.CodeChallenge,
+		ExpiresAt:              expiresAt,
+		Scopes:                 request.Scopes,
+		Audience:               request.Audience,
+	})
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func (s *Service) authorizationCode(ctx context.Context, hash string) (AuthorizationCode, error) {
+	var code AuthorizationCode
+	record, err := sqlc.New(s.db).GetAuthorizationCode(ctx, hash)
+	if err == nil {
+		code.ID, code.UserID, code.ClientID, code.RedirectURI, code.CodeChallenge, code.ExpiresAt, code.RedeemedAt = record.ID, record.UserID, record.ClientID, record.RedirectUri, record.CodeChallenge, record.ExpiresAt, record.RedeemedAt
+		code.Scopes, code.Audience = record.Scopes, record.Audience
+	}
+
+	return code, err
+}
+
+func (s *Service) createLoginState(ctx context.Context, stateHash, connectionID, requestID, purpose string, expiresAt time.Time) error {
+	deviceRequestID := ""
+	if purpose == loginPurposeDevice {
+		deviceRequestID = requestID
+		requestID = ""
+	}
+	_, err := sqlc.New(s.db).CreateLoginState(ctx, sqlc.CreateLoginStateParams{
+		StateHash:              stateHash,
+		ConnectionID:           connectionID,
+		DeviceRequestID:        deviceRequestID,
+		AuthorizationRequestID: requestID,
+		Purpose:                purpose,
+		ExpiresAt:              expiresAt,
+	})
+	return err
+}
+
+func (s *Service) consumeLoginState(ctx context.Context, stateHash string) (LoginState, error) {
+	var state LoginState
+	record, err := sqlc.New(s.db).ConsumeLoginState(ctx, stateHash)
+	if err == nil {
+		state.ConnectionID, state.AuthorizationRequestID, state.Purpose = record.ConnectionID, record.AuthorizationRequestID, record.Purpose
+		state.DeviceRequestID = record.DeviceRequestID
+	}
+
+	return state, err
+}
+
+func (s *Service) createBrowserSession(ctx context.Context, userID, hash, authenticationMethod string, expiresAt time.Time) error {
+	_, err := sqlc.New(s.db).CreateBrowserSession(ctx, sqlc.CreateBrowserSessionParams{TokenHash: hash, UserID: userID, AuthenticationMethod: authenticationMethod, ExpiresAt: expiresAt})
+	return err
+}
+
+// createPasswordBrowserSession serializes credential revalidation and session
+// creation with password changes. An old password verified before a concurrent
+// change must not create a fresh session after that change revoked old sessions.
+func (s *Service) createPasswordBrowserSession(ctx context.Context, user User, expectedHash, token string, expiresAt time.Time) (User, error) {
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return User{}, err
+	}
+	defer rollbackProfile(ctx, tx)
+	q := sqlc.New(tx)
+	credentials, err := q.LockProfileCredentials(ctx, user.ID)
+	if err != nil {
+		return User{}, err
+	}
+	if credentials.PasswordHash == nil || *credentials.PasswordHash != expectedHash {
+		return User{}, pgx.ErrNoRows
+	}
+	current, err := readProfileUser(ctx, q, user.ID)
+	if err != nil {
+		return User{}, err
+	}
+	if current.Email != user.Email || user.Role == "admin" && current.Role != "admin" {
+		return User{}, pgx.ErrNoRows
+	}
+	_, err = q.CreateBrowserSession(ctx, sqlc.CreateBrowserSessionParams{TokenHash: token, UserID: current.ID, AuthenticationMethod: "password", ExpiresAt: expiresAt})
+	if err != nil {
+		return User{}, err
+	}
+	return current, tx.Commit(ctx)
+}
+
+func (s *Service) userByBrowserToken(ctx context.Context, hash string) (User, string, error) {
+	var user User
+	var authenticationMethod string
+	record, err := sqlc.New(s.db).GetBrowserUser(ctx, hash)
+	if err == nil {
+		user.ID, user.Name, user.Email, user.AvatarURL, user.Role, user.Status, user.JoinedAt, user.LastLoginAt, authenticationMethod = record.ID, record.Name, record.Email, record.AvatarUrl, record.Role, record.Status, record.JoinedAt, record.LastLoginAt, record.AuthenticationMethod
+	}
+
+	return user, authenticationMethod, err
+}
+
+func (s *Service) userByAccessToken(ctx context.Context, hash string) (User, error) {
+	row, queryErr := sqlc.New(s.db).GetTokenUser(ctx, hash)
+	return User{ID: row.ID, Name: row.Name, Email: row.Email, AvatarURL: row.AvatarUrl, Role: row.Role, Status: row.Status, JoinedAt: row.JoinedAt, LastLoginAt: row.LastLoginAt}, queryErr
+}
+
+func (s *Service) revokeBrowserSession(ctx context.Context, hash string) error {
+	_, err := sqlc.New(s.db).RevokeBrowserSession(ctx, hash)
+	return err
+}
+
+func (s *Service) revokeToken(ctx context.Context, hash, clientID string) error {
+	id, err := sqlc.New(s.db).FindTokenGrant(ctx, sqlc.FindTokenGrantParams{AccessTokenHash: hash, ClientID: clientID})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	return s.RevokeGrant(ctx, id, "client_logout")
+}
+
+// webUser 仅投影浏览器响应，不改变会话或管理接口的鉴权角色。
+func (s *Service) webUser(ctx context.Context, user User) (User, error) {
+	if user.Role == "admin" {
+		return user, nil
+	}
+	groups, err := sqlc.New(s.db).GetUserSupervisedGroups(ctx, user.ID)
+	if err != nil {
+		return User{}, err
+	}
+	if len(groups) > 0 {
+		user.Role = "group_admin"
+	}
+	return user, nil
+}
+
+type supervisedGroup struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type adminListUser struct {
+	User
+	SupervisedGroups []supervisedGroup `json:"supervised_groups"`
+}
+
+func (s *Service) listUsers(ctx context.Context) ([]adminListUser, error) {
+	rows, err := sqlc.New(s.db).ListUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	users := make([]adminListUser, 0, len(rows))
+	for _, row := range rows {
+		var groups []supervisedGroup
+		if err := json.Unmarshal(row.SupervisedGroups, &groups); err != nil {
+			return nil, fmt.Errorf("读取成员主管分组: %w", err)
+		}
+		user := User{ID: row.ID, Name: row.Name, Email: row.Email, AvatarURL: row.AvatarUrl, Role: row.Role, Status: row.Status, JoinedAt: row.JoinedAt, LastLoginAt: row.LastLoginAt}
+		users = append(users, adminListUser{User: user, SupervisedGroups: groups})
+	}
+	return users, nil
+}
+
+func (s *Service) adminUserByID(ctx context.Context, id string) (adminListUser, error) {
+	user, err := s.userByID(ctx, id)
+	if err != nil {
+		return adminListUser{}, err
+	}
+	rows, err := sqlc.New(s.db).GetUserSupervisedGroups(ctx, id)
+	if err != nil {
+		return adminListUser{}, err
+	}
+	groups := make([]supervisedGroup, 0, len(rows))
+	for _, row := range rows {
+		groups = append(groups, supervisedGroup{ID: row.ID, Name: row.Name})
+	}
+	return adminListUser{User: user, SupervisedGroups: groups}, nil
+}
+
+func (s *Service) userByID(ctx context.Context, id string) (User, error) {
+	return readProfileUser(ctx, sqlc.New(s.db), id)
+}
+
+func readProfileUser(ctx context.Context, q *sqlc.Queries, id string) (User, error) {
+	row, queryErr := q.GetUser(ctx, id)
+	return User{ID: row.ID, Name: row.Name, Email: row.Email, AvatarURL: row.AvatarUrl, Role: row.Role, Status: row.Status, JoinedAt: row.JoinedAt, LastLoginAt: row.LastLoginAt}, queryErr
+}
+
+func (s *Service) updateUser(ctx context.Context, id, name, role, status, passwordHash string) (User, error) {
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return User{}, err
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) && ctx.Err() == nil {
+			logging.Event(ctx, slog.Default(), slog.LevelError, "identity.request.failed", "回滚更新用户事务失败", "module", "identity", "operation", "updateUser", "user_id", id, "error", err)
+		}
+	}()
+	if s.accounts != nil {
+		if err = s.accounts.PreserveAccounts(ctx, tx); err != nil {
+			return User{}, err
+		}
+	}
+	result, err := s.writer.UpdateUser(ctx, tx, member.UpdateUser{ID: id, Name: name, Role: role, Status: status, PasswordHash: passwordHash})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return User{}, ErrNotFound
+	}
+	if err != nil {
+		return User{}, err
+	}
+	user, err := readProfileUser(ctx, sqlc.New(tx), result.ID)
+	if err != nil {
+		return User{}, err
+	}
+	return user, tx.Commit(ctx)
+}
+
+func (s *Service) upsertIdentity(ctx context.Context, profile upstreamProfile, adminOnly, autoRegistrationEnabled bool) (User, error) {
+	result, err := s.writer.UpsertIdentity(ctx, member.OAuthIdentity{
+		Provider: profile.Provider, Issuer: profile.Issuer, Subject: profile.Subject,
+		Username: profile.Username, Name: profile.Name, Email: profile.Email, AvatarURL: profile.AvatarURL,
+		AdminOnly: adminOnly, AutoRegistrationEnabled: autoRegistrationEnabled,
+	})
+	if err != nil {
+		return User{}, err
+	}
+	// The host owns OAuth synchronization; read the effective avatar here so
+	// its return value cannot bypass the local custom-avatar override.
+	return s.userByID(ctx, result.ID)
+}
+
+func validateUpstreamUser(user User, adminOnly bool) error {
+	if user.Status != "active" {
+		return ErrUserDisabled
+	}
+	if adminOnly && user.Role != "admin" {
+		return ErrAdminRoleRequired
+	}
+	return nil
+}
+
+var (
+	ErrNotFound             = errors.New("记录不存在")
+	ErrUserDisabled         = errors.New("用户已停用")
+	ErrRegistrationDisabled = errors.New("未开放新用户注册")
+	ErrAdminRoleRequired    = errors.New("管理后台 OAuth 登录必须关联管理员")
+)

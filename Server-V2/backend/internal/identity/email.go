@@ -1,0 +1,358 @@
+package identity
+
+import (
+	"context"
+	"crypto/rand"
+	"crypto/subtle"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/web"
+	"log/slog"
+	"math/big"
+	"net"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/identity/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/member"
+	"github.com/jackc/pgx/v5"
+)
+
+type EmailSender interface {
+	Send(context.Context, string, string, string) error
+}
+
+func (s *Service) WithEmailSender(sender EmailSender) *Service { s.email = sender; return s }
+
+type loginMethods struct {
+	PasswordEnabled                  bool `json:"password_enabled"`
+	EmailCodeEnabled                 bool `json:"email_code_enabled"`
+	EmailCodeAutoRegistrationEnabled bool `json:"email_code_auto_registration_enabled"`
+}
+
+func (s *Service) loginMethods(ctx context.Context) (loginMethods, error) {
+	methods := loginMethods{PasswordEnabled: true}
+	value, err := s.settings.GetValue(ctx, "authentication")
+	if err != nil {
+		return loginMethods{}, err
+	}
+	err = json.Unmarshal(value, &methods)
+	return methods, err
+}
+
+func (s *Service) methods(w http.ResponseWriter, r *http.Request) {
+	methods, err := s.loginMethods(r.Context())
+	if err != nil {
+		logging.Event(r.Context(), slog.Default(), slog.LevelError, "identity.request.failed", "读取邮件认证设置失败", "module", "identity", "operation", "methods", "error", err)
+		writeError(r.Context(), w, 503, "settings_unavailable", "认证配置不可用")
+		return
+	}
+	writeJSON(r.Context(), w, 200, methods)
+}
+
+func (s *Service) allowEmail(w http.ResponseWriter, r *http.Request, purpose string) (loginMethods, bool) {
+	methods, err := s.loginMethods(r.Context())
+	if err != nil {
+		logging.Event(r.Context(), slog.Default(), slog.LevelError, "identity.request.failed", "读取邮件认证设置失败", "module", "identity", "operation", "allowEmail", "error", err)
+		writeError(r.Context(), w, 503, "settings_unavailable", "认证配置不可用")
+		return methods, false
+	}
+	allowed := false
+	switch purpose {
+	case "login":
+		allowed = methods.EmailCodeEnabled
+	case "reset":
+		allowed = methods.PasswordEnabled
+	}
+	if !allowed {
+		writeError(r.Context(), w, 403, "method_disabled", "该认证方式未启用")
+		return methods, false
+	}
+	return methods, true
+}
+
+type emailInput struct {
+	Email    string `json:"email"`
+	Code     string `json:"code"`
+	Purpose  string `json:"purpose"`
+	Password string `json:"password"`
+}
+
+func readEmailInput(w http.ResponseWriter, r *http.Request) (emailInput, bool) {
+	var input emailInput
+	err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 8192)).Decode(&input)
+	input.Email = strings.ToLower(strings.TrimSpace(input.Email))
+	if err != nil || !validEmail(input.Email) || len(input.Email) > 254 || len(input.Password) > 1024 {
+		if err != nil {
+			slog.WarnContext(r.Context(), "操作失败", "module", "identity", "operation", "readEmailInput", "error", err)
+		}
+		writeError(r.Context(), w, 400, "invalid_request", "请求格式或邮箱无效")
+		return input, false
+	}
+	return input, true
+}
+
+func (s *Service) sendCode(w http.ResponseWriter, r *http.Request) {
+	input, ok := readEmailInput(w, r)
+	if !ok {
+		return
+	}
+	if input.Purpose != "login" && input.Purpose != "reset" {
+		writeError(r.Context(), w, 400, "invalid_request", "验证码用途无效")
+		return
+	}
+	methods, allowed := s.allowEmail(w, r, input.Purpose)
+	if !allowed {
+		return
+	}
+	if s.email == nil {
+		writeError(r.Context(), w, 503, "email_unavailable", "邮件服务未配置")
+		return
+	}
+	number, err := rand.Int(rand.Reader, big.NewInt(1_000_000))
+	if err != nil {
+		slog.WarnContext(r.Context(), "操作失败", "module", "identity", "operation", "sendCode", "error", err)
+		writeError(r.Context(), w, 500, "server_error", "生成验证码失败")
+		return
+	}
+	code := fmt.Sprintf("%06d", number.Int64())
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		slog.WarnContext(r.Context(), "操作失败", "module", "identity", "operation", "sendCode", "error", err)
+		ip = r.RemoteAddr
+	}
+	err = s.reserveCode(r.Context(), input, code, tokenHash(ip))
+	if errors.Is(err, errCodeLimited) {
+		w.Header().Set("Retry-After", "30")
+		writeError(r.Context(), w, 429, "rate_limited", "发送过于频繁，请稍后重试")
+		return
+	}
+	if err != nil {
+		logging.Event(r.Context(), slog.Default(), slog.LevelError, "identity.request.failed", "保留验证码失败", "module", "identity", "operation", "sendCode", "purpose", input.Purpose, "error", err)
+		writeError(r.Context(), w, 500, "server_error", "发送验证码失败")
+		return
+	}
+	// 对不符合用途的账号返回相同结果，避免泄露账号状态。
+	user, lookupErr := sqlc.New(s.db).GetUserByEmail(r.Context(), input.Email)
+	eligible := lookupErr == nil && user.Status == "active"
+	if input.Purpose == "login" && methods.EmailCodeAutoRegistrationEnabled && errors.Is(lookupErr, pgx.ErrNoRows) {
+		eligible = true
+	}
+	if lookupErr != nil && !errors.Is(lookupErr, pgx.ErrNoRows) {
+		logging.Event(r.Context(), slog.Default(), slog.LevelError, "identity.request.failed", "查询验证码接收用户失败", "module", "identity", "operation", "sendCode", "purpose", input.Purpose, "error", lookupErr)
+		writeError(r.Context(), w, 500, "server_error", "发送验证码失败")
+		return
+	}
+	if eligible {
+		labels := map[string]string{"login": "登录", "reset": "重置密码"}
+		err = s.email.Send(r.Context(), input.Email, "MonkeyAI "+labels[input.Purpose]+"验证码", fmt.Sprintf("你的%s验证码为：%s\n\n验证码 10 分钟内有效，仅可使用一次。如非本人操作，请忽略此邮件。", labels[input.Purpose], code))
+		if err != nil {
+			logging.Event(r.Context(), slog.Default(), slog.LevelError, "identity.request.failed", "发送验证码邮件失败", "module", "identity", "operation", "sendCode", "purpose", input.Purpose, "error", err)
+			writeError(r.Context(), w, 502, "email_failed", "邮件发送失败，请稍后重试或联系管理员")
+			return
+		}
+		if err := sqlc.New(s.db).ReadyEmailCode(r.Context(), sqlc.ReadyEmailCodeParams{Email: input.Email, Purpose: input.Purpose, CodeHash: emailCodeHash(input, code)}); err != nil {
+			logging.Event(r.Context(), slog.Default(), slog.LevelError, "identity.request.failed", "激活验证码失败", "module", "identity", "operation", "sendCode", "purpose", input.Purpose, "error", err)
+			writeError(r.Context(), w, 500, "server_error", "发送验证码失败")
+			return
+		}
+	}
+	writeJSON(r.Context(), w, 200, map[string]any{"message": web.Notice(r.Context(), "email_code_sent"), "retry_after": 30})
+}
+
+var errCodeLimited = errors.New("验证码发送过于频繁")
+var errInvalidCode = errors.New("验证码无效、已过期或错误次数过多")
+
+func emailCodeHash(input emailInput, code string) string {
+	return tokenHash(input.Email + "\x00" + input.Purpose + "\x00" + code)
+}
+
+func (s *Service) reserveCode(ctx context.Context, input emailInput, code, ipHash string) error {
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) && ctx.Err() == nil {
+			logging.Event(ctx, slog.Default(), slog.LevelError, "identity.request.failed", "回滚邮件验证码事务失败", "module", "identity", "operation", "reserveCode", "purpose", input.Purpose, "error", err)
+		}
+	}()
+	q := sqlc.New(tx)
+	if err := q.LockEmailDelivery(ctx); err != nil {
+		return err
+	}
+	if err := q.CleanEmailDeliveries(ctx); err != nil {
+		return err
+	}
+	if err := q.CleanEmailCodes(ctx); err != nil {
+		return err
+	}
+	limited, err := q.EmailDeliveryLimited(ctx, sqlc.EmailDeliveryLimitedParams{Email: input.Email, IpHash: ipHash})
+	if err != nil {
+		return err
+	}
+	if limited {
+		return errCodeLimited
+	}
+	if err := q.RecordEmailDelivery(ctx, sqlc.RecordEmailDeliveryParams{Email: input.Email, IpHash: ipHash}); err != nil {
+		return err
+	}
+	if err := q.SaveEmailCode(ctx, sqlc.SaveEmailCodeParams{Email: input.Email, Purpose: input.Purpose, CodeHash: emailCodeHash(input, code), ExpiresAt: s.now().Add(10 * time.Minute)}); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func consumeEmailCode(ctx context.Context, tx pgx.Tx, input emailInput) error {
+	q := sqlc.New(tx)
+	row, err := q.GetEmailCode(ctx, sqlc.GetEmailCodeParams{Email: input.Email, Purpose: input.Purpose})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return errInvalidCode
+	}
+	if err != nil {
+		return err
+	}
+	if row.Attempts >= 5 {
+		return errInvalidCode
+	}
+	if subtle.ConstantTimeCompare([]byte(row.CodeHash), []byte(emailCodeHash(input, input.Code))) != 1 {
+		if err := q.FailEmailCode(ctx, sqlc.FailEmailCodeParams{Email: input.Email, Purpose: input.Purpose}); err != nil {
+			return err
+		}
+		if err := tx.Commit(ctx); err != nil {
+			return err
+		}
+		return errInvalidCode
+	}
+	return q.DeleteEmailCode(ctx, sqlc.DeleteEmailCodeParams{Email: input.Email, Purpose: input.Purpose})
+}
+
+func (s *Service) emailLogin(w http.ResponseWriter, r *http.Request) { s.completeEmail(w, r, "login") }
+func (s *Service) resetPassword(w http.ResponseWriter, r *http.Request) {
+	s.completeEmail(w, r, "reset")
+}
+
+func revokePasswordAccess(ctx context.Context, q *sqlc.Queries, userID, email string) error {
+	if err := q.RevokeUserSessions(ctx, userID); err != nil {
+		return err
+	}
+	if err := q.RevokeUserTokens(ctx, userID); err != nil {
+		return err
+	}
+	if err := q.RevokeUserCodes(ctx, userID); err != nil {
+		return err
+	}
+	return q.DeleteEmailCode(ctx, sqlc.DeleteEmailCodeParams{Email: email, Purpose: "login"})
+}
+
+func (s *Service) completeEmail(w http.ResponseWriter, r *http.Request, purpose string) {
+	input, ok := readEmailInput(w, r)
+	if !ok {
+		return
+	}
+	input.Purpose = purpose
+	methods, allowed := s.allowEmail(w, r, purpose)
+	if !allowed {
+		return
+	}
+	if len(input.Code) != 6 || strings.Trim(input.Code, "0123456789") != "" {
+		writeError(r.Context(), w, 400, "invalid_request", "请输入六位数字验证码")
+		return
+	}
+	if purpose == "reset" && len(input.Password) < 12 {
+		writeError(r.Context(), w, 400, "invalid_request", "密码至少需要 12 个字符")
+		return
+	}
+	ctx := r.Context()
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		logging.Event(ctx, slog.Default(), slog.LevelError, "identity.request.failed", "启动验证码校验事务失败", "module", "identity", "operation", "completeEmail", "purpose", purpose, "error", err)
+		writeError(r.Context(), w, 500, "server_error", "认证失败")
+		return
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) && ctx.Err() == nil {
+			logging.Event(ctx, slog.Default(), slog.LevelError, "identity.request.failed", "回滚邮件验证码事务失败", "module", "identity", "operation", "completeEmail", "purpose", input.Purpose, "error", err)
+		}
+	}()
+	if err := consumeEmailCode(ctx, tx, input); err != nil {
+		if errors.Is(err, errInvalidCode) {
+			writeError(r.Context(), w, 400, "invalid_code", errInvalidCode.Error())
+		} else {
+			logging.Event(ctx, slog.Default(), slog.LevelError, "identity.request.failed", "校验邮件验证码失败", "module", "identity", "operation", "completeEmail", "purpose", purpose, "error", err)
+			writeError(r.Context(), w, 500, "server_error", "认证失败")
+		}
+		return
+	}
+	q := sqlc.New(tx)
+	var user User
+	switch purpose {
+	case "reset":
+		hash, hashErr := hashPassword(input.Password)
+		if hashErr != nil {
+			logging.Event(ctx, slog.Default(), slog.LevelError, "identity.request.failed", "生成重置密码哈希失败", "module", "identity", "operation", "completeEmail", "error", hashErr)
+			writeError(r.Context(), w, 500, "server_error", "密码重置失败")
+			return
+		}
+		var id string
+		var resetErr error
+		id, resetErr = s.writer.ResetPassword(ctx, tx, member.PasswordReset{Email: input.Email, PasswordHash: hash})
+		if resetErr == nil {
+			resetErr = revokePasswordAccess(ctx, q, id, input.Email)
+		}
+		if resetErr != nil {
+			if errors.Is(resetErr, member.ErrWriterUnavailable) {
+				writeError(r.Context(), w, http.StatusServiceUnavailable, "member_writer_unavailable", "成员写入能力不可用")
+			} else {
+				if !errors.Is(resetErr, pgx.ErrNoRows) {
+					logging.Event(ctx, slog.Default(), slog.LevelError, "identity.request.failed", "重置密码并撤销旧凭据失败", "module", "identity", "operation", "completeEmail", "error", resetErr)
+				}
+				writeError(r.Context(), w, 400, "reset_failed", "密码重置失败，请重新获取验证码")
+			}
+			return
+		}
+	default:
+		row, lookupErr := q.GetUserByEmail(ctx, input.Email)
+		admin := strings.HasPrefix(r.URL.Path, "/admin/") || strings.Contains(r.URL.Path, "/v1/admin/")
+		if errors.Is(lookupErr, pgx.ErrNoRows) && methods.EmailCodeAutoRegistrationEnabled && !admin {
+			_, createErr := s.writer.RegisterEmailUser(ctx, tx, input.Email)
+			if createErr != nil {
+				switch {
+				case errors.Is(createErr, member.ErrSeatsExceeded):
+					writeError(r.Context(), w, http.StatusConflict, "seats_exceeded", member.ErrSeatsExceeded.Error())
+				case errors.Is(createErr, member.ErrSeatsUnavailable):
+					writeError(r.Context(), w, http.StatusServiceUnavailable, "seats_unavailable", member.ErrSeatsUnavailable.Error())
+				case errors.Is(createErr, member.ErrWriterUnavailable):
+					writeError(r.Context(), w, http.StatusServiceUnavailable, "member_writer_unavailable", "成员写入能力不可用")
+				default:
+					logging.Event(ctx, slog.Default(), slog.LevelError, "identity.request.failed", "自动注册邮件登录用户失败", "module", "identity", "operation", "completeEmail", "error", createErr)
+					writeError(r.Context(), w, http.StatusInternalServerError, "server_error", "创建账号失败")
+				}
+				return
+			}
+			row, lookupErr = q.GetUserByEmail(ctx, input.Email)
+		}
+		if lookupErr != nil || row.Status != "active" || admin && row.Role != "admin" {
+			if lookupErr != nil && !errors.Is(lookupErr, pgx.ErrNoRows) {
+				logging.Event(ctx, slog.Default(), slog.LevelError, "identity.request.failed", "查询验证码登录用户失败", "module", "identity", "operation", "completeEmail", "error", lookupErr)
+			}
+			writeError(r.Context(), w, 401, "invalid_credentials", "账号不可用于此登录入口")
+			return
+		}
+		user = User{ID: row.ID, Name: row.Name, Email: row.Email, AvatarURL: row.AvatarUrl, Role: row.Role, Status: row.Status, JoinedAt: row.JoinedAt}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		logging.Event(ctx, slog.Default(), slog.LevelError, "identity.request.failed", "提交邮件认证事务失败", "module", "identity", "operation", "completeEmail", "purpose", purpose, "error", err)
+		writeError(r.Context(), w, 500, "server_error", "认证失败")
+		return
+	}
+	if purpose == "reset" {
+		writeJSON(r.Context(), w, 200, map[string]bool{"reset": true})
+		return
+	}
+	s.loginSession(w, r, user, "email_code", "")
+}

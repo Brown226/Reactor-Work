@@ -1,0 +1,189 @@
+package identity
+
+import (
+	"context"
+	"crypto/pbkdf2"
+	"crypto/rand"
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"log/slog"
+	"math/big"
+	"net/http"
+	"net/mail"
+	"strconv"
+	"strings"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/audit"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/identity/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/member"
+	"github.com/jackc/pgx/v5"
+)
+
+var errPasswordNotSet = errors.New("未设置密码")
+
+const (
+	dummyPasswordHash       = "$pbkdf2-sha256$600000$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+	passwordAlphabet        = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	generatedPasswordLength = 16
+)
+
+func generatePassword() (string, error) {
+	for {
+		password := make([]byte, generatedPasswordLength)
+		var digit, upper, lower bool
+		for i := range password {
+			index, err := rand.Int(rand.Reader, big.NewInt(int64(len(passwordAlphabet))))
+			if err != nil {
+				return "", err
+			}
+			character := passwordAlphabet[index.Int64()]
+			password[i] = character
+			digit = digit || character >= '0' && character <= '9'
+			upper = upper || character >= 'A' && character <= 'Z'
+			lower = lower || character >= 'a' && character <= 'z'
+		}
+		if digit && upper && lower {
+			return string(password), nil
+		}
+	}
+}
+
+func (s *Service) EnsureInitialAdmin(ctx context.Context, name, email, password string) error {
+	return s.writer.EnsureInitialAdmin(ctx, member.InitialAdmin{Name: name, Email: email, Password: password})
+}
+
+func (s *Service) passwordLogin(w http.ResponseWriter, r *http.Request) {
+	methods, err := s.loginMethods(r.Context())
+	if err != nil {
+		logging.Event(r.Context(), slog.Default(), slog.LevelError, "identity.request.failed", "读取密码认证设置失败", "module", "identity", "operation", "passwordLogin", "error", err)
+		writeError(r.Context(), w, 503, "settings_unavailable", "认证配置不可用")
+		return
+	}
+	if !methods.PasswordEnabled {
+		writeError(r.Context(), w, 403, "method_disabled", "密码登录未启用")
+		return
+	}
+	adminOnly := strings.HasSuffix(r.URL.Path, "/admin/login")
+	var input struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 64<<10)).Decode(&input); err != nil || len(input.Password) > 1024 {
+		if err != nil {
+			slog.WarnContext(r.Context(), "操作失败", "module", "identity", "operation", "passwordLogin", "error", err)
+		}
+		writeError(r.Context(), w, http.StatusBadRequest, "invalid_request", "请求格式无效")
+		return
+	}
+	input.Email = strings.ToLower(strings.TrimSpace(input.Email))
+	var user User
+	var passwordHash string
+	row, err := sqlc.New(s.db).GetPasswordUser(r.Context(), sqlc.GetPasswordUserParams{Email: input.Email, AdminOnly: adminOnly})
+	if err == nil && row.PasswordHash == nil {
+		err = errPasswordNotSet
+	}
+	if err == nil {
+		user = User{ID: row.ID, Name: row.Name, Email: row.Email, AvatarURL: row.AvatarUrl, Role: row.Role, Status: row.Status, JoinedAt: row.JoinedAt, LastLoginAt: row.LastLoginAt}
+		passwordHash = *row.PasswordHash
+	}
+	if err != nil {
+		if !errors.Is(err, pgx.ErrNoRows) && !errors.Is(err, errPasswordNotSet) {
+			logging.Event(r.Context(), slog.Default(), slog.LevelError, "identity.request.failed", "查询密码登录用户失败", "module", "identity", "operation", "passwordLogin", "error", err)
+		}
+		passwordHash = dummyPasswordHash
+	}
+	valid := verifyPassword(input.Password, passwordHash)
+	if err != nil || !valid {
+		if err != nil {
+			slog.WarnContext(r.Context(), "操作失败", "module", "identity", "operation", "passwordLogin", "error", err)
+		}
+		writeError(r.Context(), w, http.StatusUnauthorized, "invalid_credentials", "邮箱或密码错误")
+		return
+	}
+	s.loginSession(w, r, user, "password", passwordHash)
+}
+
+func (s *Service) loginSession(w http.ResponseWriter, r *http.Request, user User, method, passwordHash string) {
+	err := s.writer.TouchLogin(r.Context(), user.ID)
+	if err != nil {
+		logging.Event(r.Context(), slog.Default(), slog.LevelError, "identity.request.failed", "更新登录时间失败", "module", "identity", "operation", "loginSession", "user_id", user.ID, "error", err)
+		writeError(r.Context(), w, http.StatusInternalServerError, "server_error", "登录失败")
+		return
+	}
+	token, err := randomToken(32)
+	if err != nil {
+		logging.Event(r.Context(), slog.Default(), slog.LevelError, "identity.request.failed", "生成登录会话令牌失败", "module", "identity", "operation", "loginSession", "user_id", user.ID, "error", err)
+		writeError(r.Context(), w, http.StatusInternalServerError, "server_error", "登录失败")
+		return
+	}
+	if method == "password" {
+		user, err = s.createPasswordBrowserSession(r.Context(), user, passwordHash, tokenHash(token), s.now().Add(s.sessionTTL))
+	} else {
+		err = s.createBrowserSession(r.Context(), user.ID, tokenHash(token), method, s.now().Add(s.sessionTTL))
+	}
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(r.Context(), w, http.StatusUnauthorized, "invalid_credentials", "邮箱或密码错误")
+		return
+	}
+	if err != nil {
+		logging.Event(r.Context(), slog.Default(), slog.LevelError, "identity.request.failed", "创建登录会话失败", "module", "identity", "operation", "loginSession", "user_id", user.ID, "method", method, "error", err)
+		writeError(r.Context(), w, http.StatusInternalServerError, "server_error", "登录失败")
+		return
+	}
+	user, err = s.webUser(r.Context(), user)
+	if err != nil {
+		writeError(r.Context(), w, http.StatusInternalServerError, "server_error", "登录失败")
+		return
+	}
+	audit.Identify(r.Context(), audit.Actor{ID: user.ID, Name: user.Name, Email: user.Email})
+	http.SetCookie(w, &http.Cookie{
+		Name: sessionCookie, Value: token, Path: "/", HttpOnly: true,
+		Secure: s.secureCookie, SameSite: http.SameSiteLaxMode,
+		MaxAge: int(s.sessionTTL.Seconds()),
+	})
+	writeJSON(r.Context(), w, http.StatusOK, user)
+}
+
+func hashPassword(password string) (string, error) {
+	return member.HashPassword(password)
+}
+
+func verifyPassword(password, encoded string) bool {
+	parts := strings.Split(encoded, "$")
+	if len(parts) != 5 || parts[1] != "pbkdf2-sha256" {
+		return false
+	}
+	iterations, err := strconv.Atoi(parts[2])
+	if err != nil || iterations < 100_000 || iterations > 2_000_000 {
+		if err != nil {
+			slog.Warn("操作失败", "module", "identity", "operation", "verifyPassword", "error", err)
+		}
+		return false
+	}
+	salt, err := base64.RawStdEncoding.DecodeString(parts[3])
+	if err != nil || len(salt) < 16 {
+		if err != nil {
+			slog.Warn("操作失败", "module", "identity", "operation", "verifyPassword", "error", err)
+		}
+		return false
+	}
+	expected, err := base64.RawStdEncoding.DecodeString(parts[4])
+	if err != nil || len(expected) != 32 {
+		if err != nil {
+			slog.Warn("操作失败", "module", "identity", "operation", "verifyPassword", "error", err)
+		}
+		return false
+	}
+	actual, err := pbkdf2.Key(sha256.New, password, salt, iterations, len(expected))
+	return err == nil && subtle.ConstantTimeCompare(actual, expected) == 1
+}
+
+func validEmail(value string) bool {
+	address, err := mail.ParseAddress(value)
+	return err == nil && strings.EqualFold(address.Address, value)
+}
