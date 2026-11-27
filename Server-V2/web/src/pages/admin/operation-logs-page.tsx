@@ -1,0 +1,681 @@
+import { useEffect, useMemo, useRef, useState } from "react"
+import {
+  FilterHorizontalIcon,
+  Loading03Icon,
+  Search02Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useTranslation } from "react-i18next"
+import { TablePagination } from "@/components/table-pagination"
+import { TableLoading } from "@/components/table-loading"
+import { TableLoadError } from "@/components/table-load-error"
+import { TABLE_DATE_TIME_OPTIONS } from "@/lib/date-time"
+import { useTableQuery } from "@/hooks/use-table-query"
+import { queryDate, queryDateValue } from "@/lib/table-query"
+
+import { useAppToast } from "@/components/animated-toast-provider"
+import { AccountDialog } from "@/components/billing/account-dialog"
+import { DatePickerField } from "@/components/date-picker-field"
+import { api } from "@/lib/api"
+import { endOfLocalDay, startOfLocalDay } from "@/lib/date-range"
+import { cn } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
+import { UserAvatar } from "@/components/user-avatar"
+import { UserSearch } from "@/components/user-search"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuOptionsContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+
+type LogCategory =
+  "model" | "identity" | "resource" | "billing" | "security" | "settings"
+type LogResult = "success" | "failed"
+type AuditLog = {
+  id: string
+  occurred_at: string
+  actor_user_id: string | null
+  actor_name: string
+  actor_email: string | null
+  actor_avatar_url?: string | null
+  action: string
+  category: LogCategory
+  target_type: string | null
+  target_id: string | null
+  request_params: Record<string, unknown>
+  source_ip: string | null
+  user_agent: string | null
+  request_id: string | null
+  error_message: string | null
+  result: LogResult
+}
+type AuditPage = {
+  items: AuditLog[]
+  total: number
+  page: number
+  page_size: number
+}
+type CategoryFilter = LogCategory | null
+type ResultFilter = LogResult | null
+type SearchField = "operator" | "ip" | "dateRange" | "category" | "result"
+const DEFAULT_PAGE_SIZE = 50
+
+const CATEGORY_FILTERS: LogCategory[] = [
+  "model",
+  "identity",
+  "resource",
+  "billing",
+  "security",
+  "settings",
+]
+const RESULT_FILTERS: LogResult[] = ["success", "failed"]
+
+const AUDIT_QUERY_KEYS = [
+  "actor",
+  "actor_user_id",
+  "ip",
+  "category",
+  "result",
+  "since",
+  "until",
+] as const
+function activeAuditFields(filters: Record<string, string>): SearchField[] {
+  return [
+    ...(filters.actor || filters.actor_user_id ? ["operator" as const] : []),
+    ...(filters.ip ? ["ip" as const] : []),
+    ...(filters.category ? ["category" as const] : []),
+    ...(filters.result ? ["result" as const] : []),
+    ...(filters.since || filters.until ? ["dateRange" as const] : []),
+  ]
+}
+
+function auditQuery(
+  filters: Record<string, string>,
+  page: number,
+  pageSize: number
+) {
+  const query = new URLSearchParams({
+    page: String(page),
+    page_size: String(pageSize),
+  })
+  const actorID = filters.actor_user_id ?? ""
+  for (const [key, value] of Object.entries({
+    actor: actorID ? "" : (filters.actor ?? ""),
+    actor_user_id: actorID,
+    ip: filters.ip ?? "",
+    category: filters.category ?? "",
+    result: filters.result ?? "",
+    since: filters.since ?? "",
+    until: filters.until ?? "",
+  }))
+    if (value) query.set(key, value)
+  return query.toString()
+}
+
+export function OperationLogsPage() {
+  const { i18n, t } = useTranslation()
+  const { showToast } = useAppToast()
+  const tableQuery = useTableQuery(AUDIT_QUERY_KEYS, DEFAULT_PAGE_SIZE)
+  const { filters, filterQuery, page, pageSize, setPage, setPageSize } =
+    tableQuery
+  const [previousQuery, setPreviousQuery] = useState(filterQuery)
+  const formRef = useRef<HTMLFormElement>(null)
+  const [operatorInput, setOperatorInput] = useState(
+    filters.actor_user_id ? "" : (filters.actor ?? "")
+  )
+  const [operatorID, setOperatorID] = useState(filters.actor_user_id ?? "")
+  const [ipInput, setIpInput] = useState(filters.ip ?? "")
+  const [categoryInput, setCategoryInput] = useState<CategoryFilter>(
+    (filters.category as CategoryFilter) ?? null
+  )
+  const [resultInput, setResultInput] = useState<ResultFilter>(
+    (filters.result as ResultFilter) ?? null
+  )
+  const [visibleFields, setVisibleFields] = useState<Set<SearchField>>(
+    () => new Set(["operator", "dateRange", ...activeAuditFields(filters)])
+  )
+  const [revision, setRevision] = useState(0)
+  const [sinceInput, setSinceInput] = useState<Date | undefined>(() =>
+    queryDate(filters.since)
+  )
+  const [untilInput, setUntilInput] = useState<Date | undefined>(() =>
+    queryDate(filters.until)
+  )
+  const [invalidRange, setInvalidRange] = useState(false)
+  const [data, setData] = useState<AuditPage>()
+  const [error, setError] = useState<string>()
+  const [loading, setLoading] = useState(true)
+  const [searching, setSearching] = useState(false)
+  const searchRevisionRef = useRef<number | null>(null)
+  const [accountUserID, setAccountUserID] = useState<string | null>(null)
+  if (previousQuery !== filterQuery) {
+    setPreviousQuery(filterQuery)
+    setOperatorInput(filters.actor_user_id ? "" : (filters.actor ?? ""))
+    setOperatorID(filters.actor_user_id ?? "")
+    setIpInput(filters.ip ?? "")
+    setCategoryInput((filters.category as CategoryFilter) ?? null)
+    setResultInput((filters.result as ResultFilter) ?? null)
+    setSinceInput(queryDate(filters.since))
+    setUntilInput(queryDate(filters.until))
+    setInvalidRange(false)
+    setVisibleFields(
+      (current) => new Set([...current, ...activeAuditFields(filters)])
+    )
+  }
+
+  const categoryLabel = (value: LogCategory) => t(`audit.categories.${value}`)
+  const resultLabel = (value: LogResult) =>
+    t(`pages.operationLogs.results.${value}`)
+  const fieldOptions: { key: SearchField; label: string }[] = [
+    {
+      key: "operator",
+      label: t("pages.operationLogs.filters.operatorSearchPlaceholder"),
+    },
+    { key: "ip", label: t("pages.operationLogs.filters.ipSearchPlaceholder") },
+    { key: "dateRange", label: `${t("audit.since")} – ${t("audit.until")}` },
+    { key: "category", label: t("pages.operationLogs.filters.actionType") },
+    { key: "result", label: t("pages.operationLogs.filters.result") },
+  ]
+
+  const query = auditQuery(filters, page, pageSize)
+  const path = `/api/admin/v1/audits?${query}`
+  useEffect(() => {
+    const controller = new AbortController()
+    const isSearch = searchRevisionRef.current === revision
+    if (!isSearch) {
+      setLoading(true)
+      setError(undefined)
+    }
+    api<AuditPage>(path, { signal: controller.signal })
+      .then((nextData) => {
+        if (controller.signal.aborted) return
+        setData(nextData)
+        setError(undefined)
+        if (isSearch) {
+          showToast({
+            status: "success",
+            title: t("pages.operationLogs.filters.searchSuccess"),
+          })
+        }
+      })
+      .catch((reason: unknown) => {
+        if (controller.signal.aborted) return
+        const message =
+          reason instanceof Error ? reason.message : String(reason)
+        setData(undefined)
+        setError(message)
+        showToast({ status: "error", title: message })
+      })
+      .finally(() => {
+        if (controller.signal.aborted) return
+        if (isSearch) {
+          setSearching(false)
+          searchRevisionRef.current = null
+        } else {
+          setLoading(false)
+        }
+      })
+    return () => controller.abort()
+  }, [path, revision, showToast, t])
+  const total = data?.total ?? 0
+  const visibleLogs = data?.items ?? []
+  const pageCount = Math.max(1, Math.ceil(total / pageSize))
+  const currentPage = page
+  const actionLabel = (log: AuditLog) =>
+    `${t(`audit.targets.${log.target_type}`, { defaultValue: log.target_type ?? categoryLabel(log.category) })} - ${t(`audit.actions.${log.action}`, { defaultValue: log.action })}`
+
+  const locale = i18n.resolvedLanguage ?? i18n.language
+  const tableDateFormatter = useMemo(
+    () => new Intl.DateTimeFormat(locale, TABLE_DATE_TIME_OPTIONS),
+    [locale]
+  )
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }),
+    [locale]
+  )
+
+  const applySearch = () => {
+    if (loading || searching) return
+    if (!formRef.current?.reportValidity()) return
+    if (operatorInput.trim() && !operatorID) return
+    const start = sinceInput ? startOfLocalDay(sinceInput) : undefined
+    const end = untilInput ? endOfLocalDay(untilInput) : undefined
+    if (start && end && start > end) {
+      setInvalidRange(true)
+      return
+    }
+    setInvalidRange(false)
+    setError(undefined)
+    const nextFilters = {
+      actor: "",
+      actor_user_id: operatorID,
+      ip: ipInput,
+      category: categoryInput ?? "",
+      result: resultInput ?? "",
+      since: queryDateValue(sinceInput, filters.since, "from"),
+      until: queryDateValue(untilInput, filters.until, "inclusiveUntil"),
+    }
+    const changed = auditQuery(nextFilters, 1, pageSize) !== query
+    tableQuery.commit(nextFilters)
+    searchRevisionRef.current = changed ? revision : revision + 1
+    setSearching(true)
+    if (!changed) setRevision((value) => value + 1)
+  }
+
+  return (
+    <section className="flex min-h-0 flex-1 flex-col p-4 pt-px md:h-[calc(100vh-5rem)] md:flex-none md:overflow-hidden">
+      <Card className="min-h-0 flex-1">
+        <CardContent className="min-h-0 flex-1 gap-4 px-0">
+          <form
+            ref={formRef}
+            onSubmit={(event) => {
+              event.preventDefault()
+              applySearch()
+            }}
+            className="flex flex-wrap items-center gap-2 px-[var(--card-spacing)]"
+          >
+            {visibleFields.has("operator") && (
+              <UserSearch
+                managed
+                id="audit-operator"
+                includeDeleted
+                selectionOnly
+                userID={operatorID}
+                query={operatorInput}
+                onChange={({ userID, query }) => {
+                  setOperatorID(userID)
+                  setOperatorInput(query)
+                }}
+                placeholder={t(
+                  "pages.operationLogs.filters.operatorSearchPlaceholder"
+                )}
+              />
+            )}
+            {visibleFields.has("ip") && (
+              <Input
+                className="w-32"
+                value={ipInput}
+                onChange={(event) => setIpInput(event.target.value)}
+                placeholder={t(
+                  "pages.operationLogs.filters.ipSearchPlaceholder"
+                )}
+                aria-label={t(
+                  "pages.operationLogs.filters.ipSearchPlaceholder"
+                )}
+              />
+            )}
+            {visibleFields.has("dateRange") && (
+              <>
+                <DatePickerField
+                  id="audit-start-date"
+                  className="w-32 sm:w-32"
+                  label={t("audit.since")}
+                  placeholder={t("audit.since")}
+                  locale={locale}
+                  value={sinceInput}
+                  onChange={setSinceInput}
+                  disabled={untilInput ? { after: untilInput } : undefined}
+                />
+                <DatePickerField
+                  id="audit-end-date"
+                  className="w-32 sm:w-32"
+                  label={t("audit.until")}
+                  placeholder={t("audit.until")}
+                  locale={locale}
+                  value={untilInput}
+                  onChange={setUntilInput}
+                  disabled={sinceInput ? { before: sinceInput } : undefined}
+                />
+              </>
+            )}
+            {visibleFields.has("category") && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      className={cn(!categoryInput && "text-muted-foreground")}
+                    />
+                  }
+                >
+                  {categoryInput
+                    ? categoryLabel(categoryInput)
+                    : t("pages.operationLogs.filters.actionType")}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>
+                      {t("pages.operationLogs.filters.actionType")}
+                    </DropdownMenuLabel>
+                    {CATEGORY_FILTERS.map((value) => (
+                      <DropdownMenuCheckboxItem
+                        key={value}
+                        checked={categoryInput === value}
+                        onCheckedChange={(checked) =>
+                          setCategoryInput(checked ? value : null)
+                        }
+                      >
+                        {categoryLabel(value)}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            {visibleFields.has("result") && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      className={cn(!resultInput && "text-muted-foreground")}
+                    />
+                  }
+                >
+                  {resultInput
+                    ? resultLabel(resultInput)
+                    : t("pages.operationLogs.filters.result")}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>
+                      {t("pages.operationLogs.filters.result")}
+                    </DropdownMenuLabel>
+                    {RESULT_FILTERS.map((value) => (
+                      <DropdownMenuCheckboxItem
+                        key={value}
+                        checked={resultInput === value}
+                        onCheckedChange={(checked) =>
+                          setResultInput(checked ? value : null)
+                        }
+                      >
+                        {resultLabel(value)}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={<Button type="button" variant="outline" />}
+              >
+                <HugeiconsIcon
+                  icon={FilterHorizontalIcon}
+                  data-icon="inline-start"
+                />
+                {t("common.more")}
+              </DropdownMenuTrigger>
+              <DropdownMenuOptionsContent align="start">
+                <DropdownMenuGroup>
+                  {fieldOptions.map(({ key, label }) => (
+                    <DropdownMenuCheckboxItem
+                      key={key}
+                      checked={visibleFields.has(key)}
+                      onCheckedChange={(checked) => {
+                        setVisibleFields((current) => {
+                          const next = new Set(current)
+                          if (checked) next.add(key)
+                          else next.delete(key)
+                          return next
+                        })
+                        if (!checked && key === "operator") {
+                          setOperatorID("")
+                          setOperatorInput("")
+                        }
+                      }}
+                    >
+                      {label}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuGroup>
+              </DropdownMenuOptionsContent>
+            </DropdownMenu>
+            <Button type="submit" disabled={loading || searching}>
+              <HugeiconsIcon
+                icon={searching ? Loading03Icon : Search02Icon}
+                data-icon="inline-start"
+                className={
+                  searching
+                    ? "animate-spin motion-reduce:animate-none"
+                    : undefined
+                }
+              />
+              {t("pages.operationLogs.filters.search")}
+            </Button>
+            {invalidRange && (
+              <p
+                id="audit-range-error"
+                role="alert"
+                className="text-sm text-destructive"
+              >
+                {t("audit.invalidRange")}
+              </p>
+            )}
+          </form>
+          <ScrollArea
+            horizontal
+            className="min-h-0 min-w-0 flex-1 [&_[data-slot=table-container]]:h-full [&_[data-slot=table-container]]:overflow-visible"
+          >
+            <Table
+              className={!visibleLogs.length ? "h-full" : undefined}
+              aria-label={t("pages.operationLogs.tableTitle")}
+              aria-busy={loading}
+            >
+              <TableHeader className="sticky top-0 z-10">
+                <TableRow>
+                  <TableHead className="ps-[var(--card-spacing)]">
+                    {t("pages.operationLogs.columns.time")}
+                  </TableHead>
+                  <TableHead>
+                    {t("pages.operationLogs.columns.operator")}
+                  </TableHead>
+                  <TableHead>
+                    {t("pages.operationLogs.columns.result")}
+                  </TableHead>
+                  <TableHead>
+                    {t("pages.operationLogs.columns.action")}
+                  </TableHead>
+                  <TableHead>
+                    {t("pages.operationLogs.columns.ipAddress")}
+                  </TableHead>
+                  <TableHead className="w-20 whitespace-nowrap pe-[var(--card-spacing)]">
+                    {t("pages.operationLogs.columns.operations")}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className={!visibleLogs.length ? "h-full" : undefined}>
+                {visibleLogs.length > 0 ? (
+                  visibleLogs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="ps-[var(--card-spacing)] text-muted-foreground">
+                        {tableDateFormatter.format(new Date(log.occurred_at))}
+                      </TableCell>
+                      <TableCell>
+                        <button
+                          type="button"
+                          className="account-user-link flex max-w-52 items-center gap-2 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring enabled:cursor-pointer"
+                          title={log.actor_email ?? undefined}
+                          disabled={!log.actor_user_id}
+                          onClick={() => {
+                            if (log.actor_user_id)
+                              setAccountUserID(log.actor_user_id)
+                          }}
+                        >
+                          <UserAvatar src={log.actor_avatar_url} />
+                          <span className="truncate">{log.actor_name}</span>
+                        </button>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            log.result === "success"
+                              ? "secondary"
+                              : "destructive"
+                          }
+                        >
+                          {resultLabel(log.result)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{actionLabel(log)}</TableCell>
+                      <TableCell className="font-mono">
+                        {log.source_ip || "—"}
+                      </TableCell>
+                      <TableCell className="w-20 whitespace-nowrap pe-[var(--card-spacing)]">
+                        <Dialog>
+                          <DialogTrigger
+                            render={
+                              <Button
+                                variant="outline"
+                                size="xs"
+                                type="button"
+                              />
+                            }
+                          >
+                            {t("pages.operationLogs.details")}
+                          </DialogTrigger>
+                          <DialogContent
+                            className="max-h-[85vh] overflow-y-auto sm:max-w-2xl"
+                            closeLabel={t("common.close")}
+                          >
+                            <DialogHeader>
+                              <DialogTitle>{t("audit.details")}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-3">
+                              <ScrollArea className="rounded-lg border [&_[data-slot=scroll-area-viewport]]:max-h-[min(40vh,24rem)]">
+                                <dl className="divide-y">
+                                  {[
+                                    [
+                                      t("pages.operationLogs.columns.time"),
+                                      dateFormatter.format(
+                                        new Date(log.occurred_at)
+                                      ),
+                                    ],
+                                    [
+                                      t("pages.operationLogs.columns.operator"),
+                                      log.actor_email
+                                        ? `${log.actor_name} (${log.actor_email})`
+                                        : log.actor_name,
+                                    ],
+                                    [
+                                      t("pages.operationLogs.columns.action"),
+                                      actionLabel(log),
+                                    ],
+                                    [t("audit.target"), log.target_id],
+                                    [
+                                      t(
+                                        "pages.operationLogs.columns.ipAddress"
+                                      ),
+                                      log.source_ip,
+                                    ],
+                                    [t("audit.userAgent"), log.user_agent],
+                                    [t("audit.requestId"), log.request_id],
+                                    [
+                                      t("pages.operationLogs.columns.result"),
+                                      resultLabel(log.result),
+                                    ],
+                                    [t("audit.error"), log.error_message],
+                                  ].map(([label, value]) => (
+                                    <div
+                                      key={label}
+                                      className="flex items-center justify-between gap-4 px-4 py-3 text-sm"
+                                    >
+                                      <dt className="w-32 shrink-0 break-words text-muted-foreground sm:w-44">
+                                        {label}
+                                      </dt>
+                                      <dd className="min-w-0 break-all text-right tabular-nums">
+                                        {value || "—"}
+                                      </dd>
+                                    </div>
+                                  ))}
+                                </dl>
+                              </ScrollArea>
+                              <pre className="whitespace-pre-wrap break-all rounded-md bg-muted p-3 text-xs">
+                                {JSON.stringify(log.request_params, null, 2)}
+                              </pre>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow className="h-full">
+                    <TableCell
+                      colSpan={6}
+                      className="h-full text-center text-muted-foreground"
+                    >
+                      {loading ? (
+                        <TableLoading />
+                      ) : error ? (
+                        <TableLoadError
+                          error={error}
+                          onRetry={() => setRevision((value) => value + 1)}
+                        />
+                      ) : (
+                        t("pages.operationLogs.empty")
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+          <TablePagination
+            page={currentPage}
+            pageSize={pageSize}
+            itemCount={visibleLogs.length}
+            total={total}
+            loading={loading || searching}
+            error={Boolean(error)}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+            }}
+            onPrevious={() => setPage(Math.max(1, page - 1))}
+            onNext={() => setPage(Math.min(pageCount, page + 1))}
+          />
+        </CardContent>
+      </Card>
+      {accountUserID && (
+        <AccountDialog
+          key={accountUserID}
+          userId={accountUserID}
+          onClose={() => setAccountUserID(null)}
+        />
+      )}
+    </section>
+  )
+}

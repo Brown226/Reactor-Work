@@ -1,0 +1,1079 @@
+import { api } from "@/lib/api"
+import { requestErrorToast } from "@/lib/request-error-toast"
+import {
+  base,
+  grants,
+  selection,
+  match,
+  saveResource,
+  savePackageGrants,
+  listResources,
+  localized,
+  useSubjects,
+  type ResourceRow,
+} from "@/lib/resources"
+import { useAppToast } from "@/components/animated-toast-provider"
+import { ResourceNotice } from "@/components/resource-notice"
+import { ResourceCard } from "@/components/resource-card"
+import { ResourceCardMenuButton } from "@/components/resource-card-menu-button"
+import { useEffect, useState, type FormEvent } from "react"
+import { ResourceList } from "@/components/resource-list"
+import { useResourceList } from "@/hooks/use-resource-list"
+import { useResourceBatch } from "@/hooks/use-resource-batch"
+import { ResourceBatchActions } from "@/components/resource-batch-actions"
+import {
+  GraduationCapIcon,
+  Copy01Icon,
+  Delete02Icon,
+  Edit02Icon,
+  MoreHorizontalIcon,
+  PauseIcon,
+  PlayIcon,
+  PlusSignIcon,
+  UnfoldMoreIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useTranslation } from "react-i18next"
+
+import { AuthorizationSelect } from "@/components/authorization-select"
+import {
+  ExpertAvatarField,
+  type ExpertAvatarDraft,
+} from "@/components/expert-avatar-field"
+import { ResourceEditorFooter } from "@/components/resource-editor-footer"
+import { SkillTagSelect } from "@/components/skill-tag-select"
+import { ResourceTagSummary } from "@/components/resource-tag-summary"
+import { ResourcePackageBadge } from "@/components/resource-package-badge"
+import { ResourceAuthorizationBadge } from "@/components/resource-authorization-badge"
+import { useSkillTags } from "@/hooks/use-skill-tags"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Textarea } from "@/components/ui/textarea"
+import type { AuthorizationSelection } from "@/lib/authorization-groups"
+import { cn, getCreatorInitial } from "@/lib/utils"
+
+type Expert = {
+  origin?: ResourceRow["origin"]
+  publisher?: string
+  retired?: boolean
+  ownership: ResourceRow["ownership_type"]
+  grants: ResourceRow["grants"]
+  owner: string
+  avatarPath: string
+  revision: number
+  id: string
+  name: string
+  description: string
+  prompt: string
+  tagIds: string[]
+  connectorSettings: ResourceRow["connectors"]
+  knowledgeBaseIds: string[]
+  toolIds: string[]
+  ruleIds: string[]
+  skillIds: string[]
+  authorization: AuthorizationSelection
+  enabled: boolean
+  updatedAt: string
+}
+
+type ExpertForm = Omit<
+  Expert,
+  | "id"
+  | "updatedAt"
+  | "enabled"
+  | "revision"
+  | "ownership"
+  | "owner"
+  | "grants"
+  | "avatarPath"
+>
+type AssociationKey = "knowledgeBaseIds" | "toolIds" | "ruleIds" | "skillIds"
+
+type AssociationOption = {
+  id: string
+  name: string
+  description: string
+  disabled?: boolean
+}
+
+function toExpert(row: ResourceRow, language: string): Expert {
+  const text = localized(row, language)
+  return {
+    id: row.id,
+    origin: row.origin,
+    publisher: row.publisher,
+    retired: row.retired,
+    ownership: row.ownership_type,
+    grants: row.grants,
+    owner: row.user.name || row.user.email || row.user.id,
+    avatarPath: row.avatar_path?.trim() || "",
+    revision: row.revision,
+    name: text.name,
+    description: text.description,
+    prompt: row.prompt,
+    tagIds: (row.tags ?? []).map((tag) => tag.id),
+    connectorSettings: row.connectors ?? [],
+    knowledgeBaseIds: row.knowledge_base_ids ?? [],
+    toolIds: (row.connectors ?? []).map((p) => p.connector_id),
+    ruleIds: row.rule_ids ?? [],
+    skillIds: row.skill_ids ?? [],
+    authorization: selection(row.grants),
+    enabled: row.enabled,
+    updatedAt: row.updated_at,
+  }
+}
+const EMPTY_FORM: ExpertForm = {
+  name: "",
+  description: "",
+  prompt: "",
+  tagIds: [],
+  connectorSettings: [],
+  knowledgeBaseIds: [],
+  toolIds: [],
+  ruleIds: [],
+  skillIds: [],
+  authorization: {
+    groupIds: [],
+    memberIds: [],
+  },
+}
+
+const ASSOCIATION_SECTIONS: Array<{
+  key: AssociationKey
+  labelKey: string
+}> = [
+  { key: "skillIds", labelKey: "pages.experts.skills" },
+  { key: "ruleIds", labelKey: "pages.experts.rules" },
+  { key: "toolIds", labelKey: "pages.tools.title" },
+  { key: "knowledgeBaseIds", labelKey: "pages.experts.knowledgeBases" },
+]
+
+function ExpertAssociationSelect({
+  id,
+  label,
+  options,
+  value,
+  limit,
+  onValueChange,
+}: {
+  id: string
+  label: string
+  options: AssociationOption[]
+  value: string[]
+  limit?: number
+  onValueChange: (value: string[]) => void
+}) {
+  const { i18n, t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState("")
+  const normalizedQuery = query.trim().toLocaleLowerCase(i18n.language)
+  const filteredOptions = options.filter(
+    (option) =>
+      (!option.disabled || value.includes(option.id)) &&
+      [option.name, option.description].some((text) =>
+        text.toLocaleLowerCase(i18n.language).includes(normalizedQuery)
+      )
+  )
+  const selectedNames = options
+    .filter((option) => value.includes(option.id))
+    .map((option) => option.name)
+    .join(", ")
+
+  return (
+    <Popover
+      modal={false}
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        if (!nextOpen) setQuery("")
+      }}
+    >
+      <PopoverTrigger
+        render={
+          <Button
+            id={id}
+            type="button"
+            variant="outline"
+            className="w-full min-w-0 justify-between font-normal"
+          />
+        }
+      >
+        <span
+          className={cn(
+            "truncate",
+            value.length === 0 && "text-muted-foreground"
+          )}
+          title={
+            selectedNames ||
+            t("pages.experts.selectAssociation", { resource: label })
+          }
+        >
+          {value.length > 0
+            ? t("pages.experts.selectedCount", { count: value.length })
+            : t("pages.experts.selectAssociation", { resource: label })}
+        </span>
+        <HugeiconsIcon icon={UnfoldMoreIcon} data-icon="inline-end" />
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-[var(--anchor-width)] gap-1 p-1"
+      >
+        <PopoverHeader className="sr-only">
+          <PopoverTitle>{label}</PopoverTitle>
+        </PopoverHeader>
+        <div className="p-1">
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t("pages.experts.searchAssociation", {
+              resource: label,
+            })}
+            aria-label={t("pages.experts.searchAssociation", {
+              resource: label,
+            })}
+          />
+        </div>
+        <div className="max-h-64 overflow-y-auto" role="listbox">
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((option) => {
+              const optionId = `${id}-${option.id}`
+              const checked = value.includes(option.id)
+
+              return (
+                <label
+                  key={option.id}
+                  htmlFor={optionId}
+                  className="flex cursor-pointer items-center gap-3 rounded-sm px-2 py-2 hover:bg-muted"
+                >
+                  <Checkbox
+                    id={optionId}
+                    checked={checked}
+                    disabled={
+                      !checked && limit !== undefined && value.length >= limit
+                    }
+                    onCheckedChange={(nextChecked) =>
+                      onValueChange(
+                        nextChecked
+                          ? [...value, option.id]
+                          : value.filter((item) => item !== option.id)
+                      )
+                    }
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium">
+                      {option.name}
+                      {option.disabled && " · " + t("pages.experts.disabled")}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {option.description}
+                    </span>
+                  </span>
+                </label>
+              )
+            })
+          ) : (
+            <p className="px-2 py-6 text-center text-sm text-muted-foreground">
+              {t("pages.experts.noAssociationResults")}
+            </p>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+export function ExpertsPage() {
+  const { t, i18n } = useTranslation()
+  const { tags: availableTags } = useSkillTags()
+  const { showToast } = useAppToast()
+  const remote = useResourceList("/experts")
+  const batch = useResourceBatch("expert", remote)
+  const experts = remote.items.map((row) => toExpert(row, i18n.language))
+  const subjects = useSubjects()
+  const authorizationGroupNames = new Map(
+    subjects.flatGroups.map((group) => [group.value, group.labelKey])
+  )
+  const authorizationMemberNames = new Map(
+    subjects.members.map((member) => [member.id, member.name || member.email])
+  )
+  const [options, setOptions] = useState<
+    Record<AssociationKey, AssociationOption[]>
+  >({ knowledgeBaseIds: [], toolIds: [], ruleIds: [], skillIds: [] })
+  const [optionRevision, setOptionRevision] = useState(0)
+
+  const [editorOpen, setEditorOpen] = useState(false)
+  const [editingExpert, setEditingExpert] = useState<Expert | null>(null)
+  const [form, setForm] = useState<ExpertForm>(EMPTY_FORM)
+  const [avatarDraft, setAvatarDraft] = useState<ExpertAvatarDraft>(null)
+  const [authorizationChanged, setAuthorizationChanged] = useState(false)
+  const authorization: AuthorizationSelection =
+    !editingExpert && !authorizationChanged
+      ? {
+          groupIds: subjects.groups.slice(0, 1).map((group) => group.value),
+          memberIds: [],
+        }
+      : form.authorization
+  const importedExpert = editingExpert?.origin === "package"
+  const [tagsOpen, setTagsOpen] = useState(false)
+  const [pendingDeletion, setPendingDeletion] = useState<Expert | null>(null)
+
+  useEffect(() => {
+    if (!editorOpen) return
+    let cancelled = false
+    Promise.all([
+      listResources(base + "/rules?ownership_type=system"),
+      listResources(base + "/skills?ownership_type=system"),
+      listResources(base + "/connectors?ownership_type=system"),
+      listResources(base + "/kb?ownership_type=system"),
+    ])
+      .then(([rules, skills, connectors, books]) => {
+        if (cancelled) return
+        const map = (rows: ResourceRow[], includeDisabled = false) =>
+          rows
+            .filter((r) => includeDisabled || r.enabled !== false)
+            .map((r) => {
+              const text = localized(r, i18n.language)
+              return {
+                id: r.id,
+                name: text.name,
+                disabled: r.enabled === false,
+                description: text.description ?? r.content ?? "",
+              }
+            })
+        setOptions({
+          knowledgeBaseIds: map(books.items, true),
+          ruleIds: map(rules.items),
+          skillIds: map(skills.items),
+          toolIds: map(connectors.items),
+        })
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          showToast(
+            requestErrorToast(e, {
+              label: t("statistics.retry"),
+              onClick: () => setOptionRevision((value) => value + 1),
+            })
+          )
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [editorOpen, optionRevision, showToast, t, i18n.language])
+
+  const openCreateDialog = () => {
+    batch.exit()
+    setEditingExpert(null)
+    setForm(EMPTY_FORM)
+    setAuthorizationChanged(false)
+    setAvatarDraft(null)
+    setTagsOpen(false)
+    setEditorOpen(true)
+  }
+
+  const openEditDialog = (expert: Expert) => {
+    if (expert.ownership !== "system") return
+    setEditingExpert(expert)
+    setAvatarDraft(null)
+    setForm({
+      name: expert.name,
+      description: expert.description,
+      prompt: expert.prompt,
+      tagIds: expert.tagIds,
+      connectorSettings: expert.connectorSettings,
+      knowledgeBaseIds: expert.knowledgeBaseIds,
+      toolIds: expert.toolIds,
+      ruleIds: expert.ruleIds,
+      skillIds: expert.skillIds,
+      authorization: expert.authorization,
+    })
+    setTagsOpen(false)
+    setEditorOpen(true)
+  }
+
+  const updateForm = <Key extends keyof ExpertForm>(
+    key: Key,
+    value: ExpertForm[Key]
+  ) => {
+    if (key === "authorization") setAuthorizationChanged(true)
+    setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  const updateConnector = (
+    id: string,
+    patch: Partial<ResourceRow["connectors"][number]>
+  ) => {
+    const current = form.connectorSettings.find(
+      (p) => p.connector_id === id
+    ) ?? {
+      connector_id: id,
+      required: true,
+      tool_allowlist: [],
+      tool_denylist: [],
+    }
+    updateForm("connectorSettings", [
+      ...form.connectorSettings.filter((p) => p.connector_id !== id),
+      { ...current, ...patch },
+    ])
+  }
+  const saveExpert = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (remote.pending) return
+    await remote.run(async () => {
+      if (editingExpert?.origin === "package") {
+        const overrides: Record<string, string> = {}
+        if (form.name !== editingExpert.name) overrides.name = form.name
+        if (form.description !== editingExpert.description) {
+          overrides.description = form.description
+        }
+        const resource = Object.keys(overrides).length
+          ? await saveResource(
+              `/experts/${editingExpert.id}`,
+              overrides,
+              editingExpert.revision
+            )
+          : editingExpert
+        await savePackageGrants("expert", resource, authorization)
+      } else {
+        const metadata = {
+          name: form.name,
+          description: form.description,
+          prompt: form.prompt,
+          tag_ids: form.tagIds,
+          rule_ids: form.ruleIds,
+          skill_ids: form.skillIds,
+          knowledge_base_ids:
+            editingExpert &&
+            form.knowledgeBaseIds.length ===
+              editingExpert.knowledgeBaseIds.length &&
+            form.knowledgeBaseIds.every((id) =>
+              editingExpert.knowledgeBaseIds.includes(id)
+            )
+              ? undefined
+              : form.knowledgeBaseIds,
+          connectors: form.toolIds.map(
+            (connector_id) =>
+              form.connectorSettings.find(
+                (p) => p.connector_id === connector_id
+              ) ?? {
+                connector_id,
+                required: true,
+                tool_allowlist: [],
+                tool_denylist: [],
+              }
+          ),
+          grants: grants(authorization),
+        }
+        const path = editingExpert ? `/experts/${editingExpert.id}` : "/experts"
+        if (avatarDraft) {
+          const body = new FormData()
+          body.set("metadata", JSON.stringify(metadata))
+          body.set("avatar", avatarDraft.file)
+          await api(base + path, {
+            method: editingExpert ? "PUT" : "POST",
+            headers: editingExpert ? match(editingExpert.revision) : {},
+            body,
+          })
+        } else {
+          await saveResource(path, metadata, editingExpert?.revision)
+        }
+      }
+      setAvatarDraft(null)
+      setEditorOpen(false)
+    }, t("resources.operationCompleted"))
+  }
+  const setExpertEnabled = async (id: string, enabled: boolean) => {
+    const item = experts.find((e) => e.id === id)
+    if (!item) return
+    await remote.run(async () => {
+      await api(base + `/experts/${id}/enabled`, {
+        method: "PATCH",
+        headers: match(item.revision),
+        body: JSON.stringify({ enabled }),
+      })
+    }, t("resources.operationCompleted"))
+  }
+  const duplicateExpert = async (expert: Expert) => {
+    if (expert.origin === "package") return
+    await remote.run(async () => {
+      await api(base + `/experts/${expert.id}/copy`, {
+        method: "POST",
+        body: JSON.stringify({
+          name: expert.name + t("pages.experts.copySuffix"),
+        }),
+      })
+    }, t("resources.operationCompleted"))
+  }
+  const deleteExpert = async () => {
+    if (!pendingDeletion || pendingDeletion.origin === "package") return
+    await remote.run(async () => {
+      await api(base + `/experts/${pendingDeletion.id}`, {
+        method: "DELETE",
+        headers: match(pendingDeletion.revision),
+      })
+      if (experts.length === 1) remote.previousPage(pendingDeletion.ownership)
+      setPendingDeletion(null)
+    }, t("resources.operationCompleted"))
+  }
+
+  return (
+    <section className="flex h-[calc(100vh-4rem)] min-h-0 flex-none flex-col gap-4 p-4 pt-0 md:h-[calc(100vh-5rem)]">
+      <ResourceList
+        page={batch.page}
+        error={subjects.error}
+        typeLabel={t("pages.models.type")}
+        systemLabel={t("resources.systemExpert")}
+        userLabel={t("resources.userExpert")}
+        searchPlaceholder={t("resources.searchPlaceholder", {
+          resource: t("pages.experts.title"),
+        })}
+        searchClassName="sm:max-w-44 sm:flex-none"
+        actions={
+          <div className="ms-auto flex shrink-0 items-center gap-2">
+            <ResourceBatchActions
+              key={batch.key}
+              {...batch.actions}
+              groups={subjects.groups}
+              members={subjects.members}
+            />
+            <Button
+              className="shrink-0"
+              type="button"
+              disabled={remote.pending}
+              onClick={openCreateDialog}
+            >
+              <HugeiconsIcon icon={PlusSignIcon} data-icon="inline-start" />
+              {t("pages.experts.createExpert")}
+            </Button>
+          </div>
+        }
+      >
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {experts.map((expert) => (
+            <ResourceCard
+              key={expert.id}
+              disabled={!expert.enabled}
+              {...batch.cardProps(expert.id, expert.name, expert.ownership)}
+            >
+              <CardHeader>
+                <div className="flex min-w-0 items-start gap-3">
+                  <Avatar size="lg">
+                    {expert.avatarPath && (
+                      <AvatarImage
+                        src={expert.avatarPath}
+                        alt=""
+                        className="m-0.5 size-9 self-center"
+                      />
+                    )}
+                    <AvatarFallback
+                      className={
+                        expert.ownership === "user"
+                          ? "text-lg font-normal"
+                          : undefined
+                      }
+                    >
+                      {expert.ownership === "system" ? (
+                        <HugeiconsIcon
+                          className="size-6"
+                          icon={GraduationCapIcon}
+                          strokeWidth={2}
+                        />
+                      ) : (
+                        getCreatorInitial(expert.owner)
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="flex min-w-0 items-center gap-2">
+                      <span className="truncate" title={expert.name}>
+                        {expert.name}
+                      </span>
+                      {expert.ownership === "user" && (
+                        <Badge variant="outline">
+                          {t("pages.experts.personalExpert")}
+                        </Badge>
+                      )}
+                      {!expert.enabled && (
+                        <Badge variant="outline">
+                          {t("pages.experts.disabled")}
+                        </Badge>
+                      )}
+                    </CardTitle>
+                    <CardDescription className="truncate" title={expert.owner}>
+                      {expert.owner}
+                    </CardDescription>
+                  </div>
+                  {batch.actions.selecting && expert.ownership === "system" ? (
+                    <Checkbox
+                      checked={batch.isSelected(expert.id)}
+                      disabled={remote.pending}
+                      aria-label={t("resources.batch.selectResource", {
+                        name: expert.name,
+                      })}
+                      onClick={(event) => event.stopPropagation()}
+                      onCheckedChange={() => batch.toggle(expert.id)}
+                    />
+                  ) : (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <ResourceCardMenuButton
+                            aria-label={t("common.more")}
+                          />
+                        }
+                      >
+                        <HugeiconsIcon
+                          icon={MoreHorizontalIcon}
+                          strokeWidth={2}
+                        />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {expert.ownership === "system" && (
+                          <>
+                            <DropdownMenuGroup>
+                              <DropdownMenuItem
+                                disabled={expert.enabled}
+                                onClick={() =>
+                                  setExpertEnabled(expert.id, true)
+                                }
+                              >
+                                <HugeiconsIcon
+                                  icon={PlayIcon}
+                                  strokeWidth={2}
+                                />
+                                {t("pages.experts.enable")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={!expert.enabled}
+                                onClick={() =>
+                                  setExpertEnabled(expert.id, false)
+                                }
+                              >
+                                <HugeiconsIcon
+                                  icon={PauseIcon}
+                                  strokeWidth={2}
+                                />
+                                {t("pages.experts.disable")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => openEditDialog(expert)}
+                              >
+                                <HugeiconsIcon
+                                  icon={Edit02Icon}
+                                  strokeWidth={2}
+                                />
+                                {t("pages.experts.edit")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                hidden={expert.origin === "package"}
+                                onClick={() => duplicateExpert(expert)}
+                              >
+                                <HugeiconsIcon
+                                  icon={Copy01Icon}
+                                  strokeWidth={2}
+                                />
+                                {t("pages.experts.duplicate")}
+                              </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            disabled={expert.origin === "package"}
+                            onClick={() => setPendingDeletion(expert)}
+                          >
+                            <HugeiconsIcon
+                              icon={Delete02Icon}
+                              strokeWidth={2}
+                            />
+                            {t("pages.experts.delete")}
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p
+                  className="truncate text-muted-foreground"
+                  title={expert.description}
+                >
+                  {expert.description?.trim() || t("resources.noDescription")}
+                </p>
+              </CardContent>
+              <CardFooter className="min-w-0 border-t">
+                <ResourceTagSummary
+                  tagIds={expert.tagIds}
+                  leading={
+                    <>
+                      <ResourceAuthorizationBadge
+                        grants={expert.grants}
+                        groupNames={authorizationGroupNames}
+                        memberNames={authorizationMemberNames}
+                        fallback={
+                          expert.ownership === "user" ? expert.owner : undefined
+                        }
+                      />
+                      {expert.origin === "package" && (
+                        <ResourcePackageBadge kind="expert" />
+                      )}
+                      {expert.skillIds.length > 0 && (
+                        <Badge
+                          variant="outline"
+                          className="border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-200"
+                        >
+                          {t("pages.experts.skillCount", {
+                            count: expert.skillIds.length,
+                          })}
+                        </Badge>
+                      )}
+                      {expert.toolIds.length > 0 && (
+                        <Badge
+                          variant="outline"
+                          className="border-cyan-200 bg-cyan-50 text-cyan-800 dark:border-cyan-800 dark:bg-cyan-950 dark:text-cyan-200"
+                        >
+                          {t("pages.experts.connectorCount", {
+                            count: expert.toolIds.length,
+                          })}
+                        </Badge>
+                      )}
+                      {expert.ruleIds.length > 0 && (
+                        <Badge
+                          variant="outline"
+                          className="border-lime-200 bg-lime-50 text-lime-800 dark:border-lime-800 dark:bg-lime-950 dark:text-lime-200"
+                        >
+                          {t("pages.experts.ruleCount", {
+                            count: expert.ruleIds.length,
+                          })}
+                        </Badge>
+                      )}
+                    </>
+                  }
+                />
+              </CardFooter>
+            </ResourceCard>
+          ))}
+        </div>
+      </ResourceList>
+
+      <Dialog
+        open={editorOpen}
+        onOpenChange={(open) => {
+          if (remote.pending) return
+          setEditorOpen(open)
+          if (!open) {
+            setEditingExpert(null)
+            setAvatarDraft(null)
+          }
+        }}
+      >
+        <DialogContent
+          className="flex max-h-[calc(100vh-2rem)] flex-col overflow-hidden sm:max-w-xl"
+          closeLabel={t("common.close")}
+          aria-describedby={
+            importedExpert ? "imported-expert-readonly" : undefined
+          }
+        >
+          <DialogHeader>
+            <DialogTitle>
+              {editingExpert
+                ? t("pages.experts.editTitle")
+                : t("pages.experts.createTitle")}
+            </DialogTitle>
+          </DialogHeader>
+          <form
+            id="expert-editor-form"
+            className="flex min-h-0 flex-1 flex-col gap-6"
+            onSubmit={saveExpert}
+          >
+            <FieldGroup className="-mx-1 max-h-[calc(100vh-12rem)] min-h-0 w-[calc(100%+0.5rem)] flex-1 gap-4 overflow-y-auto px-1">
+              <div
+                data-expert-basics=""
+                data-resource-basics=""
+                className="grid min-w-0 grid-cols-[minmax(0,1fr)_var(--resource-avatar-size,7.5rem)] items-start !gap-x-3 !gap-y-1 sm:!gap-x-4 sm:!gap-y-3"
+              >
+                <fieldset disabled={remote.pending} className="contents">
+                  <Field className="contents">
+                    <FieldLabel htmlFor="expert-name">
+                      {t("pages.experts.name")}
+                    </FieldLabel>
+                    <Input
+                      id="expert-name"
+                      className="sm:mb-1"
+                      value={form.name}
+                      onChange={(event) =>
+                        updateForm("name", event.target.value)
+                      }
+                      placeholder={t("pages.experts.namePlaceholder")}
+                      required
+                    />
+                  </Field>
+                  <Field className="contents">
+                    <FieldLabel htmlFor="expert-description">
+                      {t("pages.experts.expertDescription")}
+                    </FieldLabel>
+                    <Input
+                      id="expert-description"
+                      value={form.description}
+                      onChange={(event) =>
+                        updateForm("description", event.target.value)
+                      }
+                      placeholder={t("pages.experts.descriptionPlaceholder")}
+                      required={!importedExpert}
+                    />
+                  </Field>
+                </fieldset>
+                <ExpertAvatarField
+                  src={editingExpert?.avatarPath || ""}
+                  value={avatarDraft}
+                  onValueChange={setAvatarDraft}
+                  disabled={importedExpert || remote.pending}
+                  loading={remote.pending && !!avatarDraft}
+                />
+              </div>
+              <fieldset
+                disabled={importedExpert || remote.pending}
+                className="contents"
+              >
+                <Field>
+                  <FieldLabel htmlFor="expert-prompt">
+                    {t("pages.experts.prompt")}
+                  </FieldLabel>
+                  <Textarea
+                    id="expert-prompt"
+                    className="max-h-32 min-h-24 resize-y overflow-y-auto"
+                    value={form.prompt}
+                    onChange={(event) =>
+                      updateForm("prompt", event.target.value)
+                    }
+                    placeholder={t("pages.experts.promptPlaceholder")}
+                    required
+                  />
+                </Field>
+                <div className="grid min-w-0 grid-cols-2 gap-4">
+                  {ASSOCIATION_SECTIONS.map(({ key, labelKey }) => (
+                    <Field key={key} className="min-w-0">
+                      <FieldLabel htmlFor={`expert-${key}`}>
+                        {t(labelKey)}
+                      </FieldLabel>
+                      <ExpertAssociationSelect
+                        id={`expert-${key}`}
+                        label={t(labelKey)}
+                        options={options[key]}
+                        value={form[key]}
+                        limit={key === "knowledgeBaseIds" ? 50 : undefined}
+                        onValueChange={(value) => updateForm(key, value)}
+                      />
+                    </Field>
+                  ))}
+                </div>
+                {form.toolIds.map((id) => {
+                  const settings = form.connectorSettings.find(
+                    (p) => p.connector_id === id
+                  )
+                  return (
+                    <Field key={id}>
+                      <FieldLabel>
+                        {options.toolIds.find((p) => p.id === id)?.name}
+                      </FieldLabel>
+                      <label className="flex items-center gap-2 text-sm">
+                        <Checkbox
+                          disabled={importedExpert}
+                          checked={settings?.required ?? true}
+                          onCheckedChange={(checked) =>
+                            updateConnector(id, { required: checked })
+                          }
+                        />
+                        {t("resources.requiredConnector")}
+                      </label>
+                      <Input
+                        aria-label={t("resources.allowTools")}
+                        placeholder={t("resources.allowTools")}
+                        value={(settings?.tool_allowlist ?? []).join(",")}
+                        onChange={(e) =>
+                          updateConnector(id, {
+                            tool_allowlist: e.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean),
+                          })
+                        }
+                      />
+                      <Input
+                        aria-label={t("resources.denyTools")}
+                        placeholder={t("resources.denyTools")}
+                        value={(settings?.tool_denylist ?? []).join(",")}
+                        onChange={(e) =>
+                          updateConnector(id, {
+                            tool_denylist: e.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean),
+                          })
+                        }
+                      />
+                    </Field>
+                  )
+                })}
+              </fieldset>
+              <div className="grid min-w-0 grid-cols-2 gap-4">
+                <fieldset
+                  disabled={importedExpert || remote.pending}
+                  className="min-w-0"
+                >
+                  <Field>
+                    <FieldLabel htmlFor="expert-tags">
+                      {t("pages.skills.tags")}
+                    </FieldLabel>
+                    <SkillTagSelect
+                      id="expert-tags"
+                      open={tagsOpen}
+                      options={availableTags}
+                      placeholder={t("pages.skills.tagsPlaceholder")}
+                      value={form.tagIds}
+                      onOpenChange={setTagsOpen}
+                      onValueChange={(value) => updateForm("tagIds", value)}
+                    />
+                  </Field>
+                </fieldset>
+                <Field>
+                  <FieldLabel htmlFor="expert-authorization">
+                    {t("pages.models.authorizedScope")}
+                  </FieldLabel>
+                  <AuthorizationSelect
+                    groups={subjects.groups}
+                    members={subjects.members}
+                    id="expert-authorization"
+                    disabled={remote.pending}
+                    value={authorization}
+                    onValueChange={(value) =>
+                      updateForm("authorization", value)
+                    }
+                  />
+                  {importedExpert && editingExpert.retired && (
+                    <p className="text-sm text-amber-700 dark:text-amber-400">
+                      {t("resources.retiredGrantsOnly")}
+                    </p>
+                  )}
+                </Field>
+              </div>
+            </FieldGroup>
+            <ResourceNotice
+              error={remote.error || subjects.error}
+              loading={false}
+              pending={remote.pending}
+            />
+            <ResourceEditorFooter
+              id="imported-expert-readonly"
+              reason={
+                importedExpert
+                  ? t("resources.importedExpertReadOnly")
+                  : undefined
+              }
+            >
+              <DialogClose
+                render={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={remote.pending}
+                  />
+                }
+              >
+                {t("pages.experts.cancel")}
+              </DialogClose>
+              <Button
+                type="submit"
+                loading={remote.pending}
+                disabled={remote.pending}
+              >
+                {editingExpert
+                  ? t("pages.experts.save")
+                  : t("pages.experts.create")}
+              </Button>
+            </ResourceEditorFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={pendingDeletion !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeletion(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("pages.experts.deleteTitle")}
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            {t("pages.experts.deleteDescription", {
+              expert: pendingDeletion?.name ?? "",
+            })}
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={remote.pending}>
+              {t("pages.experts.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              loading={remote.pending}
+              variant="destructive"
+              onClick={deleteExpert}
+            >
+              {t("pages.experts.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </section>
+  )
+}
