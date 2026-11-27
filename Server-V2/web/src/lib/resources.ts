@@ -1,0 +1,297 @@
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useAppToast } from "@/components/animated-toast-provider"
+import { api } from "@/lib/api"
+import { requestErrorToast } from "@/lib/request-error-toast"
+import type {
+  AuthorizationSelection,
+  AuthorizationGroupNode,
+  AuthorizationMember,
+} from "@/lib/authorization-groups"
+export type Grant = {
+  id?: string
+  all_users?: boolean
+  access_level?: "read_only" | "read_write"
+  user_id?: string | null
+  group_id?: string | null
+  group?: { id: string; name: string; parent_id?: string | null } | null
+  user?: { id: string; name: string; email: string } | null
+  usage_requirement: "optional" | "required"
+}
+export type Credential = {
+  id: string
+  connector_id: string
+  user: ResourceRow["user"] | null
+  name: string
+  revision: number
+  authorization_status: "authorized" | "authorization_required" | "revoked"
+  connection_status: "unknown" | "connected" | "error"
+  header_names: string[]
+  last_error: string | null
+}
+export type ResourceRow = {
+  id: string
+  name: string
+  revision: number
+  ownership_type: "system" | "user"
+  origin?: "admin" | "package" | "user"
+  publisher?: string
+  source_slug?: string
+  retired?: boolean
+  name_i18n?: Record<string, string>
+  description_i18n?: Record<string, string>
+  user: { id: string; name: string; email: string }
+  description: string
+  content: string
+  enabled: boolean
+  grants: Grant[]
+  tags: { id: string; name: string }[]
+  package_file_name: string
+  file_count: number
+  prompt: string
+  avatar_path?: string | null
+  rule_ids: string[]
+  skill_ids: string[]
+  knowledge_base_ids?: string[]
+  connectors: {
+    connector_id: string
+    required: boolean
+    tool_allowlist: string[]
+    tool_denylist: string[]
+  }[]
+  updated_at: string
+  credentials: Credential[]
+  url: string
+  proxy_id?: string
+  skip_tls_verify?: boolean
+  authorization_mode: "none" | "centralized" | "independent"
+  authorization_method: "oauth" | "http_header" | null
+  auth_header_name?: string
+  timeout_ms?: number
+  credential_configured: boolean
+  icon_path: string
+  tool_count: number
+  enabled_tool_count?: number
+  connection_status: "connected" | "error" | "unknown"
+  oauth_config: Record<string, string>
+  callback_url: string
+}
+export const base = "/api/admin/v1"
+export function localized(
+  row: Pick<ResourceRow, "name" | "description"> &
+    Partial<Pick<ResourceRow, "name_i18n" | "description_i18n">>,
+  language: string
+) {
+  const pick = (
+    values: Record<string, string> | undefined,
+    fallback: string
+  ) => {
+    if (!values) return fallback
+    const exact = values[language]
+    if (exact) return exact
+    return values[language.split("-")[0]] ?? fallback
+  }
+  return {
+    name: pick(row.name_i18n, row.name),
+    description: pick(row.description_i18n, row.description),
+  }
+}
+export function selection(
+  grants: Grant[] = [],
+  required?: boolean
+): AuthorizationSelection {
+  const gs = grants.filter(
+    (g) =>
+      required === undefined ||
+      (g.usage_requirement === "required") === required
+  )
+  return {
+    groupIds: gs.flatMap((g) => (g.group_id ? [g.group_id] : [])),
+    memberIds: gs.flatMap((g) => (g.user_id ? [g.user_id] : [])),
+  }
+}
+export function grants(
+  value: AuthorizationSelection,
+  required = false
+): Grant[] {
+  return [
+    ...value.groupIds.map((group_id) => ({
+      group_id,
+      usage_requirement: required
+        ? ("required" as const)
+        : ("optional" as const),
+    })),
+    ...value.memberIds.map((user_id) => ({
+      user_id,
+      usage_requirement: required
+        ? ("required" as const)
+        : ("optional" as const),
+    })),
+  ]
+}
+export function match(revision: number) {
+  return { "If-Match": `"${revision}"` }
+}
+export function saveResource(path: string, body: unknown, revision?: number) {
+  return api<ResourceRow>(base + path, {
+    method: revision === undefined ? "POST" : "PUT",
+    headers: revision === undefined ? {} : match(revision),
+    body: JSON.stringify(body),
+  })
+}
+export function savePackageGrants(
+  kind: "skill" | "rule" | "connector" | "expert" | "kb",
+  resource: Pick<ResourceRow, "id" | "revision" | "grants">,
+  authorization: AuthorizationSelection,
+  required = false
+) {
+  const key = (grant: Grant) =>
+    grant.group_id ? `group:${grant.group_id}` : `user:${grant.user_id}`
+  const requirements = new Map(
+    resource.grants.map((grant) => [key(grant), grant.usage_requirement])
+  )
+  const scope = grants(authorization, required).map((grant) => ({
+    ...grant,
+    usage_requirement: requirements.get(key(grant)) ?? grant.usage_requirement,
+  }))
+  return api<{ grants: Grant[]; revision: number }>(
+    `${base}/resources/${kind}/${resource.id}/grants`,
+    {
+      method: "PUT",
+      headers: match(resource.revision),
+      body: JSON.stringify({ grants: scope }),
+    }
+  )
+}
+
+export function useResources<T>(
+  path: string,
+  convert: (row: ResourceRow) => T
+) {
+  const { t } = useTranslation()
+  const { showToast } = useAppToast()
+  const [items, setItems] = useState<T[]>([])
+  const [loading, setLoading] = useState(true)
+  const [pending, setPending] = useState(false)
+  const [revision, setRevision] = useState(0)
+  const lock = useRef(false)
+  const reload = useCallback(async () => {
+    const result = await listResources(base + path)
+    setItems(result.items.map(convert))
+  }, [path, convert])
+  useEffect(() => {
+    let cancelled = false
+    listResources(base + path)
+      .then((result) => {
+        if (!cancelled) setItems(result.items.map(convert))
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          showToast(
+            requestErrorToast(e, {
+              label: t("statistics.retry"),
+              onClick: () => {
+                setLoading(true)
+                setRevision((value) => value + 1)
+              },
+            })
+          )
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [path, convert, revision, showToast, t])
+  const run = async (action: () => Promise<void>, successMessage?: string) => {
+    if (lock.current) return false
+    lock.current = true
+    setPending(true)
+    try {
+      await action()
+      await reload()
+      if (successMessage) {
+        showToast({ status: "success", title: successMessage })
+      }
+      return true
+    } catch (e) {
+      showToast({
+        status: "error",
+        title: e instanceof Error ? e.message : "操作失败",
+      })
+      return false
+    } finally {
+      lock.current = false
+      setPending(false)
+    }
+  }
+  return { items, reload, run, error: "", loading, pending }
+}
+export function useSubjects() {
+  const { t } = useTranslation()
+  const { showToast } = useAppToast()
+  const [groups, setGroups] = useState<AuthorizationGroupNode[]>([])
+  const [members, setMembers] = useState<AuthorizationMember[]>([])
+  const [revision, setRevision] = useState(0)
+  useEffect(() => {
+    let cancelled = false
+    api<{
+      groups: { id: string; parent_id?: string; name: string }[]
+      users: { id: string; name: string; email: string; group_id: string }[]
+    }>(base + "/resources/authorization-subjects")
+      .then((data) => {
+        if (cancelled) return
+        const tree = (parent?: string): AuthorizationGroupNode[] =>
+          data.groups
+            .filter((g) => (g.parent_id ?? undefined) === parent)
+            .map((g) => ({
+              value: g.id,
+              labelKey: g.name,
+              children: tree(g.id),
+            }))
+        setGroups(tree())
+        setMembers(data.users.map((u) => ({ ...u, groupId: u.group_id })))
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          showToast(
+            requestErrorToast(e, {
+              label: t("statistics.retry"),
+              onClick: () => setRevision((value) => value + 1),
+            })
+          )
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [revision, showToast, t])
+  const flat = (nodes: AuthorizationGroupNode[]): AuthorizationGroupNode[] =>
+    nodes.flatMap((n) => [n, ...flat(n.children ?? [])])
+  return { groups, members, flatGroups: flat(groups), error: "" }
+}
+
+export async function listResources(
+  path: string
+): Promise<{ items: ResourceRow[] }> {
+  const items: ResourceRow[] = []
+  let cursor = ""
+  const seen = new Set<string>()
+  do {
+    const page = await api<{ items: ResourceRow[]; next_cursor?: string }>(
+      path +
+        (cursor
+          ? (path.includes("?") ? "&" : "?") +
+            "cursor=" +
+            encodeURIComponent(cursor)
+          : "")
+    )
+    items.push(...page.items)
+    cursor = page.next_cursor ?? ""
+    if (cursor && seen.has(cursor)) throw new Error("资源分页游标重复")
+    seen.add(cursor)
+  } while (cursor)
+  return { items }
+}

@@ -1,0 +1,471 @@
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/noto-sans-sc";
+@import "@fontsource-variable/noto-sans-arabic";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .account-user-link:enabled:hover,
+  .account-user-link:enabled:focus-visible {
+    @apply text-blue-600 dark:text-blue-400;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
+}
+
+:root {
+  --spacing: 0.25rem;
+  --color-yellow-500: rgb(240 177 0);
+  --color-emerald-500: rgb(0 188 125);
+  --color-emerald-400: rgb(0 212 146);
+  --color-emerald-600: rgb(0 153 102);
+  --color-orange-500: rgb(255 105 0);
+  --color-orange-400: rgb(255 137 4);
+  --color-rose-500: rgb(255 32 86);
+  --color-rose-400: rgb(255 99 126);
+  --color-primary: var(--primary);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --font-heading:
+    "JetBrains Mono Variable", "Noto Sans SC Variable", sans-serif;
+  --font-mono: "JetBrains Mono Variable", "Noto Sans SC Variable", sans-serif;
+  --font-sans: "JetBrains Mono Variable", "Noto Sans SC Variable", sans-serif;
+  --secondary-hover-rgb: 231 231 231;
+  --ecosystem-ring: rgb(167 167 167);
+  --radar-surface: rgb(251 251 251);
+  --background-rgb: 255 255 255;
+  --background: rgb(var(--background-rgb));
+  --foreground-rgb: 10 10 10;
+  --foreground: rgb(var(--foreground-rgb));
+  --card-rgb: 255 255 255;
+  --card: rgb(var(--card-rgb));
+  --card-foreground-rgb: 10 10 10;
+  --card-foreground: rgb(var(--card-foreground-rgb));
+  --popover-rgb: 255 255 255;
+  --popover: rgb(var(--popover-rgb));
+  --popover-foreground-rgb: 10 10 10;
+  --popover-foreground: rgb(var(--popover-foreground-rgb));
+  --primary-rgb: 23 23 23;
+  --primary: rgb(var(--primary-rgb));
+  --primary-foreground-rgb: 250 250 250;
+  --primary-foreground: rgb(var(--primary-foreground-rgb));
+  --secondary-rgb: 245 245 245;
+  --secondary: rgb(var(--secondary-rgb));
+  --secondary-foreground-rgb: 23 23 23;
+  --secondary-foreground: rgb(var(--secondary-foreground-rgb));
+  --muted-rgb: 245 245 245;
+  --muted: rgb(var(--muted-rgb));
+  --muted-foreground-rgb: 115 115 115;
+  --muted-foreground: rgb(var(--muted-foreground-rgb));
+  --accent-rgb: 245 245 245;
+  --accent: rgb(var(--accent-rgb));
+  --accent-foreground-rgb: 23 23 23;
+  --accent-foreground: rgb(var(--accent-foreground-rgb));
+  --destructive-rgb: 231 0 11;
+  --destructive: rgb(var(--destructive-rgb));
+  --success-rgb: 0 130 54;
+  --success: rgb(var(--success-rgb));
+  --warning-rgb: 166 95 0;
+  --warning: rgb(var(--warning-rgb));
+  --border-rgb: 229 229 229;
+  --border: rgb(var(--border-rgb));
+  --input-rgb: 229 229 229;
+  --input: rgb(var(--input-rgb));
+  --ring-rgb: 161 161 161;
+  --ring: rgb(var(--ring-rgb));
+  --chart-1-rgb: 212 212 212;
+  --chart-1: rgb(var(--chart-1-rgb));
+  --chart-2-rgb: 115 115 115;
+  --chart-2: rgb(var(--chart-2-rgb));
+  --chart-3-rgb: 82 82 82;
+  --chart-3: rgb(var(--chart-3-rgb));
+  --chart-4-rgb: 64 64 64;
+  --chart-4: rgb(var(--chart-4-rgb));
+  --chart-5-rgb: 38 38 38;
+  --chart-5: rgb(var(--chart-5-rgb));
+  --radius: 0.625rem;
+  --sidebar-rgb: 250 250 250;
+  --sidebar: rgb(var(--sidebar-rgb));
+  --sidebar-foreground-rgb: 10 10 10;
+  --sidebar-foreground: rgb(var(--sidebar-foreground-rgb));
+  --sidebar-primary-rgb: 23 23 23;
+  --sidebar-primary: rgb(var(--sidebar-primary-rgb));
+  --sidebar-primary-foreground-rgb: 250 250 250;
+  --sidebar-primary-foreground: rgb(var(--sidebar-primary-foreground-rgb));
+  --sidebar-accent-rgb: 240 240 240;
+  --sidebar-accent: rgb(var(--sidebar-accent-rgb));
+  --sidebar-accent-foreground-rgb: 23 23 23;
+  --sidebar-accent-foreground: rgb(var(--sidebar-accent-foreground-rgb));
+  --sidebar-border-rgb: 229 229 229;
+  --sidebar-border: rgb(var(--sidebar-border-rgb));
+  --sidebar-ring-rgb: 161 161 161;
+  --sidebar-ring: rgb(var(--sidebar-ring-rgb));
+}
+
+.dark {
+  --secondary-hover-rgb: 47 47 47;
+  --ecosystem-ring: rgb(235 235 235 / 0.343);
+  --radar-surface: rgb(21 21 21);
+  --background-rgb: 10 10 10;
+  --background: rgb(var(--background-rgb));
+  --foreground-rgb: 250 250 250;
+  --foreground: rgb(var(--foreground-rgb));
+  --card-rgb: 23 23 23;
+  --card: rgb(var(--card-rgb));
+  --card-foreground-rgb: 250 250 250;
+  --card-foreground: rgb(var(--card-foreground-rgb));
+  --popover-rgb: 23 23 23;
+  --popover: rgb(var(--popover-rgb));
+  --popover-foreground-rgb: 250 250 250;
+  --popover-foreground: rgb(var(--popover-foreground-rgb));
+  --primary-rgb: 229 229 229;
+  --primary: rgb(var(--primary-rgb));
+  --primary-foreground-rgb: 23 23 23;
+  --primary-foreground: rgb(var(--primary-foreground-rgb));
+  --secondary-rgb: 38 38 38;
+  --secondary: rgb(var(--secondary-rgb));
+  --secondary-foreground-rgb: 250 250 250;
+  --secondary-foreground: rgb(var(--secondary-foreground-rgb));
+  --muted-rgb: 38 38 38;
+  --muted: rgb(var(--muted-rgb));
+  --muted-foreground-rgb: 161 161 161;
+  --muted-foreground: rgb(var(--muted-foreground-rgb));
+  --accent-rgb: 38 38 38;
+  --accent: rgb(var(--accent-rgb));
+  --accent-foreground-rgb: 250 250 250;
+  --accent-foreground: rgb(var(--accent-foreground-rgb));
+  --destructive-rgb: 255 100 103;
+  --destructive: rgb(var(--destructive-rgb));
+  --success-rgb: 36 197 95;
+  --success: rgb(var(--success-rgb));
+  --warning-rgb: 254 154 0;
+  --warning: rgb(var(--warning-rgb));
+  --border-rgb: 255 255 255;
+  --border-alpha: 0.1;
+  --border: rgb(var(--border-rgb) / 10%);
+  --input-rgb: 255 255 255;
+  --input-alpha: 0.15;
+  --input: rgb(var(--input-rgb) / 15%);
+  --ring-rgb: 115 115 115;
+  --ring: rgb(var(--ring-rgb));
+  --chart-1-rgb: 212 212 212;
+  --chart-1: rgb(var(--chart-1-rgb));
+  --chart-2-rgb: 115 115 115;
+  --chart-2: rgb(var(--chart-2-rgb));
+  --chart-3-rgb: 82 82 82;
+  --chart-3: rgb(var(--chart-3-rgb));
+  --chart-4-rgb: 64 64 64;
+  --chart-4: rgb(var(--chart-4-rgb));
+  --chart-5-rgb: 38 38 38;
+  --chart-5: rgb(var(--chart-5-rgb));
+  --sidebar-rgb: 23 23 23;
+  --sidebar: rgb(var(--sidebar-rgb));
+  --sidebar-foreground-rgb: 250 250 250;
+  --sidebar-foreground: rgb(var(--sidebar-foreground-rgb));
+  --sidebar-primary-rgb: 20 71 230;
+  --sidebar-primary: rgb(var(--sidebar-primary-rgb));
+  --sidebar-primary-foreground-rgb: 250 250 250;
+  --sidebar-primary-foreground: rgb(var(--sidebar-primary-foreground-rgb));
+  --sidebar-accent-rgb: 35 35 35;
+  --sidebar-accent: rgb(var(--sidebar-accent-rgb));
+  --sidebar-accent-foreground-rgb: 250 250 250;
+  --sidebar-accent-foreground: rgb(var(--sidebar-accent-foreground-rgb));
+  --sidebar-border-rgb: 255 255 255;
+  --sidebar-border-alpha: 0.1;
+  --sidebar-border: rgb(var(--sidebar-border-rgb) / 10%);
+  --sidebar-ring-rgb: 115 115 115;
+  --sidebar-ring: rgb(var(--sidebar-ring-rgb));
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html {
+    @apply font-sans;
+  }
+  html:lang(ar) {
+    font-family: "Noto Sans Arabic Variable", sans-serif;
+  }
+}
+
+/* Chrome 86 has no aspect-ratio. Keep chart and illustration boxes measurable
+   before Recharts reads their size, without replacing fixed-height chart layouts. */
+@supports not (aspect-ratio: 1 / 1) {
+  .legacy-aspect-square::before {
+    content: "";
+    display: block;
+    padding-top: 100%;
+  }
+  .legacy-aspect-video::before,
+  .legacy-chart-aspect::before {
+    content: "";
+    display: block;
+    padding-top: 56.25%;
+  }
+  .legacy-chart-aspect {
+    display: block;
+  }
+  .legacy-chart-aspect.aspect-square::before {
+    padding-top: 100%;
+  }
+  .legacy-chart-aspect.aspect-auto::before {
+    display: none;
+  }
+  .legacy-chart-aspect > .recharts-responsive-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}
+
+@keyframes ecosystem-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes ecosystem-orbit {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes ecosystem-orbit-counter {
+  to {
+    transform: rotate(-1turn);
+  }
+}
+
+@keyframes ecosystem-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes ecosystem-core-pulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.28);
+  }
+}
+
+@keyframes ecosystem-console-orbit {
+  to {
+    transform: rotate(-1turn);
+  }
+}
+
+.ecosystem-radar {
+  --radar-shift-x: 0px;
+  --radar-shift-y: 0px;
+  --radar-grid-x: 0px;
+  --radar-grid-y: 0px;
+  background:
+    linear-gradient(
+      rgb(var(--primary-rgb) / 0.12),
+      rgb(var(--primary-rgb) / 0.12)
+    ),
+    radial-gradient(
+      circle at 50% 48%,
+      rgb(var(--primary-rgb) / 0.18) 0%,
+      transparent 42%
+    ),
+    linear-gradient(145deg, var(--radar-surface), var(--muted));
+}
+
+.ecosystem-radar-grid {
+  background-image:
+    linear-gradient(
+      to right,
+      rgb(var(--border-rgb) / 0.48) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      rgb(var(--border-rgb) / 0.48) 1px,
+      transparent 1px
+    );
+  background-size: 28px 28px;
+  opacity: 0.48;
+  transform: translate(var(--radar-grid-x), var(--radar-grid-y));
+  transition: transform 350ms ease-out;
+}
+
+.ecosystem-radar-glow {
+  background:
+    radial-gradient(
+      circle at 18% 22%,
+      rgb(var(--chart-2-rgb) / 0.14),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at 84% 78%,
+      rgb(var(--chart-1-rgb) / 0.12),
+      transparent 28%
+    );
+}
+
+.ecosystem-radar-stage {
+  transform: translate(var(--radar-shift-x), var(--radar-shift-y));
+  transition: transform 350ms ease-out;
+}
+
+.ecosystem-ring {
+  stroke: var(--ecosystem-ring);
+  stroke-width: 0.28;
+}
+
+.ecosystem-ring-dashed {
+  stroke-dasharray: 1.4 2.2;
+  stroke-width: 0.45;
+}
+
+.ecosystem-orbit {
+  animation: ecosystem-orbit 80s linear infinite;
+  transform-origin: center;
+}
+
+.ecosystem-node-anchor {
+  transform: translate(-50%, -50%);
+}
+
+.ecosystem-node-counter {
+  animation: ecosystem-orbit-counter 80s linear infinite;
+}
+
+.ecosystem-node {
+  animation: ecosystem-drift 6s ease-in-out infinite;
+  box-shadow:
+    0 12px 28px rgb(var(--foreground-rgb) / 0.08),
+    inset 0 1px 0 rgb(var(--background-rgb) / 0.72);
+  transform: translate(-50%, -50%);
+}
+
+.ecosystem-node-signal {
+  animation: ecosystem-pulse 2.8s ease-in-out infinite;
+}
+
+.ecosystem-console {
+  box-shadow:
+    0 24px 54px rgb(var(--foreground-rgb) / 0.11),
+    0 0 44px rgb(var(--primary-rgb) / 0.13),
+    inset 0 1px 0 rgb(var(--background-rgb) / 0.78);
+}
+
+.ecosystem-console-orbit {
+  animation: ecosystem-console-orbit 24s linear infinite;
+}
+
+.ecosystem-core-pulse {
+  animation: ecosystem-core-pulse 2.6s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecosystem-node,
+  .ecosystem-node-signal,
+  .ecosystem-orbit,
+  .ecosystem-node-counter,
+  .ecosystem-console-orbit,
+  .ecosystem-core-pulse {
+    animation: none;
+  }
+
+  .ecosystem-radar-grid,
+  .ecosystem-radar-stage {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* The bundled editor stylesheet passes a custom property as the second
+   argument of var(), which browsers discard. Combined with table-layout:fixed
+   and a 100px minimum cell width, preview tables collapse into unbordered
+   stacks. Keep the grid readable inside the knowledge-base editor. */
+[data-markdown-editor] {
+  --table-cell-border-color: var(--border);
+  --table-head-background-color: var(--muted);
+}
+
+[data-markdown-editor] .tiptap.ProseMirror div[data-content-type="table"] {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+[data-markdown-editor] .tiptap.ProseMirror .tableWrapper {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  overflow: visible;
+}
+
+[data-markdown-editor] .tiptap.ProseMirror table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  table-layout: auto;
+  border-collapse: collapse;
+  border: 1px solid var(--table-cell-border-color);
+}
+
+[data-markdown-editor] .tiptap.ProseMirror table th,
+[data-markdown-editor] .tiptap.ProseMirror table td {
+  min-width: 4.5rem;
+  border: 1px solid var(--table-cell-border-color);
+  text-transform: none;
+  letter-spacing: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+[data-markdown-editor] .tiptap.ProseMirror table th {
+  background-color: var(--table-head-background-color);
+}
