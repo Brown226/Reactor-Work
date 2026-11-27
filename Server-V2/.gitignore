@@ -1,0 +1,30 @@
+# 本地环境与凭据
+.env
+.env.*
+!.env.example
+
+# 运行时数据（上游 compose 的挂载点）
+data/
+runtime/
+backend/data/
+backend/runtime/
+backend/import-tmp/
+
+# 构建产物
+backend/bin/
+backend/monkeyai-server
+backend/dist/
+web/node_modules/
+web/dist/
+web/.vite/
+*.tsbuildinfo
+
+# 日志与临时文件
+*.log
+build.log
+logs/
+tmp/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

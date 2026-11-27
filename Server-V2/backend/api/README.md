@@ -1,0 +1,342 @@
+# API
+
+OpenAPI 源文件按调用方分为 `admin.yaml` 和 `agent.yaml`。管理后台接口统一维护在 `admin.yaml`，工作 Agent 接口统一维护在 `agent.yaml`，不再按业务模块拆分或生成合并文档。
+
+每个接口必须声明请求体、成功与错误响应、响应 JSON Schema，并为字段补充类型、约束和说明；不能只记录状态码和响应描述。契约字段以实际 HTTP DTO 为准，密钥等不返回的敏感字段需要明确说明。
+
+## 手机扫码配对
+
+手机首次登录可用扫码配对替代浏览器授权：桌面端使用带 `device:manage` 的 Bearer 调用 `POST /oauth/pairing`，生成 60 秒有效的二维码；手机调用 `POST /oauth/pairing/{pairingID}/join` 换取八位配对码，用户在桌面端输入后调用 `POST /oauth/pairing/{pairingID}/approve` 批准，手机再以 `grant_type=urn:monkeyai:params:oauth:grant-type:pairing_code`、`client_id=monkeyai-mobile`、`device_code` 和原始 `code_verifier` 兑换账号级 token。桌面端可通过 `GET /oauth/pairing/{pairingID}` 查询状态并展示手机信息。
+
+二维码固定为 `https://work.baizhi.cloud/app-link/scan/`，只包含 `v=1`、`server`、`id`、`secret` 四个参数，server 来自服务端公开地址。join 严格校验 JSON，最多 16 KiB；二维码过期、secret 错误与不存在统一返回 `404 pairing_not_found`。join 后窗口延长到当前时间后 60 秒，硬上限为创建后 180 秒。手机每 5 秒轮询，遇到 `slow_down` 再增加 5 秒；状态并发变更占用配对锁时返回可重试的 `authorization_pending`。所有配对响应均为 `Cache-Control: no-store`。
+
+四条安全约束：二维码 secret 只存摘要、只返回一次；PKCE S256 在 join 时绑定；配对码错五次整条作废；改密时同事务把未兑换的 pending、joined、approved 配对置为 `denied`。配对是一次性的，不形成长期设备绑定。手机固定取得 `device:connect environment:read files:read files:write resources:manage session:control session:read`，沿用现有刷新、取票与 ACP 流程，不取得设备管理或发布权限。
+
+创建与批准在用户锁下复核 Bearer。兑换先锁用户，再以 `NOWAIT` 锁配对，并条件消费，避免与改密的「配对 → 用户」锁序互相等待；改密拿到用户锁后仍复查期间新建的活动配对（pending、joined、approved），必要时返回 `409 authorization_changed` 并回滚。上线前执行迁移 `000037_oauth_pairing`。
+
+## 本人账户设置
+
+浏览器会话接口统一在 `admin.yaml` 记录。`GET /api/auth/v1/profile` 返回当前用户、`custom_avatar_url`、`synced_avatar_url`、`has_password` 和 CSRF 令牌。本人修改无需管理员角色；上传、清除和修改密码都必须携带 `X-CSRF-Token`，有 Origin 时还需匹配公开服务地址。
+
+- `PUT /api/auth/v1/profile/avatar`：直接发送 JPG/PNG/WebP 图片二进制，最多 5 MiB、2500 万像素、单边 8192 像素；服务端完整解码校验后写入现有 S3 存储，并更新自定义头像。
+- `DELETE /api/auth/v1/profile/avatar`：仅清除自定义头像，恢复最新 OAuth 同步头像或客户端默认头像。
+- `POST /api/auth/v1/profile/password`：发送 `current_password`、`new_password`。校验当前密码，新密码至少 12 个 Unicode 字符且不超过 1024 字节；每用户每 15 分钟最多 10 次校验。成功时事务内撤销旧会话、OAuth 授权/令牌、授权码、已批准但尚未兑换的设备授权、未兑换的手机配对和验证码，并轮换当前浏览器 Cookie。客户端保留当前登录并使用响应的新 CSRF 令牌。密码登录、授权码兑换和浏览器授权提交在用户记录加锁后复核凭据；遇到并发新增设备批准时返回 `409` 并回滚本次修改，客户端可重新提交。
+
+所有用户头像输出均优先取非空的 `users.custom_avatar_url`，再取 `users.avatar_url`。OAuth 继续只更新后者，不覆盖用户自定义头像。`/api/auth/v1/avatars/{userID}/{avatarID}` 提供带随机版本号的当前图片，不需要 Cookie，供浏览器和客户端展示；已清除或替换版本返回 404。部署前须执行迁移 `000036_user_profile_add`。未设置密码的 OAuth 账号通过现有登录页验证码重置流程设置密码，不能跳过当前密码校验直接设置。
+
+## 错误与国际化
+
+Agent 与管理资源 API 沿用 `{error: {code, message, references}}`，不新增 `reason`。`code` 是稳定的业务错误分类，供调用方做业务判断；`message` 由服务端完成国际化，可直接展示，不需要客户端再次翻译，也不能匹配其文本判断业务。细分 OAuth 元数据缺失/无效、不支持动态注册、注册被拒绝、Token 响应异常，以及 MCP 超时、DNS、TLS、地址限制、上游认证/权限/限流/服务故障。未识别的内部错误由服务端转换为通用的本地化提示，不透传请求 URL 或上游正文。
+
+`Accept-Language` 支持简体中文和英文（同语种变体归并），缺省或不支持的语言回退 `zh-CN`；响应提供 `Content-Language` 和 `Vary: Accept-Language`。错误文案末尾追加 `[trace_id: <Trace ID>]`，客户端仅展示 message 也能提供链路编号。编号直接采用当前 OTel Trace ID；日志记录同一 `trace_id` 和对应的 `span_id`，并保留既有的 `request_id` 和 `X-Request-ID`。现有 `references` 继续承载各接口约定的恢复字段。
+
+服务端生成的业务错误统一通过 `internal/web` 构造和渲染，i18n 词表与语言协商位于其内部；普通资源、认证、设备、设计资源、模型、设置、审计、计费及统计共用该运行时。OAuth 的 `error_description`、MCP JSON-RPC 和设备消息帧保留原协议结构。服务生成的模型/媒体网关错误及 404、405、未提交响应前的 500 错误也统一接入。
+
+`web.Error` 提供稳定 code、HTTP 状态、受控文案及错误链，`WithCause` 保留原始错误供内部诊断，不将 cause 输出到客户端。框架的 Go 1.27 泛型路由适配器统一解码、校验、序列化和错误输出；API Key Agent 接口已迁移到该适配器。HTTP 错误摘要与底层诊断分别记录：默认 WARN 级别可查询 4xx 和 HTTP 200 内的受控协议错误，5xx 使用 ERROR；设备消息错误逐条记录，不等待连接关闭。
+
+HTTP 入口按 W3C Trace Context 接续或创建 OTel server span。默认使用不采样、无导出器的 Provider，仅提供合法的链路编号；宿主可通过 `WithTracerProvider` 注入采样和导出配置。未采样不会影响错误日志和排查编号。
+
+公共词表同时按稳定错误码和已知具体文案提供翻译，避免同一 `invalid_request` 下的不同校验原因被折叠。未识别的内部错误使用安全的本地化兜底，不回显内部原文。上游透明代理内容、用户内容、机器状态和仅含错误码的协议帧保持原样，不进行响应正文后处理。
+
+授权状态轮询和连接状态沿用既有数据结构，不新增错误码或请求编号的持久化字段。OAuth 回调和连接测试当次 HTTP 错误响应返回具体 `code` 和本地化 `message`；后续轮询保留原有状态语义，历史 `last_error` 文本保持原有行为。本次无需数据库迁移。
+
+模型网关和 MCP JSON-RPC 保留各自的错误协议。
+
+## 模型概览的消息使用分布
+
+`GET /api/admin/v1/statistics/models/overview` 同时返回模型指标、90 天趋势和 `message_distribution: {from, until, total_messages, models: [{id, name, messages}]}`。分布来自有效根会话上报的消息，按消息开始时间统计滚动 24 小时，包含所有结果；与会话分析的消息口径一致，缺失模型为 `id/name: null` 的未知项。同名模型按不同 UUID 分别计数，模型停用或软删除保留历史用量，名称优先取展示名称，其次上游模型名称。
+
+数据与其他模型指标来自同一只读快照、同一 `generated_at`，模型页一次请求获取整个页面。无消息时 `total_messages` 为零、`models` 为空数组；不通过模型调用次数生成消息分布。不返回模型配置、密钥、用户资料或消息正文，无需数据库迁移。
+
+## 会话分析概览
+
+旧 `/api/admin/v1/statistics/tasks/overview` 已移除。模型页面只查询模型概览，会话页面只使用下面的完整概览接口。
+
+`GET /api/admin/v1/statistics/session-reporting/sessions/overview` 为“数据分析 → 会话”提供完整页面数据，仅管理员可读，不接收查询参数，响应为 `Cache-Control: private, no-store`。接口在 15 秒超时的只读 RepeatableRead 快照中，以同一服务端时间返回总量、90 天北京时间自然日趋势和滚动 24 小时统计，无需数据库迁移。
+
+口径与会话历史、消息历史一致：只计已上报的有效根会话，排除子会话、占位、未上报、已删除、已清理和未来开始的会话；历史所属用户被停用或软删除不会丢弃会话记录。消息按 `session_turns.started_at` 计入左闭右开的窗口，模型调用不作为消息。耗时为各消息开始到结束的秒数；每会话消息数只计窗口内消息，并按有消息的会话等权计算。P10/P90 均取排序后第 `ceil(N * p)` 个值，无样本时平均值及百分位为 `null`。
+
+`last_24h.models` 按模型 UUID 汇总，同名模型不合并，缺失模型为 `id/name: null` 的未知项；包含停用及软删除模型的历史用量。返回值不包含消息正文、用户资料、模型地址或密钥。完整字段见 `StatisticsSessionOverview`。
+
+## 历史列表分页
+
+`GET /api/admin/v1/statistics/history`（任务历史）和 `/api/admin/v1/statistics/conversations`（对话历史）返回 `{items, page, page_size, has_next}`，不再返回 `total`。每页最多读取 `page_size + 1` 条判断下一页，去掉总数及逐任务轮次 COUNT；超出末页时返回请求页码和空数组。任务行的 `turn_count` 读取已维护的缓存，存量后台校准期间为 `null`。原有筛选、时间范围和稳定排序继续生效。前后端需同步发布，深 OFFSET 与模糊搜索仍有独立成本。
+
+轮次月分区、计数校准及运行操作见 [运行方案](../../design/session-turn-monthly-partitions.md)。
+
+## Agent 资源读取
+
+Agent 使用 OAuth access token 按资源类型读取，整体 `GET /api/v1/config` 已移除，不提供兼容聚合入口。
+
+| 方法与路径 | 响应字段 |
+| --- | --- |
+| `GET /api/v1/settings` | `version`、脱敏 `settings` |
+| `GET /api/v1/models` | `version`、`models`、`model_gateway` |
+| `GET /api/v1/rules` | `version`、`rules` |
+| `GET /api/v1/skills` | `version`、`skills` |
+| `GET /api/v1/experts` | `version`、`experts` |
+| `GET /api/v1/connectors` | `version`、`connectors` |
+
+各接口返回独立的 `ETag` 和 `Cache-Control: private, no-cache`；携带该接口上次的 `If-None-Match`，可见内容未变时返回 `304`。`version` 是实际下发内容的 SHA-256 摘要，空资源列表为 `[]`。客户端按服务端、用户和接口隔离缓存，收到 `200` 后替换该类资源，不能继续使用响应中已移除的授权项。旧的全局 `schema_version`、`updated_at` 不再下发。
+
+设置与模型由各自业务服务读取。规则、技能、连接器仅加载自身目录及必要授权；专家目录会检查规则、技能和连接器依赖，因此依赖变化仍可更新专家版本。某类资源读取失败返回错误，只影响依赖它的请求。
+
+模型列表中的 `model_gateway.base_url` 为代理 `/v1` 地址，`authentication` 固定为 `api_key`。专家清单、资源 resolve、技能包下载以及连接器工具和认证接口沿用原路径与权限规则。
+
+模型列表每项的 `id` 为平台内部模型 UUID，`model` 为 `model_id@id` 格式，由数据库 `models.model_id` 中配置的上游模型名称与内部 UUID 拼接。调用模型代理时，请求体的 `model` 参数使用列表项的 `model`，由代理精确定位配置、检查权限并转换为上游模型名称；代理仍支持直接使用内部 UUID 或原始模型名称。
+
+## 生图模型网关
+
+模型列表的 `kind` 为 `text`、`image` 或 `video`。生图模型返回已开放的 `image_config`（平台统一的 1K/2K/4K 画质子集、比例、默认值和操作等能力）与 `image_pricing.rates: [{quality, credits_per_image}]`。每个开放画质各自配置最终单张积分价，金额为最多六位小数的非负十进制字符串，允许免费档位；宽高比及生成/编辑操作不参与定价。管理表单自动启用协议支持的全部画质与比例，并要求各档价格完整填写。供应商适配器按上游模型在代码中完成参数映射。调用前使用该模型的可用能力校验，并按服务端报价预留积分。
+
+已有基础积分和画质倍率配置按原定点乘法与舍入规则换算为各档单张价格返回，新配置直接保存 `rates`。服务端兼容接收旧配置，但禁止与新价格格式混用。价格保存在现有 JSON 字段中，不需要数据库迁移，不重写既有计费快照或历史账单。
+
+生图使用与文本代理相同的调用密钥，`X-Api-Key` 优先于 `Authorization: Bearer`；必须具备 `model:invoke` 权限。以下接口均以 `/v1/images` 为前缀，不接受 Agent OAuth access token，也**不兼容同路径的 OpenAI Images 同步响应**：
+
+| 接口 | 用途 |
+| --- | --- |
+| `POST /v1/images/inputs` | 上传一张不超过 16 MiB 的 PNG/JPEG/WebP 参考图，返回 24 小时有效的 `file_id` |
+| `POST /v1/images/generations` | 创建生图任务；请求体含 `model`、`prompt`、可选 `quality`/`aspect_ratio`/`count`/`reference_images`；返回 `202` 和本地任务 ID |
+| `POST /v1/images/edits` | 编辑任务；另外要求 `images: [{file_id}]`，可选 `mask`，仅在模型公布 `edit` 操作时可调用 |
+| `GET /v1/images/tasks/{id}` | 查询当前调用密钥所属用户的本地任务状态、用量与图片地址 |
+| `GET /v1/images/outputs/{id}` | 用同一调用密钥下载归档图片；其他用户、过期或不存在时返回 `404` |
+
+生成和编辑支持 `Idempotency-Key`；相同键与相同请求哈希返回同一任务，不会重复扣费，不同请求哈希返回冲突。本地账户不冻结预估积分；明确失败或审核拒绝不扣费，部分成功按实际归档张数结算；结果未知不提前扣费，等待上游查询或人工核查。图片保留 30 天，到期后任务与账单记录继续存在，结果地址不再可用。管理后台的测试表单需要管理员自行填写具备模型权限的调用密钥，测试可能产生上游费用。
+
+## 上游文本模型查询
+
+`POST /api/admin/v1/models/discover` 仅供管理员使用，请求提供 `base_url`、文本 `protocol` 和 `api_key`，返回 `{models: [{id}]}`。OpenAI Chat Completions 和 Responses 使用 Bearer 密钥，Anthropic 使用 `x-api-key` 和 `anthropic-version`。
+
+模型代理、连通性测试和模型发现采用同一套 Base URL 规则：OpenAI 的 Base URL 需包含上游要求的版本路径（如 `https://api.openai.com/v1`）；Anthropic 填写不含 `/v1` 的地址（如 `https://api.anthropic.com`），服务端自动补 `/v1`，再拼接 `/messages` 或 `/models`。已有 `/v1` 后缀的配置继续可用，无需修改。仅提供无版本路径的 Anthropic 兼容网关需要配置对应的 `/v1` 路由。
+
+编辑已有系统文本模型时，可传 `model_resource_id` 并省略或留空 `api_key`，在服务端沿用已保存的密钥。可选 `proxy_id` 使用网络代理，空字符串直连。请求 15 秒超时，不跟随重定向，合并分页、排序去重，最多 2000 个模型及合计 2 MiB 上游响应；错误不透传上游响应正文，接口返回 `Cache-Control: no-store`。前端在名称输入框按钮中打开列表，加载时仅显示一行 spinner，关闭时取消请求，选择后沿用展示名称跟随规则。
+
+## 用户模型与分享
+
+以下接口均使用 Agent OAuth access token：`Authorization: Bearer <access_token>`，完整契约见 `agent.yaml`。模型代理调用仍使用独立的调用密钥。
+
+| 方法与路径 | 用途 |
+| --- | --- |
+| `GET /api/v1/users?q=<用户名或邮箱>&limit=20` | 查找有效接收用户，返回 `users: [{id, name, email}]` |
+| `GET /api/v1/groups[?q=<分组名称>&limit=20]` | 未提供 `q` 时列出全部分组；传入 `q` 时查找分享分组，包含名称匹配的虚拟根组，返回 `groups: [{id, name, parent_id}]` |
+| `GET /api/v1/models` | 获取可用模型及代理信息，支持独立 ETag |
+| `POST /api/v1/models` | 创建个人模型，所有者取当前登录用户 |
+| `GET /api/v1/models/{modelID}` | 读取自己的模型配置用于编辑，不返回密钥原文 |
+| `PUT /api/v1/models/{modelID}` | 更新自己的模型，省略或留空 `api_key` 保留原密钥 |
+| `DELETE /api/v1/models/{modelID}` | 删除自己的模型并清除分享授权 |
+| `POST /api/v1/resources/shares` | 将一批自有资源追加分享给用户或分组 |
+| `DELETE /api/v1/resources/shares` | 撤销指定资源与用户或分组之间的分享 |
+
+创建个人模型的请求示例：
+
+```json
+{
+  "model_id": "upstream-model-name",
+  "display_name": "我的模型",
+  "protocol": "openai_chat_completions",
+  "base_url": "https://provider.example.com/v1",
+  "api_key": "上游密钥",
+  "advanced_config": {
+    "context_window_tokens": 128000,
+    "max_output_tokens": 8192,
+    "supports_vision": true
+  }
+}
+```
+
+分享和撤销使用同一请求结构，成功返回 `204`：
+
+```json
+{
+  "resources": [
+    {"type": "model", "id": "11111111-1111-4111-8111-111111111111"},
+    {"type": "model", "id": "22222222-2222-4222-8222-222222222222"}
+  ],
+  "user_ids": ["33333333-3333-4333-8333-333333333333"]
+}
+```
+
+资源限 1—100 项，`user_ids` 与 `group_ids` 合计限 1—100 项，重复项会去重。当前允许 `type=model`、`type=rule`、`type=skill`、`type=connector`、`type=expert`、`type=kb`；其他资源通过显式注册 `resource.Shareable` 接入。任一资源非本人所有、接收用户无效或真实分组不存在时整批回滚。非知识库分享仅授予使用权限，接收方不能修改、删除或转分享；知识库可指定 `access_level=read_only/read_write`，读写包含内容删除，但不包含转授权或整库管理。个人模型的积分倍率由服务端管理，创建时为 `1`。
+
+分享到根分组时传入 `"group_ids": ["00000000-0000-0000-0000-000000000000"]`，表示授予当前系统全体用户（包括后续新增用户）使用权，不展开成员快照。可同时指定其他用户或分组；撤销根分组分享仅删除全员授权，独立的用户和分组授权继续生效。所有者目录和详情通过 `shared_groups` 回显根节点，其名称来自 `branding.workspace_name`，`parent_id` 为 `null`。分组搜索按根节点名称匹配，匹配时优先返回且计入 `limit`。
+
+Agent 模型列表包含 `ownership_type`（固定为 `system` / `user`）及 `user: {id, name, email}`。`ownership_type` 仅表示资源归属，分享不会改变它；自己的模型和别人分享的模型均为 `user`，通过 `user.id` 与当前用户 ID 的比较区分。管理员在用户侧创建的个人模型同样为 `user`。自己的用户模型返回 `shared_users: [{id, name, email}]`，未分享时为 `[]`；收到分享的用户模型返回 `creator: {id, name, email}`，不展示其他接收人。系统模型不返回这两个字段。分享范围或创建者展示信息变化会影响模型目录 ETag；撤销、删除后的新列表请求和代理调用会重新检查权限。
+
+个人知识库通过 `POST /api/v1/kb` 创建，`GET/PUT/DELETE /api/v1/kb/{id}` 中只有详情对接收方开放。所有者使用同一分享接口，`resources[].type` 为 `kb`。接收方按只读或读写授权使用内容；读写可以新增、编辑、移动和删除文档，不能转分享、修改库设置或删除整库。所有者目录与详情返回 `shared_users`、`shared_groups`，详情的 `grants` 包含逐主体的 `access_level`。撤销或删除后，接收方的读取和检索立即重新检查权限。
+
+个人规则通过 `POST /api/v1/rules` 创建，`GET/PUT/DELETE /api/v1/rules/{id}` 仅供创建者维护，修改和删除需要 `If-Match`。个人规则可由创建者分享给指定用户、分组或根分组使用，接收方不能读取详情或修改、删除、转分享；所有者目录与详情返回 `shared_users` 和 `shared_groups`，详情的 `grants` 包含对应只读分享授权。个人规则不会强制应用，即使历史授权标记为 `required`。撤销后目录、资源解析和个人专家依赖校验不再允许接收方使用，删除规则时一并清理授权。系统规则以授权记录确定可见范围，`usage_requirement=required` 表示当前用户不可关闭，`optional` 表示可关闭；同一规则在管理界面统一设置强制性，已有按用户分别配置强制性的授权仍可读取。规则目录返回 `required`；Agent 首次见到规则时默认开启，之后自行维护非强制规则的开关状态，授权撤销时不再使用该规则。`/api/v1/resources/resolve` 始终包含强制规则，可选规则由 Agent 在 `rule_ids` 中显式选取（专家引用的规则另行返回）。
+
+技能、规则、工具（Connector）和专家的管理详情及授权接口中，每条 `grants` 保留 `user_id`，并返回只读的 `user: {id, name, email}`；分组、全员授权或已删除用户的 `user` 为 `null`。停用用户仍保留展示信息，便于撤销授权。
+
+个人规则、技能、Connector 和专家的所有者目录及管理详情返回 `shared_users: [{id, name, email}]`，未共享时为 `[]`，排除已删除用户。接收方和系统资源目录不返回此字段；用户名或邮箱变化会更新所有者目录的 ETag。个人 Connector 共享后，接收方可发现和调用工具；独立认证仍使用接收方自己的凭证，不复制所有者凭证，也不开放连接的管理权限。无认证连接可直接使用；撤销后目录、图标、工具读取、认证和网关请求立即重新检查权限。
+
+个人专家通过 `POST /api/v1/experts` 创建，`GET/PUT/DELETE /api/v1/experts/{id}` 仅供所有者维护，修改和删除需要 `If-Match`。创建需要 `name`、`prompt`，编辑只要求 `name`；省略其他字段保留原值。个人专家可引用自己可用的规则、技能和连接；分享不自动扩散依赖授权，引用创建者个人规则的专家在未将该规则分享给接收方时标记不可用；接收方没有系统规则或技能使用权限时清单同样标记不可用，且不能经专家路径下载未授权技能。系统专家保留固定系统规则、技能的委托读取语义。管理员可查看、治理删除个人专家，不能编辑、复制或调整其启用状态和共享范围。
+
+系统和个人专家均不绑定模型，创建、编辑、详情和清单不再声明或返回 `default_model_id`；客户端应在会话层独立选择模型。模型的启停、删除和授权变化不影响专家可用性或资源清单版本。
+
+可用列表仅下发启用的模型。上游地址和密钥不会下发给分享接收方；所有模型密钥都不在 API 响应中返回。管理员在 Agent 侧也需要得到分享才能使用他人的个人模型。
+
+## 操作审计
+
+`GET /api/admin/v1/audits` 仅管理员可访问，支持 `actor`、`ip`、`params`、`category`、`result`、`since`、`until`、`page` 和 `page_size`，返回 `{items, total, page, page_size}`。时间范围左闭右开，默认每页 20 条，最多 500 条。相同时间的记录按 ID 倒序稳定分页。
+
+审计覆盖通过管理员鉴权的后台写请求，以及管理员密码登录和浏览器退出。OAuth 跳转及回调、Agent 日常请求和模型代理流量不在本次 HTTP 管理审计范围内；已有独立业务审计继续保留。未认证登录尝试的用户 ID 为空，认证成功后保存真实用户快照。
+
+已有事务内业务审计继续与变更原子提交，并通过服务端生成的 `request_id` 关联请求；完成时补齐脱敏参数和 HTTP 结果。没有事务审计或事务已回滚时补录请求事件，批量操作保留每个目标的事件。后置补录失败会记录带请求 ID 的服务日志，不改变已返回的业务结果；此机制不能保证数据库不可用或进程在业务提交后崩溃时仍保存补录事件。
+
+请求参数采用字段白名单，密码、密钥、凭证、Header、OAuth Token、URL、内容正文及未知配置默认脱敏。JSON 捕获最多 64 KiB，超限、无效 JSON 和上传文件仅记录省略标记；失败原因只保存标准 HTTP 状态说明。来源 IP 取实际连接地址，不信任任意转发头；部署在反向代理后时显示代理地址。历史记录中未采集的 IP、请求 ID 等字段展示为空。
+
+
+## 资源所有者
+
+模型、规则、技能、Connector 和专家的公开回包统一使用 `user: {id, name, email}`，移除 `owner_user_id` 和 `owner_name`。系统资源的 user 表示创建者，个人资源表示所有者。客户端使用 `ownership_type` 和 `user.id` 判断归属；姓名或邮箱变化会更新资源目录版本。数据库归属外键继续用于服务端权限校验。
+
+凭证响应（含 `credentials` 和管理端工具上下文）也使用 `user: {id, name, email}`，不再返回 `user_id`。这里是凭证所属的平台用户，不是 Connector 所有者或上游 OAuth 账户；集中凭证返回 `user: null`。连接列表保留空 `tools` 数组及对应 `tools_version`，但不查询远端；独立认证的工具字段位于每份凭证下。为兼容旧客户端，专家 manifest 和资源解析继续返回 `tools` 与 `tools_version`，不返回 `tools_path`。独立认证在专家清单内嵌的每份当前用户凭证下返回工具与版本，resolve 选定后提升到连接对象；未认证凭证的工具为 `[]`。工具结构与 REST 工具接口一致（包含 `input_schema`），版本为工具内容的哈希；内置知识库直接返回本地定义，工具 ID 沿用工具名称。普通 MCP 保留既有工具 ID，未配置工具使用稳定 ID。工具也可通过下述实时 REST 接口或 MCP `tools/list` 获取。
+
+## MCP 代理
+
+API Key 通过全局 `POST /api/v1/api-keys` 创建，负责认证调用用户及 `mcp:invoke` scope；代理地址指定连接和凭证，服务端据此校验用户的实际访问权限。所有 MCP 代理地址以 `/mcp` 为前缀：
+
+| 认证模式 | 代理地址 |
+| --- | --- |
+| 免认证 | `/mcp/connectors/{id}` |
+| 集中认证 | `/mcp/connectors/{id}/credentials/{credential_id}` |
+| 独立认证 | `/mcp/connectors/{id}/credentials/{credential_id}` |
+
+集中和独立认证的每份凭证都有独立地址；认证连接省略凭证 ID 时返回 `400 credential_selection_required`。集中凭证仅供有该连接使用权的用户调用，独立凭证还必须属于调用用户。免认证仍需平台 API Key 和连接使用权。请求 `/mcp` 返回 404。
+
+`GET /api/v1/connectors` 仅返回连接及凭证元数据（含内置知识库），保留 `tools: []` 与空数组对应的 `tools_version`，不发起远端工具查询；其 ETag 不随远端工具变化。专家清单仍实时发现工具；资源 resolve 和管理员专家预览只读 `mcp_tools` 中当前连接及凭证的成功快照，保留 `tools` 与 `tools_version`，没有快照或工具时为 `[]`。目录版本及 ETag 随返回内容变化；兼容工具查询遇到 MCP 上游故障时记录 WARN 日志（事件 `mcp.catalog.tools.failed`，含 `connector_id`、凭证 ID `resource_id` 及 `upstream_error_code`），对应连接或凭证标记 `connection_status=error` 并返回 `tools: []` 及其哈希，不回退旧目录缓存，也不阻断其他连接或专家清单。这是实时清单的降级行为，不适用于只读快照的资源解析。权限校验、数据库错误及请求取消仍正常返回；显式 REST 工具查询、连接测试和 MCP 调用仍报告实际错误。独立连接的每份 `credentials` 各自提供网关，resolve 选定后返回到连接对象，并按所选凭证获取工具；集中连接返回当前集中凭证的 ID 和地址。需要重新认证的凭证不下发可调用网关。示例：
+
+```json
+{
+  "url": "https://monkeyai.example/mcp/connectors/<connector_id>/credentials/<credential_id>",
+  "transport": "streamable_http",
+  "authentication": "api_key",
+  "required_scope": "mcp:invoke"
+}
+```
+
+创建调用密钥使用登录后的 MonkeyAI OAuth access token，无需传入连接、凭证或工具绑定：
+
+```http
+POST /api/v1/api-keys
+Authorization: Bearer <MonkeyAI access_token>
+Content-Type: application/json
+
+{
+  "name": "Agent 调用",
+  "scopes": ["mcp:invoke"],
+  "expires_in_days": 90
+}
+```
+
+返回 201，`api_key` 原文仅本次返回。同一个 Key 可以访问当前用户有权使用的多个凭证地址，更换凭证只需切换地址。`GET /api/v1/api-keys` 返回元数据；`POST /api/v1/api-keys/{keyID}/rotate` 返回同名、同 scope 的新密钥并撤销旧密钥。需要同时调用模型时，scopes 增加 `model:invoke`。
+
+每次请求校验密钥、用户状态、连接使用权、地址对应凭证的归属及有效性。撤销资源分享、凭证或密钥会阻止后续请求。凭证撤销后，即使同一连接创建了新凭证，旧地址仍失效；不会自动切换凭证。更新或重新授权保留同一个凭证 ID，更新后需同步工具目录。上游地址、Header 和 OAuth Token 留在服务端，进入 MonkeyAI 的 API Key 不转发给上游。
+
+客户端按返回的网关地址注册 Streamable HTTP MCP Server，可为多个地址复用同一个 Key。握手示例：
+
+```http
+POST /mcp/connectors/<connector_id>/credentials/<credential_id>
+Authorization: Bearer <调用密钥>
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{"jsonrpc":"2.0","id":"init-1","method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"agent","version":"1"}}}
+```
+
+随后发送无 ID 的 `notifications/initialized`，再使用 `tools/list` 和 `tools/call`。后续请求携带协商得到的 `MCP-Protocol-Version`。`tools/list` 仅返回地址对应凭证下当前启用的工具，`tools/call.params.name` 使用该列表返回的上游原始工具名。不同凭证可拥有同名工具，由 URL 区分；客户端自行管理多个 MCP Server 的命名空间。列表不接受非空分页游标；调用参数和有效结果保留原始数值精度、`_meta` 和 `structuredContent`。
+
+专家 manifest、资源 resolve 和管理员预览在服务端应用工具允许／排除规则，拒绝规则优先，`tools_version` 基于过滤后的工具计算；同时保留规则字段供客户端展示。代理校验用户的连接和凭证访问权及实时工具启停状态；请求中没有专家身份上下文，专家清单的过滤不构成代理授权边界。
+
+专家清单、REST 工具接口及所有认证模式的 MCP `tools/list` 仍实时发现远端工具，不回退旧目录。显式工具查询、MCP `tools/list`、连接测试和独立后台刷新在成功发现后更新快照。临时远端故障不覆盖同版本的成功快照；上游拒绝认证、凭证失效或连接变更后不再使用旧快照。各认证模式保留历史工具 ID 和启停配置，独立认证的单价固定为零；无认证／集中认证叠加本地单价，没有配置记录时默认开启、单价为零。快照记录保留工具定义和已有设置；工具消失时从当前目录移除，重新出现时沿用原 ID、开关和单价。`PATCH /api/admin/v1/connectors/{id}/tools/{toolID}` 兼容省略 `name` 的旧请求：已有配置按 ID 更新，无认证／集中认证的新工具实时反查名称后创建配置；独立认证仅允许修改已有配置的开关，不新增配置。旧版本的历史目录记录不会自动当作有效快照。连接器详情不再返回基于旧目录计算的 `tool_count`、`enabled_tool_count`。
+
+入口为无状态 Streamable HTTP：POST 返回 JSON，通知返回空的 202，GET/DELETE 返回 405；不产生下游 `Mcp-Session-Id`，不提供主动推送、resources、prompts 或 sampling/elicitation。上游支持 HTTP POST 的 JSON/SSE 响应，每次调用独立握手并在结束后发送 DELETE 清理上游会话；不支持旧版 GET SSE 传输、跨调用上游会话状态或本地 stdio 进程。非空 Origin 必须与 `MONKEYAI_PUBLIC_URL` 同源。
+
+工具调用可携带 `X-Session-ID` 关联本人工作会话，或 `Idempotency-Key` 避免重复执行；重复请求返回 409 和原 `X-Billing-Transaction-ID`。集中认证仅成功调用收费，独立认证和免认证只记录调用。JSON-RPC 错误或 `isError=true` 释放预留；超时、断流、无效结果保持未知状态供核查，不自动重放。上游 JSON/SSE 响应限制为 4 MiB，请求体限制为 1 MiB。
+
+协议错误使用 JSON-RPC 数字错误码；权限、额度等业务错误保留 HTTP 状态，并在 `error.data.code` 中提供业务错误码。上游内部错误详情不直接返回，使用 `X-Billing-Transaction-ID` 查询交易。生产 Nginx 和本地 Vite 已将 `/mcp` 前缀的全部请求转发到后端。
+
+## MCP OAuth 回调
+
+OAuth MCP 创建、详情和管理列表响应提供 `callback_url`，格式为 `{MONKEYAI_PUBLIC_URL}/oauth/connectors/{id}/callback`，其中 `id` 为 Connector 实例 ID。非 OAuth 连接返回空字符串。创建后将此完整地址登记到第三方 OAuth 应用；每个 Connector 使用自己的地址。
+
+`POST /api/admin/v1/connectors/{id}/oauth/authorizations`（集中认证）或 `POST /api/v1/connectors/{id}/oauth/authorizations`（独立认证）请求体为 `{"name":"凭证名称"}`，生成带 state 和 PKCE 的授权 URL，`redirect_uri` 与 `callback_url` 一致。浏览器回调无需登录凭据，服务端核验路径 id、state、事务有效期、发起人权限和配置版本，单次消费后交换 Token，并按集中或独立认证上下文保存。保存凭证后服务端自动测试 MCP 连接与工具发现，不保存工具目录，完成测试尝试后授权状态才变为 `succeeded`。成功页面提示返回 MonkeyAI，发起端通过授权事务状态接口查询结果；连接测试失败不撤销已保存的认证，凭证的 `connection_status` 和 `last_error` 记录测试结果。
+
+原有 OAuth 应用需将统一的 `/oauth/connectors/callback` 更新为各 MCP 的专属地址，再重新发起授权。
+
+
+## Connector 多凭证
+
+独立认证连接目录返回当前用户的 `credentials`，每份包含名称、认证状态、最近测试状态和以 `/mcp` 开头的专属凭证网关。连接本身不合并目录，也不返回隐式网关。凭证不包含上游账户身份，名称由用户填写，不获取 `sub` 或 UserInfo。
+
+- 添加 Header：`POST /api/v1/connectors/{id}/credentials`，提交 `name` 和 `http_headers`，返回 `201` 和凭证 ETag。服务端在保存后自动测试连接并发现工具，响应包含最新测试状态；失败保留已保存凭证，可通过 `POST .../credentials/{credential_id}/test` 重试。
+- 改名/替换：`PATCH .../credentials/{credential_id}`，携带凭证 `If-Match`。未提交 Header 时保留原值，提交时整组替换，并自动重新测试和发现工具，不保存目录。仅改名不触发测试。Header 值只写不读。
+- 重新授权：`POST .../credentials/{credential_id}/oauth/authorizations`，携带凭证 `If-Match`；只替换此 ID。添加 OAuth 每次成功产生新 ID，不按用户或 Token 去重。
+- 查询授权：`GET /api/v1/connector-authorizations/{id}`，状态为 `pending/processing/succeeded/failed/expired`；成功返回 `credential_id`，此时服务端已完成自动连接测试尝试，可直接读取凭证测试状态和工具目录。只有发起人可以查询。
+- 撤销：`DELETE .../credentials/{credential_id}`，携带凭证 `If-Match`；后续调用及旧回调不能恢复该凭证。OAuth 后台在启动时和每 15 秒检查一次，提前 30 秒使用 Refresh Token 自动续期；调用前仍检查有效期。并发刷新复用同一结果，刷新令牌轮换会保存新值，未返回新值时保留原值，自动刷新不改变人工 revision 或工具目录。上游明确返回 `invalid_grant` 时要求重新授权，临时故障保留凭证并在后续扫描重试。
+
+集中凭证使用同样的管理端路径 `/api/admin/v1`，每个连接最多一份未撤销凭证。管理员从 `/connectors/{id}/tool-contexts` 选择系统连接的具体工具上下文，不能代用户编辑独立凭证或发起测试。
+
+专家使用 `connectors: [{connector_id, required, tool_allowlist, tool_denylist}]` 直接声明依赖。解析请求示例：
+
+```json
+{
+  "expert_id": "专家 UUID",
+  "connector_ids": ["额外连接 UUID"],
+  "connector_bindings": {"独立连接 UUID": "凭证 UUID"}
+}
+```
+
+`connector_bindings` 只为已选连接指定凭证。未绑定时恰好一份可用凭证才自动选择；零份返回认证问题，多份返回 `credential_selection_required`。显式绑定失效时拒绝，不替换其他凭证。调用端为会话保存返回的 `credential_id`，使用响应中的 `mcp_gateway.url` 和全局调用密钥注册 MCP Server；重新授权后同步目录。一次会话对同一 Connector 绑定一份凭证。
+
+旧单数 `/credential` 和 Provider 路由已删除。独立认证使用无凭证的连接级工具/测试接口返回 `400 credential_selection_required`。版本竞争沿用 `412 revision_conflict`，缺少 If-Match 返回 `428`。幂等摘要包含实际凭证 ID，同键用于其他凭证返回冲突。部署顺序见 [迁移说明](../../design/connector-migration.md)。
+
+## 单个连接的测试与工具查看
+
+资源卡片菜单使用登录 access token，不需要创建代理调用密钥。这些 REST 路径保留连接和凭证 ID：
+
+| 操作 | 独立认证 | 免认证 | 集中认证 |
+| --- | --- | --- | --- |
+| 测试连接 | `POST /api/v1/connectors/{id}/credentials/{credential_id}/test` | `POST /api/v1/connectors/{id}/test` | 管理员 `POST /api/admin/v1/connectors/{id}/test` |
+| 查看工具 | `GET /api/v1/connectors/{id}/credentials/{credential_id}/tools` | `GET /api/v1/connectors/{id}/tools` | `GET /api/v1/connectors/{id}/tools` |
+
+独立认证有多份凭证时，界面先明确选中一份。团队/个人分区表示资源归属，路径根据 `authorization_mode` 选择。集中认证不向普通用户开放测试操作，界面应隐藏或禁用该菜单。
+
+测试执行上游握手及工具发现，成功返回：
+
+```json
+{"credential_id":"选中凭证 UUID","connection_status":"connected","tool_count":2}
+```
+
+免认证的 `credential_id` 为空字符串。上游测试失败返回 502 和脱敏错误，凭证仍保留，最近测试状态记录为 error。查看工具每次实时发现上游目录，失败直接返回错误；成功返回 `{"items":[...]}`；每项包含 `id`、上游 `name`、`description`、`input_schema`、`enabled` 和 `credits_per_call`。
+
+MCP Inspector 等标准 MCP 客户端单独调试时，复用全局创建的 `mcp:invoke` API Key，选择 Streamable HTTP，地址填写选中凭证的 `mcp_gateway.url`，Header 配置为 `Authorization: Bearer <api_key>`。更换凭证时切换地址，Key 可以继续使用。按上面的握手流程连接后，`tools/list` 仅返回该地址下可用的工具，`tools/call` 使用列表返回的工具名称。`ping` 仅检查网关是否响应，`tools/list` 每次实时发现工具；REST `/test` 用于显式检查并保存最近连接测试状态，不再维护目录缓存。
+
+## 宿主安装接入
+
+管理员安装命令、宿主列表和撤销接口位于 `admin.yaml`。独立宿主的注册、签名挑战、预检心跳和发行文件协议位于 `host.yaml`；不使用用户 OAuth token，不提供任意宿主命令执行。安装部署见 [说明](../../engine/INSTALL.md)。
+
+## 云端环境控制
+
+`admin.yaml` 定义环境预设、宿主可调度容量、用户额度与环境管理；`agent.yaml` 定义用户预设、本人额度与预留占用、环境列表、创建、启停和删除；`host.yaml` 定义签名 exchange 与规范化规格。用户接口显式要求 `environment:read` 或 `environment:manage`，不扩展旧 token 默认权限。环境与操作列表返回 `{items,page,page_size}`，每页最多 100 条。创建和修改返回 HTTP 202；停止／删除确认后才释放计算预留，持久存储继续保留。字段、幂等和状态判断见 [操作说明](../../design/environment-control.md)。
+
+客户端接口接入契约见 [云电脑客户端接口](../../design/environment-client-api.md)，包含权限、幂等、状态判断和现有中转连接；本仓不实现客户端界面。
+
+
+### 知识库读写权限
+
+系统库管理员可为个人、分组或全员配置只读/读写；客户端及 MCP 使用真实调用者的有效权限，多个来源取最高权限，分组包含下级成员。客户端目录和详情返回 `permissions`，其中 `can_write_content` 表示内容写入能力，不等于 `can_manage_permissions` 或整库删除能力。停用库拒绝普通成员内容操作。
+
+- `GET /api/v1/kb/permissions/list?kb_id=...`、`PUT /api/v1/kb/permissions/update`：个人库所有者管理完整授权清单，更新须携带知识库版本 `If-Match`，复用现有 revision。每个主体独立一条记录，更新保留 ID。新主体省略权限默认只读，已有主体省略权限保留原值。系统库授权仍由管理端通用授权接口管理。
+- 协作编辑/移动须提供文档 `expected_revision`；REST 更新也可使用 `If-Match`，REST 删除使用 `If-Match`，MCP 更新/删除使用 `expected_revision`。版本缺失返回 428、冲突返回 412、只读写入返回 403。本人个人库保留旧无版本调用兼容。
+- 文档移动、删除分别使用 `POST /api/v1/kb/{id}/documents/move`、`POST /api/v1/kb/{id}/documents/delete`，body 接收 `ids`（单条也使用数组，最多 200 项），协作调用使用 `expected_revisions` 逐项携带版本。重新学习使用 `POST /api/v1/kb/documents/restudy`，body 为 `kb_id`、`ids`。三个接口返回 `succeeded/failed`；管理端重新学习路径为 `/api/admin/v1/kb/{id}/documents/restudy`。移动时 `prev_id/next_id` 仅适用于单条排序。MCP 原有三个工具同样支持 `ids`，兼容旧 `document_id` 调用。
+- 文档返回 `updated_by_user_id`、`content_updated_at`；旧数据未知值为 null。部署依赖 `000041_kb_permissions` 元数据字段增量迁移。
+
+### 知识库图标
+
+管理端及客户端的知识库创建、更新接口兼容原有 JSON，并支持 `multipart/form-data`：`metadata` 为原有字段组成的 JSON 字符串，`avatar` 必须且仅包含一个图片文件。支持 PNG、JPEG、WebP，文件最多 1 MiB；不修改图标时使用 `application/json` 请求，保留原图。客户端仍仅允许个人库所有者修改库信息与图标，内容读写授权不包含此权限。
+
+知识库列表与详情返回 `avatar_path`，通过管理端 `/api/admin/v1/kb/{id}/avatar` 或客户端 `/api/v1/kb/{id}/avatar` 读取，均检查相应身份与知识库访问权限，不公开存储地址。无图标时使用默认图标。
+
+增量迁移 `000041_kb_permissions` 在 `knowledge_bases` 新增 `avatar_s3_key text NOT NULL DEFAULT ''`，历史知识库默认为无自定义图标，不改变原有业务数据。该迁移回滚会删除图标存储键及文档修改元数据字段，不删除知识库及其内容。

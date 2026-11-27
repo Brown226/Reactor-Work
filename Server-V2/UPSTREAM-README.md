@@ -1,0 +1,298 @@
+# MonkeyAI
+
+## Docker Compose 启动
+
+复制环境变量示例并至少修改数据库密码和初始管理员密码：
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+启动后访问 <http://localhost:8080> 查看项目介绍，点击“管理后台”进入登录页。Compose 会等待 PostgreSQL 就绪、执行数据库迁移，然后依次启动 Backend 和 Admin。
+
+初始管理员只会在用户表为空时创建。首次启动成功后，可从 `.env` 中移除 `MONKEYAI_INITIAL_ADMIN_EMAIL` 和 `MONKEYAI_INITIAL_ADMIN_PASSWORD`，服务不会重置已有账号或密码。
+
+`MONKEYAI_PUBLIC_URL` 是管理页面和 API 共用的对外访问地址，也用于 OAuth 回调、元数据及登录后的页面跳转。若修改 `MONKEYAI_ADMIN_PORT`，还需将该地址改为浏览器实际访问的地址；生产环境应使用 HTTPS。
+
+### 远程执行中转
+
+服务端中转默认开启，设备仍需用户在本机开启远程访问并批准权限。首次启动自动生成控制面标识和签名私钥，保存到 `runtime` 持久卷；重启或重建 backend 容器继续复用。备份时一并保存该卷，`docker compose down -v` 会删除这些身份数据。文件地址默认沿用 `MONKEYAI_PUBLIC_URL`，生产应使用 HTTPS。
+
+需要关闭时设置 `MONKEYAI_RUNTIME_RELAY=false`；需要独立文件域名时设置 `MONKEYAI_RUNTIME_FILES_ORIGIN`。独立服务器可使用设备码授权，在 `/device` 确认后发布同一设备；会话聚合按会话上报策略开放。HTTP 产物执行预览需额外的独立泛域名模板和泛域名证书，采用禁止存储的隔离沙箱。详细授权、预览证书挂载、身份覆盖和公钥轮换配置见[后端说明](backend/README.md#远程执行中转)。
+
+### 云端执行环境
+
+客户端通过接口选择后台预设创建云电脑，`monkeyai-engine` 管理 containerd／gVisor，并复用现有 standalone runtime。已提供宿主安装、环境控制、资源预留和持久目录；真实宿主闭环仍待统一人工验收。架构见 [设计方案](design/cloud-environment-design.md)，当前状态见 [实施记录](design/cloud-environment-implementation.md)，客户端调用流程见 [接口说明](design/environment-client-api.md)。Firecracker 和 Kubernetes 保留为后续扩展。
+
+### 前置代理与操作记录来源 IP
+
+如果 Admin 前面还有反向代理，在 `.env` 中设置 `MONKEYAI_TRUSTED_PROXY_CIDRS` 为**直接连接 Admin 的可信代理** IP/CIDR，多个地址用英文逗号分隔，例如 `192.0.2.10/32,2001:db8::/32`。仅当连接来自这些网段时，Admin Nginx 才按 X-Forwarded-For 从右向左解析来源，并将结果作为 `X-Real-IP` 转发给后端；未设置时仍记录连接方地址。前置代理应追加实际连接来源到 XFF 或覆盖客户端提交的 XFF，不要把客户端可控的整段 XFF 原样透传，也不要将所有网段或整个容器网段设为可信代理。修改后重建 Admin 镜像并运行 `docker compose up -d admin`。
+
+### Admin 访问日志
+
+Nginx access 日志以 JSON 逐行输出到 stdout，error 日志继续以 `info` 级别输出到 stderr。普通 API 全量记录，静态资源的成功响应和 304 不记录，失败响应保留；健康检查以及预览、设备授权、设计资源和远程文件代理等既有敏感入口继续关闭 access 日志。
+
+访问日志包含 `time`、`remote_addr`、`method`、`path`、`status`、`request_time`、`upstream_response_time`、`upstream_addr`、`request_id`、`user_agent`、`request_length` 和 `response_bytes`。`path` 保留内部跳转前的原始路径及查询参数，不记录 Authorization、Cookie、Referer 或请求体；所有字符串使用 JSON 转义。`request_id` 优先使用后端响应的 `X-Request-ID`，缺失时使用 Nginx 本次请求生成的 ID，仅用于日志关联。
+
+耗时单位为秒；上游耗时和地址使用字符串，保留重试时的多个值，无上游时为空字符串。大小保留原始字节数：`request_length` 包含请求行、请求头和请求体，`response_bytes` 仅统计实际发送的响应体。展示时可由日志查看工具转换为 KiB、MiB。
+
+真实 Nginx 日志验证可复用已有 Admin 镜像，无需启动数据库或业务后端；测试会创建并清理隔离容器及网络：
+
+```bash
+python3 web/test/accesslog.py --image <admin-image>
+```
+
+## 设计资源导入与离线分发
+
+管理台“资源管理 → 导入资源包”可选择 Agent/设计分区，预览后分别提交并展示结果。设计资源保存不可变快照，提供本地目录、媒体与 ZIP 下载，旧快照保留；设计-only 不退役 Agent。部署配置、部分成功重试、双源 Token 与 API 说明见 [设计资源操作指南](design/design-resource-import.md)。
+
+设计资源的 Hub 地址固定内置为 `https://hub.monkeycode-ai.com/api/design`；部署实例 ID 由 Pro 入口复用 `pro_statistics_identity` 的持久化身份，通过 `server.InstanceIdentity` 扩展注入，不读取实例 ID 或 Hub 地址环境变量。发布者与签发密钥支持运行环境变量覆盖编译期默认值，显式空值也覆盖默认值；hub 与本地媒体使用独立服务端密钥。新增 `source_skill_path` 字段及 respub/Desktop 跨项目联调仍待联合验收，不应将本地测试视为线上已验收。
+
+## 客户端下载
+
+首页的客户端下载地址配置在 [`web/public/downloads.json`](web/public/downloads.json)。按平台填入 HTTPS 下载地址或同站点的绝对路径；Linux 分别配置 `linux_arm64` 和 `linux_x64`，Mac 分别配置 `macos_arm64` 和 `macos_x64`。空地址在页面上显示“敬请期待”，不会跳转。首次部署可修改该文件后重建 Admin 镜像；如需不重建镜像就更新链接，可将配置文件只读挂载到 Admin 容器的 `/usr/share/nginx/html/downloads.json`。
+
+## 后端出站代理
+
+在 `.env` 中设置 `HTTP_PROXY`、`HTTPS_PROXY`（例如 `http://proxy.example.com:7890`），Compose 会将其传入 backend，供 OAuth 和对象存储等非模型代理请求使用；不配置时保持直连。修改后运行 `docker compose up -d backend` 重建容器。可通过 `MONKEYAI_NO_PROXY` 指定直连地址，默认包含 `db,rustfs,localhost,127.0.0.1,::1`；覆盖时应保留这些地址及其他内网服务域名，避免内部流量误走代理。代理凭据如写入 `.env`，应限制该文件的读取权限。
+
+| 出站请求 | 代理行为 |
+|---|---|
+| GitHub、Google、Microsoft、GitLab、OIDC 等登录提供方的元数据、令牌和用户信息 | 后端 HTTP(S) 请求使用环境代理；授权页面跳转由用户浏览器访问，不经过后端代理 |
+| S3 对象存储 | 使用环境代理；内网存储服务需配置直连 |
+| llmproxy 文本模型上游及 Responses 用量补偿、imageproxy 图片生成上游（OpenAI、xAI、火山引擎等） | 始终直连，不读取环境代理配置 |
+| 远程 MCP 工具调用、OAuth 元数据与动态注册 | 始终直连，继续执行目标地址限制和禁止重定向策略 |
+| MCP OAuth 首次交换及刷新令牌 | 允许经 `HTTPS_PROXY` 访问 HTTPS 令牌端点（代理地址须为 HTTP 代理）；无代理或 `NO_PROXY` 命中时直连。代理请求会在本地检查目标解析结果，CONNECT 固定到获准的 IP，仍校验原域名的 TLS 证书 |
+| 百智云钱包 SDK | SDK 的专用 mTLS 传输未提供代理配置，仍然直连 |
+| SMTP 邮件及 Admin 的 ACME 证书签发/续期 | 不使用后端 HTTP(S) 代理；分别通过 TCP 直连和 Admin 容器独立发起 |
+
+## 自动域名证书
+
+Admin 镜像包含 Nginx 官方 ACME 模块，自动申请、续期并动态加载证书。功能默认关闭；Go 后端不参与证书管理。启用前，将域名解析到部署服务器，确保公网 TCP 80、443 可达，容器能够解析并访问 CA 的 HTTPS 接口。如果域名配置了 AAAA 记录，其 IPv6 入口也必须能完成验证。
+
+Admin 复用独立的 Nginx ACME 基础镜像，固定 Nginx 1.31.9（Debian）和 ACME 0.4.1，不再在每次业务构建时编译模块。`web/Dockerfile.nginx-acme` 固定官方镜像摘要并校验源码的 SHA-256，构建时应用 `web/patches/acme-renewal-retry.patch`，修复订单失败后可能延迟 24 小时才重试的问题；升级模块时应检查上游是否已合入该修复。Rust 和 C 编译工具仅存在于基础镜像的构建阶段。
+
+在 `.env` 中配置：
+
+```dotenv
+MONKEYAI_AUTO_TLS_ENABLED=true
+MONKEYAI_AUTO_TLS_EMAIL=admin@example.com
+MONKEYAI_PUBLIC_URL=https://ai.example.com
+MONKEYAI_ADMIN_PORT=80
+MONKEYAI_HTTPS_PORT=443
+```
+
+启用表示同意所使用 CA 的服务条款，默认 CA 为 [Let's Encrypt](https://letsencrypt.org/repository/)。域名从 `MONKEYAI_PUBLIC_URL` 提取；该配置必须是 HTTPS 根地址，允许末尾 `/` 和默认端口 `443`，不支持路径前缀、查询参数、IP、localhost 或泛域名。首版只使用 HTTP-01 验证，公网 80 必须转发到 admin 容器的 8080，443 转发到 8443。
+
+已有部署更新 Admin 镜像并应用配置：
+
+```bash
+docker compose build admin
+docker compose up -d backend admin
+docker compose logs -f admin
+```
+
+使用预构建镜像时，将 `ADMIN_IMAGE` 更新到包含此功能的版本，再执行 `docker compose up -d backend admin`。需要同时应用 backend 的公网地址，以保证 OAuth 回调、资源地址和登录 Cookie 使用 HTTPS。修改 `.env` 后用 `up -d` 重建相关容器，`restart` 不会更新环境变量或端口映射。
+
+首次启动无需预先放置证书。Nginx 启动后在后台签发，签发完成前 HTTPS 握手暂不可用；成功后新连接自动使用证书，续期也无需重载或重启 Nginx。HTTP 的普通请求会跳转到配置的固定 HTTPS 地址，验证请求由 ACME 模块处理。`http://127.0.0.1:8080/healthz` 只表示容器内的 Nginx 已启动，不能证明证书已经就绪；应从外部访问实际 HTTPS 域名确认。
+
+证书、私钥和 ACME 账户保存在 Compose 命名卷 `acme`（实际名称通常为 `<项目名>_acme`），只挂载到 admin，目录仅允许 nginx 用户读写。容器保持非 root 和只读根文件系统，生成的配置位于 `/tmp/nginx`。重建容器和普通 `docker compose down` 保留证书；`docker compose down -v` 会删除命名卷，执行前应备份。备份包含私钥，需要限制访问权限。
+
+可选配置：
+
+| 环境变量 | 默认值 | 用途 |
+|---|---|---|
+| `MONKEYAI_AUTO_TLS_ENABLED` | `false` | 仅接受 `true` 或 `false` |
+| `MONKEYAI_AUTO_TLS_EMAIL` | 空 | 启用时必填，CA 联系邮箱 |
+| `MONKEYAI_AUTO_TLS_CA` | `https://acme-v02.api.letsencrypt.org/directory` | HTTPS ACME 目录地址，不支持用户信息、查询参数和片段 |
+| `MONKEYAI_ADMIN_PORT` | `8080` | HTTP 主机端口；公网 HTTP-01 验证使用 80 |
+| `MONKEYAI_HTTPS_PORT` | `8443` | HTTPS 主机端口；标准 HTTPS 使用 443 |
+
+测试公网验证时可将 `MONKEYAI_AUTO_TLS_CA` 设置为 `https://acme-staging-v02.api.letsencrypt.org/directory`，该环境签发的证书不受浏览器信任。模块按 CA 地址隔离持久化目录，切回正式 CA 时会另行申请正式证书。
+
+关闭时设置 `MONKEYAI_AUTO_TLS_ENABLED=false`，同步将 `MONKEYAI_PUBLIC_URL` 改为实际使用的 HTTP 地址（或外部网关提供的 HTTPS 地址），再运行 `docker compose up -d backend admin`。已有证书数据保留，后续可继续复用。HTTPS 端口映射仍占用主机端口，但 Nginx 不再监听 TLS；默认保留主机 8443，避免占用已有网关的 443。
+
+签发失败时先查看 `docker compose logs admin`，核对 A/AAAA 解析、80 端口转发、CAA 是否允许所选 CA、CA 网络连通性和数据卷权限。临时网络或 CA 服务错误会按退避策略自动重试；账户或订单被 CA 判定无效时，修复问题后执行 `docker compose restart admin` 重新尝试。已有证书继续使用，但到期后客户端会拒绝过期证书，需及时处理日志中的错误。
+
+本地集成验证需要 Docker、Python 3.9+ 和 OpenSSL，以及已发布的 Nginx ACME 基础镜像（或按下文构建本地基础镜像，并通过 `--build-arg NGINX_ACME_IMAGE=nginx-acme:local` 指定）。测试使用独立网络、临时数据卷和本地 Pebble CA，不请求公网 CA；结束后清理测试容器、网络及数据卷：
+
+```bash
+docker build -t monkeyai-admin:acme-test ./web
+python3 web/test/acme.py --image monkeyai-admin:acme-test
+```
+
+测试覆盖开关和配置校验、空卷首次签发、CA 不可用时重建复用、自动续期、续期失败重试、代理协议头及流式连接。它不代替实际部署域名的公网 DNS、端口和 OAuth 提供方联调。
+
+## 构建和推送镜像
+
+### Nginx ACME 基础镜像
+
+首次使用前需单独构建并发布基础镜像，之后仅在升级 Nginx、ACME、系统依赖或补丁时重建；常规 `make image`、`make push` 和 Compose 构建不会触发模块编译。默认镜像为 `chaitin-registry.cn-hangzhou.cr.aliyuncs.com/monkeycode/nginx-acme:1.31.9-acme0.4.1-r1`，标签包含 Nginx、ACME 版本及基础镜像修订号。
+
+```bash
+# 发布基础镜像（需先登录仓库，并使用支持对应架构的 builder）
+make push-nginx-acme PLATFORM=linux/amd64,linux/arm64
+
+# 业务镜像直接复用已发布的基础镜像
+make image-admin
+```
+
+仅本地验证时，无需推送；使用同一 Docker daemon 的 `docker` 驱动 builder，并指定其支持的平台（以下以 ARM64 为例，AMD64 主机改为 `linux/amd64`）：
+
+```bash
+make image-nginx-acme PLATFORM=linux/arm64 NGINX_ACME_IMAGE=nginx-acme:local
+make image-admin PLATFORM=linux/arm64 NGINX_ACME_IMAGE=nginx-acme:local
+# Compose 也支持覆盖基础镜像
+NGINX_ACME_IMAGE=nginx-acme:local docker compose build admin
+```
+
+直接执行 `docker build` 时使用 `--build-arg NGINX_ACME_IMAGE=<镜像名>` 覆盖。`docker-container` 或远程 builder 需使用仓库中可拉取的基础镜像，不能直接复用本机 `--load` 的镜像。升级基础镜像时应发布新标签，并同步更新 Dockerfile、Makefile 和 Compose 中的默认值；动态模块不能跨 Nginx 版本或 Alpine/Debian 系统混用。
+
+### 业务镜像
+
+Makefile 默认构建 `linux/amd64` 镜像，使用当前 Git 短提交号作为标签，并沿用 MonkeyCode 的镜像仓库：
+
+```bash
+make image
+make push
+```
+
+也可以只处理单个服务：
+
+```bash
+make image-admin
+make image-backend
+make image-migrate
+make push-admin
+make push-backend
+make push-migrate
+```
+
+发布指定标签或多架构镜像时覆盖对应变量：
+
+```bash
+make push TAG=v1.0.0
+make push PLATFORM=linux/amd64,linux/arm64
+make push REGISTRY=registry.example.com/team
+```
+
+运行 `make images` 可在构建前查看最终镜像名称。执行 push 前需先通过 `docker login` 登录目标仓库。
+
+需要用 Compose 验证已推送的镜像时，可传入完整镜像名并跳过本地构建：
+
+```bash
+ADMIN_IMAGE=registry.example.com/team/monkeyai-admin:v1.0.0 \
+BACKEND_IMAGE=registry.example.com/team/monkeyai-backend:v1.0.0 \
+MIGRATE_IMAGE=registry.example.com/team/monkeyai-migrate:v1.0.0 \
+docker compose up --no-build
+```
+
+首次部署从当前迁移历史的 `000001` 开始；本次远程执行新增结构收敛在 `000024_remote_runtime`，连接权限代次在 `000025_remote_runtime_access_version` 补充。曾执行其他历史迁移的数据库不能直接通过 `force` 切换；需要保留旧数据时应另行制定迁移方案。升级步骤与验证要求见 [数据库迁移说明](backend/migrations/README.md)。
+
+迁移 SQL 已打包在 Migrate 镜像中。远程部署无需同步 `backend/migrations` 目录，但必须为 `MIGRATE_IMAGE` 指定与 Backend 相同发布版本的已推送镜像。
+
+停止服务：
+
+```bash
+docker compose down
+```
+
+PostgreSQL 数据保存在 `./data/postgres`，执行 `docker compose down` 不会删除该目录。如需清空数据库，请先停止服务，再手动删除 `./data/postgres`；该操作不可恢复。
+
+## 资源管理与 RustFS
+
+Connector 已直接保存连接与认证配置，支持同一用户在同一连接下持有多份凭证。设计见 [连接与多凭证认证设计](design/connector-auth-design.md)，初始化部署与客户端接入见 [迁移与接入说明](design/connector-migration.md)。
+
+技能、规则、专家和 MCP 连接使用 PostgreSQL 持久化；技能 ZIP 和连接图标字节保存在私有 RustFS Bucket。后台和工作 Agent 均经后端鉴权下载，不直接接触对象存储凭据；技能包在返回前校验大小与 SHA-256，发现损坏时拒绝下发。技能编辑会重建 ZIP 并计算 SHA-256，保留包内附件。
+
+首次重新部署按以下顺序操作：
+
+1. 使用新数据库/数据目录，按 `.env.example` 设置数据库、管理员和 RustFS 凭据。已有数据需要保留时，先完成备份，另建部署目录。
+2. 在部署目录准备 RustFS 挂载目录：`sudo mkdir -p ./data/rustfs ./data/rustfs-logs`，再执行 `sudo chown -R 10001:10001 ./data/rustfs ./data/rustfs-logs`。已有目录也需确保目录及其内容可由该用户读写；后续常规启动无需重复调整权限。
+3. 构建镜像：`docker compose build`。
+4. 执行 `docker compose up -d`。PostgreSQL 健康且 migrate 成功、RustFS 健康后启动后端，后端在启动流程中检查并按需创建私有资源 Bucket，然后提供 HTTP 服务并启动管理页。初始化限时 1 分钟，失败时后端退出，由 Compose 重启重试；重复启动不会删除已有对象。
+
+Compose 默认使用 `RUSTFS_ACCESS_KEY` / `RUSTFS_SECRET_KEY` 供后端初始化和读写资源。可通过 `MONKEYAI_S3_ACCESS_KEY` / `MONKEYAI_S3_SECRET_KEY` 覆盖为独立应用凭据，需具备资源 Bucket 的 `s3:ListBucket`、`s3:GetBucketLocation` 和其中对象的 `s3:GetObject`、`s3:PutObject`、`s3:DeleteObject` 权限；Bucket 不存在时还需 `s3:CreateBucket` 权限。
+
+RustFS 镜像固定为 `chaitin-registry.cn-hangzhou.cr.aliyuncs.com/basic/rustfs:v1.0.0-rc.5`。数据位于 `./data/rustfs`，日志位于 `./data/rustfs-logs`，RustFS 容器以非 root 用户 `10001:10001` 运行，挂载目录权限在部署前准备，不使用独立权限初始化容器。S3 API 默认仅在 Compose 网络开放，控制台只绑定宿主机回环地址。
+
+`/healthz` 表示进程存活；`/readyz` 检查数据库和 Bucket（S3 检查超时 3 秒，缓存 5 秒）。Nginx 通用请求体上限为 100 MiB，技能上传路径允许 501 MiB（含 multipart 开销）；技能文件限 500 MiB，解包限 1 GiB，文件数量和 `SKILL.md` 大小不设独立上限，拒绝路径穿越、重复项、链接及不合法的 `SKILL.md`。
+
+MCP 默认允许访问公网及私网 HTTP(S) 目标，私网包括 `10.0.0.0/8`、`172.16.0.0/12`、`192.168.0.0/16` 和 `fc00::/7`。`MONKEYAI_MCP_ALLOWED_CIDRS` 未设置或为空时使用上述默认网段，显式配置时覆盖默认私网网段，公网仍可访问；回环、链路本地等地址需要显式配置允许网段。管理员可在「系统设置 → 其他设置 → MCP 网络访问」配置 IPv4/IPv6 CIDR 黑名单（单个地址使用 `/32` 或 `/128`），黑名单优先于默认放行和环境变量白名单，保存后对新的请求生效，无需重启。限制覆盖连接测试、工具调用、OAuth 发现、注册及令牌交换，包括直连和代理；读取黑名单失败时拒绝请求。连接使用真实 MCP 初始化和分页工具发现，拒绝自动重定向。系统连接新发现工具默认禁用，个人连接工具自动启用。OAuth 固定回调为 `${MONKEYAI_PUBLIC_URL}/oauth/connectors/{id}/callback`，需要登记到上游 OAuth 应用。
+
+Connector 可以直接编辑地址、认证方式与 OAuth 应用。关键配置变更会使旧凭证和目录失效；用户需更新指定 Header 凭证或对指定凭证重新授权。同一用户可以添加多份凭证，工具目录按具体凭证隔离；调用密钥绑定连接和独立凭证 ID，集中 Header/Token 仅保存在后端。
+
+Agent 按资源类型读取 `/api/v1/settings`、`/api/v1/models`、`/api/v1/rules`、`/api/v1/skills`、`/api/v1/experts`、`/api/v1/connectors`，每个接口独立提供 SHA-256 版本与 ETag/304。模型代理信息随模型列表返回，整体 `/api/v1/config` 已移除。通过专家清单和 `/api/v1/resources/resolve` 获取最终依赖；系统专家授权只委托其固定系统规则和技能，连接仍单独检查授权；个人专家分享同时授予其所有者持有的个人技能和连接使用权限，依赖调整或撤销专家分享时同步收回继承权限，不影响独立授权。规则、系统资源和他人资源仍需单独授权，连接的个人凭据不随专家转交。专家不绑定模型，会话模型由用户独立选择并校验授权。接口详见两份 OpenAPI。
+
+资源管理列表支持 `q`、`ownership_type`、`cursor` 和 `limit`（1—200），管理页面及关联选择器会读取全部分页。连接图标限 1 MiB 的 PNG/JPEG，由后端验证尺寸并经授权接口读取。
+
+工具下发声明 `capabilities: [catalog, invoke]`，包含工具目录、积分配置和 `mcp_gateway`；独立连接在各份 `credentials` 中提供这些字段，选定后通过对应凭证地址调用，所有代理地址以 `/mcp` 开头并复用全局 API Key。网关字段（代理 URL、`streamable_http` 传输及 `mcp:invoke` 调用密钥要求）。远程工具经服务端代理调用，上游凭证留在后端；Desktop/OhMyAgent 本地加载器独立接入。对象采用不可变 key，旧包与失败上传遗留对象保留，不在写事务中删除，以免破坏备份或正在下载的资源；清理时必须确认无数据库引用且超过备份保留窗口。
+
+备份应同时保留 PostgreSQL 快照与该快照引用的 RustFS 对象。恢复时先恢复对象和数据库，再用资源摘要验证技能下载。完整部署启动前不要清空 RustFS 数据卷。
+
+本地前端联调可设置 `MONKEYAI_DEV_BACKEND_URL` 指向单独的测试后端，避免占用现有实例端口。
+
+
+## 计费管理
+
+计费后台使用 `/api/admin/v1/billing/*`。管理员可以设置分组周期额度、独立保存价格和计费方式、查看账户余额、调整当期积分，并按分组或成员立即重置当前额度，以及查询流水和待处理交易。授权与额度继承统一使用成员分组关系，不再单独指定计费归属。成员分别解析所属分组最近的显式额度（未配置则继承团队默认），多组取最高值而非相加；未加入分组时继承团队额度。新系统默认启用直接计费，每周重置 10,000 积分。
+
+- 计费账户、交易与流水已纳入 `000001` 初始化结构；down 会删除业务数据，仅供可丢弃测试库验证。`000015` 清除旧账户冻结额，之后未结算请求不占用本地积分；预估金额仅用于超额核查，实际费用在结算时扣除。并发调用可能让最终余额为负。
+- `000003` 移除旧的 `users.billing_group_id`，已有成员直接按 `group_users` 计算，无需手动同步。迁移不修改已发放的周期账户或余额；回滚只恢复字段结构，不恢复旧归属数据。部署须同步更新前后端，迁移前备份数据库。
+- 默认关闭实际扣费，仅记录调用。检查价格、额度和模型上限后，在费用设置中开启。旧计费设置写接口返回冲突提示，统一通过计费接口写入。
+- 模型需要配置有效的 `context_window_tokens` 和 `max_output_tokens`。代理以管理员确认的模型上下文上界预留、强制输出限制，使用真实 usage 结算；目前仅支持单结果同步调用，不支持 `n > 1`、`best_of > 1` 或后台异步生成。上下文上界错误、缺失用量或实际费用超出预留都会转待核查，不能按估值扣款。
+- 模型调用沿用 `/v1/chat/completions`、`/v1/responses`、`/v1/messages`；MCP 使用 `POST /mcp/connectors/{id}/credentials/{credential_id}`，免认证使用 `POST /mcp/connectors/{id}`；全局调用密钥认证用户，地址确定授权资源，密钥作用域为 `mcp:invoke`。集中认证工具成功收费；独立认证、免认证和明确失败不收费。入口采用无状态 Streamable HTTP，支持握手、通知、工具列表和调用，返回 JSON；上游 JSON/SSE 均可解析。OAuth 调用前自动刷新，每次上游会话结束后清理。详见 [MCP 接入说明](backend/api/README.md#mcp-代理)。
+- 返回的 `X-Billing-Transaction-ID` 关联真实交易；可选 `Idempotency-Key` 重复请求返回原交易 ID 和 409，禁止再次执行；`X-Session-ID` 可选，提供时验证所属用户。
+- 周期采用上海时区；每分钟准备最多 100 个账户，读取或调用时兜底开户。额度变更不重发当期余额；周期切换在当前周期结束时生效。未消费余额不结转，跨周期调用仍结算到原账户。
+- 待结算交易按原交易 ID 自动重试，最多退避一小时；执行中断 30 分钟后转核查，不自动重放上游。`openai_responses` 调用会从早期流事件保存上游响应 ID；用量未知时，后台使用原模型凭据只读查询同一响应，只有取得完整真实 usage 才自动结算，处理中按退避重试 8 次，不支持查询或证据不足时继续保留人工核查。管理端可填写证据和用量处理未知结果，已结算本地扣款通过关联冲正全额退款。流水禁止更新或删除。
+
+### 百智云钱包
+
+先在「其他设置 → 第三方登录」添加「百智云」提供方（`baizhiyun`）。配置字段与自定义 OIDC 相同，需要 Issuer URL、Client ID 和 Client Secret；默认 scopes 为 `auth_certification openid phone user email`，接口配置的自定义 scopes 会保留。百智云 OAuth 客户端需先获准 `email` 权限；已有自定义 scopes 的连接需自行加入 `email` 才能获取邮箱。
+
+用户信息接口的 `data.email` 用于新用户注册和关联同邮箱账号，未返回邮箱时保留占位邮箱登录。已有百智云账号下次登录时，会在邮箱未被其他未删除账号占用的情况下将占位邮箱补齐为真实邮箱；已有真实邮箱和用户身份保持不变。
+
+未来恢复远程计费后，只有具有有效百智云登录身份的用户可以获取或调用系统模型、规则、技能、专家和 MCP 连接。当前阶段未接入远程钱包客户端，不能启用远程计费；个人资源和本地计费遵循原有逻辑。已有自定义 OIDC 身份不会自动视为百智云身份，用户需通过新提供方登录。
+
+恢复远程钱包客户端后，钱包账户默认使用百智云身份的 `sub`。同一用户关联多个不同百智云账户时，需由管理员明确绑定其中一个；绑定必须匹配该用户已有的百智云登录身份，历史手动绑定也不能代替身份校验。当前阶段钱包绑定明确返回不可用。
+
+当前不依赖内网 `opensdk`：`internal/billing` 定义 `WalletClient` 接口和返回明确不可用错误的 `EmptyWalletClient`。后台「计费设置」仍可保存服务 URL（`base_url`）、应用 ID（1–999）和 `app.crt`、`app.key`、`ca.crt`；三份文件均为 PEM，私钥须为 PKCS#8 ECDSA，每份最多 64 KiB。保存时检查证书有效期、CA 用途和证书与私钥的匹配关系，但**保存配置不表示远程钱包已连通，也不能启用远程计费**。未来将 SDK 移至开源库后再实现接口适配器。
+
+地址须为 HTTPS 服务根地址，支持私有化域名、IP 和端口，不支持路径前缀、查询参数、片段或用户名密码。公有云生产可填写 `https://baizhi.cloud`，测试可填写 `https://baizhiyun.vip`；当前只保存并校验地址，真正的开放平台/钱包通信将在 SDK 接入后恢复。
+
+连接配置保存在数据库 `settings.billing.wallet`，保存后无需重启，其他实例在下次使用时读取最新配置。更新时未上传的文件保留原值；证书和私钥不通过管理/Agent 查询接口回显，审计仅记录脱敏信息。数据库及备份应按包含凭据的数据管理。
+
+部署配置支持 `BAIZHIYUN_BASE_URL`、`BAIZHIYUN_APP_ID`、`MONKEYAI_WALLET_CERT_DIR`；未填写 URL 时仍兼容 `BAIZHIYUN_ENV=dev/prod`，目录包含上述三个文件；后台保存的配置优先。存在未完成远程交易时禁止切换服务 URL 或应用 ID，同一应用允许更新证书。证书配置成功仅表示本地校验通过，真实钱包连接和账户权限仍需联调确认。
+
+初始化结构直接使用 `wallet_billing_records.base_url` 保存交易服务地址，钱包设置同样使用 `base_url`。
+
+容器部署时通过单独 Compose override 或现有部署系统向后端传入上述变量，将真实证书目录只读挂载到 `MONKEYAI_WALLET_CERT_DIR`。证书和私钥不进入镜像；当前构建不需要内网 Go 模块及 `netrc` 凭据。
+
+本地周期额度与百智云钱包余额独立管理。未来接入钱包客户端后，绑定用户时查询开放平台验证身份；远程预扣、确认和重试仍复用数据库中同一 BizID。计划使用的金额单位为 quota，100 quota = 1 积分；未接入远程钱包时不伪造钱包余额或扣费成功。
+
+远程真实联调尚需核实零金额确认、失败释放、重复确认、按 BizID 查询和退款/对账渠道。预扣结果不确定保留冻结，只有有证据的状态才能进入下一步；远程已结算退款不能仅增加本地余额。当前已覆盖 SDK 接口替身的确认失败及幂等恢复，不能代替真实钱包环境验收。
+
+### 验证
+
+```bash
+cd backend
+go test ./...
+go vet ./...
+# 事务及端到端测试：配置可丢弃的 PostgreSQL 和 RustFS
+MONKEYAI_TEST_DATABASE_URL='<测试库连接串>' MONKEYAI_S3_ENDPOINT='<测试 RustFS 地址>' \
+MONKEYAI_S3_BUCKET='<测试 Bucket>' MONKEYAI_S3_ACCESS_KEY='<测试访问键>' \
+MONKEYAI_S3_SECRET_KEY='<测试密钥>' go test ./... -count=1
+cd ../web
+npm test
+npm run lint
+npm run build
+```
+
+数据库测试使用随机 schema 并清理。完整方案、实施状态和验收记录见 [计费实施方案](design/billing-implementation-plan.md)。
+
+### 云电脑宿主安装
+
+管理后台「云环境 → 宿主管理」可生成一条命令安装 `monkeyai-engine`。发行物准备、HTTPS 配置、宿主要求和恢复操作见 [宿主安装说明](engine/INSTALL.md)，当前实施状态见 [安装实施计划](design/engine-installer-plan.md)。已接入注册、预检和云电脑执行驱动，真实宿主仍待统一人工验收。
+
+云环境后台控制与 engine 同步已提供 API，包含预设、配额、容量预留和启停／删除；后台已接入环境、预设、容量和额度管理页面；联网与 runtime 接入源码已完成；本仓仅交付客户端接口，真实宿主后续统一验收。接入顺序与当前边界见 [环境控制说明](design/environment-control.md) 和 [实施记录](design/cloud-environment-implementation.md)。

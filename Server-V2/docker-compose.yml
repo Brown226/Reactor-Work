@@ -1,0 +1,233 @@
+x-logging: &monkeyai_logging
+  driver: json-file
+  options:
+    max-size: "${MONKEYAI_LOG_MAX_SIZE:-20m}"
+    max-file: "${MONKEYAI_LOG_MAX_FILES:-5}"
+
+services:
+  db:
+    logging: *monkeyai_logging
+    image: chaitin-registry.cn-hangzhou.cr.aliyuncs.com/basic/pgvector:pg18
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-monkeyai}
+      POSTGRES_USER: ${POSTGRES_USER:-monkeyai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?请设置 POSTGRES_PASSWORD}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  migrate:
+    logging: *monkeyai_logging
+    image: ${MIGRATE_IMAGE:-monkeyai-migrate:local}
+    build:
+      context: ./backend/migrations
+    command:
+      - -path=/migrations
+      - -database=${MONKEYAI_DATABASE_URL:-postgres://${POSTGRES_USER:-monkeyai}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-monkeyai}?sslmode=disable}
+      - up
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  rustfs:
+    logging: *monkeyai_logging
+    image: chaitin-registry.cn-hangzhou.cr.aliyuncs.com/basic/rustfs:v1.0.0-rc.5
+    user: "10001:10001"
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?请设置 RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?请设置 RUSTFS_SECRET_KEY}
+      RUSTFS_VOLUMES: /data
+      RUSTFS_OBS_LOG_DIRECTORY: /logs
+      RUSTFS_CONSOLE_ENABLE: "true"
+    volumes:
+      - ./data/rustfs:/data
+      - ./data/rustfs-logs:/logs
+    ports:
+      - "127.0.0.1:${RUSTFS_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+
+  # Enable with --profile anydoc and a locally available image built from AnyDoc deploy/Dockerfile.slim.
+  anydoc:
+    profiles: [anydoc]
+    image: ${ANYDOC_IMAGE:-anydoc:slim}
+    pull_policy: never
+    restart: unless-stopped
+    logging: *monkeyai_logging
+    environment:
+      SERVER_ADDR: ":8080"
+      PARSER_CONCURRENT: "${ANYDOC_PARSER_CONCURRENT:-2}"
+      PARSER_MAX_OUTPUT_BYTES: "16777216"
+      # Current image logs callback credentials in task bodies and network errors.
+      GLOG_GLOBAL_LEVEL: discard
+      GLOG_DISABLE_AUTO_CHECK: "true"
+      NO_PROXY: db,rustfs,backend,anydoc,localhost,127.0.0.1,::1
+
+  backend:
+    logging: *monkeyai_logging
+    image: ${BACKEND_IMAGE:-monkeyai-backend:local}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    environment: &backend_environment
+      MONKEYAI_SERVICE_ROLE: control
+      MONKEYAI_S3_ENDPOINT: ${MONKEYAI_S3_ENDPOINT:-http://rustfs:9000}
+      MONKEYAI_S3_REGION: ${MONKEYAI_S3_REGION:-us-east-1}
+      MONKEYAI_S3_BUCKET: ${MONKEYAI_S3_BUCKET:-monkeyai-resources}
+      MONKEYAI_S3_ACCESS_KEY: ${MONKEYAI_S3_ACCESS_KEY:-${RUSTFS_ACCESS_KEY}}
+      MONKEYAI_S3_SECRET_KEY: ${MONKEYAI_S3_SECRET_KEY:-${RUSTFS_SECRET_KEY}}
+      MONKEYAI_S3_FORCE_PATH_STYLE: ${MONKEYAI_S3_FORCE_PATH_STYLE:-true}
+      MONKEYAI_MCP_ALLOWED_CIDRS: ${MONKEYAI_MCP_ALLOWED_CIDRS:-}
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      NO_PROXY: ${MONKEYAI_NO_PROXY:-db,rustfs,backend,anydoc,localhost,127.0.0.1,::1}
+
+      MONKEYAI_DATABASE_URL: ${MONKEYAI_DATABASE_URL:-postgres://${POSTGRES_USER:-monkeyai}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-monkeyai}?sslmode=disable}
+      MONKEYAI_HTTP_ADDR: :8080
+      TMPDIR: /app/import-tmp
+      MONKEYAI_LOG_LEVEL: ${MONKEYAI_LOG_LEVEL:-warn}
+      MONKEYAI_ENDPOINT_MAX_CONNECTIONS: ${MONKEYAI_ENDPOINT_MAX_CONNECTIONS:-1000}
+      MONKEYAI_ENGINE_RELEASE_DIR: ${MONKEYAI_ENGINE_RELEASE_DIR:-}
+      MONKEYAI_ENGINE_VERSION: ${MONKEYAI_ENGINE_VERSION:-}
+      MONKEYAI_RUNTIME_RELAY: ${MONKEYAI_RUNTIME_RELAY:-true}
+      MONKEYAI_RUNTIME_STATE_DIR: /app/runtime
+      MONKEYAI_RUNTIME_SERVER_ID: ${MONKEYAI_RUNTIME_SERVER_ID:-}
+      MONKEYAI_RUNTIME_SIGNING_KEY_FILE: ${MONKEYAI_RUNTIME_SIGNING_KEY_FILE:-}
+      MONKEYAI_RUNTIME_VERIFICATION_KEYS_FILE: ${MONKEYAI_RUNTIME_VERIFICATION_KEYS_FILE:-}
+      MONKEYAI_RUNTIME_PREVIEW_ORIGIN_TEMPLATE: ${MONKEYAI_RUNTIME_PREVIEW_ORIGIN_TEMPLATE:-}
+      MONKEYAI_RUNTIME_DESKTOP_ORIGINS: ${MONKEYAI_RUNTIME_DESKTOP_ORIGINS:-}
+      MONKEYAI_OAUTH_REDIRECT_ORIGINS: ${MONKEYAI_OAUTH_REDIRECT_ORIGINS:-}
+      MONKEYAI_RUNTIME_FILES_ORIGIN: ${MONKEYAI_RUNTIME_FILES_ORIGIN:-}
+      MONKEYAI_PUBLIC_URL: ${MONKEYAI_PUBLIC_URL:-http://localhost:8080}
+      MONKEYAI_DESIGN_PUBLISHER_ID: ${MONKEYAI_DESIGN_PUBLISHER_ID-}
+      MONKEYAI_DESIGN_RESPUB_JWT_SECRET:
+      MONKEYAI_DESIGN_MEDIA_JWT_SECRET: ${MONKEYAI_DESIGN_MEDIA_JWT_SECRET-}
+      MONKEYAI_INITIAL_ADMIN_NAME: ${MONKEYAI_INITIAL_ADMIN_NAME:-MonkeyAI Admin}
+      MONKEYAI_INITIAL_ADMIN_EMAIL: ${MONKEYAI_INITIAL_ADMIN_EMAIL:-}
+      MONKEYAI_INITIAL_ADMIN_PASSWORD: ${MONKEYAI_INITIAL_ADMIN_PASSWORD:-}
+      MONKEYAI_LICENSE_PUBLIC_KEY: ${MONKEYAI_LICENSE_PUBLIC_KEY:-}
+      MONKEYAI_LICENSE_AES_KEY: ${MONKEYAI_LICENSE_AES_KEY:-}
+      MONKEYAI_LICENSE_FILE: ${MONKEYAI_LICENSE_FILE:-/app/license/license.lic}
+      MONKEYAI_MACHINE_ID_FILE: ${MONKEYAI_MACHINE_ID_FILE:-/app/license/machine-id}
+    volumes:
+      - ./data/license:/app/license
+      - ./data/runtime:/app/runtime
+      - import_tmp:/app/import-tmp
+    depends_on:
+      rustfs:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "-Y", "off", "-q", "--spider", "http://127.0.0.1:8080/readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    read_only: true
+    tmpfs:
+      - /tmp
+
+  proxy:
+    container_name: monkeyai-proxy
+    logging: *monkeyai_logging
+    image: ${PROXY_IMAGE:-monkeyai-proxy:local}
+    build:
+      context: ./backend
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      <<: *backend_environment
+      TMPDIR: /tmp
+      MONKEYAI_SERVICE_ROLE: proxy
+      MONKEYAI_ENGINE_RELEASE_DIR: ""
+      MONKEYAI_ENGINE_VERSION: ""
+      MONKEYAI_INITIAL_ADMIN_EMAIL: ""
+      MONKEYAI_INITIAL_ADMIN_PASSWORD: ""
+    volumes:
+      - ./data/runtime:/app/runtime
+      - ./data/license:/app/license:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      rustfs:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-Y", "off", "-q", "--spider", "http://127.0.0.1:8080/readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  admin:
+    logging: *monkeyai_logging
+    image: ${ADMIN_IMAGE:-monkeyai-admin:local}
+    build:
+      context: ./web
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "wget", "-Y", "off", "-q", "--spider", "http://127.0.0.1:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    container_name: monkeyai-nginx
+    logging: *monkeyai_logging
+    image: ${NGINX_IMAGE:-monkeyai-nginx:local}
+    build:
+      context: ./web
+      target: ingress
+      args:
+        NGINX_ACME_IMAGE: ${NGINX_ACME_IMAGE:-chaitin-registry.cn-hangzhou.cr.aliyuncs.com/monkeycode/nginx-acme:1.31.9-acme0.4.1-r1}
+    restart: unless-stopped
+    init: true
+    environment:
+      MONKEYAI_RUNTIME_PREVIEW_ORIGIN_TEMPLATE: ${MONKEYAI_RUNTIME_PREVIEW_ORIGIN_TEMPLATE:-}
+      MONKEYAI_RUNTIME_PREVIEW_CERT_FILE: ${MONKEYAI_RUNTIME_PREVIEW_CERT_FILE:-/run/secrets/preview/tls.crt}
+      MONKEYAI_RUNTIME_PREVIEW_KEY_FILE: ${MONKEYAI_RUNTIME_PREVIEW_KEY_FILE:-/run/secrets/preview/tls.key}
+      MONKEYAI_TLS_ENABLED: ${MONKEYAI_TLS_ENABLED:-false}
+      MONKEYAI_AUTO_TLS_ENABLED: ${MONKEYAI_AUTO_TLS_ENABLED:-false}
+      MONKEYAI_AUTO_TLS_EMAIL: ${MONKEYAI_AUTO_TLS_EMAIL:-}
+      MONKEYAI_AUTO_TLS_CA: ${MONKEYAI_AUTO_TLS_CA:-https://acme-v02.api.letsencrypt.org/directory}
+      MONKEYAI_TRUSTED_PROXY_CIDRS: ${MONKEYAI_TRUSTED_PROXY_CIDRS:-}
+      MONKEYAI_PUBLIC_URL: ${MONKEYAI_PUBLIC_URL:-http://localhost:8080}
+    ports:
+      - "${MONKEYAI_ADMIN_PORT:-8080}:8080"
+      - "${MONKEYAI_HTTPS_PORT:-8443}:8443"
+    volumes:
+      - acme:/var/lib/nginx/acme
+      - ./data/tls/server:/run/monkeyai/tls:ro
+    healthcheck:
+      test: ["CMD", "wget", "-Y", "off", "-q", "--spider", "http://127.0.0.1:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    read_only: true
+    tmpfs:
+      - /tmp
+
+volumes:
+  acme:
+  import_tmp:

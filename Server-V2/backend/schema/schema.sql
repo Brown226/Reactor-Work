@@ -1,0 +1,2222 @@
+-- 从 migrations 自动提取；请勿手工修改。
+
+CREATE TABLE users (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name text NOT NULL,
+    email text NOT NULL,
+    avatar_url text,
+    password_hash text,
+    role text NOT NULL DEFAULT 'user',
+    status text NOT NULL DEFAULT 'active',
+    joined_at timestamptz NOT NULL DEFAULT now(),
+    disabled_at timestamptz,
+    last_login_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz,
+    billing_group_id uuid,
+    CONSTRAINT users_role_check CHECK (role IN ('admin', 'user')),
+    CONSTRAINT users_status_check CHECK (status IN ('active', 'disabled')),
+    CONSTRAINT users_disabled_at_check CHECK (
+        (status = 'active' AND disabled_at IS NULL)
+        OR status = 'disabled'
+    )
+);
+
+CREATE TABLE user_identities (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users (id),
+    provider text NOT NULL,
+    issuer text NOT NULL,
+    provider_subject text NOT NULL,
+    username text,
+    email text,
+    avatar_url text,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz,
+    CONSTRAINT user_identities_provider_check CHECK (
+        provider IN ('github', 'google', 'microsoft', 'gitlab', 'oidc', 'baizhiyun')
+    )
+);
+
+CREATE TABLE groups (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    parent_id uuid REFERENCES groups (id),
+    name text NOT NULL,
+    created_by_user_id uuid REFERENCES users (id),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz,
+    CONSTRAINT groups_not_own_parent_check CHECK (parent_id IS DISTINCT FROM id)
+);
+
+ALTER TABLE users ADD CONSTRAINT users_billing_group_id_fkey
+    FOREIGN KEY (billing_group_id) REFERENCES groups (id);
+
+CREATE TABLE group_users (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    group_id uuid NOT NULL REFERENCES groups (id),
+    user_id uuid NOT NULL REFERENCES users (id),
+    assigned_by_user_id uuid NOT NULL REFERENCES users (id),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    removed_at timestamptz
+);
+
+CREATE TABLE settings (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    key text NOT NULL UNIQUE,
+    value jsonb NOT NULL DEFAULT '{}'::jsonb,
+    schema_version integer NOT NULL DEFAULT 1,
+    updated_by_user_id uuid NOT NULL REFERENCES users (id),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    revision bigint NOT NULL DEFAULT 1,
+    CONSTRAINT settings_key_check CHECK (
+        key IN ('branding', 'authentication', 'email', 'billing')
+    ),
+    CONSTRAINT settings_value_check CHECK (jsonb_typeof(value) = 'object'),
+    CONSTRAINT settings_schema_version_check CHECK (schema_version > 0)
+);
+
+CREATE TABLE models (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    ownership_type text NOT NULL,
+    owner_user_id uuid NOT NULL REFERENCES users (id),
+    model_id text NOT NULL,
+    display_name text NOT NULL,
+    protocol text NOT NULL,
+    base_url text NOT NULL,
+    api_key text NOT NULL,
+    advanced_config jsonb NOT NULL,
+    credit_multiplier numeric(12, 6) NOT NULL DEFAULT 1,
+    enabled boolean NOT NULL DEFAULT true,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz,
+    CONSTRAINT models_ownership_type_check CHECK (ownership_type IN ('system', 'user')),
+    CONSTRAINT models_protocol_check CHECK (
+        protocol IN ('openai_chat_completions', 'openai_responses', 'anthropic')
+    ),
+    CONSTRAINT models_advanced_config_check CHECK (jsonb_typeof(advanced_config) = 'object'),
+    CONSTRAINT models_credit_multiplier_check CHECK (credit_multiplier > 0)
+);
+
+CREATE TABLE tags (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name text NOT NULL,
+    created_by_user_id uuid NOT NULL REFERENCES users (id),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz
+);
+
+CREATE TABLE skills (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    ownership_type text NOT NULL,
+    owner_user_id uuid NOT NULL REFERENCES users (id),
+    name text NOT NULL,
+    description text NOT NULL,
+    package_file_name text NOT NULL,
+    package_s3_key text NOT NULL,
+    package_size_bytes bigint NOT NULL,
+    package_sha256 text NOT NULL,
+    file_count integer NOT NULL DEFAULT 0,
+    enabled boolean NOT NULL DEFAULT true,
+    revision bigint NOT NULL DEFAULT 1,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz,
+    CONSTRAINT skills_ownership_type_check CHECK (ownership_type IN ('system', 'user')),
+    CONSTRAINT skills_package_size_check CHECK (package_size_bytes >= 0),
+    CONSTRAINT skills_file_count_check CHECK (file_count >= 0)
+);
+
+CREATE TABLE rules (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    ownership_type text NOT NULL,
+    owner_user_id uuid NOT NULL REFERENCES users (id),
+    name text NOT NULL,
+    content text NOT NULL,
+    revision bigint NOT NULL DEFAULT 1,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz,
+    CONSTRAINT rules_ownership_type_check CHECK (ownership_type IN ('system', 'user'))
+);
+
+CREATE TABLE connectors (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    ownership_type text NOT NULL DEFAULT 'system' CHECK (ownership_type IN ('system','user')),
+    owner_user_id uuid NOT NULL REFERENCES users(id),
+    name text NOT NULL,
+    description text NOT NULL DEFAULT '',
+    url text NOT NULL,
+    authorization_mode text NOT NULL CHECK (authorization_mode IN ('none','centralized','independent')),
+    authorization_method text CHECK (authorization_method IN ('http_header','oauth')),
+    oauth_config jsonb NOT NULL DEFAULT '{}'::jsonb,
+    oauth_client_secret text NOT NULL DEFAULT '',
+    enabled boolean NOT NULL DEFAULT true,
+    connection_status text NOT NULL DEFAULT 'unknown' CHECK (connection_status IN ('unknown','connected','error')),
+    last_checked_at timestamptz,
+    last_error text,
+    revision bigint NOT NULL DEFAULT 1,
+    config_revision bigint NOT NULL DEFAULT 1,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz,
+    icon_s3_key text NOT NULL DEFAULT '',
+    CHECK ((authorization_mode = 'none' AND authorization_method IS NULL) OR
+           (authorization_mode <> 'none' AND authorization_method IS NOT NULL))
+);
+
+CREATE TABLE connector_credentials (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    connector_id uuid NOT NULL REFERENCES connectors(id),
+    user_id uuid REFERENCES users(id),
+    http_headers jsonb NOT NULL DEFAULT '{}'::jsonb,
+    oauth_access_token text NOT NULL DEFAULT '',
+    oauth_refresh_token text NOT NULL DEFAULT '',
+    oauth_expires_at timestamptz,
+    config_revision bigint NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    revoked_at timestamptz,
+    name text NOT NULL DEFAULT '原有凭证' CHECK (char_length(btrim(name)) BETWEEN 1 AND 128),
+    revision bigint NOT NULL DEFAULT 1,
+    connection_status text NOT NULL DEFAULT 'unknown' CHECK (connection_status IN ('unknown','connected','error')),
+    last_checked_at timestamptz,
+    last_error text,
+    CONSTRAINT connector_credentials_id_connector_key UNIQUE (id, connector_id)
+);
+
+CREATE TABLE mcp_tools (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    connector_id uuid NOT NULL REFERENCES connectors(id),
+    credential_id uuid REFERENCES connector_credentials(id),
+    name text NOT NULL,
+    description text NOT NULL DEFAULT '',
+    input_schema jsonb NOT NULL DEFAULT '{}'::jsonb,
+    enabled boolean NOT NULL DEFAULT false,
+    credits_per_call numeric(24,6) NOT NULL DEFAULT 0 CHECK (credits_per_call >= 0),
+    config_revision bigint NOT NULL,
+    discovered_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz,
+    UNIQUE NULLS NOT DISTINCT (connector_id,credential_id,name),
+    CONSTRAINT mcp_tools_credential_connector_fkey
+        FOREIGN KEY (credential_id, connector_id) REFERENCES connector_credentials(id, connector_id)
+);
+
+CREATE TABLE connector_oauth_requests (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    connector_id uuid NOT NULL REFERENCES connectors(id),
+    user_id uuid NOT NULL REFERENCES users(id),
+    config_revision bigint NOT NULL,
+    state_hash text NOT NULL UNIQUE,
+    verifier text NOT NULL,
+    redirect_uri text NOT NULL,
+    expires_at timestamptz NOT NULL,
+    consumed_at timestamptz,
+    status text NOT NULL DEFAULT 'pending',
+    created_at timestamptz NOT NULL DEFAULT now(),
+    credential_id uuid REFERENCES connector_credentials(id),
+    credential_revision bigint,
+    name text NOT NULL DEFAULT '原有凭证',
+    CONSTRAINT connector_oauth_requests_status_check CHECK (status IN ('pending','processing','succeeded','failed','expired'))
+);
+
+CREATE TABLE experts (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name text NOT NULL,
+    description text NOT NULL,
+    prompt text NOT NULL,
+    enabled boolean NOT NULL DEFAULT true,
+    created_by_user_id uuid NOT NULL REFERENCES users (id),
+    revision bigint NOT NULL DEFAULT 1,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz,
+    ownership_type text NOT NULL DEFAULT 'system' CHECK (ownership_type IN ('system', 'user')),
+    owner_user_id uuid NOT NULL REFERENCES users(id)
+);
+
+CREATE TABLE resource_access_grants (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    resource_type text NOT NULL,
+    resource_id uuid NOT NULL,
+    user_id uuid REFERENCES users (id),
+    group_id uuid REFERENCES groups (id),
+    access_level text NOT NULL,
+    usage_requirement text NOT NULL DEFAULT 'optional',
+    granted_by_user_id uuid NOT NULL REFERENCES users (id),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    all_users boolean NOT NULL DEFAULT false,
+    CONSTRAINT resource_access_grants_resource_type_check CHECK (
+        resource_type IN ('model', 'skill', 'rule', 'connector', 'expert')
+    ),
+    CONSTRAINT resource_access_grants_subject_check CHECK (
+        (user_id IS NOT NULL)::integer + (group_id IS NOT NULL)::integer + all_users::integer = 1
+    ),
+    CONSTRAINT resource_access_grants_access_level_check CHECK (
+        access_level IN ('read_only', 'read_write')
+    ),
+    CONSTRAINT resource_access_grants_usage_requirement_check CHECK (
+        usage_requirement IN ('optional', 'required')
+        AND (usage_requirement = 'optional' OR resource_type = 'rule')
+    )
+);
+
+CREATE TABLE resource_tags (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    resource_type text NOT NULL,
+    resource_id uuid NOT NULL,
+    tag_id uuid NOT NULL REFERENCES tags (id),
+    assigned_by_user_id uuid NOT NULL REFERENCES users (id),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT resource_tags_resource_type_check CHECK (
+        resource_type IN ('model', 'skill', 'rule', 'connector', 'expert')
+    ),
+    CONSTRAINT resource_tags_resource_key UNIQUE (resource_type, resource_id, tag_id)
+);
+
+CREATE TABLE expert_connectors (
+    expert_id uuid NOT NULL REFERENCES experts(id),
+    connector_id uuid NOT NULL REFERENCES connectors(id),
+    required boolean NOT NULL DEFAULT true,
+    tool_allowlist text[] NOT NULL DEFAULT '{}',
+    tool_denylist text[] NOT NULL DEFAULT '{}',
+    PRIMARY KEY (expert_id, connector_id)
+);
+
+CREATE TABLE expert_rules (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    expert_id uuid NOT NULL REFERENCES experts (id),
+    rule_id uuid NOT NULL REFERENCES rules (id),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT expert_rules_key UNIQUE (expert_id, rule_id)
+);
+
+CREATE TABLE expert_skills (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    expert_id uuid NOT NULL REFERENCES experts (id),
+    skill_id uuid NOT NULL REFERENCES skills (id),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT expert_skills_key UNIQUE (expert_id, skill_id)
+);
+
+CREATE TABLE sessions (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_user_id uuid NOT NULL REFERENCES users (id),
+    expert_id uuid REFERENCES experts (id),
+    title text NOT NULL,
+    session_type text NOT NULL,
+    client_type text NOT NULL,
+    client_name text NOT NULL,
+    device_id text,
+    turn_count integer NOT NULL DEFAULT 0,
+    failure_code text,
+    failure_message text,
+    started_at timestamptz NOT NULL,
+    last_active_at timestamptz NOT NULL,
+    ended_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz,
+    CONSTRAINT sessions_session_type_check CHECK (
+        session_type IN ('conversation', 'workflow', 'tool', 'scheduled')
+    ),
+    CONSTRAINT sessions_client_type_check CHECK (
+        client_type IN ('desktop', 'web', 'extension', 'mobile')
+    ),
+    CONSTRAINT sessions_turn_count_check CHECK (turn_count >= 0),
+    CONSTRAINT sessions_time_check CHECK (
+        last_active_at >= started_at
+        AND (ended_at IS NULL OR ended_at >= started_at)
+    )
+);
+
+CREATE TABLE model_calls (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id uuid REFERENCES sessions (id),
+    user_id uuid NOT NULL REFERENCES users (id),
+    model_id uuid NOT NULL REFERENCES models (id),
+    request_id text,
+    status text NOT NULL,
+    input_tokens bigint NOT NULL DEFAULT 0,
+    cached_input_tokens bigint NOT NULL DEFAULT 0,
+    output_tokens bigint NOT NULL DEFAULT 0,
+    cache_hit boolean NOT NULL DEFAULT false,
+    response_duration_ms integer,
+    error_code text,
+    error_message text,
+    started_at timestamptz NOT NULL,
+    completed_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT model_calls_status_check CHECK (
+        status IN ('running', 'succeeded', 'failed', 'cancelled')
+    ),
+    CONSTRAINT model_calls_token_count_check CHECK (
+        input_tokens >= 0
+        AND cached_input_tokens >= 0
+        AND cached_input_tokens <= input_tokens
+        AND output_tokens >= 0
+    ),
+    CONSTRAINT model_calls_duration_check CHECK (
+        response_duration_ms IS NULL OR response_duration_ms >= 0
+    ),
+    CONSTRAINT model_calls_time_check CHECK (
+        completed_at IS NULL OR completed_at >= started_at
+    )
+);
+
+CREATE TABLE mcp_tool_calls (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id uuid REFERENCES sessions (id),
+    user_id uuid NOT NULL REFERENCES users (id),
+    connector_id uuid NOT NULL REFERENCES connectors (id),
+    tool_id uuid NOT NULL REFERENCES mcp_tools (id),
+    request_id text,
+    status text NOT NULL,
+    duration_ms integer,
+    error_code text,
+    error_message text,
+    started_at timestamptz NOT NULL,
+    completed_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT mcp_tool_calls_status_check CHECK (
+        status IN ('running', 'succeeded', 'failed', 'cancelled')
+    ),
+    CONSTRAINT mcp_tool_calls_duration_check CHECK (
+        duration_ms IS NULL OR duration_ms >= 0
+    ),
+    CONSTRAINT mcp_tool_calls_time_check CHECK (
+        completed_at IS NULL OR completed_at >= started_at
+    )
+);
+
+CREATE TABLE billing_quotas (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    subject_type text NOT NULL,
+    group_id uuid REFERENCES groups (id),
+    user_id uuid REFERENCES users (id),
+    credits_per_cycle numeric(24, 6) NOT NULL,
+    updated_by_user_id uuid NOT NULL REFERENCES users (id),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    deleted_at timestamptz,
+    CONSTRAINT billing_quotas_subject_check CHECK (
+        (subject_type = 'group' AND group_id IS NOT NULL AND user_id IS NULL)
+        OR (subject_type = 'user' AND user_id IS NOT NULL AND group_id IS NULL)
+    ),
+    CONSTRAINT billing_quotas_credits_check CHECK (credits_per_cycle >= 0)
+);
+
+CREATE TABLE credit_accounts (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users (id),
+    balance numeric(24, 6) NOT NULL DEFAULT 0,
+    period_start_at timestamptz NOT NULL,
+    period_end_at timestamptz NOT NULL,
+    last_refreshed_at timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    frozen numeric(24,6) NOT NULL DEFAULT 0,
+    quota numeric(24,6) NOT NULL DEFAULT 0,
+    group_id uuid REFERENCES groups(id),
+    sequence bigint NOT NULL DEFAULT 0,
+    CONSTRAINT credit_accounts_period_check CHECK (period_end_at > period_start_at),
+    CONSTRAINT credit_accounts_amount_check CHECK (balance >= 0 AND frozen >= 0 AND frozen <= balance)
+);
+
+CREATE TABLE billing_transactions (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users(id),
+    account_id uuid NOT NULL REFERENCES credit_accounts(id),
+    session_id uuid REFERENCES sessions(id),
+    category text NOT NULL CHECK(category IN ('model','tool')),
+    resource_id uuid NOT NULL,
+    connector_id uuid REFERENCES connectors(id),
+    item_name text NOT NULL,
+    user_name text NOT NULL,
+    user_email text NOT NULL,
+    group_id uuid REFERENCES groups(id),
+    mode text NOT NULL CHECK(mode IN ('local','remote')),
+    status text NOT NULL CHECK(status IN ('created','reserved','running','settling','settled','released','rejected','unknown')),
+    reserve numeric(24,6) NOT NULL CHECK(reserve >= 0),
+    amount numeric(24,6),
+    raw_amount numeric(24,6),
+    pricing jsonb NOT NULL CHECK(jsonb_typeof(pricing)='object'),
+    usage jsonb NOT NULL DEFAULT '{}',
+    result text,
+    error_code text NOT NULL DEFAULT '',
+    idempotency_key text,
+    request_hash text NOT NULL DEFAULT '',
+    request_id text NOT NULL DEFAULT '',
+    attempts integer NOT NULL DEFAULT 0,
+    next_retry_at timestamptz,
+    started_at timestamptz NOT NULL DEFAULT now(),
+    completed_at timestamptz,
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    CHECK(amount IS NULL OR amount >= 0)
+);
+
+CREATE TABLE credit_ledger_entries (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    account_id uuid NOT NULL REFERENCES credit_accounts (id),
+    user_id uuid NOT NULL REFERENCES users (id),
+    session_id uuid REFERENCES sessions (id),
+    entry_type text NOT NULL,
+    category text NOT NULL,
+    source_type text,
+    source_id uuid,
+    resource_type text,
+    resource_id uuid,
+    item_name text NOT NULL,
+    quantity bigint,
+    usage_unit text,
+    unit_credits numeric(24, 6),
+    credit_delta numeric(24, 6) NOT NULL,
+    balance_after numeric(24, 6) NOT NULL,
+    external_reference text,
+    metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+    occurred_at timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    transaction_id uuid REFERENCES billing_transactions(id),
+    event_key text,
+    sequence bigint,
+    user_name text,
+    user_email text,
+    group_id uuid REFERENCES groups(id),
+    mode text NOT NULL DEFAULT 'local',
+    reverses_id uuid REFERENCES credit_ledger_entries(id),
+    CONSTRAINT credit_ledger_entries_entry_type_check CHECK (
+        entry_type IN ('charge', 'grant', 'refund', 'reset', 'adjustment')
+    ),
+    CONSTRAINT credit_ledger_entries_category_check CHECK (
+        category IN ('model', 'tool', 'other')
+    ),
+    CONSTRAINT credit_ledger_entries_source_type_check CHECK (
+        source_type IS NULL
+        OR source_type IN ('model_call', 'mcp_tool_call', 'quota_refresh', 'manual')
+    ),
+    CONSTRAINT credit_ledger_entries_resource_type_check CHECK (
+        resource_type IS NULL OR resource_type IN ('model', 'mcp_tool')
+    ),
+    CONSTRAINT credit_ledger_entries_usage_unit_check CHECK (
+        usage_unit IS NULL OR usage_unit IN ('tokens', 'calls')
+    ),
+    CONSTRAINT credit_ledger_entries_quantity_check CHECK (
+        quantity IS NULL OR quantity >= 0
+    ),
+    CONSTRAINT credit_ledger_entries_unit_credits_check CHECK (
+        unit_credits IS NULL OR unit_credits >= 0
+    ),
+    CONSTRAINT credit_ledger_entries_metadata_check CHECK (jsonb_typeof(metadata) = 'object')
+);
+
+CREATE TABLE wallet_user_bindings (
+    user_id uuid PRIMARY KEY REFERENCES users(id),
+    external_user_id text NOT NULL UNIQUE,
+    verified_at timestamptz NOT NULL,
+    updated_by_user_id uuid NOT NULL REFERENCES users(id)
+);
+
+CREATE TABLE wallet_billing_records (
+    biz_id text PRIMARY KEY,
+    transaction_id uuid NOT NULL UNIQUE REFERENCES billing_transactions(id),
+    external_user_id text NOT NULL,
+    team_slug text NOT NULL DEFAULT '',
+    base_url text NOT NULL,
+    app_id integer NOT NULL,
+    status text NOT NULL CHECK(status IN ('pending','reserved','confirming','confirmed','rejected','unknown')),
+    frozen_amount_quota bigint NOT NULL CHECK(frozen_amount_quota >= 0),
+    actual_amount_quota bigint,
+    confirmation_status text,
+    error_code text NOT NULL DEFAULT '',
+    trace_id text NOT NULL DEFAULT '',
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    confirmed_at timestamptz
+);
+
+CREATE TABLE billing_migration_issues (
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    subject text NOT NULL,
+    value jsonb NOT NULL,
+    reason text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE audits (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    actor_type text NOT NULL,
+    actor_user_id uuid REFERENCES users (id) ON DELETE SET NULL,
+    actor_name text NOT NULL,
+    actor_email text,
+    action text NOT NULL,
+    category text NOT NULL,
+    target_type text,
+    target_id uuid,
+    request_params jsonb NOT NULL DEFAULT '{}'::jsonb,
+    source_ip inet,
+    user_agent text,
+    result text NOT NULL,
+    error_message text,
+    occurred_at timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    request_id text,
+    CONSTRAINT audits_actor_type_check CHECK (actor_type IN ('user', 'system')),
+    CONSTRAINT audits_result_check CHECK (result IN ('success', 'failed')),
+    CONSTRAINT audits_request_params_check CHECK (jsonb_typeof(request_params) = 'object')
+);
+
+CREATE TABLE email_codes (
+    email text NOT NULL,
+    purpose text NOT NULL CHECK (purpose IN ('login', 'register', 'reset')),
+    code_hash text NOT NULL,
+    expires_at timestamptz NOT NULL,
+    attempts integer NOT NULL DEFAULT 0,
+    ready boolean NOT NULL DEFAULT false,
+    PRIMARY KEY (email, purpose)
+);
+
+CREATE TABLE email_code_deliveries (
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    email text NOT NULL,
+    ip_hash text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE browser_sessions (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    token_hash text NOT NULL UNIQUE,
+    user_id uuid NOT NULL REFERENCES users (id),
+    authentication_method text NOT NULL,
+    expires_at timestamptz NOT NULL,
+    last_seen_at timestamptz NOT NULL DEFAULT now(),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    revoked_at timestamptz,
+    CONSTRAINT browser_sessions_authentication_method_check CHECK (
+        authentication_method IN ('password', 'oauth', 'email_code')
+    ),
+    CONSTRAINT browser_sessions_expiry_check CHECK (expires_at > created_at)
+);
+
+CREATE TABLE oauth_authorization_requests (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    client_id text NOT NULL,
+    redirect_uri text NOT NULL,
+    state text NOT NULL,
+    code_challenge text NOT NULL,
+    code_challenge_method text NOT NULL,
+    expires_at timestamptz NOT NULL,
+    completed_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT oauth_authorization_requests_method_check CHECK (
+        code_challenge_method = 'S256'
+    ),
+    CONSTRAINT oauth_authorization_requests_expiry_check CHECK (expires_at > created_at)
+);
+
+CREATE TABLE oauth_login_states (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    state_hash text NOT NULL UNIQUE,
+    connection_id text NOT NULL,
+    purpose text NOT NULL DEFAULT 'client' CHECK (purpose IN ('client','admin')),
+    CHECK ((purpose='client' AND authorization_request_id IS NOT NULL) OR (purpose='admin' AND authorization_request_id IS NULL)),
+    authorization_request_id uuid REFERENCES oauth_authorization_requests (id),
+    expires_at timestamptz NOT NULL,
+    consumed_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT oauth_login_states_expiry_check CHECK (expires_at > created_at)
+);
+
+CREATE TABLE oauth_authorization_codes (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    code_hash text NOT NULL UNIQUE,
+    authorization_request_id uuid NOT NULL UNIQUE REFERENCES oauth_authorization_requests (id),
+    user_id uuid NOT NULL REFERENCES users (id),
+    client_id text NOT NULL,
+    redirect_uri text NOT NULL,
+    code_challenge text NOT NULL,
+    expires_at timestamptz NOT NULL,
+    redeemed_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT oauth_authorization_codes_expiry_check CHECK (expires_at > created_at)
+);
+
+CREATE TABLE oauth_tokens (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users (id),
+    client_id text NOT NULL,
+    access_token_hash text NOT NULL UNIQUE,
+    refresh_token_hash text NOT NULL UNIQUE,
+    access_expires_at timestamptz NOT NULL,
+    refresh_expires_at timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    revoked_at timestamptz,
+    CONSTRAINT oauth_tokens_expiry_check CHECK (
+        access_expires_at > created_at AND refresh_expires_at > access_expires_at
+    )
+);
+
+CREATE TABLE api_keys (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users (id),
+    name text NOT NULL,
+    key_prefix text NOT NULL,
+    key_hash text NOT NULL UNIQUE,
+    scopes text[] NOT NULL,
+    expires_at timestamptz NOT NULL,
+    last_used_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    revoked_at timestamptz,
+    CONSTRAINT api_keys_name_check CHECK (btrim(name) <> ''),
+    CONSTRAINT api_keys_scopes_check CHECK (
+        cardinality(scopes) > 0
+        AND scopes <@ ARRAY['model:invoke', 'mcp:invoke']::text[]
+    ),
+    CONSTRAINT api_keys_expiry_check CHECK (expires_at > created_at)
+);
+
+CREATE TABLE endpoints (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users(id),
+    machine_id uuid NOT NULL,
+    device_name text NOT NULL CHECK (octet_length(device_name) BETWEEN 1 AND 128),
+    alias text CHECK (alias IS NULL OR octet_length(alias) BETWEEN 1 AND 128),
+    platform text NOT NULL CHECK (platform IN ('macos', 'windows', 'linux', 'ios', 'android')),
+    os_version text NOT NULL CHECK (octet_length(os_version) BETWEEN 1 AND 64),
+    arch text NOT NULL CHECK (octet_length(arch) BETWEEN 1 AND 32),
+    client_version text NOT NULL CHECK (octet_length(client_version) BETWEEN 1 AND 64),
+    protocol_version integer NOT NULL CHECK (protocol_version > 0),
+    status text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'revoked')),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    last_seen_at timestamptz,
+    revoked_at timestamptz,
+    UNIQUE (user_id, machine_id),
+    CHECK ((status = 'revoked') = (revoked_at IS NOT NULL))
+);
+
+ALTER TABLE users DROP COLUMN billing_group_id;
+
+ALTER TABLE credit_accounts
+    DROP CONSTRAINT credit_accounts_amount_check,
+    ADD CONSTRAINT credit_accounts_amount_check CHECK (frozen >= 0);
+
+ALTER TABLE models
+    ADD COLUMN kind text NOT NULL DEFAULT 'text',
+    ADD COLUMN provider text NOT NULL DEFAULT 'passthrough',
+    ADD COLUMN provider_options jsonb NOT NULL DEFAULT '{}'::jsonb,
+    ADD COLUMN image_config jsonb,
+    ADD COLUMN image_pricing jsonb;
+
+ALTER TABLE models
+    DROP CONSTRAINT models_protocol_check,
+    ADD CONSTRAINT models_protocol_check CHECK (
+        protocol IN ('openai_chat_completions', 'openai_responses', 'anthropic', 'image_generation')
+    ),
+    ADD CONSTRAINT models_kind_check CHECK (kind IN ('text', 'image')),
+    ADD CONSTRAINT models_provider_options_check CHECK (jsonb_typeof(provider_options) = 'object'),
+    ADD CONSTRAINT models_image_config_check CHECK (image_config IS NULL OR jsonb_typeof(image_config) = 'object'),
+    ADD CONSTRAINT models_image_pricing_check CHECK (image_pricing IS NULL OR jsonb_typeof(image_pricing) = 'object'),
+    ADD CONSTRAINT models_kind_config_check CHECK (
+        (kind = 'text' AND provider = 'passthrough' AND protocol <> 'image_generation'
+            AND image_config IS NULL AND image_pricing IS NULL)
+        OR (kind = 'image' AND provider <> 'passthrough' AND protocol = 'image_generation'
+            AND image_config IS NOT NULL AND image_pricing IS NOT NULL
+            AND advanced_config = '{}'::jsonb AND credit_multiplier = 1)
+    );
+
+ALTER TABLE billing_transactions DROP CONSTRAINT billing_transactions_category_check;
+
+ALTER TABLE billing_transactions ADD CONSTRAINT billing_transactions_category_check CHECK (category IN ('model', 'tool', 'image'));
+
+ALTER TABLE credit_ledger_entries DROP CONSTRAINT credit_ledger_entries_category_check;
+
+ALTER TABLE credit_ledger_entries ADD CONSTRAINT credit_ledger_entries_category_check CHECK (category IN ('model', 'tool', 'image', 'other'));
+
+CREATE TABLE image_calls (
+    id uuid PRIMARY KEY REFERENCES billing_transactions(id),
+    user_id uuid NOT NULL REFERENCES users(id),
+    model_id uuid NOT NULL REFERENCES models(id),
+    request_id text,
+    status text NOT NULL CHECK (status IN ('succeeded', 'failed', 'cancelled')),
+    generated_images bigint NOT NULL DEFAULT 0 CHECK (generated_images >= 0),
+    error_code text,
+    started_at timestamptz NOT NULL,
+    completed_at timestamptz
+);
+
+CREATE TABLE image_inputs (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users(id),
+    object_key text NOT NULL UNIQUE,
+    mime_type text NOT NULL,
+    width integer NOT NULL CHECK (width > 0),
+    height integer NOT NULL CHECK (height > 0),
+    byte_size bigint NOT NULL CHECK (byte_size > 0),
+    sha256 text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    expires_at timestamptz NOT NULL
+);
+
+CREATE TABLE image_jobs (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users(id),
+    model_id uuid NOT NULL REFERENCES models(id),
+    billing_transaction_id uuid UNIQUE REFERENCES billing_transactions(id),
+    provider text NOT NULL,
+    operation text NOT NULL CHECK (operation IN ('generate', 'edit')),
+    provider_job_id text,
+    provider_request_id text,
+    status text NOT NULL CHECK (status IN ('created', 'reserved', 'submitted', 'running', 'succeeded', 'failed', 'unknown')),
+    request_hash text NOT NULL,
+    idempotency_key text,
+    requested_images integer NOT NULL CHECK (requested_images > 0),
+    generated_images integer NOT NULL DEFAULT 0 CHECK (generated_images >= 0),
+    quality text NOT NULL,
+    aspect_ratio text NOT NULL,
+    request_config jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(request_config) = 'object'),
+    pricing_snapshot jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(pricing_snapshot) = 'object'),
+    usage jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(usage) = 'object'),
+    error_code text,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    submitted_at timestamptz,
+    completed_at timestamptz
+);
+
+CREATE TABLE image_job_inputs (
+    job_id uuid NOT NULL REFERENCES image_jobs(id),
+    input_id uuid NOT NULL REFERENCES image_inputs(id),
+    PRIMARY KEY (job_id, input_id)
+);
+
+CREATE TABLE image_outputs (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    job_id uuid NOT NULL REFERENCES image_jobs(id),
+    ordinal integer NOT NULL CHECK (ordinal >= 0),
+    object_key text NOT NULL UNIQUE,
+    UNIQUE (job_id, ordinal),
+    mime_type text NOT NULL,
+    width integer NOT NULL CHECK (width > 0),
+    height integer NOT NULL CHECK (height > 0),
+    byte_size bigint NOT NULL CHECK (byte_size > 0),
+    sha256 text NOT NULL,
+    seed bigint,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    expires_at timestamptz NOT NULL,
+    purged_at timestamptz
+);
+
+CREATE TABLE feedbacks (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users (id),
+    category text NOT NULL CHECK (category IN ('bug', 'feature', 'experience', 'other')),
+    content text NOT NULL DEFAULT '' CHECK (char_length(content) <= 5000),
+    rating integer CHECK (rating IS NULL OR rating BETWEEN 1 AND 5),
+    platform text NOT NULL CHECK (platform IN ('desktop', 'mobile', 'web', 'other')),
+    client_version text NOT NULL DEFAULT '' CHECK (char_length(client_version) <= 64),
+    state text NOT NULL DEFAULT 'uploading' CHECK (state IN ('uploading', 'new', 'resolved', 'ignored', 'failed')),
+    request_id text NOT NULL DEFAULT '',
+    idempotency_key text NOT NULL DEFAULT '',
+    request_hash text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE feedback_attachments (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    feedback_id uuid NOT NULL REFERENCES feedbacks (id) ON DELETE CASCADE,
+    object_key text NOT NULL,
+    mime_type text NOT NULL CHECK (mime_type IN ('image/png', 'image/jpeg', 'image/webp')),
+    byte_size bigint NOT NULL CHECK (byte_size > 0 AND byte_size <= 5242880),
+    width integer NOT NULL CHECK (width > 0),
+    height integer NOT NULL CHECK (height > 0),
+    sha256 text NOT NULL CHECK (sha256 ~ '^[0-9a-f]{64}$'),
+    state text NOT NULL DEFAULT 'pending' CHECK (state IN ('pending', 'ready', 'failed')),
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE settings
+    DROP CONSTRAINT settings_key_check,
+    ADD CONSTRAINT settings_key_check CHECK (
+        key IN ('branding', 'authentication', 'email', 'billing', 'session_reporting')
+    );
+
+ALTER TABLE sessions
+    ADD COLUMN group_id uuid,
+    ADD COLUMN model_id uuid,
+    ADD COLUMN parent_session_id uuid,
+    ADD COLUMN mode text,
+    ADD COLUMN workspace_kind text,
+    ADD COLUMN client_version text,
+    ADD COLUMN engine_version text,
+    ADD COLUMN runtime_version text,
+    ADD COLUMN placeholder boolean NOT NULL DEFAULT false,
+    ADD COLUMN started_at_provisional boolean NOT NULL DEFAULT false,
+    ADD COLUMN clock_suspect boolean NOT NULL DEFAULT false,
+    ADD COLUMN state_seq bigint NOT NULL DEFAULT 0,
+    ADD COLUMN state_hash bytea,
+    ADD COLUMN state_received_at timestamptz,
+    ADD COLUMN resources_snapshot_id text,
+    ADD COLUMN acked_turn integer NOT NULL DEFAULT 0,
+    ADD COLUMN facts_version integer,
+    ADD COLUMN last_stop_reason text,
+    ADD COLUMN active_seconds bigint NOT NULL DEFAULT 0,
+    ADD COLUMN client_deleted_at timestamptz,
+    ADD COLUMN purged_at timestamptz,
+    ADD COLUMN reporting_enabled_at timestamptz,
+    ADD CONSTRAINT sessions_group_id_fkey FOREIGN KEY (group_id) REFERENCES groups (id),
+    ADD CONSTRAINT sessions_model_id_fkey FOREIGN KEY (model_id) REFERENCES models (id),
+    ADD CONSTRAINT sessions_parent_session_id_fkey FOREIGN KEY (parent_session_id) REFERENCES sessions (id),
+    ADD CONSTRAINT sessions_parent_session_id_check CHECK (parent_session_id IS DISTINCT FROM id),
+    ADD CONSTRAINT sessions_state_seq_check CHECK (state_seq >= 0),
+    ADD CONSTRAINT sessions_acked_turn_check CHECK (acked_turn >= 0),
+    ADD CONSTRAINT sessions_active_seconds_check CHECK (active_seconds >= 0);
+
+ALTER TABLE sessions
+    ALTER COLUMN last_active_at DROP NOT NULL,
+    DROP CONSTRAINT sessions_client_type_check,
+    DROP CONSTRAINT sessions_time_check,
+    ADD CONSTRAINT sessions_client_type_check CHECK (
+        client_type IN ('desktop', 'web', 'extension', 'mobile', 'unknown')
+    ),
+    ADD CONSTRAINT sessions_time_check CHECK (
+        ended_at IS NULL OR ended_at >= started_at
+    );
+
+CREATE TABLE session_resource_snapshots (
+    session_id uuid NOT NULL REFERENCES sessions(id),
+    snapshot_id text NOT NULL,
+    revision bigint,
+    state_version bigint,
+    items jsonb NOT NULL CHECK (jsonb_typeof(items) = 'array'),
+    first_seen_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (session_id, snapshot_id)
+);
+
+CREATE TABLE session_resource_snapshot_items (
+    session_id uuid NOT NULL,
+    snapshot_id text NOT NULL,
+    resource_id text NOT NULL,
+    kind text NOT NULL,
+    name text,
+    source text,
+    version text,
+    digest text,
+    enabled boolean NOT NULL,
+    available boolean NOT NULL,
+    status text,
+    reason text,
+    PRIMARY KEY (session_id, snapshot_id, resource_id),
+    FOREIGN KEY (session_id, snapshot_id)
+        REFERENCES session_resource_snapshots(session_id, snapshot_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE session_turns (
+    session_id uuid NOT NULL REFERENCES sessions(id),
+    turn_index integer NOT NULL CHECK (turn_index > 0),
+    facts_version integer NOT NULL,
+    report_hash bytea NOT NULL,
+    input_seq bigint NOT NULL,
+    started_at timestamptz NOT NULL,
+    ended_at timestamptz NOT NULL,
+    received_at timestamptz NOT NULL DEFAULT now(),
+    stop_reason text NOT NULL CHECK (
+        stop_reason IN (
+            'complete', 'interrupted', 'error',
+            'max_turns', 'output_limit', 'unknown'
+        )
+    ),
+    error_code text,
+    recovered boolean NOT NULL DEFAULT false,
+
+    model_id uuid REFERENCES models(id),
+    thinking_enabled boolean,
+    thinking_effort text,
+    resources_snapshot_id text NOT NULL,
+    client_version text,
+    engine_version text,
+
+    input_tokens bigint,
+    output_tokens bigint,
+    cache_creation_input_tokens bigint,
+    cache_read_input_tokens bigint,
+    subagent_input_tokens bigint,
+    subagent_output_tokens bigint,
+    subagent_cache_creation_input_tokens bigint,
+    subagent_cache_read_input_tokens bigint,
+    context_used bigint,
+    context_window bigint,
+
+    input_kind text NOT NULL,
+    input_client_type text,
+    input_machine_id text,
+    command_skill_id text,
+    attachments integer NOT NULL DEFAULT 0,
+    canvas_nodes integer NOT NULL DEFAULT 0,
+    steers integer NOT NULL DEFAULT 0,
+    files_created integer NOT NULL DEFAULT 0,
+    files_updated integer NOT NULL DEFAULT 0,
+    files_deleted integer NOT NULL DEFAULT 0,
+    compactions integer NOT NULL DEFAULT 0,
+    permissions_asked integer NOT NULL DEFAULT 0,
+    permissions_allowed integer NOT NULL DEFAULT 0,
+    permissions_denied integer NOT NULL DEFAULT 0,
+    truncated boolean NOT NULL DEFAULT false,
+
+    PRIMARY KEY (session_id, turn_index),
+    FOREIGN KEY (session_id, resources_snapshot_id)
+        REFERENCES session_resource_snapshots(session_id, snapshot_id),
+    CHECK (ended_at >= started_at),
+    CHECK (input_tokens IS NULL OR input_tokens >= 0),
+    CHECK (output_tokens IS NULL OR output_tokens >= 0),
+    CHECK (context_used IS NULL OR context_used >= 0),
+    CHECK (context_window IS NULL OR context_window >= 0),
+    CHECK (attachments >= 0 AND canvas_nodes >= 0 AND steers >= 0),
+    CHECK (files_created >= 0 AND files_updated >= 0 AND files_deleted >= 0),
+    CHECK (compactions >= 0 AND permissions_asked >= 0),
+    CHECK (permissions_allowed >= 0 AND permissions_denied >= 0)
+);
+
+CREATE TABLE session_turn_tools (
+    session_id uuid NOT NULL,
+    turn_index integer NOT NULL,
+    ordinal integer NOT NULL CHECK (ordinal >= 0),
+    category text NOT NULL CHECK (
+        category IN ('builtin', 'skill', 'workflow', 'agent',
+                     'connector', 'local_mcp')
+    ),
+    name text,
+    resource_id text,
+    resource_origin text,
+    resource_version text,
+    server text,
+    target text,
+    calls integer NOT NULL CHECK (calls > 0),
+    failed integer NOT NULL CHECK (failed >= 0 AND failed <= calls),
+    duration_ms bigint NOT NULL CHECK (duration_ms >= 0),
+    PRIMARY KEY (session_id, turn_index, ordinal),
+    FOREIGN KEY (session_id, turn_index)
+        REFERENCES session_turns(session_id, turn_index)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE session_skill_events (
+    session_id uuid NOT NULL,
+    turn_index integer NOT NULL,
+    ordinal integer NOT NULL CHECK (ordinal >= 0),
+    skill_id text,
+    name text,
+    origin text,
+    version text,
+    digest text,
+    trigger text NOT NULL CHECK (trigger IN ('user', 'model', 'workflow')),
+    ok boolean NOT NULL,
+    reason text,
+    PRIMARY KEY (session_id, turn_index, ordinal),
+    FOREIGN KEY (session_id, turn_index)
+        REFERENCES session_turns(session_id, turn_index)
+        ON DELETE CASCADE
+);
+
+ALTER TABLE endpoints
+    DROP CONSTRAINT endpoints_platform_check,
+    ALTER COLUMN protocol_version DROP NOT NULL,
+    ADD CONSTRAINT endpoints_platform_check CHECK (
+        platform IN ('macos', 'windows', 'linux', 'ios', 'android', 'web')
+    );
+
+ALTER TABLE endpoints
+    ADD COLUMN client_type text,
+    ADD COLUMN client_name text,
+    ADD COLUMN channel text,
+    ADD COLUMN locale text,
+    ADD COLUMN system_locale text,
+    ADD COLUMN timezone text,
+    ADD COLUMN runtime_version text,
+    ADD COLUMN engine_version text,
+    ADD COLUMN electron_version text,
+    ADD COLUMN last_reported_at timestamptz;
+
+ALTER TABLE image_jobs
+    ADD COLUMN session_id uuid REFERENCES sessions(id);
+
+ALTER TABLE image_calls
+    DROP CONSTRAINT image_calls_id_fkey,
+    ADD COLUMN billing_transaction_id uuid,
+    ADD COLUMN job_id uuid,
+    ADD COLUMN session_id uuid REFERENCES sessions(id);
+
+ALTER TABLE image_calls
+    ADD CONSTRAINT image_calls_billing_transaction_id_key UNIQUE (billing_transaction_id),
+    ADD CONSTRAINT image_calls_billing_transaction_id_fkey
+        FOREIGN KEY (billing_transaction_id) REFERENCES billing_transactions(id),
+    ADD CONSTRAINT image_calls_job_id_key UNIQUE (job_id),
+    ADD CONSTRAINT image_calls_job_id_fkey
+        FOREIGN KEY (job_id) REFERENCES image_jobs(id);
+
+CREATE TABLE session_reporting_rate_limits (
+    user_id uuid NOT NULL REFERENCES users(id),
+    kind text NOT NULL CHECK (kind IN ('sessions', 'turns', 'endpoints')),
+    bucket_start timestamptz NOT NULL,
+    request_count integer NOT NULL CHECK (request_count > 0),
+    PRIMARY KEY (user_id, kind)
+);
+
+ALTER TABLE sessions ADD COLUMN title_source text;
+
+ALTER TABLE models
+    ADD COLUMN video_config jsonb,
+    ADD COLUMN video_pricing jsonb;
+
+ALTER TABLE models
+    DROP CONSTRAINT models_protocol_check,
+    ADD CONSTRAINT models_protocol_check CHECK (
+        protocol IN ('openai_chat_completions', 'openai_responses', 'anthropic', 'image_generation', 'video_generation')
+    ),
+    DROP CONSTRAINT models_kind_check,
+    ADD CONSTRAINT models_kind_check CHECK (kind IN ('text', 'image', 'video')),
+    ADD CONSTRAINT models_video_config_check CHECK (video_config IS NULL OR jsonb_typeof(video_config) = 'object'),
+    ADD CONSTRAINT models_video_pricing_check CHECK (video_pricing IS NULL OR jsonb_typeof(video_pricing) = 'object'),
+    DROP CONSTRAINT models_kind_config_check,
+    ADD CONSTRAINT models_kind_config_check CHECK (
+        (kind = 'text' AND provider = 'passthrough'
+            AND protocol IN ('openai_chat_completions', 'openai_responses', 'anthropic')
+            AND image_config IS NULL AND image_pricing IS NULL
+            AND video_config IS NULL AND video_pricing IS NULL)
+        OR (kind = 'image' AND provider <> 'passthrough' AND protocol = 'image_generation'
+            AND image_config IS NOT NULL AND image_pricing IS NOT NULL
+            AND video_config IS NULL AND video_pricing IS NULL
+            AND advanced_config = '{}'::jsonb AND credit_multiplier = 1)
+        OR (kind = 'video' AND provider IN ('xai', 'minimax') AND protocol = 'video_generation'
+            AND image_config IS NULL AND image_pricing IS NULL
+            AND video_config IS NOT NULL AND video_pricing IS NOT NULL
+            AND advanced_config = '{}'::jsonb AND credit_multiplier = 1)
+    );
+
+ALTER TABLE billing_transactions
+    DROP CONSTRAINT billing_transactions_category_check,
+    ADD CONSTRAINT billing_transactions_category_check CHECK (category IN ('model', 'tool', 'image', 'video'));
+
+ALTER TABLE credit_ledger_entries
+    DROP CONSTRAINT credit_ledger_entries_category_check,
+    ADD CONSTRAINT credit_ledger_entries_category_check CHECK (category IN ('model', 'tool', 'image', 'video', 'other'));
+
+CREATE TABLE video_inputs (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users(id),
+    object_key text NOT NULL,
+    mime_type text NOT NULL CHECK (mime_type IN ('image/png', 'image/jpeg')),
+    width integer NOT NULL CHECK (width > 0),
+    height integer NOT NULL CHECK (height > 0),
+    byte_size bigint NOT NULL CHECK (byte_size > 0),
+    sha256 text NOT NULL,
+    expires_at timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE video_jobs (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users(id),
+    model_id uuid NOT NULL REFERENCES models(id),
+    session_id uuid REFERENCES sessions(id),
+    provider text NOT NULL,
+    mode text NOT NULL,
+    status text NOT NULL CHECK (status IN ('created', 'reserved', 'submitted', 'running', 'succeeded', 'failed', 'unknown')),
+    request_hash text NOT NULL,
+    idempotency_key text,
+    request_config jsonb NOT NULL,
+    pricing_snapshot jsonb NOT NULL,
+    provider_job_id text,
+    billing_transaction_id uuid REFERENCES billing_transactions(id),
+    error_code text,
+    output_duration_ms bigint CHECK (output_duration_ms IS NULL OR output_duration_ms >= 0),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    poll_after timestamptz NOT NULL DEFAULT now(),
+    completed_at timestamptz
+);
+
+CREATE TABLE video_job_inputs (
+    job_id uuid NOT NULL REFERENCES video_jobs(id),
+    input_id uuid NOT NULL REFERENCES video_inputs(id),
+    ordinal integer NOT NULL CHECK (ordinal >= 0),
+    role text NOT NULL,
+    PRIMARY KEY (job_id, ordinal)
+);
+
+CREATE TABLE video_outputs (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    job_id uuid NOT NULL UNIQUE REFERENCES video_jobs(id),
+    object_key text NOT NULL,
+    mime_type text NOT NULL CHECK (mime_type IN ('video/mp4', 'video/webm')),
+    width integer NOT NULL CHECK (width > 0),
+    height integer NOT NULL CHECK (height > 0),
+    duration_ms bigint NOT NULL CHECK (duration_ms > 0),
+    byte_size bigint NOT NULL CHECK (byte_size > 0),
+    sha256 text NOT NULL,
+    expires_at timestamptz NOT NULL,
+    purged_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE video_calls (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    job_id uuid NOT NULL UNIQUE REFERENCES video_jobs(id),
+    billing_transaction_id uuid UNIQUE REFERENCES billing_transactions(id),
+    user_id uuid NOT NULL REFERENCES users(id),
+    model_id uuid NOT NULL REFERENCES models(id),
+    session_id uuid REFERENCES sessions(id),
+    status text NOT NULL,
+    output_duration_ms bigint NOT NULL DEFAULT 0 CHECK (output_duration_ms >= 0),
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE settings DROP CONSTRAINT settings_key_check,
+    ADD CONSTRAINT settings_key_check CHECK (key IN ('branding', 'authentication', 'email', 'billing', 'session_reporting', 'proxies'));
+
+ALTER TABLE models ADD COLUMN proxy_id text NOT NULL DEFAULT '';
+
+ALTER TABLE connectors ADD COLUMN proxy_id text NOT NULL DEFAULT '';
+
+CREATE TABLE resource_imports (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    publisher text NOT NULL CHECK (publisher = btrim(publisher) AND char_length(publisher) BETWEEN 1 AND 128),
+    release_id uuid NOT NULL,
+    version bigint NOT NULL CHECK (version > 0),
+    manifest_sha256 text NOT NULL CHECK (manifest_sha256 ~ '^sha256:[0-9a-f]{64}$'),
+    actor_user_id uuid NOT NULL REFERENCES users(id),
+    status text NOT NULL CHECK (status IN ('succeeded', 'failed')),
+    result_counts jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(result_counts) = 'object'),
+    failure_code text,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    completed_at timestamptz NOT NULL DEFAULT now(),
+    CHECK ((status = 'succeeded') = (failure_code IS NULL))
+);
+
+CREATE TABLE resource_import_bindings (
+    publisher text NOT NULL CHECK (publisher = btrim(publisher) AND char_length(publisher) BETWEEN 1 AND 128),
+    slug text NOT NULL CHECK (slug = btrim(slug) AND char_length(slug) BETWEEN 1 AND 128),
+    resource_type text NOT NULL CHECK (resource_type IN ('skill', 'rule', 'connector', 'expert')),
+    resource_id uuid NOT NULL,
+    source_sha256 text NOT NULL CHECK (source_sha256 ~ '^sha256:[0-9a-f]{64}$'),
+    applied_sha256 text NOT NULL CHECK (applied_sha256 ~ '^sha256:[0-9a-f]{64}$'),
+    last_import_id uuid NOT NULL REFERENCES resource_imports(id),
+    retired_at timestamptz,
+    retired_import_id uuid REFERENCES resource_imports(id),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    CHECK ((retired_at IS NULL) = (retired_import_id IS NULL)),
+    PRIMARY KEY (publisher, slug),
+    UNIQUE (resource_type, resource_id)
+);
+
+ALTER TABLE skills
+    ADD COLUMN name_i18n jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(name_i18n) = 'object'),
+    ADD COLUMN description_i18n jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(description_i18n) = 'object');
+
+ALTER TABLE rules
+    ADD COLUMN enabled boolean NOT NULL DEFAULT true,
+    ADD COLUMN name_i18n jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(name_i18n) = 'object'),
+    ADD COLUMN description_i18n jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(description_i18n) = 'object');
+
+ALTER TABLE connectors
+    ADD COLUMN timeout_ms integer NOT NULL DEFAULT 25000 CHECK (timeout_ms BETWEEN 1000 AND 120000),
+    ADD COLUMN auth_header_name text NOT NULL DEFAULT '',
+    ADD COLUMN name_i18n jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(name_i18n) = 'object'),
+    ADD COLUMN description_i18n jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(description_i18n) = 'object');
+
+ALTER TABLE experts
+    ADD COLUMN avatar_s3_key text NOT NULL DEFAULT '',
+    ADD COLUMN name_i18n jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(name_i18n) = 'object'),
+    ADD COLUMN description_i18n jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(description_i18n) = 'object');
+
+ALTER TABLE skills ADD COLUMN origin text NOT NULL DEFAULT 'local'
+    CHECK (origin IN ('local', 'package') AND (origin = 'local' OR ownership_type = 'system'));
+
+ALTER TABLE rules ADD COLUMN origin text NOT NULL DEFAULT 'local'
+    CHECK (origin IN ('local', 'package') AND (origin = 'local' OR ownership_type = 'system'));
+
+ALTER TABLE connectors ADD COLUMN origin text NOT NULL DEFAULT 'local'
+    CHECK (origin IN ('local', 'package') AND (origin = 'local' OR ownership_type = 'system'));
+
+ALTER TABLE experts ADD COLUMN origin text NOT NULL DEFAULT 'local'
+    CHECK (origin IN ('local', 'package') AND (origin = 'local' OR ownership_type = 'system'));
+
+ALTER TABLE session_turns
+  ADD COLUMN input_text text,
+  ADD COLUMN input_text_truncated boolean NOT NULL DEFAULT false,
+  ADD COLUMN title text,
+  ADD COLUMN title_source text;
+
+ALTER TABLE model_calls
+    ADD COLUMN first_token_duration_ms integer
+    CHECK (first_token_duration_ms IS NULL OR first_token_duration_ms >= 0);
+
+ALTER TABLE video_outputs
+    DROP CONSTRAINT video_outputs_width_check,
+    DROP CONSTRAINT video_outputs_height_check,
+    ADD CONSTRAINT video_outputs_width_check CHECK (width >= 0),
+    ADD CONSTRAINT video_outputs_height_check CHECK (height >= 0);
+
+ALTER TABLE video_jobs
+    ADD COLUMN poll_failures integer NOT NULL DEFAULT 0 CHECK (poll_failures >= 0);
+
+ALTER TABLE models
+    DROP CONSTRAINT IF EXISTS models_kind_config_check,
+    ADD CONSTRAINT models_kind_config_check CHECK (
+        (kind = 'text' AND provider = 'passthrough'
+            AND protocol IN ('openai_chat_completions', 'openai_responses', 'anthropic')
+            AND image_config IS NULL AND image_pricing IS NULL
+            AND video_config IS NULL AND video_pricing IS NULL)
+        OR (kind = 'image' AND provider <> 'passthrough' AND protocol = 'image_generation'
+            AND image_config IS NOT NULL AND image_pricing IS NOT NULL
+            AND video_config IS NULL AND video_pricing IS NULL
+            AND advanced_config = '{}'::jsonb AND credit_multiplier = 1)
+        OR (kind = 'video' AND provider IN ('xai', 'minimax', 'volcengine', 'agnes') AND protocol = 'video_generation'
+            AND image_config IS NULL AND image_pricing IS NULL
+            AND video_config IS NOT NULL AND video_pricing IS NOT NULL
+            AND advanced_config = '{}'::jsonb AND credit_multiplier = 1)
+    );
+
+CREATE TABLE IF NOT EXISTS oauth_grants (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users(id),
+    client_id text NOT NULL,
+    scopes text[] NOT NULL DEFAULT '{}',
+    audience text NOT NULL DEFAULT 'monkeyai-api' CHECK (audience = 'monkeyai-api'),
+    purpose text NOT NULL DEFAULT 'user' CHECK (purpose IN ('user', 'runtime')),
+    machine_id uuid,
+    key_id text,
+    revocation_version bigint NOT NULL DEFAULT 1 CHECK (revocation_version > 0),
+    expires_at timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    revoked_at timestamptz,
+    revoke_reason text,
+    UNIQUE (id, user_id, client_id),
+    CHECK ((machine_id IS NULL) = (key_id IS NULL)),
+    CHECK (scopes <@ ARRAY['device:bind','device:publish','device:connect','device:manage',
+        'session:report','session:read','session:control','files:read','files:write','resources:manage']::text[])
+);
+
+ALTER TABLE oauth_authorization_requests
+    ADD COLUMN IF NOT EXISTS scopes text[] NOT NULL DEFAULT '{}',
+    ADD COLUMN IF NOT EXISTS audience text NOT NULL DEFAULT 'monkeyai-api' CHECK (audience = 'monkeyai-api');
+
+ALTER TABLE oauth_authorization_codes
+    ADD COLUMN IF NOT EXISTS scopes text[] NOT NULL DEFAULT '{}',
+    ADD COLUMN IF NOT EXISTS audience text NOT NULL DEFAULT 'monkeyai-api' CHECK (audience = 'monkeyai-api');
+
+ALTER TABLE oauth_tokens
+    ADD COLUMN IF NOT EXISTS grant_id uuid,
+    ADD COLUMN IF NOT EXISTS parent_id uuid UNIQUE REFERENCES oauth_tokens(id),
+    ADD COLUMN IF NOT EXISTS rotated_at timestamptz;
+
+ALTER TABLE oauth_tokens
+    ALTER COLUMN grant_id SET NOT NULL,
+    DROP CONSTRAINT IF EXISTS oauth_tokens_grant_fkey,
+    ADD CONSTRAINT oauth_tokens_grant_fkey FOREIGN KEY (grant_id, user_id, client_id)
+        REFERENCES oauth_grants(id, user_id, client_id);
+
+ALTER TABLE endpoints
+    ADD COLUMN IF NOT EXISTS execution_protocols jsonb NOT NULL DEFAULT '{}' CHECK (jsonb_typeof(execution_protocols)='object'),
+    ADD COLUMN IF NOT EXISTS execution_public_key bytea CHECK (execution_public_key IS NULL OR octet_length(execution_public_key) = 32),
+    ADD COLUMN IF NOT EXISTS key_id text,
+    ADD COLUMN IF NOT EXISTS deployment_mode text CHECK (deployment_mode IN ('desktop_managed', 'standalone')),
+    ADD COLUMN IF NOT EXISTS remote_access_state text NOT NULL DEFAULT 'disabled' CHECK (remote_access_state IN ('disabled', 'enabled', 'revoked')),
+    ADD COLUMN IF NOT EXISTS active_grant_id uuid REFERENCES oauth_grants(id),
+    ADD COLUMN IF NOT EXISTS registration_version bigint NOT NULL DEFAULT 0 CHECK (registration_version >= 0),
+    ADD COLUMN IF NOT EXISTS grant_version bigint NOT NULL DEFAULT 0 CHECK (grant_version >= 0),
+    ADD COLUMN IF NOT EXISTS lease_epoch bigint NOT NULL DEFAULT 0 CHECK (lease_epoch >= 0),
+    DROP CONSTRAINT IF EXISTS endpoints_execution_key_check,
+    DROP CONSTRAINT IF EXISTS endpoints_execution_access_check,
+    ADD CONSTRAINT endpoints_execution_key_check CHECK ((execution_public_key IS NULL) = (key_id IS NULL)),
+    ADD CONSTRAINT endpoints_execution_access_check CHECK (remote_access_state <> 'enabled' OR (execution_public_key IS NOT NULL AND active_grant_id IS NOT NULL AND deployment_mode IS NOT NULL));
+
+ALTER TABLE sessions
+    ADD COLUMN IF NOT EXISTS host_verified boolean NOT NULL DEFAULT false,
+    ADD COLUMN IF NOT EXISTS host_revision bigint NOT NULL DEFAULT 0 CHECK (host_revision >= 0);
+
+CREATE TABLE IF NOT EXISTS device_client_connections (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users(id),
+    machine_id uuid NOT NULL,
+    client_grant_id uuid NOT NULL REFERENCES oauth_grants(id),
+    grant_version bigint NOT NULL,
+    access_version bigint NOT NULL DEFAULT 1 CHECK (access_version > 0),
+    scopes text[] NOT NULL,
+    protocol jsonb NOT NULL CHECK (jsonb_typeof(protocol) = 'object'),
+    ticket_hash text NOT NULL UNIQUE,
+    ticket_version bigint NOT NULL DEFAULT 1 CHECK (ticket_version > 0),
+    expires_at timestamptz NOT NULL,
+    previous_ticket_hash text UNIQUE,
+    previous_expires_at timestamptz,
+    revoked_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    FOREIGN KEY (user_id,machine_id) REFERENCES endpoints(user_id,machine_id)
+);
+
+ALTER TABLE sessions
+    ADD COLUMN IF NOT EXISTS last_live_report_at timestamptz,
+    ADD COLUMN IF NOT EXISTS live_boot_id uuid,
+    ADD COLUMN IF NOT EXISTS live_lease_epoch bigint CHECK (live_lease_epoch > 0);
+
+CREATE TABLE IF NOT EXISTS oauth_device_requests (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    client_id text NOT NULL CHECK (client_id='monkeyai-runtime'),
+    device_code_hash text NOT NULL UNIQUE,
+    user_code_hash text NOT NULL UNIQUE,
+    machine_id uuid NOT NULL,
+    execution_public_key bytea NOT NULL CHECK (octet_length(execution_public_key)=32),
+    key_id text NOT NULL,
+    display_name text NOT NULL CHECK (octet_length(display_name) BETWEEN 1 AND 128),
+    platform text NOT NULL CHECK (platform IN ('macos','windows','linux')),
+    arch text NOT NULL CHECK (octet_length(arch) BETWEEN 1 AND 32),
+    requested_scopes text[] NOT NULL,
+    approved_scopes text[],
+    owner_user_id uuid REFERENCES users(id),
+    restore_revoked boolean NOT NULL DEFAULT false,
+    status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','denied','expired','consumed')),
+    interval_ms bigint NOT NULL DEFAULT 5000 CHECK (interval_ms>=5000),
+    next_poll_at timestamptz NOT NULL DEFAULT now(),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    expires_at timestamptz NOT NULL,
+    CHECK (expires_at>created_at),
+    CHECK ((status NOT IN ('approved','consumed')) OR (owner_user_id IS NOT NULL AND approved_scopes IS NOT NULL))
+);
+
+ALTER TABLE oauth_grants
+    ADD COLUMN IF NOT EXISTS requested_machine_id uuid,
+    ADD COLUMN IF NOT EXISTS requested_key_id text,
+    ADD COLUMN IF NOT EXISTS restore_approved boolean NOT NULL DEFAULT false,
+    DROP CONSTRAINT IF EXISTS oauth_grants_requested_device_check,
+    ADD CONSTRAINT oauth_grants_requested_device_check CHECK ((requested_machine_id IS NULL)=(requested_key_id IS NULL));
+
+ALTER TABLE oauth_login_states
+    DROP CONSTRAINT IF EXISTS oauth_login_states_purpose_check,
+    DROP CONSTRAINT IF EXISTS oauth_login_states_check,
+    DROP CONSTRAINT IF EXISTS oauth_login_states_request_check,
+    ADD COLUMN IF NOT EXISTS device_request_id uuid REFERENCES oauth_device_requests(id),
+    ADD CONSTRAINT oauth_login_states_purpose_check CHECK (purpose IN ('client','admin','device')),
+    ADD CONSTRAINT oauth_login_states_request_check CHECK (
+        (purpose='client' AND authorization_request_id IS NOT NULL AND device_request_id IS NULL) OR
+        (purpose='admin' AND authorization_request_id IS NULL AND device_request_id IS NULL) OR
+        (purpose='device' AND authorization_request_id IS NULL AND device_request_id IS NOT NULL));
+
+ALTER TABLE api_keys
+    ADD COLUMN IF NOT EXISTS machine_id uuid,
+    ADD COLUMN IF NOT EXISTS runtime_grant_id uuid REFERENCES oauth_grants(id),
+    DROP CONSTRAINT IF EXISTS api_keys_runtime_binding_check,
+    DROP CONSTRAINT IF EXISTS api_keys_device_fkey,
+    ADD CONSTRAINT api_keys_runtime_binding_check CHECK ((machine_id IS NULL)=(runtime_grant_id IS NULL)),
+    ADD CONSTRAINT api_keys_device_fkey FOREIGN KEY(user_id,machine_id) REFERENCES endpoints(user_id,machine_id);
+
+ALTER TABLE device_client_connections
+    ADD COLUMN IF NOT EXISTS access_version bigint NOT NULL DEFAULT 1 CHECK (access_version > 0);
+
+ALTER TABLE endpoints
+    DROP CONSTRAINT endpoints_platform_check,
+    ADD CONSTRAINT endpoints_platform_check CHECK (octet_length(platform) BETWEEN 1 AND 64);
+
+CREATE TABLE resource_import_uploads (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    actor_user_id uuid NOT NULL REFERENCES users(id),
+    files jsonb NOT NULL CHECK (jsonb_typeof(files) = 'array'),
+    total_size bigint NOT NULL CHECK (total_size BETWEEN 1 AND 2147483648),
+    status text NOT NULL DEFAULT 'uploading' CHECK (status IN ('uploading', 'ready', 'imported', 'cancelled')),
+    package_sha256 text NOT NULL DEFAULT '',
+    created_at timestamptz NOT NULL DEFAULT now(),
+    expires_at timestamptz NOT NULL DEFAULT now() + interval '24 hours',
+    CHECK ((status IN ('ready', 'imported')) = (package_sha256 ~ '^sha256:[0-9a-f]{64}$'))
+);
+
+CREATE TABLE resource_import_chunks (
+    upload_id uuid NOT NULL REFERENCES resource_import_uploads(id) ON DELETE CASCADE,
+    index integer NOT NULL CHECK (index BETWEEN 0 AND 31),
+    size bigint NOT NULL CHECK (size BETWEEN 1 AND 67108864),
+    sha256 text NOT NULL CHECK (sha256 ~ '^sha256:[0-9a-f]{64}$'),
+    PRIMARY KEY (upload_id, index)
+);
+
+ALTER TABLE model_calls ADD COLUMN usage_known boolean NOT NULL DEFAULT true;
+
+CREATE TABLE stats_model_hourly (
+    hour_start timestamptz NOT NULL,
+    model_id uuid NOT NULL,
+    calls bigint NOT NULL DEFAULT 0 CHECK (calls >= 0),
+    succeeded bigint NOT NULL DEFAULT 0 CHECK (succeeded >= 0),
+    cache_hits bigint NOT NULL DEFAULT 0 CHECK (cache_hits >= 0),
+    input_tokens numeric NOT NULL DEFAULT 0 CHECK (input_tokens >= 0),
+    output_tokens numeric NOT NULL DEFAULT 0 CHECK (output_tokens >= 0),
+    PRIMARY KEY (hour_start, model_id),
+    CHECK (hour_start = date_trunc('hour', hour_start, 'UTC')),
+    CHECK (succeeded <= calls AND cache_hits <= calls)
+);
+
+CREATE TABLE stats_model_credit_hourly (
+    hour_start timestamptz PRIMARY KEY,
+    credits numeric NOT NULL DEFAULT 0,
+    CHECK (hour_start = date_trunc('hour', hour_start, 'UTC'))
+);
+
+CREATE VIEW billing_ledger_original_entries AS SELECT * FROM credit_ledger_entries;
+
+CREATE TABLE credit_ledger_entry_keys (
+    id uuid PRIMARY KEY,
+    account_id uuid NOT NULL,
+    event_key text,
+    sequence bigint,
+    transaction_id uuid,
+    occurred_at timestamptz NOT NULL CHECK (isfinite(occurred_at)),
+    user_id uuid NOT NULL,
+    session_id uuid,
+    group_id uuid
+);
+
+CREATE TABLE credit_ledger_entries_partitioned (
+    LIKE credit_ledger_entries INCLUDING DEFAULTS INCLUDING CONSTRAINTS,
+    PRIMARY KEY (id, occurred_at),
+    FOREIGN KEY (id) REFERENCES credit_ledger_entry_keys(id),
+    FOREIGN KEY (reverses_id) REFERENCES credit_ledger_entry_keys(id),
+    CHECK (isfinite(occurred_at))
+) PARTITION BY RANGE (occurred_at);
+
+CREATE TABLE credit_ledger_entries_default PARTITION OF credit_ledger_entries_partitioned DEFAULT;
+
+CREATE TABLE billing_ledger_partition_state (
+    id boolean PRIMARY KEY DEFAULT true CHECK (id),
+    phase text NOT NULL DEFAULT 'backfill' CHECK (phase IN ('backfill', 'partitioned')),
+    source_relation regclass NOT NULL,
+    target_relation regclass NOT NULL,
+    source_end_at timestamptz,
+    source_end_id uuid,
+    cursor_at timestamptz,
+    cursor_id uuid,
+    checked_rows bigint NOT NULL DEFAULT 0,
+    switched_at timestamptz,
+    mirror_legacy boolean NOT NULL DEFAULT true
+);
+
+ALTER TABLE credit_ledger_entry_keys
+    ADD FOREIGN KEY (account_id) REFERENCES credit_accounts(id),
+    ADD FOREIGN KEY (user_id) REFERENCES users(id),
+    ADD FOREIGN KEY (session_id) REFERENCES sessions(id),
+    ADD FOREIGN KEY (transaction_id) REFERENCES billing_transactions(id),
+    ADD FOREIGN KEY (group_id) REFERENCES groups(id);
+
+CREATE TABLE design_snapshots (
+    id uuid PRIMARY KEY,
+    publisher_id text NOT NULL,
+    source_release_id text NOT NULL,
+    schema_version integer NOT NULL CHECK (schema_version = 1),
+    digest_schema text NOT NULL CHECK (digest_schema = 'design-content-v1'),
+    snapshot_digest text NOT NULL,
+    taxonomy jsonb NOT NULL,
+    actor_user_id uuid NOT NULL REFERENCES users(id),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (publisher_id, source_release_id)
+);
+
+CREATE TABLE design_entries (
+    id uuid PRIMARY KEY,
+    snapshot_id uuid NOT NULL REFERENCES design_snapshots(id) ON DELETE CASCADE,
+    resource_type text NOT NULL CHECK (resource_type IN ('template','design-system','style','direction')),
+    catalog_id text NOT NULL,
+    content_digest text NOT NULL,
+    data jsonb NOT NULL,
+    UNIQUE (snapshot_id, resource_type, catalog_id)
+);
+
+CREATE TABLE design_files (
+    entry_id uuid NOT NULL REFERENCES design_entries(id) ON DELETE CASCADE,
+    path text NOT NULL,
+    sha256 text NOT NULL,
+    size bigint NOT NULL CHECK (size >= 0),
+    mime text NOT NULL,
+    role text,
+    object_key text NOT NULL,
+    PRIMARY KEY (entry_id,path)
+);
+
+CREATE TABLE design_current (
+    singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+    publisher_id text,
+    snapshot_id uuid REFERENCES design_snapshots(id),
+    revision bigint NOT NULL DEFAULT 0 CHECK (revision >= 0),
+    CHECK ((snapshot_id IS NULL AND publisher_id IS NULL) OR (snapshot_id IS NOT NULL AND publisher_id IS NOT NULL))
+);
+
+ALTER TABLE resource_imports ADD COLUMN upload_id uuid REFERENCES resource_import_uploads(id);
+
+ALTER TABLE resource_import_uploads ADD COLUMN cleaned_at timestamptz;
+
+CREATE TABLE resource_import_sections (
+    upload_id uuid NOT NULL REFERENCES resource_import_uploads(id),
+    section text NOT NULL CHECK (section IN ('agent','design')),
+    status text NOT NULL CHECK (status IN ('succeeded','failed')),
+    plan_digest text NOT NULL,
+    result jsonb NOT NULL,
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (upload_id, section)
+);
+
+CREATE VIEW resource_import_history AS
+SELECT i.id,i.created_at,to_jsonb(i) AS data FROM resource_imports i WHERE i.upload_id IS NULL
+UNION ALL
+SELECT u.id,max(s.updated_at) AS created_at,
+       jsonb_build_object(
+         'id',u.id,'actor_user_id',u.actor_user_id,
+         'publisher',coalesce(max(s.result->'result'->>'publisher'),max(s.result->'result'->>'publisher_id'),''),
+         'release_id',coalesce(max(s.result->'result'->>'release_id') FILTER (WHERE s.section='design'),max(s.result->'result'->>'release_id'),''),
+         'version',coalesce(max((s.result->'result'->>'version')::bigint),0),
+         'status',CASE WHEN bool_and(s.status='succeeded') THEN 'succeeded' WHEN bool_or(s.status='succeeded') THEN 'partial' ELSE 'failed' END,
+         'result_counts',coalesce((SELECT i.result_counts FROM resource_imports i WHERE i.upload_id=u.id ORDER BY i.created_at DESC LIMIT 1),'{}'::jsonb),
+         'section_results',jsonb_object_agg(s.section,s.result),
+         'created_at',max(s.updated_at)) AS data
+FROM resource_import_uploads u JOIN resource_import_sections s ON s.upload_id=u.id
+GROUP BY u.id,u.actor_user_id;
+
+ALTER TABLE sessions
+    DROP CONSTRAINT sessions_client_type_check,
+    ADD CONSTRAINT sessions_client_type_check CHECK (
+        client_type IN ('desktop', 'web', 'extension', 'mobile', 'runtime', 'unknown')
+    );
+
+CREATE TABLE billing_activity_partition_state (
+    table_name text PRIMARY KEY CHECK (table_name IN ('billing_transactions','model_calls','mcp_tool_calls','image_calls','video_calls')),
+    time_column text NOT NULL,
+    source_relation regclass NOT NULL,
+    target_relation regclass NOT NULL,
+    phase text NOT NULL DEFAULT 'backfill' CHECK (phase IN ('backfill','partitioned')),
+    source_end_at timestamptz,
+    source_end_id uuid,
+    cursor_at timestamptz,
+    cursor_id uuid,
+    checked_rows bigint NOT NULL DEFAULT 0,
+    switched_at timestamptz,
+    mirror_legacy boolean NOT NULL DEFAULT true
+);
+
+CREATE VIEW billing_transactions_original AS SELECT * FROM billing_transactions;
+
+CREATE TABLE billing_transactions_keys (
+    id uuid PRIMARY KEY,
+    partition_at timestamptz NOT NULL CHECK (isfinite(partition_at)),
+    user_id uuid NOT NULL,
+    category text NOT NULL,
+    idempotency_key text
+);
+
+CREATE TABLE billing_transactions_partitioned (
+    LIKE billing_transactions INCLUDING DEFAULTS INCLUDING CONSTRAINTS,
+    PRIMARY KEY (id,started_at),
+    FOREIGN KEY (id) REFERENCES billing_transactions_keys(id),
+    CHECK (isfinite(started_at))
+) PARTITION BY RANGE (started_at);
+
+CREATE TABLE billing_transactions_default PARTITION OF billing_transactions_partitioned DEFAULT;
+
+CREATE VIEW model_calls_original AS SELECT * FROM model_calls;
+
+CREATE TABLE model_calls_keys (
+    id uuid PRIMARY KEY,
+    partition_at timestamptz NOT NULL CHECK (isfinite(partition_at))
+);
+
+CREATE TABLE model_calls_partitioned (
+    LIKE model_calls INCLUDING DEFAULTS INCLUDING CONSTRAINTS,
+    PRIMARY KEY (id,started_at),
+    FOREIGN KEY (id) REFERENCES model_calls_keys(id),
+    CHECK (isfinite(started_at))
+) PARTITION BY RANGE (started_at);
+
+CREATE TABLE model_calls_default PARTITION OF model_calls_partitioned DEFAULT;
+
+CREATE VIEW mcp_tool_calls_original AS SELECT * FROM mcp_tool_calls;
+
+CREATE TABLE mcp_tool_calls_keys (
+    id uuid PRIMARY KEY,
+    partition_at timestamptz NOT NULL CHECK (isfinite(partition_at))
+);
+
+CREATE TABLE mcp_tool_calls_partitioned (
+    LIKE mcp_tool_calls INCLUDING DEFAULTS INCLUDING CONSTRAINTS,
+    PRIMARY KEY (id,started_at),
+    FOREIGN KEY (id) REFERENCES mcp_tool_calls_keys(id),
+    CHECK (isfinite(started_at))
+) PARTITION BY RANGE (started_at);
+
+CREATE TABLE mcp_tool_calls_default PARTITION OF mcp_tool_calls_partitioned DEFAULT;
+
+CREATE VIEW image_calls_original AS SELECT * FROM image_calls;
+
+CREATE TABLE image_calls_keys (
+    id uuid PRIMARY KEY,
+    partition_at timestamptz NOT NULL CHECK (isfinite(partition_at)),
+    billing_transaction_id uuid UNIQUE,
+    job_id uuid UNIQUE
+);
+
+CREATE TABLE image_calls_partitioned (
+    LIKE image_calls INCLUDING DEFAULTS INCLUDING CONSTRAINTS,
+    PRIMARY KEY (id,started_at),
+    FOREIGN KEY (id) REFERENCES image_calls_keys(id),
+    CHECK (isfinite(started_at))
+) PARTITION BY RANGE (started_at);
+
+CREATE TABLE image_calls_default PARTITION OF image_calls_partitioned DEFAULT;
+
+CREATE VIEW video_calls_original AS SELECT * FROM video_calls;
+
+CREATE TABLE video_calls_keys (
+    id uuid PRIMARY KEY,
+    partition_at timestamptz NOT NULL CHECK (isfinite(partition_at)),
+    billing_transaction_id uuid UNIQUE,
+    job_id uuid UNIQUE NOT NULL
+);
+
+CREATE TABLE video_calls_partitioned (
+    LIKE video_calls INCLUDING DEFAULTS INCLUDING CONSTRAINTS,
+    PRIMARY KEY (id,created_at),
+    FOREIGN KEY (id) REFERENCES video_calls_keys(id),
+    CHECK (isfinite(created_at))
+) PARTITION BY RANGE (created_at);
+
+CREATE TABLE video_calls_default PARTITION OF video_calls_partitioned DEFAULT;
+
+ALTER TABLE skills
+    ADD COLUMN admin_overrides jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(admin_overrides) = 'object');
+
+ALTER TABLE rules
+    ADD COLUMN description text NOT NULL DEFAULT '',
+    ADD COLUMN admin_overrides jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(admin_overrides) = 'object');
+
+ALTER TABLE connectors
+    ADD COLUMN admin_overrides jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(admin_overrides) = 'object');
+
+ALTER TABLE experts
+    ADD COLUMN admin_overrides jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(admin_overrides) = 'object');
+
+ALTER TABLE sessions ADD COLUMN turn_count_verified boolean NOT NULL DEFAULT false;
+
+ALTER TABLE sessions ALTER COLUMN turn_count_verified SET DEFAULT true;
+
+CREATE TABLE session_turns_partition_state (
+    singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+    source_relation regclass NOT NULL,
+    target_relation regclass NOT NULL,
+    phase text NOT NULL DEFAULT 'backfill' CHECK (phase IN ('backfill','partitioned')),
+    end_session uuid,
+    end_turn integer,
+    cursor_session uuid,
+    cursor_turn integer,
+    checked_rows bigint NOT NULL DEFAULT 0,
+    count_end uuid,
+    count_cursor uuid,
+    counts_ready boolean NOT NULL DEFAULT false,
+    mirror_legacy boolean NOT NULL DEFAULT true,
+    switched_at timestamptz
+);
+
+CREATE TABLE session_turns_keys (
+    session_id uuid NOT NULL REFERENCES sessions(id),
+    turn_index integer NOT NULL CHECK (turn_index > 0),
+    started_at timestamptz NOT NULL CHECK (isfinite(started_at)),
+    PRIMARY KEY (session_id,turn_index),
+    UNIQUE (session_id,turn_index,started_at)
+);
+
+CREATE VIEW session_turns_original AS SELECT * FROM session_turns;
+
+CREATE TABLE session_turns_partitioned (
+    LIKE session_turns INCLUDING DEFAULTS INCLUDING CONSTRAINTS,
+    PRIMARY KEY (session_id,started_at,turn_index),
+    FOREIGN KEY (session_id,turn_index,started_at) REFERENCES session_turns_keys(session_id,turn_index,started_at),
+    CHECK (isfinite(started_at))
+) PARTITION BY RANGE (started_at);
+
+CREATE TABLE session_turns_default PARTITION OF session_turns_partitioned DEFAULT;
+
+ALTER TABLE users ADD COLUMN custom_avatar_url text;
+
+CREATE TABLE profile_password_attempts (
+    user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    window_started_at timestamptz NOT NULL DEFAULT now(),
+    attempts integer NOT NULL DEFAULT 1 CHECK (attempts > 0)
+);
+
+CREATE TABLE IF NOT EXISTS oauth_pairing_requests (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_user_id uuid NOT NULL REFERENCES users(id),
+    secret_hash text NOT NULL,
+    device_code_hash text,
+    user_code_hash text,
+    code_challenge text,
+    code_challenge_method text CHECK (code_challenge_method IN ('S256')),
+    machine_id uuid,
+    display_name text CHECK (display_name IS NULL OR octet_length(display_name) BETWEEN 1 AND 128),
+    platform text CHECK (platform IS NULL OR platform IN ('android','ios','harmonyos')),
+    os_version text CHECK (os_version IS NULL OR octet_length(os_version) BETWEEN 1 AND 64),
+    arch text CHECK (arch IS NULL OR octet_length(arch) BETWEEN 1 AND 32),
+    status text NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending','joined','approved','consumed','denied','expired')),
+    failed_attempts int NOT NULL DEFAULT 0 CHECK (failed_attempts >= 0),
+    interval_ms bigint NOT NULL DEFAULT 5000 CHECK (interval_ms >= 5000),
+    next_poll_at timestamptz NOT NULL DEFAULT now(),
+    created_at timestamptz NOT NULL DEFAULT now(),
+    expires_at timestamptz NOT NULL,
+    CHECK (expires_at > created_at),
+    CHECK (status NOT IN ('joined','approved','consumed')
+        OR (device_code_hash IS NOT NULL AND user_code_hash IS NOT NULL
+            AND code_challenge IS NOT NULL AND machine_id IS NOT NULL
+            AND display_name IS NOT NULL AND platform IS NOT NULL))
+);
+
+ALTER TABLE models
+    ADD COLUMN embedding_config jsonb;
+
+ALTER TABLE models
+    DROP CONSTRAINT models_protocol_check,
+    ADD CONSTRAINT models_protocol_check CHECK (
+        protocol IN ('openai_chat_completions', 'openai_responses', 'anthropic', 'image_generation', 'video_generation', 'openai_embeddings')
+    ),
+    DROP CONSTRAINT models_kind_check,
+    ADD CONSTRAINT models_kind_check CHECK (kind IN ('text', 'image', 'video', 'embedding')),
+    ADD CONSTRAINT models_embedding_config_check CHECK (embedding_config IS NULL OR jsonb_typeof(embedding_config) = 'object'),
+    DROP CONSTRAINT models_kind_config_check,
+    ADD CONSTRAINT models_kind_config_check CHECK (
+        (kind = 'text' AND provider = 'passthrough'
+            AND protocol IN ('openai_chat_completions', 'openai_responses', 'anthropic')
+            AND image_config IS NULL AND image_pricing IS NULL
+            AND video_config IS NULL AND video_pricing IS NULL
+            AND embedding_config IS NULL)
+        OR (kind = 'image' AND provider <> 'passthrough' AND protocol = 'image_generation'
+            AND image_config IS NOT NULL AND image_pricing IS NOT NULL
+            AND video_config IS NULL AND video_pricing IS NULL
+            AND embedding_config IS NULL
+            AND advanced_config = '{}'::jsonb AND credit_multiplier = 1)
+        OR (kind = 'video' AND provider IN ('xai', 'minimax', 'volcengine', 'agnes') AND protocol = 'video_generation'
+            AND image_config IS NULL AND image_pricing IS NULL
+            AND video_config IS NOT NULL AND video_pricing IS NOT NULL
+            AND embedding_config IS NULL
+            AND advanced_config = '{}'::jsonb AND credit_multiplier = 1)
+        OR (kind = 'embedding' AND provider = 'passthrough' AND protocol = 'openai_embeddings'
+            AND embedding_config IS NOT NULL
+            AND image_config IS NULL AND image_pricing IS NULL
+            AND video_config IS NULL AND video_pricing IS NULL
+            AND advanced_config = '{}'::jsonb)
+    );
+
+ALTER TABLE resource_access_grants
+    DROP CONSTRAINT IF EXISTS resource_access_grants_resource_type_check;
+
+ALTER TABLE resource_access_grants
+    ADD CONSTRAINT resource_access_grants_resource_type_check CHECK (
+        resource_type IN ('model', 'skill', 'rule', 'connector', 'expert', 'kb')
+    );
+
+ALTER TABLE resource_tags
+    DROP CONSTRAINT IF EXISTS resource_tags_resource_type_check;
+
+ALTER TABLE resource_tags
+    ADD CONSTRAINT resource_tags_resource_type_check CHECK (
+        resource_type IN ('model', 'skill', 'rule', 'connector', 'expert', 'kb')
+    );
+
+CREATE TABLE knowledge_bases (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name text NOT NULL,
+    description text NOT NULL DEFAULT '',
+    ownership_type text NOT NULL DEFAULT 'system',
+    owner_user_id uuid NOT NULL,
+    created_by_user_id uuid NOT NULL,
+    enabled boolean NOT NULL DEFAULT TRUE,
+    revision integer NOT NULL DEFAULT 1,
+    embedding_model_id uuid,
+    embedding_dimension integer,
+    fusion_config jsonb NOT NULL DEFAULT
+        '{"type": "weighted_rrf", "k": 60, "weights": {"lexical": 0.3, "vector": 0.7}}'::jsonb,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT kb_ownership_type_check CHECK (ownership_type IN ('system', 'user')),
+    CONSTRAINT kb_revision_check CHECK (revision > 0),
+    CONSTRAINT kb_embedding_dimension_check CHECK (embedding_dimension IS NULL OR embedding_dimension > 0),
+    CONSTRAINT kb_fusion_config_check CHECK (
+        jsonb_typeof(fusion_config) = 'object'
+        AND fusion_config ->> 'type' = 'weighted_rrf'
+    )
+);
+
+CREATE TABLE knowledge_base_documents (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    kb_id uuid NOT NULL,
+    title text NOT NULL,
+    source_type text NOT NULL DEFAULT 'text',
+    content text NOT NULL DEFAULT '',
+    file_name text,
+    mime_type text,
+    size_bytes bigint NOT NULL DEFAULT 0,
+    storage_key text,
+    content_sha256 text,
+    status text NOT NULL DEFAULT 'pending',
+    error_message text,
+    chunk_count integer NOT NULL DEFAULT 0,
+    revision integer NOT NULL DEFAULT 1,
+    created_by_user_id uuid NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    learned_at timestamptz,
+    parent_id uuid,
+    node_type text NOT NULL DEFAULT 'document',
+    position double precision NOT NULL DEFAULT 0,
+    CONSTRAINT knowledge_base_documents_source_type_check CHECK (source_type IN ('text', 'file', 'url')),
+    CONSTRAINT knowledge_base_documents_status_check CHECK (status IN ('pending', 'learning', 'learned', 'failed')),
+    CONSTRAINT knowledge_base_documents_size_bytes_check CHECK (size_bytes >= 0),
+    CONSTRAINT knowledge_base_documents_chunk_count_check CHECK (chunk_count >= 0),
+    CONSTRAINT knowledge_base_documents_revision_check CHECK (revision > 0),
+    CONSTRAINT knowledge_base_documents_id_kb_key UNIQUE (id, kb_id),
+    CONSTRAINT knowledge_base_documents_node_type_check CHECK (node_type IN ('folder', 'document')),
+    CONSTRAINT knowledge_base_documents_not_own_parent_check CHECK (parent_id IS DISTINCT FROM id)
+);
+
+CREATE TABLE knowledge_base_chunks (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    kb_id uuid NOT NULL,
+    document_id uuid NOT NULL,
+    chunk_index integer NOT NULL,
+    content text NOT NULL,
+    token_count integer,
+    embedding vector,
+    metadata jsonb NOT NULL DEFAULT '{}',
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    embedding_model_id uuid,
+    search_tokens text NOT NULL DEFAULT '',
+    search_tsv tsvector,
+    heading_path text,
+    page_no integer,
+    source_url text,
+    CONSTRAINT knowledge_base_chunks_chunk_index_check CHECK (chunk_index >= 0),
+    CONSTRAINT knowledge_base_chunks_token_count_check CHECK (token_count IS NULL OR token_count >= 0),
+    CONSTRAINT knowledge_base_chunks_metadata_check CHECK (jsonb_typeof(metadata) = 'object')
+);
+
+CREATE TABLE knowledge_base_learning_jobs (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    kb_id uuid NOT NULL,
+    document_id uuid,
+    operation text NOT NULL,
+    status text NOT NULL DEFAULT 'pending',
+    attempts integer NOT NULL DEFAULT 0,
+    max_attempts integer NOT NULL DEFAULT 3,
+    available_at timestamptz NOT NULL DEFAULT now(),
+    locked_at timestamptz,
+    locked_by text,
+    error_message text,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    finished_at timestamptz,
+    document_revision integer,
+    embedding_model_id uuid,
+    embedding_dimension integer,
+    CONSTRAINT knowledge_base_learning_jobs_operation_check CHECK (operation IN (
+        'learn', 'relearn', 'rebuild_parse', 'rebuild_lexical', 'rebuild_vector',
+        'rebuild_model'
+    )),
+    CONSTRAINT knowledge_base_learning_jobs_status_check CHECK (status IN ('pending', 'running', 'succeeded', 'failed', 'canceled')),
+    CONSTRAINT knowledge_base_learning_jobs_attempts_check CHECK (attempts >= 0 AND max_attempts > 0),
+    CONSTRAINT knowledge_base_learning_jobs_document_revision_check CHECK (
+        document_revision IS NULL OR document_revision > 0
+    ),
+    CONSTRAINT knowledge_base_learning_jobs_embedding_dimension_check CHECK (
+        embedding_dimension IS NULL OR embedding_dimension > 0
+    )
+);
+
+CREATE TABLE IF NOT EXISTS hosts (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ user_id uuid NOT NULL REFERENCES users(id),
+ name text NOT NULL CHECK(octet_length(name) BETWEEN 1 AND 128),
+ architecture text NOT NULL CHECK(architecture IN ('amd64','arm64')),
+ version text NOT NULL,
+ public_key bytea UNIQUE CHECK(octet_length(public_key)=32),
+ status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','active','revoked')),
+ enabled boolean NOT NULL DEFAULT false,
+ max_environments integer NOT NULL DEFAULT 0 CHECK(max_environments BETWEEN 0 AND 1000000),
+ last_seen_at timestamptz,
+ report jsonb NOT NULL DEFAULT '{}'::jsonb,
+ exchange_protocol integer NOT NULL DEFAULT 0 CHECK(exchange_protocol>=0),
+ environment_synced_at timestamptz,
+ activated_at timestamptz,
+ created_at timestamptz NOT NULL DEFAULT now(),
+ deleted_at timestamptz
+);
+
+CREATE TABLE IF NOT EXISTS host_environment_configs (
+ host_id uuid PRIMARY KEY REFERENCES hosts(id),
+ resource jsonb CHECK(resource IS NULL OR jsonb_typeof(resource)='object'),
+ user_max_environments integer NOT NULL DEFAULT 3 CHECK(user_max_environments BETWEEN 0 AND 1000000),
+ billing jsonb NOT NULL DEFAULT '{"enabled":false,"cpu_credits_per_core_hour":"0","memory_credits_per_gib_hour":"0"}'::jsonb CHECK(jsonb_typeof(billing)='object')
+);
+
+CREATE TABLE IF NOT EXISTS host_upgrades (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ host_id uuid NOT NULL REFERENCES hosts(id),
+ from_version text NOT NULL,
+ target_version text NOT NULL,
+ installer_sha256 text NOT NULL CHECK(installer_sha256 ~ '^[a-f0-9]{64}$'),
+ manifest_sha256 text NOT NULL CHECK(manifest_sha256 ~ '^[a-f0-9]{64}$'),
+ status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','running','succeeded','failed')),
+ reason text NOT NULL DEFAULT '',
+ created_at timestamptz NOT NULL DEFAULT now(),
+ updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS environment_quotas (
+ host_id uuid NOT NULL REFERENCES hosts(id),
+ user_id uuid NOT NULL REFERENCES users(id),
+ max_environments integer NOT NULL CHECK(max_environments BETWEEN 0 AND 1000000),
+ PRIMARY KEY(host_id,user_id)
+);
+
+CREATE TABLE IF NOT EXISTS environments (
+ id uuid PRIMARY KEY,
+ user_id uuid NOT NULL REFERENCES users(id),
+ host_id uuid NOT NULL REFERENCES hosts(id),
+ name text NOT NULL CHECK(octet_length(name) BETWEEN 1 AND 128),
+ instance_id uuid NOT NULL,
+ generation bigint NOT NULL CHECK(generation>0),
+ desired text NOT NULL CHECK(desired IN ('running','stopped','deleted')),
+ phase text NOT NULL DEFAULT 'pending' CHECK(phase IN ('pending','preparing','starting','running','stopping','stopped','deleting','deleted','failed')),
+ observed_generation bigint NOT NULL DEFAULT 0 CHECK(observed_generation BETWEEN 0 AND generation),
+ spec jsonb NOT NULL CHECK(jsonb_typeof(spec)='object'),
+ cpu_millis bigint NOT NULL CHECK(cpu_millis>0),
+ memory_bytes bigint NOT NULL CHECK(memory_bytes>0),
+ usage jsonb,
+ reason text NOT NULL DEFAULT '',
+ billing_stop_reason text NOT NULL DEFAULT '' CHECK(billing_stop_reason IN ('','insufficient_credits','billing_unavailable')),
+ observed_at timestamptz,
+ created_at timestamptz NOT NULL DEFAULT now(),
+ updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS environment_runtimes (
+ environment_id uuid PRIMARY KEY REFERENCES environments(id),
+ machine_id uuid UNIQUE,
+ public_key bytea CHECK(octet_length(public_key)=32),
+ instance_id uuid,
+ generation bigint CHECK(generation>0),
+ runtime_version text NOT NULL DEFAULT '',
+ CHECK((machine_id IS NULL AND public_key IS NULL AND instance_id IS NULL AND generation IS NULL)
+ OR (machine_id IS NOT NULL AND public_key IS NOT NULL AND instance_id IS NOT NULL AND generation IS NOT NULL))
+);
+
+CREATE TABLE IF NOT EXISTS environment_operations (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ environment_id uuid NOT NULL REFERENCES environments(id),
+ user_id uuid NOT NULL REFERENCES users(id),
+ generation bigint NOT NULL CHECK(generation>0),
+ desired text NOT NULL CHECK(desired IN ('running','stopped','deleted')),
+ kind text NOT NULL DEFAULT 'lifecycle' CHECK(kind IN ('create','lifecycle','runtime_upgrade')),
+ target_version text NOT NULL DEFAULT '',
+ request_key text NOT NULL CHECK(octet_length(request_key) BETWEEN 1 AND 128),
+ request_hash text NOT NULL,
+ status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','succeeded','failed','superseded')),
+ reason text NOT NULL DEFAULT '',
+ created_at timestamptz NOT NULL DEFAULT now(),
+ finished_at timestamptz,
+ UNIQUE(environment_id,request_key),
+ UNIQUE(environment_id,generation)
+);
+
+CREATE TABLE IF NOT EXISTS environment_billing_periods (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ environment_id uuid NOT NULL REFERENCES environments(id),
+ user_id uuid NOT NULL REFERENCES users(id),
+ generation bigint NOT NULL CHECK(generation>0),
+ pricing jsonb NOT NULL CHECK(jsonb_typeof(pricing)='object'),
+ cpu_millis bigint NOT NULL CHECK(cpu_millis>0),
+ memory_bytes bigint NOT NULL CHECK(memory_bytes>0),
+ started_at timestamptz NOT NULL,
+ confirmed_until timestamptz NOT NULL,
+ closed_at timestamptz,
+ settled_seconds bigint NOT NULL DEFAULT 0 CHECK(settled_seconds>=0),
+ settled_amount numeric(24,6) NOT NULL DEFAULT 0 CHECK(settled_amount>=0),
+ CHECK(confirmed_until>=started_at),
+ CHECK(closed_at IS NULL OR closed_at=confirmed_until),
+ CHECK(settled_seconds<=EXTRACT(EPOCH FROM confirmed_until-started_at))
+);
+
+ALTER TABLE oauth_grants DROP CONSTRAINT IF EXISTS oauth_grants_scopes_check;
+
+ALTER TABLE oauth_grants ADD CONSTRAINT oauth_grants_scopes_check CHECK(
+ scopes <@ ARRAY['device:bind','device:publish','device:connect','device:manage',
+ 'session:report','session:read','session:control','files:read','files:write','resources:manage',
+ 'environment:read','environment:manage']::text[]
+);
+
+ALTER TABLE resource_access_grants DROP CONSTRAINT IF EXISTS resource_access_grants_resource_type_check;
+
+ALTER TABLE resource_access_grants ADD CONSTRAINT resource_access_grants_resource_type_check
+ CHECK(resource_type IN ('model','skill','rule','connector','expert','kb','host'));
+
+ALTER TABLE knowledge_base_documents ADD COLUMN updated_by_user_id uuid;
+
+ALTER TABLE knowledge_base_documents ADD COLUMN content_updated_at timestamptz;
+
+ALTER TABLE knowledge_bases ADD COLUMN avatar_s3_key text NOT NULL DEFAULT '';
+
+ALTER TABLE settings DROP CONSTRAINT settings_key_check,
+    ADD CONSTRAINT settings_key_check CHECK (key IN ('branding', 'authentication', 'email', 'billing', 'session_reporting', 'proxies', 'mcp'));
+
+ALTER TABLE connectors ADD COLUMN skip_tls_verify boolean NOT NULL DEFAULT false;
+
+ALTER TABLE environments ADD COLUMN deleted_at timestamptz;
+
+ALTER TABLE environments ADD CONSTRAINT environments_deleted_at_check
+CHECK(deleted_at IS NULL OR (desired='deleted' AND phase='deleted' AND observed_generation=generation));
+
+ALTER TABLE resource_import_sections DROP CONSTRAINT resource_import_sections_section_check;
+
+ALTER TABLE resource_import_sections ADD CONSTRAINT resource_import_sections_section_check CHECK (section IN ('agent','design','knowledge'));
+
+ALTER TABLE environment_billing_periods ADD COLUMN IF NOT EXISTS prepaid_until timestamptz;
+
+ALTER TABLE environment_billing_periods DROP CONSTRAINT IF EXISTS environment_billing_periods_check2;
+
+ALTER TABLE environment_billing_periods DROP CONSTRAINT IF EXISTS environment_billing_settled_duration;
+
+ALTER TABLE environment_billing_periods ADD CONSTRAINT environment_billing_settled_duration
+ CHECK(settled_seconds<=EXTRACT(EPOCH FROM COALESCE(prepaid_until,confirmed_until)-started_at));
+
+ALTER TABLE environment_billing_periods DROP CONSTRAINT IF EXISTS environment_billing_prepaid_hour;
+
+ALTER TABLE environment_billing_periods ADD CONSTRAINT environment_billing_prepaid_hour
+ CHECK(prepaid_until IS NULL OR prepaid_until=started_at+interval '1 hour');
+
+ALTER TABLE connectors ADD COLUMN tools_synced_at timestamptz;
+
+ALTER TABLE connector_credentials ADD COLUMN tools_synced_at timestamptz;
+
+CREATE TABLE IF NOT EXISTS environment_specification_catalog (
+    singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+    revision bigint NOT NULL DEFAULT 0 CHECK (revision >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS environment_specifications (
+    id uuid PRIMARY KEY,
+    version bigint NOT NULL DEFAULT 1 CHECK (version >= 1),
+    cpu_millis bigint NOT NULL CHECK (cpu_millis BETWEEN 100 AND 256000),
+    memory_bytes bigint NOT NULL CHECK (memory_bytes BETWEEN 268435456 AND 1099511627776),
+    position integer NOT NULL CHECK (position >= 0),
+    deleted_at timestamptz
+);
+
+DROP TABLE environment_quotas;
+
+ALTER TABLE host_environment_configs DROP COLUMN user_max_environments;
+
+ALTER TABLE hosts DROP COLUMN max_environments;
+
+ALTER TABLE environments ADD COLUMN archived_at timestamptz
+ CHECK (archived_at IS NULL OR (desired='deleted' AND generation<>observed_generation));
+
+ALTER TABLE group_users ADD COLUMN is_supervisor boolean NOT NULL DEFAULT false;
+
+ALTER TABLE hosts DROP CONSTRAINT hosts_name_check;
+
+ALTER TABLE hosts ADD CONSTRAINT hosts_name_check CHECK (octet_length(name) <= 128);
+
+CREATE TABLE images (
+ id uuid PRIMARY KEY,
+ display_name text NOT NULL CHECK (display_name=btrim(display_name) AND length(display_name) BETWEEN 1 AND 128),
+ source_type text NOT NULL CHECK(source_type IN ('builtin','pull','upload')),
+ upstream text, archive_name text, staging_key text, content_source text,
+ status text NOT NULL CHECK(status IN ('pending','importing','ready','failed')),
+ progress_stage text NOT NULL, completed_bytes bigint NOT NULL DEFAULT 0 CHECK(completed_bytes>=0),
+ total_bytes bigint CHECK(total_bytes>=completed_bytes), error_code text, error_message text,
+ created_by uuid, request_key text, request_hash text,
+ added_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), deleted_at timestamptz,
+ CHECK ((source_type='pull')=(upstream IS NOT NULL)), CHECK ((source_type='upload')=(archive_name IS NOT NULL)),
+ CHECK (status<>'ready' OR content_source IS NOT NULL)
+);
+
+ALTER TABLE environments ADD COLUMN image_id uuid REFERENCES images(id);
+
+ALTER TABLE oauth_grants DROP CONSTRAINT IF EXISTS oauth_grants_scopes_check;
+
+ALTER TABLE oauth_grants ADD CONSTRAINT oauth_grants_scopes_check CHECK(
+ scopes <@ ARRAY['device:bind','device:publish','device:connect','device:manage',
+ 'session:report','session:read','session:control','files:read','files:write','resources:manage',
+ 'environment:read','environment:manage','account:ai-resources']::text[]
+);
+
+ALTER TABLE oauth_login_states
+    DROP CONSTRAINT oauth_login_states_purpose_check,
+    DROP CONSTRAINT oauth_login_states_request_check,
+    ADD CONSTRAINT oauth_login_states_purpose_check CHECK (purpose IN ('client','admin','device','web')),
+    ADD CONSTRAINT oauth_login_states_request_check CHECK (
+        (purpose='client' AND authorization_request_id IS NOT NULL AND device_request_id IS NULL) OR
+        (purpose IN ('admin','web') AND authorization_request_id IS NULL AND device_request_id IS NULL) OR
+        (purpose='device' AND authorization_request_id IS NULL AND device_request_id IS NOT NULL));
+
+ALTER TABLE stats_model_hourly RENAME TO stats_model_hourly_old;
+
+ALTER TABLE stats_model_credit_hourly RENAME TO stats_model_credit_hourly_old;
+
+CREATE TABLE stats_model_hourly (LIKE stats_model_hourly_old INCLUDING ALL) PARTITION BY RANGE (hour_start);
+
+CREATE TABLE stats_model_credit_hourly (LIKE stats_model_credit_hourly_old INCLUDING ALL) PARTITION BY RANGE (hour_start);
+
+CREATE TABLE stats_model_hourly_default PARTITION OF stats_model_hourly DEFAULT;
+
+CREATE TABLE stats_model_credit_hourly_default PARTITION OF stats_model_credit_hourly DEFAULT;
+
+DROP TABLE stats_model_hourly_old, stats_model_credit_hourly_old;
+
+CREATE TABLE stats_model_user_backfill (
+    singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+    from_hour timestamptz NOT NULL
+);
+
+ALTER TABLE stats_model_hourly ADD COLUMN user_id uuid;
+
+ALTER TABLE stats_model_credit_hourly ADD COLUMN user_id uuid;
+
+ALTER TABLE stats_model_hourly ADD CONSTRAINT stats_model_hour_employee_key UNIQUE NULLS NOT DISTINCT (hour_start, model_id, user_id);
+
+ALTER TABLE stats_model_credit_hourly ADD CONSTRAINT stats_model_credit_hour_employee_key UNIQUE NULLS NOT DISTINCT (hour_start, user_id);
+
+ALTER TABLE settings DROP CONSTRAINT settings_key_check,
+    ADD CONSTRAINT settings_key_check CHECK (key IN ('branding', 'authentication', 'email', 'billing', 'session_reporting', 'proxies', 'mcp', 'model_network'));
+
+CREATE TABLE expert_knowledge_bases (
+    expert_id uuid NOT NULL REFERENCES experts(id) ON DELETE CASCADE,
+    kb_id uuid NOT NULL REFERENCES knowledge_bases(id) ON DELETE CASCADE,
+    PRIMARY KEY (expert_id, kb_id)
+);
+
+CREATE VIEW effective_resource_grants AS
+SELECT resource_type, resource_id, user_id, group_id, all_users, access_level, usage_requirement
+FROM resource_access_grants
+UNION ALL
+SELECT 'kb', k.id, g.user_id, g.group_id, g.all_users, 'read_only', 'optional'
+FROM resource_access_grants g
+JOIN experts e ON g.resource_type = 'expert' AND e.id = g.resource_id
+JOIN expert_knowledge_bases x ON x.expert_id = e.id
+JOIN knowledge_bases k ON k.id = x.kb_id
+WHERE e.ownership_type = 'user' AND e.enabled AND e.deleted_at IS NULL
+    AND k.ownership_type = 'user' AND k.owner_user_id = e.owner_user_id AND k.enabled;
+
+ALTER TABLE knowledge_base_documents ADD COLUMN IF NOT EXISTS file_type text;
+
+ALTER TABLE knowledge_base_documents DROP CONSTRAINT IF EXISTS knowledge_base_documents_file_type_check;
+
+ALTER TABLE knowledge_base_documents ADD CONSTRAINT knowledge_base_documents_file_type_check
+    CHECK (file_type IS NULL OR file_type IN ('txt','md','html','svg','csv','docx','xls','xlsx','pptx','pdf','jpg','png'));
