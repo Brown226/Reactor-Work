@@ -1,0 +1,584 @@
+package billing
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+	"log/slog"
+	"math"
+	"time"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/billing/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+
+	"github.com/jackc/pgx/v5"
+)
+
+type Request struct {
+	UserID, ResourceID, ConnectorID, CredentialID, SessionID, Category, ToolName string
+	IdempotencyKey, RequestHash                                                  string
+	OutputLimit                                                                  int64
+	ImageUnitPrice                                                               Amount
+	ImageCount                                                                   int64
+	VideoUnitPrice                                                               Amount
+	VideoMaxDurationMs                                                           int64
+}
+type Reservation struct {
+	ID string
+}
+type Usage struct {
+	Input                int64  `json:"input_tokens"`
+	Cached               int64  `json:"cached_input_tokens"`
+	Output               int64  `json:"output_tokens"`
+	InputSource          string `json:"input_source,omitempty"`
+	OutputSource         string `json:"output_source,omitempty"`
+	FirstTokenDurationMs *int32 `json:"first_token_duration_ms,omitempty"`
+	Images               int64  `json:"generated_images,omitempty"`
+	VideoDurationMs      int64  `json:"output_duration_ms,omitempty"`
+	Known                bool   `json:"known"`
+	Stream               *bool  `json:"stream,omitempty"`
+	Result               string `json:"result"`
+	RequestID            string `json:"request_id,omitempty"`
+	ErrorCode            string `json:"error_code,omitempty"`
+	TerminalEvent        string `json:"terminal_event,omitempty"`
+	InitialErrorCode     string `json:"initial_error_code,omitempty"`
+	Reconciled           bool   `json:"reconciled,omitempty"`
+}
+
+func (s *Service) Begin(ctx context.Context, r Request) (Reservation, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Reservation{}, err
+	}
+	defer rollback(ctx, tx, "begin", "")
+	p, err := s.policy(ctx, tx, false)
+	if err != nil {
+		return Reservation{}, err
+	}
+	a, err := s.ensureAccount(ctx, tx, r.UserID, p)
+	if err != nil {
+		return Reservation{}, err
+	}
+	var name, email, status string
+	var record sqlc.BillingUserRow
+	record, err = sqlc.New(tx).BillingUser(ctx, r.UserID)
+	if err != nil {
+		return Reservation{}, err
+	}
+	name, email, status = record.Name, record.Email, record.Status
+
+	if status != "active" {
+		return Reservation{}, fail(403, "user_disabled", "用户已停用")
+	}
+	if r.IdempotencyKey != "" {
+		if len(r.IdempotencyKey) > 128 {
+			return Reservation{}, resource.Invalid("幂等键过长")
+		}
+		var existing, hash string
+		existingTransaction, e := sqlc.New(tx).IdempotentTransaction(ctx, sqlc.IdempotentTransactionParams{UserID: r.UserID, Category: r.Category, IdempotencyKey: new(r.IdempotencyKey)})
+		if e == nil {
+			existing, hash = existingTransaction.ID, existingTransaction.RequestHash
+		}
+
+		if e == nil {
+			code := "request_already_accepted"
+			if hash != r.RequestHash {
+				code = "idempotency_conflict"
+			}
+			return Reservation{}, &resource.Error{Status: 409, Code: code, Message: "该幂等键已受理，请查看原交易", References: map[string]string{"transaction_id": existing}}
+		}
+		if !errors.Is(e, pgx.ErrNoRows) {
+			return Reservation{}, e
+		}
+	}
+	if r.SessionID != "" {
+		var ok bool
+		ok, err = sqlc.New(tx).SessionOwned(ctx, sqlc.SessionOwnedParams{ID: r.SessionID, OwnerUserID: r.UserID})
+
+		if err != nil {
+			return Reservation{}, err
+		}
+		if !ok {
+			return Reservation{}, fail(403, "invalid_session", "会话不属于当前用户")
+		}
+	}
+	price := Price{Input: p.Input, Cached: p.Cached, Output: p.Output}
+	var item, ownership string
+	var reserve Amount
+	limit := r.OutputLimit
+	switch r.Category {
+	case "model":
+		var multiplier string
+		var capacity, maxOutput int64
+		var row sqlc.ModelPricingRow
+		row, err = sqlc.New(tx).ModelPricing(ctx, r.ResourceID)
+		if err == nil {
+			item, multiplier, capacity, maxOutput = row.DisplayName, row.CreditMultiplier, row.ContextWindowTokens, row.MaxOutputTokens
+		}
+		if err != nil {
+			return Reservation{}, err
+		}
+		ownership = row.OwnershipType
+		if row.OwnershipType == "user" {
+			price = Price{}
+			break
+		}
+		price.Multiplier, err = ParseAmount(multiplier)
+		if err != nil {
+			return Reservation{}, err
+		}
+		if p.Enabled {
+			if capacity <= 0 || maxOutput <= 0 || capacity > 100_000_000 || maxOutput > capacity {
+				return Reservation{}, fail(422, "model_limits_required", "计费模型需要有效的上下文与最大输出限制")
+			}
+			if limit < 0 {
+				return Reservation{}, resource.Invalid("输出上限无效")
+			}
+			if limit == 0 {
+				limit = maxOutput
+			}
+			upper := price
+			if upper.Cached > upper.Input {
+				upper.Input = upper.Cached
+			}
+			reserve, err = priceTokens(capacity, 0, limit, upper)
+			if err != nil {
+				return Reservation{}, err
+			}
+		}
+	case "image":
+		if r.ImageCount < 1 || r.ImageCount > 16 || r.ImageUnitPrice < 0 {
+			return Reservation{}, resource.Invalid("生图数量或积分无效")
+		}
+		row, e := sqlc.New(tx).ImagePricingModel(ctx, r.ResourceID)
+		if e != nil {
+			return Reservation{}, e
+		}
+		item, ownership = row.DisplayName, row.OwnershipType
+		if row.OwnershipType == "user" {
+			price = Price{}
+			break
+		}
+		price.ImageUnit = r.ImageUnitPrice
+		if p.Enabled {
+			reserve, err = priceImages(price.ImageUnit, r.ImageCount)
+			if err != nil {
+				return Reservation{}, err
+			}
+		}
+	case "video":
+		if r.VideoUnitPrice < 0 || r.VideoMaxDurationMs <= 0 || r.VideoMaxDurationMs > MaxVideoDurationMs {
+			return Reservation{}, resource.Invalid("视频积分或时长上限无效")
+		}
+		row, e := sqlc.New(tx).VideoPricingModel(ctx, r.ResourceID)
+		if e != nil {
+			return Reservation{}, e
+		}
+		item, ownership = row.DisplayName, row.OwnershipType
+		if ownership == "user" {
+			price = Price{}
+			break
+		}
+		price.VideoUnit = r.VideoUnitPrice
+		if p.Enabled {
+			reserve, err = priceVideo(price.VideoUnit, r.VideoMaxDurationMs)
+			if err != nil {
+				return Reservation{}, err
+			}
+		}
+	case "tool":
+		var credits, auth string
+		var row sqlc.ToolPricingRow
+		row, err = sqlc.New(tx).ToolPricing(ctx, sqlc.ToolPricingParams{ID: r.ResourceID, ConnectorID: r.ConnectorID, CredentialID: r.CredentialID, ToolName: r.ToolName})
+		if err == nil {
+			item, credits, auth = row.Name, row.CreditsPerCall, row.AuthorizationMode
+		}
+		if err != nil {
+			return Reservation{}, err
+		}
+		ownership = row.OwnershipType
+		if auth == "centralized" && p.Enabled {
+			price.Tool, err = ParseAmount(credits)
+			if err != nil {
+				return Reservation{}, err
+			}
+			reserve = price.Tool
+		}
+	default:
+		return Reservation{}, resource.Invalid("计费类型无效")
+	}
+	if p.Mode == "remote" && ownership == "system" {
+		allowed, err := resource.CanUseSystem(ctx, tx, r.UserID)
+		if err != nil {
+			return Reservation{}, err
+		}
+		if !allowed {
+			return Reservation{}, fail(403, "baizhiyun_identity_required", "百智云扣费模式下，请通过百智云登录后使用系统资源")
+		}
+	}
+	if !p.Enabled {
+		price = Price{}
+	}
+	mode := p.Mode
+	if !p.Enabled || reserve == 0 {
+		mode = "local"
+	}
+	var wallet *Wallet
+	if mode == "remote" {
+		wallet, err = s.wallet(ctx, tx)
+		if err != nil {
+			return Reservation{}, err
+		}
+		if !wallet.ready() {
+			return Reservation{}, fail(503, "wallet_unavailable", "未配置百智云计费连接")
+		}
+		reserve = Amount(quotaAmount(reserve, true) * 10000)
+	}
+	// 预估费用仅用于超额核查；账面余额为正即可发起付费调用。
+	if reserve > 0 && a.Balance <= 0 {
+		return Reservation{}, insufficient
+	}
+	var walletUser, team, biz string
+	if mode == "remote" {
+		walletUser, err = sqlc.New(tx).WalletUser(ctx, r.UserID)
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Reservation{}, fail(422, "wallet_user_unbound", "请通过百智云登录；多个百智云身份需绑定扣费账户")
+		}
+		if err != nil {
+			return Reservation{}, err
+		}
+		biz, err = wallet.BizID()
+		if err != nil {
+			return Reservation{}, err
+		}
+	}
+	snapshot, err := json.Marshal(price)
+	if err != nil {
+		return Reservation{}, fmt.Errorf("序列化计费价格快照: %w", err)
+	}
+	id := resource.ID()
+
+	state := "reserved"
+	if mode == "remote" {
+		state = "created"
+	}
+	_, err = sqlc.New(tx).CreateTransaction(ctx, sqlc.CreateTransactionParams{
+		ID:             id,
+		UserID:         r.UserID,
+		AccountID:      a.ID,
+		SessionID:      r.SessionID,
+		Category:       r.Category,
+		ResourceID:     r.ResourceID,
+		ConnectorID:    r.ConnectorID,
+		ItemName:       item,
+		UserName:       name,
+		UserEmail:      email,
+		GroupID:        a.GroupID,
+		Mode:           mode,
+		Status:         state,
+		Reserve:        reserve.String(),
+		Pricing:        snapshot,
+		IdempotencyKey: r.IdempotencyKey,
+		RequestHash:    r.RequestHash,
+		StartedAt:      s.now(),
+	})
+	if err != nil {
+		return Reservation{}, err
+	}
+	if mode == "remote" {
+		_, err = sqlc.New(tx).CreateWalletRecord(ctx, sqlc.CreateWalletRecordParams{
+			BizID:             biz,
+			TransactionID:     id,
+			ExternalUserID:    walletUser,
+			TeamSlug:          team,
+			BaseUrl:           wallet.BaseURL,
+			AppID:             int32(wallet.AppID),
+			FrozenAmountQuota: int64(quotaAmount(reserve, true)),
+		})
+		if err != nil {
+			return Reservation{}, err
+		}
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return Reservation{}, err
+	}
+	if mode == "remote" {
+		if err = s.reserveRemote(ctx, id); err != nil {
+			return Reservation{}, err
+		}
+	}
+	logging.Bind(ctx, slog.String("transaction_id", id))
+	return Reservation{ID: id}, nil
+}
+func (s *Service) Start(ctx context.Context, id string) error {
+	tag, err := sqlc.New(s.pool).StartTransaction(ctx, id)
+	if err == nil && tag.RowsAffected() != 1 {
+		return fail(409, "invalid_transaction_state", "交易不可执行")
+	}
+	return err
+}
+func (s *Service) Finish(ctx context.Context, id string, u Usage) error {
+	return s.finish(ctx, id, u, false)
+}
+func (s *Service) finish(ctx context.Context, id string, u Usage, reviewed bool) error {
+	if u.Result != "succeeded" && u.Result != "failed" && u.Result != "cancelled" {
+		return resource.Invalid("调用结果无效")
+	}
+	if u.Input < 0 || u.Output < 0 || u.Cached < 0 || u.Cached > u.Input || u.Images < 0 || u.VideoDurationMs < 0 {
+		return resource.Invalid("Token 用量无效")
+	}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(ctx, tx, "finish", id)
+	var category, mode, status, reserveText string
+	var raw []byte
+	var record sqlc.LockUsageRow
+	record, err = sqlc.New(tx).LockUsage(ctx, id)
+
+	if err != nil {
+		return err
+	}
+	_, category, mode, status, reserveText, raw = record.AccountID, record.Category, record.Mode, record.Status, record.Reserve, record.Pricing
+
+	if status == "settled" || status == "released" || status == "rejected" || status == "settling" {
+		return nil
+	}
+	if status != "running" && status != "reserved" && status != "unknown" {
+		return fail(409, "invalid_transaction_state", "交易尚未完成预留")
+	}
+	p := Price{}
+	if err = json.Unmarshal(raw, &p); err != nil {
+		return err
+	}
+	reserve, err := ParseAmount(reserveText)
+	if err != nil {
+		return err
+	}
+	var amount Amount
+	if category == "model" {
+		amount, err = priceTokens(u.Input, u.Cached, u.Output, p)
+	} else if category == "image" && u.Result == "succeeded" {
+		amount, err = priceImages(p.ImageUnit, u.Images)
+	} else if category == "video" && u.Result == "succeeded" {
+		amount, err = priceVideo(p.VideoUnit, u.VideoDurationMs)
+	} else if category == "tool" && u.Result == "succeeded" {
+		amount = p.Tool
+	}
+	if err != nil {
+		return err
+	}
+	actual := amount
+	if mode == "remote" {
+		if amount < 0 || quotaAmount(amount, false) > int64(math.MaxInt64/10000) {
+			return resource.Invalid("生图积分超出可结算范围")
+		}
+		actual = Amount(quotaAmount(amount, false) * 10000)
+	}
+	state := "settling"
+	code := u.ErrorCode
+	if !u.Known {
+		state = "unknown"
+		if code == "" {
+			code = "usage_unknown"
+		}
+	}
+	if actual > reserve && (!reviewed || !u.Known || mode != "local") {
+		state = "unknown"
+		code = "reservation_exceeded"
+	}
+	usage, err := json.Marshal(u)
+	if err != nil {
+		return fmt.Errorf("序列化交易 %s 的用量: %w", id, err)
+	}
+	_, err = sqlc.New(tx).SaveUsage(ctx, sqlc.SaveUsageParams{
+		ID:          id,
+		Status:      state,
+		Amount:      new(actual.String()),
+		RawAmount:   new(amount.String()),
+		Usage:       usage,
+		Result:      new(u.Result),
+		ErrorCode:   code,
+		RequestID:   u.RequestID,
+		CompletedAt: new(s.now()),
+	})
+	if err != nil {
+		return err
+	}
+	if category == "model" {
+		_, err = sqlc.New(tx).UpsertModelCall(ctx, sqlc.UpsertModelCallParams{
+			ID: id, InputTokens: u.Input, CachedInputTokens: u.Cached, OutputTokens: u.Output,
+			FirstTokenDurationMs: u.FirstTokenDurationMs,
+		})
+	} else if category == "image" {
+		_, err = sqlc.New(tx).UpsertImageCall(ctx, sqlc.UpsertImageCallParams{ID: id, GeneratedImages: u.Images})
+	} else if category == "video" {
+		err = sqlc.New(tx).UpsertVideoCall(ctx, sqlc.UpsertVideoCallParams{TransactionID: id, Result: u.Result, DurationMs: u.VideoDurationMs})
+	} else {
+		_, err = sqlc.New(tx).UpsertToolCall(ctx, id)
+	}
+	if err != nil {
+		return err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return err
+	}
+	if state == "unknown" {
+		return nil
+	}
+	return s.Settle(ctx, id)
+}
+func (s *Service) Settle(ctx context.Context, id string) error {
+	// 会话级 advisory lock 覆盖远程请求；不持有账户行锁等待外部服务。
+	conn, err := s.pool.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+	var locked bool
+	locked, err = sqlc.New(conn).TrySettlementLock(ctx, id)
+
+	if err != nil {
+		return err
+	}
+	if !locked {
+		return nil
+	}
+	defer func() {
+		c, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if _, e := sqlc.New(conn).ReleaseSettlementLock(c, id); e != nil {
+			logging.Event(c, slog.Default(), slog.LevelError, "billing.operation.error", "释放结算锁失败", "module", "billing", "operation", "Settle", "transaction_id", id, "operation", "release_settlement_lock", "error", e)
+			if closeErr := conn.Conn().Close(c); closeErr != nil {
+				logging.Event(c, slog.Default(), slog.LevelError, "billing.operation.error", "关闭结算连接失败", "module", "billing", "operation", "Settle", "transaction_id", id, "operation", "close_settlement_connection", "error", closeErr)
+			}
+		}
+	}()
+	var mode, status string
+	var existingTransaction sqlc.SettlementStatusRow
+	existingTransaction, err = sqlc.New(conn).SettlementStatus(ctx, id)
+	if err != nil {
+		return err
+	}
+	mode, status = existingTransaction.Mode, existingTransaction.Status
+
+	if status != "settling" {
+		return nil
+	}
+	if mode == "remote" {
+		if err = s.confirmRemote(ctx, conn, id); err != nil {
+			return err
+		}
+	}
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer rollback(ctx, tx, "settle", id)
+	var account, item, category, amountText string
+	var settlement sqlc.LockSettlementRow
+	settlement, err = sqlc.New(tx).LockSettlement(ctx, id)
+
+	if err != nil {
+		return err
+	}
+	account, item, category, amountText, status = settlement.AccountID, settlement.ItemName, settlement.Category, settlement.Amount, settlement.Status
+
+	if status != "settling" {
+		return nil
+	}
+	amount, err := ParseAmount(amountText)
+	if err != nil {
+		return err
+	}
+	_, err = sqlc.New(tx).ChargeBalance(ctx, sqlc.ChargeBalanceParams{ID: account, Balance: amount.String()})
+	if err != nil {
+		return err
+	}
+	if amount > 0 {
+		if err = ledger(ctx, tx, account, id, "charge:"+id, "charge", category, item, -amount, mode, map[string]string{"transaction_id": id}); err != nil {
+			return err
+		}
+	}
+	_, err = sqlc.New(tx).CompleteSettlement(ctx, id)
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+func (s *Service) Release(ctx context.Context, id, reason string) error {
+	return s.Finish(ctx, id, Usage{Known: true, Result: "failed", ErrorCode: reason})
+}
+func (s *Service) recover(ctx context.Context) error {
+	_, err := sqlc.New(s.pool).MarkInterrupted(ctx)
+	if err != nil {
+		return err
+	}
+	rows, err := sqlc.New(s.pool).TransactionsToRetry(ctx)
+	if err != nil {
+		return err
+	}
+	ids := rows
+	for _, id := range ids {
+		c, cancel := context.WithTimeout(ctx, 30*time.Second)
+		e := s.Settle(c, id)
+		cancel()
+		if e != nil {
+			logging.Event(ctx, slog.Default(), slog.LevelWarn, "billing.retry.failed", "恢复交易结算失败", "module", "billing", "operation", "recover", "transaction_id", id, "operation", "settle", "error", e)
+			if _, retryErr := sqlc.New(s.pool).ScheduleRetry(ctx, id); retryErr != nil {
+				return fmt.Errorf("安排交易 %s 结算重试: %w", id, retryErr)
+			}
+		}
+	}
+	return s.reconcileUnknown(ctx)
+}
+func (s *Service) Run(ctx context.Context) {
+	partitionCtx, cancelPartitions := context.WithCancel(ctx)
+	partitionDone := make(chan struct{})
+	go func() {
+		defer close(partitionDone)
+		s.runLedgerPartitions(partitionCtx)
+	}()
+	activityDone := make(chan struct{})
+	go func() {
+		defer close(activityDone)
+		s.runActivityPartitions(partitionCtx)
+	}()
+	defer func() { cancelPartitions(); <-partitionDone; <-activityDone }()
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+	recoveries := logging.NewWorker(slog.Default(), "billing", "recover_transactions", "database")
+	accounts := logging.NewWorker(slog.Default(), "billing", "refresh_accounts", "database")
+	for {
+		recoveries.Report(ctx, s.recover(ctx))
+		accounts.Report(ctx, s.refresh(ctx))
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
+}
+
+func (s *Service) refresh(ctx context.Context) error {
+	p, err := s.Policy(ctx)
+	if err != nil {
+		return err
+	}
+	start, _ := p.period(s.now())
+	rows, err := sqlc.New(s.pool).ActiveUsersWithoutAccount(ctx, start)
+	if err != nil {
+		return err
+	}
+	ids := rows
+	for _, id := range ids {
+		if _, err = s.Account(ctx, id); err != nil {
+			return err
+		}
+	}
+	return nil
+}

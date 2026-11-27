@@ -1,0 +1,315 @@
+package mcp
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"log/slog"
+	"mime"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/mcp/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+	sessionreporting "github.com/chaitin/MonkeyCode/monkeyai/backend/internal/session"
+	"github.com/go-chi/chi/v5"
+)
+
+type KeyAuthenticator interface {
+	Authenticate(context.Context, string, string) (string, error)
+}
+
+// SessionResolver 校验并确保调用会话属于指定用户。
+// 应用层负责将 session.Service 适配为此接口。
+type SessionResolver interface {
+	EnsureSession(context.Context, string, string, string, string) error
+}
+
+type Invocation struct{ UserID, ConnectorID, CredentialID, ToolID, ToolName, SessionID, IdempotencyKey, RequestHash string }
+type InvocationResult struct {
+	Known             bool
+	Result, ErrorCode string
+	DurationMS        int64
+}
+type InvocationBilling interface {
+	Begin(context.Context, Invocation) (string, error)
+	Start(context.Context, string) error
+	Finish(context.Context, string, InvocationResult) error
+}
+
+func (s *Service) RegisterGateway(router chi.Router, keys KeyAuthenticator, billing InvocationBilling) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
+		if origin := r.Header.Get("Origin"); origin != "" {
+			provided, err := url.Parse(origin)
+			public, publicErr := url.Parse(s.PublicURL)
+			if publicErr != nil {
+				slog.Warn("操作失败", "module", "mcp", "operation", "RegisterGateway", "error", publicErr)
+				logging.Event(r.Context(), slog.Default(), slog.LevelError, "mcp.operation.error", "MCP 公共地址配置无效", "module", "mcp", "operation", "RegisterGateway", "operation", "origin_check", "failure_reason", "invalid_public_url")
+			}
+			if err != nil || publicErr != nil || public == nil || provided.User != nil || provided.Path != "" || provided.RawQuery != "" || provided.Fragment != "" || !strings.EqualFold(provided.Scheme, public.Scheme) || !strings.EqualFold(provided.Host, public.Host) {
+				if publicErr != nil {
+					slog.Warn("操作失败", "module", "mcp", "operation", "RegisterGateway", "error", publicErr)
+				}
+				rpcFail(r.Context(), w, nil, &resource.Error{Status: 403, Code: "invalid_origin", Message: "请求来源不被允许"})
+				return
+			}
+		}
+		scheme, token, ok := strings.Cut(r.Header.Get("Authorization"), " ")
+		if !ok || !strings.EqualFold(scheme, "Bearer") || strings.TrimSpace(token) == "" {
+			w.Header().Set("WWW-Authenticate", `Bearer realm="mcp"`)
+			rpcFail(r.Context(), w, nil, &resource.Error{Status: 401, Code: "invalid_key", Message: "缺少 MCP 调用密钥"})
+			return
+		}
+		user, err := keys.Authenticate(r.Context(), strings.TrimSpace(token), "mcp:invoke")
+		if err != nil {
+			slog.Warn("操作失败", "module", "mcp", "operation", "RegisterGateway", "error", err)
+			w.Header().Set("WWW-Authenticate", `Bearer realm="mcp", error="invalid_token"`)
+			rpcFail(r.Context(), w, nil, &resource.Error{Status: 401, Code: "invalid_key", Message: "MCP 调用密钥无效或权限不足"})
+			return
+		}
+		if r.Method != http.MethodPost {
+			w.Header().Set("Allow", "POST")
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+		if err != nil || media != "application/json" {
+			if err != nil {
+				slog.Warn("操作失败", "module", "mcp", "operation", "RegisterGateway", "error", err)
+			}
+			rpcFail(r.Context(), w, nil, &resource.Error{Status: 415, Code: "invalid_content_type", Message: "请求须使用 application/json"})
+			return
+		}
+		if version := r.Header.Get("MCP-Protocol-Version"); version != "" && !supportedVersion(version) {
+			rpcFail(r.Context(), w, nil, &resource.Error{Status: 400, Code: "unsupported_protocol", Message: "MCP 协议版本不支持"})
+			return
+		}
+		in, ok := readRequest(w, r)
+		if !ok {
+			return
+		}
+		connector, err := s.Connector(r.Context(), s.Store.Pool, chi.URLParam(r, "id"), user, false)
+		if err != nil {
+			rpcFail(r.Context(), w, in.ID, err)
+			return
+		}
+		credentialID := chi.URLParam(r, "credentialID")
+		if connector.String("authorization_mode") != "none" && credentialID == "" {
+			rpcFail(r.Context(), w, in.ID, selectionRequired)
+			return
+		}
+		credential, err := s.Credential(r.Context(), s.Store.Pool, connector, user, credentialID)
+		if err != nil {
+			rpcFail(r.Context(), w, in.ID, err)
+			return
+		}
+		if connector.String("authorization_mode") != "none" {
+			if err := requireCredential(connector, credential); err != nil {
+				rpcFail(r.Context(), w, in.ID, err)
+				return
+			}
+		}
+		if strings.HasPrefix(in.Method, "notifications/") {
+			if len(in.ID) != 0 {
+				rpcReply(r.Context(), w, 400, in.ID, nil, &rpcError{Code: -32600, Message: "通知不能包含请求 ID"})
+				return
+			}
+			w.WriteHeader(http.StatusAccepted)
+			return
+		}
+		if len(in.ID) == 0 {
+			// 无 ID 的消息不执行工具，也不产生 JSON-RPC 响应。
+			w.WriteHeader(http.StatusAccepted)
+			return
+		}
+		switch in.Method {
+		case "initialize":
+			var params struct {
+				Version string `json:"protocolVersion"`
+			}
+			if json.Unmarshal(in.Params, &params) != nil || params.Version == "" {
+				rpcReply(r.Context(), w, 200, in.ID, nil, &rpcError{Code: -32602, Message: "缺少 MCP 协议版本"})
+				return
+			}
+			if !supportedVersion(params.Version) {
+				params.Version = protocolVersion
+			}
+			rpcReply(r.Context(), w, 200, in.ID, resource.Object{"protocolVersion": params.Version, "capabilities": resource.Object{"tools": resource.Object{}}, "serverInfo": resource.Object{"name": "MonkeyAI", "version": "1"}}, nil)
+		case "ping":
+			rpcReply(r.Context(), w, 200, in.ID, resource.Object{}, nil)
+		case "tools/list", "tools/call":
+			s.invoke(w, r, in, connector, credential, user, billing)
+		default:
+			rpcReply(r.Context(), w, 200, in.ID, nil, &rpcError{Code: -32601, Message: "不支持此方法"})
+		}
+	}
+	router.HandleFunc("/mcp/connectors/{id}", handler)
+	router.HandleFunc("/mcp/connectors/{id}/credentials/{credentialID}", handler)
+}
+
+func requestSession(req *http.Request) (string, string) {
+	sessionID := strings.TrimSpace(req.Header.Get("X-MAI-Session-ID"))
+	if sessionID == "" {
+		sessionID = strings.TrimSpace(req.Header.Get("X-Session-ID"))
+	}
+	return strings.ToLower(sessionID), strings.ToLower(strings.TrimSpace(req.Header.Get("X-MAI-Parent-Session-ID")))
+}
+
+func (s *Service) setCallDuration(ctx context.Context, id string, duration int64) {
+	if s.Store == nil || s.Store.Pool == nil || id == "" {
+		return
+	}
+	if err := sqlc.New(s.Store.Pool).UpdateToolCallDuration(ctx, sqlc.UpdateToolCallDurationParams{DurationMs: int32(duration), ID: id}); err != nil {
+		logging.Event(ctx, slog.Default(), slog.LevelWarn, "mcp.operation.warn", "记录 MCP 工具调用耗时失败", "module", "mcp", "operation", "setCallDuration", "transaction_id", id, "error", err)
+	}
+}
+
+func (s *Service) invoke(w http.ResponseWriter, r *http.Request, in request, connector, credential resource.Object, user string, billing InvocationBilling) {
+	if in.Method == "tools/list" {
+		var params struct {
+			Cursor string `json:"cursor"`
+		}
+		if len(in.Params) > 0 && (json.Unmarshal(in.Params, &params) != nil || params.Cursor != "") {
+			rpcReply(r.Context(), w, 200, in.ID, nil, &rpcError{Code: -32602, Message: "工具目录游标无效"})
+			return
+		}
+	}
+	tools, err := s.listLiveTools(r.Context(), s.Store.Pool, connector, credential, false, in.Method == "tools/list")
+	if err != nil {
+		rpcFail(r.Context(), w, in.ID, err)
+		return
+	}
+	if in.Method == "tools/list" {
+		out := []resource.Object{}
+		for _, tool := range tools {
+			out = append(out, resource.Object{"name": tool["name"], "description": tool["description"], "inputSchema": tool["input_schema"]})
+		}
+		rpcReply(r.Context(), w, 200, in.ID, resource.Object{"tools": out}, nil)
+		return
+	}
+	var params map[string]any
+	decoder := json.NewDecoder(bytes.NewReader(in.Params))
+	decoder.UseNumber()
+	err = decoder.Decode(&params)
+	name, _ := params["name"].(string)
+	arguments, hasArguments := params["arguments"]
+	_, objectArguments := arguments.(map[string]any)
+	if err != nil || name == "" || (hasArguments && !objectArguments) {
+		if err != nil {
+			slog.WarnContext(r.Context(), "操作失败", "module", "mcp", "operation", "invoke", "error", err)
+		}
+		rpcReply(r.Context(), w, 200, in.ID, nil, &rpcError{Code: -32602, Message: "工具参数无效"})
+		return
+	}
+	var tool resource.Object
+	for _, candidate := range tools {
+		if candidate.String("name") == name {
+			tool = candidate
+			break
+		}
+	}
+	if tool == nil {
+		rpcReply(r.Context(), w, 200, in.ID, nil, &rpcError{Code: -32602, Message: "工具不存在或未启用"})
+		return
+	}
+	sessionID, parentID := requestSession(r)
+	if sessionID != "" {
+		if s.sessions != nil {
+			if err := s.sessions.EnsureSession(r.Context(), user, sessionID, parentID, ""); err != nil {
+				if errors.Is(err, sessionreporting.ErrReportingDisabled) {
+					sessionID = ""
+				} else {
+					rpcFail(r.Context(), w, in.ID, err)
+					return
+				}
+			}
+		}
+	}
+	headers, credential, err := s.headers(r.Context(), connector, credential)
+	if err != nil {
+		rpcFail(r.Context(), w, in.ID, err)
+		return
+	}
+	h, err := s.clientFor(r.Context(), connector)
+	if err != nil {
+		slog.WarnContext(r.Context(), "操作失败", "module", "mcp", "operation", "invoke", "error", err)
+		rpcFail(r.Context(), w, in.ID, &resource.Error{Status: 502, Code: "mcp_connect_failed", Message: "系统代理不可用"})
+		return
+	}
+	setConnectorTimeout(h, connector.Int("timeout_ms"))
+	remote, err := openRemoteWithClient(r.Context(), connector.String("url"), headers, h)
+	if err != nil {
+		logging.Event(r.Context(), slog.Default(), slog.LevelWarn, "mcp.operation.warn", "连接 MCP 上游失败", "module", "mcp", "operation", "invoke", "connector_id", connector.String("id"), "credential_id", credential.String("id"), "operation", "connect", "failure", err)
+		rpcFail(r.Context(), w, in.ID, &resource.Error{Status: 502, Code: "mcp_connect_failed", Message: "工具上游连接失败"})
+		return
+	}
+	defer remote.close()
+	id, err := billing.Begin(r.Context(), Invocation{UserID: user, ConnectorID: connector.String("id"), CredentialID: credential.String("id"), ToolID: tool.String("id"), ToolName: name, SessionID: sessionID, IdempotencyKey: r.Header.Get("Idempotency-Key"), RequestHash: resource.Hash(resource.Object{"connector": connector.String("id"), "credential": credential.String("id"), "params": params, "session_id": sessionID})})
+	if err != nil {
+		rpcFail(r.Context(), w, in.ID, err)
+		return
+	}
+	w.Header().Set("X-Billing-Transaction-ID", id)
+	if err = billing.Start(r.Context(), id); err != nil {
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), 30*time.Second)
+		defer cancel()
+		if finishErr := billing.Finish(ctx, id, InvocationResult{Known: true, Result: "failed", ErrorCode: "mcp_not_started"}); finishErr != nil {
+			logging.Event(ctx, slog.Default(), slog.LevelError, "mcp.operation.error", "MCP 调用开始失败后结算失败", "module", "mcp", "operation", "invoke", "connector_id", connector.String("id"), "operation", "finish", "failure", finishErr)
+			w.Header().Set("X-Billing-Status", "pending")
+		}
+		rpcFail(r.Context(), w, in.ID, err)
+		return
+	}
+	startedAt := time.Now()
+	result, callErr := remote.call(r.Context(), 2, "tools/call", in.Params)
+	durationMS := time.Since(startedAt).Milliseconds()
+	if durationMS < 0 {
+		durationMS = 0
+	}
+	outcome := InvocationResult{Known: true, Result: "succeeded", DurationMS: durationMS}
+	var rpc *rpcError
+	if callErr != nil {
+		outcome.Result = "failed"
+		outcome.ErrorCode = "mcp_call_failed"
+		outcome.Known = errors.As(callErr, &rpc)
+	} else {
+		var body struct {
+			Content []json.RawMessage `json:"content"`
+			IsError bool              `json:"isError"`
+		}
+		if json.Unmarshal(result, &body) != nil || body.Content == nil {
+			outcome.Known = false
+			outcome.Result = "failed"
+			outcome.ErrorCode = "mcp_invalid_result"
+			callErr = errors.New("MCP 工具结果无效")
+		} else if body.IsError {
+			outcome.Result = "failed"
+			outcome.ErrorCode = "mcp_tool_error"
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), 30*time.Second)
+	defer cancel()
+	if err = billing.Finish(ctx, id, outcome); err != nil {
+		logging.Event(ctx, slog.Default(), slog.LevelError, "mcp.operation.error", "MCP 调用结算失败", "module", "mcp", "operation", "invoke", "connector_id", connector.String("id"), "operation", "finish", "failure", err)
+		w.Header().Set("X-Billing-Status", "pending")
+	}
+	s.setCallDuration(ctx, id, outcome.DurationMS)
+	if callErr != nil {
+		if rpc == nil {
+			logging.Event(r.Context(), slog.Default(), slog.LevelWarn, "mcp.operation.warn", "MCP 工具调用失败", "module", "mcp", "operation", "invoke", "connector_id", connector.String("id"), "credential_id", credential.String("id"), "operation", "tools/call", "failure", callErr)
+		}
+		code := -32603
+		if rpc != nil {
+			code = rpc.Code
+		}
+		rpcReply(r.Context(), w, 200, in.ID, nil, &rpcError{Code: code, Message: "工具调用失败，可凭交易 ID 查询状态"})
+		return
+	}
+	rpcReply(r.Context(), w, 200, in.ID, result, nil)
+}

@@ -1,0 +1,383 @@
+package mcp
+
+import (
+	"context"
+	"errors"
+	"log/slog"
+	"net/http"
+	"net/netip"
+	"strings"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/logging"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/billing"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/identity"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/mcp/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/mcp/sqlc/connector"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
+)
+
+type ProxyResolver interface {
+	ProxyURL(context.Context, string) (string, error)
+}
+
+type NetworkSettings interface {
+	MCPBlockedCIDRs(context.Context) ([]netip.Prefix, error)
+}
+
+type Service struct {
+	network    NetworkSettings
+	proxies    ProxyResolver
+	storage    resource.Storage
+	sessions   SessionResolver
+	Connectors *resource.CRUD
+	Store      *resource.Store
+	PublicURL  string
+}
+
+func (s *Service) WithNetworkSettings(settings NetworkSettings) *Service {
+	s.network = settings
+	return s
+}
+
+func (s *Service) WithProxyResolver(proxies ProxyResolver) *Service {
+	s.proxies = proxies
+	return s
+}
+
+func (s *Service) WithSessionResolver(resolver SessionResolver) *Service {
+	s.sessions = resolver
+	return s
+}
+
+func NewService(store *resource.Store, publicURL string) *Service {
+	s := &Service{Store: store, PublicURL: strings.TrimRight(publicURL, "/")}
+	s.Connectors = resource.NewCRUD(store, resource.Definition{
+		Kind: "connector", Path: "/connectors",
+		Repository:           func(q resource.Queryer) resource.Repository { return connector.New(q) },
+		Fields:               []string{"name", "description", "url", "authorization_mode", "authorization_method", "oauth_config", "oauth_client_secret", "auth_header_name", "proxy_id", "skip_tls_verify", "enabled", "config_revision", "connection_status"},
+		UserFields:           []string{"name", "description", "url", "skip_tls_verify", "authorization_mode", "authorization_method", "oauth_config", "oauth_client_secret", "tag_ids"},
+		OverrideFields:       []string{"name", "description", "url", "proxy_id", "skip_tls_verify", "authorization_mode", "authorization_method", "oauth_config", "oauth_client_secret", "auth_header_name", "tag_ids"},
+		Hidden:               []string{"oauth_client_secret", "icon_s3_key"},
+		AllowImportedEnabled: true,
+		PrepareOverride:      s.validateConnector,
+		Validate:             s.validateConnector,
+		Persist: func(ctx context.Context, tx pgx.Tx, in resource.Object) error {
+			_, err := s.persistCredential(ctx, tx, in)
+			return err
+		},
+		PersistOverride: s.persistCredential,
+		Decorate:        s.decorateConnector, UserDecorate: userIcon,
+		References: func(ctx context.Context, tx pgx.Tx, id string) ([]resource.Object, error) {
+			return resource.DecodeObjects(sqlc.New(tx).ListConnectorReferences(ctx, id))
+		},
+	})
+	return s
+}
+
+func (s *Service) validateConnector(ctx context.Context, tx pgx.Tx, in, old resource.Object) error {
+	if _, exists := in["provider_id"]; exists {
+		return resource.InvalidCode("mcp_auth_config_invalid", "连接不再使用 Provider，请直接配置连接地址和认证方式")
+	}
+	if value, exists := in["skip_tls_verify"]; exists {
+		if _, ok := value.(bool); !ok {
+			return resource.Invalid("跳过 TLS 校验必须为布尔值")
+		}
+	} else {
+		in["skip_tls_verify"] = old.Bool("skip_tls_verify")
+	}
+	fields := []string{"url", "proxy_id", "skip_tls_verify", "authorization_mode", "authorization_method", "oauth_config"}
+	for _, key := range fields {
+		if _, ok := in[key]; !ok {
+			in[key] = old[key]
+		}
+	}
+	if !validURL(in.String("url")) {
+		return resource.InvalidCode("mcp_url_invalid", "MCP URL 无效")
+	}
+	if id := in.String("proxy_id"); id != "" {
+		if in.String("ownership_type") == "user" {
+			return resource.InvalidCode("mcp_proxy_not_allowed", "个人连接不能使用系统代理")
+		}
+		if s.proxies == nil {
+			return resource.InvalidCode("mcp_proxy_unavailable", "系统代理不可用")
+		}
+		if _, err := s.proxies.ProxyURL(ctx, id); err != nil {
+			slog.WarnContext(ctx, "操作失败", "module", "mcp", "operation", "validateConnector", "error", err)
+			return resource.InvalidCode("mcp_proxy_unavailable", "系统代理不存在")
+		}
+	}
+	mode, method := in.String("authorization_mode"), in.String("authorization_method")
+	if in.String("ownership_type") == "user" && mode != "none" && mode != "independent" {
+		return resource.InvalidCode("mcp_auth_config_invalid", "个人连接仅支持无认证或独立认证")
+	}
+	if mode == "none" {
+		in["authorization_method"], method = nil, ""
+	} else if (mode != "centralized" && mode != "independent") || (method != "http_header" && method != "oauth") {
+		return resource.InvalidCode("mcp_auth_config_invalid", "认证组合无效")
+	}
+	if method == "oauth" {
+		o := oauthSettings(in)
+		prev := oauthSettings(old)
+		if o.Mode != "" && o.Mode != "manual" && o.Mode != "dynamic" {
+			return resource.InvalidCode("mcp_auth_config_invalid", "OAuth 客户端配置模式无效")
+		}
+		if o.Mode == "dynamic" {
+			// 自动发现结果和注册凭证由后端维护，普通编辑不能覆盖或清除。
+			o = oauthConfig{Mode: "dynamic"}
+			in["oauth_client_secret"] = ""
+			if prev.Mode == "dynamic" && old.String("url") == in.String("url") {
+				o = prev
+				in["oauth_client_secret"] = old.String("oauth_client_secret")
+			}
+		}
+		o.ClientID = strings.TrimSpace(o.ClientID)
+		if o.Mode != "dynamic" && (!validURL(o.AuthorizationURL) || !validURL(o.TokenURL) || (o.ClientID == "" && o.RegistrationURL == "")) {
+			return resource.InvalidCode("mcp_auth_config_invalid", "OAuth 应用配置不完整，请填写 Client ID 或 Registration URL")
+		}
+		if o.RegistrationURL != "" && !validURL(o.RegistrationURL) {
+			return resource.InvalidCode("mcp_auth_config_invalid", "OAuth Registration URL 无效")
+		}
+		if o.TokenAuthMethod != "" && o.TokenAuthMethod != "none" && o.TokenAuthMethod != "client_secret_post" && o.TokenAuthMethod != "client_secret_basic" {
+			return resource.InvalidCode("oauth_auth_method_unsupported", "OAuth Token 端点认证方式无效")
+		}
+		o.Scopes = strings.Join(strings.Fields(o.Scopes), " ")
+		config := resource.Object{"authorization_url": o.AuthorizationURL, "token_url": o.TokenURL, "client_id": o.ClientID, "scopes": o.Scopes}
+		if o.Mode != "" {
+			config["mode"] = o.Mode
+		}
+		if o.Mode == "dynamic" && o.Resource != "" {
+			config["resource"] = o.Resource
+		}
+		if o.RegistrationURL != "" {
+			config["registration_url"] = o.RegistrationURL
+		}
+		if o.TokenAuthMethod != "" {
+			config["token_endpoint_auth_method"] = o.TokenAuthMethod
+		}
+		in["oauth_config"] = config
+		if _, exists := in["oauth_client_secret"]; !exists {
+			in["oauth_client_secret"] = old.String("oauth_client_secret")
+			if prev.Mode != o.Mode || prev.ClientID != o.ClientID || prev.TokenURL != o.TokenURL || prev.AuthorizationURL != o.AuthorizationURL {
+				in["oauth_client_secret"] = ""
+			}
+		}
+		if o.ClientID == "" || o.TokenAuthMethod == "none" {
+			in["oauth_client_secret"] = ""
+		}
+		// 到期时间由注册服务器提供，编辑其他配置时保留，不接受调用方覆盖。
+		if prev.ClientSecretExpiresAt > 0 && o.ClientID == prev.ClientID && o.TokenURL == prev.TokenURL && o.AuthorizationURL == prev.AuthorizationURL && in.String("oauth_client_secret") != "" && in.String("oauth_client_secret") == old.String("oauth_client_secret") {
+			config["client_secret_expires_at"] = prev.ClientSecretExpiresAt
+		}
+	} else {
+		in["oauth_config"], in["oauth_client_secret"] = resource.Object{}, ""
+	}
+	revision := old.Int("config_revision")
+	changed := false
+	for _, key := range fields {
+		changed = changed || resource.Hash(in[key]) != resource.Hash(old[key])
+	}
+	if old.String("id") == "" {
+		revision = 1
+	} else if changed {
+		revision++
+		if mode != old.String("authorization_mode") {
+			if err := sqlc.New(tx).RevokeConnectorCredentials(ctx, old.String("id")); err != nil {
+				return err
+			}
+		}
+	}
+	in["config_revision"] = revision
+	in["connection_status"] = old.String("connection_status")
+	if changed || old.String("id") == "" {
+		in["connection_status"] = "unknown"
+	}
+	return nil
+}
+
+func (s *Service) decorateConnector(ctx context.Context, q resource.Queryer, o resource.Object) error {
+	o["callback_url"], o["icon_path"] = "", ""
+	if o.String("authorization_method") == "oauth" {
+		o["callback_url"] = s.callbackURL(o.String("id"))
+	}
+	if key := o.String("icon_s3_key"); key != "" {
+		o["icon_path"] = "/api/admin/v1/connectors/" + o.String("id") + "/icon?v=" + resource.Hash(key)
+	}
+	creds := []resource.Object{}
+	var err error
+	if o.String("authorization_mode") == "centralized" || o.String("ownership_type") == "user" {
+		user := ""
+		if o.String("authorization_mode") == "independent" {
+			user = o.String("owner_user_id")
+		}
+		creds, err = s.Credentials(ctx, q, o, user)
+		if err != nil {
+			return err
+		}
+	}
+	delete(o, "tools_synced_at")
+	o["credentials"], o["credential_configured"] = creds, false
+	for _, cred := range creds {
+		if cred.String("authorization_status") == "authorized" {
+			o["credential_configured"] = true
+		}
+	}
+	if o.String("authorization_mode") != "none" {
+		delete(o, "connection_status")
+		delete(o, "last_checked_at")
+		delete(o, "last_error")
+	}
+	return nil
+}
+
+func userIcon(o resource.Object) {
+	o["icon_path"] = strings.Replace(o.String("icon_path"), "/api/admin/v1/", "/api/v1/", 1)
+}
+
+func (s *Service) Connector(ctx context.Context, q resource.Queryer, id, user string, admin bool) (resource.Object, error) {
+	active, err := sqlc.New(q).UserActive(ctx, sqlc.UserActiveParams{ID: user, IsAdmin: admin})
+	if err != nil {
+		return nil, err
+	}
+
+	if !active {
+		return nil, resource.NotFound
+	}
+	o, err := resource.DecodeObject(sqlc.New(q).GetConnector(ctx, id))
+	if err != nil {
+		return nil, err
+	}
+	if admin {
+		if o.String("ownership_type") == "user" {
+			return nil, resource.NotFound
+		}
+	} else {
+		ok, err := resource.Accessible(ctx, q, "connector", o, user)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			return nil, resource.NotFound
+		}
+	}
+	return o, nil
+}
+
+func (s *Service) lockConnector(ctx context.Context, tx pgx.Tx, id, user string, admin bool) (resource.Object, error) {
+	if _, err := sqlc.New(tx).LockConnector(ctx, id); err != nil {
+		return nil, err
+	}
+	return s.Connector(ctx, tx, id, user, admin)
+}
+
+func (s *Service) RegisterAdmin(r chi.Router) {
+	s.Connectors.Register(r)
+	r.Post("/connectors", s.saveConnector)
+	r.Put("/connectors/{id}", s.saveConnector)
+	s.routes(r, true)
+	s.iconRoutes(r, true)
+}
+func (s *Service) RegisterAgent(r chi.Router) {
+	s.Connectors.RegisterAgent(r)
+	s.routes(r, false)
+	s.iconRoutes(r, false)
+}
+func (s *Service) routes(r chi.Router, admin bool) {
+	s.credentialRoutes(r, admin)
+	r.Post("/connectors/{id}/test", func(w http.ResponseWriter, r *http.Request) { s.test(w, r, admin) })
+	r.Get("/connectors/{id}/tools", func(w http.ResponseWriter, r *http.Request) { s.tools(w, r, admin) })
+	r.Post("/connectors/{id}/credentials/{credentialID}/test", func(w http.ResponseWriter, r *http.Request) { s.test(w, r, admin) })
+	r.Get("/connectors/{id}/credentials/{credentialID}/tools", func(w http.ResponseWriter, r *http.Request) { s.tools(w, r, admin) })
+	r.Post("/connectors/{id}/oauth/authorizations", func(w http.ResponseWriter, r *http.Request) { s.authorize(w, r, admin) })
+	r.Post("/connectors/{id}/credentials/{credentialID}/oauth/authorizations", func(w http.ResponseWriter, r *http.Request) { s.authorize(w, r, admin) })
+	r.Get("/connector-authorizations/{id}", s.authorizationStatus)
+	if admin {
+		r.Patch("/connectors/{id}/tools/{toolID}", s.updateTool)
+		r.Get("/connectors/{id}/tool-contexts", s.toolContexts)
+	}
+}
+func (s *Service) updateTool(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Name    string         `json:"name"`
+		Enabled *bool          `json:"enabled"`
+		Credits billing.Amount `json:"credits_per_call"`
+	}
+	if err := resource.Decode(w, r, &in); err != nil || in.Enabled == nil || in.Credits < 0 || len(in.Name) > 256 {
+		if err != nil {
+			slog.WarnContext(r.Context(), "操作失败", "module", "mcp", "operation", "updateTool", "error", err)
+		}
+		resource.Fail(r.Context(), w, resource.Invalid("工具配置无效"))
+		return
+	}
+	tx, err := s.Store.Pool.Begin(r.Context())
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	defer rollbackMCP(r.Context(), tx, chi.URLParam(r, "id"), "", "update_tool")
+	var mode string
+	mode, err = sqlc.New(tx).GetAuthorizationMode(r.Context(), chi.URLParam(r, "id"))
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+
+	if mode != "centralized" && in.Credits != 0 {
+		resource.Fail(r.Context(), w, resource.Invalid("仅集中认证工具可以设置非零积分"))
+		return
+	}
+	if err = resource.RequireEditable(r.Context(), tx, "connector", chi.URLParam(r, "id")); err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	u, _ := identity.UserFromContext(r.Context())
+	queries := sqlc.New(tx)
+	params := sqlc.UpdateToolParams{
+		ConnectorID:    chi.URLParam(r, "id"),
+		ID:             chi.URLParam(r, "toolID"),
+		Name:           in.Name,
+		Enabled:        *in.Enabled,
+		CreditsPerCall: in.Credits.String(),
+	}
+	var data []byte
+	if mode == "independent" {
+		data, err = queries.UpdateIndependentTool(r.Context(), sqlc.UpdateIndependentToolParams{
+			ConnectorID: params.ConnectorID, ID: params.ID, Enabled: params.Enabled,
+		})
+		if errors.Is(err, pgx.ErrNoRows) {
+			err = resource.Invalid("独立认证仅支持修改已有工具配置")
+		}
+	} else {
+		data, err = queries.UpdateTool(r.Context(), params)
+		if errors.Is(err, pgx.ErrNoRows) && params.Name == "" {
+			params.Name, err = s.toolName(r.Context(), tx, params.ConnectorID, u.ID, params.ID)
+			if err == nil {
+				data, err = queries.UpdateTool(r.Context(), params)
+			}
+		}
+	}
+	o, err := resource.DecodeObject(data, err)
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	err = resource.Audit(r.Context(), tx, u.ID, "mcp_tool", o.String("id"), "configure")
+
+	if err == nil {
+		err = tx.Commit(r.Context())
+	}
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+
+	resource.JSON(r.Context(), w, 200, o)
+}
+
+func rollbackMCP(ctx context.Context, tx pgx.Tx, connectorID, credentialID, operation string) {
+	if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+		logging.Event(ctx, slog.Default(), slog.LevelWarn, "mcp.operation.warn", "回滚 MCP 事务失败", "module", "mcp", "operation", "rollbackMCP", "operation", operation, "connector_id", connectorID, "credential_id", credentialID, "failure", err)
+	}
+}

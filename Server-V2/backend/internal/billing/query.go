@@ -1,0 +1,372 @@
+package billing
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/memberscope"
+	"log/slog"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/billing/sqlc"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/identity"
+	"github.com/chaitin/MonkeyCode/monkeyai/backend/internal/resource"
+	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+func entryUserID(raw string) (string, error) {
+	id := strings.TrimSpace(raw)
+	if id == "" {
+		return "", nil
+	}
+	var value pgtype.UUID
+	if err := value.Scan(id); err != nil || !value.Valid {
+		return "", resource.Invalid("用户 ID 无效")
+	}
+	return id, nil
+}
+
+func filters(r *http.Request) (sqlc.CountEntriesParams, error) {
+	q := r.URL.Query()
+	var from, until *time.Time
+	for key, target := range map[string]**time.Time{"from": &from, "until": &until} {
+		if v := q.Get(key); v != "" {
+			t, err := time.Parse(time.RFC3339, v)
+			if err != nil {
+				slog.WarnContext(r.Context(), "操作失败", "module", "billing", "operation", "filters", "error", err)
+				return sqlc.CountEntriesParams{}, resource.Invalid("筛选时间需使用带时区的 ISO 格式")
+			}
+			*target = &t
+		}
+	}
+	if from != nil && until != nil && !from.Before(*until) {
+		return sqlc.CountEntriesParams{}, resource.Invalid("结束时间必须晚于开始时间")
+	}
+	for _, key := range []string{"user", "content"} {
+		if len(q.Get(key)) > 200 {
+			return sqlc.CountEntriesParams{}, resource.Invalid("搜索条件过长")
+		}
+	}
+	return sqlc.CountEntriesParams{
+		UserQuery:    q.Get("user"),
+		ContentQuery: q.Get("content"),
+		Category:     q.Get("category"),
+		Mode:         q.Get("mode"),
+		EntryType:    q.Get("entry_type"),
+		FromTime:     from,
+		UntilTime:    until,
+		GroupID:      q.Get("group_id"),
+	}, nil
+}
+func (s *Service) entries(w http.ResponseWriter, r *http.Request, scope memberscope.Scope) {
+	filter, err := filters(r)
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	if requested := r.URL.Query().Get("range"); requested != "" && requested != "all" {
+		resource.Fail(r.Context(), w, resource.Invalid("range 仅支持 all"))
+		return
+	}
+	if filter.FromTime == nil && filter.UntilTime == nil && r.URL.Query().Get("range") != "all" {
+		from, until := defaultEntryRange(s.now())
+		filter.FromTime, filter.UntilTime = &from, &until
+	}
+	page, size := pageParams(r, 500)
+	userID, err := entryUserID(r.URL.Query().Get("user_id"))
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	q := sqlc.New(s.pool)
+	var data [][]byte
+	if userID == "" {
+		data, err = q.ListEntries(r.Context(), sqlc.ListEntriesParams{VisibleUsers: scope.IDs(),
+			UserQuery:    filter.UserQuery,
+			ContentQuery: filter.ContentQuery,
+			Category:     filter.Category,
+			Mode:         filter.Mode,
+			EntryType:    filter.EntryType,
+			FromTime:     filter.FromTime,
+			UntilTime:    filter.UntilTime,
+			GroupID:      filter.GroupID,
+			Limit:        int32(size + 1),
+			Offset:       int32((page - 1) * size),
+		})
+	} else {
+		// Keep the UUID predicate unconditional so prepared plans can use the user/time index.
+		data, err = q.ListEntriesByUser(r.Context(), sqlc.ListEntriesByUserParams{VisibleUsers: scope.IDs(),
+			UserID:       userID,
+			UserQuery:    filter.UserQuery,
+			ContentQuery: filter.ContentQuery,
+			Category:     filter.Category,
+			Mode:         filter.Mode,
+			EntryType:    filter.EntryType,
+			FromTime:     filter.FromTime,
+			UntilTime:    filter.UntilTime,
+			GroupID:      filter.GroupID,
+			Limit:        int32(size + 1),
+			Offset:       int32((page - 1) * size),
+		})
+	}
+	rows, err := resource.DecodeObjects(data, err)
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	hasNext := len(rows) > size
+	if hasNext {
+		rows = rows[:size]
+	}
+	if scope.Viewer() != "" {
+		for _, row := range rows {
+			row["metadata"] = resource.Object{}
+			row["external_reference"] = nil
+		}
+	}
+	w.Header().Set("Cache-Control", "private, no-store")
+	resource.JSON(r.Context(), w, 200, map[string]any{
+		"items": rows, "has_next": hasNext, "page": page, "page_size": size,
+		"from": filter.FromTime, "until": filter.UntilTime,
+	})
+}
+
+func defaultEntryRange(now time.Time) (time.Time, time.Time) {
+	zone, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		slog.Warn("操作失败", "module", "billing", "operation", "defaultEntryRange", "error", err)
+		zone = time.FixedZone("Asia/Shanghai", 8*60*60)
+	}
+	local := now.In(zone)
+	today := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, zone)
+	return today.AddDate(0, 0, -27), today.AddDate(0, 0, 1)
+}
+
+func (s *Service) summary(w http.ResponseWriter, r *http.Request) {
+	filter, err := filters(r)
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	userID, err := entryUserID(r.URL.Query().Get("user_id"))
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	q := sqlc.New(s.pool)
+	var data []byte
+	if userID == "" {
+		data, err = q.SummarizeEntries(r.Context(), sqlc.SummarizeEntriesParams(filter))
+	} else {
+		data, err = q.SummarizeEntriesByUser(r.Context(), sqlc.SummarizeEntriesByUserParams{
+			UserID:       userID,
+			UserQuery:    filter.UserQuery,
+			ContentQuery: filter.ContentQuery,
+			Category:     filter.Category,
+			Mode:         filter.Mode,
+			EntryType:    filter.EntryType,
+			FromTime:     filter.FromTime,
+			UntilTime:    filter.UntilTime,
+			GroupID:      filter.GroupID,
+		})
+	}
+	out, err := resource.DecodeObject(data, err)
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	resource.JSON(r.Context(), w, 200, out)
+}
+func (s *Service) transaction(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	out, err := resource.DecodeObject(sqlc.New(s.pool).GetTransaction(r.Context(), id))
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	queries := sqlc.New(s.pool)
+	partitioned, err := queries.LedgerPartitioned(r.Context())
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	var entries []resource.Object
+	if partitioned {
+		entries, err = resource.DecodeObjects(queries.PartitionedTransactionEntries(r.Context(), new(id)))
+	} else {
+		entries, err = resource.DecodeObjects(queries.TransactionEntries(r.Context(), new(id)))
+	}
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	out["entries"] = entries
+	wallets, err := resource.DecodeObjects(sqlc.New(s.pool).TransactionWalletRecords(r.Context(), id))
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	out["wallet_records"] = wallets
+	resource.JSON(r.Context(), w, 200, out)
+}
+func (s *Service) reconciliation(w http.ResponseWriter, r *http.Request) {
+	page, size := pageParams(r, 500)
+	ctx := r.Context()
+	rows, err := resource.DecodeObjects(sqlc.New(s.pool).PendingTransactions(ctx, sqlc.PendingTransactionsParams{Limit: int32(size), Offset: int32((page - 1) * size)}))
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	var total int64
+	total, err = sqlc.New(s.pool).CountPendingTransactions(ctx)
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+
+	differences, err := resource.DecodeObjects(sqlc.New(s.pool).AccountDifferences(ctx))
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	issues, err := resource.DecodeObjects(sqlc.New(s.pool).MigrationIssues(ctx))
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	resource.JSON(r.Context(), w, 200, map[string]any{"items": rows, "total": total, "page": page, "page_size": size, "differences": differences, "migration_issues": issues})
+}
+func (s *Service) retry(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	state, err := sqlc.New(s.pool).TransactionStatus(r.Context(), id)
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+
+	if state != "settling" {
+		resource.Fail(r.Context(), w, fail(409, "transaction_not_retryable", "只有已确定用量的待结算交易可重试；未知结果需先核查"))
+		return
+	}
+	u, _ := identity.UserFromContext(r.Context())
+	if err := audit(r.Context(), s.pool, u.ID, "retry_settlement", id, map[string]string{"status": state}); err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	if err := s.Settle(r.Context(), id); err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	s.transaction(w, r)
+}
+func (s *Service) resolve(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Usage  Usage  `json:"usage"`
+		Reason string `json:"reason"`
+	}
+	if err := resource.Decode(w, r, &in); err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	if strings.TrimSpace(in.Reason) == "" || len(in.Reason) > 1000 {
+		resource.Fail(r.Context(), w, resource.Invalid("核查需填写证据和处理原因"))
+		return
+	}
+	id := chi.URLParam(r, "id")
+	tx, err := s.pool.Begin(r.Context())
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	defer rollback(r.Context(), tx, "resolve_transaction", id)
+	var state, mode string
+	var record sqlc.LockTransactionStatusRow
+	record, err = sqlc.New(tx).LockTransactionStatus(r.Context(), id)
+
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	state, mode = record.Status, record.Mode
+
+	if state != "unknown" {
+		resource.Fail(r.Context(), w, fail(409, "transaction_not_unknown", "只有结果未知的交易可以核查处理"))
+		return
+	}
+	if mode == "remote" {
+		var ws string
+		ws, err = sqlc.New(tx).WalletStatus(r.Context(), id)
+		if err != nil {
+			resource.Fail(r.Context(), w, err)
+			return
+		}
+
+		if ws != "reserved" {
+			resource.Fail(r.Context(), w, fail(409, "wallet_review_required", "需先通过百智云核实预扣状态，不能仅在本地解除冻结"))
+			return
+		}
+	}
+	if record.Category == "image" {
+		job, err := sqlc.New(tx).ImageJobReview(r.Context(), &id)
+		if err != nil {
+			resource.Fail(r.Context(), w, err)
+			return
+		}
+		if in.Usage.Result == "succeeded" {
+			if in.Usage.Images < 1 || in.Usage.Images > int64(job.RequestedImages) || in.Usage.Images != job.ArchivedImages {
+				resource.Fail(r.Context(), w, resource.Invalid("生图核查的张数必须与已归档图片一致"))
+				return
+			}
+		} else if in.Usage.Result != "failed" || in.Usage.Images != 0 || job.ArchivedImages != 0 {
+			resource.Fail(r.Context(), w, resource.Invalid("存在已归档图片时不能按失败退费"))
+			return
+		}
+		count, err := sqlc.New(tx).ResolveImageJob(r.Context(), sqlc.ResolveImageJobParams{
+			Status: in.Usage.Result, GeneratedImages: int32(in.Usage.Images),
+			ErrorCode: in.Usage.ErrorCode, BillingTransactionID: id,
+		})
+		if err != nil {
+			resource.Fail(r.Context(), w, err)
+			return
+		}
+		if count != 1 {
+			resource.Fail(r.Context(), w, fail(409, "image_job_not_unknown", "生图任务状态已变化，请重新核查"))
+			return
+		}
+	}
+	u, _ := identity.UserFromContext(r.Context())
+	var original Usage
+	if err = json.Unmarshal(record.Usage, &original); err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	in.Usage.Known = true
+	in.Usage.RequestID = record.RequestID
+	in.Usage.Stream = original.Stream
+	in.Usage.TerminalEvent = original.TerminalEvent
+	in.Usage.InitialErrorCode = original.InitialErrorCode
+	in.Usage.Reconciled = original.Reconciled
+	body, err := json.Marshal(in)
+	if err != nil {
+		resource.Fail(r.Context(), w, fmt.Errorf("序列化交易 %s 核查记录: %w", id, err))
+		return
+	}
+	err = audit(r.Context(), tx, u.ID, "resolve_transaction", id, json.RawMessage(body))
+
+	if err == nil {
+		err = tx.Commit(r.Context())
+	}
+	if err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+
+	if err = s.finish(r.Context(), id, in.Usage, true); err != nil {
+		resource.Fail(r.Context(), w, err)
+		return
+	}
+	s.transaction(w, r)
+}
